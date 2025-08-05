@@ -1,11 +1,11 @@
 {
-  "name": "@lumic/wundrio",
+  "name": "@lumic/wundr",
   "version": "1.0.0",
   "description": "The Intelligent CLI-Based Coding Agents Orchestrator - Transform monolithic chaos into architectural elegance with AI-powered refactoring at scale",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "wundrio": "./dist/cli.js"
+    "wundr": "./dist/cli.js"
   },
   "scripts": {
     "setup": "bash setup/install.sh",
@@ -137,14 +137,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lumicai/wundrio.git"
+    "url": "https://github.com/lumicai/wundr.git"
   },
   "bugs": {
-    "url": "https://github.com/lumicai/wundrio/issues"
+    "url": "https://github.com/lumicai/wundr/issues"
   },
   "homepage": "https://wundr.io",
   "keywords": [
-    "wundrio",
+    "wundr",
     "lumic",
     "coding-agents",
     "ai-refactoring",

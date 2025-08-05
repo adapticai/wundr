@@ -1,4 +1,4 @@
-# Wundr.io Dashboard
+# Wundr Dashboard
 
 A modern, feature-rich dashboard for analyzing and refactoring monorepo codebases by Lumic.ai, built with Next.js, shadcn/ui, and Tailwind CSS.
 
@@ -16,7 +16,7 @@ A modern, feature-rich dashboard for analyzing and refactoring monorepo codebase
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
@@ -53,7 +53,7 @@ The dashboard can load analysis data in several ways:
 The dashboard includes several main sections:
 
 - **Overview**: Summary cards and charts showing key metrics
-- **Analysis**: 
+- **Analysis**:
   - Duplicates: Browse and filter duplicate code clusters
   - Dependencies: Analyze dependency relationships
   - Code Entities: Explore all code entities in your monorepo
@@ -117,4 +117,4 @@ When contributing to the dashboard:
 
 ## License
 
-Wundr.io is a product by Lumic.ai.
+Wundr is a product by Lumic.ai.

@@ -1,8 +1,8 @@
-# Wundr.io by Lumic.ai
+# Wundr by Lumic.ai
 
 <div align="center">
 
-  <h1>🚀 Wundr.io</h1>
+  <h1>🚀 Wundr</h1>
 
   <p>
     <strong>The Intelligent CLI-Based Coding Agents Orchestrator</strong>
@@ -19,9 +19,9 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/npm/v/wundrio?style=flat-square" alt="npm version">
-    <img src="https://img.shields.io/github/license/lumicai/wundrio?style=flat-square" alt="License">
-    <img src="https://img.shields.io/github/stars/lumicai/wundrio?style=flat-square" alt="Stars">
+    <img src="https://img.shields.io/npm/v/wundr?style=flat-square" alt="npm version">
+    <img src="https://img.shields.io/github/license/lumicai/wundr?style=flat-square" alt="License">
+    <img src="https://img.shields.io/github/stars/lumicai/wundr?style=flat-square" alt="Stars">
     <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=flat-square" alt="Node Version">
   </p>
 
@@ -29,11 +29,11 @@
 
 ---
 
-## 🎯 What is Wundr.io?
+## 🎯 What is Wundr?
 
-Wundr.io is a revolutionary CLI-based coding agents orchestrator that transforms how teams refactor and modernize large codebases. Built by [Lumic.ai](https://lumic.ai), it combines advanced AST analysis, intelligent pattern recognition, and AI-assisted code transformation to turn months of manual refactoring into days of automated precision.
+Wundr is a revolutionary CLI-based coding agents orchestrator that transforms how teams refactor and modernize large codebases. Built by [Lumic.ai](https://lumic.ai), it combines advanced AST analysis, intelligent pattern recognition, and AI-assisted code transformation to turn months of manual refactoring into days of automated precision.
 
-### 🌟 Why Choose Wundr.io?
+### 🌟 Why Choose Wundr?
 
 - **90% Reduction in Technical Debt** - Systematically eliminate code duplication and complexity
 - **10x Faster Refactoring** - AI agents work in parallel to transform your codebase
@@ -46,25 +46,25 @@ Wundr.io is a revolutionary CLI-based coding agents orchestrator that transforms
 Get up and running in under 5 minutes:
 
 ```bash
-# Install Wundr.io globally
-npm install -g @lumic/wundrio
+# Install Wundr globally
+npm install -g @lumic/wundr
 
 # Initialize in your project
-wundrio init
+wundr init
 
 # Run your first analysis
-wundrio analyze
+wundr analyze
 
 # Launch the interactive dashboard
-wundrio dashboard
+wundr dashboard
 ```
 
-That's it! Wundr.io will analyze your codebase and present actionable insights immediately.
+That's it! Wundr will analyze your codebase and present actionable insights immediately.
 
 ## 🎬 See It In Action
 
 ```bash
-$ wundrio analyze
+$ wundr analyze
 
 🔍 Analyzing codebase...
   ✓ Found 2,847 TypeScript files
@@ -79,7 +79,7 @@ $ wundrio analyze
   2. Remove 156 wrapper patterns → Improve performance by 23%
   3. Break 1,203 circular dependencies → Enable proper modularity
 
-💡 Run 'wundrio fix --auto' to apply safe transformations automatically
+💡 Run 'wundr fix --auto' to apply safe transformations automatically
 ```
 
 ## 🛠️ Core Features
@@ -114,43 +114,43 @@ $ wundrio analyze
 - **Team Collaboration** - Share insights and coordinate efforts
 - **Export Reports** - Generate executive summaries and technical documentation
 
-## 📋 The Wundr.io Method™
+## 📋 The Wundr Method™
 
 Our battle-tested 5-phase approach ensures successful transformation:
 
 ### Phase 1: Foundation & Freeze (Week 1)
 ```bash
-wundrio init --strict        # Set up governance and standards
-wundrio test baseline        # Establish testing foundation
-wundrio lint --fix-all       # Apply immediate improvements
+wundr init --strict        # Set up governance and standards
+wundr test baseline        # Establish testing foundation
+wundr lint --fix-all       # Apply immediate improvements
 ```
 
 ### Phase 2: Deep Analysis (Week 2)
 ```bash
-wundrio analyze --deep       # Comprehensive codebase analysis
-wundrio report --technical   # Generate detailed findings
-wundrio plan                 # Create refactoring roadmap
+wundr analyze --deep       # Comprehensive codebase analysis
+wundr report --technical   # Generate detailed findings
+wundr plan                 # Create refactoring roadmap
 ```
 
 ### Phase 3: Tactical Consolidation (Weeks 3-4)
 ```bash
-wundrio consolidate --auto   # Apply safe transformations
-wundrio merge --ai-assist    # Handle complex consolidations
-wundrio validate             # Ensure correctness
+wundr consolidate --auto   # Apply safe transformations
+wundr merge --ai-assist    # Handle complex consolidations
+wundr validate             # Ensure correctness
 ```
 
 ### Phase 4: Strategic Refactoring (Weeks 5-6)
 ```bash
-wundrio refactor patterns    # Standardize architecture
-wundrio extract services     # Modularize business logic
-wundrio optimize deps        # Eliminate circular dependencies
+wundr refactor patterns    # Standardize architecture
+wundr extract services     # Modularize business logic
+wundr optimize deps        # Eliminate circular dependencies
 ```
 
 ### Phase 5: Monorepo Migration (Weeks 7-8)
 ```bash
-wundrio monorepo init        # Set up monorepo structure
-wundrio migrate packages     # Move code to packages
-wundrio verify               # Validate the migration
+wundr monorepo init        # Set up monorepo structure
+wundr migrate packages     # Move code to packages
+wundr verify               # Validate the migration
 ```
 
 ## 💻 CLI Commands
@@ -159,54 +159,54 @@ wundrio verify               # Validate the migration
 
 ```bash
 # Analysis
-wundrio analyze [path]       # Analyze codebase or specific path
-wundrio similarity           # Find duplicate code
-wundrio dependencies         # Map dependency graph
+wundr analyze [path]       # Analyze codebase or specific path
+wundr similarity           # Find duplicate code
+wundr dependencies         # Map dependency graph
 
 # Transformation
-wundrio fix                  # Apply automated fixes
-wundrio consolidate          # Merge duplicates
-wundrio standardize          # Apply patterns
+wundr fix                  # Apply automated fixes
+wundr consolidate          # Merge duplicates
+wundr standardize          # Apply patterns
 
 # Monorepo
-wundrio monorepo init        # Initialize monorepo
-wundrio package create       # Create new package
-wundrio migrate              # Migrate to monorepo
+wundr monorepo init        # Initialize monorepo
+wundr package create       # Create new package
+wundr migrate              # Migrate to monorepo
 
 # Governance
-wundrio drift check          # Check for drift
-wundrio lint                 # Run custom rules
-wundrio report               # Generate reports
+wundr drift check          # Check for drift
+wundr lint                 # Run custom rules
+wundr report               # Generate reports
 
 # Utilities
-wundrio dashboard            # Launch web dashboard
-wundrio config               # Configure settings
-wundrio help                 # Show help
+wundr dashboard            # Launch web dashboard
+wundr config               # Configure settings
+wundr help                 # Show help
 ```
 
 ### Advanced Usage
 
 ```bash
 # Analyze with custom configuration
-wundrio analyze --config ./custom-config.json --threshold 85
+wundr analyze --config ./custom-config.json --threshold 85
 
 # AI-assisted merge with context
-wundrio merge duplicates --ai --context "Preserve performance optimizations"
+wundr merge duplicates --ai --context "Preserve performance optimizations"
 
 # Incremental migration with validation
-wundrio migrate --packages user-service,auth-service --validate
+wundr migrate --packages user-service,auth-service --validate
 
 # Generate executive report
-wundrio report --format pdf --audience executive --output ./reports/
+wundr report --format pdf --audience executive --output ./reports/
 ```
 
 ## 🏗️ Architecture
 
-Wundr.io is built on a modular, extensible architecture:
+Wundr is built on a modular, extensible architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Wundr.io CLI                         │
+│                        Wundr CLI                         │
 ├─────────────┬────────────┬────────────┬────────────────────┤
 │   Analysis  │ Transform  │  Monorepo  │    Governance      │
 │   Engine    │  Engine    │   Engine   │     Engine         │
@@ -231,18 +231,18 @@ Wundr.io is built on a modular, extensible architecture:
 
 ### Global Installation (Recommended)
 ```bash
-npm install -g @lumic/wundrio
+npm install -g @lumic/wundr
 ```
 
 ### Project Installation
 ```bash
-npm install --save-dev @lumic/wundrio
+npm install --save-dev @lumic/wundr
 ```
 
 ### Docker Installation
 ```bash
-docker pull lumic/wundrio:latest
-docker run -v $(pwd):/workspace lumic/wundrio analyze
+docker pull lumic/wundr:latest
+docker run -v $(pwd):/workspace lumic/wundr analyze
 ```
 
 ## 🎯 Use Cases
@@ -250,36 +250,36 @@ docker run -v $(pwd):/workspace lumic/wundrio analyze
 ### 1. Legacy Modernization
 Transform 10-year-old monoliths into modern, maintainable architectures:
 ```bash
-wundrio analyze --legacy-mode
-wundrio modernize --target es2023 --framework react
+wundr analyze --legacy-mode
+wundr modernize --target es2023 --framework react
 ```
 
 ### 2. Microservices Extraction
 Extract services from monolithic applications:
 ```bash
-wundrio analyze --identify-boundaries
-wundrio extract service --name user-service --smart
+wundr analyze --identify-boundaries
+wundr extract service --name user-service --smart
 ```
 
 ### 3. Technical Debt Elimination
 Systematically pay down technical debt:
 ```bash
-wundrio debt analyze
-wundrio debt prioritize --roi
-wundrio debt eliminate --budget 40h
+wundr debt analyze
+wundr debt prioritize --roi
+wundr debt eliminate --budget 40h
 ```
 
 ### 4. Code Quality Enhancement
 Improve code quality across the board:
 ```bash
-wundrio quality baseline
-wundrio quality improve --target 90
-wundrio quality enforce
+wundr quality baseline
+wundr quality improve --target 90
+wundr quality enforce
 ```
 
 ## 📊 Success Stories
 
-> "Wundr.io helped us reduce our 2.5M line codebase by 40% while improving performance by 3x. What would have taken 18 months was done in 6 weeks."
+> "Wundr helped us reduce our 2.5M line codebase by 40% while improving performance by 3x. What would have taken 18 months was done in 6 weeks."
 >
 > **- Sarah Chen, CTO at TechCorp**
 
@@ -287,7 +287,7 @@ wundrio quality enforce
 >
 > **- Michael Rodriguez, Principal Engineer at FinanceApp**
 
-> "We migrated to a monorepo structure with zero downtime. Wundr.io's incremental approach made it risk-free."
+> "We migrated to a monorepo structure with zero downtime. Wundr's incremental approach made it risk-free."
 >
 > **- Emma Watson, VP Engineering at StartupXYZ**
 
@@ -297,8 +297,8 @@ We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for deta
 
 ```bash
 # Clone the repository
-git clone https://github.com/lumicai/wundrio
-cd wundrio
+git clone https://github.com/lumicai/wundr
+cd wundr
 
 # Install dependencies
 npm install
@@ -324,17 +324,17 @@ git push origin feature/amazing-feature
 ## 🆘 Support
 
 - **Documentation**: [docs.wundr.io](https://docs.wundr.io)
-- **Discord Community**: [discord.gg/wundrio](https://discord.gg/wundrio)
-- **GitHub Issues**: [github.com/lumicai/wundrio/issues](https://github.com/lumicai/wundrio/issues)
+- **Discord Community**: [discord.gg/wundr](https://discord.gg/wundr)
+- **GitHub Issues**: [github.com/lumicai/wundr/issues](https://github.com/lumicai/wundr/issues)
 - **Enterprise Support**: [enterprise@lumic.ai](mailto:enterprise@lumic.ai)
 
 ## 📄 License
 
-Wundr.io is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Wundr is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=lumicai/wundrio&type=Date)](https://star-history.com/#lumicai/wundrio&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=lumicai/wundr&type=Date)](https://star-history.com/#lumicai/wundr&Date)
 
 ---
 
