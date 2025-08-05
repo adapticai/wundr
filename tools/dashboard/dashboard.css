@@ -296,6 +296,12 @@ body {
     gap: 1rem;
 }
 
+.tab-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 .tab-header h3 {
     margin: 0;
     color: #2c3e50;

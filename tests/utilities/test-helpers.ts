@@ -330,6 +330,90 @@ export function createMockDriftReport(severity: string = 'medium'): any {
 }
 
 /**
+ * Create a mock standardization log
+ */
+export function createMockStandardizationLog(): string[] {
+  return [
+    '[src/errors.ts] Replaced string throw: "Invalid input"',
+    '[src/service.ts] Made function getUserData async',
+    '[src/constants.ts] Converted const USER_ROLES to enum UserRoles',
+    '[src/auth.ts] Renamed interface IUser to User',
+    '[src/utils.ts] Applied optional chaining: user?.profile',
+    '[src/types.ts] Replaced <User> with \'as User\''
+  ];
+}
+
+/**
+ * Create mock analysis snapshot for governance testing
+ */
+export function createMockAnalysisSnapshot(overrides: any = {}): any {
+  const defaultSnapshot = {
+    timestamp: new Date().toISOString(),
+    metrics: {
+      totalEntities: 20,
+      duplicateCount: 2,
+      avgComplexity: 4.5,
+      circularDeps: 0,
+      unusedExports: 3
+    },
+    entities: new Map([
+      ['src/types/user.ts:User:interface', 'hash123'],
+      ['src/services/user.ts:UserService:class', 'hash456']
+    ])
+  };
+
+  return { ...defaultSnapshot, ...overrides };
+}
+
+/**
+ * Create mock ESLint violation
+ */
+export function createMockViolation(overrides: any = {}): any {
+  const defaultViolation = {
+    rule: 'no-wrapper-pattern',
+    file: 'src/service.ts',
+    line: 10,
+    message: 'Avoid wrapper pattern',
+    severity: 'error' as const
+  };
+
+  return { ...defaultViolation, ...overrides };
+}
+
+/**
+ * Create mock weekly governance summary
+ */
+export function createMockWeeklySummary(): any {
+  return {
+    period: {
+      start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      end: new Date().toISOString()
+    },
+    totalDriftEvents: 12,
+    severityBreakdown: {
+      none: 3,
+      low: 4,
+      medium: 3,
+      high: 2,
+      critical: 0
+    },
+    trends: {
+      duplicates: 'improving',
+      complexity: 'worsening',
+      overall: 'stable'
+    },
+    topViolations: [
+      { rule: 'no-wrapper-pattern', count: 8 },
+      { rule: 'consistent-error-handling', count: 5 }
+    ],
+    recommendations: [
+      'Address the increasing complexity trend',
+      'Continue good work on reducing duplicates'
+    ]
+  };
+}
+
+/**
  * Temporary file utilities for testing
  */
 export class TempFileManager {
@@ -444,4 +528,302 @@ export function spyOnConsole(): {
     warn: jest.spyOn(console, 'warn').mockImplementation(),
     info: jest.spyOn(console, 'info').mockImplementation()
   };
+}
+
+/**
+ * Mock ts-morph Project with custom file system
+ */
+export function createMockProject(files: Record<string, string> = {}): any {
+  const sourceFiles = new Map();
+  
+  Object.entries(files).forEach(([path, content]) => {
+    const mockSourceFile = {
+      getFilePath: () => path,
+      getText: () => content,
+      save: jest.fn().mockResolvedValue(undefined),
+      replaceWithText: jest.fn(),
+      getImportDeclarations: jest.fn().mockReturnValue([]),
+      insertImportDeclaration: jest.fn(),
+      addNamedImport: jest.fn(),
+      getInterfaces: jest.fn().mockReturnValue([]),
+      getClasses: jest.fn().mockReturnValue([]),
+      getFunctions: jest.fn().mockReturnValue([]),
+      getVariableDeclarations: jest.fn().mockReturnValue([]),
+      getDescendantsOfKind: jest.fn().mockReturnValue([])
+    };
+    
+    sourceFiles.set(path, mockSourceFile);
+  });
+
+  return {
+    getSourceFiles: jest.fn().mockReturnValue(Array.from(sourceFiles.values())),
+    getSourceFile: jest.fn().mockImplementation((path: string) => sourceFiles.get(path)),
+    addSourceFileAtPath: jest.fn(),
+    createSourceFile: jest.fn(),
+    save: jest.fn().mockResolvedValue(undefined)
+  };
+}
+
+/**
+ * Create mock process.env for testing
+ */
+export function mockEnvironment(env: Record<string, string | undefined>): () => void {
+  const originalEnv = { ...process.env };
+  
+  Object.assign(process.env, env);
+  
+  return () => {
+    process.env = originalEnv;
+  };
+}
+
+/**
+ * Mock a GitHub API response
+ */
+export function createMockGitHubAPI(): any {
+  return {
+    issues: {
+      create: jest.fn().mockResolvedValue({ data: { id: 123, number: 456 } }),
+      createComment: jest.fn().mockResolvedValue({ data: { id: 789 } }),
+      list: jest.fn().mockResolvedValue({ data: [] }),
+      get: jest.fn().mockResolvedValue({ data: { id: 123 } })
+    },
+    pulls: {
+      create: jest.fn().mockResolvedValue({ data: { id: 123, number: 456 } }),
+      list: jest.fn().mockResolvedValue({ data: [] }),
+      get: jest.fn().mockResolvedValue({ data: { id: 123 } })
+    },
+    repos: {
+      get: jest.fn().mockResolvedValue({ data: { name: 'test-repo' } }),
+      getContent: jest.fn().mockResolvedValue({ data: { content: 'base64content' } })
+    }
+  };
+}
+
+/**
+ * Create a performance timer for testing
+ */
+export class TestTimer {
+  private startTime: number = 0;
+  private endTime: number = 0;
+
+  start(): void {
+    this.startTime = Date.now();
+  }
+
+  stop(): number {
+    this.endTime = Date.now();
+    return this.endTime - this.startTime;
+  }
+
+  getElapsed(): number {
+    return this.endTime - this.startTime;
+  }
+}
+
+/**
+ * Create a mock child process execution result
+ */
+export function createMockExecResult(stdout: string = '', stderr: string = '', code: number = 0): any {
+  return {
+    stdout,
+    stderr,
+    status: code,
+    signal: null,
+    output: [null, Buffer.from(stdout), Buffer.from(stderr)]
+  };
+}
+
+/**
+ * Simulate async operation with controllable timing
+ */
+export function createAsyncMock<T>(
+  result: T, 
+  delay: number = 0, 
+  shouldReject: boolean = false
+): jest.MockedFunction<() => Promise<T>> {
+  return jest.fn().mockImplementation(() => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (shouldReject) {
+          reject(new Error(String(result)));
+        } else {
+          resolve(result);
+        }
+      }, delay);
+    });
+  });
+}
+
+/**
+ * Create a batch of test files for integration testing
+ */
+export function createIntegrationTestFiles(): Record<string, string> {
+  return {
+    'src/types/user.ts': `
+      export interface User {
+        id: string;
+        name: string;
+        email: string;
+      }
+    `,
+    'src/types/user-duplicate.ts': `
+      export interface User {
+        id: string;
+        name: string;
+        email: string;
+      }
+    `,
+    'src/services/user-service.ts': `
+      export class UserService {
+        private users: User[] = [];
+        
+        start(): void {
+          console.log('Starting service');
+        }
+        
+        stop(): void {
+          console.log('Stopping service');
+        }
+        
+        getUser(id: string): User | null {
+          if (!id) {
+            throw 'ID is required';
+          }
+          return this.users.find(u => u.id === id) || null;
+        }
+      }
+    `,
+    'src/services/enhanced-user-service.ts': `
+      import { UserService } from './user-service';
+      
+      export class EnhancedUserService extends UserService {
+        getUserWithLogging(id: string): User | null {
+          console.log('Getting user:', id);
+          return super.getUser(id);
+        }
+      }
+    `,
+    'src/utils/helpers.ts': `
+      export function parseUser(data: any): User {
+        return <User>data;
+      }
+      
+      export function getUserName(user: any): string | undefined {
+        return user && user.profile && user.profile.name;
+      }
+      
+      export function unusedHelper(): void {
+        console.log('This function is never used');
+      }
+    `,
+    'src/constants.ts': `
+      export const USER_STATUS = {
+        ACTIVE: 'active',
+        INACTIVE: 'inactive',
+        PENDING: 'pending'
+      } as const;
+    `,
+    'src/interfaces.ts': `
+      export interface IUserService {
+        getUser(id: string): User | null;
+      }
+      
+      export interface IUserRepository {
+        save(user: User): Promise<void>;
+      }
+    `,
+    'package.json': `{
+      "name": "integration-test-project",
+      "version": "1.0.0",
+      "dependencies": {
+        "typescript": "^5.0.0"
+      }
+    }`,
+    'tsconfig.json': `{
+      "compilerOptions": {
+        "target": "ES2020",
+        "module": "commonjs",
+        "strict": true
+      }
+    }`
+  };
+}
+
+/**
+ * Validate that a TypeScript code string compiles
+ */
+export function validateTypeScriptCode(code: string): { valid: boolean; errors: string[] } {
+  const ts = require('typescript');
+  
+  try {
+    const result = ts.transpile(code, {
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.CommonJS,
+      strict: true
+    });
+    
+    return { valid: result.length > 0, errors: [] };
+  } catch (error: any) {
+    return { valid: false, errors: [error.message] };
+  }
+}
+
+/**
+ * Create a mock file system state for testing
+ */
+export function createMockFileSystemState(): {
+  files: Map<string, string>;
+  directories: Set<string>;
+  mockFs: jest.Mocked<typeof import('fs')>;
+} {
+  const files = new Map<string, string>();
+  const directories = new Set<string>();
+  
+  const mockFs = {
+    existsSync: jest.fn((path: string) => files.has(path) || directories.has(path)),
+    readFileSync: jest.fn((path: string) => {
+      if (files.has(path)) {
+        return files.get(path);
+      }
+      throw new Error(`File not found: ${path}`);
+    }),
+    writeFileSync: jest.fn((path: string, content: string) => {
+      files.set(path, content);
+    }),
+    appendFileSync: jest.fn((path: string, content: string) => {
+      const existing = files.get(path) || '';
+      files.set(path, existing + content);
+    }),
+    mkdirSync: jest.fn((path: string) => {
+      directories.add(path);
+    }),
+    readdirSync: jest.fn((path: string) => {
+      return Array.from(files.keys())
+        .filter(file => file.startsWith(path))
+        .map(file => file.replace(path + '/', ''));
+    }),
+    unlinkSync: jest.fn((path: string) => {
+      files.delete(path);
+    }),
+    rmSync: jest.fn((path: string) => {
+      directories.delete(path);
+      // Remove all files in directory
+      Array.from(files.keys())
+        .filter(file => file.startsWith(path))
+        .forEach(file => files.delete(file));
+    }),
+    copyFileSync: jest.fn((src: string, dest: string) => {
+      const content = files.get(src);
+      if (content) {
+        files.set(dest, content);
+      }
+    }),
+    statSync: jest.fn((path: string) => ({
+      isDirectory: () => directories.has(path),
+      isFile: () => files.has(path)
+    }))
+  } as any;
+  
+  return { files, directories, mockFs };
 }

@@ -74,6 +74,10 @@ declare global {
       toBeValidTypeScript(): R;
       toContainDuplicates(): R;
       toHaveComplexity(expected: number): R;
+      toHaveDriftSeverity(expected: string): R;
+      toHaveStandardizationIssues(): R;
+      toBeValidConsolidationBatch(): R;
+      toHaveOrderedImports(): R;
     }
   }
 }
@@ -130,6 +134,107 @@ expect.extend({
         ? `Expected complexity not to be ${expected}`
         : `Expected complexity ${expected} but got ${actualComplexity}`,
       pass
+    };
+  },
+
+  /**
+   * Check if a drift report has expected severity
+   */
+  toHaveDriftSeverity(received: any, expected: string) {
+    const actualSeverity = received.severity;
+    const pass = actualSeverity === expected;
+    
+    return {
+      message: () => pass
+        ? `Expected drift severity not to be ${expected}`
+        : `Expected drift severity ${expected} but got ${actualSeverity}`,
+      pass
+    };
+  },
+
+  /**
+   * Check if code contains pattern standardization issues
+   */
+  toHaveStandardizationIssues(received: string) {
+    const issues = [
+      received.includes("throw '"), // String throws
+      received.includes("throw \""), // String throws
+      received.includes('.then('), // Promise chains
+      received.includes('<') && received.includes('> '), // Type assertions
+      received.includes(' && ') && received.includes('.'), // Null checks without optional chaining
+      /^export const [A-Z_]+ = \{/.test(received), // Enum candidates
+      /^export interface I[A-Z]/.test(received) // Interface with I prefix
+    ];
+    
+    const hasIssues = issues.some(issue => issue);
+    
+    return {
+      message: () => hasIssues
+        ? `Expected code not to have standardization issues`
+        : `Expected code to have standardization issues`,
+      pass: hasIssues
+    };
+  },
+
+  /**
+   * Check if a consolidation batch is valid
+   */
+  toBeValidConsolidationBatch(received: any) {
+    const requiredFields = ['id', 'priority', 'type', 'items'];
+    const hasRequiredFields = requiredFields.every(field => field in received);
+    const validPriority = ['critical', 'high', 'medium', 'low'].includes(received.priority);
+    const validType = ['duplicates', 'unused-exports', 'wrapper-patterns', 'mixed'].includes(received.type);
+    const hasItems = Array.isArray(received.items);
+    
+    const isValid = hasRequiredFields && validPriority && validType && hasItems;
+    
+    return {
+      message: () => isValid
+        ? `Expected batch not to be valid`
+        : `Expected batch to be valid (missing: ${requiredFields.filter(f => !(f in received)).join(', ')})`,
+      pass: isValid
+    };
+  },
+
+  /**
+   * Check if imports are properly ordered
+   */
+  toHaveOrderedImports(received: string) {
+    const importLines = received.split('\\n').filter(line => line.trim().startsWith('import'));
+    if (importLines.length === 0) return { message: () => 'No imports found', pass: true };
+    
+    const nodeImports = importLines.filter(line => 
+      line.includes("from 'fs'") || 
+      line.includes("from 'path'") || 
+      line.includes("from 'crypto'") ||
+      line.includes('from "fs"') || 
+      line.includes('from "path"') || 
+      line.includes('from "crypto"')
+    );
+    
+    const externalImports = importLines.filter(line => 
+      !line.includes("from './") && 
+      !line.includes("from '../") && 
+      !line.includes("from '@/") &&
+      !nodeImports.includes(line)
+    );
+    
+    const internalImports = importLines.filter(line => line.includes("from '@/"));
+    const relativeImports = importLines.filter(line => 
+      line.includes("from './") || line.includes("from '../")
+    );
+    
+    // Check if groups are in correct order
+    const expectedOrder = [...nodeImports, ...externalImports, ...internalImports, ...relativeImports];
+    const actualOrder = importLines;
+    
+    const isOrdered = JSON.stringify(expectedOrder) === JSON.stringify(actualOrder);
+    
+    return {
+      message: () => isOrdered
+        ? `Expected imports not to be ordered`
+        : `Expected imports to be ordered (node, external, internal, relative)`,
+      pass: isOrdered
     };
   }
 });

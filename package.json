@@ -1,11 +1,11 @@
 {
-  "name": "monorepo-refactoring-toolkit",
+  "name": "@lumic/wundrio",
   "version": "1.0.0",
-  "description": "A comprehensive toolkit for refactoring and consolidating monorepos with automated analysis, consolidation strategies, and governance systems.",
+  "description": "The Intelligent CLI-Based Coding Agents Orchestrator - Transform monolithic chaos into architectural elegance with AI-powered refactoring at scale",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "monorepo-toolkit": "./dist/cli.js"
+    "wundrio": "./dist/cli.js"
   },
   "scripts": {
     "setup": "bash setup/install.sh",
@@ -111,8 +111,14 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "roots": ["<rootDir>/scripts", "<rootDir>/tests"],
-    "testMatch": ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+    "roots": [
+      "<rootDir>/scripts",
+      "<rootDir>/tests"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.ts",
+      "**/?(*.)+(spec|test).ts"
+    ],
     "collectCoverageFrom": [
       "scripts/**/*.ts",
       "!scripts/**/*.d.ts",
@@ -120,20 +126,28 @@
       "!scripts/**/*.spec.ts"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
     "moduleNameMapping": {
       "^@/(.*)$": "<rootDir>/scripts/$1"
     }
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/monorepo-refactoring-toolkit.git"
+    "url": "https://github.com/lumicai/wundrio.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/monorepo-refactoring-toolkit/issues"
+    "url": "https://github.com/lumicai/wundrio/issues"
   },
-  "homepage": "https://github.com/yourusername/monorepo-refactoring-toolkit#readme",
+  "homepage": "https://wundr.io",
   "keywords": [
+    "wundrio",
+    "lumic",
+    "coding-agents",
+    "ai-refactoring",
     "monorepo",
     "refactoring",
     "typescript",
@@ -143,15 +157,18 @@
     "ast",
     "dependency-analysis",
     "code-migration",
-    "developer-tools"
+    "developer-tools",
+    "cli-tool",
+    "orchestrator",
+    "automation"
   ],
-  "author": "Monorepo Refactoring Toolkit Team",
+  "author": "Lumic.ai",
   "contributors": [
-    "Add your name here"
+    "The Lumic.ai Team <team@lumic.ai>"
   ],
   "license": "MIT",
   "funding": {
     "type": "github",
-    "url": "https://github.com/sponsors/yourusername"
+    "url": "https://github.com/sponsors/lumicai"
   }
 }

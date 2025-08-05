@@ -28,6 +28,7 @@ module.exports = {
     'node',
     'security',
     'prettier',
+    './config/eslint/custom-rules', // Custom governance rules
   ],
   settings: {
     'import/resolver': {
@@ -130,6 +131,15 @@ module.exports = {
     'max-lines': ['warn', 300],
     'max-lines-per-function': ['warn', 50],
     'max-params': ['warn', 4],
+
+    // Custom governance rules
+    './config/eslint/custom-rules/no-wrapper-pattern': 'error',
+    './config/eslint/custom-rules/use-app-error': 'error',
+    './config/eslint/custom-rules/no-duplicate-enum-values': 'error',
+    './config/eslint/custom-rules/service-must-extend-base': 'error',
+    './config/eslint/custom-rules/async-method-naming': 'warn',
+    './config/eslint/custom-rules/no-direct-db-access': 'error',
+    './config/eslint/custom-rules/max-file-lines': ['warn', { max: 300 }],
   },
   overrides: [
     {

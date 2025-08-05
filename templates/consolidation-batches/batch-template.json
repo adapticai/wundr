@@ -1,0 +1,107 @@
+{
+  "$schema": "./batch-schema.json",
+  "id": "batch-template",
+  "name": "Consolidation Batch Template",
+  "description": "Template for creating consolidation batches",
+  "priority": "medium",
+  "estimatedEffort": "2-4 hours",
+  "prerequisites": [],
+  "metadata": {
+    "createdBy": "monorepo-toolkit",
+    "createdAt": "{{ timestamp }}",
+    "version": "1.0.0",
+    "tags": ["template", "consolidation"]
+  },
+  "consolidationGroups": [
+    {
+      "groupId": "group-1",
+      "type": "interface",
+      "name": "{{ groupName }}",
+      "description": "{{ groupDescription }}",
+      "strategy": "merge",
+      "confidence": 0.95,
+      "entities": [
+        {
+          "name": "{{ entityName1 }}",
+          "file": "{{ filePath1 }}",
+          "line": 0,
+          "column": 0,
+          "type": "interface",
+          "exportType": "named",
+          "signature": "{{ signature1 }}",
+          "normalizedHash": "{{ hash1 }}",
+          "semanticHash": "{{ semanticHash1 }}",
+          "dependencies": [],
+          "members": {
+            "properties": [
+              {
+                "name": "{{ propertyName }}",
+                "type": "{{ propertyType }}",
+                "optional": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "{{ entityName2 }}",
+          "file": "{{ filePath2 }}",
+          "line": 0,
+          "column": 0,
+          "type": "interface",
+          "exportType": "named",
+          "signature": "{{ signature2 }}",
+          "normalizedHash": "{{ hash2 }}",
+          "semanticHash": "{{ semanticHash2 }}",
+          "dependencies": [],
+          "members": {
+            "properties": [
+              {
+                "name": "{{ propertyName }}",
+                "type": "{{ propertyType }}",
+                "optional": false
+              }
+            ]
+          }
+        }
+      ],
+      "targetLocation": {
+        "file": "{{ targetFile }}",
+        "package": "{{ targetPackage }}",
+        "exportName": "{{ finalExportName }}"
+      },
+      "mergeStrategy": {
+        "type": "union",
+        "preserveNames": true,
+        "conflictResolution": "manual",
+        "validation": {
+          "requiredProperties": [],
+          "allowedTypes": [],
+          "customValidation": null
+        }
+      }
+    }
+  ],
+  "validation": {
+    "preValidation": [
+      "typescript-compile",
+      "test-suite",
+      "lint-check"
+    ],
+    "postValidation": [
+      "typescript-compile",
+      "test-suite",
+      "lint-check",
+      "dependency-check"
+    ]
+  },
+  "rollback": {
+    "strategy": "git-revert",
+    "backupLocation": "./backups/{{ batchId }}",
+    "dependencies": []
+  },
+  "reporting": {
+    "generateReport": true,
+    "includeMetrics": true,
+    "format": ["json", "markdown"]
+  }
+}

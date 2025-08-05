@@ -108,7 +108,21 @@
     "ms-vscode.vscode-typescript-hero",
     "steoates.autoimport",
     "formulahendry.auto-rename-tag",
-    "ms-vscode.vscode-typescript-importer"
+    "ms-vscode.vscode-typescript-importer",
+    "ms-dotnettools.vscode-dotnet-runtime",
+    "ms-vscode.vscode-json",
+    "ms-vscode.vscode-eslint-language-server",
+    
+    // Additional refactoring and analysis tools
+    "ms-vscode.vscode-typescript-next",
+    "ms-vscode.references-view",
+    "ms-vscode.outline-map",
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "bradlc.vscode-tailwindcss",
+    "christian-kohler.npm-intellisense",
+    "christian-kohler.path-intellisense",
+    "wix.vscode-import-cost",
+    "ms-vscode.vscode-typescript-refactoring"
   ],
   "unwantedRecommendations": [
     // Extensions that may conflict or are not needed

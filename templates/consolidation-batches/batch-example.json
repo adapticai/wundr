@@ -1,0 +1,227 @@
+{
+  "id": "user-types-consolidation",
+  "name": "User Interface Consolidation",
+  "description": "Consolidate duplicate user-related interfaces into a single comprehensive type",
+  "priority": "high",
+  "estimatedEffort": "3-4 hours",
+  "prerequisites": ["backup-created", "tests-passing"],
+  "metadata": {
+    "createdBy": "monorepo-toolkit",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "version": "1.0.0",
+    "tags": ["user-types", "interfaces", "high-priority"]
+  },
+  "consolidationGroups": [
+    {
+      "groupId": "user-interfaces",
+      "type": "interface",
+      "name": "UserInterfaces",
+      "description": "Consolidating User, UserProfile, and UserAccount interfaces",
+      "strategy": "merge",
+      "confidence": 0.98,
+      "entities": [
+        {
+          "name": "User",
+          "file": "src/types/User.ts",
+          "line": 5,
+          "column": 0,
+          "type": "interface",
+          "exportType": "named",
+          "signature": "interface User { id: string; name: string; email: string; }",
+          "normalizedHash": "a1b2c3d4e5f6",
+          "semanticHash": "user_basic_props",
+          "dependencies": [],
+          "members": {
+            "properties": [
+              {
+                "name": "id",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "name",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "email",
+                "type": "string",
+                "optional": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "UserProfile",
+          "file": "src/components/UserProfile/types.ts",
+          "line": 8,
+          "column": 0,
+          "type": "interface",
+          "exportType": "named",
+          "signature": "interface UserProfile { id: string; name: string; email: string; avatar?: string; }",
+          "normalizedHash": "a1b2c3d4e5f7",
+          "semanticHash": "user_profile_props",
+          "dependencies": [],
+          "members": {
+            "properties": [
+              {
+                "name": "id",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "name",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "email",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "avatar",
+                "type": "string",
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "UserAccount",
+          "file": "src/services/auth/types.ts",
+          "line": 12,
+          "column": 0,
+          "type": "interface",
+          "exportType": "named",
+          "signature": "interface UserAccount { id: string; name: string; email: string; role: string; }",
+          "normalizedHash": "a1b2c3d4e5f8",
+          "semanticHash": "user_account_props",
+          "dependencies": [],
+          "members": {
+            "properties": [
+              {
+                "name": "id",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "name",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "email",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "name": "role",
+                "type": "string",
+                "optional": false
+              }
+            ]
+          }
+        }
+      ],
+      "targetLocation": {
+        "file": "src/types/User.ts",
+        "package": "@company/core-types",
+        "exportName": "User"
+      },
+      "mergeStrategy": {
+        "type": "union",
+        "preserveNames": false,
+        "conflictResolution": "union",
+        "validation": {
+          "requiredProperties": ["id", "name", "email"],
+          "allowedTypes": ["string", "undefined"],
+          "customValidation": "validateUserProps"
+        }
+      }
+    },
+    {
+      "groupId": "user-enums",
+      "type": "enum",
+      "name": "UserEnums",
+      "description": "Consolidating user role and status enums",
+      "strategy": "merge",
+      "confidence": 0.92,
+      "entities": [
+        {
+          "name": "UserRole",
+          "file": "src/types/UserRole.ts",
+          "line": 1,
+          "column": 0,
+          "type": "enum",
+          "exportType": "named",
+          "signature": "enum UserRole { ADMIN = 'admin', USER = 'user' }",
+          "normalizedHash": "role_enum_1",
+          "semanticHash": "user_roles",
+          "dependencies": []
+        },
+        {
+          "name": "AccountRole",
+          "file": "src/services/auth/roles.ts",
+          "line": 3,
+          "column": 0,
+          "type": "enum",
+          "exportType": "named",
+          "signature": "enum AccountRole { ADMIN = 'admin', USER = 'user', GUEST = 'guest' }",
+          "normalizedHash": "role_enum_2",
+          "semanticHash": "account_roles",
+          "dependencies": []
+        }
+      ],
+      "targetLocation": {
+        "file": "src/types/UserRole.ts",
+        "package": "@company/core-types",
+        "exportName": "UserRole"
+      },
+      "mergeStrategy": {
+        "type": "merge",
+        "preserveNames": false,
+        "conflictResolution": "extend",
+        "validation": {
+          "requiredProperties": [],
+          "allowedTypes": ["string"],
+          "customValidation": null
+        }
+      }
+    }
+  ],
+  "validation": {
+    "preValidation": [
+      "typescript-compile",
+      "test-suite",
+      "lint-check"
+    ],
+    "postValidation": [
+      "typescript-compile",
+      "test-suite",
+      "lint-check",
+      "dependency-check",
+      "import-validation"
+    ]
+  },
+  "rollback": {
+    "strategy": "git-revert",
+    "backupLocation": "./backups/user-types-consolidation",
+    "dependencies": [
+      "src/types/User.ts.backup",
+      "src/components/UserProfile/types.ts.backup",
+      "src/services/auth/types.ts.backup"
+    ]
+  },
+  "reporting": {
+    "generateReport": true,
+    "includeMetrics": true,
+    "format": ["json", "markdown"],
+    "metrics": {
+      "duplicatesRemoved": 3,
+      "filesAffected": 12,
+      "linesOfCodeReduced": 45,
+      "importStatementsUpdated": 18
+    }
+  }
+}

@@ -1,0 +1,320 @@
+{
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "summary": {
+    "totalFiles": 245,
+    "totalEntities": 1283,
+    "duplicateClusters": 18,
+    "circularDependencies": 7,
+    "unusedExports": 42,
+    "codeSmells": 89
+  },
+  "entities": [
+    {
+      "name": "UserService",
+      "type": "class",
+      "file": "src/services/user.service.ts",
+      "line": 15,
+      "column": 1,
+      "exportType": "default",
+      "signature": "class UserService extends BaseService<User>",
+      "complexity": 8,
+      "dependencies": ["BaseService", "User", "DatabaseClient", "Logger"],
+      "jsDoc": "Service for managing user operations including CRUD and authentication",
+      "members": {
+        "properties": [
+          { "name": "tableName", "type": "string", "optional": false },
+          { "name": "cache", "type": "CacheService", "optional": true }
+        ],
+        "methods": [
+          { "name": "findById", "signature": "findById(id: string): Promise<User | null>" },
+          { "name": "create", "signature": "create(userData: CreateUserDto): Promise<User>" },
+          { "name": "update", "signature": "update(id: string, userData: UpdateUserDto): Promise<User>" }
+        ]
+      }
+    },
+    {
+      "name": "ProductService",
+      "type": "class",
+      "file": "src/services/product.service.ts",
+      "line": 12,
+      "column": 1,
+      "exportType": "default",
+      "signature": "class ProductService extends BaseService<Product>",
+      "complexity": 12,
+      "dependencies": ["BaseService", "Product", "DatabaseClient", "Logger", "PriceCalculator"],
+      "jsDoc": "Service for managing product catalog and inventory",
+      "members": {
+        "properties": [
+          { "name": "tableName", "type": "string", "optional": false },
+          { "name": "priceCalculator", "type": "PriceCalculator", "optional": false }
+        ],
+        "methods": [
+          { "name": "findById", "signature": "findById(id: string): Promise<Product | null>" },
+          { "name": "create", "signature": "create(productData: CreateProductDto): Promise<Product>" },
+          { "name": "updatePrice", "signature": "updatePrice(id: string, price: number): Promise<Product>" }
+        ]
+      }
+    },
+    {
+      "name": "User",
+      "type": "interface",
+      "file": "src/types/user.types.ts",
+      "line": 8,
+      "column": 1,
+      "exportType": "named",
+      "signature": "interface User",
+      "complexity": 3,
+      "dependencies": [],
+      "members": {
+        "properties": [
+          { "name": "id", "type": "string", "optional": false },
+          { "name": "email", "type": "string", "optional": false },
+          { "name": "name", "type": "string", "optional": false },
+          { "name": "createdAt", "type": "Date", "optional": false },
+          { "name": "updatedAt", "type": "Date", "optional": false }
+        ]
+      }
+    },
+    {
+      "name": "UserModel",
+      "type": "interface",
+      "file": "src/models/user.model.ts",
+      "line": 5,
+      "column": 1,
+      "exportType": "named",
+      "signature": "interface UserModel",
+      "complexity": 3,
+      "dependencies": [],
+      "members": {
+        "properties": [
+          { "name": "id", "type": "string", "optional": false },
+          { "name": "email", "type": "string", "optional": false },
+          { "name": "name", "type": "string", "optional": false },
+          { "name": "createdAt", "type": "Date", "optional": false },
+          { "name": "updatedAt", "type": "Date", "optional": false }
+        ]
+      }
+    },
+    {
+      "name": "Product",
+      "type": "interface",
+      "file": "src/types/product.types.ts",
+      "line": 12,
+      "column": 1,
+      "exportType": "named",
+      "signature": "interface Product",
+      "complexity": 4,
+      "dependencies": ["Category"],
+      "members": {
+        "properties": [
+          { "name": "id", "type": "string", "optional": false },
+          { "name": "name", "type": "string", "optional": false },
+          { "name": "price", "type": "number", "optional": false },
+          { "name": "category", "type": "Category", "optional": false },
+          { "name": "inStock", "type": "boolean", "optional": false }
+        ]
+      }
+    },
+    {
+      "name": "validateEmail",
+      "type": "function",
+      "file": "src/utils/validation.ts",
+      "line": 25,
+      "column": 1,
+      "exportType": "named",
+      "signature": "function validateEmail(email: string): boolean",
+      "complexity": 2,
+      "dependencies": []
+    },
+    {
+      "name": "formatDate",
+      "type": "function", 
+      "file": "src/utils/date.utils.ts",
+      "line": 15,
+      "column": 1,
+      "exportType": "named",
+      "signature": "function formatDate(date: Date, format?: string): string",
+      "complexity": 3,
+      "dependencies": []
+    },
+    {
+      "name": "ApiResponse",
+      "type": "type",
+      "file": "src/types/api.types.ts",
+      "line": 20,
+      "column": 1,
+      "exportType": "named",
+      "signature": "type ApiResponse<T> = { success: boolean; data: T; message?: string; }",
+      "complexity": 1,
+      "dependencies": []
+    }
+  ],
+  "duplicates": [
+    {
+      "hash": "user-interface-duplicate",
+      "type": "interface",
+      "severity": "high",
+      "structuralMatch": true,
+      "semanticMatch": true,
+      "entities": [
+        {
+          "name": "User",
+          "file": "src/types/user.types.ts",
+          "line": 8,
+          "dependencies": []
+        },
+        {
+          "name": "UserModel",
+          "file": "src/models/user.model.ts",
+          "line": 5,
+          "dependencies": []
+        }
+      ]
+    },
+    {
+      "hash": "service-crud-methods",
+      "type": "class",
+      "severity": "medium",
+      "structuralMatch": true,
+      "semanticMatch": false,
+      "entities": [
+        {
+          "name": "UserService",
+          "file": "src/services/user.service.ts",
+          "line": 15,
+          "dependencies": ["BaseService", "User", "DatabaseClient", "Logger"]
+        },
+        {
+          "name": "ProductService",
+          "file": "src/services/product.service.ts",
+          "line": 12,
+          "dependencies": ["BaseService", "Product", "DatabaseClient", "Logger", "PriceCalculator"]
+        }
+      ]
+    },
+    {
+      "hash": "validation-pattern",
+      "type": "function",
+      "severity": "critical",
+      "structuralMatch": true,
+      "semanticMatch": true,
+      "entities": [
+        {
+          "name": "validateEmail",
+          "file": "src/utils/validation.ts",
+          "line": 25,
+          "dependencies": []
+        },
+        {
+          "name": "validateEmail",
+          "file": "src/components/forms/validation.ts",
+          "line": 42,
+          "dependencies": []
+        },
+        {
+          "name": "validateEmail",
+          "file": "src/services/auth/validation.ts",
+          "line": 18,
+          "dependencies": []
+        }
+      ]
+    }
+  ],
+  "circularDeps": [
+    {
+      "cycle": ["src/services/user.service.ts", "src/models/user.model.ts", "src/services/user.service.ts"],
+      "severity": "high"
+    },
+    {
+      "cycle": ["src/utils/helpers.ts", "src/utils/formatters.ts", "src/utils/helpers.ts"],
+      "severity": "medium"
+    }
+  ],
+  "unusedExports": [
+    {
+      "name": "OldUserInterface",
+      "type": "interface",
+      "file": "src/legacy/user.types.ts",
+      "line": 45,
+      "column": 1,
+      "exportType": "named",
+      "complexity": 2,
+      "dependencies": []
+    },
+    {
+      "name": "deprecatedFunction",
+      "type": "function",
+      "file": "src/utils/deprecated.ts",
+      "line": 12,
+      "column": 1,
+      "exportType": "named",
+      "complexity": 4,
+      "dependencies": []
+    }
+  ],
+  "wrapperPatterns": [
+    {
+      "base": "BaseService",
+      "wrapper": "UserService",
+      "confidence": 0.85
+    },
+    {
+      "base": "BaseService", 
+      "wrapper": "ProductService",
+      "confidence": 0.82
+    }
+  ],
+  "recommendations": [
+    {
+      "description": "Consolidate duplicate User interface definitions",
+      "priority": "high",
+      "type": "duplicate_removal",
+      "impact": "Reduces code duplication and improves maintainability by having a single source of truth for User type definition",
+      "estimatedEffort": "2-3 hours",
+      "suggestion": "Create a single User interface in src/types/user.types.ts and update all imports to reference this centralized definition",
+      "entities": ["User", "UserModel"]
+    },
+    {
+      "description": "Extract common CRUD operations into BaseService",
+      "priority": "medium",
+      "type": "pattern_extraction",
+      "impact": "Improves code reusability and reduces duplication across service classes",
+      "estimatedEffort": "4-6 hours",
+      "suggestion": "Enhance BaseService with generic CRUD methods (findById, create, update, delete) and update child services to use these methods",
+      "entities": ["UserService", "ProductService", "BaseService"]
+    },
+    {
+      "description": "Remove circular dependency between UserService and UserModel",
+      "priority": "critical",
+      "type": "circular_dependency_fix",
+      "impact": "Prevents potential runtime issues and improves code organization",
+      "estimatedEffort": "1-2 hours",
+      "suggestion": "Move shared types to a separate types module and restructure imports to eliminate circular references"
+    },
+    {
+      "description": "Consolidate validation functions across the codebase",
+      "priority": "high",
+      "type": "duplicate_removal",
+      "impact": "Reduces code duplication and ensures consistent validation logic",
+      "estimatedEffort": "3-4 hours",
+      "suggestion": "Create a centralized validation utility module and update all components to use the shared validation functions",
+      "entities": ["validateEmail"]
+    },
+    {
+      "description": "Remove unused legacy interfaces and functions",
+      "priority": "low",
+      "type": "dead_code_removal",
+      "impact": "Reduces bundle size and improves code clarity",
+      "estimatedEffort": "1 hour",
+      "suggestion": "Remove OldUserInterface and deprecatedFunction after confirming they are not used anywhere in the codebase"
+    },
+    {
+      "description": "Implement proper error handling patterns across services",
+      "priority": "medium",
+      "type": "pattern_standardization",
+      "impact": "Improves error handling consistency and user experience",
+      "estimatedEffort": "6-8 hours",
+      "suggestion": "Create standardized error classes and implement consistent error handling across all service methods"
+    }
+  ]
+}

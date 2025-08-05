@@ -1,0 +1,170 @@
+#!/usr/bin/env node
+// scripts/testing/update-test-imports.ts
+
+import { Project, SourceFile, ImportDeclaration } from 'ts-morph';
+import * as fs from 'fs';
+import * as path from 'path';
+
+interface ImportMapping {
+  from: string;
+  to: string;
+  pattern: RegExp;
+  replacement: string;
+}
+
+interface TestImportReport {
+  timestamp: string;
+  filesScanned: number;
+  filesModified: number;
+  importsUpdated: number;
+  mappingsApplied: number;
+  details: Array<{
+    file: string;
+    oldImport: string;
+    newImport: string;
+    mapping: string;
+  }>;
+}
+
+export class TestImportsUpdater {
+  private project: Project;
+  private report: TestImportReport;
+  private mappings: ImportMapping[] = [];
+
+  constructor() {
+    this.project = new Project({
+      tsConfigFilePath: './tsconfig.json',
+      addFilesFromTsConfig: false
+    });
+
+    // Add test files specifically
+    this.project.addSourceFilesAtPaths([
+      'src/**/*.test.ts',
+      'src/**/*.spec.ts',
+      'tests/**/*.ts',
+      '__tests__/**/*.ts'
+    ]);
+
+    this.report = {
+      timestamp: new Date().toISOString(),
+      filesScanned: 0,
+      filesModified: 0,
+      importsUpdated: 0,
+      mappingsApplied: 0,
+      details: []
+    };
+
+    this.initializeCommonMappings();
+  }
+
+  /**
+   * Initialize common import mappings for refactoring scenarios
+   */
+  private initializeCommonMappings() {
+    this.mappings = [
+      // Convert relative imports to absolute paths
+      {
+        from: '../src/',
+        to: '@/',
+        pattern: /^\.\.\/src\/(.+)$/,
+        replacement: '@/$1'
+      },
+      {
+        from: '../../src/',
+        to: '@/',
+        pattern: /^\.\.\/\.\.\/src\/(.+)$/,
+        replacement: '@/$1'
+      },
+      {
+        from: '../../../src/',
+        to: '@/',
+        pattern: /^\.\.\/\.\.\/\.\.\/src\/(.+)$/,
+        replacement: '@/$1'
+      },
+
+      // Convert to monorepo package imports
+      {
+        from: '../types/',
+        to: '@company/core-types',
+        pattern: /^\.\.\/types\/(.*)$/,
+        replacement: '@company/core-types'
+      },
+      {
+        from: '../errors/',
+        to: '@company/errors',
+        pattern: /^\.\.\/errors\/(.*)$/,
+        replacement: '@company/errors'
+      },
+      {
+        from: '../utils/',
+        to: '@company/utils',
+        pattern: /^\.\.\/utils\/(.*)$/,
+        replacement: '@company/utils'
+      },
+      {
+        from: '../services/',
+        to: '@company/services',
+        pattern: /^\.\.\/services\/(.*)$/,
+        replacement: '@company/services'
+      },
+      {
+        from: '../models/',
+        to: '@company/models',
+        pattern: /^\.\.\/models\/(.*)$/,
+        replacement: '@company/models'
+      },
+
+      // Common test utilities
+      {
+        from: '../test-utils/',
+        to: '@/test-utils',
+        pattern: /^\.\.\/test-utils\/(.*)$/,
+        replacement: '@/test-utils/$1'
+      },
+      {
+        from: '../../test-utils/',
+        to: '@/test-utils',
+        pattern: /^\.\.\/\.\.\/test-utils\/(.*)$/,
+        replacement: '@/test-utils/$1'
+      },
+
+      // Mock imports
+      {
+        from: '../mocks/',
+        to: '@/mocks',
+        pattern: /^\.\.\/mocks\/(.*)$/,
+        replacement: '@/mocks/$1'
+      },
+      {
+        from: '__mocks__/',
+        to: '@/mocks',
+        pattern: /^__mocks__\/(.*)$/,
+        replacement: '@/mocks/$1'
+      }
+    ];
+  }
+
+  /**
+   * Add custom import mapping
+   */
+  addMapping(from: string, to: string): void {
+    const pattern = new RegExp(`^${from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(.*)$`);
+    this.mappings.push({
+      from,
+      to,
+      pattern,
+      replacement: to + '$1'
+    });
+  }
+
+  /**
+   * Update all test file imports
+   */
+  async updateTestImports(): Promise<TestImportReport> {
+    console.log('= Updating test imports...\n');
+
+    const testFiles = this.project.getSourceFiles();
+    this.report.filesScanned = testFiles.length;
+
+    if (testFiles.length === 0) {
+      console.log('
