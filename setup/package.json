@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "prepare": "husky install"
+  }
+}

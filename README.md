@@ -11,6 +11,186 @@ This guide gets you started with the monorepo refactoring in 30 minutes.
 - Access to the repository
 - 8GB+ RAM recommended
 
+## Directory Structure
+Here's the complete directory structure for all the materials:
+
+```
+monorepo-refactoring-toolkit/
+│
+├── README.md # Quick start guide (from artifact: quick-start-guide)
+├── IMPLEMENTATION_CHECKLIST.md # Complete implementation checklist
+├── LICENSE # Your license file
+│
+├── docs/ # All documentation
+│ ├── guides/
+│ │ ├── COMPLETE_STRATEGY.md # Complete monorepo refactoring strategy
+│ │ ├── WEEKLY_WORKFLOW.md # Weekly refactoring workflow guide
+│ │ ├── TROUBLESHOOTING.md # Refactoring troubleshooting guide
+│ │ └── QUICK_START.md # Quick start guide (duplicate for easy access)
+│ │
+│ ├── standards/
+│ │ ├── GOLDEN_STANDARDS.md # Golden standards document
+│ │ └── PATTERN_EXAMPLES.md # Code pattern examples
+│ │
+│ ├── training/
+│ │ ├── TEAM_TRAINING_GUIDE.md # Team training guide
+│ │ ├── exercises/ # Training exercises
+│ │ │ ├── 01-spot-issues.ts
+│ │ │ ├── 02-monorepo-basics.md
+│ │ │ └── 03-consolidation-practice.md
+│ │ └── assessments/
+│ │ └── skills-checklist.md
+│ │
+│ └── architecture/
+│ ├── MONOREPO_STRUCTURE.md # Monorepo architecture design
+│ ├── MIGRATION_PLAN_TEMPLATE.md # Template for migration planning
+│ └── decisions/ # Architecture Decision Records
+│ └── ADR-001-monorepo.md
+│
+├── scripts/ # All executable scripts
+│ ├── README.md # Scripts documentation
+│ │
+│ ├── analysis/ # Analysis scripts
+│ │ ├── analyze-all.sh # Master analysis orchestrator
+│ │ ├── enhanced-ast-analyzer.ts # Enhanced AST analyzer
+│ │ ├── similarity-detector.ts # Part of original AST analyzer
+│ │ ├── dependency-mapper.ts # Part of original AST analyzer
+│ │ └── consolidation-helper.sh # Original consolidation helper
+│ │
+│ ├── consolidation/ # Consolidation scripts
+│ │ ├── consolidation-manager.ts # Consolidation workflow manager
+│ │ ├── ai-merge-helper.ts # AI-assisted merge helper
+│ │ └── merge-duplicates.sh # Simple merge helper
+│ │
+│ ├── standardization/ # Pattern standardization
+│ │ ├── pattern-standardizer.ts # Pattern standardization script
+│ │ └── auto-fix-patterns.ts # Additional pattern fixes
+│ │
+│ ├── monorepo/ # Monorepo setup scripts
+│ │ ├── monorepo-setup.ts # Monorepo setup and migration
+│ │ ├── add-package.sh # Add new package helper
+│ │ └── check-dependencies.ts # Dependency checker
+│ │
+│ ├── governance/ # Governance and monitoring
+│ │ ├── governance-system.ts # Automated governance system
+│ │ ├── drift-detection.ts # Drift detection component
+│ │ └── weekly-report-generator.ts # Report generation
+│ │
+│ └── testing/ # Testing related scripts
+│ ├── create-test-baseline.ts # Testing foundation setup
+│ └── update-test-imports.ts # Test import updater
+│
+├── config/ # Configuration files
+│ ├── eslint/
+│ │ ├── .eslintrc.json # ESLint configuration
+│ │ ├── custom-rules/ # Custom ESLint rules
+│ │ │ └── index.js # Custom governance rules
+│ │ └── .eslintignore
+│ │
+│ ├── prettier/
+│ │ ├── .prettierrc.json # Prettier configuration
+│ │ └── .prettierignore
+│ │
+│ ├── typescript/
+│ │ ├── tsconfig.base.json # Base TypeScript config
+│ │ ├── tsconfig.scripts.json # Config for scripts
+│ │ └── tsconfig.monorepo.json # Monorepo TS config
+│ │
+│ ├── git/
+│ │ ├── .gitignore # Git ignore patterns
+│ │ └── hooks/ # Git hooks
+│ │ └── pre-commit # Pre-commit hook
+│ │
+│ └── ci/ # CI/CD configurations
+│ ├── drift-detection.yml # GitHub Actions workflow
+│ ├── refactor-check.yml # PR quality check
+│ └── weekly-report.yml # Automated reporting
+│
+├── templates/ # Templates and examples
+│ ├── package-template/ # Template for new packages
+│ │ ├── package.json
+│ │ ├── tsconfig.json
+│ │ ├── README.md
+│ │ ├── src/
+│ │ │ └── index.ts
+│ │ └── tests/
+│ │ └── index.test.ts
+│ │
+│ ├── service-template/ # Standard service template
+│ │ ├── base-service.ts
+│ │ ├── example-service.ts
+│ │ └── service.test.ts
+│ │
+│ ├── consolidation-batches/ # Example batch files
+│ │ ├── batch-example.json
+│ │ └── batch-template.json
+│ │
+│ └── reports/ # Report templates
+│ ├── weekly-report-template.md
+│ └── migration-report-template.md
+│
+├── tools/ # Additional tooling
+│ ├── dashboard/ # Analysis dashboard
+│ │ ├── dashboard.html # Dashboard template
+│ │ ├── dashboard.css
+│ │ └── dashboard.js
+│ │
+│ └── vscode/ # VS Code configuration
+│ ├── settings.json # Workspace settings
+│ ├── extensions.json # Recommended extensions
+│ └── snippets/ # Code snippets
+│ └── refactoring.code-snippets
+│
+├── examples/ # Example files and patterns
+│ ├── before-after/ # Before/after examples
+│ │ ├── duplicate-types-before.ts
+│ │ ├── duplicate-types-after.ts
+│ │ ├── wrapper-pattern-before.ts
+│ │ └── wrapper-pattern-after.ts
+│ │
+│ ├── golden-patterns/ # Golden standard examples
+│ │ ├── error-handling.ts
+│ │ ├── service-pattern.ts
+│ │ ├── type-definitions.ts
+│ │ └── async-patterns.ts
+│ │
+│ └── anti-patterns/ # What to avoid
+│ ├── string-throws.ts
+│ ├── wrapper-services.ts
+│ └── circular-imports.ts
+│
+└── setup/ # Initial setup files
+├── install.sh # One-click setup script
+├── requirements.txt # System requirements
+├── package.json # NPM dependencies
+└── verify-setup.sh # Setup verification script
+
+```
+
+## Mapping Guide
+Here's how the artifacts map to the directory structure:
+| Artifact ID              | Target File(s)                                         |
+|--------------------------|--------------------------------------------------------|
+| monorepo-refactor-plan   | docs/guides/COMPLETE_STRATEGY.md                       |
+| testing-foundation       | scripts/testing/create-test-baseline.ts                 |
+| analysis-orchestrator    | scripts/analysis/analyze-all.sh                        |
+| enhanced-ast-analyzer    | scripts/analysis/enhanced-ast-analyzer.ts              |
+| ast-scanner              | scripts/analysis/similarity-detector.ts                |
+| similarity-detector      | Part of enhanced-ast-analyzer                          |
+| dependency-mapper        | scripts/analysis/dependency-mapper.ts                  |
+| consolidation-helper     | scripts/analysis/consolidation-helper.sh               |
+| consolidation-manager    | scripts/consolidation/consolidation-manager.ts         |
+| ai-merge-helper          | scripts/consolidation/ai-merge-helper.ts               |
+| pattern-standardizer     | scripts/standardization/pattern-standardizer.ts         |
+| monorepo-setup           | scripts/monorepo/monorepo-setup.ts                     |
+| governance-automation    | scripts/governance/governance-system.ts                |
+| custom-eslint-rules      | config/eslint/custom-rules/index.js                    |
+| weekly-workflow          | docs/guides/WEEKLY_WORKFLOW.md                         |
+| troubleshooting-guide    | docs/guides/TROUBLESHOOTING.md                         |
+| team-training            | docs/training/TEAM_TRAINING_GUIDE.md                   |
+| implementation-checklist | IMPLEMENTATION_CHECKLIST.md                            |
+| quick-start-guide        | README.md and docs/guides/QUICK_START.md               |
+
 ## Day 1: Essential Setup (30 minutes)
 
 ### 1. Clone and Setup (5 minutes)
