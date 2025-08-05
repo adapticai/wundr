@@ -1,0 +1,157 @@
+{
+  "name": "monorepo-refactoring-toolkit",
+  "version": "1.0.0",
+  "description": "A comprehensive toolkit for refactoring and consolidating monorepos with automated analysis, consolidation strategies, and governance systems.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "monorepo-toolkit": "./dist/cli.js"
+  },
+  "scripts": {
+    "setup": "bash setup/install.sh",
+    "verify": "bash setup/verify-setup.sh",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "ts-node scripts/cli.ts",
+    "start": "node dist/cli.js",
+    "clean": "rm -rf dist build .nyc_output coverage",
+    "lint": "eslint . --ext .ts,.tsx,.js --fix",
+    "lint:check": "eslint . --ext .ts,.tsx,.js",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prepare": "husky install",
+    "postinstall": "npm run build",
+    "analyze": "ts-node scripts/analysis/analyze-all.sh",
+    "analyze:dependencies": "ts-node scripts/analysis/dependency-mapper.ts",
+    "analyze:similarity": "ts-node scripts/analysis/similarity-detector.ts",
+    "consolidate": "ts-node scripts/consolidation/consolidation-manager.ts",
+    "standardize": "ts-node scripts/standardization/pattern-standardizer.ts",
+    "governance:check": "ts-node scripts/governance/drift-detection.ts",
+    "governance:report": "ts-node scripts/governance/weekly-report-generator.ts",
+    "monorepo:setup": "ts-node scripts/monorepo/monorepo-setup.ts",
+    "monorepo:add-package": "bash scripts/monorepo/add-package.sh",
+    "dashboard": "open tools/dashboard/dashboard.html",
+    "docs:serve": "python3 -m http.server 8080 --directory docs",
+    "release": "npm run build && npm run test && npm run lint:check"
+  },
+  "dependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "commander": "^11.0.0",
+    "chalk": "^4.1.2",
+    "inquirer": "^9.2.0",
+    "ora": "^5.4.1",
+    "fs-extra": "^11.1.0",
+    "glob": "^10.3.0",
+    "fast-glob": "^3.3.0",
+    "micromatch": "^4.0.5",
+    "semver": "^7.5.0",
+    "yaml": "^2.3.0",
+    "jsonc-parser": "^3.2.0",
+    "minimatch": "^9.0.0",
+    "ignore": "^5.2.4"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@types/jest": "^29.0.0",
+    "@types/fs-extra": "^11.0.0",
+    "@types/inquirer": "^9.0.0",
+    "@types/micromatch": "^4.0.2",
+    "@types/semver": "^7.5.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.28.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-security": "^1.7.1",
+    "husky": "^8.0.0",
+    "jest": "^29.0.0",
+    "lint-staged": "^14.0.0",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.0.0",
+    "ts-node": "^10.9.0",
+    "nodemon": "^3.0.0"
+  },
+  "peerDependencies": {
+    "git": "*"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "files": [
+    "dist",
+    "config",
+    "templates",
+    "docs",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "lint-staged": {
+    "*.{ts,tsx,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && npm run type-check",
+      "pre-push": "npm run test"
+    }
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/scripts", "<rootDir>/tests"],
+    "testMatch": ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+    "collectCoverageFrom": [
+      "scripts/**/*.ts",
+      "!scripts/**/*.d.ts",
+      "!scripts/**/*.test.ts",
+      "!scripts/**/*.spec.ts"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"],
+    "moduleNameMapping": {
+      "^@/(.*)$": "<rootDir>/scripts/$1"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/monorepo-refactoring-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/monorepo-refactoring-toolkit/issues"
+  },
+  "homepage": "https://github.com/yourusername/monorepo-refactoring-toolkit#readme",
+  "keywords": [
+    "monorepo",
+    "refactoring",
+    "typescript",
+    "analysis",
+    "consolidation",
+    "code-quality",
+    "ast",
+    "dependency-analysis",
+    "code-migration",
+    "developer-tools"
+  ],
+  "author": "Monorepo Refactoring Toolkit Team",
+  "contributors": [
+    "Add your name here"
+  ],
+  "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/yourusername"
+  }
+}

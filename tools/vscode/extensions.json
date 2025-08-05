@@ -1,0 +1,121 @@
+{
+  "recommendations": [
+    // Essential TypeScript/JavaScript Development
+    "ms-vscode.vscode-typescript-next",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "formulahendry.auto-import-es6-ts-jsx-tsx",
+    "christian-kohler.path-intellisense",
+    "ms-vscode.vscode-json",
+
+    // Git and Version Control
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "donjayamanne.githistory",
+    "github.vscode-pull-request-github",
+    "github.copilot",
+    "github.copilot-chat",
+
+    // Code Quality and Refactoring
+    "sonarsource.sonarlint-vscode",
+    "ms-vscode.vscode-typescript-refactoring",
+    "wix.vscode-import-cost",
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "oderwat.indent-rainbow",
+    "mechatroner.rainbow-csv",
+
+    // Testing and Debugging
+    "ms-vscode.vscode-jest",
+    "orta.vscode-jest",
+    "hbenl.vscode-test-explorer",
+    "ms-vscode.test-adapter-converter",
+    "ms-playwright.playwright",
+
+    // Productivity and Navigation
+    "gruntfuggly.todo-tree",
+    "alefragnani.bookmarks",
+    "alefragnani.project-manager",
+    "ms-vscode.vscode-multi-cursor",
+    "formulahendry.code-runner",
+    "aaron-bond.better-comments",
+    "adpyke.codesnap",
+
+    // Documentation and Markdown
+    "yzhang.markdown-all-in-one",
+    "shd101wyy.markdown-preview-enhanced",
+    "bierner.markdown-mermaid",
+    "davidanson.vscode-markdownlint",
+
+    // File Management and Explorer
+    "ms-vscode.vscode-folder-source-actions",
+    "patbenatar.advanced-new-file",
+    "sleistner.vscode-fileutils",
+    "christian-kohler.npm-intellisense",
+
+    // Terminal and Shell
+    "ms-vscode.powershell",
+    "ms-vscode.remote-ssh",
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode-remote.remote-wsl",
+
+    // Themes and UI Enhancement
+    "pkief.material-icon-theme",
+    "zhuangtongfa.material-theme",
+    "dracula-theme.theme-dracula",
+    "github.github-vscode-theme",
+    "ms-vscode.theme-tomorrowkit",
+
+    // Language Support
+    "ms-vscode.vscode-html-css-support",
+    "bradlc.vscode-tailwindcss",
+    "stylelint.vscode-stylelint",
+    "ms-vscode.vscode-scss",
+    "redhat.vscode-yaml",
+    "ms-vscode.vscode-xml",
+    "ms-vscode.vscode-docker",
+
+    // API and REST Client
+    "humao.rest-client",
+    "rangav.vscode-thunder-client",
+    "ms-vscode.vscode-httpyac",
+
+    // Data and Database
+    "ms-mssql.mssql",
+    "oracle.oracledevtools",
+    "mongodb.mongodb-vscode",
+    "redis.redis-for-vscode",
+
+    // DevOps and CI/CD
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "ms-azuretools.vscode-docker",
+    "gitlab.gitlab-workflow",
+    "redhat.vscode-yaml",
+
+    // Performance and Monitoring
+    "ms-vscode.vscode-performance-profile",
+    "ms-vscode.hexeditor",
+    "formulahendry.vscode-mysql",
+
+    // Collaboration
+    "ms-vsliveshare.vsliveshare",
+    "ms-vsliveshare.vsliveshare-audio",
+    "ms-vsliveshare.vsliveshare-pack",
+
+    // Refactoring Specific Tools
+    "kisstkondoros.vscode-gutter-preview",
+    "ms-vscode.vscode-typescript-hero",
+    "steoates.autoimport",
+    "formulahendry.auto-rename-tag",
+    "ms-vscode.vscode-typescript-importer"
+  ],
+  "unwantedRecommendations": [
+    // Extensions that may conflict or are not needed
+    "hookyqr.beautify",
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "eg2.tslint",
+    "ms-vscode.vscode-js-profile-flame",
+    "ms-vscode.vscode-js-profile-table"
+  ]
+}

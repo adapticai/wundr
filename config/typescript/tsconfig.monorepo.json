@@ -1,0 +1,45 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "outDir": "../../dist",
+    "rootDir": "../../",
+    "baseUrl": "../../",
+    "paths": {
+      "@/*": ["scripts/*"],
+      "@config/*": ["config/*"],
+      "@templates/*": ["templates/*"],
+      "@examples/*": ["examples/*"],
+      "@tools/*": ["tools/*"],
+      "~/*": ["packages/*/src"],
+      "@shared/*": ["packages/shared/src/*"],
+      "@utils/*": ["packages/utils/src/*"],
+      "@types/*": ["packages/types/src/*"]
+    }
+  },
+  "include": [
+    "../../scripts/**/*",
+    "../../packages/*/src/**/*",
+    "../../tools/**/*"
+  ],
+  "exclude": [
+    "../../node_modules",
+    "../../dist",
+    "../../build",
+    "../../coverage",
+    "../../**/*.test.ts",
+    "../../**/*.spec.ts",
+    "../../**/__tests__/**",
+    "../../**/__mocks__/**",
+    "../../logs",
+    "../../temp",
+    "../../output"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.scripts.json"
+    }
+  ]
+}

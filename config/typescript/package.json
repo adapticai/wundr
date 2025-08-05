@@ -1,0 +1,48 @@
+{
+  "name": "@monorepo-toolkit/typescript-config",
+  "version": "1.0.0",
+  "description": "Comprehensive TypeScript configurations for the monorepo refactoring toolkit",
+  "private": true,
+  "main": "tsconfig.base.json",
+  "files": [
+    "tsconfig.*.json",
+    "types/**/*.d.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit --project tsconfig.base.json",
+    "check:monorepo": "tsc --noEmit --project tsconfig.monorepo.json",
+    "check:scripts": "tsc --noEmit --project tsconfig.scripts.json",
+    "validate": "npm run check && npm run check:monorepo && npm run check:scripts",
+    "build-info": "tsc --showConfig --project tsconfig.base.json",
+    "type-check": "tsc --noEmit --skipLibCheck false"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "typescript",
+    "tsconfig",
+    "monorepo",
+    "configuration",
+    "types",
+    "refactoring"
+  ],
+  "author": "Monorepo Refactoring Toolkit",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/company/monorepo-refactoring-toolkit",
+    "directory": "config/typescript"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

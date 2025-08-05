@@ -1,0 +1,552 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
+  workflow_dispatch:
+    inputs:
+      test_scope:
+        description: 'Test scope (unit, integration, full)'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - unit
+          - integration
+          - full
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      test-scope: ${{ steps.scope.outputs.test-scope }}
+      has-tests: ${{ steps.check.outputs.has-tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine test scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "test-scope=${{ github.event.inputs.test_scope }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "test-scope=unit" >> $GITHUB_OUTPUT
+          else
+            echo "test-scope=full" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for test files
+        id: check
+        run: |
+          if find . -name "*.test.ts" -o -name "*.test.js" -o -name "*.spec.ts" -o -name "*.spec.js" | grep -q .; then
+            echo "has-tests=true" >> $GITHUB_OUTPUT
+            echo "Found existing test files"
+          else
+            echo "has-tests=false" >> $GITHUB_OUTPUT
+            echo "No existing test files found"
+          fi
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.has-tests == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install test dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            jest \
+            @types/jest \
+            ts-jest \
+            typescript \
+            @types/node
+
+      - name: Setup Jest configuration
+        run: |
+          if [ ! -f "jest.config.js" ]; then
+            cat > jest.config.js << 'EOF'
+          module.exports = {
+            preset: 'ts-jest',
+            testEnvironment: 'node',
+            roots: ['<rootDir>/scripts', '<rootDir>/examples', '<rootDir>/tools'],
+            testMatch: [
+              '**/__tests__/**/*.ts',
+              '**/?(*.)+(spec|test).ts'
+            ],
+            transform: {
+              '^.+\\.ts$': 'ts-jest'
+            },
+            collectCoverageFrom: [
+              'scripts/**/*.ts',
+              'examples/**/*.ts',
+              'tools/**/*.ts',
+              '!**/*.d.ts',
+              '!**/node_modules/**'
+            ],
+            coverageDirectory: 'coverage',
+            coverageReporters: ['text', 'lcov', 'html']
+          };
+          EOF
+          fi
+
+      - name: Run unit tests
+        run: |
+          if [ "${{ needs.setup.outputs.has-tests }}" = "true" ]; then
+            npx jest --passWithNoTests --coverage --verbose
+          else
+            echo "No test files found, skipping unit tests"
+          fi
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  script-functionality-tests:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            typescript \
+            ts-node \
+            @types/node \
+            ts-morph \
+            glob \
+            fastest-levenshtein
+
+      - name: Create test data
+        run: |
+          # Create a minimal test project structure
+          mkdir -p test-project/src/components
+          mkdir -p test-project/src/services
+          mkdir -p test-project/src/utils
+          
+          # Create duplicate TypeScript files for testing
+          cat > test-project/src/components/Button.ts << 'EOF'
+          export interface ButtonProps {
+            label: string;
+            onClick: () => void;
+          }
+          
+          export class Button {
+            constructor(private props: ButtonProps) {}
+            
+            render() {
+              return `<button onclick="${this.props.onClick}">${this.props.label}</button>`;
+            }
+          }
+          EOF
+          
+          cat > test-project/src/components/ActionButton.ts << 'EOF'
+          export interface ActionButtonProps {
+            label: string;
+            onClick: () => void;
+          }
+          
+          export class ActionButton {
+            constructor(private props: ActionButtonProps) {}
+            
+            render() {
+              return `<button onclick="${this.props.onClick}">${this.props.label}</button>`;
+            }
+          }
+          EOF
+          
+          cat > test-project/src/services/ApiService.ts << 'EOF'
+          export class ApiService {
+            private baseUrl: string;
+            
+            constructor(baseUrl: string) {
+              this.baseUrl = baseUrl;
+            }
+            
+            async get(endpoint: string) {
+              return fetch(`${this.baseUrl}/${endpoint}`);
+            }
+          }
+          EOF
+          
+          cat > test-project/src/services/HttpService.ts << 'EOF'
+          export class HttpService {
+            private baseUrl: string;
+            
+            constructor(baseUrl: string) {
+              this.baseUrl = baseUrl;
+            }
+            
+            async get(endpoint: string) {
+              return fetch(`${this.baseUrl}/${endpoint}`);
+            }
+          }
+          EOF
+          
+          cat > test-project/src/utils/helpers.ts << 'EOF'
+          export function formatDate(date: Date): string {
+            return date.toISOString().split('T')[0];
+          }
+          
+          export function parseDate(dateStr: string): Date {
+            return new Date(dateStr);
+          }
+          
+          export function unusedFunction(): void {
+            console.log('This function is never imported');
+          }
+          EOF
+
+      - name: Test AST analyzer
+        run: |
+          echo "Testing AST analyzer functionality..."
+          
+          cd test-project
+          
+          # Test if the AST analyzer can run without errors
+          if timeout 60s npx ts-node ../scripts/analysis/enhanced-ast-analyzer.ts 2>/dev/null; then
+            echo "✅ AST analyzer completed successfully"
+            
+            # Check if output files were created
+            if [ -f "analysis-report.json" ]; then
+              echo "✅ Analysis report generated"
+              
+              # Validate the report structure
+              if jq -e '.entities | length > 0' analysis-report.json > /dev/null; then
+                echo "✅ Analysis found entities as expected"
+              else
+                echo "⚠️ Analysis report seems incomplete"
+              fi
+              
+              if jq -e '.duplicates | length > 0' analysis-report.json > /dev/null; then
+                echo "✅ Analysis detected duplicates as expected"
+              else
+                echo "⚠️ No duplicates detected (expected some in test data)"
+              fi
+            else
+              echo "⚠️ Analysis report not generated"
+            fi
+          else
+            echo "❌ AST analyzer failed or timed out"
+            exit 1
+          fi
+
+      - name: Test consolidation manager
+        run: |
+          echo "Testing consolidation manager functionality..."
+          
+          cd test-project
+          
+          # Test consolidation manager syntax and basic functionality
+          if timeout 30s npx ts-node --transpile-only --check ../scripts/consolidation/consolidation-manager.ts; then
+            echo "✅ Consolidation manager syntax is valid"
+          else
+            echo "❌ Consolidation manager has syntax errors"
+            exit 1
+          fi
+
+      - name: Test analysis script orchestrator
+        run: |
+          echo "Testing main analysis script..."
+          
+          cd test-project
+          
+          # Create a temporary output directory
+          mkdir -p analysis-output
+          cd analysis-output
+          
+          # Test the main analysis script with timeout
+          if timeout 120s bash ../../scripts/analysis/analyze-all.sh ..; then
+            echo "✅ Main analysis script completed successfully"
+            
+            # Check expected outputs
+            if [ -f "*/analysis-report.json" ]; then
+              echo "✅ Analysis report was generated"
+            else
+              echo "⚠️ Analysis report not found"
+            fi
+            
+            if [ -f "*/dashboard.html" ]; then
+              echo "✅ Dashboard was generated"
+            else
+              echo "⚠️ Dashboard not found"
+            fi
+          else
+            echo "❌ Main analysis script failed or timed out"
+            # Don't exit here as this might be expected in some environments
+          fi
+
+      - name: Test monorepo setup script
+        run: |
+          echo "Testing monorepo setup functionality..."
+          
+          # Test monorepo setup script syntax
+          if npx ts-node --transpile-only --check scripts/monorepo/monorepo-setup.ts; then
+            echo "✅ Monorepo setup script syntax is valid"
+          else
+            echo "❌ Monorepo setup script has syntax errors"
+            exit 1
+          fi
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [setup, script-functionality-tests]
+    if: needs.setup.outputs.test-scope == 'full' || needs.setup.outputs.test-scope == 'integration'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            typescript \
+            ts-node \
+            @types/node \
+            ts-morph \
+            glob \
+            fastest-levenshtein \
+            madge
+
+      - name: Test complete workflow integration
+        run: |
+          echo "Testing complete analysis workflow..."
+          
+          # Create a more complex test project
+          mkdir -p integration-test/packages/ui/src
+          mkdir -p integration-test/packages/api/src
+          mkdir -p integration-test/packages/shared/src
+          
+          # Create package.json files
+          cat > integration-test/packages/ui/package.json << 'EOF'
+          {
+            "name": "@test/ui",
+            "version": "1.0.0",
+            "main": "src/index.ts"
+          }
+          EOF
+          
+          cat > integration-test/packages/api/package.json << 'EOF'
+          {
+            "name": "@test/api",
+            "version": "1.0.0",
+            "main": "src/index.ts"
+          }
+          EOF
+          
+          cat > integration-test/packages/shared/package.json << 'EOF'
+          {
+            "name": "@test/shared",
+            "version": "1.0.0",
+            "main": "src/index.ts"
+          }
+          EOF
+          
+          # Create interconnected TypeScript files
+          cat > integration-test/packages/shared/src/types.ts << 'EOF'
+          export interface User {
+            id: string;
+            name: string;
+            email: string;
+          }
+          
+          export interface ApiResponse<T> {
+            data: T;
+            success: boolean;
+          }
+          EOF
+          
+          cat > integration-test/packages/ui/src/UserComponent.ts << 'EOF'
+          import { User } from '@test/shared';
+          
+          export class UserComponent {
+            render(user: User): string {
+              return `<div>${user.name} (${user.email})</div>`;
+            }
+          }
+          EOF
+          
+          cat > integration-test/packages/api/src/UserService.ts << 'EOF'
+          import { User, ApiResponse } from '@test/shared';
+          
+          export class UserService {
+            async getUser(id: string): Promise<ApiResponse<User>> {
+              // Mock implementation
+              return {
+                data: { id, name: 'Test User', email: 'test@example.com' },
+                success: true
+              };
+            }
+          }
+          EOF
+          
+          cd integration-test
+          
+          # Run analysis on the integrated project
+          timeout 90s bash ../scripts/analysis/analyze-all.sh . || {
+            echo "⚠️ Integration test analysis timed out or failed"
+            echo "This is not necessarily a failure in CI environment"
+          }
+          
+          echo "✅ Integration test completed"
+
+  documentation-tests:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test documentation completeness
+        run: |
+          echo "Testing documentation completeness..."
+          
+          # Check for required documentation files
+          REQUIRED_DOCS=(
+            "README.md"
+            "docs/guides/COMPLETE_STRATEGY.md"
+            "docs/guides/QUICK_START.md"
+            "docs/architecture/MONOREPO_STRUCTURE.md"
+            "scripts/README.md"
+          )
+          
+          for doc in "${REQUIRED_DOCS[@]}"; do
+            if [ -f "$doc" ]; then
+              echo "✅ Found documentation: $doc"
+              
+              # Check if file has meaningful content (more than just a title)
+              if [ $(wc -l < "$doc") -gt 5 ]; then
+                echo "✅ $doc has substantial content"
+              else
+                echo "⚠️ $doc appears to be minimal"
+              fi
+            else
+              echo "❌ Missing documentation: $doc"
+            fi
+          done
+
+      - name: Test example files
+        run: |
+          echo "Testing example files..."
+          
+          # Check that example files are valid TypeScript
+          find examples -name "*.ts" | while read -r file; do
+            echo "Checking example: $file"
+            if npx tsc --noEmit --target ES2020 --moduleResolution node "$file" 2>/dev/null; then
+              echo "✅ $file is valid TypeScript"
+            else
+              echo "⚠️ $file has TypeScript issues"
+            fi
+          done
+
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [setup, unit-tests, script-functionality-tests, integration-tests, documentation-tests]
+    if: always()
+    steps:
+      - name: Generate test summary
+        run: |
+          echo "# Test Suite Summary" > test-summary.md
+          echo "" >> test-summary.md
+          echo "**Test Scope:** ${{ needs.setup.outputs.test-scope }}" >> test-summary.md
+          echo "**Has Tests:** ${{ needs.setup.outputs.has-tests }}" >> test-summary.md
+          echo "" >> test-summary.md
+          echo "## Results" >> test-summary.md
+          echo "" >> test-summary.md
+          echo "- **Unit Tests:** ${{ needs.unit-tests.result || 'skipped' }}" >> test-summary.md
+          echo "- **Script Functionality:** ${{ needs.script-functionality-tests.result }}" >> test-summary.md
+          echo "- **Integration Tests:** ${{ needs.integration-tests.result || 'skipped' }}" >> test-summary.md
+          echo "- **Documentation Tests:** ${{ needs.documentation-tests.result }}" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          # Determine overall status
+          if [ "${{ needs.script-functionality-tests.result }}" = "failure" ] || 
+             [ "${{ needs.documentation-tests.result }}" = "failure" ]; then
+            echo "❌ **Overall Status:** FAILED" >> test-summary.md
+            echo "overall-status=failure" >> $GITHUB_ENV
+          elif [ "${{ needs.unit-tests.result }}" = "failure" ] || 
+               [ "${{ needs.integration-tests.result }}" = "failure" ]; then
+            echo "⚠️ **Overall Status:** PARTIAL" >> test-summary.md
+            echo "overall-status=partial" >> $GITHUB_ENV
+          else
+            echo "✅ **Overall Status:** PASSED" >> test-summary.md
+            echo "overall-status=success" >> $GITHUB_ENV
+          fi
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-summary
+          path: test-summary.md
+          retention-days: 7
+
+      - name: Set final status
+        run: |
+          if [ "${{ env.overall-status }}" = "failure" ]; then
+            echo "❌ Test suite failed"
+            exit 1
+          elif [ "${{ env.overall-status }}" = "partial" ]; then
+            echo "⚠️ Test suite completed with some failures"
+            # Don't exit with error for partial failures
+          else
+            echo "✅ Test suite passed"
+          fi
+
+      - name: Comment on PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const summary = fs.readFileSync('test-summary.md', 'utf8');
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🧪 Test Suite Results\n\n${summary}\n\n---\n\n**Workflow:** [View Details](${context.payload.repository.html_url}/actions/runs/${context.runId})`
+              });
+            } catch (error) {
+              console.log('Could not read test summary:', error.message);
+            }

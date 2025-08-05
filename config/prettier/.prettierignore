@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+packages/*/node_modules/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.bundle.js
+packages/*/dist/
+packages/*/build/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# IDE files
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Generated files
+*.generated.ts
+*.generated.js
+analysis-output/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Third-party code
+vendor/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Git files
+.git/
+.gitignore
+
+# Binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.pdf
+*.zip
+*.tar.gz
+
+# Other config files that have their own formatting
+.eslintrc*
+tsconfig*.json

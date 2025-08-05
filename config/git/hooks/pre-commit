@@ -1,0 +1,104 @@
+#!/bin/sh
+# Pre-commit hook for monorepo refactoring toolkit
+# This hook runs before every commit to ensure code quality
+
+set -e
+
+echo "= Running pre-commit checks..."
+
+# Stash unstaged changes
+STASH_NAME="pre-commit-$(date +%s)"
+git stash save -q --keep-index $STASH_NAME
+
+# Function to handle errors
+handle_error() {
+    echo "L Pre-commit checks failed!"
+    # Restore stashed changes
+    STASH_NUM=$(git stash list | grep "$STASH_NAME" | sed -n 's/.*\(stash@{[0-9]*}\).*/\1/p')
+    if [ -n "$STASH_NUM" ]; then
+        git stash pop -q $STASH_NUM
+    fi
+    exit 1
+}
+
+# Set trap to handle errors
+trap handle_error ERR
+
+# Check if we're in a Node.js project
+if [ -f "package.json" ]; then
+    # Run ESLint
+    if [ -f "node_modules/.bin/eslint" ]; then
+        echo "=Ý Running ESLint..."
+        npm run lint --silent || {
+            echo "L ESLint found issues. Please fix them before committing."
+            handle_error
+        }
+    fi
+
+    # Run Prettier
+    if [ -f "node_modules/.bin/prettier" ]; then
+        echo "=… Checking code formatting with Prettier..."
+        npm run prettier:check --silent || {
+            echo "L Code formatting issues found. Run 'npm run prettier:fix' to fix them."
+            handle_error
+        }
+    fi
+
+    # Run TypeScript type checking
+    if [ -f "tsconfig.json" ] && [ -f "node_modules/.bin/tsc" ]; then
+        echo "=7 Running TypeScript type checking..."
+        npm run type-check --silent || {
+            echo "L TypeScript type errors found. Please fix them before committing."
+            handle_error
+        }
+    fi
+
+    # Run tests for changed files
+    if [ -f "node_modules/.bin/jest" ] || [ -f "node_modules/.bin/vitest" ]; then
+        echo ">ê Running tests for changed files..."
+        # Get list of changed test files
+        CHANGED_TEST_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(test|spec)\.(ts|js)$' || true)
+        
+        if [ -n "$CHANGED_TEST_FILES" ]; then
+            npm test -- --findRelatedTests $CHANGED_TEST_FILES --passWithNoTests || {
+                echo "L Tests failed. Please fix them before committing."
+                handle_error
+            }
+        fi
+    fi
+fi
+
+# Check for large files
+echo "=æ Checking for large files..."
+# Find files larger than 1MB
+LARGE_FILES=$(git diff --cached --name-only --diff-filter=ACM | xargs -I {} sh -c 'test -f "{}" && find "{}" -size +1M' | grep -v "^$" || true)
+if [ -n "$LARGE_FILES" ]; then
+    echo "   Warning: Large files detected (>1MB):"
+    echo "$LARGE_FILES"
+    echo "Consider using Git LFS for large files."
+fi
+
+# Check for sensitive information
+echo "= Checking for sensitive information..."
+# Look for common patterns of sensitive data
+SENSITIVE_PATTERNS="password=|api_key=|secret=|private_key=|aws_access_key|PRIVATE KEY"
+SENSITIVE_FILES=$(git diff --cached --name-only --diff-filter=ACM | xargs grep -l -i -E "$SENSITIVE_PATTERNS" 2>/dev/null || true)
+if [ -n "$SENSITIVE_FILES" ]; then
+    echo "   Warning: Potential sensitive information found in:"
+    echo "$SENSITIVE_FILES"
+    echo "Please review these files before committing."
+    read -p "Continue with commit? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        handle_error
+    fi
+fi
+
+# Restore stashed changes
+STASH_NUM=$(git stash list | grep "$STASH_NAME" | sed -n 's/.*\(stash@{[0-9]*}\).*/\1/p')
+if [ -n "$STASH_NUM" ]; then
+    git stash pop -q $STASH_NUM
+fi
+
+echo " All pre-commit checks passed!"
+exit 0

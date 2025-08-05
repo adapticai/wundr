@@ -1,0 +1,36 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/scripts",
+    "rootDir": "../../scripts",
+    "baseUrl": "../../",
+    "paths": {
+      "@/*": ["scripts/*"],
+      "@config/*": ["config/*"],
+      "@templates/*": ["templates/*"],
+      "@examples/*": ["examples/*"],
+      "@tools/*": ["tools/*"]
+    },
+    "types": ["node", "jest"],
+    "moduleResolution": "node",
+    "allowJs": true
+  },
+  "include": [
+    "../../scripts/**/*"
+  ],
+  "exclude": [
+    "../../scripts/**/*.test.ts",
+    "../../scripts/**/*.spec.ts",
+    "../../scripts/**/__tests__/**",
+    "../../scripts/**/__mocks__/**"
+  ],
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node",
+    "compilerOptions": {
+      "module": "CommonJS",
+      "target": "ES2020",
+      "moduleResolution": "node"
+    }
+  }
+}

@@ -1,0 +1,461 @@
+name: Drift Detection
+
+on:
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'src/**'
+      - 'packages/**'
+      - '*.ts'
+      - '*.tsx'
+      - '*.js'
+      - '*.jsx'
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      analysis_depth:
+        description: 'Analysis depth (basic, standard, comprehensive)'
+        required: false
+        default: 'standard'
+        type: choice
+        options:
+          - basic
+          - standard
+          - comprehensive
+
+env:
+  NODE_VERSION: '18'
+  ANALYSIS_OUTPUT_DIR: 'drift-analysis'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      analysis-depth: ${{ steps.config.outputs.analysis-depth }}
+      should-comment: ${{ steps.config.outputs.should-comment }}
+    steps:
+      - name: Configure analysis
+        id: config
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "analysis-depth=standard" >> $GITHUB_OUTPUT
+            echo "should-comment=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "analysis-depth=comprehensive" >> $GITHUB_OUTPUT
+            echo "should-comment=false" >> $GITHUB_OUTPUT
+          else
+            echo "analysis-depth=${{ github.event.inputs.analysis_depth || 'standard' }}" >> $GITHUB_OUTPUT
+            echo "should-comment=false" >> $GITHUB_OUTPUT
+          fi
+
+  drift-detection:
+    runs-on: ubuntu-latest
+    needs: setup
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            typescript \
+            ts-node \
+            @types/node \
+            ts-morph \
+            glob \
+            fastest-levenshtein \
+            madge \
+            csv-writer \
+            @octokit/rest
+
+      - name: Cache analysis dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-drift-deps-${{ hashFiles('setup/package*.json') }}
+          restore-keys: |
+            ${{ runner.os }}-drift-deps-
+
+      - name: Create analysis output directory
+        run: |
+          mkdir -p ${{ env.ANALYSIS_OUTPUT_DIR }}
+          echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+
+      - name: Run comprehensive code analysis
+        id: analysis
+        run: |
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}
+          
+          # Set analysis parameters based on depth
+          case "${{ needs.setup.outputs.analysis-depth }}" in
+            "basic")
+              ANALYZE_OPTS="--quick --skip-visualization"
+              ;;
+            "comprehensive")
+              ANALYZE_OPTS="--full --include-metrics --generate-dashboard"
+              ;;
+            *)
+              ANALYZE_OPTS="--standard"
+              ;;
+          esac
+          
+          echo "Running analysis with options: $ANALYZE_OPTS"
+          
+          # Run the main analysis script
+          bash ../scripts/analysis/analyze-all.sh .. || {
+            echo "Analysis failed, continuing with partial results"
+            echo "analysis-failed=true" >> $GITHUB_OUTPUT
+          }
+
+      - name: Generate drift report
+        id: drift-report
+        run: |
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}/*
+          
+          # Create drift report
+          cat > drift-report.md << 'EOF'
+          # Code Drift Detection Report
+          
+          **Analysis Date:** $(date)
+          **Trigger:** ${{ github.event_name }}
+          **Analysis Depth:** ${{ needs.setup.outputs.analysis-depth }}
+          
+          ## Summary
+          
+          EOF
+          
+          # Add analysis results if available
+          if [ -f "analysis-report.json" ]; then
+            npx ts-node -e "
+              const fs = require('fs');
+              const report = JSON.parse(fs.readFileSync('analysis-report.json', 'utf-8'));
+              
+              const criticalIssues = report.duplicates.filter(d => d.severity === 'critical').length;
+              const totalDuplicates = report.duplicates.length;
+              const unusedExports = report.unusedExports.length;
+              
+              console.log(\`
+          ### Key Metrics
+          
+          - **Total Entities:** \${report.summary.totalEntities}
+          - **Files Analyzed:** \${report.summary.totalFiles}
+          - **Duplicate Clusters:** \${report.summary.duplicateClusters}
+          - **Critical Issues:** \${criticalIssues}
+          - **Unused Exports:** \${unusedExports}
+          
+          ### Severity Breakdown
+          
+          | Severity | Count | Action Required |
+          |----------|-------|----------------|
+          | Critical | \${criticalIssues} | ⚠️ Immediate |
+          | High | \${report.duplicates.filter(d => d.severity === 'high').length} | 📅 This Week |
+          | Medium | \${report.duplicates.filter(d => d.severity === 'medium').length} | 📋 Planned |
+          | Low | \${report.duplicates.filter(d => d.severity === 'low').length} | 🔄 Backlog |
+          
+          ### Top Issues
+          \${report.duplicates
+            .filter(d => d.severity === 'critical' || d.severity === 'high')
+            .slice(0, 5)
+            .map((d, i) => \`\${i + 1}. **\${d.type}**: \${d.entities.length} duplicates - \${d.entities.map(e => e.name).join(', ')}\`)
+            .join('\\n')}
+          
+          ### Recommendations
+          \${report.recommendations
+            .slice(0, 3)
+            .map((rec, i) => \`\${i + 1}. **\${rec.priority}**: \${rec.description}\`)
+            .join('\\n')}
+              \`);
+            " >> drift-report.md
+          else
+            echo "⚠️ Analysis data not available - check logs for errors" >> drift-report.md
+          fi
+          
+          # Store report path for later use
+          echo "report-path=$(pwd)/drift-report.md" >> $GITHUB_OUTPUT
+
+      - name: Check for drift thresholds
+        id: drift-check
+        run: |
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}/*
+          
+          if [ -f "analysis-report.json" ]; then
+            # Check if drift exceeds thresholds
+            CRITICAL_COUNT=$(npx ts-node -e "
+              const report = require('./analysis-report.json');
+              console.log(report.duplicates.filter(d => d.severity === 'critical').length);
+            ")
+            
+            UNUSED_COUNT=$(npx ts-node -e "
+              const report = require('./analysis-report.json');
+              console.log(report.unusedExports.length);
+            ")
+            
+            echo "critical-count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+            echo "unused-count=$UNUSED_COUNT" >> $GITHUB_OUTPUT
+            
+            # Set failure flags based on thresholds
+            if [ "$CRITICAL_COUNT" -gt 10 ]; then
+              echo "critical-threshold-exceeded=true" >> $GITHUB_OUTPUT
+              echo "❌ Critical drift detected: $CRITICAL_COUNT critical issues"
+            fi
+            
+            if [ "$UNUSED_COUNT" -gt 50 ]; then
+              echo "unused-threshold-exceeded=true" >> $GITHUB_OUTPUT
+              echo "⚠️ High unused code detected: $UNUSED_COUNT unused exports"
+            fi
+          fi
+
+      - name: Generate consolidation batches
+        if: success() || failure()
+        run: |
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}/*
+          
+          if [ -f "analysis-report.json" ]; then
+            # Create prioritized consolidation batches
+            npx ts-node -e "
+              const fs = require('fs');
+              const report = JSON.parse(fs.readFileSync('analysis-report.json', 'utf-8'));
+              
+              const batches = [];
+              const batchSize = 5;
+              
+              // Critical issues first
+              const criticalDuplicates = report.duplicates.filter(d => d.severity === 'critical');
+              for (let i = 0; i < criticalDuplicates.length; i += batchSize) {
+                batches.push({
+                  id: \`critical-batch-\${Math.floor(i/batchSize) + 1}\`,
+                  priority: 'critical',
+                  type: 'duplicates',
+                  estimatedHours: batchSize * 2,
+                  items: criticalDuplicates.slice(i, i + batchSize)
+                });
+              }
+              
+              // High priority issues
+              const highDuplicates = report.duplicates.filter(d => d.severity === 'high');
+              for (let i = 0; i < highDuplicates.length; i += batchSize) {
+                batches.push({
+                  id: \`high-batch-\${Math.floor(i/batchSize) + 1}\`,
+                  priority: 'high',
+                  type: 'duplicates',
+                  estimatedHours: batchSize * 1.5,
+                  items: highDuplicates.slice(i, i + batchSize)
+                });
+              }
+              
+              // Unused exports cleanup
+              const unusedBatchSize = 20;
+              for (let i = 0; i < report.unusedExports.length; i += unusedBatchSize) {
+                batches.push({
+                  id: \`cleanup-batch-\${Math.floor(i/unusedBatchSize) + 1}\`,
+                  priority: 'medium',
+                  type: 'unused-exports',
+                  estimatedHours: 1,
+                  items: report.unusedExports.slice(i, i + unusedBatchSize)
+                });
+              }
+              
+              fs.writeFileSync('consolidation-batches.json', JSON.stringify(batches, null, 2));
+              console.log(\`Generated \${batches.length} consolidation batches\`);
+              
+              // Create GitHub issues format
+              const issuesData = batches.slice(0, 5).map((batch, i) => ({
+                title: \`[Auto] \${batch.priority.toUpperCase()}: \${batch.type} consolidation batch \${i + 1}\`,
+                body: \`## Batch: \${batch.id}
+                
+          **Priority:** \${batch.priority}
+          **Type:** \${batch.type}
+          **Estimated Time:** \${batch.estimatedHours} hours
+          **Items to Process:** \${batch.items.length}
+          
+          ### Details
+          \${batch.items.slice(0, 10).map(item => 
+            batch.type === 'duplicates' 
+              ? \`- **\${item.type}**: \${item.entities.map(e => \`\${e.name} (\${e.file})\`).join(', ')}\`
+              : \`- \${item.name} in \${item.file}\`
+          ).join('\\n')}
+          
+          \${batch.items.length > 10 ? \`\\n_...and \${batch.items.length - 10} more items_\` : ''}
+          
+          ### Auto-generated by drift detection workflow
+          **Workflow:** ${{ github.workflow }}
+          **Run:** ${{ github.run_id }}
+                \`,
+                labels: ['drift-detection', 'refactoring', batch.priority]
+              }));
+              
+              fs.writeFileSync('github-issues.json', JSON.stringify(issuesData, null, 2));
+            "
+          fi
+
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: drift-analysis-${{ env.TIMESTAMP }}
+          path: |
+            ${{ env.ANALYSIS_OUTPUT_DIR }}/**/*
+            !${{ env.ANALYSIS_OUTPUT_DIR }}/**/node_modules
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && needs.setup.outputs.should-comment == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Find the drift report
+            const analysisDir = '${{ env.ANALYSIS_OUTPUT_DIR }}';
+            const reportPath = `${analysisDir}/*/*/drift-report.md`;
+            
+            try {
+              const reportContent = fs.readFileSync('${{ steps.drift-report.outputs.report-path }}', 'utf8');
+              
+              const comment = `## 🔍 Drift Detection Results
+              
+              ${reportContent}
+              
+              ---
+              
+              **📊 Analysis Artifacts:** Available in workflow artifacts
+              **🔄 Workflow:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              
+              ${steps.drift-check.outputs.critical-threshold-exceeded === 'true' ? '⚠️ **Action Required:** Critical drift thresholds exceeded!' : ''}
+              `;
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Could not read drift report:', error.message);
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🔍 Drift Detection Results
+                
+                ⚠️ Analysis encountered issues. Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+                
+                **Trigger:** Pull Request Analysis
+                **Status:** Completed with errors`
+              });
+            }
+
+      - name: Create GitHub Issues for Critical Drift
+        if: steps.drift-check.outputs.critical-threshold-exceeded == 'true' && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const issuesData = JSON.parse(fs.readFileSync('${{ env.ANALYSIS_OUTPUT_DIR }}/*/github-issues.json', 'utf8'));
+              
+              for (const issue of issuesData.slice(0, 3)) { // Limit to 3 critical issues
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issue.title,
+                  body: issue.body,
+                  labels: issue.labels
+                });
+              }
+            } catch (error) {
+              console.log('Could not create issues:', error.message);
+            }
+
+      - name: Set workflow status
+        if: always()
+        run: |
+          if [ "${{ steps.drift-check.outputs.critical-threshold-exceeded }}" = "true" ]; then
+            echo "❌ DRIFT DETECTION FAILED: Critical thresholds exceeded"
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "::error title=Critical Drift Detected::This PR introduces critical code drift that must be addressed before merging."
+              exit 1
+            fi
+          elif [ "${{ steps.analysis.outputs.analysis-failed }}" = "true" ]; then
+            echo "⚠️ DRIFT DETECTION WARNING: Analysis completed with errors"
+            echo "::warning title=Analysis Issues::Some analysis steps failed - check artifacts for partial results."
+          else
+            echo "✅ DRIFT DETECTION PASSED: All thresholds within acceptable limits"
+          fi
+
+  notification:
+    runs-on: ubuntu-latest
+    needs: [setup, drift-detection]
+    if: always() && github.event_name == 'schedule'
+    steps:
+      - name: Send summary notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ needs.drift-detection.result }}';
+            const criticalCount = '${{ needs.drift-detection.outputs.critical-count || 0 }}';
+            const unusedCount = '${{ needs.drift-detection.outputs.unused-count || 0 }}';
+            
+            const title = status === 'success' 
+              ? '✅ Daily Drift Check: All Clear' 
+              : '⚠️ Daily Drift Check: Action Required';
+            
+            const body = `## Daily Code Drift Report
+            
+            **Status:** ${status}
+            **Critical Issues:** ${criticalCount}
+            **Unused Exports:** ${unusedCount}
+            **Workflow:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ${status !== 'success' ? '**Action Required:** Review the analysis results and address critical issues.' : ''}
+            `;
+            
+            // Create or update a pinned issue for daily reports
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'daily-drift-report',
+              state: 'open'
+            });
+            
+            if (issues.data.length > 0) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues.data[0].number,
+                body: body
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['daily-drift-report', 'automated']
+              });
+            }

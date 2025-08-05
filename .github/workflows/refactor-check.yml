@@ -1,0 +1,579 @@
+name: Refactor Quality Check
+
+on:
+  pull_request:
+    branches: [master, main]
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to analyze'
+        required: false
+        type: string
+      check_type:
+        description: 'Type of refactor check'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - quick
+          - full
+          - consolidation
+          - standardization
+
+env:
+  NODE_VERSION: '18'
+  ANALYSIS_OUTPUT_DIR: 'refactor-analysis'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      is-refactor-pr: ${{ steps.detect.outputs.is-refactor-pr }}
+      check-type: ${{ steps.detect.outputs.check-type }}
+      files-changed: ${{ steps.detect.outputs.files-changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect refactor PR
+        id: detect
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request?.number || '${{ github.event.inputs.pr_number }}'
+            });
+            
+            const title = pr.title.toLowerCase();
+            const body = (pr.body || '').toLowerCase();
+            const labels = pr.labels.map(l => l.name.toLowerCase());
+            
+            // Check if this is a refactor PR
+            const refactorKeywords = [
+              'refactor', 'consolidat', 'duplicate', 'cleanup', 'restructur',
+              'monorepo', 'standardiz', 'pattern', 'merge', 'dedupe'
+            ];
+            
+            const isRefactorPR = 
+              refactorKeywords.some(keyword => title.includes(keyword)) ||
+              refactorKeywords.some(keyword => body.includes(keyword)) ||
+              labels.some(label => ['refactor', 'consolidation', 'cleanup', 'monorepo'].includes(label));
+            
+            // Determine check type
+            let checkType = '${{ github.event.inputs.check_type }}' || 'full';
+            if (labels.includes('consolidation')) checkType = 'consolidation';
+            if (labels.includes('standardization')) checkType = 'standardization';
+            if (labels.includes('quick-check')) checkType = 'quick';
+            
+            core.setOutput('is-refactor-pr', isRefactorPR);
+            core.setOutput('check-type', checkType);
+            
+            // Get changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+            
+            const changedFiles = files.map(f => f.filename);
+            const tsFiles = changedFiles.filter(f => f.match(/\.(ts|tsx|js|jsx)$/));
+            
+            core.setOutput('files-changed', JSON.stringify({
+              total: changedFiles.length,
+              typescript: tsFiles.length,
+              files: tsFiles.slice(0, 50) // Limit for performance
+            }));
+            
+            console.log(`PR Analysis: isRefactor=${isRefactorPR}, checkType=${checkType}, files=${tsFiles.length}`);
+
+  quality-checks:
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.is-refactor-pr == 'true'
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout base branch
+        run: |
+          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+          git checkout ${{ github.base_ref }}
+          git checkout ${{ github.head_ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            typescript \
+            ts-node \
+            @types/node \
+            ts-morph \
+            glob \
+            fastest-levenshtein \
+            madge \
+            csv-writer \
+            @typescript-eslint/parser \
+            @typescript-eslint/eslint-plugin \
+            eslint
+
+      - name: Setup analysis environment
+        run: |
+          mkdir -p ${{ env.ANALYSIS_OUTPUT_DIR }}
+          echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+
+      - name: Run pre-refactor analysis
+        id: pre-analysis
+        run: |
+          echo "Running pre-refactor analysis on base branch..."
+          git checkout ${{ github.base_ref }}
+          
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}
+          mkdir -p before
+          cd before
+          
+          # Run analysis on base branch
+          if bash ../../scripts/analysis/analyze-all.sh ../..; then
+            echo "pre-analysis-success=true" >> $GITHUB_OUTPUT
+            cp analysis-report.json ../pre-refactor-report.json 2>/dev/null || true
+          else
+            echo "pre-analysis-success=false" >> $GITHUB_OUTPUT
+            echo "Pre-analysis failed, continuing with PR analysis only"
+          fi
+
+      - name: Run post-refactor analysis
+        id: post-analysis
+        run: |
+          echo "Running post-refactor analysis on PR branch..."
+          git checkout ${{ github.head_ref }}
+          
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}
+          mkdir -p after
+          cd after
+          
+          # Run analysis on PR branch
+          if bash ../../scripts/analysis/analyze-all.sh ../..; then
+            echo "post-analysis-success=true" >> $GITHUB_OUTPUT
+            cp analysis-report.json ../post-refactor-report.json 2>/dev/null || true
+          else
+            echo "post-analysis-success=false" >> $GITHUB_OUTPUT
+            echo "::error title=Analysis Failed::Post-refactor analysis failed"
+            exit 1
+          fi
+
+      - name: Compare refactor results
+        id: comparison
+        run: |
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}
+          
+          # Create comparison report
+          npx ts-node -e "
+            const fs = require('fs');
+            
+            let preReport = null;
+            let postReport = null;
+            
+            try {
+              if (fs.existsSync('pre-refactor-report.json')) {
+                preReport = JSON.parse(fs.readFileSync('pre-refactor-report.json', 'utf8'));
+              }
+              postReport = JSON.parse(fs.readFileSync('post-refactor-report.json', 'utf8'));
+            } catch (error) {
+              console.error('Error reading reports:', error);
+              process.exit(1);
+            }
+            
+            const comparison = {
+              timestamp: new Date().toISOString(),
+              hasBaseline: !!preReport,
+              improvements: {},
+              regressions: {},
+              metrics: {
+                before: preReport ? {
+                  totalEntities: preReport.summary.totalEntities,
+                  duplicateClusters: preReport.summary.duplicateClusters,
+                  unusedExports: preReport.summary.unusedExports,
+                  criticalIssues: preReport.duplicates.filter(d => d.severity === 'critical').length
+                } : null,
+                after: {
+                  totalEntities: postReport.summary.totalEntities,
+                  duplicateClusters: postReport.summary.duplicateClusters,
+                  unusedExports: postReport.summary.unusedExports,
+                  criticalIssues: postReport.duplicates.filter(d => d.severity === 'critical').length
+                }
+              }
+            };
+            
+            if (preReport) {
+              // Calculate improvements and regressions
+              const before = comparison.metrics.before;
+              const after = comparison.metrics.after;
+              
+              comparison.improvements = {
+                duplicatesReduced: Math.max(0, before.duplicateClusters - after.duplicateClusters),
+                unusedExportsRemoved: Math.max(0, before.unusedExports - after.unusedExports),
+                criticalIssuesFixed: Math.max(0, before.criticalIssues - after.criticalIssues)
+              };
+              
+              comparison.regressions = {
+                duplicatesAdded: Math.max(0, after.duplicateClusters - before.duplicateClusters),
+                unusedExportsAdded: Math.max(0, after.unusedExports - before.unusedExports),
+                criticalIssuesAdded: Math.max(0, after.criticalIssues - before.criticalIssues)
+              };
+              
+              // Calculate quality score
+              const improvementScore = 
+                (comparison.improvements.duplicatesReduced * 3) +
+                (comparison.improvements.unusedExportsRemoved * 1) +
+                (comparison.improvements.criticalIssuesFixed * 5);
+                
+              const regressionScore = 
+                (comparison.regressions.duplicatesAdded * 3) +
+                (comparison.regressions.unusedExportsAdded * 1) +
+                (comparison.regressions.criticalIssuesAdded * 5);
+                
+              comparison.qualityScore = improvementScore - regressionScore;
+              comparison.qualityGrade = 
+                comparison.qualityScore >= 10 ? 'A' :
+                comparison.qualityScore >= 5 ? 'B' :
+                comparison.qualityScore >= 0 ? 'C' :
+                comparison.qualityScore >= -5 ? 'D' : 'F';
+            }
+            
+            fs.writeFileSync('comparison-report.json', JSON.stringify(comparison, null, 2));
+            console.log('Comparison report generated');
+            
+            // Output key metrics
+            console.log('comparison-data=' + JSON.stringify(comparison));
+          " > comparison-output.txt
+          
+          # Extract comparison data
+          COMPARISON_DATA=$(cat comparison-output.txt | grep 'comparison-data=' | cut -d'=' -f2-)
+          echo "comparison-data=$COMPARISON_DATA" >> $GITHUB_OUTPUT
+
+      - name: Run refactor-specific checks
+        id: refactor-checks
+        run: |
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}
+          
+          # Check for common refactor issues
+          echo "Running refactor-specific validations..."
+          
+          ISSUES=()
+          
+          # Check 1: Ensure no new circular dependencies
+          if [ -f "after/circular-deps.json" ]; then
+            CIRCULAR_COUNT=$(jq '. | length' after/circular-deps.json 2>/dev/null || echo "0")
+            if [ "$CIRCULAR_COUNT" -gt 0 ]; then
+              ISSUES+=("Circular dependencies detected: $CIRCULAR_COUNT cycles")
+            fi
+          fi
+          
+          # Check 2: Validate imports are not broken
+          echo "Checking for broken imports..."
+          npx ts-node -e "
+            const fs = require('fs');
+            const glob = require('glob');
+            const path = require('path');
+            
+            const files = glob.sync('../**/*.{ts,tsx}', { ignore: ['../node_modules/**', '../dist/**'] });
+            const brokenImports = [];
+            
+            files.slice(0, 20).forEach(file => { // Limit for performance
+              try {
+                const content = fs.readFileSync(file, 'utf8');
+                const importRegex = /import.*?from\\s+['\"]([^'\"]+)['\"]/g;
+                let match;
+                
+                while ((match = importRegex.exec(content)) !== null) {
+                  const importPath = match[1];
+                  if (importPath.startsWith('.')) {
+                    const resolvedPath = path.resolve(path.dirname(file), importPath);
+                    const extensions = ['', '.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.tsx'];
+                    
+                    const exists = extensions.some(ext => fs.existsSync(resolvedPath + ext));
+                    if (!exists) {
+                      brokenImports.push({ file, import: importPath });
+                    }
+                  }
+                }
+              } catch (error) {
+                console.log(\`Could not check \${file}: \${error.message}\`);
+              }
+            });
+            
+            if (brokenImports.length > 0) {
+              console.log('broken-imports=' + JSON.stringify(brokenImports));
+            }
+          " > broken-imports.txt
+          
+          BROKEN_IMPORTS=$(cat broken-imports.txt | grep 'broken-imports=' | cut -d'=' -f2- || echo "[]")
+          if [ "$BROKEN_IMPORTS" != "[]" ]; then
+            ISSUES+=("Broken imports detected")
+          fi
+          
+          # Check 3: TypeScript compilation
+          echo "Checking TypeScript compilation..."
+          if ! npx tsc --noEmit --project ../setup 2>/dev/null; then
+            ISSUES+=("TypeScript compilation errors")
+          fi
+          
+          # Output issues
+          if [ ${#ISSUES[@]} -gt 0 ]; then
+            echo "refactor-issues=$(printf '%s\n' "${ISSUES[@]}" | jq -R . | jq -s .)" >> $GITHUB_OUTPUT
+            echo "has-issues=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-issues=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate quality report
+        id: quality-report
+        run: |
+          cd ${{ env.ANALYSIS_OUTPUT_DIR }}
+          
+          # Create comprehensive quality report
+          cat > quality-report.md << 'EOF'
+          # 🔍 Refactor Quality Report
+          
+          **Analysis Date:** $(date)
+          **PR:** #${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          **Check Type:** ${{ needs.setup.outputs.check-type }}
+          
+          EOF
+          
+          # Add comparison results if available
+          if [ -f "comparison-report.json" ]; then
+            npx ts-node -e "
+              const fs = require('fs');
+              const comparison = JSON.parse(fs.readFileSync('comparison-report.json', 'utf8'));
+              
+              if (comparison.hasBaseline) {
+                const grade = comparison.qualityGrade;
+                const gradeEmoji = {
+                  'A': '🏆', 'B': '✅', 'C': '⚠️', 'D': '❌', 'F': '💥'
+                }[grade] || '❓';
+                
+                console.log(\`
+          ## Quality Assessment
+          
+          **Overall Grade:** \${gradeEmoji} \${grade} (Score: \${comparison.qualityScore})
+          
+          ### Improvements Made
+          - ✅ Duplicate clusters reduced: **\${comparison.improvements.duplicatesReduced}**
+          - ✅ Unused exports removed: **\${comparison.improvements.unusedExportsRemoved}**
+          - ✅ Critical issues fixed: **\${comparison.improvements.criticalIssuesFixed}**
+          
+          ### Potential Regressions
+          - ❌ New duplicate clusters: **\${comparison.regressions.duplicatesAdded}**
+          - ❌ New unused exports: **\${comparison.regressions.unusedExportsAdded}**
+          - ❌ New critical issues: **\${comparison.regressions.criticalIssuesAdded}**
+          
+          ### Metrics Comparison
+          
+          | Metric | Before | After | Change |
+          |--------|--------|--------|--------|
+          | Total Entities | \${comparison.metrics.before.totalEntities} | \${comparison.metrics.after.totalEntities} | \${comparison.metrics.after.totalEntities - comparison.metrics.before.totalEntities > 0 ? '+' : ''}\${comparison.metrics.after.totalEntities - comparison.metrics.before.totalEntities} |
+          | Duplicate Clusters | \${comparison.metrics.before.duplicateClusters} | \${comparison.metrics.after.duplicateClusters} | \${comparison.metrics.after.duplicateClusters - comparison.metrics.before.duplicateClusters > 0 ? '+' : ''}\${comparison.metrics.after.duplicateClusters - comparison.metrics.before.duplicateClusters} |
+          | Unused Exports | \${comparison.metrics.before.unusedExports} | \${comparison.metrics.after.unusedExports} | \${comparison.metrics.after.unusedExports - comparison.metrics.before.unusedExports > 0 ? '+' : ''}\${comparison.metrics.after.unusedExports - comparison.metrics.before.unusedExports} |
+          | Critical Issues | \${comparison.metrics.before.criticalIssues} | \${comparison.metrics.after.criticalIssues} | \${comparison.metrics.after.criticalIssues - comparison.metrics.before.criticalIssues > 0 ? '+' : ''}\${comparison.metrics.after.criticalIssues - comparison.metrics.before.criticalIssues} |
+                \`);
+              } else {
+                console.log(\`
+          ## Current State Analysis
+          
+          **Note:** No baseline comparison available (first-time analysis)
+          
+          ### Current Metrics
+          - **Total Entities:** \${comparison.metrics.after.totalEntities}
+          - **Duplicate Clusters:** \${comparison.metrics.after.duplicateClusters}
+          - **Unused Exports:** \${comparison.metrics.after.unusedExports}
+          - **Critical Issues:** \${comparison.metrics.after.criticalIssues}
+                \`);
+              }
+            " >> quality-report.md
+          fi
+          
+          # Add refactor-specific issues if any
+          if [ "${{ steps.refactor-checks.outputs.has-issues }}" = "true" ]; then
+            echo '
+          ## ⚠️ Issues Detected
+          ' >> quality-report.md
+            
+            echo '${{ steps.refactor-checks.outputs.refactor-issues }}' | jq -r '.[]' | while read issue; do
+              echo "- ❌ $issue" >> quality-report.md
+            done
+          else
+            echo '
+          ## ✅ No Issues Detected
+          
+          All refactor validation checks passed successfully.
+          ' >> quality-report.md
+          fi
+          
+          # Add recommendations
+          echo '
+          ## 📋 Recommendations
+          
+          ' >> quality-report.md
+          
+          if [ -f "post-refactor-report.json" ]; then
+            npx ts-node -e "
+              const report = JSON.parse(require('fs').readFileSync('post-refactor-report.json', 'utf8'));
+              report.recommendations.slice(0, 5).forEach((rec, i) => {
+                console.log(\`\${i + 1}. **\${rec.priority}**: \${rec.description}\`);
+              });
+            " >> quality-report.md
+          fi
+          
+          echo "report-path=$(pwd)/quality-report.md" >> $GITHUB_OUTPUT
+
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: refactor-analysis-${{ env.TIMESTAMP }}
+          path: |
+            ${{ env.ANALYSIS_OUTPUT_DIR }}/**/*
+            !${{ env.ANALYSIS_OUTPUT_DIR }}/**/node_modules
+          retention-days: 14
+
+      - name: Update PR with quality report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const reportContent = fs.readFileSync('${{ steps.quality-report.outputs.report-path }}', 'utf8');
+              const hasIssues = '${{ steps.refactor-checks.outputs.has-issues }}' === 'true';
+              
+              const comment = `${reportContent}
+              
+              ---
+              
+              **🔗 Links:**
+              - [Analysis Artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              - [Workflow Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              
+              ${hasIssues ? '⚠️ **Action Required:** Please address the issues above before merging.' : '✅ **Ready for Review:** Quality checks passed successfully.'}
+              `;
+              
+              // Find existing quality report comment
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              
+              const existingComment = comments.find(c => 
+                c.body.includes('🔍 Refactor Quality Report') && c.user.type === 'Bot'
+              );
+              
+              if (existingComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: comment
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: comment
+                });
+              }
+            } catch (error) {
+              console.error('Error updating PR:', error);
+            }
+
+      - name: Set status check
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const hasIssues = '${{ steps.refactor-checks.outputs.has-issues }}' === 'true';
+            const analysisSuccess = '${{ steps.post-analysis.outputs.post-analysis-success }}' === 'true';
+            
+            let state, description;
+            
+            if (!analysisSuccess) {
+              state = 'failure';
+              description = 'Analysis failed - check workflow logs';
+            } else if (hasIssues) {
+              state = 'failure'; 
+              description = 'Quality issues detected - review required';
+            } else {
+              state = 'success';
+              description = 'All quality checks passed';
+            }
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: state,
+              description: description,
+              context: 'refactor-quality-check'
+            });
+
+      - name: Fail workflow if issues detected
+        if: steps.refactor-checks.outputs.has-issues == 'true'
+        run: |
+          echo "❌ Refactor quality check failed due to detected issues"
+          echo "::error title=Quality Issues::Refactor introduces quality issues that must be addressed"
+          exit 1
+
+  skip-non-refactor:
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.is-refactor-pr == 'false'
+    steps:
+      - name: Skip non-refactor PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            if (context.payload.pull_request) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## 🔍 Refactor Quality Check
+                
+                ℹ️ **Skipped:** This PR doesn't appear to be a refactoring PR.
+                
+                To trigger refactor quality checks, ensure your PR:
+                - Contains refactor-related keywords in title/description
+                - Has appropriate labels (refactor, consolidation, cleanup, monorepo)
+                
+                **Workflow:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              });
+            }
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'success',
+              description: 'Skipped - not a refactor PR',
+              context: 'refactor-quality-check'
+            });

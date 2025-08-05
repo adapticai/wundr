@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+packages/*/node_modules/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.bundle.js
+packages/*/dist/
+packages/*/build/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS files
+Thumbs.db
+
+# Test fixtures
+__fixtures__/
+fixtures/
+
+# Generated files
+*.generated.ts
+*.generated.js
+analysis-output/
+
+# Documentation
+docs/
+
+# Migration files
+migrations/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Third-party libraries
+vendor/
+
+# Config files that shouldn't be linted
+*.json
+*.yml
+*.yaml
+*.md
+
+# Scripts that might have different rules
+scripts/**/*.js

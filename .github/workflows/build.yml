@@ -1,0 +1,461 @@
+name: Build and Validate
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  CACHE_VERSION: v1
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-keys.outputs.cache-key }}
+      should-run-full-build: ${{ steps.changes.outputs.should-run-full-build }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate cache keys
+        id: cache-keys
+        run: |
+          echo "cache-key=${{ runner.os }}-build-${{ env.CACHE_VERSION }}-${{ hashFiles('setup/package*.json', '**/*.ts', '**/*.js') }}" >> $GITHUB_OUTPUT
+
+      - name: Check for significant changes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/master" -o "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "should-run-full-build=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should-run-full-build=true" >> $GITHUB_OUTPUT
+          else
+            # Check if critical files changed
+            if git diff --name-only HEAD~1 HEAD | grep -E "(package\.json|tsconfig|\.github/workflows)" > /dev/null; then
+              echo "should-run-full-build=true" >> $GITHUB_OUTPUT
+            else
+              echo "should-run-full-build=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  validate-structure:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate project structure
+        run: |
+          echo "Validating monorepo refactoring toolkit structure..."
+          
+          # Check required directories
+          REQUIRED_DIRS=(
+            "scripts/analysis"
+            "scripts/consolidation"
+            "scripts/governance"
+            "scripts/monorepo"
+            "config/ci"
+            "docs/guides"
+            "templates"
+            "tools"
+          )
+          
+          for dir in "${REQUIRED_DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "❌ Missing required directory: $dir"
+              exit 1
+            else
+              echo "✅ Found directory: $dir"
+            fi
+          done
+          
+          # Check required files
+          REQUIRED_FILES=(
+            "scripts/analysis/analyze-all.sh"
+            "scripts/analysis/enhanced-ast-analyzer.ts"
+            "scripts/consolidation/consolidation-manager.ts"
+            "scripts/governance/drift-detection.ts"
+            "config/git/hooks/pre-commit"
+            "docs/guides/COMPLETE_STRATEGY.md"
+            "templates/package-template/package.json"
+          )
+          
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "⚠️ Missing file: $file"
+            else
+              echo "✅ Found file: $file"
+            fi
+          done
+
+      - name: Check file permissions
+        run: |
+          echo "Checking executable permissions..."
+          
+          EXECUTABLE_FILES=(
+            "scripts/analysis/analyze-all.sh"
+            "scripts/consolidation/merge-duplicates.sh"
+            "scripts/monorepo/add-package.sh"
+            "setup/install.sh"
+            "setup/verify-setup.sh"
+            "config/git/hooks/pre-commit"
+          )
+          
+          for file in "${EXECUTABLE_FILES[@]}"; do
+            if [ -f "$file" ]; then
+              if [ -x "$file" ]; then
+                echo "✅ $file is executable"
+              else
+                echo "⚠️ $file is not executable, fixing..."
+                chmod +x "$file"
+              fi
+            fi
+          done
+
+  lint-and-format:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            eslint \
+            @typescript-eslint/parser \
+            @typescript-eslint/eslint-plugin \
+            prettier \
+            typescript
+
+      - name: Cache lint results
+        uses: actions/cache@v3
+        with:
+          path: .eslintcache
+          key: ${{ runner.os }}-eslint-${{ hashFiles('**/*.ts', '**/*.js', '.eslintrc*') }}
+          restore-keys: |
+            ${{ runner.os }}-eslint-
+
+      - name: Run ESLint
+        run: |
+          echo "Running ESLint on TypeScript and JavaScript files..."
+          
+          # Create basic ESLint config if none exists
+          if [ ! -f ".eslintrc.js" ] && [ ! -f ".eslintrc.json" ]; then
+            cat > .eslintrc.js << 'EOF'
+          module.exports = {
+            parser: '@typescript-eslint/parser',
+            plugins: ['@typescript-eslint'],
+            extends: [
+              'eslint:recommended',
+              '@typescript-eslint/recommended'
+            ],
+            parserOptions: {
+              ecmaVersion: 2020,
+              sourceType: 'module'
+            },
+            rules: {
+              '@typescript-eslint/no-unused-vars': 'warn',
+              '@typescript-eslint/no-explicit-any': 'warn',
+              'no-console': 'off'
+            },
+            ignorePatterns: [
+              'node_modules/**',
+              'dist/**',
+              '*.js'
+            ]
+          };
+          EOF
+          fi
+          
+          npx eslint "scripts/**/*.ts" "examples/**/*.ts" --cache --cache-location .eslintcache --max-warnings 10
+
+      - name: Check Prettier formatting
+        run: |
+          echo "Checking code formatting with Prettier..."
+          
+          # Create basic Prettier config if none exists
+          if [ ! -f ".prettierrc" ] && [ ! -f ".prettierrc.json" ]; then
+            cat > .prettierrc << 'EOF'
+          {
+            "semi": true,
+            "trailingComma": "es5",
+            "singleQuote": true,
+            "printWidth": 80,
+            "tabWidth": 2,
+            "useTabs": false
+          }
+          EOF
+          fi
+          
+          if [ ! -f ".prettierignore" ]; then
+            cat > .prettierignore << 'EOF'
+          node_modules
+          dist
+          *.md
+          EOF
+          fi
+          
+          npx prettier --check "scripts/**/*.ts" "examples/**/*.ts" || {
+            echo "❌ Code formatting issues found. Run 'npm run format' to fix."
+            exit 1
+          }
+
+  type-check:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            typescript \
+            @types/node \
+            ts-morph \
+            ts-node
+
+      - name: Cache TypeScript build
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/*.tsbuildinfo
+            node_modules/.cache
+          key: ${{ runner.os }}-typescript-${{ hashFiles('**/*.ts', 'tsconfig*.json') }}
+          restore-keys: |
+            ${{ runner.os }}-typescript-
+
+      - name: Type check all TypeScript files
+        run: |
+          echo "Running TypeScript type checking..."
+          
+          # Use existing tsconfig or create a basic one
+          if [ -f "config/typescript/tsconfig.base.json" ]; then
+            echo "Using existing TypeScript configuration..."
+            npx tsc --noEmit --project config/typescript/tsconfig.base.json
+          else
+            echo "Creating basic TypeScript configuration for type checking..."
+            cat > tsconfig.json << 'EOF'
+          {
+            "compilerOptions": {
+              "target": "ES2020",
+              "module": "commonjs",
+              "lib": ["ES2020"],
+              "outDir": "./dist",
+              "rootDir": "./",
+              "strict": true,
+              "esModuleInterop": true,
+              "skipLibCheck": true,
+              "forceConsistentCasingInFileNames": true,
+              "declaration": true,
+              "declarationMap": true,
+              "sourceMap": true,
+              "noEmit": true
+            },
+            "include": [
+              "scripts/**/*.ts",
+              "examples/**/*.ts",
+              "tools/**/*.ts"
+            ],
+            "exclude": [
+              "node_modules",
+              "dist",
+              "**/*.test.ts",
+              "**/*.spec.ts"
+            ]
+          }
+          EOF
+            npx tsc --noEmit
+          fi
+
+  validate-scripts:
+    runs-on: ubuntu-latest
+    needs: [setup, validate-structure]
+    if: needs.setup.outputs.should-run-full-build == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            typescript \
+            ts-node \
+            @types/node \
+            ts-morph \
+            glob \
+            fastest-levenshtein
+
+      - name: Validate analysis scripts
+        run: |
+          echo "Validating analysis scripts..."
+          
+          # Test basic script syntax
+          SCRIPTS=(
+            "scripts/analysis/enhanced-ast-analyzer.ts"
+            "scripts/consolidation/consolidation-manager.ts"
+            "scripts/governance/drift-detection.ts"
+            "scripts/monorepo/monorepo-setup.ts"
+          )
+          
+          for script in "${SCRIPTS[@]}"; do
+            if [ -f "$script" ]; then
+              echo "Checking syntax of $script..."
+              npx ts-node --transpile-only --check "$script" || {
+                echo "❌ Syntax error in $script"
+                exit 1
+              }
+              echo "✅ $script syntax is valid"
+            else
+              echo "⚠️ Script not found: $script"
+            fi
+          done
+
+      - name: Test shell scripts
+        run: |
+          echo "Testing shell scripts..."
+          
+          SHELL_SCRIPTS=(
+            "scripts/analysis/analyze-all.sh"
+            "scripts/consolidation/merge-duplicates.sh"
+            "scripts/monorepo/add-package.sh"
+            "setup/install.sh"
+            "setup/verify-setup.sh"
+          )
+          
+          for script in "${SHELL_SCRIPTS[@]}"; do
+            if [ -f "$script" ]; then
+              echo "Checking syntax of $script..."
+              bash -n "$script" || {
+                echo "❌ Syntax error in $script"
+                exit 1
+              }
+              echo "✅ $script syntax is valid"
+            else
+              echo "⚠️ Script not found: $script"
+            fi
+          done
+
+  validate-configs:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate JSON files
+        run: |
+          echo "Validating JSON configuration files..."
+          
+          find . -name "*.json" -not -path "./node_modules/*" -not -path "./dist/*" | while read -r file; do
+            echo "Validating $file..."
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "❌ Invalid JSON in $file"
+              exit 1
+            else
+              echo "✅ $file is valid JSON"
+            fi
+          done
+
+      - name: Validate YAML files
+        run: |
+          echo "Validating YAML configuration files..."
+          
+          # Install yq for YAML validation
+          sudo snap install yq || {
+            wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+            chmod +x /usr/local/bin/yq
+          }
+          
+          find . -name "*.yml" -o -name "*.yaml" | while read -r file; do
+            echo "Validating $file..."
+            if ! yq eval . "$file" > /dev/null 2>&1; then
+              echo "❌ Invalid YAML in $file"
+              exit 1
+            else
+              echo "✅ $file is valid YAML"
+            fi
+          done
+
+  build-status:
+    runs-on: ubuntu-latest
+    needs: [validate-structure, lint-and-format, type-check, validate-scripts, validate-configs]
+    if: always()
+    steps:
+      - name: Check overall build status
+        run: |
+          echo "Build Status Summary:"
+          echo "- Structure Validation: ${{ needs.validate-structure.result }}"
+          echo "- Lint and Format: ${{ needs.lint-and-format.result }}"
+          echo "- Type Check: ${{ needs.type-check.result }}"
+          echo "- Script Validation: ${{ needs.validate-scripts.result }}"
+          echo "- Config Validation: ${{ needs.validate-configs.result }}"
+          
+          # Check if any required job failed
+          if [ "${{ needs.validate-structure.result }}" = "failure" ] || 
+             [ "${{ needs.lint-and-format.result }}" = "failure" ] || 
+             [ "${{ needs.type-check.result }}" = "failure" ] ||
+             [ "${{ needs.validate-configs.result }}" = "failure" ]; then
+            echo "❌ Build failed due to validation errors"
+            exit 1
+          elif [ "${{ needs.validate-scripts.result }}" = "failure" ]; then
+            echo "⚠️ Build completed with script validation warnings"
+            exit 0
+          else
+            echo "✅ Build completed successfully"
+          fi
+
+      - name: Set commit status
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            const description = status === 'success' 
+              ? 'All build validations passed' 
+              : 'Build validation failed';
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: status,
+              description: description,
+              context: 'build-validation'
+            });

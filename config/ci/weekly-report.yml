@@ -1,0 +1,91 @@
+# Weekly Report Configuration
+# This file contains configuration parameters for the weekly report workflow
+# The actual GitHub Actions workflow is located at .github/workflows/weekly-report.yml
+
+# Report scheduling
+schedule:
+  cron: "0 9 * * 0"              # Every Sunday at 9 AM UTC
+  timezone: "UTC"
+  default_period_days: 7
+
+# Report content settings
+report_content:
+  include_git_activity: true      # Include commit and file change statistics
+  include_pr_activity: true       # Include pull request statistics
+  include_code_analysis: true     # Include detailed code quality analysis
+  include_trend_analysis: true    # Include week-over-week trend analysis
+  include_recommendations: true   # Include actionable recommendations
+
+# Analysis settings
+analysis:
+  enable_detailed_analysis: true  # Run comprehensive code analysis
+  analysis_timeout_minutes: 15    # Timeout for analysis operations
+  include_dashboard_generation: true  # Generate visual dashboard
+
+# Scoring configuration
+scoring:
+  # Activity scoring weights
+  commit_score_weight: 0.5        # Points per commit
+  refactor_pr_weight: 2.0         # Points per refactoring PR
+  merged_pr_weight: 1.5           # Points per merged PR
+  max_activity_score: 10          # Maximum activity score
+
+  # Progress scoring weights  
+  duplicate_reduction_points: 3    # Points per duplicate cluster reduced
+  unused_export_cleanup_points: 1 # Points per unused export removed
+  critical_issue_fix_points: 5    # Points per critical issue fixed
+  duplicate_regression_penalty: 2 # Penalty per duplicate cluster added
+  critical_issue_regression_penalty: 4 # Penalty per critical issue added
+
+# Notification settings
+notifications:
+  create_github_issue: true       # Create GitHub issue with report
+  close_old_report_issues: true   # Close previous week's report issues
+  max_old_issues_to_close: 3     # Maximum old issues to close
+  
+  # Issue labeling
+  issue_labels:
+    - "weekly-report"
+    - "automated"
+  
+  # Conditional labels based on content
+  conditional_labels:
+    critical_issues: "critical-issues"     # When critical issues > 0
+    improvements: "improvements"           # When improvements detected
+    excellent_progress: "excellent-progress" # When score >= 8
+    needs_attention: "needs-attention"     # When score <= 4
+
+# Historical data management
+historical_data:
+  save_report_data: true          # Save data for next week's comparison
+  data_retention_weeks: 12        # How many weeks of data to keep
+  data_file_path: ".github/data/last-weekly-report.json"
+
+# Focus area thresholds
+focus_areas:
+  critical_issues_threshold: 0    # Show critical issues section if > 0
+  high_duplicates_threshold: 20   # Show duplicate section if > threshold
+  high_unused_exports_threshold: 50 # Show cleanup section if > threshold
+  low_refactor_activity_threshold: 0 # Show activity reminder if <= threshold
+
+# Report formatting
+formatting:
+  max_pr_details: 10              # Maximum PRs to show in detail
+  max_contributor_list: 5         # Maximum contributors to list
+  max_file_changes: 20            # Maximum changed files to analyze
+  include_links_to_resources: true # Include links to guides and docs
+  
+# External integration settings (for future use)
+integrations:
+  slack:
+    enabled: false
+    webhook_url: ""
+    channel: "#refactoring-updates"
+  
+  teams:
+    enabled: false
+    webhook_url: ""
+  
+  email:
+    enabled: false
+    recipients: []

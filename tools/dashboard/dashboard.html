@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monorepo Refactoring Analysis Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.0/index.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1><i class="fas fa-chart-line"></i> Monorepo Refactoring Dashboard</h1>
+                <div class="header-actions">
+                    <button id="refresh-btn" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                    <input type="file" id="file-input" accept=".json" style="display: none;">
+                    <button id="load-file-btn" class="btn btn-secondary">
+                        <i class="fas fa-upload"></i> Load Report
+                    </button>
+                    <button id="sample-data-btn" class="sample-data-btn">
+                        <i class="fas fa-database"></i> Load Sample Data
+                    </button>
+                </div>
+            </div>
+            <div class="last-updated" id="last-updated">
+                Last updated: Never
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading analysis data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="error-state" style="display: none;">
+            <div class="error-content">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to Load Data</h3>
+                <p id="error-message">Please load an analysis report or check the analysis-output directory.</p>
+                <button id="retry-btn" class="btn btn-primary">Try Again</button>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <main id="dashboard-content" class="dashboard-content" style="display: none;">
+            <!-- Summary Cards -->
+            <section class="summary-section">
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-file-code"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="total-files">0</h3>
+                            <p>Total Files</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="total-entities">0</h3>
+                            <p>Total Entities</p>
+                        </div>
+                    </div>
+                    <div class="summary-card critical">
+                        <div class="card-icon">
+                            <i class="fas fa-copy"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="duplicate-clusters">0</h3>
+                            <p>Duplicate Clusters</p>
+                        </div>
+                    </div>
+                    <div class="summary-card warning">
+                        <div class="card-icon">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="circular-deps">0</h3>
+                            <p>Circular Dependencies</p>
+                        </div>
+                    </div>
+                    <div class="summary-card info">
+                        <div class="card-icon">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="unused-exports">0</h3>
+                            <p>Unused Exports</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="code-smells">0</h3>
+                            <p>Code Smells</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Entity Distribution</h3>
+                        <canvas id="entity-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Duplicate Severity</h3>
+                        <canvas id="severity-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>File Complexity Heatmap</h3>
+                        <canvas id="complexity-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Dependency Analysis</h3>
+                        <canvas id="dependency-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Detailed Analysis -->
+            <section class="details-section">
+                <div class="section-tabs">
+                    <button class="tab-btn active" data-tab="duplicates">
+                        <i class="fas fa-copy"></i> Duplicates
+                    </button>
+                    <button class="tab-btn" data-tab="recommendations">
+                        <i class="fas fa-lightbulb"></i> Recommendations
+                    </button>
+                    <button class="tab-btn" data-tab="entities">
+                        <i class="fas fa-list"></i> All Entities
+                    </button>
+                    <button class="tab-btn" data-tab="dependencies">
+                        <i class="fas fa-project-diagram"></i> Dependencies
+                    </button>
+                </div>
+
+                <!-- Duplicates Tab -->
+                <div id="duplicates-tab" class="tab-content active">
+                    <div class="tab-header">
+                        <h3>Duplicate Code Clusters</h3>
+                        <div class="tab-actions">
+                            <button class="export-btn" onclick="dashboard.exportData('duplicates')">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <div class="filters">
+                            <select id="severity-filter">
+                                <option value="">All Severities</option>
+                                <option value="critical">Critical</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                            </select>
+                            <select id="type-filter">
+                                <option value="">All Types</option>
+                                <option value="class">Classes</option>
+                                <option value="interface">Interfaces</option>
+                                <option value="function">Functions</option>
+                                <option value="type">Types</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="duplicates-list" class="items-list"></div>
+                </div>
+
+                <!-- Recommendations Tab -->
+                <div id="recommendations-tab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Refactoring Recommendations</h3>
+                        <div class="priority-legend">
+                            <span class="priority-badge critical">Critical</span>
+                            <span class="priority-badge high">High</span>
+                            <span class="priority-badge medium">Medium</span>
+                            <span class="priority-badge low">Low</span>
+                        </div>
+                    </div>
+                    <div id="recommendations-list" class="items-list"></div>
+                </div>
+
+                <!-- Entities Tab -->
+                <div id="entities-tab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>All Code Entities</h3>
+                        <div class="search-container">
+                            <input type="text" id="entity-search" placeholder="Search entities...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="entities-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>File</th>
+                                    <th>Line</th>
+                                    <th>Export</th>
+                                    <th>Dependencies</th>
+                                    <th>Complexity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entities-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Dependencies Tab -->
+                <div id="dependencies-tab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Dependency Analysis</h3>
+                        <div class="dependency-stats">
+                            <div class="stat">
+                                <span class="stat-value" id="total-deps">0</span>
+                                <span class="stat-label">Total Dependencies</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="avg-deps">0</span>
+                                <span class="stat-label">Avg per Entity</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="dependencies-list" class="items-list"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="dashboard-footer">
+            <p>&copy; 2025 Monorepo Refactoring Toolkit. Built for efficient code analysis and refactoring.</p>
+        </footer>
+    </div>
+
+    <!-- Modal for Entity Details -->
+    <div id="entity-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Entity Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# Drift Detection Configuration
+# This file contains configuration parameters for the drift detection workflow
+# The actual GitHub Actions workflow is located at .github/workflows/drift-detection.yml
+
+# Analysis thresholds
+thresholds:
+  critical_issues: 10        # Maximum critical issues before failure
+  unused_exports: 50         # Maximum unused exports before warning
+  duplicate_clusters: 20     # Maximum duplicate clusters before warning
+  
+# Analysis depth settings
+analysis_depth:
+  pr_analysis: "standard"           # Analysis depth for PR checks
+  scheduled_analysis: "comprehensive"   # Analysis depth for scheduled runs
+  manual_analysis: "standard"      # Default for manual triggers
+
+# Notification settings
+notifications:
+  create_issues_on_drift: true     # Create GitHub issues for critical drift
+  comment_on_prs: true            # Comment on PRs with analysis results
+  max_issues_per_run: 3           # Maximum issues to create per run
+
+# Batch configuration
+consolidation_batches:
+  batch_size: 5                   # Items per consolidation batch
+  max_batches_per_run: 10         # Maximum batches to generate
+  estimated_hours_per_item: 2     # Estimated work hours per duplicate item
+
+# File patterns to analyze
+file_patterns:
+  include:
+    - "src/**/*.ts"
+    - "src/**/*.tsx"
+    - "src/**/*.js"
+    - "src/**/*.jsx"
+    - "packages/**/*.ts"
+    - "packages/**/*.tsx"
+  exclude:
+    - "**/*.test.ts"
+    - "**/*.spec.ts"
+    - "**/node_modules/**"
+    - "**/dist/**"
+    - "**/*.d.ts"

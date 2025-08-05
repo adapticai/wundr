@@ -1,0 +1,540 @@
+name: Weekly Progress Report
+
+on:
+  schedule:
+    # Run every Sunday at 9 AM UTC
+    - cron: '0 9 * * 0'
+  workflow_dispatch:
+    inputs:
+      report_period:
+        description: 'Report period in days'
+        required: false
+        default: '7'
+        type: string
+      include_detailed_analysis:
+        description: 'Include detailed code analysis'
+        required: false
+        default: true
+        type: boolean
+      send_notifications:
+        description: 'Send notifications'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  REPORT_OUTPUT_DIR: 'weekly-reports'
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      actions: read
+    outputs:
+      report-path: ${{ steps.generate.outputs.report-path }}
+      summary-data: ${{ steps.generate.outputs.summary-data }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'setup/package.json'
+
+      - name: Install dependencies
+        working-directory: setup
+        run: |
+          npm ci
+          npm install --save-dev \
+            typescript \
+            ts-node \
+            @types/node \
+            ts-morph \
+            glob \
+            fastest-levenshtein \
+            madge \
+            csv-writer \
+            @octokit/rest
+
+      - name: Setup report environment
+        run: |
+          mkdir -p ${{ env.REPORT_OUTPUT_DIR }}
+          echo "TIMESTAMP=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_ENV
+          echo "REPORT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "WEEK_START=$(date -d '7 days ago' +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Collect Git activity data
+        id: git-activity
+        run: |
+          cd ${{ env.REPORT_OUTPUT_DIR }}
+          
+          PERIOD_DAYS="${{ github.event.inputs.report_period || '7' }}"
+          SINCE_DATE=$(date -d "$PERIOD_DAYS days ago" +'%Y-%m-%d')
+          
+          echo "Collecting Git activity since $SINCE_DATE..."
+          
+          # Get commit activity
+          git log --since="$SINCE_DATE" --oneline --pretty=format:'%h|%an|%ad|%s' --date=short > commits.txt
+          
+          # Get changed files statistics
+          git log --since="$SINCE_DATE" --name-only --pretty=format: | sort | uniq -c | sort -nr > file-changes.txt
+          
+          # Get contributor statistics
+          git log --since="$SINCE_DATE" --pretty=format:'%an' | sort | uniq -c | sort -nr > contributors.txt
+          
+          # Count totals
+          TOTAL_COMMITS=$(wc -l < commits.txt)
+          TOTAL_FILES_CHANGED=$(wc -l < file-changes.txt)
+          TOTAL_CONTRIBUTORS=$(wc -l < contributors.txt)
+          
+          echo "total-commits=$TOTAL_COMMITS" >> $GITHUB_OUTPUT
+          echo "total-files-changed=$TOTAL_FILES_CHANGED" >> $GITHUB_OUTPUT
+          echo "total-contributors=$TOTAL_CONTRIBUTORS" >> $GITHUB_OUTPUT
+
+      - name: Collect PR activity data
+        id: pr-activity
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const periodDays = parseInt('${{ github.event.inputs.report_period || "7" }}');
+            const sinceDate = new Date();
+            sinceDate.setDate(sinceDate.getDate() - periodDays);
+            
+            // Get PRs created in the period
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              sort: 'created',
+              direction: 'desc',
+              per_page: 100
+            });
+            
+            const periodPRs = prs.filter(pr => new Date(pr.created_at) >= sinceDate);
+            
+            // Categorize PRs
+            const refactorPRs = periodPRs.filter(pr => {
+              const title = pr.title.toLowerCase();
+              const labels = pr.labels.map(l => l.name.toLowerCase());
+              return ['refactor', 'consolidat', 'cleanup', 'monorepo'].some(keyword => 
+                title.includes(keyword) || labels.includes(keyword)
+              );
+            });
+            
+            const mergedPRs = periodPRs.filter(pr => pr.merged_at);
+            const openPRs = periodPRs.filter(pr => pr.state === 'open');
+            
+            const prSummary = {
+              total: periodPRs.length,
+              refactor: refactorPRs.length,
+              merged: mergedPRs.length,
+              open: openPRs.length,
+              closed: periodPRs.filter(pr => pr.state === 'closed' && !pr.merged_at).length
+            };
+            
+            core.setOutput('pr-summary', JSON.stringify(prSummary));
+            
+            // Save detailed PR data
+            const fs = require('fs');
+            fs.writeFileSync('${{ env.REPORT_OUTPUT_DIR }}/pr-data.json', JSON.stringify({
+              summary: prSummary,
+              refactorPRs: refactorPRs.map(pr => ({
+                number: pr.number,
+                title: pr.title,
+                author: pr.user.login,
+                state: pr.state,
+                created: pr.created_at,
+                merged: pr.merged_at,
+                labels: pr.labels.map(l => l.name)
+              }))
+            }, null, 2));
+            
+            return prSummary;
+
+      - name: Run current code analysis
+        id: code-analysis
+        if: github.event.inputs.include_detailed_analysis != 'false'
+        run: |
+          cd ${{ env.REPORT_OUTPUT_DIR }}
+          mkdir -p current-analysis
+          cd current-analysis
+          
+          echo "Running comprehensive code analysis..."
+          if bash ../../scripts/analysis/analyze-all.sh ../..; then
+            echo "analysis-success=true" >> $GITHUB_OUTPUT
+            
+            # Extract key metrics
+            if [ -f "analysis-report.json" ]; then
+              TOTAL_ENTITIES=$(jq '.summary.totalEntities' analysis-report.json)
+              DUPLICATE_CLUSTERS=$(jq '.summary.duplicateClusters' analysis-report.json)
+              UNUSED_EXPORTS=$(jq '.summary.unusedExports' analysis-report.json)
+              CRITICAL_ISSUES=$(jq '[.duplicates[] | select(.severity == "critical")] | length' analysis-report.json)
+              
+              echo "total-entities=$TOTAL_ENTITIES" >> $GITHUB_OUTPUT
+              echo "duplicate-clusters=$DUPLICATE_CLUSTERS" >> $GITHUB_OUTPUT
+              echo "unused-exports=$UNUSED_EXPORTS" >> $GITHUB_OUTPUT
+              echo "critical-issues=$CRITICAL_ISSUES" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "analysis-success=false" >> $GITHUB_OUTPUT
+            echo "Code analysis failed, continuing with available data"
+          fi
+
+      - name: Load historical data
+        id: historical-data
+        run: |
+          cd ${{ env.REPORT_OUTPUT_DIR }}
+          
+          # Try to get the last weekly report for comparison
+          LAST_REPORT=""
+          if [ -f "../.github/data/last-weekly-report.json" ]; then
+            LAST_REPORT=$(cat ../.github/data/last-weekly-report.json)
+            echo "Found historical data for comparison"
+            echo "has-historical=true" >> $GITHUB_OUTPUT
+          else
+            echo "No historical data found - this will be the baseline"
+            echo "has-historical=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo 'historical-data<<EOF' >> $GITHUB_OUTPUT
+          echo "$LAST_REPORT" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: Generate comprehensive report
+        id: generate
+        run: |
+          cd ${{ env.REPORT_OUTPUT_DIR }}
+          
+          # Create the weekly report
+          npx ts-node -e "
+            const fs = require('fs');
+            
+            // Collect all data
+            const reportData = {
+              metadata: {
+                generatedAt: new Date().toISOString(),
+                reportDate: '${{ env.REPORT_DATE }}',
+                weekStart: '${{ env.WEEK_START }}',
+                periodDays: parseInt('${{ github.event.inputs.report_period || \"7\" }}'),
+                runId: '${{ github.run_id }}',
+                triggeredBy: '${{ github.actor }}'
+              },
+              git: {
+                totalCommits: parseInt('${{ steps.git-activity.outputs.total-commits }}'),
+                totalFilesChanged: parseInt('${{ steps.git-activity.outputs.total-files-changed }}'),
+                totalContributors: parseInt('${{ steps.git-activity.outputs.total-contributors }}')
+              },
+              pullRequests: JSON.parse('${{ steps.pr-activity.outputs.pr-summary }}'),
+              codeAnalysis: {
+                success: '${{ steps.code-analysis.outputs.analysis-success }}' === 'true',
+                totalEntities: parseInt('${{ steps.code-analysis.outputs.total-entities }}' || '0'),
+                duplicateClusters: parseInt('${{ steps.code-analysis.outputs.duplicate-clusters }}' || '0'),
+                unusedExports: parseInt('${{ steps.code-analysis.outputs.unused-exports }}' || '0'),
+                criticalIssues: parseInt('${{ steps.code-analysis.outputs.critical-issues }}' || '0')
+              }
+            };
+            
+            // Load historical data for comparison
+            const hasHistorical = '${{ steps.historical-data.outputs.has-historical }}' === 'true';
+            let historical = null;
+            let trends = {};
+            
+            if (hasHistorical) {
+              try {
+                historical = JSON.parse(\`${{ steps.historical-data.outputs.historical-data }}\`);
+                
+                if (historical.codeAnalysis && reportData.codeAnalysis.success) {
+                  trends = {
+                    entitiesChange: reportData.codeAnalysis.totalEntities - historical.codeAnalysis.totalEntities,
+                    duplicatesChange: reportData.codeAnalysis.duplicateClusters - historical.codeAnalysis.duplicateClusters,
+                    unusedExportsChange: reportData.codeAnalysis.unusedExports - historical.codeAnalysis.unusedExports,
+                    criticalIssuesChange: reportData.codeAnalysis.criticalIssues - historical.codeAnalysis.criticalIssues
+                  };
+                }
+              } catch (error) {
+                console.log('Error parsing historical data:', error.message);
+              }
+            }
+            
+            reportData.trends = trends;
+            
+            // Calculate progress score
+            let progressScore = 0;
+            if (reportData.codeAnalysis.success) {
+              // Positive points for improvements
+              progressScore += Math.max(0, -trends.duplicatesChange) * 3; // Fewer duplicates
+              progressScore += Math.max(0, -trends.unusedExportsChange) * 1; // Less unused code  
+              progressScore += Math.max(0, -trends.criticalIssuesChange) * 5; // Fewer critical issues
+              
+              // Negative points for regressions
+              progressScore -= Math.max(0, trends.duplicatesChange) * 2;
+              progressScore -= Math.max(0, trends.criticalIssuesChange) * 4;
+            }
+            
+            // Activity score
+            const activityScore = Math.min(10, (
+              (reportData.git.totalCommits * 0.5) +
+              (reportData.pullRequests.refactor * 2) +
+              (reportData.pullRequests.merged * 1.5)
+            ));
+            
+            reportData.scores = {
+              progress: progressScore,
+              activity: activityScore,
+              overall: Math.round((progressScore + activityScore) / 2)
+            };
+            
+            // Generate markdown report
+            const report = \`# 📊 Weekly Refactoring Progress Report
+            
+            **Week of:** \${reportData.metadata.weekStart} to \${reportData.metadata.reportDate}
+            **Generated:** \${new Date(reportData.metadata.generatedAt).toLocaleDateString()}
+            
+            ## 🎯 Executive Summary
+            
+            **Overall Score:** \${reportData.scores.overall}/10 \${reportData.scores.overall >= 8 ? '🏆' : reportData.scores.overall >= 6 ? '✅' : reportData.scores.overall >= 4 ? '⚠️' : '❌'}
+            
+            - **Activity Score:** \${reportData.scores.activity}/10
+            - **Progress Score:** \${reportData.scores.progress > 0 ? '+' : ''}\${reportData.scores.progress}
+            
+            ## 📈 Activity Summary
+            
+            ### Git Activity
+            - **Commits:** \${reportData.git.totalCommits}
+            - **Files Changed:** \${reportData.git.totalFilesChanged}
+            - **Contributors:** \${reportData.git.totalContributors}
+            
+            ### Pull Request Activity
+            - **Total PRs:** \${reportData.pullRequests.total}
+            - **Refactoring PRs:** \${reportData.pullRequests.refactor} (\${Math.round(reportData.pullRequests.refactor/Math.max(1,reportData.pullRequests.total)*100)}%)
+            - **Merged:** \${reportData.pullRequests.merged}
+            - **Still Open:** \${reportData.pullRequests.open}
+            
+            \${reportData.codeAnalysis.success ? \`
+            ## 🔍 Code Quality Analysis
+            
+            ### Current State
+            - **Total Entities:** \${reportData.codeAnalysis.totalEntities.toLocaleString()}
+            - **Duplicate Clusters:** \${reportData.codeAnalysis.duplicateClusters}
+            - **Unused Exports:** \${reportData.codeAnalysis.unusedExports}
+            - **Critical Issues:** \${reportData.codeAnalysis.criticalIssues}
+            
+            \${hasHistorical ? \`
+            ### Trends (vs. Last Week)
+            \${Object.entries(trends).map(([key, value]) => {
+              const label = key.replace('Change', '').replace(/([A-Z])/g, ' $1').toLowerCase();
+              const emoji = value < 0 ? '📉' : value > 0 ? '📈' : '➡️';
+              const sign = value > 0 ? '+' : '';
+              return \`- **\${label}:** \${emoji} \${sign}\${value}\`;
+            }).join('\\n')}
+            \` : '\\n_No historical data available for trend analysis._'}
+            \` : '\\n⚠️ **Code analysis was not available for this report.**'}
+            
+            ## 🎯 Focus Areas
+            
+            \${reportData.codeAnalysis.criticalIssues > 0 ? \`
+            ### 🚨 Critical Issues (\${reportData.codeAnalysis.criticalIssues})
+            Immediate attention required for critical code quality issues.
+            \` : ''}
+            
+            \${reportData.codeAnalysis.duplicateClusters > 20 ? \`
+            ### 🔄 Duplicate Code (\${reportData.codeAnalysis.duplicateClusters} clusters)
+            High number of duplicate clusters detected - prioritize consolidation.
+            \` : ''}
+            
+            \${reportData.codeAnalysis.unusedExports > 50 ? \`
+            ### 🧹 Code Cleanup (\${reportData.codeAnalysis.unusedExports} unused exports)
+            Significant unused code detected - good cleanup opportunity.
+            \` : ''}
+            
+            \${reportData.pullRequests.refactor === 0 ? \`
+            ### 📋 Refactoring Activity
+            No refactoring PRs this week - consider scheduling some cleanup work.
+            \` : ''}
+            
+            ## 📋 Recommendations
+            
+            ### This Week
+            \${reportData.codeAnalysis.criticalIssues > 0 ? '1. 🚨 Address critical issues immediately\\n' : ''}
+            \${reportData.codeAnalysis.duplicateClusters > 10 ? '2. 🔄 Focus on duplicate code consolidation\\n' : ''}
+            \${reportData.pullRequests.open > 5 ? '3. 📝 Review and merge pending refactor PRs\\n' : ''}
+            
+            ### Next Week
+            - 📊 Continue regular code analysis
+            - 🎯 Target areas with highest impact
+            - 👥 Engage team in refactoring discussions
+            
+            ## 📂 Resources
+            
+            - [Full Analysis Report](https://github.com/\${{ github.repository }}/actions/runs/\${{ github.run_id }})
+            - [Refactoring Guidelines](./docs/guides/COMPLETE_STRATEGY.md)
+            - [Team Training](./docs/training/TEAM_TRAINING_GUIDE.md)
+            
+            ---
+            
+            _This report was automatically generated by the Weekly Progress Report workflow._
+            \`;
+            
+            fs.writeFileSync('weekly-report.md', report);
+            fs.writeFileSync('report-data.json', JSON.stringify(reportData, null, 2));
+            
+            console.log('Weekly report generated successfully');
+            console.log('summary-data=' + JSON.stringify({
+              overallScore: reportData.scores.overall,
+              activityScore: reportData.scores.activity,
+              progressScore: reportData.scores.progress,
+              criticalIssues: reportData.codeAnalysis.criticalIssues,
+              refactorPRs: reportData.pullRequests.refactor,
+              hasImprovements: progressScore > 0
+            }));
+          "
+          
+          echo "report-path=$(pwd)/weekly-report.md" >> $GITHUB_OUTPUT
+
+      - name: Save historical data
+        run: |
+          cd ${{ env.REPORT_OUTPUT_DIR }}
+          
+          # Create .github/data directory if it doesn't exist
+          mkdir -p ../.github/data
+          
+          # Save current report data as historical baseline for next week
+          if [ -f "report-data.json" ]; then
+            cp report-data.json ../.github/data/last-weekly-report.json
+            echo "Historical data saved for next week's comparison"
+          fi
+
+      - name: Upload report artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: weekly-report-${{ env.REPORT_DATE }}
+          path: |
+            ${{ env.REPORT_OUTPUT_DIR }}/**/*
+            !${{ env.REPORT_OUTPUT_DIR }}/**/node_modules
+          retention-days: 90
+
+      - name: Commit historical data
+        run: |
+          if [ -f ".github/data/last-weekly-report.json" ]; then
+            git config --global user.name 'Weekly Report Bot'
+            git config --global user.email 'noreply@github.com'
+            git add .github/data/last-weekly-report.json
+            git commit -m "Update historical data for weekly report [skip ci]" || echo "No changes to commit"
+            git push || echo "Push failed - continuing without historical data update"
+          fi
+
+  create-issue:
+    runs-on: ubuntu-latest
+    needs: generate-report
+    if: always() && needs.generate-report.result == 'success'
+    steps:
+      - name: Create or update weekly report issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Download the report artifact (in real scenario, you'd use actions/download-artifact)
+            const reportContent = \`${{ needs.generate-report.outputs.report-path }}\`;
+            const summaryData = JSON.parse('${{ needs.generate-report.outputs.summary-data }}');
+            
+            const title = \`📊 Weekly Report - \${{ env.REPORT_DATE }}\`;
+            const labels = ['weekly-report', 'automated'];
+            
+            // Add additional labels based on report content
+            if (summaryData.criticalIssues > 0) labels.push('critical-issues');
+            if (summaryData.hasImprovements) labels.push('improvements');
+            if (summaryData.overallScore >= 8) labels.push('excellent-progress');
+            else if (summaryData.overallScore <= 4) labels.push('needs-attention');
+            
+            // Check for existing weekly report issues
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'weekly-report',
+              state: 'open'
+            });
+            
+            // Close old weekly report issues (keep only the latest)
+            const oldIssues = issues.filter(issue => 
+              issue.title.includes('Weekly Report') && 
+              !issue.title.includes('${{ env.REPORT_DATE }}')
+            );
+            
+            for (const issue of oldIssues.slice(0, 3)) { // Close max 3 old issues
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: 'Closed automatically - newer weekly report available.'
+              });
+            }
+            
+            // Create the new weekly report issue
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: \`This is the automated weekly progress report for the monorepo refactoring project.
+              
+              **Quick Summary:**
+              - Overall Score: \${summaryData.overallScore}/10
+              - Critical Issues: \${summaryData.criticalIssues}
+              - Refactor PRs: \${summaryData.refactorPRs}
+              
+              📁 **Full Report:** See artifacts in [workflow run](\${{ github.server_url }}/\${{ github.repository }}/actions/runs/\${{ github.run_id }})
+              
+              Please review the detailed analysis and take action on any critical issues identified.
+              \`,
+              labels: labels
+            });
+            
+            console.log(\`Created weekly report issue #\${issue.number}\`);
+
+  notifications:
+    runs-on: ubuntu-latest
+    needs: [generate-report, create-issue]
+    if: always() && github.event.inputs.send_notifications != 'false'
+    steps:
+      - name: Send notification summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summaryData = JSON.parse('${{ needs.generate-report.outputs.summary-data }}');
+            
+            // This could be extended to send notifications via:
+            // - Slack webhook
+            // - Teams webhook  
+            // - Email
+            // - Discord webhook
+            // etc.
+            
+            console.log('Weekly report generated with the following summary:');
+            console.log('- Overall Score:', summaryData.overallScore);
+            console.log('- Critical Issues:', summaryData.criticalIssues);
+            console.log('- Refactor PRs:', summaryData.refactorPRs);
+            console.log('- Has Improvements:', summaryData.hasImprovements);
+            
+            // Example: Could post to team chat
+            // await postToSlack({
+            //   channel: '#refactoring-updates',
+            //   message: `📊 Weekly refactoring report is ready! Score: ${summaryData.overallScore}/10`
+            // });
+            
+            console.log('Notification system ready for integration with team communication tools');

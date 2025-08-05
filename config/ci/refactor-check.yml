@@ -1,0 +1,79 @@
+# Refactor Quality Check Configuration
+# This file contains configuration parameters for the refactor check workflow
+# The actual GitHub Actions workflow is located at .github/workflows/refactor-check.yml
+
+# Keywords that identify refactoring PRs
+refactor_keywords:
+  title_keywords:
+    - "refactor"
+    - "consolidat"
+    - "duplicate"
+    - "cleanup"
+    - "restructur"
+    - "monorepo"
+    - "standardiz"
+    - "pattern"
+    - "merge"
+    - "dedupe"
+  
+  body_keywords:
+    - "refactor"
+    - "consolidation"
+    - "duplicate"
+    - "cleanup"
+    - "restructure"
+    - "monorepo"
+    - "standardize"
+    - "pattern"
+    - "merge"
+    - "dedupe"
+  
+  labels:
+    - "refactor"
+    - "consolidation" 
+    - "cleanup"
+    - "monorepo"
+    - "standardization"
+    - "quick-check"
+
+# Quality check settings
+quality_checks:
+  run_circular_dependency_check: true
+  run_import_validation: true
+  run_typescript_compilation: true
+  max_broken_imports: 0              # Maximum broken imports allowed
+  max_circular_dependencies: 0       # Maximum circular dependencies allowed
+
+# Analysis comparison settings
+comparison:
+  require_baseline: false            # Whether baseline comparison is required
+  quality_score_threshold: 0         # Minimum quality score to pass (can be negative)
+  
+  # Grade thresholds
+  grade_thresholds:
+    A: 10    # Excellent improvements
+    B: 5     # Good improvements  
+    C: 0     # Neutral/minor improvements
+    D: -5    # Minor regressions
+    F: -10   # Significant regressions
+
+# Scoring weights
+scoring:
+  duplicate_reduction_weight: 3       # Points per duplicate cluster reduced
+  unused_export_removal_weight: 1     # Points per unused export removed
+  critical_issue_fix_weight: 5        # Points per critical issue fixed
+  
+  duplicate_addition_penalty: 2       # Penalty per duplicate cluster added
+  critical_issue_addition_penalty: 4  # Penalty per critical issue added
+
+# File size limits for analysis (to prevent timeouts)
+limits:
+  max_files_to_analyze: 50           # Maximum files to analyze for performance
+  max_import_check_files: 20         # Maximum files to check for broken imports
+  analysis_timeout_minutes: 10       # Timeout for analysis operations
+
+# Report settings
+reporting:
+  include_detailed_metrics: true     # Include detailed metrics in reports
+  include_recommendations: true      # Include recommendations in reports
+  max_recommendations: 5            # Maximum recommendations to show

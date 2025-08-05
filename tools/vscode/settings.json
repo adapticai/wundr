@@ -1,0 +1,366 @@
+{
+  // Editor Configuration
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit",
+    "source.removeUnusedImports": "explicit"
+  },
+  "editor.rulers": [80, 120],
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 120,
+  "editor.minimap.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.inlineSuggest.enabled": true,
+
+  // File Management
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true,
+    "**/.nuxt": true,
+    "**/coverage": true,
+    "**/.nyc_output": true,
+    "**/*.log": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true
+  },
+
+  // Search Configuration
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.git": true,
+    "**/.next": true,
+    "**/.nuxt": true,
+    "**/logs": true,
+    "**/*.log": true
+  },
+  "search.useIgnoreFiles": true,
+  "search.smartCase": true,
+
+  // TypeScript/JavaScript Configuration
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.parameterTypes.enabled": true,
+  "typescript.inlayHints.variableTypes.enabled": true,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "javascript.suggest.autoImports": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+
+  // ESLint Configuration
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.format.enable": false,
+
+  // Prettier Configuration
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": true,
+
+  // Git Configuration
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.showPushSuccessNotification": true,
+  "scm.defaultViewMode": "tree",
+
+  // Explorer Configuration
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.sortOrder": "type",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js, ${capture}.d.ts, ${capture}.js.map",
+    "*.tsx": "${capture}.js, ${capture}.d.ts, ${capture}.js.map",
+    "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "*.jsx": "${capture}.js, ${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb",
+    "tsconfig.json": "tsconfig.*.json",
+    ".eslintrc.js": ".eslintrc.*.js, .eslintrc.*.json, .eslintrc.*.yaml, .eslintrc.*.yml",
+    "README.md": "AUTHORS, CHANGELOG*, CONTRIBUTING*, HISTORY.md, LICENSE*, MAINTAINERS, README*"
+  },
+
+  // Terminal Configuration
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.fontSize": 12,
+  "terminal.integrated.fontFamily": "Fira Code, Monaco, 'Courier New', monospace",
+
+  // Workbench Configuration
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.startupEditor": "welcomePageInEmptyWorkbench",
+  "workbench.tree.indent": 15,
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
+
+  // Language-specific settings
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Problems Panel
+  "problems.showCurrentInStatus": true,
+  "problems.sortOrder": "severity",
+
+  // Breadcrumbs
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.showFiles": true,
+  "breadcrumbs.showSymbols": true,
+
+  // Emmet
+  "emmet.includeLanguages": {
+    "typescript": "html",
+    "javascript": "html"
+  },
+
+  // Extension-specific settings
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]",
+    "REFACTOR",
+    "OPTIMIZE"
+  ],
+  "todo-tree.highlights.defaultHighlight": {
+    "icon": "alert",
+    "type": "tag",
+    "foreground": "#FFFF00",
+    "background": "#FF0000",
+    "opacity": 50,
+    "iconColour": "#FFFF00"
+  },
+  "todo-tree.highlights.customHighlight": {
+    "TODO": {
+      "icon": "check",
+      "foreground": "#000000",
+      "background": "#FFFF00",
+      "iconColour": "#FFFF00"
+    },
+    "FIXME": {
+      "icon": "bug",
+      "foreground": "#FFFFFF",
+      "background": "#FF0000",
+      "iconColour": "#FF0000"
+    },
+    "REFACTOR": {
+      "icon": "tools",
+      "foreground": "#FFFFFF",
+      "background": "#FF8C00",
+      "iconColour": "#FF8C00"
+    },
+    "OPTIMIZE": {
+      "icon": "zap",
+      "foreground": "#FFFFFF",
+      "background": "#32CD32",
+      "iconColour": "#32CD32"
+    }
+  },
+
+  // GitLens Configuration
+  "gitlens.currentLine.enabled": false,
+  "gitlens.hovers.currentLine.over": "line",
+  "gitlens.codeLens.enabled": false,
+  "gitlens.statusBar.enabled": false,
+
+  // Auto Import - ES6, TS, JSX, TSX
+  "autoimport.filesToScan": "**/*.{ts,tsx,js,jsx}",
+  "autoimport.showNotifications": true,
+  "autoimport.doubleQuotes": false,
+  "autoimport.spaceBetweenBraces": true,
+
+  // Path Intellisense
+  "path-intellisense.mappings": {
+    "@": "${workspaceRoot}/src",
+    "~": "${workspaceRoot}",
+    "components": "${workspaceRoot}/src/components",
+    "utils": "${workspaceRoot}/src/utils",
+    "types": "${workspaceRoot}/src/types"
+  },
+
+  // Monorepo specific settings
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.workspaceSymbols.scope": "allOpenProjects",
+  "typescript.preferences.includeCompletionsForModuleExports": true,
+  "typescript.preferences.includeCompletionsWithSnippetText": true,
+  "typescript.suggest.completeFunctionCalls": true,
+  "search.followSymlinks": false,
+  "search.useGlobalIgnoreFiles": true,
+  "search.useParentIgnoreFiles": true,
+
+  // Multi-root workspace settings
+  "workbench.editor.revealIfOpen": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.decorations.colors": true,
+  "workbench.editor.decorations.badges": true,
+  
+  // Enhanced file watching for monorepos
+  "files.watcherInclude": {
+    "**/*.ts": true,
+    "**/*.tsx": true,
+    "**/*.js": true,
+    "**/*.jsx": true,
+    "**/package.json": true,
+    "**/tsconfig*.json": true,
+    "**/.eslintrc*": true
+  },
+
+  // Performance optimizations for large codebases
+  "extensions.ignoreRecommendations": false,
+  "telemetry.telemetryLevel": "off",
+  "update.mode": "start",
+  "workbench.settings.enableNaturalLanguageSearch": false,
+  "typescript.disableAutomaticTypeAcquisition": false,
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+
+  // Code Quality Tools
+  "sonarlint.connectedMode.project": {
+    "connectionId": "",
+    "projectKey": ""
+  },
+  
+  // Testing Configuration
+  "jest.autoEnable": true,
+  "jest.showCoverageOnLoad": true,
+  "jest.runAllTestsFirst": false,
+
+  // Debugging
+  "debug.inlineValues": "auto",
+  "debug.showBreakpointsInOverviewRuler": true,
+
+  // Zen Mode for focused coding
+  "zenMode.fullScreen": false,
+  "zenMode.centerLayout": false,
+  "zenMode.hideLineNumbers": false,
+  "zenMode.hideTabs": false,
+
+  // Custom keybindings hints
+  "workbench.tips.enabled": true,
+  "workbench.welcomePage.walkthroughs.openOnInstall": false,
+
+  // Refactoring specific settings
+  "typescript.preferences.organizeImports.addMissingImports": true,
+  "typescript.preferences.organizeImports.removeUnused": true,
+  "typescript.preferences.organizeImports.sortMembers": true,
+  "typescript.suggest.includeCompletionsForImportStatements": true,
+  "typescript.suggest.includeCompletionsWithClassMemberSnippets": true,
+
+  // Enhanced IntelliSense for monorepos
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.suggest.paths": true,
+  "typescript.suggest.autoImports": true,
+  "typescript.suggest.completeJSDocs": true,
+
+  // Code analysis and quality
+  "typescript.preferences.generateReturnInDocTemplate": true,
+  "typescript.format.enable": true,
+  "typescript.format.insertSpaceAfterCommaDelimiter": true,
+  "typescript.format.insertSpaceAfterSemicolonInForStatements": true,
+  "typescript.format.insertSpaceBeforeAndAfterBinaryOperators": true,
+  "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": true,
+  "typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": false,
+  "typescript.format.placeOpenBraceOnNewLineForFunctions": false,
+  "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false,
+
+  // Workspace trust for monorepos
+  "security.workspace.trust.untrustedFiles": "prompt",
+  "security.workspace.trust.banner": "never",
+  "security.workspace.trust.startupPrompt": "once",
+  "security.workspace.trust.emptyWindow": false,
+
+  // Enhanced error display
+  "problems.decorations.enabled": true,
+  "problems.visibility": {
+    "off": false,
+    "on": true
+  },
+
+  // Outline view for better navigation
+  "outline.problems.enabled": true,
+  "outline.problems.badges": true,
+  "outline.problems.colors": true,
+
+  // Sticky scroll for large files
+  "editor.stickyScroll.enabled": true,
+  "editor.stickyScroll.maxLineCount": 5,
+
+  // Code lens for references
+  "typescript.referencesCodeLens.enabled": true,
+  "typescript.referencesCodeLens.showOnAllFunctions": true,
+  "typescript.implementationsCodeLens.enabled": true
+}

@@ -1,21 +1,72 @@
-// .eslintrc.json
 {
   "root": true,
+  "env": {
+    "node": true,
+    "es2022": true,
+    "jest": true
+  },
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "import", "unused-imports"],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "import",
+    "unused-imports",
+    "jest",
+    "@company"
+  ],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:import/errors",
     "plugin:import/warnings",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "plugin:jest/recommended",
+    "prettier"
   ],
   "rules": {
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-debugger": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/explicit-module-boundary-types": "error",
+    "@typescript-eslint/explicit-function-return-type": [
+      "error",
+      {
+        "allowExpressions": true,
+        "allowTypedFunctionExpressions": true,
+        "allowHigherOrderFunctions": true,
+        "allowDirectConstAssertionInArrowFunctions": true
+      }
+    ],
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-    "import/no-duplicates": "error",
-    "import/no-cycle": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-misused-promises": "error",
+    "@typescript-eslint/await-thenable": "error",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/prefer-nullish-coalescing": "error",
+    "@typescript-eslint/prefer-optional-chain": "error",
+    "@typescript-eslint/strict-boolean-expressions": [
+      "error",
+      {
+        "allowString": false,
+        "allowNumber": false,
+        "allowNullableObject": false
+      }
+    ],
     "import/order": [
       "error",
       {
@@ -23,15 +74,61 @@
           "builtin",
           "external",
           "internal",
-          "parent",
-          "sibling",
-          "index"
+          ["parent", "sibling"],
+          "index",
+          "object",
+          "type"
         ],
+        "pathGroups": [
+          {
+            "pattern": "@company/**",
+            "group": "internal",
+            "position": "before"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["type"],
         "newlines-between": "always",
-        "alphabetize": { "order": "asc" }
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
       }
     ],
+    "import/no-duplicates": "error",
+    "import/no-cycle": "error",
+    "import/no-default-export": "error",
+    "import/prefer-default-export": "off",
     "unused-imports/no-unused-imports": "error",
-    "no-console": ["warn", { "allow": ["warn", "error"] }]
+    "@company/no-wrapper-pattern": "error",
+    "@company/use-app-error": "error",
+    "@company/no-duplicate-enum-values": "error",
+    "@company/service-must-extend-base": "error",
+    "@company/async-method-naming": "warn",
+    "@company/no-direct-db-access": "error",
+    "@company/max-file-lines": ["warn", { "max": 300 }]
+  },
+  "overrides": [
+    {
+      "files": ["*.test.ts", "*.spec.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "import/no-default-export": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.ts"],
+      "rules": {
+        "no-console": "off",
+        "import/no-default-export": "off"
+      }
+    }
+  ],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": "./tsconfig.json"
+      }
+    }
   }
 }
