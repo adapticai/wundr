@@ -117,7 +117,7 @@ export class PatternStandardizer {
     let modified = false;
 
     // Find all throw statements
-    sourceFile.getDescendantsOfKind(SyntaxKind.ThrowStatement).forEach(throwStmt => {
+    sourceFile.getDescendantsOfKind(SyntaxKind.ThrowStatement).forEach((throwStmt: Node<ts.ThrowStatement>) => {
       const expression = throwStmt.getExpression();
 
       // Check if throwing a string literal
@@ -195,7 +195,7 @@ export class PatternStandardizer {
     let modified = false;
 
     // Find const objects that should be enums
-    sourceFile.getVariableDeclarations().forEach(varDecl => {
+    sourceFile.getVariableDeclarations().forEach((varDecl: Node<ts.VariableDeclaration>) => {
       const name = varDecl.getName();
       const initializer = varDecl.getInitializer();
 
@@ -206,7 +206,7 @@ export class PatternStandardizer {
         Node.isObjectLiteralExpression(initializer)
       ) {
         const properties = initializer.getProperties();
-        const isEnumLike = properties.every(prop => {
+        const isEnumLike = properties.every((prop: Node<ts.ObjectLiteralElementLike>) => {
           if (Node.isPropertyAssignment(prop)) {
             const value = prop.getInitializer();
             return value && Node.isStringLiteral(value);
@@ -217,7 +217,7 @@ export class PatternStandardizer {
         if (isEnumLike) {
           // Convert to enum
           const enumName = this.toPascalCase(name);
-          const enumMembers = properties.map(prop => {
+          const enumMembers = properties.map((prop: Node<ts.ObjectLiteralElementLike>) => {
             if (Node.isPropertyAssignment(prop)) {
               const key = prop.getName();
               const value = prop.getInitializer()?.getText() || `'${key}'`;
@@ -307,7 +307,7 @@ export class PatternStandardizer {
     const internalImports: string[] = [];
     const relativeImports: string[] = [];
 
-    imports.forEach(imp => {
+    imports.forEach((imp: Node<ts.ImportDeclaration>) => {
       const moduleSpecifier = imp.getModuleSpecifierValue();
       const importText = imp.getText();
 
@@ -350,7 +350,7 @@ export class PatternStandardizer {
     // Only modify if order changed
     if (currentImportsText !== newImports) {
       // Remove all imports
-      imports.forEach(imp => imp.remove());
+      imports.forEach((imp: Node<ts.ImportDeclaration>) => imp.remove());
 
       // Add new imports at the top
       sourceFile.insertText(0, newImports + '\n\n');
@@ -400,7 +400,7 @@ export class PatternStandardizer {
     let modified = false;
 
     // Find patterns like: obj && obj.prop && obj.prop.nested
-    sourceFile.getDescendantsOfKind(SyntaxKind.BinaryExpression).forEach(binExpr => {
+    sourceFile.getDescendantsOfKind(SyntaxKind.BinaryExpression).forEach((binExpr: Node<ts.BinaryExpression>) => {
       const operator = binExpr.getOperatorToken().getText();
 
       if (operator === '&&') {
@@ -431,7 +431,7 @@ export class PatternStandardizer {
     let modified = false;
 
     // Find <Type> assertions and replace with 'as Type'
-    sourceFile.getDescendantsOfKind(SyntaxKind.TypeAssertionExpression).forEach(assertion => {
+    sourceFile.getDescendantsOfKind(SyntaxKind.TypeAssertionExpression).forEach((assertion: Node<ts.TypeAssertion>) => {
       const type = assertion.getType().getText();
       const expression = assertion.getExpression().getText();
 

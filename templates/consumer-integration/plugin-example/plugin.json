@@ -1,0 +1,55 @@
+{
+  "name": "custom-analytics-plugin",
+  "version": "1.0.0",
+  "description": "Custom analytics and reporting plugin for project-specific metrics",
+  "author": "Your Organization",
+  "main": "index.js",
+  "type": "component",
+  "dependencies": [
+    "@wundr/core"
+  ],
+  "permissions": [
+    {
+      "type": "filesystem",
+      "scope": ["./data", "./analysis-output"],
+      "reason": "Read analysis data and project metrics"
+    },
+    {
+      "type": "network",
+      "scope": ["https://api.yourcompany.com"],
+      "reason": "Send metrics to company analytics service"
+    }
+  ],
+  "config": {
+    "refreshInterval": 30000,
+    "enableExternalSync": true,
+    "customCharts": [
+      "complexity-trend",
+      "test-coverage-history",
+      "performance-metrics"
+    ]
+  },
+  "hooks": [
+    "after-analysis",
+    "config-changed"
+  ],
+  "routes": [
+    {
+      "path": "/custom-analytics",
+      "component": "CustomAnalyticsPage"
+    },
+    {
+      "path": "/api/custom-metrics",
+      "handler": "customMetricsApi"
+    }
+  ],
+  "menuItems": [
+    {
+      "id": "custom-analytics",
+      "label": "Custom Analytics",
+      "icon": "chart-line",
+      "group": "analytics",
+      "order": 100
+    }
+  ]
+}

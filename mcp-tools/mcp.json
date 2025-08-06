@@ -1,0 +1,199 @@
+{
+  "name": "wundr-mcp-tools",
+  "version": "1.0.0",
+  "description": "Wundr toolkit MCP tools for Claude Code integration",
+  "commands": [
+    {
+      "name": "wundr",
+      "description": "Wundr MCP Tools - Governance, standardization, and monorepo management",
+      "args": [
+        {
+          "name": "command",
+          "description": "The tool command to execute",
+          "required": true
+        },
+        {
+          "name": "subcommand",
+          "description": "The specific action to perform",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "name": "drift_detection",
+      "description": "Detect code drift by comparing against baselines",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["create-baseline", "detect", "list-baselines", "trends"],
+            "description": "The drift detection action to perform"
+          },
+          "baselineVersion": {
+            "type": "string",
+            "description": "Baseline version to compare against (optional, defaults to latest)"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    {
+      "name": "pattern_standardize",
+      "description": "Apply standardization rules to fix code patterns",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["run", "review", "check"],
+            "description": "The standardization action"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specific rules to apply (optional)"
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "Preview changes without applying them"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    {
+      "name": "monorepo_manage",
+      "description": "Initialize and manage monorepo structure",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["init", "plan", "add-package", "check-deps"],
+            "description": "The monorepo management action"
+          },
+          "packageName": {
+            "type": "string",
+            "description": "Package name for add-package action"
+          },
+          "packageType": {
+            "type": "string",
+            "enum": ["app", "package", "tool"],
+            "description": "Type of package to create"
+          },
+          "analysisReport": {
+            "type": "string",
+            "description": "Path to analysis report for migration planning"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    {
+      "name": "governance_report",
+      "description": "Generate governance reports and enforce standards",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reportType": {
+            "type": "string",
+            "enum": ["weekly", "drift", "quality", "compliance"],
+            "description": "Type of governance report to generate"
+          },
+          "format": {
+            "type": "string",
+            "enum": ["markdown", "json", "html"],
+            "description": "Output format for the report"
+          },
+          "period": {
+            "type": "string",
+            "description": "Time period for the report (e.g., '7d', '30d')"
+          }
+        },
+        "required": ["reportType"]
+      }
+    },
+    {
+      "name": "dependency_analyze",
+      "description": "Analyze and map dependencies in the codebase",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": ["all", "circular", "unused", "external"],
+            "description": "Scope of dependency analysis"
+          },
+          "target": {
+            "type": "string",
+            "description": "Specific package or directory to analyze"
+          },
+          "outputFormat": {
+            "type": "string",
+            "enum": ["graph", "json", "markdown"],
+            "description": "Format for analysis output"
+          }
+        },
+        "required": ["scope"]
+      }
+    },
+    {
+      "name": "test_baseline",
+      "description": "Create and manage test coverage baselines",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["create", "compare", "update"],
+            "description": "Test baseline action"
+          },
+          "testType": {
+            "type": "string",
+            "enum": ["unit", "integration", "e2e", "all"],
+            "description": "Type of tests to baseline"
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Coverage threshold percentage"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    {
+      "name": "claude_config",
+      "description": "Generate optimized Claude Code configuration",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "configType": {
+            "type": "string",
+            "enum": ["claude-md", "hooks", "conventions", "all"],
+            "description": "Type of configuration to generate"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specific features to configure"
+          }
+        },
+        "required": ["configType"]
+      }
+    }
+  ],
+  "server": {
+    "command": "node",
+    "args": ["dist/server.js"],
+    "env": {
+      "NODE_ENV": "production"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "1.0.0",
+  "description": "Project with Wundr Dashboard integration",
+  "scripts": {
+    "dev": "your existing dev command",
+    "build": "your existing build command",
+    "test": "your existing test command",
+    "lint": "your existing lint command",
+    
+    "wundr:init": "wundr init-dashboard",
+    "wundr:dev": "wundr dashboard --dev",
+    "wundr:start": "wundr dashboard",
+    "wundr:build": "wundr dashboard --build",
+    "wundr:analyze": "wundr analyze",
+    "wundr:config": "wundr config",
+    "wundr:status": "wundr status",
+    "wundr:scripts": "wundr scripts"
+  },
+  "devDependencies": {
+    "@lumic/wundr": "latest"
+  },
+  "wundr": {
+    "configPath": "./wundr.config.json",
+    "pluginPaths": [
+      "./wundr-dashboard/plugins",
+      "./node_modules/@wundr/plugins"
+    ],
+    "themePath": "./wundr-dashboard/themes"
+  }
+}

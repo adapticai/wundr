@@ -1,0 +1,11 @@
+{
+  "name": "@wundr/typescript-config",
+  "version": "1.0.0",
+  "description": "Shared TypeScript configurations for Wundr monorepo",
+  "files": [
+    "base.json",
+    "node.json",
+    "nextjs.json",
+    "library.json"
+  ]
+}

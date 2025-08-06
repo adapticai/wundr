@@ -53,7 +53,7 @@ export class DriftDetection {
   private baselineDir = '.governance/baselines';
   private reportsDir = '.governance/drift-reports';
   private configFile = '.governance/drift-config.json';
-  private config: any;
+  // private config: any;
 
   constructor() {
     // Ensure directories exist
@@ -71,7 +71,7 @@ export class DriftDetection {
    * Create a baseline snapshot
    */
   async createBaseline(version?: string): Promise<BaselineSnapshot> {
-    console.log('=ø Creating baseline snapshot...');
+    console.log('=ï¿½ Creating baseline snapshot...');
 
     // Run analysis to get current state
     const analysisResult = await this.runAnalysis();
@@ -120,7 +120,7 @@ export class DriftDetection {
    * Detect drift against baseline
    */
   async detectDrift(baselineVersion = 'latest'): Promise<DriftDetectionReport> {
-    console.log('= Detecting code drift...');
+    console.log('= Detecting code drift...');
 
     // Load baseline
     const baseline = this.loadBaseline(baselineVersion);
@@ -287,14 +287,14 @@ export class DriftDetection {
     for (const [key] of current.entityHashes) {
       if (!baseline.entityHashes.has(key)) {
         const [file, name, type] = key.split(':');
-        newEntities.push({ name, file, type });
+        newEntities.push({ name: name || '', file: file || '', type: type || '' });
       }
     }
 
     for (const [key] of baseline.entityHashes) {
       if (!current.entityHashes.has(key)) {
         const [file, name, type] = key.split(':');
-        removedEntities.push({ name, file, type });
+        removedEntities.push({ name: name || '', file: file || '', type: type || '' });
       }
     }
 
@@ -303,9 +303,9 @@ export class DriftDetection {
       if (baselineHash && baselineHash !== hash) {
         const [file, name, type] = key.split(':');
         modifiedEntities.push({
-          name,
-          file,
-          type,
+          name: name || '',
+          file: file || '',
+          type: type || '',
           changes: ['content changed'] // Could be more detailed with proper diff
         });
       }
@@ -382,38 +382,38 @@ export class DriftDetection {
 
     if (drift.complexityIncrease > 5) {
       recommendations.push(
-        `  Average complexity increased by ${drift.complexityIncrease.toFixed(1)}. Consider refactoring complex functions.`
+        `ï¿½ Average complexity increased by ${drift.complexityIncrease.toFixed(1)}. Consider refactoring complex functions.`
       );
     }
 
     if (drift.newUnusedExports >= 10) {
       recommendations.push(
-        `=á Found ${drift.newUnusedExports} new unused exports. Schedule cleanup to remove dead code.`
+        `=ï¿½ Found ${drift.newUnusedExports} new unused exports. Schedule cleanup to remove dead code.`
       );
     }
 
     if (drift.newCodeSmells >= 5) {
       recommendations.push(
-        `  Detected ${drift.newCodeSmells} new code smells. Review and refactor affected code.`
+        `ï¿½ Detected ${drift.newCodeSmells} new code smells. Review and refactor affected code.`
       );
     }
 
     if (drift.addedEntities > drift.removedEntities * 2) {
       recommendations.push(
-        `=È Code base is growing rapidly (${drift.addedEntities} new entities). Consider architectural review.`
+        `=ï¿½ Code base is growing rapidly (${drift.addedEntities} new entities). Consider architectural review.`
       );
     }
 
     // Severity-based recommendations
     switch (severity) {
       case 'critical':
-        recommendations.push('=¨ CRITICAL: Block deployments until issues are resolved.');
+        recommendations.push('=ï¿½ CRITICAL: Block deployments until issues are resolved.');
         break;
       case 'high':
-        recommendations.push('  HIGH: Schedule immediate tech debt sprint.');
+        recommendations.push('ï¿½ HIGH: Schedule immediate tech debt sprint.');
         break;
       case 'medium':
-        recommendations.push('=á MEDIUM: Include fixes in next sprint planning.');
+        recommendations.push('=ï¿½ MEDIUM: Include fixes in next sprint planning.');
         break;
       case 'low':
         recommendations.push(' LOW: Monitor trends and address in routine maintenance.');
@@ -463,7 +463,7 @@ export class DriftDetection {
       markdownReport
     );
 
-    console.log(`=Ê Drift report saved: ${reportFile}`);
+    console.log(`=ï¿½ Drift report saved: ${reportFile}`);
   }
 
   /**
@@ -514,19 +514,19 @@ ${this.getNextStepsForSeverity(report.severity)}
    */
   private getNextStepsForSeverity(severity: string): string {
     const steps: Record<string, string> = {
-      critical: `1. =¨ **BLOCK DEPLOYMENTS** - Do not deploy until issues are resolved
+      critical: `1. =ï¿½ **BLOCK DEPLOYMENTS** - Do not deploy until issues are resolved
 2. Schedule emergency team meeting to address critical issues
 3. Run consolidation workflow for duplicates
 4. Fix circular dependencies immediately
 5. Re-run drift detection after fixes`,
 
-      high: `1.   Schedule high-priority tech debt sprint
+      high: `1. ï¿½ Schedule high-priority tech debt sprint
 2. Run consolidation workflow for new duplicates
 3. Review complexity increases and refactor
 4. Address code smells in affected areas
 5. Re-baseline after fixes`,
 
-      medium: `1. =á Include drift fixes in next sprint planning
+      medium: `1. =ï¿½ Include drift fixes in next sprint planning
 2. Schedule regular consolidation runs
 3. Monitor complexity trends
 4. Plan cleanup for unused exports`,
@@ -540,7 +540,7 @@ ${this.getNextStepsForSeverity(report.severity)}
 3. Keep monitoring for future drift`
     };
 
-    return steps[severity] || steps.none;
+    return steps[severity as keyof typeof steps] || steps.none || 'No specific steps available';
   }
 
   /**
@@ -616,8 +616,8 @@ ${this.getNextStepsForSeverity(report.severity)}
 
   private generateVersionFromGit(): string {
     try {
-      const hash = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim();
-      const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim();
+      const hash = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).toString().trim();
+      const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).toString().trim();
       return `${branch}-${hash}`;
     } catch (error) {
       return `manual-${Date.now().toString(36)}`;
@@ -637,11 +637,12 @@ ${this.getNextStepsForSeverity(report.severity)}
       ignorePaths: ['node_modules', 'dist', 'build', '.git']
     };
 
+    let _config: any;
     if (fs.existsSync(this.configFile)) {
       const userConfig = JSON.parse(fs.readFileSync(this.configFile, 'utf-8'));
-      this.config = { ...defaultConfig, ...userConfig };
+      config = { ...defaultConfig, ...userConfig };
     } else {
-      this.config = defaultConfig;
+      config = defaultConfig;
       fs.writeFileSync(this.configFile, JSON.stringify(defaultConfig, null, 2));
     }
   }
@@ -654,7 +655,7 @@ ${this.getNextStepsForSeverity(report.severity)}
       .filter(f => f.startsWith('baseline-') && f.endsWith('.json'))
       .sort();
 
-    console.log('\n=ø Available Baselines:');
+    console.log('\n=ï¿½ Available Baselines:');
     
     if (files.length === 0) {
       console.log('No baselines found. Create one with: drift-detection create-baseline');
@@ -706,7 +707,7 @@ ${trendData.map(d => `- **${d.timestamp.split('T')[0]}**: ${d.entities} entities
 `;
 
     fs.writeFileSync(path.join(this.reportsDir, 'trends.md'), trendReport);
-    console.log('=Ê Trend analysis saved to drift-reports/trends.md');
+    console.log('=ï¿½ Trend analysis saved to drift-reports/trends.md');
   }
 
   private calculateTrend(values: number[]): string {
@@ -714,6 +715,7 @@ ${trendData.map(d => `- **${d.timestamp.split('T')[0]}**: ${d.entities} entities
 
     const first = values[0];
     const last = values[values.length - 1];
+    if (!first || !last) return 'No data available';
     const change = ((last - first) / first * 100);
 
     if (Math.abs(change) < 5) return 'Stable';
@@ -740,7 +742,7 @@ if (require.main === module) {
     case 'detect':
       driftDetection.detectDrift(arg)
         .then(report => {
-          console.log(`\n=Ê Drift Detection Results:`);
+          console.log(`\n=ï¿½ Drift Detection Results:`);
           console.log(`Severity: ${report.severity.toUpperCase()}`);
           console.log('\nRecommendations:');
           report.recommendations.forEach(r => console.log(`  ${r}`));

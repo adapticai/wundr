@@ -1,0 +1,53 @@
+# @wundr/{{PACKAGE_NAME}}
+
+{{PACKAGE_DESCRIPTION}}
+
+## Installation
+
+```bash
+pnpm add @wundr/{{PACKAGE_NAME}}
+```
+
+## Usage
+
+```typescript
+import { /* exports */ } from '@wundr/{{PACKAGE_NAME}}';
+
+// Usage example
+```
+
+## API
+
+### Functions
+
+Document your exported functions here.
+
+### Types
+
+Document your exported types here.
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build the package
+pnpm build
+
+# Run tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run linting
+pnpm lint
+
+# Run type checking
+pnpm typecheck
+```
+
+## License
+
+MIT © [Lumic.ai](https://lumic.ai)

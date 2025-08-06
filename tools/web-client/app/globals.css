@@ -1,0 +1,264 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+@layer base {
+  :root {
+    --font-brand: var(--font-space-grotesk);
+    --background: 0 0% 100%;
+    --foreground: 206 37% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 206 37% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 206 37% 10%;
+    --primary: 206 37% 10%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 205 25% 95%;
+    --secondary-foreground: 206 37% 10%;
+    --muted: 205 25% 95%;
+    --muted-foreground: 205 15% 45%;
+    --accent: 205 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 205 25% 90%;
+    --input: 205 25% 90%;
+    --ring: 206 37% 10%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 206 37% 10%;
+    --sidebar-primary: 206 37% 10%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 205 25% 95%;
+    --sidebar-accent-foreground: 206 37% 10%;
+    --sidebar-border: 205 25% 90%;
+    --sidebar-ring: 206 37% 10%;
+  }
+  .dark {
+    --background: 206 37% 10%;
+    --foreground: 0 0% 100%;
+    --card: 206 37% 13%;
+    --card-foreground: 0 0% 100%;
+    --popover: 206 37% 13%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 206 37% 10%;
+    --secondary: 206 37% 17%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 206 37% 17%;
+    --muted-foreground: 205 15% 65%;
+    --accent: 205 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 206 25% 20%;
+    --input: 206 25% 20%;
+    --ring: 0 0% 100%;
+    --sidebar-background: 206 37% 8%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 206 37% 10%;
+    --sidebar-accent: 206 37% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 206 25% 20%;
+    --sidebar-ring: 0 0% 100%;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Syntax highlighting styles for code blocks */
+@layer components {
+  .hljs {
+    @apply bg-muted text-foreground rounded-lg p-4 overflow-x-auto;
+  }
+  
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-subst {
+    @apply text-primary font-medium;
+  }
+  
+  .hljs-string,
+  .hljs-attr,
+  .hljs-symbol,
+  .hljs-bullet,
+  .hljs-addition {
+    @apply text-green-600 dark:text-green-400;
+  }
+  
+  .hljs-title,
+  .hljs-section,
+  .hljs-attribute {
+    @apply text-accent font-medium;
+  }
+  
+  .hljs-variable,
+  .hljs-template-variable {
+    @apply text-destructive;
+  }
+  
+  .hljs-comment,
+  .hljs-quote,
+  .hljs-deletion {
+    @apply text-muted-foreground italic;
+  }
+  
+  .hljs-number,
+  .hljs-regexp,
+  .hljs-literal,
+  .hljs-type {
+    @apply text-accent;
+  }
+  
+  .hljs-built_in,
+  .hljs-builtin-name {
+    @apply text-accent dark:text-accent;
+  }
+  
+  .hljs-meta {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+  
+  .hljs-emphasis {
+    @apply italic;
+  }
+  
+  .hljs-strong {
+    @apply font-bold;
+  }
+}
+
+/* Custom markdown styles */
+@layer components {
+  .markdown-content {
+    @apply text-foreground;
+  }
+  
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    @apply text-foreground font-semibold;
+  }
+  
+  .markdown-content h1 {
+    @apply text-3xl mb-6 mt-8 first:mt-0;
+  }
+  
+  .markdown-content h2 {
+    @apply text-2xl mb-4 mt-8 first:mt-0 pb-2 border-b border-border;
+  }
+  
+  .markdown-content h3 {
+    @apply text-xl mb-3 mt-6 first:mt-0;
+  }
+  
+  .markdown-content h4 {
+    @apply text-lg mb-2 mt-4 first:mt-0;
+  }
+  
+  .markdown-content p {
+    @apply mb-4 leading-relaxed text-foreground;
+  }
+  
+  .markdown-content a {
+    @apply text-primary hover:text-primary/80 underline-offset-4 hover:underline;
+  }
+  
+  .markdown-content code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  
+  .markdown-content pre {
+    @apply bg-muted border border-border rounded-lg p-4 overflow-x-auto mb-4;
+  }
+  
+  .markdown-content pre code {
+    @apply bg-transparent p-0 rounded-none;
+  }
+  
+  .markdown-content blockquote {
+    @apply border-l-4 border-primary pl-4 italic my-4 text-muted-foreground;
+  }
+  
+  .markdown-content ul,
+  .markdown-content ol {
+    @apply mb-4 pl-6;
+  }
+  
+  .markdown-content li {
+    @apply mb-1;
+  }
+  
+  .markdown-content table {
+    @apply w-full border-collapse border border-border rounded-lg overflow-hidden mb-4;
+  }
+  
+  .markdown-content th {
+    @apply bg-muted border border-border p-3 text-left font-medium;
+  }
+  
+  .markdown-content td {
+    @apply border border-border p-3;
+  }
+  
+  .markdown-content img {
+    @apply rounded-lg shadow-sm max-w-full h-auto;
+  }
+  
+  .markdown-content hr {
+    @apply border-border my-6;
+  }
+  
+  /* Task lists */
+  .markdown-content input[type="checkbox"] {
+    @apply mr-2;
+  }
+  
+  /* Alert boxes */
+  .markdown-content .alert {
+    @apply p-4 rounded-lg border mb-4;
+  }
+  
+  .markdown-content .alert-info {
+    @apply bg-accent/10 border-accent/20 text-accent;
+  }
+  
+  .markdown-content .alert-warning {
+    @apply bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400;
+  }
+  
+  .markdown-content .alert-danger {
+    @apply bg-destructive/10 border-destructive/20 text-destructive;
+  }
+  
+  .markdown-content .alert-success {
+    @apply bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400;
+  }
+}

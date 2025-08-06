@@ -652,28 +652,27 @@ Private
 # scripts/add-package.sh
 
 PACKAGE_NAME=$1
-PACKAGE_TYPE=${2:-package
-  } # package or app
+PACKAGE_TYPE=\${2:-package} # package or app
 
-if [-z "$PACKAGE_NAME"]; then
+if [ -z "$PACKAGE_NAME" ]; then
   echo "Usage: ./scripts/add-package.sh <package-name> [package|app]"
   exit 1
 fi
 
 # Determine directory
-if ["$PACKAGE_TYPE" = "app"]; then
-PACKAGE_DIR = "apps/$PACKAGE_NAME"
+if [ "$PACKAGE_TYPE" = "app" ]; then
+  PACKAGE_DIR="apps/$PACKAGE_NAME"
 else
-PACKAGE_DIR = "packages/$PACKAGE_NAME"
+  PACKAGE_DIR="packages/$PACKAGE_NAME"
 fi
 
 echo "Creating new package: @company/$PACKAGE_NAME in $PACKAGE_DIR"
 
 # Create directory structure
-mkdir - p "$PACKAGE_DIR/src"
+mkdir -p "$PACKAGE_DIR/src"
 
 # Run the setup script
-npx ts - node scripts / monorepo - setup.ts add - package "$PACKAGE_NAME" "$PACKAGE_TYPE"
+npx ts-node scripts/monorepo-setup.ts add-package "$PACKAGE_NAME" "$PACKAGE_TYPE"
 
 echo "✅ Package created successfully!"
 echo "Next steps:"

@@ -167,7 +167,7 @@ export class TestImportsUpdater {
     this.report.filesScanned = testFiles.length;
 
     if (testFiles.length === 0) {
-      console.log('  No test files found. Make sure test files exist in:');
+      console.log('ï¿½ No test files found. Make sure test files exist in:');
       console.log('  - src/**/*.test.ts');
       console.log('  - src/**/*.spec.ts');
       console.log('  - tests/**/*.ts');
@@ -222,7 +222,7 @@ export class TestImportsUpdater {
         hasChanges = true;
         this.report.importsUpdated++;
 
-        console.log(`  ${path.basename(filePath)}: ${moduleSpecifier} ’ ${updatedSpecifier}`);
+        console.log(`  ${path.basename(filePath)}: ${moduleSpecifier} ï¿½ ${updatedSpecifier}`);
       }
     }
 
@@ -250,7 +250,7 @@ export class TestImportsUpdater {
                 mapping: this.findAppliedMapping(moduleSpecifier)
               });
 
-              console.log(`  ${path.basename(filePath)}: dynamic import('${moduleSpecifier}') ’ import('${updatedSpecifier}')`);
+              console.log(`  ${path.basename(filePath)}: dynamic import('${moduleSpecifier}') ï¿½ import('${updatedSpecifier}')`);
             }
           }
         }
@@ -278,7 +278,7 @@ export class TestImportsUpdater {
   private findAppliedMapping(moduleSpecifier: string): string {
     for (const mapping of this.mappings) {
       if (mapping.pattern.test(moduleSpecifier)) {
-        return `${mapping.from} ’ ${mapping.to}`;
+        return `${mapping.from} ï¿½ ${mapping.to}`;
       }
     }
     return 'unknown mapping';
@@ -288,7 +288,7 @@ export class TestImportsUpdater {
    * Update imports for specific pattern
    */
   async updateSpecificPattern(fromPattern: string, toPattern: string): Promise<void> {
-    console.log(`= Updating imports: ${fromPattern} ’ ${toPattern}`);
+    console.log(`= Updating imports: ${fromPattern} ï¿½ ${toPattern}`);
 
     // Add the specific mapping
     this.addMapping(fromPattern, toPattern);
@@ -308,7 +308,7 @@ export class TestImportsUpdater {
           importDecl.setModuleSpecifier(newSpecifier);
           hasChanges = true;
 
-          console.log(`  ${path.basename(testFile.getFilePath())}: ${moduleSpecifier} ’ ${newSpecifier}`);
+          console.log(`  ${path.basename(testFile.getFilePath())}: ${moduleSpecifier} ï¿½ ${newSpecifier}`);
         }
       }
 
@@ -325,7 +325,7 @@ export class TestImportsUpdater {
    * Fix common test import patterns
    */
   async fixCommonPatterns(): Promise<void> {
-    console.log('=' Fixing common test import patterns...\n');
+    console.log('ðŸ”§ Fixing common test import patterns...\n');
 
     const testFiles = this.project.getSourceFiles();
     let totalFixes = 0;
@@ -378,7 +378,7 @@ export class TestImportsUpdater {
       return;
     }
 
-    console.log('=Ê Generating mappings from analysis report...');
+    console.log('=ï¿½ Generating mappings from analysis report...');
 
     const report = JSON.parse(fs.readFileSync(analysisReportPath, 'utf-8'));
     
@@ -395,7 +395,7 @@ export class TestImportsUpdater {
             
             if (fromPath !== toPath) {
               this.addMapping(fromPath, toPath);
-              console.log(`  Added mapping: ${fromPath} ’ ${toPath}`);
+              console.log(`  Added mapping: ${fromPath} ï¿½ ${toPath}`);
             }
           });
         }
@@ -419,7 +419,7 @@ export class TestImportsUpdater {
    * Validate that all imports resolve correctly
    */
   async validateImports(): Promise<boolean> {
-    console.log('= Validating test imports...');
+    console.log('= Validating test imports...');
 
     const testFiles = this.project.getSourceFiles();
     let hasErrors = false;
@@ -427,7 +427,7 @@ export class TestImportsUpdater {
     for (const testFile of testFiles) {
       const diagnostics = testFile.getPreEmitDiagnostics();
       
-      const importErrors = diagnostics.filter(d => 
+      const importErrors = diagnostics.filter((d: ts.Diagnostic) => 
         d.getMessageText().toString().includes('Cannot find module') ||
         d.getMessageText().toString().includes('Module not found')
       );
@@ -436,7 +436,7 @@ export class TestImportsUpdater {
         hasErrors = true;
         console.log(`L Import errors in ${path.basename(testFile.getFilePath())}:`);
         
-        importErrors.forEach(error => {
+        importErrors.forEach((error: ts.Diagnostic) => {
           console.log(`  Line ${error.getLineNumber()}: ${error.getMessageText()}`);
         });
       }
@@ -465,7 +465,7 @@ Generated: ${this.report.timestamp}
 
 ## Import Mappings Used
 
-${this.mappings.map(m => `- \`${m.from}\` ’ \`${m.to}\``).join('\n')}
+${this.mappings.map(m => `- \`${m.from}\` ï¿½ \`${m.to}\``).join('\n')}
 
 ## Detailed Changes
 
@@ -492,17 +492,17 @@ Run \`npm run test:imports\` to validate all imports resolve correctly.
 `;
 
     fs.writeFileSync('test-imports-report.md', reportContent);
-    console.log('\n=Ä Report saved to test-imports-report.md');
+    console.log('\n=ï¿½ Report saved to test-imports-report.md');
   }
 
   /**
    * List current mappings
    */
   listMappings(): void {
-    console.log('=Ë Current Import Mappings:\n');
+    console.log('=ï¿½ Current Import Mappings:\n');
 
     this.mappings.forEach((mapping, index) => {
-      console.log(`${index + 1}. ${mapping.from} ’ ${mapping.to}`);
+      console.log(`${index + 1}. ${mapping.from} ï¿½ ${mapping.to}`);
       console.log(`   Pattern: ${mapping.pattern}`);
       console.log('');
     });
@@ -512,7 +512,7 @@ Run \`npm run test:imports\` to validate all imports resolve correctly.
    * Preview import changes without applying them
    */
   async previewChanges(): Promise<void> {
-    console.log('= Previewing import changes...\n');
+    console.log('= Previewing import changes...\n');
 
     const testFiles = this.project.getSourceFiles();
     const preview: Array<{ file: string; changes: Array<{ from: string; to: string }> }> = [];
@@ -549,13 +549,13 @@ Run \`npm run test:imports\` to validate all imports resolve correctly.
     preview.forEach(filePreview => {
       console.log(`${path.basename(filePreview.file)}:`);
       filePreview.changes.forEach(change => {
-        console.log(`  ${change.from} ’ ${change.to}`);
+        console.log(`  ${change.from} ï¿½ ${change.to}`);
       });
       console.log('');
     });
 
     const totalChanges = preview.reduce((sum, p) => sum + p.changes.length, 0);
-    console.log(`=Ê Total: ${totalChanges} import changes across ${preview.length} files`);
+    console.log(`=ï¿½ Total: ${totalChanges} import changes across ${preview.length} files`);
   }
 }
 
@@ -575,7 +575,7 @@ if (require.main === module) {
           // Validate imports
           updater.validateImports().then(isValid => {
             if (!isValid) {
-              console.warn('  Some imports may not resolve correctly. Please review.');
+              console.warn('ï¿½ Some imports may not resolve correctly. Please review.');
             }
           });
         })

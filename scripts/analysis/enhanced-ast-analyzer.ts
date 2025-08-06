@@ -2,7 +2,7 @@
 // scripts/enhanced-ast-analyzer.ts
 
 import * as ts from 'typescript';
-import { Project, SourceFile, Node, Type } from 'ts-morph';
+import { Project, SourceFile, Node } from 'ts-morph';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -18,7 +18,7 @@ interface EntityInfo {
   signature?: string;
   normalizedHash?: string;
   semanticHash?: string;
-  jsDoc?: string;
+  jsDoc: string;
   complexity?: number;
   dependencies: string[];
   members?: {
@@ -60,18 +60,17 @@ export class EnhancedASTAnalyzer {
   private typeChecker: ts.TypeChecker;
   private entities: Map<string, EntityInfo> = new Map();
   private imports: Map<string, Set<string>> = new Map();
-  private exports: Map<string, Set<string>> = new Map();
+  // private exportMap: Map<string, Set<string>> = new Map();
 
   constructor(tsConfigPath = './tsconfig.json') {
     // Initialize ts-morph project
     this.project = new Project({
-      tsConfigFilePath: tsConfigPath,
-      addFilesFromTsConfig: true
+      tsConfigFilePath: tsConfigPath
     });
 
-    // Get TypeScript program and type checker for semantic analysis
-    this.tsProgram = this.project.getProgram().compilerObject;
-    this.typeChecker = this.tsProgram.getTypeChecker();
+    // Get TypeScript program and type checker for semantic analysis  
+    this.tsProgram = (this.project as any).getProgram?.()?.compilerObject;
+    this.typeChecker = this.tsProgram?.getTypeChecker();
   }
 
   async analyzeProject(): Promise<AnalysisReport> {
@@ -169,13 +168,13 @@ export class EnhancedASTAnalyzer {
       if (!name) return;
 
       const isService = name.toLowerCase().includes('service') ||
-        classDecl.getJsDocs().some(doc =>
+        (classDecl as any).getJsDocs?.()?.some((doc: any) =>
           doc.getDescription().toLowerCase().includes('service')
         );
 
       const methods = classDecl.getMethods().map(m => ({
         name: m.getName(),
-        signature: m.getSignature().getDeclaration().getText()
+        signature: m.getText()
       }));
 
       const properties = classDecl.getProperties().map(p => ({
@@ -189,7 +188,7 @@ export class EnhancedASTAnalyzer {
         type: isService ? 'service' : 'class',
         file: sourceFile.getFilePath(),
         line: classDecl.getStartLineNumber(),
-        column: classDecl.getStartLinePos(),
+        column: classDecl.getStart(),
         exportType: this.getExportType(classDecl),
         normalizedHash: this.generateNormalizedHash({ methods, properties }),
         semanticHash: this.generateSemanticHash(classDecl),
@@ -213,7 +212,7 @@ export class EnhancedASTAnalyzer {
 
       const methods = interfaceDecl.getMethods().map(m => ({
         name: m.getName(),
-        signature: m.getSignature().getDeclaration().getText()
+        signature: m.getText()
       }));
 
       // Sort for consistent hashing (from Gemini's approach)
@@ -225,7 +224,7 @@ export class EnhancedASTAnalyzer {
         type: 'interface',
         file: sourceFile.getFilePath(),
         line: interfaceDecl.getStartLineNumber(),
-        column: interfaceDecl.getStartLinePos(),
+        column: interfaceDecl.getStart(),
         exportType: this.getExportType(interfaceDecl),
         normalizedHash: this.generateNormalizedHash({ properties, methods }),
         semanticHash: this.generateSemanticHash(interfaceDecl),
@@ -245,10 +244,10 @@ export class EnhancedASTAnalyzer {
         type: 'type',
         file: sourceFile.getFilePath(),
         line: typeAlias.getStartLineNumber(),
-        column: typeAlias.getStartLinePos(),
+        column: typeAlias.getStart(),
         exportType: this.getExportType(typeAlias),
-        signature: typeAlias.getType().getText(),
-        normalizedHash: this.generateNormalizedHash(typeAlias.getType().getText()),
+        signature: typeAlias.getTypeNode()?.getText() || '',
+        normalizedHash: this.generateNormalizedHash(typeAlias.getTypeNode()?.getText() || ''),
         jsDoc: this.extractJsDoc(typeAlias),
         dependencies: this.extractDependencies(typeAlias)
       };
@@ -269,7 +268,7 @@ export class EnhancedASTAnalyzer {
         type: 'enum',
         file: sourceFile.getFilePath(),
         line: enumDecl.getStartLineNumber(),
-        column: enumDecl.getStartLinePos(),
+        column: enumDecl.getStart(),
         exportType: this.getExportType(enumDecl),
         normalizedHash: this.generateNormalizedHash(members),
         jsDoc: this.extractJsDoc(enumDecl),
@@ -297,9 +296,9 @@ export class EnhancedASTAnalyzer {
         type: 'function',
         file: sourceFile.getFilePath(),
         line: func.getStartLineNumber(),
-        column: func.getStartLinePos(),
+        column: func.getStart(),
         exportType: this.getExportType(func),
-        signature: func.getSignature().getDeclaration().getText(),
+        signature: func.getText(),
         normalizedHash: this.generateNormalizedHash(func.getText()),
         semanticHash: this.generateSemanticHash(func),
         jsDoc: this.extractJsDoc(func),
@@ -312,20 +311,23 @@ export class EnhancedASTAnalyzer {
   }
 
   private extractVariables(sourceFile: SourceFile) {
-    sourceFile.getVariableDeclarations().forEach(varDecl => {
-      if (varDecl.isExported() && varDecl.getVariableStatement()?.isExported()) {
-        const entity: EntityInfo = {
-          name: varDecl.getName(),
-          type: 'const',
-          file: sourceFile.getFilePath(),
-          line: varDecl.getStartLineNumber(),
-          column: varDecl.getStartLinePos(),
-          exportType: 'named',
-          signature: varDecl.getType().getText(),
-          dependencies: []
-        };
+    (sourceFile as any).getVariableStatements?.()?.forEach((varStatement: any) => {
+      if (varStatement.isExported()) {
+        varStatement.getDeclarations().forEach((varDecl: any) => {
+          const entity: EntityInfo = {
+            name: varDecl.getName(),
+            type: 'const',
+            file: sourceFile.getFilePath(),
+            line: varDecl.getStartLineNumber(),
+            column: varDecl.getStart(),
+            exportType: 'named',
+            signature: varDecl.getType().getText(),
+            jsDoc: this.extractJsDoc(varDecl),
+            dependencies: []
+          };
 
-        this.entities.set(`${entity.file}:${entity.name}`, entity);
+          this.entities.set(`${entity.file}:${entity.name}`, entity);
+        });
       }
     });
   }
@@ -338,7 +340,8 @@ export class EnhancedASTAnalyzer {
 
   private generateSemanticHash(node: Node): string {
     // Use TypeChecker for semantic comparison
-    const type = node.getType();
+    const type = (node as any).getType?.();
+    if (!type) return '';
     const typeString = this.typeChecker.typeToString(
       type.compilerType,
       undefined,
@@ -375,7 +378,7 @@ export class EnhancedASTAnalyzer {
       if (entities.length > 1) {
         clusters.push({
           hash,
-          type: entities[0].type,
+          type: entities[0]?.type || 'unknown',
           severity: this.calculateDuplicateSeverity(entities),
           entities,
           structuralMatch: true,
@@ -408,7 +411,7 @@ export class EnhancedASTAnalyzer {
         { encoding: 'utf-8' }
       );
 
-      const madgeOutput = JSON.parse(result);
+      const madgeOutput = JSON.parse(result.toString());
       return madgeOutput.circular || [];
     } catch (error) {
       console.warn('⚠️ Could not run madge for circular dependencies');
@@ -422,7 +425,7 @@ export class EnhancedASTAnalyzer {
     // Mark all imported entities as used
     for (const sourceFile of this.project.getSourceFiles()) {
       sourceFile.getImportDeclarations().forEach(importDecl => {
-        importDecl.getNamedImports().forEach(namedImport => {
+        importDecl.getNamedImports().forEach((namedImport: any) => {
           used.add(namedImport.getName());
         });
       });
@@ -476,8 +479,8 @@ export class EnhancedASTAnalyzer {
   }
 
   private getExportType(node: Node): 'default' | 'named' | 'none' {
-    if (node.hasModifier(ts.SyntaxKind.ExportKeyword)) {
-      if (node.hasModifier(ts.SyntaxKind.DefaultKeyword)) {
+    if ((node as any).hasModifier?.(ts.SyntaxKind.ExportKeyword)) {
+      if ((node as any).hasModifier?.(ts.SyntaxKind.DefaultKeyword)) {
         return 'default';
       }
       return 'named';
@@ -485,25 +488,25 @@ export class EnhancedASTAnalyzer {
     return 'none';
   }
 
-  private extractJsDoc(node: Node): string | undefined {
-    const jsDocs = node.getJsDocs();
+  private extractJsDoc(node: Node): string {
+    const jsDocs = (node as any).getJsDocs?.() || [];
     if (jsDocs.length > 0) {
       return jsDocs[0].getDescription().trim();
     }
-    return undefined;
+    return '';
   }
 
   private calculateComplexity(node: Node): number {
     // Simple cyclomatic complexity calculation
     let complexity = 1;
 
-    node.forEachDescendant(child => {
+    (node as any).forEachDescendant?.((child: Node) => {
       if (
-        Node.isIfStatement(child) ||
-        Node.isWhileStatement(child) ||
-        Node.isForStatement(child) ||
-        Node.isConditionalExpression(child) ||
-        Node.isCaseClause(child)
+        child.getKind() === ts.SyntaxKind.IfStatement ||
+        child.getKind() === ts.SyntaxKind.WhileStatement ||
+        child.getKind() === ts.SyntaxKind.ForStatement ||
+        child.getKind() === ts.SyntaxKind.ConditionalExpression ||
+        child.getKind() === ts.SyntaxKind.CaseClause
       ) {
         complexity++;
       }
@@ -515,14 +518,16 @@ export class EnhancedASTAnalyzer {
   private extractDependencies(node: Node): string[] {
     const deps = new Set<string>();
 
-    node.forEachDescendant(child => {
-      if (Node.isIdentifier(child)) {
-        const symbol = child.getSymbol();
+    (node as any).forEachDescendant?.((child: Node) => {
+      if (child.getKind() === ts.SyntaxKind.Identifier) {
+        const symbol = (child as any).getSymbol?.();
         if (symbol && symbol.getDeclarations().length > 0) {
           const declaration = symbol.getDeclarations()[0];
-          const sourceFile = declaration.getSourceFile();
-          if (sourceFile.getFilePath() !== node.getSourceFile().getFilePath()) {
-            deps.add(sourceFile.getFilePath());
+          if (declaration) {
+            const childSourceFile = (declaration as any).getSourceFile?.();
+            if (childSourceFile && childSourceFile.getFilePath() !== (node as any).getSourceFile?.()?.getFilePath()) {
+              deps.add(childSourceFile.getFilePath());
+            }
           }
         }
       }
@@ -678,8 +683,8 @@ ${report.circularDeps.length > 0 ?
 
 ${report.recommendations
         .sort((a, b) => {
-          const priority = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
-          return priority[a.priority] - priority[b.priority];
+          const priority: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+          return (priority[a.priority] || 999) - (priority[b.priority] || 999);
         })
         .map(rec => `
 ### ${rec.priority}: ${rec.description}

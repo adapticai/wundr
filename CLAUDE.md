@@ -1,4 +1,4 @@
-# Claude Code Configuration - SPARC Development Environment
+# Claude Code Configuration - SPARC Development Environment with MCP Tools
 
 ## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
@@ -255,14 +255,77 @@ Message 4: Write "file.js"
 6. Enable hooks automation
 7. Use GitHub tools first
 
+## 🔧 Wundr MCP Tools Integration
+
+### Available MCP Tools for Claude Code
+
+The Wundr toolkit provides powerful MCP tools for governance and code quality:
+
+1. **drift_detection** - Monitor code quality drift
+   - "Check for code drift"
+   - "Create drift baseline"
+   - "Show drift trends"
+
+2. **pattern_standardize** - Auto-fix code patterns
+   - "Standardize error handling"
+   - "Fix import ordering"
+   - "Review patterns needing attention"
+
+3. **monorepo_manage** - Monorepo management
+   - "Initialize monorepo"
+   - "Add new package"
+   - "Check circular dependencies"
+
+4. **governance_report** - Generate reports
+   - "Create weekly report"
+   - "Show compliance status"
+   - "Generate quality metrics"
+
+5. **dependency_analyze** - Analyze dependencies
+   - "Find circular dependencies"
+   - "Show unused packages"
+   - "Create dependency graph"
+
+6. **test_baseline** - Manage test coverage
+   - "Create coverage baseline"
+   - "Compare against baseline"
+   - "Update test metrics"
+
+7. **claude_config** - Configure Claude Code
+   - "Generate CLAUDE.md"
+   - "Set up hooks"
+   - "Create conventions"
+
+### Quick MCP Setup
+
+```bash
+# Install MCP tools
+cd mcp-tools && ./install.sh
+
+# Verify installation
+claude mcp list
+```
+
+### Example Workflows
+
+**Daily Quality Check:**
+"Run my daily quality check: detect drift, check dependencies, and show coverage"
+
+**Pre-Commit Validation:**
+"Make sure my code meets all standards before I commit"
+
+**Weekly Maintenance:**
+"Run weekly maintenance: create baseline, generate report, clean dependencies"
+
 ## Support
 
 - Documentation: https://github.com/ruvnet/claude-flow
 - Issues: https://github.com/ruvnet/claude-flow/issues
+- Wundr MCP Guide: docs/CLAUDE_CODE_MCP_INTEGRATION.md
 
 ---
 
-Remember: **Claude Flow coordinates, Claude Code creates!**
+Remember: **Claude Flow coordinates, Claude Code creates, Wundr ensures quality!**
 
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.

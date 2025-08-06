@@ -243,24 +243,6 @@ expect.extend({
 process.env.NODE_ENV = 'test';
 process.env.CI = 'true';
 
-// Disable actual file system operations in tests unless explicitly enabled
-if (!process.env.ALLOW_FS_OPERATIONS) {
-  // Mock fs operations that could be destructive
-  const fsOperationsToMock = ['writeFileSync', 'unlinkSync', 'rmSync'];
-  
-  fsOperationsToMock.forEach(operation => {
-    const original = fs[operation as keyof typeof fs];
-    (fs as any)[operation] = jest.fn((...args: any[]) => {
-      // Allow operations in test directories
-      const filePath = args[0];
-      if (typeof filePath === 'string' && 
-          (filePath.includes('/test-') || filePath.includes('test.') || filePath.includes('.test'))) {
-        return (original as any).apply(fs, args);
-      }
-      // Mock other operations
-      return undefined;
-    });
-  });
-}
+// Note: fs operations are mocked at the module level in individual test files when needed
 
 export {};

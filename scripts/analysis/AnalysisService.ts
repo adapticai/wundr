@@ -1,12 +1,12 @@
 /**
  * Base Analysis Service - Common functionality for all analysis services
  */
-import { BaseService, ServiceResult } from '../core/BaseService';
-import { AppError, FileSystemError, AnalysisError } from '../core/errors';
+import { BaseService, ServiceResult, ServiceConfig } from '../core/BaseService';
+import { FileSystemError, AnalysisError } from '../core/errors';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as ts from 'typescript';
-import * as glob from 'glob';
+import glob from 'glob';
 
 export interface AnalysisConfig {
   targetDir: string;
@@ -34,20 +34,24 @@ export interface AnalysisIssue {
 }
 
 export abstract class AnalysisService extends BaseService {
-  protected config: AnalysisConfig;
+  protected override config: AnalysisConfig & ServiceConfig;
   protected program: ts.Program | null = null;
   protected checker: ts.TypeChecker | null = null;
 
   constructor(name: string, config: Partial<AnalysisConfig>) {
-    super(name, {
+    const baseConfig = {
       outputDir: path.join(process.cwd(), 'analysis-output', name.toLowerCase()),
-    });
+    };
+    super(name, baseConfig);
     
     this.config = {
+      name,
+      version: '1.0.0',
       targetDir: process.cwd(),
       excludeDirs: ['node_modules', 'dist', 'build', 'coverage', '.git'],
       includeTests: false,
       outputFormat: 'json',
+      ...baseConfig,
       ...config
     };
   }
@@ -55,7 +59,7 @@ export abstract class AnalysisService extends BaseService {
   /**
    * Run the analysis
    */
-  async analyze(): ServiceResult<AnalysisReport> {
+  async analyze(): Promise<ServiceResult<AnalysisReport>> {
     return this.executeOperation('analyze', async () => {
       const files = await this.getTargetFiles();
       
@@ -106,11 +110,15 @@ export abstract class AnalysisService extends BaseService {
     }
 
     return new Promise((resolve, reject) => {
-      glob(pattern, { ignore: excludePatterns }, (err, files) => {
+      glob(pattern, (err: any, files: string[]) => {
         if (err) {
           reject(new FileSystemError('glob', pattern, err));
         } else {
-          resolve(files);
+          // Filter out excluded patterns manually
+          const filteredFiles = files.filter(file => 
+            !excludePatterns.some(pattern => file.includes(pattern.replace('**', '')))
+          );
+          resolve(filteredFiles);
         }
       });
     });
@@ -265,7 +273,9 @@ ${JSON.stringify(report.summary, null, 2)}
   }
 
   protected async onInitialize(): Promise<void> {
-    await fs.ensureDir(this.config.outputDir!);
+    if (this.config.outputDir) {
+      await fs.ensureDir(this.config.outputDir);
+    }
   }
 
   protected async onShutdown(): Promise<void> {

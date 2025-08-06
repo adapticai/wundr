@@ -1,0 +1,12 @@
+packages:
+  # Core packages with shared functionality
+  - 'packages/*'
+  
+  # Applications
+  - 'apps/*'
+  
+  # Development tools and scripts
+  - 'tools/*'
+  
+  # Configuration packages
+  - 'config/*'

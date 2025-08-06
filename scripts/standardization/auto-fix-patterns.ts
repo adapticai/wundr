@@ -205,7 +205,7 @@ export class AutoFixPatterns {
    * Apply all auto-fix rules to the project
    */
   async applyAutoFixes(): Promise<AutoFixReport> {
-    console.log('=' Starting auto-fix patterns...\n');
+    console.log('ðŸ”§ Starting auto-fix patterns...\n');
 
     const sourceFiles = this.project.getSourceFiles();
     
@@ -215,7 +215,7 @@ export class AutoFixPatterns {
     }
 
     // Save all modified files
-    const modifiedFiles = sourceFiles.filter(file => file.getWasSaved() === false);
+    const modifiedFiles = sourceFiles.filter(file => file.isSaved() === false);
     
     for (const file of modifiedFiles) {
       await file.save();
@@ -325,7 +325,7 @@ export class AutoFixPatterns {
     await this.applyRule(rule, sourceFiles);
 
     // Save modified files
-    const modifiedFiles = sourceFiles.filter(file => file.getWasSaved() === false);
+    const modifiedFiles = sourceFiles.filter(file => file.isSaved() === false);
     for (const file of modifiedFiles) {
       await file.save();
     }
@@ -337,7 +337,7 @@ export class AutoFixPatterns {
    * Preview fixes without applying them
    */
   async previewFixes(): Promise<void> {
-    console.log('= Previewing auto-fix patterns...\n');
+    console.log('= Previewing auto-fix patterns...\n');
 
     const sourceFiles = this.project.getSourceFiles();
     const preview: Array<{ rule: string; file: string; fixes: number }> = [];
@@ -373,7 +373,7 @@ export class AutoFixPatterns {
     if (preview.length === 0) {
       console.log(' No fixes needed!');
     } else {
-      console.log(`\n=Ê Total: ${preview.reduce((sum, p) => sum + p.fixes, 0)} potential fixes across ${preview.length} file-rule combinations`);
+      console.log(`\n=ï¿½ Total: ${preview.reduce((sum, p) => sum + p.fixes, 0)} potential fixes across ${preview.length} file-rule combinations`);
     }
   }
 
@@ -426,14 +426,14 @@ Each rule should include:
 `;
 
     fs.writeFileSync('auto-fix-report.md', reportContent);
-    console.log('\n=Ä Report saved to auto-fix-report.md');
+    console.log('\n=ï¿½ Report saved to auto-fix-report.md');
   }
 
   /**
    * List available rules
    */
   listRules(): void {
-    console.log('=Ë Available Auto-Fix Rules:\n');
+    console.log('=ï¿½ Available Auto-Fix Rules:\n');
 
     this.fixRules.forEach((rule, index) => {
       console.log(`${index + 1}. **${rule.name}**`);
@@ -451,7 +451,7 @@ Each rule should include:
    * Validate that fixes don't break syntax
    */
   async validateFixes(): Promise<boolean> {
-    console.log('= Validating fixes...');
+    console.log('= Validating fixes...');
 
     try {
       // Try to compile the project
@@ -459,7 +459,7 @@ Each rule should include:
       
       if (diagnostics.length > 0) {
         console.log('L TypeScript errors found after fixes:');
-        diagnostics.forEach(diagnostic => {
+        diagnostics.forEach((diagnostic: ts.Diagnostic) => {
           const message = diagnostic.getMessageText();
           const file = diagnostic.getSourceFile()?.getFilePath() || 'unknown';
           const line = diagnostic.getLineNumber();
@@ -492,7 +492,7 @@ if (require.main === module) {
           // Validate fixes
           autoFix.validateFixes().then(isValid => {
             if (!isValid) {
-              console.warn('  Some fixes may have introduced errors. Please review.');
+              console.warn('ï¿½ Some fixes may have introduced errors. Please review.');
             }
           });
         })

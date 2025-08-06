@@ -84,7 +84,8 @@
     "output",
     ".git",
     ".vscode",
-    ".nyc_output"
+    ".nyc_output",
+    "tools/dashboard-next/**/*"
   ],
   "ts-node": {
     "esm": false,

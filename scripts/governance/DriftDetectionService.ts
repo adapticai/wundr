@@ -2,7 +2,7 @@
  * Drift Detection Service - Refactored to follow BaseService pattern
  */
 import { BaseService, ServiceResult } from '../core/BaseService';
-import { AppError, FileSystemError, AnalysisError } from '../core/errors';
+import { FileSystemError, AnalysisError } from '../core/errors';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { execSync } from 'child_process';
@@ -54,14 +54,14 @@ interface DriftDetectionReport {
 export class DriftDetectionService extends BaseService {
   private readonly baselineDir: string;
   private readonly reportsDir: string;
-  private readonly projectRoot: string;
+  private readonly _projectRoot: string;
 
-  constructor(projectRoot: string = process.cwd()) {
+  constructor(projectRoot = process.cwd()) {
     super('DriftDetectionService', {
       outputDir: path.join(projectRoot, 'governance-output'),
     });
     
-    this.projectRoot = projectRoot;
+    this._projectRoot = projectRoot;
     this.baselineDir = path.join(this.config.outputDir!, 'baselines');
     this.reportsDir = path.join(this.config.outputDir!, 'drift-reports');
   }
@@ -69,7 +69,7 @@ export class DriftDetectionService extends BaseService {
   /**
    * Create a new baseline snapshot
    */
-  async createBaseline(version?: string): ServiceResult<BaselineSnapshot> {
+  async createBaseline(version?: string): Promise<ServiceResult<BaselineSnapshot>> {
     return this.executeOperation('createBaseline', async () => {
       this.log('info', 'Creating baseline snapshot...');
 
@@ -106,7 +106,7 @@ export class DriftDetectionService extends BaseService {
   /**
    * Detect drift against baseline
    */
-  async detectDrift(baselineVersion = 'latest'): ServiceResult<DriftDetectionReport> {
+  async detectDrift(baselineVersion = 'latest'): Promise<ServiceResult<DriftDetectionReport>> {
     return this.executeOperation('detectDrift', async () => {
       this.log('info', 'Detecting code drift...');
 
@@ -153,11 +153,11 @@ export class DriftDetectionService extends BaseService {
     critical?: number;
     high?: number;
     medium?: number;
-  }): ServiceResult<{
+  }): Promise<ServiceResult<{
     passed: boolean;
     severity: string;
     report: DriftDetectionReport;
-  }> {
+  }>> {
     return this.executeOperation('checkDriftThresholds', async () => {
       const result = await this.detectDrift();
       
@@ -347,7 +347,7 @@ export class DriftDetectionService extends BaseService {
     return recommendations;
   }
 
-  private analyzeDetailedChanges(baseline: BaselineSnapshot, current: BaselineSnapshot): any {
+  private analyzeDetailedChanges(_baseline: BaselineSnapshot, _current: BaselineSnapshot): any {
     // Simplified implementation - would need access to entity details
     return {
       newEntities: [],

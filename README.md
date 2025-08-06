@@ -1,295 +1,413 @@
-# Wundr by Lumic.ai
+# Wundr Dashboard - Consumer Integration System
 
 <div align="center">
 
-  <h1>🚀 Wundr</h1>
+  <h1>🚀 Wundr Dashboard</h1>
 
   <p>
-    <strong>The Intelligent CLI-Based Coding Agents Orchestrator</strong>
+    <strong>Consumer Integration System for Intelligent Code Analysis</strong>
   </p>
 
   <p>
-    Transform monolithic chaos into architectural elegance with AI-powered refactoring at scale
+    Transform your development workflow with customizable dashboards, plugins, and secure script execution
   </p>
 
   <p>
     <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-Get_Started_in_5_Minutes-brightgreen?style=for-the-badge" alt="Quick Start"></a>
-    <a href="#features"><img src="https://img.shields.io/badge/Features-Powerful_Tools-blue?style=for-the-badge" alt="Features"></a>
-    <a href="#documentation"><img src="https://img.shields.io/badge/Docs-Comprehensive_Guide-orange?style=for-the-badge" alt="Documentation"></a>
+    <a href="#integration"><img src="https://img.shields.io/badge/Integration-Plugin_System-blue?style=for-the-badge" alt="Integration"></a>
+    <a href="#documentation"><img src="https://img.shields.io/badge/Docs-API_Reference-orange?style=for-the-badge" alt="Documentation"></a>
   </p>
 
   <p>
-    <img src="https://img.shields.io/npm/v/wundr?style=flat-square" alt="npm version">
+    <img src="https://img.shields.io/npm/v/@lumic/wundr?style=flat-square" alt="npm version">
     <img src="https://img.shields.io/github/license/lumicai/wundr?style=flat-square" alt="License">
-    <img src="https://img.shields.io/github/stars/lumicai/wundr?style=flat-square" alt="Stars">
     <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=flat-square" alt="Node Version">
+    <img src="https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square" alt="TypeScript">
   </p>
 
 </div>
 
 ---
 
-## 🎯 What is Wundr?
+## 🎯 What is Wundr Dashboard?
 
-Wundr is a revolutionary CLI-based coding agents orchestrator that transforms how teams refactor and modernize large codebases. Built by [Lumic.ai](https://lumic.ai), it combines advanced AST analysis, intelligent pattern recognition, and AI-assisted code transformation to turn months of manual refactoring into days of automated precision.
+Wundr Dashboard is a comprehensive consumer integration system that enables developers to embed intelligent code analysis capabilities into their existing projects. Built by [Lumic.ai](https://lumic.ai), it provides a flexible, secure, and extensible platform for running analysis scripts, creating custom visualizations, and integrating with your development workflow.
 
-### 🌟 Why Choose Wundr?
+### 🌟 Why Choose Wundr Dashboard?
 
-- **90% Reduction in Technical Debt** - Systematically eliminate code duplication and complexity
-- **10x Faster Refactoring** - AI agents work in parallel to transform your codebase
-- **Zero-Downtime Migration** - Incremental, safe transformations with continuous validation
-- **Enterprise-Grade Governance** - Built-in quality gates and drift detection
-- **AI-Powered Intelligence** - Smart consolidation suggestions and automated fixes
+- **🎨 Complete Customization** - Brand the dashboard with your colors, logo, and styling
+- **🔌 Extensible Plugin System** - Add custom pages, components, and functionality
+- **🛡️ Enterprise Security** - Multi-level security model for safe script execution
+- **⚡ Real-time Integration** - Hooks and callbacks for CI/CD and external tools
+- **📊 Rich Analytics** - Built-in analysis capabilities with custom metric support
+- **🚀 Quick Setup** - Get running in minutes with `npx wundr init-dashboard`
 
 ## 🚀 Quick Start
 
-Get up and running in under 5 minutes:
+Get your custom dashboard running in under 5 minutes:
 
 ```bash
-# Install Wundr globally
-npm install -g @lumic/wundr
+# Initialize dashboard in your project
+npx wundr init-dashboard
 
-# Initialize in your project
-wundr init
+# Interactive setup (recommended)
+npx wundr init-dashboard --interactive
 
-# Run your first analysis
-wundr analyze
+# Start development server
+npm run wundr:dev
 
-# Launch the interactive dashboard
-wundr dashboard
+# View your dashboard
+open http://localhost:3000
 ```
 
-That's it! Wundr will analyze your codebase and present actionable insights immediately.
+That's it! Your branded dashboard is ready with your project's analysis capabilities.
 
 ## 🎬 See It In Action
 
 ```bash
-$ wundr analyze
+$ npx wundr init-dashboard --interactive
 
-🔍 Analyzing codebase...
-  ✓ Found 2,847 TypeScript files
-  ✓ Detected 342 duplicate interfaces (89% similarity)
-  ✓ Identified 156 wrapper anti-patterns
-  ✓ Mapped 1,203 circular dependencies
+🚀 Wundr Dashboard Initialization
 
-📊 Analysis complete! View results at: http://localhost:8080/dashboard
+✓ Environment validated
+📋 Configuration Setup
+? What is your project name? My Awesome Project
+? Primary color (hex): #0066CC
+? Default analysis path: ./src
+? Enable plugin system? Yes
 
-🎯 Top recommendations:
-  1. Consolidate 342 duplicate interfaces → Save 45,000 lines
-  2. Remove 156 wrapper patterns → Improve performance by 23%
-  3. Break 1,203 circular dependencies → Enable proper modularity
+✓ Directory structure created
+✓ Configuration files generated
+✓ Starter files created
+✓ Dependencies installed
+✓ Helper scripts created
 
-💡 Run 'wundr fix --auto' to apply safe transformations automatically
+✅ Dashboard initialization complete!
+
+📋 Next Steps:
+1. Review configuration in wundr.config.json
+2. Customize theme in wundr-dashboard/themes/custom.css
+3. Start the dashboard: npm run wundr:dev
+4. Open in browser: http://localhost:3000
 ```
 
 ## 🛠️ Core Features
 
-### 1. 🧠 **Intelligent Code Analysis**
-- **AST-Powered Deep Scanning** - Goes beyond text matching to understand code structure
-- **Similarity Detection** - Finds duplicate code with configurable threshold (70-100%)
-- **Dependency Mapping** - Visualizes and untangles complex dependency graphs
-- **Anti-Pattern Recognition** - Identifies and fixes common architectural issues
+### 1. 🎨 **Complete Customization**
+- **Brand Integration** - Your logo, colors, and styling throughout the dashboard
+- **Environment Variables** - Override any setting with environment variables
+- **Theme System** - Custom CSS support with hot reloading
+- **Responsive Design** - Works perfectly on desktop, tablet, and mobile
 
-### 2. 🤖 **AI-Assisted Refactoring**
-- **Smart Merge Suggestions** - AI generates optimal consolidation strategies
-- **Automated Code Transformation** - Safe, incremental changes with rollback
-- **Context-Aware Modifications** - Preserves business logic while improving structure
-- **Test-Driven Refactoring** - Ensures all changes maintain functionality
+### 2. 🔌 **Extensible Plugin System**
+- **Custom Pages** - Add new dashboard pages with React components
+- **API Endpoints** - Create custom REST endpoints for data integration
+- **Menu Integration** - Seamlessly add items to the navigation menu  
+- **Lifecycle Hooks** - React to analysis events and configuration changes
 
-### 3. 📦 **Monorepo Migration**
-- **Automated Package Extraction** - Intelligently splits code into packages
-- **Dependency Resolution** - Handles complex interdependencies automatically
-- **Incremental Migration** - Move at your own pace with continuous validation
-- **Build System Integration** - Works with npm, pnpm, yarn, rush, and more
+### 3. 🛡️ **Multi-Level Security**
+- **Safe Mode** - Whitelist-only commands with no shell access
+- **Moderate Mode** - Limited shell features with command validation
+- **Unsafe Mode** - Full shell access for trusted environments only
+- **Resource Limits** - Memory, CPU, and timeout constraints
 
-### 4. 🛡️ **Enterprise Governance**
-- **Drift Detection** - Prevents regression with continuous monitoring
-- **Custom ESLint Rules** - Enforce architectural standards automatically
-- **Quality Gates** - Block PRs that violate standards
-- **Weekly Reports** - Track progress and technical debt reduction
+### 4. ⚡ **Real-time Integration**
+- **Webhook Support** - Push events to Slack, Teams, or custom endpoints
+- **Hook System** - Before/after callbacks for analysis and script execution
+- **External APIs** - Integrate with GitHub, Jira, or any REST service
+- **Live Updates** - Real-time dashboard updates during analysis
 
-### 5. 📊 **Real-Time Dashboard**
-- **Visual Analytics** - See your codebase health at a glance
-- **Progress Tracking** - Monitor refactoring velocity and impact
-- **Team Collaboration** - Share insights and coordinate efforts
-- **Export Reports** - Generate executive summaries and technical documentation
+### 5. 📊 **Rich Analytics Platform**
+- **Built-in Analysis** - Code quality, complexity, and dependency analysis
+- **Custom Scripts** - Run your own analysis tools through the dashboard
+- **Historical Tracking** - Track metrics over time with trend analysis
+- **Export Options** - JSON, CSV, and Markdown export formats
 
-## 📋 The Wundr Method™
+## 🔧 Integration Architecture
 
-Our battle-tested 5-phase approach ensures successful transformation:
+The Wundr Dashboard follows a modular architecture designed for maximum flexibility:
 
-### Phase 1: Foundation & Freeze (Week 1)
-```bash
-wundr init --strict        # Set up governance and standards
-wundr test baseline        # Establish testing foundation
-wundr lint --fix-all       # Apply immediate improvements
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Consumer Project                         │
+├─────────────────────────────────────────────────────────────┤
+│  wundr.config.json  │  .env.wundr  │  package.json          │
+├─────────────┬───────────────┬───────────────┬──────────────┤
+│ Plugin API  │  Hook System  │  Config API   │ Script API   │
+├─────────────┴───────────────┴───────────────┴──────────────┤
+│                   Wundr Integration Layer                   │
+│    • Configuration Manager  • Security Engine              │
+│    • Plugin Registry       • Execution Engine              │
+├─────────────────────────────────────────────────────────────┤
+│                      Dashboard UI                           │
+│    • React Components  • Real-time Updates  • Theming     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Phase 2: Deep Analysis (Week 2)
-```bash
-wundr analyze --deep       # Comprehensive codebase analysis
-wundr report --technical   # Generate detailed findings
-wundr plan                 # Create refactoring roadmap
-```
+### Integration Points
 
-### Phase 3: Tactical Consolidation (Weeks 3-4)
-```bash
-wundr consolidate --auto   # Apply safe transformations
-wundr merge --ai-assist    # Handle complex consolidations
-wundr validate             # Ensure correctness
-```
-
-### Phase 4: Strategic Refactoring (Weeks 5-6)
-```bash
-wundr refactor patterns    # Standardize architecture
-wundr extract services     # Modularize business logic
-wundr optimize deps        # Eliminate circular dependencies
-```
-
-### Phase 5: Monorepo Migration (Weeks 7-8)
-```bash
-wundr monorepo init        # Set up monorepo structure
-wundr migrate packages     # Move code to packages
-wundr verify               # Validate the migration
-```
+1. **Configuration Layer** - Centralized settings with environment override
+2. **Plugin System** - Modular extension capabilities
+3. **Hook System** - Event-driven integration with external tools
+4. **Security Layer** - Safe script execution with multiple safety levels
+5. **UI Framework** - Customizable React-based dashboard
 
 ## 💻 CLI Commands
 
-### Essential Commands
+### Dashboard Management
+
+```bash
+# Initialization
+npx wundr init-dashboard           # Initialize dashboard
+npx wundr init-dashboard --interactive  # Interactive setup
+npx wundr init-dashboard ./path    # Custom path
+
+# Dashboard Operations
+wundr dashboard                    # Start dashboard server
+wundr dashboard --dev             # Development mode
+wundr dashboard --port 4000       # Custom port
+wundr dashboard --build           # Build for production
+
+# Configuration
+wundr config                      # Interactive config manager
+wundr status                      # System status and diagnostics
+```
+
+### Analysis & Scripts
 
 ```bash
 # Analysis
-wundr analyze [path]       # Analyze codebase or specific path
-wundr similarity           # Find duplicate code
-wundr dependencies         # Map dependency graph
+wundr analyze                     # Run analysis on default path
+wundr analyze --path ./src       # Analyze specific path
+wundr analyze --format table     # Output as table
+wundr analyze --output results.json  # Save to file
 
-# Transformation
-wundr fix                  # Apply automated fixes
-wundr consolidate          # Merge duplicates
-wundr standardize          # Apply patterns
-
-# Monorepo
-wundr monorepo init        # Initialize monorepo
-wundr package create       # Create new package
-wundr migrate              # Migrate to monorepo
-
-# Governance
-wundr drift check          # Check for drift
-wundr lint                 # Run custom rules
-wundr report               # Generate reports
-
-# Utilities
-wundr dashboard            # Launch web dashboard
-wundr config               # Configure settings
-wundr help                 # Show help
+# Script Management
+wundr scripts                     # List available scripts
+wundr script <name>               # Execute registered script
+wundr script test --safety safe   # Execute with safety level
+wundr script build --timeout 60000  # Custom timeout
 ```
 
 ### Advanced Usage
 
 ```bash
-# Analyze with custom configuration
-wundr analyze --config ./custom-config.json --threshold 85
+# Custom configuration
+WUNDR_PRIMARY_COLOR="#FF6B35" wundr dashboard --dev
 
-# AI-assisted merge with context
-wundr merge duplicates --ai --context "Preserve performance optimizations"
+# Environment-specific execution
+NODE_ENV=production wundr script deploy --safety moderate
 
-# Incremental migration with validation
-wundr migrate --packages user-service,auth-service --validate
+# Export analysis with custom format
+wundr analyze --format markdown --output ./reports/analysis.md
 
-# Generate executive report
-wundr report --format pdf --audience executive --output ./reports/
+# Run with external integrations
+SLACK_WEBHOOK_URL=https://hooks.slack.com/... wundr analyze
 ```
 
-## 🏗️ Architecture
+## 📊 Configuration Examples
 
-Wundr is built on a modular, extensible architecture:
+### Basic Configuration
 
+```json
+{
+  "branding": {
+    "appName": "My Project Dashboard",
+    "primaryColor": "#0066CC",
+    "logo": "./assets/logo.png"
+  },
+  "analysis": {
+    "defaultPath": "./src",
+    "excludePatterns": ["node_modules", "dist"],
+    "includeExtensions": [".ts", ".tsx", ".js", ".jsx"]
+  },
+  "integration": {
+    "customScripts": [
+      {
+        "name": "run-tests",
+        "command": "npm test",
+        "description": "Run project tests",
+        "safetyLevel": "safe"
+      }
+    ]
+  }
+}
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Wundr CLI                         │
-├─────────────┬────────────┬────────────┬────────────────────┤
-│   Analysis  │ Transform  │  Monorepo  │    Governance      │
-│   Engine    │  Engine    │   Engine   │     Engine         │
-├─────────────┴────────────┴────────────┴────────────────────┤
-│                    Core Framework                           │
-│  • AST Parser  • Pattern Matcher  • Dependency Resolver    │
-├─────────────────────────────────────────────────────────────┤
-│                    AI Assistant Layer                       │
-│  • Code Understanding  • Merge Strategies  • Optimization  │
-├─────────────────────────────────────────────────────────────┤
-│                    Storage & Reporting                      │
-│  • File System  • Git Integration  • Dashboard Server      │
-└─────────────────────────────────────────────────────────────┘
+
+### Advanced Configuration with Hooks
+
+```javascript
+// wundr.config.js
+module.exports = {
+  branding: {
+    appName: process.env.WUNDR_APP_NAME || 'Advanced Dashboard',
+    primaryColor: process.env.WUNDR_PRIMARY_COLOR || '#0066CC'
+  },
+  integration: {
+    hooks: [
+      {
+        name: 'slack-notification',
+        event: 'after-analysis',
+        type: 'async',
+        script: `
+          const webhook = process.env.SLACK_WEBHOOK_URL;
+          if (webhook) {
+            await fetch(webhook, {
+              method: 'POST',
+              body: JSON.stringify({
+                text: \`Analysis completed: \${context.data.summary}\`
+              })
+            });
+          }
+        `
+      }
+    ],
+    webhooks: [
+      {
+        url: process.env.CUSTOM_WEBHOOK_URL,
+        method: 'POST',
+        events: ['after-analysis', 'error-occurred']
+      }
+    ]
+  }
+};
 ```
 
-## 📦 Installation
+## 📦 Installation & Setup
 
 ### Prerequisites
 - Node.js 18+
-- Git
-- 8GB+ RAM (16GB recommended for large codebases)
+- npm 8+
+- Git (for repository analysis)
 
-### Global Installation (Recommended)
+### Quick Installation
+
 ```bash
+# Install globally (recommended)
 npm install -g @lumic/wundr
+
+# Or use directly with npx
+npx @lumic/wundr init-dashboard
 ```
 
-### Project Installation
+### Development Installation
+
 ```bash
+# Add to your project
 npm install --save-dev @lumic/wundr
+
+# Add scripts to package.json
+{
+  "scripts": {
+    "wundr:dev": "wundr dashboard --dev",
+    "wundr:start": "wundr dashboard",
+    "wundr:analyze": "wundr analyze"
+  }
+}
 ```
 
-### Docker Installation
+### Docker Setup
+
 ```bash
+# Using official image
 docker pull lumic/wundr:latest
-docker run -v $(pwd):/workspace lumic/wundr analyze
+
+# Run dashboard in container
+docker run -p 3000:3000 -v $(pwd):/workspace lumic/wundr dashboard
+
+# Or build your own
+FROM node:18-alpine
+RUN npm install -g @lumic/wundr
+WORKDIR /app
+COPY . .
+RUN wundr init-dashboard --no-interactive
+EXPOSE 3000
+CMD ["wundr", "dashboard"]
 ```
 
 ## 🎯 Use Cases
 
-### 1. Legacy Modernization
-Transform 10-year-old monoliths into modern, maintainable architectures:
+### 1. **Development Team Dashboard**
+Create a branded dashboard for your development team:
 ```bash
-wundr analyze --legacy-mode
-wundr modernize --target es2023 --framework react
+# Setup team dashboard
+npx wundr init-dashboard --interactive
+# Configure team branding and scripts
+WUNDR_APP_NAME="Team Alpha Dashboard" npm run wundr:dev
 ```
 
-### 2. Microservices Extraction
-Extract services from monolithic applications:
+### 2. **CI/CD Integration**
+Integrate analysis into your continuous integration:
 ```bash
-wundr analyze --identify-boundaries
-wundr extract service --name user-service --smart
+# GitHub Actions integration
+wundr analyze --format json --output analysis-results.json
+# Webhook to Slack/Teams
+SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} wundr analyze
 ```
 
-### 3. Technical Debt Elimination
-Systematically pay down technical debt:
+### 3. **Custom Analysis Tools**
+Run your own analysis tools through the dashboard:
 ```bash
-wundr debt analyze
-wundr debt prioritize --roi
-wundr debt eliminate --budget 40h
+# Register custom script
+wundr script security-audit --safety moderate
+# View results in dashboard
+wundr dashboard --dev
 ```
 
-### 4. Code Quality Enhancement
-Improve code quality across the board:
+### 4. **Multi-Project Monitoring**
+Monitor multiple projects from a single dashboard:
 ```bash
-wundr quality baseline
-wundr quality improve --target 90
-wundr quality enforce
+# Setup multi-project configuration
+wundr init-dashboard ./project-a
+wundr init-dashboard ./project-b
+# Aggregate dashboard
+wundr dashboard --multi-project
 ```
 
-## 📊 Success Stories
+## 🔌 Plugin Examples
 
-> "Wundr helped us reduce our 2.5M line codebase by 40% while improving performance by 3x. What would have taken 18 months was done in 6 weeks."
->
-> **- Sarah Chen, CTO at TechCorp**
+### Simple Analytics Plugin
 
-> "The AI-assisted consolidation saved us thousands of hours. It understood our business logic better than some of our developers!"
->
-> **- Michael Rodriguez, Principal Engineer at FinanceApp**
+```javascript
+// plugins/analytics/index.js
+module.exports = {
+  async initialize({ api, logger }) {
+    api.addMenuItem({
+      id: 'analytics',
+      label: 'Analytics',
+      path: '/analytics'
+    });
+    
+    logger.info('Analytics plugin loaded');
+  },
+  
+  component: () => React.createElement('div', null, 'Custom Analytics Page')
+};
+```
 
-> "We migrated to a monorepo structure with zero downtime. Wundr's incremental approach made it risk-free."
->
-> **- Emma Watson, VP Engineering at StartupXYZ**
+### Integration Hook Example
+
+```javascript
+// Custom hook for GitHub integration
+{
+  name: 'github-pr-comment',
+  event: 'after-analysis',
+  type: 'async',
+  script: `
+    if (process.env.GITHUB_TOKEN && process.env.GITHUB_PR) {
+      const { Octokit } = require('@octokit/rest');
+      const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+      
+      await octokit.issues.createComment({
+        owner: process.env.GITHUB_REPOSITORY_OWNER,
+        repo: process.env.GITHUB_REPOSITORY_NAME,
+        issue_number: process.env.GITHUB_PR,
+        body: \`## Analysis Results\\n\\n\${context.data.summary}\`
+      });
+    }
+  `
+}
+```
 
 ## 🤝 Contributing
 
@@ -314,12 +432,12 @@ git push origin feature/amazing-feature
 
 ## 📚 Documentation
 
-- [Complete User Guide](docs/guides/COMPLETE_STRATEGY.md)
-- [API Reference](docs/api/README.md)
-- [Architecture Overview](docs/architecture/README.md)
-- [Best Practices](docs/guides/GOLDEN_STANDARDS.md)
-- [Troubleshooting](docs/guides/TROUBLESHOOTING.md)
-- [FAQ](docs/FAQ.md)
+- [Complete Integration API Guide](docs/integration/INTEGRATION_API.md)
+- [Configuration Reference](docs/integration/INTEGRATION_API.md#configuration-api)
+- [Plugin Development Guide](docs/integration/INTEGRATION_API.md#plugin-system)
+- [Hook System Documentation](docs/integration/INTEGRATION_API.md#hooks-and-callbacks)
+- [Security Best Practices](docs/integration/INTEGRATION_API.md#security-model)
+- [Example Templates](templates/consumer-integration/)
 
 ## 🆘 Support
 

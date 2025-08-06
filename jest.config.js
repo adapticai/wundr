@@ -16,7 +16,7 @@ module.exports = {
   ],
 
   // Module paths
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/scripts/$1',
     '^@tests/(.*)$': '<rootDir>/tests/$1'
   },
@@ -149,15 +149,7 @@ module.exports = {
 
   // Reporter configuration
   reporters: [
-    'default',
-    [
-      'jest-html-reporters',
-      {
-        publicPath: './coverage/html-report',
-        filename: 'report.html',
-        expand: true
-      }
-    ]
+    'default'
   ],
 
   // Watch mode configuration

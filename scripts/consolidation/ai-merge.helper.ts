@@ -40,7 +40,7 @@ export class AIMergeHelper {
    * Generate a merge prompt for AI assistant
    */
   generateMergePrompt(candidates: MergeCandidate): MergePrompt {
-    const entityType = candidates.entities[0].type;
+    const entityType = candidates.entities[0]?.type || 'unknown';
     const entityCount = candidates.entities.length;
 
     const instruction = this.generateInstruction(entityType, entityCount);
@@ -298,7 +298,7 @@ Please provide the merged entity following the expected format above.`;
    */
   generateBatchPrompts(batchFile: string): void {
     const batch = JSON.parse(fs.readFileSync(batchFile, 'utf-8'));
-    const outputDir = path.join('ai-prompts', new Date().toISOString().split('T')[0]);
+    const outputDir = path.join('ai-prompts', new Date().toISOString().split('T')[0] || 'unknown');
 
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
@@ -400,7 +400,7 @@ ${batch.items.map((item: any, index: number) =>
       throw new Error('No TypeScript code block found in merge result');
     }
 
-    const code = codeMatch[1];
+    const code = codeMatch[1] || '';
 
     // Append to target file or create new
     if (fs.existsSync(targetFile)) {

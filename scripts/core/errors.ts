@@ -36,7 +36,7 @@ export class NotFoundError extends AppError {
 export class FileSystemError extends AppError {
   constructor(operation: string, path: string, cause?: Error) {
     super(`File system ${operation} failed for ${path}`, 'FS_ERROR', 500);
-    if (cause) {
+    if (cause && cause.stack) {
       this.stack = cause.stack;
     }
   }

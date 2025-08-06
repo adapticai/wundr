@@ -21,7 +21,7 @@ export interface ServiceResult<T> {
     executionTime: number;
     timestamp: Date;
     filesProcessed?: number;
-  };
+  } | undefined;
 }
 
 export interface ServiceMetrics {
@@ -140,23 +140,23 @@ export abstract class BaseService extends EventEmitter {
 
   protected createSuccessResult<T>(
     data: T,
-    metadata?: Partial<ServiceResult<T>['metadata']>
+    metadata?: ServiceResult<T>['metadata']
   ): ServiceResult<T> {
     return {
       success: true,
       data,
-      metadata: metadata as ServiceResult<T>['metadata'],
+      metadata,
     };
   }
 
   protected createErrorResult(
     error: AppError,
-    metadata?: Partial<ServiceResult<any>['metadata']>
+    metadata?: ServiceResult<any>['metadata']
   ): ServiceResult<any> {
     return {
       success: false,
       error,
-      metadata: metadata as ServiceResult<any>['metadata'],
+      metadata,
     };
   }
 

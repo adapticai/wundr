@@ -1,0 +1,69 @@
+{
+  "branding": {
+    "appName": "My Project Dashboard",
+    "primaryColor": "#0066CC",
+    "secondaryColor": "#6B7280",
+    "logo": "./assets/logo.png",
+    "favicon": "./assets/favicon.ico"
+  },
+  "analysis": {
+    "defaultPath": "./src",
+    "excludePatterns": [
+      "node_modules",
+      "dist",
+      "build",
+      ".git",
+      "coverage",
+      "*.min.js",
+      "*.map"
+    ],
+    "includeExtensions": [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx",
+      ".vue",
+      ".py",
+      ".java",
+      ".cs"
+    ],
+    "maxFileSize": 1048576,
+    "enableRealtime": false
+  },
+  "integration": {
+    "customScripts": [
+      {
+        "name": "run-tests",
+        "command": "npm test",
+        "description": "Run project tests",
+        "safetyLevel": "safe"
+      },
+      {
+        "name": "lint-code",
+        "command": "npm run lint",
+        "description": "Run code linting",
+        "safetyLevel": "safe"
+      },
+      {
+        "name": "build-project",
+        "command": "npm run build",
+        "description": "Build the project",
+        "safetyLevel": "safe"
+      },
+      {
+        "name": "type-check",
+        "command": "npm run type-check",
+        "description": "Run TypeScript type checking",
+        "safetyLevel": "safe"
+      }
+    ],
+    "webhooks": [],
+    "apiEndpoints": []
+  },
+  "plugins": [
+    "@wundr/core-plugins"
+  ],
+  "environment": "development",
+  "port": 3000,
+  "basePath": "/"
+}

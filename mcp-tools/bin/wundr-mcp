@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+const { spawn } = require('child_process');
+const path = require('path');
+
+// Resolve the server path
+const serverPath = path.join(__dirname, '..', 'dist', 'server.js');
+
+// Spawn the server process
+const server = spawn(process.execPath, [serverPath], {
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    NODE_ENV: process.env.NODE_ENV || 'production'
+  }
+});
+
+// Handle errors
+server.on('error', (err) => {
+  console.error('Failed to start Wundr MCP server:', err);
+  process.exit(1);
+});
+
+// Handle exit
+server.on('exit', (code, signal) => {
+  if (signal) {
+    console.log(`Wundr MCP server terminated by signal: ${signal}`);
+  } else if (code !== 0) {
+    console.error(`Wundr MCP server exited with code: ${code}`);
+  }
+  process.exit(code || 0);
+});
+
+// Handle process termination
+process.on('SIGINT', () => {
+  server.kill('SIGINT');
+});
+
+process.on('SIGTERM', () => {
+  server.kill('SIGTERM');
+});

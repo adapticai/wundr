@@ -1,0 +1,50 @@
+{
+  "name": "@wundr/{{PACKAGE_NAME}}",
+  "version": "0.0.1",
+  "description": "{{PACKAGE_DESCRIPTION}}",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist coverage",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "wundr",
+    "{{PACKAGE_NAME}}"
+  ],
+  "author": "Lumic.ai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lumicai/wundr.git",
+    "directory": "packages/{{PACKAGE_NAME}}"
+  },
+  "bugs": {
+    "url": "https://github.com/lumicai/wundr/issues"
+  },
+  "homepage": "https://wundr.io",
+  "devDependencies": {
+    "@wundr/eslint-config": "workspace:*",
+    "@wundr/jest-config": "workspace:*",
+    "@wundr/prettier-config": "workspace:*",
+    "@wundr/typescript-config": "workspace:*"
+  },
+  "prettier": "@wundr/prettier-config",
+  "eslintConfig": {
+    "extends": "@wundr/eslint-config"
+  }
+}
