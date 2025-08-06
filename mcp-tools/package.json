@@ -2,6 +2,17 @@
   "name": "@wundr/mcp-tools",
   "version": "1.0.0",
   "description": "MCP Tools for Wundr toolkit integration with Claude Code",
+  "keywords": [
+    "mcp",
+    "claude-code",
+    "wundr",
+    "toolkit",
+    "governance",
+    "standardization",
+    "monorepo"
+  ],
+  "license": "MIT",
+  "author": "Wundr Team",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,41 +26,30 @@
   ],
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf dist",
     "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "npm run build",
     "start": "node dist/server.js",
     "test": "jest",
-    "lint": "eslint src --ext .ts",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "zod": "^3.22.0",
-    "ts-morph": "^21.0.1",
+    "fs-extra": "^11.2.0",
     "glob": "^10.3.10",
-    "fs-extra": "^11.2.0"
+    "ts-morph": "^21.0.1",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@types/node": "^20.9.0",
     "@types/fs-extra": "^11.0.4",
-    "typescript": "^5.2.2",
     "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.4.1",
-    "eslint": "^8.54.0",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0"
-  },
-  "keywords": [
-    "mcp",
-    "claude-code",
-    "wundr",
-    "toolkit",
-    "governance",
-    "standardization",
-    "monorepo"
-  ],
-  "author": "Wundr Team",
-  "license": "MIT"
+    "typescript": "^5.2.2"
+  }
 }
