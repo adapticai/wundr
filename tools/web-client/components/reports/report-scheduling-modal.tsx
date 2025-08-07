@@ -72,7 +72,7 @@ export function ReportSchedulingModal({ onClose }: ReportSchedulingModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     templateId: '',
-    frequency: 'weekly' as const,
+    frequency: 'weekly' as 'daily' | 'weekly' | 'monthly' | 'quarterly',
     dayOfWeek: 1,
     dayOfMonth: 1,
     time: '09:00',

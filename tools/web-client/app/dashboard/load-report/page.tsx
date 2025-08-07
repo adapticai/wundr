@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAnalysis } from '@/lib/contexts/analysis-context';
+import { useReports } from '@/hooks/reports/use-reports';
+import { ReportService } from '@/lib/services/report-service';
 import { useChartTheme } from '@/hooks/chart/useChartTheme';
 import { useDataCache } from '@/hooks/use-data-cache';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,6 +117,7 @@ interface ComparisonMetrics {
 
 export default function LoadReportPage() {
   const { data, loading, error, loadFromFile } = useAnalysis();
+  const { templates, processAnalysisFile, exportReportEnhanced, getReportContent } = useReports();
   const chartTheme = useChartTheme();
   const { cache } = useDataCache<LoadedReport>('load-reports');
   
@@ -126,6 +129,9 @@ export default function LoadReportPage() {
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date');
   const [filterBy, setFilterBy] = useState<'all' | 'recent' | 'large' | 'complex'>('all');
   const [isUploading, setIsUploading] = useState(false);
+  const [showReportGeneration, setShowReportGeneration] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('comprehensive-analysis');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   // Load reports from cache on mount
   useEffect(() => {
@@ -167,18 +173,18 @@ export default function LoadReportPage() {
         fileSize: file.size,
         analysisData,
         summary: analysisData.summary || {
-          totalFiles: 0,
-          totalEntities: 0,
-          duplicateClusters: 0,
-          circularDependencies: 0,
-          unusedExports: 0,
-          codeSmells: 0,
+          totalFiles: analysisData.metrics?.overview?.totalFiles || 0,
+          totalEntities: analysisData.metrics?.overview?.totalEntities || analysisData.entities?.length || 0,
+          duplicateClusters: analysisData.duplicates?.length || 0,
+          circularDependencies: analysisData.circularDependencies?.length || 0,
+          unusedExports: analysisData.metrics?.dependencies?.unused || 0,
+          codeSmells: analysisData.metrics?.issues?.total || 0,
         },
         metadata: {
-          version: analysisData.version || 'Unknown',
-          generator: analysisData.generator || 'Wundr Analysis',
+          version: analysisData.version || analysisData.metadata?.version || 'Unknown',
+          generator: analysisData.generator || analysisData.metadata?.generator || 'Wundr Analysis',
           environment: analysisData.environment || 'Production',
-          duration: analysisData.metadata?.duration || 0,
+          duration: analysisData.metadata?.duration || analysisData.duration || 0,
         },
       };
 
@@ -196,6 +202,60 @@ export default function LoadReportPage() {
       setIsUploading(false);
       // Reset file input
       event.target.value = '';
+    }
+  };
+
+  const handleGenerateReport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsGeneratingReport(true);
+    try {
+      // Generate report using ReportService
+      const reportId = await processAnalysisFile(file, selectedTemplate);
+      
+      // Show success message
+      alert(`Report generated successfully! Report ID: ${reportId}`);
+      
+      // Optionally navigate to reports page or refresh
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      alert(`Failed to generate report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsGeneratingReport(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  const handleExportReportEnhanced = async (report: LoadedReport, format: 'json' | 'csv' | 'html' = 'json') => {
+    try {
+      if (format === 'json') {
+        // Export original analysis data
+        const dataStr = JSON.stringify(report.analysisData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${report.name}_analysis.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      } else {
+        // Use ReportService for enhanced export if report content exists
+        const reportContent = await getReportContent(report.id);
+        if (reportContent) {
+          await ReportService.exportReport(reportContent, format, report.name);
+        } else {
+          throw new Error('Report content not found for enhanced export');
+        }
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      // Fallback to basic JSON export
+      handleExportReport(report);
     }
   };
 
@@ -387,6 +447,14 @@ export default function LoadReportPage() {
             <GitCompare className="mr-2 h-4 w-4" />
             {comparisonMode ? 'Exit Compare' : 'Compare'}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowReportGeneration(!showReportGeneration)}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Generate Report
+          </Button>
           <Label htmlFor="file-upload" className="cursor-pointer">
             <Button disabled={isUploading} asChild>
               <span>
@@ -395,7 +463,7 @@ export default function LoadReportPage() {
                 ) : (
                   <Upload className="mr-2 h-4 w-4" />
                 )}
-                {isUploading ? 'Uploading...' : 'Upload Report'}
+                {isUploading ? 'Uploading...' : 'Load Analysis'}
               </span>
             </Button>
           </Label>
@@ -409,6 +477,79 @@ export default function LoadReportPage() {
           />
         </div>
       </div>
+
+      {/* Report Generation Section */}
+      {showReportGeneration && (
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Generate Professional Report
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Upload an analysis file and generate a comprehensive report with insights, recommendations, and exportable formats.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="template-select">Report Template</Label>
+                <select
+                  id="template-select"
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  className="w-full px-3 py-2 border border-input bg-background rounded-md mt-1"
+                >
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name} - {template.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>Upload Analysis File</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Label htmlFor="report-generation-upload" className="cursor-pointer flex-1">
+                    <Button 
+                      disabled={isGeneratingReport} 
+                      asChild 
+                      className="w-full"
+                    >
+                      <span>
+                        {isGeneratingReport ? (
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="mr-2 h-4 w-4" />
+                        )}
+                        {isGeneratingReport ? 'Generating...' : 'Upload & Generate'}
+                      </span>
+                    </Button>
+                  </Label>
+                  <Input
+                    id="report-generation-upload"
+                    type="file"
+                    accept=".json"
+                    onChange={handleGenerateReport}
+                    className="hidden"
+                    disabled={isGeneratingReport}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h4 className="font-medium mb-2">Selected Template: {templates.find(t => t.id === selectedTemplate)?.name}</h4>
+              <p className="text-sm text-muted-foreground mb-2">
+                {templates.find(t => t.id === selectedTemplate)?.description}
+              </p>
+              <div className="text-xs text-muted-foreground">
+                Estimated processing time: ~{Math.floor((templates.find(t => t.id === selectedTemplate)?.estimatedDuration || 300) / 60)} minutes
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {loadedReports.length === 0 ? (
         <Card className="flex-1">
@@ -543,7 +684,7 @@ export default function LoadReportPage() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleExportReport(report);
+                            handleExportReportEnhanced(report, 'json');
                           }}
                         >
                           <Download className="h-4 w-4" />
@@ -620,10 +761,10 @@ export default function LoadReportPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleExportReport(selectedReport)}
+                          onClick={() => handleExportReportEnhanced(selectedReport, 'html')}
                         >
                           <Download className="mr-2 h-4 w-4" />
-                          Export
+                          Export HTML
                         </Button>
                       </div>
                     </div>
@@ -694,7 +835,7 @@ export default function LoadReportPage() {
                 </div>
 
                 {/* Charts */}
-                <DashboardCharts data={selectedReport.analysisData} />
+                <DashboardCharts data={selectedReport.analysisData as any} />
               </>
             )}
           </TabsContent>

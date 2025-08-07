@@ -41,7 +41,7 @@ export function DependencyNetwork({
   const { theme } = useTheme()
   const [zoom, setZoom] = useState(1)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number | undefined>(undefined)
 
   // Force-directed graph simulation
   useEffect(() => {

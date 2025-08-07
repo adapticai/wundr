@@ -8,19 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Download, RefreshCw, TrendingUp, Clock, Package } from "lucide-react"
 
-interface DependencyData {
-  name: string
-  version: string
-  latestVersion: string
-  type: 'dependency' | 'devDependency' | 'peerDependency'
-  size: number
-  vulnerabilities: number
-  lastUpdated: string
-  weeklyDownloads: number
-}
+import { 
+  exportToCSV,
+  exportToJSON
+} from '@/lib/utils'
+import type { DependencyData } from '@/app/api/analysis/dependencies/route'
 
 interface PackageVersionChartProps {
-  dependencies: DependencyData[]
+  dependencies?: DependencyData[]
 }
 
 interface VersionAnalysis {
@@ -41,39 +36,136 @@ interface VersionDistribution {
   percentage: number
 }
 
-export function PackageVersionChart({ dependencies }: PackageVersionChartProps) {
+export function PackageVersionChart({ dependencies: initialDependencies = [] }: PackageVersionChartProps) {
+  const [dependencies, setDependencies] = useState<DependencyData[]>(initialDependencies)
   const [versionAnalysis, setVersionAnalysis] = useState<VersionAnalysis[]>([])
   const [versionDistribution, setVersionDistribution] = useState<VersionDistribution[]>([])
   const [filterType, setFilterType] = useState("all")
   const [sortBy, setSortBy] = useState("risk")
   const [riskFilter, setRiskFilter] = useState("all")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (dependencies.length === 0) {
+      loadPackageData()
+    } else {
+      analyzeVersions()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (dependencies.length > 0) {
+      analyzeVersions()
+    }
+  }, [dependencies])
+
+  const loadPackageData = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      // Mock data - in production this would parse package.json files
+      let packages: any[] = []
+      
+      setDependencies(packages)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load package data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const refreshAnalysis = () => {
     analyzeVersions()
-  }, [dependencies, analyzeVersions])
+  }
+
+  const handleExport = () => {
+    const exportData = {
+      summary: {
+        totalPackages: dependencies.length,
+        outdatedPackages: versionAnalysis.filter(v => v.versionsBehind > 0).length,
+        criticalRiskPackages: versionAnalysis.filter(v => v.riskLevel === 'critical').length,
+        distribution: versionDistribution
+      },
+      analysis: versionAnalysis.map(item => ({
+        package: item.package,
+        currentVersion: item.currentVersion,
+        latestVersion: item.latestVersion,
+        versionsBehind: item.versionsBehind,
+        riskLevel: item.riskLevel,
+        updateType: item.updateType,
+        daysSinceUpdate: item.daysSinceUpdate
+      })),
+      exportedAt: new Date().toISOString()
+    }
+    
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
+    exportToJSON(exportData, `package-version-analysis-${timestamp}.json`)
+  }
+
+  const compareVersions = (current: string, latest: string) => {
+    const parseVersion = (v: string) => {
+      const parts = v.split('.').map(p => parseInt(p) || 0);
+      return { major: parts[0] || 0, minor: parts[1] || 0, patch: parts[2] || 0 };
+    };
+    
+    const currentV = parseVersion(current);
+    const latestV = parseVersion(latest);
+    
+    let updateType: 'major' | 'minor' | 'patch' = 'patch';
+    let versionsBehind = 0;
+    
+    if (latestV.major > currentV.major) {
+      updateType = 'major';
+      versionsBehind = latestV.major - currentV.major;
+    } else if (latestV.minor > currentV.minor) {
+      updateType = 'minor';
+      versionsBehind = latestV.minor - currentV.minor;
+    } else if (latestV.patch > currentV.patch) {
+      updateType = 'patch';
+      versionsBehind = latestV.patch - currentV.patch;
+    }
+    
+    return { updateType, versionsBehind };
+  };
 
   const analyzeVersions = useCallback(() => {
     const analysis: VersionAnalysis[] = dependencies.map(dep => {
-      const current = parseVersion(dep.version)
-      const latest = parseVersion(dep.latestVersion)
+      if (!dep.latestVersion) {
+        return {
+          package: dep.name,
+          currentVersion: dep.version || 'unknown',
+          latestVersion: 'unknown',
+          versionsBehind: 0,
+          riskLevel: 'low' as const,
+          updateType: 'patch' as const,
+          daysSinceUpdate: 0
+        }
+      }
       
-      const versionsBehind = calculateVersionsBehind(current, latest)
-      const updateType = getUpdateType(current, latest)
-      const riskLevel = calculateRiskLevel(versionsBehind, updateType, dep.lastUpdated)
-      const daysSinceUpdate = Math.floor(
-        (Date.now() - new Date(dep.lastUpdated).getTime()) / (1000 * 60 * 60 * 24)
+      const versionComparison = compareVersions(dep.version || '0.0.0', dep.latestVersion)
+      const riskLevel = calculateRiskLevel(
+        versionComparison.versionsBehind, 
+        versionComparison.updateType, 
+        dep.lastUpdated || new Date().toISOString()
       )
+      const daysSinceUpdate = dep.lastUpdated ? 
+        Math.floor((Date.now() - new Date(dep.lastUpdated).getTime()) / (1000 * 60 * 60 * 24)) : 0
 
       return {
         package: dep.name,
         currentVersion: dep.version,
         latestVersion: dep.latestVersion,
-        versionsBehind,
+        versionsBehind: versionComparison.versionsBehind,
         riskLevel,
-        updateType,
+        updateType: versionComparison.updateType,
         daysSinceUpdate,
-        changelogUrl: `https://github.com/search?q=${dep.name}+changelog&type=repositories`,
-        migrationGuide: updateType === 'major' ? `https://github.com/search?q=${dep.name}+migration+guide&type=repositories` : undefined
+        changelogUrl: dep.repositoryUrl ? 
+          `${dep.repositoryUrl}/releases` : 
+          `https://www.npmjs.com/package/${dep.name}?activeTab=versions`,
+        migrationGuide: versionComparison.updateType === 'major' ? 
+          `https://github.com/search?q=${dep.name}+migration+guide&type=repositories` : undefined
       }
     })
 
@@ -81,28 +173,7 @@ export function PackageVersionChart({ dependencies }: PackageVersionChartProps) 
     calculateVersionDistribution(analysis)
   }, [dependencies])
 
-  const parseVersion = (version: string) => {
-    const clean = version.replace(/[^0-9.]/g, '')
-    const parts = clean.split('.').map(Number)
-    return {
-      major: parts[0] || 0,
-      minor: parts[1] || 0,
-      patch: parts[2] || 0
-    }
-  }
 
-  const calculateVersionsBehind = (current: any, latest: any) => {
-    if (latest.major > current.major) return latest.major - current.major
-    if (latest.minor > current.minor) return latest.minor - current.minor
-    if (latest.patch > current.patch) return latest.patch - current.patch
-    return 0
-  }
-
-  const getUpdateType = (current: any, latest: any): 'patch' | 'minor' | 'major' => {
-    if (latest.major > current.major) return 'major'
-    if (latest.minor > current.minor) return 'minor'
-    return 'patch'
-  }
 
   const calculateRiskLevel = (versionsBehind: number, updateType: string, lastUpdated: string): 'low' | 'medium' | 'high' | 'critical' => {
     const daysSinceUpdate = Math.floor((Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24))
@@ -182,6 +253,39 @@ export function PackageVersionChart({ dependencies }: PackageVersionChartProps) 
     }
   }
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mr-2" />
+              Loading package version analysis...
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <p className="text-lg font-semibold mb-2">Error Loading Package Data</p>
+              <p className="text-sm">{error}</p>
+              <Button onClick={loadPackageData} className="mt-4">
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -194,11 +298,19 @@ export function PackageVersionChart({ dependencies }: PackageVersionChartProps) 
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleExport}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Export Report
               </Button>
-              <Button variant="outline" size="sm" onClick={analyzeVersions}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshAnalysis}
+              >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh Analysis
               </Button>

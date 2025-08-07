@@ -22,35 +22,15 @@ import {
   AlertCircle,
   Info
 } from 'lucide-react';
-import * as d3 from 'd3';
+const d3 = require('d3');
 
-// Types for circular dependency analysis
-interface DependencyNode {
-  id: string;
-  name: string;
-  path: string;
-  type: 'file' | 'module' | 'package';
-  size: number;
-  dependencies: string[];
-  dependents: string[];
-}
-
-interface CircularDependency {
-  id: string;
-  cycle: string[];
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  impact: number;
-  description: string;
-  suggestions: ResolutionSuggestion[];
-}
-
-interface ResolutionSuggestion {
-  type: 'extract' | 'invert' | 'merge' | 'interface';
-  description: string;
-  effort: 'low' | 'medium' | 'high';
-  risk: 'low' | 'medium' | 'high';
-  steps: string[];
-}
+import type { 
+  DependencyNode, 
+  CircularDependency, 
+  ResolutionSuggestion,
+  CircularAnalysisResponse 
+} from '@/app/api/analysis/circular/route'
+import type { ApiResponse } from '@/types/data'
 
 interface GraphData {
   nodes: DependencyNode[];
@@ -73,271 +53,45 @@ interface D3SimulationLink {
   type: 'dependency' | 'circular';
 }
 
-// Circular dependency detection algorithm
-class CircularDependencyDetector {
-  private graph: Map<string, Set<string>> = new Map();
-  private nodes: Map<string, DependencyNode> = new Map();
-
-  constructor(dependencies: DependencyNode[]) {
-    this.buildGraph(dependencies);
-  }
-
-  private buildGraph(dependencies: DependencyNode[]) {
-    // Build adjacency list
-    dependencies.forEach(node => {
-      this.nodes.set(node.id, node);
-      this.graph.set(node.id, new Set(node.dependencies));
-    });
-  }
-
-  detectCircularDependencies(): CircularDependency[] {
-    const visited = new Set<string>();
-    const recursionStack = new Set<string>();
-    const cycles: string[][] = [];
-
-    const dfs = (nodeId: string, path: string[]): void => {
-      if (recursionStack.has(nodeId)) {
-        // Found a cycle
-        const cycleStart = path.indexOf(nodeId);
-        if (cycleStart !== -1) {
-          cycles.push([...path.slice(cycleStart), nodeId]);
-        }
-        return;
-      }
-
-      if (visited.has(nodeId)) return;
-
-      visited.add(nodeId);
-      recursionStack.add(nodeId);
-
-      const dependencies = this.graph.get(nodeId) || new Set();
-      dependencies.forEach(depId => {
-        dfs(depId, [...path, nodeId]);
-      });
-
-      recursionStack.delete(nodeId);
-    };
-
-    // Check all nodes for cycles
-    this.graph.forEach((_, nodeId) => {
-      if (!visited.has(nodeId)) {
-        dfs(nodeId, []);
-      }
-    });
-
-    // Convert cycles to CircularDependency objects
-    return cycles.map((cycle, index) => this.analyzeCycle(cycle, index));
-  }
-
-  private analyzeCycle(cycle: string[], index: number): CircularDependency {
-    const impact = this.calculateImpact(cycle);
-    const severity = this.determineSeverity(cycle, impact);
-    const suggestions = this.generateSuggestions(cycle);
-
-    return {
-      id: `cycle-${index}`,
-      cycle,
-      severity,
-      impact,
-      description: this.generateDescription(cycle),
-      suggestions
-    };
-  }
-
-  private calculateImpact(cycle: string[]): number {
-    // Calculate impact based on node sizes and dependency counts
-    let totalImpact = 0;
-    cycle.forEach(nodeId => {
-      const node = this.nodes.get(nodeId);
-      if (node) {
-        totalImpact += node.size + node.dependencies.length + node.dependents.length;
-      }
-    });
-    return totalImpact;
-  }
-
-  private determineSeverity(cycle: string[], impact: number): 'low' | 'medium' | 'high' | 'critical' {
-    const cycleLength = cycle.length;
-    
-    if (cycleLength <= 2 && impact < 100) return 'low';
-    if (cycleLength <= 3 && impact < 500) return 'medium';
-    if (cycleLength <= 5 && impact < 1000) return 'high';
-    return 'critical';
-  }
-
-  private generateDescription(cycle: string[]): string {
-    const nodeNames = cycle.map(id => this.nodes.get(id)?.name || id);
-    return `Circular dependency between: ${nodeNames.join(' → ')} → ${nodeNames[0]}`;
-  }
-
-  private generateSuggestions(cycle: string[]): ResolutionSuggestion[] {
-    const suggestions: ResolutionSuggestion[] = [];
-
-    // Extract common functionality
-    suggestions.push({
-      type: 'extract',
-      description: 'Extract common functionality into a separate module',
-      effort: 'medium',
-      risk: 'low',
-      steps: [
-        'Identify shared functionality between modules',
-        'Create a new utility module',
-        'Move shared code to the utility module',
-        'Update imports in both modules'
-      ]
-    });
-
-    // Dependency inversion
-    suggestions.push({
-      type: 'invert',
-      description: 'Use dependency injection or interfaces to break the cycle',
-      effort: 'high',
-      risk: 'medium',
-      steps: [
-        'Define interfaces for dependencies',
-        'Implement dependency injection',
-        'Update module imports',
-        'Test the refactored code'
-      ]
-    });
-
-    // Module merging (for small cycles)
-    if (cycle.length <= 2) {
-      suggestions.push({
-        type: 'merge',
-        description: 'Merge closely related modules',
-        effort: 'low',
-        risk: 'high',
-        steps: [
-          'Analyze module responsibilities',
-          'Merge related functionality',
-          'Update all imports',
-          'Ensure no functionality is lost'
-        ]
-      });
-    }
-
-    return suggestions;
-  }
-}
-
-// Sample data generator
-const generateSampleData = (): DependencyNode[] => {
-  return [
-    {
-      id: 'auth',
-      name: 'AuthService',
-      path: '/src/services/auth.ts',
-      type: 'module',
-      size: 250,
-      dependencies: ['user', 'token'],
-      dependents: ['app', 'dashboard']
-    },
-    {
-      id: 'user',
-      name: 'UserService',
-      path: '/src/services/user.ts',
-      type: 'module',
-      size: 180,
-      dependencies: ['auth', 'profile'],
-      dependents: ['dashboard', 'settings']
-    },
-    {
-      id: 'profile',
-      name: 'ProfileService',
-      path: '/src/services/profile.ts',
-      type: 'module',
-      size: 120,
-      dependencies: ['user', 'validation'],
-      dependents: ['settings', 'admin']
-    },
-    {
-      id: 'token',
-      name: 'TokenService',
-      path: '/src/services/token.ts',
-      type: 'module',
-      size: 90,
-      dependencies: ['validation'],
-      dependents: ['auth']
-    },
-    {
-      id: 'validation',
-      name: 'ValidationService',
-      path: '/src/utils/validation.ts',
-      type: 'module',
-      size: 150,
-      dependencies: [],
-      dependents: ['profile', 'token', 'forms']
-    },
-    {
-      id: 'app',
-      name: 'App',
-      path: '/src/app.ts',
-      type: 'module',
-      size: 300,
-      dependencies: ['auth', 'dashboard'],
-      dependents: []
-    },
-    {
-      id: 'dashboard',
-      name: 'Dashboard',
-      path: '/src/components/dashboard.ts',
-      type: 'module',
-      size: 400,
-      dependencies: ['user', 'auth'],
-      dependents: ['app']
-    },
-    {
-      id: 'settings',
-      name: 'Settings',
-      path: '/src/components/settings.ts',
-      type: 'module',
-      size: 200,
-      dependencies: ['user', 'profile'],
-      dependents: []
-    },
-    {
-      id: 'admin',
-      name: 'AdminPanel',
-      path: '/src/components/admin.ts',
-      type: 'module',
-      size: 350,
-      dependencies: ['profile', 'user'],
-      dependents: []
-    },
-    {
-      id: 'forms',
-      name: 'FormUtils',
-      path: '/src/utils/forms.ts',
-      type: 'module',
-      size: 100,
-      dependencies: ['validation'],
-      dependents: []
-    }
-  ];
-};
-
 export default function CircularDependencyAnalysis() {
   const [dependencies, setDependencies] = useState<DependencyNode[]>([]);
   const [circularDeps, setCircularDeps] = useState<CircularDependency[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCycle, setSelectedCycle] = useState<CircularDependency | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const svgRef = useRef<SVGSVGElement>(null);
+  const refreshAnalysisRef = useRef<() => void>(() => {});
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (refresh = false) => {
     setLoading(true);
+    setError(null);
     try {
-      // In a real app, this would fetch from an API
-      const data = generateSampleData();
-      setDependencies(data);
+      const url = new URL('/api/analysis/circular', window.location.origin);
+      if (refresh) {
+        url.searchParams.set('refresh', 'true');
+      }
+
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: ApiResponse<CircularAnalysisResponse> = await response.json();
       
-      const detector = new CircularDependencyDetector(data);
-      const cycles = detector.detectCircularDependencies();
-      setCircularDeps(cycles);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load circular dependency data');
+      }
+
+      setDependencies(result.data.nodes);
+      setCircularDeps(result.data.circularDependencies);
     } catch (error) {
-      console.error('Error loading dependency data:', error);
+      console.error('Error loading circular dependency data:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
+      setError(errorMessage);
+      setDependencies([]);
+      setCircularDeps([]);
     } finally {
       setLoading(false);
     }
@@ -346,6 +100,27 @@ export default function CircularDependencyAnalysis() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Update refreshAnalysis to use loadData
+  useEffect(() => {
+    refreshAnalysisRef.current = () => loadData(true);
+  }, [loadData]);
+
+  const exportAnalysis = useCallback(() => {
+    const data = {
+      nodes: dependencies,
+      circularDependencies: circularDeps,
+      exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'circular-dependencies.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [dependencies, circularDeps]);
 
   const renderGraph = useCallback(() => {
     const svg = d3.select(svgRef.current);
@@ -387,7 +162,7 @@ export default function CircularDependencyAnalysis() {
     });
 
     const simulation = d3.forceSimulation(graphData.nodes as D3SimulationNode[])
-      .force('link', d3.forceLink(graphData.links).id((d: D3SimulationNode) => d.id).distance(100))
+      .force('link', d3.forceLink(graphData.links).id((d: any) => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
@@ -395,13 +170,13 @@ export default function CircularDependencyAnalysis() {
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
     // Add zoom behavior
-    const zoom = d3.zoom()
+    const zoomBehavior = d3.zoom()
       .scaleExtent([0.1, 4])
-      .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-        g.attr('transform', event.transform);
+      .on('zoom', (event: any) => {
+        g.attr('transform', event.transform.toString());
       });
 
-    svg.call(zoom as d3.ZoomBehavior<SVGSVGElement, unknown>);
+    (svg as any).call(zoomBehavior);
 
     // Add links
     const link = g.append('g')
@@ -447,21 +222,21 @@ export default function CircularDependencyAnalysis() {
           setSelectedCycle(cycle);
         }
       })
-      .call(d3.drag<SVGCircleElement, DependencyNode>()
-        .on('start', (event: d3.D3DragEvent<SVGCircleElement, DependencyNode, DependencyNode>, d: D3SimulationNode) => {
+      .call(d3.drag()
+        .on('start', (event: any, d: D3SimulationNode) => {
           if (!event.active) simulation.alphaTarget(0.3).restart();
           d.fx = d.x;
           d.fy = d.y;
         })
-        .on('drag', (event: d3.D3DragEvent<SVGCircleElement, DependencyNode, DependencyNode>, d: D3SimulationNode) => {
+        .on('drag', (event: any, d: D3SimulationNode) => {
           d.fx = event.x;
           d.fy = event.y;
         })
-        .on('end', (event: d3.D3DragEvent<SVGCircleElement, DependencyNode, DependencyNode>, d: D3SimulationNode) => {
+        .on('end', (event: any, d: D3SimulationNode) => {
           if (!event.active) simulation.alphaTarget(0);
           d.fx = null;
           d.fy = null;
-        }));
+        }) as any);
 
     // Add node labels
     const label = g.append('g')
@@ -477,18 +252,18 @@ export default function CircularDependencyAnalysis() {
 
     simulation.on('tick', () => {
       link
-        .attr('x1', (d: D3SimulationLink) => d.source.x)
-        .attr('y1', (d: D3SimulationLink) => d.source.y)
-        .attr('x2', (d: D3SimulationLink) => d.target.x)
-        .attr('y2', (d: D3SimulationLink) => d.target.y);
+        .attr('x1', (d: any) => d.source.x)
+        .attr('y1', (d: any) => d.source.y)
+        .attr('x2', (d: any) => d.target.x)
+        .attr('y2', (d: any) => d.target.y);
 
       node
-        .attr('cx', (d: D3SimulationNode) => d.x)
-        .attr('cy', (d: D3SimulationNode) => d.y);
+        .attr('cx', (d: any) => d.x)
+        .attr('cy', (d: any) => d.y);
 
       label
-        .attr('x', (d: D3SimulationNode) => d.x)
-        .attr('y', (d: D3SimulationNode) => d.y + 4);
+        .attr('x', (d: any) => d.x)
+        .attr('y', (d: any) => d.y + 4);
     });
   }, [dependencies, circularDeps]);
 
@@ -527,21 +302,21 @@ export default function CircularDependencyAnalysis() {
     return matchesSearch && matchesSeverity;
   });
 
-  const exportData = () => {
-    const data = {
-      dependencies,
-      circularDependencies: circularDeps,
-      exportDate: new Date().toISOString()
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'circular-dependencies.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  if (error) {
+    return (
+      <div className="container mx-auto p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Analysis Failed</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => loadData()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -553,11 +328,11 @@ export default function CircularDependencyAnalysis() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={loadData} disabled={loading} variant="outline">
+          <Button onClick={() => refreshAnalysisRef.current()} disabled={loading} variant="outline">
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button onClick={exportData} variant="outline">
+          <Button onClick={exportAnalysis} variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>

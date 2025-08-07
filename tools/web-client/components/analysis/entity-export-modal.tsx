@@ -16,10 +16,11 @@ import {
   X,
   CheckCircle,
 } from 'lucide-react';
-import type { Entity } from '@/lib/contexts/analysis-context';
+import type { EntityData } from '@/app/api/analysis/entities/route';
+import { exportToCSV, exportToJSON } from '@/lib/utils';
 
 interface EntityExportModalProps {
-  entities: Entity[];
+  entities: EntityData[];
   onClose: () => void;
 }
 
@@ -147,13 +148,13 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
       if (exportOptions.includeFields.type) exportEntity.type = entity.type;
       if (exportOptions.includeFields.file) exportEntity.file = entity.file;
       if (exportOptions.includeFields.line) exportEntity.line = entity.line;
-      if (exportOptions.includeFields.column) exportEntity.column = entity.column;
-      if (exportOptions.includeFields.exportType) exportEntity.exportType = entity.exportType;
+      if (exportOptions.includeFields.column) exportEntity.column = (entity as any).column;
+      if (exportOptions.includeFields.exportType) exportEntity.exportType = (entity as any).exportType;
       if (exportOptions.includeFields.complexity) exportEntity.complexity = entity.complexity;
       if (exportOptions.includeFields.dependencies) exportEntity.dependencies = entity.dependencies;
-      if (exportOptions.includeFields.jsDoc) exportEntity.jsDoc = entity.jsDoc;
-      if (exportOptions.includeFields.signature) exportEntity.signature = entity.signature;
-      if (exportOptions.includeFields.members) exportEntity.members = entity.members;
+      if (exportOptions.includeFields.jsDoc) exportEntity.jsDoc = (entity as any).jsDoc;
+      if (exportOptions.includeFields.signature) exportEntity.signature = (entity as any).signature;
+      if (exportOptions.includeFields.members) exportEntity.members = (entity as any).members;
       
       return exportEntity;
     });
@@ -161,36 +162,6 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
     return exportData;
   };
 
-  const exportAsJSON = (data: any[]) => {
-    const jsonStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    return blob;
-  };
-
-  const exportAsCSV = (data: any[]) => {
-    if (data.length === 0) return new Blob(['No data to export'], { type: 'text/csv' });
-
-    const headers = Object.keys(data[0]);
-    const csvRows = [headers.join(',')];
-
-    data.forEach(row => {
-      const values = headers.map(header => {
-        const value = row[header];
-        if (Array.isArray(value)) {
-          return `"${value.join('; ')}"`;
-        }
-        if (typeof value === 'object' && value !== null) {
-          return `"${JSON.stringify(value)}"`;
-        }
-        return `"${value || ''}"`;
-      });
-      csvRows.push(values.join(','));
-    });
-
-    const csvStr = csvRows.join('\n');
-    const blob = new Blob([csvStr], { type: 'text/csv' });
-    return blob;
-  };
 
   const exportAsMarkdown = (data: any[]) => {
     if (data.length === 0) return new Blob(['# No data to export'], { type: 'text/markdown' });
@@ -287,39 +258,37 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
     
     try {
       const data = generateExportData();
-      let blob: Blob;
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
       let filename: string;
 
       switch (exportOptions.format) {
         case 'json':
-          blob = exportAsJSON(data);
-          filename = `entities-export-${Date.now()}.json`;
+          filename = `entities-export-${timestamp}.json`;
+          exportToJSON({
+            entities: data,
+            filters: exportOptions.filters,
+            fields: exportOptions.includeFields,
+            exportedAt: new Date().toISOString(),
+            totalEntities: filteredEntities.length
+          }, filename);
           break;
         case 'csv':
-          blob = exportAsCSV(data);
-          filename = `entities-export-${Date.now()}.csv`;
+          filename = `entities-export-${timestamp}.csv`;
+          exportToCSV(data, filename);
           break;
         case 'markdown':
-          blob = exportAsMarkdown(data);
-          filename = `entities-export-${Date.now()}.md`;
+          const blob = exportAsMarkdown(data);
+          filename = `entities-export-${timestamp}.md`;
+          downloadBlob(blob, filename);
           break;
         case 'html':
-          blob = exportAsHTML(data);
-          filename = `entities-export-${Date.now()}.html`;
+          const htmlBlob = exportAsHTML(data);
+          filename = `entities-export-${timestamp}.html`;
+          downloadBlob(htmlBlob, filename);
           break;
         default:
           throw new Error('Invalid export format');
       }
-
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
       setExportComplete(true);
       setTimeout(() => {
@@ -331,6 +300,17 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
     } finally {
       setIsExporting(false);
     }
+  };
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const getFormatIcon = (format: ExportFormat) => {

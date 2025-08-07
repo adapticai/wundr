@@ -489,7 +489,7 @@ ${errorOutput}
                         disabled={isExecuting}
                       >
                         <Upload className="h-3 w-3 mr-2" />
-                        {config.name}
+                        {String(config.name)}
                       </Button>
                     ))}
                   </CardContent>

@@ -23,45 +23,13 @@ import { SecurityVulnerabilityReport } from "@/components/analysis/security-vuln
 import { DependencySizeAnalyzer } from "@/components/analysis/dependency-size-analyzer"
 import { OutdatedPackagesTable } from "@/components/analysis/outdated-packages-table"
 
-interface DependencyData {
-  name: string
-  version: string
-  latestVersion: string
-  type: 'dependency' | 'devDependency' | 'peerDependency'
-  size: number
-  vulnerabilities: number
-  lastUpdated: string
-  license: string
-  description: string
-  dependencies: string[]
-  maintainers: number
-  weeklyDownloads: number
-  repositoryUrl?: string
-  homepageUrl?: string
-}
-
-interface SecurityVulnerability {
-  id: string
-  packageName: string
-  severity: 'low' | 'moderate' | 'high' | 'critical'
-  title: string
-  description: string
-  patchedVersions: string
-  vulnerableVersions: string
-  cwe: string[]
-  cvss: number
-  publishedAt: string
-}
-
-interface DependencyStats {
-  total: number
-  outdated: number
-  vulnerable: number
-  totalSize: number
-  directDependencies: number
-  devDependencies: number
-  peerDependencies: number
-}
+import type { 
+  DependencyData, 
+  SecurityVulnerability, 
+  DependencyStats,
+  DependencyAnalysisResponse 
+} from '@/app/api/analysis/dependencies/route'
+import type { ApiResponse } from '@/types/data'
 
 export default function DependenciesAnalysisPage() {
   const [dependencies, setDependencies] = useState<DependencyData[]>([])
@@ -81,18 +49,47 @@ export default function DependenciesAnalysisPage() {
   const [severityFilter, setSeverityFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [error, setError] = useState<string | null>(null)
 
-  const loadDependencyData = useCallback(async () => {
+  const loadDependencyData = useCallback(async (refresh = false) => {
     setLoading(true)
+    setError(null)
     try {
-      // Simulate API calls for dependency analysis
-      await Promise.all([
-        loadPackageInfo(),
-        loadVulnerabilityData(),
-        calculateStats()
-      ])
+      const url = new URL('/api/analysis/dependencies', window.location.origin)
+      if (refresh) {
+        url.searchParams.set('refresh', 'true')
+      }
+
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const result: ApiResponse<DependencyAnalysisResponse> = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load dependency data')
+      }
+
+      setDependencies(result.data.dependencies)
+      setVulnerabilities(result.data.vulnerabilities)
+      setStats(result.data.stats)
     } catch (error) {
       console.error('Error loading dependency data:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load dependency data'
+      setError(errorMessage)
+      // Set empty data on error to avoid undefined state
+      setDependencies([])
+      setVulnerabilities([])
+      setStats({
+        total: 0,
+        outdated: 0,
+        vulnerable: 0,
+        totalSize: 0,
+        directDependencies: 0,
+        devDependencies: 0,
+        peerDependencies: 0
+      })
     } finally {
       setLoading(false)
     }
@@ -102,147 +99,26 @@ export default function DependenciesAnalysisPage() {
     loadDependencyData()
   }, [loadDependencyData])
 
-  const loadPackageInfo = async () => {
-    // Mock data - in real implementation, this would fetch from package.json and npm registry
-    const mockDependencies: DependencyData[] = [
-      {
-        name: "react",
-        version: "19.1.0",
-        latestVersion: "19.1.0",
-        type: "dependency",
-        size: 2580000,
-        vulnerabilities: 0,
-        lastUpdated: "2024-12-05",
-        license: "MIT",
-        description: "React is a JavaScript library for building user interfaces.",
-        dependencies: ["loose-envify"],
-        maintainers: 12,
-        weeklyDownloads: 20000000,
-        repositoryUrl: "https://github.com/facebook/react",
-        homepageUrl: "https://reactjs.org/"
-      },
-      {
-        name: "next",
-        version: "15.4.5",
-        latestVersion: "15.4.6",
-        type: "dependency",
-        size: 45600000,
-        vulnerabilities: 1,
-        lastUpdated: "2024-12-10",
-        license: "MIT",
-        description: "The React Framework for Production",
-        dependencies: ["react", "react-dom"],
-        maintainers: 8,
-        weeklyDownloads: 5000000,
-        repositoryUrl: "https://github.com/vercel/next.js",
-        homepageUrl: "https://nextjs.org"
-      },
-      {
-        name: "lodash",
-        version: "4.17.20",
-        latestVersion: "4.17.21",
-        type: "dependency",
-        size: 1400000,
-        vulnerabilities: 2,
-        lastUpdated: "2021-02-20",
-        license: "MIT",
-        description: "Lodash modular utilities.",
-        dependencies: [],
-        maintainers: 3,
-        weeklyDownloads: 35000000,
-        repositoryUrl: "https://github.com/lodash/lodash",
-        homepageUrl: "https://lodash.com/"
-      },
-      {
-        name: "@types/node",
-        version: "20.0.0",
-        latestVersion: "22.7.4",
-        type: "devDependency",
-        size: 890000,
-        vulnerabilities: 0,
-        lastUpdated: "2024-11-15",
-        license: "MIT",
-        description: "TypeScript definitions for Node.js",
-        dependencies: [],
-        maintainers: 45,
-        weeklyDownloads: 15000000,
-        repositoryUrl: "https://github.com/DefinitelyTyped/DefinitelyTyped",
-      },
-      {
-        name: "chart.js",
-        version: "4.5.0",
-        latestVersion: "4.5.0",
-        type: "dependency",
-        size: 1200000,
-        vulnerabilities: 0,
-        lastUpdated: "2024-10-22",
-        license: "MIT",
-        description: "Simple HTML5 Charts using the canvas element",
-        dependencies: [],
-        maintainers: 6,
-        weeklyDownloads: 2500000,
-        repositoryUrl: "https://github.com/chartjs/Chart.js",
-        homepageUrl: "https://www.chartjs.org"
-      }
-    ]
-    setDependencies(mockDependencies)
-  }
+  const refreshAnalysis = useCallback(() => {
+    loadDependencyData(true)
+  }, [loadDependencyData])
 
-  const loadVulnerabilityData = async () => {
-    // Mock vulnerability data
-    const mockVulnerabilities: SecurityVulnerability[] = [
-      {
-        id: "GHSA-67hx-6x53-jw92",
-        packageName: "next",
-        severity: "moderate",
-        title: "Server-Side Request Forgery in Next.js",
-        description: "Next.js applications using the Image Optimization API are vulnerable to SSRF attacks.",
-        patchedVersions: ">=15.4.6",
-        vulnerableVersions: "<15.4.6",
-        cwe: ["CWE-918"],
-        cvss: 5.3,
-        publishedAt: "2024-12-08"
-      },
-      {
-        id: "GHSA-jf85-cpcp-j695",
-        packageName: "lodash",
-        severity: "high",
-        title: "Prototype pollution in lodash",
-        description: "Lodash versions prior to 4.17.21 are vulnerable to prototype pollution.",
-        patchedVersions: ">=4.17.21",
-        vulnerableVersions: "<4.17.21",
-        cwe: ["CWE-1321"],
-        cvss: 7.5,
-        publishedAt: "2021-02-15"
-      },
-      {
-        id: "GHSA-35jh-r3h4-6jhm",
-        packageName: "lodash",
-        severity: "critical",
-        title: "Command injection in lodash template",
-        description: "Lodash template function is vulnerable to command injection.",
-        patchedVersions: ">=4.17.21",
-        vulnerableVersions: "<4.17.21",
-        cwe: ["CWE-94"],
-        cvss: 9.8,
-        publishedAt: "2021-02-15"
-      }
-    ]
-    setVulnerabilities(mockVulnerabilities)
-  }
-
-  const calculateStats = async () => {
-    // Calculate statistics from loaded data
-    setStats({
-      total: 52,
-      outdated: 8,
-      vulnerable: 3,
-      totalSize: 125400000,
-      directDependencies: 25,
-      devDependencies: 22,
-      peerDependencies: 5
-    })
-  }
+  const exportData = useCallback(() => {
+    const data = {
+      dependencies,
+      vulnerabilities,
+      stats,
+      exportDate: new Date().toISOString()
+    }
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'dependency-analysis.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [dependencies, vulnerabilities, stats])
 
   const filteredDependencies = dependencies.filter(dep => {
     const matchesSearch = dep.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -302,6 +178,22 @@ export default function DependenciesAnalysisPage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Analysis Failed</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => loadDependencyData()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -313,11 +205,11 @@ export default function DependenciesAnalysisPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={loadDependencyData} disabled={loading}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button onClick={refreshAnalysis} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh Analysis
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={exportData}>
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>

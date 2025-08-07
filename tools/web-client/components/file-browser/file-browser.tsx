@@ -26,7 +26,6 @@ import {
   formatDate,
   sortFileSystemItems,
   filterFileSystemItems,
-  generateMockFileSystem,
 } from '@/lib/file-system';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +40,64 @@ export interface FileBrowserProps {
 
 type SortBy = 'name' | 'size' | 'modified' | 'type';
 type SortOrder = 'asc' | 'desc';
+
+// Mock file system for development
+const generateMockFileSystem = (): FileSystemItem => ({
+  id: 'root',
+  name: 'root',
+  type: 'directory',
+  path: '/',
+  size: 0,
+  modified: new Date(),
+  children: [
+    {
+      id: 'src',
+      name: 'src',
+      type: 'directory',
+      path: '/src',
+      size: 0,
+      modified: new Date(),
+      children: [
+        {
+          id: 'index-ts',
+          name: 'index.ts',
+          type: 'file',
+          path: '/src/index.ts',
+          extension: 'ts',
+          size: 2048,
+          modified: new Date(),
+        },
+        {
+          id: 'app-tsx',
+          name: 'App.tsx',
+          type: 'file',
+          path: '/src/App.tsx',
+          extension: 'tsx',
+          size: 4096,
+          modified: new Date(),
+        },
+      ],
+    },
+    {
+      id: 'package-json',
+      name: 'package.json',
+      type: 'file',
+      path: '/package.json',
+      extension: 'json',
+      size: 1024,
+      modified: new Date(),
+    },
+    {
+      id: 'readme',
+      name: 'README.md',
+      type: 'file',
+      path: '/README.md',
+      extension: 'md',
+      size: 3072,
+      modified: new Date(),
+    },
+  ]
+});
 
 export function FileBrowser({
   rootPath: _rootPath = '/',
@@ -95,12 +152,26 @@ export function FileBrowser({
 
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
-    const filtered = filterFileSystemItems(currentDirectoryItems, {
-      search: searchQuery,
-      fileTypes: selectedFileTypes,
-      showHidden,
-    });
-    return sortFileSystemItems(filtered, sortBy, sortOrder);
+    // First filter by search query
+    let filtered = filterFileSystemItems(currentDirectoryItems, searchQuery);
+    
+    // Then filter by file types if any are selected
+    if (selectedFileTypes.length > 0) {
+      filtered = filtered.filter(item => {
+        if (item.type === 'directory') return true;
+        const ext = item.extension || '';
+        return selectedFileTypes.includes(ext);
+      });
+    }
+    
+    // Filter hidden files if needed
+    if (!showHidden) {
+      filtered = filtered.filter(item => !item.name.startsWith('.'));
+    }
+    
+    // Sort items (sortOrder is not supported by the current implementation)
+    const sorted = sortFileSystemItems(filtered, sortBy as 'name' | 'size' | 'date');
+    return sortOrder === 'desc' ? sorted.reverse() : sorted;
   }, [currentDirectoryItems, searchQuery, selectedFileTypes, showHidden, sortBy, sortOrder]);
 
   // Breadcrumb navigation
@@ -216,7 +287,7 @@ export function FileBrowser({
           <div className="font-medium truncate">{item.name}</div>
           <div className="text-sm text-muted-foreground flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              {typeInfo.category}
+              {typeInfo.type}
             </Badge>
             {item.size !== undefined && (
               <span>{formatFileSize(item.size)}</span>

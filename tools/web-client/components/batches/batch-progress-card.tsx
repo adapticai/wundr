@@ -39,6 +39,7 @@ export const BatchProgressCard: React.FC<BatchProgressCardProps> = ({
       case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
       case 'paused': return <Pause className="h-4 w-4 text-yellow-500" />;
       case 'pending': return <Clock className="h-4 w-4 text-gray-500" />;
+      case 'cancelled': return <XCircle className="h-4 w-4 text-gray-500" />;
       default: return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -49,7 +50,8 @@ export const BatchProgressCard: React.FC<BatchProgressCardProps> = ({
       completed: 'default',
       failed: 'destructive',
       paused: 'secondary',
-      pending: 'outline'
+      pending: 'outline',
+      cancelled: 'secondary'
     } as const;
 
     return (
@@ -167,7 +169,7 @@ export const BatchProgressCard: React.FC<BatchProgressCardProps> = ({
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-muted-foreground">Templates:</span>
-            <span className="ml-2 font-medium">{batch.templates.length}</span>
+            <span className="ml-2 font-medium">{batch.templateIds.length}</span>
           </div>
           <div>
             <span className="text-muted-foreground">Priority:</span>
@@ -210,14 +212,14 @@ export const BatchProgressCard: React.FC<BatchProgressCardProps> = ({
         <div className="space-y-2">
           <span className="text-sm font-medium">Templates:</span>
           <div className="flex flex-wrap gap-1">
-            {batch.templates.slice(0, 3).map((template) => (
+            {batch.templateIds.slice(0, 3).map((template) => (
               <Badge key={template} variant="outline" className="text-xs">
                 {template}
               </Badge>
             ))}
-            {batch.templates.length > 3 && (
+            {batch.templateIds.length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{batch.templates.length - 3} more
+                +{batch.templateIds.length - 3} more
               </Badge>
             )}
           </div>

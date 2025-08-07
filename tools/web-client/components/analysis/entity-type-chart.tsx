@@ -4,10 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Doughnut } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Entity } from '@/lib/contexts/analysis-context';
+import type { EntityData } from '@/app/api/analysis/entities/route';
 
 interface EntityTypeChartProps {
-  entities: Entity[];
+  entities: EntityData[];
 }
 
 export function EntityTypeChart({ entities }: EntityTypeChartProps) {

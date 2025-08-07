@@ -21,13 +21,13 @@ import {
   Copy,
   CheckCheck,
 } from 'lucide-react';
-import type { Entity } from '@/lib/contexts/analysis-context';
+import type { EntityData } from '@/app/api/analysis/entities/route';
 
 interface EntityDetailsTableProps {
-  entities: Entity[];
+  entities: EntityData[];
 }
 
-type SortKey = keyof Entity | 'dependencyCount';
+type SortKey = keyof EntityData | 'dependencyCount';
 type SortDirection = 'asc' | 'desc';
 
 export function EntityDetailsTable({ entities }: EntityDetailsTableProps) {

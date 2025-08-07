@@ -231,14 +231,14 @@ export function FileContentViewer({
 
     // Render markdown content
     if (isMarkdown && !showRawContent) {
-      const parsed = parseMarkdown(fileContent);
+      // parseMarkdown is async, so we'll use the content directly for now
       return (
         <div className="p-6">
           <MarkdownRenderer
-            content={parsed.content}
-            frontmatter={parsed.data}
-            showMetadata={Object.keys(parsed.data).length > 0}
-            showTableOfContents={parsed.content.length > 1000}
+            content={fileContent}
+            frontmatter={{}}
+            showMetadata={false}
+            showTableOfContents={fileContent.length > 1000}
           />
         </div>
       );

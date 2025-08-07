@@ -184,7 +184,7 @@ export default function UploadPage() {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onFileSelect={handleFileSelect}
-                fileInputRef={fileInputRef}
+                fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>}
                 maxFileSize={MAX_FILE_SIZE}
                 maxFiles={MAX_FILES}
                 acceptedTypes={['.json', '.csv', '.xlsx', '.xls']}

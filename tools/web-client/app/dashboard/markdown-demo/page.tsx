@@ -3,8 +3,18 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { MarkdownRenderer, FileContentViewer } from '@/components/markdown';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  generateReportMarkdown, 
+  parseReportMarkdown, 
+  extractReportStats,
+  generateReportTOC,
+  formatReportNumber 
+} from '@/lib/markdown-utils';
+import { ReportTemplateEngine } from '@/lib/report-templates';
+import { CompleteAnalysisData, ReportTemplate, ReportContent } from '@/types/reports';
 
 const SAMPLE_MARKDOWN = `---
 title: "Markdown Rendering Demo"
@@ -136,8 +146,304 @@ export class MarkdownProcessor {
   }
 }`;
 
+// Sample analysis data for report generation
+const SAMPLE_ANALYSIS_DATA: CompleteAnalysisData = {
+  metadata: {
+    version: '2.0.0',
+    generator: 'Wundr Analysis Engine',
+    timestamp: new Date(),
+    configuration: {
+      includeTests: true,
+      complexityThreshold: 10,
+    },
+    projectInfo: {
+      name: 'Sample React Project',
+      path: '/projects/sample-react',
+      language: 'TypeScript',
+      framework: 'React',
+      packageManager: 'npm',
+    },
+  },
+  entities: [
+    {
+      id: 'entity-1',
+      name: 'UserService',
+      path: 'src/services/user.ts',
+      type: 'class',
+      dependencies: ['DatabaseService', 'ValidationService'],
+      dependents: ['UserController', 'AuthService'],
+      complexity: {
+        cyclomatic: 15,
+        cognitive: 12,
+        halstead: {
+          volume: 245.6,
+          difficulty: 8.2,
+          effort: 2014.2,
+        },
+      },
+      metrics: {
+        linesOfCode: 156,
+        maintainabilityIndex: 68,
+        testCoverage: 85,
+      },
+      issues: [
+        {
+          id: 'issue-1',
+          type: 'code-smell',
+          severity: 'medium',
+          message: 'Complex method should be refactored',
+          rule: 'complexity-threshold',
+          startLine: 45,
+          endLine: 78,
+          suggestions: ['Extract method', 'Simplify logic'],
+        },
+      ],
+      tags: ['service', 'user-management'],
+      lastModified: new Date('2024-01-15'),
+    },
+  ],
+  duplicates: [
+    {
+      id: 'dup-1',
+      type: 'structural',
+      severity: 'high',
+      similarity: 89,
+      occurrences: [
+        {
+          path: 'src/utils/validate.ts',
+          startLine: 10,
+          endLine: 25,
+          content: 'function validateEmail(email: string) { ... }',
+          context: 'Email validation utility',
+        },
+        {
+          path: 'src/components/forms/validation.ts',
+          startLine: 5,
+          endLine: 20,
+          content: 'function validateEmail(email: string) { ... }',
+          context: 'Form validation helper',
+        },
+      ],
+      linesCount: 15,
+      tokensCount: 142,
+      recommendation: 'Extract common validation logic into a shared utility module',
+      effort: 'low',
+      impact: 'medium',
+    },
+  ],
+  circularDependencies: [
+    {
+      id: 'circular-1',
+      severity: 'warning',
+      cycle: [
+        { from: 'UserService', to: 'AuthService', type: 'import', line: 5 },
+        { from: 'AuthService', to: 'UserService', type: 'import', line: 8 },
+      ],
+      depth: 2,
+      recommendation: 'Break circular dependency by introducing an interface or moving shared code',
+      breakpoints: [
+        {
+          from: 'AuthService',
+          to: 'UserService',
+          reason: 'Extract shared types to separate module',
+          effort: 'medium',
+        },
+      ],
+    },
+  ],
+  securityIssues: [
+    {
+      id: 'security-1',
+      type: 'vulnerability',
+      severity: 'high',
+      cve: 'CVE-2023-1234',
+      cvss: 7.2,
+      path: 'package.json',
+      description: 'Vulnerable dependency: lodash@4.17.20 has known security issues',
+      recommendation: 'Update lodash to version 4.17.21 or higher',
+      references: ['https://nvd.nist.gov/vuln/detail/CVE-2023-1234'],
+      fixable: true,
+      fixCommand: 'npm update lodash',
+    },
+  ],
+  metrics: {
+    overview: {
+      totalFiles: 45,
+      totalLines: 5420,
+      totalEntities: 23,
+      analysisTime: 1250,
+      timestamp: new Date(),
+    },
+    quality: {
+      maintainabilityIndex: 72,
+      technicalDebt: {
+        minutes: 180,
+        rating: 'B',
+      },
+      duplicateLines: 156,
+      duplicateRatio: 0.029,
+      testCoverage: {
+        lines: 78,
+        functions: 85,
+        branches: 72,
+        statements: 80,
+      },
+    },
+    complexity: {
+      average: 8.2,
+      highest: 15,
+      distribution: {
+        low: 15,
+        medium: 6,
+        high: 2,
+        veryHigh: 0,
+      },
+    },
+    issues: {
+      total: 12,
+      byType: {
+        'code-smell': 8,
+        'bug': 2,
+        'vulnerability': 1,
+        'maintainability': 1,
+      },
+      bySeverity: {
+        critical: 0,
+        high: 1,
+        medium: 5,
+        low: 6,
+      },
+    },
+    dependencies: {
+      total: 34,
+      circular: 1,
+      unused: 3,
+      outdated: 7,
+      vulnerable: 1,
+    },
+  },
+  recommendations: [
+    {
+      id: 'rec-1',
+      title: 'Reduce UserService Complexity',
+      description: 'The UserService class has high cyclomatic complexity and should be refactored into smaller, focused methods.',
+      category: 'maintainability',
+      priority: 'high',
+      effort: {
+        level: 'medium',
+        hours: 4,
+        description: 'Refactor complex methods into smaller functions',
+      },
+      impact: {
+        level: 'high',
+        metrics: ['maintainability', 'readability'],
+        description: 'Improved code maintainability and reduced technical debt',
+      },
+      affectedFiles: ['src/services/user.ts'],
+      implementation: {
+        steps: [
+          'Extract validation logic to separate methods',
+          'Split large methods into smaller functions',
+          'Add unit tests for new methods',
+        ],
+        codeExamples: [
+          {
+            before: 'complex method with multiple responsibilities',
+            after: 'simplified method calling extracted functions',
+            language: 'typescript',
+          },
+        ],
+        automatable: false,
+        tools: ['ESLint', 'SonarQube'],
+      },
+      references: [
+        'https://refactoring.guru/extract-method',
+        'https://martinfowler.com/refactoring/',
+      ],
+      tags: ['complexity', 'refactoring'],
+    },
+  ],
+  rawData: {
+    dependencies: {
+      'UserService': ['DatabaseService', 'ValidationService'],
+      'PaymentProcessor': ['PaymentGateway', 'Logger'],
+    },
+    fileTree: {
+      src: {
+        services: ['user.ts', 'payment.ts'],
+        components: ['UserForm.tsx', 'PaymentForm.tsx'],
+      },
+    },
+    packageInfo: {
+      name: 'sample-react-project',
+      version: '1.0.0',
+    },
+  },
+};
+
+const SAMPLE_REPORT_TEMPLATE: ReportTemplate = {
+  id: 'comprehensive-demo',
+  name: 'Comprehensive Analysis Demo',
+  description: 'Demonstration template showing all report features',
+  type: 'code-quality',
+  category: 'standard',
+  parameters: [],
+  estimatedDuration: 300,
+};
+
 export default function MarkdownDemoPage() {
   const [activeTab, setActiveTab] = useState('renderer');
+  const [reportMarkdown, setReportMarkdown] = useState<string>('');
+  const [reportContent, setReportContent] = useState<ReportContent | null>(null);
+  
+  // Generate sample report on component mount
+  React.useEffect(() => {
+    try {
+      // Generate report content using ReportService logic
+      const summary = {
+        executiveSummary: `Analysis of ${SAMPLE_ANALYSIS_DATA.metadata.projectInfo.name} reveals a TypeScript project with ${SAMPLE_ANALYSIS_DATA.metrics.overview.totalFiles} files containing ${formatReportNumber(SAMPLE_ANALYSIS_DATA.metrics.overview.totalLines)} lines of code. The codebase shows a maintainability index of ${SAMPLE_ANALYSIS_DATA.metrics.quality.maintainabilityIndex}/100 with ${SAMPLE_ANALYSIS_DATA.metrics.issues.total} issues identified.`,
+        keyFindings: [
+          '1 high-severity security vulnerability detected',
+          '1 circular dependency requiring attention',
+          'Code duplication ratio of 2.9%',
+          'Test coverage at 78% (acceptable)',
+        ],
+        recommendations: SAMPLE_ANALYSIS_DATA.recommendations.map(r => r.title),
+        metrics: [
+          { label: 'Total Files', value: SAMPLE_ANALYSIS_DATA.metrics.overview.totalFiles },
+          { label: 'Lines of Code', value: formatReportNumber(SAMPLE_ANALYSIS_DATA.metrics.overview.totalLines) },
+          { label: 'Technical Debt', value: `${SAMPLE_ANALYSIS_DATA.metrics.quality.technicalDebt.minutes}m (${SAMPLE_ANALYSIS_DATA.metrics.quality.technicalDebt.rating})` },
+          { label: 'Maintainability', value: `${SAMPLE_ANALYSIS_DATA.metrics.quality.maintainabilityIndex}/100` },
+          { label: 'Issues Found', value: SAMPLE_ANALYSIS_DATA.metrics.issues.total },
+          { label: 'Test Coverage', value: `${SAMPLE_ANALYSIS_DATA.metrics.quality.testCoverage?.lines || 0}%` },
+        ],
+        riskAssessment: {
+          level: 'medium' as const,
+          factors: [
+            'High-severity security vulnerability in dependencies',
+            'Circular dependency may cause build issues',
+            'Some methods exceed complexity thresholds',
+          ],
+          mitigation: [
+            'Update vulnerable dependencies immediately',
+            'Refactor circular dependency',
+            'Break down complex methods',
+          ],
+        },
+      };
+
+      const sections = ReportTemplateEngine.generateDetailedSections(SAMPLE_ANALYSIS_DATA);
+      sections.push(ReportTemplateEngine.generateRecommendationsSection(SAMPLE_ANALYSIS_DATA));
+
+      const content: ReportContent = { summary, sections };
+      setReportContent(content);
+      
+      const markdown = generateReportMarkdown(SAMPLE_ANALYSIS_DATA, SAMPLE_REPORT_TEMPLATE, content);
+      setReportMarkdown(markdown);
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+    }
+  }, []);
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -188,9 +494,10 @@ export default function MarkdownDemoPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="renderer">Markdown Renderer</TabsTrigger>
           <TabsTrigger value="viewer">File Content Viewer</TabsTrigger>
+          <TabsTrigger value="reports">Report Generation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="renderer" className="space-y-4">
@@ -232,6 +539,79 @@ export default function MarkdownDemoPage() {
             />
           </div>
         </TabsContent>
+
+        <TabsContent value="reports" className="space-y-4">
+          <Card className="p-4">
+            <h3 className="font-semibold mb-2">Report Generation System</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Demonstrates the complete report generation pipeline from analysis data to formatted reports with markdown rendering.
+            </p>
+            
+            {reportContent && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="text-center p-3 bg-muted rounded">
+                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).sections}</div>
+                    <div className="text-sm text-muted-foreground">Sections</div>
+                  </div>
+                  <div className="text-center p-3 bg-muted rounded">
+                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).charts}</div>
+                    <div className="text-sm text-muted-foreground">Charts</div>
+                  </div>
+                  <div className="text-center p-3 bg-muted rounded">
+                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).tables}</div>
+                    <div className="text-sm text-muted-foreground">Tables</div>
+                  </div>
+                  <div className="text-center p-3 bg-muted rounded">
+                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).recommendations}</div>
+                    <div className="text-sm text-muted-foreground">Recommendations</div>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg p-4 bg-muted/50">
+                  <h4 className="font-medium mb-2">Table of Contents</h4>
+                  <div className="text-sm space-y-1">
+                    {generateReportTOC(reportContent).map((item, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{item.level === 1 ? '•' : '  ◦'}</span>
+                        <span>{item.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Generated Report (Markdown)</h4>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const blob = new Blob([reportMarkdown], { type: 'text/markdown' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'sample-report.md';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                    >
+                      Download Markdown
+                    </Button>
+                  </div>
+                  
+                  <div className="max-h-96 overflow-auto">
+                    <MarkdownRenderer
+                      content={reportMarkdown}
+                      showMetadata={true}
+                      showTableOfContents={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <Card className="p-6">
@@ -266,12 +646,46 @@ export default function MarkdownDemoPage() {
           </div>
 
           <div>
-            <h4 className="font-medium mb-2">Parsing Utilities</h4>
+            <h4 className="font-medium mb-2">Report Generation</h4>
             <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
-              <code>{`import { parseMarkdown, markdownToHtml } from '@/lib/markdown-utils';
+              <code>{`import { ReportService } from '@/lib/services/report-service';
+import { generateReportMarkdown } from '@/lib/markdown-utils';
 
-const parsed = parseMarkdown(content);
-const html = await markdownToHtml(parsed.content);`}</code>
+// Parse analysis file
+const analysisData = await ReportService.parseAnalysisFile(file);
+
+// Generate report content
+const reportContent = ReportService.generateReport(analysisData, template);
+
+// Generate markdown
+const markdown = generateReportMarkdown(analysisData, template, reportContent);
+
+// Export to various formats
+await ReportService.exportReport(reportContent, 'html', 'my-report');`}</code>
+            </pre>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-2">Advanced Markdown Processing</h4>
+            <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
+              <code>{`import { 
+  parseReportMarkdown, 
+  extractReportStats, 
+  generateReportTOC 
+} from '@/lib/markdown-utils';
+
+// Enhanced parsing with report features
+const html = await parseReportMarkdown(markdown, {
+  showCharts: true,
+  maxTableRows: 50,
+  theme: 'dark'
+});
+
+// Extract statistics
+const stats = extractReportStats(reportContent);
+
+// Generate table of contents
+const toc = generateReportTOC(reportContent);`}</code>
             </pre>
           </div>
         </div>

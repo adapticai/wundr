@@ -41,6 +41,11 @@ interface TemplateParameter {
   required: boolean;
   defaultValue?: unknown;
   options?: string[];
+  validation?: {
+    pattern?: string;
+    min?: number;
+    max?: number;
+  };
 }
 
 interface ScriptTemplatesProps {

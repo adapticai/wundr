@@ -5,10 +5,10 @@ import { useTheme } from 'next-themes';
 import { Bar } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Entity } from '@/lib/contexts/analysis-context';
+import type { EntityData } from '@/app/api/analysis/entities/route';
 
 interface ComplexityMetricsProps {
-  entities: Entity[];
+  entities: EntityData[];
 }
 
 export function ComplexityMetrics({ entities }: ComplexityMetricsProps) {

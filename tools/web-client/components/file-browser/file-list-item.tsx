@@ -98,18 +98,14 @@ export function FileListItem({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {typeInfo.previewable && (
-                    <DropdownMenuItem onClick={handleView}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </DropdownMenuItem>
-                  )}
-                  {typeInfo.editable && (
-                    <DropdownMenuItem onClick={handleEdit}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem onClick={handleView}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleEdit}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleDownload}>
                     <Download className="h-4 w-4 mr-2" />
                     Download
@@ -156,7 +152,7 @@ export function FileListItem({
         <div className="font-medium truncate">{item.name}</div>
         <div className="text-sm text-muted-foreground flex items-center gap-3">
           <Badge variant="outline" className="text-xs">
-            {item.type === 'directory' ? 'Folder' : typeInfo.category}
+            {item.type === 'directory' ? 'Folder' : typeInfo.type}
           </Badge>
           {item.size !== undefined && (
             <span>{formatFileSize(item.size)}</span>
@@ -180,13 +176,13 @@ export function FileListItem({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {item.type === 'file' && typeInfo.previewable && (
+            {item.type === 'file' && (
               <DropdownMenuItem onClick={handleView}>
                 <Eye className="h-4 w-4 mr-2" />
                 View
               </DropdownMenuItem>
             )}
-            {item.type === 'file' && typeInfo.editable && (
+            {item.type === 'file' && (
               <DropdownMenuItem onClick={handleEdit}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit

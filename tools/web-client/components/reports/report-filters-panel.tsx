@@ -168,7 +168,7 @@ export function ReportFiltersPanel({ filters, onChange }: ReportFiltersPanelProp
                   initialFocus
                   mode="range"
                   defaultMonth={dateRange.from}
-                  selected={dateRange}
+                  selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
                   onSelect={(range) => {
                     setDateRange({ from: range?.from, to: range?.to });
                     if (range?.from && range?.to) {

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { parseMarkdown, type ParsedMarkdown } from '@/lib/markdown-utils';
+import { parseMarkdown, extractFrontMatter, type ParsedMarkdown } from '@/lib/markdown-utils';
 
 /**
  * Server-side utilities for reading markdown files
@@ -17,7 +17,13 @@ export async function readMarkdownFile(filePath: string): Promise<ParsedMarkdown
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    return parseMarkdown(fileContent);
+    const { meta, content: extractedContent } = extractFrontMatter(fileContent);
+    const htmlContent = await parseMarkdown(extractedContent);
+    
+    return {
+      content: htmlContent,
+      data: meta
+    };
   } catch (error) {
     console.error(`Error reading markdown file ${filePath}:`, error);
     return null;

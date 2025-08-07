@@ -9,20 +9,25 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-interface OutdatedPackage {
-  name: string
-  current: string
-  latest: string
-  type: 'major' | 'minor' | 'patch'
-  location: string
-}
+import type { DependencyData } from '@/app/api/analysis/dependencies/route'
 
 interface OutdatedPackagesTableProps {
-  packages?: OutdatedPackage[]
+  dependencies?: DependencyData[]
 }
 
-export function OutdatedPackagesTable({ packages = [] }: OutdatedPackagesTableProps) {
+export function OutdatedPackagesTable({ dependencies = [] }: OutdatedPackagesTableProps) {
+  // Filter outdated packages
+  const outdatedPackages = dependencies.filter(dep => 
+    dep.version !== dep.latestVersion && dep.latestVersion
+  ).map(dep => ({
+    name: dep.name,
+    current: dep.version,
+    latest: dep.latestVersion,
+    type: getVersionChangeType(dep.version, dep.latestVersion),
+    location: dep.type
+  }))
+  
+  const packages = outdatedPackages
   if (packages.length === 0) {
     return (
       <Card>
@@ -34,6 +39,15 @@ export function OutdatedPackagesTable({ packages = [] }: OutdatedPackagesTablePr
         </CardContent>
       </Card>
     )
+  }
+
+  function getVersionChangeType(current: string, latest: string): 'major' | 'minor' | 'patch' {
+    const currentParts = current.replace(/[^0-9.]/g, '').split('.').map(Number)
+    const latestParts = latest.replace(/[^0-9.]/g, '').split('.').map(Number)
+    
+    if (latestParts[0] > currentParts[0]) return 'major'
+    if (latestParts[1] > currentParts[1]) return 'minor'
+    return 'patch'
   }
 
   const getBadgeVariant = (type: string) => {

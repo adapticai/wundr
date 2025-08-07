@@ -71,9 +71,8 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
+        const content = e.target?.result as string;
         try {
-          const content = e.target?.result as string;
-          
           if (file.type === 'application/json' || file.name.endsWith('.json')) {
             const jsonData = JSON.parse(content);
             const keys = Array.isArray(jsonData) 

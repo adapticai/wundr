@@ -1,31 +1,42 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfigSection } from '@/components/config/config-section';
 import { ConfigToggle } from '@/components/config/config-toggle';
-import { ConfigInput } from '@/components/config/config-input';
-import { ConfigSelect } from '@/components/config/config-select';
+import { ConfigInput, ConfigNumberInput, ConfigUrlInput, ConfigPasswordInput } from '@/components/config/config-input';
+import { ConfigSelect, ConfigThemeSelect, ConfigAnalysisDepthSelect } from '@/components/config/config-select';
 import { ConfigList } from '@/components/config/config-list';
 import { ConfigTemplates } from '@/components/config/config-templates';
 import { ConfigActions } from '@/components/config/config-actions';
+import { ConfigThemeColorPicker } from '@/components/config/config-color-picker';
 import { useConfigSection } from '@/hooks/config/use-config';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Settings,
   BarChart3,
   Zap,
   Download,
-  Palette
+  Palette,
+  Upload,
+  Save,
+  RotateCcw,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+  Copy,
+  Archive
 } from 'lucide-react';
+import { useConfig } from '@/lib/contexts/config/config-context';
+import { templates } from '@/lib/contexts/config/config-templates';
 
 function GeneralSettings() {
   const { config, updateConfig, resetSection, errors, hasErrors } = useConfigSection('general');
-
-  const themeOptions = [
-    { value: 'light', label: 'Light', description: 'Light theme' },
-    { value: 'dark', label: 'Dark', description: 'Dark theme' },
-    { value: 'system', label: 'System', description: 'Follow system preference' },
-  ];
 
   const languageOptions = [
     { value: 'en', label: 'English', description: 'English (US)' },
@@ -33,6 +44,11 @@ function GeneralSettings() {
     { value: 'fr', label: 'Français', description: 'French' },
     { value: 'de', label: 'Deutsch', description: 'German' },
     { value: 'zh', label: '中文', description: 'Chinese (Simplified)' },
+    { value: 'ja', label: '日本語', description: 'Japanese' },
+    { value: 'ko', label: '한국어', description: 'Korean' },
+    { value: 'pt', label: 'Português', description: 'Portuguese' },
+    { value: 'ru', label: 'Русский', description: 'Russian' },
+    { value: 'ar', label: 'العربية', description: 'Arabic' },
   ];
 
   return (
@@ -43,13 +59,14 @@ function GeneralSettings() {
       hasErrors={hasErrors}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ConfigSelect
+        <ConfigThemeSelect
           label="Theme"
           description="Choose your preferred color theme"
           value={config.theme}
           onChange={(value) => updateConfig({ theme: value as 'light' | 'dark' | 'system' })}
-          options={themeOptions}
           error={errors.theme}
+          section="general"
+          field="theme"
         />
 
         <ConfigSelect
@@ -59,6 +76,9 @@ function GeneralSettings() {
           onChange={(value) => updateConfig({ language: value })}
           options={languageOptions}
           error={errors.language}
+          section="general"
+          field="language"
+          searchable
         />
 
         <ConfigToggle
@@ -100,15 +120,29 @@ function GeneralSettings() {
 function AnalysisSettings() {
   const { config, updateConfig, resetSection, errors, hasErrors } = useConfigSection('analysis');
 
-  const analysisDepthOptions = [
-    { value: 'shallow', label: 'Shallow', description: 'Fast analysis with basic detection' },
-    { value: 'medium', label: 'Medium', description: 'Balanced analysis with good coverage' },
-    { value: 'deep', label: 'Deep', description: 'Thorough analysis with detailed insights' },
+  const commonFileTypes = [
+    '.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.py', '.java', '.cs', '.go', '.rs',
+    '.php', '.rb', '.swift', '.kt', '.dart', '.cpp', '.c', '.h', '.hpp', '.css', '.scss',
+    '.html', '.xml', '.json', '.yaml', '.yml', '.md', '.sql'
   ];
 
-  const commonFileTypes = [
-    '.ts', '.tsx', '.js', '.jsx', '.vue', '.py', '.java', '.cs', '.go', '.rs',
-    '.php', '.rb', '.swift', '.kt', '.dart', '.cpp', '.c', '.h', '.hpp'
+  const commonIgnorePatterns = [
+    'node_modules/**',
+    'dist/**',
+    'build/**',
+    '.next/**',
+    'coverage/**',
+    '*.test.*',
+    '*.spec.*',
+    '*.min.*',
+    '*.bundle.*',
+    '.git/**',
+    'vendor/**',
+    '__pycache__/**',
+    '*.pyc',
+    'target/**',
+    'bin/**',
+    'obj/**'
   ];
 
   return (
@@ -120,52 +154,56 @@ function AnalysisSettings() {
     >
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ConfigInput
+          <ConfigNumberInput
             label="Duplicate Threshold"
             description="Similarity threshold for duplicate detection (0.0 - 1.0)"
             value={config.duplicateThreshold}
             onChange={(value) => updateConfig({ duplicateThreshold: parseFloat(value) || 0 })}
-            type="number"
             min={0}
             max={1}
             step={0.01}
             error={errors.duplicateThreshold}
+            section="analysis"
+            field="duplicateThreshold"
           />
 
-          <ConfigInput
+          <ConfigNumberInput
             label="Complexity Threshold"
             description="Maximum cyclomatic complexity before flagging"
             value={config.complexityThreshold}
             onChange={(value) => updateConfig({ complexityThreshold: parseInt(value) || 0 })}
-            type="number"
             min={1}
             max={100}
             error={errors.complexityThreshold}
+            section="analysis"
+            field="complexityThreshold"
           />
 
-          <ConfigInput
-            label="Minimum File Size"
+          <ConfigNumberInput
+            label="Minimum File Size (bytes)"
             description="Minimum file size in bytes to analyze"
             value={config.minFileSize}
             onChange={(value) => updateConfig({ minFileSize: parseInt(value) || 0 })}
-            type="number"
             min={0}
             error={errors.minFileSize}
+            section="analysis"
+            field="minFileSize"
           />
 
-          <ConfigSelect
+          <ConfigAnalysisDepthSelect
             label="Analysis Depth"
             description="Choose how thorough the analysis should be"
             value={config.analysisDepth}
             onChange={(value) => updateConfig({ analysisDepth: value as 'shallow' | 'medium' | 'deep' })}
-            options={analysisDepthOptions}
             error={errors.analysisDepth}
+            section="analysis"
+            field="analysisDepth"
           />
         </div>
 
         <ConfigToggle
           label="Smart Analysis"
-          description="Use AI-powered analysis for better accuracy"
+          description="Use AI-powered analysis for better accuracy (experimental)"
           checked={config.enableSmartAnalysis}
           onChange={(checked) => updateConfig({ enableSmartAnalysis: checked })}
           error={errors.enableSmartAnalysis}
@@ -179,6 +217,29 @@ function AnalysisSettings() {
           placeholder="e.g., node_modules/**, *.test.*, dist/**"
           error={errors.patternsToIgnore}
         />
+
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium mb-2">Common ignore patterns:</p>
+            <div className="flex flex-wrap gap-1">
+              {commonIgnorePatterns.map((pattern) => (
+                <button
+                  key={pattern}
+                  type="button"
+                  className="px-2 py-1 text-xs bg-muted rounded hover:bg-muted/80 transition-colors"
+                  onClick={() => {
+                    if (!config.patternsToIgnore.includes(pattern)) {
+                      updateConfig({ patternsToIgnore: [...config.patternsToIgnore, pattern] });
+                    }
+                  }}
+                  title={`Click to add: ${pattern}`}
+                >
+                  + {pattern}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         <ConfigList
           label="Exclude Directories"
@@ -198,23 +259,26 @@ function AnalysisSettings() {
           error={errors.includeFileTypes}
         />
 
-        <div className="text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Common file types:</p>
-          <div className="flex flex-wrap gap-1">
-            {commonFileTypes.map((type) => (
-              <button
-                key={type}
-                type="button"
-                className="px-2 py-1 text-xs bg-muted rounded hover:bg-muted/80"
-                onClick={() => {
-                  if (!config.includeFileTypes.includes(type)) {
-                    updateConfig({ includeFileTypes: [...config.includeFileTypes, type] });
-                  }
-                }}
-              >
-                {type}
-              </button>
-            ))}
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium mb-2">Common file types:</p>
+            <div className="flex flex-wrap gap-1">
+              {commonFileTypes.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className="px-2 py-1 text-xs bg-muted rounded hover:bg-muted/80 transition-colors"
+                  onClick={() => {
+                    if (!config.includeFileTypes.includes(type)) {
+                      updateConfig({ includeFileTypes: [...config.includeFileTypes, type] });
+                    }
+                  }}
+                  title={`Click to add: ${type}`}
+                >
+                  + {type}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -234,89 +298,110 @@ function IntegrationSettings() {
     >
       <div className="space-y-6">
         <div>
-          <h4 className="font-medium mb-4">Webhook URLs</h4>
+          <h4 className="font-medium mb-4 flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Webhook URLs
+          </h4>
           <div className="space-y-4">
-            <ConfigInput
+            <ConfigUrlInput
               label="Analysis Complete Webhook"
               description="URL to call when analysis is complete"
               value={config.webhookUrls.onAnalysisComplete}
               onChange={(value) => updateConfig({ 
                 webhookUrls: { ...config.webhookUrls, onAnalysisComplete: value }
               })}
-              type="url"
               placeholder="https://your-api.com/webhooks/analysis-complete"
               error={errors['webhookUrls.onAnalysisComplete']}
+              section="integration"
+              field="webhookUrls.onAnalysisComplete"
             />
 
-            <ConfigInput
+            <ConfigUrlInput
               label="Report Generated Webhook"
               description="URL to call when a report is generated"
               value={config.webhookUrls.onReportGenerated}
               onChange={(value) => updateConfig({ 
                 webhookUrls: { ...config.webhookUrls, onReportGenerated: value }
               })}
-              type="url"
               placeholder="https://your-api.com/webhooks/report-generated"
               error={errors['webhookUrls.onReportGenerated']}
+              section="integration"
+              field="webhookUrls.onReportGenerated"
             />
 
-            <ConfigInput
+            <ConfigUrlInput
               label="Error Webhook"
               description="URL to call when errors occur"
               value={config.webhookUrls.onError}
               onChange={(value) => updateConfig({ 
                 webhookUrls: { ...config.webhookUrls, onError: value }
               })}
-              type="url"
               placeholder="https://your-api.com/webhooks/error"
               error={errors['webhookUrls.onError']}
+              section="integration"
+              field="webhookUrls.onError"
             />
           </div>
         </div>
 
         <div>
-          <h4 className="font-medium mb-4">API Keys</h4>
+          <h4 className="font-medium mb-4 flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            API Keys
+          </h4>
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              API keys are stored securely and encrypted. They are only used for authorized integrations.
+            </AlertDescription>
+          </Alert>
           <div className="space-y-4">
-            <ConfigInput
+            <ConfigPasswordInput
               label="GitHub API Key"
               description="Personal access token for GitHub integration"
               value={config.apiKeys.github}
               onChange={(value) => updateConfig({ 
                 apiKeys: { ...config.apiKeys, github: value }
               })}
-              type="password"
               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
               error={errors['apiKeys.github']}
+              section="integration"
+              field="apiKeys.github"
             />
 
-            <ConfigInput
+            <ConfigPasswordInput
               label="Slack API Key"
               description="Bot token for Slack notifications"
               value={config.apiKeys.slack}
               onChange={(value) => updateConfig({ 
                 apiKeys: { ...config.apiKeys, slack: value }
               })}
-              type="password"
               placeholder="xoxb-xxxxxxxxxxxxxxxxxxxx"
               error={errors['apiKeys.slack']}
+              section="integration"
+              field="apiKeys.slack"
             />
 
-            <ConfigInput
+            <ConfigPasswordInput
               label="Jira API Key"
               description="API token for Jira integration"
               value={config.apiKeys.jira}
               onChange={(value) => updateConfig({ 
                 apiKeys: { ...config.apiKeys, jira: value }
               })}
-              type="password"
               placeholder="ATATTxxxxxxxxxxxxxxxxxxx"
               error={errors['apiKeys.jira']}
+              section="integration"
+              field="apiKeys.jira"
             />
           </div>
         </div>
 
         <div>
-          <h4 className="font-medium mb-4">Automation Settings</h4>
+          <h4 className="font-medium mb-4 flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Automation Settings
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ConfigToggle
               label="Auto Upload"
@@ -358,10 +443,12 @@ function ExportSettings() {
   const { config, updateConfig, resetSection, errors, hasErrors } = useConfigSection('export');
 
   const formatOptions = [
-    { value: 'json', label: 'JSON', description: 'JavaScript Object Notation' },
-    { value: 'csv', label: 'CSV', description: 'Comma Separated Values' },
-    { value: 'html', label: 'HTML', description: 'Interactive HTML report' },
-    { value: 'pdf', label: 'PDF', description: 'Portable Document Format' },
+    { value: 'json', label: 'JSON', description: 'JavaScript Object Notation for data exchange' },
+    { value: 'csv', label: 'CSV', description: 'Comma Separated Values for spreadsheet analysis' },
+    { value: 'html', label: 'HTML', description: 'Interactive HTML report for web viewing' },
+    { value: 'pdf', label: 'PDF', description: 'Portable Document Format for presentations' },
+    { value: 'xml', label: 'XML', description: 'Extensible Markup Language for structured data' },
+    { value: 'xlsx', label: 'Excel', description: 'Microsoft Excel format for detailed analysis' },
   ];
 
   return (
@@ -378,19 +465,22 @@ function ExportSettings() {
             description="Default directory for exported reports"
             value={config.defaultPath}
             onChange={(value) => updateConfig({ defaultPath: value })}
-            placeholder="./reports"
+            placeholder="./wundr-reports"
             error={errors.defaultPath}
+            section="export"
+            field="defaultPath"
           />
 
-          <ConfigInput
+          <ConfigNumberInput
             label="Maximum File Size (MB)"
             description="Maximum size for exported files in megabytes"
             value={config.maxFileSize}
             onChange={(value) => updateConfig({ maxFileSize: parseInt(value) || 0 })}
-            type="number"
             min={1}
             max={1000}
             error={errors.maxFileSize}
+            section="export"
+            field="maxFileSize"
           />
         </div>
 
@@ -422,36 +512,232 @@ function ExportSettings() {
 
         <div>
           <h4 className="font-medium mb-4">Default Export Formats</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {formatOptions.map((format) => (
-              <div key={format.value} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id={`format-${format.value}`}
-                  checked={config.defaultFormats.includes(format.value as 'json' | 'csv' | 'html' | 'pdf')}
-                  onChange={(e) => {
-                    const formats = e.target.checked
-                      ? [...config.defaultFormats, format.value as 'json' | 'csv' | 'html' | 'pdf']
-                      : config.defaultFormats.filter(f => f !== format.value);
-                    updateConfig({ defaultFormats: formats });
-                  }}
-                  className="rounded border-gray-300"
-                />
-                <label 
-                  htmlFor={`format-${format.value}`}
-                  className="text-sm font-medium cursor-pointer"
-                >
-                  {format.label}
-                </label>
-              </div>
+              <Card key={format.value} className="cursor-pointer transition-all hover:shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-3">
+                    <input
+                      type="checkbox"
+                      id={`format-${format.value}`}
+                      checked={config.defaultFormats.includes(format.value as any)}
+                      onChange={(e) => {
+                        const formats = e.target.checked
+                          ? [...config.defaultFormats, format.value as any]
+                          : config.defaultFormats.filter(f => f !== format.value);
+                        updateConfig({ defaultFormats: formats });
+                      }}
+                      className="mt-1 rounded border-gray-300"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <label 
+                        htmlFor={`format-${format.value}`}
+                        className="text-sm font-medium cursor-pointer"
+                      >
+                        {format.label}
+                      </label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {format.description}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            Select which formats to include by default when exporting reports
+          <p className="text-sm text-muted-foreground mt-4">
+            Select which formats to include by default when exporting reports. You can always choose different formats during export.
           </p>
         </div>
       </div>
     </ConfigSection>
+  );
+}
+
+function ConfigurationManagement() {
+  const { exportConfig, importConfig, save, isDirty, resetAll } = useConfig();
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      exportConfig();
+    } finally {
+      setIsExporting(false);
+    }
+  }, [exportConfig]);
+
+  const handleImport = useCallback(async () => {
+    if (!importFile) return;
+    
+    setIsImporting(true);
+    try {
+      await importConfig(importFile);
+      setImportFile(null);
+    } catch (error) {
+      console.error('Import failed:', error);
+    } finally {
+      setIsImporting(false);
+    }
+  }, [importConfig, importFile]);
+
+  const handleReset = useCallback(async () => {
+    try {
+      await resetAll();
+      setShowResetDialog(false);
+    } catch (error) {
+      console.error('Reset failed:', error);
+    }
+  }, [resetAll]);
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Save className="h-5 w-5" />
+            Configuration Management
+          </CardTitle>
+          <CardDescription>
+            Export, import, and manage your configuration settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isDirty && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                You have unsaved changes. Remember to save your configuration.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={save} disabled={!isDirty}>
+              <Save className="h-4 w-4 mr-2" />
+              Save Configuration
+            </Button>
+
+            <Button variant="outline" onClick={handleExport} disabled={isExporting}>
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? 'Exporting...' : 'Export Configuration'}
+            </Button>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Configuration
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Import Configuration</DialogTitle>
+                  <DialogDescription>
+                    Select a configuration file to import. This will replace your current settings.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Input
+                    type="file"
+                    accept=".json"
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                  />
+                  {importFile && (
+                    <div className="mt-2 p-2 bg-muted rounded text-sm">
+                      Selected: {importFile.name} ({(importFile.size / 1024).toFixed(1)} KB)
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setImportFile(null)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleImport} disabled={!importFile || isImporting}>
+                    {isImporting ? 'Importing...' : 'Import'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="text-destructive">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset All Settings
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Reset All Settings</DialogTitle>
+                  <DialogDescription>
+                    This will reset all settings to their default values. This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={handleReset}>
+                    Reset All Settings
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Archive className="h-5 w-5" />
+            Configuration Templates
+          </CardTitle>
+          <CardDescription>
+            Quick setup templates for common project types
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {templates.slice(0, 6).map((template) => (
+              <Card key={template.id} className="cursor-pointer transition-all hover:shadow-md">
+                <CardContent className="p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <h4 className="font-medium">{template.name}</h4>
+                      <div className="flex gap-1">
+                        {template.tags.slice(0, 2).map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {template.description}
+                    </p>
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        // Apply template logic would go here
+                        console.log('Applying template:', template.id);
+                      }}
+                    >
+                      Apply Template
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -461,12 +747,12 @@ export default function SettingsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
-          Configure your dashboard preferences and analysis settings
+          Configure your dashboard preferences, analysis settings, and integrations
         </p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             General
@@ -487,11 +773,14 @@ export default function SettingsPage() {
             <Palette className="h-4 w-4" />
             Templates
           </TabsTrigger>
+          <TabsTrigger value="manage" className="flex items-center gap-2">
+            <Archive className="h-4 w-4" />
+            Manage
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
           <GeneralSettings />
-          <ConfigActions />
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-6">
@@ -508,6 +797,10 @@ export default function SettingsPage() {
 
         <TabsContent value="templates" className="space-y-6">
           <ConfigTemplates />
+        </TabsContent>
+
+        <TabsContent value="manage" className="space-y-6">
+          <ConfigurationManagement />
         </TabsContent>
       </Tabs>
     </div>

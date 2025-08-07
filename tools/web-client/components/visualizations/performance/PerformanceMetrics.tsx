@@ -231,7 +231,7 @@ export function PerformanceMetrics({ data, realtime = false }: PerformanceMetric
             <Card key={metric}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{label}</CardTitle>
-                <TrendIcon trend={trend.trend} />
+                <TrendIcon trend={trend.trend as "up" | "down" | "neutral"} />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">

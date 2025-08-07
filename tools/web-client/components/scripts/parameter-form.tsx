@@ -115,10 +115,10 @@ export function ParameterForm({ parameters, values, onChange, disabled = false }
         return (
           <Input
             type="text"
-            value={value}
+            value={String(value)}
             onChange={(e) => handleValueChange(param.name, e.target.value)}
             onBlur={() => handleBlur(param.name)}
-            placeholder={param.defaultValue || `Enter ${param.name}...`}
+            placeholder={typeof param.defaultValue === 'string' ? param.defaultValue : `Enter ${param.name}...`}
             disabled={disabled}
             className={hasError ? 'border-red-500' : ''}
           />
@@ -128,7 +128,7 @@ export function ParameterForm({ parameters, values, onChange, disabled = false }
         return (
           <Input
             type="number"
-            value={value}
+            value={String(value)}
             onChange={(e) => handleValueChange(param.name, e.target.value ? Number(e.target.value) : '')}
             onBlur={() => handleBlur(param.name)}
             placeholder={param.defaultValue?.toString() || `Enter ${param.name}...`}
@@ -158,7 +158,7 @@ export function ParameterForm({ parameters, values, onChange, disabled = false }
       case 'select':
         return (
           <select
-            value={value}
+            value={String(value)}
             onChange={(e) => handleValueChange(param.name, e.target.value)}
             onBlur={() => handleBlur(param.name)}
             disabled={disabled}
@@ -181,7 +181,7 @@ export function ParameterForm({ parameters, values, onChange, disabled = false }
             <div className="flex gap-2">
               <Input
                 type="text"
-                value={value}
+                value={String(value)}
                 onChange={(e) => handleValueChange(param.name, e.target.value)}
                 onBlur={() => handleBlur(param.name)}
                 placeholder="Enter file path or select..."
@@ -213,7 +213,7 @@ export function ParameterForm({ parameters, values, onChange, disabled = false }
             <div className="flex gap-2">
               <Input
                 type="text"
-                value={value}
+                value={String(value)}
                 onChange={(e) => handleValueChange(param.name, e.target.value)}
                 onBlur={() => handleBlur(param.name)}
                 placeholder="Enter directory path or select..."

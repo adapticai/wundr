@@ -16,11 +16,11 @@ const getGettingStartedContent = async () => {
       return {
         content: docContent.content,
         frontmatter: {
-          title: 'Getting Started',
-          description: 'Quick setup and first steps with the monorepo refactoring toolkit',
-          category: 'guides',
-          tags: ['setup', 'guide', 'quick-start'],
-          ...docContent.frontmatter
+          ...docContent.frontmatter,
+          title: docContent.frontmatter?.title || 'Getting Started',
+          description: docContent.frontmatter?.description || 'Quick setup and first steps with the monorepo refactoring toolkit',
+          category: docContent.frontmatter?.category || 'guides',
+          tags: docContent.frontmatter?.tags || ['setup', 'guide', 'quick-start']
         }
       };
     }

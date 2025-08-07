@@ -7,15 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { ZoomIn, ZoomOut, Download, Maximize2, RotateCcw } from "lucide-react"
 
-interface DependencyData {
-  name: string
-  version: string
-  latestVersion: string
-  type: 'dependency' | 'devDependency' | 'peerDependency'
-  size: number
-  vulnerabilities: number
-  dependencies: string[]
-}
+import type { DependencyData } from '@/app/api/analysis/dependencies/route'
 
 interface DependencyGraphProps {
   dependencies: DependencyData[]
@@ -50,14 +42,6 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
   const [filterType, setFilterType] = useState("all")
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-
-  useEffect(() => {
-    generateGraph()
-  }, [generateGraph])
-
-  useEffect(() => {
-    drawGraph()
-  }, [drawGraph])
 
   const generateGraph = useCallback(() => {
     // Filter dependencies based on selected type
@@ -101,7 +85,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
     } else if (layoutType === "hierarchical") {
       applyHierarchicalLayout(graphNodes, graphLinks)
     }
-  }, [dependencies, filterType, layoutType, applyForceLayout, applyCircularLayout, applyHierarchicalLayout])
+  }, [dependencies, filterType, layoutType])
 
   const applyForceLayout = useCallback((nodes: GraphNode[], links: GraphLink[]) => {
     // Simple force-directed layout simulation
@@ -361,6 +345,15 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
     link.href = canvas.toDataURL()
     link.click()
   }
+
+  // UseEffect hooks must be after the function definitions
+  useEffect(() => {
+    generateGraph()
+  }, [generateGraph])
+
+  useEffect(() => {
+    drawGraph()
+  }, [drawGraph])
 
   return (
     <div className="space-y-4">

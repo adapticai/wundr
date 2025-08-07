@@ -74,12 +74,23 @@ export default function ScriptsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('scripts');
 
-  // Sample scripts data - in real implementation, this would come from API
+  // Load scripts from API
   useEffect(() => {
     const loadScripts = async () => {
       setLoading(true);
       try {
-        // Simulate API call to discover scripts
+        const response = await fetch('/api/scripts');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setScripts(data.data);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // Fallback to mock scripts if API fails
+        console.warn('Failed to load scripts from API, using mock data');
         const mockScripts: Script[] = [
           {
             id: 'analysis-service',
@@ -232,6 +243,22 @@ export default function ScriptsPage() {
         setScripts(mockScripts);
       } catch (error) {
         console.error('Failed to load scripts:', error);
+        // Use mock scripts as fallback
+        const mockScripts: Script[] = [
+          {
+            id: 'analysis-service',
+            name: 'Analysis Service',
+            description: 'Run comprehensive code analysis to detect duplicates, dependencies, and issues',
+            category: 'analysis',
+            safetyLevel: 'safe',
+            command: 'npx ts-node scripts/analysis/AnalysisService.ts',
+            parameters: [],
+            tags: ['analysis', 'duplicates', 'dependencies'],
+            estimatedDuration: 30000,
+            requiresConfirmation: false
+          }
+        ];
+        setScripts(mockScripts);
       } finally {
         setLoading(false);
       }
@@ -250,9 +277,74 @@ export default function ScriptsPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleScriptExecution = (result: ExecutionResult) => {
-    setExecutionResults(prev => [result, ...prev.slice(0, 49)]); // Keep last 50 results
+  const handleScriptExecution = async (scriptId: string, parameters: Record<string, any>) => {
+    try {
+      const response = await fetch(`/api/scripts/${scriptId}/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parameters })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Poll for execution result
+          const executionId = data.data.executionId;
+          pollExecutionResult(executionId);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to execute script:', error);
+    }
   };
+  
+  const pollExecutionResult = async (executionId: string) => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/scripts/executions/${executionId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const result = data.data;
+            setExecutionResults(prev => {
+              const existing = prev.find(r => r.id === result.id);
+              if (existing) {
+                return prev.map(r => r.id === result.id ? result : r);
+              } else {
+                return [result, ...prev.slice(0, 49)];
+              }
+            });
+            
+            if (result.status !== 'running') {
+              clearInterval(pollInterval);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to poll execution result:', error);
+        clearInterval(pollInterval);
+      }
+    }, 2000); // Poll every 2 seconds
+  };
+  
+  const loadExecutionHistory = async () => {
+    try {
+      const response = await fetch('/api/scripts/executions');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setExecutionResults(data.data);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load execution history:', error);
+    }
+  };
+  
+  // Load execution history on mount
+  useEffect(() => {
+    loadExecutionHistory();
+  }, []);
 
   const getSafetyLevelColor = (level: string) => {
     switch (level) {
@@ -354,7 +446,7 @@ export default function ScriptsPage() {
               <ScriptCard
                 key={script.id}
                 script={script}
-                onSelect={setSelectedScript}
+                onSelect={(script) => setSelectedScript(script)}
                 onExecute={() => setActiveTab('executor')}
               />
             ))}
@@ -375,7 +467,10 @@ export default function ScriptsPage() {
           {selectedScript ? (
             <ScriptExecutor
               script={selectedScript}
-              onExecutionResult={handleScriptExecution}
+              onExecutionResult={(result) => {
+                // Handle execution result if needed
+                console.log('Script execution result:', result);
+              }}
             />
           ) : (
             <div className="text-center py-8">
@@ -400,7 +495,10 @@ export default function ScriptsPage() {
         </TabsContent>
 
         <TabsContent value="templates" className="space-y-4">
-          <ScriptTemplates onSelectTemplate={setSelectedScript} />
+          <ScriptTemplates onSelectTemplate={(script) => {
+            // Convert the script from template to the expected Script type
+            setSelectedScript(script as Script);
+          }} />
         </TabsContent>
       </Tabs>
     </div>

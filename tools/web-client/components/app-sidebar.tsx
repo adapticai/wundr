@@ -51,6 +51,18 @@ const data = {
           title: 'Load Report',
           url: '/dashboard/load-report',
         },
+        {
+          title: 'Performance',
+          url: '/dashboard/performance',
+        },
+        {
+          title: 'Quality',
+          url: '/dashboard/quality',
+        },
+        {
+          title: 'Services',
+          url: '/dashboard/services',
+        },
       ],
     },
     {
@@ -69,6 +81,14 @@ const data = {
       url: '/dashboard/analysis',
       icon: LineChart,
       items: [
+        {
+          title: 'Overview',
+          url: '/dashboard/analysis',
+        },
+        {
+          title: 'Code Scan',
+          url: '/dashboard/analysis/scan',
+        },
         {
           title: 'Entities',
           url: '/dashboard/analysis/entities',
@@ -133,6 +153,21 @@ const data = {
         },
       ],
     },
+    {
+      title: 'Repository',
+      url: '/dashboard/git',
+      icon: Network,
+      items: [
+        {
+          title: 'Git Activity',
+          url: '/dashboard/git',
+        },
+        {
+          title: 'Visualizations',
+          url: '/dashboard/visualizations',
+        },
+      ],
+    },
   ],
   navSecondary: [
     {
@@ -166,6 +201,11 @@ const data = {
       name: 'Migration Reports',
       url: '/dashboard/reports',
       icon: Network,
+    },
+    {
+      name: 'Scripts',
+      url: '/dashboard/scripts',
+      icon: FileCode,
     },
   ],
 };

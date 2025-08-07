@@ -12,6 +12,153 @@ export interface PerformanceMetrics {
   errorRate: number
 }
 
+// Extended analysis types for production data
+export interface AnalysisEntity {
+  id: string
+  name: string
+  path: string
+  type: 'class' | 'function' | 'module' | 'component' | 'interface'
+  dependencies: string[]
+  complexity: number
+  size: number
+  lastModified: string
+  issues: AnalysisIssue[]
+  metrics: {
+    maintainability: number
+    testability: number
+    reusability: number
+  }
+}
+
+export interface AnalysisIssue {
+  id: string
+  type: 'bug' | 'vulnerability' | 'code_smell' | 'duplication' | 'complexity'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  message: string
+  file: string
+  line: number
+  category: string
+  effort: 'low' | 'medium' | 'high'
+  impact: 'low' | 'medium' | 'high'
+  tags: string[]
+}
+
+export interface AnalysisDuplicate {
+  id: string
+  type: 'structural' | 'exact' | 'similar'
+  severity: 'low' | 'medium' | 'high'
+  occurrences: Array<{
+    path: string
+    startLine: number
+    endLine: number
+  }>
+  linesCount: number
+  similarity: number
+}
+
+export interface AnalysisRecommendation {
+  id: string
+  title: string
+  description: string
+  type: string
+  priority: 'critical' | 'high' | 'medium' | 'low'
+  category: 'Security' | 'Performance' | 'Maintainability' | 'Reliability' | 'Architecture'
+  impact: string
+  estimatedEffort: string
+  suggestion?: string
+  entities: string[]
+  status: 'pending' | 'in_progress' | 'completed' | 'dismissed'
+  assignedTo?: string
+  dueDate?: string
+  dependencies: string[]
+  autoFixAvailable: boolean
+  quickFix?: {
+    available: boolean
+    action: string
+    description: string
+    estimatedTime: string
+  }
+}
+
+export interface DashboardSummary {
+  totalFiles: number
+  totalEntities: number
+  totalLines: number
+  duplicateClusters: number
+  circularDependencies: number
+  unusedExports: number
+  codeSmells: number
+  bugs: number
+  vulnerabilities: number
+  technicalDebtHours: number
+  maintainabilityIndex: number
+  testCoverage: number
+  lastAnalysis: string
+}
+
+export interface AnalysisData {
+  id: string
+  timestamp: string
+  version: string
+  summary: DashboardSummary
+  entities: AnalysisEntity[]
+  duplicates: AnalysisDuplicate[]
+  recommendations: AnalysisRecommendation[]
+  dependencies: DependencyGraph
+  metrics: ProjectMetrics
+  issues: AnalysisIssue[]
+}
+
+export interface DependencyGraph {
+  nodes: DependencyNode[]
+  edges: DependencyEdge[]
+  cycles: string[][]
+  orphans: string[]
+}
+
+export interface DependencyNode {
+  id: string
+  name: string
+  type: 'internal' | 'external' | 'system'
+  size: number
+  complexity: number
+  imports: number
+  exports: number
+}
+
+export interface DependencyEdge {
+  source: string
+  target: string
+  type: 'import' | 'require' | 'dynamic'
+  weight: number
+}
+
+export interface ProjectMetrics {
+  complexity: {
+    average: number
+    median: number
+    max: number
+    distribution: Record<string, number>
+  }
+  size: {
+    totalLines: number
+    codeLines: number
+    commentLines: number
+    blankLines: number
+  }
+  quality: {
+    maintainabilityIndex: number
+    testability: number
+    reusability: number
+    reliability: number
+  }
+  debt: {
+    totalHours: number
+    breakdown: Record<string, number>
+    trend: 'improving' | 'stable' | 'worsening'
+  }
+}
+
 export interface QualityMetrics {
   timestamp: string
   codeComplexity: number

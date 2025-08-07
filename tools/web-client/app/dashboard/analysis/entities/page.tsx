@@ -1,14 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { useAnalysis, type Entity } from '@/lib/contexts/analysis-context';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-// Tabs components available for future features
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Search,
@@ -21,7 +18,14 @@ import {
   RefreshCw,
   Database,
   Eye,
+  AlertTriangle,
 } from 'lucide-react';
+import type { 
+  EntityData, 
+  EntityStats,
+  EntitiesAnalysisResponse 
+} from '@/app/api/analysis/entities/route'
+import type { ApiResponse } from '@/types/data'
 import { EntityTypeChart } from '@/components/analysis/entity-type-chart';
 import { ComplexityMetrics } from '@/components/analysis/complexity-metrics';
 import { EntityRelationshipGraph } from '@/components/analysis/entity-relationship-graph';
@@ -39,7 +43,10 @@ interface EntityFilters {
 }
 
 export default function EntitiesAnalysisPage() {
-  const { data, loading, error, loadSampleData } = useAnalysis();
+  const [entities, setEntities] = useState<EntityData[]>([])
+  const [stats, setStats] = useState<EntityStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<EntityFilters>({
     search: '',
     type: '',
@@ -50,92 +57,84 @@ export default function EntitiesAnalysisPage() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [selectedView, setSelectedView] = useState<'table' | 'graph'>('table');
 
-  // Filter and search entities
-  const filteredEntities = useMemo(() => {
-    if (!data?.entities) return [];
+  const loadEntitiesData = useCallback(async (refresh = false) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const url = new URL('/api/analysis/entities', window.location.origin)
+      if (refresh) {
+        url.searchParams.set('refresh', 'true')
+      }
+      
+      // Apply server-side filters for better performance
+      if (filters.type && filters.type !== 'all') {
+        url.searchParams.set('type', filters.type)
+      }
+      if (filters.complexity && filters.complexity !== 'all') {
+        url.searchParams.set('complexity', filters.complexity)
+      }
 
-    return data.entities.filter((entity) => {
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const result: ApiResponse<EntitiesAnalysisResponse> = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load entities data')
+      }
+
+      setEntities(result.data.entities)
+      setStats(result.data.stats)
+    } catch (error) {
+      console.error('Error loading entities data:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load data'
+      setError(errorMessage)
+      setEntities([])
+      setStats(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [filters.type, filters.complexity])
+
+  const refreshAnalysis = useCallback(() => {
+    loadEntitiesData(true)
+  }, [loadEntitiesData])
+
+  useEffect(() => {
+    loadEntitiesData()
+  }, [loadEntitiesData])
+
+  // Filter and search entities (client-side filtering for search and file filters)
+  const filteredEntities = useMemo(() => {
+    if (!entities) return [];
+
+    return entities.filter((entity) => {
       const matchesSearch = 
         entity.name.toLowerCase().includes(filters.search.toLowerCase()) ||
         entity.file.toLowerCase().includes(filters.search.toLowerCase());
       
-      const matchesType = !filters.type || entity.type === filters.type;
-      
-      const matchesComplexity = !filters.complexity || (() => {
-        const complexity = entity.complexity || 0;
-        switch (filters.complexity) {
-          case 'low': return complexity <= 5;
-          case 'medium': return complexity > 5 && complexity <= 15;
-          case 'high': return complexity > 15;
-          default: return true;
-        }
-      })();
-      
       const matchesFile = !filters.file || entity.file.includes(filters.file);
       const matchesExportType = !filters.exportType || entity.exportType === filters.exportType;
 
-      return matchesSearch && matchesType && matchesComplexity && matchesFile && matchesExportType;
+      return matchesSearch && matchesFile && matchesExportType;
     });
-  }, [data?.entities, filters]);
+  }, [entities, filters.search, filters.file, filters.exportType]);
 
-  // Entity statistics
-  const entityStats = useMemo(() => {
-    if (!data?.entities) return null;
-
-    const stats = {
-      total: data.entities.length,
-      byType: {} as Record<string, number>,
-      byComplexity: { low: 0, medium: 0, high: 0, unknown: 0 },
-      avgComplexity: 0,
-      avgDependencies: 0,
-      totalDependencies: 0,
-    };
-
-    let complexitySum = 0;
-    let complexityCount = 0;
-    let dependencySum = 0;
-
-    data.entities.forEach((entity) => {
-      // Count by type
-      stats.byType[entity.type] = (stats.byType[entity.type] || 0) + 1;
-
-      // Count by complexity
-      const complexity = entity.complexity || 0;
-      if (complexity === 0) {
-        stats.byComplexity.unknown++;
-      } else if (complexity <= 5) {
-        stats.byComplexity.low++;
-      } else if (complexity <= 15) {
-        stats.byComplexity.medium++;
-      } else {
-        stats.byComplexity.high++;
-      }
-
-      if (entity.complexity) {
-        complexitySum += entity.complexity;
-        complexityCount++;
-      }
-
-      dependencySum += entity.dependencies.length;
-    });
-
-    stats.avgComplexity = complexityCount > 0 ? complexitySum / complexityCount : 0;
-    stats.avgDependencies = stats.total > 0 ? dependencySum / stats.total : 0;
-    stats.totalDependencies = dependencySum;
-
-    return stats;
-  }, [data?.entities]);
+  // Use server-provided stats
+  const entityStats = stats;
 
   // Get unique values for filter dropdowns
   const filterOptions = useMemo(() => {
-    if (!data?.entities) return { types: [], files: [], exportTypes: [] };
+    if (!entities) return { types: [], files: [], exportTypes: [] };
 
-    const types = [...new Set(data.entities.map((e: Entity) => e.type))];
-    const files = [...new Set(data.entities.map((e: Entity) => e.file.split('/').pop() || e.file))];
-    const exportTypes = [...new Set(data.entities.map((e: Entity) => e.exportType))];
+    const types = [...new Set(entities.map((e: EntityData) => e.type))];
+    const files = [...new Set(entities.map((e: EntityData) => e.file.split('/').pop() || e.file))];
+    const exportTypes = [...new Set(entities.map((e: EntityData) => e.exportType))];
 
     return { types, files, exportTypes };
-  }, [data?.entities]);
+  }, [entities]);
 
   const handleFilterChange = (key: keyof EntityFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -151,30 +150,29 @@ export default function EntitiesAnalysisPage() {
     });
   };
 
-  const exportData = () => {
-    setShowExportModal(true);
-  };
+  const exportData = useCallback(() => {
+    const data = {
+      entities: filteredEntities,
+      stats: entityStats,
+      filters,
+      exportDate: new Date().toISOString()
+    }
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'entities-analysis.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [filteredEntities, entityStats, filters]);
 
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-96" />
-          <Skeleton className="h-96" />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <RefreshCw className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Analyzing code entities...</span>
         </div>
       </div>
     );
@@ -184,25 +182,30 @@ export default function EntitiesAnalysisPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-lg text-muted-foreground mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Analysis Failed</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => loadEntitiesData()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
         </div>
       </div>
     );
   }
 
-  if (!data) {
+  if (!entityStats) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center space-y-4">
           <Database className="mx-auto h-12 w-12 text-muted-foreground" />
           <h2 className="text-xl font-semibold">No Analysis Data Available</h2>
           <p className="text-muted-foreground max-w-md">
-            Upload an analysis report or load sample data to analyze code entities
+            No entity analysis data found. Please run the analysis first.
           </p>
-          <Button onClick={loadSampleData}>
-            <Database className="mr-2 h-4 w-4" />
-            Load Sample Data
+          <Button onClick={() => loadEntitiesData(true)}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh Analysis
           </Button>
         </div>
       </div>
@@ -224,8 +227,8 @@ export default function EntitiesAnalysisPage() {
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={refreshAnalysis} disabled={loading}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
@@ -254,7 +257,7 @@ export default function EntitiesAnalysisPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {entityStats.avgComplexity.toFixed(1)}
+                {entityStats.averages?.complexity?.toFixed(1) || '0.0'}
               </div>
               <p className="text-xs text-muted-foreground">
                 Cyclomatic complexity
@@ -268,9 +271,9 @@ export default function EntitiesAnalysisPage() {
               <Network className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{entityStats.totalDependencies}</div>
+              <div className="text-2xl font-bold">{entities.reduce((sum, e) => sum + e.dependencies.length, 0)}</div>
               <p className="text-xs text-muted-foreground">
-                {entityStats.avgDependencies.toFixed(1)} avg per entity
+                {entityStats.averages?.dependencies?.toFixed(1) || '0.0'} avg per entity
               </p>
             </CardContent>
           </Card>
@@ -283,7 +286,7 @@ export default function EntitiesAnalysisPage() {
             <CardContent>
               <div className="text-2xl font-bold">{entityStats.byComplexity.high}</div>
               <p className="text-xs text-muted-foreground">
-                {"Entities with complexity > 15"}
+                Entities with complexity 16-25
               </p>
             </CardContent>
           </Card>

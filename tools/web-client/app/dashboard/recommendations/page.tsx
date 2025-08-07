@@ -1,6 +1,7 @@
 'use client';
 
-import { useAnalysis } from '@/lib/contexts/analysis-context';
+import { useAnalysisData } from '@/hooks/use-analysis-data';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -24,31 +26,14 @@ import {
   Zap,
   Database,
   Upload,
+  Search,
+  Filter,
+  Activity,
+  Bell,
 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
-
-interface RecommendationWithProgress {
-  id: string;
-  description: string;
-  priority: 'critical' | 'high' | 'medium' | 'low';
-  type: string;
-  impact: string;
-  estimatedEffort: string;
-  suggestion?: string;
-  entities?: string[];
-  category: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'dismissed';
-  progress: number;
-  implementationTime?: string;
-  assignedTo?: string;
-  dependencies?: string[];
-  quickFix?: {
-    available: boolean;
-    action: string;
-    description: string;
-  };
-}
+import { AnalysisRecommendation } from '@/types/data';
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -82,18 +67,18 @@ const getPriorityIcon = (priority: string) => {
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
-    case 'Code Quality':
-      return Code2;
-    case 'Performance':
-      return Zap;
-    case 'Architecture':
-      return FileCode;
-    case 'Maintenance':
-      return Wrench;
     case 'Security':
       return AlertTriangle;
+    case 'Performance':
+      return Zap;
+    case 'Maintainability':
+      return Code2;
+    case 'Reliability':
+      return CheckCircle2;
+    case 'Architecture':
+      return FileCode;
     default:
-      return Lightbulb;
+      return Wrench;
   }
 };
 
@@ -113,41 +98,61 @@ const getStatusColor = (status: string) => {
 };
 
 export default function RecommendationsPage() {
-  const { data, loading, error, loadSampleData } = useAnalysis();
-  const [sortBy, setSortBy] = useState<'priority' | 'effort' | 'impact'>('priority');
+  const {
+    data,
+    loading,
+    error,
+    refresh,
+    updateRecommendation,
+    triggerAnalysis
+  } = useAnalysisData({
+    autoRefresh: true,
+    refreshInterval: 300000, // 5 minutes
+    realtime: true
+  });
+
+  const [sortBy, setSortBy] = useState<'priority' | 'effort' | 'impact' | 'status'>('priority');
   const [filterByPriority, setFilterByPriority] = useState<string>('all');
   const [filterByCategory, setFilterByCategory] = useState<string>('all');
   const [filterByStatus, setFilterByStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [realtimeUpdates, setRealtimeUpdates] = useState<any>(null);
 
-  // Enhanced sample recommendations with progress tracking
-  const enhancedRecommendations: RecommendationWithProgress[] = useMemo(() => {
-    if (!data?.recommendations) return [];
+  const { isConnected, subscribe, lastMessage } = useWebSocket({
+    enabled: true,
+    onMessage: (message) => {
+      if (message.type === 'data' && message.channel === 'recommendations') {
+        setRealtimeUpdates(message.payload);
+      }
+    }
+  });
 
-    return data.recommendations.map((rec, index) => ({
-      id: `rec-${index}`,
-      ...rec,
-      category: getCategoryFromType(rec.type),
-      status: getRandomStatus(),
-      progress: getRandomProgress(),
-      implementationTime: getRandomImplementationTime(),
-      assignedTo: getRandomAssignee(),
-      dependencies: getRandomDependencies(),
-      quickFix: {
-        available: Math.random() > 0.5,
-        action: 'Auto-fix',
-        description: `Automatically apply fix for ${rec.type}`,
-      },
-    }));
-  }, [data?.recommendations]);
+  useEffect(() => {
+    if (isConnected) {
+      subscribe('recommendations');
+    }
+  }, [isConnected, subscribe]);
+
+  const recommendations = data?.recommendations || [];
 
   const categories = useMemo(() => {
-    const cats = new Set(enhancedRecommendations.map(r => r.category));
+    const cats = new Set(recommendations.map(r => r.category));
     return Array.from(cats);
-  }, [enhancedRecommendations]);
+  }, [recommendations]);
 
   const filteredRecommendations = useMemo(() => {
-    let filtered = enhancedRecommendations;
+    let filtered = recommendations;
 
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(r => 
+        r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply filters
     if (filterByPriority !== 'all') {
       filtered = filtered.filter(r => r.priority === filterByPriority);
     }
@@ -170,33 +175,34 @@ export default function RecommendationsPage() {
           return parseEffort(a.estimatedEffort) - parseEffort(b.estimatedEffort);
         case 'impact':
           return b.impact.localeCompare(a.impact);
+        case 'status':
+          return a.status.localeCompare(b.status);
         default:
           return 0;
       }
     });
-  }, [enhancedRecommendations, sortBy, filterByPriority, filterByCategory, filterByStatus]);
+  }, [recommendations, sortBy, filterByPriority, filterByCategory, filterByStatus, searchTerm]);
 
   const stats = useMemo(() => {
-    const total = enhancedRecommendations.length;
+    const total = recommendations.length;
     const byPriority = {
-      critical: enhancedRecommendations.filter(r => r.priority === 'critical').length,
-      high: enhancedRecommendations.filter(r => r.priority === 'high').length,
-      medium: enhancedRecommendations.filter(r => r.priority === 'medium').length,
-      low: enhancedRecommendations.filter(r => r.priority === 'low').length,
+      critical: recommendations.filter(r => r.priority === 'critical').length,
+      high: recommendations.filter(r => r.priority === 'high').length,
+      medium: recommendations.filter(r => r.priority === 'medium').length,
+      low: recommendations.filter(r => r.priority === 'low').length,
     };
     const byStatus = {
-      pending: enhancedRecommendations.filter(r => r.status === 'pending').length,
-      in_progress: enhancedRecommendations.filter(r => r.status === 'in_progress').length,
-      completed: enhancedRecommendations.filter(r => r.status === 'completed').length,
-      dismissed: enhancedRecommendations.filter(r => r.status === 'dismissed').length,
+      pending: recommendations.filter(r => r.status === 'pending').length,
+      in_progress: recommendations.filter(r => r.status === 'in_progress').length,
+      completed: recommendations.filter(r => r.status === 'completed').length,
+      dismissed: recommendations.filter(r => r.status === 'dismissed').length,
     };
-    const avgProgress = enhancedRecommendations.reduce((sum, r) => sum + r.progress, 0) / total || 0;
-    const quickFixAvailable = enhancedRecommendations.filter(r => r.quickFix?.available).length;
+    const autoFixAvailable = recommendations.filter(r => r.autoFixAvailable).length;
 
-    return { total, byPriority, byStatus, avgProgress, quickFixAvailable };
-  }, [enhancedRecommendations]);
+    return { total, byPriority, byStatus, autoFixAvailable };
+  }, [recommendations]);
 
-  if (loading) {
+  if (loading.isLoading && !data) {
     return (
       <div className='flex flex-1 flex-col gap-4 p-4'>
         <div className='flex items-center justify-between'>
@@ -220,9 +226,17 @@ export default function RecommendationsPage() {
   if (error) {
     return (
       <div className='flex flex-1 items-center justify-center p-4'>
-        <div className='text-center'>
-          <p className='text-lg text-muted-foreground mb-4'>{error}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        <div className='text-center space-y-4'>
+          <AlertTriangle className='mx-auto h-12 w-12 text-destructive' />
+          <h2 className='text-xl font-semibold'>Error Loading Recommendations</h2>
+          <p className='text-lg text-muted-foreground mb-4'>{error.message}</p>
+          <div className='flex gap-2 justify-center'>
+            <Button onClick={error.retry || refresh}>Try Again</Button>
+            <Button variant='outline' onClick={triggerAnalysis}>
+              <RefreshCw className='mr-2 h-4 w-4' />
+              Refresh Analysis
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -235,16 +249,16 @@ export default function RecommendationsPage() {
           <Database className='mx-auto h-12 w-12 text-muted-foreground' />
           <h2 className='text-xl font-semibold'>No Analysis Data Available</h2>
           <p className='text-muted-foreground max-w-md'>
-            Upload an analysis report or load sample data to view recommendations
+            Trigger a new analysis to get personalized recommendations
           </p>
           <div className='flex gap-2 justify-center'>
-            <Button onClick={loadSampleData}>
-              <Database className='mr-2 h-4 w-4' />
-              Load Sample Data
+            <Button onClick={triggerAnalysis}>
+              <Activity className='mr-2 h-4 w-4' />
+              Start Analysis
             </Button>
-            <Button variant='outline'>
+            <Button variant='outline' onClick={refresh}>
               <Upload className='mr-2 h-4 w-4' />
-              Upload Report
+              Check for Updates
             </Button>
           </div>
         </div>
@@ -257,15 +271,34 @@ export default function RecommendationsPage() {
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold'>Code Improvement Recommendations</h1>
+          <div className='flex items-center gap-3'>
+            <h1 className='text-2xl font-bold'>Code Improvement Recommendations</h1>
+            <Badge variant={isConnected ? 'default' : 'secondary'}>
+              <Activity className='mr-1 h-3 w-3' />
+              {isConnected ? 'Live' : 'Cached'}
+            </Badge>
+            {realtimeUpdates?.data?.newRecommendations > 0 && (
+              <Badge variant='destructive'>
+                <Bell className='mr-1 h-3 w-3' />
+                {realtimeUpdates.data.newRecommendations} New
+              </Badge>
+            )}
+          </div>
           <p className='text-sm text-muted-foreground'>
             Last updated: {format(new Date(data.timestamp), 'PPpp')}
+            {loading.isRefreshing && ' • Refreshing...'}
           </p>
         </div>
-        <Button variant='outline' size='sm'>
-          <RefreshCw className='mr-2 h-4 w-4' />
-          Refresh
-        </Button>
+        <div className='flex gap-2'>
+          <Button variant='outline' size='sm' onClick={refresh} disabled={loading.isRefreshing}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading.isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button size='sm' onClick={triggerAnalysis}>
+            <Database className='mr-2 h-4 w-4' />
+            New Analysis
+          </Button>
+        </div>
       </div>
 
       {/* Stats Overview */}
@@ -276,7 +309,9 @@ export default function RecommendationsPage() {
             <Lightbulb className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.total}</div>
+            <div className='text-2xl font-bold'>
+              {realtimeUpdates?.data?.totalPending || stats.total}
+            </div>
             <p className='text-xs text-muted-foreground'>
               {stats.byPriority.critical} critical, {stats.byPriority.high} high priority
             </p>
@@ -285,24 +320,30 @@ export default function RecommendationsPage() {
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Overall Progress</CardTitle>
-            <TrendingUp className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-sm font-medium'>Critical Issues</CardTitle>
+            <AlertTriangle className='h-4 w-4 text-red-500' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{Math.round(stats.avgProgress)}%</div>
-            <Progress value={stats.avgProgress} className='mt-2' />
+            <div className='text-2xl font-bold text-red-600'>
+              {realtimeUpdates?.data?.critical || stats.byPriority.critical}
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              Require immediate attention
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Quick Fixes Available</CardTitle>
-            <Zap className='h-4 w-4 text-muted-foreground' />
+            <CardTitle className='text-sm font-medium'>Auto-Fix Available</CardTitle>
+            <Zap className='h-4 w-4 text-green-500' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.quickFixAvailable}</div>
+            <div className='text-2xl font-bold text-green-600'>
+              {realtimeUpdates?.data?.autoFixAvailable || stats.autoFixAvailable}
+            </div>
             <p className='text-xs text-muted-foreground'>
-              {Math.round((stats.quickFixAvailable / stats.total) * 100)}% can be auto-fixed
+              Can be resolved automatically
             </p>
           </CardContent>
         </Card>
@@ -310,10 +351,10 @@ export default function RecommendationsPage() {
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
             <CardTitle className='text-sm font-medium'>Completed</CardTitle>
-            <CheckCircle2 className='h-4 w-4 text-muted-foreground' />
+            <CheckCircle2 className='h-4 w-4 text-green-500' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{stats.byStatus.completed}</div>
+            <div className='text-2xl font-bold text-green-600'>{stats.byStatus.completed}</div>
             <p className='text-xs text-muted-foreground'>
               {stats.byStatus.in_progress} in progress
             </p>
@@ -321,43 +362,53 @@ export default function RecommendationsPage() {
         </Card>
       </div>
 
-      {/* Filters and Controls */}
-      <div className='flex flex-wrap gap-4 items-center'>
-        <div className='flex items-center gap-2'>
-          <label className='text-sm font-medium'>Sort by:</label>
-          <Select value={sortBy} onValueChange={(value: 'priority' | 'effort' | 'impact') => setSortBy(value)}>
-            <SelectTrigger className='w-32'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='priority'>Priority</SelectItem>
-              <SelectItem value='effort'>Effort</SelectItem>
-              <SelectItem value='impact'>Impact</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Search and Filters */}
+      <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center'>
+        <div className='relative flex-1 max-w-sm'>
+          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4' />
+          <Input
+            placeholder='Search recommendations...'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className='pl-10'
+          />
         </div>
+        
+        <div className='flex flex-wrap gap-4 items-center'>
+          <div className='flex items-center gap-2'>
+            <label className='text-sm font-medium'>Sort by:</label>
+            <Select value={sortBy} onValueChange={(value: 'priority' | 'effort' | 'impact' | 'status') => setSortBy(value)}>
+              <SelectTrigger className='w-32'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='priority'>Priority</SelectItem>
+                <SelectItem value='effort'>Effort</SelectItem>
+                <SelectItem value='impact'>Impact</SelectItem>
+                <SelectItem value='status'>Status</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className='flex items-center gap-2'>
-          <label className='text-sm font-medium'>Priority:</label>
-          <Select value={filterByPriority} onValueChange={setFilterByPriority}>
-            <SelectTrigger className='w-32'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All</SelectItem>
-              <SelectItem value='critical'>Critical</SelectItem>
-              <SelectItem value='high'>High</SelectItem>
-              <SelectItem value='medium'>Medium</SelectItem>
-              <SelectItem value='low'>Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <div className='flex items-center gap-2'>
+            <Filter className='h-4 w-4 text-muted-foreground' />
+            <Select value={filterByPriority} onValueChange={setFilterByPriority}>
+              <SelectTrigger className='w-32'>
+                <SelectValue placeholder='Priority' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All</SelectItem>
+                <SelectItem value='critical'>Critical</SelectItem>
+                <SelectItem value='high'>High</SelectItem>
+                <SelectItem value='medium'>Medium</SelectItem>
+                <SelectItem value='low'>Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className='flex items-center gap-2'>
-          <label className='text-sm font-medium'>Category:</label>
           <Select value={filterByCategory} onValueChange={setFilterByCategory}>
             <SelectTrigger className='w-40'>
-              <SelectValue />
+              <SelectValue placeholder='Category' />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value='all'>All Categories</SelectItem>
@@ -366,13 +417,10 @@ export default function RecommendationsPage() {
               ))}
             </SelectContent>
           </Select>
-        </div>
 
-        <div className='flex items-center gap-2'>
-          <label className='text-sm font-medium'>Status:</label>
           <Select value={filterByStatus} onValueChange={setFilterByStatus}>
             <SelectTrigger className='w-32'>
-              <SelectValue />
+              <SelectValue placeholder='Status' />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value='all'>All</SelectItem>
@@ -388,38 +436,45 @@ export default function RecommendationsPage() {
       {/* Recommendations Tabs */}
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="critical">Critical</TabsTrigger>
-          <TabsTrigger value="high">High</TabsTrigger>
-          <TabsTrigger value="medium">Medium</TabsTrigger>
-          <TabsTrigger value="low">Low</TabsTrigger>
+          <TabsTrigger value="all">All ({filteredRecommendations.length})</TabsTrigger>
+          <TabsTrigger value="critical">Critical ({filteredRecommendations.filter(r => r.priority === 'critical').length})</TabsTrigger>
+          <TabsTrigger value="high">High ({filteredRecommendations.filter(r => r.priority === 'high').length})</TabsTrigger>
+          <TabsTrigger value="medium">Medium ({filteredRecommendations.filter(r => r.priority === 'medium').length})</TabsTrigger>
+          <TabsTrigger value="low">Low ({filteredRecommendations.filter(r => r.priority === 'low').length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <RecommendationsList recommendations={filteredRecommendations} />
+          <RecommendationsList 
+            recommendations={filteredRecommendations} 
+            updateRecommendation={updateRecommendation}
+          />
         </TabsContent>
         
         <TabsContent value="critical" className="space-y-4">
           <RecommendationsList 
             recommendations={filteredRecommendations.filter(r => r.priority === 'critical')} 
+            updateRecommendation={updateRecommendation}
           />
         </TabsContent>
         
         <TabsContent value="high" className="space-y-4">
           <RecommendationsList 
             recommendations={filteredRecommendations.filter(r => r.priority === 'high')} 
+            updateRecommendation={updateRecommendation}
           />
         </TabsContent>
         
         <TabsContent value="medium" className="space-y-4">
           <RecommendationsList 
             recommendations={filteredRecommendations.filter(r => r.priority === 'medium')} 
+            updateRecommendation={updateRecommendation}
           />
         </TabsContent>
         
         <TabsContent value="low" className="space-y-4">
           <RecommendationsList 
             recommendations={filteredRecommendations.filter(r => r.priority === 'low')} 
+            updateRecommendation={updateRecommendation}
           />
         </TabsContent>
       </Tabs>
@@ -428,13 +483,15 @@ export default function RecommendationsPage() {
 }
 
 function RecommendationsList({ 
-  recommendations 
+  recommendations,
+  updateRecommendation 
 }: { 
-  recommendations: RecommendationWithProgress[] 
+  recommendations: AnalysisRecommendation[]
+  updateRecommendation: (id: string, status: string) => Promise<void>
 }) {
   if (recommendations.length === 0) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-12">
         <Lightbulb className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">No recommendations found</h3>
         <p className="text-muted-foreground">Try adjusting your filters to see more results.</p>
@@ -445,19 +502,29 @@ function RecommendationsList({
   return (
     <div className="space-y-4">
       {recommendations.map((recommendation) => (
-        <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+        <RecommendationCard 
+          key={recommendation.id} 
+          recommendation={recommendation} 
+          updateRecommendation={updateRecommendation}
+        />
       ))}
     </div>
   );
 }
 
 function RecommendationCard({ 
-  recommendation 
+  recommendation,
+  updateRecommendation 
 }: { 
-  recommendation: RecommendationWithProgress 
+  recommendation: AnalysisRecommendation
+  updateRecommendation: (id: string, status: string) => Promise<void>
 }) {
   const PriorityIcon = getPriorityIcon(recommendation.priority);
   const CategoryIcon = getCategoryIcon(recommendation.category);
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    await updateRecommendation(recommendation.id, newStatus);
+  };
 
   return (
     <Card className="relative">
@@ -467,11 +534,17 @@ function RecommendationCard({
             <CategoryIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <CardTitle className="text-lg">{recommendation.description}</CardTitle>
+                <CardTitle className="text-lg">{recommendation.title}</CardTitle>
                 <Badge variant={getPriorityColor(recommendation.priority) as 'destructive' | 'default' | 'secondary' | 'outline'}>
                   <PriorityIcon className="h-3 w-3 mr-1" />
                   {recommendation.priority}
                 </Badge>
+                {recommendation.autoFixAvailable && (
+                  <Badge variant="default">
+                    <Zap className="h-3 w-3 mr-1" />
+                    Auto-Fix
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
@@ -496,14 +569,15 @@ function RecommendationCard({
       
       <CardContent className="space-y-4">
         <CardDescription className="text-base">
-          {recommendation.impact}
+          {recommendation.description}
         </CardDescription>
 
-        {recommendation.suggestion && (
-          <div className="bg-muted/50 p-3 rounded-md">
-            <p className="text-sm"><strong>Suggestion:</strong> {recommendation.suggestion}</p>
-          </div>
-        )}
+        <div className="bg-muted/50 p-3 rounded-md">
+          <p className="text-sm"><strong>Impact:</strong> {recommendation.impact}</p>
+          {recommendation.suggestion && (
+            <p className="text-sm mt-2"><strong>Suggestion:</strong> {recommendation.suggestion}</p>
+          )}
+        </div>
 
         {recommendation.entities && recommendation.entities.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -527,33 +601,38 @@ function RecommendationCard({
           </div>
         )}
 
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="font-medium">{recommendation.progress}%</span>
-          </div>
-          <Progress value={recommendation.progress} />
-        </div>
-
         {/* Action Buttons */}
-        <div className="flex justify-between items-center pt-2">
+        <div className="flex justify-between items-center pt-2 border-t">
           <div className="flex gap-2">
             {recommendation.quickFix?.available && (
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="destructive">
                 <Zap className="h-4 w-4 mr-1" />
                 {recommendation.quickFix.action}
               </Button>
             )}
-            <Button size="sm" variant="outline">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => handleStatusUpdate('in_progress')}
+              disabled={recommendation.status === 'in_progress'}
+            >
               <Play className="h-4 w-4 mr-1" />
-              Start Implementation
+              {recommendation.status === 'in_progress' ? 'In Progress' : 'Start'}
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={() => handleStatusUpdate('completed')}
+              disabled={recommendation.status === 'completed'}
+            >
+              <CheckCircle2 className="h-4 w-4 mr-1" />
+              {recommendation.status === 'completed' ? 'Completed' : 'Mark Done'}
             </Button>
           </div>
           
-          {recommendation.implementationTime && (
+          {recommendation.quickFix?.estimatedTime && (
             <span className="text-xs text-muted-foreground">
-              ETA: {recommendation.implementationTime}
+              ETA: {recommendation.quickFix.estimatedTime}
             </span>
           )}
         </div>
@@ -562,59 +641,8 @@ function RecommendationCard({
   );
 }
 
-// Helper functions
-function getCategoryFromType(type: string): string {
-  const categoryMap: Record<string, string> = {
-    'duplicate_removal': 'Code Quality',
-    'pattern_extraction': 'Architecture',
-    'code_cleanup': 'Maintenance',
-    'performance': 'Performance',
-    'security': 'Security',
-  };
-  return categoryMap[type] || 'Code Quality';
-}
-
-function getRandomStatus(): 'pending' | 'in_progress' | 'completed' | 'dismissed' {
-  const statuses = ['pending', 'in_progress', 'completed', 'dismissed'] as const;
-  const weights = [0.5, 0.25, 0.15, 0.1]; // Weights for each status
-  const random = Math.random();
-  let sum = 0;
-  
-  for (let i = 0; i < statuses.length; i++) {
-    sum += weights[i];
-    if (random < sum) {
-      return statuses[i];
-    }
-  }
-  
-  return 'pending';
-}
-
-function getRandomProgress(): number {
-  // Generate random progress based on status logic
-  const baseProgress = Math.floor(Math.random() * 100);
-  return Math.max(0, Math.min(100, baseProgress));
-}
-
-function getRandomImplementationTime(): string {
-  const times = ['2 hours', '1 day', '3 days', '1 week', '2 weeks'];
-  return times[Math.floor(Math.random() * times.length)];
-}
-
-function getRandomAssignee(): string {
-  const assignees = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'Alex Chen'];
-  return assignees[Math.floor(Math.random() * assignees.length)];
-}
-
-function getRandomDependencies(): string[] {
-  const allDeps = ['Refactor Module A', 'Update Tests', 'Review Security', 'Performance Audit', 'Documentation Update'];
-  const numDeps = Math.floor(Math.random() * 3); // 0-2 dependencies
-  const shuffled = allDeps.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, numDeps);
-}
-
+// Helper function to parse effort string to hours for sorting
 function parseEffort(effort: string): number {
-  // Parse effort string to hours for sorting
   const match = effort.match(/(\d+)(?:-(\d+))?\s*hours?/i);
   if (match) {
     const min = parseInt(match[1]);

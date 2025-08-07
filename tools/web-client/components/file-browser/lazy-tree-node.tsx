@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { TreeItem } from '@/components/ui/tree-view';
-import { FolderIcon, Loader2 } from 'lucide-react';
+import { FolderIcon, FileIcon, Loader2 } from 'lucide-react';
 import { FileSystemItem, getFileTypeInfo } from '@/lib/file-system';
 import { cn } from '@/lib/utils';
 
@@ -27,10 +27,9 @@ export function LazyTreeNode({
   const [loadedChildren, setLoadedChildren] = useState<FileSystemItem[]>(
     item.children || []
   );
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(item.isLoaded || false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const typeInfo = getFileTypeInfo(item.name);
-  const IconComponent = item.type === 'directory' ? FolderIcon : typeInfo.icon;
   const hasChildren = item.type === 'directory' && (!hasLoadedOnce || loadedChildren.length > 0);
 
   const handleSelect = useCallback(() => {
@@ -57,7 +56,10 @@ export function LazyTreeNode({
     if (isLoading) {
       return <Loader2 className="h-4 w-4 animate-spin" />;
     }
-    return <IconComponent className={cn('h-4 w-4', typeInfo.color)} />;
+    if (item.type === 'directory') {
+      return <FolderIcon className={cn('h-4 w-4', typeInfo.color)} />;
+    }
+    return <FileIcon className={cn('h-4 w-4', typeInfo.color)} />;
   };
 
   return (

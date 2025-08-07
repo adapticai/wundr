@@ -16,6 +16,20 @@ import {
   Terminal
 } from 'lucide-react';
 
+interface ScriptParameter {
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'select' | 'file' | 'directory';
+  description: string;
+  required: boolean;
+  defaultValue?: unknown;
+  options?: string[];
+  validation?: {
+    pattern?: string;
+    min?: number;
+    max?: number;
+  };
+}
+
 interface Script {
   id: string;
   name: string;
@@ -23,6 +37,7 @@ interface Script {
   category: 'analysis' | 'governance' | 'consolidation' | 'testing' | 'quality' | 'monorepo';
   safetyLevel: 'safe' | 'moderate' | 'unsafe';
   command: string;
+  parameters: ScriptParameter[];
   tags: string[];
   lastRun?: string;
   status?: 'idle' | 'running' | 'completed' | 'failed';

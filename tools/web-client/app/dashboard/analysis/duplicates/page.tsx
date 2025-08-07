@@ -1,6 +1,6 @@
 "use client"
 
-import { useAnalysis } from "@/lib/contexts/analysis-context"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -12,31 +12,116 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Code, Brain, Download } from "lucide-react"
-import { useState } from "react"
+import { Code, Brain, Download, RefreshCw, AlertTriangle } from "lucide-react"
+import type { 
+  DuplicateCluster, 
+  DuplicateStats,
+  DuplicatesAnalysisResponse 
+} from '@/app/api/analysis/duplicates/route'
+import type { ApiResponse } from '@/types/data'
 
 export default function DuplicatesPage() {
-  const { data, loading } = useAnalysis()
+  const [clusters, setClusters] = useState<DuplicateCluster[]>([])
+  const [stats, setStats] = useState<DuplicateStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [severityFilter, setSeverityFilter] = useState<string>("all")
   const [typeFilter, setTypeFilter] = useState<string>("all")
+
+  const loadDuplicatesData = useCallback(async (refresh = false) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const url = new URL('/api/analysis/duplicates', window.location.origin)
+      if (refresh) {
+        url.searchParams.set('refresh', 'true')
+      }
+      if (severityFilter !== 'all') {
+        url.searchParams.set('severity', severityFilter)
+      }
+      if (typeFilter !== 'all') {
+        url.searchParams.set('type', typeFilter)
+      }
+
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const result: ApiResponse<DuplicatesAnalysisResponse> = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load duplicates data')
+      }
+
+      setClusters(result.data.clusters)
+      setStats(result.data.stats)
+    } catch (error) {
+      console.error('Error loading duplicates data:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load data'
+      setError(errorMessage)
+      setClusters([])
+      setStats(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [severityFilter, typeFilter])
+
+  const refreshAnalysis = useCallback(() => {
+    loadDuplicatesData(true)
+  }, [loadDuplicatesData])
+
+  const exportDuplicates = useCallback(() => {
+    const data = {
+      clusters,
+      stats,
+      filters: { severityFilter, typeFilter },
+      exportDate: new Date().toISOString()
+    }
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'duplicates-report.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, [clusters, stats, severityFilter, typeFilter])
+
+  useEffect(() => {
+    loadDuplicatesData()
+  }, [loadDuplicatesData])
 
   if (loading) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Duplicate Code Analysis</h1>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+        <div className="flex items-center justify-center min-h-[400px]">
+          <RefreshCw className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Analyzing code duplicates...</span>
         </div>
       </div>
     )
   }
 
-  if (!data) {
+  if (error) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Analysis Failed</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => loadDuplicatesData()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!stats) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <p className="text-muted-foreground">No analysis data available</p>
@@ -44,34 +129,15 @@ export default function DuplicatesPage() {
     )
   }
 
-  const filteredDuplicates = data.duplicates.filter((duplicate) => {
-    if (severityFilter !== "all" && duplicate.severity !== severityFilter) {
-      return false
-    }
-    if (typeFilter !== "all" && duplicate.type !== typeFilter) {
-      return false
-    }
-    return true
-  })
+  const filteredDuplicates = clusters
 
-  const exportDuplicates = () => {
-    const jsonStr = JSON.stringify(filteredDuplicates, null, 2)
-    const blob = new Blob([jsonStr], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "duplicates-report.json"
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
 
-  const severityColors = {
+  const severityColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     critical: "destructive",
-    high: "warning",
-    medium: "default",
-  } as const
+    high: "destructive",
+    medium: "secondary",
+    low: "outline"
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -79,13 +145,19 @@ export default function DuplicatesPage() {
         <div>
           <h1 className="text-2xl font-bold">Duplicate Code Analysis</h1>
           <p className="text-sm text-muted-foreground">
-            Found {data.duplicates.length} duplicate clusters in your codebase
+            Found {stats.totalClusters} duplicate clusters affecting {stats.totalDuplicates} code blocks
           </p>
         </div>
-        <Button onClick={exportDuplicates} variant="outline" size="sm">
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={refreshAnalysis} disabled={loading} variant="outline" size="sm">
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button onClick={exportDuplicates} variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -161,11 +233,11 @@ export default function DuplicatesPage() {
                       <div>
                         <p className="font-medium">{entity.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {entity.file}:{entity.line}
+                          {entity.file}:{entity.line}-{entity.endLine} ({entity.endLine - entity.line + 1} lines)
                         </p>
                       </div>
                       <Button variant="ghost" size="sm">
-                        View Details
+                        View Code
                       </Button>
                     </div>
                   ))}

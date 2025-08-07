@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileContentViewer } from '@/components/markdown/FileContentViewer';
-import { Download, Copy } from 'lucide-react';
+import { Download, Copy, FileIcon } from 'lucide-react';
 import { FileSystemItem, getFileTypeInfo, formatFileSize } from '@/lib/file-system';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +37,6 @@ export function FilePreviewModal({
   }
 
   const typeInfo = getFileTypeInfo(file.name);
-  const IconComponent = typeInfo.icon;
 
   const handleDownload = () => {
     onDownload?.(file);
@@ -59,11 +58,11 @@ export function FilePreviewModal({
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <IconComponent className={cn('h-6 w-6', typeInfo.color)} />
+              <FileIcon className={cn('h-6 w-6', typeInfo.color)} />
               <div>
                 <DialogTitle className="text-lg">{file.name}</DialogTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Badge variant="outline">{typeInfo.category}</Badge>
+                  <Badge variant="outline">{typeInfo.type}</Badge>
                   {file.size && <span>{formatFileSize(file.size)}</span>}
                   <span className="font-mono text-xs">{file.path}</span>
                 </div>

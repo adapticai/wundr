@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { DocsLayout } from '@/components/docs/DocsLayout';
 import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
 import { SearchableContent } from '@/components/docs/SearchableContent';
+import { ApiDocsRenderer } from '@/components/docs/ApiDocsRenderer';
+import { VersionSwitcher } from '@/components/docs/VersionSwitcher';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Code, Copy, PlayCircle } from 'lucide-react';
-import { readDocFile } from '@/lib/docs-utils';
+import { Code, Copy, PlayCircle, FileText, Package, Settings } from 'lucide-react';
+import { readDocFile, generateApiDocs, getCurrentDocVersion, DOCS_ROOT } from '@/lib/docs-utils';
 import path from 'path';
 
 interface APIEndpoint {
@@ -48,27 +51,33 @@ interface Example {
   response: string;
 }
 
-// This would be generated from OpenAPI spec or similar in a real app
+// Load API documentation from multiple sources
 const getAPIContent = async () => {
   try {
-    // Try to read from the project's docs directory
-    const docsPath = path.join(process.cwd(), '../../docs/integration/INTEGRATION_API.md');
-    const docContent = await readDocFile(docsPath);
+    // Try multiple potential locations
+    const possiblePaths = [
+      path.join(DOCS_ROOT, 'integration', 'INTEGRATION_API.md'),
+      path.join(DOCS_ROOT, 'api', 'reference.md'),
+      path.join(DOCS_ROOT, 'INTEGRATION_API.md')
+    ];
 
-    if (docContent) {
-      return {
-        content: docContent.content,
-        frontmatter: {
-          title: 'API Reference',
-          description: 'Complete API documentation for the analysis tools',
-          category: 'reference',
-          tags: ['api', 'reference', 'integration'],
-          ...docContent.frontmatter
-        }
-      };
+    for (const docsPath of possiblePaths) {
+      const docContent = await readDocFile(docsPath);
+      if (docContent) {
+        return {
+          content: docContent.content,
+          frontmatter: {
+            ...docContent.frontmatter,
+            title: docContent.frontmatter?.title || 'API Reference',
+            description: docContent.frontmatter?.description || 'Complete API documentation for the analysis tools',
+            category: docContent.frontmatter?.category || 'api',
+            tags: docContent.frontmatter?.tags || ['api', 'reference', 'integration', 'typescript']
+          }
+        };
+      }
     }
-  } catch (_error) {
-    console.log('Could not read from filesystem, using fallback content');
+  } catch (error) {
+    console.log('Could not read API docs from filesystem, using fallback content');
   }
 
   // Fallback content
@@ -431,102 +440,324 @@ curl -X POST https://api.wundr.io/v1/analysis \\
   };
 };
 
-const apiEndpoints: APIEndpoint[] = [
-  {
-    method: 'POST',
-    path: '/analysis',
-    description: 'Start a new code analysis',
-    requestBody: {
-      contentType: 'application/json',
-      schema: 'AnalysisRequest',
-      example: `{
-  "repository": {
-    "url": "https://github.com/user/repo",
-    "branch": "main"
-  },
-  "options": {
-    "includeDuplicates": true,
-    "includeComplexity": true
+
+async function ApiDocsContent() {
+  const [apiDocsResult, contentResult] = await Promise.all([
+    generateApiDocs(),
+    getAPIContent()
+  ]);
+  
+  const currentVersion = getCurrentDocVersion();
+  const { content, frontmatter } = contentResult;
+  
+  // Group API docs by type for overview
+  const docsByType = apiDocsResult.reduce((acc, doc) => {
+    if (!acc[doc.type]) acc[doc.type] = [];
+    acc[doc.type].push(doc);
+    return acc;
+  }, {} as Record<string, typeof apiDocsResult>);
+
+  const typeStats = Object.entries(docsByType).map(([type, docs]) => ({
+    type,
+    count: docs.length,
+    icon: getTypeIcon(type)
+  }));
+
+  return (
+    <>
+      {/* API Overview Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">API Reference</h1>
+            <p className="text-muted-foreground mt-2">
+              Complete TypeScript API documentation with examples and usage patterns.
+            </p>
+          </div>
+          <VersionSwitcher currentVersion={currentVersion.version} />
+        </div>
+
+        {/* API Statistics */}
+        {typeStats.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {typeStats.map(({ type, count, icon }) => (
+              <Card key={type} className="p-4">
+                <div className="flex items-center gap-2">
+                  {icon}
+                  <div>
+                    <p className="text-2xl font-bold">{count}</p>
+                    <p className="text-sm text-muted-foreground capitalize">{type}s</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Quick Navigation */}
+        {Object.keys(docsByType).length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Quick Navigation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                {Object.entries(docsByType).map(([type, docs]) => (
+                  <div key={type}>
+                    <h3 className="font-semibold mb-2 flex items-center gap-2 capitalize">
+                      {getTypeIcon(type)}
+                      {type}s ({docs.length})
+                    </h3>
+                    <div className="space-y-1">
+                      {docs.slice(0, 5).map(doc => (
+                        <a
+                          key={doc.name}
+                          href={`#${doc.name.toLowerCase()}`}
+                          className="block text-sm text-muted-foreground hover:text-primary hover:underline"
+                        >
+                          {doc.name}
+                        </a>
+                      ))}
+                      {docs.length > 5 && (
+                        <p className="text-xs text-muted-foreground">
+                          +{docs.length - 5} more...
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="typescript">TypeScript API</TabsTrigger>
+          <TabsTrigger value="endpoints">HTTP Endpoints</TabsTrigger>
+          <TabsTrigger value="examples">Examples</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          {/* Main documentation content */}
+          <MarkdownRenderer
+            content={content}
+            frontmatter={frontmatter}
+            showMetadata={true}
+            showTableOfContents={true}
+            enableSyntaxHighlighting={true}
+          />
+        </TabsContent>
+
+        <TabsContent value="typescript" className="space-y-6">
+          {/* TypeScript API Documentation */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-4">TypeScript API Reference</h2>
+              <p className="text-muted-foreground mb-6">
+                Auto-generated documentation from TypeScript interfaces, types, and functions.
+              </p>
+            </div>
+            <ApiDocsRenderer apiDocs={apiDocsResult} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="endpoints" className="space-y-6">
+          {/* HTTP API Endpoints - existing code */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-4">HTTP API Endpoints</h2>
+              <p className="text-muted-foreground mb-6">
+                REST API endpoints with request/response examples and interactive testing.
+              </p>
+            </div>
+
+            {/* Existing HTTP endpoints code would go here */}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="examples" className="space-y-6">
+          {/* Code Examples */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Code Examples</h2>
+              <p className="text-muted-foreground mb-6">
+                Ready-to-use code examples for common integration scenarios.
+              </p>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Code className="h-5 w-5" />
+                    TypeScript Usage
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Using the TypeScript interfaces and utilities
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    <code>{`import { DocPage, searchDocs } from '@/lib/docs-utils';
+
+// Load and search documentation
+const pages = await loadAllDocPages();
+const results = searchDocs(pages, 'typescript patterns');
+
+// Use with components
+const docsProps = {
+  content: page.content,
+  frontmatter: page.frontmatter,
+  showMetadata: true,
+  enableSyntaxHighlighting: true
+};`}</code>
+                  </pre>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Code className="h-5 w-5" />
+                    Component Integration
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Using documentation components in your app
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    <code>{`import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
+import { ApiDocsRenderer } from '@/components/docs/ApiDocsRenderer';
+import { AdvancedSearch } from '@/components/docs/AdvancedSearch';
+
+// Render documentation
+<MarkdownRenderer 
+  content={content}
+  enableSyntaxHighlighting={true}
+  showTableOfContents={true}
+/>
+
+// Render API docs
+<ApiDocsRenderer apiDocs={apiDocs} />`}</code>
+                  </pre>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </>
+  );
+}
+
+function getTypeIcon(type: string) {
+  switch (type) {
+    case 'interface': return <FileText className="h-4 w-4" />;
+    case 'type': return <Code className="h-4 w-4" />;
+    case 'function': return <Settings className="h-4 w-4" />;
+    case 'class': return <Package className="h-4 w-4" />;
+    case 'enum': return <Package className="h-4 w-4" />;
+    default: return <Code className="h-4 w-4" />;
   }
-}`
+}
+
+function ApiDocsLoading() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <Skeleton className="h-10 w-32" />
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} className="p-4">
+            <Skeleton className="h-16 w-full" />
+          </Card>
+        ))}
+      </div>
+      
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="typescript">TypeScript API</TabsTrigger>
+          <TabsTrigger value="endpoints">HTTP Endpoints</TabsTrigger>
+          <TabsTrigger value="examples">Examples</TabsTrigger>
+        </TabsList>
+        <div className="space-y-4">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </Tabs>
+    </div>
+  );
+}
+
+function getMethodColor(method: string): string {
+  const colors: Record<string, string> = {
+    GET: 'bg-blue-500 text-white',
+    POST: 'bg-green-500 text-white',
+    PUT: 'bg-yellow-500 text-white',
+    DELETE: 'bg-red-500 text-white',
+    PATCH: 'bg-purple-500 text-white',
+  };
+  return colors[method] || 'bg-gray-500 text-white';
+}
+
+export default async function ApiPage() {
+  const [apiDocsResult, contentResult] = await Promise.all([
+    generateApiDocs(),
+    getAPIContent()
+  ]);
+  
+  const { content, frontmatter } = contentResult;
+  const apiDocs = apiDocsResult;
+  
+  // Sample HTTP endpoints for demonstration
+  const apiEndpoints = [
+    {
+      method: 'GET',
+      path: '/api/analysis/entities',
+      description: 'Get all code entities with analysis data',
+      parameters: [
+        { name: 'type', type: 'string', required: false, description: 'Filter by entity type' },
+        { name: 'minComplexity', type: 'number', required: false, description: 'Minimum complexity threshold' }
+      ],
+      responses: {
+        '200': { description: 'Successful response with entity data' },
+        '500': { description: 'Internal server error' }
+      }
     },
-    responses: [
-      {
-        status: 201,
-        description: 'Analysis started successfully',
-        example: `{
-  "analysisId": "analysis_123456",
-  "status": "pending",
-  "estimatedDuration": "5-10 minutes"
-}`
+    {
+      method: 'POST',
+      path: '/api/reports/generate',
+      description: 'Generate a new analysis report',
+      parameters: [
+        { name: 'templateId', type: 'string', required: true, description: 'Report template identifier' },
+        { name: 'name', type: 'string', required: true, description: 'Report name' }
+      ],
+      responses: {
+        '200': { description: 'Report generated successfully' },
+        '400': { description: 'Invalid request parameters' }
       }
-    ],
-    examples: [
-      {
-        title: 'Basic Analysis',
-        description: 'Start analysis with default options',
-        request: 'POST /analysis',
-        response: '201 Created'
-      }
-    ]
-  },
-  {
-    method: 'GET',
-    path: '/analysis/{analysisId}',
-    description: 'Get analysis status and results',
-    parameters: [
-      {
-        name: 'analysisId',
-        type: 'string',
-        required: true,
-        description: 'Unique analysis identifier',
-        example: 'analysis_123456'
-      }
-    ],
-    responses: [
-      {
-        status: 200,
-        description: 'Analysis details retrieved successfully',
-        example: `{
-  "analysisId": "analysis_123456",
-  "status": "completed",
-  "results": {...}
-}`
-      }
-    ],
-    examples: [
-      {
-        title: 'Get Analysis Results',
-        description: 'Retrieve completed analysis',
-        request: 'GET /analysis/analysis_123456',
-        response: '200 OK'
-      }
-    ]
-  }
-];
-
-export default async function APIPage() {
-  const { content, frontmatter } = await getAPIContent();
-
+    }
+  ];
+  
   const currentPage = {
     title: 'API Reference',
     slug: 'api',
     path: '/dashboard/docs/api',
-    category: 'reference',
-    description: 'Complete API documentation for integration',
-    tags: ['api', 'reference', 'integration'],
-    order: 4
-  };
-
-  const getMethodColor = (method: string) => {
-    const colors = {
-      GET: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      POST: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      PUT: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      DELETE: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      PATCH: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-    };
-    return colors[method as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    category: 'api',
+    description: 'Complete TypeScript and HTTP API documentation',
+    tags: ['api', 'typescript', 'reference', 'http'],
+    order: 1
   };
 
   return (
@@ -612,37 +843,9 @@ export default async function APIPage() {
                                 <p className="text-sm text-muted-foreground">
                                   {param.description}
                                 </p>
-                                {param.example && (
-                                  <code className="text-xs text-muted-foreground">
-                                    Example: {param.example}
-                                  </code>
-                                )}
                               </div>
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Request Body */}
-                    {endpoint.requestBody && (
-                      <div>
-                        <h4 className="font-medium mb-2">Request Body</h4>
-                        <div className="space-y-2">
-                          <Badge variant="outline">{endpoint.requestBody.contentType}</Badge>
-                          <div className="relative">
-                            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                              <code>{endpoint.requestBody.example}</code>
-                            </pre>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="absolute top-2 right-2"
-                              onClick={() => navigator.clipboard.writeText(endpoint.requestBody!.example)}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </div>
                       </div>
                     )}
@@ -651,29 +854,16 @@ export default async function APIPage() {
                     <div>
                       <h4 className="font-medium mb-2">Responses</h4>
                       <div className="space-y-3">
-                        {endpoint.responses.map((response, responseIndex) => (
+                        {Object.entries(endpoint.responses).map(([code, response], responseIndex) => (
                           <div key={responseIndex} className="border rounded-lg p-3">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge
-                                variant={response.status < 400 ? "default" : "destructive"}
+                                variant={parseInt(code) < 400 ? "default" : "destructive"}
                                 className="font-mono"
                               >
-                                {response.status}
+                                {code}
                               </Badge>
                               <span className="text-sm">{response.description}</span>
-                            </div>
-                            <div className="relative">
-                              <pre className="bg-muted p-3 rounded text-sm overflow-x-auto">
-                                <code>{response.example}</code>
-                              </pre>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="absolute top-1 right-1"
-                                onClick={() => navigator.clipboard.writeText(response.example)}
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
                             </div>
                           </div>
                         ))}

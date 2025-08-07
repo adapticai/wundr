@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Download, Calendar, Search, MoreHorizontal } from 'lucide-react';
-// Filter not used in this component
+import { Plus, Download, Calendar, Search, MoreHorizontal, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

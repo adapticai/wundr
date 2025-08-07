@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -59,6 +59,7 @@ interface ServiceTemplate {
   };
 }
 
+// This would be loaded from the real TemplateService
 const mockTemplates: ServiceTemplate[] = [
   {
     id: "rest-api-express",
@@ -232,16 +233,48 @@ export default function ServiceTemplatesPage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
   const [showPreview, setShowPreview] = useState(false);
   const [showCustomizer, setShowCustomizer] = useState(false);
-  const [filteredTemplates, setFilteredTemplates] = useState(mockTemplates);
+  const [templates, setTemplates] = useState<ServiceTemplate[]>([]);
+  const [filteredTemplates, setFilteredTemplates] = useState<ServiceTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [generatedCode, setGeneratedCode] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const categories = ["all", ...new Set(mockTemplates.map(t => t.category))];
-  const languages = ["all", ...new Set(mockTemplates.map(t => t.language))];
+  const categories = ["all", ...new Set(templates.map(t => t.category))];
+  const languages = ["all", ...new Set(templates.map(t => t.language))];
   const difficulties = ["all", "beginner", "intermediate", "advanced"];
 
+  // Load templates from API
   useEffect(() => {
-    let filtered = mockTemplates;
+    const loadTemplates = async () => {
+      try {
+        setLoadingTemplates(true);
+        const response = await fetch('/api/templates');
+        if (response.ok) {
+          const data = await response.json();
+          const loadedTemplates = data.success ? data.data.map((t: any) => ({
+            ...t,
+            codePreview: t.content?.[Object.keys(t.content)[0]] || '',
+            downloads: t.stats?.usage?.total || 0,
+            rating: t.stats?.rating || 0,
+            usageStats: t.stats?.usage || { monthly: 0, total: 0, trending: false }
+          })) : mockTemplates;
+          setTemplates(loadedTemplates);
+        } else {
+          setTemplates(mockTemplates);
+        }
+      } catch (error) {
+        console.error('Failed to load templates:', error);
+        setTemplates(mockTemplates);
+      } finally {
+        setLoadingTemplates(false);
+      }
+    };
+
+    loadTemplates();
+  }, []);
+
+  useEffect(() => {
+    let filtered = templates;
 
     if (searchTerm) {
       filtered = filtered.filter(template =>
@@ -264,7 +297,7 @@ export default function ServiceTemplatesPage() {
     }
 
     setFilteredTemplates(filtered);
-  }, [searchTerm, selectedCategory, selectedLanguage, selectedDifficulty]);
+  }, [templates, searchTerm, selectedCategory, selectedLanguage, selectedDifficulty]);
 
   const handleTemplateSelect = (template: ServiceTemplate) => {
     setSelectedTemplate(template);
@@ -488,7 +521,7 @@ export default class ${template.name.replace(/\s+/g, '')}Service {
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-4">
-          <TemplateStats templates={mockTemplates} />
+          <TemplateStats templates={templates} />
         </TabsContent>
 
         <TabsContent value="documentation" className="space-y-4">
@@ -515,7 +548,7 @@ export default class ${template.name.replace(/\s+/g, '')}Service {
           template={selectedTemplate}
           open={showCustomizer}
           onOpenChange={setShowCustomizer}
-          onGenerate={handleGenerateCode}
+          onGenerate={handleGenerateCode as any}
         />
       )}
 

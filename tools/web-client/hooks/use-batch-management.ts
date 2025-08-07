@@ -6,23 +6,36 @@ export interface BatchJob {
   id: string;
   name: string;
   description: string;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused';
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'paused' | 'cancelled';
   progress: number;
   createdAt: Date;
   startedAt?: Date;
   completedAt?: Date;
-  templates: string[];
+  templateIds: string[];
   consolidationType: 'merge' | 'replace' | 'archive';
   priority: 'low' | 'medium' | 'high';
   estimatedDuration: number;
   actualDuration?: number;
   errors: string[];
   warnings: string[];
+  currentStage?: string;
+  currentTemplate?: string;
   results?: {
     templatesProcessed: number;
     duplicatesRemoved: number;
     conflictsResolved: number;
+    filesCreated: number;
     filesModified: number;
+    backupCreated: boolean;
+  };
+  executionIds: string[];
+  config: {
+    backupStrategy: 'auto' | 'manual' | 'none';
+    conflictResolution: 'interactive' | 'auto' | 'skip';
+    maxConcurrentJobs?: number;
+    retryAttempts?: number;
+    timeoutPerTemplate?: number;
+    rollbackOnFailure?: boolean;
   };
 }
 
@@ -40,13 +53,17 @@ export interface BatchSchedule {
 export interface CreateBatchRequest {
   name: string;
   description: string;
-  templates: string[];
+  templateIds: string[];
   consolidationType: 'merge' | 'replace' | 'archive';
   priority: 'low' | 'medium' | 'high';
   schedule?: string;
   config?: {
     backupStrategy: 'auto' | 'manual' | 'none';
     conflictResolution: 'interactive' | 'auto' | 'skip';
+    maxConcurrentJobs?: number;
+    retryAttempts?: number;
+    timeoutPerTemplate?: number;
+    rollbackOnFailure?: boolean;
   };
 }
 
@@ -57,116 +74,28 @@ export const useBatchManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock API functions - replace with actual API calls
+  // API functions using real backend services
   const fetchActiveBatches = useCallback(async (): Promise<BatchJob[]> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return [
-      {
-        id: 'batch-001',
-        name: 'Template Consolidation - Q4 2024',
-        description: 'Consolidating duplicate React components and utilities',
-        status: 'running',
-        progress: 65,
-        createdAt: new Date('2024-01-15T10:00:00'),
-        startedAt: new Date('2024-01-15T10:05:00'),
-        templates: ['Button', 'Input', 'Modal', 'Card'],
-        consolidationType: 'merge',
-        priority: 'high',
-        estimatedDuration: 120,
-        errors: [],
-        warnings: ['Potential breaking change in Button component']
-      },
-      {
-        id: 'batch-002',
-        name: 'Legacy API Cleanup',
-        description: 'Removing deprecated API templates',
-        status: 'pending',
-        progress: 0,
-        createdAt: new Date('2024-01-15T14:30:00'),
-        templates: ['AuthAPI', 'UserAPI', 'PaymentAPI'],
-        consolidationType: 'archive',
-        priority: 'medium',
-        estimatedDuration: 90,
-        errors: [],
-        warnings: []
-      }
-    ];
+    const response = await fetch('/api/batches?type=active');
+    if (!response.ok) {
+      throw new Error('Failed to fetch active batches');
+    }
+    const data = await response.json();
+    return data.success ? data.data.map(transformBatch) : [];
   }, []);
 
   const fetchBatchHistory = useCallback(async (): Promise<BatchJob[]> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    return [
-      {
-        id: 'batch-h001',
-        name: 'Database Schema Templates',
-        description: 'Merged redundant database migration templates',
-        status: 'completed',
-        progress: 100,
-        createdAt: new Date('2024-01-10T09:00:00'),
-        startedAt: new Date('2024-01-10T09:15:00'),
-        completedAt: new Date('2024-01-10T11:30:00'),
-        templates: ['Migration', 'Schema', 'Seed'],
-        consolidationType: 'merge',
-        priority: 'medium',
-        estimatedDuration: 150,
-        actualDuration: 135,
-        errors: [],
-        warnings: [],
-        results: {
-          templatesProcessed: 15,
-          duplicatesRemoved: 8,
-          conflictsResolved: 3,
-          filesModified: 24
-        }
-      },
-      {
-        id: 'batch-h002',
-        name: 'CSS Framework Migration',
-        description: 'Failed due to circular dependencies',
-        status: 'failed',
-        progress: 45,
-        createdAt: new Date('2024-01-08T16:00:00'),
-        startedAt: new Date('2024-01-08T16:10:00'),
-        completedAt: new Date('2024-01-08T17:45:00'),
-        templates: ['Styles', 'Themes', 'Variables'],
-        consolidationType: 'replace',
-        priority: 'low',
-        estimatedDuration: 200,
-        actualDuration: 95,
-        errors: ['Circular dependency detected in theme system'],
-        warnings: ['Multiple theme conflicts found']
-      }
-    ];
+    const response = await fetch('/api/batches?type=history');
+    if (!response.ok) {
+      throw new Error('Failed to fetch batch history');
+    }
+    const data = await response.json();
+    return data.success ? data.data.map(transformBatch) : [];
   }, []);
 
   const fetchSchedules = useCallback(async (): Promise<BatchSchedule[]> => {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-    return [
-      {
-        id: 'sched-001',
-        name: 'Weekly Template Cleanup',
-        batchId: 'template-weekly',
-        cronExpression: '0 2 * * 1',
-        nextRun: new Date('2024-01-22T02:00:00'),
-        enabled: true,
-        lastRun: new Date('2024-01-15T02:00:00'),
-        lastStatus: 'success'
-      },
-      {
-        id: 'sched-002',
-        name: 'Monthly Archive Job',
-        batchId: 'archive-monthly',
-        cronExpression: '0 1 1 * *',
-        nextRun: new Date('2024-02-01T01:00:00'),
-        enabled: false,
-        lastRun: new Date('2024-01-01T01:00:00'),
-        lastStatus: 'failed'
-      }
-    ];
+    // For now, schedules are managed separately - would integrate with job scheduler
+    return [];
   }, []);
 
   // Load initial data
@@ -195,32 +124,45 @@ export const useBatchManagement = () => {
     loadData();
   }, [fetchActiveBatches, fetchBatchHistory, fetchSchedules]);
 
+  // Transform function to ensure compatibility
+  const transformBatch = useCallback((batch: any): BatchJob => {
+    return {
+      ...batch,
+      createdAt: new Date(batch.createdAt),
+      startedAt: batch.startedAt ? new Date(batch.startedAt) : undefined,
+      completedAt: batch.completedAt ? new Date(batch.completedAt) : undefined,
+      templates: batch.templateIds || batch.templates || [], // Backward compatibility
+      config: batch.config || {
+        backupStrategy: 'auto',
+        conflictResolution: 'interactive'
+      }
+    };
+  }, []);
+
   // Batch operations
   const createBatch = useCallback(async (request: CreateBatchRequest): Promise<BatchJob> => {
     setLoading(true);
     setError(null);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('/api/batches', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(request)
+      });
       
-      const newBatch: BatchJob = {
-        id: `batch-${Date.now()}`,
-        name: request.name,
-        description: request.description,
-        status: request.schedule ? 'pending' : 'running',
-        progress: 0,
-        createdAt: new Date(),
-        templates: request.templates,
-        consolidationType: request.consolidationType,
-        priority: request.priority,
-        estimatedDuration: 60, // Default estimate
-        errors: [],
-        warnings: []
-      };
+      const data = await response.json();
       
-      if (!request.schedule) {
-        newBatch.startedAt = new Date();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to create batch');
+      }
+      
+      const newBatch = transformBatch(data.data);
+      
+      // Update local state
+      if (newBatch.status === 'running' || newBatch.status === 'pending') {
         setActiveBatches(prev => [...prev, newBatch]);
       }
       
@@ -232,77 +174,114 @@ export const useBatchManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [transformBatch]);
 
   const pauseBatch = useCallback(async (batchId: string): Promise<void> => {
-    setActiveBatches(prev => 
-      prev.map(batch => 
-        batch.id === batchId 
-          ? { ...batch, status: 'paused' as const }
-          : batch
-      )
-    );
-  }, []);
+    const response = await fetch(`/api/batches/${batchId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'pause' })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to pause batch');
+    }
+    
+    const data = await response.json();
+    if (data.success) {
+      const updatedBatch = transformBatch(data.data);
+      setActiveBatches(prev => 
+        prev.map(batch => batch.id === batchId ? updatedBatch : batch)
+      );
+    }
+  }, [transformBatch]);
 
   const resumeBatch = useCallback(async (batchId: string): Promise<void> => {
-    setActiveBatches(prev => 
-      prev.map(batch => 
-        batch.id === batchId 
-          ? { ...batch, status: 'running' as const }
-          : batch
-      )
-    );
-  }, []);
+    const response = await fetch(`/api/batches/${batchId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'resume' })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to resume batch');
+    }
+    
+    const data = await response.json();
+    if (data.success) {
+      const updatedBatch = transformBatch(data.data);
+      setActiveBatches(prev => 
+        prev.map(batch => batch.id === batchId ? updatedBatch : batch)
+      );
+    }
+  }, [transformBatch]);
 
   const stopBatch = useCallback(async (batchId: string): Promise<void> => {
-    setActiveBatches(prev => 
-      prev.filter(batch => batch.id !== batchId)
-    );
+    const response = await fetch(`/api/batches/${batchId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cancel' })
+    });
     
-    // Move to history with failed status
-    const stoppedBatch = activeBatches.find(b => b.id === batchId);
-    if (stoppedBatch) {
-      setBatchHistory(prev => [{
-        ...stoppedBatch,
-        status: 'failed',
-        completedAt: new Date(),
-        errors: ['Batch stopped by user']
-      }, ...prev]);
+    if (!response.ok) {
+      throw new Error('Failed to stop batch');
     }
-  }, [activeBatches]);
+    
+    // Refresh data
+    const [active, history] = await Promise.all([
+      fetchActiveBatches(),
+      fetchBatchHistory()
+    ]);
+    
+    setActiveBatches(active);
+    setBatchHistory(history);
+  }, [fetchActiveBatches, fetchBatchHistory]);
 
   const retryBatch = useCallback(async (batchId: string): Promise<void> => {
-    const batch = batchHistory.find(b => b.id === batchId);
-    if (batch) {
-      const retriedBatch: BatchJob = {
-        ...batch,
-        id: `${batch.id}-retry-${Date.now()}`,
-        status: 'running',
-        progress: 0,
-        startedAt: new Date(),
-        completedAt: undefined,
-        errors: [],
-        warnings: []
-      };
-      
-      setActiveBatches(prev => [...prev, retriedBatch]);
+    const response = await fetch(`/api/batches/${batchId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'retry' })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to retry batch');
     }
-  }, [batchHistory]);
+    
+    // Refresh active batches to show the new retry
+    const active = await fetchActiveBatches();
+    setActiveBatches(active);
+  }, [fetchActiveBatches]);
 
   const rollbackBatch = useCallback(async (batchId: string): Promise<void> => {
-    // Simulate rollback operation
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // In a real implementation, this would restore files from backup
-      console.log(`Rolling back batch ${batchId}`);
+      const response = await fetch(`/api/batches/${batchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'rollback' })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to rollback batch');
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   const deleteBatch = useCallback(async (batchId: string): Promise<void> => {
+    const response = await fetch(`/api/batches/${batchId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete batch');
+    }
+    
+    // Remove from local state
     setBatchHistory(prev => prev.filter(batch => batch.id !== batchId));
+    setActiveBatches(prev => prev.filter(batch => batch.id !== batchId));
   }, []);
 
   // Schedule operations
@@ -330,44 +309,27 @@ export const useBatchManagement = () => {
     setSchedules(prev => prev.filter(schedule => schedule.id !== scheduleId));
   }, []);
 
-  // Real-time progress updates (simulate)
+  // Real-time progress updates using polling
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveBatches(prev => 
-        prev.map(batch => {
-          if (batch.status === 'running' && batch.progress < 100) {
-            const increment = Math.random() * 5;
-            const newProgress = Math.min(batch.progress + increment, 100);
-            
-            if (newProgress >= 100) {
-              // Move completed batch to history
-              setTimeout(() => {
-                setActiveBatches(current => current.filter(b => b.id !== batch.id));
-                setBatchHistory(current => [{
-                  ...batch,
-                  status: 'completed',
-                  progress: 100,
-                  completedAt: new Date(),
-                  actualDuration: batch.estimatedDuration + Math.floor(Math.random() * 30) - 15,
-                  results: {
-                    templatesProcessed: batch.templates.length * 2,
-                    duplicatesRemoved: Math.floor(batch.templates.length * 0.6),
-                    conflictsResolved: Math.floor(batch.templates.length * 0.2),
-                    filesModified: batch.templates.length * 3
-                  }
-                }, ...current]);
-              }, 1000);
-            }
-            
-            return { ...batch, progress: newProgress };
-          }
-          return batch;
-        })
-      );
-    }, 3000);
+    const interval = setInterval(async () => {
+      try {
+        const active = await fetchActiveBatches();
+        setActiveBatches(active);
+        
+        // Check if any batches completed
+        const completedBatches = active.filter(batch => batch.status === 'completed');
+        if (completedBatches.length > 0) {
+          // Refresh history to include completed batches
+          const history = await fetchBatchHistory();
+          setBatchHistory(history);
+        }
+      } catch (error) {
+        console.warn('Failed to update batch progress:', error);
+      }
+    }, 5000); // Update every 5 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchActiveBatches, fetchBatchHistory]);
 
   return {
     // State

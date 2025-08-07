@@ -20,13 +20,12 @@ import {
   Layers
 } from "lucide-react"
 
-interface DependencyData {
-  name: string
-  version: string
-  type: 'dependency' | 'devDependency' | 'peerDependency'
-  size: number
-  weeklyDownloads: number
-}
+import { 
+  formatBytes,
+  exportToCSV,
+  exportToJSON
+} from '@/lib/utils'
+import type { DependencyData } from '@/app/api/analysis/dependencies/route'
 
 interface DependencySizeAnalyzerProps {
   dependencies: DependencyData[]
@@ -60,20 +59,58 @@ interface SizeDistribution {
   percentage: number
 }
 
-export function DependencySizeAnalyzer({ dependencies }: DependencySizeAnalyzerProps) {
+export function DependencySizeAnalyzer({ dependencies: initialDependencies }: DependencySizeAnalyzerProps) {
+  const [dependencies, setDependencies] = useState<DependencyData[]>(initialDependencies || [])
   const [sizeAnalysis, setSizeAnalysis] = useState<SizeAnalysis[]>([])
   const [bundleImpact, setBundleImpact] = useState<BundleImpact | null>(null)
   const [sizeDistribution, setSizeDistribution] = useState<SizeDistribution[]>([])
   const [filterType, setFilterType] = useState("all")
   const [sortBy, setSortBy] = useState("size")
   const [showRecommendations, setShowRecommendations] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    analyzeDependencySizes()
+    if (dependencies.length > 0) {
+      analyzeDependencySizes()
+    } else {
+      loadRealDependencies()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (dependencies.length > 0) {
+      analyzeDependencySizes()
+    }
   }, [dependencies])
 
+  const loadRealDependencies = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      // Mock data - in production this would parse package.json files
+      let packages: any[] = []
+      
+      // Mock download statistics
+      const downloadStats: any = {}
+      
+      const enrichedDependencies: DependencyData[] = packages.map(pkg => ({
+        ...pkg,
+        size: pkg.size || 0,
+        weeklyDownloads: downloadStats[pkg.name] || 0
+      }))
+      
+      setDependencies(enrichedDependencies)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load dependencies')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const analyzeDependencySizes = () => {
-    const totalSize = dependencies.reduce((sum, dep) => sum + dep.size, 0)
+    const totalSize = dependencies.reduce((sum, dep) => sum + (dep.size || 0), 0)
     
     // Analyze individual packages
     const analysis: SizeAnalysis[] = dependencies.map(dep => {
@@ -198,12 +235,26 @@ export function DependencySizeAnalyzer({ dependencies }: DependencySizeAnalyzerP
     setSizeDistribution(distribution)
   }
 
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  const handleExport = () => {
+    const exportData = sizeAnalysis.map(item => ({
+      package: item.package,
+      size: item.size,
+      sizeFormatted: formatBytes(item.size),
+      type: item.type,
+      percentage: item.percentage,
+      sizeCategory: item.sizeCategory,
+      impactScore: item.impactScore,
+      recommendation: item.recommendation,
+      alternatives: item.alternatives?.join(', ') || ''
+    }))
+    
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
+    exportToJSON({
+      summary: bundleImpact,
+      analysis: exportData,
+      distribution: sizeDistribution,
+      exportedAt: new Date().toISOString()
+    }, `dependency-size-analysis-${timestamp}.json`)
   }
 
   const getCategoryColor = (category: string) => {
@@ -238,6 +289,39 @@ export function DependencySizeAnalyzer({ dependencies }: DependencySizeAnalyzerP
     }
   })
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mr-2" />
+              Loading dependency analysis...
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <p className="text-lg font-semibold mb-2">Error Loading Dependencies</p>
+              <p className="text-sm">{error}</p>
+              <Button onClick={loadRealDependencies} className="mt-4">
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -258,7 +342,11 @@ export function DependencySizeAnalyzer({ dependencies }: DependencySizeAnalyzerP
                 <Target className="h-4 w-4 mr-2" />
                 {showRecommendations ? 'Hide' : 'Show'} Recommendations
               </Button>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleExport()}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Export Analysis
               </Button>

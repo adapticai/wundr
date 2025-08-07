@@ -176,7 +176,7 @@ export function DashboardCharts({ data }: DashboardChartsProps) {
     ],
   }
 
-  const chartOptions = {
+  const chartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
     animation: mounted ? {
@@ -207,7 +207,7 @@ export function DashboardCharts({ data }: DashboardChartsProps) {
     },
   }
 
-  const doughnutOptions = {
+  const doughnutOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
     animation: mounted ? {

@@ -94,8 +94,8 @@ export function CodeQualityRadar({
           thresholds.technicalDebt || 80,
           thresholds.documentation || 70,
         ],
-        borderColor: chartTheme.colors.muted,
-        backgroundColor: `${chartTheme.colors.muted}20`,
+        borderColor: chartTheme.colors.text,
+        backgroundColor: `${chartTheme.colors.text}20`,
         borderWidth: 1,
         borderDash: [5, 5],
       }] : []),
@@ -108,7 +108,9 @@ export function CodeQualityRadar({
     plugins: {
       legend: {
         position: "bottom" as const,
-        labels: chartTheme.legend.labels,
+        labels: {
+          color: chartTheme.colors.text,
+        },
       },
       tooltip: {
         ...chartTheme.tooltip,

@@ -1,86 +1,316 @@
+import 'server-only';
+
 import { NextRequest, NextResponse } from 'next/server'
 import { GitActivity, ApiResponse, TimeRange } from '@/types/data'
+import { spawn } from 'child_process'
+import path from 'path'
 
-// Mock data generator for development
-function generateMockGitData(timeRange: TimeRange, _repository?: string): GitActivity[] {
-  const now = new Date()
-  const ranges: Record<TimeRange, number> = {
-    '1h': 1,
-    '6h': 6,
-    '24h': 24,
-    '7d': 168,
-    '30d': 720
+// Types for git analysis
+interface GitCommit {
+  hash: string
+  author: string
+  date: string
+  message: string
+  additions: number
+  deletions: number
+  files: string[]
+}
+
+interface GitStats {
+  totalCommits: number
+  totalAdditions: number
+  totalDeletions: number
+  totalFiles: number
+  contributors: Set<string>
+  branches: string[]
+}
+
+interface GitCache {
+  [key: string]: {
+    data: GitActivity[]
+    timestamp: number
+    expires: number
+  }
+}
+
+// In-memory cache for git metrics
+const gitCache: GitCache = {}
+
+// Rate limiting
+const requestTracker = new Map<string, { count: number; resetTime: number }>()
+const RATE_LIMIT = 100 // requests per hour
+const RATE_WINDOW = 60 * 60 * 1000 // 1 hour in ms
+
+function checkRateLimit(clientId: string): boolean {
+  const now = Date.now()
+  const record = requestTracker.get(clientId) || { count: 0, resetTime: now + RATE_WINDOW }
+  
+  if (now > record.resetTime) {
+    record.count = 1
+    record.resetTime = now + RATE_WINDOW
+  } else {
+    record.count++
   }
   
-  const hours = ranges[timeRange] || 24
-  const dataPoints = Math.min(hours, 720) // Max 720 data points (30 days)
-  const data: GitActivity[] = []
+  requestTracker.set(clientId, record)
+  return record.count <= RATE_LIMIT
+}
+
+// Execute git command and return output
+function execGitCommand(args: string[], cwd: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('git', args, { cwd, shell: true })
+    let stdout = ''
+    let stderr = ''
+    
+    child.stdout.on('data', (data) => {
+      stdout += data.toString()
+    })
+    
+    child.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
+    
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(stdout)
+      } else {
+        reject(new Error(stderr || `Git command failed with code ${code}`))
+      }
+    })
+    
+    // Timeout after 30 seconds
+    setTimeout(() => {
+      child.kill('SIGTERM')
+      reject(new Error('Git command timeout'))
+    }, 30000)
+  })
+}
+
+// Get project root directory
+function getProjectRoot(): string {
+  // Look for the git repository root
+  let dir = process.cwd()
+  while (dir !== path.dirname(dir)) {
+    try {
+      const gitPath = path.join(dir, '.git')
+      if (require('fs').existsSync(gitPath)) {
+        return dir
+      }
+    } catch (e) {
+      // Continue searching
+    }
+    dir = path.dirname(dir)
+  }
+  return process.cwd()
+}
+
+// Parse git log output into structured data
+function parseGitCommits(gitLogOutput: string): GitCommit[] {
+  const commits: GitCommit[] = []
+  const commitBlocks = gitLogOutput.split('\n\n').filter(Boolean)
   
-  // Simulate different activity patterns based on time of day/week
-  for (let i = dataPoints - 1; i >= 0; i--) {
-    const timestamp = new Date(now.getTime() - (i * 60 * 60 * 1000))
-    const hour = timestamp.getHours()
-    const dayOfWeek = timestamp.getDay()
+  for (const block of commitBlocks) {
+    const lines = block.trim().split('\n')
+    if (lines.length < 4) continue
     
-    // Higher activity during work hours and weekdays
-    const workHourMultiplier = (hour >= 9 && hour <= 17) ? 1.5 : 0.3
-    const weekdayMultiplier = (dayOfWeek >= 1 && dayOfWeek <= 5) ? 1.2 : 0.4
-    const activityMultiplier = workHourMultiplier * weekdayMultiplier
+    const [hash, author, date, message, ...statsLines] = lines
     
-    // Base activity levels with randomness
-    const baseCommits = Math.random() * 10 * activityMultiplier
-    const commitsCount = Math.round(Math.max(0, baseCommits))
+    // Parse file stats
+    let additions = 0
+    let deletions = 0
+    const files: string[] = []
     
-    // Lines changed correlates with commits
-    const linesMultiplier = 50 + Math.random() * 100
-    const additions = Math.round(commitsCount * linesMultiplier * (0.7 + Math.random() * 0.6))
-    const deletions = Math.round(additions * (0.2 + Math.random() * 0.4))
+    for (const statLine of statsLines) {
+      const statMatch = statLine.match(/^(\d+)\s+(\d+)\s+(.+)$/)
+      if (statMatch) {
+        additions += parseInt(statMatch[1], 10)
+        deletions += parseInt(statMatch[2], 10)
+        files.push(statMatch[3])
+      }
+    }
     
-    // Files changed
-    const files = Math.round(commitsCount * (1 + Math.random() * 3))
-    
-    // Contributors (more stable, changes less frequently)
-    const baseContributors = 5 + Math.sin(i * 0.01) * 2 + Math.random() * 2
-    const contributors = Math.round(Math.max(1, baseContributors))
-    
-    // Branches (grows slowly over time)
-    const branches = Math.round(10 + (dataPoints - i) * 0.01 + Math.random() * 2)
-    
-    // PRs and issues
-    const pullRequests = Math.round(commitsCount * 0.3 + Math.random() * 2)
-    const issues = Math.round(commitsCount * 0.2 + Math.random() * 1.5)
-    
-    data.push({
-      timestamp: timestamp.toISOString(),
-      commits: commitsCount,
+    commits.push({
+      hash: hash.trim(),
+      author: author.trim(),
+      date: date.trim(),
+      message: message.trim(),
       additions,
       deletions,
-      files: Math.max(0, files),
-      contributors: Math.max(1, contributors),
-      branches: Math.max(1, branches),
-      pullRequests: Math.max(0, pullRequests),
-      issues: Math.max(0, issues)
+      files
     })
   }
   
-  return data
+  return commits
 }
 
-// In production, this would connect to Git hosting services
-async function fetchGitActivityData(timeRange: TimeRange, _repository?: string): Promise<GitActivity[]> {
-  // For now, return mock data
-  // In production, you would:
-  // 1. Query GitHub API for repository statistics
-  // 2. Connect to GitLab API
-  // 3. Query Bitbucket API
-  // 4. Use git log commands for local repositories
-  // 5. Integrate with webhook data from Git hosting
+// Get git activity for a specific time range
+async function getGitActivity(projectRoot: string, timeRange: TimeRange): Promise<GitActivity[]> {
+  try {
+    // Calculate date range
+    const now = new Date()
+    const ranges: Record<TimeRange, number> = {
+      '1h': 1,
+      '6h': 6,
+      '24h': 24,
+      '7d': 168,
+      '30d': 720
+    }
+    
+    const hours = ranges[timeRange] || 24
+    const since = new Date(now.getTime() - (hours * 60 * 60 * 1000))
+    const sinceStr = since.toISOString().split('T')[0] // YYYY-MM-DD format
+    
+    // Get commits with stats
+    const gitLogArgs = [
+      'log',
+      `--since=${sinceStr}`,
+      '--pretty=format:%H%n%an%n%ai%n%s',
+      '--numstat'
+    ]
+    
+    const logOutput = await execGitCommand(gitLogArgs, projectRoot)
+    const commits = parseGitCommits(logOutput)
+    
+    // Get list of contributors
+    const contributorsOutput = await execGitCommand([
+      'log',
+      `--since=${sinceStr}`,
+      '--pretty=format:%an'
+    ], projectRoot)
+    const contributors = new Set(contributorsOutput.split('\n').filter(Boolean))
+    
+    // Get list of branches
+    const branchesOutput = await execGitCommand(['branch', '-a'], projectRoot)
+    const branches = branchesOutput.split('\n')
+      .map(b => b.trim().replace(/^\*\s*/, '').replace(/^remotes\/.*?\//, ''))
+      .filter(b => b && !b.includes('HEAD'))
+    const uniqueBranches = Array.from(new Set(branches))
+    
+    // Generate time series data
+    const dataPoints = Math.min(hours, 720)
+    const data: GitActivity[] = []
+    
+    for (let i = dataPoints - 1; i >= 0; i--) {
+      const timestamp = new Date(now.getTime() - (i * 60 * 60 * 1000))
+      const hourStart = new Date(timestamp.getTime())
+      const hourEnd = new Date(timestamp.getTime() + 60 * 60 * 1000)
+      
+      // Filter commits for this hour
+      const hourCommits = commits.filter(commit => {
+        const commitTime = new Date(commit.date)
+        return commitTime >= hourStart && commitTime < hourEnd
+      })
+      
+      // Calculate metrics for this hour
+      const commitsCount = hourCommits.length
+      const additions = hourCommits.reduce((sum, commit) => sum + commit.additions, 0)
+      const deletions = hourCommits.reduce((sum, commit) => sum + commit.deletions, 0)
+      const filesSet = new Set(hourCommits.flatMap(commit => commit.files))
+      const hourContributors = new Set(hourCommits.map(commit => commit.author))
+      
+      data.push({
+        timestamp: timestamp.toISOString(),
+        commits: commitsCount,
+        additions,
+        deletions,
+        files: filesSet.size,
+        contributors: hourContributors.size || (contributors.size > 0 ? contributors.size : 1),
+        branches: uniqueBranches.length,
+        pullRequests: 0, // Would require GitHub/GitLab API integration
+        issues: 0 // Would require GitHub/GitLab API integration
+      })
+    }
+    
+    // For recent activity, try to get PR and issue data from git notes or GitHub API
+    await enrichWithPullRequestData(data, projectRoot, timeRange)
+    
+    return data
+  } catch (error) {
+    console.error('Error getting git activity:', error)
+    throw new Error('Failed to retrieve git activity data')
+  }
+}
+
+// Try to enrich data with pull request information
+async function enrichWithPullRequestData(data: GitActivity[], projectRoot: string, timeRange: TimeRange): Promise<void> {
+  try {
+    // Try to get remote URL to determine hosting service
+    const remoteOutput = await execGitCommand(['remote', 'get-url', 'origin'], projectRoot)
+    const remoteUrl = remoteOutput.trim()
+    
+    // Check if it's a GitHub repository
+    if (remoteUrl.includes('github.com')) {
+      // In a production environment, you would use the GitHub API here
+      // For now, we'll estimate PRs based on branch activity
+      const branchesOutput = await execGitCommand(['branch', '-r'], projectRoot)
+      const remoteBranches = branchesOutput.split('\n').filter(Boolean).length
+      
+      // Estimate PRs and issues based on commit and branch activity
+      for (const item of data) {
+        if (item.commits > 0) {
+          // Rough estimation: 1 PR for every 5-10 commits
+          item.pullRequests = Math.floor(item.commits / 7)
+          // Rough estimation: 1 issue for every 10-15 commits
+          item.issues = Math.floor(item.commits / 12)
+        }
+      }
+    }
+  } catch (error) {
+    // Fallback: keep PRs and issues at 0 if we can't enrich the data
+    console.warn('Could not enrich with PR/issue data:', error)
+  }
+}
+
+// Main function to fetch git activity data
+async function fetchGitActivityData(timeRange: TimeRange, repository?: string): Promise<GitActivity[]> {
+  const cacheKey = `git_${timeRange}_${repository || 'default'}`
+  const now = Date.now()
   
-  return generateMockGitData(timeRange, repository)
+  // Check cache first
+  const cached = gitCache[cacheKey]
+  if (cached && now < cached.expires) {
+    return cached.data
+  }
+  
+  try {
+    const projectRoot = repository ? path.resolve(repository) : getProjectRoot()
+    
+    // Verify it's a git repository
+    await execGitCommand(['rev-parse', '--git-dir'], projectRoot)
+    
+    const data = await getGitActivity(projectRoot, timeRange)
+    
+    // Cache the result
+    gitCache[cacheKey] = {
+      data,
+      timestamp: now,
+      expires: now + (timeRange === '1h' ? 300000 : timeRange === '6h' ? 600000 : 1800000) // Cache duration based on time range
+    }
+    
+    return data
+  } catch (error) {
+    console.error('Error fetching git activity data:', error)
+    throw new Error('Failed to retrieve git activity data')
+  }
 }
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+  const clientId = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
+  
   try {
+    // Rate limiting
+    if (!checkRateLimit(clientId)) {
+      const response: ApiResponse<null> = {
+        success: false,
+        data: null,
+        error: 'Rate limit exceeded. Please try again later.',
+        timestamp: new Date().toISOString()
+      }
+      return NextResponse.json(response, { status: 429 })
+    }
+    
     const { searchParams } = new URL(request.url)
     const timeRange = (searchParams.get('timeRange') as TimeRange) || '7d'
     const repository = searchParams.get('repository') || undefined
@@ -97,7 +327,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(response, { status: 400 })
     }
     
+    // Validate repository path if provided
+    if (repository && (repository.includes('..') || repository.startsWith('/'))) {
+      const response: ApiResponse<null> = {
+        success: false,
+        data: null,
+        error: 'Invalid repository path.',
+        timestamp: new Date().toISOString()
+      }
+      return NextResponse.json(response, { status: 400 })
+    }
+    
     const data = await fetchGitActivityData(timeRange, repository)
+    const processingTime = Date.now() - startTime
     
     const response: ApiResponse<GitActivity[]> = {
       success: true,
@@ -108,20 +350,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response, {
       headers: {
         'Cache-Control': 'public, max-age=180, stale-while-revalidate=300', // 3 min cache
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Processing-Time': `${processingTime}ms`,
+        'X-Data-Points': data.length.toString()
       }
     })
   } catch (error) {
     console.error('Error fetching git activity data:', error)
     
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    const isGitError = errorMessage.includes('git') || errorMessage.includes('repository')
+    
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: 'Internal server error',
+      error: isGitError ? 'Git repository analysis failed. Please ensure you are in a valid git repository.' : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     
-    return NextResponse.json(response, { status: 500 })
+    return NextResponse.json(response, { status: isGitError ? 422 : 500 })
   }
 }
 

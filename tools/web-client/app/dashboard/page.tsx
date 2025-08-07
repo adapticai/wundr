@@ -1,10 +1,13 @@
 'use client';
 
-import { useAnalysis } from '@/lib/contexts/analysis-context';
+import { useAnalysisData } from '@/hooks/use-analysis-data';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { SummaryCard } from '@/components/dashboard/summary-card';
 import { DashboardCharts } from '@/components/dashboard/dashboard-charts';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   FileCode,
   Code,
@@ -15,13 +18,46 @@ import {
   RefreshCw,
   Upload,
   Database,
+  Activity,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
 
 export default function DashboardPage() {
-  const { data, loading, error, loadSampleData } = useAnalysis();
+  const {
+    data,
+    loading,
+    error,
+    refresh,
+    triggerAnalysis
+  } = useAnalysisData({
+    autoRefresh: true,
+    refreshInterval: 300000, // 5 minutes
+    realtime: true
+  });
 
-  if (loading) {
+  const [realtimeStats, setRealtimeStats] = useState<any>(null);
+
+  const { isConnected, subscribe, lastMessage } = useWebSocket({
+    enabled: true,
+    onMessage: (message) => {
+      if (message.type === 'data' && message.channel === 'dashboard') {
+        setRealtimeStats(message.payload);
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (isConnected) {
+      subscribe('dashboard');
+    }
+  }, [isConnected, subscribe]);
+
+  if (loading.isLoading && !data) {
     return (
       <div className='flex flex-1 flex-col gap-4 p-4'>
         <div className='flex items-center justify-between'>
@@ -44,9 +80,17 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className='flex flex-1 items-center justify-center p-4'>
-        <div className='text-center'>
-          <p className='text-lg text-muted-foreground mb-4'>{error}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        <div className='text-center space-y-4'>
+          <AlertTriangle className='mx-auto h-12 w-12 text-destructive' />
+          <h2 className='text-xl font-semibold'>Error Loading Dashboard</h2>
+          <p className='text-lg text-muted-foreground mb-4'>{error.message}</p>
+          <div className='flex gap-2 justify-center'>
+            <Button onClick={error.retry || refresh}>Try Again</Button>
+            <Button variant='outline' onClick={triggerAnalysis}>
+              <RefreshCw className='mr-2 h-4 w-4' />
+              Refresh Analysis
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -59,16 +103,16 @@ export default function DashboardPage() {
           <Database className='mx-auto h-12 w-12 text-muted-foreground' />
           <h2 className='text-xl font-semibold'>No Analysis Data Available</h2>
           <p className='text-muted-foreground max-w-md'>
-            Upload an analysis report or load sample data to get started
+            Trigger a new analysis to get started with real-time insights
           </p>
           <div className='flex gap-2 justify-center'>
-            <Button onClick={loadSampleData}>
-              <Database className='mr-2 h-4 w-4' />
-              Load Sample Data
+            <Button onClick={triggerAnalysis}>
+              <Activity className='mr-2 h-4 w-4' />
+              Start Analysis
             </Button>
-            <Button variant='outline'>
+            <Button variant='outline' onClick={refresh}>
               <Upload className='mr-2 h-4 w-4' />
-              Upload Report
+              Check for Data
             </Button>
           </div>
         </div>
@@ -76,58 +120,144 @@ export default function DashboardPage() {
     );
   }
 
+  const summary = data.summary;
+  const isRefreshing = loading.isRefreshing;
+  const connectionStatus = isConnected ? 'connected' : 'disconnected';
+  const lastUpdate = realtimeStats?.data?.lastUpdate || data.timestamp;
+
   return (
     <div className='flex flex-1 flex-col gap-4 p-4'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold'>Dashboard</h1>
+          <div className='flex items-center gap-3'>
+            <h1 className='text-2xl font-bold'>Real-time Dashboard</h1>
+            <Badge variant={isConnected ? 'default' : 'secondary'}>
+              <Activity className='mr-1 h-3 w-3' />
+              {connectionStatus}
+            </Badge>
+          </div>
           <p className='text-sm text-muted-foreground'>
-            Last updated: {format(new Date(data.timestamp), 'PPpp')}
+            Last updated: {format(new Date(lastUpdate), 'PPpp')}
+            {isRefreshing && ' • Refreshing...'}
           </p>
         </div>
-        <Button variant='outline' size='sm'>
-          <RefreshCw className='mr-2 h-4 w-4' />
-          Refresh
-        </Button>
+        <div className='flex gap-2'>
+          <Button 
+            variant='outline' 
+            size='sm' 
+            onClick={refresh} 
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button size='sm' onClick={triggerAnalysis}>
+            <Database className='mr-2 h-4 w-4' />
+            New Analysis
+          </Button>
+        </div>
       </div>
 
+      {/* Real-time Status Cards */}
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Analysis Status</CardTitle>
+            <CheckCircle className='h-4 w-4 text-green-500' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-green-600'>Active</div>
+            <p className='text-xs text-muted-foreground'>
+              Real-time monitoring enabled
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Data Freshness</CardTitle>
+            <Clock className='h-4 w-4 text-muted-foreground' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>Live</div>
+            <p className='text-xs text-muted-foreground'>
+              Updated {Math.floor((Date.now() - new Date(lastUpdate).getTime()) / 1000)}s ago
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Critical Issues</CardTitle>
+            <AlertTriangle className='h-4 w-4 text-red-500' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-red-600'>
+              {data.recommendations.filter(r => r.priority === 'critical').length}
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              Require immediate attention
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Quality Score</CardTitle>
+            <TrendingUp className='h-4 w-4 text-green-500' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold text-green-600'>
+              {Math.round(summary.maintainabilityIndex)}
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              Maintainability index
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Metrics Grid */}
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6'>
         <SummaryCard
           title='Total Files'
-          value={data.summary.totalFiles}
+          value={realtimeStats?.data?.totalFiles || summary.totalFiles}
           icon={FileCode}
         />
         <SummaryCard
           title='Total Entities'
-          value={data.summary.totalEntities}
+          value={realtimeStats?.data?.totalEntities || summary.totalEntities}
           icon={Code}
         />
         <SummaryCard
           title='Duplicate Clusters'
-          value={data.summary.duplicateClusters}
+          value={realtimeStats?.data?.duplicateClusters || summary.duplicateClusters}
           icon={Copy}
           variant='critical'
         />
         <SummaryCard
           title='Circular Dependencies'
-          value={data.summary.circularDependencies}
+          value={realtimeStats?.data?.circularDependencies || summary.circularDependencies}
           icon={GitBranch}
           variant='warning'
         />
         <SummaryCard
           title='Unused Exports'
-          value={data.summary.unusedExports}
+          value={realtimeStats?.data?.unusedExports || summary.unusedExports}
           icon={FileX}
           variant='info'
         />
         <SummaryCard
           title='Code Smells'
-          value={data.summary.codeSmells}
+          value={realtimeStats?.data?.codeSmells || summary.codeSmells}
           icon={Bug}
         />
       </div>
 
-      <DashboardCharts data={data} />
+      {/* Enhanced Dashboard Charts with Real-time Data */}
+      <DashboardCharts 
+        data={data as any} 
+      />
     </div>
   );
 }

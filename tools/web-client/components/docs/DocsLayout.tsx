@@ -126,10 +126,10 @@ export function DocsLayout({ children, currentPage, allPages = defaultPages }: D
     ];
 
     if (segments.includes('docs')) {
-      breadcrumbs.push({ label: 'Documentation', href: '/dashboard/docs' });
+      breadcrumbs.push({ label: 'Documentation', href: '/dashboard/docs', icon: BookOpen });
       
       if (currentPage) {
-        breadcrumbs.push({ label: currentPage.title, href: currentPage.path });
+        breadcrumbs.push({ label: currentPage.title, href: currentPage.path, icon: FileCode });
       }
     }
 

@@ -131,16 +131,16 @@ export function MetricsTrend({
             : d.value,
           isAnomaly: (d as any).isAnomaly
         })),
-        borderColor: s.color || chartTheme.colors[index % chartTheme.colors.length],
-        backgroundColor: `${s.color || chartTheme.colors[index % chartTheme.colors.length]}20`,
+        borderColor: s.color || Object.values(chartTheme.colors)[index % Object.values(chartTheme.colors).length],
+        backgroundColor: `${s.color || Object.values(chartTheme.colors)[index % Object.values(chartTheme.colors).length]}20`,
         fill: true,
         tension: 0.4,
         pointRadius: processedData.map((d: any) => d.isAnomaly ? 6 : 3),
         pointBackgroundColor: processedData.map((d: any) => 
-          d.isAnomaly ? "#ef4444" : s.color || chartTheme.colors[index % chartTheme.colors.length]
+          d.isAnomaly ? "#ef4444" : s.color || Object.values(chartTheme.colors)[index % Object.values(chartTheme.colors).length]
         ),
         pointBorderColor: processedData.map((d: any) => 
-          d.isAnomaly ? "#ef4444" : s.color || chartTheme.colors[index % chartTheme.colors.length]
+          d.isAnomaly ? "#ef4444" : s.color || Object.values(chartTheme.colors)[index % Object.values(chartTheme.colors).length]
         ),
       }
     })
@@ -156,7 +156,9 @@ export function MetricsTrend({
     plugins: {
       legend: {
         position: "top" as const,
-        labels: chartTheme.legend.labels,
+        labels: {
+          color: chartTheme.colors.text,
+        },
       },
       tooltip: {
         ...chartTheme.tooltip,
@@ -179,7 +181,7 @@ export function MetricsTrend({
       x: {
         type: "time" as const,
         time: {
-          unit: timeRange === "7d" ? "day" : timeRange === "30d" ? "day" : "week",
+          unit: (timeRange === "7d" ? "day" : timeRange === "30d" ? "day" : "week") as "day" | "week",
           displayFormats: {
             day: "MMM d",
             week: "MMM d",
@@ -284,7 +286,7 @@ export function MetricsTrend({
           )}
           
           <div style={{ height: `${height}px` }}>
-            <Line data={chartData} options={chartOptions} />
+            <Line data={chartData} options={chartOptions as any} />
           </div>
 
           {showAnomalies && filteredSeries.some(s => detectAnomalies(s.data).some((d: any) => d.isAnomaly)) && (

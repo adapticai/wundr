@@ -89,9 +89,9 @@ export function useQualityMetrics(options: UseQualityMetricsOptions = {}): UseQu
                      recentDebt > previousDebt ? 'declining' : 'stable'
 
     return {
-      complexity: complexityTrend,
-      coverage: coverageTrend,
-      debt: debtTrend
+      complexity: complexityTrend as 'stable' | 'improving' | 'declining',
+      coverage: coverageTrend as 'stable' | 'improving' | 'declining',
+      debt: debtTrend as 'stable' | 'improving' | 'declining'
     }
   }, [])
 

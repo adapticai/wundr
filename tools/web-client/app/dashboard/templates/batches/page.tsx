@@ -77,7 +77,8 @@ const BatchManagementPage: React.FC = () => {
       completed: 'default',
       failed: 'destructive',
       paused: 'secondary',
-      pending: 'outline'
+      pending: 'outline',
+      cancelled: 'secondary'
     } as const;
 
     return (
@@ -227,7 +228,7 @@ const BatchManagementPage: React.FC = () => {
     const [newBatch, setNewBatch] = useState<CreateBatchRequest>({
       name: '',
       description: '',
-      templates: [],
+      templateIds: [],
       consolidationType: 'merge',
       priority: 'medium',
       schedule: undefined,
@@ -246,7 +247,7 @@ const BatchManagementPage: React.FC = () => {
         setNewBatch({
           name: '',
           description: '',
-          templates: [],
+          templateIds: [],
           consolidationType: 'merge',
           priority: 'medium',
           schedule: undefined,
@@ -653,10 +654,10 @@ const BatchManagementPage: React.FC = () => {
             </div>
 
             <div>
-              <h4 className="font-medium mb-2">Templates ({selectedBatch.templates.length})</h4>
+              <h4 className="font-medium mb-2">Templates ({selectedBatch.templateIds.length})</h4>
               <div className="flex flex-wrap gap-2">
-                {selectedBatch.templates.map((template: string) => (
-                  <Badge key={template} variant="outline">{template}</Badge>
+                {selectedBatch.templateIds.map((templateId: string) => (
+                  <Badge key={templateId} variant="outline">{templateId}</Badge>
                 ))}
               </div>
             </div>

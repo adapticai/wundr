@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ZoomIn, ZoomOut, Maximize2, RotateCcw } from 'lucide-react';
-import type { Entity } from '@/lib/contexts/analysis-context';
+import type { EntityData } from '@/app/api/analysis/entities/route';
 
 interface EntityRelationshipGraphProps {
-  entities: Entity[];
+  entities: EntityData[];
 }
 
 interface Node {
