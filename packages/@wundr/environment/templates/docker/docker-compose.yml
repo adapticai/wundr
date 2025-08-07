@@ -1,0 +1,212 @@
+# Docker Compose for Wundr Development Environments
+version: '3.8'
+
+services:
+  # Human Developer Environment
+  human-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.human
+    container_name: wundr-human-dev
+    volumes:
+      - ./projects:/workspace/projects
+      - ./config:/workspace/.config
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8080:8080"  # VS Code Server
+      - "3000:3000"  # Development server
+      - "3001:3001"  # Additional port
+    environment:
+      - DISPLAY=${DISPLAY:-}
+      - PROFILE=human
+      - WORKSPACE=/workspace
+    networks:
+      - wundr-network
+    restart: unless-stopped
+    labels:
+      - "wundr.environment=human"
+      - "wundr.profile=developer"
+
+  # AI Agent Environment
+  ai-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-agent
+    container_name: wundr-ai-agent
+    volumes:
+      - ./projects:/workspace/projects
+      - ./memory:/workspace/memory
+      - ./logs:/workspace/logs
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "3100:3100"  # Claude Flow orchestrator
+      - "3101:3101"  # Agent communication
+    environment:
+      - PROFILE=ai-agent
+      - CLAUDE_FLOW_MAX_AGENTS=54
+      - CLAUDE_FLOW_ENABLE_NEURAL=true
+      - CLAUDE_FLOW_MEMORY_BACKEND=sqlite
+      - WORKSPACE=/workspace
+      - LOG_LEVEL=info
+    networks:
+      - wundr-network
+    restart: unless-stopped
+    labels:
+      - "wundr.environment=ai-agent"
+      - "wundr.profile=agent"
+      - "wundr.swarm=enabled"
+
+  # CI/CD Runner Environment
+  ci-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.ci
+    container_name: wundr-ci-runner
+    volumes:
+      - ./projects:/workspace/projects
+      - ./cache:/workspace/.cache
+      - ~/.gitconfig:/root/.gitconfig:ro
+    environment:
+      - PROFILE=ci-runner
+      - NODE_ENV=production
+      - CI=true
+      - WORKSPACE=/workspace
+    networks:
+      - wundr-network
+    restart: "no"
+    labels:
+      - "wundr.environment=ci-runner"
+      - "wundr.profile=ci"
+
+  # PostgreSQL Database (for development)
+  postgres:
+    image: postgres:15-alpine
+    container_name: wundr-postgres
+    environment:
+      POSTGRES_DB: wundr_dev
+      POSTGRES_USER: wundr
+      POSTGRES_PASSWORD: wundr_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - wundr-network
+    restart: unless-stopped
+    labels:
+      - "wundr.service=database"
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: wundr-redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - wundr-network
+    restart: unless-stopped
+    labels:
+      - "wundr.service=cache"
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: wundr-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - wundr-network
+    restart: unless-stopped
+    depends_on:
+      - human-dev
+      - ai-agent
+    labels:
+      - "wundr.service=proxy"
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: wundr-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - wundr-network
+    restart: unless-stopped
+    labels:
+      - "wundr.service=monitoring"
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: wundr-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - wundr-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    labels:
+      - "wundr.service=dashboard"
+
+networks:
+  wundr-network:
+    driver: bridge
+    labels:
+      - "wundr.network=main"
+
+volumes:
+  postgres_data:
+    labels:
+      - "wundr.volume=postgres"
+  redis_data:
+    labels:
+      - "wundr.volume=redis"
+  prometheus_data:
+    labels:
+      - "wundr.volume=prometheus"
+  grafana_data:
+    labels:
+      - "wundr.volume=grafana"
+
+# Development profile override
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+x-development: &development
+  human-dev:
+    environment:
+      - NODE_ENV=development
+      - DEBUG=wundr:*
+    volumes:
+      - ./src:/workspace/projects/src:delegated
+    command: ["npm", "run", "dev"]
+
+# Production profile override  
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+x-production: &production
+  human-dev:
+    environment:
+      - NODE_ENV=production
+    restart: always
+  ai-agent:
+    environment:
+      - NODE_ENV=production
+      - CLAUDE_FLOW_OPTIMIZATION=production
+    restart: always

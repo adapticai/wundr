@@ -1,0 +1,61 @@
+{
+  "name": "@wundr/docs",
+  "version": "1.0.0",
+  "description": "Comprehensive documentation site for Wundr platform",
+  "private": true,
+  "scripts": {
+    "build": "docusaurus build",
+    "clear": "docusaurus clear",
+    "deploy": "docusaurus deploy",
+    "docusaurus": "docusaurus",
+    "serve": "docusaurus serve",
+    "start": "docusaurus start",
+    "swizzle": "docusaurus swizzle",
+    "typecheck": "tsc",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "generate-api-docs": "ts-node scripts/generate-api-docs.ts",
+    "generate-playground": "ts-node scripts/generate-playground.ts"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.1.0",
+    "@docusaurus/preset-classic": "^3.1.0",
+    "@docusaurus/plugin-content-docs": "^3.1.0",
+    "@docusaurus/plugin-ideal-image": "^3.1.0",
+    "@docusaurus/theme-search-algolia": "^3.1.0",
+    "@docusaurus/theme-live-codeblock": "^3.1.0",
+    "@mdx-js/react": "^3.0.0",
+    "@monaco-editor/react": "^4.6.0",
+    "@swagger-api/apidom-parser-openapi-yaml-3-1": "^0.90.0",
+    "clsx": "^2.0.0",
+    "prism-react-renderer": "^2.3.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "swagger-ui-react": "^5.10.5",
+    "redoc": "^2.1.3",
+    "swagger-parser": "^10.0.3"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "^3.1.0",
+    "@docusaurus/tsconfig": "^3.1.0",
+    "@docusaurus/types": "^3.1.0",
+    "@types/swagger-ui-react": "^4.18.3",
+    "typescript": "~5.2.2",
+    "ts-node": "^10.9.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome versions",
+      "last 3 firefox versions",
+      "last 5 safari versions"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}

@@ -20,7 +20,7 @@
 
   <p>
     <img src="https://img.shields.io/npm/v/@lumic/wundr?style=flat-square" alt="npm version">
-    <img src="https://img.shields.io/github/license/lumicai/wundr?style=flat-square" alt="License">
+    <img src="https://img.shields.io/github/license/adapticai/wundr?style=flat-square" alt="License">
     <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=flat-square" alt="Node Version">
     <img src="https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square" alt="TypeScript">
   </p>
@@ -31,7 +31,10 @@
 
 ## 🎯 What is Wundr Dashboard?
 
-Wundr Dashboard is a comprehensive consumer integration system that enables developers to embed intelligent code analysis capabilities into their existing projects. Built by [Lumic.ai](https://lumic.ai), it provides a flexible, secure, and extensible platform for running analysis scripts, creating custom visualizations, and integrating with your development workflow.
+Wundr Dashboard is a comprehensive consumer integration system that enables developers to embed
+intelligent code analysis capabilities into their existing projects. Built by
+[Lumic.ai](https://lumic.ai), it provides a flexible, secure, and extensible platform for running
+analysis scripts, creating custom visualizations, and integrating with your development workflow.
 
 ### 🌟 Why Choose Wundr Dashboard?
 
@@ -94,30 +97,35 @@ $ npx wundr init-dashboard --interactive
 ## 🛠️ Core Features
 
 ### 1. 🎨 **Complete Customization**
+
 - **Brand Integration** - Your logo, colors, and styling throughout the dashboard
 - **Environment Variables** - Override any setting with environment variables
 - **Theme System** - Custom CSS support with hot reloading
 - **Responsive Design** - Works perfectly on desktop, tablet, and mobile
 
 ### 2. 🔌 **Extensible Plugin System**
+
 - **Custom Pages** - Add new dashboard pages with React components
 - **API Endpoints** - Create custom REST endpoints for data integration
-- **Menu Integration** - Seamlessly add items to the navigation menu  
+- **Menu Integration** - Seamlessly add items to the navigation menu
 - **Lifecycle Hooks** - React to analysis events and configuration changes
 
 ### 3. 🛡️ **Multi-Level Security**
+
 - **Safe Mode** - Whitelist-only commands with no shell access
 - **Moderate Mode** - Limited shell features with command validation
 - **Unsafe Mode** - Full shell access for trusted environments only
 - **Resource Limits** - Memory, CPU, and timeout constraints
 
 ### 4. ⚡ **Real-time Integration**
+
 - **Webhook Support** - Push events to Slack, Teams, or custom endpoints
 - **Hook System** - Before/after callbacks for analysis and script execution
 - **External APIs** - Integrate with GitHub, Jira, or any REST service
 - **Live Updates** - Real-time dashboard updates during analysis
 
 ### 5. 📊 **Rich Analytics Platform**
+
 - **Built-in Analysis** - Code quality, complexity, and dependency analysis
 - **Custom Scripts** - Run your own analysis tools through the dashboard
 - **Historical Tracking** - Track metrics over time with trend analysis
@@ -241,7 +249,7 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/... wundr analyze
 module.exports = {
   branding: {
     appName: process.env.WUNDR_APP_NAME || 'Advanced Dashboard',
-    primaryColor: process.env.WUNDR_PRIMARY_COLOR || '#0066CC'
+    primaryColor: process.env.WUNDR_PRIMARY_COLOR || '#0066CC',
   },
   integration: {
     hooks: [
@@ -259,23 +267,24 @@ module.exports = {
               })
             });
           }
-        `
-      }
+        `,
+      },
     ],
     webhooks: [
       {
         url: process.env.CUSTOM_WEBHOOK_URL,
         method: 'POST',
-        events: ['after-analysis', 'error-occurred']
-      }
-    ]
-  }
+        events: ['after-analysis', 'error-occurred'],
+      },
+    ],
+  },
 };
 ```
 
 ## 📦 Installation & Setup
 
 ### Prerequisites
+
 - Node.js 18+
 - npm 8+
 - Git (for repository analysis)
@@ -328,7 +337,9 @@ CMD ["wundr", "dashboard"]
 ## 🎯 Use Cases
 
 ### 1. **Development Team Dashboard**
+
 Create a branded dashboard for your development team:
+
 ```bash
 # Setup team dashboard
 npx wundr init-dashboard --interactive
@@ -337,7 +348,9 @@ WUNDR_APP_NAME="Team Alpha Dashboard" npm run wundr:dev
 ```
 
 ### 2. **CI/CD Integration**
+
 Integrate analysis into your continuous integration:
+
 ```bash
 # GitHub Actions integration
 wundr analyze --format json --output analysis-results.json
@@ -346,7 +359,9 @@ SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK }} wundr analyze
 ```
 
 ### 3. **Custom Analysis Tools**
+
 Run your own analysis tools through the dashboard:
+
 ```bash
 # Register custom script
 wundr script security-audit --safety moderate
@@ -355,7 +370,9 @@ wundr dashboard --dev
 ```
 
 ### 4. **Multi-Project Monitoring**
+
 Monitor multiple projects from a single dashboard:
+
 ```bash
 # Setup multi-project configuration
 wundr init-dashboard ./project-a
@@ -375,13 +392,13 @@ module.exports = {
     api.addMenuItem({
       id: 'analytics',
       label: 'Analytics',
-      path: '/analytics'
+      path: '/analytics',
     });
-    
+
     logger.info('Analytics plugin loaded');
   },
-  
-  component: () => React.createElement('div', null, 'Custom Analytics Page')
+
+  component: () => React.createElement('div', null, 'Custom Analytics Page'),
 };
 ```
 
@@ -397,7 +414,7 @@ module.exports = {
     if (process.env.GITHUB_TOKEN && process.env.GITHUB_PR) {
       const { Octokit } = require('@octokit/rest');
       const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-      
+
       await octokit.issues.createComment({
         owner: process.env.GITHUB_REPOSITORY_OWNER,
         repo: process.env.GITHUB_REPOSITORY_NAME,
@@ -415,7 +432,7 @@ We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for deta
 
 ```bash
 # Clone the repository
-git clone https://github.com/lumicai/wundr
+git clone https://github.com/adapticai/wundr
 cd wundr
 
 # Install dependencies
@@ -443,7 +460,7 @@ git push origin feature/amazing-feature
 
 - **Documentation**: [docs.wundr.io](https://docs.wundr.io)
 - **Discord Community**: [discord.gg/wundr](https://discord.gg/wundr)
-- **GitHub Issues**: [github.com/lumicai/wundr/issues](https://github.com/lumicai/wundr/issues)
+- **GitHub Issues**: [github.com/adapticai/wundr/issues](https://github.com/adapticai/wundr/issues)
 - **Enterprise Support**: [enterprise@lumic.ai](mailto:enterprise@lumic.ai)
 
 ## 📄 License
@@ -452,7 +469,7 @@ Wundr is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=lumicai/wundr&type=Date)](https://star-history.com/#lumicai/wundr&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=adapticai/wundr&type=Date)](https://star-history.com/#adapticai/wundr&Date)
 
 ---
 
@@ -462,7 +479,7 @@ Wundr is licensed under the MIT License. See [LICENSE](LICENSE) for details.
   </p>
   <p>
     <a href="https://twitter.com/lumic_ai">Twitter</a> •
-    <a href="https://linkedin.com/company/lumicai">LinkedIn</a> •
+    <a href="https://linkedin.com/company/adapticai">LinkedIn</a> •
     <a href="https://blog.lumic.ai">Blog</a>
   </p>
 </div>

@@ -1,0 +1,128 @@
+{
+  "name": "CI/CD Runner",
+  "description": "Minimal environment for CI/CD pipelines and automated builds",
+  "profile": "ci-runner",
+  "tools": [
+    {
+      "name": "node",
+      "version": ">=18.0.0",
+      "required": true,
+      "installer": "brew",
+      "description": "Node.js runtime for CI workflows"
+    },
+    {
+      "name": "npm",
+      "required": true,
+      "installer": "brew",
+      "dependencies": ["node"],
+      "description": "Node package manager"
+    },
+    {
+      "name": "pnpm",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Fast package manager for builds"
+    },
+    {
+      "name": "git",
+      "required": true,
+      "installer": "brew",
+      "description": "Version control system"
+    },
+    {
+      "name": "gh",
+      "required": true,
+      "installer": "brew",
+      "dependencies": ["git"],
+      "description": "GitHub CLI for CI operations"
+    },
+    {
+      "name": "docker",
+      "required": false,
+      "installer": "brew",
+      "description": "Container platform for builds"
+    },
+    {
+      "name": "typescript",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "TypeScript compiler"
+    },
+    {
+      "name": "eslint",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Code linting"
+    },
+    {
+      "name": "prettier",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Code formatting"
+    },
+    {
+      "name": "jest",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Testing framework"
+    }
+  ],
+  "preferences": {
+    "editor": "vim",
+    "shell": "bash",
+    "packageManager": "pnpm",
+    "theme": "auto"
+  },
+  "agentConfig": {
+    "claudeCode": false,
+    "claudeFlow": false,
+    "mcpTools": [],
+    "swarmCapabilities": false,
+    "neuralFeatures": false
+  },
+  "customScripts": [
+    "setup-ci-environment.sh",
+    "configure-build-cache.sh",
+    "setup-test-coverage.sh"
+  ],
+  "features": {
+    "minimalInstall": true,
+    "fastBuild": true,
+    "testingFramework": true,
+    "lintingAndFormatting": true,
+    "typeScriptSupport": true,
+    "caching": true,
+    "parallelBuilds": true
+  },
+  "ci": {
+    "cacheEnabled": true,
+    "parallelJobs": true,
+    "testCoverage": true,
+    "artifactStorage": true,
+    "buildMatrix": true,
+    "dependencyScanning": true
+  },
+  "performance": {
+    "buildOptimization": "speed",
+    "cacheStrategy": "aggressive",
+    "parallelization": true,
+    "resourceLimits": true
+  },
+  "security": {
+    "dependencyScanning": true,
+    "vulnerabilityCheck": true,
+    "secretScanning": true,
+    "sandboxed": true
+  },
+  "monitoring": {
+    "buildMetrics": true,
+    "performanceTracking": true,
+    "errorReporting": true,
+    "resourceUsage": true
+  }
+}

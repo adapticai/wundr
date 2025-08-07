@@ -22,7 +22,7 @@ npx claude-flow@alpha hive-mind init
 # Spawn hive with maximum configuration for unified Wundr platform
 npx claude-flow@alpha hive-mind spawn "Execute the unified Wundr platform development from docs/REFINED_WUNDR_EXPANSION_PROMPT.md with full multi-hive orchestration including: 1) Architecture hive for system design, 2) Analysis engine hive for code analysis features, 3) Environment setup hive for cross-platform setup, 4) Dashboard platform hive for Next.js web interface, 5) AI integration hive for Claude/MCP tools, 6) CLI framework hive for command interface, 7) Testing & quality hive for comprehensive testing, 8) Documentation hive for technical docs, 9) Security & compliance hive for enterprise security, 10) Integration & deployment hive for CI/CD - all coordinated with hierarchical mesh topology, Byzantine consensus, auto-scaling, cross-session memory, neural training, and enterprise-grade monitoring" \
   --queen-type "strategic" \
-  --max-workers 50 \
+  --max-workers 20 \
   --consensus "byzantine" \
   --memory-size 1000 \
   --auto-scale \
@@ -38,7 +38,7 @@ npx claude-flow@alpha hive-mind spawn "Execute the unified Wundr platform develo
 
 ```bash
 # Execute with your refined prompt file directly
-npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 50 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
+npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 20 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
 ```
 
 ## 🎛️ **Step-by-Step Approach (Conservative)**
@@ -49,7 +49,7 @@ npx claude-flow@alpha init --monitoring
 npx claude-flow@alpha hive-mind init
 ```
 
-### Step 2: Foundation Phase  
+### Step 2: Foundation Phase
 ```bash
 npx claude-flow@alpha hive-mind spawn "Phase 1: Foundation - Execute architecture planning and security framework from docs/REFINED_WUNDR_EXPANSION_PROMPT.md focusing on unified system design, API specifications, technology stack decisions, and enterprise security requirements" \
   --queen-type "strategic" \
@@ -174,7 +174,7 @@ npx claude-flow@alpha status
 
 You'll know it's working when:
 - ✅ Hive mind sessions show "ACTIVE" status
-- ✅ Multiple Claude Code instances spawn automatically  
+- ✅ Multiple Claude Code instances spawn automatically
 - ✅ Worker agents begin coordinated development
 - ✅ Consensus decisions appear in logs
 - ✅ Memory sharing shows cross-agent learning
@@ -191,7 +191,7 @@ You'll know it's working when:
 npx claude-flow@alpha hive-mind wizard
 
 # OR direct execution with full power
-npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 50 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
+npx claude-flow@alpha hive-mind spawn "$(cat docs/REFINED_WUNDR_EXPANSION_PROMPT.md)" --queen-type strategic --max-workers 20 --consensus byzantine --auto-scale --encryption --monitor --verbose --claude --auto-spawn --execute
 ```
 
 ## 🚀 What Happens After Execution
@@ -231,7 +231,7 @@ npx claude-flow@alpha emergency stop --all-hives
 # Pause and checkpoint
 npx claude-flow@alpha pause --checkpoint --reason "review-needed"
 
-# Resume from checkpoint  
+# Resume from checkpoint
 npx claude-flow@alpha resume --from-checkpoint --validate-first
 
 # Force restart problematic hive

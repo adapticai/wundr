@@ -62,9 +62,11 @@ export class InitCommand {
 
       console.log(chalk.green.bold('\n✅ Dashboard initialization complete!'));
       this.printNextSteps();
-
     } catch (error) {
-      console.error(chalk.red.bold('\n❌ Initialization failed:'), error instanceof Error ? error.message : String(error));
+      console.error(
+        chalk.red.bold('\n❌ Initialization failed:'),
+        error instanceof Error ? error.message : String(error)
+      );
       process.exit(1);
     }
   }
@@ -137,8 +139,16 @@ export class InitCommand {
         name: 'includeExtensions',
         message: 'File extensions to analyze:',
         choices: [
-          { name: 'TypeScript (.ts, .tsx)', value: ['.ts', '.tsx'], checked: true },
-          { name: 'JavaScript (.js, .jsx)', value: ['.js', '.jsx'], checked: true },
+          {
+            name: 'TypeScript (.ts, .tsx)',
+            value: ['.ts', '.tsx'],
+            checked: true,
+          },
+          {
+            name: 'JavaScript (.js, .jsx)',
+            value: ['.js', '.jsx'],
+            checked: true,
+          },
           { name: 'Vue (.vue)', value: ['.vue'] },
           { name: 'Python (.py)', value: ['.py'] },
           { name: 'Java (.java)', value: ['.java'] },
@@ -206,7 +216,9 @@ export class InitCommand {
     }
   }
 
-  private async generateConfigurationFiles(config: DashboardConfig): Promise<void> {
+  private async generateConfigurationFiles(
+    config: DashboardConfig
+  ): Promise<void> {
     const spinner = ora('Generating configuration files...').start();
 
     try {
@@ -255,7 +267,7 @@ WUNDR_ENVIRONMENT="${config.environment}"
 
   private async updatePackageJson(config: DashboardConfig): Promise<void> {
     const packageJsonPath = path.join(this.projectPath, 'package.json');
-    
+
     let packageJson: any = {};
     if (existsSync(packageJsonPath)) {
       const content = await readFile(packageJsonPath, 'utf-8');
@@ -287,31 +299,50 @@ WUNDR_ENVIRONMENT="${config.environment}"
     try {
       // Create custom theme file
       const themeContent = this.generateThemeFile(config);
-      const themePath = path.join(this.projectPath, 'wundr-dashboard/themes/custom.css');
+      const themePath = path.join(
+        this.projectPath,
+        'wundr-dashboard/themes/custom.css'
+      );
       await writeFile(themePath, themeContent);
 
       // Create example plugin
       const pluginContent = this.generateExamplePlugin();
-      const pluginPath = path.join(this.projectPath, 'wundr-dashboard/plugins/example-plugin');
+      const pluginPath = path.join(
+        this.projectPath,
+        'wundr-dashboard/plugins/example-plugin'
+      );
       await mkdir(pluginPath, { recursive: true });
-      await writeFile(path.join(pluginPath, 'plugin.json'), JSON.stringify({
-        name: 'example-plugin',
-        version: '1.0.0',
-        description: 'Example plugin for customization',
-        author: 'Generated',
-        main: 'index.js',
-        type: 'component',
-      }, null, 2));
+      await writeFile(
+        path.join(pluginPath, 'plugin.json'),
+        JSON.stringify(
+          {
+            name: 'example-plugin',
+            version: '1.0.0',
+            description: 'Example plugin for customization',
+            author: 'Generated',
+            main: 'index.js',
+            type: 'component',
+          },
+          null,
+          2
+        )
+      );
       await writeFile(path.join(pluginPath, 'index.js'), pluginContent);
 
       // Create example scripts
       const scriptContent = this.generateExampleScript();
-      const scriptPath = path.join(this.projectPath, 'wundr-dashboard/scripts/example.js');
+      const scriptPath = path.join(
+        this.projectPath,
+        'wundr-dashboard/scripts/example.js'
+      );
       await writeFile(scriptPath, scriptContent);
 
       // Create README
       const readmeContent = this.generateReadme(config);
-      const readmePath = path.join(this.projectPath, 'wundr-dashboard/README.md');
+      const readmePath = path.join(
+        this.projectPath,
+        'wundr-dashboard/README.md'
+      );
       await writeFile(readmePath, readmeContent);
 
       spinner.succeed('Starter files created');
@@ -356,9 +387,9 @@ WUNDR_ENVIRONMENT="${config.environment}"
 module.exports = {
   async initialize(context) {
     const { api, logger } = context;
-    
+
     logger.info('Example plugin initializing...');
-    
+
     // Add a custom menu item
     api.addMenuItem({
       id: 'example-page',
@@ -368,10 +399,10 @@ module.exports = {
       group: 'custom',
       order: 100,
     });
-    
+
     logger.info('Example plugin initialized successfully');
   },
-  
+
   // Custom React component for the page
   component: function ExampleComponent() {
     return React.createElement('div', {
@@ -382,7 +413,7 @@ module.exports = {
       React.createElement('p', null, 'You can customize this component to show any content you need.'),
     ]);
   },
-  
+
   async cleanup() {
     console.log('Example plugin cleaning up...');
   }
@@ -400,26 +431,26 @@ const path = require('path');
 
 async function runAnalysis() {
   console.log('Running example analysis...');
-  
+
   // Example: Count files by extension
   const projectPath = process.env.WUNDR_DEFAULT_PATH || './';
   const stats = await analyzeProject(projectPath);
-  
+
   console.log('Analysis Results:', stats);
   return stats;
 }
 
 async function analyzeProject(projectPath) {
   const stats = {};
-  
+
   // Simple file counting by extension
   function walkDir(dir) {
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory() && !file.startsWith('.')) {
         walkDir(filePath);
       } else if (stat.isFile()) {
@@ -428,7 +459,7 @@ async function analyzeProject(projectPath) {
       }
     }
   }
-  
+
   walkDir(projectPath);
   return stats;
 }
@@ -505,8 +536,8 @@ For full documentation, visit: https://wundr.io/docs
 
 ## 🆘 Support
 
-- Issues: https://github.com/lumicai/wundr/issues
-- Discussions: https://github.com/lumicai/wundr/discussions
+- Issues: https://github.com/adapticai/wundr/issues
+- Discussions: https://github.com/adapticai/wundr/discussions
 `;
   }
 
@@ -521,7 +552,9 @@ For full documentation, visit: https://wundr.io/docs
       await execAsync('npm install', { cwd: this.projectPath });
       spinner.succeed('Dependencies installed');
     } catch (error) {
-      spinner.warn('Failed to install dependencies automatically. Run "npm install" manually.');
+      spinner.warn(
+        'Failed to install dependencies automatically. Run "npm install" manually.'
+      );
     }
   }
 
@@ -558,18 +591,22 @@ pause
   private printNextSteps(): void {
     console.log(chalk.cyan('\n📋 Next Steps:'));
     console.log(chalk.white('1. Review configuration in wundr.config.json'));
-    console.log(chalk.white('2. Customize theme in wundr-dashboard/themes/custom.css'));
+    console.log(
+      chalk.white('2. Customize theme in wundr-dashboard/themes/custom.css')
+    );
     console.log(chalk.white('3. Add environment variables to .env.wundr'));
     console.log(chalk.white('4. Start the dashboard:'));
     console.log(chalk.green('   npm run wundr:dev'));
     console.log(chalk.white('\n5. Open in browser:'));
     console.log(chalk.blue(`   http://localhost:${this.options.port || 3000}`));
-    
+
     console.log(chalk.cyan('\n🔗 Helpful Commands:'));
     console.log(chalk.white('• npm run wundr:analyze  - Run analysis'));
     console.log(chalk.white('• npm run wundr:config   - Manage configuration'));
     console.log(chalk.white('• ./start-dashboard.sh   - Quick start (Unix)'));
-    console.log(chalk.white('• start-dashboard.bat    - Quick start (Windows)'));
+    console.log(
+      chalk.white('• start-dashboard.bat    - Quick start (Windows)')
+    );
   }
 }
 

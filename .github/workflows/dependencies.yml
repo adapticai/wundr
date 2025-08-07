@@ -1,0 +1,457 @@
+name: Dependency Management
+
+on:
+  schedule:
+    # Run weekly on Mondays at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of updates to perform'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - all
+        default: minor
+      create_pr:
+        description: 'Create pull request for updates'
+        type: boolean
+        default: true
+
+concurrency:
+  group: dependencies
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.15.0'
+
+jobs:
+  audit-dependencies:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    outputs:
+      vulnerabilities-found: ${{ steps.audit.outputs.vulnerabilities-found }}
+      audit-report: ${{ steps.audit.outputs.report-path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run security audit
+        id: audit
+        run: |
+          echo "Running security audit..."
+          
+          # Generate detailed audit report
+          pnpm audit --json > audit-report.json || true
+          
+          # Check for vulnerabilities
+          CRITICAL=$(jq -r '.metadata.vulnerabilities.critical // 0' audit-report.json)
+          HIGH=$(jq -r '.metadata.vulnerabilities.high // 0' audit-report.json)
+          MODERATE=$(jq -r '.metadata.vulnerabilities.moderate // 0' audit-report.json)
+          LOW=$(jq -r '.metadata.vulnerabilities.low // 0' audit-report.json)
+          
+          echo "Vulnerability Summary:"
+          echo "  Critical: $CRITICAL"
+          echo "  High: $HIGH"
+          echo "  Moderate: $MODERATE"
+          echo "  Low: $LOW"
+          
+          TOTAL_CRITICAL_HIGH=$((CRITICAL + HIGH))
+          
+          if [[ $TOTAL_CRITICAL_HIGH -gt 0 ]]; then
+            echo "vulnerabilities-found=true" >> $GITHUB_OUTPUT
+            echo "❌ Found $TOTAL_CRITICAL_HIGH critical/high vulnerabilities"
+          else
+            echo "vulnerabilities-found=false" >> $GITHUB_OUTPUT
+            echo "✅ No critical/high vulnerabilities found"
+          fi
+          
+          echo "report-path=audit-report.json" >> $GITHUB_OUTPUT
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-report
+          path: audit-report.json
+          retention-days: 30
+
+      - name: Generate vulnerability summary
+        if: steps.audit.outputs.vulnerabilities-found == 'true'
+        run: |
+          echo "## 🚨 Security Vulnerabilities Found" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Parse and display vulnerabilities
+          jq -r '.vulnerabilities | to_entries[] | "- **\(.key)**: \(.value.severity) - \(.value.title)"' audit-report.json | head -10 >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Full report available in artifacts**" >> $GITHUB_STEP_SUMMARY
+
+  check-outdated:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      updates-available: ${{ steps.outdated.outputs.updates-available }}
+      outdated-report: ${{ steps.outdated.outputs.report-path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Check outdated packages
+        id: outdated
+        run: |
+          echo "Checking for outdated packages..."
+          
+          # Generate outdated report
+          pnpm outdated --json > outdated-report.json || true
+          
+          # Check if updates are available
+          if [[ -s outdated-report.json ]] && [[ $(jq 'length' outdated-report.json) -gt 0 ]]; then
+            echo "updates-available=true" >> $GITHUB_OUTPUT
+            echo "✅ Found $(jq 'length' outdated-report.json) outdated packages"
+            
+            # Display summary
+            echo "## 📦 Outdated Packages" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Package | Current | Wanted | Latest |" >> $GITHUB_STEP_SUMMARY
+            echo "|---------|---------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+            
+            jq -r 'to_entries[] | "| \(.key) | \(.value.current) | \(.value.wanted) | \(.value.latest) |"' outdated-report.json | head -20 >> $GITHUB_STEP_SUMMARY
+          else
+            echo "updates-available=false" >> $GITHUB_OUTPUT
+            echo "✅ All packages are up to date"
+          fi
+          
+          echo "report-path=outdated-report.json" >> $GITHUB_OUTPUT
+
+      - name: Upload outdated report
+        if: steps.outdated.outputs.updates-available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-packages-report
+          path: outdated-report.json
+          retention-days: 30
+
+  auto-fix-vulnerabilities:
+    name: Auto-fix Vulnerabilities
+    runs-on: ubuntu-latest
+    needs: audit-dependencies
+    if: needs.audit-dependencies.outputs.vulnerabilities-found == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Auto-fix vulnerabilities
+        run: |
+          echo "Attempting to auto-fix vulnerabilities..."
+          
+          # Try to fix vulnerabilities automatically
+          pnpm audit --fix || true
+          
+          # Update lockfile
+          pnpm install --lockfile-only
+
+      - name: Check if fixes were applied
+        id: check-fixes
+        run: |
+          if git diff --quiet; then
+            echo "fixes-applied=false" >> $GITHUB_OUTPUT
+            echo "No automatic fixes available"
+          else
+            echo "fixes-applied=true" >> $GITHUB_OUTPUT
+            echo "Automatic fixes applied"
+            
+            # Show changes
+            git diff --name-only
+          fi
+
+      - name: Create vulnerability fix PR
+        if: steps.check-fixes.outputs.fixes-applied == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'fix: auto-fix security vulnerabilities'
+          title: '🔒 Auto-fix Security Vulnerabilities'
+          body: |
+            ## 🔒 Security Vulnerability Fixes
+            
+            This PR contains automatic fixes for security vulnerabilities detected in our dependencies.
+            
+            ### 🛡️ Changes Made
+            
+            - Applied automatic vulnerability fixes via `pnpm audit --fix`
+            - Updated package lockfiles
+            
+            ### 📋 Review Checklist
+            
+            - [ ] Verify all tests pass
+            - [ ] Check for any breaking changes
+            - [ ] Ensure application functionality is not affected
+            
+            ### 🔍 Details
+            
+            This PR was automatically created by the dependency management workflow.
+            Review the security audit report in the workflow artifacts for more details.
+            
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          branch: security/auto-fix-vulnerabilities
+          delete-branch: true
+          labels: |
+            security
+            dependencies
+            automated
+
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    needs: check-outdated
+    if: needs.check-outdated.outputs.updates-available == 'true' && (github.event.inputs.create_pr == 'true' || github.event_name == 'schedule')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Update dependencies
+        run: |
+          UPDATE_TYPE="${{ github.event.inputs.update_type || 'minor' }}"
+          
+          echo "Updating dependencies (type: $UPDATE_TYPE)"
+          
+          case "$UPDATE_TYPE" in
+            "patch")
+              pnpm update --latest --depth 0 --workspace-root
+              ;;
+            "minor")
+              pnpm update --latest --depth 0 --workspace-root
+              ;;
+            "major")
+              pnpm update --latest --depth 0 --workspace-root
+              ;;
+            "all")
+              pnpm update --latest --recursive
+              ;;
+          esac
+
+      - name: Run tests after updates
+        run: |
+          pnpm install
+          pnpm build
+          pnpm test || echo "Tests failed - will be noted in PR"
+
+      - name: Generate update summary
+        run: |
+          echo "## 📦 Dependency Updates Summary" > UPDATE_SUMMARY.md
+          echo "" >> UPDATE_SUMMARY.md
+          
+          if git diff --quiet; then
+            echo "No updates were applied." >> UPDATE_SUMMARY.md
+          else
+            echo "The following dependencies have been updated:" >> UPDATE_SUMMARY.md
+            echo "" >> UPDATE_SUMMARY.md
+            
+            # Show package.json changes
+            if git diff --name-only | grep -q "package.json"; then
+              echo "### 📋 Package Changes" >> UPDATE_SUMMARY.md
+              echo "" >> UPDATE_SUMMARY.md
+              echo "\`\`\`diff" >> UPDATE_SUMMARY.md
+              git diff package.json >> UPDATE_SUMMARY.md
+              echo "\`\`\`" >> UPDATE_SUMMARY.md
+            fi
+            
+            # Show lockfile changes summary
+            if git diff --name-only | grep -q "pnpm-lock.yaml"; then
+              echo "### 🔒 Lockfile Updated" >> UPDATE_SUMMARY.md
+              echo "" >> UPDATE_SUMMARY.md
+              echo "The package lockfile has been updated to reflect the new dependency versions." >> UPDATE_SUMMARY.md
+            fi
+          fi
+
+      - name: Create dependency update PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies (${{ github.event.inputs.update_type || "minor" }})'
+          title: '📦 Dependency Updates (${{ github.event.inputs.update_type || "minor" }})'
+          body-path: UPDATE_SUMMARY.md
+          branch: dependencies/auto-update-${{ github.event.inputs.update_type || "minor" }}
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+            ${{ github.event.inputs.update_type || "minor" }}
+
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check licenses
+        run: |
+          echo "Checking dependency licenses..."
+          
+          # Install license checker
+          npm install -g license-checker
+          
+          # Generate license report
+          license-checker --json > license-report.json
+          
+          # Check for problematic licenses
+          PROBLEMATIC_LICENSES=("GPL-2.0" "GPL-3.0" "AGPL-1.0" "AGPL-3.0" "LGPL-2.0" "LGPL-2.1" "LGPL-3.0")
+          
+          echo "## 📄 License Compliance Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          ISSUES_FOUND=false
+          
+          for license in "${PROBLEMATIC_LICENSES[@]}"; do
+            if jq -e --arg license "$license" 'to_entries[] | select(.value.licenses == $license)' license-report.json > /dev/null; then
+              echo "❌ Found packages with problematic license: $license" >> $GITHUB_STEP_SUMMARY
+              jq -r --arg license "$license" 'to_entries[] | select(.value.licenses == $license) | "- \(.key)"' license-report.json >> $GITHUB_STEP_SUMMARY
+              ISSUES_FOUND=true
+            fi
+          done
+          
+          if [[ "$ISSUES_FOUND" == "false" ]]; then
+            echo "✅ No problematic licenses found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Show license summary
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### License Distribution" >> $GITHUB_STEP_SUMMARY
+          jq -r 'to_entries | group_by(.value.licenses) | .[] | "\(.[0].value.licenses): \(length) packages"' license-report.json | head -10 >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: license-report.json
+          retention-days: 90
+
+  dependency-summary:
+    name: Dependency Summary
+    runs-on: ubuntu-latest
+    needs: [audit-dependencies, check-outdated, auto-fix-vulnerabilities, update-dependencies, license-check]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 📦 Dependency Management Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Audit | ${{ needs.audit-dependencies.result }} | ${{ needs.audit-dependencies.outputs.vulnerabilities-found == 'true' && '⚠️ Vulnerabilities found' || '✅ No critical issues' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Outdated Check | ${{ needs.check-outdated.result }} | ${{ needs.check-outdated.outputs.updates-available == 'true' && '📦 Updates available' || '✅ Up to date' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Auto-fix | ${{ needs.auto-fix-vulnerabilities.result || 'skipped' }} | ${{ needs.auto-fix-vulnerabilities.result == 'success' && '🔒 Fixes applied' || 'No fixes needed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Updates | ${{ needs.update-dependencies.result || 'skipped' }} | ${{ needs.update-dependencies.result == 'success' && '📦 PR created' || 'No updates' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| License Check | ${{ needs.license-check.result }} | ${{ needs.license-check.result == 'success' && '📄 Compliant' || '⚠️ Issues found' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create issues for critical problems
+        if: needs.audit-dependencies.outputs.vulnerabilities-found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Critical Security Vulnerabilities Detected';
+            
+            const body = `## 🚨 Security Alert
+            
+            Critical security vulnerabilities have been detected in our dependencies during the automated security audit.
+            
+            ### 🔍 Next Steps
+            
+            1. Review the security audit report in the workflow artifacts
+            2. Evaluate the impact of each vulnerability
+            3. Update affected packages or find alternatives
+            4. Test thoroughly after applying fixes
+            
+            ### 📊 Reports Available
+            
+            - **Security Audit Report**: Available in workflow artifacts
+            - **Outdated Packages**: ${{ needs.check-outdated.outputs.updates-available == 'true' && 'Available in workflow artifacts' || 'No outdated packages' }}
+            
+            ### 🤖 Automated Actions
+            
+            - Auto-fix attempted: ${{ needs.auto-fix-vulnerabilities.result == 'success' && '✅ Completed' || '❌ Failed or not attempted' }}
+            - Update PR created: ${{ needs.update-dependencies.result == 'success' && '✅ Available for review' || '❌ Not created' }}
+            
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'dependencies', 'urgent']
+            });

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wundr-production
+  labels:
+    name: wundr-production
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wundr-staging
+  labels:
+    name: wundr-staging
+    environment: staging
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wundr-development
+  labels:
+    name: wundr-development
+    environment: development

@@ -1,0 +1,129 @@
+# Dockerfile for Human Developer Environment
+FROM ubuntu:22.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NODE_VERSION=18
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Set working directory
+WORKDIR /workspace
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    software-properties-common \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    jq \
+    tree \
+    htop \
+    tmux \
+    ripgrep \
+    fd-find \
+    bat \
+    exa \
+    openssh-client \
+    sudo \
+    vim \
+    nano \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js via NodeSource
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y nodejs
+
+# Install pnpm
+RUN curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+# Install Yarn
+RUN npm install -g yarn
+
+# Install global npm packages
+RUN npm install -g \
+    typescript \
+    tsx \
+    ts-node \
+    @types/node \
+    nodemon \
+    prettier \
+    eslint \
+    @typescript-eslint/eslint-plugin \
+    @typescript-eslint/parser \
+    jest \
+    husky \
+    lint-staged \
+    concurrently \
+    cross-env \
+    dotenv-cli
+
+# Install Docker
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce-cli docker-compose-plugin
+
+# Install GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh
+
+# Install VS Code Server
+RUN curl -fsSL https://code-server.dev/install.sh | sh
+
+# Install Claude Code (if available)
+RUN npm install -g @anthropic-ai/claude-code || echo "Claude Code not available"
+
+# Install Claude Flow
+RUN npm install -g claude-flow@alpha || echo "Claude Flow not available"
+
+# Set up aliases and shell configuration
+RUN echo 'alias ll="ls -la"' >> /root/.bashrc \
+    && echo 'alias la="ls -A"' >> /root/.bashrc \
+    && echo 'alias l="ls -CF"' >> /root/.bashrc \
+    && echo 'alias ..="cd .."' >> /root/.bashrc \
+    && echo 'alias ...="cd ../.."' >> /root/.bashrc \
+    && echo 'alias g="git"' >> /root/.bashrc \
+    && echo 'alias gs="git status"' >> /root/.bashrc \
+    && echo 'alias ga="git add"' >> /root/.bashrc \
+    && echo 'alias gc="git commit"' >> /root/.bashrc \
+    && echo 'alias gp="git push"' >> /root/.bashrc \
+    && echo 'alias gl="git pull"' >> /root/.bashrc \
+    && echo 'alias ni="npm install"' >> /root/.bashrc \
+    && echo 'alias nr="npm run"' >> /root/.bashrc \
+    && echo 'alias pi="pnpm install"' >> /root/.bashrc \
+    && echo 'alias pr="pnpm run"' >> /root/.bashrc
+
+# Configure Git (will be overridden by user)
+RUN git config --global init.defaultBranch main \
+    && git config --global pull.rebase false \
+    && git config --global core.editor "code --wait"
+
+# Create development directories
+RUN mkdir -p /workspace/projects \
+    && mkdir -p /workspace/.cache \
+    && mkdir -p /workspace/.config
+
+# Set permissions
+RUN chmod -R 755 /workspace
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD node --version && npm --version && git --version
+
+# Default command
+CMD ["bash"]
+
+# Labels
+LABEL maintainer="Wundr Environment Team"
+LABEL description="Human Developer Environment with full toolchain"
+LABEL version="1.0.0"
+LABEL profile="human"

@@ -1,0 +1,163 @@
+# Dockerfile for AI Agent Environment
+FROM ubuntu:22.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NODE_VERSION=18
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV CLAUDE_FLOW_MAX_AGENTS=54
+ENV CLAUDE_FLOW_ENABLE_NEURAL=true
+
+# Set working directory
+WORKDIR /workspace
+
+# Install minimal system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    ca-certificates \
+    gnupg \
+    jq \
+    sqlite3 \
+    vim \
+    unzip \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js via NodeSource
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y nodejs
+
+# Install pnpm
+RUN curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+# Install essential global packages
+RUN npm install -g \
+    typescript \
+    tsx \
+    ts-node \
+    prettier \
+    eslint \
+    jest
+
+# Install Docker CLI only (for containerized operations)
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce-cli
+
+# Install GitHub CLI for automated operations
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y gh
+
+# Install Claude Code
+RUN npm install -g @anthropic-ai/claude-code || echo "Claude Code installation skipped"
+
+# Install Claude Flow with AI agent configuration
+RUN npm install -g claude-flow@alpha || echo "Claude Flow installation skipped"
+
+# Create Claude Flow configuration
+RUN mkdir -p /root/.claude-flow && \
+    echo '{ \
+        "version": "2.0.0-alpha", \
+        "global": { \
+            "defaultModel": "claude-opus-4-1-20250805", \
+            "enforceModelSelection": true, \
+            "preventModelDowngrade": true, \
+            "maxConcurrentAgents": 54, \
+            "memoryBackend": "sqlite", \
+            "enableHooks": true, \
+            "enableNeuralPatterns": true \
+        }, \
+        "swarm": { \
+            "enabled": true, \
+            "queen": { \
+                "model": "claude-opus-4-1-20250805", \
+                "alwaysOnline": true, \
+                "enforceModel": true \
+            }, \
+            "workers": { \
+                "count": 54, \
+                "autoSpawn": true, \
+                "neuralTraining": true \
+            } \
+        }, \
+        "memory": { \
+            "type": "persistent", \
+            "backend": "sqlite", \
+            "maxSize": "500MB", \
+            "autoSave": true \
+        }, \
+        "performance": { \
+            "parallel": true, \
+            "caching": true, \
+            "optimization": "aggressive" \
+        } \
+    }' > /root/.claude-flow/config.json
+
+# Set up minimal aliases for automation
+RUN echo 'alias g="git"' >> /root/.bashrc \
+    && echo 'alias gs="git status"' >> /root/.bashrc \
+    && echo 'alias ga="git add"' >> /root/.bashrc \
+    && echo 'alias gc="git commit"' >> /root/.bashrc \
+    && echo 'alias pi="pnpm install"' >> /root/.bashrc \
+    && echo 'alias pr="pnpm run"' >> /root/.bashrc \
+    && echo 'alias clf="claude-flow"' >> /root/.bashrc \
+    && echo 'alias swarm="npx claude-flow swarm"' >> /root/.bashrc \
+    && echo 'alias hive="npx claude-flow hive-mind spawn"' >> /root/.bashrc
+
+# Configure Git for automation
+RUN git config --global init.defaultBranch main \
+    && git config --global pull.rebase false \
+    && git config --global user.name "AI Agent" \
+    && git config --global user.email "agent@wundr.dev"
+
+# Create workspace structure
+RUN mkdir -p /workspace/projects \
+    && mkdir -p /workspace/.cache \
+    && mkdir -p /workspace/.config \
+    && mkdir -p /workspace/memory \
+    && mkdir -p /workspace/logs
+
+# Create memory database
+RUN sqlite3 /workspace/memory/agent.db "CREATE TABLE IF NOT EXISTS memory (id INTEGER PRIMARY KEY, key TEXT, value TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);"
+
+# Set permissions
+RUN chmod -R 755 /workspace
+
+# Install Python packages for AI operations
+RUN pip3 install requests sqlite3
+
+# Health check for AI agent
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD node --version && npm --version && git --version && sqlite3 --version
+
+# Set up AI agent startup script
+RUN echo '#!/bin/bash\n\
+echo "AI Agent Environment Started"\n\
+echo "Available tools: Node.js $(node --version), Git $(git --version)"\n\
+echo "Claude Flow: $(claude-flow --version 2>/dev/null || echo \"not available\")"\n\
+echo "Memory backend: SQLite ready"\n\
+echo "Swarm capabilities: Enabled (54 agents)"\n\
+echo "Neural features: Enabled"\n\
+exec "$@"' > /workspace/start-agent.sh \
+    && chmod +x /workspace/start-agent.sh
+
+# Default command for AI agent
+CMD ["/workspace/start-agent.sh", "bash"]
+
+# Labels
+LABEL maintainer="Wundr Environment Team"
+LABEL description="AI Agent Environment optimized for autonomous operations"
+LABEL version="1.0.0"
+LABEL profile="ai-agent"
+LABEL max_agents="54"
+LABEL neural_features="enabled"
+LABEL swarm_capabilities="enabled"

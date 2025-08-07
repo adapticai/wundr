@@ -1,0 +1,68 @@
+{
+  "name": "@wundr/ai-integration",
+  "version": "1.0.0",
+  "description": "AI Integration Hive Queen - Claude Code, Claude Flow, and MCP orchestration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
+    "@octokit/rest": "^20.0.2",
+    "@types/ws": "^8.5.10",
+    "axios": "^1.6.2",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "eventemitter3": "^5.0.1",
+    "fs-extra": "^11.3.1",
+    "glob": "^10.3.10",
+    "ioredis": "^5.3.2",
+    "lodash": "^4.17.21",
+    "node-cron": "^3.0.3",
+    "sqlite3": "^5.1.6",
+    "uuid": "^11.0.3",
+    "ws": "^8.16.0",
+    "yaml": "^2.3.4",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^29.5.8",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.9.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/uuid": "^10.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "keywords": [
+    "ai-integration",
+    "claude-code",
+    "claude-flow",
+    "mcp-tools",
+    "neural-networks",
+    "swarm-intelligence",
+    "agent-orchestration"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adapticai/wundr.git",
+    "directory": "packages/@wundr/ai-integration"
+  },
+  "bugs": {
+    "url": "https://github.com/adapticai/wundr/issues"
+  },
+  "homepage": "https://wundr.io"
+}

@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Production build
+/build/
+
+# Generated files
+.docusaurus/
+.cache-loader/
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Auto-generated API docs (can be regenerated)
+api/*/
+!api/overview.md
+
+# Generated playground data
+src/data/playground-*.json
+src/examples/*.ts
+
+# Translation files (can be regenerated)
+i18n/*/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Coverage
+coverage/
+
+# Build artifacts
+dist/
+lib/

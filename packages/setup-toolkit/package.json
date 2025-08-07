@@ -1,0 +1,37 @@
+{
+  "name": "@wundr/setup-toolkit",
+  "version": "1.0.0",
+  "description": "Environment setup and configuration tools",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@wundr/core": "workspace:*",
+    "inquirer": "^9.2.0",
+    "chalk": "^5.3.0",
+    "ora": "^5.4.1",
+    "fs-extra": "^11.3.1",
+    "execa": "^8.0.1",
+    "listr2": "^8.2.5"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.0",
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^29.5.8",
+    "jest": "^29.7.0",
+    "typescript": "^5.2.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

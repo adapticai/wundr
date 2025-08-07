@@ -1,10 +1,9 @@
 {
-  "name": "@lumic/wundr",
+  "name": "@adapticai/wundr",
   "version": "1.0.0",
   "description": "The Intelligent CLI-Based Coding Agents Orchestrator - Transform monolithic chaos into architectural elegance with AI-powered refactoring at scale",
   "keywords": [
     "wundr",
-    "lumic",
     "coding-agents",
     "ai-refactoring",
     "monorepo",
@@ -17,11 +16,11 @@
   ],
   "homepage": "https://wundr.io",
   "bugs": {
-    "url": "https://github.com/lumicai/wundr/issues"
+    "url": "https://github.com/adapticai/wundr/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lumicai/wundr.git"
+    "url": "https://github.com/adapticai/wundr.git"
   },
   "license": "MIT",
   "author": "Lumic.ai",
@@ -30,15 +29,7 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src",
-    "templates",
-    "docs",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "bin", "src", "templates", "docs", "README.md", "LICENSE"],
   "scripts": {
     "build": "pnpm -r build",
     "build:all": "tsc",
@@ -51,9 +42,15 @@
     "postinstall": "pnpm run build",
     "lint": "pnpm -r lint",
     "prepare": "husky",
-    "test": "pnpm -r test",
-    "test:ci": "pnpm -r test -- --ci --coverage",
-    "test:watch": "pnpm -r --parallel test:watch",
+    "test": "jest",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:performance": "jest tests/performance --runInBand",
+    "test:e2e": "playwright test",
+    "test:quality-gates": "jest tests/quality-gates",
+    "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=json-summary",
+    "test:watch": "jest --watch",
+    "test:ci": "npm run test:unit && npm run test:integration && npm run test:performance && npm run test:quality-gates",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -67,6 +64,7 @@
     "glob": "^10.3.10",
     "inquirer": "^9.2.0",
     "ora": "^5.4.1",
+    "pnpm": "^10.14.0",
     "ts-morph": "^21.0.1",
     "ts-node": "^10.9.1",
     "uuid": "^11.0.3",
@@ -74,6 +72,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.0",
     "@types/jest": "^29.5.8",
@@ -101,5 +100,9 @@
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
-  "lint-staged": "{\"*.{ts,tsx}\":[\"eslint --fix --max-warnings=0\",\"prettier --write\"],\"*.{js,jsx}\":[\"eslint --fix --max-warnings=0\",\"prettier --write\"],\"*.{json,yaml,yml,md}\":[\"prettier --write\"]}"
+  "lint-staged": {
+    "*.{ts,tsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{js,jsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{json,yaml,yml,md}": ["prettier --write"]
+  }
 }

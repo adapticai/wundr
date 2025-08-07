@@ -1,0 +1,62 @@
+# CI/CD Batch Job Template
+# Generated with Wundr CLI
+
+name: ci-cd-pipeline
+description: Continuous Integration and Deployment pipeline
+
+# Global settings
+parallel: false
+continueOnError: false
+timeout: 1800000  # 30 minutes
+
+# Environment variables
+variables:
+  NODE_VERSION: "18"
+  BUILD_OUTPUT: "dist"
+
+# Job steps
+commands:
+  # Setup
+  - command: "echo 'Starting CI/CD pipeline...'"
+    condition: "always"
+
+  # Install dependencies
+  - command: "npm ci"
+    retry: 2
+    timeout: 300000  # 5 minutes
+
+  # Code quality checks
+  - command: "npm run lint"
+    condition: "test-files"
+
+  - command: "npm run typecheck"
+    condition: "typescript-files"
+
+  # Testing
+  - command: "npm run test"
+    timeout: 600000  # 10 minutes
+
+  - command: "npm run test:e2e"
+    condition: "e2e-tests-exist"
+    timeout: 900000  # 15 minutes
+
+  # Security audit
+  - command: "npm audit --audit-level high"
+    continueOnError: true
+
+  # Build
+  - command: "npm run build"
+    timeout: 300000  # 5 minutes
+
+  # Package
+  - command: "npm pack"
+    condition: "production"
+
+  # Deploy (conditional)
+  - command: "npm run deploy"
+    condition: "production"
+    timeout: 600000  # 10 minutes
+
+  # Cleanup
+  - command: "echo 'CI/CD pipeline completed'"
+    condition: "always"

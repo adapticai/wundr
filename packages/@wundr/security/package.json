@@ -1,0 +1,66 @@
+{
+  "name": "@wundr/security",
+  "version": "1.0.0",
+  "description": "Enterprise security and compliance module for Wundr platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "security:scan": "node scripts/security-scan.js",
+    "security:audit": "node scripts/audit.js",
+    "compliance:check": "node scripts/compliance-check.js"
+  },
+  "keywords": [
+    "security",
+    "compliance",
+    "encryption",
+    "vulnerability",
+    "audit",
+    "rbac"
+  ],
+  "dependencies": {
+    "node-keytar": "^7.9.0",
+    "@octokit/rest": "^19.0.13",
+    "semver": "^7.5.4",
+    "crypto": "^1.0.1",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.10.0",
+    "winston": "^3.10.0",
+    "joi": "^17.9.2",
+    "axios": "^1.4.0",
+    "uuid": "^9.0.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "@types/bcrypt": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/uuid": "^9.0.2",
+    "@types/lodash": "^4.14.195",
+    "@types/jest": "^29.5.3",
+    "typescript": "^5.1.6",
+    "jest": "^29.6.1",
+    "ts-jest": "^29.1.1",
+    "eslint": "^8.46.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wundr/wundr.git",
+    "directory": "packages/@wundr/security"
+  },
+  "license": "MIT"
+}

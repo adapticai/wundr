@@ -1,0 +1,150 @@
+{
+  "name": "Human Developer",
+  "description": "Complete development environment for human developers with full toolchain",
+  "profile": "human",
+  "tools": [
+    {
+      "name": "homebrew",
+      "required": true,
+      "installer": "manual",
+      "platform": ["macos"],
+      "description": "Package manager for macOS"
+    },
+    {
+      "name": "node",
+      "version": ">=18.0.0",
+      "required": true,
+      "installer": "brew",
+      "platform": ["macos", "linux"],
+      "description": "Node.js runtime"
+    },
+    {
+      "name": "npm",
+      "required": true,
+      "installer": "brew",
+      "dependencies": ["node"],
+      "description": "Node package manager"
+    },
+    {
+      "name": "pnpm",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Fast, disk space efficient package manager"
+    },
+    {
+      "name": "yarn",
+      "required": false,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Alternative package manager"
+    },
+    {
+      "name": "git",
+      "required": true,
+      "installer": "brew",
+      "description": "Version control system"
+    },
+    {
+      "name": "gh",
+      "required": true,
+      "installer": "brew",
+      "dependencies": ["git"],
+      "description": "GitHub CLI"
+    },
+    {
+      "name": "docker",
+      "required": true,
+      "installer": "brew",
+      "description": "Container platform"
+    },
+    {
+      "name": "docker-compose",
+      "required": true,
+      "installer": "brew",
+      "dependencies": ["docker"],
+      "description": "Container orchestration tool"
+    },
+    {
+      "name": "vscode",
+      "required": true,
+      "installer": "brew",
+      "description": "Code editor",
+      "config": {
+        "extensions": [
+          "ms-vscode.vscode-typescript-next",
+          "esbenp.prettier-vscode",
+          "ms-python.python",
+          "ms-vscode.vscode-json",
+          "bradlc.vscode-tailwindcss",
+          "ms-vscode-remote.remote-containers",
+          "GitHub.copilot",
+          "ms-vscode.vscode-eslint",
+          "ms-vscode.vscode-jest",
+          "formulahendry.auto-rename-tag",
+          "christian-kohler.path-intellisense",
+          "ms-vscode-remote.remote-ssh"
+        ],
+        "settings": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": true,
+            "source.organizeImports": true
+          },
+          "files.autoSave": "onFocusChange",
+          "terminal.integrated.shell.osx": "/bin/zsh",
+          "workbench.colorTheme": "Dark+ (default dark)",
+          "editor.fontFamily": "'Cascadia Code', 'Fira Code', Monaco, 'Courier New', monospace",
+          "editor.fontLigatures": true,
+          "editor.fontSize": 14,
+          "editor.lineHeight": 1.6,
+          "editor.minimap.enabled": true,
+          "workbench.startupEditor": "newUntitledFile",
+          "explorer.confirmDelete": false,
+          "git.confirmSync": false
+        }
+      }
+    },
+    {
+      "name": "claude-code",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Claude AI coding assistant"
+    },
+    {
+      "name": "claude-flow",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node", "claude-code"],
+      "description": "Claude AI workflow orchestration"
+    }
+  ],
+  "preferences": {
+    "editor": "vscode",
+    "shell": "zsh",
+    "packageManager": "pnpm",
+    "theme": "dark"
+  },
+  "agentConfig": {
+    "claudeCode": true,
+    "claudeFlow": true,
+    "mcpTools": ["claude-flow", "wundr-toolkit"],
+    "swarmCapabilities": true,
+    "neuralFeatures": true
+  },
+  "customScripts": [
+    "setup-git-hooks.sh",
+    "configure-shell-aliases.sh",
+    "install-global-packages.sh"
+  ],
+  "features": {
+    "aiIntegration": true,
+    "githubIntegration": true,
+    "dockerSupport": true,
+    "testingFramework": true,
+    "lintingAndFormatting": true,
+    "typeScriptSupport": true
+  }
+}

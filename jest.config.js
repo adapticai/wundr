@@ -9,16 +9,21 @@ module.exports = {
   // Root directory
   rootDir: '.',
 
-  // Test match patterns
+  // Test match patterns - Include all test types
   testMatch: [
-    '<rootDir>/tests/**/*.test.ts',
+    '<rootDir>/tests/unit/**/*.test.ts',
+    '<rootDir>/tests/integration/**/*.test.ts',
+    '<rootDir>/tests/performance/**/*.test.ts',
+    '<rootDir>/tests/quality-gates/**/*.test.ts',
     '<rootDir>/tests/**/*.spec.ts'
   ],
 
-  // Module paths
+  // Module paths - Enhanced mapping
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/scripts/$1',
-    '^@tests/(.*)$': '<rootDir>/tests/$1'
+    '^@tests/(.*)$': '<rootDir>/tests/$1',
+    '^@fixtures/(.*)$': '<rootDir>/tests/fixtures/$1',
+    '^@mocks/(.*)$': '<rootDir>/tests/mocks/$1'
   },
 
   // Setup files
@@ -48,13 +53,13 @@ module.exports = {
     '!**/*.spec.ts'
   ],
 
-  // Coverage thresholds
+  // Coverage thresholds - Enhanced for comprehensive testing
   coverageThreshold: {
     global: {
-      branches: 75,
-      functions: 80,
-      lines: 80,
-      statements: 80
+      branches: 85,
+      functions: 90,
+      lines: 90,
+      statements: 90
     },
     // Specific thresholds for critical files
     'scripts/analysis/enhanced-ast-analyzer.ts': {
@@ -144,8 +149,8 @@ module.exports = {
   // Force exit after tests complete
   forceExit: false,
 
-  // Max concurrent tests
-  maxConcurrency: 5,
+  // Max concurrent tests - Optimized for performance
+  maxConcurrency: 10,
 
   // Reporter configuration
   reporters: [

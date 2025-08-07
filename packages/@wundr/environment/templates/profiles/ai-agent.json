@@ -1,0 +1,147 @@
+{
+  "name": "AI Agent Environment",
+  "description": "Optimized environment for AI agents with minimal UI dependencies and maximum automation",
+  "profile": "ai-agent",
+  "tools": [
+    {
+      "name": "node",
+      "version": ">=18.0.0",
+      "required": true,
+      "installer": "brew",
+      "description": "Node.js runtime for AI workflows"
+    },
+    {
+      "name": "npm",
+      "required": true,
+      "installer": "brew",
+      "dependencies": ["node"],
+      "description": "Node package manager"
+    },
+    {
+      "name": "pnpm",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Fast package manager for agent workflows"
+    },
+    {
+      "name": "git",
+      "required": true,
+      "installer": "brew",
+      "description": "Version control for code generation"
+    },
+    {
+      "name": "gh",
+      "required": true,
+      "installer": "brew",
+      "dependencies": ["git"],
+      "description": "GitHub CLI for automated operations"
+    },
+    {
+      "name": "docker",
+      "required": true,
+      "installer": "brew",
+      "description": "Container platform for isolated environments"
+    },
+    {
+      "name": "claude-code",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Claude AI coding assistant"
+    },
+    {
+      "name": "claude-flow",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node", "claude-code"],
+      "description": "Claude AI swarm orchestration",
+      "config": {
+        "swarmSize": 54,
+        "neuralFeatures": true,
+        "autoSpawn": true,
+        "memoryBackend": "sqlite",
+        "enableHooks": true
+      }
+    },
+    {
+      "name": "typescript",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "TypeScript for type-safe code generation"
+    },
+    {
+      "name": "eslint",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Code linting for AI-generated code"
+    },
+    {
+      "name": "prettier",
+      "required": true,
+      "installer": "npm",
+      "dependencies": ["node"],
+      "description": "Code formatting for consistent output"
+    }
+  ],
+  "preferences": {
+    "editor": "vim",
+    "shell": "bash",
+    "packageManager": "pnpm",
+    "theme": "auto"
+  },
+  "agentConfig": {
+    "claudeCode": true,
+    "claudeFlow": true,
+    "mcpTools": [
+      "claude-flow",
+      "wundr-toolkit",
+      "filesystem",
+      "git",
+      "docker",
+      "npm",
+      "terminal"
+    ],
+    "swarmCapabilities": true,
+    "neuralFeatures": true
+  },
+  "customScripts": [
+    "setup-swarm-topology.sh",
+    "configure-neural-training.sh",
+    "optimize-agent-performance.sh",
+    "setup-mcp-tools.sh",
+    "configure-automated-workflows.sh"
+  ],
+  "features": {
+    "aiIntegration": true,
+    "swarmIntelligence": true,
+    "neuralPatterns": true,
+    "distributedMemory": true,
+    "consensusProtocols": true,
+    "performanceOptimization": true,
+    "autonomousOperation": true
+  },
+  "automation": {
+    "autoCommit": false,
+    "autoDeploy": false,
+    "autoTest": true,
+    "autoFormat": true,
+    "autoLint": true,
+    "autoOptimize": true
+  },
+  "performance": {
+    "maxConcurrentAgents": 54,
+    "memoryOptimization": "aggressive",
+    "cacheEnabled": true,
+    "parallelExecution": true,
+    "resourcePooling": true
+  },
+  "security": {
+    "sandboxed": true,
+    "networkRestricted": false,
+    "fileSystemRestricted": false,
+    "apiRateLimit": false
+  }
+}

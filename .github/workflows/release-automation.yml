@@ -1,0 +1,451 @@
+name: Release Automation
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: "Type of release"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+        default: patch
+      dry_run:
+        description: "Dry run (no actual release)"
+        type: boolean
+        default: false
+      skip_npm:
+        description: "Skip npm publishing"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "8.15.0"
+
+jobs:
+  check-release:
+    name: Check Release Readiness
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.check.outputs.should-release }}
+      current-version: ${{ steps.check.outputs.current-version }}
+      new-version: ${{ steps.check.outputs.new-version }}
+      has-changesets: ${{ steps.check.outputs.has-changesets }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for changesets
+        id: check
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Check if changesets exist
+          if ls .changeset/*.md 1> /dev/null 2>&1 && [[ $(ls .changeset/*.md | wc -l) -gt 0 ]]; then
+            echo "has-changesets=true" >> $GITHUB_OUTPUT
+            echo "should-release=true" >> $GITHUB_OUTPUT
+
+            # Simulate changeset version to get new version
+            npx @changesets/cli version --snapshot preview > /dev/null 2>&1 || true
+            NEW_VERSION=$(node -p "require('./package.json').version")
+
+            # Restore original package.json
+            git checkout -- package.json
+
+            echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "Found changesets, release needed: $CURRENT_VERSION -> $NEW_VERSION"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "has-changesets=false" >> $GITHUB_OUTPUT
+            echo "should-release=true" >> $GITHUB_OUTPUT
+
+            # Calculate new version based on input
+            case "${{ github.event.inputs.release_type }}" in
+              "major")
+                NEW_VERSION=$(npx semver -i major $CURRENT_VERSION)
+                ;;
+              "minor")
+                NEW_VERSION=$(npx semver -i minor $CURRENT_VERSION)
+                ;;
+              "patch")
+                NEW_VERSION=$(npx semver -i patch $CURRENT_VERSION)
+                ;;
+              "prerelease")
+                NEW_VERSION=$(npx semver -i prerelease $CURRENT_VERSION --preid alpha)
+                ;;
+            esac
+
+            echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "Manual release requested: $CURRENT_VERSION -> $NEW_VERSION"
+          else
+            echo "has-changesets=false" >> $GITHUB_OUTPUT
+            echo "should-release=false" >> $GITHUB_OUTPUT
+            echo "new-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "No release needed"
+          fi
+
+  run-tests:
+    name: Run Full Test Suite
+    needs: check-release
+    if: needs.check-release.outputs.should-release == 'true'
+    uses: ./.github/workflows/ci-modern.yml
+
+  create-release-pr:
+    name: Create Release PR
+    runs-on: ubuntu-latest
+    needs: [check-release, run-tests]
+    if: needs.check-release.outputs.should-release == 'true' && needs.check-release.outputs.has-changesets == 'true' && github.event_name != 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create Release Pull Request
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          commit: "chore: release packages"
+          title: "chore: release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: [check-release, run-tests]
+    if: needs.check-release.outputs.should-release == 'true' && needs.run-tests.result == 'success' && github.event.inputs.dry_run != 'true'
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    outputs:
+      release-url: ${{ steps.create-github-release.outputs.html_url }}
+      release-tag: ${{ steps.create-github-release.outputs.tag_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Apply version changes
+        if: needs.check-release.outputs.has-changesets == 'true'
+        run: |
+          npx @changesets/cli version
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "chore: version packages" || echo "No changes to commit"
+
+      - name: Manual version bump
+        if: needs.check-release.outputs.has-changesets == 'false' && github.event_name == 'workflow_dispatch'
+        run: |
+          npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json
+          git commit -m "chore: bump version to ${{ needs.check-release.outputs.new-version }}"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          NEW_VERSION=${{ needs.check-release.outputs.new-version }}
+          CURRENT_VERSION=${{ needs.check-release.outputs.current-version }}
+
+          echo "Generating changelog from $CURRENT_VERSION to $NEW_VERSION"
+
+          # Get the previous tag
+          PREV_TAG=$(git tag -l --sort=-version:refname "v*" | head -1)
+          if [[ -z "$PREV_TAG" ]]; then
+            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          # Generate changelog
+          CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --reverse | grep -v "^- chore:" | head -20)
+
+          # Create full changelog
+          cat > RELEASE_NOTES.md << EOF
+          # Release v$NEW_VERSION
+
+          ## What's Changed
+
+          $CHANGELOG
+
+          ## Installation
+
+          \`\`\`bash
+          npm install @lumic/wundr@$NEW_VERSION
+          # or
+          pnpm add @lumic/wundr@$NEW_VERSION
+          \`\`\`
+
+          ## Docker
+
+          \`\`\`bash
+          docker pull ghcr.io/adapticai/wundr:$NEW_VERSION
+          \`\`\`
+
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$CURRENT_VERSION...v$NEW_VERSION
+          EOF
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        run: |
+          NEW_VERSION=${{ needs.check-release.outputs.new-version }}
+          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
+
+      - name: Publish to npm
+        if: github.event.inputs.skip_npm != 'true'
+        run: |
+          # Configure npm for publishing
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+          # Publish main package
+          npm publish --access public --provenance
+
+          # Publish workspace packages if they exist
+          if [[ -f pnpm-workspace.yaml ]]; then
+            pnpm -r publish --access public --no-git-checks || true
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        id: create-github-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.check-release.outputs.new-version }}
+          release_name: Release v${{ needs.check-release.outputs.new-version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(needs.check-release.outputs.new-version, '-') }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:v${{ needs.check-release.outputs.new-version }}
+          build-args: |
+            VERSION=v${{ needs.check-release.outputs.new-version }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: [publish-release]
+    if: always() && needs.publish-release.result == 'success'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          cname: wundr.lumic.ai
+
+  notify-release:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [check-release, publish-release]
+    if: always() && needs.publish-release.result == 'success'
+    steps:
+      - name: Create release announcement
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ needs.check-release.outputs.new-version }}';
+            const releaseUrl = '${{ needs.publish-release.outputs.release-url }}';
+
+            const title = `🎉 Release v${version} is now available!`;
+
+            const body = `## 🚀 New Release: v${version}
+
+            We're excited to announce the release of **Wundr v${version}**!
+
+            ### 📦 Installation
+
+            \`\`\`bash
+            # npm
+            npm install @lumic/wundr@${version}
+
+            # pnpm
+            pnpm add @lumic/wundr@${version}
+
+            # Docker
+            docker pull ghcr.io/${{ github.repository }}:${version}
+            \`\`\`
+
+            ### 🔗 Links
+
+            - **Release Notes:** ${releaseUrl}
+            - **Documentation:** https://wundr.lumic.ai
+            - **NPM Package:** https://www.npmjs.com/package/@lumic/wundr
+
+            ### 🙏 Thanks
+
+            Thank you to all contributors who made this release possible!
+
+            ---
+
+            **Full Changelog:** https://github.com/${{ github.repository }}/releases/tag/v${version}
+            `;
+
+            // Create an issue for the release announcement
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['release', 'announcement']
+            });
+
+      - name: Send Slack notification
+        if: secrets.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: "#releases"
+          text: |
+            🎉 *Release v${{ needs.check-release.outputs.new-version }} is now available!*
+
+            📦 *Package:* @lumic/wundr@${{ needs.check-release.outputs.new-version }}
+            🔗 *Release:* ${{ needs.publish-release.outputs.release-url }}
+            🐳 *Docker:* ghcr.io/${{ github.repository }}:v${{ needs.check-release.outputs.new-version }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  rollback:
+    name: Emergency Rollback
+    runs-on: ubuntu-latest
+    needs: [check-release, publish-release]
+    if: failure() && needs.publish-release.result == 'failure'
+    steps:
+      - name: Rollback Git tag
+        if: needs.publish-release.outputs.release-tag
+        run: |
+          git push --delete origin ${{ needs.publish-release.outputs.release-tag }} || echo "Tag not found"
+
+      - name: Rollback npm package
+        continue-on-error: true
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          npm unpublish @lumic/wundr@${{ needs.check-release.outputs.new-version }} || echo "Package not published or cannot be unpublished"
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create rollback issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Release v${{ needs.check-release.outputs.new-version }} failed - Rollback initiated`;
+
+            const body = `## ⚠️ Release Failure
+
+            The release pipeline for v${{ needs.check-release.outputs.new-version }} failed and rollback procedures have been initiated.
+
+            ### 🔄 Rollback Actions Taken
+
+            - ✅ Git tag removed (if created)
+            - ✅ npm package unpublish attempted
+            - ✅ Docker images remain (manual cleanup needed)
+
+            ### 🔍 Investigation Required
+
+            Please review the failed workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            ### 📋 Next Steps
+
+            1. Investigate the failure cause
+            2. Fix the issues
+            3. Re-run the release workflow
+
+            ---
+
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'release', 'rollback', 'urgent']
+            });

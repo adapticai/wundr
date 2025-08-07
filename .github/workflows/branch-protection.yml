@@ -1,0 +1,635 @@
+name: Branch Protection Setup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+  workflow_dispatch:
+    inputs:
+      apply_protection:
+        description: "Apply branch protection rules"
+        type: boolean
+        default: true
+      force_update:
+        description: "Force update existing rules"
+        type: boolean
+        default: false
+
+permissions:
+  administration: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  setup-branch-protection:
+    name: Setup Branch Protection
+    runs-on: ubuntu-latest
+    if: github.event.inputs.apply_protection != 'false'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup branch protection rules
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Define branch protection rules
+            const protectionRules = {
+              required_status_checks: {
+                strict: true,
+                contexts: [
+                  'CI Status Summary',
+                  'Quality Checks',
+                  'Test Suite / Test Matrix (ubuntu-latest, 20)',
+                  'Security Audit',
+                  'Docker Build & Test',
+                  'Build and Validate / build-status'
+                ]
+              },
+              enforce_admins: false,
+              required_pull_request_reviews: {
+                dismiss_stale_reviews: true,
+                require_code_owner_reviews: true,
+                required_approving_review_count: 2,
+                require_last_push_approval: true,
+                bypass_pull_request_allowances: {
+                  users: [],
+                  teams: ['maintainers']
+                }
+              },
+              restrictions: null,
+              required_linear_history: true,
+              allow_force_pushes: false,
+              allow_deletions: false,
+              required_conversation_resolution: true
+            };
+
+            // Branches to protect
+            const branches = ['main', 'master'];
+
+            for (const branch of branches) {
+              try {
+                console.log(`Setting up protection for branch: ${branch}`);
+
+                // Check if branch exists
+                try {
+                  await github.rest.repos.getBranch({
+                    owner,
+                    repo,
+                    branch
+                  });
+                } catch (error) {
+                  if (error.status === 404) {
+                    console.log(`Branch ${branch} does not exist, skipping...`);
+                    continue;
+                  }
+                  throw error;
+                }
+
+                // Apply or update protection rules
+                const response = await github.rest.repos.updateBranchProtection({
+                  owner,
+                  repo,
+                  branch,
+                  ...protectionRules
+                });
+
+                console.log(`✅ Branch protection applied to ${branch}`);
+
+              } catch (error) {
+                console.error(`❌ Failed to protect branch ${branch}:`, error.message);
+
+                // Don't fail the workflow if protection setup fails
+                if (error.status !== 403 && error.status !== 422) {
+                  throw error;
+                }
+              }
+            }
+
+      - name: Setup repository settings
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            try {
+              // Update repository settings
+              await github.rest.repos.update({
+                owner,
+                repo,
+                // Security settings
+                has_issues: true,
+                has_projects: true,
+                has_wiki: false,
+                has_downloads: true,
+
+                // Merge settings
+                allow_merge_commit: true,
+                allow_squash_merge: true,
+                allow_rebase_merge: false,
+                delete_branch_on_merge: true,
+
+                // Advanced security
+                security_and_analysis: {
+                  advanced_security: {
+                    status: 'enabled'
+                  },
+                  secret_scanning: {
+                    status: 'enabled'
+                  },
+                  secret_scanning_push_protection: {
+                    status: 'enabled'
+                  }
+                }
+              });
+
+              console.log('✅ Repository settings updated');
+
+            } catch (error) {
+              console.error('❌ Failed to update repository settings:', error.message);
+
+              // Don't fail if we don't have admin permissions
+              if (error.status !== 403) {
+                throw error;
+              }
+            }
+
+      - name: Create CODEOWNERS file
+        run: |
+          if [[ ! -f .github/CODEOWNERS ]]; then
+            cat > .github/CODEOWNERS << 'EOF'
+          # Global Owners
+          * @adapticai/maintainers
+
+          # Workflow and CI/CD
+          .github/ @adapticai/devops @adapticai/maintainers
+          *.yml @adapticai/devops
+          *.yaml @adapticai/devops
+          Dockerfile* @adapticai/devops
+          docker-compose* @adapticai/devops
+          k8s/ @adapticai/devops
+
+          # Core Application Code
+          src/ @adapticai/core-team
+          scripts/ @adapticai/core-team
+
+          # Configuration
+          config/ @adapticai/core-team @adapticai/devops
+          *.config.js @adapticai/core-team
+          *.config.ts @adapticai/core-team
+
+          # Documentation
+          docs/ @adapticai/docs-team @adapticai/maintainers
+          *.md @adapticai/docs-team
+
+          # Package and Dependency Management
+          package.json @adapticai/maintainers
+          pnpm-lock.yaml @adapticai/maintainers
+          pnpm-workspace.yaml @adapticai/maintainers
+
+          # Security and Compliance
+          .changeset/ @adapticai/maintainers
+          LICENSE @adapticai/legal @adapticai/maintainers
+
+          # Testing
+          tests/ @adapticai/core-team @adapticai/qa-team
+          **/*.test.* @adapticai/core-team @adapticai/qa-team
+          **/*.spec.* @adapticai/core-team @adapticai/qa-team
+          EOF
+
+          echo "✅ CODEOWNERS file created"
+          fi
+
+      - name: Create issue templates
+        run: |
+          mkdir -p .github/ISSUE_TEMPLATE
+
+          # Bug report template
+          if [[ ! -f .github/ISSUE_TEMPLATE/bug_report.yml ]]; then
+            cat > .github/ISSUE_TEMPLATE/bug_report.yml << 'EOF'
+          name: Bug Report
+          description: File a bug report to help us improve
+          title: "[BUG] "
+          labels: ["bug", "needs-triage"]
+          assignees: []
+          body:
+            - type: markdown
+              attributes:
+                value: |
+                  Thanks for taking the time to fill out this bug report!
+
+            - type: input
+              id: contact
+              attributes:
+                label: Contact Details
+                description: How can we get in touch with you if we need more info?
+                placeholder: ex. email@example.com
+              validations:
+                required: false
+
+            - type: textarea
+              id: what-happened
+              attributes:
+                label: What happened?
+                description: Also tell us, what did you expect to happen?
+                placeholder: Tell us what you see!
+                value: "A bug happened!"
+              validations:
+                required: true
+
+            - type: dropdown
+              id: version
+              attributes:
+                label: Version
+                description: What version of Wundr are you running?
+                options:
+                  - latest
+                  - 1.0.0
+                  - Other (please specify in description)
+              validations:
+                required: true
+
+            - type: dropdown
+              id: environment
+              attributes:
+                label: Environment
+                description: What environment are you using?
+                options:
+                  - Docker
+                  - Node.js (local)
+                  - Kubernetes
+                  - Other (please specify)
+              validations:
+                required: true
+
+            - type: textarea
+              id: logs
+              attributes:
+                label: Relevant log output
+                description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+                render: shell
+
+            - type: checkboxes
+              id: terms
+              attributes:
+                label: Code of Conduct
+                description: By submitting this issue, you agree to follow our Code of Conduct
+                options:
+                  - label: I agree to follow this project's Code of Conduct
+                    required: true
+          EOF
+          fi
+
+          # Feature request template
+          if [[ ! -f .github/ISSUE_TEMPLATE/feature_request.yml ]]; then
+            cat > .github/ISSUE_TEMPLATE/feature_request.yml << 'EOF'
+          name: Feature Request
+          description: Suggest an idea for this project
+          title: "[FEATURE] "
+          labels: ["enhancement", "needs-triage"]
+          assignees: []
+          body:
+            - type: markdown
+              attributes:
+                value: |
+                  Thanks for suggesting a new feature! Please fill out the form below.
+
+            - type: textarea
+              id: problem
+              attributes:
+                label: Is your feature request related to a problem?
+                description: A clear and concise description of what the problem is.
+                placeholder: I'm always frustrated when...
+              validations:
+                required: false
+
+            - type: textarea
+              id: solution
+              attributes:
+                label: Describe the solution you'd like
+                description: A clear and concise description of what you want to happen.
+              validations:
+                required: true
+
+            - type: textarea
+              id: alternatives
+              attributes:
+                label: Describe alternatives you've considered
+                description: A clear and concise description of any alternative solutions or features you've considered.
+              validations:
+                required: false
+
+            - type: dropdown
+              id: priority
+              attributes:
+                label: Priority
+                description: How important is this feature to you?
+                options:
+                  - Low
+                  - Medium
+                  - High
+                  - Critical
+              validations:
+                required: true
+
+            - type: textarea
+              id: additional-context
+              attributes:
+                label: Additional context
+                description: Add any other context, screenshots, or examples about the feature request here.
+              validations:
+                required: false
+          EOF
+          fi
+
+          # Config file
+          if [[ ! -f .github/ISSUE_TEMPLATE/config.yml ]]; then
+            cat > .github/ISSUE_TEMPLATE/config.yml << 'EOF'
+          blank_issues_enabled: false
+          contact_links:
+            - name: Security Issue
+              url: mailto:security@lumic.ai
+              about: Please report security vulnerabilities privately via email
+            - name: Question or Discussion
+              url: https://github.com/adapticai/wundr/discussions
+              about: Ask questions or discuss ideas with the community
+            - name: Documentation
+              url: https://wundr.lumic.ai
+              about: Check our documentation for usage guides and API reference
+          EOF
+          fi
+
+      - name: Create pull request template
+        run: |
+          if [[ ! -f .github/pull_request_template.md ]]; then
+            cat > .github/pull_request_template.md << 'EOF'
+          ## 📝 Description
+
+          <!-- Provide a brief description of the changes in this PR -->
+
+          ## 🔗 Related Issues
+
+          <!-- Link to related issues using keywords like "Closes #123" or "Fixes #456" -->
+
+          ## 🧪 Type of Change
+
+          <!-- Mark the relevant option with an "x" -->
+
+          - [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
+          - [ ] ✨ New feature (non-breaking change which adds functionality)
+          - [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
+          - [ ] 📚 Documentation update
+          - [ ] 🔧 Maintenance (dependency updates, CI changes, etc.)
+          - [ ] ♻️ Refactoring (no functional changes)
+
+          ## ✅ Testing
+
+          <!-- Describe the tests that you ran to verify your changes -->
+
+          - [ ] I have added tests that prove my fix is effective or that my feature works
+          - [ ] New and existing unit tests pass locally with my changes
+          - [ ] I have tested the changes manually
+
+          ## 📋 Checklist
+
+          <!-- Mark completed items with an "x" -->
+
+          - [ ] My code follows the style guidelines of this project
+          - [ ] I have performed a self-review of my own code
+          - [ ] I have commented my code, particularly in hard-to-understand areas
+          - [ ] I have made corresponding changes to the documentation
+          - [ ] My changes generate no new warnings
+          - [ ] Any dependent changes have been merged and published in downstream modules
+
+          ## 📸 Screenshots (if applicable)
+
+          <!-- Add screenshots to help explain your changes -->
+
+          ## 📊 Performance Impact
+
+          <!-- If your changes affect performance, describe the impact -->
+
+          ## 🚨 Breaking Changes
+
+          <!-- If this is a breaking change, describe what users need to do to adapt -->
+
+          ## 📝 Additional Notes
+
+          <!-- Any additional information that reviewers should know -->
+          EOF
+          fi
+
+      - name: Commit protection files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .github/
+            git commit -m "chore: setup branch protection and repository templates
+
+            - Add CODEOWNERS file for code review assignments
+            - Create issue templates for bug reports and feature requests
+            - Add pull request template with comprehensive checklist
+            - Configure repository protection settings"
+
+            git push
+            echo "✅ Branch protection files committed and pushed"
+          else
+            echo "✅ No changes to commit"
+          fi
+
+  create-required-teams:
+    name: Create Required Teams
+    runs-on: ubuntu-latest
+    if: github.event.inputs.apply_protection != 'false'
+    needs: setup-branch-protection
+    steps:
+      - name: Create organization teams
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.ORG_ADMIN_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const org = context.repo.owner;
+
+            const teams = [
+              {
+                name: 'maintainers',
+                description: 'Core maintainers with full access',
+                privacy: 'closed',
+                permission: 'admin'
+              },
+              {
+                name: 'core-team',
+                description: 'Core development team',
+                privacy: 'closed',
+                permission: 'push'
+              },
+              {
+                name: 'devops',
+                description: 'DevOps and infrastructure team',
+                privacy: 'closed',
+                permission: 'push'
+              },
+              {
+                name: 'docs-team',
+                description: 'Documentation team',
+                privacy: 'closed',
+                permission: 'push'
+              },
+              {
+                name: 'qa-team',
+                description: 'Quality assurance team',
+                privacy: 'closed',
+                permission: 'push'
+              }
+            ];
+
+            for (const team of teams) {
+              try {
+                // Try to create the team
+                const response = await github.rest.teams.create({
+                  org,
+                  name: team.name,
+                  description: team.description,
+                  privacy: team.privacy
+                });
+
+                console.log(`✅ Created team: ${team.name}`);
+
+                // Add team to repository with specified permission
+                await github.rest.teams.addOrUpdateRepoPermissionsInOrg({
+                  org,
+                  team_slug: team.name,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  permission: team.permission
+                });
+
+                console.log(`✅ Added ${team.name} team to repository with ${team.permission} permission`);
+
+              } catch (error) {
+                if (error.status === 422) {
+                  console.log(`⚠️ Team ${team.name} already exists`);
+                } else if (error.status === 403) {
+                  console.log(`⚠️ Insufficient permissions to create team ${team.name}`);
+                } else {
+                  console.error(`❌ Failed to create team ${team.name}:`, error.message);
+                }
+              }
+            }
+
+  setup-environments:
+    name: Setup Deployment Environments
+    runs-on: ubuntu-latest
+    if: github.event.inputs.apply_protection != 'false'
+    steps:
+      - name: Create deployment environments
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const environments = [
+              {
+                name: 'development',
+                wait_timer: 0,
+                reviewers: [],
+                deployment_branch_policy: {
+                  protected_branches: false,
+                  custom_branch_policies: true
+                }
+              },
+              {
+                name: 'staging',
+                wait_timer: 0,
+                reviewers: [
+                  { type: 'Team', id: 'maintainers' }
+                ],
+                deployment_branch_policy: {
+                  protected_branches: true,
+                  custom_branch_policies: false
+                }
+              },
+              {
+                name: 'production',
+                wait_timer: 300, // 5 minutes
+                reviewers: [
+                  { type: 'Team', id: 'maintainers' },
+                  { type: 'Team', id: 'devops' }
+                ],
+                deployment_branch_policy: {
+                  protected_branches: true,
+                  custom_branch_policies: false
+                }
+              }
+            ];
+
+            for (const env of environments) {
+              try {
+                console.log(`Creating environment: ${env.name}`);
+
+                await github.rest.repos.createOrUpdateEnvironment({
+                  owner,
+                  repo,
+                  environment_name: env.name,
+                  wait_timer: env.wait_timer,
+                  reviewers: env.reviewers,
+                  deployment_branch_policy: env.deployment_branch_policy
+                });
+
+                console.log(`✅ Created environment: ${env.name}`);
+
+              } catch (error) {
+                console.error(`❌ Failed to create environment ${env.name}:`, error.message);
+              }
+            }
+
+  summary:
+    name: Branch Protection Summary
+    runs-on: ubuntu-latest
+    needs: [setup-branch-protection, create-required-teams, setup-environments]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🛡️ Branch Protection Setup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch Protection | ${{ needs.setup-branch-protection.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Organization Teams | ${{ needs.create-required-teams.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployment Environments | ${{ needs.setup-environments.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔒 Protection Rules Applied" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Required Status Checks**: CI Status Summary, Quality Checks, Test Suite, Security Audit" >> $GITHUB_STEP_SUMMARY
+          echo "- **Required Reviews**: 2 approving reviews, dismiss stale reviews" >> $GITHUB_STEP_SUMMARY
+          echo "- **Code Owner Reviews**: Required" >> $GITHUB_STEP_SUMMARY
+          echo "- **Linear History**: Enforced" >> $GITHUB_STEP_SUMMARY
+          echo "- **Force Pushes**: Disabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch Deletions**: Disabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Conversation Resolution**: Required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 Templates Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- CODEOWNERS file with team assignments" >> $GITHUB_STEP_SUMMARY
+          echo "- Issue templates (bug report, feature request)" >> $GITHUB_STEP_SUMMARY
+          echo "- Pull request template with checklist" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Environments Configured" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Development**: No restrictions" >> $GITHUB_STEP_SUMMARY
+          echo "- **Staging**: Requires maintainer approval" >> $GITHUB_STEP_SUMMARY
+          echo "- **Production**: Requires maintainer + devops approval, 5-minute wait timer" >> $GITHUB_STEP_SUMMARY
