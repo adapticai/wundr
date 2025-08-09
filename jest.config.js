@@ -9,13 +9,13 @@ module.exports = {
   // Root directory
   rootDir: '.',
 
-  // Test match patterns - Include all test types
+  // Test match patterns - Include all test types EXCEPT e2e (Playwright)
   testMatch: [
     '<rootDir>/tests/unit/**/*.test.ts',
-    '<rootDir>/tests/integration/**/*.test.ts',
+    '<rootDir>/tests/integration/**/*.test.ts', 
     '<rootDir>/tests/performance/**/*.test.ts',
     '<rootDir>/tests/quality-gates/**/*.test.ts',
-    '<rootDir>/tests/**/*.spec.ts'
+    '<rootDir>/packages/**/tests/**/*.test.ts'
   ],
 
   // Module paths - Enhanced mapping
@@ -106,11 +106,13 @@ module.exports = {
   // Test timeout
   testTimeout: 30000,
 
-  // Ignore patterns
+  // Ignore patterns - Exclude Playwright tests
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/dist/',
-    '<rootDir>/coverage/'
+    '<rootDir>/coverage/',
+    '<rootDir>/tests/e2e/',
+    '<rootDir>/packages/**/tests/e2e/'
   ],
 
   // Module paths to ignore for transforms

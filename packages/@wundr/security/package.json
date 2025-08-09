@@ -27,7 +27,6 @@
     "node-keytar": "^7.9.0",
     "@octokit/rest": "^19.0.13",
     "semver": "^7.5.4",
-    "crypto": "^1.0.1",
     "bcrypt": "^5.1.1",
     "jsonwebtoken": "^9.0.2",
     "helmet": "^7.0.0",

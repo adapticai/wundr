@@ -87,16 +87,16 @@ ARG BUILD_DATE
 ARG VCS_REF
 
 # Add metadata labels
-LABEL maintainer="Lumic.ai" \
-      org.opencontainers.image.title="Wundr" \
-      org.opencontainers.image.description="Intelligent CLI-Based Coding Agents Orchestrator" \
-      org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.revision="${VCS_REF}" \
-      org.opencontainers.image.vendor="Lumic.ai" \
-      org.opencontainers.image.url="https://wundr.io" \
-      org.opencontainers.image.source="https://github.com/adapticai/wundr" \
-      org.opencontainers.image.documentation="https://github.com/adapticai/wundr/blob/main/README.md"
+LABEL maintainer="Wundr, by Adaptic.ai" \
+    org.opencontainers.image.title="Wundr" \
+    org.opencontainers.image.description="Intelligent CLI-Based Coding Agents Orchestrator" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.revision="${VCS_REF}" \
+    org.opencontainers.image.vendor="Wundr, by Adaptic.ai" \
+    org.opencontainers.image.url="https://wundr.io" \
+    org.opencontainers.image.source="https://github.com/adapticai/wundr" \
+    org.opencontainers.image.documentation="https://github.com/adapticai/wundr/blob/main/README.md"
 
 # Switch to non-root user
 USER wundr
@@ -127,10 +127,10 @@ FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} AS webclient
 WORKDIR /app
 COPY tools/web-client* ./tools/web-client*/
 RUN if [ -f "tools/web-client/package.json" ]; then \
-        cd tools/web-client && \
-        corepack enable && \
-        pnpm install --frozen-lockfile && \
-        pnpm build; \
+    cd tools/web-client && \
+    corepack enable && \
+    pnpm install --frozen-lockfile && \
+    pnpm build; \
     fi
 
 # Multi-service stage (includes web client)

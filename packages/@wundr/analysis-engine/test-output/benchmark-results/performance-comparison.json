@@ -1,0 +1,93 @@
+{
+  "optimized": {
+    "name": "optimized",
+    "duration": 3824,
+    "memoryUsage": {
+      "before": {
+        "rss": 1232601088,
+        "heapTotal": 623738880,
+        "heapUsed": 585677560,
+        "external": 4841097,
+        "arrayBuffers": 1273144
+      },
+      "peak": {
+        "rss": 1386463232,
+        "heapTotal": 624001024,
+        "heapUsed": 591857000,
+        "external": 4841097,
+        "arrayBuffers": 1273144
+      },
+      "after": {
+        "rss": 1520582656,
+        "heapTotal": 633700352,
+        "heapUsed": 590408160,
+        "external": 4841097,
+        "arrayBuffers": 1273144
+      },
+      "leaked": 4730600
+    },
+    "entitiesProcessed": 10000,
+    "clustersFound": 2000,
+    "cacheHits": 0,
+    "workerMetrics": {
+      "activeWorkers": 0,
+      "idleWorkers": 4,
+      "totalTasks": 10,
+      "completedTasks": 10,
+      "failedTasks": 0,
+      "averageExecutionTime": 319.09090909090907,
+      "queueSize": 0,
+      "throughput": 0,
+      "errorRate": 0,
+      "resourceUsage": {
+        "cpu": 0,
+        "memory": 0
+      }
+    }
+  },
+  "standard": {
+    "name": "standard",
+    "duration": 27887,
+    "memoryUsage": {
+      "before": {
+        "rss": 1572323328,
+        "heapTotal": 175636480,
+        "heapUsed": 134878192,
+        "external": 4846140,
+        "arrayBuffers": 1278187
+      },
+      "peak": {
+        "rss": 1572323328,
+        "heapTotal": 175636480,
+        "heapUsed": 134878192,
+        "external": 4846140,
+        "arrayBuffers": 1278187
+      },
+      "after": {
+        "rss": 1232584704,
+        "heapTotal": 623738880,
+        "heapUsed": 585557040,
+        "external": 4841097,
+        "arrayBuffers": 1273144
+      },
+      "leaked": 450678848
+    },
+    "entitiesProcessed": 10000,
+    "clustersFound": 23,
+    "cacheHits": 0
+  },
+  "improvements": {
+    "speedImprovement": 86.28751748126368,
+    "memoryReduction": -338.8085213953639,
+    "leakReduction": 98.95033902278901,
+    "throughputImprovement": 629.2625523012553
+  },
+  "summary": [
+    "🚀 Speed Improvement: 86.3% (27887ms → 3824ms)",
+    "💾 Memory Reduction: -338.8% (129MB → 564MB)",
+    "🔒 Leak Reduction: 99.0% (440116KB → 4620KB)",
+    "⚡ Throughput Improvement: 629.3%",
+    "📊 Clusters Found: Standard=23, Optimized=2000",
+    "🎯 Cache Hits: 0 (optimized engine only)"
+  ]
+}

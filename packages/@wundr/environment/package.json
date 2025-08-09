@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "wundr-env": "bin/wundr-env.js"
+    "wundr-env": "bin/wundr-env.js",
+    "wundr-quickstart": "bin/quickstart.js"
   },
   "scripts": {
     "build": "tsc",
@@ -24,19 +25,30 @@
     "setup:human": "./scripts/setup-profile.sh human",
     "setup:ai-agent": "./scripts/setup-profile.sh ai-agent",
     "setup:ci-runner": "./scripts/setup-profile.sh ci-runner",
+    "quickstart": "./bin/quickstart.js",
+    "quickstart:minimal": "./bin/quickstart.js --preset=minimal",
+    "quickstart:standard": "./bin/quickstart.js --preset=standard",
+    "quickstart:full": "./bin/quickstart.js --preset=full",
+    "quickstart:parallel": "./scripts/install/quickstart-parallel.sh",
+    "benchmark": "jest tests/benchmark/quickstart-benchmark.test.ts --testTimeout=600000",
     "validate": "./scripts/validation/validate-environment.sh",
     "health-check": "./scripts/validation/health-check.sh"
   },
   "keywords": [
     "development-environment",
     "setup",
+    "quickstart",
+    "fast-setup",
+    "parallel-installation",
     "cross-platform",
     "node.js",
     "docker",
     "vscode",
     "ai-agents",
     "claude-code",
-    "mcp-tools"
+    "mcp-tools",
+    "performance",
+    "automation"
   ],
   "dependencies": {
     "inquirer": "^9.2.0",

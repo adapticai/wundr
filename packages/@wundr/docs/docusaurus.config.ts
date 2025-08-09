@@ -1,6 +1,6 @@
-import { themes as prismThemes } from 'prism-react-renderer';
-import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import type { Config } from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 const config: Config = {
   title: 'Wundr Documentation',
@@ -99,6 +99,23 @@ const config: Config = {
       },
     ],
     '@docusaurus/plugin-ideal-image',
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        language: ['en', 'es', 'fr', 'de'],
+        indexDocs: true,
+        indexBlog: true,
+        indexPages: true,
+        docsRouteBasePath: '/',
+        docsDir: 'docs',
+        blogRouteBasePath: '/blog',
+        blogDir: 'blog',
+        highlightSearchTermsOnTargetPage: true,
+        searchResultLimits: 8,
+        searchResultContextMaxLength: 50,
+      },
+    ],
   ],
 
   themeConfig: {
@@ -204,21 +221,22 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Lumic.ai. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Wundr, by Adaptic.ai. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['typescript', 'bash', 'yaml', 'json'],
     },
-    algolia: {
-      appId: 'YOUR_APP_ID',
-      apiKey: 'YOUR_SEARCH_API_KEY',
-      indexName: 'wundr',
-      contextualSearch: true,
-      searchParameters: {},
-      searchPagePath: 'search',
-    },
+    // Algolia configuration (disabled in favor of local search)
+    // algolia: {
+    //   appId: 'YOUR_APP_ID',
+    //   apiKey: 'YOUR_SEARCH_API_KEY',
+    //   indexName: 'wundr',
+    //   contextualSearch: true,
+    //   searchParameters: {},
+    //   searchPagePath: 'search',
+    // },
     announcementBar: {
       id: 'wundr-v2',
       content:

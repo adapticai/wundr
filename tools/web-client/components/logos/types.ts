@@ -68,13 +68,15 @@ export interface LogoSizeConfig {
  * Brand constants
  */
 export const BRAND_CONSTANTS = {
-  tagline: 'Transform your monorepo with intelligent code analysis and refactoring',
-  attribution: 'A product by Lumic.ai',
+  tagline:
+    'Transform your monorepo with intelligent code analysis and refactoring',
+  attribution: 'A product by Wundr, by Adaptic.ai',
   colors: {
     primary: '#0E1A24',
     primaryLight: '#FFFFFF',
   },
   fonts: {
-    primary: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+    primary:
+      "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
   },
 } as const;

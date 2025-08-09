@@ -1,10 +1,12 @@
 #!/usr/bin/env ts-node
 
-import { program } from 'commander';
+import { Command } from 'commander';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as inquirer from 'inquirer';
 import chalk from 'chalk';
+
+// Program will be initialized later
 
 interface PackageOptions {
   name: string;

@@ -1,0 +1,1188 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Wundr API",
+    "version": "2.0.0",
+    "description": "Comprehensive API for Wundr platform operations including code analysis, batch processing, configuration management, and report generation.",
+    "contact": {
+      "name": "Wundr Support",
+      "url": "https://github.com/adapticai/wundr",
+      "email": "support@wundr.io"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.wundr.io",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "analysis",
+      "description": "Code analysis operations"
+    },
+    {
+      "name": "batches",
+      "description": "Batch processing management"
+    },
+    {
+      "name": "config",
+      "description": "Configuration management"
+    },
+    {
+      "name": "files",
+      "description": "File system operations"
+    },
+    {
+      "name": "reports",
+      "description": "Report generation and export"
+    },
+    {
+      "name": "scripts",
+      "description": "Script execution management"
+    },
+    {
+      "name": "git",
+      "description": "Git repository operations"
+    },
+    {
+      "name": "performance",
+      "description": "Performance metrics"
+    },
+    {
+      "name": "quality",
+      "description": "Code quality metrics"
+    }
+  ],
+  "paths": {
+    "/analysis": {
+      "get": {
+        "tags": ["analysis"],
+        "summary": "Get comprehensive analysis data",
+        "description": "Retrieves complete analysis results including summary, entities, issues, and recommendations",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "description": "Project identifier for specific analysis",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analysis data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["analysis"],
+        "summary": "Trigger analysis operations",
+        "description": "Initiates new analysis or updates recommendation status",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["trigger_analysis", "update_recommendation"]
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "projectId": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analysis/entities": {
+      "get": {
+        "tags": ["analysis"],
+        "summary": "Get analysis entities",
+        "description": "Retrieves all entities detected in the codebase",
+        "responses": {
+          "200": {
+            "description": "Entities retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AnalysisEntity"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analysis/duplicates": {
+      "get": {
+        "tags": ["analysis"],
+        "summary": "Get duplicate code analysis",
+        "description": "Retrieves information about duplicate code blocks found in the project",
+        "responses": {
+          "200": {
+            "description": "Duplicates data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DuplicateGroup"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analysis/circular": {
+      "get": {
+        "tags": ["analysis"],
+        "summary": "Get circular dependency analysis",
+        "description": "Identifies circular dependencies in the codebase",
+        "responses": {
+          "200": {
+            "description": "Circular dependencies retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "cycles": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "count": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analysis/dependencies": {
+      "get": {
+        "tags": ["analysis"],
+        "summary": "Get dependency analysis",
+        "description": "Retrieves dependency graph and analysis results",
+        "responses": {
+          "200": {
+            "description": "Dependencies retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DependencyGraph"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analysis/scan": {
+      "post": {
+        "tags": ["analysis"],
+        "summary": "Initiate code scan",
+        "description": "Starts a new code analysis scan for the specified project",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Path to scan"
+                  },
+                  "options": {
+                    "type": "object",
+                    "properties": {
+                      "includeTests": {
+                        "type": "boolean"
+                      },
+                      "depth": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scan initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batches": {
+      "get": {
+        "tags": ["batches"],
+        "summary": "Get batch processing jobs",
+        "description": "Retrieves batch processing jobs with optional filtering",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter batches by type",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "active", "history"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batches retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BatchJob"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["batches"],
+        "summary": "Create new batch job",
+        "description": "Creates a new batch processing job",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BatchJob"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batches/{id}": {
+      "get": {
+        "tags": ["batches"],
+        "summary": "Get specific batch job",
+        "description": "Retrieves details for a specific batch job",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Batch job identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BatchJob"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config": {
+      "get": {
+        "tags": ["config"],
+        "summary": "Get configuration",
+        "description": "Retrieves current configuration settings",
+        "responses": {
+          "200": {
+            "description": "Configuration retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Configuration"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["config"],
+        "summary": "Update configuration",
+        "description": "Updates configuration settings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Configuration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configuration updated successfully"
+          }
+        }
+      }
+    },
+    "/files": {
+      "get": {
+        "tags": ["files"],
+        "summary": "List files",
+        "description": "Lists files in the project directory",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "description": "Directory path to list",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Files listed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FileInfo"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/read": {
+      "get": {
+        "tags": ["files"],
+        "summary": "Read file content",
+        "description": "Reads the content of a specific file",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "description": "File path to read",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "content": {
+                          "type": "string"
+                        },
+                        "encoding": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "tags": ["reports"],
+        "summary": "List reports",
+        "description": "Lists available reports",
+        "responses": {
+          "200": {
+            "description": "Reports listed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Report"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/generate": {
+      "post": {
+        "tags": ["reports"],
+        "summary": "Generate report",
+        "description": "Generates a new report based on analysis data",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["summary", "detailed", "export"]
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": ["json", "pdf", "html"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Report generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Report"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quality": {
+      "get": {
+        "tags": ["quality"],
+        "summary": "Get quality metrics",
+        "description": "Retrieves code quality metrics and indicators",
+        "responses": {
+          "200": {
+            "description": "Quality metrics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/QualityMetrics"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/performance": {
+      "get": {
+        "tags": ["performance"],
+        "summary": "Get performance metrics",
+        "description": "Retrieves performance analysis and metrics",
+        "responses": {
+          "200": {
+            "description": "Performance metrics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PerformanceMetrics"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object"
+          },
+          "error": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["success", "timestamp"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          },
+          "error": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AnalysisData"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AnalysisData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/DashboardSummary"
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalysisEntity"
+            }
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalysisIssue"
+            }
+          },
+          "duplicates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DuplicateGroup"
+            }
+          },
+          "dependencies": {
+            "$ref": "#/components/schemas/DependencyGraph"
+          }
+        }
+      },
+      "DashboardSummary": {
+        "type": "object",
+        "properties": {
+          "totalFiles": {
+            "type": "number"
+          },
+          "totalEntities": {
+            "type": "number"
+          },
+          "totalLines": {
+            "type": "number"
+          },
+          "duplicateClusters": {
+            "type": "number"
+          },
+          "circularDependencies": {
+            "type": "number"
+          },
+          "codeSmells": {
+            "type": "number"
+          },
+          "bugs": {
+            "type": "number"
+          },
+          "vulnerabilities": {
+            "type": "number"
+          },
+          "maintainabilityIndex": {
+            "type": "number"
+          },
+          "testCoverage": {
+            "type": "number"
+          },
+          "lastAnalysis": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AnalysisEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["class", "function", "module", "component", "interface"]
+          },
+          "complexity": {
+            "type": "number"
+          },
+          "size": {
+            "type": "number"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AnalysisIssue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["bug", "vulnerability", "code_smell", "duplication", "complexity"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "message": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "effort": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          }
+        }
+      },
+      "DuplicateGroup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["structural", "exact", "similar"]
+          },
+          "similarity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "occurrences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "startLine": {
+                  "type": "number"
+                },
+                "endLine": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "linesCount": {
+            "type": "number"
+          }
+        }
+      },
+      "DependencyGraph": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["internal", "external", "system"]
+                }
+              }
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["import", "require", "dynamic"]
+                }
+              }
+            }
+          },
+          "cycles": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "BatchJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "running", "completed", "failed"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "progress": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      },
+      "CreateBatchRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "configuration": {
+            "type": "object"
+          }
+        },
+        "required": ["name", "type"]
+      },
+      "Configuration": {
+        "type": "object",
+        "properties": {
+          "analysisSettings": {
+            "type": "object",
+            "properties": {
+              "enableDuplicateDetection": {
+                "type": "boolean"
+              },
+              "complexityThreshold": {
+                "type": "number"
+              },
+              "includeTests": {
+                "type": "boolean"
+              }
+            }
+          },
+          "reportSettings": {
+            "type": "object",
+            "properties": {
+              "defaultFormat": {
+                "type": "string",
+                "enum": ["json", "pdf", "html"]
+              },
+              "includeCharts": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "FileInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["file", "directory"]
+          },
+          "size": {
+            "type": "number"
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "downloadUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "QualityMetrics": {
+        "type": "object",
+        "properties": {
+          "maintainabilityIndex": {
+            "type": "number"
+          },
+          "testCoverage": {
+            "type": "number"
+          },
+          "codeSmells": {
+            "type": "number"
+          },
+          "technicalDebt": {
+            "type": "number"
+          },
+          "duplicates": {
+            "type": "number"
+          }
+        }
+      },
+      "PerformanceMetrics": {
+        "type": "object",
+        "properties": {
+          "analysisTime": {
+            "type": "number"
+          },
+          "memoryUsage": {
+            "type": "number"
+          },
+          "fileProcessingRate": {
+            "type": "number"
+          },
+          "throughput": {
+            "type": "number"
+          }
+        }
+      },
+      "ScanResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "scanId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["initiated", "running", "completed"]
+              },
+              "estimatedTime": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

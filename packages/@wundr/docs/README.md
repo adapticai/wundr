@@ -1,346 +1,284 @@
-# Wundr Documentation Site
+# Wundr Documentation
 
-This is the comprehensive documentation site for Wundr, built with Docusaurus 3.
+Comprehensive documentation site for the Wundr platform - the Intelligent CLI-Based Coding Agents Orchestrator.
 
 ## Features
 
-- **📚 Complete Documentation** - User guides, API reference, tutorials
-- **🎮 Interactive Playground** - Try Wundr features in your browser
-- **🌍 Multi-language Support** - English, Spanish, French, German
-- **🔍 Full-text Search** - Powered by Algolia
-- **📱 Mobile Responsive** - Optimized for all devices
-- **🎨 Custom Theming** - Wundr brand integration
-- **⚡ Fast Performance** - Static site generation
-- **🤖 Auto-generated API Docs** - Synced with web client APIs
+- 🌐 **Multi-language Support**: Available in English, Spanish, French, and German
+- 🔍 **Advanced Search**: Local search with analytics and cross-language support
+- 📱 **Mobile Responsive**: Optimized for all device sizes
+- 🎨 **Modern UI**: Built with Docusaurus 3.x and custom components
+- 📊 **Search Analytics**: Track popular queries and user engagement
+- 🔄 **Translation Management**: Automated i18n workflow and maintenance
 
 ## Quick Start
 
-### Development
+### Prerequisites
+
+- Node.js 18+
+- npm or pnpm
+
+### Installation
 
 ```bash
 # Install dependencies
-pnpm install
-
-# Generate API documentation
-pnpm run generate-api-docs
-
-# Generate playground examples
-pnpm run generate-playground
+npm install
 
 # Start development server
-pnpm start
+npm start
+
+# Build for production
+npm run build
 ```
 
-### Build for Production
+### Available Scripts
 
 ```bash
-# Build static site
-pnpm run build
+# Development
+npm start                    # Start dev server (all languages)
+npm start -- --locale es    # Start with specific locale
 
-# Serve built site locally
-pnpm run serve
+# Build
+npm run build               # Build all languages
+npm run serve              # Serve built site locally
+
+# Documentation Generation
+npm run generate-api-docs      # Generate API documentation
+npm run generate-translations  # Create translation infrastructure
+npm run generate-playground    # Generate interactive playground
+
+# I18n Management
+npm run i18n-maintenance report    # Generate translation report
+npm run i18n-maintenance validate  # Validate translation files
+npm run write-translations         # Extract translatable strings
+
+# Utilities
+npm run clear              # Clear cache
+npm run typecheck         # Run TypeScript checks
 ```
 
-## Documentation Structure
+## Architecture
+
+### Structure
 
 ```
-docs/
-├── intro.md                 # Getting started
-├── getting-started/          # Installation & setup guides
-├── concepts/                 # Core concepts & theory
-├── cli/                      # CLI command reference
-├── dashboard/                # Web dashboard guides
-├── integration/              # Tool integrations
-├── advanced/                 # Advanced topics
-├── migration/                # Migration guides
-└── troubleshooting/          # Common issues & FAQ
-
-api/                          # Auto-generated API docs
-├── overview.md               # API introduction
-├── analysis/                 # Analysis endpoints
-├── reports/                  # Reporting endpoints
-├── config/                   # Configuration endpoints
-└── openapi.json              # OpenAPI 3.0 specification
-
-guides/                       # Step-by-step tutorials
-├── quickstart/               # Quick start guides
-├── workflow/                 # Daily workflows
-├── best-practices/           # Best practices
-├── integration/              # Integration guides
-├── advanced/                 # Advanced usage
-├── videos/                   # Video tutorials
-└── examples/                 # Real-world examples
+packages/@wundr/docs/
+├── docs/                  # Main documentation content
+├── blog/                  # Blog posts
+├── api/                   # API documentation
+├── guides/                # User guides
+├── src/
+│   ├── components/        # Custom React components
+│   ├── utils/             # Utility functions
+│   └── css/              # Custom styles
+├── i18n/                  # Translations
+│   ├── es/               # Spanish translations
+│   ├── fr/               # French translations
+│   ├── de/               # German translations
+│   └── reports/          # Translation reports
+├── scripts/              # Build and maintenance scripts
+├── static/               # Static assets
+└── sidebars*.ts          # Sidebar configurations
 ```
 
-## Content Creation
+### Key Components
 
-### Writing Documentation
+- **SearchAnalytics**: Tracks search metrics and popular queries
+- **LanguageSwitcher**: Enhanced language switching with visual indicators
+- **TranslationGenerator**: Automated translation infrastructure creation
+- **I18nMaintenance**: Translation status and quality management
 
-1. **Use clear headings** and consistent formatting
-2. **Include code examples** for all concepts
-3. **Add cross-references** to related topics
-4. **Test all examples** before publishing
-5. **Follow the style guide** in `/docs/contributing/`
+## Configuration
 
-### Adding New Pages
+### Supported Languages
 
-```bash
-# Create a new guide
-touch guides/my-new-guide.md
+- **English (en)**: Default locale
+- **Spanish (es)**: Español  
+- **French (fr)**: Français
+- **German (de)**: Deutsch
 
-# Update the sidebar
-# Edit sidebars-guides.ts
+### Search Configuration
 
-# Add to navigation
-# Update docusaurus.config.ts if needed
-```
-
-### API Documentation
-
-API docs are auto-generated from the web client routes:
-
-```bash
-# Scan routes and generate docs
-pnpm run generate-api-docs
-
-# Manual updates
-# Edit scripts/generate-api-docs.ts
-```
-
-### Playground Examples
-
-Add interactive examples:
-
-```bash
-# Generate playground configuration
-pnpm run generate-playground
-
-# Add new examples
-# Edit scripts/generate-playground.ts
-```
-
-## Multi-language Support
-
-### Available Languages
-
-- **English** (en) - Default
-- **Spanish** (es) - Español
-- **French** (fr) - Français
-- **German** (de) - Deutsch
-
-### Adding Translations
-
-```bash
-# Extract translatable strings
-pnpm run write-translations --locale es
-
-# Edit translation files
-# i18n/es/docusaurus-plugin-content-docs/current.json
-
-# Build with translations
-pnpm run build
-```
-
-### Translation Guidelines
-
-1. **Maintain technical accuracy** - Don't translate technical terms unnecessarily
-2. **Keep code examples in English** - Code should remain readable
-3. **Translate UI elements** - Buttons, navigation, messages
-4. **Consider cultural context** - Adapt examples when needed
-
-## Customization
-
-### Theming
-
-Custom styles are in `src/css/custom.css`:
-
-```css
-:root {
-  --wundr-primary: #6366f1;
-  --wundr-secondary: #8b5cf6;
-  /* Add custom variables */
-}
-
-/* Custom component styles */
-.wundr-feature-card {
-  /* Component styling */
-}
-```
-
-### Components
-
-Custom React components in `src/components/`:
-
-```tsx
-// src/components/MyComponent.tsx
-import React from 'react';
-
-export const MyComponent: React.FC = () => {
-  return <div>Custom component</div>;
-};
-```
-
-### Plugins and Configuration
-
-Main configuration in `docusaurus.config.ts`:
+Uses `@easyops-cn/docusaurus-search-local` for offline search:
 
 ```typescript
-// Add new plugins
-plugins: [
-  '@docusaurus/plugin-ideal-image',
-  // Add custom plugins
-],
+{
+  hashed: true,
+  language: ['en', 'es', 'fr', 'de'],
+  indexDocs: true,
+  indexBlog: true,
+  indexPages: true,
+  highlightSearchTermsOnTargetPage: true,
+  searchResultLimits: 8,
+}
+```
 
-// Modify theme configuration
-themeConfig: {
-  // Add custom theme options
+## Translation Workflow
+
+### Adding New Content
+
+1. Create English content first in `docs/`
+2. Generate translation files:
+   ```bash
+   npm run generate-translations
+   ```
+3. Translate content in `i18n/{locale}/docusaurus-plugin-content-docs/current/`
+4. Update sidebar translations in `i18n/{locale}/docusaurus-plugin-content-docs/current.json`
+
+### Maintaining Translations
+
+```bash
+# Check translation status
+npm run i18n-maintenance report
+
+# Validate all translation files
+npm run i18n-maintenance validate
+
+# View detailed translation report
+cat i18n/reports/maintenance-$(date +%Y-%m-%d).md
+```
+
+### Translation Status
+
+Current translation completeness:
+- 🇺🇸 English: 100% (source)
+- 🇪🇸 Spanish: ~60% (core content translated)
+- 🇫🇷 French: ~60% (core content translated)
+- 🇩🇪 German: ~60% (core content translated)
+
+## Development
+
+### Custom Components
+
+#### SearchAnalytics
+Provides search metrics and analytics:
+- Popular queries tracking
+- No-result queries identification
+- Language-specific search volume
+- Real-time analytics display
+
+#### LanguageSwitcher
+Enhanced language switching:
+- Visual language indicators
+- Proper URL transformation
+- Mobile-responsive design
+- Current language highlighting
+
+### Theme Customization
+
+Custom CSS variables for consistent theming:
+```css
+:root {
+  --wundr-primary: #0066cc;
+  --wundr-secondary: #666;
+  --wundr-accent: #ff6b35;
 }
 ```
 
 ## Deployment
 
-### GitHub Pages (Automatic)
-
-Documentation is automatically deployed on push to main:
-
-1. **GitHub Actions** builds the site
-2. **API docs** are regenerated
-3. **Site deploys** to GitHub Pages
-4. **Accessibility tests** run automatically
-
-### Manual Deployment
+### Build Process
 
 ```bash
-# Build and deploy manually
-pnpm run build
-pnpm run deploy
+# Production build
+npm run build
+
+# Test production build locally
+npm run serve
 ```
 
-### Custom Domain
+### SEO Optimization
 
-To use a custom domain:
+- Multi-language sitemap generation
+- Proper hreflang tags
+- Localized meta descriptions
+- Open Graph tags per locale
 
-1. Add `CNAME` file to `/static/`
-2. Configure DNS records
-3. Update `docusaurus.config.ts` URL
+### Performance
 
-## Performance
+- Code splitting by language
+- Optimized search indices
+- Image optimization with `@docusaurus/plugin-ideal-image`
+- Lazy loading for non-critical content
 
-### Optimization Features
+## API Documentation
 
-- **Static site generation** for fast loading
-- **Image optimization** with `@docusaurus/plugin-ideal-image`
-- **Bundle splitting** for efficient caching
-- **Search indexing** with Algolia
-- **CDN-friendly** assets
+Auto-generated from existing API routes:
 
-### Analytics
+```bash
+# Generate API documentation
+npm run generate-api-docs
 
-Analytics configuration in `docusaurus.config.ts`:
-
-```typescript
-themeConfig: {
-  gtag: {
-    trackingID: 'G-YOUR-TRACKING-ID',
-  },
-}
+# Output: api/ directory with OpenAPI specs and Markdown files
 ```
 
 ## Contributing
 
-### Documentation Standards
+### Documentation
 
-1. **Write clear, concise content**
-2. **Include working code examples**
-3. **Test all instructions**
-4. **Use consistent terminology**
-5. **Add screenshots for UI features**
+1. Follow the existing structure and style
+2. Use proper heading hierarchy (H1 -> H2 -> H3)
+3. Include code examples where applicable
+4. Add translations for new content
 
-### Review Process
+### Translations
 
-1. **Create feature branch** from main
-2. **Write/update documentation**
-3. **Test locally** with `pnpm start`
-4. **Submit pull request**
-5. **Address review feedback**
-6. **Documentation team approves**
+1. Maintain consistency with existing translations
+2. Use the translation glossary for technical terms
+3. Test builds before submitting
+4. Follow the [i18n workflow](./docs/i18n-workflow.md)
 
-### Style Guide
+### Code
 
-- **Headings**: Use sentence case
-- **Code blocks**: Always specify language
-- **Links**: Use descriptive text
-- **Images**: Include alt text
-- **Lists**: Use parallel structure
+1. Use TypeScript for all new components
+2. Follow React best practices
+3. Add proper JSDoc comments
+4. Test responsive behavior
 
 ## Troubleshooting
 
-### Common Issues
-
-**Build fails**:
+### Build Issues
 
 ```bash
 # Clear cache and rebuild
-pnpm run clear
-pnpm run build
+npm run clear && npm run build
+
+# Check for missing files referenced in sidebars
+npm run i18n-maintenance validate
 ```
 
-**Search not working**:
+### Search Problems
 
-- Check Algolia configuration
-- Verify API keys
-- Rebuild search index
+- Verify search plugin configuration in `docusaurus.config.ts`
+- Rebuild search indices by clearing cache
+- Check browser console for JavaScript errors
 
-**Translations missing**:
-
-```bash
-# Generate missing translations
-pnpm run write-translations --locale [locale]
-```
-
-**Playground not loading**:
-
-- Check Monaco Editor configuration
-- Verify example syntax
-- Check browser console for errors
-
-### Getting Help
-
-- **GitHub Issues** - Bug reports and feature requests
-- **Discussions** - Questions and community help
-- **Discord** - Real-time community support
-- **Documentation Team** - docs@wundr.io
-
-## Scripts Reference
+### Translation Issues
 
 ```bash
-# Development
-pnpm start              # Start dev server
-pnpm run build          # Build for production
-pnpm run serve          # Serve built site
+# Generate translation report
+npm run i18n-maintenance report
 
-# Content Generation
-pnpm run generate-api-docs     # Generate API documentation
-pnpm run generate-playground   # Generate playground examples
-
-# Internationalization
-pnpm run write-translations    # Extract translation strings
-pnpm run write-heading-ids     # Add heading IDs for translations
-
-# Utilities
-pnpm run clear          # Clear build cache
-pnpm run typecheck      # Type checking
-pnpm run swizzle        # Customize theme components
+# Fix common issues
+# - Missing translation keys
+# - Invalid JSON syntax
+# - Broken internal links
 ```
 
 ## Resources
 
-- **[Docusaurus Documentation](https://docusaurus.io/)**
-- **[MDX Documentation](https://mdxjs.com/)**
-- **[React Documentation](https://react.dev/)**
-- **[Wundr GitHub Repository](https://github.com/adapticai/wundr)**
+- [Docusaurus Documentation](https://docusaurus.io/)
+- [I18n Workflow Guide](./docs/i18n-workflow.md)
+- [API Documentation](./api/overview.md)
+- [Component Library](./src/components/README.md)
 
 ## License
 
-This documentation is part of the Wundr project and is licensed under the MIT License. See the
-[LICENSE](../../../LICENSE) file for details.
+MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## Support
+
+For documentation issues:
+- [GitHub Issues](https://github.com/adapticai/wundr/issues)
+- [Discussion Forum](https://github.com/adapticai/wundr/discussions)
+- [Discord Server](https://discord.gg/wundr)

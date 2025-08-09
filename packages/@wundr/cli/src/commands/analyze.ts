@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import fs from 'fs-extra';
-import path from 'path';
+// import path from 'path';  // Unused import
 import chalk from 'chalk';
 import { ConfigManager } from '../utils/config-manager';
 import { PluginManager } from '../plugins/plugin-manager';
@@ -14,8 +14,8 @@ import { AnalysisResult, Finding } from '../types';
 export class AnalyzeCommands {
   constructor(
     private program: Command,
-    private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private _configManager: ConfigManager,
+    private _pluginManager: PluginManager
   ) {
     this.registerCommands();
   }
@@ -165,19 +165,19 @@ export class AnalyzeCommands {
         timestamp: new Date()
       };
 
-      if (options.complexity) {
+      if (options['complexity']) {
         const complexity = await this.analyzeComplexity();
         results.metrics.complexity = complexity.average;
         results.findings.push(...complexity.violations);
       }
 
-      if (options.duplication) {
+      if (options['duplication']) {
         const duplication = await this.detectDuplication();
         results.metrics.duplication = duplication.percentage;
         results.findings.push(...duplication.violations);
       }
 
-      if (options.coverage) {
+      if (options['coverage']) {
         const coverage = await this.analyzeCoverage();
         results.metrics.coverage = coverage.percentage;
         results.findings.push(...coverage.violations);

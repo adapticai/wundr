@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "startTime": 1754580031665,
+    "endTime": 1754580035673,
+    "totalSnapshots": 5,
+    "monitoringDuration": 4008,
+    "thresholds": {
+      "heapWarning": 52428800,
+      "heapCritical": 104857600,
+      "rssWarning": 209715200,
+      "rssCritical": 524288000,
+      "growthRateWarning": 1048576,
+      "growthRateCritical": 5242880
+    }
+  },
+  "gcStats": {
+    "count": 6,
+    "totalDuration": 17.87049999833107,
+    "averageDuration": 2.9784166663885117,
+    "lastGC": 1754580033345
+  },
+  "snapshots": [
+    {
+      "timestamp": 1754580031665,
+      "heapUsed": 65120872,
+      "heapTotal": 88702976,
+      "external": 4847188,
+      "arrayBuffers": 1279275,
+      "rss": 216449024,
+      "cpu": 828.526,
+      "gcStats": {
+        "totalHeapSize": 88702976,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 88588288,
+        "totalAvailableSize": 4278281512,
+        "usedHeapSize": 65131712,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    {
+      "timestamp": 1754580032668,
+      "heapUsed": 101140232,
+      "heapTotal": 137412608,
+      "external": 4847244,
+      "arrayBuffers": 1279291,
+      "rss": 264732672,
+      "cpu": 875.475,
+      "gcStats": {
+        "totalHeapSize": 137412608,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 137297920,
+        "totalAvailableSize": 4234060232,
+        "usedHeapSize": 101140912,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    {
+      "timestamp": 1754580033670,
+      "heapUsed": 131219400,
+      "heapTotal": 175636480,
+      "external": 4847244,
+      "arrayBuffers": 1273144,
+      "rss": 305070080,
+      "cpu": 987.481,
+      "gcStats": {
+        "totalHeapSize": 175636480,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 175521792,
+        "totalAvailableSize": 4195960864,
+        "usedHeapSize": 131227752,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    {
+      "timestamp": 1754580034672,
+      "heapUsed": 131259328,
+      "heapTotal": 175636480,
+      "external": 4847244,
+      "arrayBuffers": 1273144,
+      "rss": 305070080,
+      "cpu": 988.355,
+      "gcStats": {
+        "totalHeapSize": 175636480,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 175521792,
+        "totalAvailableSize": 4195928608,
+        "usedHeapSize": 131260008,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    {
+      "timestamp": 1754580035673,
+      "heapUsed": 131264304,
+      "heapTotal": 175636480,
+      "external": 4847244,
+      "arrayBuffers": 1273144,
+      "rss": 305070080,
+      "cpu": 988.693,
+      "gcStats": {
+        "totalHeapSize": 175636480,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 175521792,
+        "totalAvailableSize": 4195923632,
+        "usedHeapSize": 131264984,
+        "heapSizeLimit": 4345298944
+      }
+    }
+  ],
+  "metrics": {
+    "current": {
+      "timestamp": 1754580035673,
+      "heapUsed": 131264304,
+      "heapTotal": 175636480,
+      "external": 4847244,
+      "arrayBuffers": 1273144,
+      "rss": 305070080,
+      "cpu": 988.693,
+      "gcStats": {
+        "totalHeapSize": 175636480,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 175521792,
+        "totalAvailableSize": 4195923632,
+        "usedHeapSize": 131264984,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    "peak": {
+      "timestamp": 1754580035673,
+      "heapUsed": 131264304,
+      "heapTotal": 175636480,
+      "external": 4847244,
+      "arrayBuffers": 1273144,
+      "rss": 305070080,
+      "cpu": 988.693,
+      "gcStats": {
+        "totalHeapSize": 175636480,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 175521792,
+        "totalAvailableSize": 4195923632,
+        "usedHeapSize": 131264984,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    "average": {
+      "heapUsed": 112000827.2,
+      "heapTotal": 150605004.8,
+      "rss": 279278387.2
+    },
+    "trend": {
+      "heapGrowthRate": 16502852.295409182,
+      "gcFrequency": 89.82035928143713,
+      "gcDuration": 2.9784166663885117
+    },
+    "leakAnalysis": {
+      "leakDetected": true,
+      "growthRate": 16240596,
+      "severity": "critical",
+      "trend": "growing",
+      "recommendations": [
+        "URGENT: Memory usage is critical. Consider restarting the application.",
+        "Take heap snapshot for detailed analysis of memory usage.",
+        "Memory usage is steadily increasing. Check for memory leaks.",
+        "Review recent code changes that might cause memory retention.",
+        "High memory growth rate detected. Profile memory allocations.",
+        "Consider implementing object pooling for frequently created objects.",
+        "Enable --expose-gc flag to manually trigger garbage collection.",
+        "Use WeakMap and WeakSet for temporary object references.",
+        "Implement streaming for large data processing.",
+        "Monitor and limit cache sizes to prevent unbounded growth."
+      ],
+      "suspiciousObjects": []
+    }
+  }
+}

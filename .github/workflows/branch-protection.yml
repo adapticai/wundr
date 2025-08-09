@@ -355,13 +355,13 @@ jobs:
           blank_issues_enabled: false
           contact_links:
             - name: Security Issue
-              url: mailto:security@lumic.ai
+              url: mailto:security@adaptic.ai
               about: Please report security vulnerabilities privately via email
             - name: Question or Discussion
               url: https://github.com/adapticai/wundr/discussions
               about: Ask questions or discuss ideas with the community
             - name: Documentation
-              url: https://wundr.lumic.ai
+              url: https://wundr.adaptic.ai
               about: Check our documentation for usage guides and API reference
           EOF
           fi

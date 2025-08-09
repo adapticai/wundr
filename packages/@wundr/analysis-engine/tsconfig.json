@@ -14,18 +14,11 @@
     "noUnusedParameters": false
   },
   "include": [
-    "src/types/index.ts",
-    "src/utils/index.ts",
-    "src/simple-analyzer.ts",
-    "src/index.ts"
+    "src/**/*"
   ],
   "exclude": [
     "dist",
     "node_modules",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "src/analyzers/**",
-    "src/engines/**",
-    "src/cli.ts"
+    "coverage/**/*"
   ]
 }

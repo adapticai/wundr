@@ -1,6 +1,7 @@
 # Wundr Dashboard
 
-A modern, feature-rich dashboard for analyzing and refactoring monorepo codebases by Lumic.ai, built with Next.js, shadcn/ui, and Tailwind CSS.
+A modern, feature-rich dashboard for analyzing and refactoring monorepo codebases by Wundr, by
+Adaptic.ai, built with Next.js, shadcn/ui, and Tailwind CSS.
 
 ## Features
 
@@ -22,16 +23,19 @@ A modern, feature-rich dashboard for analyzing and refactoring monorepo codebase
 ### Installation
 
 1. Navigate to the dashboard directory:
+
 ```bash
 cd tools/dashboard-next
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -44,7 +48,8 @@ npm run dev
 
 The dashboard can load analysis data in several ways:
 
-1. **Automatic Loading**: Place your `analysis-report.json` in the `public/analysis-output/` directory
+1. **Automatic Loading**: Place your `analysis-report.json` in the `public/analysis-output/`
+   directory
 2. **Upload Report**: Use the upload button in the dashboard to load a JSON report
 3. **Sample Data**: Click "Load Sample Data" to explore the dashboard with example data
 
@@ -90,6 +95,7 @@ dashboard-next/
 ### Styling
 
 The project uses:
+
 - Tailwind CSS for utility-first styling
 - shadcn/ui for pre-built components
 - CSS variables for theming
@@ -97,6 +103,7 @@ The project uses:
 ### Data Management
 
 The dashboard uses React Context for state management:
+
 - `AnalysisContext` provides analysis data throughout the app
 - Data is loaded from JSON files or can be uploaded by users
 
@@ -110,6 +117,7 @@ npm start
 ## Contributing
 
 When contributing to the dashboard:
+
 1. Follow the existing code patterns
 2. Use TypeScript for type safety
 3. Ensure responsive design
@@ -117,4 +125,4 @@ When contributing to the dashboard:
 
 ## License
 
-Wundr is a product by Lumic.ai.
+Wundr is a product by Wundr, by Adaptic.ai.

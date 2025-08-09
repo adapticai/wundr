@@ -212,7 +212,16 @@ export class SimpleAnalyzer {
   }
 
   private getNodeName(node: ts.Node): string | undefined {
-    if ('name' in node && node.name && ts.isIdentifier(node.name)) {
+    if (ts.isClassDeclaration(node) && node.name) {
+      return node.name.text;
+    }
+    if (ts.isInterfaceDeclaration(node) && node.name) {
+      return node.name.text;
+    }
+    if (ts.isFunctionDeclaration(node) && node.name) {
+      return node.name.text;
+    }
+    if (ts.isTypeAliasDeclaration(node) && node.name) {
       return node.name.text;
     }
     return undefined;
@@ -270,7 +279,7 @@ export class SimpleAnalyzer {
       if (classMatch) {
         entities.push({
           id: createId(),
-          name: classMatch[2],
+          name: classMatch[2] || 'unknown',
           type: classMatch[1] as any,
           file: filePath,
           line: index + 1,

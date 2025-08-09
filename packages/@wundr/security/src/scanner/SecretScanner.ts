@@ -250,8 +250,8 @@ export class SecretScanner extends EventEmitter {
 
       return matches;
 
-    } catch (error) {
-      if (error.code === 'EISDIR') {
+    } catch (error: any) {
+      if (error?.code === 'EISDIR') {
         return [];
       }
       throw error;

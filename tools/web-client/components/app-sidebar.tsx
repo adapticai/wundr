@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { WundrLogo } from '@/components/logos';
 import {
   BookOpen,
   Copy,
@@ -10,10 +10,10 @@ import {
   LineChart,
   Network,
   Settings,
-  Upload,
   Sparkles,
+  Upload,
 } from 'lucide-react';
-import { WundrLogo } from '@/components/logos';
+import * as React from 'react';
 
 import { NavMain } from '@/components/nav-main';
 import { NavProjects } from '@/components/nav-projects';
@@ -223,7 +223,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className='grid flex-1 text-left text-sm leading-tight'>
                   <span className='truncate font-semibold'>Wundr</span>
-                  <span className='truncate text-xs text-muted-foreground'>by Lumic.ai</span>
+                  <span className='truncate text-xs text-muted-foreground'>
+                    by Wundr, by Adaptic.ai
+                  </span>
                 </div>
               </a>
             </SidebarMenuButton>

@@ -7,13 +7,15 @@ export interface EntityInfo {
   name: string;
   type: EntityType;
   file: string;
-  line: number;
+  startLine: number; // Changed from line for consistency
+  endLine?: number; // Add end line
+  line: number; // Keep for compatibility
   column: number;
   exportType: ExportType;
   signature?: string;
   normalizedHash?: string;
   semanticHash?: string;
-  jsDoc: string;
+  jsDoc?: string; // Make optional
   complexity?: ComplexityMetrics;
   dependencies: string[];
   members?: EntityMembers;
@@ -26,11 +28,15 @@ export type EntityType =
   | 'type' 
   | 'enum' 
   | 'function' 
+  | 'method'
   | 'const' 
+  | 'variable'
   | 'service'
   | 'component'
   | 'hook'
-  | 'utility';
+  | 'utility'
+  | 'comment'
+  | 'whitespace';
 
 export type ExportType = 'default' | 'named' | 'none';
 
@@ -52,10 +58,38 @@ export interface EntityMembers {
 export interface ComplexityMetrics {
   cyclomatic: number;
   cognitive: number;
-  maintainability: number;
-  depth: number;
-  parameters: number;
-  lines: number;
+  maintainability?: number;
+  depth?: number;
+  parameters?: number;
+  lines?: number;
+  halstead?: {
+    operators: number;
+    operands: number;
+    vocabulary: number;
+    length: number;
+    volume: number;
+    difficulty: number;
+    effort: number;
+  };
+}
+
+export interface MemoryMetrics {
+  heapUsed: number;
+  heapTotal: number;
+  external: number;
+  rss: number;
+  peakUsage: number;
+  gcEvents: number;
+  objectPoolHits: number;
+  objectPoolMisses: number;
+}
+
+export interface ConcurrencyStats {
+  tasksCompleted: number;
+  tasksQueued: number;
+  averageTaskTime: number;
+  currentConcurrency: number;
+  backpressureEvents: number;
 }
 
 export interface DuplicateCluster {
@@ -175,6 +209,10 @@ export interface AnalysisConfig {
       maxLines: number;
     };
   };
+  // Memory optimization settings
+  useOptimizations?: boolean; // Enable memory optimizations
+  maxMemoryUsage?: number; // Memory limit in bytes
+  enableStreaming?: boolean; // Enable streaming for large datasets
 }
 
 export type OutputFormat = 'json' | 'html' | 'markdown' | 'csv' | 'xml';

@@ -1,12 +1,22 @@
 {
-  "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["es2020", "dom"],
+    "allowJs": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@theme/*": ["./src/theme/*"],
-      "@docusaurus/*": ["./node_modules/@docusaurus/*/lib/*"]
-    }
+      "@theme/*": ["./src/theme/*"]
+    },
+    "outDir": "./dist",
+    "rootDir": ".",
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*",

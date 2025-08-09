@@ -1,0 +1,195 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  e2e-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run E2E tests (Shard ${{ matrix.shard }}/4)
+      run: npx playwright test --shard=${{ matrix.shard }}/4
+    
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.shard }}
+        path: playwright-report/
+        retention-days: 30
+    
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.shard }}
+        path: test-results/
+        retention-days: 30
+
+  # Performance baseline tests (run separately for consistent metrics)
+  performance-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run Performance Tests
+      run: npm run test:e2e:performance
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-report
+        path: test-results/
+        retention-days: 30
+
+  # Security tests (run on all browsers for thorough coverage)
+  security-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run Security Tests on ${{ matrix.browser }}
+      run: npx playwright test tests/e2e/security/ --project=${{ matrix.browser }}
+    
+    - name: Upload security results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-report-${{ matrix.browser }}
+        path: test-results/
+        retention-days: 30
+
+  # Mobile tests (specific devices)
+  mobile-tests:
+    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        device: ['Mobile Chrome', 'Mobile Safari']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run Mobile Tests on ${{ matrix.device }}
+      run: npx playwright test tests/e2e/mobile/ --project="${{ matrix.device }}"
+    
+    - name: Upload mobile results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: mobile-report-${{ matrix.device }}
+        path: test-results/
+        retention-days: 30
+
+  # Generate combined report
+  report:
+    if: always()
+    needs: [e2e-tests, performance-tests, security-tests, mobile-tests]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/download-artifact@v4
+      with:
+        path: all-reports
+    
+    - name: Combine reports
+      run: |
+        mkdir -p combined-report
+        for report_dir in all-reports/*/; do
+          if [ -d "$report_dir" ]; then
+            cp -r "$report_dir"* combined-report/ || true
+          fi
+        done
+    
+    - name: Upload combined report
+      uses: actions/upload-artifact@v4
+      with:
+        name: combined-e2e-report
+        path: combined-report/
+        retention-days: 30
+    
+    # Optional: Deploy report to GitHub Pages
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: combined-report
+        destination_dir: e2e-reports/${{ github.run_number }}

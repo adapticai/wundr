@@ -26,7 +26,7 @@
     "wundr",
     "{{PACKAGE_NAME}}"
   ],
-  "author": "Lumic.ai",
+  "author": "Wundr, by Adaptic.ai",
   "license": "MIT",
   "repository": {
     "type": "git",

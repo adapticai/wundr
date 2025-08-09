@@ -1,0 +1,399 @@
+name: Security Scans
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  # CodeQL security analysis
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'typescript']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.15.0'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  # Dependency vulnerability scanning
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.15.0'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run npm audit
+        run: |
+          # Run audit and capture results
+          pnpm audit --audit-level high --json > audit-results.json || true
+          
+          # Check for high/critical vulnerabilities
+          HIGH_VULNS=$(cat audit-results.json | jq -r '.advisories | length')
+          
+          if [ "$HIGH_VULNS" -gt "0" ]; then
+            echo "⚠️ Found $HIGH_VULNS high/critical vulnerabilities"
+            cat audit-results.json | jq -r '.advisories[] | "- \(.title): \(.url)"'
+            exit 1
+          else
+            echo "✅ No high/critical vulnerabilities found"
+          fi
+
+      - name: Check for outdated packages
+        run: |
+          pnpm outdated --format json > outdated-packages.json || true
+          
+          # Check for severely outdated packages (>1 major version behind)
+          OUTDATED_COUNT=$(cat outdated-packages.json | jq '. | length')
+          
+          if [ "$OUTDATED_COUNT" -gt "10" ]; then
+            echo "⚠️ Found $OUTDATED_COUNT outdated packages"
+            echo "Consider updating dependencies"
+          fi
+
+      - name: Upload audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: |
+            audit-results.json
+            outdated-packages.json
+          retention-days: 30
+
+  # Container security scanning
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          load: true
+          tags: wundr:security-scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'wundr:security-scan'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy config scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-config-results.sarif'
+
+      - name: Upload Trivy config scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-config-results.sarif'
+
+  # SAST (Static Application Security Testing)
+  sast-scan:
+    name: SAST Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.15.0'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint security plugin
+        run: |
+          # Run ESLint with security rules
+          pnpm lint -- --format json --output-file eslint-security.json || true
+
+      - name: Run semgrep security scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+          generateSarif: "1"
+
+      - name: Upload semgrep scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+      - name: Upload ESLint results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-security-results
+          path: eslint-security.json
+          retention-days: 30
+
+  # Secret scanning
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Run GitGuardian scan
+        uses: GitGuardian/ggshield-action@v1.25.0
+        env:
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+
+  # License compliance
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.15.0'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check licenses
+        run: |
+          # Install license checker
+          npm install -g license-checker
+          
+          # Generate license report
+          license-checker --json --out licenses.json
+          
+          # Check for problematic licenses
+          PROBLEMATIC_LICENSES="GPL-2.0,GPL-3.0,AGPL-1.0,AGPL-3.0,CPAL-1.0,OSL-3.0"
+          
+          if license-checker --excludePackages "dummy" --excludePrivatePackages --restrictLicenses "$PROBLEMATIC_LICENSES" --summary; then
+            echo "✅ No problematic licenses found"
+          else
+            echo "❌ Problematic licenses detected"
+            exit 1
+          fi
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: licenses.json
+          retention-days: 30
+
+  # Infrastructure as Code security
+  iac-security:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'  # Skip on scheduled runs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov security scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: dockerfile,kubernetes,docker_compose
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+
+      - name: Upload Checkov scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+
+      - name: Validate Kubernetes security policies
+        run: |
+          # Check for security best practices in K8s manifests
+          echo "Validating Kubernetes security policies..."
+          
+          # Check for non-root user
+          if grep -r "runAsUser.*0" k8s/; then
+            echo "❌ Found containers running as root"
+            exit 1
+          fi
+          
+          # Check for privileged containers
+          if grep -r "privileged.*true" k8s/; then
+            echo "❌ Found privileged containers"
+            exit 1
+          fi
+          
+          # Check for resource limits
+          if ! grep -r "resources:" k8s/ | grep -q "limits:"; then
+            echo "❌ Missing resource limits"
+            exit 1
+          fi
+          
+          echo "✅ Kubernetes security validation passed"
+
+  # Security report aggregation
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [codeql, dependency-scan, container-security, sast-scan, secret-scan, license-check, iac-security]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate security summary
+        run: |
+          echo "# Security Scan Summary" > security-summary.md
+          echo "" >> security-summary.md
+          echo "**Scan Date:** $(date)" >> security-summary.md
+          echo "**Commit:** ${{ github.sha }}" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          # Job results summary
+          echo "## Scan Results" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          echo "| Scan Type | Status |" >> security-summary.md
+          echo "|-----------|--------|" >> security-summary.md
+          echo "| CodeQL Analysis | ${{ needs.codeql.result }} |" >> security-summary.md
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |" >> security-summary.md
+          echo "| Container Security | ${{ needs.container-security.result }} |" >> security-summary.md
+          echo "| SAST Scan | ${{ needs.sast-scan.result }} |" >> security-summary.md
+          echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> security-summary.md
+          echo "| License Check | ${{ needs.license-check.result }} |" >> security-summary.md
+          echo "| IaC Security | ${{ needs.iac-security.result }} |" >> security-summary.md
+          
+          # Overall status
+          if [[ "${{ needs.codeql.result }}" == "success" && 
+                "${{ needs.dependency-scan.result }}" == "success" && 
+                "${{ needs.container-security.result }}" == "success" && 
+                "${{ needs.sast-scan.result }}" == "success" && 
+                "${{ needs.secret-scan.result }}" == "success" && 
+                "${{ needs.license-check.result }}" == "success" && 
+                "${{ needs.iac-security.result }}" == "success" ]]; then
+            echo "" >> security-summary.md
+            echo "🛡️ **Overall Status: SECURE** - All security scans passed" >> security-summary.md
+          else
+            echo "" >> security-summary.md
+            echo "⚠️ **Overall Status: ATTENTION REQUIRED** - Some security scans failed" >> security-summary.md
+          fi
+
+      - name: Comment PR with security summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Upload security summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-summary
+          path: security-summary.md
+          retention-days: 90

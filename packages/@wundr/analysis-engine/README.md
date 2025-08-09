@@ -474,7 +474,7 @@ npm run test:watch
 
 ## License
 
-MIT © [Lumic.ai](https://lumic.ai)
+MIT © [Wundr, by Adaptic.ai](https://adaptic.ai)
 
 ## Support
 

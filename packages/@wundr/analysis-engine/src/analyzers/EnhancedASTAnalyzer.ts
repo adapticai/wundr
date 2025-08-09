@@ -35,6 +35,9 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private imports: Map<string, Set<string>> = new Map();
   private exports: Map<string, Set<string>> = new Map();
   
+  // Add program property to match base class expectations
+  protected override program: ts.Program | null = null;
+  
   // Performance optimizations
   private entityBatch: EntityInfo[] = [];
   private batchSize = 1000;
@@ -69,6 +72,9 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
     // Get optimized TypeScript program and type checker
     this.tsProgram = (this.project as any).getProgram?.()?.compilerObject;
     this.typeChecker = this.tsProgram?.getTypeChecker();
+    
+    // Initialize the program property for base class compatibility
+    this.program = this.tsProgram;
   }
 
   /**
@@ -374,7 +380,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         const cluster = {
           id: createId(),
           hash,
-          type: duplicateEntities[0].type,
+          type: duplicateEntities[0]?.type || 'unknown',
           severity: this.calculateDuplicateSeverity(duplicateEntities),
           entities: duplicateEntities,
           structuralMatch: true,
@@ -760,8 +766,9 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   }
 
   private getVisibility(node: ts.ClassElement): 'public' | 'private' | 'protected' {
-    if (node.modifiers) {
-      for (const modifier of node.modifiers) {
+    const modifiers = (node as any).modifiers as ts.Modifier[] | undefined;
+    if (modifiers) {
+      for (const modifier of modifiers) {
         if (modifier.kind === ts.SyntaxKind.PrivateKeyword) return 'private';
         if (modifier.kind === ts.SyntaxKind.ProtectedKeyword) return 'protected';
       }
@@ -981,6 +988,8 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private generateConsolidationSuggestion(entities: EntityInfo[]): any {
     const primaryEntity = entities[0];
+    if (!primaryEntity) return null;
+    
     const strategy = primaryEntity.type === 'interface' ? 'merge' : 
                     primaryEntity.type === 'class' ? 'extract' : 'refactor';
 

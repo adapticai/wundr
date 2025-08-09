@@ -9,6 +9,9 @@ import * as ts from 'typescript';
 import { glob } from 'glob';
 import chalk from 'chalk';
 import ora, { Ora } from 'ora';
+import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
+import { WorkerPoolManager } from '../workers/WorkerPoolManager';
+import { MemoryMonitor } from '../monitoring/MemoryMonitor';
 
 import {
   AnalysisConfig,
@@ -52,12 +55,22 @@ export abstract class BaseAnalysisService {
   protected spinner: Ora;
   protected progressCallback?: AnalysisProgressCallback;
   
-  // Performance tracking
+  // Performance tracking and optimization
   private startTime: number = 0;
   private fileCache = new Map<string, ts.SourceFile>();
   private analysisCache = new Map<string, any>();
   private memoryUsage: { peak: number; average: number } = { peak: 0, average: 0 };
   private cacheHits = 0;
+  
+  // Memory optimization components
+  private streamingProcessor: StreamingFileProcessor;
+  private workerPool: WorkerPoolManager;
+  private memoryMonitor: MemoryMonitor;
+  private objectPools = {
+    entities: [] as EntityInfo[],
+    buffers: [] as Buffer[],
+    arrays: [] as any[][]
+  };
 
   constructor(name: string, config: Partial<AnalysisConfig & ServiceConfig>) {
     const defaultConfig: AnalysisConfig & ServiceConfig = {
@@ -93,6 +106,29 @@ export abstract class BaseAnalysisService {
 
     this.config = { ...defaultConfig, ...config };
     this.spinner = ora({ color: 'cyan' });
+    
+    // Initialize optimization components
+    this.streamingProcessor = new StreamingFileProcessor({
+      chunkSize: 32 * 1024, // 32KB chunks for memory efficiency
+      maxMemoryUsage: 100 * 1024 * 1024, // 100MB limit
+      workerPoolSize: this.config.performance.maxConcurrency,
+      bufferSize: 512 * 1024 // 512KB buffer
+    });
+    
+    this.workerPool = new WorkerPoolManager({
+      minWorkers: Math.max(2, Math.floor(this.config.performance.maxConcurrency * 0.5)),
+      maxWorkers: Math.max(30, this.config.performance.maxConcurrency * 2), // Target 30+ workers
+      enableAutoScaling: true,
+      workerScript: path.join(__dirname, '../workers/analysis-worker.js')
+    });
+    
+    this.memoryMonitor = new MemoryMonitor({
+      snapshotInterval: 10000, // 10 second intervals
+      maxSnapshots: 500,
+      outputDir: path.join(this.config.outputDir || '.', 'memory-profiles')
+    });
+    
+    this.setupMemoryOptimizations();
   }
 
   /**
@@ -132,21 +168,24 @@ export abstract class BaseAnalysisService {
   }
 
   /**
-   * Main analysis method with performance optimizations
+   * Main analysis method with advanced memory optimization and concurrency
    */
   async analyze(): Promise<ServiceResult<AnalysisReport>> {
     this.startTime = Date.now();
-    this.emitProgress({ type: 'phase', message: 'Initializing analysis...' });
+    this.emitProgress({ type: 'phase', message: 'Initializing high-performance analysis...' });
     
     try {
       if (this.config.verbose) {
-        this.spinner.start('Starting analysis...');
+        this.spinner.start('Starting optimized analysis...');
       }
 
+      // Start memory monitoring
+      await this.memoryMonitor.startMonitoring();
+      
       await this.initialize();
       
-      // Get target files with caching
-      const files = await this.getTargetFiles();
+      // Get target files with caching and streaming
+      const files = await this.getTargetFilesOptimized();
       if (files.length === 0) {
         throw new Error('No files found to analyze');
       }
@@ -156,26 +195,35 @@ export abstract class BaseAnalysisService {
         phase: 'file-discovery',
         progress: files.length,
         total: files.length,
-        message: `Found ${files.length} files`
+        message: `Found ${files.length} files (using streaming optimization)`
       });
 
-      // Create TypeScript program with optimization
-      this.createOptimizedProgram(files);
+      // Use streaming analysis for large codebases
+      let entities: EntityInfo[];
+      let analysisResults: any;
       
-      // Perform analysis with concurrency
-      const entities = await this.extractEntitiesOptimized(files);
-      const analysisResults = await this.performAnalysis(entities);
+      if (files.length > 1000 || this.getTotalFileSize(files) > 50 * 1024 * 1024) {
+        // Large codebase - use streaming
+        ({ entities, analysisResults } = await this.performStreamingAnalysis(files));
+      } else {
+        // Small codebase - use optimized traditional approach
+        this.createOptimizedProgram(files);
+        entities = await this.extractEntitiesOptimizedConcurrent(files);
+        analysisResults = await this.performAnalysisConcurrent(entities);
+      }
       
-      // Generate report
-      const report = await this.generateReport(files, entities, analysisResults);
+      // Generate report with memory optimization
+      const report = await this.generateReportOptimized(files, entities, analysisResults);
       
       // Save report in multiple formats
       await this.saveReport(report);
       
       const duration = Date.now() - this.startTime;
+      const memoryMetrics = this.memoryMonitor.getMetrics();
+      
       this.emitProgress({ 
         type: 'complete', 
-        message: `Analysis completed in ${formatDuration(duration)}`
+        message: `Analysis completed in ${formatDuration(duration)} (Peak memory: ${formatFileSize(memoryMetrics.peak.heapUsed)})`
       });
 
       return {
@@ -188,17 +236,17 @@ export abstract class BaseAnalysisService {
       const duration = Date.now() - this.startTime;
       this.emitProgress({ 
         type: 'error', 
-        message: `Analysis failed: ${error.message}`,
-        error: error as Error
+        message: `Analysis failed: ${error instanceof Error ? error.message : String(error)}`,
+        error: error instanceof Error ? error : new Error(String(error))
       });
       
       return {
         success: false,
-        error: error as Error,
+        error: error instanceof Error ? error : new Error(String(error)),
         duration
       };
     } finally {
-      await this.cleanup();
+      await this.cleanupOptimized();
     }
   }
 
@@ -269,7 +317,7 @@ export abstract class BaseAnalysisService {
           }
         } catch (error) {
           if (this.config.verbose) {
-            console.warn(`Error reading file ${file}: ${error.message}`);
+            console.warn(`Error reading file ${file}: ${error instanceof Error ? error.message : String(error)}`);
           }
         }
       },

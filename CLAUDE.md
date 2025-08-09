@@ -1,11 +1,58 @@
 # Claude Code Configuration - SPARC Development Environment with MCP Tools
 
+## 🚨 CRITICAL: VERIFICATION PROTOCOL & REALITY CHECKS
+
+### MANDATORY: ALWAYS VERIFY, NEVER ASSUME
+
+**After EVERY code change or implementation:**
+1. **TEST IT**: Run the actual command and show real output
+2. **PROVE IT**: Show file contents, build results, test output  
+3. **FAIL LOUDLY**: If something fails, say "❌ FAILED:" immediately
+4. **VERIFY SUCCESS**: Only claim "complete" after showing it working
+
+**NEVER claim completion without:**
+- Actual terminal output proving it works
+- Build command succeeding (`npm run build`, etc.)
+- Tests passing (if applicable)
+- The feature demonstrably working
+
+**When something fails:**
+1. Report immediately: "❌ FAILURE: [specific error]"
+2. Show the actual error message
+3. Do NOT continue pretending it worked
+4. Do NOT claim partial success without verification
+
+### VERIFICATION CHECKPOINTS
+
+Before claiming ANY task complete:
+- [ ] Does the build succeed? (show `npm run build` output)
+- [ ] Do tests pass? (show test output)
+- [ ] Can you run it? (show execution)
+- [ ] Did you verify, not assume? (show proof)
+
+### HONESTY REQUIREMENTS
+
+You MUST:
+- Test every claim with actual commands
+- Show real terminal output (not fictional)
+- Say "I cannot verify this" if you can't test it
+- Report failures immediately and clearly
+- Track all failures in a list
+
+You MUST NOT:
+- Assume code works without testing
+- Create fictional success messages
+- Claim completion without verification
+- Hide, minimize, or gloss over failures
+- Generate imaginary terminal output
+
 ## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
 **ABSOLUTE RULES**:
 1. ALL operations MUST be concurrent/parallel in a single message
 2. **NEVER save working files, text/mds and tests to the root folder**
 3. ALWAYS organize files in appropriate subdirectories
+4. **ALWAYS VERIFY before claiming success**
 
 ### ⚡ GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
 

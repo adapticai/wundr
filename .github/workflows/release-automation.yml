@@ -319,7 +319,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
-          cname: wundr.lumic.ai
+          cname: wundr.adaptic.ai
 
   notify-release:
     name: Notify Release
@@ -356,7 +356,7 @@ jobs:
             ### 🔗 Links
 
             - **Release Notes:** ${releaseUrl}
-            - **Documentation:** https://wundr.lumic.ai
+            - **Documentation:** https://wundr.adaptic.ai
             - **NPM Package:** https://www.npmjs.com/package/@lumic/wundr
 
             ### 🙏 Thanks

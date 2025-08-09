@@ -42,7 +42,7 @@ export default function DocsPage() {
         <h1 className='text-3xl font-bold'>Documentation</h1>
         <p className='text-muted-foreground mt-2'>
           Everything you need to know about Wundr - Intelligent Monorepo
-          Analysis by Lumic.ai
+          Analysis by Wundr, by Adaptic.ai
         </p>
       </div>
 

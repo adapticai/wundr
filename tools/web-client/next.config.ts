@@ -123,7 +123,7 @@ const nextConfig: NextConfig = {
       // Allow Node.js modules on server side
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        canvas: require.resolve('canvas'),
+        canvas: false,
       };
     }
 

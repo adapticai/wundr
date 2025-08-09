@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Sparkles, Zap, Shield, Globe } from 'lucide-react';
+import { Globe, Shield, Sparkles, Zap } from 'lucide-react';
 
 const features = [
   {
@@ -48,8 +48,9 @@ export default function AboutPage() {
           Transform your monorepo with intelligent code analysis and refactoring
         </p>
         <p className='text-sm text-muted-foreground'>
-          A product by <span className='font-semibold'>Lumic.ai</span> -
-          Building the future of developer tools
+          A product by{' '}
+          <span className='font-semibold'>Wundr, by Adaptic.ai</span> - Building
+          the future of developer tools
         </p>
       </div>
 
@@ -92,10 +93,10 @@ export default function AboutPage() {
           </p>
           <div className='pt-4 border-t'>
             <p className='text-sm text-muted-foreground'>
-              <strong>Lumic.ai</strong> is dedicated to creating developer tools
-              that enhance productivity and code quality. Wundr represents our
-              commitment to solving real-world challenges faced by engineering
-              teams working with large-scale codebases.
+              <strong>Wundr, by Adaptic.ai</strong> is dedicated to creating
+              developer tools that enhance productivity and code quality. Wundr
+              represents our commitment to solving real-world challenges faced
+              by engineering teams working with large-scale codebases.
             </p>
           </div>
         </CardContent>

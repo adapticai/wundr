@@ -243,8 +243,8 @@ export class InitCommands {
    */
   private async createDefaultStructure(projectPath: string, options: any): Promise<void> {
     const directories = options.monorepo 
-      ? ['packages', 'apps', 'tools', 'docs']
-      : ['src', 'tests', 'docs'];
+      ? ['packages', 'apps', 'tools', 'docs', 'scripts', '.claude-flow']
+      : ['src', 'tests', 'docs', 'scripts', '.claude-flow'];
 
     for (const dir of directories) {
       await fs.ensureDir(path.join(projectPath, dir));
@@ -260,7 +260,8 @@ export class InitCommands {
         build: 'wundr build',
         test: 'wundr test',
         lint: 'wundr lint',
-        analyze: 'wundr analyze'
+        analyze: 'wundr analyze',
+        verify: './scripts/verify-claims.sh'
       },
       devDependencies: {
         '@wundr/cli': '^1.0.0'
@@ -273,6 +274,9 @@ export class InitCommands {
     // Create README
     const readme = this.generateReadme(path.basename(projectPath), options);
     await fs.writeFile(path.join(projectPath, 'README.md'), readme);
+
+    // Create verification files
+    await this.createVerificationFiles(projectPath);
   }
 
   /**
@@ -418,5 +422,234 @@ Run \`wundr init config --interactive\` to set up your preferences.
     // Implementation for dependency installation
     logger.debug('Installing dependencies...');
     // This would call npm/yarn/pnpm install
+  }
+
+  /**
+   * Create verification files for preventing hallucinations
+   */
+  private async createVerificationFiles(projectPath: string): Promise<void> {
+    // Create CLAUDE.md with verification protocols
+    const claudeMd = `# Claude Code Configuration - WITH VERIFICATION PROTOCOLS
+
+## 🚨 CRITICAL: VERIFICATION PROTOCOL & REALITY CHECKS
+
+### MANDATORY: ALWAYS VERIFY, NEVER ASSUME
+
+**After EVERY code change or implementation:**
+1. **TEST IT**: Run the actual command and show real output
+2. **PROVE IT**: Show file contents, build results, test output  
+3. **FAIL LOUDLY**: If something fails, say "❌ FAILED:" immediately
+4. **VERIFY SUCCESS**: Only claim "complete" after showing it working
+
+**FORBIDDEN BEHAVIORS:**
+- ❌ NEVER claim "build successful" without running build
+- ❌ NEVER say "tests pass" without running tests
+- ❌ NEVER report "implemented" without verification
+- ❌ NEVER hide or minimize errors
+- ❌ NEVER generate fictional terminal output
+- ❌ NEVER assume code works because you wrote it
+
+**REQUIRED BEHAVIORS:**
+- ✅ Run actual commands
+- ✅ Show real output
+- ✅ Report failures immediately
+- ✅ Document issues in FAILURES.md
+- ✅ Test before claiming done
+- ✅ Be honest about state
+
+### FAILURE REPORTING FORMAT
+\`\`\`
+❌ FAILURE: [Component Name]
+Error: [Exact error message]
+Location: [File and line if available]
+Status: BLOCKED/PARTIAL/NEEDS_INVESTIGATION
+\`\`\`
+
+### SUCCESS REPORTING FORMAT
+\`\`\`
+✅ VERIFIED: [Component Name]
+Build Output: [Show actual npm run build success]
+Test Output: [Show actual test results]
+Execution: [Show feature actually running]
+\`\`\`
+
+## Project Commands
+
+- \`npm run build\` - Build the project
+- \`npm run test\` - Run tests
+- \`npm run verify\` - Run verification script
+- \`wundr analyze\` - Analyze project
+`;
+
+    await fs.writeFile(path.join(projectPath, 'CLAUDE.md'), claudeMd);
+
+    // Create verification script
+    const verifyScript = `#!/bin/bash
+
+# Verification Script - MUST pass before claiming tasks complete
+set -e
+
+RED='\\033[0;31m'
+GREEN='\\033[0;32m'
+YELLOW='\\033[1;33m'
+NC='\\033[0m'
+
+echo "================================================"
+echo "🔍 VERIFICATION SCRIPT"
+echo "================================================"
+
+FAILURES=0
+SUCCESSES=0
+
+test_command() {
+    local description=$1
+    local command=$2
+    
+    echo -n "Testing: $description... "
+    
+    if eval "$command" > /dev/null 2>&1; then
+        echo -e "\${GREEN}✅ PASSED\${NC}"
+        ((SUCCESSES++))
+    else
+        echo -e "\${RED}❌ FAILED\${NC}"
+        echo "  Command: $command"
+        ((FAILURES++))
+    fi
+}
+
+echo "1. CHECKING BUILD SYSTEM"
+test_command "Project build" "npm run build"
+
+echo ""
+echo "2. CHECKING TESTS"
+test_command "Project tests" "npm test"
+
+echo ""
+echo "================================================"
+echo -e "Successes: \${GREEN}$SUCCESSES\${NC}"
+echo -e "Failures:  \${RED}$FAILURES\${NC}"
+
+if [ $FAILURES -gt 0 ]; then
+    echo -e "\${RED}❌ VERIFICATION FAILED\${NC}"
+    echo "Cannot claim tasks complete with $FAILURES failures!"
+    exit 1
+else
+    echo -e "\${GREEN}✅ ALL VERIFICATIONS PASSED\${NC}"
+    exit 0
+fi
+`;
+
+    await fs.writeFile(path.join(projectPath, 'scripts', 'verify-claims.sh'), verifyScript);
+    await fs.chmod(path.join(projectPath, 'scripts', 'verify-claims.sh'), '755');
+
+    // Create FAILURES.md
+    const failuresMd = `# Failure Tracking
+
+This file tracks actual failures encountered during development.
+Always update this when encountering issues that block progress.
+
+## Format
+
+### [Date] - [Component]
+**Error**: Exact error message
+**Command**: Command that failed
+**Status**: BLOCKED/PARTIAL/RESOLVED
+**Solution**: What fixed it (if resolved)
+
+---
+
+## Active Failures
+
+_(None yet - will be populated when failures occur)_
+
+## Resolved Failures
+
+_(None yet - will be populated when failures are resolved)_
+`;
+
+    await fs.writeFile(path.join(projectPath, 'docs', 'FAILURES.md'), failuresMd);
+
+    // Create verification hooks
+    const verificationHooks = {
+      version: '1.0.0',
+      hooks: {
+        'pre-completion': {
+          enabled: true,
+          required: true,
+          commands: ['./scripts/verify-claims.sh'],
+          failureMessage: '❌ Cannot mark complete - verification failed!'
+        },
+        'post-implementation': {
+          enabled: true,
+          commands: ['npm run build', 'npm test'],
+          continueOnFailure: false
+        },
+        'reality-check': {
+          enabled: true,
+          interval: 'after-each-task',
+          checks: [
+            'build-passes',
+            'tests-pass',
+            'no-typescript-errors',
+            'dependencies-installed'
+          ]
+        }
+      },
+      enforcement: {
+        blockHallucinatedSuccess: true,
+        requireActualOutput: true,
+        documentFailures: true,
+        verifyBeforeClaiming: true
+      }
+    };
+
+    await fs.writeJson(
+      path.join(projectPath, '.claude-flow', 'verification-hooks.json'),
+      verificationHooks,
+      { spaces: 2 }
+    );
+
+    // Create agent verification protocol
+    const agentProtocol = `# 🚨 AGENT VERIFICATION PROTOCOL
+
+## MANDATORY FOR ALL AGENTS
+
+### CORE PRINCIPLE: VERIFY, DON'T HALLUCINATE
+
+## BEFORE CLAIMING SUCCESS
+
+**ALWAYS run these commands and show output:**
+\`\`\`bash
+npm run build  # or appropriate build command
+npm test       # if tests exist
+\`\`\`
+
+## FORBIDDEN BEHAVIORS
+
+**NEVER DO THIS:**
+- ❌ Claim "build successful" without running build
+- ❌ Say "tests pass" without running tests
+- ❌ Report "implemented" without verification
+- ❌ Hide or minimize errors
+- ❌ Generate fictional terminal output
+
+## REQUIRED BEHAVIORS
+
+**ALWAYS DO THIS:**
+- ✅ Run actual commands
+- ✅ Show real output
+- ✅ Report failures immediately
+- ✅ Document issues in FAILURES.md
+- ✅ Test before claiming done
+
+Remember: It's better to report a failure honestly than to claim false success.
+`;
+
+    await fs.writeFile(
+      path.join(projectPath, 'docs', 'AGENT_VERIFICATION_PROTOCOL.md'),
+      agentProtocol
+    );
+
+    logger.debug('Verification files created');
   }
 }

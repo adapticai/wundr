@@ -224,4 +224,68 @@ describe('CredentialManager', () => {
       expect(results).toHaveLength(1); // Only one successful
     });
   });
+
+  describe('encryption/decryption', () => {
+    it('should encrypt and decrypt passwords correctly with AES-256-GCM', async () => {
+      const password = 'test-password-123';
+      const credentialId = await credentialManager.storeCredential({
+        service: 'test-service',
+        account: 'test-user',
+        password,
+      });
+
+      mockKeytar.setPassword.mockResolvedValue(undefined);
+      const retrieved = await credentialManager.retrieveCredential(credentialId);
+      expect(retrieved?.password).toBe(password);
+    });
+
+    it('should generate unique IVs for each encryption', async () => {
+      const password = 'same-password';
+      
+      mockKeytar.setPassword.mockResolvedValue(undefined);
+      
+      const credentialId1 = await credentialManager.storeCredential({
+        service: 'test-service-1',
+        account: 'test-user',
+        password,
+      });
+      
+      const credentialId2 = await credentialManager.storeCredential({
+        service: 'test-service-2',
+        account: 'test-user',
+        password,
+      });
+
+      // Get the encrypted credentials from the internal store
+      const cred1 = credentialManager['credentialStore'].get(credentialId1);
+      const cred2 = credentialManager['credentialStore'].get(credentialId2);
+      
+      // IVs should be different even for the same password
+      expect(cred1?.iv).not.toBe(cred2?.iv);
+      // Encrypted data should be different due to different IVs
+      expect(cred1?.encryptedPassword).not.toBe(cred2?.encryptedPassword);
+      // Both should use encryption version 2
+      expect(cred1?.encryptionVersion).toBe(2);
+      expect(cred2?.encryptionVersion).toBe(2);
+    });
+
+    it('should handle authentication tag verification', async () => {
+      const password = 'test-password-auth-tag';
+      
+      mockKeytar.setPassword.mockResolvedValue(undefined);
+      
+      const credentialId = await credentialManager.storeCredential({
+        service: 'auth-test-service',
+        account: 'auth-test-user',
+        password,
+      });
+
+      const credential = credentialManager['credentialStore'].get(credentialId);
+      expect(credential?.authTag).toBeDefined();
+      expect(credential?.authTag).toHaveLength(32); // 16 bytes = 32 hex chars
+      
+      const retrieved = await credentialManager.retrieveCredential(credentialId);
+      expect(retrieved?.password).toBe(password);
+    });
+  });
 });

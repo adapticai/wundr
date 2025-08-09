@@ -11,13 +11,13 @@ interface WundrLogoFullProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({ 
+export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({
   className = '',
   theme = 'auto',
   orientation = 'horizontal',
   showTagline = true,
   showAttribution = true,
-  size = 'md'
+  size = 'md',
 }) => {
   // Size configurations
   const sizeConfig = {
@@ -29,7 +29,7 @@ export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({
       taglineSize: 'text-[10px]',
       attributionSize: 'text-[9px]',
       verticalGap: 'gap-1.5',
-      taglineGap: 'mt-0.5'
+      taglineGap: 'mt-0.5',
     },
     md: {
       logoSize: 32,
@@ -39,7 +39,7 @@ export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({
       taglineSize: 'text-xs',
       attributionSize: 'text-[10px]',
       verticalGap: 'gap-2',
-      taglineGap: 'mt-1'
+      taglineGap: 'mt-1',
     },
     lg: {
       logoSize: 48,
@@ -49,7 +49,7 @@ export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({
       taglineSize: 'text-sm',
       attributionSize: 'text-xs',
       verticalGap: 'gap-3',
-      taglineGap: 'mt-1.5'
+      taglineGap: 'mt-1.5',
     },
     xl: {
       logoSize: 64,
@@ -59,12 +59,12 @@ export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({
       taglineSize: 'text-base',
       attributionSize: 'text-sm',
       verticalGap: 'gap-4',
-      taglineGap: 'mt-2'
-    }
+      taglineGap: 'mt-2',
+    },
   };
 
   const config = sizeConfig[size];
-  
+
   // Theme-aware text colors
   const getTextColorClass = (opacity: number) => {
     if (theme === 'auto') {
@@ -74,60 +74,75 @@ export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({
   };
 
   const getTextColorStyle = (opacity: number) => {
-    if (theme === 'light') return { color: `#0E1A24${Math.round(opacity * 255).toString(16).padStart(2, '0')}` };
-    if (theme === 'dark') return { color: `#FFFFFF${Math.round(opacity * 255).toString(16).padStart(2, '0')}` };
+    if (theme === 'light')
+      return {
+        color: `#0E1A24${Math.round(opacity * 255)
+          .toString(16)
+          .padStart(2, '0')}`,
+      };
+    if (theme === 'dark')
+      return {
+        color: `#FFFFFF${Math.round(opacity * 255)
+          .toString(16)
+          .padStart(2, '0')}`,
+      };
     return {};
   };
 
   // Vertical layout
   if (orientation === 'vertical') {
     return (
-      <div className={`flex flex-col items-center ${config.verticalGap} ${className}`}>
+      <div
+        className={`flex flex-col items-center ${config.verticalGap} ${className}`}
+      >
         {/* Logo */}
         <WundrLogo size={config.logoSize} theme={theme} />
-        
+
         {/* Wordmark */}
         <div style={{ transform: `scale(${config.wordmarkScale})` }}>
           <WundrWordmark theme={theme} />
         </div>
-        
+
         {/* Tagline and Attribution */}
         {(showTagline || showAttribution) && (
           <div className={`text-center ${config.taglineGap} max-w-[280px]`}>
             {showTagline && (
-              <div className="space-y-0.5">
-                <p 
+              <div className='space-y-0.5'>
+                <p
                   className={`${config.taglineSize} leading-relaxed font-medium ${getTextColorClass(70)}`}
                   style={{
-                    fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+                    fontFamily:
+                      "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
                     letterSpacing: '-0.01em',
-                    ...getTextColorStyle(0.7)
+                    ...getTextColorStyle(0.7),
                   }}
                 >
                   Transform your monorepo with intelligent
                 </p>
-                <p 
+                <p
                   className={`${config.taglineSize} leading-relaxed font-medium ${getTextColorClass(70)}`}
                   style={{
-                    fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+                    fontFamily:
+                      "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
                     letterSpacing: '-0.01em',
-                    ...getTextColorStyle(0.7)
+                    ...getTextColorStyle(0.7),
                   }}
                 >
                   code analysis and refactoring
                 </p>
               </div>
             )}
-            
+
             {showAttribution && (
-              <p 
+              <p
                 className={`${config.attributionSize} ${showTagline ? 'mt-2' : ''} font-normal ${getTextColorClass(50)}`}
                 style={{
-                  fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
-                  ...getTextColorStyle(0.5)
+                  fontFamily:
+                    "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+                  ...getTextColorStyle(0.5),
                 }}
               >
-                A product by Lumic.ai
+                A product by Wundr, by Adaptic.ai
               </p>
             )}
           </div>
@@ -135,45 +150,53 @@ export const WundrLogoFull: React.FC<WundrLogoFullProps> = ({
       </div>
     );
   }
-  
+
   // Horizontal layout
   return (
     <div className={`flex items-center ${config.gap} ${className}`}>
       {/* Logo */}
       <WundrLogo size={config.logoSize} theme={theme} />
-      
+
       {/* Content */}
-      <div className="flex flex-col justify-center">
+      <div className='flex flex-col justify-center'>
         {/* Wordmark */}
-        <div style={{ transform: `scale(${config.wordmarkScale})`, transformOrigin: 'left center' }}>
+        <div
+          style={{
+            transform: `scale(${config.wordmarkScale})`,
+            transformOrigin: 'left center',
+          }}
+        >
           <WundrWordmark theme={theme} />
         </div>
-        
+
         {/* Tagline and Attribution */}
         {(showTagline || showAttribution) && (
           <div className={`${config.taglineGap} max-w-[400px]`}>
             {showTagline && (
-              <p 
+              <p
                 className={`${config.taglineSize} leading-relaxed font-medium ${getTextColorClass(70)}`}
                 style={{
-                  fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+                  fontFamily:
+                    "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
                   letterSpacing: '-0.01em',
-                  ...getTextColorStyle(0.7)
+                  ...getTextColorStyle(0.7),
                 }}
               >
-                Transform your monorepo with intelligent code analysis and refactoring
+                Transform your monorepo with intelligent code analysis and
+                refactoring
               </p>
             )}
-            
+
             {showAttribution && (
-              <p 
+              <p
                 className={`${config.attributionSize} ${showTagline ? 'mt-0.5' : ''} font-normal ${getTextColorClass(50)}`}
                 style={{
-                  fontFamily: "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
-                  ...getTextColorStyle(0.5)
+                  fontFamily:
+                    "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+                  ...getTextColorStyle(0.5),
                 }}
               >
-                A product by Lumic.ai
+                A product by Wundr, by Adaptic.ai
               </p>
             )}
           </div>

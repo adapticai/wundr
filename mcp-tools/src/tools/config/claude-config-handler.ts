@@ -36,7 +36,49 @@ export class ClaudeConfigHandler {
   }
 
   private generateClaudeMd(features: string[]): string {
-    const claudeMdContent = `# Claude Code Configuration
+    const claudeMdContent = `# Claude Code Configuration - WITH VERIFICATION PROTOCOLS
+
+## 🚨 CRITICAL: VERIFICATION PROTOCOL & REALITY CHECKS
+
+### MANDATORY: ALWAYS VERIFY, NEVER ASSUME
+
+**After EVERY code change or implementation:**
+1. **TEST IT**: Run the actual command and show real output
+2. **PROVE IT**: Show file contents, build results, test output  
+3. **FAIL LOUDLY**: If something fails, say "❌ FAILED:" immediately
+4. **VERIFY SUCCESS**: Only claim "complete" after showing it working
+
+**FORBIDDEN BEHAVIORS:**
+- ❌ NEVER claim "build successful" without running build
+- ❌ NEVER say "tests pass" without running tests
+- ❌ NEVER report "implemented" without verification
+- ❌ NEVER hide or minimize errors
+- ❌ NEVER generate fictional terminal output
+- ❌ NEVER assume code works because you wrote it
+
+**REQUIRED BEHAVIORS:**
+- ✅ Run actual commands
+- ✅ Show real output
+- ✅ Report failures immediately
+- ✅ Document issues in FAILURES.md
+- ✅ Test before claiming done
+- ✅ Be honest about state
+
+### FAILURE REPORTING FORMAT
+\`\`\`
+❌ FAILURE: [Component Name]
+Error: [Exact error message]
+Location: [File and line if available]
+Status: BLOCKED/PARTIAL/NEEDS_INVESTIGATION
+\`\`\`
+
+### SUCCESS REPORTING FORMAT
+\`\`\`
+✅ VERIFIED: [Component Name]
+Build Output: [Show actual npm run build success]
+Test Output: [Show actual test results]
+Execution: [Show feature actually running]
+\`\`\`
 
 ## Project Overview
 This project uses the Wundr toolkit for systematic code quality management, governance, and standardization.

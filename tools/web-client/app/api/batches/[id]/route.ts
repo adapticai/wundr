@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { batchProcessingService } from '@/lib/services/batch/BatchProcessingService';
+import { BatchProcessingService } from '@/lib/services/batch/BatchProcessingService';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const batch = batchProcessingService.getBatch(id);
+    const batch = BatchProcessingService.getBatch(id);
     
     if (!batch) {
       return NextResponse.json(
@@ -47,25 +47,25 @@ export async function PATCH(
 
     switch (action) {
       case 'start':
-        await batchProcessingService.startBatch(id);
+        await BatchProcessingService.startBatch(id);
         break;
       case 'pause':
-        await batchProcessingService.pauseBatch(id);
+        await BatchProcessingService.pauseBatch(id);
         break;
       case 'resume':
-        await batchProcessingService.resumeBatch(id);
+        await BatchProcessingService.resumeBatch(id);
         break;
       case 'cancel':
-        await batchProcessingService.cancelBatch(id);
+        await BatchProcessingService.cancelBatch(id);
         break;
       case 'retry':
-        const newBatchId = await batchProcessingService.retryBatch(id);
+        const newBatchId = await BatchProcessingService.retryBatch(id);
         return NextResponse.json({
           success: true,
           data: { newBatchId }
         });
       case 'rollback':
-        await batchProcessingService.rollbackBatch(id);
+        await BatchProcessingService.rollbackBatch(id);
         break;
       default:
         return NextResponse.json(
@@ -77,7 +77,7 @@ export async function PATCH(
         );
     }
 
-    const batch = batchProcessingService.getBatch(id);
+    const batch = BatchProcessingService.getBatch(id);
     return NextResponse.json({
       success: true,
       data: batch
@@ -101,8 +101,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const { batchProcessingService } = await import('@/lib/services/batch/BatchProcessingService');
-    await batchProcessingService.cancelBatch(id);
+    const { BatchProcessingService } = await import('@/lib/services/batch/BatchProcessingService');
+    await BatchProcessingService.cancelBatch(id);
     
     return NextResponse.json({
       success: true,

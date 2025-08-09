@@ -1,8 +1,8 @@
+import { ThemeProvider } from '@/components/theme-provider';
+import { ConfigProvider } from '@/lib/contexts/config/config-context';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Space_Grotesk } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
-import { ConfigProvider } from '@/lib/contexts/config/config-context';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -23,7 +23,7 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: 'Wundr - Intelligent Monorepo Analysis',
   description:
-    'Transform your monorepo with intelligent code analysis, duplicate detection, and refactoring recommendations. Powered by Lumic.ai',
+    'Transform your monorepo with intelligent code analysis, duplicate detection, and refactoring recommendations. Powered by Wundr, by Adaptic.ai',
 };
 
 export default function RootLayout({
@@ -37,14 +37,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
+          attribute='class'
+          defaultTheme='system'
           enableSystem
           disableTransitionOnChange
         >
-          <ConfigProvider>
-            {children}
-          </ConfigProvider>
+          <ConfigProvider>{children}</ConfigProvider>
         </ThemeProvider>
       </body>
     </html>

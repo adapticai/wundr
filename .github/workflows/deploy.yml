@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Target environment'
+        description: "Target environment"
         required: true
         type: choice
         options:
@@ -15,15 +15,15 @@ on:
           - production
         default: staging
       version:
-        description: 'Version to deploy (leave empty for latest)'
+        description: "Version to deploy (leave empty for latest)"
         required: false
         type: string
       skip_health_check:
-        description: 'Skip health check after deployment'
+        description: "Skip health check after deployment"
         type: boolean
         default: false
       rollback:
-        description: 'Rollback to previous version'
+        description: "Rollback to previous version"
         type: boolean
         default: false
 
@@ -32,8 +32,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '8.15.0'
+  NODE_VERSION: "20"
+  PNPM_VERSION: "8.15.0"
 
 jobs:
   prepare-deployment:
@@ -58,7 +58,7 @@ jobs:
           else
             ENVIRONMENT="${{ github.event.inputs.environment }}"
           fi
-          
+
           # Determine version
           if [[ "${{ github.event.inputs.version }}" ]]; then
             VERSION="${{ github.event.inputs.version }}"
@@ -67,26 +67,26 @@ jobs:
           else
             VERSION="latest"
           fi
-          
+
           # Configure environment-specific settings
           case "$ENVIRONMENT" in
             "development")
-              DEPLOY_URL="https://dev.wundr.lumic.ai"
+              DEPLOY_URL="https://dev.wundr.adaptic.ai"
               ;;
             "staging")
-              DEPLOY_URL="https://staging.wundr.lumic.ai"
+              DEPLOY_URL="https://staging.wundr.adaptic.ai"
               ;;
             "production")
-              DEPLOY_URL="https://wundr.lumic.ai"
+              DEPLOY_URL="https://wundr.adaptic.ai"
               ;;
           esac
-          
+
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "deploy-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
           echo "is-production=$([ "$ENVIRONMENT" = "production" ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "rollback=${{ github.event.inputs.rollback || 'false' }}" >> $GITHUB_OUTPUT
-          
+
           echo "Deployment configuration:"
           echo "  Environment: $ENVIRONMENT"
           echo "  Version: $VERSION"
@@ -105,14 +105,14 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}:${{ needs.prepare-deployment.outputs.version }}'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          image-ref: "ghcr.io/${{ github.repository }}:${{ needs.prepare-deployment.outputs.version }}"
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
 
       - name: Fail on critical vulnerabilities
         run: |
@@ -148,14 +148,14 @@ jobs:
         run: |
           ENVIRONMENT="${{ needs.prepare-deployment.outputs.environment }}"
           VERSION="${{ needs.prepare-deployment.outputs.version }}"
-          
+
           # Update ECS service
           aws ecs update-service \
             --cluster "wundr-$ENVIRONMENT" \
             --service "wundr-$ENVIRONMENT" \
             --force-new-deployment \
             --task-definition "wundr-$ENVIRONMENT:latest"
-          
+
           # Wait for deployment to complete
           aws ecs wait services-stable \
             --cluster "wundr-$ENVIRONMENT" \
@@ -168,7 +168,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          vercel-args: "--prod"
           alias-domains: ${{ needs.prepare-deployment.outputs.deploy-url }}
 
       - name: Deploy to Railway
@@ -183,14 +183,14 @@ jobs:
         run: |
           ENVIRONMENT="${{ needs.prepare-deployment.outputs.environment }}"
           VERSION="${{ needs.prepare-deployment.outputs.version }}"
-          
+
           # Create kubeconfig
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
           export KUBECONFIG=kubeconfig
-          
+
           # Apply deployment
           envsubst < k8s/deployment.yaml | kubectl apply -f -
-          
+
           # Wait for rollout
           kubectl rollout status deployment/wundr-$ENVIRONMENT -n wundr-$ENVIRONMENT
         env:
@@ -218,10 +218,10 @@ jobs:
         run: |
           # Add database migration logic here
           echo "Running database migrations for ${{ needs.prepare-deployment.outputs.environment }}"
-          
+
           # Example with Prisma
           # npx prisma migrate deploy
-          
+
           # Example with custom migration script
           # node scripts/migrate.js
         env:
@@ -243,24 +243,24 @@ jobs:
           URL="${{ needs.prepare-deployment.outputs.deploy-url }}"
           MAX_ATTEMPTS=10
           WAIT_TIME=30
-          
+
           echo "Checking health of $URL"
-          
+
           for i in $(seq 1 $MAX_ATTEMPTS); do
             echo "Attempt $i/$MAX_ATTEMPTS"
-            
+
             if curl -f -s "$URL/health" > /dev/null; then
               echo "✅ Health check passed"
               echo "healthy=true" >> $GITHUB_OUTPUT
               exit 0
             fi
-            
+
             if [[ $i -lt $MAX_ATTEMPTS ]]; then
               echo "Health check failed, waiting ${WAIT_TIME}s..."
               sleep $WAIT_TIME
             fi
           done
-          
+
           echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
           echo "healthy=false" >> $GITHUB_OUTPUT
           exit 1
@@ -269,39 +269,39 @@ jobs:
         if: steps.health.outputs.healthy == 'true'
         run: |
           URL="${{ needs.prepare-deployment.outputs.deploy-url }}"
-          
+
           echo "Running performance check on $URL"
-          
+
           # Simple response time check
           RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "$URL")
-          
+
           echo "Response time: ${RESPONSE_TIME}s"
-          
+
           # Fail if response time > 5 seconds
           if (( $(echo "$RESPONSE_TIME > 5" | bc -l) )); then
             echo "❌ Response time too slow: ${RESPONSE_TIME}s"
             exit 1
           fi
-          
+
           echo "✅ Performance check passed"
 
       - name: API functionality test
         if: steps.health.outputs.healthy == 'true'
         run: |
           URL="${{ needs.prepare-deployment.outputs.deploy-url }}"
-          
+
           # Test key API endpoints
           ENDPOINTS=(
             "/api/health"
             "/api/version"
             "/api/analysis/scan"
           )
-          
+
           for endpoint in "${ENDPOINTS[@]}"; do
             echo "Testing $URL$endpoint"
-            
+
             STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$URL$endpoint")
-            
+
             if [[ $STATUS -ge 200 && $STATUS -lt 400 ]]; then
               echo "✅ $endpoint: $STATUS"
             else
@@ -333,7 +333,7 @@ jobs:
         run: |
           # Run critical user journey tests
           URL="${{ needs.prepare-deployment.outputs.deploy-url }}"
-          
+
           npx playwright test \
             --config=playwright.smoke.config.js \
             --baseURL="$URL" \
@@ -370,7 +370,7 @@ jobs:
         run: |
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
           export KUBECONFIG=kubeconfig
-          
+
           kubectl rollout undo deployment/wundr-${{ needs.prepare-deployment.outputs.environment }} \
             -n wundr-${{ needs.prepare-deployment.outputs.environment }}
 
@@ -380,32 +380,32 @@ jobs:
           script: |
             const environment = '${{ needs.prepare-deployment.outputs.environment }}';
             const version = '${{ needs.prepare-deployment.outputs.version }}';
-            
+
             const title = `🚨 Deployment rollback: ${environment} (${version})`;
-            
+
             const body = `## 🚨 Deployment Rollback Initiated
-            
+
             **Environment:** ${environment}
             **Version:** ${version}
             **Time:** ${new Date().toISOString()}
-            
+
             ### ❌ Failure Reasons
-            
+
             - **Health Check:** ${{ needs.health-check.result }}
             - **Smoke Tests:** ${{ needs.smoke-tests.result }}
             - **Manual Rollback:** ${{ needs.prepare-deployment.outputs.rollback }}
-            
+
             ### 🔄 Rollback Actions
-            
+
             Automatic rollback has been initiated for all deployment targets.
-            
+
             ### 🔍 Investigation
-            
+
             Please review the deployment logs and resolve the issues before attempting another deployment.
-            
+
             **Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             `;
-            
+
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -417,7 +417,14 @@ jobs:
   deployment-status:
     name: Deployment Status
     runs-on: ubuntu-latest
-    needs: [prepare-deployment, deploy-infrastructure, health-check, smoke-tests, rollback-deployment]
+    needs:
+      [
+        prepare-deployment,
+        deploy-infrastructure,
+        health-check,
+        smoke-tests,
+        rollback-deployment,
+      ]
     if: always()
     steps:
       - name: Update deployment status
@@ -425,7 +432,7 @@ jobs:
           ENVIRONMENT="${{ needs.prepare-deployment.outputs.environment }}"
           VERSION="${{ needs.prepare-deployment.outputs.version }}"
           URL="${{ needs.prepare-deployment.outputs.deploy-url }}"
-          
+
           if [[ "${{ needs.rollback-deployment.result }}" == "success" ]]; then
             STATUS="🔄 ROLLED BACK"
             COLOR="warning"
@@ -439,7 +446,7 @@ jobs:
             STATUS="❌ FAILED"
             COLOR="failure"
           fi
-          
+
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
@@ -457,10 +464,10 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          channel: '#deployments'
+          channel: "#deployments"
           text: |
             🚀 *Deployment to ${{ needs.prepare-deployment.outputs.environment }}*
-            
+
             *Version:* ${{ needs.prepare-deployment.outputs.version }}
             *URL:* ${{ needs.prepare-deployment.outputs.deploy-url }}
             *Status:* ${{ (needs.rollback-deployment.result == 'success' && '🔄 ROLLED BACK') || (needs.smoke-tests.result == 'success' && '✅ SUCCESS') || (needs.deploy-infrastructure.result == 'success' && '⚠️ PARTIAL') || '❌ FAILED' }}

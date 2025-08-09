@@ -89,20 +89,20 @@ export class WundrCLI {
         const options = thisCommand.opts();
         
         // Setup logging level
-        if (options.verbose) {
+        if (options['verbose']) {
           logger.setLevel('debug');
-        } else if (options.quiet) {
+        } else if (options['quiet']) {
           logger.setLevel('error');
         }
 
         // Load custom config if specified
-        if (options.config) {
-          this.configManager.loadConfig(options.config);
+        if (options['config']) {
+          this.configManager.loadConfig(options['config']);
         }
 
         // Setup color mode
-        if (options.noColor) {
-          process.env.NO_COLOR = '1';
+        if (options['noColor']) {
+          process.env['NO_COLOR'] = '1';
         }
 
         logger.debug(`Executing command: ${actionCommand.name()}`);

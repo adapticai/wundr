@@ -97,7 +97,19 @@ export class StaticAnalyzer extends EventEmitter {
       languages: ['js', 'ts'],
       cwe: 'CWE-327',
       owasp: ['A02:2021 - Cryptographic Failures'],
-      recommendation: 'Use strong cryptographic algorithms like SHA-256 or AES'
+      recommendation: 'Use strong cryptographic algorithms like SHA-256 for hashing or AES-256-GCM for encryption'
+    },
+    {
+      id: 'deprecated-crypto',
+      name: 'Deprecated Crypto Methods',
+      description: 'Deprecated createCipher/createDecipher methods detected',
+      severity: 'critical',
+      category: 'security',
+      pattern: /(?:createCipher|createDecipher)\s*\(\s*['"](?:aes-256-gcm|aes-256-cbc)['"]\s*,\s*/gi,
+      languages: ['js', 'ts'],
+      cwe: 'CWE-327',
+      owasp: ['A02:2021 - Cryptographic Failures'],
+      recommendation: 'Replace with createCipherGCM/createDecipherGCM and proper IV/auth tag handling'
     },
     {
       id: 'path-traversal',
@@ -494,7 +506,9 @@ export class StaticAnalyzer extends EventEmitter {
   private generateFixSuggestion(rule: SecurityRule, match: string): string {
     switch (rule.id) {
       case 'weak-crypto':
-        return 'Replace with: createHash("sha256") or createCipher("aes-256-gcm")';
+        return 'Replace with: createHash("sha256") for hashing or createCipherGCM("aes-256-gcm", key, iv) for encryption';
+      case 'deprecated-crypto':
+        return 'Replace createCipher with createCipherGCM and add proper IV generation and auth tag verification';
       case 'insecure-random':
         return 'Replace with: crypto.randomBytes().toString("hex")';
       case 'eval-usage':

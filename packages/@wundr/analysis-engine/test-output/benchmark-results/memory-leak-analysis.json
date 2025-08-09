@@ -1,0 +1,82 @@
+{
+  "leakAnalysis": {
+    "leakDetected": false,
+    "growthRate": -32072220.02406015,
+    "severity": "low",
+    "trend": "shrinking",
+    "recommendations": [
+      "Enable --expose-gc flag to manually trigger garbage collection.",
+      "Use WeakMap and WeakSet for temporary object references.",
+      "Implement streaming for large data processing.",
+      "Monitor and limit cache sizes to prevent unbounded growth."
+    ],
+    "suspiciousObjects": []
+  },
+  "metrics": {
+    "entitiesProcessed": 10000,
+    "clustersFound": 2000,
+    "cacheHits": 0,
+    "memoryPeakUsage": 600289760
+  },
+  "memoryMetrics": {
+    "current": {
+      "timestamp": 1754580082112,
+      "heapUsed": 81053640,
+      "heapTotal": 107347968,
+      "external": 4841232,
+      "arrayBuffers": 1281336,
+      "rss": 756301824,
+      "cpu": 51954.91,
+      "gcStats": {
+        "totalHeapSize": 107347968,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 101941248,
+        "totalAvailableSize": 4261711944,
+        "usedHeapSize": 81054368,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    "peak": {
+      "timestamp": 1754580070584,
+      "heapUsed": 595833424,
+      "heapTotal": 636043264,
+      "external": 4849289,
+      "arrayBuffers": 1281336,
+      "rss": 1391738880,
+      "cpu": 41578.221,
+      "gcStats": {
+        "totalHeapSize": 636043264,
+        "totalHeapSizeExecutable": 4194304,
+        "totalPhysicalSize": 635928576,
+        "totalAvailableSize": 3738236168,
+        "usedHeapSize": 595834152,
+        "heapSizeLimit": 4345298944
+      }
+    },
+    "average": {
+      "heapUsed": 279478838.4,
+      "heapTotal": 310391603.2,
+      "rss": 996877926.4
+    },
+    "trend": {
+      "heapGrowthRate": -31529803.007518794,
+      "gcFrequency": 93.98496240601503,
+      "gcDuration": 2.637620040178299
+    },
+    "leakAnalysis": {
+      "leakDetected": false,
+      "growthRate": -30655310.08,
+      "severity": "low",
+      "trend": "shrinking",
+      "recommendations": [
+        "Enable --expose-gc flag to manually trigger garbage collection.",
+        "Use WeakMap and WeakSet for temporary object references.",
+        "Implement streaming for large data processing.",
+        "Monitor and limit cache sizes to prevent unbounded growth."
+      ],
+      "suspiciousObjects": []
+    }
+  },
+  "cleanupTriggered": true,
+  "timestamp": "2025-08-07T15:21:26.162Z"
+}

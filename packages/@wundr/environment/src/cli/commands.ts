@@ -6,10 +6,80 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { EnvironmentManager } from '../core/environment-manager';
+import { QuickstartInstaller } from '../installers/quickstart-installer';
 import { ProfileType } from '../types';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('CLI');
+
+/**
+ * Ultra-fast quickstart command - <5 minute setup
+ */
+export const quickstartCommand = new Command('quickstart')
+  .description('🚀 Ultra-fast environment setup in <5 minutes')
+  .option('-p, --profile <profile>', 'Profile type (basic|developer|full)', 'developer')
+  .option('-y, --yes', 'Skip all prompts and use defaults')
+  .option('--skip-ai', 'Skip AI agents setup for faster installation')
+  .option('--cache-only', 'Use only cached packages (fails if not cached)')
+  .option('--parallel <number>', 'Number of parallel installations', '4')
+  .option('--timeout <seconds>', 'Installation timeout in seconds', '300')
+  .option('--preset <preset>', 'Use predefined preset (minimal|standard|full)', 'standard')
+  .action(async (options) => {
+    const spinner = ora('🚀 Starting ultra-fast environment setup...').start();
+    const startTime = Date.now();
+    
+    try {
+      const installer = new QuickstartInstaller({
+        profile: options.profile as ProfileType,
+        skipPrompts: options.yes,
+        skipAI: options.skipAi,
+        cacheOnly: options.cacheOnly,
+        parallelJobs: parseInt(options.parallel, 10),
+        timeout: parseInt(options.timeout, 10) * 1000,
+        preset: options.preset
+      });
+      
+      spinner.text = 'Analyzing system and detecting existing tools...';
+      await installer.analyze();
+      
+      spinner.text = 'Installing core tools in parallel...';
+      await installer.installParallel();
+      
+      spinner.text = 'Configuring environment...';
+      await installer.configure();
+      
+      if (!options.skipAi) {
+        spinner.text = 'Setting up AI agents (simplified)...';
+        await installer.setupAIAgentsQuick();
+      }
+      
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      spinner.succeed(`✅ Environment setup completed in ${elapsed}s!`);
+      
+      console.log(chalk.green.bold('\n🎉 Welcome to your optimized development environment!'));
+      console.log(chalk.cyan('\n📊 Setup Summary:'));
+      console.log(`   ⏱️  Time: ${elapsed} seconds`);
+      console.log(`   🎯 Target: <300 seconds (${elapsed < 300 ? '✅ PASSED' : '❌ EXCEEDED'})`);
+      console.log(`   🔧 Profile: ${options.profile}`);
+      console.log(`   🤖 AI Agents: ${options.skipAi ? 'Skipped' : 'Enabled'}`);
+      
+      console.log(chalk.yellow('\n🚀 Quick Commands:'));
+      console.log('   wundr-env validate     # Check environment health');
+      console.log('   wundr-env status       # Show installation status');
+      console.log('   claude-flow quickstart # Start AI development');
+      
+    } catch (error) {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      spinner.fail(`❌ Setup failed after ${elapsed}s`);
+      logger.error('Quickstart failed:', error);
+      console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
+      console.log(chalk.yellow('\n💡 Try these recovery options:'));
+      console.log('   wundr-env quickstart --preset minimal    # Minimal setup');
+      console.log('   wundr-env quickstart --skip-ai           # Skip AI components');
+      console.log('   wundr-env install --profile basic        # Full traditional setup');
+      process.exit(1);
+    }
+  });
 
 /**
  * Initialize a new environment
@@ -303,6 +373,7 @@ export const program = new Command()
   .version('1.0.0');
 
 program
+  .addCommand(quickstartCommand)
   .addCommand(initCommand)
   .addCommand(installCommand)
   .addCommand(validateCommand)

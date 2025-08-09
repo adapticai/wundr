@@ -2,20 +2,80 @@
 
 const WebSocket = require('ws')
 const http = require('http')
+const fs = require('fs')
+const path = require('path')
 
 const PORT = process.env.WS_PORT || 8080
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3001'
 
-// Create HTTP server
-const server = http.createServer()
+// Create HTTP server with CORS support
+const server = http.createServer((req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', CORS_ORIGIN)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200)
+    res.end()
+    return
+  }
+  
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ 
+      status: 'healthy', 
+      clients: clients.size,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString()
+    }))
+    return
+  }
+  
+  res.writeHead(404)
+  res.end('Not Found')
+})
 
 // Create WebSocket server
 const wss = new WebSocket.Server({ server })
 
-// Store connected clients
+// Store connected clients and their subscriptions
 const clients = new Set()
+const clientSubscriptions = new Map() // client -> Set of subscriptions
+
+// Analysis engine integration
+const ANALYSIS_ENGINE_PATH = path.join(__dirname, '../../../analysis-engine')
+const METRICS_FILE = path.join(ANALYSIS_ENGINE_PATH, 'metrics.json')
+const ANALYSIS_RESULTS_FILE = path.join(ANALYSIS_ENGINE_PATH, 'results.json')
+
+// File watchers for real analysis data
+let metricsWatcher = null
+let resultsWatcher = null
 
 // Mock data generators for real-time updates
 function generateMetrics() {
+  // Try to read real metrics first
+  try {
+    if (fs.existsSync(METRICS_FILE)) {
+      const metricsData = JSON.parse(fs.readFileSync(METRICS_FILE, 'utf8'))
+      return {
+        type: 'metrics',
+        data: {
+          timestamp: new Date().toISOString(),
+          cpu: metricsData.cpu || Math.random() * 100,
+          memory: metricsData.memory || Math.random() * 100,
+          disk: metricsData.disk || Math.random() * 100,
+          network: metricsData.network || Math.random() * 1000,
+          buildTime: metricsData.buildTime || (30000 + Math.random() * 20000),
+          testCoverage: metricsData.testCoverage || (75 + Math.random() * 20),
+          activeConnections: clients.size
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Could not read metrics file:', error.message)
+  }
+  
+  // Fallback to mock data
   return {
     type: 'metrics',
     data: {
@@ -224,6 +284,16 @@ process.on('SIGINT', () => {
   // Clear intervals
   Object.values(intervals).forEach(interval => clearInterval(interval))
   
+  // Close file watchers
+  if (metricsWatcher) {
+    metricsWatcher.close()
+    console.log('📊 Metrics watcher closed')
+  }
+  if (resultsWatcher) {
+    resultsWatcher.close()
+    console.log('🔍 Analysis watcher closed')
+  }
+  
   // Close all connections
   clients.forEach(client => {
     client.send(JSON.stringify({
@@ -240,9 +310,47 @@ process.on('SIGINT', () => {
   })
 })
 
+// Initialize file watchers for analysis engine integration
+function initializeAnalysisWatchers() {
+  // Watch for metrics updates
+  if (fs.existsSync(path.dirname(METRICS_FILE))) {
+    try {
+      metricsWatcher = fs.watch(path.dirname(METRICS_FILE), (eventType, filename) => {
+        if (filename === 'metrics.json' && eventType === 'change') {
+          console.log('📊 Metrics file changed, broadcasting update...')
+          broadcast(generateMetrics())
+        }
+      })
+      console.log('📊 Watching for metrics updates at:', METRICS_FILE)
+    } catch (error) {
+      console.warn('Could not set up metrics watcher:', error.message)
+    }
+  }
+
+  // Watch for analysis results updates
+  if (fs.existsSync(path.dirname(ANALYSIS_RESULTS_FILE))) {
+    try {
+      resultsWatcher = fs.watch(path.dirname(ANALYSIS_RESULTS_FILE), (eventType, filename) => {
+        if (filename === 'results.json' && eventType === 'change') {
+          console.log('🔍 Analysis results changed, broadcasting update...')
+          broadcast(generateAnalysisUpdate())
+        }
+      })
+      console.log('🔍 Watching for analysis updates at:', ANALYSIS_RESULTS_FILE)
+    } catch (error) {
+      console.warn('Could not set up analysis watcher:', error.message)
+    }
+  }
+}
+
 // Start server
 server.listen(PORT, () => {
   console.log(`🚀 WebSocket server running on ws://localhost:${PORT}`)
   console.log(`📊 Dashboard real-time data streaming enabled`)
+  console.log(`🔗 CORS enabled for: ${CORS_ORIGIN}`)
+  console.log(`🏥 Health check available at: http://localhost:${PORT}/health`)
   console.log('Press Ctrl+C to stop the server')
+  
+  // Initialize analysis engine integration
+  initializeAnalysisWatchers()
 })

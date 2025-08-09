@@ -107,12 +107,17 @@ wundr dashboard start --open
 
 ### `wundr ai`
 
+- `ai setup` - Setup AI configuration and API keys
+- `ai status` - Check AI configuration status
+- `ai validate` - Validate AI connection
 - `ai generate <type>` - Code generation
 - `ai review [files...]` - Code review
 - `ai refactor <target>` - Code refactoring
 - `ai docs <target>` - Documentation generation
 - `ai chat` - Interactive AI chat
 - `ai analyze <target>` - AI-powered analysis
+- `ai test <target>` - Generate tests
+- `ai optimize <target>` - Performance optimization
 
 ### `wundr dashboard`
 
@@ -317,29 +322,110 @@ wundr batch run build-pipeline.yaml --vars '{"NODE_ENV": "production"}'
 
 ## 🤖 AI Integration
 
-### Configuration
+### Setup & Configuration
+
+Wundr CLI integrates with AI providers for intelligent development assistance. Currently supports Claude (Anthropic) with OpenAI support coming soon.
+
+#### Quick Setup
 
 ```bash
-wundr ai config set provider claude
-wundr ai config set model claude-3
-wundr ai config set apiKey your-api-key
+# Interactive setup (recommended)
+wundr ai setup
+
+# Manual setup
+wundr ai setup --provider claude --api-key your-key-here
+
+# Validate configuration
+wundr ai validate
 ```
 
-### Usage Examples
+#### Environment Variables
+
+Set your API key via environment variables:
 
 ```bash
+# Claude (Anthropic)
+export CLAUDE_API_KEY=your_api_key_here
+
+# OpenAI (coming soon)
+export OPENAI_API_KEY=your_api_key_here
+
+# Optional: Provider and model selection
+export WUNDR_AI_PROVIDER=claude
+export WUNDR_AI_MODEL=claude-3-opus-20240229
+```
+
+#### Configuration File
+
+Manually configure in `~/.wundr/config.json`:
+
+```json
+{
+  "ai": {
+    "provider": "claude",
+    "model": "claude-3-opus-20240229",
+    "apiKey": "your-api-key-here"
+  }
+}
+```
+
+#### Getting API Keys
+
+**Claude (Anthropic)**:
+1. Visit [Anthropic Console](https://console.anthropic.com)
+2. Create an account or sign in
+3. Generate an API key in your dashboard
+4. Copy the key and use in setup
+
+### AI Commands
+
+```bash
+# Setup and status
+wundr ai setup          # Interactive setup wizard
+wundr ai status         # Check configuration status
+wundr ai validate       # Test API connection
+
 # Code generation
 wundr ai generate component --prompt "Create a user profile card"
+wundr ai generate function --prompt "Sort array by date"
 
-# Code review
+# Code review and analysis
 wundr ai review src/ --focus security --suggest-fixes
+wundr ai analyze src/component.tsx --suggestions
 
-# Interactive chat
+# Interactive assistance
 wundr ai chat --context src/
+wundr ai chat          # Start interactive session
 
-# Documentation generation
+# Documentation and tests
 wundr ai docs src/utils.ts --type api --include-examples
+wundr ai test src/service.ts --framework jest --coverage unit
+
+# Code optimization
+wundr ai optimize src/component.tsx --focus performance
+wundr ai refactor src/legacy.js --type modernize
 ```
+
+### Error Handling
+
+If AI features aren't working:
+
+```bash
+# Check status
+wundr ai status
+
+# Validate connection
+wundr ai validate
+
+# Re-run setup if needed
+wundr ai setup --validate
+```
+
+Common issues:
+- **API key not configured**: Run `wundr ai setup`
+- **Invalid API key**: Check your key at the provider console
+- **Network issues**: Verify internet connection
+- **Rate limits**: Wait and try again, or check your usage
 
 ## 📊 Dashboard & Monitoring
 

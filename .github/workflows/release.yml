@@ -2,573 +2,388 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [master]
+    paths:
+      - 'CHANGELOG.md'
+      - 'package.json'
+      - 'packages/*/package.json'
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Release version (e.g., v1.0.0)'
-        required: true
-        type: string
       release_type:
-        description: 'Type of release'
-        required: false
-        default: 'stable'
+        description: 'Release type'
+        required: true
+        default: 'patch'
         type: choice
         options:
-          - stable
-          - beta
-          - alpha
-      create_tag:
-        description: 'Create git tag'
-        required: false
-        default: true
-        type: boolean
+          - patch
+          - minor
+          - major
+          - prerelease
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.15.0'
 
 jobs:
+  # Validate release readiness
   validate-release:
+    name: Validate Release Readiness
     runs-on: ubuntu-latest
     outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
       version: ${{ steps.version.outputs.version }}
-      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
-      release-notes: ${{ steps.notes.outputs.release-notes }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Determine version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            VERSION="${{ github.ref_name }}"
-          else
-            VERSION="${{ github.event.inputs.version }}"
-            # Ensure version starts with 'v'
-            if [[ ! "$VERSION" =~ ^v ]]; then
-              VERSION="v$VERSION"
-            fi
-          fi
-          
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          
-          # Check if this is a prerelease
-          if [[ "$VERSION" =~ -(alpha|beta|rc) ]] || [ "${{ github.event.inputs.release_type }}" != "stable" ]; then
-            echo "is-prerelease=true" >> $GITHUB_OUTPUT
-          else
-            echo "is-prerelease=false" >> $GITHUB_OUTPUT
-          fi
-          
-          echo "Release version: $VERSION"
-
-      - name: Validate version format
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
-            echo "❌ Invalid version format: $VERSION"
-            echo "Expected format: v1.0.0 or v1.0.0-alpha.1"
-            exit 1
-          fi
-          echo "✅ Version format is valid: $VERSION"
-
-      - name: Check if tag exists
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if git tag -l | grep -q "^$VERSION$"; then
-            echo "❌ Tag $VERSION already exists"
-            exit 1
-          fi
-          echo "✅ Tag $VERSION is available"
-
-      - name: Generate release notes
-        id: notes
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          
-          # Get the previous tag
-          PREV_TAG=$(git tag -l --sort=-version:refname | head -1)
-          
-          if [ -n "$PREV_TAG" ]; then
-            echo "Generating release notes from $PREV_TAG to HEAD"
-            
-            # Generate changelog
-            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --grep="^feat\|^fix\|^refactor\|^docs\|^style\|^test\|^chore" --reverse)
-            
-            # Categorize commits
-            FEATURES=$(echo "$CHANGELOG" | grep -E "^- (feat|feature)" || true)
-            FIXES=$(echo "$CHANGELOG" | grep -E "^- (fix|bug)" || true)
-            REFACTORS=$(echo "$CHANGELOG" | grep -E "^- refactor" || true)
-            DOCS=$(echo "$CHANGELOG" | grep -E "^- docs" || true)
-            OTHERS=$(echo "$CHANGELOG" | grep -vE "^- (feat|feature|fix|bug|refactor|docs)" || true)
-            
-            # Build release notes
-            RELEASE_NOTES="# Release $VERSION
-
-## What's New in This Release
-
-This release of the Monorepo Refactoring Toolkit includes improvements to code analysis, consolidation tools, and CI/CD workflows.
-
-"
-            
-            if [ -n "$FEATURES" ]; then
-              RELEASE_NOTES+="### ✨ New Features
-$FEATURES
-
-"
-            fi
-            
-            if [ -n "$FIXES" ]; then
-              RELEASE_NOTES+="### 🐛 Bug Fixes
-$FIXES
-
-"
-            fi
-            
-            if [ -n "$REFACTORS" ]; then
-              RELEASE_NOTES+="### 🔧 Refactoring
-$REFACTORS
-
-"
-            fi
-            
-            if [ -n "$DOCS" ]; then
-              RELEASE_NOTES+="### 📚 Documentation
-$DOCS
-
-"
-            fi
-            
-            if [ -n "$OTHERS" ]; then
-              RELEASE_NOTES+="### 🔄 Other Changes
-$OTHERS
-
-"
-            fi
-          else
-            echo "No previous tags found, generating initial release notes"
-            RELEASE_NOTES="# Release $VERSION
-
-## Initial Release
-
-This is the initial release of the Monorepo Refactoring Toolkit - a comprehensive set of tools and workflows for refactoring codebases into monorepo structures.
-
-### 🚀 Key Features
-
-- **Code Analysis Tools**: Deep TypeScript/JavaScript AST analysis for detecting duplicates, unused code, and patterns
-- **Consolidation Scripts**: Automated tools for merging duplicate code and cleaning up unused exports
-- **Governance System**: Drift detection and automated quality checks
-- **CI/CD Workflows**: Complete GitHub Actions workflows for continuous integration and quality assurance
-- **Documentation**: Comprehensive guides and training materials
-- **Templates**: Ready-to-use templates for packages, services, and configurations
-
-### 📦 What's Included
-
-- Analysis scripts with visual dashboards
-- Consolidation and cleanup automation
-- Weekly progress reporting
-- Quality gates and validation
-- Team training materials
-- Best practices documentation
-
-"
-          fi
-          
-          RELEASE_NOTES+="## 📋 Installation & Usage
-
-\`\`\`bash
-# Clone the repository
-git clone https://github.com/${{ github.repository }}.git
-cd monorepo-refactoring-toolkit
-
-# Run setup
-./setup/install.sh
-
-# Start with the quick start guide
-open docs/guides/QUICK_START.md
-\`\`\`
-
-## 🔗 Links
-
-- [Quick Start Guide](./docs/guides/QUICK_START.md)
-- [Complete Strategy](./docs/guides/COMPLETE_STRATEGY.md)
-- [Architecture Documentation](./docs/architecture/MONOREPO_STRUCTURE.md)
-- [Team Training Guide](./docs/training/TEAM_TRAINING_GUIDE.md)
-
-## 🤝 Contributing
-
-See our [contribution guidelines](./CONTRIBUTING.md) for how to get involved.
-
----
-
-**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${VERSION}
-"
-          
-          # Save release notes to file and output
-          echo "$RELEASE_NOTES" > release-notes.md
-          
-          # For GitHub output, we need to handle multiline properly
-          {
-            echo 'release-notes<<EOF'
-            echo "$RELEASE_NOTES"
-            echo 'EOF'
-          } >> $GITHUB_OUTPUT
-
-  build-artifacts:
-    runs-on: ubuntu-latest
-    needs: validate-release
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'setup/package.json'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Install dependencies
-        working-directory: setup
-        run: |
-          npm ci
-          npm install --save-dev \
-            typescript \
-            ts-node \
-            @types/node
+        run: pnpm install --frozen-lockfile
 
-      - name: Create release artifacts
+      - name: Check if release is needed
+        id: check
         run: |
-          VERSION="${{ needs.validate-release.outputs.version }}"
-          
-          # Create release directory
-          mkdir -p release-artifacts
-          
-          # Create a comprehensive toolkit package
-          echo "Building release package..."
-          
-          # Copy all essential files
-          cp -r scripts release-artifacts/
-          cp -r config release-artifacts/
-          cp -r docs release-artifacts/
-          cp -r templates release-artifacts/
-          cp -r tools release-artifacts/
-          cp -r examples release-artifacts/
-          cp -r setup release-artifacts/
-          
-          # Copy root files
-          cp README.md release-artifacts/
-          cp LICENSE release-artifacts/
-          cp IMPLEMENTATION_CHECKLIST.md release-artifacts/
-          
-          # Create version info
-          cat > release-artifacts/VERSION << EOF
-          Version: $VERSION
-          Build Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-          Git Commit: ${{ github.sha }}
-          Build Number: ${{ github.run_number }}
-          EOF
-          
-          # Create installation script
-          cat > release-artifacts/install.sh << 'EOF'
-          #!/bin/bash
-          
-          set -e
-          
-          echo "🚀 Installing Monorepo Refactoring Toolkit..."
-          
-          # Make scripts executable
-          find scripts -name "*.sh" -exec chmod +x {} \;
-          find setup -name "*.sh" -exec chmod +x {} \;
-          chmod +x config/git/hooks/pre-commit
-          
-          # Run setup
-          if [ -f "setup/install.sh" ]; then
-            ./setup/install.sh
+          # Check if this is a manual release or if changes warrant a release
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            # Check for changes in key files since last release
+            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [[ -z "$LAST_TAG" ]] || git diff --name-only "$LAST_TAG"..HEAD | grep -E "(src/|package\.json|CHANGELOG\.md)"; then
+              echo "should_release=true" >> $GITHUB_OUTPUT
+            else
+              echo "should_release=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Determine version
+        id: version
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Manual release - use input
+            RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+          else
+            # Automatic release - determine from commits
+            if git log --oneline $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep -i "breaking\|major"; then
+              RELEASE_TYPE="major"
+            elif git log --oneline $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep -i "feat\|feature\|minor"; then
+              RELEASE_TYPE="minor"
+            else
+              RELEASE_TYPE="patch"
+            fi
           fi
           
-          echo "✅ Installation complete!"
-          echo "📚 See docs/guides/QUICK_START.md to get started"
-          EOF
+          # Calculate new version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          NEW_VERSION=$(npx semver -i $RELEASE_TYPE $CURRENT_VERSION)
           
-          chmod +x release-artifacts/install.sh
-          
-          # Create compressed archives
-          cd release-artifacts
-          tar -czf ../monorepo-refactoring-toolkit-${VERSION}.tar.gz .
-          zip -r ../monorepo-refactoring-toolkit-${VERSION}.zip .
-          cd ..
-          
-          # Generate checksums
-          sha256sum monorepo-refactoring-toolkit-${VERSION}.tar.gz > monorepo-refactoring-toolkit-${VERSION}.tar.gz.sha256
-          sha256sum monorepo-refactoring-toolkit-${VERSION}.zip > monorepo-refactoring-toolkit-${VERSION}.zip.sha256
-          
-          echo "✅ Release artifacts created"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+          echo "New version: $NEW_VERSION"
+          echo "Release type: $RELEASE_TYPE"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: release-${{ needs.validate-release.outputs.version }}
-          path: |
-            monorepo-refactoring-toolkit-*.tar.gz
-            monorepo-refactoring-toolkit-*.zip
-            monorepo-refactoring-toolkit-*.sha256
-            release-notes.md
-          retention-days: 90
-
-  run-tests:
-    uses: ./.github/workflows/test.yml
-    needs: validate-release
-    with:
-      test_scope: 'full'
-
-  create-tag:
-    runs-on: ubuntu-latest
-    needs: [validate-release, build-artifacts, run-tests]
-    if: github.event.inputs.create_tag != 'false' && github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Create and push tag
-        run: |
-          VERSION="${{ needs.validate-release.outputs.version }}"
-          
-          git config --global user.name 'Release Bot'
-          git config --global user.email 'noreply@github.com'
-          
-          git tag -a "$VERSION" -m "Release $VERSION"
-          git push origin "$VERSION"
-          
-          echo "✅ Created and pushed tag: $VERSION"
-
+  # Create release
   create-release:
+    name: Create Release
     runs-on: ubuntu-latest
-    needs: [validate-release, build-artifacts, run-tests]
-    if: needs.run-tests.result == 'success'
+    needs: [validate-release]
+    if: needs.validate-release.outputs.should_release == 'true'
     permissions:
       contents: write
+      packages: write
+      pull-requests: write
+    outputs:
+      release_id: ${{ steps.release.outputs.id }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
+      - uses: actions/checkout@v4
         with:
-          name: release-${{ needs.validate-release.outputs.version }}
-          path: ./artifacts
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Create GitHub Release
-        uses: actions/github-script@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            
-            const version = '${{ needs.validate-release.outputs.version }}';
-            const isPrerelease = '${{ needs.validate-release.outputs.is-prerelease }}' === 'true';
-            
-            // Read release notes
-            const releaseNotes = fs.readFileSync('./artifacts/release-notes.md', 'utf8');
-            
-            // Create the release
-            const { data: release } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: version,
-              name: `Monorepo Refactoring Toolkit ${version}`,
-              body: releaseNotes,
-              draft: false,
-              prerelease: isPrerelease,
-              generate_release_notes: false
-            });
-            
-            console.log(`Created release: ${release.html_url}`);
-            
-            // Upload artifacts
-            const artifactsDir = './artifacts';
-            const files = fs.readdirSync(artifactsDir);
-            
-            for (const file of files) {
-              if (file.endsWith('.tar.gz') || file.endsWith('.zip') || file.endsWith('.sha256')) {
-                const filePath = path.join(artifactsDir, file);
-                const fileContent = fs.readFileSync(filePath);
-                
-                console.log(`Uploading ${file}...`);
-                
-                await github.rest.repos.uploadReleaseAsset({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  release_id: release.id,
-                  name: file,
-                  data: fileContent
-                });
-                
-                console.log(`✅ Uploaded ${file}`);
-              }
-            }
-            
-            // Output release URL
-            core.setOutput('release-url', release.html_url);
-            core.setOutput('release-id', release.id);
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Create release summary
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Configure git
         run: |
-          VERSION="${{ needs.validate-release.outputs.version }}"
-          IS_PRERELEASE="${{ needs.validate-release.outputs.is-prerelease }}"
-          
-          echo "# 🎉 Release Summary" > release-summary.md
-          echo "" >> release-summary.md
-          echo "**Version:** $VERSION" >> release-summary.md
-          echo "**Type:** $([ "$IS_PRERELEASE" = "true" ] && echo "Pre-release" || echo "Stable")" >> release-summary.md
-          echo "**Build:** ${{ github.run_number }}" >> release-summary.md
-          echo "**Commit:** ${{ github.sha }}" >> release-summary.md
-          echo "" >> release-summary.md
-          echo "## 📦 Artifacts" >> release-summary.md
-          echo "" >> release-summary.md
-          echo "- \`monorepo-refactoring-toolkit-${VERSION}.tar.gz\` - Complete toolkit (tar.gz)" >> release-summary.md
-          echo "- \`monorepo-refactoring-toolkit-${VERSION}.zip\` - Complete toolkit (zip)" >> release-summary.md
-          echo "- Checksum files for verification" >> release-summary.md
-          echo "" >> release-summary.md
-          echo "## 🚀 Quick Start" >> release-summary.md
-          echo "" >> release-summary.md
-          echo "\`\`\`bash" >> release-summary.md
-          echo "# Download and extract" >> release-summary.md
-          echo "wget https://github.com/${{ github.repository }}/releases/download/${VERSION}/monorepo-refactoring-toolkit-${VERSION}.tar.gz" >> release-summary.md
-          echo "tar -xzf monorepo-refactoring-toolkit-${VERSION}.tar.gz" >> release-summary.md
-          echo "cd monореpos-refactoring-toolkit" >> release-summary.md
-          echo "" >> release-summary.md
-          echo "# Install and setup" >> release-summary.md
-          echo "./install.sh" >> release-summary.md
-          echo "\`\`\`" >> release-summary.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Upload release summary
-        uses: actions/upload-artifact@v3
-        with:
-          name: release-summary-${{ needs.validate-release.outputs.version }}
-          path: release-summary.md
-          retention-days: 30
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-  post-release:
-    runs-on: ubuntu-latest
-    needs: [validate-release, create-release]
-    if: always() && needs.create-release.result == 'success'
-    steps:
-      - name: Create release announcement issue
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const version = '${{ needs.validate-release.outputs.version }}';
-            const releaseUrl = '${{ needs.create-release.outputs.release-url }}';
-            const isPrerelease = '${{ needs.validate-release.outputs.is-prerelease }}' === 'true';
-            
-            const title = `🎉 Release ${version} is now available!`;
-            const emoji = isPrerelease ? '🚧' : '🎉';
-            const typeLabel = isPrerelease ? 'Pre-release' : 'Stable Release';
-            
-            const body = `${emoji} **${typeLabel} ${version}** has been published!
-            
-            ## 📦 What's New
-            
-            Check out the [full release notes](${releaseUrl}) for detailed information about what's included in this release.
-            
-            ## 🚀 Get Started
-            
-            \`\`\`bash
-            # Download the latest release
-            wget https://github.com/${{ github.repository }}/releases/download/${version}/monorepo-refactoring-toolkit-${version}.tar.gz
-            
-            # Extract and install
-            tar -xzf monorepo-refactoring-toolkit-${version}.tar.gz
-            cd monorepo-refactoring-toolkit
-            ./install.sh
-            \`\`\`
-            
-            ## 📚 Documentation
-            
-            - [Quick Start Guide](./docs/guides/QUICK_START.md)
-            - [Complete Strategy](./docs/guides/COMPLETE_STRATEGY.md)
-            - [Team Training](./docs/training/TEAM_TRAINING_GUIDE.md)
-            
-            ## 🔗 Links
-            
-            - **Release Page:** ${releaseUrl}
-            - **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            ${isPrerelease ? '⚠️ **Note:** This is a pre-release version. Use with caution in production environments.' : ''}
-            
-            ---
-            
-            Happy refactoring! 🛠️
-            `;
-            
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['release', 'announcement', isPrerelease ? 'prerelease' : 'stable']
-            });
-
-      - name: Notify completion
+      - name: Update version
         run: |
-          VERSION="${{ needs.validate-release.outputs.version }}"
-          IS_PRERELEASE="${{ needs.validate-release.outputs.is-prerelease }}"
+          # Update package.json version
+          npm version ${{ needs.validate-release.outputs.version }} --no-git-tag-version
           
-          echo "🎉 Release $VERSION completed successfully!"
-          echo "📦 Type: $([ "$IS_PRERELEASE" = "true" ] && echo "Pre-release" || echo "Stable")"
-          echo "🔗 Release URL: ${{ needs.create-release.outputs.release-url }}"
-          echo "🚀 Ready for distribution!"
+          # Update workspace package versions
+          pnpm -r exec npm version ${{ needs.validate-release.outputs.version }} --no-git-tag-version
 
-  cleanup:
+      - name: Generate changelog
+        run: |
+          # Generate changelog for this release
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          
+          echo "# Changelog" > RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          echo "## [${{ needs.validate-release.outputs.version }}] - $(date +%Y-%m-%d)" >> RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          
+          # Group commits by type
+          echo "### Features" >> RELEASE_CHANGELOG.md
+          git log --oneline "$LAST_TAG"..HEAD | grep -i "feat\|feature" | sed 's/^/- /' >> RELEASE_CHANGELOG.md || echo "- No new features" >> RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          
+          echo "### Bug Fixes" >> RELEASE_CHANGELOG.md  
+          git log --oneline "$LAST_TAG"..HEAD | grep -i "fix\|bug" | sed 's/^/- /' >> RELEASE_CHANGELOG.md || echo "- No bug fixes" >> RELEASE_CHANGELOG.md
+          echo "" >> RELEASE_CHANGELOG.md
+          
+          echo "### Other Changes" >> RELEASE_CHANGELOG.md
+          git log --oneline "$LAST_TAG"..HEAD | grep -v -i "feat\|feature\|fix\|bug" | sed 's/^/- /' >> RELEASE_CHANGELOG.md || echo "- No other changes" >> RELEASE_CHANGELOG.md
+
+      - name: Build packages
+        run: |
+          pnpm build
+          
+          # Create distribution archives
+          mkdir -p dist/
+          tar -czf dist/wundr-${{ needs.validate-release.outputs.version }}.tar.gz \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='dist' \
+            .
+
+      - name: Commit and tag
+        run: |
+          git add .
+          git commit -m "chore(release): v${{ needs.validate-release.outputs.version }}"
+          git tag -a "v${{ needs.validate-release.outputs.version }}" -m "Release v${{ needs.validate-release.outputs.version }}"
+          git push origin master --tags
+
+      - name: Create GitHub release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.validate-release.outputs.version }}
+          release_name: Release v${{ needs.validate-release.outputs.version }}
+          body_path: RELEASE_CHANGELOG.md
+          draft: false
+          prerelease: ${{ contains(needs.validate-release.outputs.version, 'pre') }}
+
+      - name: Upload release archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: dist/wundr-${{ needs.validate-release.outputs.version }}.tar.gz
+          asset_name: wundr-${{ needs.validate-release.outputs.version }}.tar.gz
+          asset_content_type: application/gzip
+
+  # Publish to NPM
+  publish-npm:
+    name: Publish to NPM
     runs-on: ubuntu-latest
-    needs: [validate-release, create-release, post-release]
-    if: always()
+    needs: [create-release, validate-release]
+    if: |
+      needs.validate-release.outputs.should_release == 'true' && 
+      !contains(needs.validate-release.outputs.version, 'pre')
     steps:
-      - name: Cleanup old pre-releases
-        if: needs.validate-release.outputs.is-prerelease == 'false'
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.validate-release.outputs.version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Publish to NPM
+        run: |
+          # Publish main package
+          npm publish --access public
+          
+          # Publish workspace packages (if they exist and are publishable)
+          pnpm -r --filter='!@wundr/private-*' publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Build and publish Docker images
+  publish-docker:
+    name: Publish Docker Images
+    runs-on: ubuntu-latest
+    needs: [create-release, validate-release]
+    if: needs.validate-release.outputs.should_release == 'true'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.validate-release.outputs.version }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+            wundr/wundr
+          tags: |
+            type=semver,pattern={{version}},value=v${{ needs.validate-release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.validate-release.outputs.version }}
+            type=semver,pattern={{major}},value=v${{ needs.validate-release.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ needs.validate-release.outputs.version }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+  # Create deployment PR for staging
+  create-deployment-pr:
+    name: Create Deployment PR
+    runs-on: ubuntu-latest
+    needs: [create-release, validate-release, publish-docker]
+    if: needs.validate-release.outputs.should_release == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create deployment branch
+        run: |
+          BRANCH_NAME="deploy/v${{ needs.validate-release.outputs.version }}"
+          git checkout -b "$BRANCH_NAME"
+          
+          # Update any deployment configurations
+          sed -i "s/VERSION: .*/VERSION: v${{ needs.validate-release.outputs.version }}/" k8s/deployment.yaml
+          
+          git add .
+          git commit -m "deploy: update to v${{ needs.validate-release.outputs.version }}"
+          git push origin "$BRANCH_NAME"
+
+      - name: Create deployment PR
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: deploy/v${{ needs.validate-release.outputs.version }}
+          destination_branch: master
+          pr_title: "🚀 Deploy v${{ needs.validate-release.outputs.version }} to Production"
+          pr_body: |
+            ## Release Deployment
+            
+            This PR updates the deployment configuration for release v${{ needs.validate-release.outputs.version }}.
+            
+            ### Changes
+            - Updated Kubernetes deployment manifests
+            - Docker image version: `v${{ needs.validate-release.outputs.version }}`
+            
+            ### Pre-deployment Checklist
+            - [x] Release created and published
+            - [x] Docker images built and pushed
+            - [ ] Staging deployment verified
+            - [ ] Production deployment approved
+            
+            **Release Notes:** See [Release v${{ needs.validate-release.outputs.version }}](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.validate-release.outputs.version }})
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Notify team
+  notify:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [create-release, validate-release]
+    if: always() && needs.validate-release.outputs.should_release == 'true'
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.create-release.result }}
+          text: |
+            🎉 New release created!
+            Version: v${{ needs.validate-release.outputs.version }}
+            Status: ${{ needs.create-release.result }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create GitHub issue for post-release tasks
+        if: needs.create-release.result == 'success'
         uses: actions/github-script@v7
         with:
           script: |
-            // Clean up old pre-releases when a stable release is made
-            const { data: releases } = await github.rest.repos.listReleases({
+            github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              per_page: 50
-            });
-            
-            const oldPrereleases = releases.filter(release => 
-              release.prerelease && 
-              release.tag_name !== '${{ needs.validate-release.outputs.version }}'
-            );
-            
-            // Keep the 3 most recent pre-releases
-            const toDelete = oldPrereleases.slice(3);
-            
-            for (const release of toDelete) {
-              console.log(`Deleting old pre-release: ${release.tag_name}`);
+              title: `Post-release tasks for v${{ needs.validate-release.outputs.version }}`,
+              body: `## Post-release Tasks
               
-              try {
-                await github.rest.repos.deleteRelease({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  release_id: release.id
-                });
-                
-                // Also delete the tag
-                await github.rest.git.deleteRef({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: `tags/${release.tag_name}`
-                });
-                
-                console.log(`✅ Deleted ${release.tag_name}`);
-              } catch (error) {
-                console.log(`⚠️ Could not delete ${release.tag_name}: ${error.message}`);
-              }
-            }
-            
-            console.log(`Cleanup complete. Removed ${toDelete.length} old pre-releases.`);
+              Release v${{ needs.validate-release.outputs.version }} has been created.
+              
+              ### Tasks
+              - [ ] Verify deployment to staging
+              - [ ] Update documentation
+              - [ ] Announce release to community
+              - [ ] Monitor release metrics
+              
+              **Release Link:** [v${{ needs.validate-release.outputs.version }}](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.validate-release.outputs.version }})`,
+              labels: ['release', 'post-release-tasks']
+            });

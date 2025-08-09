@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-08-07T13:16:54.539Z",
+  "tests": [
+    {
+      "test": "memory-monitor",
+      "snapshotsTaken": 6,
+      "alertsReceived": 5,
+      "peakMemoryMB": 22.746261596679688,
+      "currentMemoryMB": 22.746261596679688,
+      "growthRate": 1289152.677857714,
+      "leakDetected": true
+    },
+    {
+      "test": "worker-pool",
+      "workersSpawned": 2,
+      "tasksCompleted": 20,
+      "successRate": 100,
+      "durationMs": 128,
+      "throughput": 0,
+      "averageTaskTime": 6.142857142857144
+    },
+    {
+      "test": "optimized-engine-small",
+      "entityCount": 1000,
+      "clustersFound": 49,
+      "durationMs": 267,
+      "peakMemoryMB": 24.827552795410156,
+      "entitiesPerSecond": 3745.318352059925,
+      "streamingUsed": false,
+      "batchesProcessed": 0,
+      "cacheHits": 49,
+      "memoryPeakUsage": 0
+    },
+    {
+      "test": "optimized-engine-medium",
+      "entityCount": 5000,
+      "clustersFound": 249,
+      "durationMs": 1469,
+      "peakMemoryMB": 54.68804168701172,
+      "entitiesPerSecond": 3403.6759700476514,
+      "streamingUsed": false,
+      "batchesProcessed": 0,
+      "cacheHits": 245,
+      "memoryPeakUsage": 0
+    },
+    {
+      "test": "optimized-engine-large",
+      "entityCount": 10000,
+      "clustersFound": 373,
+      "durationMs": 2780,
+      "peakMemoryMB": 85.72283172607422,
+      "entitiesPerSecond": 3597.1223021582737,
+      "streamingUsed": true,
+      "batchesProcessed": 12,
+      "cacheHits": 0,
+      "memoryPeakUsage": 76.61405181884766
+    }
+  ]
+}

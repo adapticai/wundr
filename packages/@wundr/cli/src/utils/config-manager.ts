@@ -79,6 +79,9 @@ export class ConfigManager {
         logger.info('Created default configuration');
       }
 
+      // Merge with environment variables
+      this.config = this.mergeEnvironmentVariables(this.config);
+
       return this.config;
     } catch (error) {
       logger.error('Failed to load configuration:', error);
@@ -194,13 +197,20 @@ export class ConfigManager {
     
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
+      if (!current || typeof current !== 'object') {
+        throw new Error(`Invalid path: cannot set property on non-object`);
+      }
       if (!current[key] || typeof current[key] !== 'object') {
         current[key] = {};
       }
       current = current[key];
     }
     
-    current[keys[keys.length - 1]] = value;
+    const finalKey = keys[keys.length - 1];
+    if (!finalKey || !current || typeof current !== 'object') {
+      throw new Error(`Invalid path: cannot set property`);
+    }
+    current[finalKey] = value;
   }
 
   /**
@@ -214,7 +224,7 @@ export class ConfigManager {
       integrations: {},
       ai: {
         provider: 'claude',
-        model: 'claude-3'
+        model: 'claude-3-opus-20240229'
       },
       analysis: {
         patterns: ['**/*.ts', '**/*.js', '**/*.tsx', '**/*.jsx'],
@@ -226,6 +236,93 @@ export class ConfigManager {
         severity: 'warning'
       }
     };
+  }
+
+  /**
+   * Merge environment variables into configuration
+   */
+  private mergeEnvironmentVariables(config: WundrConfig): WundrConfig {
+    const envConfig = { ...config };
+    
+    // AI API Key from environment
+    if (process.env.CLAUDE_API_KEY && !envConfig.ai.apiKey) {
+      envConfig.ai.apiKey = process.env.CLAUDE_API_KEY;
+    }
+    
+    if (process.env.OPENAI_API_KEY && envConfig.ai.provider === 'openai' && !envConfig.ai.apiKey) {
+      envConfig.ai.apiKey = process.env.OPENAI_API_KEY;
+    }
+    
+    // AI Provider and Model from environment
+    if (process.env.WUNDR_AI_PROVIDER) {
+      envConfig.ai.provider = process.env.WUNDR_AI_PROVIDER;
+    }
+    
+    if (process.env.WUNDR_AI_MODEL) {
+      envConfig.ai.model = process.env.WUNDR_AI_MODEL;
+    }
+    
+    // GitHub integration
+    if (process.env.GITHUB_TOKEN) {
+      envConfig.integrations.github = envConfig.integrations.github || {
+        token: process.env.GITHUB_TOKEN,
+        owner: process.env.GITHUB_OWNER || '',
+        repo: process.env.GITHUB_REPO || ''
+      };
+      if (!envConfig.integrations.github.token) {
+        envConfig.integrations.github.token = process.env.GITHUB_TOKEN;
+      }
+    }
+    
+    return envConfig;
+  }
+
+  /**
+   * Get API key for AI provider with fallback mechanisms
+   */
+  getAIApiKey(provider?: string): string | undefined {
+    const currentProvider = provider || this.config?.ai?.provider || 'claude';
+    
+    // First check config
+    if (this.config?.ai?.apiKey) {
+      return this.config.ai.apiKey;
+    }
+    
+    // Then check environment variables based on provider
+    switch (currentProvider.toLowerCase()) {
+      case 'claude':
+        return process.env.CLAUDE_API_KEY;
+      case 'openai':
+        return process.env.OPENAI_API_KEY;
+      default:
+        return process.env.CLAUDE_API_KEY; // Default fallback
+    }
+  }
+
+  /**
+   * Set API key securely in config
+   */
+  async setAIApiKey(apiKey: string, provider?: string): Promise<void> {
+    if (!this.config) {
+      await this.loadConfig();
+    }
+    
+    if (provider && provider !== this.config!.ai.provider) {
+      this.config!.ai.provider = provider;
+    }
+    
+    this.config!.ai.apiKey = apiKey;
+    await this.saveConfig();
+  }
+
+  /**
+   * Check if AI is properly configured
+   */
+  isAIConfigured(): boolean {
+    const apiKey = this.getAIApiKey();
+    const provider = this.config?.ai?.provider;
+    
+    return !!(apiKey && provider);
   }
 
   /**
@@ -260,7 +357,8 @@ export class ConfigManager {
         
         logger.debug(`Merged project config from: ${projectConfigPath}`);
       } catch (error) {
-        logger.warn(`Failed to load project config: ${error.message}`);
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        logger.warn(`Failed to load project config: ${message}`);
       }
     }
     
