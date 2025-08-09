@@ -10,7 +10,7 @@ import { ConfigList } from '@/components/config/config-list';
 import { ConfigTemplates } from '@/components/config/config-templates';
 import { ConfigActions } from '@/components/config/config-actions';
 import { ConfigThemeColorPicker } from '@/components/config/config-color-picker';
-import { useConfigSection } from '@/hooks/config/use-config';
+// Removed unused import
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +36,8 @@ import { useConfig } from '@/lib/contexts/config/config-context';
 import { templates } from '@/lib/contexts/config/config-templates';
 
 function GeneralSettings() {
-  const { config, updateConfig, resetSection, errors, hasErrors } = useConfigSection('general');
+  const { config, updateConfig, resetConfig, errors } = useConfig();
+  const hasErrors = Object.keys(errors).length > 0;
 
   const languageOptions = [
     { value: 'en', label: 'English', description: 'English (US)' },
@@ -55,7 +56,7 @@ function GeneralSettings() {
     <ConfigSection
       title="General Settings"
       description="Basic application preferences and interface settings"
-      onReset={resetSection}
+      onReset={resetConfig}
       hasErrors={hasErrors}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -100,7 +101,7 @@ function GeneralSettings() {
         <ConfigToggle
           label="Compact Mode"
           description="Use a more compact interface with reduced spacing"
-          checked={config.compactMode}
+          checked={config.compactMode || false}
           onChange={(checked) => updateConfig({ compactMode: checked })}
           error={errors.compactMode}
         />
@@ -108,7 +109,7 @@ function GeneralSettings() {
         <ConfigToggle
           label="Collapsed Sidebar"
           description="Start with the sidebar collapsed by default"
-          checked={config.sidebarCollapsed}
+          checked={config.sidebarCollapsed || false}
           onChange={(checked) => updateConfig({ sidebarCollapsed: checked })}
           error={errors.sidebarCollapsed}
         />
@@ -118,7 +119,8 @@ function GeneralSettings() {
 }
 
 function AnalysisSettings() {
-  const { config, updateConfig, resetSection, errors, hasErrors } = useConfigSection('analysis');
+  const { config, updateConfig, resetConfig, errors } = useConfig();
+  const hasErrors = Object.keys(errors).length > 0;
 
   const commonFileTypes = [
     '.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.py', '.java', '.cs', '.go', '.rs',
@@ -149,7 +151,7 @@ function AnalysisSettings() {
     <ConfigSection
       title="Analysis Settings"
       description="Configure how code analysis and duplicate detection works"
-      onReset={resetSection}
+      onReset={resetConfig}
       hasErrors={hasErrors}
     >
       <div className="space-y-6">
@@ -157,7 +159,7 @@ function AnalysisSettings() {
           <ConfigNumberInput
             label="Duplicate Threshold"
             description="Similarity threshold for duplicate detection (0.0 - 1.0)"
-            value={config.duplicateThreshold}
+            value={config.duplicateThreshold || 80}
             onChange={(value) => updateConfig({ duplicateThreshold: parseFloat(value) || 0 })}
             min={0}
             max={1}
@@ -170,7 +172,7 @@ function AnalysisSettings() {
           <ConfigNumberInput
             label="Complexity Threshold"
             description="Maximum cyclomatic complexity before flagging"
-            value={config.complexityThreshold}
+            value={config.complexityThreshold || 10}
             onChange={(value) => updateConfig({ complexityThreshold: parseInt(value) || 0 })}
             min={1}
             max={100}
@@ -182,7 +184,7 @@ function AnalysisSettings() {
           <ConfigNumberInput
             label="Minimum File Size (bytes)"
             description="Minimum file size in bytes to analyze"
-            value={config.minFileSize}
+            value={config.minFileSize || 1000}
             onChange={(value) => updateConfig({ minFileSize: parseInt(value) || 0 })}
             min={0}
             error={errors.minFileSize}
@@ -193,7 +195,7 @@ function AnalysisSettings() {
           <ConfigAnalysisDepthSelect
             label="Analysis Depth"
             description="Choose how thorough the analysis should be"
-            value={config.analysisDepth}
+            value={config.analysisDepth || 'medium'}
             onChange={(value) => updateConfig({ analysisDepth: value as 'shallow' | 'medium' | 'deep' })}
             error={errors.analysisDepth}
             section="analysis"
@@ -204,7 +206,7 @@ function AnalysisSettings() {
         <ConfigToggle
           label="Smart Analysis"
           description="Use AI-powered analysis for better accuracy (experimental)"
-          checked={config.enableSmartAnalysis}
+          checked={config.enableSmartAnalysis || false}
           onChange={(checked) => updateConfig({ enableSmartAnalysis: checked })}
           error={errors.enableSmartAnalysis}
         />
@@ -212,7 +214,7 @@ function AnalysisSettings() {
         <ConfigList
           label="Patterns to Ignore"
           description="Glob patterns for files and directories to exclude from analysis"
-          items={config.patternsToIgnore}
+          items={config.patternsToIgnore || []}
           onChange={(items) => updateConfig({ patternsToIgnore: items })}
           placeholder="e.g., node_modules/**, *.test.*, dist/**"
           error={errors.patternsToIgnore}
@@ -228,8 +230,9 @@ function AnalysisSettings() {
                   type="button"
                   className="px-2 py-1 text-xs bg-muted rounded hover:bg-muted/80 transition-colors"
                   onClick={() => {
-                    if (!config.patternsToIgnore.includes(pattern)) {
-                      updateConfig({ patternsToIgnore: [...config.patternsToIgnore, pattern] });
+                    const patterns = config.patternsToIgnore || [];
+                    if (!patterns.includes(pattern)) {
+                      updateConfig({ patternsToIgnore: [...patterns, pattern] });
                     }
                   }}
                   title={`Click to add: ${pattern}`}
@@ -244,7 +247,7 @@ function AnalysisSettings() {
         <ConfigList
           label="Exclude Directories"
           description="Directory names to exclude from analysis"
-          items={config.excludeDirectories}
+          items={config.excludeDirectories || []}
           onChange={(items) => updateConfig({ excludeDirectories: items })}
           placeholder="e.g., node_modules, dist, build"
           error={errors.excludeDirectories}
@@ -253,7 +256,7 @@ function AnalysisSettings() {
         <ConfigList
           label="Include File Types"
           description="File extensions to include in analysis"
-          items={config.includeFileTypes}
+          items={config.includeFileTypes || []}
           onChange={(items) => updateConfig({ includeFileTypes: items })}
           placeholder="e.g., .ts, .tsx, .js"
           error={errors.includeFileTypes}
@@ -269,8 +272,9 @@ function AnalysisSettings() {
                   type="button"
                   className="px-2 py-1 text-xs bg-muted rounded hover:bg-muted/80 transition-colors"
                   onClick={() => {
-                    if (!config.includeFileTypes.includes(type)) {
-                      updateConfig({ includeFileTypes: [...config.includeFileTypes, type] });
+                    const fileTypes = config.includeFileTypes || [];
+                    if (!fileTypes.includes(type)) {
+                      updateConfig({ includeFileTypes: [...fileTypes, type] });
                     }
                   }}
                   title={`Click to add: ${type}`}
@@ -287,13 +291,14 @@ function AnalysisSettings() {
 }
 
 function IntegrationSettings() {
-  const { config, updateConfig, resetSection, errors, hasErrors } = useConfigSection('integration');
+  const { config, updateConfig, resetConfig, errors } = useConfig();
+  const hasErrors = Object.keys(errors).length > 0;
 
   return (
     <ConfigSection
       title="Integration Settings"
       description="Configure webhooks, API keys, and external service integrations"
-      onReset={resetSection}
+      onReset={resetConfig}
       hasErrors={hasErrors}
     >
       <div className="space-y-6">
@@ -306,7 +311,7 @@ function IntegrationSettings() {
             <ConfigUrlInput
               label="Analysis Complete Webhook"
               description="URL to call when analysis is complete"
-              value={config.webhookUrls.onAnalysisComplete}
+              value={config.webhookUrls?.onAnalysisComplete || ''}
               onChange={(value) => updateConfig({ 
                 webhookUrls: { ...config.webhookUrls, onAnalysisComplete: value }
               })}
@@ -319,7 +324,7 @@ function IntegrationSettings() {
             <ConfigUrlInput
               label="Report Generated Webhook"
               description="URL to call when a report is generated"
-              value={config.webhookUrls.onReportGenerated}
+              value={config.webhookUrls?.onReportGenerated || ''}
               onChange={(value) => updateConfig({ 
                 webhookUrls: { ...config.webhookUrls, onReportGenerated: value }
               })}
@@ -332,7 +337,7 @@ function IntegrationSettings() {
             <ConfigUrlInput
               label="Error Webhook"
               description="URL to call when errors occur"
-              value={config.webhookUrls.onError}
+              value={config.webhookUrls?.onError || ''}
               onChange={(value) => updateConfig({ 
                 webhookUrls: { ...config.webhookUrls, onError: value }
               })}
@@ -359,7 +364,7 @@ function IntegrationSettings() {
             <ConfigPasswordInput
               label="GitHub API Key"
               description="Personal access token for GitHub integration"
-              value={config.apiKeys.github}
+              value={config.apiKeys?.github || ''}
               onChange={(value) => updateConfig({ 
                 apiKeys: { ...config.apiKeys, github: value }
               })}
@@ -372,7 +377,7 @@ function IntegrationSettings() {
             <ConfigPasswordInput
               label="Slack API Key"
               description="Bot token for Slack notifications"
-              value={config.apiKeys.slack}
+              value={config.apiKeys?.slack || ''}
               onChange={(value) => updateConfig({ 
                 apiKeys: { ...config.apiKeys, slack: value }
               })}
@@ -385,7 +390,7 @@ function IntegrationSettings() {
             <ConfigPasswordInput
               label="Jira API Key"
               description="API token for Jira integration"
-              value={config.apiKeys.jira}
+              value={config.apiKeys?.jira || ''}
               onChange={(value) => updateConfig({ 
                 apiKeys: { ...config.apiKeys, jira: value }
               })}
@@ -406,7 +411,7 @@ function IntegrationSettings() {
             <ConfigToggle
               label="Auto Upload"
               description="Automatically upload reports to configured services"
-              checked={config.automations.autoUpload}
+              checked={config.automations?.autoUpload || false}
               onChange={(checked) => updateConfig({ 
                 automations: { ...config.automations, autoUpload: checked }
               })}
@@ -416,7 +421,7 @@ function IntegrationSettings() {
             <ConfigToggle
               label="Schedule Analysis"
               description="Enable scheduled analysis runs"
-              checked={config.automations.scheduleAnalysis}
+              checked={config.automations?.scheduleAnalysis || false}
               onChange={(checked) => updateConfig({ 
                 automations: { ...config.automations, scheduleAnalysis: checked }
               })}
@@ -426,7 +431,7 @@ function IntegrationSettings() {
             <ConfigToggle
               label="Notify on Completion"
               description="Send notifications when analysis completes"
-              checked={config.automations.notifyOnCompletion}
+              checked={config.automations?.notifyOnCompletion || false}
               onChange={(checked) => updateConfig({ 
                 automations: { ...config.automations, notifyOnCompletion: checked }
               })}
@@ -440,7 +445,8 @@ function IntegrationSettings() {
 }
 
 function ExportSettings() {
-  const { config, updateConfig, resetSection, errors, hasErrors } = useConfigSection('export');
+  const { config, updateConfig, resetConfig, errors } = useConfig();
+  const hasErrors = Object.keys(errors).length > 0;
 
   const formatOptions = [
     { value: 'json', label: 'JSON', description: 'JavaScript Object Notation for data exchange' },
@@ -455,7 +461,7 @@ function ExportSettings() {
     <ConfigSection
       title="Export Settings"
       description="Configure default export formats and output options"
-      onReset={resetSection}
+      onReset={resetConfig}
       hasErrors={hasErrors}
     >
       <div className="space-y-6">
@@ -463,7 +469,7 @@ function ExportSettings() {
           <ConfigInput
             label="Default Export Path"
             description="Default directory for exported reports"
-            value={config.defaultPath}
+            value={config.defaultPath || ''}
             onChange={(value) => updateConfig({ defaultPath: value })}
             placeholder="./wundr-reports"
             error={errors.defaultPath}
@@ -474,7 +480,7 @@ function ExportSettings() {
           <ConfigNumberInput
             label="Maximum File Size (MB)"
             description="Maximum size for exported files in megabytes"
-            value={config.maxFileSize}
+            value={config.maxFileSize || 0}
             onChange={(value) => updateConfig({ maxFileSize: parseInt(value) || 0 })}
             min={1}
             max={1000}
@@ -488,7 +494,7 @@ function ExportSettings() {
           <ConfigToggle
             label="Include Metadata"
             description="Include analysis metadata in exports"
-            checked={config.includeMetadata}
+            checked={config.includeMetadata || false}
             onChange={(checked) => updateConfig({ includeMetadata: checked })}
             error={errors.includeMetadata}
           />
@@ -496,7 +502,7 @@ function ExportSettings() {
           <ConfigToggle
             label="Enable Compression"
             description="Compress exported files to reduce size"
-            checked={config.compressionEnabled}
+            checked={config.compressionEnabled || false}
             onChange={(checked) => updateConfig({ compressionEnabled: checked })}
             error={errors.compressionEnabled}
           />
@@ -504,7 +510,7 @@ function ExportSettings() {
           <ConfigToggle
             label="Timestamp Files"
             description="Add timestamps to exported file names"
-            checked={config.timestampFiles}
+            checked={config.timestampFiles || false}
             onChange={(checked) => updateConfig({ timestampFiles: checked })}
             error={errors.timestampFiles}
           />
@@ -520,11 +526,11 @@ function ExportSettings() {
                     <input
                       type="checkbox"
                       id={`format-${format.value}`}
-                      checked={config.defaultFormats.includes(format.value as any)}
+                      checked={(config.defaultFormats || []).includes(format.value as any)}
                       onChange={(e) => {
                         const formats = e.target.checked
-                          ? [...config.defaultFormats, format.value as any]
-                          : config.defaultFormats.filter(f => f !== format.value);
+                          ? [...(config.defaultFormats || []), format.value as any]
+                          : (config.defaultFormats || []).filter((f: any) => f !== format.value);
                         updateConfig({ defaultFormats: formats });
                       }}
                       className="mt-1 rounded border-gray-300"
@@ -575,7 +581,10 @@ function ConfigurationManagement() {
     
     setIsImporting(true);
     try {
-      await importConfig(importFile);
+      if (importFile) {
+        const fileContent = await importFile.text();
+        await importConfig(fileContent);
+      }
       setImportFile(null);
     } catch (error) {
       console.error('Import failed:', error);

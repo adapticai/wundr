@@ -17,7 +17,7 @@ import {
 } from "chart.js"
 import { Bar, Doughnut, Line } from "react-chartjs-2"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { AnalysisData } from "@/lib/contexts/analysis-context"
+import type { CompleteAnalysisData } from "@/types/reports"
 
 ChartJS.register(
   CategoryScale,
@@ -33,7 +33,7 @@ ChartJS.register(
 )
 
 interface DashboardChartsProps {
-  data: AnalysisData
+  data: CompleteAnalysisData
 }
 
 export function DashboardCharts({ data }: DashboardChartsProps) {
@@ -112,7 +112,7 @@ export function DashboardCharts({ data }: DashboardChartsProps) {
 
   // Complexity distribution
   const complexityBuckets = data.entities.reduce((acc, entity) => {
-    const complexity = entity.complexity || 0
+    const complexity = entity.complexity?.cyclomatic || 0
     const bucket =
       complexity === 0
         ? "0"

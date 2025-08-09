@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+coverage/
+*.config.js
+.eslintrc.js
+jest.config.js
+commitlint.config.js
+scripts/
+bin/
+.changeset/
+.github/
+*.md
+tests/
+templates/

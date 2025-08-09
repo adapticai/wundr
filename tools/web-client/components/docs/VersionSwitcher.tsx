@@ -34,7 +34,7 @@ export function VersionSwitcher({
         >
           <div className="flex items-center gap-2">
             <span className="font-medium">{current.label}</span>
-            {current.isLatest && (
+            {!current.deprecated && (
               <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                 Latest
               </Badge>
@@ -56,7 +56,7 @@ export function VersionSwitcher({
               {version.deprecated && (
                 <AlertTriangle className="h-3 w-3 text-yellow-500" />
               )}
-              {version.isLatest && (
+              {!version.deprecated && (
                 <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                   Latest
                 </Badge>

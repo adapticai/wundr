@@ -36,6 +36,8 @@ async function loadPatternsPage(): Promise<DocPage | null> {
           description: data.description || 'Best practices and recommended patterns for code organization',
           content,
           html: '', // Will be processed by MarkdownRenderer
+          tags: data.tags || ['patterns', 'standards', 'best-practices'],
+          lastModified: stats.mtime,
           frontmatter: {
             title: data.title || 'Golden Patterns & Standards',
             description: data.description || 'Best practices and recommended patterns for code organization',
@@ -82,11 +84,11 @@ export default async function PatternsPage() {
     path: '/dashboard/docs/patterns',
     category: docPage.category,
     description: docPage.description,
-    tags: docPage.frontmatter.tags,
-    order: docPage.frontmatter.order || 3,
+    tags: docPage.frontmatter?.tags || docPage.tags,
+    order: docPage.frontmatter?.order || 3,
     lastUpdated: docPage.lastUpdated,
-    version: docPage.frontmatter.version,
-    deprecated: docPage.frontmatter.deprecated,
+    version: docPage.frontmatter?.version,
+    deprecated: docPage.frontmatter?.deprecated,
     wordCount: docPage.wordCount
   };
 
@@ -94,7 +96,7 @@ export default async function PatternsPage() {
     <DocsLayout currentPage={currentPage}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Version notice if deprecated */}
-        {docPage.frontmatter.deprecated && (
+        {docPage.frontmatter?.deprecated && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 rounded">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -128,12 +130,12 @@ export default async function PatternsPage() {
         {/* Document metadata */}
         <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
           <div className="flex flex-wrap gap-4">
-            {docPage.frontmatter.author && (
+            {docPage.frontmatter?.author && (
               <span>Author: {docPage.frontmatter.author}</span>
             )}
-            <span>Last updated: {docPage.lastUpdated.toLocaleDateString()}</span>
-            <span>Words: {docPage.wordCount.toLocaleString()}</span>
-            {docPage.frontmatter.version && (
+            <span>Last updated: {docPage.lastUpdated?.toLocaleDateString()}</span>
+            <span>Words: {docPage.wordCount?.toLocaleString() || '0'}</span>
+            {docPage.frontmatter?.version && (
               <span>Version: {docPage.frontmatter.version}</span>
             )}
           </div>
@@ -144,7 +146,7 @@ export default async function PatternsPage() {
           content={docPage.content}
           frontmatter={docPage.frontmatter}
           showMetadata={false} // Already shown above
-          showTableOfContents={docPage.frontmatter.toc !== false}
+          showTableOfContents={docPage.frontmatter?.toc !== false}
           enableSyntaxHighlighting={true}
           enableMath={false}
           enableMermaid={false}

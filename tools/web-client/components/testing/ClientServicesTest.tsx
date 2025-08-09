@@ -34,12 +34,18 @@ export default function ClientServicesTest() {
     try {
       // Run tests
       const browserSafe = isBrowserSafe();
-      const { results } = runClientServiceTests();
+      const results = await runClientServiceTests();
       
       setTestResults({
         browserSafe,
-        instantiation: results.instantiation,
-        validation: results.validation,
+        instantiation: results[0] ? {
+          success: results[0].passed > 0 && results[0].failed === 0,
+          errors: results[0].tests.filter(t => !t.success).map(t => t.message || 'Unknown error')
+        } : { success: false, errors: ['No instantiation tests found'] },
+        validation: results[1] ? {
+          success: results[1].passed > 0 && results[1].failed === 0,
+          errors: results[1].tests.filter(t => !t.success).map(t => t.message || 'Unknown error')
+        } : { success: false, errors: ['No validation tests found'] },
       });
       
     } catch (error) {

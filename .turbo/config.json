@@ -1,0 +1,10 @@
+{
+  "ui": "tui",
+  "daemon": true,
+  "cache": {
+    "dir": ".turbo/cache"
+  },
+  "remoteCache": {
+    "enabled": false
+  }
+}

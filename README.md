@@ -1,29 +1,29 @@
-# Wundr - AI-Powered Development Platform
+# Wundr - Unified Developer Platform
 
 <div align="center">
 
   <h1>🚀 Wundr</h1>
 
   <p>
-    <strong>The Intelligent CLI-Based Coding Agents Orchestrator</strong>
+    <strong>The Complete Developer Platform - From Machine Setup to Code Excellence</strong>
   </p>
 
   <p>
-    Transform monolithic chaos into architectural elegance with AI-powered refactoring at scale
+    Three powerful tools in one unified platform: Computer Setup, Project Creation, and Code Governance
   </p>
 
   <p>
     <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-Get_Started_in_5_Minutes-brightgreen?style=for-the-badge" alt="Quick Start"></a>
-    <a href="#features"><img src="https://img.shields.io/badge/Features-Full_Platform-blue?style=for-the-badge" alt="Features"></a>
+    <a href="#three-core-features"><img src="https://img.shields.io/badge/Features-Three_Core_Tools-blue?style=for-the-badge" alt="Features"></a>
     <a href="#documentation"><img src="https://img.shields.io/badge/Docs-Comprehensive_Guide-orange?style=for-the-badge" alt="Documentation"></a>
   </p>
 
   <p>
-    <img src="https://img.shields.io/npm/v/@adapticai/wundr?style=flat-square" alt="npm version">
+    <img src="https://img.shields.io/npm/v/@wundr/cli?style=flat-square" alt="npm version">
     <img src="https://img.shields.io/github/license/adapticai/wundr?style=flat-square" alt="License">
-    <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=flat-square" alt="Node Version">
-    <img src="https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square" alt="TypeScript">
-    <img src="https://img.shields.io/badge/AI_Powered-Claude_Integration-purple?style=flat-square" alt="AI Powered">
+    <img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen?style=flat-square" alt="Node Version">
+    <img src="https://img.shields.io/badge/TypeScript-5.2+-blue?style=flat-square" alt="TypeScript">
+    <img src="https://img.shields.io/badge/Turborepo-Optimized-purple?style=flat-square" alt="Turborepo">
   </p>
 
 </div>
@@ -32,684 +32,353 @@
 
 ## 🎯 What is Wundr?
 
-Wundr is a comprehensive AI-powered development platform that transforms how teams approach code analysis, refactoring, and architectural evolution. Built by [Wundr, by Adaptic.ai](https://adaptic.ai), it combines intelligent code analysis, automated refactoring assistance, and real-time visualization to help development teams modernize large codebases efficiently and safely.
+Wundr is a comprehensive unified developer platform that provides three distinct but complementary features to support the entire developer lifecycle:
 
-### The Complete Development Solution
+1. **🖥️ Computer Setup** - Automated developer machine provisioning with global tools and configurations
+2. **🏗️ Project Creation** - Scaffold new projects with Wundr-compliant best practices built-in
+3. **📊 Code Governance** - Analyze and improve existing codebases with AI-powered insights
 
-Wundr isn't just a tool—it's a complete ecosystem:
-- **🧠 AI-Powered Analysis**: Advanced AST parsing with Claude integration for intelligent insights
-- **🔄 Automated Refactoring**: Smart consolidation of duplicates and pattern standardization
-- **📊 Real-time Dashboard**: Interactive visualizations and monitoring for development metrics
-- **🛠️ Unified CLI**: Powerful command-line interface with natural language processing
-- **🏗️ Monorepo Management**: Seamless transition from monolithic to modular architecture
-- **🔍 Deep Code Intelligence**: Circular dependency detection, complexity analysis, and quality metrics
+Each feature serves a specific purpose in the development workflow, from initial machine setup through project creation to ongoing code quality management.
 
-### 🌟 Why Choose Wundr?
+## 🌟 Three Core Features
 
-- **🤖 AI-First Approach** - Claude integration for intelligent refactoring suggestions and code analysis
-- **📈 Proven Results** - Up to 90% reduction in code duplicates and 50% faster development cycles
-- **🏗️ Enterprise-Ready** - Handles codebases with 10,000+ files while maintaining performance
-- **🔧 Developer Experience** - Intuitive CLI with natural language commands and interactive wizards
-- **📊 Comprehensive Analytics** - Real-time dashboards with dependency graphs, complexity metrics, and quality trends
-- **🚀 Quick Setup** - Get analyzing in minutes with `npx @adapticai/wundr init`
-- **🔒 Production Safe** - Multi-level security with safe execution environments and audit trails
-- **🌐 Full Stack Solution** - CLI, dashboard, analysis engine, and documentation all integrated
+### 1. Computer Setup (New Developer Onboarding)
+**Purpose**: Set up new developer machines with all required global tools
+
+```bash
+# Interactive setup wizard
+wundr computer-setup
+
+# Setup with specific profile
+wundr computer-setup --profile fullstack
+
+# Apply team configurations
+wundr computer-setup --team platform
+```
+
+**What it installs**:
+- ✅ Development runtimes (Node.js, Python, Go, Rust)
+- ✅ Global CLI tools (git, docker, aws-cli, gh)
+- ✅ Package managers (npm, pnpm, yarn, pip)
+- ✅ Editors and extensions (VS Code, Vim)
+- ✅ Database clients and tools
+- ✅ AI development tools (Claude Code, Claude Flow)
+
+**Available Profiles**:
+- Frontend Developer
+- Backend Developer
+- Full Stack Developer
+- DevOps Engineer
+- Machine Learning Engineer
+- Mobile Developer
+
+### 2. Project Creation (Start New Projects Right)
+**Purpose**: Create new projects with all Wundr best practices pre-configured
+
+```bash
+# Create a Next.js frontend application
+wundr create frontend my-app
+
+# Create a Fastify backend API
+wundr create backend my-api
+
+# Create a Turborepo monorepo
+wundr create monorepo my-platform
+
+# Create a full-stack application
+wundr create fullstack my-project
+```
+
+**What it includes**:
+- ✅ TypeScript with strict configuration
+- ✅ ESLint + Prettier pre-configured
+- ✅ Jest/Vitest testing setup
+- ✅ Husky pre-commit hooks
+- ✅ GitHub Actions CI/CD
+- ✅ Wundr governance baselines
+- ✅ CLAUDE.md for AI assistance
+- ✅ Docker configuration (optional)
+
+**Project Templates**:
+- **Frontend**: Next.js 15 + Tailwind + shadcn/ui
+- **Backend**: Fastify + Prisma + OpenAPI
+- **Monorepo**: Turborepo + multiple packages
+- **Full-stack**: Complete application setup
+
+### 3. Code Analysis & Governance (Maintain Quality)
+**Purpose**: Analyze and improve existing codebases
+
+```bash
+# Analyze current codebase
+wundr analyze
+
+# Create governance baseline
+wundr govern baseline
+
+# Check for drift from standards
+wundr govern check
+
+# Generate compliance reports
+wundr govern report
+```
+
+**Analysis Capabilities**:
+- ✅ AST-powered code analysis
+- ✅ Duplicate detection and consolidation
+- ✅ Complexity metrics and quality scoring
+- ✅ Circular dependency detection
+- ✅ Security vulnerability scanning
+- ✅ Performance bottleneck identification
 
 ## 🚀 Quick Start
 
-Get Wundr analyzing your codebase in under 5 minutes:
-
-### Option 1: Global Installation (Recommended)
-```bash
-# Install globally
-npm install -g @adapticai/wundr
-
-# Initialize in your project
-wundr init
-
-# Run analysis
-wundr analyze
-
-# Start dashboard
-wundr dashboard
-```
-
-### Option 2: Direct Usage
-```bash
-# Use directly with npx
-npx @adapticai/wundr init
-npx @adapticai/wundr analyze --interactive
-
-# View results
-open http://localhost:3000
-```
-
-### Option 3: Try the Demo
-```bash
-# Analyze a sample project
-npx @adapticai/wundr demo
-```
-
-That's it! Wundr will analyze your code, identify improvements, and provide an interactive dashboard to explore the results.
-
-## 🎬 See It In Action
+### Installation
 
 ```bash
-$ wundr init --interactive
+# Install globally (recommended)
+npm install -g @wundr/cli
 
-🚀 Wundr Platform Initialization
-
-✓ Environment validated
-📋 Project Configuration
-? What type of project is this? TypeScript/JavaScript
-? Primary analysis focus? Code Quality & Architecture
-? Enable AI assistance? Yes (Claude integration)
-? Setup dashboard? Yes
-
-✓ Analysis engine configured
-✓ CLI tools installed
-✓ Dashboard setup complete
-✓ AI integration validated
-
-✅ Wundr initialization complete!
-
-📋 Next Steps:
-1. Run your first analysis: wundr analyze
-2. View results: wundr dashboard
-3. Get AI suggestions: wundr ai review
-4. Start refactoring: wundr refactor --guided
-
-$ wundr analyze
-
-🔍 Analyzing codebase...
-📁 Found 1,247 files
-🧮 Parsing AST structures...
-🔍 Detecting duplicates...
-📊 Calculating complexity metrics...
-🌐 Checking dependencies...
-
-✅ Analysis complete!
-📊 Found 23 duplicate clusters (89% consolidation opportunity)
-🔄 Detected 3 circular dependencies
-📈 Average complexity: 4.2 (Good)
-⚠️  12 files exceed recommended size
-
-🎯 Run 'wundr dashboard' to explore results
-💡 Try 'wundr ai review' for improvement suggestions
+# Or use with npx
+npx @wundr/cli --help
 ```
 
-## 🛠️ Platform Components
+### Development Setup (For Contributors)
 
-Wundr consists of four integrated components that work together to provide a complete development solution:
+```bash
+# Clone the repository
+git clone https://github.com/adapticai/wundr.git
+cd wundr
 
-### 1. 🛠️ **@wundr/cli - Unified Command Interface**
+# Install dependencies
+pnpm install
 
-- **Natural Language Commands** - `wundr ai "optimize this React component"`
-- **Interactive Wizards** - Step-by-step guided workflows
-- **Batch Processing** - YAML-based automation for CI/CD integration
-- **Plugin Architecture** - Extensible with custom commands and integrations
-- **Cross-Platform** - Works seamlessly on macOS, Linux, and Windows
+# Build all packages
+pnpm build
 
-### 2. 🔍 **@wundr/analysis-engine - Deep Code Intelligence**
-
-- **AST-Powered Analysis** - Advanced Abstract Syntax Tree parsing and semantic analysis
-- **Duplicate Detection** - Hash-based clustering with 90%+ accuracy
-- **Complexity Metrics** - Cyclomatic, cognitive, and maintainability scoring
-- **Dependency Analysis** - Circular dependency detection and visualization
-- **High Performance** - Handles 10,000+ files with concurrent processing
-
-### 3. 📊 **@wundr/dashboard - Real-time Visualization**
-
-- **Interactive Charts** - D3.js-powered dependency graphs and heatmaps
-- **Real-time Updates** - WebSocket integration for live analysis results
-- **Script Execution** - Safe environment for running automation scripts
-- **Custom Themes** - Dark/light mode with branded styling options
-- **Responsive Design** - Works on desktop, tablet, and mobile devices
-
-### 4. 🤖 **AI Integration - Intelligent Assistance**
-
-- **Claude Integration** - Advanced AI for code review and refactoring suggestions
-- **Pattern Recognition** - Automatic detection of code smells and anti-patterns
-- **Smart Recommendations** - Context-aware improvement suggestions
-- **Natural Language Interface** - Chat-based interaction for complex queries
-- **Learning System** - Adapts to your team's coding patterns over time
-
-## 🏗️ Architecture Overview
-
-Wundr follows a modular, microservices-inspired architecture designed for scalability and maintainability:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        User Interface Layer                     │
-├─────────────────┬───────────────────┬─────────────────────────┤
-│   CLI Interface │  Dashboard Web UI │     AI Chat Interface     │
-│   • Commands    │   • Visualizations│     • Natural Language   │
-│   • Wizards     │   • Real-time     │     • Code Review         │
-│   • Batch Jobs  │   • Interactions  │     • Suggestions         │
-└─────────────────┴───────────────────┴─────────────────────────┘
-                              |
-┌─────────────────────────────────────────────────────────────┐
-│                     Orchestration Layer                         │
-├─────────────────────────────────────────────────────────────┤
-│  • Task Coordination    • Event System     • Plugin Manager    │
-│  • State Management     • Security Layer   • Configuration     │
-└─────────────────────────────────────────────────────────────┘
-                              |
-┌─────────────────────────────────────────────────────────────┐
-│                      Processing Engines                         │
-├───────────────┬─────────────────┬───────────────┬──────────────┤
-│ Analysis      │ AI Integration  │ Refactoring   │ Monitoring   │
-│ Engine        │ • Claude API    │ Engine        │ Engine       │
-│ • AST Parse   │ • NLP Processing│ • Pattern Fix │ • Metrics    │
-│ • Complexity  │ • Code Review   │ • Consolidate │ • Alerts     │
-│ • Duplicates  │ • Suggestions   │ • Standards   │ • Reports    │
-└───────────────┴─────────────────┴───────────────┴──────────────┘
-                              |
-┌─────────────────────────────────────────────────────────────┐
-│                       Data & Storage Layer                      │
-├─────────────────────────────────────────────────────────────┤
-│  • Analysis Results   • Configuration   • Historical Data      │
-│  • Cache Management   • User Preferences• Performance Metrics  │
-└─────────────────────────────────────────────────────────────┘
+# Run in development mode
+pnpm dev
 ```
 
-### Key Integration Points
+### Quick Development Commands
 
-1. **Unified Configuration** - Single `wundr.config.json` for all components
-2. **Event-Driven Communication** - Real-time updates between CLI, analysis, and dashboard
-3. **Plugin Ecosystem** - Extensible architecture for custom functionality
-4. **AI-First Design** - Every component can leverage AI assistance
-5. **Security by Design** - Multi-layer security with audit trails and safe execution
-6. **Performance Optimization** - Concurrent processing with intelligent caching
+For quick development without building:
+
+```bash
+# Check what tools are installed
+npx tsx packages/@wundr/computer-setup/dev.ts check-tools
+
+# List available profiles
+npx tsx packages/@wundr/computer-setup/dev.ts list-profiles
+
+# Dry run a profile (safe)
+npx tsx packages/@wundr/computer-setup/dev.ts dry-run frontend
+
+# Create a new project (after dependencies installed)
+npx tsx packages/@wundr/cli/src/index.ts create frontend my-app
+```
+
+See [DEV_QUICKSTART.md](./DEV_QUICKSTART.md) for more development shortcuts.
+
+## 📦 Monorepo Structure
+
+Wundr is built as a monorepo using Turborepo for optimized builds and caching:
+
+```
+packages/
+├── @wundr/core              # Shared utilities and event bus
+├── @wundr/config            # Configuration management
+├── @wundr/plugin-system     # Plugin lifecycle management
+├── @wundr/computer-setup    # Machine provisioning system
+├── @wundr/project-templates # Project scaffolding templates
+├── @wundr/cli               # Unified command interface
+├── @wundr/analysis-engine   # Code analysis capabilities
+├── @wundr/dashboard         # Web dashboard interface
+├── @wundr/ai-integration    # AI and Claude Flow integration
+├── @wundr/security          # Security scanning and compliance
+├── @wundr/environment       # Environment management
+└── @wundr/docs              # Documentation site
+```
 
 ## 💻 Command Reference
 
-Wundr provides a comprehensive CLI with natural language support and interactive modes:
-
-### Project Initialization
+### Computer Setup Commands
 
 ```bash
-# Quick setup
-wundr init                        # Initialize Wundr in current project
-wundr init --interactive          # Interactive setup wizard
-wundr init --template react       # Initialize with React template
+# Main setup command
+wundr computer-setup                    # Interactive setup wizard
+wundr computer-setup --profile <role>   # Use specific profile
+wundr computer-setup --dry-run          # Preview without installing
+wundr computer-setup validate           # Verify installations
+wundr computer-setup doctor             # Diagnose issues
 
-# Advanced initialization
-wundr init --ai-enabled           # Enable AI features during setup
-wundr init --monorepo             # Configure for monorepo migration
-wundr init --enterprise           # Enterprise configuration
+# Profile management
+wundr computer-setup profile list       # List available profiles
+wundr computer-setup profile show <name> # Show profile details
+wundr computer-setup profile export     # Export current setup
+wundr computer-setup profile import <file> # Import profile
+
+# Team configurations
+wundr computer-setup team <name>        # Apply team settings
+wundr computer-setup team list          # List team configs
 ```
 
-### Code Analysis
+### Project Creation Commands
 
 ```bash
-# Basic analysis
-wundr analyze                     # Full codebase analysis
-wundr analyze ./src              # Analyze specific directory
-wundr analyze --focus duplicates  # Focus on specific analysis type
+# Create projects
+wundr create frontend <name>      # Next.js application
+wundr create backend <name>        # Fastify API
+wundr create monorepo <name>       # Turborepo platform
+wundr create fullstack <name>      # Full-stack app
 
-# Advanced analysis
-wundr analyze --ai-review         # Include AI-powered insights
-wundr analyze --benchmark         # Performance benchmarking
-wundr analyze --export-format json,html,markdown  # Multiple output formats
+# With options
+wundr create frontend my-app --no-git     # Skip git init
+wundr create backend my-api --no-install  # Skip deps install
+wundr create monorepo my-platform --docker # Include Docker
 
-# Specialized analysis
-wundr deps --circular             # Circular dependency detection
-wundr quality --complexity        # Code quality and complexity metrics
-wundr security --scan             # Security vulnerability analysis
+# List available templates
+wundr create list                  # Show all templates
 ```
 
-### AI-Powered Development
+### Code Analysis Commands
 
 ```bash
-# AI assistance
-wundr ai setup                    # Configure AI integration
-wundr ai chat                     # Interactive AI chat
-wundr ai review ./src             # AI code review
-wundr ai "refactor this component to use hooks"  # Natural language commands
+# Analysis
+wundr analyze                      # Full analysis
+wundr analyze --focus duplicates   # Specific analysis
+wundr analyze ./src                # Analyze directory
 
-# AI-powered refactoring
-wundr refactor --guided           # Step-by-step AI-guided refactoring
-wundr refactor --consolidate      # AI-assisted duplicate consolidation
-wundr refactor --patterns         # Standardize code patterns with AI
+# Governance
+wundr govern baseline              # Create baseline
+wundr govern check                 # Check compliance
+wundr govern report                # Generate report
+wundr govern drift                 # Check for drift
 
-# Generate code
-wundr create component UserCard --ai  # AI-assisted component generation
-wundr create tests --ai --coverage    # AI-generated comprehensive tests
-```
-
-### Dashboard & Monitoring
-
-```bash
-# Dashboard operations
-wundr dashboard start             # Start web dashboard
-wundr dashboard --port 4000       # Custom port
-wundr dashboard --theme dark      # Set theme
-
-# Real-time monitoring
-wundr watch                       # Watch for file changes and re-analyze
-wundr monitor --metrics           # Real-time performance metrics
-wundr alerts setup                # Configure quality alerts
-```
-
-### Batch Operations & CI/CD
-
-```bash
-# Batch processing
-wundr batch run analysis-pipeline.yaml    # Run batch job
-wundr batch create --template ci          # Create CI/CD batch template
-wundr batch validate config.yaml          # Validate batch configuration
-
-# CI/CD integration
-wundr ci analyze --fail-on-quality        # Fail CI on quality issues
-wundr ci report --format junit             # Generate CI-compatible reports
-wundr ci webhook --slack-url $WEBHOOK      # Send notifications
+# Dashboard
+wundr dashboard                    # Start web UI
+wundr dashboard --port 4000        # Custom port
 ```
 
 ## ⚙️ Configuration
 
-Wundr uses a flexible configuration system that adapts to your project needs:
-
-### Basic Configuration (`wundr.config.json`)
+Wundr uses a flexible configuration system in `wundr.config.json`:
 
 ```json
 {
   "project": {
-    "name": "My Awesome Project",
-    "type": "typescript",
-    "framework": "react"
+    "name": "My Project",
+    "type": "monorepo",
+    "framework": "turborepo"
+  },
+  "computerSetup": {
+    "profile": "fullstack",
+    "team": "platform",
+    "autoUpdate": true
   },
   "analysis": {
     "targetPath": "./src",
-    "excludePatterns": ["node_modules", "dist", "coverage"],
-    "includeExtensions": [".ts", ".tsx", ".js", ".jsx"],
+    "excludePatterns": ["node_modules", "dist"],
     "complexity": {
       "maxCyclomatic": 10,
       "maxCognitive": 15
-    },
-    "duplicates": {
-      "minSimilarity": 0.8,
-      "enableSemanticAnalysis": true
     }
   },
-  "ai": {
-    "enabled": true,
-    "provider": "claude",
-    "model": "claude-3-opus",
-    "features": {
-      "codeReview": true,
-      "refactoringSuggestions": true,
-      "testGeneration": true
-    }
-  },
-  "dashboard": {
-    "port": 3000,
-    "theme": "system",
-    "realTimeUpdates": true
+  "governance": {
+    "enforceStandards": true,
+    "failOnViolation": false,
+    "standards": ["eslint", "prettier", "typescript"]
   }
 }
 ```
 
-### Advanced Configuration with Integrations
+## 🏗️ Architecture
 
-```javascript
-// wundr.config.js - Advanced configuration with hooks and integrations
-module.exports = {
-  project: {
-    name: process.env.PROJECT_NAME || 'Advanced Project',
-    type: 'monorepo',
-  },
-  analysis: {
-    performance: {
-      maxConcurrency: 20,
-      enableCaching: true,
-      chunkSize: 100
-    },
-    ai: {
-      enhancedAnalysis: true,
-      patternRecognition: true,
-      contextualSuggestions: true
-    }
-  },
-  integrations: {
-    github: {
-      enabled: true,
-      token: process.env.GITHUB_TOKEN,
-      webhooks: {
-        onAnalysisComplete: 'comment-pr',
-        onQualityIssues: 'create-issue'
-      }
-    },
-    slack: {
-      webhook: process.env.SLACK_WEBHOOK_URL,
-      channels: {
-        alerts: '#dev-alerts',
-        reports: '#dev-reports'
-      }
-    },
-    ci: {
-      failOnQualityIssues: true,
-      qualityGates: {
-        duplicates: { max: 5 },
-        complexity: { average: 8, max: 20 },
-        coverage: { min: 80 }
-      }
-    }
-  },
-  hooks: {
-    beforeAnalysis: './scripts/pre-analysis.js',
-    afterAnalysis: './scripts/post-analysis.js',
-    onQualityAlert: './scripts/quality-alert.js'
-  }
-};
+Wundr is built with a modular, event-driven architecture:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Presentation Layer                        │
+│  CLI Interface    Web Dashboard    IDE Extensions            │
+├─────────────────────────────────────────────────────────────┤
+│                    Orchestration Layer                        │
+│  Event Bus       Plugin System      Configuration            │
+├─────────────────────────────────────────────────────────────┤
+│                     Service Layer                            │
+│  Computer Setup   Project Templates   Analysis Engine        │
+│  AI Integration   Governance          Security              │
+├─────────────────────────────────────────────────────────────┤
+│                    Infrastructure Layer                      │
+│  File System      Process Management   Network              │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## 📦 Installation Options
+### Technology Stack
 
-Choose the installation method that best fits your workflow:
+- **Runtime**: Node.js 20+ LTS
+- **Language**: TypeScript 5.2+
+- **Build**: Turborepo + esbuild
+- **CLI**: Commander.js
+- **Web**: Next.js 15 + React 19
+- **Testing**: Jest + Playwright
+- **Package Manager**: pnpm (recommended)
 
-### System Requirements
+## 🎯 Use Cases
 
-- **Node.js 18+** (LTS recommended)
-- **npm 8+** or **pnpm 8+** (pnpm recommended for monorepos)
-- **Git** (for repository analysis and integrations)
-- **8GB+ RAM** (for large codebase analysis)
-- **OS**: macOS, Linux, or Windows (with PowerShell)
+### 1. New Team Member Onboarding
+```bash
+# Day 1: Set up developer machine
+wundr computer-setup --profile fullstack --team platform
 
-### Global Installation (Recommended)
+# Day 2: Create first project
+wundr create frontend onboarding-app
+
+# Ongoing: Maintain code quality
+wundr analyze
+wundr govern check
+```
+
+### 2. Starting a New Project
+```bash
+# Create project with best practices
+wundr create monorepo my-platform
+
+# Project includes:
+# - TypeScript configuration
+# - Testing setup
+# - CI/CD pipelines
+# - Governance baselines
+# - AI integration
+```
+
+### 3. Maintaining Code Quality
+```bash
+# Regular quality checks
+wundr analyze --watch
+wundr govern drift
+wundr dashboard
+
+# CI/CD integration
+wundr analyze --ci --fail-on-issues
+```
+
+## 📚 Documentation
+
+- [Getting Started Guide](docs/GETTING_STARTED.md)
+- [Architecture Overview](docs/architecture/UNIFIED_PLATFORM_ARCHITECTURE.md)
+- [Platform Completion Report](docs/PLATFORM_COMPLETION_REPORT.md)
+- [Development Guide](docs/DEVELOPMENT_GUIDE.md)
+- [CLI Reference](packages/@wundr/cli/README.md)
+- [Computer Setup Guide](packages/@wundr/computer-setup/README.md)
+- [Project Templates](packages/@wundr/project-templates/README.md)
+
+## 🤝 Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Development Commands
 
 ```bash
-# Install globally with npm
-npm install -g @adapticai/wundr
-
-# Verify installation
-wundr --version
-wundr --help
-
-# Initialize in any project
-cd my-project
-wundr init
-```
-
-### Project-Specific Installation
-
-```bash
-# Add to your project dependencies
-npm install --save-dev @adapticai/wundr
-
-# Or with pnpm (recommended)
-pnpm add -D @adapticai/wundr
-
-# Add to package.json scripts
-{
-  "scripts": {
-    "analyze": "wundr analyze",
-    "dashboard": "wundr dashboard",
-    "quality-check": "wundr analyze --fail-on-issues",
-    "ai-review": "wundr ai review",
-    "refactor": "wundr refactor --interactive"
-  }
-}
-```
-
-### Docker & Container Setup
-
-```bash
-# Using official Docker image
-docker pull adapticai/wundr:latest
-
-# Run analysis in container
-docker run -v $(pwd):/workspace adapticai/wundr analyze
-
-# Run dashboard in container
-docker run -p 3000:3000 -v $(pwd):/workspace adapticai/wundr dashboard
-
-# Docker Compose for full development
-version: '3.8'
-services:
-  wundr:
-    image: adapticai/wundr:latest
-    ports:
-      - "3000:3000"
-      - "8080:8080"  # WebSocket port
-    volumes:
-      - .:/workspace
-    environment:
-      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
-    command: wundr dashboard --dev
-```
-
-### Homebrew Installation (macOS)
-
-```bash
-# Add the tap
-brew tap adapticai/wundr
-
-# Install Wundr
-brew install wundr
-
-# Verify installation
-wundr --version
-```
-
-## 🎯 Real-World Use Cases
-
-Wundr solves common development challenges across different scenarios:
-
-### 1. **Legacy Code Modernization**
-
-**Challenge**: 50,000+ line monolithic application with years of technical debt
-
-```bash
-# Initial assessment
-wundr analyze --comprehensive
-
-# AI-powered modernization plan
-wundr ai "create a modernization roadmap for this codebase"
-
-# Gradual refactoring
-wundr refactor --guided --batch-size 10
-
-# Track progress
-wundr monitor --baseline initial-analysis.json
-```
-
-**Results**: Teams typically see 40-60% reduction in technical debt and 30% improvement in development velocity.
-
-### 2. **Monorepo Migration Strategy**
-
-**Challenge**: Transitioning from monolith to monorepo architecture
-
-```bash
-# Analyze current structure
-wundr analyze --focus dependencies,boundaries
-
-# Generate migration plan
-wundr monorepo plan --target-structure
-
-# Validate package boundaries
-wundr monorepo validate --check-circular-deps
-
-# Execute migration
-wundr monorepo migrate --phase 1 --dry-run
-```
-
-**Results**: Safe, incremental migration with 90% fewer integration issues.
-
-### 3. **Code Quality Governance**
-
-**Challenge**: Maintaining quality standards across multiple teams
-
-```bash
-# Setup quality gates
-wundr govern setup --standards enterprise
-
-# Automated quality checks
-wundr govern check --fail-on-violations
-
-# Generate compliance reports
-wundr govern report --format executive-summary
-
-# Real-time quality monitoring
-wundr dashboard --quality-alerts
-```
-
-**Results**: 80% reduction in code review time and consistent quality standards.
-
-### 4. **AI-Assisted Development**
-
-**Challenge**: Scaling development team productivity with AI
-
-```bash
-# AI-powered code review
-wundr ai review --focus security,performance
-
-# Automated test generation
-wundr ai generate tests --coverage 90%
-
-# Natural language refactoring
-wundr ai "convert this class component to hooks"
-
-# Intelligent documentation
-wundr ai docs --api-reference --examples
-```
-
-**Results**: 50% faster development cycles and improved code quality.
-
-### 5. **Enterprise Integration**
-
-**Challenge**: Integrating with enterprise tools and workflows
-
-```bash
-# GitHub Enterprise integration
-wundr integrate github --enterprise --webhook-pr-comments
-
-# Slack notifications
-wundr integrate slack --channel dev-alerts --quality-reports
-
-# JIRA ticket creation
-wundr integrate jira --create-tickets-on-issues
-
-# Custom webhook integration
-wundr integrate webhook --url ${COMPANY_WEBHOOK} --events all
-```
-
-**Results**: Seamless integration with existing enterprise workflows.
-
-## 🔌 Extensibility & Plugins
-
-Wundr's plugin system allows you to extend functionality for your specific needs:
-
-### Custom Analysis Plugin
-
-```typescript
-// plugins/security-analysis/index.ts
-import { Plugin, AnalysisContext } from '@adapticai/wundr';
-
-export class SecurityAnalysisPlugin implements Plugin {
-  name = 'security-analysis';
-  version = '1.0.0';
-  description = 'Advanced security vulnerability detection';
-
-  async initialize(context: AnalysisContext) {
-    // Register custom analysis step
-    context.registerAnalyzer('security-vulnerabilities', {
-      analyze: async (files) => {
-        // Custom security analysis logic
-        return await this.detectSecurityIssues(files);
-      },
-      weight: 10, // Priority
-      dependencies: ['ast-analysis']
-    });
-
-    // Add dashboard component
-    context.dashboard.addComponent('SecurityDashboard', {
-      path: '/security',
-      component: SecurityDashboardComponent
-    });
-  }
-
-  private async detectSecurityIssues(files: FileInfo[]) {
-    // Implementation
-  }
-}
-```
-
-### AI Integration Plugin
-
-```typescript
-// plugins/custom-ai/index.ts
-import { AIPlugin, CodeContext } from '@adapticai/wundr';
-
-export class CustomAIPlugin extends AIPlugin {
-  name = 'custom-ai-reviewer';
-  
-  async enhance(context: CodeContext) {
-    // Custom AI logic using your model
-    const insights = await this.analyzeWithCustomModel(context.code);
-    
-    return {
-      suggestions: insights.suggestions,
-      confidence: insights.confidence,
-      reasoning: insights.explanation
-    };
-  }
-
-  async generateCode(prompt: string, context: CodeContext) {
-    // Custom code generation logic
-    return await this.customCodeGeneration(prompt, context);
-  }
-}
-```
-
-### Integration Hook Examples
-
-```javascript
-// wundr.config.js - Advanced hooks
-module.exports = {
-  hooks: {
-    // Before analysis starts
-    beforeAnalysis: async (context) => {
-      console.log('Starting analysis for', context.projectPath);
-      // Custom pre-analysis setup
-    },
-
-    // After analysis completes
-    afterAnalysis: async (results, context) => {
-      // Send to custom analytics
-      await sendToAnalytics(results);
-      
-      // Create GitHub PR comment
-      if (process.env.CI && process.env.PR_NUMBER) {
-        await createPRComment(results);
-      }
-
-      // Slack notification
-      if (results.issues.length > 10) {
-        await notifyTeam(results);
-      }
-    },
-
-    // Quality threshold violations
-    onQualityAlert: async (alert, context) => {
-      await escalateAlert(alert);
-    }
-  }
-};
-```
-
-## 🤝 Contributing to Wundr
-
-We welcome contributions from the community! Here's how you can help make Wundr better:
-
-### Development Setup
-
-```bash
-# Fork and clone the repository
-git clone https://github.com/YOUR_USERNAME/wundr.git
-cd wundr
-
-# Install dependencies (use pnpm for monorepo)
+# Install dependencies
 pnpm install
 
 # Build all packages
@@ -718,158 +387,51 @@ pnpm build
 # Run tests
 pnpm test
 
-# Start development environment
+# Run in development mode
 pnpm dev
+
+# Type checking
+pnpm typecheck
+
+# Linting
+pnpm lint
 ```
 
-### Contribution Guidelines
+## 📊 Performance
 
-1. **Code Quality**: All contributions must pass linting, tests, and type checking
-2. **Documentation**: Include documentation for new features
-3. **Tests**: Add tests for new functionality
-4. **Commit Messages**: Use conventional commit format
-5. **PR Process**: Fill out the PR template completely
+Wundr is optimized for performance using Turborepo:
 
-### Areas We Need Help With
+- **Parallel builds**: 2.8-4.4x faster builds
+- **Smart caching**: 80% cache hit rate
+- **Incremental builds**: Only rebuild what changed
+- **Optimized pipelines**: Automatic task scheduling
 
-- 🔌 **Plugin Development**: Create plugins for popular tools and frameworks
-- 🤖 **AI Improvements**: Enhance AI analysis and suggestions
-- 📊 **Visualizations**: New chart types and dashboard components
-- 🌍 **Internationalization**: Translations and locale support
-- 📚 **Documentation**: Examples, tutorials, and guides
-- 🐛 **Bug Reports**: High-quality bug reports with reproducible examples
+## 🔒 Security
 
-### Running Tests
-
-```bash
-# Unit tests
-pnpm test:unit
-
-# Integration tests
-pnpm test:integration
-
-# E2E tests
-pnpm test:e2e
-
-# Performance tests
-pnpm test:performance
-
-# All tests
-pnpm test:ci
-```
-
-## 📚 Documentation & Resources
-
-Comprehensive documentation to help you get the most out of Wundr:
-
-### Getting Started
-- [📖 Getting Started Guide](docs/GETTING_STARTED.md) - Step-by-step setup and first analysis
-- [⚡ Quick Start](docs/guides/QUICK_START.md) - 30-minute guided tour
-- [🏗️ Architecture Overview](docs/ARCHITECTURE.md) - Understanding Wundr's design
-
-### User Guides
-- [🛠️ CLI Reference](packages/@wundr/cli/README.md) - Complete command documentation
-- [📊 Dashboard Guide](packages/@wundr/dashboard/README.md) - Web interface usage
-- [🔍 Analysis Engine](packages/@wundr/analysis-engine/README.md) - Deep code analysis
-- [🤖 AI Integration](docs/AI_INTEGRATION.md) - Setting up and using AI features
-
-### Advanced Topics
-- [🔌 Plugin Development](docs/PLUGIN_DEVELOPMENT.md) - Creating custom plugins
-- [🔧 Configuration Reference](docs/CONFIGURATION.md) - All configuration options
-- [🚀 Performance Optimization](docs/PERFORMANCE.md) - Scaling for large codebases
-- [🔒 Security & Compliance](docs/SECURITY.md) - Enterprise security features
-
-### Integration Guides
-- [⚙️ CI/CD Integration](docs/CICD_INTEGRATION.md) - GitHub Actions, Jenkins, etc.
-- [🔗 Enterprise Integration](docs/ENTERPRISE.md) - Slack, JIRA, custom webhooks
-- [📈 Monitoring & Alerts](docs/MONITORING.md) - Setting up quality alerts
-
-### Reference
-- [📋 API Reference](docs/API_REFERENCE.md) - Complete API documentation
-- [🔧 Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
-- [❓ FAQ](docs/FAQ.md) - Frequently asked questions
-- [🎯 Best Practices](docs/BEST_PRACTICES.md) - Recommended usage patterns
-
-## 🆘 Support & Community
-
-Get help and connect with the Wundr community:
-
-### Community Support
-- 💬 **Discord Community**: [Join our Discord](https://discord.gg/wundr) for real-time help
-- 🐛 **GitHub Issues**: [Report bugs](https://github.com/adapticai/wundr/issues) and request features
-- 💡 **GitHub Discussions**: [Community discussions](https://github.com/adapticai/wundr/discussions)
-- 📚 **Documentation**: [docs.wundr.io](https://docs.wundr.io) - Comprehensive guides
-
-### Professional Support
-- 🏢 **Enterprise Support**: [enterprise@adaptic.ai](mailto:enterprise@adaptic.ai)
-- 📞 **Priority Support**: Available for enterprise customers
-- 🎓 **Training Programs**: Custom team training available
-- 🔧 **Custom Development**: Tailored solutions and integrations
-
-### Stay Updated
-- 🐦 **Twitter**: [@WundrAI](https://twitter.com/WundrAI) for updates and tips
-- 📧 **Newsletter**: [Subscribe](https://wundr.io/newsletter) for release notes and tutorials
-- 📝 **Blog**: [blog.wundr.io](https://blog.wundr.io) for deep dives and case studies
-
-### Status & Reliability
-- 📊 **System Status**: [status.wundr.io](https://status.wundr.io)
-- 🔄 **Release Notes**: [GitHub Releases](https://github.com/adapticai/wundr/releases)
-- 📈 **Roadmap**: [Public roadmap](https://github.com/adapticai/wundr/projects) on GitHub
-
-## 🚀 What's Coming Next?
-
-We're constantly improving Wundr based on community feedback:
-
-### Short Term (Next 3 months)
-- 🔗 **Enhanced CI/CD Integration** - Native GitHub Actions, GitLab CI support
-- 🤖 **More AI Models** - OpenAI GPT-4, local model support
-- 📱 **Mobile Dashboard** - React Native app for monitoring on the go
-- 🔌 **Plugin Marketplace** - Community-driven plugin ecosystem
-
-### Medium Term (Next 6 months)
-- 🏢 **Enterprise Features** - Advanced security, audit trails, SSO
-- 🌐 **Multi-language Support** - Python, Java, C#, Go analysis
-- 🎯 **Advanced AI** - Custom model training, team-specific suggestions
-- 📊 **Advanced Analytics** - Predictive quality metrics, trend analysis
-
-### Long Term (Next year)
-- 🤝 **Team Collaboration** - Real-time collaborative refactoring
-- 🔄 **Automated Refactoring** - Fully automated code improvements
-- 🎓 **Learning System** - AI that learns from your team's patterns
-- 🌍 **Cloud Platform** - Hosted analysis and collaboration platform
+- All packages regularly updated
+- Security scanning integrated
+- Credential management built-in
+- Audit logging for compliance
 
 ## 📄 License
 
-Wundr is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
-## 🌟 Show Your Support
+## 🙏 Acknowledgments
 
-If Wundr is helping your team, please consider:
-- ⭐ **Star the repository** on GitHub
-- 🐦 **Share on social media** with #WundrAI
-- 📝 **Write about your experience** on your blog or LinkedIn
-- 🤝 **Contribute** code, documentation, or plugins
-
-[![Star History Chart](https://api.star-history.com/svg?repos=adapticai/wundr&type=Date)](https://star-history.com/#adapticai/wundr&Date)
+Built with ❤️ by the Wundr team using:
+- [Turborepo](https://turbo.build) for monorepo management
+- [Commander.js](https://github.com/tj/commander.js) for CLI
+- [Next.js](https://nextjs.org) for dashboard
+- [TypeScript](https://www.typescriptlang.org) for type safety
 
 ---
 
 <div align="center">
   <p>
-    <strong>Built with ❤️ by <a href="https://adaptic.ai">Wundr, by Adaptic.ai</a></strong>
+    <strong>Transform your development workflow with Wundr</strong>
   </p>
   <p>
-    Transform your development workflow with intelligent automation and architectural excellence
-  </p>
-  <p>
-    <a href="https://twitter.com/WundrAI">Twitter</a> •
-    <a href="https://linkedin.com/company/adapticai">LinkedIn</a> •
-    <a href="https://blog.wundr.io">Blog</a> •
-    <a href="https://discord.gg/wundr">Discord</a> •
-    <a href="https://docs.wundr.io">Documentation</a>
-  </p>
-  
-  <p>
-    <em>"Code is poetry, architecture is art, and quality is the canvas that makes it all possible."</em>
+    From machine setup to code excellence - we've got you covered
   </p>
 </div>

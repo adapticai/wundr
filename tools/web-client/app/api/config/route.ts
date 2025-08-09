@@ -49,6 +49,7 @@ interface ConfigTemplate {
   type: string
   content: any
   schema?: ConfigSchema
+  tags?: string[]
 }
 
 interface ConfigRequest {

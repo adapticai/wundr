@@ -7,6 +7,7 @@ import { ConfigManager } from '../utils/config-manager';
 import { PluginManager } from '../plugins/plugin-manager';
 import { logger } from '../utils/logger';
 import { errorHandler } from '../utils/error-handler';
+import { projectTemplates } from '@wundr/project-templates';
 
 /**
  * Create commands for generating components, services, and templates
@@ -23,7 +24,82 @@ export class CreateCommands {
   private registerCommands(): void {
     const createCmd = this.program
       .command('create')
-      .description('create new components, services, and templates');
+      .description('create new wundr-compliant projects, components, services, and templates');
+
+    // Create new project (full wundr-compliant project)
+    createCmd
+      .command('project <type> [name]')
+      .alias('p')
+      .description('create a new wundr-compliant project')
+      .option('-f, --framework <framework>', 'framework to use')
+      .option('-d, --description <description>', 'project description')
+      .option('-a, --author <author>', 'project author')
+      .option('--no-git', 'skip git initialization')
+      .option('--no-install', 'skip dependency installation')
+      .option('--typescript', 'use TypeScript', true)
+      .option('--testing', 'include testing setup', true)
+      .option('--ci', 'include CI/CD workflows', true)
+      .option('--docker', 'include Docker configuration')
+      .option('-p, --path <path>', 'path to create project in')
+      .action(async (type: string, name: string | undefined, options: any) => {
+        await this.createProject(type, name, options);
+      });
+
+    // Quick project creation commands
+    createCmd
+      .command('frontend <name>')
+      .description('create a frontend application')
+      .option('-f, --framework <framework>', 'framework (next|react|vue)', 'next')
+      .action(async (name: string, options: any) => {
+        await projectTemplates.createProject({
+          name,
+          type: 'frontend',
+          framework: options.framework,
+          install: true,
+          git: true
+        });
+      });
+
+    createCmd
+      .command('backend <name>')
+      .description('create a backend API')
+      .option('-f, --framework <framework>', 'framework (fastify|express|nestjs)', 'fastify')
+      .action(async (name: string, options: any) => {
+        await projectTemplates.createProject({
+          name,
+          type: 'backend',
+          framework: options.framework,
+          install: true,
+          git: true
+        });
+      });
+
+    createCmd
+      .command('monorepo <name>')
+      .description('create a monorepo platform')
+      .action(async (name: string) => {
+        await projectTemplates.createProject({
+          name,
+          type: 'monorepo',
+          framework: 'turborepo',
+          install: true,
+          git: true
+        });
+      });
+
+    createCmd
+      .command('fullstack <name>')
+      .description('create a full-stack application')
+      .action(async (name: string) => {
+        await projectTemplates.createProject({
+          name,
+          type: 'monorepo',
+          framework: 'turborepo',
+          install: true,
+          git: true,
+          description: 'Full-stack wundr-compliant application'
+        });
+      });
 
     // Create component
     createCmd
@@ -89,6 +165,53 @@ export class CreateCommands {
       .action(async (name, options) => {
         await this.createConfig(name, options);
       });
+  }
+
+  /**
+   * Create a new wundr-compliant project
+   */
+  private async createProject(type: string, name: string | undefined, options: any): Promise<void> {
+    try {
+      // If no name provided, launch interactive mode
+      if (!name) {
+        await projectTemplates.createInteractive();
+        return;
+      }
+
+      // Validate project type
+      const validTypes = ['frontend', 'backend', 'fullstack', 'monorepo', 'library', 'cli'];
+      if (!validTypes.includes(type)) {
+        logger.error(`Invalid project type: ${type}`);
+        logger.info(`Valid types: ${validTypes.join(', ')}`);
+        process.exit(1);
+      }
+
+      logger.info(`Creating ${type} project: ${chalk.cyan(name)}`);
+
+      // Create project with options
+      await projectTemplates.createProject({
+        name,
+        type: type as any,
+        framework: options.framework,
+        description: options.description,
+        author: options.author,
+        git: options.git,
+        install: options.install,
+        typescript: options.typescript,
+        testing: options.testing,
+        ci: options.ci,
+        docker: options.docker,
+        path: options.path
+      });
+
+    } catch (error) {
+      throw errorHandler.createError(
+        'WUNDR_CREATE_PROJECT_FAILED',
+        'Failed to create project',
+        { type, name, options },
+        true
+      );
+    }
   }
 
   /**

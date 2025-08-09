@@ -39,7 +39,7 @@ export function MarkdownRenderer({
   className = ''
 }: MarkdownRendererProps) {
   const [htmlContent, setHtmlContent] = useState<string>('');
-  const [processedFrontmatter, setProcessedFrontmatter] = useState<DocFrontmatter | ParsedMarkdown['data']>({});
+  const [processedFrontmatter, setProcessedFrontmatter] = useState<DocFrontmatter>({} as DocFrontmatter);
   const [toc, setToc] = useState<TocItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,8 +105,8 @@ export function MarkdownRenderer({
         let extractedFrontmatter = frontmatter;
         
         if (!frontmatter || Object.keys(frontmatter).length === 0) {
-          const { meta, content: contentWithoutFrontmatter } = extractFrontMatter(content);
-          extractedFrontmatter = meta;
+          const { metadata, content: contentWithoutFrontmatter } = extractFrontMatter(content);
+          extractedFrontmatter = metadata;
           processedContent = contentWithoutFrontmatter;
         }
         

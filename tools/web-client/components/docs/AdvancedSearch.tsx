@@ -44,7 +44,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     pages.forEach(page => {
-      page.frontmatter.tags.forEach(tag => tags.add(tag));
+      page.frontmatter?.tags?.forEach((tag: string) => tags.add(tag));
     });
     return Array.from(tags).sort();
   }, [pages]);
@@ -56,7 +56,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
         selectedCategories.includes(page.category);
       
       const tagMatch = selectedTags.length === 0 || 
-        selectedTags.some(tag => page.frontmatter.tags.includes(tag));
+        selectedTags.some(tag => page.frontmatter?.tags?.includes(tag));
       
       return categoryMatch && tagMatch;
     });
@@ -66,7 +66,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
   const searchResults = useMemo(() => {
     if (!query.trim()) return [];
     
-    const results = searchDocs(filteredPages, query);
+    const results = searchDocs(query, filteredPages);
     return results.slice(0, 10); // Limit results
   }, [query, filteredPages]);
 
@@ -162,11 +162,11 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
               </DropdownMenuLabel>
               {docCategories.map(category => (
                 <DropdownMenuCheckboxItem
-                  key={category.id}
-                  checked={selectedCategories.includes(category.id)}
-                  onCheckedChange={() => toggleCategory(category.id)}
+                  key={category.value}
+                  checked={selectedCategories.includes(category.value)}
+                  onCheckedChange={() => toggleCategory(category.value)}
                 >
-                  {category.name}
+                  {category.label}
                 </DropdownMenuCheckboxItem>
               ))}
               
@@ -193,14 +193,14 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
       {hasFilters && (
         <div className="flex flex-wrap gap-1 mt-2">
           {selectedCategories.map(category => {
-            const cat = docCategories.find(c => c.id === category);
+            const cat = docCategories.find(c => c.value === category);
             return (
               <Badge 
                 key={category} 
                 variant="secondary" 
                 className="text-xs"
               >
-                {cat?.name}
+                {cat?.label}
                 <button 
                   onClick={() => toggleCategory(category)}
                   className="ml-1 hover:text-destructive"
@@ -310,11 +310,10 @@ interface SearchResultItemProps {
 }
 
 function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
-  const { page, matches, score } = result;
+  const { page, matchType, relevanceScore } = result;
   
-  const primaryMatch = matches.find(m => m.field === 'title') || 
-                      matches.find(m => m.field === 'description') || 
-                      matches[0];
+  // Since we don't have detailed matches, create a simple match representation
+  const primaryMatch = { field: matchType, content: page.title, snippet: page.description.substring(0, 150) + '...' };
 
   return (
     <button
@@ -329,19 +328,19 @@ function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-medium text-sm truncate" 
-                dangerouslySetInnerHTML={{ __html: matches.find(m => m.field === 'title')?.snippet || page.title }} 
+                dangerouslySetInnerHTML={{ __html: page.title }} 
             />
             <Badge variant="outline" className="text-xs flex-shrink-0">
               {page.category}
             </Badge>
-            {score > 10 && (
+            {relevanceScore > 50 && (
               <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
             )}
           </div>
           
           <p className="text-xs text-muted-foreground mb-2 line-clamp-2" 
              dangerouslySetInnerHTML={{ 
-               __html: matches.find(m => m.field === 'description')?.snippet || page.description 
+               __html: page.description 
              }} 
           />
           
@@ -352,7 +351,7 @@ function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
           )}
           
           <div className="flex items-center gap-2 mt-2">
-            {page.frontmatter.tags.slice(0, 3).map(tag => (
+            {page.frontmatter?.tags?.slice(0, 3)?.map((tag: string) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>

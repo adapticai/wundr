@@ -71,9 +71,9 @@ export function ConfigSelect({
   const validateValue = useCallback((val: string) => {
     if (!section || !field || !validateOnChange) return;
     
-    const validationError = configValidator.validateField(section, field, val);
-    setLocalError(validationError || '');
-    setIsValid(!validationError);
+    const validationResult = configValidator.validateField(field as keyof import('@/lib/config-validation').ConfigType, val);
+    setLocalError(validationResult.error || '');
+    setIsValid(validationResult.valid);
   }, [section, field, validateOnChange]);
   
   const handleValueChange = useCallback((newValue: string) => {

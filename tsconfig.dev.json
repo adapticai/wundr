@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "downlevelIteration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@wundr/core": ["./packages/@wundr/core/src/index.ts"],
+      "@wundr/core/*": ["./packages/@wundr/core/src/*"],
+      "@wundr/config": ["./packages/@wundr/config/src/index.ts"],
+      "@wundr/config/*": ["./packages/@wundr/config/src/*"],
+      "@wundr/computer-setup": ["./packages/@wundr/computer-setup/src/index.ts"],
+      "@wundr/computer-setup/*": ["./packages/@wundr/computer-setup/src/*"],
+      "@wundr/project-templates": ["./packages/@wundr/project-templates/src/index.ts"],
+      "@wundr/project-templates/*": ["./packages/@wundr/project-templates/src/*"],
+      "@wundr/plugin-system": ["./packages/@wundr/plugin-system/src/index.ts"],
+      "@wundr/plugin-system/*": ["./packages/@wundr/plugin-system/src/*"]
+    }
+  }
+}

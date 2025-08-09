@@ -5,9 +5,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { templateService } = await import('@/lib/services/template/TemplateService');
+    const { TemplateService } = await import('@/lib/services/template/TemplateService');
     const { id } = await params;
-    const template = await templateService.getTemplate(id);
+    const template = await TemplateService.getTemplate(id);
     
     if (!template) {
       return NextResponse.json(
@@ -20,7 +20,7 @@ export async function GET(
     }
 
     // Record usage
-    await templateService.recordUsage(id);
+    await TemplateService.recordUsage(id);
     
     return NextResponse.json({
       success: true,
@@ -44,12 +44,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { templateService } = await import('@/lib/services/template/TemplateService');
+    const { TemplateService } = await import('@/lib/services/template/TemplateService');
     const { id } = await params;
     const body = await request.json();
     const { parameters } = body;
 
-    const template = await templateService.getTemplate(id);
+    const template = await TemplateService.getTemplate(id);
     if (!template) {
       return NextResponse.json(
         {
@@ -61,7 +61,7 @@ export async function POST(
     }
 
     // Validate parameters
-    const validation = templateService.validateParameters(template, parameters || {});
+    const validation = TemplateService.validateParameters(template, parameters || {});
     if (!validation.isValid) {
       return NextResponse.json(
         {

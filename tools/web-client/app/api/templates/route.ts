@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { templateService } = await import('@/lib/services/template/TemplateService');
+    const { TemplateService } = await import('@/lib/services/template/TemplateService');
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const language = searchParams.get('language');
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       ...(tags && tags.length > 0 && { tags })
     };
 
-    const templates = await templateService.searchTemplates(filter);
+    const templates = await TemplateService.searchTemplates(filter);
     
     return NextResponse.json({
       success: true,
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { templateService } = await import('@/lib/services/template/TemplateService');
+    const { TemplateService } = await import('@/lib/services/template/TemplateService');
     const body = await request.json();
     const { templateData, files } = body;
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const template = await templateService.createTemplate(templateData, files);
+    const template = await TemplateService.createTemplate(templateData, files);
     
     return NextResponse.json({
       success: true,

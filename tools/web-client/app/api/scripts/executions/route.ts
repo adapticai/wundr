@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { scriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
     const { searchParams } = new URL(request.url);
     const scriptId = searchParams.get('scriptId');
 
     let executions;
     if (scriptId) {
-      executions = scriptRunnerService.getExecutionsByScript(scriptId);
+      executions = ScriptRunnerService.getExecutionsByScript(scriptId);
     } else {
-      executions = scriptRunnerService.getAllExecutions();
+      executions = ScriptRunnerService.getAllExecutions();
     }
 
     return NextResponse.json({

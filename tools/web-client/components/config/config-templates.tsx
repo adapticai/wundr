@@ -20,8 +20,8 @@ export function ConfigTemplates() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {configTemplates.map((template) => (
-          <Card key={template.id} className="hover:shadow-md transition-shadow">
+        {Object.entries(configTemplates).map(([key, template]) => (
+          <Card key={key} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
@@ -31,7 +31,7 @@ export function ConfigTemplates() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => applyTemplate(template)}
+                  onClick={() => applyTemplate(template.config)}
                 >
                   Apply
                 </Button>

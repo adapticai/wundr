@@ -170,7 +170,8 @@ export function FileBrowser({
     }
     
     // Sort items (sortOrder is not supported by the current implementation)
-    const sorted = sortFileSystemItems(filtered, sortBy as 'name' | 'size' | 'date');
+    const supportedSortBy = sortBy === 'type' ? 'name' : sortBy;
+    const sorted = sortFileSystemItems(filtered, supportedSortBy as 'name' | 'size' | 'modified');
     return sortOrder === 'desc' ? sorted.reverse() : sorted;
   }, [currentDirectoryItems, searchQuery, selectedFileTypes, showHidden, sortBy, sortOrder]);
 

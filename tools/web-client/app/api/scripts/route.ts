@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { scriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
     let scripts;
     if (category && category !== 'all') {
-      scripts = scriptRunnerService.getScriptsByCategory(category);
+      scripts = ScriptRunnerService.getScriptsByCategory(category);
     } else {
-      scripts = scriptRunnerService.getScripts();
+      scripts = ScriptRunnerService.getScripts();
     }
 
     return NextResponse.json({
@@ -32,10 +32,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { scriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
     const body = await request.json();
 
-    const script = scriptRunnerService.registerScript(body);
+    const script = ScriptRunnerService.registerScript(body);
     
     return NextResponse.json({
       success: true,

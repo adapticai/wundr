@@ -5,16 +5,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { scriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
     const { id } = await params;
     const body = await request.json();
     const { parameters, options } = body;
 
-    const executionId = await scriptRunnerService.executeScript(
-      id,
-      parameters || {},
-      options
-    );
+    const combinedParams = { ...(parameters || {}), ...(options || {}) };
+    const executionId = await ScriptRunnerService.executeScript(id, combinedParams);
     
     return NextResponse.json({
       success: true,

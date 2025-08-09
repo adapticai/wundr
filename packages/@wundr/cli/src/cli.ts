@@ -16,6 +16,7 @@ import { WatchCommands } from './commands/watch';
 import { BatchCommands } from './commands/batch';
 import { ChatCommands } from './commands/chat';
 import { PluginCommands } from './commands/plugins';
+import { ComputerSetupCommands } from './commands/computer-setup-commands';
 
 /**
  * Main CLI class that orchestrates all commands and modes
@@ -44,9 +45,15 @@ export class WundrCLI {
   private setupProgram(): void {
     this.program
       .name('wundr')
-      .description('The Intelligent CLI-Based Coding Agents Orchestrator')
+      .description('Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams')
       .version(version, '-v, --version', 'display version number')
       .helpOption('-h, --help', 'display help for command')
+      .addHelpText('before', `
+╦ ╦╦ ╦╔╗╔╔╦╗╦═╗
+║║║║ ║║║║ ║║╠╦╝
+╚╩╝╚═╝╝╚╝═╩╝╩╚═
+The Unified Developer Platform
+      `)
       .configureOutput({
         writeOut: (str) => process.stdout.write(str),
         writeErr: (str) => process.stderr.write(str),
@@ -57,20 +64,29 @@ export class WundrCLI {
    * Register all command categories
    */
   private registerCommands(): void {
-    // Core command categories
-    new InitCommands(this.program, this.configManager, this.pluginManager);
-    new CreateCommands(this.program, this.configManager, this.pluginManager);
+    // Code Analysis & Governance (original wundr features)
     new AnalyzeCommands(this.program, this.configManager, this.pluginManager);
     new GovernCommands(this.program, this.configManager, this.pluginManager);
+    
+    // Computer Setup & Provisioning (new-starter integration)
+    new ComputerSetupCommands(this.program, this.configManager, this.pluginManager);
+    
+    // Project Management
+    new InitCommands(this.program, this.configManager, this.pluginManager);
+    new CreateCommands(this.program, this.configManager, this.pluginManager);
+    
+    // AI & Automation
     new AICommands(this.program, this.configManager, this.pluginManager);
-    new DashboardCommands(this.program, this.configManager, this.pluginManager);
-
-    // Interactive modes
-    new WatchCommands(this.program, this.configManager, this.pluginManager);
     new BatchCommands(this.program, this.configManager, this.pluginManager);
+    
+    // Dashboard & Monitoring
+    new DashboardCommands(this.program, this.configManager, this.pluginManager);
+    new WatchCommands(this.program, this.configManager, this.pluginManager);
+    
+    // Interactive Modes
     new ChatCommands(this.program, this.configManager, this.pluginManager);
 
-    // Plugin management
+    // Plugin Management
     new PluginCommands(this.program, this.configManager, this.pluginManager);
   }
 

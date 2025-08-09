@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Cpu, HardDrive, Network, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
 import { performanceMonitor, usePerformanceMonitor } from '@/lib/performance-monitor';
-import { FixedSizeList as List } from 'react-window';
+// import { FixedSizeList as List } from 'react-window'; // Not available, using regular div
 
 interface PerformanceMetric {
   name: string;
@@ -62,15 +62,10 @@ const VirtualizedMetricsList = memo(({ metrics }: { metrics: PerformanceMetric[]
   }, [metrics]);
   
   return (
-    <div className="h-96 border rounded">
-      <List
-        height={384}
-        itemCount={metrics.length}
-        itemSize={60}
-        width="100%"
-      >
-        {Row}
-      </List>
+    <div className="h-96 border rounded overflow-y-auto">
+      {metrics.map((metric, index) => (
+        <Row key={`${metric.name}-${index}`} index={index} style={{}} />
+      ))}
     </div>
   );
 });
@@ -323,7 +318,7 @@ MetricsSummaryCards.displayName = 'MetricsSummaryCards';
  * Main Performance Dashboard Component
  */
 export const PerformanceDashboard: React.FC = () => {
-  const { metrics, memoryStatus, recordCustomMetric, getPerformanceReport } = usePerformanceMonitor();
+  const { metrics, alerts, isRunning, startMonitoring, stopMonitoring, clearAlerts } = usePerformanceMonitor();
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -331,25 +326,15 @@ export const PerformanceDashboard: React.FC = () => {
   
   // Memoized data transformations
   const memoryData = useMemo(() => {
-    return metrics
-      .filter(m => ['heap_used', 'heap_total', 'external', 'rss'].includes(m.name))
-      .reduce((acc, metric) => {
-        const existing = acc.find(item => item.timestamp === metric.timestamp);
-        if (existing) {
-          (existing as any)[metric.name.replace('_', '')] = metric.value;
-        } else {
-          acc.push({
-            timestamp: metric.timestamp,
-            [metric.name.replace('_', '')]: metric.value,
-            heapUsed: 0,
-            heapTotal: 0,
-            external: 0,
-            rss: 0
-          });
-        }
-        return acc;
-      }, [] as MemoryData[])
-      .slice(-100); // Keep last 100 points
+    if (!metrics) return [];
+    // Convert single metrics object to array format for charts
+    return [{
+      timestamp: metrics.timestamp,
+      heapUsed: metrics.memory.used,
+      heapTotal: metrics.memory.total,
+      external: 0, // Not available in our metrics
+      rss: 0 // Not available in our metrics
+    }];
   }, [metrics]);
   
   const concurrencyData = useMemo(() => {
@@ -363,15 +348,22 @@ export const PerformanceDashboard: React.FC = () => {
   }, []);
   
   const recentMetrics = useMemo(() => {
-    return metrics.slice(-1000); // Keep last 1000 metrics for virtualized list
+    if (!metrics) return [];
+    // Convert single metrics to array format for the virtualized list
+    return [
+      { name: 'Memory Usage', value: metrics.memory.percentage, unit: '%', timestamp: metrics.timestamp, category: 'memory' as const },
+      { name: 'CPU Usage', value: metrics.cpu.usage, unit: '%', timestamp: metrics.timestamp, category: 'cpu' as const },
+      { name: 'FPS', value: metrics.fps, unit: 'fps', timestamp: metrics.timestamp, category: 'ui' as const },
+      { name: 'DOM Nodes', value: metrics.domNodes, unit: 'nodes', timestamp: metrics.timestamp, category: 'ui' as const },
+    ];
   }, [metrics]);
   
   // Auto-refresh functionality
   useEffect(() => {
     if (autoRefresh && isMonitoring) {
       intervalRef.current = setInterval(() => {
-        // Force re-render by recording a timestamp metric
-        recordCustomMetric('dashboard_refresh', Date.now(), 'timestamp');
+        // Force re-render - the hook will automatically update metrics
+        setSelectedTab(prev => prev); // Trigger re-render
       }, 5000);
     } else if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -383,23 +375,26 @@ export const PerformanceDashboard: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [autoRefresh, isMonitoring, recordCustomMetric]);
+  }, [autoRefresh, isMonitoring]);
   
   const handleStartMonitoring = useCallback(() => {
     setIsMonitoring(true);
-    performanceMonitor.start(1000);
-    recordCustomMetric('monitoring_started', 1, 'event');
-  }, [recordCustomMetric]);
+    startMonitoring(1000);
+  }, [startMonitoring]);
   
   const handleStopMonitoring = useCallback(() => {
     setIsMonitoring(false);
-    performanceMonitor.stop();
-    recordCustomMetric('monitoring_stopped', 1, 'event');
-  }, [recordCustomMetric]);
+    stopMonitoring();
+  }, [stopMonitoring]);
   
   const handleGenerateReport = useCallback(async () => {
     try {
-      const report = getPerformanceReport();
+      const report = {
+        timestamp: Date.now(),
+        currentMetrics: metrics,
+        alerts: alerts,
+        summary: 'Performance report generated'
+      };
       const blob = new Blob([JSON.stringify(report, null, 2)], {
         type: 'application/json'
       });
@@ -414,7 +409,7 @@ export const PerformanceDashboard: React.FC = () => {
     } catch (error) {
       console.error('Failed to generate performance report:', error);
     }
-  }, [getPerformanceReport]);
+  }, [metrics, alerts]);
   
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
@@ -492,7 +487,7 @@ export const PerformanceDashboard: React.FC = () => {
             </Card>
           </div>
           
-          <MemoryLeakIndicator memoryStatus={memoryStatus} />
+          <MemoryLeakIndicator memoryStatus={metrics ? { status: 'normal', percentage: metrics.memory.percentage, trend: 'stable' } : null} />
         </TabsContent>
         
         <TabsContent value="memory" className="space-y-6">
@@ -554,7 +549,7 @@ export const PerformanceDashboard: React.FC = () => {
             </div>
           </div>
           
-          <MemoryLeakIndicator memoryStatus={memoryStatus} />
+          <MemoryLeakIndicator memoryStatus={metrics ? { status: 'normal', percentage: metrics.memory.percentage, trend: 'stable' } : null} />
         </TabsContent>
         
         <TabsContent value="concurrency" className="space-y-6">

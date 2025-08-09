@@ -59,8 +59,8 @@ export default function HighPriorityRecommendationsPage() {
   }
 
   // Generate recommendations from data
-  const highComplexityEntities = data.entities.filter(e => (e.complexity || 0) > 15);
-  const criticalDuplicates = data.duplicates.filter(d => d.severity === 'high');
+  const highComplexityEntities = data.entities.filter((e: any) => (e.complexity || 0) > 15);
+  const criticalDuplicates = data.duplicates.filter((d: any) => d.severity === 'high');
   
   const totalIssues = highComplexityEntities.length + criticalDuplicates.length;
   const criticalCount = criticalDuplicates.length;
@@ -151,7 +151,7 @@ export default function HighPriorityRecommendationsPage() {
               <div className="flex items-center gap-4 text-sm">
                 <span>Impact: High</span>
                 <span>Effort: {criticalDuplicates.length * 4}h</span>
-                <span>Files: {criticalDuplicates.reduce((sum, d) => sum + d.occurrences.length, 0)}</span>
+                <span>Files: {criticalDuplicates.reduce((sum: number, d: any) => sum + d.occurrences.length, 0)}</span>
               </div>
             </CardContent>
           </Card>

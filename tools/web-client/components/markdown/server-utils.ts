@@ -17,12 +17,15 @@ export async function readMarkdownFile(filePath: string): Promise<ParsedMarkdown
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    const { meta, content: extractedContent } = extractFrontMatter(fileContent);
+    const { metadata, content: extractedContent } = extractFrontMatter(fileContent);
     const htmlContent = await parseMarkdown(extractedContent);
     
     return {
-      content: htmlContent,
-      data: meta
+      html: htmlContent,
+      frontmatter: metadata,
+      tableOfContents: [],
+      wordCount: extractedContent.split(/\s+/).length,
+      readingTime: Math.ceil(extractedContent.split(/\s+/).length / 200) // Assuming 200 words per minute
     };
   } catch (error) {
     console.error(`Error reading markdown file ${filePath}:`, error);

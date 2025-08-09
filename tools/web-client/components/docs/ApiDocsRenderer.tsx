@@ -185,7 +185,7 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: 
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onCopy(doc.signature)}
+              onClick={() => onCopy(doc.signature || doc.name)}
               className="text-muted-foreground hover:text-foreground"
             >
               <Copy className="h-4 w-4" />
@@ -200,12 +200,14 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: 
         <CardContent className="pt-0">
           <div className="space-y-4">
             {/* Signature */}
-            <div>
-              <h4 className="text-sm font-semibold mb-2">Signature</h4>
-              <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
-                <code>{doc.signature}</code>
-              </pre>
-            </div>
+            {doc.signature && (
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Signature</h4>
+                <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
+                  <code>{doc.signature}</code>
+                </pre>
+              </div>
+            )}
 
             {/* Properties */}
             {doc.properties && doc.properties.length > 0 && (

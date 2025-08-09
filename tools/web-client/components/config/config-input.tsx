@@ -63,10 +63,10 @@ export function ConfigInput({
     }
     
     // Perform validation
-    const validationError = configValidator.validateField(section, field, validationValue);
+    const validationResult = configValidator.validateField(field as keyof import('@/lib/config-validation').ConfigType, validationValue);
     
-    setLocalError(validationError || '');
-    setIsValid(!validationError);
+    setLocalError(validationResult.error || '');
+    setIsValid(validationResult.valid);
   }, [section, field, type, validateOnBlur]);
   
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
