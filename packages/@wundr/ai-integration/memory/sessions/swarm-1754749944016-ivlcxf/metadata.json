@@ -1,0 +1,1 @@
+{"sessionId":"swarm-1754749944016-ivlcxf","createdAt":"2025-08-09T14:32:24.029Z","config":{"maxConcurrentAgents":10,"defaultTopology":"adaptive","hooks":{"preTask":true,"postTask":true,"sessionRestore":true,"exportMetrics":true},"sparc":{"enabledPhases":["specification","architecture","refinement"],"parallelExecution":true,"autoOptimization":true}}}

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { spawn } from 'child_process'
-import path from 'path'
 import { ApiResponse } from '@/types/data'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 // Types for git operations
 interface GitStatus {
@@ -112,6 +113,7 @@ function execGitCommand(args: string[], cwd: string, timeout: number = 30000): P
       return arg.replace(/[;&|`$(){}[\]<>]/g, '')
     })
     
+    const { spawn } = require('child_process')
     const child = spawn('git', sanitizedArgs, { 
       cwd, 
       shell: false, // Disable shell for security
@@ -121,15 +123,15 @@ function execGitCommand(args: string[], cwd: string, timeout: number = 30000): P
     let stdout = ''
     let stderr = ''
     
-    child.stdout.on('data', (data) => {
+    child.stdout.on('data', (data: Buffer) => {
       stdout += data.toString()
     })
     
-    child.stderr.on('data', (data) => {
+    child.stderr.on('data', (data: Buffer) => {
       stderr += data.toString()
     })
     
-    child.on('close', (code) => {
+    child.on('close', (code: number | null) => {
       if (code === 0) {
         resolve(stdout)
       } else {
@@ -137,7 +139,7 @@ function execGitCommand(args: string[], cwd: string, timeout: number = 30000): P
       }
     })
     
-    child.on('error', (error) => {
+    child.on('error', (error: Error) => {
       reject(new Error(`Failed to execute git command: ${error.message}`))
     })
     
@@ -154,13 +156,19 @@ function execGitCommand(args: string[], cwd: string, timeout: number = 30000): P
 }
 
 // Get project root directory
-function getProjectRoot(): string {
+async function getProjectRoot(): Promise<string> {
+  const path = await import('path')
+  const { promises: fs } = await import('fs')
+  
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const gitPath = path.join(dir, '.git')
-      if (require('fs').existsSync(gitPath)) {
+      try {
+        await fs.access(gitPath)
         return dir
+      } catch {
+        // Continue searching
       }
     } catch (e) {
       // Continue searching
@@ -171,9 +179,10 @@ function getProjectRoot(): string {
 }
 
 // Validate repository path
-function validateRepositoryPath(repoPath?: string): { isValid: boolean; resolvedPath: string; error?: string } {
+async function validateRepositoryPath(repoPath?: string): Promise<{ isValid: boolean; resolvedPath: string; error?: string }> {
   try {
-    const projectRoot = getProjectRoot()
+    const path = await import('path')
+    const projectRoot = await getProjectRoot()
     let resolvedPath = projectRoot
     
     if (repoPath) {
@@ -528,7 +537,7 @@ export async function GET(request: NextRequest) {
     const stat = searchParams.get('stat') === 'true'
     const includeRemotes = searchParams.get('includeRemotes') === 'true'
     
-    const pathValidation = validateRepositoryPath(repository)
+    const pathValidation = await validateRepositoryPath(repository)
     if (!pathValidation.isValid) {
       const response: ApiResponse<null> = {
         success: false,

@@ -1,7 +1,7 @@
 {
   "leakAnalysis": {
     "leakDetected": false,
-    "growthRate": -32072220.02406015,
+    "growthRate": -56216122.74887218,
     "severity": "low",
     "trend": "shrinking",
     "recommendations": [
@@ -16,56 +16,56 @@
     "entitiesProcessed": 10000,
     "clustersFound": 2000,
     "cacheHits": 0,
-    "memoryPeakUsage": 600289760
+    "memoryPeakUsage": 884715728
   },
   "memoryMetrics": {
     "current": {
-      "timestamp": 1754580082112,
-      "heapUsed": 81053640,
-      "heapTotal": 107347968,
+      "timestamp": 1754750755771,
+      "heapUsed": 89178840,
+      "heapTotal": 127827968,
       "external": 4841232,
       "arrayBuffers": 1281336,
-      "rss": 756301824,
-      "cpu": 51954.91,
+      "rss": 807157760,
+      "cpu": 52914.884,
       "gcStats": {
-        "totalHeapSize": 107347968,
-        "totalHeapSizeExecutable": 4194304,
-        "totalPhysicalSize": 101941248,
-        "totalAvailableSize": 4261711944,
-        "usedHeapSize": 81054368,
+        "totalHeapSize": 127827968,
+        "totalHeapSizeExecutable": 6553600,
+        "totalPhysicalSize": 109756416,
+        "totalAvailableSize": 4251008208,
+        "usedHeapSize": 89179568,
         "heapSizeLimit": 4345298944
       }
     },
     "peak": {
-      "timestamp": 1754580070584,
-      "heapUsed": 595833424,
-      "heapTotal": 636043264,
+      "timestamp": 1754750744391,
+      "heapUsed": 876335632,
+      "heapTotal": 925466624,
       "external": 4849289,
       "arrayBuffers": 1281336,
-      "rss": 1391738880,
-      "cpu": 41578.221,
+      "rss": 1609285632,
+      "cpu": 43328.792,
       "gcStats": {
-        "totalHeapSize": 636043264,
-        "totalHeapSizeExecutable": 4194304,
-        "totalPhysicalSize": 635928576,
-        "totalAvailableSize": 3738236168,
-        "usedHeapSize": 595834152,
+        "totalHeapSize": 925466624,
+        "totalHeapSizeExecutable": 6815744,
+        "totalPhysicalSize": 925024256,
+        "totalAvailableSize": 3452293704,
+        "usedHeapSize": 876336360,
         "heapSizeLimit": 4345298944
       }
     },
     "average": {
-      "heapUsed": 279478838.4,
-      "heapTotal": 310391603.2,
-      "rss": 996877926.4
+      "heapUsed": 399226953.6,
+      "heapTotal": 437698560,
+      "rss": 1117025075.2
     },
     "trend": {
-      "heapGrowthRate": -31529803.007518794,
-      "gcFrequency": 93.98496240601503,
-      "gcDuration": 2.637620040178299
+      "heapGrowthRate": -50444208.77909616,
+      "gcFrequency": 120.59910523244505,
+      "gcDuration": 2.341797031942875
     },
     "leakAnalysis": {
       "leakDetected": false,
-      "growthRate": -30655310.08,
+      "growthRate": -47000889.92,
       "severity": "low",
       "trend": "shrinking",
       "recommendations": [
@@ -78,5 +78,5 @@
     }
   },
   "cleanupTriggered": true,
-  "timestamp": "2025-08-07T15:21:26.162Z"
+  "timestamp": "2025-08-09T14:45:59.647Z"
 }

@@ -14,7 +14,6 @@ import {
   Agent, 
   AgentType, 
   SwarmTopology,
-  Task,
   OperationResult,
   SPARCPhase 
 } from '../types';
@@ -117,17 +116,18 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
         message: 'Claude Flow Orchestrator initialized successfully'
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        message: `Claude Flow initialization failed: ${error.message}`,
-        error: error
+        message: `Claude Flow initialization failed: ${errorMessage}`,
+        error: error instanceof Error ? error : new Error(String(error))
       };
     }
   }
 
   private async setupClaudeFlowMCP(): Promise<void> {
     // Check if Claude Flow MCP is installed and configured
-    const mcpConfigPath = path.join(process.env.HOME || '', '.claude', 'mcp.json');
+    const mcpConfigPath = path.join(process.env['HOME'] || '', '.claude', 'mcp.json');
     
     try {
       const mcpConfig = await fs.readJson(mcpConfigPath);
@@ -314,10 +314,11 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
         data: results
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        message: `SPARC workflow failed: ${error.message}`,
-        error: error
+        message: `SPARC workflow failed: ${errorMessage}`,
+        error: error instanceof Error ? error : new Error(String(error))
       };
     }
   }
@@ -330,7 +331,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       operations.map(op => this.executeClaudeFlowCommand(op.command, op.params))
     );
 
-    return results.map((result, index) => ({
+    return results.map((result, _index) => ({
       success: result.status === 'fulfilled',
       message: result.status === 'fulfilled' ? 'Operation completed' : `Operation failed: ${result.reason}`,
       data: result.status === 'fulfilled' ? result.value : null,
@@ -369,7 +370,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       'session-end': `npx claude-flow@alpha hooks session-end --export-metrics true`
     };
 
-    return hooks[command] || `npx claude-flow@alpha ${command}`;
+    return (hooks as Record<string, string>)[command] || `npx claude-flow@alpha ${command}`;
   }
 
   private async executeHook(hookType: string, context: any): Promise<void> {
@@ -385,13 +386,14 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       ]
     };
 
-    const commands = hookCommands[hookType] || [];
+    const commands = (hookCommands as Record<string, string[]>)[hookType] || [];
     
     for (const command of commands) {
       try {
         await this.executeSystemCommand(command);
       } catch (error) {
-        console.warn(`Hook execution failed: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn(`Hook execution failed: ${errorMessage}`);
       }
     }
   }
@@ -399,9 +401,9 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
   private async executeSystemCommand(command: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const [cmd, ...args] = command.split(' ');
-      const process = spawn(cmd, args, { stdio: 'pipe' });
+      const childProcess = spawn(cmd, args, { stdio: 'pipe' });
 
-      process.on('close', (code) => {
+      childProcess.on('close', (code: number | null) => {
         if (code === 0) {
           resolve();
         } else {
@@ -409,7 +411,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
         }
       });
 
-      process.on('error', reject);
+      childProcess.on('error', reject);
     });
   }
 
@@ -466,10 +468,11 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
         message: 'Claude Flow Orchestrator shutdown completed'
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        message: `Shutdown failed: ${error.message}`,
-        error: error
+        message: `Shutdown failed: ${errorMessage}`,
+        error: error instanceof Error ? error : new Error(String(error))
       };
     }
   }

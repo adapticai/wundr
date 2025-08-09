@@ -1,30 +1,30 @@
 {
   "optimized": {
     "name": "optimized",
-    "duration": 3824,
+    "duration": 3583,
     "memoryUsage": {
       "before": {
-        "rss": 1232601088,
-        "heapTotal": 623738880,
-        "heapUsed": 585677560,
-        "external": 4841097,
-        "arrayBuffers": 1273144
+        "rss": 1436598272,
+        "heapTotal": 910016512,
+        "heapUsed": 863569432,
+        "external": 4849289,
+        "arrayBuffers": 1281336
       },
       "peak": {
-        "rss": 1386463232,
-        "heapTotal": 624001024,
-        "heapUsed": 591857000,
-        "external": 4841097,
-        "arrayBuffers": 1273144
+        "rss": 1748385792,
+        "heapTotal": 915521536,
+        "heapUsed": 875914544,
+        "external": 4849289,
+        "arrayBuffers": 1281336
       },
       "after": {
-        "rss": 1520582656,
-        "heapTotal": 633700352,
-        "heapUsed": 590408160,
-        "external": 4841097,
-        "arrayBuffers": 1273144
+        "rss": 1753972736,
+        "heapTotal": 920748032,
+        "heapUsed": 877344528,
+        "external": 4849289,
+        "arrayBuffers": 1281336
       },
-      "leaked": 4730600
+      "leaked": 13775096
     },
     "entitiesProcessed": 10000,
     "clustersFound": 2000,
@@ -35,7 +35,7 @@
       "totalTasks": 10,
       "completedTasks": 10,
       "failedTasks": 0,
-      "averageExecutionTime": 319.09090909090907,
+      "averageExecutionTime": 297,
       "queueSize": 0,
       "throughput": 0,
       "errorRate": 0,
@@ -47,47 +47,47 @@
   },
   "standard": {
     "name": "standard",
-    "duration": 27887,
+    "duration": 29275,
     "memoryUsage": {
       "before": {
-        "rss": 1572323328,
-        "heapTotal": 175636480,
-        "heapUsed": 134878192,
-        "external": 4846140,
-        "arrayBuffers": 1278187
+        "rss": 1508540416,
+        "heapTotal": 213139456,
+        "heapUsed": 149660832,
+        "external": 4854345,
+        "arrayBuffers": 1286392
       },
       "peak": {
-        "rss": 1572323328,
-        "heapTotal": 175636480,
-        "heapUsed": 134878192,
-        "external": 4846140,
-        "arrayBuffers": 1278187
+        "rss": 1508540416,
+        "heapTotal": 213139456,
+        "heapUsed": 149660832,
+        "external": 4854345,
+        "arrayBuffers": 1286392
       },
       "after": {
-        "rss": 1232584704,
-        "heapTotal": 623738880,
-        "heapUsed": 585557040,
-        "external": 4841097,
-        "arrayBuffers": 1273144
+        "rss": 1436532736,
+        "heapTotal": 910016512,
+        "heapUsed": 863440944,
+        "external": 4849289,
+        "arrayBuffers": 1281336
       },
-      "leaked": 450678848
+      "leaked": 713780112
     },
     "entitiesProcessed": 10000,
-    "clustersFound": 23,
+    "clustersFound": 21,
     "cacheHits": 0
   },
   "improvements": {
-    "speedImprovement": 86.28751748126368,
-    "memoryReduction": -338.8085213953639,
-    "leakReduction": 98.95033902278901,
-    "throughputImprovement": 629.2625523012553
+    "speedImprovement": 87.76088812980359,
+    "memoryReduction": -485.2663868660038,
+    "leakReduction": 98.07012050792471,
+    "throughputImprovement": 717.0527490929387
   },
   "summary": [
-    "🚀 Speed Improvement: 86.3% (27887ms → 3824ms)",
-    "💾 Memory Reduction: -338.8% (129MB → 564MB)",
-    "🔒 Leak Reduction: 99.0% (440116KB → 4620KB)",
-    "⚡ Throughput Improvement: 629.3%",
-    "📊 Clusters Found: Standard=23, Optimized=2000",
+    "🚀 Speed Improvement: 87.8% (29275ms → 3583ms)",
+    "💾 Memory Reduction: -485.3% (143MB → 835MB)",
+    "🔒 Leak Reduction: 98.1% (697051KB → 13452KB)",
+    "⚡ Throughput Improvement: 717.1%",
+    "📊 Clusters Found: Standard=21, Optimized=2000",
     "🎯 Cache Hits: 0 (optimized engine only)"
   ]
 }

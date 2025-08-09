@@ -3,8 +3,9 @@
  * This file contains utilities to create test data from real sources
  */
 
-import { createTestFixtures } from '../utils/mock-data'
 import { AnalysisData } from '@/lib/contexts/analysis-context'
+import { CompleteAnalysisData } from '@/types/reports'
+import { createCompleteAnalysisData, createSimpleEntity } from '../utils/test-data-helpers'
 
 /**
  * Test database setup for integration tests
@@ -88,7 +89,7 @@ export class TestApiServer {
     try {
       return handler({ body, method, path })
     } catch (error) {
-      return { status: 500, error: error.message }
+      return { status: 500, error: (error as Error).message }
     }
   }
 }
@@ -199,8 +200,14 @@ export async function generateProjectFixtures() {
   return await createTestFixtures(projectPath)
 }
 
+// Re-export createTestFixtures function from mock-data
+export async function createTestFixtures(projectPath?: string) {
+  const { createTestFixtures: createTestFixturesImpl } = await import('../utils/mock-data')
+  return createTestFixturesImpl(projectPath)
+}
+
 /**
- * Minimal test data for unit tests
+ * Minimal test data for unit tests (backward compatibility)
  */
 export const minimalTestData: AnalysisData = {
   entities: [
@@ -218,9 +225,36 @@ export const minimalTestData: AnalysisData = {
 }
 
 /**
+ * Complete minimal test data for components expecting full structure
+ */
+export const minimalCompleteTestData: CompleteAnalysisData = createCompleteAnalysisData({
+  entities: [
+    createSimpleEntity({
+      name: 'test-component.tsx',
+      path: 'components/test-component.tsx',
+      type: 'component',
+      dependencies: ['react'],
+      complexity: 5,
+      issues: []
+    })
+  ]
+})
+
+/**
  * Complex test data for integration tests
  */
 export async function getComplexTestData(): Promise<AnalysisData> {
   const fixtures = await generateProjectFixtures()
-  return fixtures.analysisData
+  // Extract AnalysisData properties from CompleteAnalysisData
+  const { entities, duplicates, recommendations, metrics, ...rest } = fixtures.analysisData as any
+  return {
+    entities,
+    duplicates,
+    recommendations,
+    metrics,
+    timestamp: new Date().toISOString()
+  }
 }
+
+// Export TestEnvironment class for imports
+export { TestEnvironment } from '../setup/test-environment'

@@ -25,7 +25,7 @@ import { backendFastifyTemplate } from './templates/backend-fastify';
 import { monorepoTurborepoTemplate } from './templates/monorepo-turborepo';
 import { wundrFiles } from './templates/wundr-files';
 
-const logger = getLogger('project-templates');
+const logger = getLogger();
 
 export class ProjectTemplateManager {
   private templates: Map<string, TemplateConfig> = new Map();

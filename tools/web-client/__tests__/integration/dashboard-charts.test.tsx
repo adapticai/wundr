@@ -1,7 +1,8 @@
 import React from 'react'
 import { render, screen, waitFor } from '../utils/test-utils'
 import { DashboardCharts } from '@/components/dashboard/dashboard-charts'
-import { createTestFixtures, minimalTestData } from '../fixtures/real-test-data'
+import { createTestFixtures, minimalTestData, minimalCompleteTestData } from '../fixtures/real-test-data'
+import { createCompleteAnalysisData, createSimpleEntity, createSimpleDuplicate } from '../utils/test-data-helpers'
 
 /**
  * Integration tests for DashboardCharts using real test data
@@ -27,7 +28,12 @@ describe('DashboardCharts Integration', () => {
   })
 
   it('processes real entity data correctly', async () => {
-    render(<DashboardCharts data={realTestData} />)
+    // Convert realTestData to CompleteAnalysisData if needed
+    const completeData = realTestData.metadata ? realTestData : createCompleteAnalysisData({
+      entities: realTestData.entities?.map((e: any) => createSimpleEntity(e)) || [],
+      duplicates: realTestData.duplicates?.map((d: any) => createSimpleDuplicate(d)) || []
+    })
+    render(<DashboardCharts data={completeData} />)
     
     await waitFor(() => {
       // Check if charts are rendered with real data
@@ -42,7 +48,7 @@ describe('DashboardCharts Integration', () => {
   })
 
   it('handles empty data gracefully', () => {
-    const emptyData = { entities: [], duplicates: [] }
+    const emptyData = createCompleteAnalysisData()
     render(<DashboardCharts data={emptyData} />)
     
     expect(screen.getByText('Entity Distribution')).toBeInTheDocument()
@@ -50,7 +56,7 @@ describe('DashboardCharts Integration', () => {
   })
 
   it('works with minimal test data', () => {
-    render(<DashboardCharts data={minimalTestData} />)
+    render(<DashboardCharts data={minimalCompleteTestData} />)
     
     expect(screen.getByText('Entity Distribution')).toBeInTheDocument()
     expect(screen.getByText('Complexity Distribution')).toBeInTheDocument()

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs-extra';
-import * as path from 'path';
 import matter from 'gray-matter';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export interface DocFrontmatter {
   title: string;
@@ -26,9 +27,12 @@ export interface DocFile {
 }
 
 // Base paths for documentation
-const DOCS_ROOT = path.join(process.cwd(), '../../docs');
+const DOCS_ROOT = process.cwd() + '/../../docs';
 
 async function getAllDocFiles(docsDir: string): Promise<DocFile[]> {
+  const fs = await import('fs-extra');
+  const path = await import('path');
+  
   const files: DocFile[] = [];
   
   async function scanDirectory(dir: string, relativeTo: string): Promise<void> {
@@ -87,6 +91,9 @@ async function getAllDocFiles(docsDir: string): Promise<DocFile[]> {
 
 export async function GET(request: NextRequest) {
   try {
+    const fs = await import('fs-extra');
+    const path = await import('path');
+    
     const searchParams = request.nextUrl.searchParams;
     const docsPath = searchParams.get('path') || DOCS_ROOT;
     const category = searchParams.get('category');

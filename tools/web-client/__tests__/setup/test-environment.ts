@@ -30,7 +30,8 @@ export class TestEnvironment {
     this.apiServer.setup()
 
     // Set up environment variables for testing
-    process.env.NODE_ENV = 'test'
+    // Note: We use object assignment instead of direct property assignment for read-only properties
+    Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: true })
     process.env.DATABASE_URL = 'test://localhost:5432/test_db'
     process.env.API_BASE_URL = 'http://localhost:3001'
 

@@ -1,0 +1,531 @@
+name: 🔄 Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  pull_request:
+    branches: [main, master]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  merge_group:
+    types: [checks_requested]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  NODE_ENV: test
+  CI: true
+  FORCE_COLOR: 1
+
+jobs:
+  setup-matrix:
+    name: 🔧 Setup Build Matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      node-versions: ${{ steps.versions.outputs.node-versions }}
+      pnpm-version: ${{ steps.versions.outputs.pnpm-version }}
+      changed-packages: ${{ steps.changes.outputs.packages }}
+      should-run-e2e: ${{ steps.changes.outputs.should-run-e2e }}
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 🔍 Detect versions
+        id: versions
+        run: |
+          # Extract Node.js versions from package.json engines
+          NODE_REQUIREMENT=$(node -pe "require('./package.json').engines?.node || '>=18.0.0'")
+          NODE_VERSIONS='["18", "20"]'
+          
+          # Extract pnpm version
+          PNPM_VERSION=$(node -pe "require('./package.json').packageManager?.split('@')[1] || '10.14.0'")
+          
+          echo "node-versions=$NODE_VERSIONS" >> $GITHUB_OUTPUT
+          echo "pnpm-version=$PNPM_VERSION" >> $GITHUB_OUTPUT
+          
+          echo "::notice::Node.js versions: $NODE_VERSIONS"
+          echo "::notice::pnpm version: $PNPM_VERSION"
+
+      - name: 🔍 Detect changed packages
+        id: changes
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "should-run-e2e=true" >> $GITHUB_OUTPUT
+            echo "packages=all" >> $GITHUB_OUTPUT
+          else
+            # Detect changed packages for PR builds
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            echo "Changed files: $CHANGED_FILES"
+            
+            # Check if critical files changed
+            if echo "$CHANGED_FILES" | grep -E "(package\.json|pnpm-lock\.yaml|turbo\.json)" > /dev/null; then
+              echo "should-run-e2e=true" >> $GITHUB_OUTPUT
+            else
+              echo "should-run-e2e=false" >> $GITHUB_OUTPUT
+            fi
+            
+            echo "packages=changed" >> $GITHUB_OUTPUT
+          fi
+
+  quality-gates:
+    name: 🧹 Quality Gates (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: setup-matrix
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ${{ fromJson(needs.setup-matrix.outputs.node-versions) }}
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ needs.setup-matrix.outputs.pnpm-version }}
+          run_install: false
+
+      - name: 🏗️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📊 Cache Status
+        run: |
+          echo "::group::Cache Information"
+          echo "pnpm store path: $(pnpm store path)"
+          echo "Node.js version: $(node --version)"
+          echo "pnpm version: $(pnpm --version)"
+          echo "::endgroup::"
+
+      - name: 🔧 Install dependencies
+        run: |
+          echo "::group::Dependency Installation"
+          pnpm install --frozen-lockfile --prefer-offline
+          echo "::endgroup::"
+          
+          echo "::group::Dependency Tree (Top Level)"
+          pnpm list --depth=0 --long
+          echo "::endgroup::"
+
+      - name: 🔍 TypeScript compilation
+        run: |
+          echo "::group::TypeScript Type Checking"
+          pnpm typecheck
+          echo "::endgroup::"
+
+      - name: 🧹 Code linting
+        run: |
+          echo "::group::ESLint Analysis"
+          pnpm lint --max-warnings=0
+          echo "::endgroup::"
+
+      - name: 🎨 Code formatting
+        run: |
+          echo "::group::Prettier Format Validation"
+          pnpm format:check
+          echo "::endgroup::"
+
+      - name: 🏗️ Build verification
+        run: |
+          echo "::group::Build Process"
+          pnpm build
+          echo "::endgroup::"
+          
+          echo "::group::Build Artifacts Verification"
+          find . -name "dist" -type d | head -10 | while read dir; do
+            echo "📦 $dir:"
+            ls -la "$dir" | head -5
+          done
+          echo "::endgroup::"
+
+  test-suite:
+    name: 🧪 Test Suite (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    needs: [setup-matrix, quality-gates]
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ${{ fromJson(needs.setup-matrix.outputs.node-versions) }}
+        test-type: [unit, integration]
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ needs.setup-matrix.outputs.pnpm-version }}
+          run_install: false
+
+      - name: 🏗️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: 🏗️ Build packages
+        run: pnpm build
+
+      - name: 🧪 Run ${{ matrix.test-type }} tests
+        run: |
+          echo "::group::${{ matrix.test-type }} Test Execution"
+          case "${{ matrix.test-type }}" in
+            unit)
+              pnpm test:unit --coverage --passWithNoTests
+              ;;
+            integration)
+              pnpm test:integration --passWithNoTests
+              ;;
+          esac
+          echo "::endgroup::"
+
+      - name: 📊 Upload coverage (Unit tests on Node 20)
+        if: matrix.test-type == 'unit' && matrix.node-version == '20'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          verbose: true
+          flags: unit-tests
+          name: unit-tests-node-${{ matrix.node-version }}
+
+      - name: 📦 Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.test-type }}-node-${{ matrix.node-version }}
+          path: |
+            coverage/
+            test-results/
+            junit.xml
+          retention-days: 7
+
+  e2e-tests:
+    name: 🎭 End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: [setup-matrix, quality-gates]
+    if: needs.setup-matrix.outputs.should-run-e2e == 'true'
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+        shard: [1, 2]
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ needs.setup-matrix.outputs.pnpm-version }}
+          run_install: false
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: 🏗️ Build for E2E
+        run: pnpm build
+
+      - name: 🎭 Install Playwright
+        run: |
+          pnpm exec playwright install ${{ matrix.browser }} --with-deps
+
+      - name: 🧪 Run E2E tests
+        run: |
+          echo "::group::E2E Test Execution (${{ matrix.browser }} - Shard ${{ matrix.shard }})"
+          pnpm test:e2e --project=${{ matrix.browser }} --shard=${{ matrix.shard }}/2
+          echo "::endgroup::"
+        env:
+          CI: true
+
+      - name: 📊 Upload E2E results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ matrix.browser }}-shard-${{ matrix.shard }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
+
+  security-scan:
+    name: 🔒 Security Analysis
+    runs-on: ubuntu-latest
+    needs: setup-matrix
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ needs.setup-matrix.outputs.pnpm-version }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Dependency audit
+        run: |
+          echo "::group::Security Audit"
+          pnpm audit --audit-level moderate --json > audit-results.json || true
+          
+          # Check if there are critical vulnerabilities
+          CRITICAL_COUNT=$(cat audit-results.json | jq '.metadata.vulnerabilities.critical // 0')
+          HIGH_COUNT=$(cat audit-results.json | jq '.metadata.vulnerabilities.high // 0')
+          
+          echo "Critical vulnerabilities: $CRITICAL_COUNT"
+          echo "High vulnerabilities: $HIGH_COUNT"
+          
+          if [[ $CRITICAL_COUNT -gt 0 ]]; then
+            echo "::error::Critical security vulnerabilities found!"
+            exit 1
+          fi
+          
+          if [[ $HIGH_COUNT -gt 5 ]]; then
+            echo "::warning::High number of high-severity vulnerabilities found: $HIGH_COUNT"
+          fi
+          echo "::endgroup::"
+
+      - name: 🔒 Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: 🏗️ Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: 🔍 Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  performance-benchmarks:
+    name: ⚡ Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: [setup-matrix, quality-gates]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 20
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ needs.setup-matrix.outputs.pnpm-version }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: 🏗️ Build for performance testing
+        run: NODE_ENV=production pnpm build
+
+      - name: ⚡ Run performance benchmarks
+        run: |
+          echo "::group::Performance Benchmark Suite"
+          pnpm test:performance
+          echo "::endgroup::"
+
+      - name: 📊 Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'benchmarkjs'
+          output-file-path: performance-results/benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-on-alert: true
+          alert-threshold: '200%'
+          fail-on-alert: false
+
+      - name: 📦 Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results-${{ github.sha }}
+          path: performance-results/
+          retention-days: 30
+
+  deployment-readiness:
+    name: 🚀 Deployment Readiness
+    runs-on: ubuntu-latest
+    needs: [quality-gates, test-suite, security-scan]
+    if: always()
+    timeout-minutes: 10
+    outputs:
+      ready-for-deployment: ${{ steps.check.outputs.ready }}
+      quality-score: ${{ steps.check.outputs.score }}
+    steps:
+      - name: 📊 Evaluate readiness
+        id: check
+        run: |
+          echo "::group::Deployment Readiness Assessment"
+          
+          # Check all job statuses
+          QUALITY_STATUS="${{ needs.quality-gates.result }}"
+          TEST_STATUS="${{ needs.test-suite.result }}"
+          SECURITY_STATUS="${{ needs.security-scan.result }}"
+          
+          echo "Quality Gates: $QUALITY_STATUS"
+          echo "Test Suite: $TEST_STATUS"
+          echo "Security Scan: $SECURITY_STATUS"
+          
+          # Calculate readiness score
+          SCORE=0
+          
+          if [[ "$QUALITY_STATUS" == "success" ]]; then
+            SCORE=$((SCORE + 40))
+          fi
+          
+          if [[ "$TEST_STATUS" == "success" ]]; then
+            SCORE=$((SCORE + 40))
+          fi
+          
+          if [[ "$SECURITY_STATUS" == "success" ]]; then
+            SCORE=$((SCORE + 20))
+          fi
+          
+          echo "Quality Score: $SCORE/100"
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          
+          if [[ $SCORE -ge 80 ]]; then
+            echo "ready=true" >> $GITHUB_OUTPUT
+            echo "✅ Ready for deployment"
+          else
+            echo "ready=false" >> $GITHUB_OUTPUT
+            echo "❌ Not ready for deployment (Score: $SCORE/100)"
+          fi
+          echo "::endgroup::"
+
+      - name: 📢 Quality report
+        run: |
+          echo "::notice::Deployment Readiness Score: ${{ steps.check.outputs.score }}/100"
+          if [[ "${{ steps.check.outputs.ready }}" == "true" ]]; then
+            echo "::notice::✅ Build is ready for deployment"
+          else
+            echo "::warning::⚠️ Build is not ready for deployment"
+          fi
+
+  notify-status:
+    name: 📢 Notification Hub
+    runs-on: ubuntu-latest
+    needs: [deployment-readiness, e2e-tests, performance-benchmarks]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 5
+    steps:
+      - name: 📊 Gather results
+        id: results
+        run: |
+          echo "::group::Pipeline Results Summary"
+          echo "Deployment Ready: ${{ needs.deployment-readiness.outputs.ready-for-deployment }}"
+          echo "Quality Score: ${{ needs.deployment-readiness.outputs.quality-score }}/100"
+          echo "E2E Tests: ${{ needs.e2e-tests.result }}"
+          echo "Performance: ${{ needs.performance-benchmarks.result }}"
+          echo "::endgroup::"
+
+      - name: 📢 Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#ci-cd'
+          author_name: 'Enterprise CI/CD Pipeline'
+          text: |
+            🔄 **Wundr CI/CD Pipeline Complete**
+            
+            📊 **Quality Score:** ${{ needs.deployment-readiness.outputs.quality-score }}/100
+            🚀 **Deployment Ready:** ${{ needs.deployment-readiness.outputs.ready-for-deployment }}
+            🎭 **E2E Tests:** ${{ needs.e2e-tests.result }}
+            ⚡ **Performance:** ${{ needs.performance-benchmarks.result }}
+            
+            🔗 **View Details:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 📧 Email notification
+        if: env.EMAIL_RECIPIENTS != '' && needs.deployment-readiness.outputs.ready-for-deployment != 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: '⚠️ Wundr CI/CD Pipeline - Quality Issues Detected'
+          to: ${{ secrets.EMAIL_RECIPIENTS }}
+          from: 'Wundr CI/CD <noreply@wundr.io>'
+          body: |
+            The Wundr CI/CD pipeline has completed with quality issues that prevent deployment.
+            
+            Quality Score: ${{ needs.deployment-readiness.outputs.quality-score }}/100
+            
+            Please review the pipeline results and address any failing tests or quality gates.
+            
+            View detailed results: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  cleanup:
+    name: 🧹 Cleanup
+    runs-on: ubuntu-latest
+    needs: [deployment-readiness, notify-status]
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: 🗑️ Clean up artifacts
+        run: |
+          echo "::group::Cleanup Summary"
+          echo "Pipeline completed at: $(date)"
+          echo "Final deployment status: ${{ needs.deployment-readiness.outputs.ready-for-deployment }}"
+          echo "::endgroup::"
+          
+          # Additional cleanup logic can be added here
+          echo "✅ Cleanup completed"

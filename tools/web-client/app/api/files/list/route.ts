@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export interface FileSystemItem {
   id: string;
@@ -23,6 +24,9 @@ async function traverseDirectory(dirPath: string, maxDepth: number = 10, current
   if (currentDepth >= maxDepth) {
     return [];
   }
+
+  const fs = await import('fs-extra');
+  const path = await import('path');
 
   const items: FileSystemItem[] = [];
   
@@ -76,6 +80,9 @@ async function traverseDirectory(dirPath: string, maxDepth: number = 10, current
 
 export async function GET(request: NextRequest) {
   try {
+    const fs = await import('fs-extra');
+    const path = await import('path');
+    
     const searchParams = request.nextUrl.searchParams;
     const requestedPath = searchParams.get('path') || process.cwd();
     const maxDepth = parseInt(searchParams.get('maxDepth') || '5', 10);

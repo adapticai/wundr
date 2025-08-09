@@ -2,9 +2,9 @@ import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server'
 import { PerformanceMetrics, ApiResponse, TimeRange } from '@/types/data'
-import { promises as fs } from 'fs'
-import path from 'path'
-import { spawn } from 'child_process'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 // Types for performance analysis
 interface BuildMetrics {
@@ -56,8 +56,9 @@ function checkRateLimit(clientId: string): boolean {
 }
 
 // Execute command and return output
-function execCommand(command: string, args: string[], cwd: string): Promise<string> {
-  return new Promise((resolve, reject) => {
+async function execCommand(command: string, args: string[], cwd: string): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    const { spawn } = await import('child_process')
     const child = spawn(command, args, { cwd, shell: true })
     let stdout = ''
     let stderr = ''
@@ -87,14 +88,21 @@ function execCommand(command: string, args: string[], cwd: string): Promise<stri
 }
 
 // Get project root directory
-function getProjectRoot(): string {
+async function getProjectRoot(): Promise<string> {
+  const { promises: fs } = await import('fs')
+  const path = await import('path')
+  
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const packagePath = path.join(dir, 'package.json')
       const workspacePath = path.join(dir, 'pnpm-workspace.yaml')
-      if (require('fs').existsSync(packagePath) && require('fs').existsSync(workspacePath)) {
+      try {
+        await fs.access(packagePath)
+        await fs.access(workspacePath)
         return dir
+      } catch {
+        // Files don't exist, continue searching
       }
     } catch (e) {
       // Continue searching
@@ -107,6 +115,9 @@ function getProjectRoot(): string {
 // Measure build performance
 async function measureBuildPerformance(projectRoot: string): Promise<BuildMetrics> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     // Check if there's a build script and run it
     const packageJsonPath = path.join(projectRoot, 'tools', 'web-client', 'package.json')
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
@@ -250,6 +261,9 @@ async function getSystemMetrics(): Promise<SystemMetrics> {
 // Analyze network/load performance
 async function analyzeNetworkPerformance(): Promise<NetworkMetrics> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     // Simulate load time analysis
     let loadTime = 1000
     let cacheHitRate = 0.85
@@ -257,12 +271,13 @@ async function analyzeNetworkPerformance(): Promise<NetworkMetrics> {
     
     // Check if there are any error logs
     try {
-      const projectRoot = getProjectRoot()
+      const projectRoot = await getProjectRoot()
       const logFiles = ['.next/server.log', 'logs/error.log', 'npm-debug.log']
       
       for (const logFile of logFiles) {
         const logPath = path.join(projectRoot, 'tools', 'web-client', logFile)
-        if (require('fs').existsSync(logPath)) {
+        try {
+          await fs.access(logPath)
           const logContent = await fs.readFile(logPath, 'utf-8')
           const errorLines = logContent.split('\n').filter(line => 
             line.toLowerCase().includes('error') || 
@@ -270,6 +285,8 @@ async function analyzeNetworkPerformance(): Promise<NetworkMetrics> {
             line.toLowerCase().includes('exception')
           )
           errorRate += errorLines.length * 0.1
+        } catch {
+          // File doesn't exist, skip
         }
       }
     } catch {
@@ -278,7 +295,7 @@ async function analyzeNetworkPerformance(): Promise<NetworkMetrics> {
     
     // Estimate cache hit rate based on build artifacts
     try {
-      const projectRoot = getProjectRoot()
+      const projectRoot = await getProjectRoot()
       const nextCacheDir = path.join(projectRoot, 'tools', 'web-client', '.next', 'cache')
       if (require('fs').existsSync(nextCacheDir)) {
         const cacheFiles = await execCommand('find', [nextCacheDir, '-type', 'f'], projectRoot)
@@ -290,7 +307,7 @@ async function analyzeNetworkPerformance(): Promise<NetworkMetrics> {
     }
     
     // Estimate load time based on bundle size and complexity
-    const bundleMetrics = await measureBuildPerformance(getProjectRoot())
+    const bundleMetrics = await measureBuildPerformance(await getProjectRoot())
     loadTime = Math.max(200, Math.floor(bundleMetrics.bundleSize / (1024 * 1024) * 300)) // 300ms per MB
     
     return {

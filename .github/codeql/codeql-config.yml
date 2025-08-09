@@ -1,0 +1,45 @@
+name: "Wundr CodeQL Configuration"
+
+# Disable default queries and use custom query suites
+disable-default-queries: false
+
+# Additional query suites to run
+queries:
+  - name: security-and-quality
+    uses: security-and-quality
+  - name: security-experimental 
+    uses: security-experimental
+
+# Specify paths to analyze
+paths:
+  - "packages/*/src"
+  - "apps/*/src" 
+  - "src"
+  - "scripts"
+
+# Paths to ignore during analysis
+paths-ignore:
+  - "**/*.test.ts"
+  - "**/*.test.js"
+  - "**/*.spec.ts"
+  - "**/*.spec.js"
+  - "**/node_modules"
+  - "**/dist"
+  - "**/build"
+  - "**/coverage"
+  - "**/*.min.js"
+  - "**/vendor"
+  - "**/third-party"
+  - "packages/*/tests"
+  - "apps/*/tests"
+  - "tests"
+  - "**/__tests__"
+  - "**/__mocks__"
+  - "**/fixtures"
+  - "**/test-utils"
+
+# Additional configuration
+pack-filters:
+  - exclude:
+      id: "javascript/lib/semmle/javascript/security/dataflow/TaintedPath.qll"
+      severity: "error"

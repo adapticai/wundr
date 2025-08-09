@@ -1,4 +1,4 @@
-import * as keytar from 'node-keytar';
+import * as keytar from 'keytar';
 import { randomBytes, createHash, scrypt } from 'crypto';
 import { promisify } from 'util';
 

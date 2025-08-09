@@ -10,7 +10,6 @@ import { Octokit } from '@octokit/rest';
 import { 
   GitHubConfig,
   Agent,
-  Task,
   OperationResult 
 } from '../types';
 
@@ -142,6 +141,7 @@ export class GitHubIntegration extends EventEmitter {
     if (!this.octokit) throw new Error('GitHub client not initialized');
     
     const [owner, repo] = repository.split('/');
+    if (!owner || !repo) throw new Error('Invalid repository format');
     const { data: pr } = await this.octokit.pulls.get({
       owner,
       repo,
@@ -511,6 +511,7 @@ export class GitHubIntegration extends EventEmitter {
     
     try {
       const [owner, repo] = swarm.repository.split('/');
+      if (!owner || !repo) throw new Error('Invalid repository format');
       
       await this.octokit.pulls.createReview({
         owner,

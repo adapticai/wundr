@@ -1,8 +1,8 @@
 import React from 'react'
 import { render, screen, waitFor } from '../../utils/test-utils'
 import { DashboardCharts } from '@/components/dashboard/dashboard-charts'
-import { createTestFixtures, minimalTestData } from '../../fixtures/real-test-data'
-import { PerformanceTestUtils } from '../../fixtures/real-test-data'
+import { createTestFixtures, minimalTestData, minimalCompleteTestData, PerformanceTestUtils } from '../../fixtures/real-test-data'
+import { createCompleteAnalysisData, createTestMetrics, createSimpleEntity, createSimpleDuplicate } from '../../utils/test-data-helpers'
 
 /**
  * Unit tests for DashboardCharts component
@@ -34,7 +34,7 @@ describe('DashboardCharts Unit Tests', () => {
     })
 
     it('handles empty data gracefully', () => {
-      const emptyData = { entities: [], duplicates: [] }
+      const emptyData = createCompleteAnalysisData()
       render(<DashboardCharts data={emptyData} />)
       
       expect(screen.getByText('Entity Distribution')).toBeInTheDocument()
@@ -42,7 +42,7 @@ describe('DashboardCharts Unit Tests', () => {
     })
 
     it('handles minimal test data', () => {
-      render(<DashboardCharts data={minimalTestData} />)
+      render(<DashboardCharts data={minimalCompleteTestData} />)
       
       expect(screen.getByText('Entity Distribution')).toBeInTheDocument()
       expect(screen.getByText('Complexity Distribution')).toBeInTheDocument()
@@ -64,7 +64,12 @@ describe('DashboardCharts Unit Tests', () => {
     })
 
     it('calculates entity type distribution from real data', () => {
-      render(<DashboardCharts data={realTestData} />)
+      // Convert realTestData to CompleteAnalysisData if needed
+      const completeData = realTestData.metadata ? realTestData : createCompleteAnalysisData({
+        entities: realTestData.entities?.map((e: any) => createSimpleEntity(e)) || [],
+        duplicates: realTestData.duplicates?.map((d: any) => createSimpleDuplicate(d)) || []
+      })
+      render(<DashboardCharts data={completeData} />)
       
       // The component should process and group entities by type
       expect(screen.getByText('Entity Distribution')).toBeInTheDocument()
@@ -173,12 +178,45 @@ describe('DashboardCharts Unit Tests', () => {
 
   describe('Error Handling', () => {
     it('handles corrupted data gracefully', () => {
-      const corruptedData = {
+      const corruptedData = createCompleteAnalysisData({
         entities: [
           { name: null, path: undefined, type: 'invalid' } as any
         ],
-        duplicates: []
-      }
+        metrics: createTestMetrics({
+          overview: {
+            totalFiles: 1,
+            totalLines: 10,
+            totalEntities: 1,
+            analysisTime: 100,
+            timestamp: new Date()
+          },
+          quality: {
+            maintainabilityIndex: 50,
+            technicalDebt: {
+              rating: 'C' as const,
+              minutes: 60
+            },
+            duplicateLines: 10,
+            duplicateRatio: 15,
+            testCoverage: {
+              lines: 0,
+              branches: 0,
+              functions: 0,
+              statements: 0
+            }
+          },
+          complexity: {
+            average: 5,
+            highest: 15,
+            distribution: {
+              low: 2,
+              medium: 1,
+              high: 1,
+              veryHigh: 0
+            }
+          }
+        })
+      })
 
       expect(() => {
         render(<DashboardCharts data={corruptedData} />)
@@ -186,10 +224,10 @@ describe('DashboardCharts Unit Tests', () => {
     })
 
     it('handles missing required properties', () => {
-      const incompleteData = {
+      const incompleteData = createCompleteAnalysisData({
         entities: [{}] as any,
         duplicates: []
-      }
+      })
 
       expect(() => {
         render(<DashboardCharts data={incompleteData} />)

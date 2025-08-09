@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { EventEmitter } from 'events';
+import { FSWatcher } from 'chokidar';
 import { logger } from '../utils/logger';
 
 export interface SecurityConfig {
@@ -154,7 +155,7 @@ export interface AlertRule {
 export class SecurityConfigManager extends EventEmitter {
   private config: SecurityConfig;
   private configPath: string;
-  private watchers: Map<string, fs.FSWatcher> = new Map();
+  private watchers: Map<string, FSWatcher> = new Map();
 
   constructor(configPath?: string) {
     super();
@@ -177,8 +178,9 @@ export class SecurityConfigManager extends EventEmitter {
       logger.info('Security configuration loaded', { path: this.configPath });
       
       return this.config;
-    } catch (error) {
-      if (error.code === 'ENOENT') {
+    } catch (error: unknown) {
+      const nodeError = error as NodeJS.ErrnoException;
+      if (nodeError.code === 'ENOENT') {
         logger.info('No configuration file found, using defaults');
         await this.saveConfig();
       } else {
@@ -215,7 +217,8 @@ export class SecurityConfigManager extends EventEmitter {
    */
   async watchConfig(): Promise<void> {
     try {
-      const watcher = fs.watch(this.configPath, { persistent: false });
+      const chokidar = await import('chokidar');
+      const watcher = chokidar.watch(this.configPath, { persistent: false });
       
       watcher.on('change', async () => {
         try {
@@ -227,7 +230,7 @@ export class SecurityConfigManager extends EventEmitter {
         }
       });
 
-      this.watchers.set(this.configPath, watcher as any);
+      this.watchers.set(this.configPath, watcher);
       logger.info('Watching configuration file for changes');
     } catch (error) {
       logger.warn('Failed to watch configuration file:', error);

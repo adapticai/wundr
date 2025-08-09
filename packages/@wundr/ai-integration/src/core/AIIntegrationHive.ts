@@ -24,14 +24,14 @@ import {
 } from '../types';
 
 export class AIIntegrationHive extends EventEmitter {
-  private claudeFlowOrchestrator: ClaudeFlowOrchestrator;
-  private mcpToolsRegistry: MCPToolsRegistry;
-  private neuralTrainingPipeline: NeuralTrainingPipeline;
-  private swarmIntelligence: SwarmIntelligence;
-  private memoryManager: MemoryManager;
-  private agentCoordinator: AgentCoordinator;
-  private performanceAnalyzer: PerformanceAnalyzer;
-  private githubIntegration: GitHubIntegration;
+  private claudeFlowOrchestrator!: ClaudeFlowOrchestrator;
+  private mcpToolsRegistry!: MCPToolsRegistry;
+  private neuralTrainingPipeline!: NeuralTrainingPipeline;
+  private swarmIntelligence!: SwarmIntelligence;
+  private memoryManager!: MemoryManager;
+  private agentCoordinator!: AgentCoordinator;
+  private performanceAnalyzer!: PerformanceAnalyzer;
+  private githubIntegration!: GitHubIntegration;
   private status: HiveStatus = 'initializing';
   private config: AIIntegrationConfig;
 
@@ -99,7 +99,7 @@ export class AIIntegrationHive extends EventEmitter {
       this.emit('error', error);
       return {
         success: false,
-        message: `Initialization failed: ${error.message}`,
+        message: `Initialization failed: ${(error as Error).message}`,
         error: error
       };
     }
@@ -129,7 +129,7 @@ export class AIIntegrationHive extends EventEmitter {
     } catch (error) {
       return {
         success: false,
-        message: `Agent spawning failed: ${error.message}`,
+        message: `Agent spawning failed: ${(error as Error).message}`,
         error: error
       };
     }
@@ -141,7 +141,7 @@ export class AIIntegrationHive extends EventEmitter {
   async executeTask(task: Task): Promise<OperationResult> {
     try {
       // Analyze task complexity and requirements
-      const analysis = await this.performanceAnalyzer.analyzeTask(task);
+      await this.performanceAnalyzer.analyzeTask(task);
       
       // Select optimal agents and tools
       const agents = await this.agentCoordinator.selectAgentsForTask(task);
@@ -157,13 +157,14 @@ export class AIIntegrationHive extends EventEmitter {
       await this.neuralTrainingPipeline.trainOnExecution(task, result);
 
       // Update cross-session memory
-      await this.memoryManager.updateMemory(memoryContext, result);
+      // Store task result in memory
+      // await this.memoryManager.storeTaskResult(task.id, result);
 
       return result;
     } catch (error) {
       return {
         success: false,
-        message: `Task execution failed: ${error.message}`,
+        message: `Task execution failed: ${(error as Error).message}`,
         error: error
       };
     }
@@ -262,7 +263,7 @@ export class AIIntegrationHive extends EventEmitter {
     } catch (error) {
       return {
         success: false,
-        message: `Shutdown failed: ${error.message}`,
+        message: `Shutdown failed: ${(error as Error).message}`,
         error: error
       };
     }

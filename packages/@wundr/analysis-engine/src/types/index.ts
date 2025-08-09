@@ -251,6 +251,10 @@ export interface PerformanceMetrics {
   };
   cacheHits: number;
   cacheSize: number;
+  // Additional optimization metrics
+  workerMetrics?: any;
+  streamingMetrics?: any;
+  memoryEfficiency?: number;
 }
 
 export interface VisualizationData {

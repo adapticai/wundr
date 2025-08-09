@@ -1,16 +1,28 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
+import '@testing-library/jest-dom';
 import UploadPage from '../../app/dashboard/upload/page';
 
+// Add jest-dom types for this file
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeInTheDocument(): R;
+      toBeVisible(): R;
+      toHaveTextContent(text: string): R;
+    }
+  }
+}
+
 // Mock the useToast hook
-vi.mock('../../hooks/use-toast', () => ({
+jest.mock('../../hooks/use-toast', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast: jest.fn(),
   }),
 }));
 
 // Mock the upload components
-vi.mock('../../components/upload', () => ({
+jest.mock('../../components/upload', () => ({
   FileUploadZone: function MockFileUploadZone(props: any) {
     return (
       <div data-testid="upload-zone">
@@ -45,9 +57,9 @@ describe('UploadPage', () => {
   it('renders upload page with tabs', () => {
     render(<UploadPage />);
     
-    expect(screen.getByText('Upload Analysis Reports')).toBeInTheDocument();
-    expect(screen.getByText('Upload Files')).toBeInTheDocument();
-    expect(screen.getByText(/Upload History/)).toBeInTheDocument();
+    (expect(screen.getByText('Upload Analysis Reports')) as any).toBeInTheDocument();
+    (expect(screen.getByText('Upload Files')) as any).toBeInTheDocument();
+    (expect(screen.getByText(/Upload History/)) as any).toBeInTheDocument();
   });
 
   it('shows recent uploads in history tab', () => {
@@ -56,15 +68,15 @@ describe('UploadPage', () => {
     // Click on history tab
     fireEvent.click(screen.getByText(/Upload History/));
     
-    expect(screen.getByText('analysis-report-2024-01.json')).toBeInTheDocument();
-    expect(screen.getByText('metrics-data.csv')).toBeInTheDocument();
+    (expect(screen.getByText('analysis-report-2024-01.json')) as any).toBeInTheDocument();
+    (expect(screen.getByText('metrics-data.csv')) as any).toBeInTheDocument();
   });
 
   it('displays upload zone on upload tab', () => {
     render(<UploadPage />);
     
-    expect(screen.getByTestId('upload-zone')).toBeInTheDocument();
-    expect(screen.getByText('File Upload')).toBeInTheDocument();
+    (expect(screen.getByTestId('upload-zone')) as any).toBeInTheDocument();
+    (expect(screen.getByText('File Upload')) as any).toBeInTheDocument();
   });
 
   it('handles file selection', async () => {
@@ -77,7 +89,7 @@ describe('UploadPage', () => {
     
     // The file upload hook should handle the file processing
     // This test verifies the integration works without errors
-    expect(fileInput).toBeInTheDocument();
+    (expect(fileInput) as any).toBeInTheDocument();
   });
 
   it('displays file size and type information correctly', () => {
@@ -87,7 +99,7 @@ describe('UploadPage', () => {
     fireEvent.click(screen.getByText(/Upload History/));
     
     // Check that file sizes are displayed
-    expect(screen.getByText(/KB/)).toBeInTheDocument();
-    expect(screen.getByText(/MB/)).toBeInTheDocument();
+    (expect(screen.getByText(/KB/)) as any).toBeInTheDocument();
+    (expect(screen.getByText(/MB/)) as any).toBeInTheDocument();
   });
 });

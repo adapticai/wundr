@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
 import { ApiResponse } from '@/types/data'
-import { spawn } from 'child_process'
+
+// Force dynamic rendering and Node.js runtime
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 // Types for code analysis operations
 interface ScanOptions {
@@ -118,13 +119,19 @@ function checkRateLimit(clientId: string): boolean {
 }
 
 // Get project root directory
-function getProjectRoot(): string {
+async function getProjectRoot(): Promise<string> {
+  const { promises: fs } = await import('fs')
+  const path = await import('path')
+  
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const packagePath = path.join(dir, 'package.json')
-      if (require('fs').existsSync(packagePath)) {
+      try {
+        await fs.access(packagePath)
         return dir
+      } catch {
+        // File doesn't exist, continue searching
       }
     } catch (e) {
       // Continue searching
@@ -135,8 +142,9 @@ function getProjectRoot(): string {
 }
 
 // Validate and sanitize paths
-function validatePaths(inputPaths: string[], projectRoot: string): { isValid: boolean; resolvedPaths: string[]; error?: string } {
+async function validatePaths(inputPaths: string[], projectRoot: string): Promise<{ isValid: boolean; resolvedPaths: string[]; error?: string }> {
   try {
+    const path = await import('path')
     const resolvedPaths: string[] = []
     
     for (const inputPath of inputPaths) {
@@ -178,8 +186,9 @@ function validatePaths(inputPaths: string[], projectRoot: string): { isValid: bo
 }
 
 // Execute command with timeout and error handling
-function execCommand(command: string, args: string[], cwd: string, timeout: number = 300000): Promise<string> {
-  return new Promise((resolve, reject) => {
+async function execCommand(command: string, args: string[], cwd: string, timeout: number = 300000): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    const { spawn } = await import('child_process')
     const child = spawn(command, args, { 
       cwd, 
       shell: false,
@@ -223,6 +232,7 @@ function execCommand(command: string, args: string[], cwd: string, timeout: numb
 // Analyze file for basic metrics
 async function analyzeFile(filePath: string): Promise<CodeMetric> {
   try {
+    const { promises: fs } = await import('fs')
     const content = await fs.readFile(filePath, 'utf8')
     const lines = content.split('\n')
     
@@ -350,6 +360,9 @@ async function scanDirectory(
   visited.add(dirPath)
   
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     const entries = await fs.readdir(dirPath, { withFileTypes: true })
     
     for (const entry of entries) {
@@ -399,6 +412,9 @@ async function scanDirectory(
 // Analyze dependencies
 async function analyzeDependencies(projectRoot: string): Promise<DependencyAnalysis> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     const packageJsonPath = path.join(projectRoot, 'package.json')
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'))
     
@@ -445,6 +461,7 @@ async function detectDuplications(files: string[]): Promise<CodeDuplication[]> {
   
   for (const file of files.slice(0, 50)) { // Limit for performance
     try {
+      const { promises: fs } = await import('fs')
       const content = await fs.readFile(file, 'utf8')
       fileContents.set(file, content.split('\n'))
     } catch (error) {
@@ -512,12 +529,14 @@ async function performScan(options: ScanOptions, projectRoot: string): Promise<S
   
   try {
     // Validate paths
-    const pathValidation = validatePaths(options.paths, projectRoot)
+    const pathValidation = await validatePaths(options.paths, projectRoot)
     if (!pathValidation.isValid) {
       throw new Error(pathValidation.error || 'Invalid paths')
     }
     
     // Collect all files to scan
+    const { promises: fs } = await import('fs')
+    
     let allFiles: string[] = []
     for (const scanPath of pathValidation.resolvedPaths) {
       const stats = await fs.stat(scanPath)
@@ -665,7 +684,7 @@ export async function POST(request: NextRequest) {
       outputFormat: options.outputFormat || 'json'
     }
     
-    const projectRoot = getProjectRoot()
+    const projectRoot = await getProjectRoot()
     
     let data: any
     
@@ -681,10 +700,12 @@ export async function POST(request: NextRequest) {
         
       case 'duplicates':
         // Collect files first
-        const pathValidation = validatePaths(scanOptions.paths, projectRoot)
+        const pathValidation = await validatePaths(scanOptions.paths, projectRoot)
         if (!pathValidation.isValid) {
           throw new Error(pathValidation.error || 'Invalid paths')
         }
+        
+        const { promises: fs } = await import('fs')
         
         let allFiles: string[] = []
         for (const scanPath of pathValidation.resolvedPaths) {

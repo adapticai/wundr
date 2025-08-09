@@ -5,8 +5,9 @@
 
 import React from 'react'
 import { render } from '../utils/test-utils'
-import { createTestFixtures, minimalTestData, SnapshotTestUtils } from '../fixtures/real-test-data'
+import { createTestFixtures, minimalTestData, minimalCompleteTestData, SnapshotTestUtils } from '../fixtures/real-test-data'
 import { DashboardCharts } from '@/components/dashboard/dashboard-charts'
+import { createCompleteAnalysisData, createTestMetrics, createSimpleEntity, createSimpleDuplicate } from '../utils/test-data-helpers'
 
 // Mock Chart.js components for consistent snapshots
 jest.mock('react-chartjs-2', () => ({
@@ -37,21 +38,26 @@ describe('Component Snapshots', () => {
 
   describe('DashboardCharts Snapshots', () => {
     it('renders consistently with minimal data', () => {
-      const { container } = render(<DashboardCharts data={minimalTestData} />)
+      const { container } = render(<DashboardCharts data={minimalCompleteTestData} />)
       const normalizedSnapshot = SnapshotTestUtils.normalizeSnapshot(container)
       
       expect(normalizedSnapshot).toMatchSnapshot('dashboard-charts-minimal')
     })
 
     it('renders consistently with real project data', () => {
-      const { container } = render(<DashboardCharts data={realTestData} />)
+      // Convert realTestData to CompleteAnalysisData if needed
+      const completeData = realTestData.metadata ? realTestData : createCompleteAnalysisData({
+        entities: realTestData.entities?.map((e: any) => createSimpleEntity(e)) || [],
+        duplicates: realTestData.duplicates?.map((d: any) => createSimpleDuplicate(d)) || []
+      })
+      const { container } = render(<DashboardCharts data={completeData} />)
       const normalizedSnapshot = SnapshotTestUtils.normalizeSnapshot(container)
       
       expect(normalizedSnapshot).toMatchSnapshot('dashboard-charts-real-data')
     })
 
     it('renders consistently with empty data', () => {
-      const emptyData = { entities: [], duplicates: [] }
+      const emptyData = createCompleteAnalysisData()
       const { container } = render(<DashboardCharts data={emptyData} />)
       const normalizedSnapshot = SnapshotTestUtils.normalizeSnapshot(container)
       
@@ -59,11 +65,11 @@ describe('Component Snapshots', () => {
     })
 
     it('renders consistently with complex data', () => {
-      const complexData = {
-        entities: Array.from({ length: 10 }, (_, i) => ({
+      const complexData = createCompleteAnalysisData({
+        entities: Array.from({ length: 10 }, (_, i) => createSimpleEntity({
           name: `Entity${i}`,
           path: `path/to/entity${i}.ts`,
-          type: (['class', 'function', 'module', 'component'][i % 4]) as any,
+          type: ['class', 'function', 'module', 'component'][i % 4],
           dependencies: [`dep${i}`, `dep${i + 1}`],
           complexity: 5 + (i * 2),
           issues: i % 3 === 0 ? [{
@@ -73,18 +79,72 @@ describe('Component Snapshots', () => {
           }] : []
         })),
         duplicates: [
-          {
+          createSimpleDuplicate({
             id: 'dup-1',
-            type: 'structural' as const,
-            severity: 'high' as const,
+            type: 'structural',
+            severity: 'high',
             occurrences: [
-              { path: 'file1.ts', startLine: 1, endLine: 10 },
-              { path: 'file2.ts', startLine: 5, endLine: 14 }
+              { path: 'file1.ts', startLine: 1, endLine: 10, content: 'duplicated content', context: 'function A' },
+              { path: 'file2.ts', startLine: 5, endLine: 14, content: 'duplicated content', context: 'function B' }
             ],
             linesCount: 10
+          })
+        ],
+        metrics: createTestMetrics({
+          overview: {
+            totalFiles: 10,
+            totalLines: 500,
+            totalEntities: 10,
+            analysisTime: 1000,
+            timestamp: new Date()
+          },
+          quality: {
+            maintainabilityIndex: 85,
+            technicalDebt: {
+              rating: 'B' as const,
+              minutes: 300
+            },
+            duplicateLines: 25,
+            duplicateRatio: 5,
+            testCoverage: {
+              lines: 75,
+              branches: 70,
+              functions: 80,
+              statements: 75
+            }
           }
-        ]
-      }
+        }),
+        recommendations: [{
+          id: 'test-rec',
+          title: 'Test Recommendation',
+          description: 'Test description',
+          category: 'maintainability' as const,
+          priority: 'medium' as const,
+          effort: {
+            level: 'low' as const,
+            hours: 2,
+            description: 'Should take 2 hours to implement'
+          },
+          impact: {
+            level: 'medium' as const,
+            metrics: ['maintainability', 'complexity'],
+            description: 'Will improve code maintainability'
+          },
+          affectedFiles: ['Entity0.ts', 'Entity1.ts'],
+          implementation: {
+            steps: ['Extract common functionality', 'Create shared utilities'],
+            codeExamples: [{
+              before: 'const duplicate = () => { }',
+              after: 'import { shared } from "./utils"',
+              language: 'typescript'
+            }],
+            automatable: true,
+            tools: ['typescript', 'eslint']
+          },
+          references: ['https://refactoring.com'],
+          tags: ['refactoring', 'maintainability']
+        }]
+      })
       
       const { container } = render(<DashboardCharts data={complexData} />)
       const normalizedSnapshot = SnapshotTestUtils.normalizeSnapshot(container)

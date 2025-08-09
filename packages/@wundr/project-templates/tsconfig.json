@@ -15,11 +15,15 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "downlevelIteration": true,
+    "composite": true,
     "paths": {
-      "@wundr/core": ["../core/src"],
-      "@wundr/config": ["../config/src"]
+      "@wundr/core": ["../core/dist"],
+      "@wundr/config": ["../config/dist"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib", "**/*.test.ts"]
+  "exclude": ["node_modules", "lib", "**/*.test.ts"],
+  "references": [
+    { "path": "../core" }
+  ]
 }

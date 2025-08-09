@@ -185,7 +185,7 @@ export class RoleBasedAccessControl extends EventEmitter {
         users = users.filter(user => user.isActive === filter.active);
       }
       if (filter.role) {
-        users = users.filter(user => user.roles.includes(filter.role));
+        users = users.filter(user => user.roles.includes(filter.role!));
       }
     }
 

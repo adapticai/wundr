@@ -51,7 +51,7 @@ export interface StreamingMetrics {
 export class StreamingFileProcessor extends EventEmitter {
   private config: StreamingConfig;
   private metrics: StreamingMetrics;
-  private memoryMonitor: NodeJS.Timer | null = null;
+  private memoryMonitor: NodeJS.Timeout | null = null;
   private activeStreams = new Set<Readable>();
   private processingQueue = new Map<string, FileChunk[]>();
   private backpressureActive = false;
@@ -215,24 +215,26 @@ export class StreamingFileProcessor extends EventEmitter {
     let chunkId = 0;
     let lineNumber = 1;
     
-    return new Transform({
+    const self = this;
+    
+    const transform = new Transform({
       objectMode: false,
       highWaterMark: this.config.bufferSize,
       
-      transform(data: Buffer, encoding, callback) {
+      transform(data: Buffer, encoding: BufferEncoding, callback: (error?: Error | null) => void) {
         try {
           buffer = Buffer.concat([buffer, data]);
           
           // Process complete chunks
-          while (buffer.length >= this.config.chunkSize) {
-            const chunkData = buffer.slice(0, this.config.chunkSize);
-            buffer = buffer.slice(this.config.chunkSize);
+          while (buffer.length >= self.config.chunkSize) {
+            const chunkData = buffer.slice(0, self.config.chunkSize);
+            buffer = buffer.slice(self.config.chunkSize);
             
             // Find line boundaries
             const lines = chunkData.toString().split('\n');
             const endLine = lineNumber + lines.length - 1;
             
-            const chunk = this.createChunk({
+            const chunk = self.createChunk({
               id: `${path.basename(filePath)}-${chunkId++}`,
               filePath,
               content: chunkData,
@@ -252,16 +254,16 @@ export class StreamingFileProcessor extends EventEmitter {
           
           callback();
         } catch (error) {
-          callback(error);
+          callback(error as Error);
         }
       },
       
-      flush(callback) {
+      flush(callback: (error?: Error | null) => void) {
         try {
           // Process remaining buffer
           if (buffer.length > 0) {
             const lines = buffer.toString().split('\n');
-            const chunk = this.createChunk({
+            const chunk = self.createChunk({
               id: `${path.basename(filePath)}-${chunkId++}`,
               filePath,
               content: buffer,
@@ -278,13 +280,15 @@ export class StreamingFileProcessor extends EventEmitter {
             this.push(chunk);
           }
           
-          this.releaseBuffer(buffer);
+          self.releaseBuffer(buffer);
           callback();
         } catch (error) {
-          callback(error);
+          callback(error as Error);
         }
       }
-    }.bind(this));
+    });
+    
+    return transform;
   }
 
   /**
@@ -293,21 +297,23 @@ export class StreamingFileProcessor extends EventEmitter {
   private createProcessingTransform(
     processor: (chunk: FileChunk) => Promise<any>
   ): Transform {
+    const self = this;
+    
     return new Transform({
       objectMode: true,
       highWaterMark: 10,
       
-      async transform(chunk: FileChunk, encoding, callback) {
+      async transform(chunk: FileChunk, encoding: BufferEncoding, callback: (error?: Error | null) => void) {
         try {
           await processor(chunk);
-          this.releaseChunk(chunk);
-          this.metrics.chunksProcessed++;
-          this.metrics.bytesProcessed += chunk.metadata.size;
+          self.releaseChunk(chunk);
+          self.metrics.chunksProcessed++;
+          self.metrics.bytesProcessed += chunk.metadata.size;
           
           callback();
         } catch (error) {
-          this.metrics.errorCount++;
-          callback(error);
+          self.metrics.errorCount++;
+          callback(error as Error);
         }
       }
     });

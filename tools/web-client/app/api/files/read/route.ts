@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 function isBinaryFile(buffer: Buffer): boolean {
   // Simple binary detection - check for null bytes in first 1024 bytes
@@ -15,6 +16,9 @@ function isBinaryFile(buffer: Buffer): boolean {
 
 export async function GET(request: NextRequest) {
   try {
+    const fs = await import('fs-extra');
+    const path = await import('path');
+    
     const searchParams = request.nextUrl.searchParams;
     const filePath = searchParams.get('path');
     

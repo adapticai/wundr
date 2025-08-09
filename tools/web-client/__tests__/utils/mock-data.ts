@@ -1,4 +1,5 @@
 import { AnalysisData, Entity, Duplicate } from '@/lib/contexts/analysis-context'
+import { CompleteAnalysisData } from '@/types/reports'
 import path from 'path'
 import fs from 'fs'
 
@@ -11,7 +12,7 @@ import fs from 'fs'
  * Create test fixtures from real project data
  */
 export async function createTestFixtures(projectPath: string = process.cwd()): Promise<{
-  analysisData: AnalysisData,
+  analysisData: CompleteAnalysisData,
   performanceData: any[],
   qualityMetrics: any,
   gitActivities: any[],
@@ -28,7 +29,22 @@ export async function createTestFixtures(projectPath: string = process.cwd()): P
       duplicates,
       recommendations: generateRealRecommendations(entities, duplicates),
       metrics,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      metadata: {
+        version: '1.0.0',
+        generator: 'test-fixtures',
+        timestamp: new Date().toISOString(),
+        configuration: { includeTests: true, analyzeTypes: true },
+        projectInfo: {
+          name: 'wundr-dashboard',
+          path: projectPath,
+          language: 'TypeScript',
+          framework: 'Next.js',
+          packageManager: 'npm'
+        }
+      },
+      circularDependencies: [],
+      securityIssues: []
     },
     performanceData: await getRealPerformanceData(),
     qualityMetrics: await getRealQualityMetrics(projectPath),
@@ -263,7 +279,7 @@ async function findRealDuplicates(entities: Entity[]): Promise<Duplicate[]> {
 /**
  * Calculate real metrics from actual data
  */
-function calculateRealMetrics(entities: Entity[], duplicates: Duplicate[]) {
+function calculateRealMetrics(entities: Entity[], duplicates: Duplicate[]): CompleteAnalysisData['metrics'] {
   const totalFiles = entities.length
   const totalComplexity = entities.reduce((sum, e) => sum + e.complexity, 0)
   const avgComplexity = totalFiles > 0 ? totalComplexity / totalFiles : 0
@@ -282,8 +298,8 @@ function calculateRealMetrics(entities: Entity[], duplicates: Duplicate[]) {
 /**
  * Generate real recommendations
  */
-function generateRealRecommendations(entities: Entity[], duplicates: Duplicate[]) {
-  const recommendations: any[] = []
+function generateRealRecommendations(entities: Entity[], duplicates: Duplicate[]): CompleteAnalysisData['recommendations'] {
+  const recommendations: CompleteAnalysisData['recommendations'] = []
   
   const highComplexityEntities = entities.filter(e => e.complexity > 10)
   if (highComplexityEntities.length > 0) {
@@ -291,10 +307,10 @@ function generateRealRecommendations(entities: Entity[], duplicates: Duplicate[]
       id: 'complexity-real',
       title: 'Reduce Code Complexity',
       description: `${highComplexityEntities.length} files have high complexity`,
-      severity: 'high',
+      severity: 'high' as const,
       category: 'Maintainability',
-      effort: 'medium',
-      impact: 'high'
+      effort: 'medium' as const,
+      impact: 'high' as const
     })
   }
   
@@ -303,10 +319,10 @@ function generateRealRecommendations(entities: Entity[], duplicates: Duplicate[]
       id: 'duplicates-real',
       title: 'Remove Code Duplicates',
       description: `Found ${duplicates.length} potential duplicates`,
-      severity: 'medium',
+      severity: 'medium' as const,
       category: 'Code Quality',
-      effort: 'low',
-      impact: 'medium'
+      effort: 'low' as const,
+      impact: 'medium' as const
     })
   }
   
@@ -391,6 +407,19 @@ function generateRealNetworkData(entities: Entity[]) {
   return { nodes, links }
 }
 
+// Declare entities array before use
+let entities: Entity[] = []
+
+// Initialize entities data immediately
+;(async () => {
+  try {
+    entities = await analyzeRealEntities(process.cwd())
+  } catch (error) {
+    console.warn('Could not analyze entities for test data:', error)
+    entities = []
+  }
+})()
+
 // Network data exports
 export const mockNetworkNodes = entities ? generateRealNetworkData(entities).nodes : []
 export const mockNetworkLinks = entities ? generateRealNetworkData(entities).links : []
@@ -413,15 +442,22 @@ export const mockMetricsSeries = [
   }
 ]
 
-// Export mock data for components that need specific test data
-let entities: Entity[] = []
-
-// Initialize entities data
-;(async () => {
-  try {
-    entities = await analyzeRealEntities(process.cwd())
-  } catch (error) {
-    console.warn('Could not analyze entities for test data:', error)
-    entities = []
+// Export mock performance data
+export const mockPerformanceData = [
+  {
+    timestamp: new Date().toISOString(),
+    buildTime: 1234,
+    bundleSize: 567890,
+    memoryUsage: 45.2,
+    cpuUsage: 23.5,
+    loadTime: 890
+  },
+  {
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    buildTime: 1201,
+    bundleSize: 563421,
+    memoryUsage: 44.8,
+    cpuUsage: 22.1,
+    loadTime: 876
   }
-})()
+]

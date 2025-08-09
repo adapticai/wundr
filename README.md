@@ -19,11 +19,41 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/npm/v/@wundr/cli?style=flat-square" alt="npm version">
+    <img src="https://img.shields.io/npm/v/@wundr/cli?style=flat-square&logo=npm" alt="npm version">
     <img src="https://img.shields.io/github/license/adapticai/wundr?style=flat-square" alt="License">
-    <img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen?style=flat-square" alt="Node Version">
-    <img src="https://img.shields.io/badge/TypeScript-5.2+-blue?style=flat-square" alt="TypeScript">
+    <img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen?style=flat-square&logo=node.js" alt="Node Version">
+    <img src="https://img.shields.io/badge/TypeScript-5.2+-blue?style=flat-square&logo=typescript" alt="TypeScript">
     <img src="https://img.shields.io/badge/Turborepo-Optimized-purple?style=flat-square" alt="Turborepo">
+  </p>
+
+  <p>
+    <a href="https://github.com/adapticai/wundr/actions/workflows/enterprise-ci.yml">
+      <img src="https://github.com/adapticai/wundr/workflows/🔄%20Enterprise%20CI/CD%20Pipeline/badge.svg" alt="CI/CD Pipeline">
+    </a>
+    <a href="https://github.com/adapticai/wundr/actions/workflows/enterprise-release.yml">
+      <img src="https://github.com/adapticai/wundr/workflows/🚀%20Enterprise%20Release%20Pipeline/badge.svg" alt="Release Pipeline">
+    </a>
+    <a href="https://codecov.io/gh/adapticai/wundr">
+      <img src="https://codecov.io/gh/adapticai/wundr/branch/main/graph/badge.svg" alt="Code Coverage">
+    </a>
+    <a href="https://github.com/adapticai/wundr/security/code-scanning">
+      <img src="https://img.shields.io/github/actions/workflow/status/adapticai/wundr/enterprise-ci.yml?label=CodeQL&logo=github" alt="CodeQL">
+    </a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/github/last-commit/adapticai/wundr?style=flat-square&logo=github" alt="Last Commit">
+    <img src="https://img.shields.io/github/commit-activity/m/adapticai/wundr?style=flat-square&logo=github" alt="Commit Activity">
+    <img src="https://img.shields.io/github/contributors/adapticai/wundr?style=flat-square&logo=github" alt="Contributors">
+    <img src="https://img.shields.io/github/issues/adapticai/wundr?style=flat-square&logo=github" alt="Issues">
+    <img src="https://img.shields.io/github/pull-requests/adapticai/wundr?style=flat-square&logo=github" alt="Pull Requests">
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/docker/v/wundr/cli?style=flat-square&logo=docker&label=Docker" alt="Docker Version">
+    <img src="https://img.shields.io/docker/image-size/wundr/cli?style=flat-square&logo=docker" alt="Docker Image Size">
+    <img src="https://img.shields.io/badge/Maintained-Yes-brightgreen?style=flat-square" alt="Maintained">
+    <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square" alt="PRs Welcome">
   </p>
 
 </div>

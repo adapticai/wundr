@@ -64,8 +64,8 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         noResolve: false,
         allowJs: true,
         checkJs: false,
-        target: ts.ScriptTarget.ES2020,
-        module: ts.ModuleKind.CommonJS
+        target: ts.ScriptTarget.ES2020 as ts.ScriptTarget,
+        module: ts.ModuleKind.CommonJS as ts.ModuleKind
       }
     });
 
@@ -80,7 +80,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   /**
    * Perform comprehensive AST analysis
    */
-  protected async performAnalysis(entities: EntityInfo[]): Promise<any> {
+  protected override async performAnalysis(entities: EntityInfo[]): Promise<any> {
     this.emitProgress({ type: 'phase', message: 'Performing advanced AST analysis...' });
 
     // Run analysis phases concurrently where possible
@@ -125,7 +125,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   /**
    * Extract entity information from TypeScript node
    */
-  protected extractEntityFromNode(node: ts.Node, sourceFile: ts.SourceFile): EntityInfo | null {
+  protected override extractEntityFromNode(node: ts.Node, sourceFile: ts.SourceFile): EntityInfo | null {
     const filePath = normalizeFilePath(sourceFile.fileName);
     const position = this.getPositionInfo(node, sourceFile);
 
@@ -177,6 +177,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
       name,
       type: isService ? 'service' : isComponent ? 'component' : 'class',
       file: filePath,
+      startLine: position.line,
       line: position.line,
       column: position.column,
       exportType: this.getExportType(classDecl),
@@ -212,6 +213,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
       name,
       type: 'interface',
       file: filePath,
+      startLine: position.line,
       line: position.line,
       column: position.column,
       exportType: this.getExportType(interfaceDecl),
@@ -239,6 +241,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
       name,
       type: 'type',
       file: filePath,
+      startLine: position.line,
       line: position.line,
       column: position.column,
       exportType: this.getExportType(typeAlias),
@@ -269,6 +272,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
       name,
       type: 'enum',
       file: filePath,
+      startLine: position.line,
       line: position.line,
       column: position.column,
       exportType: this.getExportType(enumDecl),
@@ -300,6 +304,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
       name,
       type: isHook ? 'hook' : isUtility ? 'utility' : 'function',
       file: filePath,
+      startLine: position.line,
       line: position.line,
       column: position.column,
       exportType: this.getExportType(func),
@@ -337,6 +342,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
       name,
       type: 'const',
       file: filePath,
+      startLine: position.line,
       line: position.line,
       column: position.column,
       exportType: 'named',

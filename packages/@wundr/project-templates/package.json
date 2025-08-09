@@ -5,9 +5,11 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "clean": "rm -rf lib",
+    "build": "tsc --build",
+    "build:watch": "tsc --build --watch",
+    "dev": "tsc --build --watch",
+    "clean": "rm -rf lib tsconfig.tsbuildinfo",
+    "prebuild": "npm run clean",
     "test": "jest",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit"

@@ -23,8 +23,6 @@ module.exports = {
   },
   plugins: [
     '@typescript-eslint',
-    'react',
-    'react-hooks',
   ],
   rules: {
     '@typescript-eslint/no-unused-expressions': 'warn',

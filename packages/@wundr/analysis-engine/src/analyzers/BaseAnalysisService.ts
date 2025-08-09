@@ -184,8 +184,8 @@ export abstract class BaseAnalysisService {
       
       await this.initialize();
       
-      // Get target files with caching and streaming
-      const files = await this.getTargetFilesOptimized();
+      // Get target files
+      const files = await this.getTargetFiles();
       if (files.length === 0) {
         throw new Error('No files found to analyze');
       }
@@ -195,25 +195,16 @@ export abstract class BaseAnalysisService {
         phase: 'file-discovery',
         progress: files.length,
         total: files.length,
-        message: `Found ${files.length} files (using streaming optimization)`
+        message: `Found ${files.length} files`
       });
 
-      // Use streaming analysis for large codebases
-      let entities: EntityInfo[];
-      let analysisResults: any;
+      // Create program and extract entities
+      this.createOptimizedProgram(files);
+      const entities = await this.extractEntitiesOptimized(files);
+      const analysisResults = await this.performAnalysis(entities);
       
-      if (files.length > 1000 || this.getTotalFileSize(files) > 50 * 1024 * 1024) {
-        // Large codebase - use streaming
-        ({ entities, analysisResults } = await this.performStreamingAnalysis(files));
-      } else {
-        // Small codebase - use optimized traditional approach
-        this.createOptimizedProgram(files);
-        entities = await this.extractEntitiesOptimizedConcurrent(files);
-        analysisResults = await this.performAnalysisConcurrent(entities);
-      }
-      
-      // Generate report with memory optimization
-      const report = await this.generateReportOptimized(files, entities, analysisResults);
+      // Generate report
+      const report = await this.generateReport(files, entities, analysisResults);
       
       // Save report in multiple formats
       await this.saveReport(report);
@@ -246,7 +237,7 @@ export abstract class BaseAnalysisService {
         duration
       };
     } finally {
-      await this.cleanupOptimized();
+      await this.cleanup();
     }
   }
 
@@ -592,6 +583,48 @@ export abstract class BaseAnalysisService {
   protected abstract performAnalysis(entities: EntityInfo[]): Promise<any>;
   protected abstract extractEntityFromNode(node: ts.Node, sourceFile: ts.SourceFile): EntityInfo | null;
   
+  // Add missing method implementations that were referenced
+  protected setupMemoryOptimizations(): void {
+    // Initialize object pools for memory efficiency
+    for (let i = 0; i < 100; i++) {
+      this.objectPools.entities.push({} as EntityInfo);
+      this.objectPools.arrays.push([]);
+    }
+    
+    for (let i = 0; i < 20; i++) {
+      this.objectPools.buffers.push(Buffer.alloc(0));
+    }
+    
+    // Setup memory monitoring events
+    this.memoryMonitor.on('memory-alert', (alert) => {
+      if (this.config.verbose) {
+        console.warn(`Memory Alert: ${alert.type} - Current: ${formatFileSize(alert.current)}`);
+      }
+      
+      if (alert.severity === 'critical') {
+        this.forceCleanup();
+      }
+    });
+  }
+  
+  private forceCleanup(): void {
+    // Clear caches
+    this.fileCache.clear();
+    if (!this.config.performance.enableCaching) {
+      this.analysisCache.clear();
+    }
+    
+    // Return objects to pools
+    this.objectPools.entities.length = 0;
+    this.objectPools.arrays.length = 0;
+    this.objectPools.buffers.length = 0;
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
+  }
+  
   // Helper methods
   protected getSourceFile(filePath: string): ts.SourceFile | undefined {
     if (this.fileCache.has(filePath)) {
@@ -747,13 +780,19 @@ ${rec.estimatedTimeHours ? `- **Estimated Time:** ${rec.estimatedTimeHours}h` : 
     return rows.join('\n');
   }
 
-  private async initialize(): Promise<void> {
+  protected async initialize(): Promise<void> {
     if (this.config.outputDir) {
       await fs.ensureDir(this.config.outputDir);
     }
   }
 
-  private async cleanup(): Promise<void> {
+  protected async cleanup(): Promise<void> {
+    // Stop monitoring
+    this.memoryMonitor.stopMonitoring();
+    
+    // Shutdown worker pool gracefully
+    await this.workerPool.shutdown(10000);
+    
     this.program = null;
     this.checker = null;
     this.fileCache.clear();
@@ -761,5 +800,10 @@ ${rec.estimatedTimeHours ? `- **Estimated Time:** ${rec.estimatedTimeHours}h` : 
     if (!this.config.performance.enableCaching) {
       this.analysisCache.clear();
     }
+    
+    // Clear object pools
+    this.objectPools.entities.length = 0;
+    this.objectPools.arrays.length = 0;
+    this.objectPools.buffers.length = 0;
   }
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
 import { ApiResponse } from '@/types/data'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 // Types for file operations
 interface FileInfo {
@@ -84,13 +85,19 @@ function checkRateLimit(clientId: string): boolean {
 }
 
 // Get project root directory
-function getProjectRoot(): string {
+async function getProjectRoot(): Promise<string> {
+  const path = await import('path')
+  const { promises: fs } = await import('fs')
+  
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const packagePath = path.join(dir, 'package.json')
-      if (require('fs').existsSync(packagePath)) {
+      try {
+        await fs.access(packagePath)
         return dir
+      } catch {
+        // File doesn't exist, continue searching
       }
     } catch (e) {
       // Continue searching
@@ -101,8 +108,10 @@ function getProjectRoot(): string {
 }
 
 // Security: Validate and sanitize file path
-function validatePath(inputPath: string, projectRoot: string): { isValid: boolean; resolvedPath: string; error?: string } {
+async function validatePath(inputPath: string, projectRoot: string): Promise<{ isValid: boolean; resolvedPath: string; error?: string }> {
   try {
+    const path = await import('path')
+    
     // Remove leading/trailing slashes and normalize
     const cleanPath = inputPath.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/')
     
@@ -144,13 +153,16 @@ function validatePath(inputPath: string, projectRoot: string): { isValid: boolea
 
 // Security: Check if file extension is allowed
 function isAllowedExtension(filePath: string): boolean {
-  const ext = path.extname(filePath).toLowerCase()
+  const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase()
   return ALLOWED_EXTENSIONS.has(ext)
 }
 
 // Get file/directory information
 async function getFileInfo(fullPath: string): Promise<FileInfo> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     const stats = await fs.stat(fullPath)
     const name = path.basename(fullPath)
     const extension = path.extname(fullPath)
@@ -176,6 +188,9 @@ async function listFiles(
   filter?: FileOperationRequest['filter']
 ): Promise<FileListResponse> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     const files: FileInfo[] = []
     let totalFiles = 0
     let totalDirectories = 0
@@ -256,6 +271,8 @@ async function listFiles(
 // Read file content
 async function readFileContent(filePath: string, encoding: 'utf8' | 'base64' = 'utf8'): Promise<FileContent> {
   try {
+    const { promises: fs } = await import('fs')
+    
     if (!isAllowedExtension(filePath)) {
       throw new Error('File type not allowed for reading')
     }
@@ -282,6 +299,9 @@ async function writeFileContent(
   encoding: 'utf8' | 'base64' = 'utf8'
 ): Promise<{ success: boolean; size: number }> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     if (!isAllowedExtension(filePath)) {
       throw new Error('File type not allowed for writing')
     }
@@ -303,6 +323,8 @@ async function writeFileContent(
 // Delete file or directory
 async function deleteFileOrDirectory(filePath: string, recursive: boolean = false): Promise<{ success: boolean }> {
   try {
+    const { promises: fs } = await import('fs')
+    
     const stats = await fs.stat(filePath)
     
     if (stats.isDirectory()) {
@@ -347,8 +369,8 @@ export async function GET(request: NextRequest) {
     const pattern = searchParams.get('pattern') || undefined
     const includeHidden = searchParams.get('includeHidden') === 'true'
     
-    const projectRoot = getProjectRoot()
-    const pathValidation = validatePath(filePath, projectRoot)
+    const projectRoot = await getProjectRoot()
+    const pathValidation = await validatePath(filePath, projectRoot)
     
     if (!pathValidation.isValid) {
       const response: ApiResponse<null> = {
@@ -434,8 +456,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response, { status: 400 })
     }
     
-    const projectRoot = getProjectRoot()
-    const pathValidation = validatePath(filePath, projectRoot)
+    const projectRoot = await getProjectRoot()
+    const pathValidation = await validatePath(filePath, projectRoot)
     
     if (!pathValidation.isValid) {
       const response: ApiResponse<null> = {
@@ -468,10 +490,12 @@ export async function POST(request: NextRequest) {
           throw new Error('newPath is required for move/copy operations')
         }
         
-        const newPathValidation = validatePath(newPath, projectRoot)
+        const newPathValidation = await validatePath(newPath, projectRoot)
         if (!newPathValidation.isValid) {
           throw new Error(newPathValidation.error || 'Invalid destination path')
         }
+        
+        const { promises: fs } = await import('fs')
         
         if (action === 'copy') {
           await fs.copyFile(pathValidation.resolvedPath, newPathValidation.resolvedPath)

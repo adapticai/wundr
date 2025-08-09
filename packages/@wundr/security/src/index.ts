@@ -1,7 +1,7 @@
 // Security Module Main Export
 export * from './credential/CredentialManager';
 export * from './scanner/SecretScanner';
-export * from './scanner/VulnerabilityScanner';
+export { VulnerabilityScanner, ScanResult as VulnScanResult } from './scanner/VulnerabilityScanner';
 export * from './scanner/StaticAnalyzer';
 export * from './compliance/ComplianceReporter';
 export * from './audit/AuditLogger';
@@ -23,13 +23,13 @@ import { SecurityConfigManager } from './config/SecurityConfig';
  * Coordinates all security components and provides unified interface
  */
 export class SecurityManager {
-  private credentialManager: CredentialManager;
-  private secretScanner: SecretScanner;
-  private vulnerabilityScanner: VulnerabilityScanner;
-  private staticAnalyzer: StaticAnalyzer;
-  private complianceReporter: ComplianceReporter;
-  private auditLogger: AuditLogger;
-  private rbac: RoleBasedAccessControl;
+  private credentialManager!: CredentialManager;
+  private secretScanner!: SecretScanner;
+  private vulnerabilityScanner!: VulnerabilityScanner;
+  private staticAnalyzer!: StaticAnalyzer;
+  private complianceReporter!: ComplianceReporter;
+  private auditLogger!: AuditLogger;
+  private rbac!: RoleBasedAccessControl;
   private configManager: SecurityConfigManager;
 
   constructor(configPath?: string) {

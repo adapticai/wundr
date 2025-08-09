@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
 import { ApiResponse } from '@/types/data'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 // Types for documentation operations
 interface DocumentationFile {
@@ -86,13 +87,19 @@ function checkRateLimit(clientId: string): boolean {
 }
 
 // Get project root directory
-function getProjectRoot(): string {
+async function getProjectRoot(): Promise<string> {
+  const path = await import('path')
+  const { promises: fs } = await import('fs')
+  
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const packagePath = path.join(dir, 'package.json')
-      if (require('fs').existsSync(packagePath)) {
+      try {
+        await fs.access(packagePath)
         return dir
+      } catch {
+        // File doesn't exist, continue searching
       }
     } catch (e) {
       // Continue searching
@@ -103,8 +110,10 @@ function getProjectRoot(): string {
 }
 
 // Validate and sanitize documentation path
-function validateDocPath(inputPath: string, projectRoot: string): { isValid: boolean; resolvedPath: string; error?: string } {
+async function validateDocPath(inputPath: string, projectRoot: string): Promise<{ isValid: boolean; resolvedPath: string; error?: string }> {
   try {
+    const path = await import('path')
+    
     // Default to docs directory if no path provided
     const cleanPath = inputPath ? 
       inputPath.replace(/^\/+|\/+$/g, '').replace(/\/+/g, '/') : 
@@ -154,7 +163,7 @@ function validateDocPath(inputPath: string, projectRoot: string): { isValid: boo
 
 // Detect file type based on extension
 function getDocumentationType(filePath: string): DocumentationFile['type'] {
-  const ext = path.extname(filePath).toLowerCase()
+  const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase()
   switch (ext) {
     case '.md':
     case '.markdown':
@@ -257,6 +266,9 @@ function generateTableOfContents(content: string): TableOfContentsItem[] {
 // Read documentation file
 async function readDocumentationFile(filePath: string, includeContent: boolean = true): Promise<DocumentationFile> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     const stats = await fs.stat(filePath)
     const name = path.basename(filePath)
     const type = getDocumentationType(filePath)
@@ -501,8 +513,8 @@ export async function GET(request: NextRequest) {
     const fileTypes = searchParams.get('fileTypes')?.split(',') || []
     const searchTerm = searchParams.get('search') || ''
     
-    const projectRoot = getProjectRoot()
-    const pathValidation = validateDocPath(docPath, projectRoot)
+    const projectRoot = await getProjectRoot()
+    const pathValidation = await validateDocPath(docPath, projectRoot)
     
     if (!pathValidation.isValid) {
       const response: ApiResponse<null> = {
@@ -618,7 +630,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response, { status: 400 })
     }
     
-    const projectRoot = getProjectRoot()
+    const projectRoot = await getProjectRoot()
     
     let data: any
     
@@ -628,7 +640,7 @@ export async function POST(request: NextRequest) {
           throw new Error('Path and content are required for write operations')
         }
         
-        const pathValidation = validateDocPath(docPath, projectRoot)
+        const pathValidation = await validateDocPath(docPath, projectRoot)
         if (!pathValidation.isValid) {
           throw new Error(pathValidation.error || 'Invalid documentation path')
         }

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
 import { ApiResponse } from '@/types/data'
 
 // Force dynamic rendering to allow fs access
 export const dynamic = 'force-dynamic'
+// Ensure this runs only on Node.js runtime
+export const runtime = 'nodejs'
 
 // Types for configuration operations
 interface ConfigFile {
@@ -86,13 +86,19 @@ function checkRateLimit(clientId: string): boolean {
 }
 
 // Get project root directory
-function getProjectRoot(): string {
+async function getProjectRoot(): Promise<string> {
+  const { promises: fs } = await import('fs')
+  const path = await import('path')
+  
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const packagePath = path.join(dir, 'package.json')
-      if (require('fs').existsSync(packagePath)) {
+      try {
+        await fs.access(packagePath)
         return dir
+      } catch {
+        // File doesn't exist, continue searching
       }
     } catch (e) {
       // Continue searching
@@ -156,8 +162,10 @@ const CONFIG_PATTERNS = [
 ]
 
 // Validate configuration file access
-function validateConfigAccess(configName: string, projectRoot: string): { isValid: boolean; resolvedPath: string; error?: string } {
+async function validateConfigAccess(configName: string, projectRoot: string): Promise<{ isValid: boolean; resolvedPath: string; error?: string }> {
   try {
+    const path = await import('path')
+    
     // Prevent path traversal
     if (configName.includes('..') || configName.includes('~') || path.isAbsolute(configName)) {
       return {
@@ -208,8 +216,9 @@ function validateConfigAccess(configName: string, projectRoot: string): { isVali
 
 // Detect configuration file type
 function getConfigType(filePath: string): ConfigFile['type'] {
-  const ext = path.extname(filePath).toLowerCase()
-  const basename = path.basename(filePath)
+  // Use basic path operations without importing path module
+  const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase()
+  const basename = filePath.substring(filePath.lastIndexOf('/') + 1)
   
   if (basename.startsWith('.env')) return 'env'
   
@@ -233,6 +242,7 @@ function getConfigType(filePath: string): ConfigFile['type'] {
 // Parse configuration file content
 async function parseConfigContent(filePath: string, type: ConfigFile['type']): Promise<any> {
   try {
+    const { promises: fs } = await import('fs')
     const content = await fs.readFile(filePath, 'utf8')
     
     switch (type) {
@@ -328,6 +338,9 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
   const configFiles: ConfigFile[] = []
   
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     // Scan for configuration files based on patterns
     for (const pattern of CONFIG_PATTERNS) {
       if (pattern.includes('*')) {
@@ -335,7 +348,8 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
         const dirPath = path.dirname(path.resolve(projectRoot, pattern))
         const fileName = path.basename(pattern)
         
-        if (require('fs').existsSync(dirPath)) {
+        try {
+          await fs.access(dirPath)
           const entries = await fs.readdir(dirPath)
           const regex = new RegExp(fileName.replace('*', '.*'))
           
@@ -356,12 +370,14 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
               }
             }
           }
+        } catch {
+          // Directory doesn't exist, skip
         }
       } else {
         // Handle specific file patterns
         const fullPath = path.resolve(projectRoot, pattern)
         
-        if (require('fs').existsSync(fullPath)) {
+        try {
           const stats = await fs.stat(fullPath)
           
           if (stats.isFile()) {
@@ -374,6 +390,8 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
               lastModified: stats.mtime.toISOString()
             })
           }
+        } catch {
+          // File doesn't exist, skip
         }
       }
     }
@@ -390,12 +408,15 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
 // Read configuration file
 async function readConfigurationFile(filePath: string): Promise<ConfigFile> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     const stats = await fs.stat(filePath)
     const type = getConfigType(filePath)
     const content = await parseConfigContent(filePath, type)
     
     return {
-      name: path.basename(filePath),
+      name: filePath.substring(filePath.lastIndexOf('/') + 1),
       path: filePath,
       type,
       size: stats.size,
@@ -415,13 +436,21 @@ async function writeConfigurationFile(
   backup: boolean = true
 ): Promise<{ success: boolean; size: number; backupPath?: string }> {
   try {
+    const { promises: fs } = await import('fs')
+    const path = await import('path')
+    
     let backupPath: string | undefined
     
     // Create backup if requested and file exists
-    if (backup && require('fs').existsSync(filePath)) {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-      backupPath = `${filePath}.backup.${timestamp}`
-      await fs.copyFile(filePath, backupPath)
+    if (backup) {
+      try {
+        await fs.access(filePath)
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        backupPath = `${filePath}.backup.${timestamp}`
+        await fs.copyFile(filePath, backupPath)
+      } catch {
+        // File doesn't exist, no backup needed
+      }
     }
     
     // Serialize content
@@ -588,7 +617,7 @@ export async function GET(request: NextRequest) {
     const configName = searchParams.get('config') || ''
     const templateName = searchParams.get('template') || ''
     
-    const projectRoot = getProjectRoot()
+    const projectRoot = await getProjectRoot()
     
     let data: any
     
@@ -598,12 +627,15 @@ export async function GET(request: NextRequest) {
           throw new Error('Configuration name is required')
         }
         
-        const pathValidation = validateConfigAccess(configName, projectRoot)
+        const pathValidation = await validateConfigAccess(configName, projectRoot)
         if (!pathValidation.isValid) {
           throw new Error(pathValidation.error || 'Invalid configuration file')
         }
         
-        if (!require('fs').existsSync(pathValidation.resolvedPath)) {
+        try {
+          const { promises: fs } = await import('fs')
+          await fs.access(pathValidation.resolvedPath)
+        } catch {
           throw new Error('Configuration file not found')
         }
         
@@ -687,7 +719,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response, { status: 400 })
     }
     
-    const projectRoot = getProjectRoot()
+    const projectRoot = await getProjectRoot()
     
     let data: any
     
@@ -697,7 +729,7 @@ export async function POST(request: NextRequest) {
           throw new Error('Configuration name and content are required')
         }
         
-        const pathValidation = validateConfigAccess(configName, projectRoot)
+        const pathValidation = await validateConfigAccess(configName, projectRoot)
         if (!pathValidation.isValid) {
           throw new Error(pathValidation.error || 'Invalid configuration file')
         }
@@ -730,7 +762,7 @@ export async function POST(request: NextRequest) {
           throw new Error('Configuration name is required')
         }
         
-        const validatePathValidation = validateConfigAccess(configName, projectRoot)
+        const validatePathValidation = await validateConfigAccess(configName, projectRoot)
         if (!validatePathValidation.isValid) {
           throw new Error(validatePathValidation.error || 'Invalid configuration file')
         }
@@ -747,20 +779,23 @@ export async function POST(request: NextRequest) {
           throw new Error('Configuration name is required')
         }
         
-        const backupPathValidation = validateConfigAccess(configName, projectRoot)
+        const backupPathValidation = await validateConfigAccess(configName, projectRoot)
         if (!backupPathValidation.isValid) {
           throw new Error(backupPathValidation.error || 'Invalid configuration file')
         }
         
-        if (!require('fs').existsSync(backupPathValidation.resolvedPath)) {
+        try {
+          const { promises: fs } = await import('fs')
+          await fs.access(backupPathValidation.resolvedPath)
+          
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+          const backupPath = `${backupPathValidation.resolvedPath}.backup.${timestamp}`
+          await fs.copyFile(backupPathValidation.resolvedPath, backupPath)
+          
+          data = { success: true, backupPath }
+        } catch {
           throw new Error('Configuration file not found')
         }
-        
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-        const backupPath = `${backupPathValidation.resolvedPath}.backup.${timestamp}`
-        await fs.copyFile(backupPathValidation.resolvedPath, backupPath)
-        
-        data = { success: true, backupPath }
         break
         
       default:

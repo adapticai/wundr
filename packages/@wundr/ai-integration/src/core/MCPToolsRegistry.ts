@@ -215,10 +215,11 @@ export class MCPToolsRegistry extends EventEmitter {
         message: `MCP Tools Registry initialized with ${this.tools.size} tools`
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        message: `MCP Tools Registry initialization failed: ${error.message}`,
-        error: error
+        message: `MCP Tools Registry initialization failed: ${errorMessage}`,
+        error: error instanceof Error ? error : new Error(String(error))
       };
     }
   }
@@ -232,14 +233,16 @@ export class MCPToolsRegistry extends EventEmitter {
         this.mergeToolConfigurations(toolConfigs);
       }
     } catch (error) {
-      console.warn(`Failed to load tool configurations: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.warn(`Failed to load tool configurations: ${errorMessage}`);
     }
   }
 
   private mergeToolConfigurations(configs: any): void {
     for (const [toolId, config] of Object.entries(configs)) {
-      if (this.AVAILABLE_TOOLS[toolId]) {
-        Object.assign(this.AVAILABLE_TOOLS[toolId], config);
+      const availableTools = this.AVAILABLE_TOOLS as Record<string, any>;
+      if (availableTools[toolId]) {
+        Object.assign(availableTools[toolId], config);
       }
     }
   }
@@ -260,7 +263,8 @@ export class MCPToolsRegistry extends EventEmitter {
           this.toolHandlers.set(toolId, new DefaultMCPHandler(toolId, toolConfig));
         }
       } catch (error) {
-        console.warn(`Failed to initialize handler for ${toolId}: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn(`Failed to initialize handler for ${toolId}: ${errorMessage}`);
         this.toolHandlers.set(toolId, new DefaultMCPHandler(toolId, toolConfig));
       }
     }
@@ -269,8 +273,9 @@ export class MCPToolsRegistry extends EventEmitter {
   private async discoverTools(): Promise<void> {
     // Register enabled tools
     for (const toolId of this.config.enabledTools) {
-      if (this.AVAILABLE_TOOLS[toolId]) {
-        await this.registerTool(toolId, this.AVAILABLE_TOOLS[toolId]);
+      const availableTools = this.AVAILABLE_TOOLS as Record<string, any>;
+      if (availableTools[toolId]) {
+        await this.registerTool(toolId, availableTools[toolId]);
       }
     }
 
@@ -312,7 +317,7 @@ export class MCPToolsRegistry extends EventEmitter {
   private async discoverNewTools(): Promise<void> {
     // Check for new MCP servers or tool configurations
     try {
-      const mcpConfigPath = path.join(process.env.HOME || '', '.claude', 'mcp.json');
+      const mcpConfigPath = path.join(process.env['HOME'] || '', '.claude', 'mcp.json');
       
       if (await fs.pathExists(mcpConfigPath)) {
         const mcpConfig = await fs.readJson(mcpConfigPath);
@@ -324,7 +329,8 @@ export class MCPToolsRegistry extends EventEmitter {
         }
       }
     } catch (error) {
-      console.warn(`Tool discovery failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.warn(`Tool discovery failed: ${errorMessage}`);
     }
   }
 
@@ -510,8 +516,8 @@ export class MCPToolsRegistry extends EventEmitter {
    * Get comprehensive metrics
    */
   async getMetrics(): Promise<any> {
-    const toolsByCategory = {};
-    const toolsByStatus = {};
+    const toolsByCategory: Record<string, number> = {};
+    const toolsByStatus: Record<string, number> = {};
 
     for (const tool of this.tools.values()) {
       toolsByCategory[tool.category] = (toolsByCategory[tool.category] || 0) + 1;
@@ -546,10 +552,11 @@ export class MCPToolsRegistry extends EventEmitter {
         message: 'MCP Tools Registry shutdown completed'
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        message: `Shutdown failed: ${error.message}`,
-        error: error
+        message: `Shutdown failed: ${errorMessage}`,
+        error: error instanceof Error ? error : new Error(String(error))
       };
     }
   }
@@ -560,11 +567,11 @@ export class MCPToolsRegistry extends EventEmitter {
  */
 class DefaultMCPHandler {
   private toolId: string;
-  private config: any;
+  private _config: any;
 
   constructor(toolId: string, config: any) {
     this.toolId = toolId;
-    this.config = config;
+    this._config = config;
   }
 
   async execute(operation: string, params: any): Promise<any> {
