@@ -5,6 +5,14 @@
 
 import { TestDatabase, TestApiServer } from '../fixtures/real-test-data'
 
+// Type declaration for Jest in test environment
+declare const jest: {
+  fn(): unknown;
+  clearAllMocks(): void;
+  spyOn(object: unknown, method: string): { mockImplementation(fn: () => void): void };
+  restoreAllMocks(): void;
+};
+
 /**
  * Global test environment manager
  */
@@ -214,6 +222,7 @@ export const customMatchers = {
 
 // Extend Jest matchers
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Matchers<R> {
       toBeAccessible(): R

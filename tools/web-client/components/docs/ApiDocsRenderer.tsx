@@ -31,18 +31,18 @@ export function ApiDocsRenderer({ apiDocs, className = '' }: ApiDocsRendererProp
   // Filter API docs
   const filteredDocs = apiDocs.filter(doc => {
     const matchesSearch = !searchTerm || 
-      doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.description.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesType = selectedType === 'all' || doc.type === selectedType;
+    const matchesType = selectedType === 'all' || doc.method === selectedType;
     
     return matchesSearch && matchesType;
   });
 
-  // Group by type
+  // Group by method
   const groupedDocs = filteredDocs.reduce((acc, doc) => {
-    if (!acc[doc.type]) acc[doc.type] = [];
-    acc[doc.type].push(doc);
+    if (!acc[doc.method]) acc[doc.method] = [];
+    acc[doc.method].push(doc);
     return acc;
   }, {} as Record<string, ApiDocEntry[]>);
 
@@ -60,27 +60,38 @@ export function ApiDocsRenderer({ apiDocs, className = '' }: ApiDocsRendererProp
     navigator.clipboard.writeText(text);
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'interface': return <FileText className="h-4 w-4" />;
-      case 'type': return <Code className="h-4 w-4" />;
-      case 'function': return <Settings className="h-4 w-4" />;
-      case 'class': return <Package className="h-4 w-4" />;
-      case 'enum': return <Package className="h-4 w-4" />;
+  const getMethodIcon = (method: string) => {
+    switch (method.toUpperCase()) {
+      case 'GET': return <FileText className="h-4 w-4 text-blue-500" />;
+      case 'POST': return <Code className="h-4 w-4 text-green-500" />;
+      case 'PUT': return <Settings className="h-4 w-4 text-orange-500" />;
+      case 'DELETE': return <Package className="h-4 w-4 text-red-500" />;
+      case 'PATCH': return <Package className="h-4 w-4 text-purple-500" />;
       default: return <Code className="h-4 w-4" />;
     }
   };
 
-  const getTypeBadgeVariant = (type: string) => {
-    switch (type) {
-      case 'interface': return 'default';
-      case 'type': return 'secondary';
-      case 'function': return 'outline';
-      case 'class': return 'destructive';
-      case 'enum': return 'secondary';
+  const getMethodBadgeVariant = (method: string) => {
+    switch (method.toUpperCase()) {
+      case 'GET': return 'default';
+      case 'POST': return 'secondary';
+      case 'PUT': return 'outline';
+      case 'DELETE': return 'destructive';
+      case 'PATCH': return 'secondary';
       default: return 'outline';
     }
   };
+
+  const getTypeBadgeVariant = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'function': return 'default';
+      case 'class': return 'secondary';
+      case 'interface': return 'outline';
+      case 'type': return 'destructive';
+      default: return 'default';
+    }
+  };
+
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -118,19 +129,19 @@ export function ApiDocsRenderer({ apiDocs, className = '' }: ApiDocsRendererProp
         {Object.entries(groupedDocs).map(([type, docs]) => (
           <div key={type}>
             <h3 className="text-lg font-semibold mb-3 capitalize flex items-center gap-2">
-              {getTypeIcon(type)}
-              {type}s ({docs.length})
+              {getMethodIcon(type)}
+              {type} ({docs.length})
             </h3>
             
             <div className="space-y-3">
               {docs.map((doc) => (
                 <ApiDocItem
-                  key={doc.name}
+                  key={doc.id}
                   doc={doc}
-                  isExpanded={expandedItems.has(doc.name)}
-                  onToggle={() => toggleExpanded(doc.name)}
+                  isExpanded={expandedItems.has(doc.id)}
+                  onToggle={() => toggleExpanded(doc.id)}
                   onCopy={copyToClipboard}
-                  getTypeBadgeVariant={getTypeBadgeVariant}
+                  getMethodBadgeVariant={getMethodBadgeVariant}
                 />
               ))}
             </div>
@@ -156,10 +167,10 @@ interface ApiDocItemProps {
   isExpanded: boolean;
   onToggle: () => void;
   onCopy: (text: string) => void;
-  getTypeBadgeVariant: (type: string) => any;
+  getMethodBadgeVariant: (method: string) => any;
 }
 
-function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: ApiDocItemProps) {
+function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }: ApiDocItemProps) {
   return (
     <Card className="transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-3">
@@ -175,9 +186,9 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: 
                 className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
               />
             </Button>
-            <code className="text-lg font-mono">{doc.name}</code>
-            <Badge variant={getTypeBadgeVariant(doc.type)} className="text-xs">
-              {doc.type}
+            <code className="text-lg font-mono">{doc.title}</code>
+            <Badge variant={getMethodBadgeVariant(doc.method)} className="text-xs">
+              {doc.method}
             </Badge>
           </CardTitle>
           
@@ -185,7 +196,7 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: 
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onCopy(doc.signature || doc.name)}
+              onClick={() => onCopy(doc.path || doc.title)}
               className="text-muted-foreground hover:text-foreground"
             >
               <Copy className="h-4 w-4" />
@@ -199,22 +210,22 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: 
       {isExpanded && (
         <CardContent className="pt-0">
           <div className="space-y-4">
-            {/* Signature */}
-            {doc.signature && (
+            {/* Path */}
+            {doc.path && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Signature</h4>
+                <h4 className="text-sm font-semibold mb-2">Endpoint</h4>
                 <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
-                  <code>{doc.signature}</code>
+                  <code>{doc.method} {doc.path}</code>
                 </pre>
               </div>
             )}
 
-            {/* Properties */}
-            {doc.properties && doc.properties.length > 0 && (
+            {/* Parameters */}
+            {doc.parameters && doc.parameters.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Properties</h4>
+                <h4 className="text-sm font-semibold mb-2">Parameters</h4>
                 <div className="space-y-2">
-                  {doc.properties.map((prop) => (
+                  {doc.parameters.map((prop) => (
                     <div key={prop.name} className="flex items-start gap-3 text-sm">
                       <code className="font-mono text-primary">{prop.name}</code>
                       {!prop.required && <Badge variant="outline" className="text-xs">optional</Badge>}
@@ -228,23 +239,25 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: 
               </div>
             )}
 
-            {/* Methods */}
-            {doc.methods && doc.methods.length > 0 && (
+            {/* Responses */}
+            {doc.responses && doc.responses.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Methods</h4>
+                <h4 className="text-sm font-semibold mb-2">Responses</h4>
                 <div className="space-y-3">
-                  {doc.methods.map((method) => (
-                    <div key={method.name} className="border-l-2 border-muted pl-3">
+                  {doc.responses.map((response) => (
+                    <div key={response.code} className="border-l-2 border-muted pl-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <code className="font-mono text-primary">{method.name}</code>
-                        <Badge variant="outline" className="text-xs">
-                          returns {method.returns}
+                        <code className="font-mono text-primary">{response.code}</code>
+                        <Badge variant={response.code < 400 ? "default" : "destructive"} className="text-xs">
+                          {response.code < 400 ? 'Success' : 'Error'}
                         </Badge>
                       </div>
-                      <pre className="bg-muted p-2 rounded text-xs mb-2 overflow-x-auto">
-                        <code>{method.signature}</code>
-                      </pre>
-                      <p className="text-sm text-muted-foreground">{method.description}</p>
+                      {response.example && (
+                        <pre className="bg-muted p-2 rounded text-xs mb-2 overflow-x-auto">
+                          <code>{JSON.stringify(response.example, null, 2)}</code>
+                        </pre>
+                      )}
+                      <p className="text-sm text-muted-foreground">{response.description}</p>
                     </div>
                   ))}
                 </div>
@@ -258,9 +271,20 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getTypeBadgeVariant }: 
                 <div className="space-y-3">
                   {doc.examples.map((example, index) => (
                     <div key={index}>
-                      <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
-                        <code>{example}</code>
-                      </pre>
+                      {typeof example === 'string' ? (
+                        <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
+                          <code>{example}</code>
+                        </pre>
+                      ) : (
+                        <div>
+                          <h5 className="text-xs font-medium mb-1 text-muted-foreground">
+                            {(example as any).title}
+                          </h5>
+                          <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
+                            <code>{(example as any).code}</code>
+                          </pre>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

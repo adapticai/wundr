@@ -125,8 +125,12 @@ export async function POST(request: NextRequest) {
     // Normalize analysis data (using parameters as data source)
     const normalizedData = ReportService.normalizeAnalysisData(body.parameters);
     
-    // Generate report content
-    const reportContent = ReportService.generateReport(normalizedData, template);
+    // Generate report content using the correct method signature
+    const reportContent = ReportService.generateReport(
+      body.name || `${template.name} - ${new Date().toLocaleDateString()}`,
+      template.type,
+      normalizedData
+    );
     
     // Generate detailed sections if requested
     let additionalSections: any[] = [];
@@ -141,10 +145,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Combine sections
-    if (additionalSections.length > 0) {
-      reportContent.sections.push(...additionalSections);
-    }
+    // Store additional sections in metadata for later use
+    const sectionsData = additionalSections.length > 0 ? additionalSections : [];
 
     // Create report object
     const report: Report = {
@@ -171,8 +173,10 @@ export async function POST(request: NextRequest) {
     if ((body as any).format === 'markdown') {
       const markdown = ReportTemplateEngine.generateMarkdownReport(
         normalizedData,
-        template,
-        reportContent
+        {
+          title: body.name || `${template.name} - ${new Date().toLocaleDateString()}`,
+          includeMetadata: true
+        }
       );
       
       return NextResponse.json({

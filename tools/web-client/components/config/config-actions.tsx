@@ -45,8 +45,7 @@ export function ConfigActions() {
     if (!file) return;
 
     try {
-      const fileContent = await file.text();
-      await importConfig(fileContent);
+      await importConfig(file);
       toast({
         title: 'Configuration Imported',
         description: 'Your configuration has been successfully imported.',

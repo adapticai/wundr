@@ -54,14 +54,12 @@ interface DriftDetectionReport {
 export class DriftDetectionService extends BaseService {
   private readonly baselineDir: string;
   private readonly reportsDir: string;
-  private readonly _projectRoot: string;
 
   constructor(projectRoot = process.cwd()) {
     super('DriftDetectionService', {
       outputDir: path.join(projectRoot, 'governance-output'),
     });
     
-    this._projectRoot = projectRoot;
     this.baselineDir = path.join(this.config.outputDir!, 'baselines');
     this.reportsDir = path.join(this.config.outputDir!, 'drift-reports');
   }

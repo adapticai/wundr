@@ -7,14 +7,11 @@ import { Button } from '@/components/ui/button';
 import { MarkdownRenderer, FileContentViewer } from '@/components/markdown';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  generateReportMarkdown, 
   parseReportMarkdown, 
-  extractReportStats,
-  generateReportTOC,
   formatReportNumber 
 } from '@/lib/markdown-utils';
 import { ReportTemplateEngine } from '@/lib/report-templates';
-import { CompleteAnalysisData, ReportTemplate, ReportContent } from '@/types/reports';
+import { CompleteAnalysisData, ReportTemplate, ReportContent, ReportSection } from '@/types/reports';
 
 const SAMPLE_MARKDOWN = `---
 title: "Markdown Rendering Demo"
@@ -432,13 +429,33 @@ export default function MarkdownDemoPage() {
         },
       };
 
-      const sections = ReportTemplateEngine.generateDetailedSections(SAMPLE_ANALYSIS_DATA);
-      sections.push(ReportTemplateEngine.generateRecommendationsSection(SAMPLE_ANALYSIS_DATA));
+      const sectionStrings = ReportTemplateEngine.generateDetailedSections(SAMPLE_ANALYSIS_DATA);
+      sectionStrings.push(ReportTemplateEngine.generateRecommendationsSection(SAMPLE_ANALYSIS_DATA));
+
+      // Convert strings to proper ReportSection format
+      const sections: ReportSection[] = sectionStrings.map((sectionString, index) => {
+        const lines = sectionString.split('\n');
+        const title = lines[0].replace(/^#+\s*/, '') || `Section ${index + 1}`;
+        const content = lines.slice(1).join('\n').trim();
+        
+        return {
+          id: `section-${index + 1}`,
+          title,
+          content: [{
+            type: 'markdown' as const,
+            content
+          }],
+          order: index + 1
+        };
+      });
 
       const content: ReportContent = { summary, sections };
       setReportContent(content);
       
-      const markdown = generateReportMarkdown(SAMPLE_ANALYSIS_DATA, SAMPLE_REPORT_TEMPLATE, content);
+      const markdown = ReportTemplateEngine.generateMarkdownReport(SAMPLE_ANALYSIS_DATA, {
+        title: SAMPLE_REPORT_TEMPLATE.name,
+        includeMetadata: true
+      });
       setReportMarkdown(markdown);
     } catch (error) {
       console.error('Failed to generate report:', error);
@@ -551,19 +568,19 @@ export default function MarkdownDemoPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center p-3 bg-muted rounded">
-                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).sections}</div>
+                    <div className="text-2xl font-bold text-primary">{reportContent.sections.length}</div>
                     <div className="text-sm text-muted-foreground">Sections</div>
                   </div>
                   <div className="text-center p-3 bg-muted rounded">
-                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).charts}</div>
+                    <div className="text-2xl font-bold text-primary">{reportContent.sections.reduce((acc, section) => acc + (section.charts?.length || 0), 0)}</div>
                     <div className="text-sm text-muted-foreground">Charts</div>
                   </div>
                   <div className="text-center p-3 bg-muted rounded">
-                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).tables}</div>
+                    <div className="text-2xl font-bold text-primary">{reportContent.sections.reduce((acc, section) => acc + (section.tables?.length || 0), 0)}</div>
                     <div className="text-sm text-muted-foreground">Tables</div>
                   </div>
                   <div className="text-center p-3 bg-muted rounded">
-                    <div className="text-2xl font-bold text-primary">{extractReportStats(reportContent).recommendations}</div>
+                    <div className="text-2xl font-bold text-primary">{reportContent.summary.recommendations.length}</div>
                     <div className="text-sm text-muted-foreground">Recommendations</div>
                   </div>
                 </div>
@@ -571,10 +588,10 @@ export default function MarkdownDemoPage() {
                 <div className="border rounded-lg p-4 bg-muted/50">
                   <h4 className="font-medium mb-2">Table of Contents</h4>
                   <div className="text-sm space-y-1">
-                    {generateReportTOC(reportContent).map((item, index) => (
+                    {reportContent.sections.map((section, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <span className="text-muted-foreground">{item.level === 1 ? '•' : '  ◦'}</span>
-                        <span>{item.title}</span>
+                        <span className="text-muted-foreground">•</span>
+                        <span>{section.title}</span>
                       </div>
                     ))}
                   </div>

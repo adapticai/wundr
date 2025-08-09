@@ -98,7 +98,7 @@ class FileHeaderManager {
       await fs.promises.writeFile(filePath, newContent);
       console.log(`✓ Added header to ${filePath}`);
     } catch (error) {
-      console.error(`❌ Failed to process ${filePath}:`, error.message);
+      console.error(`❌ Failed to process ${filePath}:`, (error as Error).message);
     }
   }
 

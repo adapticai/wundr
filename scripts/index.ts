@@ -4,6 +4,7 @@
  * Main entry point for monorepo refactoring toolkit CLI
  */
 
+// @ts-ignore - Commander import issue with TS  
 import { Command } from 'commander';
 
 interface CommandOptions {

@@ -3,15 +3,15 @@
  * This file contains utilities to create test data from real sources
  */
 
-import { AnalysisData } from '@/lib/contexts/analysis-context'
-import { CompleteAnalysisData } from '@/types/reports'
+import { AnalysisData } from '../types/analysis-types'
+import { CompleteAnalysisData } from '../../types/reports'
 import { createCompleteAnalysisData, createSimpleEntity } from '../utils/test-data-helpers'
 
 /**
  * Test database setup for integration tests
  */
 export class TestDatabase {
-  private data: Map<string, any> = new Map()
+  private data: Map<string, Map<string, unknown>> = new Map()
 
   async setup(): Promise<void> {
     // In a real implementation, this would set up a test database
@@ -22,7 +22,7 @@ export class TestDatabase {
     this.data.clear()
   }
 
-  async insert(table: string, data: any): Promise<string> {
+  async insert(table: string, data: unknown): Promise<string> {
     const id = `${table}_${Date.now()}_${Math.random()}`
     if (!this.data.has(table)) {
       this.data.set(table, new Map())
@@ -31,11 +31,11 @@ export class TestDatabase {
     return id
   }
 
-  async find(table: string, id: string): Promise<any> {
+  async find(table: string, id: string): Promise<unknown> {
     return this.data.get(table)?.get(id)
   }
 
-  async findAll(table: string): Promise<any[]> {
+  async findAll(table: string): Promise<unknown[]> {
     const tableData = this.data.get(table)
     return tableData ? Array.from(tableData.values()) : []
   }
@@ -48,8 +48,20 @@ export class TestDatabase {
 /**
  * API test server setup
  */
+interface ApiRequest {
+  body?: unknown;
+  method?: string;
+  path?: string;
+}
+
+interface ApiResponse {
+  status: number;
+  data?: unknown;
+  error?: string;
+}
+
 export class TestApiServer {
-  private routes: Map<string, (req: any) => any> = new Map()
+  private routes: Map<string, (req: ApiRequest) => ApiResponse> = new Map()
 
   setup(): void {
     // Mock API routes
@@ -78,7 +90,7 @@ export class TestApiServer {
     }))
   }
 
-  async request(method: string, path: string, body?: any): Promise<any> {
+  async request(method: string, path: string, body?: unknown): Promise<ApiResponse> {
     const key = `${method} ${path}`
     const handler = this.routes.get(key)
     
@@ -213,15 +225,29 @@ export const minimalTestData: AnalysisData = {
   entities: [
     {
       name: 'test-component.tsx',
-      path: 'components/test-component.tsx',
+      file: 'components/test-component.tsx',
       type: 'component',
+      line: 1,
+      column: 1,
+      exportType: 'named',
       dependencies: ['react'],
-      complexity: 5,
-      issues: []
+      complexity: 5
     }
   ],
   duplicates: [],
-  timestamp: '2025-01-01T00:00:00.000Z'
+  circularDeps: [],
+  unusedExports: [],
+  wrapperPatterns: [],
+  recommendations: [],
+  timestamp: '2025-01-01T00:00:00.000Z',
+  summary: {
+    totalFiles: 1,
+    totalEntities: 1,
+    duplicateClusters: 0,
+    circularDependencies: 0,
+    unusedExports: 0,
+    codeSmells: 0
+  }
 }
 
 /**
@@ -245,15 +271,9 @@ export const minimalCompleteTestData: CompleteAnalysisData = createCompleteAnaly
  */
 export async function getComplexTestData(): Promise<AnalysisData> {
   const fixtures = await generateProjectFixtures()
-  // Extract AnalysisData properties from CompleteAnalysisData
-  const { entities, duplicates, recommendations, metrics, ...rest } = fixtures.analysisData as any
-  return {
-    entities,
-    duplicates,
-    recommendations,
-    metrics,
-    timestamp: new Date().toISOString()
-  }
+  // Convert CompleteAnalysisData to AnalysisData format
+  const { convertToAnalysisData } = await import('../utils/mock-data')
+  return convertToAnalysisData(fixtures.analysisData)
 }
 
 // Export TestEnvironment class for imports

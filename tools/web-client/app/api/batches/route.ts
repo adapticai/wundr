@@ -6,16 +6,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
 
+    const service = BatchProcessingService.getInstance();
     let batches;
     switch (type) {
       case 'active':
-        batches = BatchProcessingService.getActiveBatches();
+        batches = service.getAllBatches().filter(b => b.status === 'processing');
         break;
       case 'history':
-        batches = BatchProcessingService.getBatchHistory();
+        batches = service.getAllBatches().filter(b => b.status === 'completed' || b.status === 'failed');
         break;
       default:
-        batches = BatchProcessingService.getAllBatches();
+        batches = service.getAllBatches();
     }
 
     return NextResponse.json({
@@ -40,7 +41,8 @@ export async function POST(request: NextRequest) {
     const { BatchProcessingService } = await import('@/lib/services/batch/BatchProcessingService');
     const body = await request.json();
 
-    const batch = await BatchProcessingService.createBatch(body);
+    const service = BatchProcessingService.getInstance();
+    const batch = service.createBatch(body.items || []);
     
     return NextResponse.json({
       success: true,

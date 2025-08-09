@@ -152,7 +152,7 @@ export function FileListItem({
         <div className="font-medium truncate">{item.name}</div>
         <div className="text-sm text-muted-foreground flex items-center gap-3">
           <Badge variant="outline" className="text-xs">
-            {item.type === 'directory' ? 'Folder' : typeInfo.type}
+            {item.type === 'directory' ? 'Folder' : typeInfo.category}
           </Badge>
           {item.size !== undefined && (
             <span>{formatFileSize(item.size)}</span>

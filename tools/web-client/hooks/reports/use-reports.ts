@@ -451,7 +451,8 @@ export function useReports() {
       setLoading(true);
       
       // Parse analysis data using ReportService
-      const analysisData = await ReportService.parseAnalysisFile(file);
+      const fileContent = await file.text();
+      const analysisData = ReportService.parseAnalysisFile(fileContent, file.name);
       
       // Cache the analysis data
       const analysisId = `analysis_${Date.now()}`;
@@ -464,7 +465,7 @@ export function useReports() {
       }
       
       // Generate report content
-      const reportContent = ReportService.generateReport(analysisData, template);
+      const reportContent = ReportService.generateReport(template.name, template.type, analysisData);
       
       // Create report record
       const newReport: Report = {
@@ -557,7 +558,7 @@ export function useReports() {
         throw new Error('Report or content not found');
       }
       
-      await ReportService.exportReport(reportContent, format, report.name);
+      ReportService.exportReport(reportContent, format as 'json' | 'csv' | 'pdf' | 'html', report.name);
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to export report');
     }

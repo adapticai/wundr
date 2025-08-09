@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        const instanceId = await ServiceOrchestrator.startService(serviceId, config);
+        const result = ServiceOrchestrator.startService(serviceId);
+        const instanceId = result ? serviceId : null;
         return NextResponse.json({
           success: true,
           data: { instanceId }

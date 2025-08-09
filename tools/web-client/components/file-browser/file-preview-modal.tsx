@@ -62,7 +62,7 @@ export function FilePreviewModal({
               <div>
                 <DialogTitle className="text-lg">{file.name}</DialogTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Badge variant="outline">{typeInfo.type}</Badge>
+                  <Badge variant="outline">{typeInfo.category}</Badge>
                   {file.size && <span>{formatFileSize(file.size)}</span>}
                   <span className="font-mono text-xs">{file.path}</span>
                 </div>

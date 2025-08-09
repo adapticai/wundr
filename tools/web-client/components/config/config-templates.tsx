@@ -31,7 +31,7 @@ export function ConfigTemplates() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => applyTemplate(template.config)}
+                  onClick={() => applyTemplate(template)}
                 >
                   Apply
                 </Button>

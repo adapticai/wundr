@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const tags = searchParams.get('tags')?.split(',').filter(Boolean);
 
-    const filter = {
+    const filter: any = {
       ...(category && { category }),
       ...(language && { language }),
       ...(framework && { framework }),
@@ -44,19 +44,19 @@ export async function POST(request: NextRequest) {
   try {
     const { TemplateService } = await import('@/lib/services/template/TemplateService');
     const body = await request.json();
-    const { templateData, files } = body;
+    const { templateData } = body;
 
-    if (!templateData || !files) {
+    if (!templateData) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Template data and files are required'
+          error: 'Template data is required'
         },
         { status: 400 }
       );
     }
 
-    const template = await TemplateService.createTemplate(templateData, files);
+    const template = TemplateService.createTemplate(templateData);
     
     return NextResponse.json({
       success: true,

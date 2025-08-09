@@ -1,181 +1,332 @@
 import React from 'react';
 import { DocsLayout } from '@/components/docs/DocsLayout';
 import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
-import { SearchableContent } from '@/components/docs/SearchableContent';
-import { generateDocSlug, DocPage } from '@/lib/docs-utils';
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import matter from 'gray-matter';
-import { notFound } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Code, FileText, GitBranch, Package, Shield, Zap } from 'lucide-react';
 
-// Server-side function to load patterns page
-async function loadPatternsPage(): Promise<DocPage | null> {
-  try {
-    const DOCS_ROOT = path.join(process.cwd(), '../../docs');
+// Pattern categories and examples
+const patternCategories = [
+  {
+    id: 'architecture',
+    title: 'Architecture Patterns',
+    description: 'Best practices for structuring your application',
+    icon: Package,
+    patterns: [
+      {
+        title: 'Modular Monolith',
+        description: 'Organize your application into well-defined modules with clear boundaries',
+        code: `// modules/user/index.ts
+export interface UserModule {
+  services: {
+    userService: UserService;
+    authService: AuthService;
+  };
+  repositories: {
+    userRepository: UserRepository;
+  };
+  controllers: {
+    userController: UserController;
+  };
+}
+
+// Dependency injection setup
+export function createUserModule(db: Database): UserModule {
+  const userRepository = new UserRepository(db);
+  const userService = new UserService(userRepository);
+  const authService = new AuthService(userRepository);
+  const userController = new UserController(userService, authService);
+  
+  return {
+    services: { userService, authService },
+    repositories: { userRepository },
+    controllers: { userController }
+  };
+}`,
+        language: 'typescript'
+      },
+      {
+        title: 'Clean Architecture',
+        description: 'Separate business logic from infrastructure concerns',
+        code: `// domain/entities/User.ts
+export class User {
+  constructor(
+    public readonly id: string,
+    public readonly email: string,
+    public readonly name: string
+  ) {}
+}
+
+// application/use-cases/CreateUser.ts
+export class CreateUserUseCase {
+  constructor(
+    private userRepository: UserRepository,
+    private emailService: EmailService
+  ) {}
+  
+  async execute(input: CreateUserInput): Promise<User> {
+    const user = new User(
+      generateId(),
+      input.email,
+      input.name
+    );
     
-    // Try multiple potential file locations
-    const possiblePaths = [
-      path.join(DOCS_ROOT, 'standards', 'GOLDEN_STANDARDS.md'),
-      path.join(DOCS_ROOT, 'standards', 'PATTERN_EXAMPLES.md'),
-      path.join(DOCS_ROOT, 'GOLDEN_STANDARDS.md')
-    ];
+    await this.userRepository.save(user);
+    await this.emailService.sendWelcome(user);
     
-    for (const filePath of possiblePaths) {
-      try {
-        const exists = await fs.pathExists(filePath);
-        if (!exists) continue;
-        
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const { data, content } = matter(fileContents);
-        const stats = await fs.stat(filePath);
-        
-        return {
-          id: 'patterns',
-          slug: generateDocSlug('Golden Patterns & Standards'),
-          title: data.title || 'Golden Patterns & Standards',
-          description: data.description || 'Best practices and recommended patterns for code organization',
-          content,
-          html: '', // Will be processed by MarkdownRenderer
-          tags: data.tags || ['patterns', 'standards', 'best-practices'],
-          lastModified: stats.mtime,
-          frontmatter: {
-            title: data.title || 'Golden Patterns & Standards',
-            description: data.description || 'Best practices and recommended patterns for code organization',
-            category: data.category || 'standards',
-            tags: data.tags || ['patterns', 'standards', 'best-practices'],
-            version: data.version,
-            deprecated: data.deprecated,
-            lastUpdated: data.lastUpdated,
-            author: data.author,
-            order: data.order || 1,
-            api: data.api,
-            toc: data.toc !== false
-          },
-          path: 'standards/patterns',
-          category: data.category || 'standards',
-          sections: [], // Will be extracted by MarkdownRenderer
-          lastUpdated: stats.mtime,
-          searchTerms: [],
-          wordCount: content.split(/\s+/).length
-        };
-      } catch (error) {
-        console.warn(`Could not read ${filePath}:`, error);
-        continue;
+    return user;
+  }
+}`,
+        language: 'typescript'
       }
-    }
+    ]
+  },
+  {
+    id: 'performance',
+    title: 'Performance Patterns',
+    description: 'Optimize your application for speed and efficiency',
+    icon: Zap,
+    patterns: [
+      {
+        title: 'Lazy Loading',
+        description: 'Load components and modules only when needed',
+        code: `// React lazy loading
+const Dashboard = lazy(() => import('./Dashboard'));
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+// Module lazy loading
+async function loadAnalyticsModule() {
+  const { AnalyticsModule } = await import('./modules/analytics');
+  return new AnalyticsModule();
+}`,
+        language: 'typescript'
+      },
+      {
+        title: 'Memoization',
+        description: 'Cache expensive computations',
+        code: `// React memoization
+const ExpensiveComponent = memo(({ data }) => {
+  const processedData = useMemo(
+    () => processComplexData(data),
+    [data]
+  );
+  
+  const handleClick = useCallback(
+    (id: string) => {
+      console.log('Clicked:', id);
+    },
+    []
+  );
+  
+  return <DataGrid data={processedData} onClick={handleClick} />;
+});
+
+// Function memoization
+const memoize = <T extends (...args: any[]) => any>(fn: T): T => {
+  const cache = new Map();
+  
+  return ((...args: Parameters<T>) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
     
-    return null;
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  }) as T;
+};`,
+        language: 'typescript'
+      }
+    ]
+  },
+  {
+    id: 'security',
+    title: 'Security Patterns',
+    description: 'Protect your application from common vulnerabilities',
+    icon: Shield,
+    patterns: [
+      {
+        title: 'Input Validation',
+        description: 'Validate and sanitize all user inputs',
+        code: `// Using Zod for validation
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8).regex(/[A-Z]/).regex(/[0-9]/),
+  age: z.number().min(18).max(120)
+});
+
+export function validateUser(input: unknown) {
+  try {
+    return UserSchema.parse(input);
   } catch (error) {
-    console.error('Error loading patterns page:', error);
-    return null;
+    if (error instanceof z.ZodError) {
+      throw new ValidationError(error.errors);
+    }
+    throw error;
   }
 }
 
-export default async function PatternsPage() {
-  const docPage = await loadPatternsPage();
-  
-  if (!docPage) {
-    notFound();
-  }
+// SQL injection prevention
+export async function getUser(id: string) {
+  // Use parameterized queries
+  const query = 'SELECT * FROM users WHERE id = $1';
+  const result = await db.query(query, [id]);
+  return result.rows[0];
+}`,
+        language: 'typescript'
+      }
+    ]
+  },
+  {
+    id: 'testing',
+    title: 'Testing Patterns',
+    description: 'Write maintainable and effective tests',
+    icon: FileText,
+    patterns: [
+      {
+        title: 'Test Pyramid',
+        description: 'Balance unit, integration, and E2E tests',
+        code: `// Unit test
+describe('UserService', () => {
+  it('should create a user', async () => {
+    const mockRepo = { save: jest.fn() };
+    const service = new UserService(mockRepo);
+    
+    const user = await service.create({
+      email: 'test@example.com',
+      name: 'Test User'
+    });
+    
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'test@example.com'
+      })
+    );
+  });
+});
 
-  const currentPage = {
-    title: docPage.title,
-    slug: docPage.slug,
-    path: '/dashboard/docs/patterns',
-    category: docPage.category,
-    description: docPage.description,
-    tags: docPage.frontmatter?.tags || docPage.tags,
-    order: docPage.frontmatter?.order || 3,
-    lastUpdated: docPage.lastUpdated,
-    version: docPage.frontmatter?.version,
-    deprecated: docPage.frontmatter?.deprecated,
-    wordCount: docPage.wordCount
-  };
+// Integration test
+describe('User API', () => {
+  it('should create user via API', async () => {
+    const response = await request(app)
+      .post('/api/users')
+      .send({ email: 'test@example.com', name: 'Test' })
+      .expect(201);
+      
+    expect(response.body).toMatchObject({
+      id: expect.any(String),
+      email: 'test@example.com'
+    });
+  });
+});`,
+        language: 'typescript'
+      }
+    ]
+  },
+  {
+    id: 'git',
+    title: 'Git Patterns',
+    description: 'Best practices for version control',
+    icon: GitBranch,
+    patterns: [
+      {
+        title: 'Conventional Commits',
+        description: 'Standardize your commit messages',
+        code: `# Format: <type>(<scope>): <subject>
+
+feat(auth): add OAuth2 integration
+fix(api): handle null response in user endpoint
+docs(readme): update installation instructions
+refactor(dashboard): extract chart component
+test(user): add integration tests for registration
+chore(deps): upgrade React to v18
+
+# Breaking changes
+feat(api)!: change user endpoint response format
+
+# With body and footer
+fix(payment): prevent duplicate charges
+
+Customers were being charged twice when clicking 
+submit button multiple times.
+
+Fixes #123`,
+        language: 'bash'
+      }
+    ]
+  }
+];
+
+export default function PatternsPage() {
+  const [selectedCategory, setSelectedCategory] = React.useState('architecture');
+  const currentCategory = patternCategories.find(cat => cat.id === selectedCategory);
 
   return (
-    <DocsLayout currentPage={currentPage}>
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Version notice if deprecated */}
-        {docPage.frontmatter?.deprecated && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 rounded">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  Deprecated Content
-                </h3>
-                <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                  This documentation is deprecated. Please refer to the latest version for current best practices.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Enhanced search functionality */}
-        <SearchableContent 
-          content={docPage.content}
-          onNavigate={(sectionId) => {
-            const element = document.getElementById(sectionId);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }}
-        />
-
-        {/* Document metadata */}
-        <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-          <div className="flex flex-wrap gap-4">
-            {docPage.frontmatter?.author && (
-              <span>Author: {docPage.frontmatter.author}</span>
-            )}
-            <span>Last updated: {docPage.lastUpdated?.toLocaleDateString()}</span>
-            <span>Words: {docPage.wordCount?.toLocaleString() || '0'}</span>
-            {docPage.frontmatter?.version && (
-              <span>Version: {docPage.frontmatter.version}</span>
-            )}
-          </div>
+    <DocsLayout>
+      <div className="max-w-6xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-4">Development Patterns</h1>
+          <p className="text-muted-foreground">
+            Best practices and patterns for building maintainable applications
+          </p>
         </div>
 
-        {/* Main content with enhanced rendering */}
-        <MarkdownRenderer
-          content={docPage.content}
-          frontmatter={docPage.frontmatter}
-          showMetadata={false} // Already shown above
-          showTableOfContents={docPage.frontmatter?.toc !== false}
-          enableSyntaxHighlighting={true}
-          enableMath={false}
-          enableMermaid={false}
-        />
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+          <TabsList className="grid grid-cols-5 w-full mb-8">
+            {patternCategories.map((category) => (
+              <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
+                <category.icon className="h-4 w-4" />
+                <span className="hidden md:inline">{category.title}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {/* Related pages or next steps */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <h3 className="text-lg font-semibold mb-4">Related Documentation</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            <a 
-              href="/dashboard/docs/api"
-              className="block p-4 rounded-lg border border-border hover:border-primary/50 transition-colors"
-            >
-              <h4 className="font-medium mb-2">API Reference</h4>
-              <p className="text-sm text-muted-foreground">
-                Detailed API documentation and type definitions
-              </p>
-            </a>
-            <a 
-              href="/dashboard/docs/getting-started"
-              className="block p-4 rounded-lg border border-border hover:border-primary/50 transition-colors"
-            >
-              <h4 className="font-medium mb-2">Getting Started</h4>
-              <p className="text-sm text-muted-foreground">
-                Quick start guide and setup instructions
-              </p>
-            </a>
-          </div>
-        </div>
+          {patternCategories.map((category) => (
+            <TabsContent key={category.id} value={category.id}>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <category.icon className="h-5 w-5" />
+                      {category.title}
+                    </CardTitle>
+                    <CardDescription>{category.description}</CardDescription>
+                  </CardHeader>
+                </Card>
+
+                {category.patterns.map((pattern, index) => (
+                  <Card key={index}>
+                    <CardHeader>
+                      <CardTitle className="text-xl">{pattern.title}</CardTitle>
+                      <CardDescription>{pattern.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="relative">
+                        <Badge className="absolute top-2 right-2" variant="secondary">
+                          {pattern.language}
+                        </Badge>
+                        <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
+                          <code className="text-sm">{pattern.code}</code>
+                        </pre>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </DocsLayout>
   );

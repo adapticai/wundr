@@ -298,8 +298,10 @@ package-import-method=clone
       packageManager: 'pnpm@8.6.0',
       devDependencies: Object.fromEntries(
         this.config.sharedDevDependencies.map(dep => {
-          const [name, version] = dep.split('@');
-          return [name, version || 'latest'];
+          const parts = dep.split('@');
+          const name = parts[0] || '';
+          const version = parts[1] || 'latest';
+          return [name, version];
         })
       )
     };
@@ -463,14 +465,18 @@ lerna-debug.log*
         if (dep.startsWith('@company/')) {
           deps[dep] = 'workspace:*';
         } else {
-          const [name, version] = dep.split('@');
-          deps[name] = version || 'latest';
+          const parts = dep.split('@');
+          const name = parts[0] || '';
+          const version = parts[1] || 'latest';
+          deps[name] = version;
         }
         return deps;
       }, {} as Record<string, string>),
       devDependencies: pkg.devDependencies?.reduce((deps, dep) => {
-        const [name, version] = dep.split('@');
-        deps[name] = version || 'latest';
+        const parts = dep.split('@');
+        const name = parts[0] || '';
+        const version = parts[1] || 'latest';
+        deps[name] = version;
         return deps;
       }, {} as Record<string, string>)
     };
@@ -492,9 +498,13 @@ lerna-debug.log*
       exclude: ['**/*.test.ts', '**/*.spec.ts'],
       references: pkg.dependencies
         .filter(dep => dep.startsWith('@company/'))
-        .map(dep => ({
-          path: `../${dep.split('/')[1]}`
-        }))
+        .map(dep => {
+          const parts = dep.split('/');
+          const packageName = parts[1] || '';
+          return {
+            path: `../${packageName}`
+          };
+        })
     };
 
     fs.writeFileSync(

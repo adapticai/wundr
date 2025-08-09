@@ -1,4 +1,4 @@
-import { CompleteAnalysisData, AnalysisEntity, AnalysisDuplicate } from '@/types/reports'
+import { CompleteAnalysisData, AnalysisEntity, AnalysisDuplicate } from '../../types/reports'
 
 /**
  * Helper to create complete metadata structure for tests
@@ -57,6 +57,16 @@ export function createTestMetrics(overrides: Partial<CompleteAnalysisData['metri
         veryHigh: 0
       }
     },
+    issues: {
+      total: 0,
+      byType: {},
+      bySeverity: {
+        critical: 0,
+        high: 0,
+        medium: 0,
+        low: 0
+      }
+    },
     dependencies: {
       total: 0,
       circular: 0,
@@ -87,7 +97,14 @@ export function createCompleteAnalysisData(overrides: Partial<CompleteAnalysisDa
 /**
  * Helper to create simple entity for backward compatibility with basic data
  */
-export function createSimpleEntity(data: any): AnalysisEntity {
+export function createSimpleEntity(data: {
+  name?: string;
+  path?: string;
+  type?: string;
+  dependencies?: string[];
+  complexity?: number;
+  issues?: unknown[];
+}): AnalysisEntity {
   return {
     id: data.name || 'test-entity',
     name: data.name || 'test-entity',
@@ -106,15 +123,20 @@ export function createSimpleEntity(data: any): AnalysisEntity {
     },
     issues: data.issues || [],
     tags: [],
-    lastModified: new Date(),
-    affectedFiles: []
+    lastModified: new Date()
   }
 }
 
 /**
  * Helper to create simple duplicate for backward compatibility
  */
-export function createSimpleDuplicate(data: any): AnalysisDuplicate {
+export function createSimpleDuplicate(data: {
+  id?: string;
+  type?: string;
+  severity?: string;
+  occurrences?: unknown[];
+  linesCount?: number;
+}): AnalysisDuplicate {
   return {
     id: data.id || 'test-duplicate',
     type: data.type || 'structural',

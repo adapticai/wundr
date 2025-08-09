@@ -57,9 +57,10 @@ export class GovernanceSystem {
     });
 
     // Initialize GitHub client if token available
-    if (process.env.GITHUB_TOKEN) {
+    const githubToken = process.env.GITHUB_TOKEN;
+    if (githubToken) {
       this.octokit = new Octokit({
-        auth: process.env.GITHUB_TOKEN
+        auth: githubToken
       });
     }
   }
@@ -103,7 +104,7 @@ export class GovernanceSystem {
    */
   private async runAnalysis(): Promise<AnalysisSnapshot> {
     // Run the enhanced AST analyzer
-    const analysisOutput = execSync(
+    execSync(
       'npx ts-node enhanced-ast-analyzer.ts',
       { encoding: 'utf-8' }
     );
@@ -152,17 +153,17 @@ export class GovernanceSystem {
     };
 
     // Count added/removed entities
-    for (const [key, hash] of baseline.entities) {
+    baseline.entities.forEach((_hash, key) => {
       if (!current.entities.has(key)) {
         drift.removedEntities++;
       }
-    }
+    });
 
-    for (const [key, hash] of current.entities) {
+    current.entities.forEach((_hash, key) => {
       if (!baseline.entities.has(key)) {
         drift.addedEntities++;
       }
-    }
+    });
 
     return drift;
   }
@@ -321,8 +322,11 @@ export class GovernanceSystem {
     }
 
     // Create GitHub issue if configured
-    if (this.octokit && process.env.GITHUB_REPOSITORY) {
-      const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+    const githubRepo = process.env.GITHUB_REPOSITORY;
+    if (this.octokit && githubRepo) {
+      const parts = githubRepo.split('/');
+      const owner = parts[0] || '';
+      const repo = parts[1] || '';
 
       await this.octokit.issues.create({
         owner,
@@ -341,7 +345,8 @@ export class GovernanceSystem {
     console.warn('⚠️ High drift detected');
 
     // Add warning to PR if in CI
-    if (process.env.CI && process.env.GITHUB_EVENT_NAME === 'pull_request') {
+    const eventName = process.env.GITHUB_EVENT_NAME;
+    if (process.env.CI && eventName === 'pull_request') {
       await this.commentOnPR(report);
     }
 
@@ -583,10 +588,14 @@ This drift must be addressed immediately before any new features can be merged.
   }
 
   private async commentOnPR(report: DriftReport) {
-    if (!this.octokit || !process.env.GITHUB_REPOSITORY) return;
+    const githubRepo = process.env.GITHUB_REPOSITORY;
+    if (!this.octokit || !githubRepo) return;
 
-    const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-    const prNumber = parseInt(process.env.GITHUB_EVENT_NUMBER || '0');
+    const parts = githubRepo.split('/');
+    const owner = parts[0] || '';
+    const repo = parts[1] || '';
+    const eventNumber = process.env.GITHUB_EVENT_NUMBER;
+    const prNumber = parseInt(eventNumber || '0');
 
     if (prNumber > 0) {
       await this.octokit.issues.createComment({
@@ -646,6 +655,10 @@ Please address these issues before merging.`;
 
     const first = sorted[0];
     const last = sorted[sorted.length - 1];
+
+    if (!first || !last) {
+      return { improving: false, trend: 'stable' };
+    }
 
     const duplicatesTrend = last.drift.newDuplicates - first.drift.newDuplicates;
     const complexityTrend = last.drift.complexityIncrease - first.drift.complexityIncrease;

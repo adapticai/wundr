@@ -153,7 +153,7 @@ export function FileBrowser({
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
     // First filter by search query
-    let filtered = filterFileSystemItems(currentDirectoryItems, searchQuery);
+    let filtered = filterFileSystemItems(currentDirectoryItems, { search: searchQuery });
     
     // Then filter by file types if any are selected
     if (selectedFileTypes.length > 0) {
@@ -288,7 +288,7 @@ export function FileBrowser({
           <div className="font-medium truncate">{item.name}</div>
           <div className="text-sm text-muted-foreground flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              {typeInfo.type}
+              {typeInfo.category}
             </Badge>
             {item.size !== undefined && (
               <span>{formatFileSize(item.size)}</span>

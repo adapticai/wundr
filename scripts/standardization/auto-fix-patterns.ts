@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // scripts/standardization/auto-fix-patterns.ts
 
-import { Project, SourceFile, Node, SyntaxKind } from 'ts-morph';
+import { Project, SourceFile, Node } from 'ts-morph';
+import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -35,9 +36,9 @@ export class AutoFixPatterns {
 
   constructor() {
     this.project = new Project({
-      tsConfigFilePath: './tsconfig.json',
-      addFilesFromTsConfig: true
+      tsConfigFilePath: './tsconfig.json'
     });
+    this.project.addSourceFilesFromTsConfig();
 
     this.report = {
       timestamp: new Date().toISOString(),
@@ -272,10 +273,10 @@ export class AutoFixPatterns {
 
       // Count and log changes
       if (hasChanges) {
-        const matches = [...originalText.matchAll(new RegExp(rule.pattern, 'gm'))];
+        const matches = Array.from(originalText.matchAll(new RegExp(rule.pattern, 'gm')));
         
         matches.forEach(match => {
-          const lineNumber = this.getLineNumber(originalText, match.index || 0);
+          const lineNumber = this.getLineNumber(originalText, (match as any).index || 0);
           
           this.report.fixes.push({
             file: filePath,
@@ -284,7 +285,7 @@ export class AutoFixPatterns {
             before: match[0],
             after: typeof rule.replacement === 'string' 
               ? match[0].replace(rule.pattern, rule.replacement)
-              : rule.replacement(match[0], ...match.slice(1))
+              : rule.replacement(match[0], ...(match as any).slice(1))
           });
           
           fixCount++;
@@ -353,7 +354,7 @@ export class AutoFixPatterns {
         }
 
         const text = sourceFile.getFullText();
-        const matches = [...text.matchAll(new RegExp(rule.pattern, 'gm'))];
+        const matches = Array.from(text.matchAll(new RegExp(rule.pattern, 'gm')));
         
         if (matches.length > 0) {
           totalFixes += matches.length;
@@ -459,10 +460,11 @@ Each rule should include:
       
       if (diagnostics.length > 0) {
         console.log('L TypeScript errors found after fixes:');
-        diagnostics.forEach((diagnostic: ts.Diagnostic) => {
+        diagnostics.forEach((diagnostic) => {
           const message = diagnostic.getMessageText();
-          const file = diagnostic.getSourceFile()?.getFilePath() || 'unknown';
-          const line = diagnostic.getLineNumber();
+          const sourceFile = diagnostic.getSourceFile();
+          const file = sourceFile ? sourceFile.getFilePath() : 'unknown';
+          const line = diagnostic.getLineNumber ? diagnostic.getLineNumber() : 0;
           console.log(`  ${file}:${line} - ${message}`);
         });
         return false;

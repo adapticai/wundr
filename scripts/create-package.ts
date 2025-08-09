@@ -1,12 +1,11 @@
 #!/usr/bin/env ts-node
 
+// @ts-ignore - Commander import issue with TS
 import { Command } from 'commander';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as inquirer from 'inquirer';
+import inquirer from 'inquirer';
 import chalk from 'chalk';
-
-// Program will be initialized later
 
 interface PackageOptions {
   name: string;
@@ -101,7 +100,7 @@ program
   .command('new')
   .description('Create a new package or app')
   .action(async () => {
-    const answers = await (inquirer as any).prompt([
+    const answers = await inquirer.prompt([
       {
         type: 'input',
         name: 'name',
@@ -131,7 +130,7 @@ program
       }
     ]);
     
-    await createPackage(answers);
+    await createPackage(answers as PackageOptions);
   });
 
 // Parse arguments

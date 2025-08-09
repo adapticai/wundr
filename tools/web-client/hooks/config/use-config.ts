@@ -1,19 +1,19 @@
 import { useConfig as useConfigContext } from '@/lib/contexts/config/config-context';
 import { useCallback, useMemo } from 'react';
-import { Config } from '@/lib/contexts/config/config-context';
+import { ConfigurationState } from '@/types/config';
 
 export function useConfig() {
   return useConfigContext();
 }
 
-export function useConfigSection<T extends keyof Config>(section: T) {
+export function useConfigSection<T extends keyof ConfigurationState>(section: T) {
   const { config, updateConfig, resetSection, errors } = useConfig();
   
   const sectionConfig = config[section];
   
   const updateSection = useCallback(
-    (updates: Partial<Config[T]>) => {
-      updateConfig(updates);
+    (updates: Partial<ConfigurationState[T]>) => {
+      updateConfig(section, updates);
     },
     [updateConfig, section]
   );
@@ -24,9 +24,10 @@ export function useConfigSection<T extends keyof Config>(section: T) {
   
   const sectionErrors = useMemo(() => {
     const sectionErrorMap: Record<string, string> = {};
+    const sectionString = String(section);
     Object.entries(errors).forEach(([key, value]) => {
-      if (key.startsWith(`${section}.`)) {
-        const fieldKey = key.replace(`${section}.`, '');
+      if (key.startsWith(`${sectionString}.`) && typeof value === 'string') {
+        const fieldKey = key.replace(`${sectionString}.`, '');
         sectionErrorMap[fieldKey] = value;
       }
     });
@@ -48,18 +49,19 @@ export function useConfigValidation() {
   const hasErrors = useMemo(() => Object.keys(errors).length > 0, [errors]);
   
   const getFieldError = useCallback(
-    (section: keyof Config, field: string) => {
-      return errors[`${section}.${field}`];
+    (section: keyof ConfigurationState, field: string) => {
+      return errors[`${String(section)}.${field}`];
     },
     [errors]
   );
   
   const getSectionErrors = useCallback(
-    (section: keyof Config) => {
+    (section: keyof ConfigurationState) => {
       const sectionErrors: Record<string, string> = {};
+      const sectionString = String(section);
       Object.entries(errors).forEach(([key, value]) => {
-        if (key.startsWith(`${section}.`)) {
-          const fieldKey = key.replace(`${section}.`, '');
+        if (key.startsWith(`${sectionString}.`) && typeof value === 'string') {
+          const fieldKey = key.replace(`${sectionString}.`, '');
           sectionErrors[fieldKey] = value;
         }
       });

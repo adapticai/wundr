@@ -1,6 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import { parseMarkdown, extractFrontMatter, type ParsedMarkdown } from '@/lib/markdown-utils';
+import { parseMarkdown, extractFrontMatter, markdownToHtml, type ParsedMarkdown, type MarkdownFrontmatter } from '@/lib/markdown-utils';
+
+interface ExtendedMarkdown {
+  html: string;
+  frontmatter: MarkdownFrontmatter;
+  tableOfContents: any[];
+  wordCount: number;
+  readingTime: number;
+}
 
 /**
  * Server-side utilities for reading markdown files
@@ -10,7 +18,7 @@ import { parseMarkdown, extractFrontMatter, type ParsedMarkdown } from '@/lib/ma
 /**
  * Read and parse a markdown file from the filesystem (server-side only)
  */
-export async function readMarkdownFile(filePath: string): Promise<ParsedMarkdown | null> {
+export async function readMarkdownFile(filePath: string): Promise<ExtendedMarkdown | null> {
   try {
     if (!fs.existsSync(filePath)) {
       return null;
@@ -18,7 +26,7 @@ export async function readMarkdownFile(filePath: string): Promise<ParsedMarkdown
 
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const { metadata, content: extractedContent } = extractFrontMatter(fileContent);
-    const htmlContent = await parseMarkdown(extractedContent);
+    const htmlContent = await markdownToHtml(extractedContent);
     
     return {
       html: htmlContent,
@@ -65,7 +73,7 @@ export function getMarkdownFiles(dirPath: string, recursive = true): string[] {
 /**
  * Read multiple markdown files and return their parsed content
  */
-export async function readMultipleMarkdownFiles(filePaths: string[]): Promise<Array<{ path: string; content: ParsedMarkdown | null }>> {
+export async function readMultipleMarkdownFiles(filePaths: string[]): Promise<Array<{ path: string; content: ExtendedMarkdown | null }>> {
   const results = await Promise.all(
     filePaths.map(async (filePath) => ({
       path: filePath,

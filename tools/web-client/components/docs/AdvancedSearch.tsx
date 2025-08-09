@@ -44,7 +44,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     pages.forEach(page => {
-      page.frontmatter?.tags?.forEach((tag: string) => tags.add(tag));
+      page.tags?.forEach((tag: string) => tags.add(tag));
     });
     return Array.from(tags).sort();
   }, [pages]);
@@ -56,7 +56,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
         selectedCategories.includes(page.category);
       
       const tagMatch = selectedTags.length === 0 || 
-        selectedTags.some(tag => page.frontmatter?.tags?.includes(tag));
+        selectedTags.some(tag => page.tags?.includes(tag));
       
       return categoryMatch && tagMatch;
     });
@@ -67,7 +67,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
     if (!query.trim()) return [];
     
     const results = searchDocs(query, filteredPages);
-    return results.slice(0, 10); // Limit results
+    return results;
   }, [query, filteredPages]);
 
   const handleSearch = useCallback((searchQuery: string) => {
@@ -312,8 +312,8 @@ interface SearchResultItemProps {
 function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
   const { page, matchType, relevanceScore } = result;
   
-  // Since we don't have detailed matches, create a simple match representation
-  const primaryMatch = { field: matchType, content: page.title, snippet: page.description.substring(0, 150) + '...' };
+  // Create a simple match representation
+  const primaryMatch = { field: matchType, content: page.title, snippet: page.description?.substring(0, 150) + '...' || '' };
 
   return (
     <button
@@ -340,7 +340,7 @@ function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
           
           <p className="text-xs text-muted-foreground mb-2 line-clamp-2" 
              dangerouslySetInnerHTML={{ 
-               __html: page.description 
+               __html: page.description || '' 
              }} 
           />
           
@@ -351,7 +351,7 @@ function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
           )}
           
           <div className="flex items-center gap-2 mt-2">
-            {page.frontmatter?.tags?.slice(0, 3)?.map((tag: string) => (
+            {page.tags?.slice(0, 3)?.map((tag: string) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>

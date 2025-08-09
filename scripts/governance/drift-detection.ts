@@ -637,12 +637,11 @@ ${this.getNextStepsForSeverity(report.severity)}
       ignorePaths: ['node_modules', 'dist', 'build', '.git']
     };
 
-    let config: any;
     if (fs.existsSync(this.configFile)) {
       const userConfig = JSON.parse(fs.readFileSync(this.configFile, 'utf-8'));
-      config = { ...defaultConfig, ...userConfig };
+      // Merge user config with defaults
+      Object.assign(defaultConfig, userConfig);
     } else {
-      config = defaultConfig;
       fs.writeFileSync(this.configFile, JSON.stringify(defaultConfig, null, 2));
     }
   }

@@ -337,7 +337,7 @@ async function fetchPerformanceData(timeRange: TimeRange): Promise<PerformanceMe
   }
   
   try {
-    const projectRoot = getProjectRoot()
+    const projectRoot = await getProjectRoot()
     
     // Run all analyses in parallel
     const [buildMetrics, systemMetrics, networkMetrics] = await Promise.all([
