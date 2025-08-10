@@ -179,7 +179,7 @@ export class GovernanceSystem {
       const eslintOutput = execSync(
         'npx eslint src --format json',
         { encoding: 'utf-8' }
-      );
+      ) as string;
 
       const results = JSON.parse(eslintOutput);
 
@@ -494,7 +494,7 @@ module.exports = {
       }
 
       return JSON.parse(
-        fs.readFileSync(path.join(this.baselineDir, files[0]), 'utf-8')
+        fs.readFileSync(path.join(this.baselineDir, files[0]!), 'utf-8')
       );
     }
 
@@ -640,7 +640,11 @@ Please address these issues before merging.`;
       critical: 0
     };
 
-    reports.forEach(r => breakdown[r.severity]++);
+    reports.forEach(r => {
+      if (r.severity && breakdown[r.severity] !== undefined) {
+        (breakdown as any)[r.severity]++;
+      }
+    });
 
     return breakdown;
   }
@@ -690,7 +694,7 @@ Please address these issues before merging.`;
     const severityBreakdown = this.getSeverityBreakdown(reports);
     const trends = this.calculateTrends(reports);
 
-    if (severityBreakdown.critical > 0) {
+    if (severityBreakdown?.critical && severityBreakdown.critical > 0) {
       recommendations.push(
         `🔴 ${severityBreakdown.critical} critical drift events this week. Schedule emergency refactoring session.`
       );
@@ -702,7 +706,7 @@ Please address these issues before merging.`;
       );
     }
 
-    if (severityBreakdown.high > 2) {
+    if (severityBreakdown?.high && severityBreakdown.high > 2) {
       recommendations.push(
         '⚠️ Multiple high-severity drift events. Review and update coding standards with the team.'
       );

@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 // scripts/pattern-standardizer.ts
 
-import { Project, SourceFile, ClassDeclaration, Node, SyntaxKind, ts } from 'ts-morph';
+import { Project, SourceFile, Node, SyntaxKind, Scope } from 'ts-morph';
 import * as fs from 'fs';
-import * as path from 'path';
 
 interface StandardizationRule {
   name: string;
@@ -18,9 +17,9 @@ export class PatternStandardizer {
 
   constructor() {
     this.project = new Project({
-      tsConfigFilePath: './tsconfig.json',
-      addFilesFromTsConfig: true
+      tsConfigFilePath: './tsconfig.json'
     });
+    this.project.addSourceFilesFromTsConfig('./tsconfig.json');
 
     this.initializeRules();
   }
@@ -269,12 +268,12 @@ export class PatternStandardizer {
             // Convert start/stop to onStart/onStop
             if (hasStart) {
               hasStart.rename('onStart');
-              hasStart.setScope('protected');
+              hasStart.setScope(Scope.Protected);
             }
 
             if (hasStop) {
               hasStop.rename('onStop');
-              hasStop.setScope('protected');
+              hasStop.setScope(Scope.Protected);
             }
 
             // Add constructor if missing
@@ -342,6 +341,8 @@ export class PatternStandardizer {
     // Get the current imports text
     const firstImport = imports[0];
     const lastImport = imports[imports.length - 1];
+    if (!firstImport || !lastImport) return false;
+    
     const currentImportsText = sourceFile.getText().substring(
       firstImport.getStart(),
       lastImport.getEnd()
@@ -371,7 +372,7 @@ export class PatternStandardizer {
     // Fix interface names (remove I prefix)
     sourceFile.getInterfaces().forEach(iface => {
       const name = iface.getName();
-      if (name.startsWith('I') && name[1] === name[1].toUpperCase()) {
+      if (name && name.startsWith('I') && name.length > 1 && name[1] && name[1] === name[1].toUpperCase()) {
         const newName = name.substring(1);
         iface.rename(newName);
         modified = true;
@@ -432,7 +433,8 @@ export class PatternStandardizer {
 
     // Find <Type> assertions and replace with 'as Type'
     sourceFile.getDescendantsOfKind(SyntaxKind.TypeAssertionExpression).forEach(assertion => {
-      const type = assertion.getType().getText();
+      const typeNode = assertion.getTypeNode();
+      const type = typeNode ? typeNode.getText() : 'unknown';
       const expression = assertion.getExpression().getText();
 
       assertion.replaceWithText(`${expression} as ${type}`);

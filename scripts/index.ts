@@ -16,7 +16,7 @@ interface CommandOptions {
   name?: string;
 }
 
-const program = new Command();
+const program = new (Command as any)();
 
 program
   .name('wundr')

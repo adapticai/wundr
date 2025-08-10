@@ -1,9 +1,8 @@
-import 'server-only';
-
 import { NextRequest, NextResponse } from 'next/server'
 import { GitActivity, ApiResponse, TimeRange } from '@/types/data'
-import { spawn } from 'child_process'
-import path from 'path'
+
+// Force Node.js runtime for child_process support
+export const runtime = 'nodejs'
 
 // Types for git analysis
 interface GitCommit {
@@ -58,20 +57,24 @@ function checkRateLimit(clientId: string): boolean {
 
 // Execute git command and return output
 function execGitCommand(args: string[], cwd: string): Promise<string> {
+  // Dynamically import child_process only when needed
+  const { spawn } = require('child_process')
+  const path = require('path')
+  
   return new Promise((resolve, reject) => {
     const child = spawn('git', args, { cwd, shell: true })
     let stdout = ''
     let stderr = ''
     
-    child.stdout.on('data', (data) => {
+    child.stdout.on('data', (data: Buffer) => {
       stdout += data.toString()
     })
     
-    child.stderr.on('data', (data) => {
+    child.stderr.on('data', (data: Buffer) => {
       stderr += data.toString()
     })
     
-    child.on('close', (code) => {
+    child.on('close', (code: number | null) => {
       if (code === 0) {
         resolve(stdout)
       } else {
@@ -89,12 +92,15 @@ function execGitCommand(args: string[], cwd: string): Promise<string> {
 
 // Get project root directory
 function getProjectRoot(): string {
+  const path = require('path')
+  const fs = require('fs')
+  
   // Look for the git repository root
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const gitPath = path.join(dir, '.git')
-      if (require('fs').existsSync(gitPath)) {
+      if (fs.existsSync(gitPath)) {
         return dir
       }
     } catch (e) {
@@ -274,6 +280,7 @@ async function fetchGitActivityData(timeRange: TimeRange, repository?: string): 
   }
   
   try {
+    const path = require('path')
     const projectRoot = repository ? path.resolve(repository) : getProjectRoot()
     
     // Verify it's a git repository

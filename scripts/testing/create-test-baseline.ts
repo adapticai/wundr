@@ -60,11 +60,11 @@ class TestBaselineCreator {
     console.log('✅ Test baseline created successfully');
   }
 
-  private async createPathTests(path: CriticalPath) {
-    const testContent = `// ${path.name}.test.ts
+  private async createPathTests(criticalPath: CriticalPath) {
+    const testContent = `// ${criticalPath.name}.test.ts
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
-describe('Critical Path: ${path.description}', () => {
+describe('Critical Path: ${criticalPath.description}', () => {
   let testContext: any;
 
   beforeAll(async () => {
@@ -77,11 +77,11 @@ describe('Critical Path: ${path.description}', () => {
     await teardownTestEnvironment(testContext);
   });
 
-  ${path.endpoints ? this.generateEndpointTests(path.endpoints) : ''}
+  ${criticalPath.endpoints ? this.generateEndpointTests(criticalPath.endpoints) : ''}
 
-  ${path.services ? this.generateServiceTests(path.services) : ''}
+  ${criticalPath.services ? this.generateServiceTests(criticalPath.services) : ''}
 
-  it('should complete the full ${path.name} workflow', async () => {
+  it('should complete the full ${criticalPath.name} workflow', async () => {
     // TODO: Implement end-to-end workflow test
     // This should test the complete business flow
 
@@ -94,7 +94,7 @@ describe('Critical Path: ${path.description}', () => {
     expect(true).toBe(true); // Placeholder
   });
 
-  it('should handle errors gracefully in ${path.name}', async () => {
+  it('should handle errors gracefully in ${criticalPath.name}', async () => {
     // TODO: Test error scenarios
     // - Invalid inputs
     // - Service failures
@@ -115,7 +115,7 @@ async function teardownTestEnvironment(context: any) {
 }
 `;
 
-    const filename = path.join(this.testDir, `${path.name}.test.ts`);
+    const filename = path.join(this.testDir, `${criticalPath.name}.test.ts`);
     fs.writeFileSync(filename, testContent);
     console.log(`  ✓ Created test: ${filename}`);
   }

@@ -2,9 +2,11 @@ import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server'
 import { QualityMetrics, ApiResponse, TimeRange } from '@/types/data'
-import { promises as fs } from 'fs'
-import path from 'path'
-import { spawn } from 'child_process'
+
+// Force dynamic rendering to allow fs access
+export const dynamic = 'force-dynamic'
+// Ensure this runs only on Node.js runtime
+export const runtime = 'nodejs'
 
 // Types for quality analysis
 interface ESLintResult {
@@ -63,7 +65,8 @@ function checkRateLimit(clientId: string): boolean {
 
 // Execute command and return output
 function execCommand(command: string, args: string[], cwd: string): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    const { spawn } = await import('child_process')
     const child = spawn(command, args, { cwd, shell: true })
     let stdout = ''
     let stderr = ''
@@ -93,14 +96,17 @@ function execCommand(command: string, args: string[], cwd: string): Promise<stri
 }
 
 // Get project root directory
-function getProjectRoot(): string {
+async function getProjectRoot(): Promise<string> {
   // Look for the wundr project root by finding package.json with pnpm-workspace.yaml
+  const path = await import('path')
+  const fs = await import('fs')
+  
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {
     try {
       const packagePath = path.join(dir, 'package.json')
       const workspacePath = path.join(dir, 'pnpm-workspace.yaml')
-      if (require('fs').existsSync(packagePath) && require('fs').existsSync(workspacePath)) {
+      if (fs.existsSync(packagePath) && fs.existsSync(workspacePath)) {
         return dir
       }
     } catch (e) {
@@ -114,6 +120,9 @@ function getProjectRoot(): string {
 // Analyze code complexity using TypeScript and file analysis
 async function analyzeCodeComplexity(projectRoot: string): Promise<number> {
   try {
+    const path = await import('path')
+    const { promises: fs } = await import('fs')
+    
     const tsFiles = await execCommand('find', ['.', '-name', '*.ts', '-o', '-name', '*.tsx', '!', '-path', './node_modules/*', '!', '-path', './.next/*'], projectRoot)
     const files = tsFiles.split('\n').filter(Boolean)
     
@@ -147,6 +156,9 @@ async function analyzeCodeComplexity(projectRoot: string): Promise<number> {
 // Analyze test coverage
 async function analyzeTestCoverage(projectRoot: string): Promise<number> {
   try {
+    const path = await import('path')
+    const { promises: fs } = await import('fs')
+    
     // Try to read existing coverage report
     const coverageFile = path.join(projectRoot, 'coverage', 'coverage-summary.json')
     try {
@@ -179,6 +191,9 @@ async function analyzeTestCoverage(projectRoot: string): Promise<number> {
 // Analyze duplicate lines
 async function analyzeDuplicateLines(projectRoot: string): Promise<number> {
   try {
+    const path = await import('path')
+    const { promises: fs } = await import('fs')
+    
     // Use a simple approach to find duplicate lines in TypeScript files
     const files = await execCommand('find', ['.', '-name', '*.ts', '-o', '-name', '*.tsx', '!', '-path', './node_modules/*', '!', '-path', './.next/*'], projectRoot)
     const fileList = files.split('\n').filter(Boolean).slice(0, 100) // Limit for performance
@@ -220,6 +235,9 @@ async function analyzeDuplicateLines(projectRoot: string): Promise<number> {
 // Analyze maintainability index (simplified version)
 async function analyzeMaintainability(projectRoot: string): Promise<number> {
   try {
+    const path = await import('path')
+    const { promises: fs } = await import('fs')
+    
     const files = await execCommand('find', ['.', '-name', '*.ts', '-o', '-name', '*.tsx', '!', '-path', './node_modules/*', '!', '-path', './.next/*'], projectRoot)
     const fileList = files.split('\n').filter(Boolean).slice(0, 50)
     
@@ -327,6 +345,9 @@ async function analyzeVulnerabilities(projectRoot: string): Promise<number> {
 // Count lines of code
 async function countLinesOfCode(projectRoot: string): Promise<number> {
   try {
+    const path = await import('path')
+    const { promises: fs } = await import('fs')
+    
     const output = await execCommand('find', ['.', '-name', '*.ts', '-o', '-name', '*.tsx', '!', '-path', './node_modules/*', '!', '-path', './.next/*'], projectRoot)
     const files = output.split('\n').filter(Boolean)
     
@@ -362,7 +383,7 @@ async function fetchQualityData(timeRange: TimeRange): Promise<QualityMetrics[]>
   }
   
   try {
-    const projectRoot = getProjectRoot()
+    const projectRoot = await getProjectRoot()
     
     // Run all analyses in parallel for better performance
     const [complexity, coverage, duplicates, maintainability, eslintIssues, vulnerabilities, linesOfCode] = await Promise.all([

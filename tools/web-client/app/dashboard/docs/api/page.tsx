@@ -11,7 +11,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, Copy, PlayCircle, FileText, Package, Settings } from 'lucide-react';
 import { readDocFile, generateApiDocs, getCurrentDocVersion, DOCS_ROOT } from '@/lib/docs-utils';
-import path from 'path';
 
 interface APIEndpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
