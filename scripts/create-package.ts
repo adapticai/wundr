@@ -90,7 +90,7 @@ describe('@wundr/${name}', () => {
 }
 
 // CLI setup
-const program = new Command()
+const program = new (Command as any)()
   .name('create-package')
   .description('Create a new package in the Wundr monorepo')
   .version('1.0.0');

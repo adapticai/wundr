@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { glob } from 'glob';
+import * as glob from 'glob';
 
 interface FileHeaderConfig {
   pattern: string;
@@ -71,7 +71,7 @@ class FileHeaderManager {
     console.log('📝 Adding file headers...');
 
     for (const config of this.configs) {
-      const files = await glob(config.pattern, {
+      const files = await glob.glob(config.pattern, {
         ignore: config.skipPatterns || []
       });
 
