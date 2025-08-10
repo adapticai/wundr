@@ -1,32 +1,16 @@
+'use client';
+
 import React from 'react';
 import { DocsLayout } from '@/components/docs/DocsLayout';
 import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
 import { SearchableContent } from '@/components/docs/SearchableContent';
 import { readDocFile } from '@/lib/docs-utils';
-import path from 'path';
+// Remove path import - not needed in client component
 
 // This would be fetched from the filesystem in a real app
 const getGettingStartedContent = async () => {
-  try {
-    // Try to read from the project's docs directory
-    const docsPath = path.join(process.cwd(), '../../docs/guides/QUICK_START.md');
-    const docContent = await readDocFile(docsPath);
-    
-    if (docContent) {
-      return {
-        content: docContent.content,
-        frontmatter: {
-          ...docContent.frontmatter,
-          title: docContent.frontmatter?.title || 'Getting Started',
-          description: docContent.frontmatter?.description || 'Quick setup and first steps with the monorepo refactoring toolkit',
-          category: docContent.frontmatter?.category || 'guides',
-          tags: docContent.frontmatter?.tags || ['setup', 'guide', 'quick-start']
-        }
-      };
-    }
-  } catch (_error) {
-    console.log('Could not read from filesystem, using fallback content');
-  }
+  // Client-side component can't read from filesystem directly
+  // Return static content instead
 
   // Fallback content
   return {

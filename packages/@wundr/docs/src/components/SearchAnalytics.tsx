@@ -22,7 +22,7 @@ interface SearchAnalyticsProps {
  * - Search volume by language
  * - Average results per query
  */
-export default function SearchAnalytics({ className }: SearchAnalyticsProps): JSX.Element | null {
+export default function SearchAnalytics({ className }: SearchAnalyticsProps) {
   const [metrics, setMetrics] = useState<SearchMetrics>({
     totalSearches: 0,
     popularQueries: [],
@@ -210,7 +210,7 @@ export default function SearchAnalytics({ className }: SearchAnalyticsProps): JS
         </div>
       )}
       
-      <style jsx>{`
+      <style>{`
         .search-analytics {
           position: fixed;
           bottom: 20px;

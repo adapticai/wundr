@@ -2,7 +2,7 @@
  * System detection and information utilities
  */
 
-import { platform, arch, release } from 'os';
+import { platform, arch } from 'os';
 import { execSync } from 'child_process';
 import { Platform, SystemInfo } from '../types';
 

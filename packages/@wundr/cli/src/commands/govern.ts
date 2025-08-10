@@ -140,7 +140,7 @@ export class GovernCommands {
       
       const config = this.configManager.getConfig();
       const rules = options.rules ? options.rules.split(',') : config.governance.rules;
-      const violations = [];
+      const violations: any[] = [];
 
       for (const rule of rules) {
         logger.debug(`Checking rule: ${rule}`);

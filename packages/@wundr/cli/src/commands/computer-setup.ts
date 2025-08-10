@@ -8,9 +8,10 @@ import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
 import { ComputerSetupManager } from '@wundr/computer-setup';
-import { getLogger } from '@wundr/core';
+// import { getLogger } from '@wundr/core';
+const logger = { info: console.log, error: console.error, warn: console.warn };
 
-const logger = getLogger('cli:computer-setup');
+// const logger = getLogger('cli:computer-setup');
 
 export function createComputerSetupCommand(): Command {
   const command = new Command('computer-setup')
@@ -148,22 +149,22 @@ async function runComputerSetup(options: any): Promise<void> {
     }
 
     console.log(chalk.white('Summary:'));
-    console.log(chalk.green(`  ✓ Completed: ${result.completedSteps.length} steps`));
-    if (result.skippedSteps.length > 0) {
+    console.log(chalk.green(`  ✓ Completed: ${result.completedSteps?.length || 0} steps`));
+    if (result.skippedSteps && result.skippedSteps.length > 0) {
       console.log(chalk.yellow(`  ⊘ Skipped: ${result.skippedSteps.length} steps`));
     }
-    if (result.failedSteps.length > 0) {
+    if (result.failedSteps && result.failedSteps.length > 0) {
       console.log(chalk.red(`  ✗ Failed: ${result.failedSteps.length} steps`));
     }
 
-    if (result.warnings.length > 0) {
+    if (result.warnings && result.warnings.length > 0) {
       console.log(chalk.yellow('\n⚠️  Warnings:'));
       result.warnings.forEach(w => console.log(chalk.yellow(`  - ${w}`)));
     }
 
-    if (result.errors.length > 0) {
+    if (result.errors && result.errors.length > 0) {
       console.log(chalk.red('\n❌ Errors:'));
-      result.errors.forEach(e => console.log(chalk.red(`  - ${e.message}`)));
+      result.errors.forEach(e => console.log(chalk.red(`  - ${(e as any)?.message || e}`)));
     }
 
     if (result.report) {
@@ -464,7 +465,7 @@ async function runDoctor(): Promise<void> {
     const spinner = ora(`Checking ${check.name}...`).start();
     
     try {
-      const { execa } = await import('execa');
+      const { execa } = await import('execa') as any;
       const { stdout } = await execa(check.command.split(' ')[0], check.command.split(' ').slice(1));
       spinner.succeed(`${check.name}: ${stdout.trim()}`);
     } catch (error) {

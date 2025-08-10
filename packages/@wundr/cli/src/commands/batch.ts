@@ -239,7 +239,7 @@ export class BatchCommands {
 
       logger.info(`Batch jobs (${yamlFiles.length}):`);
       
-      const jobs = [];
+      const jobs: Array<{ Name: string; Description: string; Commands: number | string; Parallel: string }> = [];
       for (const file of yamlFiles) {
         const filePath = path.join(batchDir, file);
         try {
@@ -594,21 +594,20 @@ export class BatchCommands {
     console.log(`Continue on error: ${job.continueOnError ? 'Yes' : 'No'}`);
   }
 
-  private async executeBatchJob(job: BatchJob, jobId: string, options: any): Promise<void> {
-    const tasks = job.commands.map((cmd, index) => ({
+  private async executeBatchJob(job: BatchJob, _jobId: string, _options: any): Promise<void> {
+    const tasks = job.commands.map((cmd, _index) => ({
       title: cmd.command,
       task: async () => {
-        await this.executeCommand(cmd, options);
+        await this.executeCommand(cmd, _options);
       },
       retry: cmd.retry || 0,
       timeout: cmd.timeout
     }));
 
     const listr = new Listr(tasks, {
-      concurrent: job.parallel || options.parallel,
-      exitOnError: !(job.continueOnError || options.continueOnError),
+      concurrent: job.parallel || _options.parallel,
+      exitOnError: !(job.continueOnError || _options.continueOnError),
       rendererOptions: {
-        collapse: false,
         showSubtasks: true
       }
     });
@@ -616,7 +615,7 @@ export class BatchCommands {
     await listr.run();
   }
 
-  private async executeCommand(cmd: BatchCommand, options: any): Promise<void> {
+  private async executeCommand(cmd: BatchCommand, _options: any): Promise<void> {
     // Check condition if specified
     if (cmd.condition && !await this.evaluateCondition(cmd.condition)) {
       logger.debug(`Skipping command due to condition: ${cmd.condition}`);
@@ -628,23 +627,23 @@ export class BatchCommands {
     const finalArgs = cmd.args ? [...args, ...cmd.args] : args;
 
     return new Promise((resolve, reject) => {
-      const child = spawn(command, finalArgs, {
-        stdio: 'pipe',
+      const child = spawn(command ?? 'echo', finalArgs, {
+        stdio: ['ignore', 'pipe', 'pipe'],
         shell: true
       });
 
       let output = '';
       let error = '';
 
-      child.stdout?.on('data', (data) => {
+      child.stdout?.on('data', (data: Buffer) => {
         output += data.toString();
       });
 
-      child.stderr?.on('data', (data) => {
+      child.stderr?.on('data', (data: Buffer) => {
         error += data.toString();
       });
 
-      child.on('exit', (code) => {
+      child.on('exit', (code: number | null) => {
         if (code === 0) {
           resolve();
         } else {

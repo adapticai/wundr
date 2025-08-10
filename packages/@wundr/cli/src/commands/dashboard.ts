@@ -638,7 +638,7 @@ export class DashboardCommands {
     }
 
     const files = await fs.readdir(widgetsDir);
-    const widgets = [];
+    const widgets: any[] = [];
 
     for (const file of files.filter(f => f.endsWith('.json'))) {
       const widget = await fs.readJson(path.join(widgetsDir, file));

@@ -177,7 +177,7 @@ export class MemoryManager extends EventEmitter {
     }, 60 * 60 * 1000);
   }
 
-  private async initializeCompression(): void {
+  private async initializeCompression(): Promise<void> {
     // Setup compression processing
     setInterval(async () => {
       if (this.compressionQueue.length > 0) {
@@ -459,19 +459,20 @@ export class MemoryManager extends EventEmitter {
     }
 
     // Load from database
-    memory = await this.loadMemoryFromDatabase(memoryId);
+    const dbMemory = await this.loadMemoryFromDatabase(memoryId);
     
-    if (memory) {
+    if (dbMemory) {
       // Add to cache
-      this.memoryCache.set(memoryId, memory);
+      this.memoryCache.set(memoryId, dbMemory);
       await this.updateAccessInfo(memoryId);
+      return dbMemory;
     }
 
-    return memory;
+    return undefined;
   }
 
-  private async loadMemoryFromDatabase(memoryId: string): Promise<MemoryEntry | null> {
-    if (!this.database) return null;
+  private async loadMemoryFromDatabase(memoryId: string): Promise<MemoryEntry | undefined> {
+    if (!this.database) return undefined;
 
     return new Promise((resolve, reject) => {
       const query = 'SELECT * FROM memories WHERE id = ?';
@@ -729,7 +730,7 @@ export class MemoryManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       const query = 'DELETE FROM memories WHERE expires_at IS NOT NULL AND expires_at < ?';
       
-      this.database!.run(query, [currentTime], function(error) {
+      this.database!.run(query, [currentTime], (error) => {
         if (error) {
           reject(error);
         } else {

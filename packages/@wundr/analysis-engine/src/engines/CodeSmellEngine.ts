@@ -67,7 +67,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         'deep-nesting',
         'long-parameter-list'
       ],
-      customThresholds: {},
+      customThresholds: {} as Record<CodeSmellType, Record<string, number>>,
       strictMode: false,
       includeMinorSmells: true,
       ...config

@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import { parseMarkdown, extractFrontMatter, markdownToHtml, type ParsedMarkdown, type MarkdownFrontmatter } from '@/lib/markdown-utils';
+import { parseMarkdown, extractFrontMatter, markdownToHtml, type ParsedMarkdown } from '@/lib/markdown-utils';
 
 interface ExtendedMarkdown {
   html: string;
-  frontmatter: MarkdownFrontmatter;
+  frontmatter: Record<string, any>;
   tableOfContents: any[];
   wordCount: number;
   readingTime: number;

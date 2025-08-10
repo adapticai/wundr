@@ -401,7 +401,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
   private async executeSystemCommand(command: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const [cmd, ...args] = command.split(' ');
-      const childProcess = spawn(cmd, args, { stdio: 'pipe' });
+      const childProcess = spawn(cmd || '', args, { stdio: 'pipe' });
 
       childProcess.on('close', (code: number | null) => {
         if (code === 0) {

@@ -59,7 +59,7 @@ export const quickstartCommand = new Command('quickstart')
       console.log(chalk.green.bold('\n🎉 Welcome to your optimized development environment!'));
       console.log(chalk.cyan('\n📊 Setup Summary:'));
       console.log(`   ⏱️  Time: ${elapsed} seconds`);
-      console.log(`   🎯 Target: <300 seconds (${elapsed < 300 ? '✅ PASSED' : '❌ EXCEEDED'})`);
+      console.log(`   🎯 Target: <300 seconds (${Number(elapsed) < 300 ? '✅ PASSED' : '❌ EXCEEDED'})`);
       console.log(`   🔧 Profile: ${options.profile}`);
       console.log(`   🤖 AI Agents: ${options.skipAi ? 'Skipped' : 'Enabled'}`);
       
@@ -134,7 +134,7 @@ export const initCommand = new Command('init')
 export const installCommand = new Command('install')
   .description('Install all configured environment tools')
   .option('-f, --force', 'Force reinstallation of existing tools')
-  .action(async (options) => {
+  .action(async (_options) => {
     const spinner = ora('Installing environment tools...').start();
     
     try {

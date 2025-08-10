@@ -255,7 +255,7 @@ export class InteractiveMode {
     console.log(chalk.green('\n🔬 Running analysis...\n'));
 
     for (const analysisType of answers.analysisTypes) {
-      const command = `wundr analyze ${analysisType}`;
+      let command = `wundr analyze ${analysisType}`;
       if (answers.outputFormat !== 'table') {
         command += ` --format ${answers.outputFormat}`;
       }

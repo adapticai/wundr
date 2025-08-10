@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
           );
         }
         const result = ServiceOrchestrator.startService(serviceId);
-        const instanceId = result ? serviceId : null;
+        const instanceId = result !== undefined ? serviceId : null;
         return NextResponse.json({
           success: true,
           data: { instanceId }

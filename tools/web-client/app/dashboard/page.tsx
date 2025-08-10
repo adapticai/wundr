@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { useAnalysisData } from '@/hooks/use-analysis-data';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { SummaryCard } from '@/components/dashboard/summary-card';

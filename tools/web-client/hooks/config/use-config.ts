@@ -9,17 +9,18 @@ export function useConfig() {
 export function useConfigSection<T extends keyof ConfigurationState>(section: T) {
   const { config, updateConfig, resetSection, errors } = useConfig();
   
-  const sectionConfig = config[section];
+  const sectionConfig = (config as any)[section];
   
   const updateSection = useCallback(
     (updates: Partial<ConfigurationState[T]>) => {
-      updateConfig(section, updates);
+      // Since the actual config is flat, we need to spread the updates directly
+      updateConfig(updates as any);
     },
-    [updateConfig, section]
+    [updateConfig]
   );
   
   const resetSectionCallback = useCallback(() => {
-    resetSection(section);
+    resetSection(section as any);
   }, [resetSection, section]);
   
   const sectionErrors = useMemo(() => {

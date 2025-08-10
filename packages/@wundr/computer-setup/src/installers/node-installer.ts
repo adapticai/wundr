@@ -1,7 +1,7 @@
 /**
  * Node.js Installer - Cross-platform Node.js and package manager setup
  */
-import execa from 'execa';
+import { execa } from 'execa';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';

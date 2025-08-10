@@ -149,7 +149,7 @@ export class ManualInstaller extends BaseInstaller {
       success: errors.length === 0,
       tool: 'vscode-extensions',
       message: `Processed ${extensions.length} extensions`,
-      warnings: errors.length > 0 ? errors : undefined
+      ...(errors.length > 0 && { warnings: errors })
     };
   }
 
@@ -232,6 +232,6 @@ export class ManualInstaller extends BaseInstaller {
    */
   private extractVersion(output: string): string {
     const match = output.match(/Homebrew ([0-9]+\\.[0-9]+\\.[0-9]+)/);
-    return match ? match[1] : output.split('\\n')[0].trim();
+    return match?.[1] || output.split('\\n')[0]?.trim() || output.trim();
   }
 }

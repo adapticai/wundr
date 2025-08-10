@@ -11,7 +11,11 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "skipLibCheck": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noImplicitAny": false
   },
   "include": [
     "src/**/*"

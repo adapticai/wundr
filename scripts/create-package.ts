@@ -1,6 +1,5 @@
 #!/usr/bin/env ts-node
 
-// @ts-ignore - Commander import issue with TS
 import { Command } from 'commander';
 import * as fs from 'fs-extra';
 import * as path from 'path';

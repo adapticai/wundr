@@ -153,6 +153,74 @@ export class InstallerRegistry {
   }
 
   /**
+   * Get system setup steps
+   */
+  async getSystemSteps(platform: SetupPlatform): Promise<SetupStep[]> {
+    const installer = this.installers.get('platform');
+    if (!installer) return [];
+    return installer.getSteps({} as DeveloperProfile, platform);
+  }
+
+  /**
+   * Get Node.js setup steps
+   */
+  async getNodeSteps(nodeConfig: any): Promise<SetupStep[]> {
+    const installer = this.installers.get('node');
+    if (!installer) return [];
+    const profile = { tools: { languages: { node: nodeConfig } } } as any;
+    return installer.getSteps(profile, this.platform);
+  }
+
+  /**
+   * Get Python setup steps
+   */
+  async getPythonSteps(pythonConfig: any): Promise<SetupStep[]> {
+    // Python installer not yet implemented
+    return [];
+  }
+
+  /**
+   * Get Homebrew setup steps
+   */
+  async getBrewSteps(): Promise<SetupStep[]> {
+    // Brew installer handled by MacInstaller
+    return [];
+  }
+
+  /**
+   * Get Docker setup steps
+   */
+  async getDockerSteps(): Promise<SetupStep[]> {
+    const installer = this.installers.get('docker');
+    if (!installer) return [];
+    return installer.getSteps({} as DeveloperProfile, this.platform);
+  }
+
+  /**
+   * Get Claude Code setup steps
+   */
+  async getClaudeCodeSteps(): Promise<SetupStep[]> {
+    // Claude Code installer to be implemented
+    return [];
+  }
+
+  /**
+   * Get Claude Flow setup steps
+   */
+  async getClaudeFlowSteps(swarmAgents?: string[]): Promise<SetupStep[]> {
+    // Claude Flow installer to be implemented
+    return [];
+  }
+
+  /**
+   * Get Slack setup steps
+   */
+  async getSlackSteps(): Promise<SetupStep[]> {
+    // Slack installer to be implemented
+    return [];
+  }
+
+  /**
    * Validate all installers on current platform
    */
   async validateAll(): Promise<Record<string, boolean>> {

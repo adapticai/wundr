@@ -4,8 +4,14 @@
  */
 
 import { EventEmitter } from 'events';
-import { getLogger } from '@wundr/core';
-import { ConfigManager } from '@wundr/config';
+// import { getLogger } from '@wundr/core'; // TODO: Fix core exports
+const getLogger = (name: string) => ({
+  info: (...args: any[]) => console.log(...args),
+  error: (...args: any[]) => console.error(...args),
+  warn: (...args: any[]) => console.warn(...args),
+  debug: (...args: any[]) => console.debug(...args)
+});
+import { WundrConfigManager } from '@wundr/config';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { 
@@ -28,7 +34,7 @@ export class ComputerSetupManager extends EventEmitter {
   private installerRegistry: InstallerRegistry;
   private configuratorService: ConfiguratorService;
   private validator: SetupValidator;
-  private configManager: ConfigManager;
+  private configManager: WundrConfigManager;
   private steps: SetupStep[] = [];
   private progress: SetupProgress = {
     totalSteps: 0,
@@ -41,11 +47,15 @@ export class ComputerSetupManager extends EventEmitter {
 
   constructor(configPath?: string) {
     super();
-    this.configManager = new ConfigManager({
-      configPath: configPath || path.join(process.env.HOME || '', '.wundr', 'computer-setup.json')
-    });
+    this.configManager = new WundrConfigManager({});
     this.profileManager = new ProfileManager(this.configManager);
-    this.installerRegistry = new InstallerRegistry();
+    const platform: SetupPlatform = {
+      os: process.platform === 'win32' ? 'win32' : process.platform === 'darwin' ? 'darwin' : 'linux',
+      arch: process.arch as 'x64' | 'arm64',
+      node: process.version,
+      shell: process.env.SHELL || 'bash'
+    };
+    this.installerRegistry = new InstallerRegistry(platform);
     this.configuratorService = new ConfiguratorService();
     this.validator = new SetupValidator();
   }
@@ -56,8 +66,8 @@ export class ComputerSetupManager extends EventEmitter {
   async initialize(): Promise<void> {
     logger.info('Initializing Computer Setup Manager');
     
-    await this.configManager.load();
-    await this.installerRegistry.discover();
+    await this.configManager.initialize();
+    // Auto-discovery handled in constructor
     await this.configuratorService.initialize();
     
     logger.info('Computer Setup Manager initialized');
@@ -206,9 +216,7 @@ export class ComputerSetupManager extends EventEmitter {
 
     // Communication tools
     if (profile.tools.communication.slack) {
-      steps.push(...await this.installerRegistry.getSlackSteps(
-        profile.tools.communication.slack
-      ));
+      steps.push(...await this.installerRegistry.getSlackSteps());
     }
 
     // Git configuration

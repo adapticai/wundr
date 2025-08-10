@@ -6,17 +6,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
 
-    const service = BatchProcessingService.getInstance();
-    let batches;
+    let batches: any[];
     switch (type) {
       case 'active':
-        batches = service.getAllBatches().filter(b => b.status === 'processing');
+        batches = (await BatchProcessingService.getAllBatches()).filter((b: any) => b.status === 'running');
         break;
       case 'history':
-        batches = service.getAllBatches().filter(b => b.status === 'completed' || b.status === 'failed');
+        batches = (await BatchProcessingService.getAllBatches()).filter((b: any) => b.status === 'completed' || b.status === 'failed');
         break;
       default:
-        batches = service.getAllBatches();
+        batches = await BatchProcessingService.getAllBatches();
     }
 
     return NextResponse.json({
@@ -41,8 +40,11 @@ export async function POST(request: NextRequest) {
     const { BatchProcessingService } = await import('@/lib/services/batch/BatchProcessingService');
     const body = await request.json();
 
-    const service = BatchProcessingService.getInstance();
-    const batch = service.createBatch(body.items || []);
+    const batch = await BatchProcessingService.createBatch({
+      name: body.name || 'New Batch',
+      type: body.type || 'default',
+      data: body.items || []
+    });
     
     return NextResponse.json({
       success: true,

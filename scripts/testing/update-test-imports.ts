@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // scripts/testing/update-test-imports.ts
 
-import { Project, SourceFile, ImportDeclaration } from 'ts-morph';
+import { Project, SourceFile, ImportDeclaration, SyntaxKind } from 'ts-morph';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as ts from 'typescript';
 
 interface ImportMapping {
   from: string;
@@ -33,8 +34,7 @@ export class TestImportsUpdater {
 
   constructor() {
     this.project = new Project({
-      tsConfigFilePath: './tsconfig.json',
-      addFilesFromTsConfig: false
+      tsConfigFilePath: './tsconfig.json'
     });
 
     // Add test files specifically
@@ -227,14 +227,14 @@ export class TestImportsUpdater {
     }
 
     // Also check for dynamic imports
-    const dynamicImports = sourceFile.getDescendantsOfKind(40); // SyntaxKind.CallExpression
+    const dynamicImports = sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression);
     
     for (const callExpr of dynamicImports) {
       if (callExpr.getExpression().getText() === 'import') {
         const args = callExpr.getArguments();
         if (args.length > 0) {
           const firstArg = args[0];
-          if (firstArg.getKind() === 10) { // StringLiteral
+          if (firstArg.getKind() === SyntaxKind.StringLiteral) {
             const moduleSpecifier = firstArg.getText().slice(1, -1); // Remove quotes
             const updatedSpecifier = this.applyMappings(moduleSpecifier);
 
@@ -427,17 +427,20 @@ export class TestImportsUpdater {
     for (const testFile of testFiles) {
       const diagnostics = testFile.getPreEmitDiagnostics();
       
-      const importErrors = diagnostics.filter((d: ts.Diagnostic) => 
-        d.getMessageText().toString().includes('Cannot find module') ||
-        d.getMessageText().toString().includes('Module not found')
-      );
+      const importErrors = diagnostics.filter((d) => {
+        const messageText = d.getMessageText().toString();
+        return messageText.includes('Cannot find module') ||
+               messageText.includes('Module not found');
+      });
 
       if (importErrors.length > 0) {
         hasErrors = true;
         console.log(`L Import errors in ${path.basename(testFile.getFilePath())}:`);
         
-        importErrors.forEach((error: ts.Diagnostic) => {
-          console.log(`  Line ${error.getLineNumber()}: ${error.getMessageText()}`);
+        importErrors.forEach((error) => {
+          const messageText = error.getMessageText().toString();
+          const lineNumber = error.getStart() ? testFile.getLineAndColumnAtPos(error.getStart()).line : 0;
+          console.log(`  Line ${lineNumber}: ${messageText}`);
         });
       }
     }
@@ -477,7 +480,7 @@ ${this.report.details.map(detail => `### ${path.basename(detail.file)}
 
 ## Files Modified
 
-${[...new Set(this.report.details.map(d => d.file))].map(file => `- ${file}`).join('\n')}
+${Array.from(new Set(this.report.details.map(d => d.file))).map(file => `- ${file}`).join('\n')}
 
 ## Next Steps
 

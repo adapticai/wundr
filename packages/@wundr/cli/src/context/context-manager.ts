@@ -331,7 +331,7 @@ export class ContextManager {
   async listSessions(): Promise<{ id: string; startTime: Date; lastActivity: Date; commandCount: number }[]> {
     try {
       const files = await fs.readdir(this.sessionsDir);
-      const sessions = [];
+      const sessions: Array<{ id: string; startTime: Date; lastActivity: Date; commandCount: number }> = [];
 
       for (const file of files) {
         if (file.endsWith('.json')) {

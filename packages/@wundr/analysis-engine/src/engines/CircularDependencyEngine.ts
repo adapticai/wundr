@@ -67,7 +67,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
 
     // Method 2: Internal graph analysis
     if (this.config.enableInternalAnalysis) {
-      const internalCycles = this.detectWithInternalAlgorithm();
+      const internalCycles = await this.detectWithInternalAlgorithm();
       // Merge with madge results, avoiding duplicates
       const uniqueInternalCycles = this.filterUniqueCycles(circularDependencies, internalCycles);
       circularDependencies.push(...uniqueInternalCycles);
@@ -499,7 +499,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       affectedFiles: cycle.files.length,
       estimatedRefactoringHours: Math.max(2, cycle.depth * 2),
       riskLevel: cycle.severity,
-      buildTimeImprovement: cycle.weight > 5 ? 'significant' : 'moderate'
+      buildTimeImprovement: (cycle.weight ?? 0) > 5 ? 'significant' : 'moderate'
     };
   }
 

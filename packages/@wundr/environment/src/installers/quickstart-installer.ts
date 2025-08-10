@@ -4,13 +4,12 @@
  */
 
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+import { join } from 'path';
 import { homedir, platform, cpus } from 'os';
 import { execSync, spawn } from 'child_process';
 import { ProfileType, Platform } from '../types';
 import { createLogger } from '../utils/logger';
-import { detectPlatform, getSystemInfo } from '../utils/system';
-import chalk from 'chalk';
+import { detectPlatform } from '../utils/system';
 import ora from 'ora';
 
 const logger = createLogger('QuickstartInstaller');
@@ -100,7 +99,7 @@ export class QuickstartInstaller {
       {
         id: 'git',
         name: 'Git',
-        command: this.platform === 'darwin' ? 'brew install git' : 'sudo apt-get install -y git',
+        command: this.platform === 'macos' ? 'brew install git' : 'sudo apt-get install -y git',
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasGit,
         parallel: true,
@@ -433,25 +432,33 @@ export class QuickstartInstaller {
 
   private async executeCommand(command: string, options: any = {}): Promise<string> {
     return new Promise((resolve, reject) => {
-      const [cmd, ...args] = command.split(' ');
-      const process = spawn(cmd, args, {
+      const parts = command.split(' ');
+      const cmd = parts[0];
+      const args = parts.slice(1);
+      
+      if (!cmd) {
+        reject(new Error('Invalid command: empty command'));
+        return;
+      }
+      
+      const childProcess = spawn(cmd, args, {
         stdio: 'pipe',
         timeout: this.options.timeout,
         ...options
-      });
+      }) as any;
 
       let stdout = '';
       let stderr = '';
 
-      process.stdout?.on('data', (data) => {
+      childProcess.stdout?.on('data', (data: any) => {
         stdout += data.toString();
       });
 
-      process.stderr?.on('data', (data) => {
+      childProcess.stderr?.on('data', (data: any) => {
         stderr += data.toString();
       });
 
-      process.on('close', (code) => {
+      childProcess.on('close', (code: any) => {
         if (code === 0) {
           resolve(stdout);
         } else {
@@ -459,12 +466,12 @@ export class QuickstartInstaller {
         }
       });
 
-      process.on('error', reject);
+      childProcess.on('error', reject);
     });
   }
 
   private async installHomebrew(): Promise<void> {
-    if (this.platform === 'darwin') {
+    if (this.platform === 'macos') {
       const script = 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
       await this.executeCommand(`/bin/bash -c "${script}"`, { stdio: 'inherit' });
     } else if (this.platform === 'linux') {
@@ -476,7 +483,7 @@ export class QuickstartInstaller {
   }
 
   private async installNodeBasic(): Promise<void> {
-    if (this.platform === 'darwin') {
+    if (this.platform === 'macos') {
       await this.executeCommand('brew install node npm');
     } else {
       await this.executeCommand('curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -');
@@ -505,7 +512,7 @@ export class QuickstartInstaller {
   }
 
   private async installDockerLite(): Promise<void> {
-    if (this.platform === 'darwin') {
+    if (this.platform === 'macos') {
       await this.executeCommand('brew install --cask docker');
     } else {
       await this.executeCommand('sudo apt-get install -y docker.io');
@@ -520,7 +527,7 @@ export class QuickstartInstaller {
   }
 
   private async installVSCodeFast(): Promise<void> {
-    if (this.platform === 'darwin') {
+    if (this.platform === 'macos') {
       await this.executeCommand('brew install --cask visual-studio-code');
     } else {
       await this.executeCommand('wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg');

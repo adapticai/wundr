@@ -17,7 +17,7 @@ const config: Config = {
   organizationName: 'adapticai',
   projectName: 'wundr',
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
@@ -25,19 +25,10 @@ const config: Config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'es', 'fr', 'de'],
+    locales: ['en'],
     localeConfigs: {
       en: {
         htmlLang: 'en-US',
-      },
-      es: {
-        htmlLang: 'es-ES',
-      },
-      fr: {
-        htmlLang: 'fr-FR',
-      },
-      de: {
-        htmlLang: 'de-DE',
       },
     },
   },

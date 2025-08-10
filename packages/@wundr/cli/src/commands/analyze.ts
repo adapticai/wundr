@@ -167,19 +167,19 @@ export class AnalyzeCommands {
 
       if (options['complexity']) {
         const complexity = await this.analyzeComplexity();
-        results.metrics.complexity = complexity.average;
+        results.metrics['complexity'] = complexity.average;
         results.findings.push(...complexity.violations);
       }
 
       if (options['duplication']) {
         const duplication = await this.detectDuplication();
-        results.metrics.duplication = duplication.percentage;
+        results.metrics['duplication'] = duplication.percentage;
         results.findings.push(...duplication.violations);
       }
 
       if (options['coverage']) {
         const coverage = await this.analyzeCoverage();
-        results.metrics.coverage = coverage.percentage;
+        results.metrics['coverage'] = coverage.percentage;
         results.findings.push(...coverage.violations);
       }
 
@@ -218,19 +218,19 @@ export class AnalyzeCommands {
 
       if (options.bundle) {
         const bundleAnalysis = await this.analyzeBundleSize();
-        results.metrics.bundleSize = bundleAnalysis.totalSize;
+        results.metrics['bundleSize'] = bundleAnalysis.totalSize;
         results.findings.push(...bundleAnalysis.issues);
       }
 
       if (options.runtime) {
         const runtimeAnalysis = await this.analyzeRuntimePerformance();
-        results.metrics.runtime = runtimeAnalysis.averageTime;
+        results.metrics['runtime'] = runtimeAnalysis.averageTime;
         results.findings.push(...runtimeAnalysis.issues);
       }
 
       if (options.memory) {
         const memoryAnalysis = await this.analyzeMemoryUsage();
-        results.metrics.memory = memoryAnalysis.peakUsage;
+        results.metrics['memory'] = memoryAnalysis.peakUsage;
         results.findings.push(...memoryAnalysis.issues);
       }
 

@@ -11,9 +11,9 @@ export * from './utils';
 export { SimpleAnalyzer, analyzeProject } from './simple-analyzer';
 
 // Memory-optimized components
-export { OptimizedDuplicateDetectionEngine } from './engines/DuplicateDetectionEngineOptimized';
+export { OptimizedDuplicateDetectionEngine } from './engines';
 export { WorkerPoolManager } from './workers/WorkerPoolManager';
-export { MemoryMonitor } from './monitoring/MemoryMonitor';
+export { MemoryMonitor } from './monitoring';
 
 // Main analysis orchestrator (simplified)
 import { SimpleAnalyzer } from './simple-analyzer';
@@ -29,8 +29,8 @@ import {
  */
 export class AnalysisEngine {
   private analyzer: SimpleAnalyzer;
-  private optimizedDuplicateEngine?: OptimizedDuplicateDetectionEngine;
-  private memoryMonitor?: MemoryMonitor;
+  private optimizedDuplicateEngine?: any; // OptimizedDuplicateDetectionEngine
+  private memoryMonitor?: any; // MemoryMonitor
   private useOptimizations: boolean;
 
   constructor(config: Partial<AnalysisConfig> = {}) {
@@ -43,6 +43,9 @@ export class AnalysisEngine {
   }
 
   private initializeOptimizations(): void {
+    const { OptimizedDuplicateDetectionEngine } = require('./engines');
+    const { MemoryMonitor } = require('./monitoring');
+    
     this.optimizedDuplicateEngine = new OptimizedDuplicateDetectionEngine({
       enableStreaming: true,
       maxMemoryUsage: 200 * 1024 * 1024, // 200MB

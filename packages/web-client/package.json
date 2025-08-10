@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/web-client",
+  "name": "@wundr/web-client-simple",
   "version": "1.0.0",
   "description": "Shared web components and utilities",
   "main": "dist/index.js",
@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@wundr/core": "workspace:*",
+    "@wundr/core-simple": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "@radix-ui/react-slot": "^1.1.0",

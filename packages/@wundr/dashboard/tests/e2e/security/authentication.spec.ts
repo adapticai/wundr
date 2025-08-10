@@ -173,7 +173,7 @@ test.describe('Security E2E Tests', () => {
     
     // For local testing we use ws://, but in production it should be wss://
     if (process.env.NODE_ENV === 'production') {
-      expect(wsState.url).toStartWith('wss://');
+      expect(wsState.url).toMatch(/^wss:\/\//);
     }
 
     await websocketHelper.setupWebSocketMock();

@@ -5,7 +5,7 @@
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { EnvironmentConfig, ProfileType, Platform, HealthCheckResult, SystemInfo } from '../types';
+import { EnvironmentConfig, ProfileType, HealthCheckResult } from '../types';
 import { ProfileManager } from './profile-manager';
 import { ToolManager } from './tool-manager';
 import { detectPlatform, getSystemInfo } from '../utils/system';
@@ -46,10 +46,10 @@ export class EnvironmentManager {
       platform,
       tools: profileTemplate.tools,
       preferences: {
-        email: options.email,
-        fullName: options.fullName,
-        githubUsername: options.githubUsername,
-        company: options.company,
+        ...(options.email && { email: options.email }),
+        ...(options.fullName && { fullName: options.fullName }),
+        ...(options.githubUsername && { githubUsername: options.githubUsername }),
+        ...(options.company && { company: options.company }),
         editor: 'vscode',
         shell: platform === 'windows' ? 'powershell' : 'zsh',
         packageManager: 'pnpm',
@@ -160,7 +160,7 @@ export class EnvironmentManager {
       environment: this.config,
       tools: toolValidations,
       system: systemInfo,
-      recommendations: recommendations.length > 0 ? recommendations : undefined
+      ...(recommendations.length > 0 && { recommendations })
     };
   }
 

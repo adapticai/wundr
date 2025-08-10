@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { DocsLayout } from '@/components/docs/DocsLayout';
 import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
@@ -6,8 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileCode, Download, Eye, Copy } from 'lucide-react';
-import path from 'path';
-import { promises as fs } from 'fs';
 
 interface Template {
   name: string;
@@ -21,6 +21,10 @@ interface Template {
 // This would be dynamically generated in a real app
 const getTemplatesContent = async () => {
   try {
+    // Import Node.js modules dynamically on server-side only
+    const path = await import('path');
+    const { promises: fs } = await import('fs');
+    
     // Try to read templates from filesystem
     const templatesPath = path.join(process.cwd(), '../../templates');
     const templateCategories = await fs.readdir(templatesPath, { withFileTypes: true });

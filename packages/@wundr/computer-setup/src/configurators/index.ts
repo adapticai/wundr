@@ -7,7 +7,8 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-import { getLogger } from '@wundr/core';
+// import { getLogger } from '@wundr/core'; // TODO: Fix core exports
+const getLogger = (name: string) => console;
 import { 
   DeveloperProfile, 
   GitConfiguration, 
@@ -504,7 +505,7 @@ function serve() {
     this.configChanges.push({
       file,
       changes,
-      backup
+      backup: backup || undefined
     });
   }
 

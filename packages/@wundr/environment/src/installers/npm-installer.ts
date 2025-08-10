@@ -32,16 +32,16 @@ export class NpmInstaller extends BaseInstaller {
         return {
           success: true,
           tool: tool.name,
-          version: validation.version,
+          ...(validation.version && { version: validation.version }),
           message: `Successfully installed ${tool.name}`,
-          warnings: result.stderr ? [result.stderr] : undefined
+          ...(result.stderr && { warnings: [result.stderr] })
         };
       } else {
         return {
           success: false,
           tool: tool.name,
           message: 'Installation completed but validation failed',
-          errors: validation.issues
+          ...(validation.issues && { errors: validation.issues })
         };
       }
     }
@@ -152,6 +152,6 @@ export class NpmInstaller extends BaseInstaller {
    */
   private extractVersion(output: string): string {
     const match = output.match(/([0-9]+\\.[0-9]+\\.[0-9]+)/);
-    return match ? match[1] : output.trim();
+    return match?.[1] || output.trim();
   }
 }

@@ -153,7 +153,9 @@ export function FileBrowser({
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
     // First filter by search query
-    let filtered = filterFileSystemItems(currentDirectoryItems, { search: searchQuery });
+    let filtered = currentDirectoryItems.filter(item => 
+      !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
     
     // Then filter by file types if any are selected
     if (selectedFileTypes.length > 0) {

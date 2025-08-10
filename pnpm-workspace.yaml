@@ -1,6 +1,7 @@
 packages:
   # Core packages with shared functionality
   - 'packages/*'
+  - 'packages/@wundr/*'
   
   # Applications
   - 'apps/*'

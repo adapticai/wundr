@@ -419,10 +419,10 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     return {
       cyclomatic: enhancement.cyclomatic || base.cyclomatic,
       cognitive: enhancement.cognitive || base.cognitive,
-      maintainability: enhancement.maintainability || base.maintainability,
+      maintainability: enhancement.maintainability ?? base.maintainability ?? 0,
       depth: Math.max(base.depth, enhancement.depth || 0),
-      parameters: enhancement.parameters || base.parameters,
-      lines: enhancement.lines || base.lines
+      parameters: enhancement.parameters ?? base.parameters ?? 0,
+      lines: enhancement.lines ?? base.lines ?? 0
     };
   }
 
@@ -650,15 +650,15 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       issues.push(`Low maintainability index (${complexity.maintainability.toFixed(1)})`);
     }
     
-    if (complexity.depth > this.thresholds.nesting.maxDepth) {
+    if (complexity.depth && complexity.depth > this.thresholds.nesting.maxDepth) {
       issues.push(`Excessive nesting depth (${complexity.depth})`);
     }
     
-    if (complexity.parameters > this.thresholds.size.maxParameters) {
+    if (complexity.parameters && complexity.parameters > this.thresholds.size.maxParameters) {
       issues.push(`Too many parameters (${complexity.parameters})`);
     }
     
-    if (complexity.lines > this.thresholds.size.maxLines) {
+    if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
       issues.push(`Function/method too long (${complexity.lines} lines)`);
     }
     
@@ -697,7 +697,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       recommendations.push('Consider if some parameters can be derived or have defaults');
     }
     
-    if (complexity.lines > this.thresholds.size.maxLines) {
+    if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
       recommendations.push('Break large function into smaller, focused functions');
       recommendations.push('Extract reusable logic into utility functions');
       recommendations.push('Consider if the function has multiple responsibilities');
@@ -758,11 +758,11 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     }
     
     // Large method/function
-    if (complexity.lines > this.thresholds.size.maxLines) {
+    if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
       recommendations.push({
         id: createId(),
         type: 'extract-method',
-        priority: complexity.lines > this.thresholds.size.maxLines * 2 ? 'high' : 'medium',
+        priority: (complexity.lines && complexity.lines > this.thresholds.size.maxLines * 2) ? 'high' : 'medium',
         entity,
         description: `Break down large ${entity.type} (${complexity.lines} lines) into smaller functions`,
         impact: 'Improves code organization and reusability',
@@ -778,7 +778,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     }
     
     // Too many parameters
-    if (complexity.parameters > this.thresholds.size.maxParameters) {
+    if (complexity.parameters && complexity.parameters > this.thresholds.size.maxParameters) {
       recommendations.push({
         id: createId(),
         type: 'simplify-conditions',

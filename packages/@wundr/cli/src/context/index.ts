@@ -1,5 +1,5 @@
-export { 
-  ContextManager, 
+export { ContextManager } from './context-manager';
+export type { 
   ProjectContext, 
   SessionContext, 
   CommandHistoryEntry,

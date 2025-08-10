@@ -269,7 +269,7 @@ async function runOptimizedAnalysis(directory: string, options: OptimizedAnalysi
       console.log(chalk.gray(`   Duplicate clusters: ${result.data.summary.duplicateClusters}`));
       console.log(chalk.gray(`   Circular dependencies: ${result.data.summary.circularDependencies}`));
       console.log(chalk.gray(`   Code smells: ${result.data.summary.codeSmells}`));
-      console.log(chalk.gray(`   Technical debt score: ${result.data.summary.technicalDebt.score}/100`));
+      console.log(chalk.gray(`   Technical debt score: ${result.data.summary.technicalDebt}/100`));
     }
     
     // Memory efficiency

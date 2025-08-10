@@ -1,8 +1,17 @@
 'use client';
 
 import React from 'react';
-import { FileBrowser } from '@/components/file-browser/file-browser';
+import dynamic from 'next/dynamic';
 import { FileSystemItem } from '@/lib/file-system';
+
+// Dynamically import FileBrowser to avoid SSR issues
+const FileBrowser = dynamic(
+  () => import('@/components/file-browser/file-browser').then(mod => mod.FileBrowser),
+  { 
+    ssr: false,
+    loading: () => <div>Loading file browser...</div>
+  }
+);
 
 export default function FilesPage() {
   const handleFileSelect = (file: FileSystemItem) => {

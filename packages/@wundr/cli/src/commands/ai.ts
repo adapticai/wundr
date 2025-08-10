@@ -17,7 +17,7 @@ export class AICommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private _pluginManager: PluginManager
   ) {
     this.aiService = new AIService(configManager);
     this.registerCommands();
@@ -221,7 +221,7 @@ export class AICommands {
       logger.info('Starting AI code review...');
       
       const filesToReview = files.length > 0 ? files : await this.getChangedFiles();
-      const reviewResults = [];
+      const reviewResults: Array<{ file: string; issues: any; suggestions: any; score: any }> = [];
 
       for (const file of filesToReview) {
         logger.debug(`Reviewing ${file}...`);

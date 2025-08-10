@@ -451,8 +451,7 @@ export function useReports() {
       setLoading(true);
       
       // Parse analysis data using ReportService
-      const fileContent = await file.text();
-      const analysisData = ReportService.parseAnalysisFile(fileContent, file.name);
+      const analysisData = await ReportService.parseAnalysisFile(file);
       
       // Cache the analysis data
       const analysisId = `analysis_${Date.now()}`;
@@ -465,7 +464,7 @@ export function useReports() {
       }
       
       // Generate report content
-      const reportContent = ReportService.generateReport(template.name, template.type, analysisData);
+      const reportContent = ReportService.generateReport(analysisData, template);
       
       // Create report record
       const newReport: Report = {

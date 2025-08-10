@@ -3,7 +3,7 @@ import Layout from '@theme/Layout';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Playground from '../components/Playground';
 
-export default function PlaygroundPage(): JSX.Element {
+export default function PlaygroundPage() {
   const { siteConfig } = useDocusaurusContext();
   
   return (

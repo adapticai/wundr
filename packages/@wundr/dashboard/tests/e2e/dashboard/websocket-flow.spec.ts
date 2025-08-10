@@ -238,7 +238,7 @@ test.describe('WebSocket Real-time Flow E2E Tests', () => {
     await dashboardPage.page.waitForTimeout(10000);
     
     // Stop data stream
-    await websocketHelper.stopRealtimeDataStream(streamId);
+    await websocketHelper.stopRealtimeDataStream(streamId as any);
     
     // Get performance metrics
     const metrics = await metricsPromise;

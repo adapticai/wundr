@@ -274,7 +274,7 @@ export class ChatCommands {
     try {
       logger.debug('Processing single question...');
 
-      let session: ChatSession;
+      let session: ChatSession | null;
       
       if (options.session) {
         session = await this.loadChatSession(options.session);

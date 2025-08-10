@@ -85,7 +85,7 @@ class FileHeaderManager {
 
   private async processFile(filePath: string, config: FileHeaderConfig): Promise<void> {
     try {
-      const content = await fs.promises.readFile(filePath, 'utf-8');
+      const content = await fs.promises.readFile(filePath, 'utf-8') as string;
       
       // Skip if header already exists
       if (this.hasHeader(content, config)) {
@@ -93,7 +93,7 @@ class FileHeaderManager {
       }
 
       const header = this.generateHeader(filePath, config);
-      const newContent = this.insertHeader(content, header, config);
+      const newContent = this.insertHeader(content, header, config) as string;
 
       await fs.promises.writeFile(filePath, newContent);
       console.log(`✓ Added header to ${filePath}`);
@@ -107,7 +107,7 @@ class FileHeaderManager {
     
     // Check if file already has a proper header
     if (config.pattern.endsWith('.sh')) {
-      return lines[0].startsWith('#!') && 
+      return (lines[0]?.startsWith('#!') ?? false) && 
              lines.slice(1, 10).some(line => line.includes('Author:') || line.includes('@author'));
     } else {
       return lines.slice(0, 10).some(line => 
@@ -123,7 +123,7 @@ class FileHeaderManager {
 
     return config.header
       .replace(/\{\{filename\}\}/g, filename)
-      .replace(/\{\{description\}\}/g, description)
+      .replace(/\{\{description\}\}/g, description || 'Part of the monorepo refactoring toolkit.')
       .replace(/\{\{date\}\}/g, date);
   }
 
@@ -158,14 +158,14 @@ class FileHeaderManager {
     
     if (config.pattern.endsWith('.sh')) {
       // For shell scripts, preserve shebang and insert header after
-      if (lines[0].startsWith('#!')) {
-        return [lines[0], '', header, '', ...lines.slice(1)].join('\n');
+      if (lines[0]?.startsWith('#!')) {
+        return [lines[0]!, '', header, '', ...lines.slice(1)].join('\n');
       } else {
         return [header, '', ...lines].join('\n');
       }
-    } else if (config.pattern.endsWith('.ts') && lines[0].startsWith('#!')) {
+    } else if (config.pattern.endsWith('.ts') && lines[0]?.startsWith('#!')) {
       // For TypeScript files with shebang
-      return [lines[0], '', header, '', ...lines.slice(1)].join('\n');
+      return [lines[0]!, '', header, '', ...lines.slice(1)].join('\n');
     } else {
       // For other files, insert header at the beginning
       return [header, '', ...lines].join('\n');

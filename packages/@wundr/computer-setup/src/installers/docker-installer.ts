@@ -1,7 +1,7 @@
 /**
  * Docker Installer - Cross-platform Docker and Docker Compose setup
  */
-import execa from 'execa';
+import { execa } from 'execa';
 import * as os from 'os';
 import which from 'which';
 import { BaseInstaller } from './index';

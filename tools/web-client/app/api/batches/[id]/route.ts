@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const batch = BatchProcessingService.getInstance().getBatch(id);
+    const batch = await BatchProcessingService.getBatch(id);
     
     if (!batch) {
       return NextResponse.json(
@@ -47,31 +47,35 @@ export async function PATCH(
 
     switch (action) {
       case 'start':
-        BatchProcessingService.getInstance().updateBatchStatus(id, 'processing');
+        await BatchProcessingService.updateBatch(id, { status: 'running' });
         break;
       case 'pause':
-        BatchProcessingService.getInstance().updateBatchStatus(id, 'pending');
+        await BatchProcessingService.updateBatch(id, { status: 'pending' });
         break;
       case 'resume':
-        BatchProcessingService.getInstance().updateBatchStatus(id, 'processing');
+        await BatchProcessingService.updateBatch(id, { status: 'running' });
         break;
       case 'cancel':
-        BatchProcessingService.getInstance().updateBatchStatus(id, 'failed');
+        await BatchProcessingService.updateBatch(id, { status: 'failed' });
         break;
       case 'retry':
         // Retry logic - create a new batch with same items
-        const oldBatch = BatchProcessingService.getInstance().getBatch(id);
+        const oldBatch = await BatchProcessingService.getBatch(id);
         if (!oldBatch) {
           return NextResponse.json({ success: false, error: 'Batch not found' }, { status: 404 });
         }
-        const newBatch = BatchProcessingService.getInstance().createBatch(oldBatch.items);
+        const newBatch = await BatchProcessingService.createBatch({
+          name: `${oldBatch.name} (retry)`,
+          type: oldBatch.type,
+          data: oldBatch
+        });
         return NextResponse.json({
           success: true,
           data: { newBatchId: newBatch.id }
         });
       case 'rollback':
         // Rollback not implemented - just mark as failed
-        BatchProcessingService.getInstance().updateBatchStatus(id, 'failed');
+        await BatchProcessingService.updateBatch(id, { status: 'failed' });
         break;
       default:
         return NextResponse.json(
@@ -83,7 +87,7 @@ export async function PATCH(
         );
     }
 
-    const batch = BatchProcessingService.getInstance().getBatch(id);
+    const batch = await BatchProcessingService.getBatch(id);
     return NextResponse.json({
       success: true,
       data: batch
@@ -107,7 +111,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const success = BatchProcessingService.getInstance().deleteBatch(id);
+    const success = await BatchProcessingService.deleteBatch(id);
     
     if (!success) {
       return NextResponse.json(

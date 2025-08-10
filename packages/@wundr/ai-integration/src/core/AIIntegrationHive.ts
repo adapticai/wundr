@@ -111,7 +111,7 @@ export class AIIntegrationHive extends EventEmitter {
   async spawnAgents(agentTypes: string[], task: string): Promise<OperationResult> {
     try {
       const topology = await this.swarmIntelligence.selectOptimalTopology(agentTypes, task);
-      const agents = await this.claudeFlowOrchestrator.spawnAgents(agentTypes, topology);
+      const agents = await this.claudeFlowOrchestrator.spawnAgents(agentTypes as any, topology);
       
       // Register agents with coordinator
       for (const agent of agents) {

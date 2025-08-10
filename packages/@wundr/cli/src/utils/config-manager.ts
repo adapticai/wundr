@@ -197,6 +197,9 @@ export class ConfigManager {
     
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
+      if (!key) {
+        throw new Error(`Invalid path: empty key at position ${i}`);
+      }
       if (!current || typeof current !== 'object') {
         throw new Error(`Invalid path: cannot set property on non-object`);
       }
@@ -207,6 +210,9 @@ export class ConfigManager {
     }
     
     const finalKey = keys[keys.length - 1];
+    if (!finalKey) {
+      throw new Error('Invalid path: empty final key');
+    }
     if (!finalKey || !current || typeof current !== 'object') {
       throw new Error(`Invalid path: cannot set property`);
     }
@@ -245,32 +251,32 @@ export class ConfigManager {
     const envConfig = { ...config };
     
     // AI API Key from environment
-    if (process.env.CLAUDE_API_KEY && !envConfig.ai.apiKey) {
-      envConfig.ai.apiKey = process.env.CLAUDE_API_KEY;
+    if (process.env['CLAUDE_API_KEY'] && !envConfig.ai.apiKey) {
+      envConfig.ai.apiKey = process.env['CLAUDE_API_KEY'];
     }
     
-    if (process.env.OPENAI_API_KEY && envConfig.ai.provider === 'openai' && !envConfig.ai.apiKey) {
-      envConfig.ai.apiKey = process.env.OPENAI_API_KEY;
+    if (process.env['OPENAI_API_KEY'] && envConfig.ai.provider === 'openai' && !envConfig.ai.apiKey) {
+      envConfig.ai.apiKey = process.env['OPENAI_API_KEY'];
     }
     
     // AI Provider and Model from environment
-    if (process.env.WUNDR_AI_PROVIDER) {
-      envConfig.ai.provider = process.env.WUNDR_AI_PROVIDER;
+    if (process.env['WUNDR_AI_PROVIDER']) {
+      envConfig.ai.provider = process.env['WUNDR_AI_PROVIDER'];
     }
     
-    if (process.env.WUNDR_AI_MODEL) {
-      envConfig.ai.model = process.env.WUNDR_AI_MODEL;
+    if (process.env['WUNDR_AI_MODEL']) {
+      envConfig.ai.model = process.env['WUNDR_AI_MODEL'];
     }
     
     // GitHub integration
-    if (process.env.GITHUB_TOKEN) {
+    if (process.env['GITHUB_TOKEN']) {
       envConfig.integrations.github = envConfig.integrations.github || {
-        token: process.env.GITHUB_TOKEN,
-        owner: process.env.GITHUB_OWNER || '',
-        repo: process.env.GITHUB_REPO || ''
+        token: process.env['GITHUB_TOKEN'],
+        owner: process.env['GITHUB_OWNER'] || '',
+        repo: process.env['GITHUB_REPO'] || ''
       };
       if (!envConfig.integrations.github.token) {
-        envConfig.integrations.github.token = process.env.GITHUB_TOKEN;
+        envConfig.integrations.github.token = process.env['GITHUB_TOKEN'];
       }
     }
     
@@ -291,11 +297,11 @@ export class ConfigManager {
     // Then check environment variables based on provider
     switch (currentProvider.toLowerCase()) {
       case 'claude':
-        return process.env.CLAUDE_API_KEY;
+        return process.env['CLAUDE_API_KEY'];
       case 'openai':
-        return process.env.OPENAI_API_KEY;
+        return process.env['OPENAI_API_KEY'];
       default:
-        return process.env.CLAUDE_API_KEY; // Default fallback
+        return process.env['CLAUDE_API_KEY']; // Default fallback
     }
   }
 

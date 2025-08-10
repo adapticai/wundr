@@ -332,8 +332,8 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter implements B
     const allClusters: DuplicateCluster[] = [];
     
     for (const result of results) {
-      if (result.success && result.data) {
-        allClusters.push(...result.data);
+      if (result?.success && result?.data) {
+        allClusters.push(...(result.data as DuplicateCluster[]));
       }
     }
     
@@ -366,8 +366,8 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter implements B
     const allClusters: DuplicateCluster[] = [];
     
     for (const result of results) {
-      if (result.success && result.data) {
-        allClusters.push(...result.data);
+      if (result?.success && result?.data) {
+        allClusters.push(...(result.data as DuplicateCluster[]));
       }
     }
     
@@ -410,8 +410,8 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter implements B
     const allClusters: DuplicateCluster[] = [];
     
     for (const result of results) {
-      if (result.success && result.data) {
-        allClusters.push(...result.data);
+      if (result?.success && result?.data) {
+        allClusters.push(...(result.data as DuplicateCluster[]));
       }
     }
 
@@ -456,25 +456,27 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter implements B
     
     // Use more efficient similarity calculation
     for (let i = 0; i < entities.length; i++) {
-      if (localProcessed.has(entities[i].id)) continue;
+      const currentEntity = entities[i];
+      if (!currentEntity || localProcessed.has(currentEntity.id)) continue;
 
-      const cluster = [entities[i]];
-      localProcessed.add(entities[i].id);
+      const cluster = [currentEntity];
+      localProcessed.add(currentEntity.id);
 
       // Find entities with fuzzy similarity
       for (let j = i + 1; j < entities.length; j++) {
-        if (localProcessed.has(entities[j].id)) continue;
+        const comparisonEntity = entities[j];
+        if (!comparisonEntity || localProcessed.has(comparisonEntity.id)) continue;
 
-        const similarity = this.getCachedSimilarity(entities[i], entities[j]);
+        const similarity = this.getCachedSimilarity(currentEntity, comparisonEntity);
         if (similarity >= this.config.minSimilarity * 0.7) {
-          cluster.push(entities[j]);
-          localProcessed.add(entities[j].id);
+          cluster.push(comparisonEntity);
+          localProcessed.add(comparisonEntity.id);
         }
       }
 
       if (cluster.length > 1 && cluster.length <= this.config.maxClusterSize) {
         const clusterObj = this.getClusterFromPool();
-        this.populateCluster(clusterObj, cluster, entities[i].type, false, false);
+        this.populateCluster(clusterObj, cluster, currentEntity.type, false, false);
         clusters.push(clusterObj);
       }
     }
@@ -628,8 +630,9 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter implements B
           uniqueClusters.get(key)!.similarity < cluster.similarity) {
         
         // Return previous cluster to pool if it exists
-        if (uniqueClusters.has(key)) {
-          this.returnClusterToPool(uniqueClusters.get(key)!);
+        const existingCluster = uniqueClusters.get(key);
+        if (existingCluster) {
+          this.returnClusterToPool(existingCluster);
         }
         
         uniqueClusters.set(key, cluster);
@@ -775,6 +778,9 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter implements B
       throw new Error('Cannot generate suggestion for empty entity list');
     }
     const primaryEntity = entities[0];
+    if (!primaryEntity) {
+      throw new Error('Primary entity is undefined');
+    }
     
     let strategy: 'merge' | 'extract' | 'refactor';
     if (entityType === 'interface' || entityType === 'type') {

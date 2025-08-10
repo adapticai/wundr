@@ -70,7 +70,7 @@ export class IntentClassifier {
     return results.sort((a, b) => {
       const confidenceDiff = b.confidence - a.confidence;
       if (Math.abs(confidenceDiff) < 0.1) {
-        return (b.metadata?.priority || 0) - (a.metadata?.priority || 0);
+        return (b.metadata?.['priority'] || 0) - (a.metadata?.['priority'] || 0);
       }
       return confidenceDiff;
     });
@@ -81,7 +81,7 @@ export class IntentClassifier {
    */
   getBestIntent(input: string): Intent | null {
     const intents = this.classifyIntent(input);
-    return intents.length > 0 ? intents[0] : null;
+    return intents.length > 0 && intents[0] ? intents[0] : null;
   }
 
   /**
@@ -394,7 +394,7 @@ export class IntentClassifier {
 
   private extractPort(input: string): number | undefined {
     const match = input.match(/port\s+(\d+)/);
-    return match ? parseInt(match[1], 10) : undefined;
+    return match && match[1] ? parseInt(match[1], 10) : undefined;
   }
 
   private extractWatchPattern(input: string): string | undefined {

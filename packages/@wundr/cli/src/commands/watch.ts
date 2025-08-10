@@ -557,6 +557,11 @@ export class WatchCommands {
       const { spawn } = await import('child_process');
       const [cmdName, ...args] = command.split(' ');
       
+      if (!cmdName) {
+        logger.error('Invalid command: empty command string');
+        return;
+      }
+      
       const child = spawn(cmdName, args, {
         stdio: 'inherit',
         shell: true
@@ -687,7 +692,7 @@ export class WatchCommands {
 
   private getTestCommand(framework: string, options: any): string {
     const baseCmd = framework === 'npm' ? `npm test` : `npx ${framework}`;
-    const flags = [];
+    const flags: string[] = [];
     
     if (options.coverage) flags.push('--coverage');
     if (options.changedOnly) flags.push('--changedSince=HEAD');

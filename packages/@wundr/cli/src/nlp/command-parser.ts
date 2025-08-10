@@ -139,6 +139,8 @@ export class CommandParser {
 
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
+        if (!step) continue;
+        
         const stepResult = await this.parseCommand(step, context);
         
         executionPlan.push({
@@ -356,7 +358,7 @@ export class CommandParser {
     for (let i = 0; i < remaining.length; i++) {
       const part = remaining[i];
       
-      if (part.startsWith('--')) {
+      if (part?.startsWith('--')) {
         const optionName = part.slice(2);
         const nextPart = remaining[i + 1];
         
@@ -366,10 +368,10 @@ export class CommandParser {
         } else {
           options[optionName] = true;
         }
-      } else if (part.startsWith('-')) {
+      } else if (part?.startsWith('-')) {
         const optionName = part.slice(1);
         options[optionName] = true;
-      } else {
+      } else if (part) {
         args.push(part);
       }
     }
@@ -382,7 +384,7 @@ export class CommandParser {
    */
   private extractIntent(command: string): string {
     const parts = command.split(' ');
-    if (parts.length >= 2) {
+    if (parts.length >= 2 && parts[1]) {
       return parts[1]; // "analyze", "create", etc.
     }
     return 'unknown';
@@ -443,7 +445,7 @@ export class CommandParser {
     ];
     
     const baseCommand = command.split(' ')[0];
-    return validCommands.includes(baseCommand);
+    return baseCommand ? validCommands.includes(baseCommand) : false;
   }
 
   /**
@@ -467,19 +469,19 @@ export class CommandParser {
 
       case 'analyze':
         // Analyze command is flexible, but we can suggest focus areas
-        if (!parsedCommand.options.focus) {
+        if (!parsedCommand.options['focus']) {
           recommendations.push('Consider using --focus to target specific areas (dependencies, duplicates, quality)');
         }
         break;
 
       case 'watch':
-        if (!parsedCommand.options.pattern && parsedCommand.args.length === 0) {
+        if (!parsedCommand.options['pattern'] && parsedCommand.args.length === 0) {
           recommendations.push('Specify file patterns to watch: "wundr watch --pattern "**/*.ts""');
         }
         break;
 
       case 'batch':
-        if (!parsedCommand.options.file && !parsedCommand.options.interactive) {
+        if (!parsedCommand.options['file'] && !parsedCommand.options['interactive']) {
           issues.push('Batch command requires either a batch file or interactive mode');
           recommendations.push('Use --file <batch-file> or --interactive for step-by-step execution');
         }

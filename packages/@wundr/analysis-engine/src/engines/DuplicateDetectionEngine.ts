@@ -118,10 +118,13 @@ export class DuplicateDetectionEngine implements BaseAnalyzer<DuplicateCluster[]
     // Process normalized hash groups
     for (const [hash, duplicateEntities] of normalizedGroups.entries()) {
       if (duplicateEntities.length > 1) {
+        const firstEntity = duplicateEntities[0];
+        if (!firstEntity) continue;
+        
         const cluster: DuplicateCluster = {
           id: createId(),
           hash,
-          type: duplicateEntities[0].type,
+          type: firstEntity.type,
           severity: this.calculateSeverity(duplicateEntities),
           entities: duplicateEntities,
           structuralMatch: true,
@@ -141,10 +144,13 @@ export class DuplicateDetectionEngine implements BaseAnalyzer<DuplicateCluster[]
         );
 
         if (!existingCluster) {
+          const firstEntity = duplicateEntities[0];
+          if (!firstEntity) continue;
+          
           const cluster: DuplicateCluster = {
             id: createId(),
             hash,
-            type: duplicateEntities[0].type,
+            type: firstEntity.type,
             severity: this.calculateSeverity(duplicateEntities),
             entities: duplicateEntities,
             structuralMatch: false,
@@ -298,12 +304,12 @@ export class DuplicateDetectionEngine implements BaseAnalyzer<DuplicateCluster[]
         
         for (const otherEntity of entities) {
           if (entity.id === otherEntity.id) {
-            matrix[entity.id][otherEntity.id] = 1.0;
+            matrix[entity.id]![otherEntity.id] = 1.0;
             continue;
           }
 
           const similarity = this.calculateFuzzySimilarity(entity, otherEntity);
-          matrix[entity.id][otherEntity.id] = similarity;
+          matrix[entity.id]![otherEntity.id] = similarity;
         }
       },
       8 // Reasonable concurrency for matrix calculation
@@ -678,7 +684,7 @@ export class DuplicateDetectionEngine implements BaseAnalyzer<DuplicateCluster[]
 
     for (let i = 0; i < entities.length; i++) {
       for (let j = i + 1; j < entities.length; j++) {
-        totalSimilarity += this.calculateSemanticSimilarity(entities[i], entities[j]);
+        totalSimilarity += this.calculateSemanticSimilarity(entities[i]!, entities[j]!);
         pairs++;
       }
     }
@@ -728,6 +734,9 @@ export class DuplicateDetectionEngine implements BaseAnalyzer<DuplicateCluster[]
     entityType: string
   ): ConsolidationSuggestion {
     const primaryEntity = entities[0];
+    if (!primaryEntity) {
+      throw new Error('Primary entity is undefined');
+    }
     
     let strategy: 'merge' | 'extract' | 'refactor';
     if (entityType === 'interface' || entityType === 'type') {

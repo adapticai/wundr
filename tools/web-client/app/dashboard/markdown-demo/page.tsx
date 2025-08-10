@@ -452,10 +452,11 @@ export default function MarkdownDemoPage() {
       const content: ReportContent = { summary, sections };
       setReportContent(content);
       
-      const markdown = ReportTemplateEngine.generateMarkdownReport(SAMPLE_ANALYSIS_DATA, {
-        title: SAMPLE_REPORT_TEMPLATE.name,
-        includeMetadata: true
-      });
+      const markdown = ReportTemplateEngine.generateMarkdownReport(
+        SAMPLE_ANALYSIS_DATA, 
+        SAMPLE_REPORT_TEMPLATE, 
+        content
+      );
       setReportMarkdown(markdown);
     } catch (error) {
       console.error('Failed to generate report:', error);

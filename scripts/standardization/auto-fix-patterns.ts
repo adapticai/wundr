@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 // scripts/standardization/auto-fix-patterns.ts
 
-import { Project, SourceFile, Node } from 'ts-morph';
-import * as ts from 'typescript';
+import { Project, SourceFile } from 'ts-morph';
 import * as fs from 'fs';
-import * as path from 'path';
 
 interface FixRule {
   name: string;
@@ -38,7 +36,7 @@ export class AutoFixPatterns {
     this.project = new Project({
       tsConfigFilePath: './tsconfig.json'
     });
-    this.project.addSourceFilesFromTsConfig();
+    this.project.addSourceFilesFromTsConfig('./tsconfig.json');
 
     this.report = {
       timestamp: new Date().toISOString(),
@@ -85,7 +83,7 @@ export class AutoFixPatterns {
         name: 'fix-double-equals',
         description: 'Replace == with === and != with !==',
         pattern: /([^=!])([=!])=([^=])/g,
-        replacement: (match, before, operator, after) => {
+        replacement: (_match: string, before: string, operator: string, after: string) => {
           return `${before}${operator}==${after}`;
         },
         examples: [
@@ -128,7 +126,7 @@ export class AutoFixPatterns {
         name: 'fix-string-concatenation',
         description: 'Replace string concatenation with template literals',
         pattern: /(['"`])((?:[^'"`\\]|\\.)*)(['"`])\s*\+\s*([^+\s][^+]*?)(?=\s*[;,\)])/g,
-        replacement: (match, quote1, str1, quote2, rest) => {
+        replacement: (match: string, _quote1: string, str1: string, _quote2: string, rest: string) => {
           // Simple case - convert basic concatenation
           if (rest.includes("'") || rest.includes('"')) {
             return `\`${str1.replace(/\$\{/g, '\\${')}\${${rest.trim()}}\``;
@@ -146,7 +144,7 @@ export class AutoFixPatterns {
         name: 'fix-array-join',
         description: 'Simplify array.join() patterns',
         pattern: /\[(.*?)\]\.join\(['"`]([^'"`]*)['"`]\)/g,
-        replacement: (match, items, separator) => {
+        replacement: (match: string, items: string, separator: string) => {
           // Only fix simple cases
           if (items.includes(',') && !items.includes('${')) {
             const itemList = items.split(',').map(s => s.trim());
@@ -216,7 +214,7 @@ export class AutoFixPatterns {
     }
 
     // Save all modified files
-    const modifiedFiles = sourceFiles.filter(file => file.isSaved() === false);
+    const modifiedFiles = sourceFiles.filter(file => !file.isSaved());
     
     for (const file of modifiedFiles) {
       await file.save();
@@ -276,7 +274,7 @@ export class AutoFixPatterns {
         const matches = Array.from(originalText.matchAll(new RegExp(rule.pattern, 'gm')));
         
         matches.forEach(match => {
-          const lineNumber = this.getLineNumber(originalText, (match as any).index || 0);
+          const lineNumber = this.getLineNumber(originalText, match.index || 0);
           
           this.report.fixes.push({
             file: filePath,
@@ -285,7 +283,7 @@ export class AutoFixPatterns {
             before: match[0],
             after: typeof rule.replacement === 'string' 
               ? match[0].replace(rule.pattern, rule.replacement)
-              : rule.replacement(match[0], ...(match as any).slice(1))
+              : rule.replacement(match[0], ...Array.from(match).slice(1))
           });
           
           fixCount++;
@@ -326,7 +324,7 @@ export class AutoFixPatterns {
     await this.applyRule(rule, sourceFiles);
 
     // Save modified files
-    const modifiedFiles = sourceFiles.filter(file => file.isSaved() === false);
+    const modifiedFiles = sourceFiles.filter(file => !file.isSaved());
     for (const file of modifiedFiles) {
       await file.save();
     }
@@ -488,7 +486,7 @@ if (require.main === module) {
   switch (command) {
     case 'apply':
       autoFix.applyAutoFixes()
-        .then(report => {
+        .then(_report => {
           autoFix.generateReport();
           
           // Validate fixes

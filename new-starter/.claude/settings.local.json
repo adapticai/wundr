@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(gh auth:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Bash(/Users/kirk/new-starter/verify-setup-fixes.sh:*)",
+      "Bash(ls:*)"
+    ],
+    "deny": []
+  }
+}

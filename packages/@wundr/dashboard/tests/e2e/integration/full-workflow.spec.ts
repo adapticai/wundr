@@ -197,7 +197,7 @@ test.describe('Full Workflow Integration E2E Tests', () => {
     // Let it run for a few seconds
     await page.waitForTimeout(5000);
     
-    await websocketHelper.stopRealtimeDataStream(streamId);
+    await websocketHelper.stopRealtimeDataStream(streamId as any);
     
     // 5. Check performance metrics
     const finalMemory = await performanceHelper.measureMemoryUsage();

@@ -204,7 +204,9 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     importPatterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(content)) !== null) {
-        const importPath = this.resolveImportPath(match[1], filePath);
+        const matchResult = match[1];
+        if (!matchResult) continue;
+        const importPath = this.resolveImportPath(matchResult, filePath);
         imports.add(importPath);
       }
     });
@@ -226,7 +228,9 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     [reExportPattern, reExportAllPattern].forEach(pattern => {
       let match;
       while ((match = pattern.exec(content)) !== null) {
-        reExports.add(match[1]);
+        const matchResult = match[1];
+        if (!matchResult) continue;
+        reExports.add(matchResult);
       }
     });
 

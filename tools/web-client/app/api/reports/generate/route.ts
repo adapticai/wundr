@@ -126,11 +126,7 @@ export async function POST(request: NextRequest) {
     const normalizedData = ReportService.normalizeAnalysisData(body.parameters);
     
     // Generate report content using the correct method signature
-    const reportContent = ReportService.generateReport(
-      body.name || `${template.name} - ${new Date().toLocaleDateString()}`,
-      template.type,
-      normalizedData
-    );
+    const reportContent = ReportService.generateReport(normalizedData, template);
     
     // Generate detailed sections if requested
     let additionalSections: any[] = [];
@@ -172,11 +168,9 @@ export async function POST(request: NextRequest) {
     // Generate markdown if requested
     if ((body as any).format === 'markdown') {
       const markdown = ReportTemplateEngine.generateMarkdownReport(
-        normalizedData,
-        {
-          title: body.name || `${template.name} - ${new Date().toLocaleDateString()}`,
-          includeMetadata: true
-        }
+        normalizedData, 
+        template, 
+        reportContent
       );
       
       return NextResponse.json({

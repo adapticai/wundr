@@ -71,7 +71,7 @@ export interface MemoryThresholds {
 export class MemoryMonitor extends EventEmitter {
   private snapshots: MemorySnapshot[] = [];
   private isMonitoring = false;
-  private monitoringInterval: NodeJS.Timer | null = null;
+  private monitoringInterval: NodeJS.Timeout | null = null;
   private gcObserver: any = null;
   private thresholds: MemoryThresholds;
   private snapshotInterval: number;
@@ -334,7 +334,7 @@ export class MemoryMonitor extends EventEmitter {
     const x = Array.from({ length: n }, (_, i) => i);
     const sumX = x.reduce((a, b) => a + b, 0);
     const sumY = values.reduce((a, b) => a + b, 0);
-    const sumXY = x.reduce((sum, xi, i) => sum + xi * values[i], 0);
+    const sumXY = x.reduce((sum, xi, i) => sum + xi * values[i]!, 0);
     const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
     const sumYY = values.reduce((sum, yi) => sum + yi * yi, 0);
     
@@ -360,6 +360,8 @@ export class MemoryMonitor extends EventEmitter {
     
     const firstSnapshot = recent[0];
     const lastSnapshot = recent[recent.length - 1];
+    
+    if (!firstSnapshot || !lastSnapshot) return 0;
     
     const heapDiff = lastSnapshot.heapUsed - firstSnapshot.heapUsed;
     const timeDiff = (lastSnapshot.timestamp - firstSnapshot.timestamp) / 1000; // seconds
@@ -469,7 +471,7 @@ export class MemoryMonitor extends EventEmitter {
       this.gcObserver.observe({ type: 'gc' });
     } catch (error) {
       // GC observer not available
-      console.warn('GC observer not available:', error.message);
+      console.warn('GC observer not available:', (error as Error).message);
     }
   }
 
@@ -505,9 +507,9 @@ export class MemoryMonitor extends EventEmitter {
       const snapshot = v8.getHeapSnapshot();
       const writeStream = fs.createWriteStream(filepath);
       
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         snapshot.pipe(writeStream);
-        writeStream.on('finish', resolve);
+        writeStream.on('finish', () => resolve());
         writeStream.on('error', reject);
       });
       
@@ -575,7 +577,11 @@ export class MemoryMonitor extends EventEmitter {
    */
   private getMonitoringDuration(): number {
     if (this.snapshots.length < 2) return 0;
-    return this.snapshots[this.snapshots.length - 1].timestamp - this.snapshots[0].timestamp;
+    const lastSnapshot = this.snapshots[this.snapshots.length - 1];
+    const firstSnapshot = this.snapshots[0];
+    return lastSnapshot?.timestamp && firstSnapshot?.timestamp 
+      ? lastSnapshot.timestamp - firstSnapshot.timestamp 
+      : 0;
   }
 
   /**

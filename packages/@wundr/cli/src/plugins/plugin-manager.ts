@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { spawn } from 'child_process';
+import { spawn, type ChildProcess } from 'child_process';
 import chalk from 'chalk';
 import { ConfigManager } from '../utils/config-manager';
 import { logger } from '../utils/logger';
@@ -295,7 +295,7 @@ export class PluginManager {
       }
 
       const pluginDirs = await fs.readdir(this.pluginsDir);
-      const plugins = [];
+      const plugins: any[] = [];
 
       for (const dir of pluginDirs) {
         const pluginInfo = await this.getPluginInfo(dir);
@@ -707,7 +707,11 @@ export class PluginManager {
   private async runCommand(command: string, options: any = {}): Promise<void> {
     return new Promise((resolve, reject) => {
       const [cmd, ...args] = command.split(' ');
-      const child = spawn(cmd, args, {
+      if (!cmd) {
+        reject(new Error('Invalid command: empty command string'));
+        return;
+      }
+      const child: ChildProcess = spawn(cmd, args, {
         stdio: 'inherit',
         shell: true,
         ...options

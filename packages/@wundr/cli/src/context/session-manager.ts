@@ -190,7 +190,7 @@ export class SessionManager extends EventEmitter {
     
     if (!session) {
       // Try to load from persistence
-      session = await this.loadSession(sessionId);
+      session = await this.loadSession(sessionId) || undefined;
       if (!session) {
         throw new Error(`Session not found: ${sessionId}`);
       }
@@ -442,7 +442,9 @@ export class SessionManager extends EventEmitter {
     const commandFrequency = new Map<string, number>();
     for (const cmd of recentCommands) {
       const baseCommand = cmd.command.split(' ')[0];
-      commandFrequency.set(baseCommand, (commandFrequency.get(baseCommand) || 0) + 1);
+      if (baseCommand) {
+        commandFrequency.set(baseCommand, (commandFrequency.get(baseCommand) || 0) + 1);
+      }
     }
 
     for (const [command, frequency] of commandFrequency) {
@@ -565,7 +567,9 @@ export class SessionManager extends EventEmitter {
     for (const session of this.activeSessions.values()) {
       for (const cmd of session.recentCommands) {
         const baseCommand = cmd.command.split(' ')[0];
-        commandCounts.set(baseCommand, (commandCounts.get(baseCommand) || 0) + 1);
+        if (baseCommand) {
+          commandCounts.set(baseCommand, (commandCounts.get(baseCommand) || 0) + 1);
+        }
       }
     }
 
@@ -864,21 +868,25 @@ export class SessionManager extends EventEmitter {
     
     if (recentCommands.length >= 3) {
       // Look for command sequences
-      const sequences = [];
+      const sequences: string[] = [];
       for (let i = 0; i < recentCommands.length - 1; i++) {
-        sequences.push(`${recentCommands[i].command} -> ${recentCommands[i + 1].command}`);
+        const current = recentCommands[i];
+        const next = recentCommands[i + 1];
+        if (current?.command && next?.command) {
+          sequences.push(`${current.command} -> ${next.command}`);
+        }
       }
       
       // Store patterns in temporary data for future suggestions
-      if (!session.temporaryData.commandPatterns) {
-        session.temporaryData.commandPatterns = [];
+      if (!session.temporaryData['commandPatterns']) {
+        session.temporaryData['commandPatterns'] = [];
       }
       
-      session.temporaryData.commandPatterns.push(...sequences);
+      session.temporaryData['commandPatterns'].push(...sequences);
       
       // Keep only recent patterns
-      session.temporaryData.commandPatterns = 
-        session.temporaryData.commandPatterns.slice(-20);
+      session.temporaryData['commandPatterns'] = 
+        session.temporaryData['commandPatterns'].slice(-20);
     }
   }
 

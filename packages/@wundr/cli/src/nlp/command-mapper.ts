@@ -441,7 +441,7 @@ export class CommandMapper extends EventEmitter {
 
     if (filters.since) {
       history = history.filter(cmd => 
-        cmd.metadata?.startTime && new Date(cmd.metadata.startTime) >= filters.since!
+        cmd.metadata?.['startTime'] && new Date(cmd.metadata['startTime']) >= filters.since!
       );
     }
 
@@ -451,7 +451,7 @@ export class CommandMapper extends EventEmitter {
 
     if (filters.intent) {
       history = history.filter(cmd => 
-        cmd.metadata?.intent === filters.intent
+        cmd.metadata?.['intent'] === filters.intent
       );
     }
 
@@ -695,7 +695,7 @@ export class CommandMapper extends EventEmitter {
     context: ExecutionContext
   ): Promise<{ command: string; args: string[] }> {
     const commandParts = template.commandTemplate.split(' ');
-    const baseCommand = commandParts[0];
+    const baseCommand = commandParts[0] || '';
     const args = commandParts.slice(1);
 
     // Add parameter-based arguments

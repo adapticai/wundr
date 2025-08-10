@@ -64,8 +64,8 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         noResolve: false,
         allowJs: true,
         checkJs: false,
-        target: ts.ScriptTarget.ES2020 as ts.ScriptTarget,
-        module: ts.ModuleKind.CommonJS as ts.ModuleKind
+        target: ts.ScriptTarget.ES2020 as any,
+        module: ts.ModuleKind.CommonJS as any
       }
     });
 

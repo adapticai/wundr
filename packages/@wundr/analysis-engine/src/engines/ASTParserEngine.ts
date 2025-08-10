@@ -3,8 +3,7 @@
  * Core component for analyzing source code structure and extracting entity information
  */
 
-import * as ts from 'typescript';
-import { Project, SourceFile, Node, SyntaxKind } from 'ts-morph';
+import { Project, SourceFile, Node, SyntaxKind, ts } from 'ts-morph';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import {
@@ -75,8 +74,8 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     // Initialize ts-morph project
     this.project = new Project({
       compilerOptions: {
-        target: this.config.parseOptions.target,
-        module: this.config.parseOptions.module,
+        target: this.config.parseOptions.target as any,
+        module: this.config.parseOptions.module as any,
         allowJs: this.config.parseOptions.allowJs,
         jsx: this.config.parseOptions.jsx ? ts.JsxEmit.Preserve : undefined,
         strict: true,
@@ -217,7 +216,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         exports,
         dependencies,
         ast: sourceFile,
-        diagnostics
+        diagnostics: diagnostics as any
       };
 
     } catch (error) {
@@ -359,7 +358,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     // Calculate position information
     const start = node.getStart();
     const sourceFile = node.getSourceFile();
-    const { line, character: column } = sourceFile.getLineAndColumnAtPos(start);
+    const { line, column } = sourceFile.getLineAndColumnAtPos(start);
     const endPos = node.getEnd();
     const endLineColumn = sourceFile.getLineAndColumnAtPos(endPos);
 
@@ -371,7 +370,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
 
     // Generate hashes
     const normalizedHash = generateNormalizedHash(signature || name);
-    const semanticHash = generateSemanticHash(signature || name, entityType, dependencies);
+    const semanticHash = generateSemanticHash(signature || name);
 
     const entity: EntityInfo = {
       id: createId(),

@@ -174,7 +174,7 @@ export class MockDataHelper {
   }
 
   generateMockDependencies() {
-    const dependencies = [];
+    const dependencies: any[] = [];
     const packages = [
       'react', 'next', 'typescript', 'playwright', 'jest', 'webpack',
       'lodash', 'moment', 'axios', 'express', 'mongoose', 'd3'

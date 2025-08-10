@@ -4,7 +4,17 @@
  */
 
 import { EventEmitter } from 'events';
-import { getLogger, getEventBus } from '@wundr/core';
+// import { getLogger, getEventBus } from '@wundr/core'; // TODO: Fix core exports
+const getLogger = (name: string) => ({
+  info: (...args: any[]) => console.log(...args),
+  error: (...args: any[]) => console.error(...args),
+  warn: (...args: any[]) => console.warn(...args),
+  debug: (...args: any[]) => console.debug(...args)
+});
+const getEventBus = () => ({ 
+  emit: (event: string, data?: any) => {}, 
+  on: (event: string, handler: Function) => {} 
+});
 import { 
   DeveloperProfile,
   SetupOptions,

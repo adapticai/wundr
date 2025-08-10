@@ -23,6 +23,7 @@ interface OptimizationResult {
   applied: boolean;
   metrics: Record<string, number>;
   recommendations: string[];
+  metadata?: Record<string, any>;
 }
 
 interface SystemMetrics {
@@ -149,13 +150,13 @@ class MemoryOptimizer {
 
   private async applyMemoryOptimization(opt: OptimizationResult): Promise<void> {
     // Force garbage collection if available
-    if (global.gc && opt.metrics.heapUtilization > 0.8) {
+    if (global.gc && opt.metrics?.['heapUtilization'] && opt.metrics['heapUtilization'] > 0.8) {
       global.gc();
       logger.info('Forced garbage collection to reclaim memory');
     }
 
     // Adjust Node.js memory settings if needed
-    if (opt.metrics.heapUsed > 1024 * 1024 * 1024) { // 1GB
+    if (opt.metrics?.['heapUsed'] && opt.metrics['heapUsed'] > 1024 * 1024 * 1024) { // 1GB
       logger.warn('Consider increasing Node.js heap size with --max-old-space-size');
     }
   }
@@ -212,7 +213,9 @@ class ConcurrencyOptimizer {
           automated: true,
           applied: false,
           metrics: {
-            queueSize: tasks.length,
+            queueSize: tasks.length
+          },
+          metadata: {
             queueName: queueName
           },
           recommendations: [
@@ -242,7 +245,7 @@ class ConcurrencyOptimizer {
   }
 
   private async applyConcurrencyOptimization(opt: OptimizationResult): Promise<void> {
-    if (opt.metrics.utilization < 0.7) {
+    if (opt.metrics?.['utilization'] && opt.metrics['utilization'] < 0.7) {
       // Increase worker thread pool for better CPU utilization
       const newWorkerCount = Math.min(this.workerThreads, Math.floor(this.workerThreads * 1.2));
       logger.info(`Increasing worker threads from ${this.activeWorkers} to ${newWorkerCount}`);
@@ -292,6 +295,9 @@ class AssetOptimizer {
             applied: false,
             metrics: {
               largeDependencies: largeDeps.length,
+              totalDependencies: largeDeps.length
+            },
+            metadata: {
               dependencies: largeDeps
             },
             recommendations: [
@@ -519,8 +525,10 @@ export class PerformanceOptimizerCommands {
       
       // Group by category
       const grouped = allOptimizations.reduce((acc, opt) => {
-        if (!acc[opt.category]) acc[opt.category] = [];
-        acc[opt.category].push(opt);
+        if (opt && opt.category) {
+          if (!acc[opt.category]) acc[opt.category] = [];
+          acc[opt.category]!.push(opt);
+        }
         return acc;
       }, {} as Record<string, OptimizationResult[]>);
       
@@ -703,7 +711,7 @@ export class PerformanceOptimizerCommands {
   // Benchmark implementations
   private async benchmarkMemoryAllocation(): Promise<void> {
     // Simulate memory-intensive operations
-    const arrays = [];
+    const arrays: number[][] = [];
     for (let i = 0; i < 1000; i++) {
       arrays.push(new Array(1000).fill(Math.random()));
     }

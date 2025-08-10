@@ -43,7 +43,7 @@ export class PerformanceHelper {
       return {
         domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
         loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
-        domInteractive: navigation.domInteractive - navigation.navigationStart,
+        domInteractive: navigation.domInteractive - navigation.fetchStart,
         firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
         firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0,
         largestContentfulPaint: 0, // Will be populated by LCP observer
@@ -73,7 +73,7 @@ export class PerformanceHelper {
 
       const originalWebSocket = window.WebSocket;
       window.WebSocket = class extends originalWebSocket {
-        constructor(...args: any[]) {
+        constructor(...args: ConstructorParameters<typeof originalWebSocket>) {
           super(...args);
           
           this.addEventListener('message', (event) => {
@@ -205,7 +205,7 @@ export class PerformanceHelper {
         url: response.url(),
         status: response.status(),
         size: response.headers()['content-length'] || 0,
-        timing: response.timing(),
+        timing: null, // response.timing() not available in Playwright
         contentType: response.headers()['content-type'] || ''
       });
     });
@@ -288,17 +288,17 @@ export class PerformanceHelper {
     // Check against thresholds
     if (metrics.totalLoadTime > thresholds.pageLoadTime) {
       report.summary.passed = false;
-      report.summary.issues.push(`Page load time ${metrics.totalLoadTime}ms exceeds threshold ${thresholds.pageLoadTime}ms`);
+      (report.summary.issues as string[]).push(`Page load time ${metrics.totalLoadTime}ms exceeds threshold ${thresholds.pageLoadTime}ms`);
     }
 
     if (metrics.memory && metrics.memory.used > thresholds.memoryUsage * 1024 * 1024) {
       report.summary.passed = false;
-      report.summary.issues.push(`Memory usage ${Math.round(metrics.memory.used / 1024 / 1024)}MB exceeds threshold ${thresholds.memoryUsage}MB`);
+      (report.summary.issues as string[]).push(`Memory usage ${Math.round(metrics.memory.used / 1024 / 1024)}MB exceeds threshold ${thresholds.memoryUsage}MB`);
     }
 
     if (metrics.fps && metrics.fps < thresholds.fps) {
       report.summary.passed = false;
-      report.summary.issues.push(`FPS ${metrics.fps} below threshold ${thresholds.fps}`);
+      (report.summary.issues as string[]).push(`FPS ${metrics.fps} below threshold ${thresholds.fps}`);
     }
 
     return report;

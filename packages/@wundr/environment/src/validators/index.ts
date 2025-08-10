@@ -53,7 +53,7 @@ export class EnvironmentValidator {
       environment: config,
       tools: toolValidations,
       system: systemInfo,
-      recommendations: recommendations.length > 0 ? recommendations : undefined
+      ...(recommendations.length > 0 && { recommendations })
     };
   }
 
@@ -114,8 +114,8 @@ export class EnvironmentValidator {
     return {
       valid: issues.length === 0,
       tool: 'platform',
-      issues: issues.length > 0 ? issues : undefined,
-      suggestions: suggestions.length > 0 ? suggestions : undefined
+      ...(issues.length > 0 && { issues }),
+      ...(suggestions.length > 0 && { suggestions })
     };
   }
 
@@ -142,8 +142,8 @@ export class EnvironmentValidator {
     return {
       valid: issues.length === 0,
       tool: 'platform-macos',
-      issues: issues.length > 0 ? issues : undefined,
-      suggestions: suggestions.length > 0 ? suggestions : undefined
+      ...(issues.length > 0 && { issues }),
+      ...(suggestions.length > 0 && { suggestions })
     };
   }
 
@@ -152,7 +152,7 @@ export class EnvironmentValidator {
    */
   private validateLinuxCompatibility(
     config: EnvironmentConfig,
-    systemInfo: SystemInfo,
+    _systemInfo: SystemInfo,
     issues: string[],
     suggestions: string[]
   ): ValidationResult {
@@ -167,8 +167,8 @@ export class EnvironmentValidator {
     return {
       valid: issues.length === 0,
       tool: 'platform-linux',
-      issues: issues.length > 0 ? issues : undefined,
-      suggestions: suggestions.length > 0 ? suggestions : undefined
+      ...(issues.length > 0 && { issues }),
+      ...(suggestions.length > 0 && { suggestions })
     };
   }
 
@@ -177,7 +177,7 @@ export class EnvironmentValidator {
    */
   private validateWindowsCompatibility(
     config: EnvironmentConfig,
-    systemInfo: SystemInfo,
+    _systemInfo: SystemInfo,
     issues: string[],
     suggestions: string[]
   ): ValidationResult {
@@ -192,8 +192,8 @@ export class EnvironmentValidator {
     return {
       valid: issues.length === 0,
       tool: 'platform-windows',
-      issues: issues.length > 0 ? issues : undefined,
-      suggestions: suggestions.length > 0 ? suggestions : undefined
+      ...(issues.length > 0 && { issues }),
+      ...(suggestions.length > 0 && { suggestions })
     };
   }
 
@@ -232,8 +232,8 @@ export class EnvironmentValidator {
     return {
       valid: issues.length === 0,
       tool: 'dependencies',
-      issues: issues.length > 0 ? issues : undefined,
-      suggestions: suggestions.length > 0 ? suggestions : undefined
+      ...(issues.length > 0 && { issues }),
+      ...(suggestions.length > 0 && { suggestions })
     };
   }
 

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { DocsLayout } from '@/components/docs/DocsLayout';
 import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';

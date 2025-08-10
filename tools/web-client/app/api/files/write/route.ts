@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+
+// Force dynamic rendering to allow fs access
+export const dynamic = 'force-dynamic'
+// Ensure this runs only on Node.js runtime
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
+    // Dynamic imports for Node.js modules
+    const fs = await import('fs-extra');
+    const path = await import('path');
+    
     const body = await request.json();
     const { path: filePath, content } = body;
     

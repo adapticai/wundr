@@ -17,7 +17,7 @@ interface LanguageSwitcherProps {
  * - Visual indicators for current language
  * - Mobile-responsive design
  */
-export default function LanguageSwitcher({ className, showLabel = false }: LanguageSwitcherProps): JSX.Element {
+export default function LanguageSwitcher({ className, showLabel = false }: LanguageSwitcherProps) {
   const location = useLocation();
   const history = useHistory();
   const { i18n } = useDocusaurusContext();
@@ -88,7 +88,7 @@ export default function LanguageSwitcher({ className, showLabel = false }: Langu
         </div>
       </div>
       
-      <style jsx>{`
+      <style>{`
         .language-switcher {
           position: relative;
           display: inline-flex;

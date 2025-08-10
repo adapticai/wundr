@@ -134,7 +134,9 @@ export interface SetupPlatform {
   os: 'darwin' | 'linux' | 'win32';
   arch: 'x64' | 'arm64';
   distro?: string; // For Linux
-  version: string;
+  version?: string;
+  node?: string;
+  shell?: string;
 }
 
 export interface SetupOptions {

@@ -660,7 +660,7 @@ export class PluginCommands {
       }
     };
 
-    return templates[template] || templates.basic;
+    return templates[template] || templates['basic'];
   }
 
   private async generatePluginStructure(pluginPath: string, config: any): Promise<void> {

@@ -328,7 +328,7 @@ Examples:
   }
 
   private generateSetupSteps(profile: any, platform: any): any[] {
-    const steps = [];
+    const steps: Array<{ name: string; required: boolean }> = [];
 
     // Platform-specific setup
     if (platform.os === 'darwin') {

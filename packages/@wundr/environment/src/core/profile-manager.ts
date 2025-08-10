@@ -2,7 +2,7 @@
  * Profile management system for different environment types
  */
 
-import { ProfileType, ProfileTemplate, ToolConfiguration, AgentConfiguration } from '../types';
+import { ProfileType, ProfileTemplate } from '../types';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('ProfileManager');

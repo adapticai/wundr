@@ -32,16 +32,16 @@ export class BrewInstaller extends BaseInstaller {
         return {
           success: true,
           tool: tool.name,
-          version: validation.version,
+          ...(validation.version && { version: validation.version }),
           message: `Successfully installed ${tool.name}`,
-          warnings: result.stderr ? [result.stderr] : undefined
+          ...(result.stderr && { warnings: [result.stderr] })
         };
       } else {
         return {
           success: false,
           tool: tool.name,
           message: 'Installation completed but validation failed',
-          errors: validation.issues
+          ...(validation.issues && { errors: validation.issues })
         };
       }
     }
@@ -177,6 +177,6 @@ export class BrewInstaller extends BaseInstaller {
     // Remove common prefixes and extract version number
     const cleaned = output.replace(/^v?([0-9]+\\.[0-9]+\\.[0-9]+).*$/m, '$1');
     const match = cleaned.match(/([0-9]+\\.[0-9]+\\.[0-9]+)/);
-    return match ? match[1] : output.trim();
+    return match?.[1] || output.trim();
   }
 }

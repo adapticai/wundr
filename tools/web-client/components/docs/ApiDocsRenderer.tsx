@@ -31,18 +31,18 @@ export function ApiDocsRenderer({ apiDocs, className = '' }: ApiDocsRendererProp
   // Filter API docs
   const filteredDocs = apiDocs.filter(doc => {
     const matchesSearch = !searchTerm || 
-      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.description.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesType = selectedType === 'all' || doc.method === selectedType;
+    const matchesType = selectedType === 'all' || doc.type === selectedType;
     
     return matchesSearch && matchesType;
   });
 
-  // Group by method
+  // Group by type
   const groupedDocs = filteredDocs.reduce((acc, doc) => {
-    if (!acc[doc.method]) acc[doc.method] = [];
-    acc[doc.method].push(doc);
+    if (!acc[doc.type]) acc[doc.type] = [];
+    acc[doc.type].push(doc);
     return acc;
   }, {} as Record<string, ApiDocEntry[]>);
 
@@ -72,12 +72,12 @@ export function ApiDocsRenderer({ apiDocs, className = '' }: ApiDocsRendererProp
   };
 
   const getMethodBadgeVariant = (method: string) => {
-    switch (method.toUpperCase()) {
-      case 'GET': return 'default';
-      case 'POST': return 'secondary';
-      case 'PUT': return 'outline';
-      case 'DELETE': return 'destructive';
-      case 'PATCH': return 'secondary';
+    switch (method.toLowerCase()) {
+      case 'interface': return 'default';
+      case 'type': return 'secondary';
+      case 'function': return 'outline';
+      case 'class': return 'destructive';
+      case 'enum': return 'default';
       default: return 'outline';
     }
   };
@@ -186,9 +186,9 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }
                 className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
               />
             </Button>
-            <code className="text-lg font-mono">{doc.title}</code>
-            <Badge variant={getMethodBadgeVariant(doc.method)} className="text-xs">
-              {doc.method}
+            <code className="text-lg font-mono">{doc.name}</code>
+            <Badge variant={getMethodBadgeVariant(doc.type)} className="text-xs">
+              {doc.type}
             </Badge>
           </CardTitle>
           
@@ -196,7 +196,7 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onCopy(doc.path || doc.title)}
+              onClick={() => onCopy(doc.signature || doc.name)}
               className="text-muted-foreground hover:text-foreground"
             >
               <Copy className="h-4 w-4" />
@@ -210,12 +210,12 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }
       {isExpanded && (
         <CardContent className="pt-0">
           <div className="space-y-4">
-            {/* Path */}
-            {doc.path && (
+            {/* Signature */}
+            {doc.signature && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Endpoint</h4>
+                <h4 className="text-sm font-semibold mb-2">Signature</h4>
                 <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
-                  <code>{doc.method} {doc.path}</code>
+                  <code>{doc.signature}</code>
                 </pre>
               </div>
             )}
@@ -228,7 +228,6 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }
                   {doc.parameters.map((prop) => (
                     <div key={prop.name} className="flex items-start gap-3 text-sm">
                       <code className="font-mono text-primary">{prop.name}</code>
-                      {!prop.required && <Badge variant="outline" className="text-xs">optional</Badge>}
                       <span className="text-muted-foreground flex-1">
                         <code className="text-xs">{prop.type}</code>
                         {prop.description && <span className="ml-2">{prop.description}</span>}
@@ -239,27 +238,13 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }
               </div>
             )}
 
-            {/* Responses */}
-            {doc.responses && doc.responses.length > 0 && (
+            {/* Returns */}
+            {doc.returns && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Responses</h4>
-                <div className="space-y-3">
-                  {doc.responses.map((response) => (
-                    <div key={response.code} className="border-l-2 border-muted pl-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <code className="font-mono text-primary">{response.code}</code>
-                        <Badge variant={response.code < 400 ? "default" : "destructive"} className="text-xs">
-                          {response.code < 400 ? 'Success' : 'Error'}
-                        </Badge>
-                      </div>
-                      {response.example && (
-                        <pre className="bg-muted p-2 rounded text-xs mb-2 overflow-x-auto">
-                          <code>{JSON.stringify(response.example, null, 2)}</code>
-                        </pre>
-                      )}
-                      <p className="text-sm text-muted-foreground">{response.description}</p>
-                    </div>
-                  ))}
+                <h4 className="text-sm font-semibold mb-2">Returns</h4>
+                <div className="border-l-2 border-muted pl-3">
+                  <code className="font-mono text-primary">{doc.returns.type}</code>
+                  <p className="text-sm text-muted-foreground mt-1">{doc.returns.description}</p>
                 </div>
               </div>
             )}
