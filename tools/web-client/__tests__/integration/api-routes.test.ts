@@ -50,7 +50,7 @@ describe('API Routes Integration', () => {
       expect(analysisId).toBeTruthy()
       
       // Verify data was stored correctly
-      const storedAnalysis = await testDb.find('analyses', analysisId)
+      const storedAnalysis = await testDb.find('analyses', analysisId) as any
       expect(storedAnalysis).toBeTruthy()
       expect(storedAnalysis.entities).toBeDefined()
       expect(Array.isArray(storedAnalysis.entities)).toBe(true)
@@ -82,7 +82,7 @@ describe('API Routes Integration', () => {
       const perfId = await testDb.insert('performance', performanceData)
       expect(perfId).toBeTruthy()
       
-      const storedPerf = await testDb.find('performance', perfId)
+      const storedPerf = await testDb.find('performance', perfId) as any
       expect(storedPerf).toBeTruthy()
       expect(storedPerf.memoryUsage).toBeDefined()
       expect(typeof storedPerf.memoryUsage).toBe('number')
@@ -107,7 +107,7 @@ describe('API Routes Integration', () => {
       expect(qualityData.maintainability).toBeLessThanOrEqual(100)
       
       const qualityId = await testDb.insert('quality', qualityData)
-      const storedQuality = await testDb.find('quality', qualityId)
+      const storedQuality = await testDb.find('quality', qualityId) as any
       
       expect(storedQuality.maintainability).toBe(qualityData.maintainability)
       expect(storedQuality.reliability).toBe(qualityData.reliability)
@@ -139,7 +139,7 @@ describe('API Routes Integration', () => {
       const id = await testDb.insert('integrity_test', originalData)
       
       // Retrieve data
-      const retrievedData = await testDb.find('integrity_test', id)
+      const retrievedData = await testDb.find('integrity_test', id) as any
       
       // Verify data integrity
       expect(retrievedData.entities.length).toBe(originalData.entities.length)
@@ -172,7 +172,7 @@ describe('API Routes Integration', () => {
       }
       
       const id = await testDb.insert('large_dataset', largeDataset)
-      const retrievedData = await testDb.find('large_dataset', id)
+      const retrievedData = await testDb.find('large_dataset', id) as any
       
       const endTime = Date.now()
       const operationTime = endTime - startTime
@@ -228,7 +228,7 @@ describe('API Routes Integration', () => {
       
       // Store and retrieve to verify API can handle real data
       const id = await testDb.insert('real_project', testFixtures.analysisData)
-      const stored = await testDb.find('real_project', id)
+      const stored = await testDb.find('real_project', id) as any
       
       expect(stored.entities[0].name).toBe(firstEntity.name)
     })

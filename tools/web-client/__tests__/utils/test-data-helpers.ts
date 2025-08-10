@@ -100,16 +100,25 @@ export function createCompleteAnalysisData(overrides: Partial<CompleteAnalysisDa
 export function createSimpleEntity(data: {
   name?: string;
   path?: string;
-  type?: string;
+  type?: 'class' | 'function' | 'module' | 'component' | 'interface' | 'enum' | 'type';
   dependencies?: string[];
   complexity?: number;
-  issues?: unknown[];
+  issues?: Array<{
+    id: string;
+    type: 'code-smell' | 'bug' | 'vulnerability' | 'maintainability' | 'performance';
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    message: string;
+    rule?: string;
+    startLine?: number;
+    endLine?: number;
+    suggestions?: string[];
+  }>;
 }): AnalysisEntity {
   return {
     id: data.name || 'test-entity',
     name: data.name || 'test-entity',
     path: data.path || 'test/path',
-    type: data.type || 'module',
+    type: data.type || 'module' as const,
     dependencies: data.dependencies || [],
     dependents: [],
     complexity: {
@@ -132,15 +141,21 @@ export function createSimpleEntity(data: {
  */
 export function createSimpleDuplicate(data: {
   id?: string;
-  type?: string;
-  severity?: string;
-  occurrences?: unknown[];
+  type?: 'structural' | 'exact' | 'similar' | 'semantic';
+  severity?: 'low' | 'medium' | 'high' | 'critical';
+  occurrences?: Array<{
+    path: string;
+    startLine: number;
+    endLine: number;
+    content: string;
+    context?: string;
+  }>;
   linesCount?: number;
 }): AnalysisDuplicate {
   return {
     id: data.id || 'test-duplicate',
-    type: data.type || 'structural',
-    severity: data.severity || 'medium',
+    type: data.type || 'structural' as const,
+    severity: data.severity || 'medium' as const,
     similarity: 85,
     occurrences: data.occurrences || [{
       path: 'test/path1',

@@ -72,7 +72,7 @@ export class TestApiServer {
 
     this.routes.set('POST /api/analysis', (req) => ({
       status: 201,
-      data: { id: 'test-analysis', ...req.body }
+      data: { id: 'test-analysis', ...(req.body as object) }
     }))
 
     this.routes.set('GET /api/performance', () => ({

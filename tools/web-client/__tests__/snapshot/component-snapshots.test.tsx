@@ -69,13 +69,15 @@ describe('Component Snapshots', () => {
         entities: Array.from({ length: 10 }, (_, i) => createSimpleEntity({
           name: `Entity${i}`,
           path: `path/to/entity${i}.ts`,
-          type: ['class', 'function', 'module', 'component'][i % 4],
+          type: (['class', 'function', 'module', 'component'] as const)[i % 4],
           dependencies: [`dep${i}`, `dep${i + 1}`],
           complexity: 5 + (i * 2),
           issues: i % 3 === 0 ? [{
-            type: 'complexity',
+            id: `issue-${i}`,
+            type: 'performance' as const,
             severity: 'medium' as const,
-            message: `Issue ${i}`
+            message: `Issue ${i}`,
+            rule: 'complexity-rule'
           }] : []
         })),
         duplicates: [
