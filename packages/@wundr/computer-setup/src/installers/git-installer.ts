@@ -47,6 +47,9 @@ export class GitInstaller implements BaseInstaller {
 
   async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     await this.configureGit(profile, platform);
+    
+    // Setup SSH keys for GitHub/GitLab
+    await this.setupSSHKeys(profile, platform);
   }
 
   async validate(): Promise<boolean> {
@@ -114,6 +117,19 @@ export class GitInstaller implements BaseInstaller {
         installer: () => this.setupCommitSigning(profile, platform)
       });
     }
+
+    // Add SSH key setup step
+    steps.push({
+      id: 'setup-ssh-keys',
+      name: 'Setup SSH Keys',
+      description: 'Generate and configure SSH keys for Git remotes',
+      category: 'configuration',
+      required: false,
+      dependencies: ['configure-git-basic'],
+      estimatedTime: 60,
+      validator: () => this.validateSSHKeys(),
+      installer: () => this.setupSSHKeys(profile, platform)
+    });
 
     return steps;
   }
@@ -239,21 +255,29 @@ export class GitInstaller implements BaseInstaller {
   private async setupCommitSigning(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     const { gitConfig } = profile.preferences;
     
-    if (!gitConfig.gpgKey) {
-      // Generate GPG key if not provided
-      await this.generateGPGKey(profile, platform);
-    } else {
-      // Import existing GPG key
-      await this.importGPGKey(gitConfig.gpgKey);
-    }
-    
-    // Configure Git to sign commits
-    await execa('git', ['config', '--global', 'commit.gpgsign', 'true']);
-    await execa('git', ['config', '--global', 'user.signingkey', gitConfig.gpgKey || await this.getGPGKeyId(profile)]);
-    
-    // Configure GPG program
-    if (platform.os === 'darwin') {
-      await execa('git', ['config', '--global', 'gpg.program', 'gpg']);
+    try {
+      if (!gitConfig.gpgKey) {
+        // Generate GPG key if not provided
+        await this.generateGPGKey(profile, platform);
+      } else {
+        // Import existing GPG key
+        await this.importGPGKey(gitConfig.gpgKey);
+      }
+      
+      // Configure Git to sign commits
+      await execa('git', ['config', '--global', 'commit.gpgsign', 'true']);
+      const keyId = gitConfig.gpgKey || await this.getGPGKeyId(profile);
+      if (keyId) {
+        await execa('git', ['config', '--global', 'user.signingkey', keyId]);
+      }
+      
+      // Configure GPG program
+      if (platform.os === 'darwin') {
+        await execa('git', ['config', '--global', 'gpg.program', 'gpg']);
+      }
+    } catch (error) {
+      console.warn(`Warning: Failed to setup commit signing: ${error}`);
+      console.warn('You can manually configure GPG signing later');
     }
   }
 
@@ -389,6 +413,77 @@ Passphrase:
     }
   }
 
+  private async setupSSHKeys(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    const sshDir = path.join(os.homedir(), '.ssh');
+    await fs.ensureDir(sshDir);
+    
+    const sshKeyPath = path.join(sshDir, 'id_ed25519');
+    
+    // Check if SSH key already exists
+    const keyExists = await fs.pathExists(sshKeyPath);
+    
+    if (!keyExists) {
+      // Generate new SSH key
+      try {
+        await execa('ssh-keygen', [
+          '-t', 'ed25519',
+          '-C', profile.email,
+          '-f', sshKeyPath,
+          '-N', '' // No passphrase for automation
+        ]);
+        console.log('SSH key generated successfully');
+      } catch (error) {
+        console.warn(`Warning: Failed to generate SSH key: ${error}`);
+        return;
+      }
+    }
+    
+    // Add to SSH agent on macOS
+    if (platform.os === 'darwin') {
+      try {
+        // Use -K flag for older macOS versions, fallback to regular add
+        await execa('ssh-add', ['-K', sshKeyPath]).catch(() => 
+          execa('ssh-add', [sshKeyPath])
+        );
+        
+        // Update SSH config for macOS
+        const sshConfigPath = path.join(sshDir, 'config');
+        const configContent = await fs.readFile(sshConfigPath, 'utf-8').catch(() => '');
+        
+        if (!configContent.includes('Host github.com')) {
+          const githubConfig = `\n\nHost github.com\n  AddKeysToAgent yes\n  UseKeychain yes\n  IdentityFile ${sshKeyPath}\n`;
+          await fs.appendFile(sshConfigPath, githubConfig);
+        }
+      } catch (error) {
+        console.warn(`Warning: Failed to add SSH key to agent: ${error}`);
+      }
+    } else {
+      // For Linux, just add to agent
+      try {
+        await execa('ssh-add', [sshKeyPath]);
+      } catch (error) {
+        console.warn(`Warning: Failed to add SSH key to agent: ${error}`);
+      }
+    }
+    
+    // Display public key for manual addition to GitHub/GitLab
+    const publicKey = await fs.readFile(`${sshKeyPath}.pub`, 'utf-8');
+    console.log('\nSSH Public Key (add this to your GitHub/GitLab account):');
+    console.log(publicKey);
+    console.log('\nYou can add this key at:');
+    console.log('- GitHub: https://github.com/settings/keys');
+    console.log('- GitLab: https://gitlab.com/-/profile/keys\n');
+  }
+  
+  private async validateSSHKeys(): Promise<boolean> {
+    try {
+      const sshKeyPath = path.join(os.homedir(), '.ssh', 'id_ed25519');
+      return await fs.pathExists(sshKeyPath);
+    } catch {
+      return false;
+    }
+  }
+  
   private async validateGPGSigning(profile: DeveloperProfile): Promise<boolean> {
     try {
       const { stdout: signing } = await execa('git', ['config', '--global', 'commit.gpgsign']);

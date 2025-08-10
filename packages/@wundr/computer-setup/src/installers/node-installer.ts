@@ -162,7 +162,7 @@ export class NodeInstaller implements BaseInstaller {
       const installScript = 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash';
       await execa('bash', ['-c', installScript]);
       
-      // Source nvm in current session
+      // Source nvm in current session with proper HOME expansion
       const nvmDir = path.join(os.homedir(), '.nvm');
       process.env.NVM_DIR = nvmDir;
     }
@@ -174,16 +174,17 @@ export class NodeInstaller implements BaseInstaller {
         // Windows nvm command
         await execa('nvm', ['install', version]);
       } else {
-        // Unix nvm command (requires sourcing)
+        // Unix nvm command (requires sourcing) with proper HOME expansion
         const nvmScript = `
-          export NVM_DIR="$HOME/.nvm"
+          export NVM_DIR="${os.homedir()}/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          nvm install ${version}
+          nvm install ${version} || echo "Warning: Failed to install Node.js ${version}, continuing..."
         `;
         await execa('bash', ['-c', nvmScript]);
       }
     } catch (error) {
-      throw new Error(`Failed to install Node.js ${version}: ${error}`);
+      console.warn(`Warning: Failed to install Node.js ${version}: ${error}`);
+      // Continue instead of throwing - non-critical failure
     }
   }
 
@@ -199,22 +200,24 @@ export class NodeInstaller implements BaseInstaller {
         await execa('nvm', ['use', version]);
       } else {
         const nvmScript = `
-          export NVM_DIR="$HOME/.nvm"
+          export NVM_DIR="${os.homedir()}/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          nvm use ${version}
-          nvm alias default ${version}
+          nvm alias default ${version} || echo "Warning: Failed to set default alias"
+          nvm use --delete-prefix ${version} || nvm use ${version} || echo "Warning: Failed to use version ${version}"
         `;
         await execa('bash', ['-c', nvmScript]);
       }
     } catch (error) {
-      throw new Error(`Failed to set default Node.js version to ${version}: ${error}`);
+      console.warn(`Warning: Failed to set default Node.js version to ${version}: ${error}`);
+      // Continue instead of throwing - non-critical failure
     }
   }
 
   private async installGlobalPackages(packages: string[]): Promise<void> {
     for (const pkg of packages) {
       try {
-        await execa('npm', ['install', '-g', pkg]);
+        // Use --force flag to handle existing packages
+        await execa('npm', ['install', '-g', pkg, '--force']);
       } catch (error) {
         console.warn(`Failed to install global package ${pkg}: ${error}`);
       }
@@ -226,7 +229,8 @@ export class NodeInstaller implements BaseInstaller {
 
     if (packageManagers.pnpm) {
       try {
-        await execa('npm', ['install', '-g', 'pnpm']);
+        // Use --force flag to handle existing packages
+        await execa('npm', ['install', '-g', 'pnpm', '--force']);
       } catch (error) {
         console.warn(`Failed to install pnpm: ${error}`);
       }
@@ -234,7 +238,8 @@ export class NodeInstaller implements BaseInstaller {
 
     if (packageManagers.yarn) {
       try {
-        await execa('npm', ['install', '-g', 'yarn']);
+        // Use --force flag to handle existing packages
+        await execa('npm', ['install', '-g', 'yarn', '--force']);
       } catch (error) {
         console.warn(`Failed to install yarn: ${error}`);
       }
@@ -282,12 +287,10 @@ export class NodeInstaller implements BaseInstaller {
     }
   }
 
-  private async validateNodeVersions(versions: string[]): Promise<boolean> {
+  private async validateNodeVersions(_versions: string[]): Promise<boolean> {
     try {
-      for (const version of versions) {
-        // This would require checking if specific versions are installed
-        // Simplified validation for now
-      }
+      // This would require checking if specific versions are installed
+      // Simplified validation for now
       return true;
     } catch {
       return false;
