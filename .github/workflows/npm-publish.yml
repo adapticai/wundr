@@ -101,15 +101,17 @@ jobs:
           cache: "pnpm"
 
       - name: 🔧 Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts --ignore-scripts
-
-      - name: 🏗️ Build core dependencies
-        run: pnpm turbo build --filter='@wundr.io/core' --filter='@wundr.io/shared-config'
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: 🔄 Update package scopes to @wundr.io
         run: |
           echo "Updating all package scopes from @wundr to @wundr.io..."
           node scripts/update-package-scope.js
+
+      - name: 🏗️ Build core dependencies
+        run: |
+          # Build the core packages after scope update
+          pnpm build --filter='@wundr.io/core' --filter='@wundr.io/shared-config'
 
       - name: 📝 Update versions
         run: |
