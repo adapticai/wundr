@@ -29,15 +29,7 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src",
-    "templates",
-    "docs",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "bin", "src", "templates", "docs", "README.md", "LICENSE"],
   "scripts": {
     "build": "turbo build",
     "build:parallel": "turbo build --parallel",
@@ -53,7 +45,7 @@
     "dev:cli": "npx tsx packages/@wundr/cli/src/index.ts",
     "format": "turbo format",
     "format:check": "turbo format:check",
-    "postinstall": "turbo build --filter='@wundr/core' --filter='@wundr/shared-config'",
+    "postinstall": "turbo build --filter='@wundr.io/core' --filter='@wundr.io/shared-config'",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "prepare": "husky",
@@ -126,16 +118,8 @@
     "npm": ">=8.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{js,jsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{json,yaml,yml,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{js,jsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{json,yaml,yml,md}": ["prettier --write"]
   }
 }
