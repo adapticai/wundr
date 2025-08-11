@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/core-simple",
+  "name": "@wundr.io/core-simple",
   "version": "1.0.0",
   "description": "Core business logic and domain models for Wundr platform",
   "main": "dist/index.js",

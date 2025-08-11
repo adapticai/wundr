@@ -1,13 +1,10 @@
 {
-  "name": "@wundr/plugin-system",
+  "name": "@wundr.io/plugin-system",
   "version": "1.0.0",
   "description": "Plugin system and base interfaces for the Wundr platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -22,8 +19,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@wundr/core": "file:../core",
-    "semver": "^7.6.3"
+    "semver": "^7.6.3",
+    "@wundr.io/core": "file:../core"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
@@ -37,11 +34,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": [
-    "wundr",
-    "plugin",
-    "system",
-    "interfaces",
-    "extensibility"
-  ]
+  "keywords": ["wundr", "plugin", "system", "interfaces", "extensibility"]
 }

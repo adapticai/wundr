@@ -1,0 +1,327 @@
+name: 📦 NPM Publish @wundr.io
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: "Release type (patch, minor, major, prerelease)"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      dry-run:
+        description: "Dry run (skip actual publishing)"
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "8.15.0"
+
+jobs:
+  prepare-release:
+    name: 🎯 Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      packages: ${{ steps.packages.outputs.list }}
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 📋 Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            CURRENT_VERSION=$(node -p "require('./package.json').version")
+            NEW_VERSION=$(npm version ${{ github.event.inputs.release-type }} --no-git-tag-version --no-commit-hooks)
+            echo "version=${NEW_VERSION#v}" >> $GITHUB_OUTPUT
+          else
+            # Extract version from tag
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📦 List publishable packages
+        id: packages
+        run: |
+          PACKAGES=$(find packages -name "package.json" -not -path "*/node_modules/*" | while read pkg; do
+            PKG_NAME=$(node -p "require('./$pkg').name" 2>/dev/null || echo "")
+            PKG_PRIVATE=$(node -p "require('./$pkg').private || false" 2>/dev/null || echo "true")
+            if [[ -n "$PKG_NAME" && "$PKG_PRIVATE" != "true" ]]; then
+              echo "$PKG_NAME"
+            fi
+          done | tr '\n' ',' | sed 's/,$//')
+
+          echo "list=$PACKAGES" >> $GITHUB_OUTPUT
+          echo "Found packages: $PACKAGES"
+
+  update-packages:
+    name: 🔄 Update Package Scopes
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔄 Update package scopes to @wundr.io
+        run: |
+          echo "Updating all package scopes from @wundr to @wundr.io..."
+          node scripts/update-package-scope.js
+
+      - name: 📝 Update versions
+        run: |
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+          echo "Setting all packages to version $VERSION"
+
+          # Update root package.json
+          npm version $VERSION --no-git-tag-version --allow-same-version
+
+          # Update all workspace packages
+          for pkg in packages/*/package.json packages/@wundr/*/package.json; do
+            if [[ -f "$pkg" ]]; then
+              cd $(dirname "$pkg")
+              npm version $VERSION --no-git-tag-version --allow-same-version
+              cd - > /dev/null
+            fi
+          done
+
+      - name: 🏗️ Build all packages
+        run: pnpm build
+
+      - name: 💾 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            packages/*/dist
+            packages/@wundr/*/dist
+          retention-days: 1
+
+  publish-packages:
+    name: 📡 Publish to NPM
+    runs-on: ubuntu-latest
+    needs: [prepare-release, update-packages]
+    if: github.event.inputs.dry-run != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(format('[{0}]', needs.prepare-release.outputs.packages)) }}
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔄 Update package scopes
+        run: node scripts/update-package-scope.js
+
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: 🔍 Find package directory
+        id: find-package
+        run: |
+          # Convert @wundr/xxx to @wundr.io/xxx for matching
+          PACKAGE_NAME="${{ matrix.package }}"
+          UPDATED_NAME=$(echo "$PACKAGE_NAME" | sed 's/@wundr\//@wundr.io\//')
+
+          # Find the package directory
+          PKG_DIR=$(find packages -name "package.json" -not -path "*/node_modules/*" | while read pkg; do
+            PKG_JSON_NAME=$(node -p "require('./$pkg').name" 2>/dev/null || echo "")
+            if [[ "$PKG_JSON_NAME" == "$UPDATED_NAME" ]]; then
+              dirname "$pkg"
+              break
+            fi
+          done)
+
+          if [[ -z "$PKG_DIR" ]]; then
+            echo "❌ Package $UPDATED_NAME not found!"
+            exit 1
+          fi
+
+          echo "dir=$PKG_DIR" >> $GITHUB_OUTPUT
+          echo "name=$UPDATED_NAME" >> $GITHUB_OUTPUT
+
+      - name: 📡 Publish to NPM
+        run: |
+          cd "${{ steps.find-package.outputs.dir }}"
+
+          # Ensure we're publishing with the correct scope
+          PACKAGE_NAME="${{ steps.find-package.outputs.name }}"
+          echo "Publishing $PACKAGE_NAME from $(pwd)"
+
+          # Verify package.json has correct name
+          ACTUAL_NAME=$(node -p "require('./package.json').name")
+          if [[ "$ACTUAL_NAME" != "$PACKAGE_NAME" ]]; then
+            echo "❌ Package name mismatch: expected $PACKAGE_NAME, got $ACTUAL_NAME"
+            exit 1
+          fi
+
+          # Dry run first to verify
+          npm pack --dry-run
+
+          # Publish with public access
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: ✅ Verify publication
+        run: |
+          PACKAGE_NAME="${{ steps.find-package.outputs.name }}"
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+
+          # Wait for npm registry to update
+          sleep 10
+
+          # Check if package is available
+          if npm view "$PACKAGE_NAME@$VERSION" version; then
+            echo "✅ Successfully published $PACKAGE_NAME@$VERSION"
+          else
+            echo "⚠️ Package may not be immediately available"
+          fi
+
+  create-release:
+    name: 🎉 Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare-release, publish-packages]
+    if: success()
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📝 Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+
+          cat << EOF > release-notes.md
+          # 🚀 Wundr.io v$VERSION
+
+          ## 📦 Installation
+
+          \`\`\`bash
+          # Install CLI globally
+          npm install -g @wundr.io/cli
+
+          # Or use specific packages
+          npm install @wundr.io/core
+          npm install @wundr.io/analysis-engine
+          \`\`\`
+
+          ## 📚 Published Packages
+
+          All packages are now available under the **@wundr.io** scope:
+
+          - @wundr.io/cli - Command-line interface
+          - @wundr.io/core - Core utilities
+          - @wundr.io/analysis-engine - Code analysis tools
+          - @wundr.io/security - Security scanning
+          - @wundr.io/dashboard - Web dashboard
+          - @wundr.io/ai-integration - AI features
+          - @wundr.io/environment - Environment setup
+          - @wundr.io/computer-setup - Developer machine setup
+          - @wundr.io/config - Configuration management
+          - @wundr.io/plugin-system - Plugin architecture
+          - @wundr.io/project-templates - Project templates
+          - @wundr.io/docs - Documentation
+
+          ## 🔗 Links
+
+          - [Documentation](https://wundr.io)
+          - [NPM Organization](https://www.npmjs.com/org/wundr.io)
+          - [GitHub Repository](https://github.com/adapticai/wundr)
+          EOF
+
+      - name: 🏷️ Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ needs.prepare-release.outputs.version }}
+          name: "Wundr.io v${{ needs.prepare-release.outputs.version }}"
+          bodyFile: release-notes.md
+          draft: false
+          prerelease: ${{ contains(needs.prepare-release.outputs.version, 'pre') || contains(needs.prepare-release.outputs.version, 'beta') || contains(needs.prepare-release.outputs.version, 'alpha') }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-completion:
+    name: 📢 Notify Completion
+    runs-on: ubuntu-latest
+    needs: [prepare-release, publish-packages, create-release]
+    if: always()
+    steps:
+      - name: 📊 Summary
+        run: |
+          echo "## 📦 NPM Publishing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.prepare-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ needs.publish-packages.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          IFS=',' read -ra PACKAGES <<< "${{ needs.prepare-release.outputs.packages }}"
+          for pkg in "${PACKAGES[@]}"; do
+            UPDATED_PKG=$(echo "$pkg" | sed 's/@wundr\//@wundr.io\//')
+            echo "- ✅ $UPDATED_PKG" >> $GITHUB_STEP_SUMMARY
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. Verify packages on [npmjs.com](https://www.npmjs.com/org/wundr.io)" >> $GITHUB_STEP_SUMMARY
+          echo "2. Test installation: \`npm install -g @wundr.io/cli\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Update documentation with new package names" >> $GITHUB_STEP_SUMMARY

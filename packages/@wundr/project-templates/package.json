@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/project-templates",
+  "name": "@wundr.io/project-templates",
   "version": "1.0.0",
   "description": "Wundr-compliant project templates with opinionated best practices",
   "main": "lib/index.js",
@@ -15,13 +15,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@wundr/core": "workspace:*",
     "chalk": "^5.3.0",
     "fs-extra": "^11.2.0",
     "handlebars": "^4.7.8",
     "inquirer": "^9.2.12",
     "ora": "^8.0.1",
-    "validate-npm-package-name": "^5.0.1"
+    "validate-npm-package-name": "^5.0.1",
+    "@wundr.io/core": "workspace:*"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",

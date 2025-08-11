@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/analysis-engine-simple",
+  "name": "@wundr.io/analysis-engine-simple",
   "version": "1.0.0",
   "description": "Code analysis and quality metrics engine",
   "main": "dist/index.js",
@@ -16,11 +16,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@wundr/core-simple": "workspace:*",
     "ts-morph": "^21.0.1",
     "glob": "^10.3.10",
     "@typescript-eslint/parser": "^6.21.0",
-    "@typescript-eslint/typescript-estree": "^6.21.0"
+    "@typescript-eslint/typescript-estree": "^6.21.0",
+    "@wundr.io/core-simple": "workspace:*"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",

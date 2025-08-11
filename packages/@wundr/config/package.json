@@ -1,13 +1,10 @@
 {
-  "name": "@wundr/config",
+  "name": "@wundr.io/config",
   "version": "1.0.0",
   "description": "Configuration management and validation for the Wundr platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -22,11 +19,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@wundr/core": "file:../core",
     "dotenv": "^16.4.5",
     "fs-extra": "^11.3.1",
     "yaml": "^2.3.4",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "@wundr.io/core": "file:../core"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
@@ -40,11 +37,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": [
-    "wundr",
-    "config",
-    "configuration",
-    "validation",
-    "management"
-  ]
+  "keywords": ["wundr", "config", "configuration", "validation", "management"]
 }

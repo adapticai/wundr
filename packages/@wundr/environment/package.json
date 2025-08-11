@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/environment",
+  "name": "@wundr.io/environment",
   "version": "1.0.0",
   "description": "Cross-platform development environment setup and management tools",
   "private": true,

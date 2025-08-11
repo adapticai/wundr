@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/docs",
+  "name": "@wundr.io/docs",
   "version": "1.0.0",
   "description": "Comprehensive documentation site for Wundr platform",
   "private": true,
@@ -51,11 +51,7 @@
     "typescript": "~5.2.2"
   },
   "browserslist": {
-    "production": [
-      ">0.5%",
-      "not dead",
-      "not op_mini all"
-    ],
+    "production": [">0.5%", "not dead", "not op_mini all"],
     "development": [
       "last 3 chrome versions",
       "last 3 firefox versions",

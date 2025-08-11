@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/security",
+  "name": "@wundr.io/security",
   "version": "1.0.0",
   "description": "Enterprise security and compliance module for Wundr platform",
   "main": "dist/index.js",
@@ -53,10 +53,7 @@
     "ts-jest": "^29.1.1",
     "typescript": "^5.1.6"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "repository": {
     "type": "git",
     "url": "https://github.com/wundr/wundr.git",

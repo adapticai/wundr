@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/shared-config",
+  "name": "@wundr.io/shared-config",
   "version": "1.0.0",
   "description": "Shared configurations and constants",
   "main": "dist/index.js",

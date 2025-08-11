@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/web-client-simple",
+  "name": "@wundr.io/web-client-simple",
   "version": "1.0.0",
   "description": "Shared web components and utilities",
   "main": "dist/index.js",
@@ -16,14 +16,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@wundr/core-simple": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.4",
-    "recharts": "^2.13.3"
+    "recharts": "^2.13.3",
+    "@wundr.io/core-simple": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.1.9",

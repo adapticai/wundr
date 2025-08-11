@@ -1,13 +1,10 @@
 {
-  "name": "@wundr/core",
+  "name": "@wundr.io/core",
   "version": "1.0.0",
   "description": "Core utilities and shared functionality for the Wundr platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -40,11 +37,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": [
-    "wundr",
-    "core",
-    "utilities",
-    "shared",
-    "platform"
-  ]
+  "keywords": ["wundr", "core", "utilities", "shared", "platform"]
 }

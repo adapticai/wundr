@@ -1,5 +1,5 @@
 {
-  "name": "@wundr/ai-integration",
+  "name": "@wundr.io/ai-integration",
   "version": "1.0.0",
   "description": "AI Integration Hive Queen - Claude Code, Claude Flow, and MCP orchestration",
   "main": "dist/index.js",
