@@ -79,8 +79,8 @@ jobs:
           echo "list=$PACKAGES" >> $GITHUB_OUTPUT
           echo "Found packages: $PACKAGES"
 
-  update-packages:
-    name: 🔄 Update Package Scopes
+  build-packages:
+    name: 🏗️ Build Packages
     runs-on: ubuntu-latest
     needs: prepare-release
     steps:
@@ -103,16 +103,6 @@ jobs:
       - name: 🔧 Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: 🔄 Update package scopes to @wundr.io
-        run: |
-          echo "Updating all package scopes from @wundr to @wundr.io..."
-          node scripts/update-package-scope.js
-
-      - name: 🏗️ Build core dependencies
-        run: |
-          # Build the core packages after scope update
-          pnpm build --filter='@wundr.io/core' --filter='@wundr.io/shared-config'
-
       - name: 📝 Update versions
         run: |
           VERSION="${{ needs.prepare-release.outputs.version }}"
@@ -131,7 +121,7 @@ jobs:
           done
 
       - name: 🏗️ Build all packages
-        run: pnpm build
+        run: pnpm run build
 
       - name: 💾 Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -145,7 +135,7 @@ jobs:
   publish-packages:
     name: 📡 Publish to NPM
     runs-on: ubuntu-latest
-    needs: [prepare-release, update-packages]
+    needs: [prepare-release, build-packages]
     if: github.event.inputs.dry-run != 'true'
     strategy:
       fail-fast: false
@@ -170,9 +160,6 @@ jobs:
       - name: 🔧 Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: 🔄 Update package scopes
-        run: node scripts/update-package-scope.js
-
       - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -181,26 +168,25 @@ jobs:
       - name: 🔍 Find package directory
         id: find-package
         run: |
-          # Convert @wundr/xxx to @wundr.io/xxx for matching
+          # Package name should already be @wundr.io/xxx
           PACKAGE_NAME="${{ matrix.package }}"
-          UPDATED_NAME=$(echo "$PACKAGE_NAME" | sed 's/@wundr\//@wundr.io\//')
 
           # Find the package directory
           PKG_DIR=$(find packages -name "package.json" -not -path "*/node_modules/*" | while read pkg; do
             PKG_JSON_NAME=$(node -p "require('./$pkg').name" 2>/dev/null || echo "")
-            if [[ "$PKG_JSON_NAME" == "$UPDATED_NAME" ]]; then
+            if [[ "$PKG_JSON_NAME" == "$PACKAGE_NAME" ]]; then
               dirname "$pkg"
               break
             fi
           done)
 
           if [[ -z "$PKG_DIR" ]]; then
-            echo "❌ Package $UPDATED_NAME not found!"
+            echo "❌ Package $PACKAGE_NAME not found!"
             exit 1
           fi
 
           echo "dir=$PKG_DIR" >> $GITHUB_OUTPUT
-          echo "name=$UPDATED_NAME" >> $GITHUB_OUTPUT
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
 
       - name: 📡 Publish to NPM
         run: |
@@ -320,8 +306,7 @@ jobs:
 
           IFS=',' read -ra PACKAGES <<< "${{ needs.prepare-release.outputs.packages }}"
           for pkg in "${PACKAGES[@]}"; do
-            UPDATED_PKG=$(echo "$pkg" | sed 's/@wundr\//@wundr.io\//')
-            echo "- ✅ $UPDATED_PKG" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ $pkg" >> $GITHUB_STEP_SUMMARY
           done
 
           echo "" >> $GITHUB_STEP_SUMMARY
