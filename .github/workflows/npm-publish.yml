@@ -50,7 +50,7 @@ jobs:
           cache: "pnpm"
 
       - name: 🔧 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: 📋 Determine version
         id: version
@@ -101,7 +101,10 @@ jobs:
           cache: "pnpm"
 
       - name: 🔧 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts --ignore-scripts
+
+      - name: 🏗️ Build core dependencies
+        run: pnpm turbo build --filter='@wundr.io/core' --filter='@wundr.io/shared-config'
 
       - name: 🔄 Update package scopes to @wundr.io
         run: |
@@ -163,7 +166,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: 🔧 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: 🔄 Update package scopes
         run: node scripts/update-package-scope.js

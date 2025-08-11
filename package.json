@@ -45,7 +45,7 @@
     "dev:cli": "npx tsx packages/@wundr/cli/src/index.ts",
     "format": "turbo format",
     "format:check": "turbo format:check",
-    "postinstall": "turbo build --filter='@wundr.io/core' --filter='@wundr.io/shared-config'",
+    "postinstall": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('turbo build --filter=@wundr.io/core --filter=@wundr.io/shared-config', {stdio: 'inherit'}); }\"",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "prepare": "husky",
