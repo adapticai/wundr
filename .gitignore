@@ -130,7 +130,7 @@ junit.xml
 # Package manager lock files (keep only one)
 # Uncomment the one you're using:
 # package-lock.json  # if using yarn or pnpm
-# yarn.lock          # if using npm or pnpm  
+# yarn.lock          # if using npm or pnpm
 # pnpm-lock.yaml     # if using npm or yarn
 
 # Claude Flow generated files
@@ -160,3 +160,5 @@ hive-mind-prompt-*.txt
 package-lock.json
 npm-debug.log*
 yarn.lock
+
+.turbo/
