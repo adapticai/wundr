@@ -11,7 +11,7 @@ const getLogger = (name: string) => ({
   warn: (...args: any[]) => console.warn(...args),
   debug: (...args: any[]) => console.debug(...args)
 });
-import { WundrConfigManager } from '@wundr/config';
+import { WundrConfigManager } from '@wundr.io/config';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { 

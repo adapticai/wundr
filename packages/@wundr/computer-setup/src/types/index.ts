@@ -4,11 +4,54 @@
 
 export interface DeveloperProfile {
   name: string;
-  email: string;
-  role: 'frontend' | 'backend' | 'fullstack' | 'devops' | 'ml' | 'mobile';
+  email?: string;
+  role: string;
   team?: string;
-  preferences: ProfilePreferences;
-  tools: RequiredTools;
+  preferences?: ProfilePreferences;
+  languages?: {
+    javascript?: boolean;
+    typescript?: boolean;
+    python?: boolean;
+    go?: boolean;
+    rust?: boolean;
+    java?: boolean;
+  };
+  frameworks?: {
+    react?: boolean;
+    vue?: boolean;
+    angular?: boolean;
+    nextjs?: boolean;
+    express?: boolean;
+    nestjs?: boolean;
+    fastapi?: boolean;
+    tensorflow?: boolean;
+    pytorch?: boolean;
+    scikitLearn?: boolean;
+  };
+  tools: {
+    packageManagers?: PackageManagers;
+    containers?: ContainerTools;
+    editors?: {
+      vscode?: boolean;
+      vim?: boolean;
+      neovim?: boolean;
+      sublime?: boolean;
+      intellij?: boolean;
+      claude?: boolean;
+      jupyter?: boolean;
+    };
+    databases?: DatabaseTools;
+    cloud?: CloudCLIs;
+    ci?: {
+      jenkins?: boolean;
+      githubActions?: boolean;
+      gitlab?: boolean;
+    };
+    languages?: ProgrammingLanguages;
+    cloudCLIs?: CloudCLIs;
+    monitoring?: MonitoringTools;
+    communication?: CommunicationTools;
+  };
 }
 
 export interface ProfilePreferences {
@@ -38,13 +81,28 @@ export interface AIToolsConfiguration {
 }
 
 export interface RequiredTools {
-  languages: ProgrammingLanguages;
-  packageManagers: PackageManagers;
-  containers: ContainerTools;
-  cloudCLIs: CloudCLIs;
-  databases: DatabaseTools;
-  monitoring: MonitoringTools;
-  communication: CommunicationTools;
+  languages?: ProgrammingLanguages;
+  packageManagers?: PackageManagers;
+  containers?: ContainerTools;
+  editors?: {
+    vscode?: boolean;
+    vim?: boolean;
+    neovim?: boolean;
+    sublime?: boolean;
+    intellij?: boolean;
+    claude?: boolean;
+    jupyter?: boolean;
+  };
+  databases?: DatabaseTools;
+  cloud?: CloudCLIs;
+  ci?: {
+    jenkins?: boolean;
+    githubActions?: boolean;
+    gitlab?: boolean;
+  };
+  cloudCLIs?: CloudCLIs;
+  monitoring?: MonitoringTools;
+  communication?: CommunicationTools;
 }
 
 export interface ProgrammingLanguages {
@@ -73,13 +131,15 @@ export interface ProgrammingLanguages {
 }
 
 export interface PackageManagers {
-  npm: boolean;
-  pnpm: boolean;
-  yarn: boolean;
-  brew: boolean;
+  npm?: boolean;
+  pnpm?: boolean;
+  yarn?: boolean;
+  brew?: boolean;
   apt?: boolean;
   yum?: boolean;
   chocolatey?: boolean;
+  pip?: boolean;
+  conda?: boolean;
 }
 
 export interface ContainerTools {

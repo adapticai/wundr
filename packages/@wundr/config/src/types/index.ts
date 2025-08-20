@@ -2,7 +2,7 @@
  * Configuration management type definitions
  */
 
-import { BaseConfig } from '@wundr/core';
+import { BaseConfig } from '@wundr.io/core';
 
 export interface ConfigSource {
   readonly name: string;
@@ -98,8 +98,8 @@ export interface WundrConfig extends BaseConfig {
 
 // Default configuration structure
 export const DEFAULT_CONFIG: WundrConfig = {
-  version: '1.0.0' as const,
-  environment: 'development' as const,
+  version: '1.0.0',
+  environment: 'development',
   debug: false,
   core: {
     logLevel: 'info',

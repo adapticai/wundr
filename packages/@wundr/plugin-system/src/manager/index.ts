@@ -15,7 +15,7 @@ import {
   success,
   failure,
   isFailure,
-} from '@wundr/core';
+} from '@wundr.io/core';
 import {
   Plugin,
   PluginConstructor,

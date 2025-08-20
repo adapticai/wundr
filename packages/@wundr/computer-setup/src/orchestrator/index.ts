@@ -4,17 +4,95 @@
  */
 
 import { EventEmitter } from 'events';
-// import { getLogger, getEventBus } from '@wundr/core'; // TODO: Fix core exports
-const getLogger = (name: string) => ({
-  info: (...args: any[]) => console.log(...args),
-  error: (...args: any[]) => console.error(...args),
-  warn: (...args: any[]) => console.warn(...args),
-  debug: (...args: any[]) => console.debug(...args)
-});
-const getEventBus = () => ({ 
-  emit: (event: string, data?: any) => {}, 
-  on: (event: string, handler: Function) => {} 
-});
+
+// Real logger implementation - production ready
+class Logger {
+  private name: string;
+  private logLevel: string;
+
+  constructor(name: string) {
+    this.name = name;
+    this.logLevel = process.env.LOG_LEVEL || 'info';
+  }
+
+  private shouldLog(level: string): boolean {
+    const levels = ['debug', 'info', 'warn', 'error'];
+    const currentLevel = levels.indexOf(this.logLevel);
+    const targetLevel = levels.indexOf(level);
+    return targetLevel >= currentLevel;
+  }
+
+  private formatMessage(level: string, message: string, ...args: any[]): string {
+    const timestamp = new Date().toISOString();
+    const formattedArgs = args.length > 0 ? ' ' + JSON.stringify(args) : '';
+    return `[${timestamp}] [${level.toUpperCase()}] [${this.name}] ${message}${formattedArgs}`;
+  }
+
+  info(message: string, ...args: any[]) {
+    if (this.shouldLog('info')) {
+      console.log(this.formatMessage('info', message, ...args));
+    }
+  }
+
+  error(message: string, ...args: any[]) {
+    if (this.shouldLog('error')) {
+      console.error(this.formatMessage('error', message, ...args));
+    }
+  }
+
+  warn(message: string, ...args: any[]) {
+    if (this.shouldLog('warn')) {
+      console.warn(this.formatMessage('warn', message, ...args));
+    }
+  }
+
+  debug(message: string, ...args: any[]) {
+    if (this.shouldLog('debug')) {
+      console.debug(this.formatMessage('debug', message, ...args));
+    }
+  }
+}
+
+// Real event bus implementation - production ready
+class EventBus extends EventEmitter {
+  private static instance: EventBus;
+
+  private constructor() {
+    super();
+    this.setMaxListeners(100);
+  }
+
+  static getInstance(): EventBus {
+    if (!EventBus.instance) {
+      EventBus.instance = new EventBus();
+    }
+    return EventBus.instance;
+  }
+
+  override emit(event: string, data?: any): boolean {
+    const timestamp = new Date().toISOString();
+    if (process.env.LOG_LEVEL === 'debug') {
+      console.debug(`[${timestamp}] [EVENT] ${event}`, data ? JSON.stringify(data) : '');
+    }
+    return super.emit(event, data);
+  }
+
+  override on(event: string, handler: (...args: any[]) => void): this {
+    return super.on(event, handler);
+  }
+
+  override once(event: string, handler: (...args: any[]) => void): this {
+    return super.once(event, handler);
+  }
+
+  override off(event: string, handler: (...args: any[]) => void): this {
+    return super.off(event, handler);
+  }
+}
+
+// Factory functions for compatibility
+const getLogger = (name: string) => new Logger(name);
+const getEventBus = () => EventBus.getInstance();
 import { 
   DeveloperProfile,
   SetupOptions,

@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { watch } from 'fs';
 import { ConfigSource } from '../types/index.js';
-import { getLogger } from '@wundr/core';
+import { getLogger } from '@wundr.io/core';
 
 const logger = getLogger();
 

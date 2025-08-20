@@ -3,7 +3,7 @@
  */
 
 import { ConfigSource } from '../types/index.js';
-import { deepClone } from '@wundr/core';
+import { deepClone } from '@wundr.io/core';
 
 export class MemoryConfigSource implements ConfigSource {
   public readonly name: string;

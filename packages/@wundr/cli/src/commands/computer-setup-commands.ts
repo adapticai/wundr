@@ -1,6 +1,6 @@
 /**
  * Computer Setup Commands
- * Integrates new-starter functionality for provisioning developer machines
+ * Integrates real setup orchestrator for provisioning developer machines
  */
 
 import { Command } from 'commander';
@@ -10,13 +10,55 @@ import inquirer from 'inquirer';
 import { ConfigManager } from '../utils/config-manager';
 import { PluginManager } from '../plugins/plugin-manager';
 import { logger } from '../utils/logger';
+import { execSync } from 'child_process';
+import * as os from 'os';
+import * as fs from 'fs/promises';
+import { SetupPlatform, SetupProgress, SetupResult, RealSetupOrchestrator } from '../../../computer-setup/dist';
+
+// Types
+interface DeveloperProfile {
+  name: string;
+  email?: string;
+  role: string;
+  team?: string;
+  languages?: {
+    javascript?: boolean;
+    typescript?: boolean;
+    python?: boolean;
+    go?: boolean;
+  };
+  frameworks?: any;
+  tools: {
+    packageManagers?: any;
+    containers?: {
+      docker?: boolean;
+      dockerCompose?: boolean;
+      kubernetes?: boolean;
+    };
+    editors?: {
+      vscode?: boolean;
+      vim?: boolean;
+      claude?: boolean;
+    };
+    databases?: any;
+    cloud?: any;
+    ci?: any;
+  };
+}
+
+// SetupPlatform is imported from computer-setup package
 
 export class ComputerSetupCommands {
+  private orchestrator: RealSetupOrchestrator;
+  private platform: SetupPlatform;
+
   constructor(
     private program: Command,
     private configManager: ConfigManager,
     private pluginManager: PluginManager
   ) {
+    this.platform = this.detectPlatform();
+    this.orchestrator = new RealSetupOrchestrator(this.platform);
     this.registerCommands();
   }
 
@@ -39,7 +81,7 @@ Examples:
     computerSetup
       .command('run', { isDefault: true })
       .description('Run computer setup for new developer machine')
-      .option('-p, --profile <profile>', 'Use specific profile (frontend, backend, fullstack, devops, ml)')
+      .option('-p, --profile <profile>', 'Use specific profile (frontend, backend, fullstack, devops)')
       .option('-t, --team <team>', 'Apply team-specific configurations')
       .option('-m, --mode <mode>', 'Setup mode', 'interactive')
       .option('--os <os>', 'Target OS (auto-detected by default)')
@@ -49,6 +91,22 @@ Examples:
       .option('--report', 'Generate detailed setup report')
       .action(async (options) => {
         await this.runSetup(options);
+      });
+
+    // Resume command
+    computerSetup
+      .command('resume')
+      .description('Resume failed setup from saved state')
+      .action(async () => {
+        await this.resumeSetup();
+      });
+
+    // List profiles command
+    computerSetup
+      .command('list-profiles')
+      .description('List available developer profiles')
+      .action(async () => {
+        await this.listAvailableProfiles();
       });
 
     // Profile management
@@ -115,41 +173,62 @@ Examples:
     console.log(chalk.cyan('\n🖥️  Wundr Computer Setup'));
     console.log(chalk.gray('Setting up your development machine...\n'));
 
-    const spinner = ora('Initializing setup...').start();
-
     try {
-      // Detect platform
-      const platform = this.detectPlatform(options.os);
-      spinner.text = `Detected platform: ${platform.os} ${platform.arch}`;
+      // Check for resumable setup
+      const canResume = await this.orchestrator.canResume();
+      if (canResume) {
+        const { resume } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'resume',
+          message: 'Found incomplete setup. Resume from where you left off?',
+          default: true
+        }]);
 
-      // Load or create profile
-      let profile;
-      if (options.profile) {
-        spinner.text = `Loading profile: ${options.profile}`;
-        profile = await this.loadProfile(options.profile);
-      } else if (options.mode === 'interactive') {
-        spinner.stop();
-        profile = await this.createInteractiveProfile();
-        spinner.start();
-      } else {
-        profile = await this.getDefaultProfile();
+        if (resume) {
+          return await this.resumeSetup();
+        }
       }
 
-      spinner.succeed('Profile loaded');
+      // Get profile
+      let profileName = options.profile;
+      if (!profileName) {
+        if (options.mode === 'interactive') {
+          profileName = await this.selectProfile();
+        } else {
+          profileName = 'fullstack'; // Default
+        }
+      }
 
-      // Display setup plan
-      console.log(chalk.cyan('\n📋 Setup Plan:\n'));
-      const setupSteps = this.generateSetupSteps(profile, platform);
-      setupSteps.forEach((step, i) => {
-        console.log(chalk.white(`  ${i + 1}. ${step.name}`));
-      });
+      // Validate profile
+      const availableProfiles = this.orchestrator.getAvailableProfiles();
+      const profile = availableProfiles.find(p => p.name.toLowerCase().includes(profileName.toLowerCase()));
+      
+      if (!profile) {
+        console.error(chalk.red(`❌ Unknown profile: ${profileName}`));
+        console.log(chalk.cyan('\nAvailable profiles:'));
+        availableProfiles.forEach(p => console.log(`  • ${p.name}: ${p.description}`));
+        return;
+      }
+
+      console.log(chalk.cyan(`\n📋 Selected Profile: ${chalk.white(profile.name)}`));
+      console.log(chalk.gray(`${profile.description}`));
+      console.log(chalk.gray(`Estimated time: ${profile.estimatedTimeMinutes} minutes\n`));
+
+      // Show what will be installed
+      console.log(chalk.cyan('🛠️  Tools to install:'));
+      profile.requiredTools.forEach(tool => console.log(`  • ${tool}`));
+      
+      if (profile.optionalTools.length > 0) {
+        console.log(chalk.cyan('\n🔧 Optional tools:'));
+        profile.optionalTools.forEach(tool => console.log(`  • ${tool}`));
+      }
 
       if (options.dryRun) {
         console.log(chalk.yellow('\n⚠️  DRY RUN - No changes will be made'));
         return;
       }
 
-      // Confirm
+      // Confirm before proceeding
       if (options.mode === 'interactive') {
         const { proceed } = await inquirer.prompt([{
           type: 'confirm',
@@ -164,28 +243,67 @@ Examples:
         }
       }
 
-      // Execute setup
-      console.log(chalk.cyan('\n🚀 Executing Setup:\n'));
+      // Run the orchestrator with progress tracking
+      const progressCallback = (progress: SetupProgress) => {
+        // Update progress display
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+        process.stdout.write(`${chalk.cyan('[')}${progress.percentage.toFixed(1)}%${chalk.cyan(']')} ${progress.currentStep}`);
+      };
+
+      console.log(chalk.cyan('\n🚀 Starting setup...\n'));
       
-      for (const [index, step] of setupSteps.entries()) {
-        const stepSpinner = ora(`[${index + 1}/${setupSteps.length}] ${step.name}`).start();
+      const result: SetupResult = await this.orchestrator.orchestrate(
+        profileName,
+        {
+          dryRun: options.dryRun,
+          skipExisting: options.skipExisting,
+          parallel: options.parallel,
+          generateReport: options.report
+        },
+        progressCallback
+      );
+
+      console.log('\n'); // New line after progress
+
+      if (result.success) {
+        console.log(chalk.green('✅ Computer setup completed successfully!'));
+        console.log(chalk.gray(`Setup took ${Math.round(result.duration / 1000)} seconds\n`));
         
-        try {
-          await this.executeSetupStep(step, options);
-          stepSpinner.succeed();
-        } catch (error) {
-          stepSpinner.fail();
-          logger.error(`Failed: ${step.name}`, error);
-          if (step.required) throw error;
+        if (result.completedSteps.length > 0) {
+          console.log(chalk.cyan(`🎯 Completed steps (${result.completedSteps.length}):`));
+          result.completedSteps.slice(0, 5).forEach(step => console.log(`  ✅ ${step}`));
+          if (result.completedSteps.length > 5) {
+            console.log(`  ... and ${result.completedSteps.length - 5} more`);
+          }
         }
+
+        if (result.skippedSteps.length > 0) {
+          console.log(chalk.yellow(`⏭️  Skipped steps (${result.skippedSteps.length}):`));
+          result.skippedSteps.forEach(step => console.log(`  ⏭️  ${step}`));
+        }
+
+        this.displayNextSteps();
+      } else {
+        console.log(chalk.red('❌ Setup failed!'));
+        
+        if (result.failedSteps.length > 0) {
+          console.log(chalk.red(`Failed steps (${result.failedSteps.length}):`));
+          result.failedSteps.forEach(step => console.log(`  ❌ ${step}`));
+        }
+
+        if (result.errors.length > 0) {
+          console.log(chalk.red('\nErrors:'));
+          result.errors.forEach(error => console.log(`  • ${error.message}`));
+        }
+
+        console.log(chalk.cyan('\n💡 You can resume setup by running: wundr computer-setup resume'));
+        process.exit(1);
       }
 
-      console.log(chalk.green('\n✅ Computer setup completed successfully!'));
-      this.displayNextSteps();
-
     } catch (error) {
-      spinner.fail('Setup failed');
-      console.error(chalk.red('Error:'), error);
+      console.error(chalk.red('\n❌ Setup failed with error:'), error);
+      console.log(chalk.cyan('\n💡 You can resume setup by running: wundr computer-setup resume'));
       process.exit(1);
     }
   }
@@ -316,15 +434,115 @@ Examples:
     ]);
 
     console.log(chalk.green('\n✅ Profile created successfully!'));
-    return answers;
+    
+    // Map answers to DeveloperProfile structure
+    const profile: DeveloperProfile = {
+      name: 'custom',
+      role: answers.role,
+      languages: {
+        javascript: answers.tools.includes('Node.js'),
+        typescript: answers.tools.includes('TypeScript'),
+        python: answers.tools.includes('Python')
+      },
+      frameworks: {},
+      tools: {
+        packageManagers: {
+          npm: answers.tools.includes('Node.js'),
+          yarn: answers.tools.includes('Yarn'),
+          pnpm: answers.tools.includes('pnpm')
+        },
+        containers: {
+          docker: answers.tools.includes('Docker'),
+          dockerCompose: answers.tools.includes('Docker'),
+          kubernetes: answers.tools.includes('Kubernetes')
+        },
+        editors: {
+          vscode: answers.tools.includes('VS Code'),
+          vim: answers.tools.includes('Vim'),
+          claude: answers.tools.includes('Claude Code')
+        },
+        databases: {
+          postgres: answers.tools.includes('PostgreSQL'),
+          mysql: answers.tools.includes('MySQL'),
+          mongodb: answers.tools.includes('MongoDB'),
+          redis: answers.tools.includes('Redis')
+        }
+      }
+    };
+
+    return profile;
   }
 
-  private detectPlatform(os?: string): any {
+  private detectPlatform(os?: string): SetupPlatform {
     return {
-      os: os || process.platform,
-      arch: process.arch,
+      os: (os || process.platform) as 'darwin' | 'linux' | 'win32',
+      arch: process.arch as 'x64' | 'arm64',
       version: process.version
     };
+  }
+
+  private async selectProfile(): Promise<string> {
+    const profiles = this.orchestrator.getAvailableProfiles();
+    
+    const { selectedProfile } = await inquirer.prompt([{
+      type: 'list',
+      name: 'selectedProfile',
+      message: 'Select a developer profile:',
+      choices: profiles.map(p => ({
+        name: `${p.name} - ${p.description}`,
+        value: p.name.toLowerCase().replace(' ', ''),
+        short: p.name
+      }))
+    }]);
+
+    return selectedProfile;
+  }
+
+  private async resumeSetup(): Promise<void> {
+    console.log(chalk.cyan('\n🔄 Resuming setup from saved state...\n'));
+    
+    const progressCallback = (progress: SetupProgress) => {
+      process.stdout.clearLine(0);
+      process.stdout.cursorTo(0);
+      process.stdout.write(`${chalk.cyan('[')}${progress.percentage.toFixed(1)}%${chalk.cyan(']')} ${progress.currentStep}`);
+    };
+
+    try {
+      const result = await this.orchestrator.resume(progressCallback);
+      console.log('\n'); // New line after progress
+
+      if (result.success) {
+        console.log(chalk.green('✅ Setup resumed and completed successfully!'));
+        this.displayNextSteps();
+      } else {
+        console.log(chalk.red('❌ Resume failed!'));
+        if (result.errors.length > 0) {
+          console.log(chalk.red('Errors:'));
+          result.errors.forEach(error => console.log(`  • ${error.message}`));
+        }
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error(chalk.red('❌ Resume failed:'), error);
+      process.exit(1);
+    }
+  }
+
+  private async listAvailableProfiles(): Promise<void> {
+    console.log(chalk.cyan('\n👤 Available Developer Profiles:\n'));
+    
+    const profiles = this.orchestrator.getAvailableProfiles();
+    profiles.forEach(profile => {
+      console.log(chalk.white(`📋 ${profile.name}`));
+      console.log(chalk.gray(`   ${profile.description}`));
+      console.log(chalk.gray(`   Categories: ${profile.categories.join(', ')}`));
+      console.log(chalk.gray(`   Tools: ${profile.requiredTools.join(', ')}`));
+      console.log(chalk.gray(`   Estimated time: ${profile.estimatedTimeMinutes} minutes`));
+      console.log();
+    });
+
+    console.log(chalk.cyan('Usage: wundr computer-setup --profile <profile-name>'));
+    console.log(chalk.gray('Example: wundr computer-setup --profile frontend\n'));
   }
 
   private generateSetupSteps(profile: any, platform: any): any[] {

@@ -2,7 +2,7 @@
  * Plugin hook registry implementation
  */
 
-import { getLogger, getEventBus } from '@wundr/core';
+import { getLogger, getEventBus } from '@wundr.io/core';
 import {
   PluginHook,
   PluginHookRegistry,

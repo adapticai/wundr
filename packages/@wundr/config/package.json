@@ -23,7 +23,7 @@
     "fs-extra": "^11.3.1",
     "yaml": "^2.3.4",
     "zod": "^3.25.76",
-    "@wundr.io/core": "file:../core"
+    "@wundr.io/core": "workspace:*"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",

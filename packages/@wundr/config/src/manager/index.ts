@@ -13,7 +13,7 @@ import {
   setNestedValue, 
   deepMerge,
   debounceAsync 
-} from '@wundr/core';
+} from '@wundr.io/core';
 import {
   ConfigSource,
   ConfigManager,

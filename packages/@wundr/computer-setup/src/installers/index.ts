@@ -5,6 +5,8 @@ import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
 import { NodeInstaller } from './node-installer';
 import { DockerInstaller } from './docker-installer';
 import { GitInstaller } from './git-installer';
+import { HomebrewInstaller } from './homebrew-installer';
+import { PythonInstaller } from './python-installer';
 import { MacInstaller } from './mac-installer';
 import { LinuxInstaller } from './linux-installer';
 import { WindowsInstaller } from './windows-installer';
@@ -35,9 +37,16 @@ export class InstallerRegistry {
    * Register core cross-platform installers
    */
   private registerCoreInstallers(): void {
-    this.register('node', new NodeInstaller());
-    this.register('docker', new DockerInstaller());
+    // System package managers
+    if (['darwin', 'linux'].includes(this.platform.os)) {
+      this.register('homebrew', new HomebrewInstaller());
+    }
+    
+    // Development tools
     this.register('git', new GitInstaller());
+    this.register('node', new NodeInstaller());
+    this.register('python', new PythonInstaller());
+    this.register('docker', new DockerInstaller());
   }
 
   /**
@@ -308,9 +317,13 @@ export class InstallerRegistry {
 }
 
 // Export all installers
+export * from './homebrew-installer';
+export * from './permissions-installer';
+export * from './python-installer';
 export * from './node-installer';
 export * from './docker-installer';
 export * from './git-installer';
 export * from './mac-installer';
 export * from './linux-installer';
 export * from './windows-installer';
+export { default as RealSetupOrchestrator } from './real-setup-orchestrator';

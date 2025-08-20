@@ -6,7 +6,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
-import { ConfigManager } from '@wundr/config';
+import { ConfigManager } from '@wundr.io/config';
 // import { getLogger } from '@wundr/core'; // TODO: Fix core exports
 const getLogger = (name: string) => console;
 import { DeveloperProfile, ProfilePreferences, RequiredTools } from '../types';

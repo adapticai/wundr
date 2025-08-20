@@ -154,37 +154,56 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   private async installNVM(platform: SetupPlatform): Promise<void> {
+    console.log('Installing NVM (Node Version Manager)...');
+    
+    const homeDir = os.homedir();
+    const nvmDir = path.join(homeDir, '.nvm');
+    
+    if (await fs.pathExists(nvmDir)) {
+      console.log('NVM already installed');
+      return;
+    }
+
     if (platform.os === 'win32') {
-      // Install nvm-windows
       throw new Error('NVM installation on Windows requires manual setup of nvm-windows');
-    } else {
-      // Install nvm for Unix-like systems
-      const installScript = 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash';
-      await execa('bash', ['-c', installScript]);
+    }
+
+    try {
+      // Install NVM
+      const installScript = 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash';
+      await execa('bash', ['-c', installScript], { stdio: 'inherit' });
       
-      // Source nvm in current session with proper HOME expansion
-      const nvmDir = path.join(os.homedir(), '.nvm');
+      // Setup environment for current session
       process.env.NVM_DIR = nvmDir;
+      
+      // Update shell profiles
+      await this.setupNVMShellIntegration();
+      
+      console.log('NVM installed successfully');
+    } catch (error) {
+      throw new Error(`NVM installation failed: ${error}`);
     }
   }
 
   private async installNodeVersion(version: string): Promise<void> {
+    console.log(`Installing Node.js v${version}...`);
+    
     try {
       if (process.platform === 'win32') {
-        // Windows nvm command
         await execa('nvm', ['install', version]);
       } else {
-        // Unix nvm command (requires sourcing) with proper HOME expansion
         const nvmScript = `
           export NVM_DIR="${os.homedir()}/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          nvm install ${version} || echo "Warning: Failed to install Node.js ${version}, continuing..."
+          [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
+          if ! nvm install ${version}; then
+            echo "Warning: Failed to install Node.js v${version}, continuing..."
+          fi
         `;
         await execa('bash', ['-c', nvmScript]);
       }
+      console.log(`Node.js v${version} installed successfully`);
     } catch (error) {
-      console.warn(`Warning: Failed to install Node.js ${version}: ${error}`);
-      // Continue instead of throwing - non-critical failure
+      console.warn(`Warning: Failed to install Node.js v${version}: ${error}`);
     }
   }
 
@@ -227,33 +246,116 @@ export class NodeInstaller implements BaseInstaller {
   private async installPackageManagers(profile: DeveloperProfile): Promise<void> {
     const { packageManagers } = profile.tools;
 
-    if (packageManagers.pnpm) {
-      try {
-        // Use --force flag to handle existing packages
-        await execa('npm', ['install', '-g', 'pnpm', '--force']);
-      } catch (error) {
-        console.warn(`Failed to install pnpm: ${error}`);
-      }
+    // Install pnpm
+    if (packageManagers?.pnpm) {
+      await this.installPnpm();
     }
 
-    if (packageManagers.yarn) {
-      try {
-        // Use --force flag to handle existing packages
-        await execa('npm', ['install', '-g', 'yarn', '--force']);
-      } catch (error) {
-        console.warn(`Failed to install yarn: ${error}`);
+    // Install yarn
+    if (packageManagers?.yarn) {
+      await this.installYarn(profile);
+    }
+  }
+
+  private async installPnpm(): Promise<void> {
+    console.log('Installing pnpm...');
+    
+    try {
+      // Check if already installed
+      await which('pnpm');
+      console.log('pnpm already installed');
+      await execa('npm', ['update', '-g', 'pnpm']);
+      return;
+    } catch {
+      // Not installed, proceed with installation
+    }
+
+    try {
+      // Use the official pnpm installation script
+      await execa('bash', ['-c', 'curl -fsSL https://get.pnpm.io/install.sh | sh -']);
+      
+      // Setup environment
+      const pnpmHome = path.join(os.homedir(), '.local', 'share', 'pnpm');
+      process.env.PNPM_HOME = pnpmHome;
+      process.env.PATH = `${pnpmHome}:${process.env.PATH}`;
+      
+      // Update shell profiles
+      await this.updateShellWithPnpm(pnpmHome);
+      
+      // Configure pnpm
+      await execa('pnpm', ['config', 'set', 'store-dir', path.join(os.homedir(), '.pnpm-store')]);
+      await execa('pnpm', ['config', 'set', 'auto-install-peers', 'true']);
+      await execa('pnpm', ['config', 'set', 'strict-peer-dependencies', 'false']);
+      
+      console.log('pnpm installed and configured');
+    } catch (error) {
+      console.warn(`Failed to install pnpm: ${error}`);
+    }
+  }
+
+  private async installYarn(profile: DeveloperProfile): Promise<void> {
+    console.log('Installing Yarn...');
+    
+    try {
+      // Check if already installed
+      await which('yarn');
+      console.log('Yarn already installed');
+      return;
+    } catch {
+      // Not installed, proceed with installation
+    }
+
+    try {
+      await execa('npm', ['install', '-g', 'yarn', '--force']);
+      
+      // Configure yarn
+      if (profile.name) {
+        await execa('yarn', ['config', 'set', 'init-author-name', profile.name]);
       }
+      if (profile.email) {
+        await execa('yarn', ['config', 'set', 'init-author-email', profile.email]);
+      }
+      await execa('yarn', ['config', 'set', 'init-license', 'MIT']);
+      
+      console.log('Yarn installed and configured');
+    } catch (error) {
+      console.warn(`Failed to install Yarn: ${error}`);
     }
   }
 
   private async configureNPM(profile: DeveloperProfile): Promise<void> {
-    // Set npm registry if needed
-    await execa('npm', ['config', 'set', 'init.author.name', profile.name]);
-    await execa('npm', ['config', 'set', 'init.author.email', profile.email]);
+    console.log('Configuring npm...');
     
-    // Configure npm for better security
-    await execa('npm', ['config', 'set', 'audit-level', 'moderate']);
-    await execa('npm', ['config', 'set', 'fund', 'false']);
+    const homeDir = os.homedir();
+    const npmGlobalDir = path.join(homeDir, '.npm-global');
+    
+    try {
+      // Create npm-global directory structure
+      await fs.ensureDir(path.join(npmGlobalDir, 'lib'));
+      await fs.ensureDir(path.join(npmGlobalDir, 'bin'));
+      
+      // Set npm prefix before any global installs
+      await execa('npm', ['config', 'set', 'prefix', npmGlobalDir]);
+      
+      // Configure npm settings
+      if (profile.name) {
+        await execa('npm', ['config', 'set', 'init-author-name', profile.name]);
+      }
+      if (profile.email) {
+        await execa('npm', ['config', 'set', 'init-author-email', profile.email]);
+      }
+      await execa('npm', ['config', 'set', 'init-license', 'MIT']);
+      
+      // Update npm after setting prefix
+      await execa('npm', ['install', '-g', 'npm@latest', '--force']);
+      
+      // Update shell profiles to include npm global bin
+      await this.updateShellWithNpmGlobal(npmGlobalDir);
+      
+      console.log('npm configured successfully');
+    } catch (error) {
+      console.warn('npm configuration failed:', error);
+    }
   }
 
   private async setupNVMRC(profile: DeveloperProfile): Promise<void> {
@@ -318,6 +420,134 @@ export class NodeInstaller implements BaseInstaller {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  private async setupNVMShellIntegration(): Promise<void> {
+    const homeDir = os.homedir();
+    const shellFiles = ['.zshrc', '.bashrc'];
+    
+    const nvmConfig = `
+# NVM Configuration
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \\. "$NVM_DIR/bash_completion"
+
+# Auto use .nvmrc
+autoload -U add-zsh-hook
+load-nvmrc() {
+  local node_version="$(nvm version)"
+  local nvmrc_path="$(nvm_find_nvmrc)"
+
+  if [ -n "$nvmrc_path" ]; then
+    local nvmrc_node_version=$(nvm version "$(cat "$nvmrc_path")")
+
+    if [ "$nvmrc_node_version" = "N/A" ]; then
+      nvm install
+    elif [ "$nvmrc_node_version" != "$node_version" ]; then
+      nvm use
+    fi
+  elif [ "$node_version" != "$(nvm version default)" ]; then
+    echo "Reverting to nvm default version"
+    nvm use default
+  fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc
+`;
+
+    for (const shellFile of shellFiles) {
+      const shellPath = path.join(homeDir, shellFile);
+      
+      try {
+        let shellContent = '';
+        try {
+          shellContent = await fs.readFile(shellPath, 'utf-8');
+        } catch {
+          // File doesn't exist, will be created
+        }
+
+        // Check if NVM is already configured
+        if (shellContent.includes('NVM_DIR')) {
+          continue;
+        }
+
+        await fs.writeFile(shellPath, shellContent + nvmConfig, 'utf-8');
+        console.log(`Updated ${shellFile} with NVM configuration`);
+      } catch (error) {
+        console.warn(`Failed to update ${shellFile}:`, error);
+      }
+    }
+  }
+
+  private async updateShellWithNpmGlobal(npmGlobalDir: string): Promise<void> {
+    const homeDir = os.homedir();
+    const shellFiles = ['.zshrc', '.bashrc'];
+    const npmPath = path.join(npmGlobalDir, 'bin');
+    
+    const npmConfig = `
+# NPM Global Path
+export PATH="${npmPath}:$PATH"
+`;
+
+    for (const shellFile of shellFiles) {
+      const shellPath = path.join(homeDir, shellFile);
+      
+      try {
+        let shellContent = '';
+        try {
+          shellContent = await fs.readFile(shellPath, 'utf-8');
+        } catch {
+          // File doesn't exist, will be created
+        }
+
+        // Check if npm global is already configured
+        if (shellContent.includes(npmPath)) {
+          continue;
+        }
+
+        await fs.writeFile(shellPath, shellContent + npmConfig, 'utf-8');
+        console.log(`Updated ${shellFile} with npm global path`);
+      } catch (error) {
+        console.warn(`Failed to update ${shellFile}:`, error);
+      }
+    }
+  }
+
+  private async updateShellWithPnpm(pnpmHome: string): Promise<void> {
+    const homeDir = os.homedir();
+    const shellFiles = ['.zshrc', '.bashrc'];
+    
+    const pnpmConfig = `
+# pnpm
+export PNPM_HOME="${pnpmHome}"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+`;
+
+    for (const shellFile of shellFiles) {
+      const shellPath = path.join(homeDir, shellFile);
+      
+      try {
+        let shellContent = '';
+        try {
+          shellContent = await fs.readFile(shellPath, 'utf-8');
+        } catch {
+          // File doesn't exist, will be created
+        }
+
+        // Check if pnpm is already configured
+        if (shellContent.includes('PNPM_HOME')) {
+          continue;
+        }
+
+        await fs.writeFile(shellPath, shellContent + pnpmConfig, 'utf-8');
+        console.log(`Updated ${shellFile} with pnpm configuration`);
+      } catch (error) {
+        console.warn(`Failed to update ${shellFile}:`, error);
+      }
     }
   }
 }

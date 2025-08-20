@@ -210,46 +210,68 @@ export class GitInstaller implements BaseInstaller {
   }
 
   private async configureAdvancedGit(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    console.log('Configuring Git advanced settings...');
+    
     const { gitConfig } = profile.preferences;
     
-    // Set up aliases
-    for (const [alias, command] of Object.entries(gitConfig.aliases)) {
-      await execa('git', ['config', '--global', `alias.${alias}`, command]);
-    }
+    // Basic Git settings from the script
+    await execa('git', ['config', '--global', 'init.defaultBranch', gitConfig.defaultBranch || 'main']);
+    await execa('git', ['config', '--global', 'pull.rebase', 'false']);
+    await execa('git', ['config', '--global', 'push.autoSetupRemote', 'true']);
+    await execa('git', ['config', '--global', 'fetch.prune', 'true']);
+    await execa('git', ['config', '--global', 'diff.colorMoved', 'zebra']);
+    await execa('git', ['config', '--global', 'rerere.enabled', 'true']);
+    await execa('git', ['config', '--global', 'column.ui', 'auto']);
+    await execa('git', ['config', '--global', 'branch.sort', '-committerdate']);
     
     // Configure editor
     const editorMap: Record<string, string> = {
       'vscode': 'code --wait',
       'vim': 'vim',
-      'neovim': 'nvim',
+      'neovim': 'nvim', 
       'sublime': 'subl -w'
     };
     
-    const editor = editorMap[profile.preferences.editor];
-    if (editor) {
-      await execa('git', ['config', '--global', 'core.editor', editor]);
-    }
+    const editor = editorMap[profile.preferences?.editor] || 'code --wait';
+    await execa('git', ['config', '--global', 'core.editor', editor]);
     
-    // Configure useful defaults
-    await execa('git', ['config', '--global', 'core.autocrlf', platform.os === 'win32' ? 'true' : 'input']);
-    await execa('git', ['config', '--global', 'core.safecrlf', 'warn']);
-    await execa('git', ['config', '--global', 'pull.rebase', 'false']);
-    await execa('git', ['config', '--global', 'push.default', 'simple']);
-    await execa('git', ['config', '--global', 'rerere.enabled', 'true']);
+    // Configure diff and merge tools for VS Code
+    await execa('git', ['config', '--global', 'merge.tool', 'vscode']);
+    await execa('git', ['config', '--global', 'mergetool.vscode.cmd', 'code --wait $MERGED']);
+    await execa('git', ['config', '--global', 'diff.tool', 'vscode']);
+    await execa('git', ['config', '--global', 'difftool.vscode.cmd', 'code --wait --diff $LOCAL $REMOTE']);
+    
+    // Set up aliases from the script
+    const commonAliases = {
+      'st': 'status',
+      'co': 'checkout',
+      'br': 'branch',
+      'ci': 'commit',
+      'cm': 'commit -m',
+      'ca': 'commit --amend',
+      'unstage': 'reset HEAD --',
+      'last': 'log -1 HEAD',
+      'visual': '!gitk',
+      'lg': "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit",
+      'sync': '!git fetch --all && git pull',
+      'undo': 'reset --soft HEAD~1',
+      'prune': 'fetch --prune',
+      'stash-all': 'stash save --include-untracked'
+    };
+    
+    // Set up aliases
+    const aliases = { ...commonAliases, ...gitConfig.aliases };
+    for (const [alias, command] of Object.entries(aliases)) {
+      await execa('git', ['config', '--global', `alias.${alias}`, command]);
+    }
     
     // Configure colors
     await execa('git', ['config', '--global', 'color.ui', 'auto']);
     
-    // Configure diff and merge tools
-    if (profile.preferences.editor === 'vscode') {
-      await execa('git', ['config', '--global', 'diff.tool', 'vscode']);
-      await execa('git', ['config', '--global', 'difftool.vscode.cmd', 'code --wait --diff $LOCAL $REMOTE']);
-      await execa('git', ['config', '--global', 'merge.tool', 'vscode']);
-      await execa('git', ['config', '--global', 'mergetool.vscode.cmd', 'code --wait $MERGED']);
-    }
+    // Setup global gitignore
+    await this.setupGlobalGitignore();
     
-    // Set up .gitconfig includes for work/personal separation
-    await this.setupGitIncludes(profile, platform);
+    console.log('Git advanced configuration completed');
   }
 
   private async setupCommitSigning(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
@@ -282,6 +304,8 @@ export class GitInstaller implements BaseInstaller {
   }
 
   private async generateGPGKey(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    console.log('Setting up commit signing...');
+    
     // Check if GPG is installed
     try {
       await which('gpg');
@@ -289,10 +313,20 @@ export class GitInstaller implements BaseInstaller {
       await this.installGPG(platform);
     }
     
+    // Check if GPG key already exists for this email
+    try {
+      const { stdout } = await execa('gpg', ['--list-secret-keys', '--keyid-format', 'LONG']);
+      if (stdout.includes(profile.email || '')) {
+        console.log('GPG key already exists');
+        return;
+      }
+    } catch {
+      // No existing keys, proceed with generation
+    }
+    
     // Generate GPG key batch file
-    const batchFile = path.join(os.tmpdir(), 'gpg-batch.txt');
-    const batchContent = `
-%echo Generating a default key
+    const batchFile = path.join(os.tmpdir(), 'gpg-gen-key.txt');
+    const batchContent = `%echo Generating GPG key
 Key-Type: RSA
 Key-Length: 4096
 Subkey-Type: RSA
@@ -300,17 +334,36 @@ Subkey-Length: 4096
 Name-Real: ${profile.name}
 Name-Email: ${profile.email}
 Expire-Date: 2y
-Passphrase: 
+%no-protection
 %commit
-%echo done
-`;
+%echo done`;
     
-    await fs.writeFile(batchFile, batchContent.trim());
+    await fs.writeFile(batchFile, batchContent);
     
     try {
       await execa('gpg', ['--batch', '--generate-key', batchFile]);
+      
+      // Get the key ID
+      const keyId = await this.getGPGKeyId(profile);
+      
+      if (keyId) {
+        // Configure Git to use the key
+        await execa('git', ['config', '--global', 'user.signingkey', keyId]);
+        await execa('git', ['config', '--global', 'commit.gpgsign', 'true']);
+        await execa('git', ['config', '--global', 'tag.gpgsign', 'true']);
+        
+        console.log('GPG key generated and configured for commit signing');
+        
+        // Export public key for GitHub/GitLab
+        const { stdout: publicKey } = await execa('gpg', ['--armor', '--export', keyId]);
+        console.log('\nGPG Public Key (add this to your GitHub/GitLab account):');
+        console.log(publicKey);
+        console.log('\nYou can add this key at:');
+        console.log('- GitHub: https://github.com/settings/gpg/new');
+        console.log('- GitLab: https://gitlab.com/-/profile/gpg_keys');
+      }
     } finally {
-      await fs.remove(batchFile);
+      await fs.remove(batchFile).catch(() => {});
     }
   }
 
@@ -492,6 +545,96 @@ Passphrase:
       return signing === 'true' && !!signingKey;
     } catch {
       return false;
+    }
+  }
+
+  private async setupGlobalGitignore(): Promise<void> {
+    console.log('Creating global .gitignore...');
+    
+    const globalGitignorePath = path.join(os.homedir(), '.gitignore_global');
+    
+    const globalGitignoreContent = `# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Dependencies
+node_modules/
+bower_components/
+vendor/
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+out/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+`;
+
+    try {
+      await fs.writeFile(globalGitignorePath, globalGitignoreContent.trim(), 'utf-8');
+      await execa('git', ['config', '--global', 'core.excludesfile', globalGitignorePath]);
+      console.log('Global .gitignore created and configured');
+    } catch (error) {
+      console.warn('Failed to create global .gitignore:', error);
     }
   }
 }
