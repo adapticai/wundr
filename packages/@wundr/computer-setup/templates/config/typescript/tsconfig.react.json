@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "{{REACT_TARGET}}",
+    "lib": [{{#REACT_LIBS}}"{{.}}"{{#unless @last}}, {{/unless}}{{/REACT_LIBS}}],
+    "module": "{{REACT_MODULE}}",
+    "jsx": "{{REACT_JSX}}",
+    "types": [{{#REACT_TYPES}}"{{.}}"{{#unless @last}}, {{/unless}}{{/REACT_TYPES}}],
+    {{#OUT_DIR}}"outDir": "{{OUT_DIR}}",{{/OUT_DIR}}
+    {{#ROOT_DIR}}"rootDir": "{{ROOT_DIR}}"{{/ROOT_DIR}}
+  },
+  "include": [{{#REACT_INCLUDE}}"{{.}}"{{#unless @last}}, {{/unless}}{{/REACT_INCLUDE}}],
+  "exclude": [{{#REACT_EXCLUDE}}"{{.}}"{{#unless @last}}, {{/unless}}{{/REACT_EXCLUDE}}]
+}

@@ -1,0 +1,26 @@
+FROM node:{{NODE_VERSION}}-alpine AS base
+
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+FROM base AS deps
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM base AS build
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM base AS runtime
+ENV NODE_ENV production
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+
+COPY --from=deps --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=nodejs:nodejs /app/{{BUILD_OUTPUT_DIR}} ./{{BUILD_OUTPUT_DIR}}
+COPY --chown=nodejs:nodejs package*.json ./
+
+USER nodejs
+EXPOSE {{PORT}}
+CMD ["node", "{{BUILD_OUTPUT_DIR}}/{{ENTRY_POINT}}"]

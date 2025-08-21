@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "{{NODE_MODULE}}",
+    "moduleResolution": "{{NODE_MODULE_RESOLUTION}}",
+    "target": "{{NODE_TARGET}}",
+    "lib": [{{#NODE_LIBS}}"{{.}}"{{#unless @last}}, {{/unless}}{{/NODE_LIBS}}],
+    "types": [{{#NODE_TYPES}}"{{.}}"{{#unless @last}}, {{/unless}}{{/NODE_TYPES}}],
+    {{#OUT_DIR}}"outDir": "{{OUT_DIR}}",{{/OUT_DIR}}
+    {{#ROOT_DIR}}"rootDir": "{{ROOT_DIR}}"{{/ROOT_DIR}}
+  },
+  "include": [{{#NODE_INCLUDE}}"{{.}}"{{#unless @last}}, {{/unless}}{{/NODE_INCLUDE}}],
+  "exclude": [{{#NODE_EXCLUDE}}"{{.}}"{{#unless @last}}, {{/unless}}{{/NODE_EXCLUDE}}]
+}

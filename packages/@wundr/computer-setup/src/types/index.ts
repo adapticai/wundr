@@ -7,6 +7,7 @@ export interface DeveloperProfile {
   email?: string;
   role: string;
   team?: string;
+  company?: string;
   preferences?: ProfilePreferences;
   languages?: {
     javascript?: boolean;

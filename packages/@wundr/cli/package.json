@@ -36,6 +36,9 @@
     "@oclif/plugin-help": "^6.0.0",
     "@oclif/plugin-plugins": "^4.1.0",
     "@types/axios": "^0.9.36",
+    "@wundr.io/computer-setup": "workspace:*",
+    "@wundr.io/core": "workspace:*",
+    "@wundr.io/config": "workspace:*",
     "axios": "^1.11.0",
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.11.0",
@@ -98,6 +101,9 @@
       },
       "dashboard": {
         "description": "Dashboard and visualization tools"
+      },
+      "setup": {
+        "description": "Computer setup and provisioning for developer machines"
       }
     }
   }

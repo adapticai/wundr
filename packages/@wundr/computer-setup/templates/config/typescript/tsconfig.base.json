@@ -1,0 +1,65 @@
+{
+  "compilerOptions": {
+    "target": "{{TARGET}}",
+    "lib": [{{#LIBS}}"{{.}}"{{#unless @last}}, {{/unless}}{{/LIBS}}],
+    "module": "{{MODULE}}",
+    "moduleResolution": "{{MODULE_RESOLUTION}}",
+    {{#JSX_SUPPORT}}"jsx": "{{JSX}}",{{/JSX_SUPPORT}}
+    
+    // Strict checks
+    "strict": {{STRICT}},
+    "noImplicitAny": {{NO_IMPLICIT_ANY}},
+    "strictNullChecks": {{STRICT_NULL_CHECKS}},
+    "strictFunctionTypes": {{STRICT_FUNCTION_TYPES}},
+    "strictBindCallApply": {{STRICT_BIND_CALL_APPLY}},
+    "strictPropertyInitialization": {{STRICT_PROPERTY_INITIALIZATION}},
+    "noImplicitThis": {{NO_IMPLICIT_THIS}},
+    "alwaysStrict": {{ALWAYS_STRICT}},
+    
+    // Additional checks
+    "noUnusedLocals": {{NO_UNUSED_LOCALS}},
+    "noUnusedParameters": {{NO_UNUSED_PARAMETERS}},
+    "noImplicitReturns": {{NO_IMPLICIT_RETURNS}},
+    "noFallthroughCasesInSwitch": {{NO_FALLTHROUGH_CASES}},
+    "noUncheckedIndexedAccess": {{NO_UNCHECKED_INDEXED_ACCESS}},
+    "noImplicitOverride": {{NO_IMPLICIT_OVERRIDE}},
+    "noPropertyAccessFromIndexSignature": {{NO_PROPERTY_ACCESS_FROM_INDEX_SIGNATURE}},
+    "exactOptionalPropertyTypes": {{EXACT_OPTIONAL_PROPERTY_TYPES}},
+    
+    // Module resolution
+    "esModuleInterop": {{ES_MODULE_INTEROP}},
+    "skipLibCheck": {{SKIP_LIB_CHECK}},
+    "forceConsistentCasingInFileNames": {{FORCE_CONSISTENT_CASING}},
+    "allowSyntheticDefaultImports": {{ALLOW_SYNTHETIC_DEFAULT_IMPORTS}},
+    "resolveJsonModule": {{RESOLVE_JSON_MODULE}},
+    "isolatedModules": {{ISOLATED_MODULES}},
+    {{#VERBATIM_MODULE_SYNTAX}}"verbatimModuleSyntax": {{VERBATIM_MODULE_SYNTAX}},{{/VERBATIM_MODULE_SYNTAX}}
+    
+    // Emit
+    "declaration": {{DECLARATION}},
+    "declarationMap": {{DECLARATION_MAP}},
+    "sourceMap": {{SOURCE_MAP}},
+    "inlineSources": {{INLINE_SOURCES}},
+    
+    // Performance
+    "incremental": {{INCREMENTAL}},
+    "tsBuildInfoFile": "{{TS_BUILD_INFO_FILE}}",
+    
+    // Other
+    "pretty": {{PRETTY}},
+    "removeComments": {{REMOVE_COMMENTS}},
+    "preserveConstEnums": {{PRESERVE_CONST_ENUMS}},
+    
+    // Paths
+    "baseUrl": "{{BASE_URL}}",
+    "paths": {
+      {{#PATH_MAPPINGS}}"{{ALIAS}}/*": ["{{PATH}}/*"]{{#unless @last}},{{/unless}}{{/PATH_MAPPINGS}}
+    }{{#OUT_DIR}},
+    "outDir": "{{OUT_DIR}}"{{/OUT_DIR}}{{#ROOT_DIR}},
+    "rootDir": "{{ROOT_DIR}}"{{/ROOT_DIR}}
+  },
+  {{#INCLUDE_PATTERNS}}"include": [{{#INCLUDE_PATTERNS}}"{{.}}"{{#unless @last}}, {{/unless}}{{/INCLUDE_PATTERNS}}],{{/INCLUDE_PATTERNS}}
+  "exclude": [
+    {{#EXCLUDE_PATTERNS}}"{{.}}"{{#unless @last}},{{/unless}}{{/EXCLUDE_PATTERNS}}
+  ]
+}

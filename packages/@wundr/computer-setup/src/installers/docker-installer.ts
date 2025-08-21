@@ -70,6 +70,15 @@ export class DockerInstaller implements BaseInstaller {
     
     // Configure resource limits
     await this.configureResourceLimits(platform);
+    
+    // Install additional Docker tools
+    await this.installDockerTools();
+    
+    // Setup Docker aliases
+    await this.setupDockerAliases();
+    
+    // Create Docker templates
+    await this.createDockerTemplates();
   }
 
   async validate(): Promise<boolean> {
@@ -531,6 +540,229 @@ export class DockerInstaller implements BaseInstaller {
     } catch (error) {
       console.error('Docker verification failed:', error);
       throw new Error(`Docker verification failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async installDockerTools(): Promise<void> {
+    console.log('Installing Docker development tools...');
+    
+    // Check if Homebrew is available
+    try {
+      await which('brew');
+      
+      const tools = [
+        'dive',
+        'lazydocker',
+        'ctop',
+        'docker-slim'
+      ];
+      
+      for (const tool of tools) {
+        try {
+          // Check if already installed
+          await execa('brew', ['list', tool]);
+          console.log(`${tool} already installed`);
+        } catch {
+          try {
+            console.log(`Installing ${tool}...`);
+            await execa('brew', ['install', tool]);
+          } catch (error) {
+            console.warn(`Failed to install ${tool}:`, error);
+          }
+        }
+      }
+    } catch {
+      console.log('Homebrew not available, skipping Docker tools installation');
+    }
+  }
+
+  private async setupDockerAliases(): Promise<void> {
+    const homeDir = os.homedir();
+    
+    const aliases = `
+# Docker aliases
+alias d='docker'
+alias dc='docker-compose'
+alias dps='docker ps'
+alias dpsa='docker ps -a'
+alias di='docker images'
+alias dex='docker exec -it'
+alias dl='docker logs'
+alias dlf='docker logs -f'
+alias dcp='docker cp'
+alias drm='docker rm'
+alias drmi='docker rmi'
+alias dprune='docker system prune -a'
+alias dstop='docker stop $(docker ps -q)'
+alias dkill='docker kill $(docker ps -q)'
+alias drmall='docker rm $(docker ps -aq)'
+alias drmiall='docker rmi $(docker images -q)'
+
+# Docker Compose aliases
+alias dcup='docker-compose up'
+alias dcupd='docker-compose up -d'
+alias dcdown='docker-compose down'
+alias dcdownv='docker-compose down -v'
+alias dcps='docker-compose ps'
+alias dclogs='docker-compose logs'
+alias dclogsf='docker-compose logs -f'
+alias dcrestart='docker-compose restart'
+alias dcbuild='docker-compose build'
+alias dcpull='docker-compose pull'
+
+# Docker functions
+dsh() {
+    docker exec -it "$1" /bin/sh
+}
+
+dbash() {
+    docker exec -it "$1" /bin/bash
+}
+
+dclean() {
+    docker system prune -af --volumes
+}
+
+docker-ip() {
+    docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$1"
+}
+`;
+
+    const shellFiles = ['.zshrc', '.bashrc'];
+    
+    for (const shellFile of shellFiles) {
+      const shellPath = path.join(homeDir, shellFile);
+      
+      try {
+        let shellContent = '';
+        try {
+          shellContent = await fs.readFile(shellPath, 'utf-8');
+        } catch {
+          // File doesn't exist
+        }
+
+        // Check if Docker aliases are already configured
+        if (shellContent.includes("alias d='docker'")) {
+          continue;
+        }
+
+        await fs.writeFile(shellPath, shellContent + aliases, 'utf-8');
+        console.log(`Added Docker aliases to ${shellFile}`);
+      } catch (error) {
+        console.warn(`Failed to update ${shellFile} with Docker aliases:`, error);
+      }
+    }
+  }
+
+  private async createDockerTemplates(): Promise<void> {
+    console.log('Creating Docker templates...');
+    
+    const templatesDir = path.join(os.homedir(), '.docker-templates');
+    
+    try {
+      await fs.mkdir(templatesDir, { recursive: true });
+      
+      // Node.js Dockerfile template
+      const nodeDockerfile = `FROM node:lts-alpine AS base
+
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+FROM base AS deps
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM base AS build
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM base AS runtime
+ENV NODE_ENV production
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+
+COPY --from=deps --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
+COPY --chown=nodejs:nodejs package*.json ./
+
+USER nodejs
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+`;
+
+      await fs.writeFile(path.join(templatesDir, 'Dockerfile.node'), nodeDockerfile);
+      
+      // Docker Compose template
+      const dockerCompose = `version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+volumes:
+  postgres-data:
+
+networks:
+  app-network:
+    driver: bridge
+`;
+
+      await fs.writeFile(path.join(templatesDir, 'docker-compose.yml'), dockerCompose);
+      
+      // .dockerignore template
+      const dockerignore = `node_modules
+npm-debug.log
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+README.md
+.vscode
+.idea
+coverage
+.nyc_output
+dist
+build
+*.log
+.DS_Store
+`;
+
+      await fs.writeFile(path.join(templatesDir, '.dockerignore'), dockerignore);
+      
+      console.log(`Docker templates created in ${templatesDir}`);
+    } catch (error) {
+      console.warn('Failed to create Docker templates:', error);
     }
   }
 }

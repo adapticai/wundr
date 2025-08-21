@@ -6,10 +6,28 @@
  * Based on the new-starter repository functionality
  */
 
+// Core types
 export * from './types';
+
+// Profiles management
 export * from './profiles';
+
+// All installers and orchestrator
 export * from './installers';
+export { default as RealSetupOrchestrator } from './installers/real-setup-orchestrator';
+
+// Configuration management
 export * from './configurators';
+
+// Profile personalization
+export * from './personalizers';
+
+// Validation utilities
 export * from './validators';
+
+// Template management
+export * from './templates';
+
+// Legacy exports for compatibility
 export { ComputerSetupManager } from './manager';
 export { SetupOrchestrator } from './orchestrator';

@@ -17,7 +17,7 @@ export class ProfileManager {
   private profilesDir: string;
   private profiles: Map<string, DeveloperProfile> = new Map();
 
-  constructor(private configManager: ConfigManager) {
+  constructor(configManager?: ConfigManager) {
     this.profilesDir = path.join(os.homedir(), '.wundr', 'profiles');
     this.ensureProfilesDirectory();
   }
@@ -93,6 +93,18 @@ export class ProfileManager {
    */
   async listProfiles(): Promise<DeveloperProfile[]> {
     await this.loadProfiles();
+    
+    // If no profiles found, return predefined ones
+    if (this.profiles.size === 0) {
+      const predefinedProfiles = [
+        'frontend', 'backend', 'fullstack', 'devops', 'ml', 'mobile'
+      ].map(role => this.getPredefinedProfile(role)).filter(Boolean) as DeveloperProfile[];
+      
+      predefinedProfiles.forEach(profile => {
+        this.profiles.set(profile.name, profile);
+      });
+    }
+    
     return Array.from(this.profiles.values());
   }
 

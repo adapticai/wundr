@@ -16,6 +16,7 @@ import { WatchCommands } from './commands/watch';
 import { BatchCommands } from './commands/batch';
 import { ChatCommands } from './commands/chat';
 import { PluginCommands } from './commands/plugins';
+import { SetupCommands } from './commands/setup';
 import { ComputerSetupCommands } from './commands/computer-setup-commands';
 
 /**
@@ -64,12 +65,13 @@ The Unified Developer Platform
    * Register all command categories
    */
   private registerCommands(): void {
+    // Computer Setup & Provisioning (primary integration)
+    new SetupCommands(this.program, this.configManager, this.pluginManager);
+    new ComputerSetupCommands(this.program, this.configManager, this.pluginManager);
+    
     // Code Analysis & Governance (original wundr features)
     new AnalyzeCommands(this.program, this.configManager, this.pluginManager);
     new GovernCommands(this.program, this.configManager, this.pluginManager);
-    
-    // Computer Setup & Provisioning (new-starter integration)
-    new ComputerSetupCommands(this.program, this.configManager, this.pluginManager);
     
     // Project Management
     new InitCommands(this.program, this.configManager, this.pluginManager);
