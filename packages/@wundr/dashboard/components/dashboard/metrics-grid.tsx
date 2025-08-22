@@ -147,8 +147,31 @@ export function MetricsGrid() {
   })
 
   React.useEffect(() => {
+    // Create message handler that transforms WebSocketMessage to RealtimeData
+    const messageHandler = (message: { type: string; data: any; timestamp: number }) => {
+      try {
+        if (message.type === 'realtime-data') {
+          setRealtimeData({
+            connected: true,
+            lastUpdate: new Date(message.timestamp),
+            events: message.data.events || [],
+            metrics: message.data.metrics || []
+          })
+        } else if (message.type === 'metrics-update') {
+          setRealtimeData(prev => ({
+            ...prev,
+            connected: true,
+            lastUpdate: new Date(message.timestamp),
+            metrics: message.data || []
+          }))
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message in MetricsGrid:', error)
+      }
+    }
+
     // Subscribe to real-time data updates
-    const unsubscribe = realtimeStore.subscribe(setRealtimeData)
+    const unsubscribe = realtimeStore.subscribe(messageHandler)
     return unsubscribe
   }, [])
 

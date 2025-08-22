@@ -134,8 +134,38 @@ export function RealtimeMetrics() {
     // Connect to WebSocket
     connect()
 
+    // Create message handler that transforms WebSocketMessage to RealtimeData
+    const messageHandler = (message: { type: string; data: any; timestamp: number }) => {
+      try {
+        if (message.type === 'realtime-data') {
+          setData({
+            connected: true,
+            lastUpdate: new Date(message.timestamp),
+            events: message.data.events || [],
+            metrics: message.data.metrics || []
+          })
+        } else if (message.type === 'metrics-update') {
+          setData(prev => ({
+            ...prev,
+            connected: true,
+            lastUpdate: new Date(message.timestamp),
+            metrics: message.data || []
+          }))
+        } else if (message.type === 'events-update') {
+          setData(prev => ({
+            ...prev,
+            connected: true,
+            lastUpdate: new Date(message.timestamp),
+            events: message.data || []
+          }))
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message in RealtimeMetrics:', error)
+      }
+    }
+
     // Subscribe to real-time data updates
-    const unsubscribe = realtimeStore.subscribe(setData)
+    const unsubscribe = realtimeStore.subscribe(messageHandler)
 
     return unsubscribe
   }, [connect])

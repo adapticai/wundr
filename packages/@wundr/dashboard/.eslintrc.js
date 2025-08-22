@@ -18,5 +18,5 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
-  extends: ['../../.eslintrc.js'],
+  extends: ['next/core-web-vitals'],
 };

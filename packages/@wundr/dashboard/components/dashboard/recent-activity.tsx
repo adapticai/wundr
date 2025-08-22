@@ -110,8 +110,31 @@ export function RecentActivity() {
   })
 
   React.useEffect(() => {
+    // Create message handler that transforms WebSocketMessage to RealtimeData
+    const messageHandler = (message: { type: string; data: any; timestamp: number }) => {
+      try {
+        if (message.type === 'realtime-data') {
+          setRealtimeData({
+            connected: true,
+            lastUpdate: new Date(message.timestamp),
+            events: message.data.events || [],
+            metrics: message.data.metrics || []
+          })
+        } else if (message.type === 'events-update') {
+          setRealtimeData(prev => ({
+            ...prev,
+            connected: true,
+            lastUpdate: new Date(message.timestamp),
+            events: message.data || []
+          }))
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message in RecentActivity:', error)
+      }
+    }
+
     // Subscribe to real-time data updates
-    const unsubscribe = realtimeStore.subscribe(setRealtimeData)
+    const unsubscribe = realtimeStore.subscribe(messageHandler)
 
     return unsubscribe
   }, [])
