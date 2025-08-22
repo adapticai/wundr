@@ -193,7 +193,7 @@ export function MetricsGrid() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {mockMetrics.map((metric, index) => (
+      {mockMetrics.map((metric, _index) => (
         <MetricCard
           key={metric.title}
           metric={metric}

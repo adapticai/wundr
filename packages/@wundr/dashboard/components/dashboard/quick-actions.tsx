@@ -5,12 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Play, 
   RefreshCw, 
-  Download, 
-  Settings, 
   FileText,
-  GitBranch,
   Package,
   TestTube,
   Zap,

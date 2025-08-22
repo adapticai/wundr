@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Activity, Zap, Database, Globe, Clock, TestTube } from 'lucide-react'
 import { useWebSocket, realtimeStore } from '@/lib/websocket'
-import { RealtimeData, RealtimeEvent, RealtimeMetric } from '@/types'
+import { RealtimeData, RealtimeEvent } from '@/types'
 import { cn } from '@/lib/utils'
 
 interface MetricCardProps {

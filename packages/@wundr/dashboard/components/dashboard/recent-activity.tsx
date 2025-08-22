@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { GitCommit, GitMerge, GitBranch, Package, AlertCircle } from 'lucide-react'
-import { useWebSocket, realtimeStore } from '@/lib/websocket'
+import { realtimeStore } from '@/lib/websocket'
 import { RealtimeData } from '@/types'
 
 interface ActivityItem {

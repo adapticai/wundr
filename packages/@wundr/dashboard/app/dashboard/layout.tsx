@@ -12,7 +12,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { connect, disconnect, isConnected } = useWebSocket()
+  const { connect, disconnect } = useWebSocket()
   const { toast } = useToast()
   
   // Initialize WebSocket connection

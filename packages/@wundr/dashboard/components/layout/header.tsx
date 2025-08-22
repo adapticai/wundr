@@ -15,10 +15,9 @@ import { Badge } from '@/components/ui/badge'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
 import { useWebSocket } from '@/lib/websocket'
-import { cn } from '@/lib/utils'
 
 export function Header() {
-  const { theme, setTheme } = useTheme()
+  const { setTheme } = useTheme()
   const { isConnected } = useWebSocket()
   const [mounted, setMounted] = React.useState(false)
   

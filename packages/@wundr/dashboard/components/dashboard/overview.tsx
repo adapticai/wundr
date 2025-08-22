@@ -4,17 +4,12 @@ import * as React from 'react'
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
   CartesianGrid
 } from 'recharts'
-import { useTheme } from 'next-themes'
 
 // Mock data for the overview chart
 const data = [
@@ -28,8 +23,6 @@ const data = [
 ]
 
 export function Overview() {
-  const { theme } = useTheme()
-
   return (
     <div data-testid="overview-chart" data-has-data={data.length > 0 ? "true" : "false"}>
       <ResponsiveContainer width="100%" height={350}>

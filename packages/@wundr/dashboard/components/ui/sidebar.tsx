@@ -5,12 +5,13 @@ import { Slot } from '@radix-ui/react-slot'
 import { VariantProps, cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
+// Cookie configuration for persistent sidebar state
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 1 week
 const SIDEBAR_WIDTH = '16rem'
 const SIDEBAR_WIDTH_MOBILE = '18rem'
 
-type SidebarContext = {
+type SidebarContextType = {
   state: 'open' | 'closed'
   open: boolean
   setOpen: (open: boolean) => void
@@ -20,7 +21,7 @@ type SidebarContext = {
   toggleSidebar: () => void
 }
 
-const SidebarContext = React.createContext<SidebarContext | null>(null)
+const SidebarContext = React.createContext<SidebarContextType | null>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -68,7 +69,7 @@ const SidebarProvider = React.forwardRef<
 
   const state = open ? 'open' : 'closed'
 
-  const contextValue = React.useMemo<SidebarContext>(
+  const contextValue = React.useMemo<SidebarContextType>(
     () => ({
       state,
       open,
@@ -110,7 +111,7 @@ const Sidebar = React.forwardRef<
     variant?: 'sidebar' | 'floating' | 'inset'
     collapsible?: 'offcanvas' | 'icon' | 'none'
   }
->(({ side = 'left', variant = 'sidebar', collapsible = 'offcanvas', className, children, ...props }, ref) => {
+>(({ side = 'left', variant: _variant = 'sidebar', collapsible = 'offcanvas', className, children, ...props }, ref) => {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
   if (collapsible === 'none') {
