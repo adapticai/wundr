@@ -132,7 +132,7 @@ export function RealtimeMetrics() {
 
   React.useEffect(() => {
     // Connect to WebSocket
-    connect().catch(console.error)
+    connect()
 
     // Subscribe to real-time data updates
     const unsubscribe = realtimeStore.subscribe(setData)
