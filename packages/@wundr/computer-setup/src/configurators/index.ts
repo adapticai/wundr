@@ -7,8 +7,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-// import { getLogger } from '@wundr/core'; // TODO: Fix core exports
-const getLogger = (name: string) => console;
+import { getLogger } from '../utils/logger';
 import { 
   DeveloperProfile, 
   GitConfiguration, 

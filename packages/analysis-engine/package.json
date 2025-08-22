@@ -18,6 +18,7 @@
   "dependencies": {
     "ts-morph": "^21.0.1",
     "glob": "^10.3.10",
+    "minimatch": "^9.0.3",
     "@typescript-eslint/parser": "^6.21.0",
     "@typescript-eslint/typescript-estree": "^6.21.0",
     "@wundr.io/core-simple": "workspace:*"

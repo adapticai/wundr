@@ -25,6 +25,18 @@ interface MonorepoConfig {
   sharedDevDependencies: string[];
 }
 
+/**
+ * MonorepoSetup - A utility class for creating and managing monorepo structures
+ * 
+ * This class provides comprehensive functionality for setting up modern monorepo
+ * architectures with TypeScript, package management, build tooling, and development
+ * workflows. It supports automated package creation, dependency management,
+ * and migration planning from existing codebases.
+ * 
+ * @example
+ * const setup = new MonorepoSetup();
+ * await setup.initializeMonorepo();
+ */
 export class MonorepoSetup {
   private config: MonorepoConfig = {
     rootName: 'my-monorepo',
@@ -154,7 +166,26 @@ export class MonorepoSetup {
   };
 
   /**
-   * Initialize the monorepo structure
+   * Initialize the complete monorepo structure with all necessary configurations
+   * 
+   * Creates a comprehensive monorepo setup including:
+   * - Directory structure (packages/, apps/, tools/, docs/)
+   * - Package manager configuration (pnpm, yarn, or npm workspaces)
+   * - Root configuration files (tsconfig.json, turbo.json, .gitignore)
+   * - Individual package configurations with proper dependencies
+   * - Build tooling setup (Jest, ESLint, Prettier)
+   * - Helper scripts for package management
+   * 
+   * @throws {Error} If directory creation fails or configuration files cannot be written
+   * 
+   * @example
+   * const setup = new MonorepoSetup();
+   * try {
+   *   await setup.initializeMonorepo();
+   *   console.log('Monorepo initialized successfully!');
+   * } catch (error) {
+   *   console.error('Failed to initialize monorepo:', error);
+   * }
    */
   async initializeMonorepo() {
     console.log('🚀 Initializing monorepo structure...\n');
@@ -184,7 +215,18 @@ export class MonorepoSetup {
   }
 
   /**
-   * Create the directory structure
+   * Create the basic directory structure for the monorepo
+   * 
+   * Creates the following directories if they don't exist:
+   * - packages/ (for shared packages)
+   * - apps/ (for applications)
+   * - tools/ (for development tools)
+   * - docs/ (for documentation)
+   * - scripts/ (for utility scripts)
+   * - .github/workflows/ (for GitHub Actions)
+   * 
+   * @private
+   * @throws {Error} If directory creation fails due to permissions or filesystem issues
    */
   private createDirectoryStructure() {
     console.log('📁 Creating directory structure...');
@@ -208,7 +250,20 @@ export class MonorepoSetup {
   }
 
   /**
-   * Initialize package manager
+   * Initialize the configured package manager with workspace settings
+   * 
+   * Sets up workspace configuration based on the selected package manager:
+   * - PNPM: Creates pnpm-workspace.yaml and .npmrc with performance optimizations
+   * - Yarn: Configures yarn workspaces in package.json
+   * - NPM: Sets up npm workspaces configuration
+   * 
+   * @private
+   * @throws {Error} If workspace configuration files cannot be created
+   * 
+   * @example
+   * For PNPM, creates:
+   * - pnpm-workspace.yaml with workspace patterns
+   * - .npmrc with strict peer dependencies and hoisting settings
    */
   private async initializePackageManager() {
     console.log(`\n📦 Initializing ${this.config.packageManager}...`);
@@ -248,7 +303,24 @@ package-import-method=clone
   }
 
   /**
-   * Create root configuration files
+   * Create all root-level configuration files for the monorepo
+   * 
+   * Generates comprehensive configuration files including:
+   * - package.json with workspace scripts and shared dependencies
+   * - tsconfig.json with project references and path mapping
+   * - turbo.json with build pipeline configuration
+   * - .gitignore with appropriate ignore patterns
+   * - ESLint configuration for consistent code style
+   * - Prettier configuration for code formatting
+   * 
+   * @private
+   * @throws {Error} If any configuration file cannot be written
+   * 
+   * @example
+   * Creates scripts like:
+   * - "build": "turbo run build"
+   * - "test": "turbo run test"
+   * - "lint": "turbo run lint"
    */
   private createRootConfigs() {
     console.log('\n⚙️ Creating root configuration files...');
@@ -432,7 +504,38 @@ lerna-debug.log*
   }
 
   /**
-   * Create individual package
+   * Create an individual package with its complete configuration
+   * 
+   * Sets up a complete package structure including:
+   * - Directory structure (src/, dist/)
+   * - package.json with proper dependencies and scripts
+   * - tsconfig.json with project references
+   * - index.ts entry point
+   * - README.md with usage documentation
+   * - Jest configuration (if tests are enabled)
+   * 
+   * @private
+   * @param {PackageConfig} pkg - Configuration object for the package to create
+   * @param {string} pkg.name - The package name (e.g., '@company/utils')
+   * @param {string} pkg.path - Relative path where package should be created
+   * @param {string} pkg.description - Human-readable description of the package
+   * @param {string[]} pkg.dependencies - List of package dependencies
+   * @param {'app' | 'package'} pkg.type - Whether this is an application or library package
+   * @param {boolean} [pkg.private] - Whether the package should be marked as private
+   * @param {Record<string, string>} [pkg.scripts] - Custom npm scripts for the package
+   * 
+   * @throws {Error} If package directory cannot be created or files cannot be written
+   * 
+   * @example
+   * const packageConfig = {
+   *   name: '@company/utils',
+   *   path: 'packages/utils',
+   *   description: 'Shared utility functions',
+   *   dependencies: ['@company/core-types'],
+   *   type: 'package' as const,
+   *   scripts: { build: 'tsc', test: 'jest' }
+   * };
+   * await this.createPackage(packageConfig);
    */
   private async createPackage(pkg: PackageConfig) {
     console.log(`\n📦 Creating package: ${pkg.name}`);
@@ -530,19 +633,36 @@ ${pkg.description}
 
 ## Installation
 
-\`\`\`bash
+\\\`\\\`\\\`bash
 pnpm add ${pkg.name}
-\`\`\`
+\\\`\\\`\\\`
 
 ## Usage
 
-\`\`\`typescript
+\\\`\\\`\\\`typescript
 import { } from '${pkg.name}';
-\`\`\`
+\\\`\\\`\\\`
 
 ## API
 
-TODO: Document the API
+Documentation for the main MonorepoSetup class and its public methods can be found in the source code JSDoc comments.
+
+### Key Methods
+
+- \`initializeMonorepo()\` - Sets up the complete monorepo structure
+- \`generateMigrationPlan(analysisReport: string)\` - Creates migration plan from existing codebase
+
+### CLI Usage
+
+Initialize a new monorepo:
+\\\`\\\`\\\`bash
+npx ts-node scripts/monorepo-setup.ts init
+\\\`\\\`\\\`
+
+Generate migration plan:
+\\\`\\\`\\\`bash
+npx ts-node scripts/monorepo-setup.ts plan <analysis-report.json>
+\\\`\\\`\\\`
 
 ## License
 
@@ -574,7 +694,22 @@ Private
   }
 
   /**
-   * Setup build tooling
+   * Setup comprehensive build tooling and development tools
+   * 
+   * Configures essential development tools including:
+   * - Jest preset with coverage thresholds and module mapping
+   * - Prettier configuration for consistent code formatting
+   * - ESLint configuration with TypeScript and import rules
+   * - Coverage thresholds (80% for branches, functions, lines, statements)
+   * 
+   * @private
+   * @throws {Error} If tooling configuration files cannot be created
+   * 
+   * @example
+   * Sets up Jest with:
+   * - Module name mapping for @company/asterisk packages  
+   * - Coverage collection from src/glob/asterisk.ts files
+   * - Exclusion of test and declaration files from coverage
    */
   private setupBuildTooling() {
     console.log('\n🔧 Setting up build tooling...');
@@ -652,7 +787,19 @@ Private
   }
 
   /**
-   * Create helper scripts
+   * Create utility scripts for monorepo management
+   * 
+   * Generates helpful scripts for ongoing monorepo maintenance:
+   * - add-package.sh: Script to add new packages to the monorepo
+   * - check-dependencies.ts: Script to detect circular dependencies
+   * 
+   * @private
+   * @throws {Error} If script files cannot be created or permissions cannot be set
+   * 
+   * @example
+   * Usage of generated scripts:
+   * - Add a new package: ./scripts/add-package.sh my-new-package package
+   * - Check for circular dependencies: npx ts-node scripts/check-dependencies.ts
    */
   private createHelperScripts() {
     console.log('\n📝 Creating helper scripts...');
@@ -782,7 +929,23 @@ if (require.main === module) {
     }
 
   /**
-   * Print next steps
+   * Print comprehensive next steps and usage instructions
+   * 
+   * Displays a formatted guide with:
+   * - Installation commands for the configured package manager
+   * - Migration steps for existing codebases
+   * - Import update instructions
+   * - Build and development commands
+   * - Testing and validation steps
+   * 
+   * @private
+   * 
+   * @example
+   * Outputs guidance like:
+   * - "pnpm install" to install dependencies
+   * - Migration steps for moving existing code
+   * - "pnpm run build" to build all packages
+   * - "pnpm run dev" to start development
    */
   private printNextSteps() {
       console.log(`
@@ -820,7 +983,55 @@ For more information, see the generated README files in each package.
     }
 
   /**
-   * Generate migration plan from existing codebase
+   * Generate a comprehensive migration plan from an existing codebase analysis
+   * 
+   * Analyzes a codebase report and creates a phased migration plan with:
+   * - Phase-by-phase migration strategy
+   * - File movement recommendations
+   * - Import update strategies
+   * - Effort estimation for each phase
+   * 
+   * The migration plan includes phases for:
+   * 1. Core types (interfaces, types, enums) → @company/core-types
+   * 2. Error classes → @company/errors
+   * 3. Utility functions → @company/utils
+   * 4. Additional phases based on codebase analysis
+   * 
+   * @param {string} analysisReport - Path to the JSON analysis report file
+   * @returns {Promise<Object>} Migration plan object with phases and file movements
+   * 
+   * @throws {Error} If analysis report cannot be read or is malformed
+   * @throws {Error} If migration plan file cannot be written
+   * 
+   * @example
+   * 
+   * const setup = new MonorepoSetup();
+   * try {
+   *   const plan = await setup.generateMigrationPlan('./analysis-report.json');
+   *   console.log(`Generated ${plan.phases.length} migration phases`);
+   * } catch (error) {
+   *   console.error('Failed to generate migration plan:', error);
+   * }
+   * 
+   * 
+   * @example
+   * Expected analysis report format:
+   * 
+   * {
+   *   "entities": [
+   *     {
+   *       "name": "User",
+   *       "type": "interface",
+   *       "file": "src/types/user.ts"
+   *     },
+   *     {
+   *       "name": "ValidationError",
+   *       "type": "class",
+   *       "file": "src/errors/validation.ts"
+   *     }
+   *   ]
+   * }
+   * 
    */
   async generateMigrationPlan(analysisReport: string) {
       console.log('📋 Generating migration plan...\n');

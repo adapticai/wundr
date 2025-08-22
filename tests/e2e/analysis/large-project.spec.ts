@@ -116,7 +116,7 @@ test.describe('Large Project Analysis E2E Tests', () => {
       
       // Verify language breakdown
       await expect(page.locator('.language-breakdown')).toBeVisible();
-      await expect(page.locator('.language-item')).toHaveCount.greaterThan(4);
+      await expect(page.locator('.language-item')).count(); expect(count).toBeGreaterThan(4);
       
       // Test language-specific filtering
       await page.selectOption('select[name="language-filter"]', 'typescript');
@@ -207,7 +207,7 @@ test.describe('Large Project Analysis E2E Tests', () => {
       
       // Test performance recommendations
       await expect(page.locator('.recommendations')).toBeVisible();
-      await expect(page.locator('.recommendation-item')).toHaveCount.greaterThan(3);
+      await expect(page.locator('.recommendation-item')).count(); expect(count).toBeGreaterThan(3);
     });
   });
 
@@ -381,7 +381,7 @@ test.describe('Large Project Analysis E2E Tests', () => {
       await page.click('button:has-text("Generate Comparison")');
       
       await expect(page.locator('.comparison-results')).toBeVisible();
-      await expect(page.locator('.comparison-metric')).toHaveCount.greaterThan(5);
+      await expect(page.locator('.comparison-metric')).count(); expect(count).toBeGreaterThan(5);
     });
   });
 
@@ -414,8 +414,8 @@ test.describe('Large Project Analysis E2E Tests', () => {
       
       // Verify architectural visualization
       await expect(page.locator('.architecture-diagram')).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('.service-node')).toHaveCount.greaterThan(5);
-      await expect(page.locator('.service-boundary')).toHaveCount.greaterThan(3);
+      await expect(page.locator('.service-node')).count(); expect(count).toBeGreaterThan(5);
+      await expect(page.locator('.service-boundary')).count(); expect(count).toBeGreaterThan(3);
       
       // Test service interaction analysis
       await page.click('.service-node:first-child');
@@ -506,7 +506,7 @@ test.describe('Large Project Analysis E2E Tests', () => {
       // Test refactoring plan generation
       await page.click('button:has-text("Generate Refactoring Plan")');
       await expect(page.locator('.refactoring-plan')).toBeVisible({ timeout: 10000 });
-      await expect(page.locator('.refactoring-task')).toHaveCount.greaterThan(5);
+      await expect(page.locator('.refactoring-task')).count(); expect(count).toBeGreaterThan(5);
     });
   });
 

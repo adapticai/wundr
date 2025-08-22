@@ -2,5 +2,10 @@
  * @fileoverview Shared React hooks
  */
 
-// Placeholder for shared React hooks
-// TODO: Add actual hooks here
+// Core hooks
+export { useDebounce } from './useDebounce';
+export { useLocalStorage } from './useLocalStorage';
+export { useTheme } from './useTheme';
+
+// Types
+export type { Theme, UseThemeReturn } from './useTheme';

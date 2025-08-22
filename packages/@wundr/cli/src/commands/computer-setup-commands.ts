@@ -13,51 +13,21 @@ import { logger } from '../utils/logger';
 import { execSync } from 'child_process';
 import * as os from 'os';
 import * as fs from 'fs/promises';
-// TODO: Fix import issue with @wundr.io/computer-setup
-// import { SetupPlatform, SetupProgress, SetupResult, RealSetupOrchestrator } from '@wundr.io/computer-setup';
-type SetupPlatform = any;
-type SetupProgress = any;
-type SetupResult = any;
-class RealSetupOrchestrator {
-  constructor(platform: any) {}
-  orchestrate(profile: string, options: any, callback: any): Promise<any> { return Promise.resolve({}); }
-  getAvailableProfiles(): any[] { return []; }
-  canResume(): Promise<boolean> { return Promise.resolve(false); }
-  resume(callback: any): Promise<any> { return Promise.resolve({}); }
-}
+// Note: Using relative path import due to workspace resolution issues in this monorepo setup
+// The computer-setup package must be built first before building this CLI package
+import { SetupPlatform, SetupProgress, SetupResult, RealSetupOrchestrator, DeveloperProfile } from '../../../computer-setup/dist';
 
-// Types
-interface DeveloperProfile {
-  name: string;
-  email?: string;
-  role: string;
+// Additional local types
+interface LocalSetupOptions {
+  profile?: string;
   team?: string;
-  languages?: {
-    javascript?: boolean;
-    typescript?: boolean;
-    python?: boolean;
-    go?: boolean;
-  };
-  frameworks?: any;
-  tools: {
-    packageManagers?: any;
-    containers?: {
-      docker?: boolean;
-      dockerCompose?: boolean;
-      kubernetes?: boolean;
-    };
-    editors?: {
-      vscode?: boolean;
-      vim?: boolean;
-      claude?: boolean;
-    };
-    databases?: any;
-    cloud?: any;
-    ci?: any;
-  };
+  mode?: string;
+  os?: string;
+  dryRun?: boolean;
+  skipExisting?: boolean;
+  parallel?: boolean;
+  report?: boolean;
 }
-
-// SetupPlatform is imported from computer-setup package
 
 export class ComputerSetupCommands {
   private orchestrator: RealSetupOrchestrator;
@@ -473,7 +443,7 @@ Examples:
           claude: answers.tools.includes('Claude Code')
         },
         databases: {
-          postgres: answers.tools.includes('PostgreSQL'),
+          postgresql: answers.tools.includes('PostgreSQL'),
           mysql: answers.tools.includes('MySQL'),
           mongodb: answers.tools.includes('MongoDB'),
           redis: answers.tools.includes('Redis')
@@ -488,7 +458,9 @@ Examples:
     return {
       os: (os || process.platform) as 'darwin' | 'linux' | 'win32',
       arch: process.arch as 'x64' | 'arm64',
-      version: process.version
+      version: process.version,
+      node: process.version,
+      shell: process.env.SHELL
     };
   }
 

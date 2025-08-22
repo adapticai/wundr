@@ -1,10 +1,14 @@
 /**
  * @fileoverview Web client package entry point
  * This package provides shared web components and utilities.
- * Currently a placeholder - implementation pending.
  */
 
-// TODO: Uncomment when components are implemented
-// export * from './components';
-// export * from './hooks';
-// export * from './utils';
+// Export all components
+export * from './components';
+
+// Export hooks (excluding Theme to avoid conflict)
+export { useDebounce, useLocalStorage, useTheme } from './hooks';
+export type { UseThemeReturn } from './hooks';
+
+// Export all utilities
+export * from './utils';

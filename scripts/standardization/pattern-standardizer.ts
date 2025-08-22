@@ -164,27 +164,250 @@ export class PatternStandardizer {
   private standardizeAsyncAwait(sourceFile: SourceFile): boolean {
     let modified = false;
 
-    // Find functions that return promises but aren't async
-    sourceFile.getFunctions().forEach(func => {
-      const returnType = func.getReturnType();
-      const returnTypeText = returnType.getText();
+    // Process all functions and methods
+    [...sourceFile.getFunctions(), ...sourceFile.getClasses().flatMap(c => c.getMethods())].forEach(func => {
+      if (this.transformPromiseChainsInFunction(func)) {
+        modified = true;
+      }
+    });
 
-      if (returnTypeText.includes('Promise<') && !func.isAsync()) {
-        // Check if body contains .then() chains
-        const body = func.getBody();
-        if (body && body.getText().includes('.then(')) {
-          // Make function async
-          func.setIsAsync(true);
-
-          // TODO: Complex transformation of promise chains to await
-          // This is a simplified version
+    // Process arrow functions and variable declarations
+    sourceFile.getVariableDeclarations().forEach(varDecl => {
+      const initializer = varDecl.getInitializer();
+      if (initializer && Node.isArrowFunction(initializer)) {
+        if (this.transformPromiseChainsInArrowFunction(varDecl, initializer)) {
           modified = true;
-          this.log(sourceFile, `Made function ${func.getName()} async`);
         }
       }
     });
 
     return modified;
+  }
+
+  /**
+   * Transform promise chains in regular functions and methods
+   */
+  private transformPromiseChainsInFunction(func: any): boolean {
+    const body = func.getBody();
+    if (!body) return false;
+
+    const bodyText = body.getText();
+    if (!bodyText.includes('.then(') && !bodyText.includes('.catch(')) {
+      return false;
+    }
+
+    let modified = false;
+    const statements = body.getStatements();
+
+    statements.forEach((stmt: any) => {
+      if (this.containsPromiseChain(stmt)) {
+        const transformed = this.transformStatement(stmt);
+        if (transformed && transformed !== stmt.getText()) {
+          stmt.replaceWithText(transformed);
+          modified = true;
+
+          // Make function async if not already
+          if (!func.isAsync()) {
+            func.setIsAsync(true);
+          }
+
+          this.log(stmt.getSourceFile(), `Transformed promise chain in ${func.getName?.() || 'function'}`);
+        }
+      }
+    });
+
+    return modified;
+  }
+
+  /**
+   * Transform promise chains in arrow functions
+   */
+  private transformPromiseChainsInArrowFunction(varDecl: any, arrowFunc: any): boolean {
+    const body = arrowFunc.getBody();
+    if (!body) return false;
+
+    const bodyText = body.getText();
+    if (!bodyText.includes('.then(') && !bodyText.includes('.catch(')) {
+      return false;
+    }
+
+    // For expression bodies, check if it's a promise chain
+    if (Node.isCallExpression(body)) {
+      const transformed = this.transformPromiseChainExpression(body);
+      if (transformed && transformed !== body.getText()) {
+        // Convert to block statement with async/await
+        const asyncBody = `{\n  return ${transformed};\n}`;
+        arrowFunc.setBodyText(asyncBody);
+        arrowFunc.setIsAsync(true);
+        
+        this.log(varDecl.getSourceFile(), `Transformed arrow function ${varDecl.getName()}`);
+        return true;
+      }
+    }
+
+    // For block bodies, transform statements
+    if (Node.isBlock(body)) {
+      let modified = false;
+      const statements = body.getStatements();
+
+      statements.forEach((stmt: any) => {
+        if (this.containsPromiseChain(stmt)) {
+          const transformed = this.transformStatement(stmt);
+          if (transformed && transformed !== stmt.getText()) {
+            stmt.replaceWithText(transformed);
+            modified = true;
+
+            if (!arrowFunc.isAsync()) {
+              arrowFunc.setIsAsync(true);
+            }
+          }
+        }
+      });
+
+      if (modified) {
+        this.log(varDecl.getSourceFile(), `Transformed arrow function ${varDecl.getName()}`);
+      }
+
+      return modified;
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if a statement contains promise chains
+   */
+  private containsPromiseChain(stmt: any): boolean {
+    const text = stmt.getText();
+    return text.includes('.then(') || text.includes('.catch(');
+  }
+
+  /**
+   * Transform a statement containing promise chains
+   */
+  private transformStatement(stmt: any): string | null {
+    // Handle return statements with promise chains
+    if (Node.isReturnStatement(stmt)) {
+      const expression = stmt.getExpression();
+      if (expression) {
+        const transformed = this.transformPromiseChainExpression(expression);
+        if (transformed !== expression.getText()) {
+          return `return ${transformed};`;
+        }
+      }
+    }
+
+    // Handle variable declarations with promise chains
+    if (Node.isVariableStatement(stmt)) {
+      const declarations = stmt.getDeclarations();
+      let hasChanges = false;
+      const newDeclarations = declarations.map(decl => {
+        const initializer = decl.getInitializer();
+        if (initializer && this.isPromiseChainExpression(initializer)) {
+          const transformed = this.transformPromiseChainExpression(initializer);
+          if (transformed !== initializer.getText()) {
+            hasChanges = true;
+            return `${decl.getName()} = await ${transformed}`;
+          }
+        }
+        return decl.getText();
+      });
+
+      if (hasChanges) {
+        const kind = stmt.getDeclarationKind();
+        return `${kind} ${newDeclarations.join(', ')};`;
+      }
+    }
+
+    // Handle expression statements with promise chains
+    if (Node.isExpressionStatement(stmt)) {
+      const expression = stmt.getExpression();
+      if (this.isPromiseChainExpression(expression)) {
+        const transformed = this.transformPromiseChainExpression(expression);
+        if (transformed !== expression.getText()) {
+          return `await ${transformed};`;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Transform a promise chain expression to async/await with try/catch
+   */
+  private transformPromiseChainExpression(expression: any): string {
+    const text = expression.getText().trim();
+    
+    // Simple case - just convert simple .then() to await
+    if (text.includes('.then(') && !text.includes('.catch(') && !text.includes('.finally(')) {
+      // For simple cases, just add await
+      return `await ${this.extractBasePromise(text)}`;
+    }
+    
+    // More complex case with catch/finally - use try/catch wrapper
+    if (text.includes('.catch(') || text.includes('.finally(')) {
+      const basePromise = this.extractBasePromise(text);
+      const hasCatch = text.includes('.catch(');
+      const hasFinally = text.includes('.finally(');
+      
+      let result = 'await (async () => {\n';
+      
+      if (hasCatch) {
+        result += '  try {\n';
+        result += `    return await ${basePromise};\n`;
+        result += '  } catch (error) {\n';
+        result += '    // Handle error - simplified transformation\n';
+        result += '    throw error;\n';
+        result += '  }';
+        
+        if (hasFinally) {
+          result += ' finally {\n';
+          result += '    // Finally block - simplified transformation\n';
+          result += '  }';
+        }
+      } else if (hasFinally) {
+        result += '  try {\n';
+        result += `    return await ${basePromise};\n`;
+        result += '  } finally {\n';
+        result += '    // Finally block - simplified transformation\n';
+        result += '  }';
+      }
+      
+      result += '\n})()';
+      return result;
+    }
+    
+    // Fallback - just add await
+    return `await ${text}`;
+  }
+  
+  /**
+   * Extract the base promise from a chain (before first .then/.catch/.finally)
+   */
+  private extractBasePromise(text: string): string {
+    const firstChainIndex = Math.min(
+      text.indexOf('.then(') >= 0 ? text.indexOf('.then(') : Infinity,
+      text.indexOf('.catch(') >= 0 ? text.indexOf('.catch(') : Infinity,
+      text.indexOf('.finally(') >= 0 ? text.indexOf('.finally(') : Infinity
+    );
+    
+    if (firstChainIndex < Infinity) {
+      return text.substring(0, firstChainIndex).trim();
+    }
+    
+    return text.trim();
+  }
+
+
+  /**
+   * Check if an expression is a promise chain
+   */
+  private isPromiseChainExpression(expression: any): boolean {
+    if (!expression) return false;
+    
+    const text = expression.getText();
+    return text.includes('.then(') || text.includes('.catch(') || text.includes('.finally(');
   }
 
   /**
@@ -451,10 +674,13 @@ export class PatternStandardizer {
 
   private shouldProcessFile(sourceFile: SourceFile): boolean {
     const filePath = sourceFile.getFilePath();
+    const text = sourceFile.getText();
+    
     return !filePath.includes('node_modules') &&
       !filePath.includes('.test.') &&
       !filePath.includes('.spec.') &&
-      !filePath.endsWith('.d.ts');
+      !filePath.endsWith('.d.ts') &&
+      !text.startsWith('#!'); // Skip files with shebang lines
   }
 
   private ensureImport(sourceFile: SourceFile, namedImport: string, moduleSpecifier: string) {
@@ -472,8 +698,26 @@ export class PatternStandardizer {
         existingImport.addNamedImport(namedImport);
       }
     } else {
-      // Add new import at the top
-      sourceFile.insertImportDeclaration(0, {
+      // Find the best insertion point (after shebang, comments, but before other code)
+      let insertIndex = 0;
+      const statements = sourceFile.getStatements();
+      
+      // Skip shebang and leading comments
+      for (let i = 0; i < statements.length; i++) {
+        const stmt = statements[i];
+        if (Node.isImportDeclaration(stmt) || Node.isExportDeclaration(stmt)) {
+          // Insert before first import/export
+          insertIndex = i;
+          break;
+        }
+        if (!Node.isImportDeclaration(stmt) && !Node.isExportDeclaration(stmt)) {
+          // Insert before first non-import statement
+          insertIndex = i;
+          break;
+        }
+      }
+      
+      sourceFile.insertImportDeclaration(insertIndex, {
         namedImports: [namedImport],
         moduleSpecifier
       });

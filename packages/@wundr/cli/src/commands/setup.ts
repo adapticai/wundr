@@ -10,23 +10,14 @@ import inquirer from 'inquirer';
 import { ConfigManager } from '../utils/config-manager';
 import { PluginManager } from '../plugins/plugin-manager';
 import { logger } from '../utils/logger';
-// TODO: Fix import issue with @wundr.io/computer-setup
-// import { 
-//   SetupPlatform, 
-//   SetupProgress, 
-//   SetupResult, 
-//   RealSetupOrchestrator 
-// } from '@wundr.io/computer-setup';
-type SetupPlatform = any;
-type SetupProgress = any;
-type SetupResult = any;
-class RealSetupOrchestrator {
-  constructor(platform: any) {}
-  orchestrate(profile: string, options: any, callback: any): Promise<any> { return Promise.resolve({}); }
-  getAvailableProfiles(): any[] { return []; }
-  canResume(): Promise<boolean> { return Promise.resolve(false); }
-  resume(callback: any): Promise<any> { return Promise.resolve({}); }
-}
+// Note: Using relative path import due to workspace resolution issues in this monorepo setup
+// The computer-setup package must be built first before building this CLI package
+import { 
+  SetupPlatform, 
+  SetupProgress, 
+  SetupResult, 
+  RealSetupOrchestrator 
+} from '../../../computer-setup/dist';
 
 export class SetupCommands {
   private orchestrator: RealSetupOrchestrator;
@@ -431,7 +422,7 @@ export class SetupCommands {
     return {
       os: process.platform as 'darwin' | 'linux' | 'win32',
       arch: process.arch as 'x64' | 'arm64',
-      nodeVersion: process.version || 'unknown'
+      version: process.version || 'unknown'
     };
   }
 

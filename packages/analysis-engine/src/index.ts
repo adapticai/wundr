@@ -1,10 +1,15 @@
 /**
  * @fileoverview Analysis engine package entry point
- * This package provides code analysis and quality metrics engine.
- * Currently a placeholder - implementation pending.
+ * Provides comprehensive code analysis and quality metrics engine.
  */
 
-// TODO: Uncomment when modules are implemented
-// export * from './analyzers';
-// export * from './metrics';
-// export * from './reporters';
+export * from './metrics';
+export * from './analyzers';
+export * from './reporters';
+
+// Optimized modules
+export * from './analyzers/BaseAnalysisServiceOptimizations';
+export * from './engines/DuplicateDetectionEngineSimple';
+export * from './streaming/StreamingFileProcessorSimple';
+export * from './monitoring/MemoryMonitorSimple';
+export * from './optimization/PerformanceBenchmarkSuiteSimple';

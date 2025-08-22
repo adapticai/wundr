@@ -42,7 +42,6 @@ export const UserList = ({ users }: { users: User[] }) => {
   // Potential issue: No error handling
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
-    console.log('Selected user:', user); // TODO: remove debug log
   };
   
   // Potential issue: Inline styling should be extracted

@@ -4,13 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-// import { getLogger } from '@wundr/core'; // TODO: Fix core exports
-const getLogger = (name: string) => ({
-  info: (...args: any[]) => console.log(...args),
-  error: (...args: any[]) => console.error(...args),
-  warn: (...args: any[]) => console.warn(...args),
-  debug: (...args: any[]) => console.debug(...args)
-});
+import { getLogger } from '../utils/logger';
 import { WundrConfigManager } from '@wundr.io/config';
 import * as fs from 'fs-extra';
 import * as path from 'path';
