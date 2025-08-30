@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import * as React from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { 
   Search, 
   Filter, 
@@ -44,7 +45,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     pages.forEach(page => {
-      page.tags?.forEach((tag: string) => tags.add(tag));
+      page.tags?.forEach((tag) => tags.add(tag));
     });
     return Array.from(tags).sort();
   }, [pages]);
@@ -351,7 +352,7 @@ function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
           )}
           
           <div className="flex items-center gap-2 mt-2">
-            {page.tags?.slice(0, 3)?.map((tag: string) => (
+            {page.tags?.slice(0, 3)?.map((tag) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>

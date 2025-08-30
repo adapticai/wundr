@@ -45,56 +45,56 @@ type SortOrder = 'asc' | 'desc';
 const generateMockFileSystem = (): FileSystemItem => ({
   id: 'root',
   name: 'root',
-  type: 'directory',
+  type: 'directory' as const,
   path: '/',
   size: 0,
-  modified: new Date(),
+  modifiedAt: new Date(),
   children: [
     {
       id: 'src',
       name: 'src',
-      type: 'directory',
+      type: 'directory' as const,
       path: '/src',
       size: 0,
-      modified: new Date(),
+      modifiedAt: new Date(),
       children: [
         {
           id: 'index-ts',
           name: 'index.ts',
-          type: 'file',
+          type: 'file' as const,
           path: '/src/index.ts',
           extension: 'ts',
           size: 2048,
-          modified: new Date(),
+          modifiedAt: new Date(),
         },
         {
           id: 'app-tsx',
           name: 'App.tsx',
-          type: 'file',
+          type: 'file' as const,
           path: '/src/App.tsx',
           extension: 'tsx',
           size: 4096,
-          modified: new Date(),
+          modifiedAt: new Date(),
         },
       ],
     },
     {
       id: 'package-json',
       name: 'package.json',
-      type: 'file',
+      type: 'file' as const,
       path: '/package.json',
       extension: 'json',
       size: 1024,
-      modified: new Date(),
+      modifiedAt: new Date(),
     },
     {
       id: 'readme',
       name: 'README.md',
-      type: 'file',
+      type: 'file' as const,
       path: '/README.md',
       extension: 'md',
       size: 3072,
-      modified: new Date(),
+      modifiedAt: new Date(),
     },
   ]
 });
@@ -152,10 +152,8 @@ export function FileBrowser({
 
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
-    // First filter by search query
-    let filtered = currentDirectoryItems.filter(item => 
-      !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Use the filterFileSystemItems utility function
+    let filtered = filterFileSystemItems(currentDirectoryItems, searchQuery, showHidden);
     
     // Then filter by file types if any are selected
     if (selectedFileTypes.length > 0) {
@@ -166,15 +164,10 @@ export function FileBrowser({
       });
     }
     
-    // Filter hidden files if needed
-    if (!showHidden) {
-      filtered = filtered.filter(item => !item.name.startsWith('.'));
-    }
-    
-    // Sort items (sortOrder is not supported by the current implementation)
+    // Sort items
     const supportedSortBy = sortBy === 'type' ? 'name' : sortBy;
-    const sorted = sortFileSystemItems(filtered, supportedSortBy as 'name' | 'size' | 'modified');
-    return sortOrder === 'desc' ? sorted.reverse() : sorted;
+    const sorted = sortFileSystemItems(filtered, supportedSortBy as 'name' | 'size' | 'modified', sortOrder);
+    return sorted;
   }, [currentDirectoryItems, searchQuery, selectedFileTypes, showHidden, sortBy, sortOrder]);
 
   // Breadcrumb navigation
@@ -295,8 +288,8 @@ export function FileBrowser({
             {item.size !== undefined && (
               <span>{formatFileSize(item.size)}</span>
             )}
-            {item.modified && (
-              <span>{formatDate(item.modified)}</span>
+            {(item.modified || item.modifiedAt) && (
+              <span>{formatDate(item.modified || item.modifiedAt)}</span>
             )}
           </div>
         </div>

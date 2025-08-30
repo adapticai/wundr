@@ -27,6 +27,7 @@ import {
 import { HomebrewInstaller } from './homebrew-installer';
 import { PermissionsInstaller } from './permissions-installer';
 import { DockerInstaller } from './docker-installer';
+import ClaudeInstaller from './claude-installer';
 
 // Enhanced interfaces for the real orchestrator
 interface InstallationState {
@@ -84,6 +85,7 @@ export class RealSetupOrchestrator extends EventEmitter {
     this.installers.set('permissions', new PermissionsInstaller());
     this.installers.set('homebrew', new HomebrewInstaller());
     this.installers.set('docker', new DockerInstaller());
+    this.installers.set('claude', ClaudeInstaller);
     
     // Core tools installers (to be implemented)
     this.installers.set('git', this.createCoreToolInstaller('git', 'Git version control'));
@@ -100,40 +102,40 @@ export class RealSetupOrchestrator extends EventEmitter {
       name: 'Frontend Developer',
       description: 'Modern web frontend development with React, Vue, and tooling',
       priority: 1,
-      categories: ['system', 'development', 'frontend'],
-      requiredTools: ['permissions', 'homebrew', 'git', 'node', 'vscode'],
+      categories: ['system', 'development', 'frontend', 'ai'],
+      requiredTools: ['permissions', 'homebrew', 'git', 'node', 'vscode', 'claude'],
       optionalTools: ['docker'],
-      estimatedTimeMinutes: 15
+      estimatedTimeMinutes: 20
     });
 
     this.profiles.set('backend', {
       name: 'Backend Developer',
       description: 'Server-side development with Node.js, Python, and databases',
       priority: 1,
-      categories: ['system', 'development', 'backend', 'database'],
-      requiredTools: ['permissions', 'homebrew', 'git', 'node', 'python', 'docker', 'vscode'],
+      categories: ['system', 'development', 'backend', 'database', 'ai'],
+      requiredTools: ['permissions', 'homebrew', 'git', 'node', 'python', 'docker', 'vscode', 'claude'],
       optionalTools: [],
-      estimatedTimeMinutes: 25
+      estimatedTimeMinutes: 30
     });
 
     this.profiles.set('fullstack', {
       name: 'Full Stack Developer',
       description: 'Complete development stack with frontend and backend tools',
       priority: 1,
-      categories: ['system', 'development', 'frontend', 'backend', 'database'],
-      requiredTools: ['permissions', 'homebrew', 'git', 'node', 'python', 'docker', 'vscode'],
+      categories: ['system', 'development', 'frontend', 'backend', 'database', 'ai'],
+      requiredTools: ['permissions', 'homebrew', 'git', 'node', 'python', 'docker', 'vscode', 'claude'],
       optionalTools: [],
-      estimatedTimeMinutes: 30
+      estimatedTimeMinutes: 35
     });
 
     this.profiles.set('devops', {
       name: 'DevOps Engineer',
       description: 'Infrastructure and deployment tools with container orchestration',
       priority: 1,
-      categories: ['system', 'development', 'devops', 'cloud'],
-      requiredTools: ['permissions', 'homebrew', 'git', 'docker', 'python', 'vscode'],
+      categories: ['system', 'development', 'devops', 'cloud', 'ai'],
+      requiredTools: ['permissions', 'homebrew', 'git', 'docker', 'python', 'vscode', 'claude'],
       optionalTools: ['node'],
-      estimatedTimeMinutes: 35
+      estimatedTimeMinutes: 40
     });
   }
 

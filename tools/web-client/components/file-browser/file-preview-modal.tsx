@@ -58,7 +58,7 @@ export function FilePreviewModal({
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <FileIcon className={cn('h-6 w-6', typeInfo.color)} />
+              {React.createElement(typeInfo.icon, { className: cn('h-6 w-6', typeInfo.color) })}
               <div>
                 <DialogTitle className="text-lg">{file.name}</DialogTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">

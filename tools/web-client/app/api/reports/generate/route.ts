@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { reportService } from '@/lib/services/report-service';
-import { ReportTemplateEngine } from '@/lib/report-templates';
+import { ReportTemplateRenderer, ReportTemplate as TemplateEngineTemplate } from '@/lib/report-templates';
 import {
   CompleteAnalysisData,
   ReportTemplate,
@@ -125,8 +125,30 @@ export async function POST(request: NextRequest) {
     // Normalize analysis data (using parameters as data source)
     const normalizedData = reportService.normalizeAnalysisData(body.parameters, 'analysis');
     
+    // Convert template to engine format
+    const engineTemplate: TemplateEngineTemplate = {
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      type: template.type as TemplateEngineTemplate['type'],
+      sections: (template.sections || []).map(s => ({
+        id: s.id,
+        title: s.title,
+        order: s.order,
+        type: 'text' as const,
+        required: s.enabled,
+        template: `## ${s.title}\n\nContent for ${s.title} section.`
+      })),
+      metadata: {
+        version: '1.0.0',
+        author: 'Wundr Analysis Engine',
+        tags: ['generated', 'api'],
+        lastUpdated: new Date()
+      }
+    };
+    
     // Generate report content using template renderer
-    const reportContent = ReportTemplateEngine.renderReport(template, normalizedData);
+    const reportContent = ReportTemplateRenderer.renderReport(engineTemplate, normalizedData);
     
     // Additional sections are now handled by the template system
     const sectionsData: any[] = [];

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, Copy, PlayCircle, FileText, Package, Settings } from 'lucide-react';
-import { readDocFile, generateApiDocs, getCurrentDocVersion, DOCS_ROOT } from '@/lib/docs-utils';
+import { readDocFile, generateApiDocs, getCurrentDocVersion } from '@/lib/docs-utils';
 
 interface APIEndpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -423,7 +423,18 @@ export default async function ApiDocsPage() {
   let docs: any = null;
   
   try {
-    docs = await generateApiDocs();
+    // Create a sample OpenAPI spec for demonstration
+    const sampleApiSpec = {
+      info: {
+        title: 'Wundr Analysis API',
+        version: '1.0.0',
+        description: 'API for code analysis and metrics'
+      },
+      servers: [{ url: '/api' }],
+      paths: {},
+      components: { schemas: {} }
+    };
+    docs = generateApiDocs(sampleApiSpec);
   } catch (error) {
     console.error('Failed to load API documentation:', error);
   }

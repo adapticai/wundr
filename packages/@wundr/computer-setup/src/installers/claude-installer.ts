@@ -1,5 +1,5 @@
-import { Installer } from '../types';
-import { execAsync, fileExists, createDirectory, copyDirectory, writeFile } from '../utils';
+import { BaseInstaller } from './index';
+import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { homedir } from 'os';
@@ -8,7 +8,7 @@ import { homedir } from 'os';
  * Comprehensive Claude and Claude-Flow installer for complete AI integration
  * Includes: Claude CLI, Claude Flow, MCP tools, agents, and Chrome browser
  */
-export class ClaudeInstaller implements Installer {
+export class ClaudeInstaller implements BaseInstaller {
   name = 'Claude Code & Claude Flow';
   
   private readonly homeDir = homedir();
@@ -26,32 +26,116 @@ export class ClaudeInstaller implements Installer {
     'sequentialthinking'
   ];
 
-  async check(): Promise<boolean> {
+  isSupported(platform: SetupPlatform): boolean {
+    return platform.os === 'darwin' || platform.os === 'linux';
+  }
+
+  async isInstalled(): Promise<boolean> {
     try {
-      // Check if Claude CLI is installed
-      const { stdout: claudeVersion } = await execAsync('claude --version');
-      
-      // Check if Claude Flow is installed
-      const { stdout: flowVersion } = await execAsync('npx claude-flow@alpha --version');
-      
-      // Check if Chrome is installed (for Browser MCP)
-      const chromeExists = await fileExists('/Applications/Google Chrome.app');
-      
-      // Check if .claude directory exists with proper structure
-      const claudeDirExists = await fileExists(this.claudeDir);
-      const agentsDirExists = await fileExists(this.agentsDir);
-      
-      return claudeVersion.includes('claude') && 
-             flowVersion.includes('claude-flow') && 
-             chromeExists && 
-             claudeDirExists && 
-             agentsDirExists;
+      const { execSync } = require('child_process');
+      execSync('claude --version', { stdio: 'ignore' });
+      return true;
     } catch {
       return false;
     }
   }
 
-  async install(): Promise<void> {
+  async getVersion(): Promise<string | null> {
+    try {
+      const { execSync } = require('child_process');
+      const version = execSync('claude --version', { encoding: 'utf8' });
+      return version.trim();
+    } catch {
+      return null;
+    }
+  }
+
+  async validate(): Promise<boolean> {
+    return this.check();
+  }
+
+  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
+    const steps: SetupStep[] = [];
+
+    steps.push({
+      id: 'claude-cli',
+      name: 'Install Claude CLI',
+      description: 'Install Claude command-line interface',
+      category: 'ai',
+      required: true,
+      dependencies: [],
+      estimatedTime: 30,
+      installer: async () => {
+        await this.installClaudeCLI();
+      }
+    });
+
+    steps.push({
+      id: 'chrome-browser',
+      name: 'Install Chrome Browser',
+      description: 'Install Google Chrome for Browser MCP',
+      category: 'system',
+      required: false,
+      dependencies: [],
+      estimatedTime: 120,
+      installer: async () => {
+        await this.installChrome();
+      }
+    });
+
+    steps.push({
+      id: 'claude-config',
+      name: 'Configure Claude',
+      description: 'Setup Claude directory and configurations',
+      category: 'configuration',
+      required: true,
+      dependencies: ['claude-cli'],
+      estimatedTime: 10,
+      installer: async () => {
+        await this.setupClaudeDirectory();
+        await this.configureClaudeSettings();
+      }
+    });
+
+    steps.push({
+      id: 'mcp-servers',
+      name: 'Install MCP Servers',
+      description: 'Install and configure MCP servers',
+      category: 'ai',
+      required: true,
+      dependencies: ['claude-config'],
+      estimatedTime: 60,
+      installer: async () => {
+        await this.installMCPServers();
+      }
+    });
+
+    steps.push({
+      id: 'claude-agents',
+      name: 'Setup Agents',
+      description: 'Configure 54 specialized agents',
+      category: 'ai',
+      required: true,
+      dependencies: ['claude-config'],
+      estimatedTime: 30,
+      installer: async () => {
+        await this.setupAgents();
+      }
+    });
+
+    return steps;
+  }
+
+  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    await this.execute();
+  }
+
+  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    await this.setupQualityEnforcement();
+    await this.setupClaudeMdGenerator();
+  }
+
+  private async execute(): Promise<void> {
     console.log('🤖 Installing Claude Code & Claude Flow ecosystem...');
     
     // Step 1: Install Claude CLI if not present
@@ -84,70 +168,103 @@ export class ClaudeInstaller implements Installer {
     console.log('✅ Claude Code & Claude Flow ecosystem installed successfully!');
   }
 
+  async check(): Promise<boolean> {
+    try {
+      const { execSync } = require('child_process');
+      const fs = require('fs');
+      
+      // Check if Claude CLI is installed
+      const claudeVersion = execSync('claude --version', { encoding: 'utf8' });
+      
+      // Check if Claude Flow is installed
+      const flowVersion = execSync('npx claude-flow@alpha --version', { encoding: 'utf8' });
+      
+      // Check if Chrome is installed (for Browser MCP)
+      const chromeExists = fs.existsSync('/Applications/Google Chrome.app');
+      
+      // Check if .claude directory exists with proper structure
+      const claudeDirExists = fs.existsSync(this.claudeDir);
+      const agentsDirExists = fs.existsSync(this.agentsDir);
+      
+      return claudeVersion.includes('claude') && 
+             flowVersion.includes('claude-flow') && 
+             chromeExists && 
+             claudeDirExists && 
+             agentsDirExists;
+    } catch {
+      return false;
+    }
+  }
+
   private async installClaudeCLI(): Promise<void> {
     console.log('📦 Installing Claude CLI...');
+    const { execSync } = require('child_process');
     try {
-      await execAsync('npm install -g @anthropic/claude-cli');
+      execSync('npm install -g @anthropic/claude-cli');
     } catch {
       // Try with sudo if needed
-      await execAsync('sudo npm install -g @anthropic/claude-cli');
+      execSync('sudo npm install -g @anthropic/claude-cli');
     }
   }
 
   private async installChrome(): Promise<void> {
-    const chromeExists = await fileExists('/Applications/Google Chrome.app');
+    const fs = require('fs');
+    const chromeExists = fs.existsSync('/Applications/Google Chrome.app');
     if (!chromeExists) {
       console.log('🌐 Installing Google Chrome...');
+      const { execSync } = require('child_process');
       
       // Download Chrome DMG
-      await execAsync('curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"');
+      execSync('curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"');
       
       // Mount and install Chrome
-      await execAsync('hdiutil attach ~/Downloads/googlechrome.dmg');
-      await execAsync('cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/');
-      await execAsync('hdiutil detach "/Volumes/Google Chrome"');
+      execSync('hdiutil attach ~/Downloads/googlechrome.dmg');
+      execSync('cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/');
+      execSync('hdiutil detach "/Volumes/Google Chrome"');
       
       // Set as default browser
-      await execAsync('open -a "Google Chrome" --args --make-default-browser');
+      execSync('open -a "Google Chrome" --args --make-default-browser');
       
       // Clean up
-      await execAsync('rm ~/Downloads/googlechrome.dmg');
+      execSync('rm ~/Downloads/googlechrome.dmg');
     }
   }
 
   private async setupClaudeDirectory(): Promise<void> {
     console.log('📁 Setting up Claude directory structure...');
+    const fs = require('fs').promises;
     
     // Create all necessary directories
-    await createDirectory(this.claudeDir);
-    await createDirectory(this.agentsDir);
-    await createDirectory(this.commandsDir);
-    await createDirectory(this.helpersDir);
-    await createDirectory(path.join(this.claudeDir, '.claude-flow'));
-    await createDirectory(path.join(this.claudeDir, '.roo'));
+    await fs.mkdir(this.claudeDir, { recursive: true });
+    await fs.mkdir(this.agentsDir, { recursive: true });
+    await fs.mkdir(this.commandsDir, { recursive: true });
+    await fs.mkdir(this.helpersDir, { recursive: true });
+    await fs.mkdir(path.join(this.claudeDir, '.claude-flow'), { recursive: true });
+    await fs.mkdir(path.join(this.claudeDir, '.roo'), { recursive: true });
   }
 
   private async installMCPServers(): Promise<void> {
     console.log('🔧 Installing MCP servers...');
+    const { execSync } = require('child_process');
     
     // Install Claude Flow
-    await execAsync('npx claude mcp add claude-flow npx claude-flow@alpha mcp start');
+    execSync('npx claude mcp add claude-flow npx claude-flow@alpha mcp start');
     
     // Install Firecrawl MCP
-    await execAsync('npx claude mcp add firecrawl npx @firecrawl/mcp-server');
+    execSync('npx claude mcp add firecrawl npx @firecrawl/mcp-server');
     
     // Install Context7 MCP
-    await execAsync('npx claude mcp add context7 npx @context7/mcp-server');
+    execSync('npx claude mcp add context7 npx @context7/mcp-server');
     
     // Install Playwright MCP
-    await execAsync('npx claude mcp add playwright npx @playwright/mcp-server');
+    execSync('npx claude mcp add playwright npx @playwright/mcp-server');
     
     // Install Browser MCP
-    await execAsync('npx claude mcp add browser npx @browser/mcp-server');
+    execSync('npx claude mcp add browser npx @browser/mcp-server');
     
     // Install Sequential Thinking MCP
-    await execAsync('npm install -g @modelcontextprotocol/server-sequentialthinking');
-    await execAsync('npx claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js');
+    execSync('npm install -g @modelcontextprotocol/server-sequentialthinking');
+    execSync('npx claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js');
   }
 
   private async configureClaudeSettings(): Promise<void> {
@@ -277,7 +394,8 @@ export class ClaudeInstaller implements Installer {
       }
     };
     
-    await writeFile(
+    const fs = require('fs').promises;
+    await fs.writeFile(
       path.join(this.claudeDir, 'settings.json'),
       JSON.stringify(settings, null, 2)
     );
@@ -307,9 +425,10 @@ export class ClaudeInstaller implements Installer {
                       'tdd-london-swarm', 'migration-planner', 'swarm-init']
     };
     
+    const fs = require('fs').promises;
     for (const [category, agents] of Object.entries(agentCategories)) {
       const categoryDir = path.join(this.agentsDir, category);
-      await createDirectory(categoryDir);
+      await fs.mkdir(categoryDir, { recursive: true });
       
       for (const agent of agents) {
         await this.createAgentConfig(categoryDir, agent, category);
@@ -338,7 +457,8 @@ export class ClaudeInstaller implements Installer {
       }
     };
     
-    await writeFile(
+    const fsPromises = require('fs').promises;
+    await fsPromises.writeFile(
       path.join(dir, `${agentName}.json`),
       JSON.stringify(agentConfig, null, 2)
     );
@@ -397,8 +517,9 @@ export class ClaudeInstaller implements Installer {
   private async installBrowserExtension(): Promise<void> {
     console.log('🔌 Installing Browser MCP Chrome extension...');
     
+    const fsPromises = require('fs').promises;
     const extensionDir = path.join(this.homeDir, '.claude', 'browser-extension');
-    await createDirectory(extensionDir);
+    await fsPromises.mkdir(extensionDir, { recursive: true });
     
     // Create manifest.json
     const manifest = {
@@ -419,7 +540,7 @@ export class ClaudeInstaller implements Installer {
       }
     };
     
-    await writeFile(
+    await fsPromises.writeFile(
       path.join(extensionDir, 'manifest.json'),
       JSON.stringify(manifest, null, 2)
     );
@@ -442,7 +563,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });`;
     
-    await writeFile(path.join(extensionDir, 'background.js'), backgroundScript);
+    await fsPromises.writeFile(path.join(extensionDir, 'background.js'), backgroundScript);
     
     // Create content script
     const contentScript = `
@@ -456,7 +577,7 @@ window.addEventListener('message', (event) => {
   }
 });`;
     
-    await writeFile(path.join(extensionDir, 'content.js'), contentScript);
+    await fsPromises.writeFile(path.join(extensionDir, 'content.js'), contentScript);
     
     // Create popup HTML
     const popupHtml = `<!DOCTYPE html>
@@ -474,7 +595,7 @@ window.addEventListener('message', (event) => {
 </body>
 </html>`;
     
-    await writeFile(path.join(extensionDir, 'popup.html'), popupHtml);
+    await fsPromises.writeFile(path.join(extensionDir, 'popup.html'), popupHtml);
     
     console.log('📌 Chrome extension created. Load it manually from chrome://extensions');
   }
@@ -512,12 +633,14 @@ npx claude-flow@alpha validate --pre-commit || exit 1
 
 echo "✅ All quality checks passed!"`;
     
-    await writeFile(
+    const fs = require('fs').promises;
+    await fs.writeFile(
       path.join(this.helpersDir, 'pre-commit-hook.sh'),
       preCommitHook
     );
     
-    await execAsync(`chmod +x ${path.join(this.helpersDir, 'pre-commit-hook.sh')}`);
+    const { execSync } = require('child_process');
+    execSync(`chmod +x ${path.join(this.helpersDir, 'pre-commit-hook.sh')}`);
   }
 
   private async setupClaudeMdGenerator(): Promise<void> {
@@ -615,18 +738,20 @@ console.log('🚀 Initializing Claude Flow...');
 execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
 `;
     
-    await writeFile(
+    const fs = require('fs').promises;
+    await fs.writeFile(
       path.join(this.helpersDir, 'generate-claude-md.js'),
       generatorScript
     );
     
-    await execAsync(`chmod +x ${path.join(this.helpersDir, 'generate-claude-md.js')}`);
+    const { execSync } = require('child_process');
+    execSync(`chmod +x ${path.join(this.helpersDir, 'generate-claude-md.js')}`);
     
     // Create global command
-    await execAsync(`ln -sf ${path.join(this.helpersDir, 'generate-claude-md.js')} /usr/local/bin/claude-init`);
+    execSync(`ln -sf ${path.join(this.helpersDir, 'generate-claude-md.js')} /usr/local/bin/claude-init`);
   }
 
-  async configure(options?: any): Promise<void> {
+  private async configureProfile(options?: any): Promise<void> {
     // Additional configuration based on profile
     if (options?.profile) {
       console.log(`🎯 Configuring for ${options.profile} profile...`);

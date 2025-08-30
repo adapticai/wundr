@@ -229,7 +229,7 @@ export default function LoadReportPage() {
     }
   };
 
-  const handleExportReportEnhanced = async (report: LoadedReport, format: 'json' | 'csv' | 'html' = 'json') => {
+  const handleExportReportEnhanced = async (report: LoadedReport, format: 'json' | 'csv' | 'pdf' | 'markdown' = 'json') => {
     try {
       if (format === 'json') {
         // Export original analysis data
@@ -247,7 +247,20 @@ export default function LoadReportPage() {
         // Use ReportService for enhanced export if report content exists
         const reportContent = await getReportContent(report.id);
         if (reportContent) {
-          await ReportService.exportReport(reportContent, format, report.name);
+          const reportService = new ReportService();
+          const exportResult = await reportService.exportReport(report.id, { format });
+          if (!exportResult.success) {
+            throw new Error(exportResult.error || 'Export failed');
+          }
+          // If there's a download URL, trigger the download
+          if (exportResult.downloadUrl) {
+            const link = document.createElement('a');
+            link.href = exportResult.downloadUrl;
+            link.download = `${report.name}_export.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+          }
         } else {
           throw new Error('Report content not found for enhanced export');
         }
@@ -761,10 +774,10 @@ export default function LoadReportPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleExportReportEnhanced(selectedReport, 'html')}
+                          onClick={() => handleExportReportEnhanced(selectedReport, 'markdown')}
                         >
                           <Download className="mr-2 h-4 w-4" />
-                          Export HTML
+                          Export Markdown
                         </Button>
                       </div>
                     </div>

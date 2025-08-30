@@ -157,8 +157,8 @@ export function FileListItem({
           {item.size !== undefined && (
             <span>{formatFileSize(item.size)}</span>
           )}
-          {item.modified && (
-            <span>{formatDate(item.modified)}</span>
+          {(item.modified || item.modifiedAt) && (
+            <span>{formatDate(item.modified || item.modifiedAt)}</span>
           )}
         </div>
       </div>

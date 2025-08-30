@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -130,11 +131,11 @@ export function ApiDocsRenderer({ apiDocs, className = '' }: ApiDocsRendererProp
           <div key={type}>
             <h3 className="text-lg font-semibold mb-3 capitalize flex items-center gap-2">
               {getMethodIcon(type)}
-              {type} ({docs.length})
+              {type} ({(docs as ApiDocEntry[]).length})
             </h3>
             
             <div className="space-y-3">
-              {docs.map((doc) => (
+              {(docs as ApiDocEntry[]).map((doc) => (
                 <ApiDocItem
                   key={doc.id}
                   doc={doc}
@@ -167,7 +168,7 @@ interface ApiDocItemProps {
   isExpanded: boolean;
   onToggle: () => void;
   onCopy: (text: string) => void;
-  getMethodBadgeVariant: (method: string) => any;
+  getMethodBadgeVariant: (method: string) => 'default' | 'secondary' | 'outline' | 'destructive';
 }
 
 function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }: ApiDocItemProps) {
@@ -263,10 +264,10 @@ function ApiDocItem({ doc, isExpanded, onToggle, onCopy, getMethodBadgeVariant }
                       ) : (
                         <div>
                           <h5 className="text-xs font-medium mb-1 text-muted-foreground">
-                            {(example as any).title}
+                            {(example as { title: string; code: string }).title}
                           </h5>
                           <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
-                            <code>{(example as any).code}</code>
+                            <code>{(example as { title: string; code: string }).code}</code>
                           </pre>
                         </div>
                       )}

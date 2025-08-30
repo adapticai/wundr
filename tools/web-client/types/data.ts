@@ -231,6 +231,15 @@ export interface LoadingState {
   progress?: number
 }
 
+export interface CircularDependency {
+  id: string
+  cycle: string[]
+  severity: 'low' | 'medium' | 'high'
+  description: string
+  impact: string
+  recommendation: string
+}
+
 // Complete analysis data structure for reports and test fixtures
 export interface CompleteAnalysisData {
   metadata: {

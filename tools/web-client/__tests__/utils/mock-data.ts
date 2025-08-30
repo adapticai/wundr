@@ -1,7 +1,9 @@
 import { AnalysisData, Entity, DuplicateCluster } from '../types/analysis-types'
 import { CompleteAnalysisData, AnalysisEntity, AnalysisDuplicate, AnalysisMetrics, AnalysisRecommendation } from '../../types/reports'
-import * as path from 'path'
-import * as fs from 'fs'
+
+// Node.js imports - only used in server-side testing
+const path = typeof window === 'undefined' ? require('path') : null
+const fs = typeof window === 'undefined' ? require('fs') : null
 
 /**
  * Real test fixtures based on actual project structure
@@ -55,12 +57,18 @@ export async function createTestFixtures(projectPath: string = process.cwd()): P
  */
 async function analyzeRealEntities(projectPath: string): Promise<AnalysisEntity[]> {
   const entities: AnalysisEntity[] = []
+  
+  // Return mock data if running in browser or Node.js modules not available
+  if (!path || !fs) {
+    return generateMockEntities()
+  }
+  
   const componentDir = path.join(projectPath, 'components')
   
   if (fs.existsSync(componentDir)) {
     const components = fs.readdirSync(componentDir)
     
-    components.forEach((component, index) => {
+    components.forEach((component: string, index: number) => {
       const componentPath = path.join(componentDir, component)
       const stats = fs.statSync(componentPath)
       
@@ -94,6 +102,56 @@ async function analyzeRealEntities(projectPath: string): Promise<AnalysisEntity[
   }
   
   return entities
+}
+
+/**
+ * Generate mock entities when file system access is not available
+ */
+function generateMockEntities(): AnalysisEntity[] {
+  const mockEntities: AnalysisEntity[] = [
+    {
+      id: 'entity-1',
+      name: 'DashboardComponent',
+      path: 'components/dashboard/DashboardComponent.tsx',
+      type: 'component',
+      dependencies: ['react', '@/components/ui', '@/lib/utils'],
+      dependents: [],
+      complexity: {
+        cyclomatic: 8,
+        cognitive: 6
+      },
+      metrics: {
+        linesOfCode: 245,
+        maintainabilityIndex: 78,
+        testCoverage: 85
+      },
+      issues: [],
+      tags: ['ui', 'component'],
+      lastModified: new Date()
+    },
+    {
+      id: 'entity-2',
+      name: 'AnalysisService',
+      path: 'lib/services/AnalysisService.ts',
+      type: 'module',
+      dependencies: ['@/lib/utils', '@/types/data'],
+      dependents: ['DashboardComponent'],
+      complexity: {
+        cyclomatic: 12,
+        cognitive: 9
+      },
+      metrics: {
+        linesOfCode: 156,
+        maintainabilityIndex: 72,
+        testCoverage: 92
+      },
+      issues: [],
+      tags: ['service', 'core'],
+      lastModified: new Date()
+    }
+  ]
+  
+  return mockEntities
 }
 
 /**

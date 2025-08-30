@@ -18,6 +18,8 @@ import { ChatCommands } from './commands/chat';
 import { PluginCommands } from './commands/plugins';
 import { SetupCommands } from './commands/setup';
 import { ComputerSetupCommands } from './commands/computer-setup-commands';
+import claudeInitCommand from './commands/claude-init';
+import claudeSetupCommand from './commands/claude-setup';
 
 /**
  * Main CLI class that orchestrates all commands and modes
@@ -90,6 +92,10 @@ The Unified Developer Platform
 
     // Plugin Management
     new PluginCommands(this.program, this.configManager, this.pluginManager);
+    
+    // Claude Integration
+    claudeInitCommand(this.program);
+    claudeSetupCommand(this.program);
   }
 
   /**

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { ScriptRunnerService, ScriptCategory } = await import('@/lib/services/script/ScriptRunnerService');
+    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    type ScriptCategory = import('@/lib/services/script/ScriptRunnerService').ScriptCategory;
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 

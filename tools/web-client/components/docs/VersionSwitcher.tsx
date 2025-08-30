@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 import { Check, ChevronDown, AlertTriangle } from 'lucide-react';
 import {
   DropdownMenu,
@@ -21,7 +21,7 @@ interface VersionSwitcherProps {
 export function VersionSwitcher({ 
   currentVersion, 
   onVersionChange,
-  className 
+  className = '' 
 }: VersionSwitcherProps) {
   const current = DOCS_VERSIONS.find(v => v.version === currentVersion) || DOCS_VERSIONS[0];
 
@@ -34,7 +34,7 @@ export function VersionSwitcher({
         >
           <div className="flex items-center gap-2">
             <span className="font-medium">{current.label}</span>
-            {!current.deprecated && (
+            {!current.deprecated && current.version === DOCS_VERSIONS[0]?.version && (
               <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                 Latest
               </Badge>
@@ -56,7 +56,7 @@ export function VersionSwitcher({
               {version.deprecated && (
                 <AlertTriangle className="h-3 w-3 text-yellow-500" />
               )}
-              {!version.deprecated && (
+              {!version.deprecated && version.version === DOCS_VERSIONS[0]?.version && (
                 <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                   Latest
                 </Badge>

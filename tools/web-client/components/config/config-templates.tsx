@@ -39,7 +39,7 @@ export function ConfigTemplates() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-1">
-                {template.tags.map((tag) => (
+                {template.tags.map((tag: string) => (
                   <Badge key={tag} variant="secondary" className="text-xs">
                     {tag}
                   </Badge>
