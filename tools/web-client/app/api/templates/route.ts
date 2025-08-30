@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { TemplateService } = await import('@/lib/services/template/TemplateService');
+    const { templateService } = await import('@/lib/services/template/TemplateService');
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const language = searchParams.get('language');
@@ -11,16 +11,16 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const tags = searchParams.get('tags')?.split(',').filter(Boolean);
 
-    const filter: any = {
-      ...(category && { category }),
-      ...(language && { language }),
-      ...(framework && { framework }),
-      ...(difficulty && { difficulty }),
-      ...(search && { search }),
-      ...(tags && tags.length > 0 && { tags })
-    };
-
-    const templates = await TemplateService.searchTemplates(filter);
+    // For now, get all templates and filter manually since searchTemplates doesn't exist
+    let templates = await templateService.getTemplates();
+    
+    // Apply filters
+    if (category) {
+      templates = templates.filter(t => t.category === category);
+    }
+    if (search) {
+      templates = templateService.searchTemplates(search);
+    }
     
     return NextResponse.json({
       success: true,
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { TemplateService } = await import('@/lib/services/template/TemplateService');
+    const { templateService } = await import('@/lib/services/template/TemplateService');
     const body = await request.json();
     const { templateData } = body;
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const template = TemplateService.createTemplate(templateData);
+    const template = await templateService.createTemplate(templateData);
     
     return NextResponse.json({
       success: true,

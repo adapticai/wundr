@@ -230,3 +230,76 @@ export interface LoadingState {
   isRefreshing: boolean
   progress?: number
 }
+
+// Complete analysis data structure for reports and test fixtures
+export interface CompleteAnalysisData {
+  metadata: {
+    version: string
+    generator: string
+    timestamp: Date
+    configuration: Record<string, unknown>
+    projectInfo: {
+      name: string
+      path: string
+      language: string
+      framework?: string
+      packageManager?: string
+    }
+  }
+  entities: AnalysisEntity[]
+  duplicates: AnalysisDuplicate[]
+  circularDependencies: CircularDependency[]
+  securityIssues: AnalysisIssue[]
+  metrics: {
+    overview: {
+      totalFiles: number
+      totalLines: number
+      totalEntities: number
+      analysisTime: number
+      timestamp: Date
+    }
+    quality: {
+      maintainabilityIndex: number
+      technicalDebt: {
+        rating: 'A' | 'B' | 'C' | 'D' | 'E'
+        minutes: number
+      }
+      duplicateLines: number
+      duplicateRatio: number
+      testCoverage: {
+        lines: number
+        functions: number
+        branches: number
+        statements: number
+      }
+    }
+    complexity: {
+      average: number
+      highest: number
+      distribution: {
+        low: number
+        medium: number
+        high: number
+        veryHigh: number
+      }
+    }
+    issues: {
+      total: number
+      byType: Record<string, number>
+      bySeverity: {
+        critical: number
+        high: number
+        medium: number
+        low: number
+      }
+    }
+    dependencies: {
+      total: number
+      circular: number
+      unused: number
+      outdated: number
+      vulnerable: number
+    }
+  }
+  recommendations: AnalysisRecommendation[]
+}

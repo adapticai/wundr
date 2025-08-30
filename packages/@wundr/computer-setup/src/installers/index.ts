@@ -10,6 +10,7 @@ import { PythonInstaller } from './python-installer';
 import { MacInstaller } from './mac-installer';
 import { LinuxInstaller } from './linux-installer';
 import { WindowsInstaller } from './windows-installer';
+import ClaudeInstaller from './claude-installer';
 
 export interface BaseInstaller {
   name: string;
@@ -47,6 +48,7 @@ export class InstallerRegistry {
     this.register('node', new NodeInstaller());
     this.register('python', new PythonInstaller());
     this.register('docker', new DockerInstaller());
+    this.register('claude', ClaudeInstaller);
   }
 
   /**
@@ -209,16 +211,19 @@ export class InstallerRegistry {
    * Get Claude Code setup steps
    */
   async getClaudeCodeSteps(): Promise<SetupStep[]> {
-    // Claude Code installer to be implemented
-    return [];
+    const installer = this.installers.get('claude');
+    if (!installer) return [];
+    return installer.getSteps({} as DeveloperProfile, this.platform);
   }
 
   /**
    * Get Claude Flow setup steps
    */
   async getClaudeFlowSteps(swarmAgents?: string[]): Promise<SetupStep[]> {
-    // Claude Flow installer to be implemented
-    return [];
+    const installer = this.installers.get('claude');
+    if (!installer) return [];
+    const profile = { aiTools: { claudeFlow: { agents: swarmAgents } } } as any;
+    return installer.getSteps(profile, this.platform);
   }
 
   /**

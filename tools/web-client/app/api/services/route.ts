@@ -2,34 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { ServiceOrchestrator } = await import('@/lib/services/orchestrator/ServiceOrchestrator');
+    const { serviceOrchestrator } = await import('@/lib/services/orchestrator/ServiceOrchestrator');
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
     switch (type) {
       case 'health':
-        const health = ServiceOrchestrator.getSystemHealth();
+        const health = await serviceOrchestrator.getSystemHealth();
         return NextResponse.json({
           success: true,
           data: health
         });
 
       case 'metrics':
-        const metrics = ServiceOrchestrator.getMetrics();
+        const metrics = await serviceOrchestrator.getMetrics();
         return NextResponse.json({
           success: true,
           data: metrics
         });
 
       case 'instances':
-        const instances = ServiceOrchestrator.getAllInstances();
+        const instances = await serviceOrchestrator.getAllInstances();
         return NextResponse.json({
           success: true,
           data: instances
         });
 
       default:
-        const services = ServiceOrchestrator.getAllServices();
+        const services = await serviceOrchestrator.getAllServices();
         return NextResponse.json({
           success: true,
           data: services
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { ServiceOrchestrator } = await import('@/lib/services/orchestrator/ServiceOrchestrator');
+    const { serviceOrchestrator } = await import('@/lib/services/orchestrator/ServiceOrchestrator');
     const body = await request.json();
     const { action, serviceId, config } = body;
 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        const result = ServiceOrchestrator.startService(serviceId);
+        const result = await serviceOrchestrator.startService(serviceId);
         const instanceId = result !== undefined ? serviceId : null;
         return NextResponse.json({
           success: true,
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         });
 
       case 'register':
-        const service = ServiceOrchestrator.registerService(body.service);
+        const service = await serviceOrchestrator.registerService(body.service);
         return NextResponse.json({
           success: true,
           data: service

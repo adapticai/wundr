@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const { ScriptRunnerService, ScriptCategory } = await import('@/lib/services/script/ScriptRunnerService');
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
+    // Valid script categories
+    const validCategories: string[] = [
+      'system', 'development', 'testing', 'deployment', 
+      'maintenance', 'analysis', 'utility', 'security', 'monitoring'
+    ];
+
     let scripts;
-    if (category && category !== 'all') {
-      scripts = ScriptRunnerService.getScriptsByCategory(category);
+    if (category && category !== 'all' && validCategories.includes(category)) {
+      scripts = ScriptRunnerService.getScriptsByCategory(category as any);
     } else {
       scripts = ScriptRunnerService.getScripts();
     }

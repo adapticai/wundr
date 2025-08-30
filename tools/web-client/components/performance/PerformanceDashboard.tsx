@@ -345,7 +345,7 @@ export const PerformanceDashboard: React.FC = () => {
     const updateSystemMetrics = () => {
       const now = Date.now();
       const memoryMetrics = rawMetrics ? Object.values(rawMetrics).filter((m: any) => m.name?.includes('memory')) : [];
-      const latestMemory = memoryMetrics[memoryMetrics.length - 1];
+      const latestMemory = memoryMetrics[memoryMetrics.length - 1] as any;
       
       // Get browser memory info if available
       const browserMemory = typeof window !== 'undefined' && 'memory' in performance 

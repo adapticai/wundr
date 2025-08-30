@@ -67,7 +67,7 @@ export async function PATCH(
         const newBatch = await BatchProcessingService.createBatch({
           name: `${oldBatch.name} (retry)`,
           type: oldBatch.type,
-          data: oldBatch
+          data: oldBatch.data
         });
         return NextResponse.json({
           success: true,

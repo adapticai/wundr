@@ -11,6 +11,8 @@ import {
   isBrowserSafe, 
   testClientServicesInstantiation,
   testClientServiceValidation,
+  TestResult as ServiceTestResult,
+  TestSuite
 } from '@/lib/services/client/test-client-services';
 
 interface TestResult {
@@ -40,11 +42,11 @@ export default function ClientServicesTest() {
         browserSafe,
         instantiation: results[0] ? {
           success: results[0].passed > 0 && results[0].failed === 0,
-          errors: results[0].tests.filter(t => !t.success).map(t => t.message || 'Unknown error')
+          errors: results[0].tests.filter((t: ServiceTestResult) => !t.success).map((t: ServiceTestResult) => t.message || 'Unknown error')
         } : { success: false, errors: ['No instantiation tests found'] },
         validation: results[1] ? {
           success: results[1].passed > 0 && results[1].failed === 0,
-          errors: results[1].tests.filter(t => !t.success).map(t => t.message || 'Unknown error')
+          errors: results[1].tests.filter((t: ServiceTestResult) => !t.success).map((t: ServiceTestResult) => t.message || 'Unknown error')
         } : { success: false, errors: ['No validation tests found'] },
       });
       

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ReportService } from '@/lib/services/report-service';
+import { reportService } from '@/lib/services/report-service';
 import { ReportTemplateEngine } from '@/lib/report-templates';
 import {
   CompleteAnalysisData,
@@ -123,26 +123,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Normalize analysis data (using parameters as data source)
-    const normalizedData = ReportService.normalizeAnalysisData(body.parameters);
+    const normalizedData = reportService.normalizeAnalysisData(body.parameters, 'analysis');
     
-    // Generate report content using the correct method signature
-    const reportContent = ReportService.generateReport(normalizedData, template);
+    // Generate report content using template renderer
+    const reportContent = ReportTemplateEngine.renderReport(template, normalizedData);
     
-    // Generate detailed sections if requested
-    let additionalSections: any[] = [];
-    if ((body as any).includeDetailedSections) {
-      additionalSections = ReportTemplateEngine.generateDetailedSections(normalizedData);
-    }
-    
-    // Add recommendations section if requested
-    if ((body as any).includeRecommendations && normalizedData.recommendations.length > 0) {
-      additionalSections.push(
-        ReportTemplateEngine.generateRecommendationsSection(normalizedData)
-      );
-    }
-    
-    // Store additional sections in metadata for later use
-    const sectionsData = additionalSections.length > 0 ? additionalSections : [];
+    // Additional sections are now handled by the template system
+    const sectionsData: any[] = [];
 
     // Create report object
     const report: Report = {
@@ -167,11 +154,7 @@ export async function POST(request: NextRequest) {
 
     // Generate markdown if requested
     if ((body as any).format === 'markdown') {
-      const markdown = ReportTemplateEngine.generateMarkdownReport(
-        normalizedData, 
-        template, 
-        reportContent
-      );
+      const markdown = reportContent; // The content is already in markdown format
       
       return NextResponse.json({
         report,
