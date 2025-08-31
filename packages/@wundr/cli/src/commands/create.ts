@@ -7,7 +7,19 @@ import { ConfigManager } from '../utils/config-manager';
 import { PluginManager } from '../plugins/plugin-manager';
 import { logger } from '../utils/logger';
 import { errorHandler } from '../utils/error-handler';
-import { projectTemplates } from '@wundr/project-templates';
+// import { projectTemplates } from '@wundr/project-templates';
+// TODO: Fix this import - project-templates package needs to be created
+const projectTemplates = {
+  createProject: async (options: any) => {
+    console.log('Creating project with options:', options);
+    // TODO: Implement actual project creation logic
+    console.log('Project creation not yet implemented');
+  },
+  createInteractive: async () => {
+    console.log('Interactive project creation not yet implemented');
+    // TODO: Implement interactive project creation
+  }
+};
 
 /**
  * Create commands for generating components, services, and templates

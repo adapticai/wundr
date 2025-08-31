@@ -17,7 +17,7 @@ import { BatchCommands } from './commands/batch';
 import { ChatCommands } from './commands/chat';
 import { PluginCommands } from './commands/plugins';
 import { SetupCommands } from './commands/setup';
-import { ComputerSetupCommands } from './commands/computer-setup-commands';
+import { createComputerSetupCommand } from './commands/computer-setup';
 import claudeInitCommand from './commands/claude-init';
 import claudeSetupCommand from './commands/claude-setup';
 
@@ -69,7 +69,8 @@ The Unified Developer Platform
   private registerCommands(): void {
     // Computer Setup & Provisioning (primary integration)
     new SetupCommands(this.program, this.configManager, this.pluginManager);
-    new ComputerSetupCommands(this.program, this.configManager, this.pluginManager);
+    // Use the working computer-setup command instead of the broken one
+    this.program.addCommand(createComputerSetupCommand());
     
     // Code Analysis & Governance (original wundr features)
     new AnalyzeCommands(this.program, this.configManager, this.pluginManager);

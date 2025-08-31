@@ -68,6 +68,124 @@ export class ComputerSetupManager extends EventEmitter {
   }
 
   /**
+   * Get a profile by name
+   */
+  async getProfile(profileName: string): Promise<DeveloperProfile> {
+    // Try to get the profile from the ProfileManager first
+    const profile = await this.profileManager.getProfile(profileName);
+    
+    if (profile) {
+      return profile;
+    }
+    
+    // If not found, create a default one based on the name
+    const normalizedName = profileName.toLowerCase().replace(/\s+/g, '');
+    
+    // Map common profile names to full names
+    const profileMap: Record<string, string> = {
+      'frontend': 'Frontend Developer',
+      'backend': 'Backend Developer',
+      'fullstack': 'Full Stack Developer',
+      'fullstackdeveloper': 'Full Stack Developer',
+      'devops': 'DevOps Engineer',
+      'ml': 'Machine Learning Engineer',
+      'mobile': 'Mobile Developer'
+    };
+
+    const fullProfileName = profileMap[normalizedName] || profileName;
+    
+    // Return a default profile based on the name
+    return {
+      id: normalizedName,
+      name: fullProfileName,
+      role: normalizedName,
+      email: '',
+      preferences: {
+        shell: 'zsh',
+        editor: 'vscode',
+        theme: 'auto',
+        gitConfig: {
+          userName: '',
+          userEmail: '',
+          signCommits: true,
+          defaultBranch: 'main',
+          aliases: {}
+        },
+        aiTools: {
+          claudeCode: true,
+          claudeFlow: true,
+          mcpTools: ['all'],
+          swarmAgents: ['default'],
+          memoryAllocation: '2GB'
+        }
+      },
+      tools: this.getToolsForProfile(normalizedName),
+      createdAt: new Date()
+    } as DeveloperProfile;
+  }
+
+  /**
+   * Get the default profile
+   */
+  async getDefaultProfile(): Promise<DeveloperProfile> {
+    // First try to get from ProfileManager
+    const defaultProfile = this.profileManager.getDefaultProfile();
+    if (defaultProfile) {
+      return defaultProfile;
+    }
+    // Fallback to getting fullstack profile
+    return this.getProfile('fullstack');
+  }
+
+  /**
+   * Get tools configuration for a profile
+   */
+  private getToolsForProfile(profile: string): any {
+    const baseTools = {
+      languages: { node: true, typescript: true, python: false },
+      packageManagers: { npm: true, pnpm: true, yarn: false, brew: process.platform === 'darwin' },
+      git: { enabled: true },
+      containers: { docker: true, dockerCompose: true, kubernetes: false },
+      cloudCLIs: { aws: false, gcloud: false, azure: false },
+      databases: { postgresql: false, redis: false, mongodb: false },
+      monitoring: { datadog: false, newRelic: false, sentry: false },
+      communication: { slack: false }
+    };
+
+    switch (profile) {
+      case 'frontend':
+        return {
+          ...baseTools,
+          languages: { ...baseTools.languages, javascript: true },
+          frameworks: { react: true, vue: true, nextjs: true }
+        };
+      case 'backend':
+        return {
+          ...baseTools,
+          languages: { ...baseTools.languages, python: true },
+          databases: { ...baseTools.databases, postgresql: true, redis: true }
+        };
+      case 'fullstack':
+      case 'fullstackdeveloper':
+        return {
+          ...baseTools,
+          languages: { ...baseTools.languages, javascript: true, python: true },
+          containers: { ...baseTools.containers, docker: true, dockerCompose: true },
+          frameworks: { react: true, nextjs: true },
+          databases: { ...baseTools.databases, postgresql: true, redis: true }
+        };
+      case 'devops':
+        return {
+          ...baseTools,
+          containers: { ...baseTools.containers, kubernetes: true },
+          cloudCLIs: { ...baseTools.cloudCLIs, aws: true, gcloud: true }
+        };
+      default:
+        return baseTools;
+    }
+  }
+
+  /**
    * Run the complete setup process
    */
   async setup(options: SetupOptions): Promise<SetupResult> {
@@ -181,47 +299,51 @@ export class ComputerSetupManager extends EventEmitter {
     steps.push(...await this.installerRegistry.getSystemSteps(options.platform));
 
     // Development tools
-    if (profile.tools.languages.node) {
+    if (profile.tools?.languages?.node) {
       steps.push(...await this.installerRegistry.getNodeSteps(profile.tools.languages.node));
     }
-    if (profile.tools.languages.python) {
+    if (profile.tools?.languages?.python) {
       steps.push(...await this.installerRegistry.getPythonSteps(profile.tools.languages.python));
     }
 
     // Package managers
-    if (profile.tools.packageManagers.brew && options.platform.os === 'darwin') {
+    if (profile.tools?.packageManagers?.brew && options.platform.os === 'darwin') {
       steps.push(...await this.installerRegistry.getBrewSteps());
     }
 
     // Container tools
-    if (profile.tools.containers.docker) {
+    if (profile.tools?.containers?.docker) {
       steps.push(...await this.installerRegistry.getDockerSteps());
     }
 
     // AI tools
-    if (profile.preferences.aiTools.claudeCode) {
+    if (profile.preferences?.aiTools?.claudeCode) {
       steps.push(...await this.installerRegistry.getClaudeCodeSteps());
     }
-    if (profile.preferences.aiTools.claudeFlow) {
+    if (profile.preferences?.aiTools?.claudeFlow) {
       steps.push(...await this.installerRegistry.getClaudeFlowSteps(
-        profile.preferences.aiTools.swarmAgents
+        profile.preferences.aiTools.swarmAgents || []
       ));
     }
 
     // Communication tools
-    if (profile.tools.communication.slack) {
+    if (profile.tools?.communication?.slack) {
       steps.push(...await this.installerRegistry.getSlackSteps());
     }
 
     // Git configuration
-    steps.push(...await this.configuratorService.getGitConfigSteps(
-      profile.preferences.gitConfig
-    ));
+    if (profile.preferences?.gitConfig) {
+      steps.push(...await this.configuratorService.getGitConfigSteps(
+        profile.preferences.gitConfig
+      ));
+    }
 
     // Editor setup
-    steps.push(...await this.configuratorService.getEditorSteps(
-      profile.preferences.editor
-    ));
+    if (profile.preferences?.editor) {
+      steps.push(...await this.configuratorService.getEditorSteps(
+        profile.preferences.editor
+      ));
+    }
 
     // Sort steps by dependencies
     return this.sortStepsByDependencies(steps);

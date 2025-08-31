@@ -49,20 +49,29 @@ export class ProfileManager {
    * Get a specific profile by name
    */
   async getProfile(name: string): Promise<DeveloperProfile | null> {
+    // Normalize the profile name
+    const normalizedName = name.toLowerCase().replace(/\s+/g, '');
+    
+    // Check loaded profiles
+    if (this.profiles.has(normalizedName)) {
+      return this.profiles.get(normalizedName) || null;
+    }
+    
+    // Check by original name too
     if (this.profiles.has(name)) {
       return this.profiles.get(name) || null;
     }
 
     // Try to load from disk
-    const profilePath = path.join(this.profilesDir, `${name}.json`);
+    const profilePath = path.join(this.profilesDir, `${normalizedName}.json`);
     if (await fs.pathExists(profilePath)) {
       const profile = await fs.readJson(profilePath);
-      this.profiles.set(name, profile);
+      this.profiles.set(normalizedName, profile);
       return profile;
     }
 
-    // Try predefined profiles
-    return this.getPredefinedProfile(name);
+    // Try predefined profiles with normalized name
+    return this.getPredefinedProfile(normalizedName);
   }
 
   /**
@@ -121,7 +130,7 @@ export class ProfileManager {
    */
   getDefaultProfile(): DeveloperProfile {
     return {
-      name: 'default',
+      name: 'Full Stack Developer',
       email: 'developer@example.com',
       role: 'fullstack',
       preferences: this.getDefaultPreferences(),
@@ -133,44 +142,54 @@ export class ProfileManager {
    * Get predefined profile by role
    */
   private getPredefinedProfile(role: string): DeveloperProfile | null {
+    // Normalize the role name
+    const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
+    
     const profiles: Record<string, DeveloperProfile> = {
       frontend: {
-        name: 'frontend',
+        name: 'Frontend Developer',
         email: '',
         role: 'frontend',
         preferences: this.getFrontendPreferences(),
         tools: this.getFrontendTools()
       },
       backend: {
-        name: 'backend',
+        name: 'Backend Developer',
         email: '',
         role: 'backend',
         preferences: this.getBackendPreferences(),
         tools: this.getBackendTools()
       },
       fullstack: {
-        name: 'fullstack',
+        name: 'Full Stack Developer',
+        email: '',
+        role: 'fullstack',
+        preferences: this.getFullstackPreferences(),
+        tools: this.getFullstackTools()
+      },
+      fullstackdeveloper: {
+        name: 'Full Stack Developer',
         email: '',
         role: 'fullstack',
         preferences: this.getFullstackPreferences(),
         tools: this.getFullstackTools()
       },
       devops: {
-        name: 'devops',
+        name: 'DevOps Engineer',
         email: '',
         role: 'devops',
         preferences: this.getDevOpsPreferences(),
         tools: this.getDevOpsTools()
       },
       ml: {
-        name: 'ml',
+        name: 'Machine Learning Engineer',
         email: '',
         role: 'ml',
         preferences: this.getMLPreferences(),
         tools: this.getMLTools()
       },
       mobile: {
-        name: 'mobile',
+        name: 'Mobile Developer',
         email: '',
         role: 'mobile',
         preferences: this.getMobilePreferences(),
@@ -178,7 +197,7 @@ export class ProfileManager {
       }
     };
 
-    return profiles[role] || null;
+    return profiles[normalizedRole] || null;
   }
 
   private getDefaultPreferences(): ProfilePreferences {

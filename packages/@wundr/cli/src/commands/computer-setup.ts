@@ -7,7 +7,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { ComputerSetupManager } from '@wundr/computer-setup';
+import { ComputerSetupManager } from '@wundr.io/computer-setup';
 // import { getLogger } from '@wundr/core';
 const logger = { info: console.log, error: console.error, warn: console.warn };
 
@@ -75,8 +75,13 @@ async function runComputerSetup(options: any): Promise<void> {
     // Get or create profile
     let profile;
     if (options.profile) {
+      // Get profile by name - ProfileManager will handle normalization
       profile = await manager.getProfile(options.profile);
-    } else if (options.mode === 'interactive') {
+      if (!profile) {
+        console.log(chalk.yellow(`Profile '${options.profile}' not found. Using default.`));
+        profile = await manager.getDefaultProfile();
+      }
+    } else if (options.mode === 'interactive' || options.interactive) {
       profile = await createInteractiveProfile();
     } else {
       profile = await manager.getDefaultProfile();
@@ -168,7 +173,7 @@ async function runComputerSetup(options: any): Promise<void> {
     }
 
     if (result.report) {
-      console.log(chalk.cyan(`\n📄 Setup report saved to: ${result.report.path}`));
+      console.log(chalk.cyan(`\n📄 Setup report generated successfully`));
     }
 
     // Display next steps
@@ -431,6 +436,10 @@ async function validateSetup(): Promise<void> {
     }
     
     const profile = profiles[0]; // Use most recent
+    if (!profile) {
+      console.log(chalk.yellow('No profile found. Run "wundr computer-setup" first.'));
+      return;
+    }
     const isValid = await manager.validateSetup(profile);
     
     spinner.stop();
