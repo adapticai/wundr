@@ -2,7 +2,14 @@
   "name": "@wundr.io/cli",
   "version": "1.0.0",
   "description": "Unified CLI framework for the Wundr platform",
-  "keywords": ["wundr", "cli", "commander", "interactive", "tui", "automation"],
+  "keywords": [
+    "wundr",
+    "cli",
+    "commander",
+    "interactive",
+    "tui",
+    "automation"
+  ],
   "homepage": "https://wundr.io",
   "bugs": {
     "url": "https://github.com/adapticai/wundr/issues"
@@ -18,12 +25,18 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": ["dist", "bin", "src", "templates", "README.md"],
+  "files": [
+    "dist",
+    "bin",
+    "src",
+    "templates",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
-    "dev": "ts-node src/index.ts",
+    "dev": "tsc --watch",
     "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,md}'",
     "format:check": "prettier --check 'src/**/*.{ts,tsx,js,jsx,json,md}'",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
@@ -36,9 +49,10 @@
     "@oclif/plugin-help": "^6.0.0",
     "@oclif/plugin-plugins": "^4.1.0",
     "@types/axios": "^0.9.36",
+    "@types/open": "^6.2.1",
     "@wundr.io/computer-setup": "workspace:*",
-    "@wundr.io/core": "workspace:*",
     "@wundr.io/config": "workspace:*",
+    "@wundr.io/core": "workspace:*",
     "axios": "^1.11.0",
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.11.0",
@@ -52,6 +66,7 @@
     "inquirer": "^9.2.12",
     "listr2": "^8.0.0",
     "node-pty": "^1.0.0",
+    "open": "^10.2.0",
     "ora": "^8.0.1",
     "prompts": "^2.4.2",
     "rxjs": "^7.8.1",
@@ -81,7 +96,10 @@
     "bin": "wundr",
     "dirname": "wundr",
     "commands": "./dist/commands",
-    "plugins": ["@oclif/plugin-help", "@oclif/plugin-plugins"],
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ],
     "topicSeparator": ":",
     "topics": {
       "init": {
