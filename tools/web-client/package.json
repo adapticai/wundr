@@ -14,6 +14,13 @@
     "test": "jest --passWithNoTests",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e",
+    "playwright:install": "playwright install",
+    "playwright:report": "playwright show-report",
     "typecheck": "tsc --noEmit",
     "ws": "node scripts/websocket-server.js"
   },
@@ -98,6 +105,8 @@
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@playwright/test": "^1.54.2",
+    "playwright": "^1.54.2"
   }
 }

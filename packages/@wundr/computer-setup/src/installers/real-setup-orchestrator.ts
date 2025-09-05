@@ -27,6 +27,7 @@ import {
 import { HomebrewInstaller } from './homebrew-installer';
 import { PermissionsInstaller } from './permissions-installer';
 import { DockerInstaller } from './docker-installer';
+import { PythonInstaller } from './python-installer';
 import ClaudeInstaller from './claude-installer';
 
 // Enhanced interfaces for the real orchestrator
@@ -85,12 +86,12 @@ export class RealSetupOrchestrator extends EventEmitter {
     this.installers.set('permissions', new PermissionsInstaller());
     this.installers.set('homebrew', new HomebrewInstaller());
     this.installers.set('docker', new DockerInstaller());
+    this.installers.set('python', new PythonInstaller());
     this.installers.set('claude', ClaudeInstaller);
     
     // Core tools installers (to be implemented)
     this.installers.set('git', this.createCoreToolInstaller('git', 'Git version control'));
     this.installers.set('node', this.createCoreToolInstaller('node', 'Node.js runtime'));
-    this.installers.set('python', this.createCoreToolInstaller('python', 'Python programming language'));
     this.installers.set('vscode', this.createCoreToolInstaller('code', 'Visual Studio Code editor'));
   }
 

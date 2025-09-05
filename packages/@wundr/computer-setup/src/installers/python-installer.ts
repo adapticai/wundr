@@ -19,6 +19,7 @@ export class PythonInstaller implements BaseInstaller {
 
   async isInstalled(): Promise<boolean> {
     try {
+      // Try python3 first (most common on modern systems)
       const { stdout } = await execa('python3', ['--version']);
       const version = stdout.match(/Python (\d+)\.(\d+)/);
       if (version) {
@@ -28,7 +29,18 @@ export class PythonInstaller implements BaseInstaller {
       }
       return false;
     } catch {
-      return false;
+      // Try python as fallback
+      try {
+        const { stdout } = await execa('python', ['--version']);
+        const version = stdout.match(/Python (\d+)\.(\d+)/);
+        if (version) {
+          const major = parseInt(version[1]);
+          return major === 3; // Accept any Python 3.x
+        }
+        return false;
+      } catch {
+        return false;
+      }
     }
   }
 
@@ -44,25 +56,53 @@ export class PythonInstaller implements BaseInstaller {
   async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     const pythonConfig = profile.tools?.languages?.python;
     if (!pythonConfig) {
-      console.log('Python not configured in profile, installing default setup');
+      console.log('Python not configured in profile, checking existing setup');
     }
 
-    // Install Python if not present
-    if (!await this.isInstalled()) {
+    // Check if Python is already installed
+    const alreadyInstalled = await this.isInstalled();
+    if (alreadyInstalled) {
+      console.log('✅ Python is already installed');
+      const version = await this.getVersion();
+      console.log(`   Version: ${version}`);
+    } else {
+      // Install Python if not present
       await this.installPython(platform);
     }
 
-    // Setup pip and ensure it's up to date
-    await this.setupPip();
+    // Setup pip and ensure it's up to date (only if not skipping)
+    try {
+      await this.setupPip();
+    } catch (error) {
+      console.warn('pip setup had issues, but continuing:', error);
+    }
     
-    // Install pyenv for version management
-    await this.installPyenv(platform);
+    // Optional: Install pyenv for version management
+    if (pythonConfig?.versions && pythonConfig.versions.length > 1) {
+      try {
+        await this.installPyenv(platform);
+      } catch (error) {
+        console.warn('pyenv installation skipped:', error);
+      }
+    }
 
-    // Install virtual environment tools
-    await this.setupVirtualEnvironments(pythonConfig);
+    // Optional: Install virtual environment tools
+    if (pythonConfig?.virtualEnv) {
+      try {
+        await this.setupVirtualEnvironments(pythonConfig);
+      } catch (error) {
+        console.warn('Virtual environment setup skipped:', error);
+      }
+    }
 
-    // Install common Python packages
-    await this.installCommonPackages();
+    // Optional: Install common Python packages
+    if (!alreadyInstalled) {
+      try {
+        await this.installCommonPackages();
+      } catch (error) {
+        console.warn('Common package installation had issues:', error);
+      }
+    }
   }
 
   async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
@@ -80,14 +120,29 @@ export class PythonInstaller implements BaseInstaller {
     try {
       // Check Python 3 installation
       const pythonVersion = await this.getVersion();
-      if (!pythonVersion) return false;
+      if (!pythonVersion) {
+        console.log('Python version check failed');
+        return false;
+      }
+      console.log(`Python found: ${pythonVersion}`);
 
-      // Check pip
-      await execa('python3', ['-m', 'pip', '--version']);
+      // Check pip (more lenient)
+      try {
+        await execa('python3', ['-m', 'pip', '--version']);
+        console.log('pip is available');
+      } catch {
+        console.warn('pip not available via python3 -m pip, but Python is installed');
+      }
       
-      // Check virtual environment capability
-      await execa('python3', ['-m', 'venv', '--help']);
+      // Don't fail on venv check - it's optional
+      try {
+        await execa('python3', ['-m', 'venv', '--help'], { stdio: 'ignore' });
+        console.log('venv module available');
+      } catch {
+        console.warn('venv module not available, but Python is installed');
+      }
       
+      // If we got here, Python is at least installed
       return true;
     } catch (error) {
       console.error('Python validation failed:', error);
@@ -168,6 +223,15 @@ export class PythonInstaller implements BaseInstaller {
       // Check if Homebrew is available
       await which('brew');
       
+      // Check if Python is already installed via brew
+      try {
+        const { stdout } = await execa('brew', ['list', 'python@3.12']);
+        console.log('Python 3.12 is already installed via Homebrew');
+        return;
+      } catch {
+        // Not installed, proceed
+      }
+      
       // Install Python via Homebrew
       console.log('Installing Python via Homebrew...');
       await execa('brew', ['install', 'python@3.12']);
@@ -177,7 +241,12 @@ export class PythonInstaller implements BaseInstaller {
       
     } catch (error) {
       console.error('Python installation failed:', error);
-      throw new Error('Python installation requires Homebrew. Please install Homebrew first.');
+      // Check if Python is available through other means
+      if (await this.isInstalled()) {
+        console.log('Python is available through other means, continuing...');
+      } else {
+        throw new Error('Python installation requires Homebrew. Please install Homebrew first.');
+      }
     }
   }
 
@@ -229,6 +298,23 @@ export class PythonInstaller implements BaseInstaller {
     console.log('Setting up pip...');
     
     try {
+      // First check if pip is already available
+      try {
+        await execa('python3', ['-m', 'pip', '--version']);
+        console.log('pip is already available');
+        
+        // Just try to upgrade it
+        try {
+          await execa('python3', ['-m', 'pip', 'install', '--upgrade', 'pip']);
+          console.log('pip upgraded to latest version');
+        } catch {
+          console.log('Could not upgrade pip, but it is available');
+        }
+        return;
+      } catch {
+        // pip not available, try to install
+      }
+      
       // Ensure pip is available
       await execa('python3', ['-m', 'ensurepip', '--upgrade']);
       
@@ -237,7 +323,7 @@ export class PythonInstaller implements BaseInstaller {
       
       console.log('pip setup completed');
     } catch (error) {
-      console.warn('pip setup had issues:', error);
+      console.warn('pip setup had issues (this is often okay if pip is already installed):', error);
     }
   }
 

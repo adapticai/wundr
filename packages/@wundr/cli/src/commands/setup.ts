@@ -133,9 +133,35 @@ export class SetupCommands {
 
       // Validate profile
       const availableProfiles = this.orchestrator.getAvailableProfiles();
-      const profile = availableProfiles.find(p => 
-        p.name.toLowerCase().includes(profileName.toLowerCase())
+      
+      // Try different matching strategies
+      let profile = availableProfiles.find(p => 
+        p.name.toLowerCase() === profileName.toLowerCase()
       );
+      
+      if (!profile) {
+        // Try partial match
+        profile = availableProfiles.find(p => 
+          p.name.toLowerCase().includes(profileName.toLowerCase()) ||
+          profileName.toLowerCase().includes(p.name.toLowerCase().split(' ')[0])
+        );
+      }
+      
+      // Map common aliases
+      if (!profile) {
+        const aliases: Record<string, string> = {
+          'fullstack': 'Full Stack Developer',
+          'full-stack': 'Full Stack Developer',
+          'frontend': 'Frontend Developer',
+          'backend': 'Backend Developer',
+          'devops': 'DevOps Engineer'
+        };
+        
+        const mappedName = aliases[profileName.toLowerCase()];
+        if (mappedName) {
+          profile = availableProfiles.find(p => p.name === mappedName);
+        }
+      }
       
       if (!profile) {
         console.error(chalk.red(`❌ Unknown profile: ${profileName}`));
