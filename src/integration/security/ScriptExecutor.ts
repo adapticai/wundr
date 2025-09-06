@@ -5,10 +5,8 @@
 
 import { spawn, exec, ChildProcess } from 'child_process';
 import { promisify } from 'util';
-import path from 'path';
-import { readFile, writeFile, access, mkdir } from 'fs/promises';
-import { existsSync, constants } from 'fs';
-import crypto from 'crypto';
+import { readFile } from 'fs/promises';
+import { existsSync } from 'fs';
 
 const execAsync = promisify(exec);
 

@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import path from 'path';
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { ConfigurationAPI } from '../config/ConfigurationAPI';
 import { ScriptExecutor } from '../security/ScriptExecutor';
@@ -72,7 +72,6 @@ export class DashboardCLI {
       }
 
       // Initialize plugin system
-      const config = this.configAPI.getConfig();
       const pluginPaths = [
         path.join(this.workingDir, 'wundr-dashboard/plugins'),
         path.join(this.workingDir, 'node_modules/@wundr/plugins'),
@@ -142,7 +141,7 @@ export class DashboardCLI {
       const result = await this.scriptExecutor.executeRegisteredScript(scriptName, {
         timeout: options.timeout || 60000,
         safetyLevel: options.safety || 'moderate',
-        env: options.env,
+        env: options.env || {},
       });
 
       // Trigger after-script-execution hooks
@@ -166,7 +165,7 @@ export class DashboardCLI {
   /**
    * List available scripts
    */
-  async listScripts(options: CLIOptions = {}): Promise<void> {
+  async listScripts(_options: CLIOptions = {}): Promise<void> {
     const scripts = this.scriptExecutor.getRegisteredScripts();
     
     if (scripts.length === 0) {
@@ -259,7 +258,7 @@ export class DashboardCLI {
   /**
    * Show system status and diagnostics
    */
-  async showStatus(options: CLIOptions = {}): Promise<void> {
+  async showStatus(_options: CLIOptions = {}): Promise<void> {
     console.log(chalk.blue.bold('🔍 Wundr Dashboard Status'));
     console.log();
 
@@ -301,7 +300,7 @@ export class DashboardCLI {
   /**
    * Private helper methods
    */
-  private async executeAnalysisScript(analysisPath: string, options: any): Promise<any> {
+  private async executeAnalysisScript(analysisPath: string, _options: any): Promise<any> {
     // This would integrate with your existing analysis scripts
     const analysisScript = path.join(__dirname, '../../../scripts/analysis/analyze-all.sh');
     

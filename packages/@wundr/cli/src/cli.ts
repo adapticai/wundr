@@ -18,6 +18,7 @@ import { ChatCommands } from './commands/chat';
 import { PluginCommands } from './commands/plugins';
 import { SetupCommands } from './commands/setup';
 import { createComputerSetupCommand } from './commands/computer-setup';
+import { createTestCommand } from './commands/test';
 import claudeInitCommand from './commands/claude-init';
 import claudeSetupCommand from './commands/claude-setup';
 
@@ -87,6 +88,9 @@ The Unified Developer Platform
     // Dashboard & Monitoring
     new DashboardCommands(this.program, this.configManager, this.pluginManager);
     new WatchCommands(this.program, this.configManager, this.pluginManager);
+    
+    // Testing
+    this.program.addCommand(createTestCommand());
     
     // Interactive Modes
     new ChatCommands(this.program, this.configManager, this.pluginManager);
