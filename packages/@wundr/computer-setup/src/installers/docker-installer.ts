@@ -83,22 +83,50 @@ export class DockerInstaller implements BaseInstaller {
 
   async validate(): Promise<boolean> {
     try {
-      // Check if Docker daemon is running
-      const { stdout } = await execa('docker', ['info']);
-      
-      // Check for critical Docker components
-      const hasServer = stdout.includes('Server:');
-      const hasClient = stdout.includes('Client:');
-      
-      if (!hasServer || !hasClient) {
-        console.warn('Docker validation: Missing components');
+      // Quick check if Docker command exists
+      try {
+        await execa('which', ['docker']);
+      } catch {
+        console.log('❌ Docker command not found in PATH');
         return false;
       }
       
-      // Try to run a simple container
-      await execa('docker', ['run', '--rm', 'hello-world']);
+      // Check if Docker daemon is running with a shorter timeout
+      try {
+        const { stdout } = await execa('docker', ['version'], { timeout: 5000 });
+        
+        // Check for both client and server
+        const hasClient = stdout.includes('Client:');
+        const hasServer = stdout.includes('Server:');
+        
+        if (!hasClient) {
+          console.log('❌ Docker client not properly installed');
+          return false;
+        }
+        
+        if (!hasServer) {
+          console.log('⚠️ Docker daemon is not running');
+          console.log('💡 Tip: Start Docker Desktop from your Applications folder');
+          return false;
+        }
+      } catch (error: any) {
+        if (error.message?.includes('Cannot connect to the Docker daemon')) {
+          console.log('⚠️ Docker is installed but the daemon is not running');
+          console.log('💡 Tip: Start Docker Desktop from your Applications folder');
+        } else {
+          console.log('❌ Docker validation error:', error.message);
+        }
+        return false;
+      }
       
-      return true;
+      // Verify Docker can actually run containers
+      try {
+        await execa('docker', ['ps'], { timeout: 5000 });
+        return true;
+      } catch {
+        console.log('⚠️ Docker daemon may not be fully initialized');
+        return false;
+      }
     } catch (error) {
       console.error('Docker validation failed:', error);
       return false;
@@ -214,41 +242,119 @@ export class DockerInstaller implements BaseInstaller {
     try {
       // Check if Docker is already running
       try {
-        await execa('docker', ['system', 'info'], { timeout: 5000 });
-        console.log('Docker Desktop is already running');
+        await execa('docker', ['version'], { timeout: 5000 });
+        console.log('✅ Docker is already running');
         return;
       } catch {
-        // Not running, start it
+        // Not running, need to start it
       }
 
-      await execa('open', ['-a', 'Docker']);
-      console.log('Docker Desktop launch initiated');
+      // Check if Docker Desktop process is running but daemon not ready
+      try {
+        const { stdout } = await execa('pgrep', ['-f', 'Docker Desktop']);
+        if (stdout) {
+          console.log('Docker Desktop process detected but daemon not ready yet...');
+          return; // Let waitForDockerDaemon handle the waiting
+        }
+      } catch {
+        // Process not running either
+      }
+
+      // Try to open Docker from different possible locations
+      const dockerPaths = [
+        '/Applications/Docker.app',
+        `${process.env.HOME}/Applications/Docker.app`,
+        'Docker'  // Let macOS find it
+      ];
       
-      // Give it a moment to start launching
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      let started = false;
+      for (const path of dockerPaths) {
+        try {
+          await execa('open', ['-a', path]);
+          started = true;
+          console.log(`✅ Docker Desktop launch initiated from: ${path}`);
+          break;
+        } catch {
+          // Try next path
+        }
+      }
+      
+      if (!started) {
+        // Last resort - try with just 'Docker'
+        await execa('open', ['-a', 'Docker']);
+      }
+      
+      console.log('💡 Note: First launch may take 2-4 minutes to complete initial setup.');
+      console.log('🔄 The setup will wait for Docker to be ready...');
+      
+      // Give it more time to start launching
+      await new Promise(resolve => setTimeout(resolve, 5000));
     } catch (error) {
       console.warn('Could not auto-start Docker Desktop:', error);
-      throw new Error('Failed to start Docker Desktop. Please start it manually.');
+      console.log('\n📝 Manual steps required:');
+      console.log('   1. Open Docker Desktop from your Applications folder');
+      console.log('   2. Wait for the whale icon to appear in your menu bar');
+      console.log('   3. Run the setup command again\n');
+      throw new Error('Please start Docker Desktop manually and run setup again.');
     }
   }
 
-  private async waitForDockerDaemon(maxAttempts: number = 60): Promise<void> {
-    console.log('Waiting for Docker daemon to start (this may take up to 2 minutes)...');
+  private async waitForDockerDaemon(maxAttempts: number = 120): Promise<void> {
+    console.log('Waiting for Docker daemon to start (this may take up to 4 minutes on first launch)...');
+    
+    let dockerDesktopRunning = false;
+    let lastError: any;
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        await execa('docker', ['system', 'info'], { timeout: 10000 });
-        console.log('Docker daemon is ready!');
-        return;
-      } catch {
-        if (attempt % 10 === 0) {
-          console.log(`Still waiting for Docker daemon... (${attempt}/${maxAttempts})`);
+      // First check if Docker Desktop app is running
+      if (!dockerDesktopRunning) {
+        try {
+          const { stdout } = await execa('pgrep', ['-f', 'Docker Desktop']);
+          if (stdout) {
+            dockerDesktopRunning = true;
+            console.log('Docker Desktop application detected...');
+          }
+        } catch {
+          // Docker Desktop not yet running
         }
+      }
+      
+      // Then check if daemon is responsive
+      try {
+        await execa('docker', ['version'], { timeout: 5000 });
+        console.log('\n✅ Docker daemon is ready!');
+        
+        // Give it a moment to fully initialize
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Verify it's really working
+        await execa('docker', ['ps'], { timeout: 5000 });
+        return;
+      } catch (error) {
+        lastError = error;
+        
+        // Show progress every 10 seconds
+        if (attempt % 5 === 0 && attempt > 0) {
+          const elapsed = Math.round(attempt * 2);
+          const remaining = Math.round((maxAttempts - attempt) * 2);
+          console.log(`⏳ Still waiting for Docker daemon... (${elapsed}s elapsed, max ${remaining}s remaining)`);
+          
+          // After 60 seconds, give helpful hint
+          if (attempt === 30) {
+            console.log('\n💡 Tip: If Docker Desktop is not starting automatically:');
+            console.log('   1. Open Docker Desktop manually from Applications');
+            console.log('   2. Wait for the whale icon to appear in your menu bar');
+            console.log('   3. The setup will continue automatically once Docker is ready\n');
+          }
+        }
+        
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
     
-    throw new Error('Docker daemon failed to start within the timeout period. Please start Docker Desktop manually and ensure it is running.');
+    console.log('\n❌ Docker daemon did not start within the expected time.');
+    console.log('\nLast error:', lastError?.message || 'Unknown error');
+    throw new Error('Docker daemon failed to start. Please ensure Docker Desktop is running and try again.');
   }
 
   private async installOnLinux(platform: SetupPlatform): Promise<void> {

@@ -1,6 +1,7 @@
 # Portable UI Testing Framework
 
-The Wundr CLI now includes a powerful, portable UI testing framework that can be used in any repository where `@wundr.io/cli` is installed.
+The Wundr CLI now includes a powerful, portable UI testing framework that can be used in any
+repository where `@wundr.io/cli` is installed.
 
 ## Features
 
@@ -32,6 +33,7 @@ npx wundr test init
 ```
 
 This interactive wizard will:
+
 - Ask for your application's base URL
 - Let you choose which test suites to enable
 - Select browsers to test
@@ -70,6 +72,7 @@ npx wundr test --watch
 ## Bundled Test Suites
 
 ### UI Tests
+
 - **Smoke Tests**: Basic functionality validation
 - **Accessibility Tests**: WCAG compliance checks
 - **Navigation Tests**: Link and routing validation
@@ -77,6 +80,7 @@ npx wundr test --watch
 - **Mobile Tests**: Responsive design validation
 
 ### API Tests
+
 - **Health Checks**: Endpoint availability
 - **Response Validation**: Content type and structure
 - **Error Handling**: Graceful error responses
@@ -91,70 +95,74 @@ The `wundr-test.config.js` file allows you to customize:
 module.exports = {
   // Base URL of your application
   baseURL: 'http://localhost:3000',
-  
+
   // Test execution settings
   timeout: 30000,
   retries: 2,
   workers: 4,
-  
+
   // Browser settings
   headless: true,
-  
+
   // Custom selectors for your app
   selectors: {
     navigation: 'nav, [role="navigation"]',
     mainContent: 'main, [role="main"]',
     footer: 'footer',
     searchInput: 'input[type="search"]',
-    loginButton: 'button[type="submit"]'
+    loginButton: 'button[type="submit"]',
   },
-  
+
   // API configuration
   api: {
     baseURL: 'http://localhost:3000/api',
     headers: {
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   },
-  
+
   // Test data
   testData: {
     validUser: {
       username: 'test@example.com',
-      password: 'password123'
+      password: 'password123',
     },
-    searchTerms: ['dashboard', 'settings', 'profile']
+    searchTerms: ['dashboard', 'settings', 'profile'],
   },
-  
+
   // Specific test suites to run
   testSuites: {
     smoke: true,
     accessibility: true,
     api: true,
     performance: false,
-    security: false
-  }
+    security: false,
+  },
 };
 ```
 
 ## Use Cases
 
 ### 1. Testing Wundr Dashboard
+
 ```bash
 npx wundr test --base-url http://localhost:3001 --type ui
 ```
 
 ### 2. Testing Web Client
+
 ```bash
 npx wundr test --base-url http://localhost:3000 --type ui
 ```
 
 ### 3. Testing API Endpoints
+
 ```bash
 npx wundr test --base-url http://localhost:3000 --type api
 ```
 
 ### 4. CI/CD Pipeline Testing
+
 ```yaml
 # .github/workflows/wundr-tests.yml
 name: Wundr Tests
@@ -163,11 +171,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-    - run: npm ci
-    - run: npx playwright install --with-deps
-    - run: npm run test:wundr
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npm run test:wundr
 ```
 
 ## Benefits
@@ -222,32 +230,32 @@ test('custom business logic', async ({ page }) => {
 // wundr-test.config.js
 module.exports = {
   // ... base config ...
-  
+
   // Add custom test patterns
-  testMatch: [
-    '**/*.spec.ts',
-    'my-tests/**/*.test.js'
-  ],
-  
+  testMatch: ['**/*.spec.ts', 'my-tests/**/*.test.js'],
+
   // Custom reporters
   reporters: [
     ['html', { outputFolder: 'custom-reports' }],
     ['json', { outputFile: 'results.json' }],
-    ['junit', { outputFile: 'junit.xml' }]
-  ]
+    ['junit', { outputFile: 'junit.xml' }],
+  ],
 };
 ```
 
 ## Troubleshooting
 
 ### Tests fail with "No tests found"
+
 - Ensure Playwright is installed: `npm install -D @playwright/test`
 - Check that test suites are enabled in `wundr-test.config.js`
 
 ### Browser not launching
+
 - Install browser dependencies: `npx playwright install --with-deps`
 
 ### Custom selectors not working
+
 - Update the `selectors` section in `wundr-test.config.js`
 - Use browser DevTools to find correct selectors
 

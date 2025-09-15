@@ -29,6 +29,7 @@ import { PermissionsInstaller } from './permissions-installer';
 import { DockerInstaller } from './docker-installer';
 import { PythonInstaller } from './python-installer';
 import ClaudeInstaller from './claude-installer';
+import { VSCodeInstaller } from './vscode-installer';
 
 // Enhanced interfaces for the real orchestrator
 interface InstallationState {
@@ -92,7 +93,7 @@ export class RealSetupOrchestrator extends EventEmitter {
     // Core tools installers (to be implemented)
     this.installers.set('git', this.createCoreToolInstaller('git', 'Git version control'));
     this.installers.set('node', this.createCoreToolInstaller('node', 'Node.js runtime'));
-    this.installers.set('vscode', this.createCoreToolInstaller('code', 'Visual Studio Code editor'));
+    this.installers.set('vscode', new VSCodeInstaller());
   }
 
   /**
