@@ -134,7 +134,7 @@ export function RecentActivity() {
     }
 
     // Subscribe to real-time data updates
-    const unsubscribe = realtimeStore.subscribe(messageHandler)
+    const unsubscribe = realtimeStore.subscribeToMessages(messageHandler)
 
     return unsubscribe
   }, [])

@@ -221,6 +221,7 @@ export class HomebrewInstaller implements BaseInstaller {
       'cmake', 
       'gcc',
       'python@3.12',
+      'python-setuptools',
       'go',
       'rust',
       'sqlite',
