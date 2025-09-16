@@ -17,8 +17,7 @@ import {
   ProjectType,
   TemplateConfig,
   TemplateContext,
-  ValidationResult,
-  WundrConfig
+  ValidationResult
 } from './types';
 import { frontendNextTemplate } from './templates/frontend-next';
 import { backendFastifyTemplate } from './templates/backend-fastify';
@@ -116,6 +115,7 @@ export class ProjectTemplateManager {
       await this.createGovernanceBaseline(projectPath);
       spinner.succeed('Governance baseline created');
       
+      /* eslint-disable no-console */
       // Success message
       console.log(chalk.green('\\n✨ Project created successfully!'));
       console.log(chalk.cyan(`\\n📁 Project location: ${projectPath}`));
@@ -125,6 +125,7 @@ export class ProjectTemplateManager {
       console.log(chalk.gray('\\n📊 Check governance:'));
       console.log(chalk.gray('   wundr analyze'));
       console.log(chalk.gray('   wundr govern check'));
+      /* eslint-enable no-console */
       
     } catch (error) {
       spinner.fail('Project creation failed');
@@ -163,8 +164,8 @@ export class ProjectTemplateManager {
         type: 'list',
         name: 'framework',
         message: 'Framework:',
-        choices: (answers: any) => this.getFrameworkChoices(answers.type),
-        when: (answers: any) => ['frontend', 'backend', 'fullstack'].includes(answers.type)
+        choices: (answers: Record<string, unknown>) => this.getFrameworkChoices((answers as { type: ProjectType }).type),
+        when: (answers: Record<string, unknown>) => ['frontend', 'backend', 'fullstack'].includes((answers as { type: ProjectType }).type)
       },
       {
         type: 'input',
@@ -216,7 +217,7 @@ export class ProjectTemplateManager {
       }
     ]);
     
-    await this.createProject(answers as ProjectOptions);
+    await this.createProject(answers as unknown as ProjectOptions);
   }
   
   /**
@@ -267,7 +268,7 @@ export class ProjectTemplateManager {
   /**
    * Get framework choices based on project type
    */
-  private getFrameworkChoices(type: ProjectType): any[] {
+  private getFrameworkChoices(type: ProjectType): Array<{ name: string; value: string }> {
     switch (type) {
       case 'frontend':
         return [
@@ -449,13 +450,17 @@ export class ProjectTemplateManager {
     try {
       execSync('pnpm --version', { stdio: 'ignore' });
       return 'pnpm';
-    } catch {}
+    } catch {
+      // Package manager not available
+    }
     
     // Check for yarn
     try {
       execSync('yarn --version', { stdio: 'ignore' });
       return 'yarn';
-    } catch {}
+    } catch {
+      // Package manager not available
+    }
     
     // Default to npm
     return 'npm';
@@ -465,13 +470,15 @@ export class ProjectTemplateManager {
    * List available templates
    */
   listTemplates(): void {
+    /* eslint-disable no-console */
     console.log(chalk.cyan('\\n📦 Available Templates:\\n'));
-    
+
     for (const [key, template] of this.templates) {
       console.log(chalk.yellow(`  ${template.displayName}`));
       console.log(chalk.gray(`    Key: ${key}`));
       console.log(chalk.gray(`    ${template.description}\\n`));
     }
+    /* eslint-enable no-console */
   }
 }
 

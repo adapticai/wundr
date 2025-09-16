@@ -21,7 +21,7 @@ export function deepClone<T>(obj: T): T {
   if (typeof obj === 'object') {
     const clonedObj = {} as T;
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         clonedObj[key] = deepClone(obj[key]);
       }
     }
@@ -34,6 +34,7 @@ export function deepClone<T>(obj: T): T {
 /**
  * Deep merges multiple objects
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function deepMerge<T extends Record<string, any>>(...objects: T[]): T {
   if (objects.length === 0) {
     return {} as T;
@@ -48,10 +49,11 @@ export function deepMerge<T extends Record<string, any>>(...objects: T[]): T {
   for (const obj of objects) {
     if (obj && typeof obj === 'object') {
       for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           const value = obj[key];
           
           if (value && typeof value === 'object' && !Array.isArray(value)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             target[key] = deepMerge(target[key] || {} as any, value);
           } else {
             target[key] = deepClone(value);
@@ -67,7 +69,9 @@ export function deepMerge<T extends Record<string, any>>(...objects: T[]): T {
 /**
  * Gets a nested property value using dot notation
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getNestedValue<T = any>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<string, any>,
   path: string,
   defaultValue?: T
@@ -90,8 +94,10 @@ export function getNestedValue<T = any>(
  * Sets a nested property value using dot notation
  */
 export function setNestedValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<string, any>,
   path: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
 ): void {
   const keys = path.split('.');
@@ -111,6 +117,7 @@ export function setNestedValue(
 /**
  * Removes empty values from an object
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function removeEmpty<T extends Record<string, any>>(
   obj: T,
   options: {
@@ -154,7 +161,8 @@ export function removeEmpty<T extends Record<string, any>>(
 
     if (!shouldRemove) {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
-        const cleaned = removeEmpty(value, options);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cleaned = removeEmpty(value as Record<string, any>, options);
         if (Object.keys(cleaned).length > 0 || !removeEmptyObjects) {
           result[key as keyof T] = cleaned as T[keyof T];
         }
@@ -170,6 +178,7 @@ export function removeEmpty<T extends Record<string, any>>(
 /**
  * Picks specific properties from an object
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function pick<T extends Record<string, any>, K extends keyof T>(
   obj: T,
   keys: K[]
@@ -195,6 +204,7 @@ export function omit<T, K extends keyof T>(
   const result = { ...obj } as Omit<T, K>;
   
   for (const key of keys) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (result as any)[key];
   }
   
@@ -205,16 +215,20 @@ export function omit<T, K extends keyof T>(
  * Flattens a nested object into a flat object with dot notation keys
  */
 export function flatten(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<string, any>,
   prefix = '',
   separator = '.'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const flattened: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(obj)) {
     const newKey = prefix ? `${prefix}${separator}${key}` : key;
 
     if (value && typeof value === 'object' && !Array.isArray(value)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Object.assign(flattened, flatten(value as Record<string, any>, newKey, separator));
     } else {
       flattened[newKey] = value;
@@ -228,9 +242,12 @@ export function flatten(
  * Unflattens a flat object with dot notation keys into a nested object
  */
 export function unflatten(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<string, any>,
   separator = '.'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(obj)) {

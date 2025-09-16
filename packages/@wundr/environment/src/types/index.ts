@@ -20,7 +20,7 @@ export interface ToolConfiguration {
   version?: string;
   required: boolean;
   installer: InstallerType;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   dependencies?: string[];
   platform?: Platform[];
   profile?: ProfileType[];

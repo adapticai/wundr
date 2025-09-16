@@ -63,11 +63,11 @@ export abstract class BaseInstaller {
     try {
       const { stdout, stderr } = await execAsync(command);
       return { success: true, stdout: stdout.toString(), stderr: stderr.toString() };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
-        stdout: error.stdout?.toString() || '',
-        stderr: error.stderr?.toString() || error.message
+        stdout: (error as { stdout?: Buffer }).stdout?.toString() || '',
+        stderr: (error as { stderr?: Buffer }).stderr?.toString() || String(error)
       };
     }
   }

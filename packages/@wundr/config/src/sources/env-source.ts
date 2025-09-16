@@ -3,7 +3,7 @@
  */
 
 import { ConfigSource } from '../types/index.js';
-import { getLogger, getNestedValue, setNestedValue } from '@wundr.io/core';
+import { getLogger, setNestedValue } from '@wundr.io/core';
 
 const logger = getLogger();
 

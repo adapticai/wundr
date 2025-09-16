@@ -144,7 +144,7 @@ export function isEmpty(value: unknown): boolean {
 /**
  * Checks if a value is a plain object
  */
-export function isPlainObject(value: unknown): value is Record<string, any> {
+export function isPlainObject(value: unknown): value is Record<string, unknown> {
   return (
     value !== null &&
     typeof value === 'object' &&
@@ -202,7 +202,7 @@ export function isPromise(value: unknown): value is Promise<unknown> {
     value !== null &&
     typeof value === 'object' &&
     'then' in value &&
-    typeof (value as any).then === 'function'
+    typeof (value as { then?: unknown }).then === 'function'
   );
 }
 

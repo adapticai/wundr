@@ -173,23 +173,23 @@ export class ToolManager {
   /**
    * Configure VS Code extensions and settings
    */
-  private async configureVSCode(config?: Record<string, any>): Promise<void> {
+  private async configureVSCode(config?: Record<string, unknown>): Promise<void> {
     if (!config) return;
 
     const vscodeInstaller = this.installers.get('manual') as ManualInstaller;
-    if (vscodeInstaller && config.extensions) {
-      await vscodeInstaller.installVSCodeExtensions(config.extensions);
+    if (vscodeInstaller && config.extensions && Array.isArray(config.extensions)) {
+      await vscodeInstaller.installVSCodeExtensions(config.extensions as string[]);
     }
 
-    if (config.settings) {
-      await vscodeInstaller.applyVSCodeSettings(config.settings);
+    if (config.settings && typeof config.settings === 'object' && config.settings !== null) {
+      await vscodeInstaller.applyVSCodeSettings(config.settings as Record<string, unknown>);
     }
   }
 
   /**
    * Configure Git settings
    */
-  private async configureGit(config?: Record<string, any>): Promise<void> {
+  private async configureGit(config?: Record<string, unknown>): Promise<void> {
     if (!config) return;
     // Git configuration will be handled by specific installer
   }
@@ -197,7 +197,7 @@ export class ToolManager {
   /**
    * Configure Claude Code
    */
-  private async configureClaudeCode(config?: Record<string, any>): Promise<void> {
+  private async configureClaudeCode(config?: Record<string, unknown>): Promise<void> {
     if (!config) return;
     // Claude Code configuration
   }

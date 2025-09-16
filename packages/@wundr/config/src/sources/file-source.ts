@@ -27,7 +27,7 @@ export abstract class FileConfigSource implements ConfigSource {
       const content = await fs.readFile(this.filePath, 'utf-8');
       return this.parseContent(content);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if ((error as { code?: string }).code === 'ENOENT') {
         logger.debug(`Configuration file not found: ${this.filePath}`);
         return {};
       }

@@ -86,25 +86,32 @@ export function createTimer(): Timer {
  */
 export async function measureTime<T>(
   fn: () => T | Promise<T>,
-  label?: string
+  options: {
+    label?: string;
+    logToConsole?: boolean;
+  } = {}
 ): Promise<{ result: T; duration: number }> {
+  const { label, logToConsole = false } = options;
   const timer = createTimer();
-  
-  if (label) {
+
+  if (label && logToConsole && typeof console !== 'undefined' && console.time) {
+    // eslint-disable-next-line no-console
     console.time(label);
   }
-  
+
   try {
     const result = await fn();
     const duration = timer.stop();
-    
-    if (label) {
+
+    if (label && logToConsole && typeof console !== 'undefined' && console.timeEnd) {
+      // eslint-disable-next-line no-console
       console.timeEnd(label);
     }
-    
+
     return { result, duration };
   } catch (error) {
-    if (label) {
+    if (label && logToConsole && typeof console !== 'undefined' && console.timeEnd) {
+      // eslint-disable-next-line no-console
       console.timeEnd(label);
     }
     throw error;
@@ -131,8 +138,8 @@ export function getMemoryUsage(): {
   }
   
   // Fallback for browser environments
-  if (typeof performance !== 'undefined' && (performance as any).memory) {
-    const mem = (performance as any).memory;
+  if (typeof performance !== 'undefined' && 'memory' in performance) {
+    const mem = (performance as { memory: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory;
     return {
       used: mem.usedJSHeapSize,
       total: mem.totalJSHeapSize,
@@ -214,6 +221,7 @@ export class LRUCache<K, V> {
 /**
  * Memoization decorator for caching function results
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function memoize<T extends (...args: any[]) => any>(
   fn: T,
   options: {
@@ -252,12 +260,14 @@ export function memoize<T extends (...args: any[]) => any>(
  * Performance benchmarking suite
  */
 export class Benchmark {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private tests: Array<{ name: string; fn: () => any | Promise<any> }> = [];
   private results: Array<{ name: string; duration: number; error?: Error }> = [];
 
   /**
    * Add a test to the benchmark suite
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   add(name: string, fn: () => any | Promise<any>): this {
     this.tests.push({ name, fn });
     return this;
@@ -308,12 +318,15 @@ export class Benchmark {
   /**
    * Print results to console
    */
-  printResults(): void {
-    console.table(this.getResults().map(result => ({
-      Name: result.name,
-      'Duration (ms)': result.duration.toFixed(2),
-      Error: result.error ? result.error.message : 'None',
-    })));
+  printResults(useConsole = false): void {
+    if (useConsole && typeof console !== 'undefined' && console.table) {
+      // eslint-disable-next-line no-console
+      console.table(this.getResults().map(result => ({
+        Name: result.name,
+        'Duration (ms)': result.duration.toFixed(2),
+        Error: result.error ? result.error.message : 'None',
+      })));
+    }
   }
 }
 

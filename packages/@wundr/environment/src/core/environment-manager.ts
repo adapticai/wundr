@@ -83,7 +83,7 @@ export class EnvironmentManager {
       logger.info('Environment configuration loaded');
       return this.config;
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      if ((error as { code?: string }).code !== 'ENOENT') {
         logger.error('Failed to load configuration', error);
       }
       return null;

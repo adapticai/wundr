@@ -208,10 +208,12 @@ function isVowel(char: string): boolean {
  */
 export function template(
   str: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>,
   options: {
     prefix?: string;
     suffix?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transform?: (key: string, value: any) => string;
   } = {}
 ): string {

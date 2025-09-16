@@ -2,7 +2,7 @@
  * Configuration manager implementation
  */
 
-import { EventEmitter } from 'events';
+// EventEmitter not used - removed
 import { 
   getLogger, 
   getEventBus, 
@@ -286,7 +286,6 @@ export class WundrConfigManager implements ConfigManager {
       return;
     }
 
-    const source = this.sources[index];
     this.sources.splice(index, 1);
     
     // Remove watcher

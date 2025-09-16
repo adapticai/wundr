@@ -2,6 +2,8 @@
  * Logging utilities
  */
 
+/* eslint-disable no-console */
+
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
@@ -9,10 +11,10 @@ import { homedir } from 'os';
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export interface Logger {
-  debug(message: string, ...args: any[]): void;
-  info(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  error(message: string, ...args: any[]): void;
+  debug(message: string, ...args: unknown[]): void;
+  info(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
 }
 
 class WundrLogger implements Logger {
@@ -30,36 +32,42 @@ class WundrLogger implements Logger {
     this.logFile = join(logDir, `environment-${new Date().toISOString().split('T')[0]}.log`);
   }
 
-  debug(message: string, ...args: any[]): void {
+  debug(message: string, ...args: unknown[]): void {
     this.log('debug', message, args);
   }
 
-  info(message: string, ...args: any[]): void {
+  info(message: string, ...args: unknown[]): void {
     this.log('info', message, args);
   }
 
-  warn(message: string, ...args: any[]): void {
+  warn(message: string, ...args: unknown[]): void {
     this.log('warn', message, args);
   }
 
-  error(message: string, ...args: any[]): void {
+  error(message: string, ...args: unknown[]): void {
     this.log('error', message, args);
   }
 
-  private log(level: LogLevel, message: string, args: any[]): void {
+  private log(level: LogLevel, message: string, args: unknown[]): void {
     const timestamp = new Date().toISOString();
     const formattedArgs = args.length > 0 ? ` ${JSON.stringify(args)}` : '';
     const logEntry = `[${timestamp}] ${level.toUpperCase()} [${this.component}] ${message}${formattedArgs}\\n`;
     
-    // Console output with colors
+    // Console output with colors - legitimate logging for CLI tool
     const color = this.getColor(level);
-    console.log(`${color}[${this.component}]${this.resetColor()} ${message}`, ...args);
-    
+    if (typeof console !== 'undefined' && console.log) {
+      // eslint-disable-next-line no-console -- legitimate logging output for CLI tool
+      console.log(`${color}[${this.component}]${this.resetColor()} ${message}`, ...args);
+    }
+
     // File output
     try {
       writeFileSync(this.logFile, logEntry, { flag: 'a' });
     } catch (error) {
-      console.error('Failed to write to log file:', error);
+      if (typeof console !== 'undefined' && console.error) {
+        // eslint-disable-next-line no-console -- legitimate error logging for CLI tool
+        console.error('Failed to write to log file:', error);
+      }
     }
   }
 

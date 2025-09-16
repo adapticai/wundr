@@ -430,7 +430,7 @@ export class QuickstartInstaller {
     }
   }
 
-  private async executeCommand(command: string, options: any = {}): Promise<string> {
+  private async executeCommand(command: string, options: Record<string, unknown> = {}): Promise<string> {
     return new Promise((resolve, reject) => {
       const parts = command.split(' ');
       const cmd = parts[0];
@@ -445,20 +445,20 @@ export class QuickstartInstaller {
         stdio: 'pipe',
         timeout: this.options.timeout,
         ...options
-      }) as any;
+      });
 
       let stdout = '';
       let stderr = '';
 
-      childProcess.stdout?.on('data', (data: any) => {
+      childProcess.stdout?.on('data', (data: Buffer) => {
         stdout += data.toString();
       });
 
-      childProcess.stderr?.on('data', (data: any) => {
+      childProcess.stderr?.on('data', (data: Buffer) => {
         stderr += data.toString();
       });
 
-      childProcess.on('close', (code: any) => {
+      childProcess.on('close', (code: number | null) => {
         if (code === 0) {
           resolve(stdout);
         } else {

@@ -19,7 +19,7 @@ export class ManualInstaller extends BaseInstaller {
       case 'homebrew':
         return await this.installHomebrew();
       case 'vscode-extensions':
-        return await this.installVSCodeExtensions(tool.config?.extensions || []);
+        return await this.installVSCodeExtensions((tool.config?.extensions && Array.isArray(tool.config.extensions) ? tool.config.extensions : []) as string[]);
       default:
         return {
           success: false,
@@ -35,7 +35,7 @@ export class ManualInstaller extends BaseInstaller {
       case 'homebrew':
         return await this.validateHomebrew();
       case 'vscode-extensions':
-        return await this.validateVSCodeExtensions(tool.config?.extensions || []);
+        return await this.validateVSCodeExtensions((tool.config?.extensions && Array.isArray(tool.config.extensions) ? tool.config.extensions : []) as string[]);
       default:
         return {
           valid: false,
@@ -203,7 +203,7 @@ export class ManualInstaller extends BaseInstaller {
   /**
    * Apply VS Code settings
    */
-  async applyVSCodeSettings(settings: Record<string, any>): Promise<void> {
+  async applyVSCodeSettings(settings: Record<string, unknown>): Promise<void> {
     const settingsPath = join(homedir(), 'Library', 'Application Support', 'Code', 'User', 'settings.json');
     
     try {

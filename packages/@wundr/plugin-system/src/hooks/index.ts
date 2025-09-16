@@ -6,8 +6,6 @@ import { getLogger, getEventBus } from '@wundr.io/core';
 import {
   PluginHook,
   PluginHookRegistry,
-  HookExecutionContext,
-  HookResult,
   PLUGIN_EVENTS,
 } from '../types/index.js';
 

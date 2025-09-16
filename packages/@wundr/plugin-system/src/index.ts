@@ -2,8 +2,8 @@
  * @wundr/plugin-system - Plugin system and base interfaces for the Wundr platform
  */
 
-// Types
-export * from './types/index.js';
+// Types (selective exports to avoid unused warnings)
+export type { PluginMetadata, PluginContext, PluginHook, PluginHookRegistry, PluginModule } from './types/index.js';
 
 // Hook system
 export * from './hooks/index.js';

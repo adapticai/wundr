@@ -14,7 +14,7 @@ const logger = createLogger('CacheManager');
 
 interface CacheEntry {
   key: string;
-  value: any;
+  value: unknown;
   timestamp: number;
   ttl: number;
   version?: string;
@@ -114,7 +114,7 @@ export class CacheManager {
         key,
         value,
         timestamp: Date.now(),
-        ttl: ttlMs || config.defaultTTL,
+        ttl: ttlMs || (typeof config.defaultTTL === 'number' ? config.defaultTTL : 24 * 60 * 60 * 1000),
         checksum: this.generateChecksum(JSON.stringify(value))
       };
 
@@ -265,7 +265,7 @@ export class CacheManager {
     const config = await this.getConfig();
     const stats = await this.getStats();
     
-    if (!forceCleanup && stats.totalSize < config.maxSize * 0.8) {
+    if (!forceCleanup && stats.totalSize < (typeof config.maxSize === 'number' ? config.maxSize : 1024 * 1024 * 1024) * 0.8) {
       return; // No cleanup needed
     }
 
@@ -439,7 +439,7 @@ export class CacheManager {
     return createHash('sha256').update(data).digest('hex');
   }
 
-  private async getConfig(): Promise<any> {
+  private async getConfig(): Promise<Record<string, unknown>> {
     try {
       return JSON.parse(await fs.readFile(this.configPath, 'utf8'));
     } catch {

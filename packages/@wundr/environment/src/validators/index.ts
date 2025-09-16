@@ -2,7 +2,7 @@
  * Environment validation system
  */
 
-import { EnvironmentConfig, ValidationResult, HealthCheckResult, SystemInfo } from '../types';
+import { EnvironmentConfig, ValidationResult, HealthCheckResult, SystemInfo, ToolConfiguration } from '../types';
 import { ToolManager } from '../core/tool-manager';
 import { getSystemInfo } from '../utils/system';
 import { createLogger } from '../utils/logger';
@@ -240,7 +240,7 @@ export class EnvironmentValidator {
   /**
    * Detect circular dependencies in tool configuration
    */
-  private detectCircularDependencies(tools: any[]): string[] {
+  private detectCircularDependencies(tools: ToolConfiguration[]): string[] {
     const visited = new Set<string>();
     const visiting = new Set<string>();
     const circularPath: string[] = [];
@@ -320,8 +320,8 @@ export class EnvironmentValidator {
     try {
       const { stdout } = await execAsync(command);
       return { success: true, output: stdout.toString().trim() };
-    } catch (error: any) {
-      return { success: false, output: error.message };
+    } catch (error: unknown) {
+      return { success: false, output: String(error) };
     }
   }
 }

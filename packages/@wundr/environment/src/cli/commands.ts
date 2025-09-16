@@ -2,12 +2,14 @@
  * CLI command implementations for Wundr Environment Manager
  */
 
+/* eslint-disable no-console */
+
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { EnvironmentManager } from '../core/environment-manager';
 import { QuickstartInstaller } from '../installers/quickstart-installer';
-import { ProfileType } from '../types';
+import { ProfileType, EnvironmentConfig } from '../types';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('CLI');
@@ -56,26 +58,41 @@ export const quickstartCommand = new Command('quickstart')
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       spinner.succeed(`✅ Environment setup completed in ${elapsed}s!`);
       
+      // eslint-disable-next-line no-console
       console.log(chalk.green.bold('\n🎉 Welcome to your optimized development environment!'));
+      // eslint-disable-next-line no-console
       console.log(chalk.cyan('\n📊 Setup Summary:'));
+      // eslint-disable-next-line no-console
       console.log(`   ⏱️  Time: ${elapsed} seconds`);
+      // eslint-disable-next-line no-console
       console.log(`   🎯 Target: <300 seconds (${Number(elapsed) < 300 ? '✅ PASSED' : '❌ EXCEEDED'})`);
+      // eslint-disable-next-line no-console
       console.log(`   🔧 Profile: ${options.profile}`);
+      // eslint-disable-next-line no-console
       console.log(`   🤖 AI Agents: ${options.skipAi ? 'Skipped' : 'Enabled'}`);
-      
+
+      // eslint-disable-next-line no-console
       console.log(chalk.yellow('\n🚀 Quick Commands:'));
+      // eslint-disable-next-line no-console
       console.log('   wundr-env validate     # Check environment health');
+      // eslint-disable-next-line no-console
       console.log('   wundr-env status       # Show installation status');
+      // eslint-disable-next-line no-console
       console.log('   claude-flow quickstart # Start AI development');
       
     } catch (error) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       spinner.fail(`❌ Setup failed after ${elapsed}s`);
       logger.error('Quickstart failed:', error);
+      // eslint-disable-next-line no-console
       console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
+      // eslint-disable-next-line no-console
       console.log(chalk.yellow('\n💡 Try these recovery options:'));
+      // eslint-disable-next-line no-console
       console.log('   wundr-env quickstart --preset minimal    # Minimal setup');
+      // eslint-disable-next-line no-console
       console.log('   wundr-env quickstart --skip-ai           # Skip AI components');
+      // eslint-disable-next-line no-console
       console.log('   wundr-env install --profile basic        # Full traditional setup');
       process.exit(1);
     }
@@ -115,10 +132,12 @@ export const initCommand = new Command('init')
       
       spinner.succeed('Environment initialized successfully');
       
+      // eslint-disable-next-line no-console
       console.log(chalk.cyan('\\nEnvironment Configuration:'));
       console.log(`Profile: ${chalk.yellow(config.profile)}`);
       console.log(`Platform: ${chalk.yellow(config.platform)}`);
       console.log(`Tools: ${chalk.yellow(config.tools.length)} configured`);
+      // eslint-disable-next-line no-console
       console.log(`Development Path: ${chalk.yellow(config.paths.development)}`);
       
     } catch (error) {
@@ -290,7 +309,7 @@ export const updateCommand = new Command('update')
         throw new Error('No environment configuration found. Run "wundr-env init" first.');
       }
       
-      const updates: any = {};
+      const updates: Partial<EnvironmentConfig> = {};
       
       if (options.profile) {
         if (!['human', 'ai-agent', 'ci-runner'].includes(options.profile)) {

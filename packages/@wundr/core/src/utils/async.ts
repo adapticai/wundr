@@ -18,7 +18,7 @@ export async function retry<T>(
     attempts?: number;
     delay?: number;
     backoff?: 'linear' | 'exponential';
-    shouldRetry?: (error: any) => boolean;
+    shouldRetry?: (error: unknown) => boolean;
   } = {}
 ): Promise<T> {
   const {
@@ -28,7 +28,7 @@ export async function retry<T>(
     shouldRetry = () => true,
   } = options;
 
-  let lastError: any;
+  let lastError: unknown;
 
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
@@ -130,11 +130,12 @@ export async function processWithConcurrency<T, R>(
 /**
  * Creates a debounced version of an async function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   delay: number
 ): T {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: ReturnType<typeof setTimeout>;
   
   return ((...args: Parameters<T>) => {
     return new Promise<Awaited<ReturnType<T>>>((resolve, reject) => {
@@ -154,12 +155,13 @@ export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
 /**
  * Creates a throttled version of an async function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function throttleAsync<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   interval: number
 ): T {
   let lastCall = 0;
-  let timeout: NodeJS.Timeout;
+  let timeout: ReturnType<typeof setTimeout>;
   
   return ((...args: Parameters<T>) => {
     return new Promise<Awaited<ReturnType<T>>>((resolve, reject) => {
