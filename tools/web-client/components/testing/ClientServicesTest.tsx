@@ -76,22 +76,22 @@ export default function ClientServicesTest() {
       const results = await runClientServiceTests(services);
 
       // Group results by test type
-      const instantiationTests = results.filter(r => r.name.includes('instantiation') || r.name.includes('Health check'));
-      const validationTests = results.filter(r => r.name.includes('validation') || r.name.includes('Parameter'));
+      const instantiationTests = results.filter((r: ServiceTestResult) => r.name.includes('instantiation') || r.name.includes('Health check'));
+      const validationTests = results.filter((r: ServiceTestResult) => r.name.includes('validation') || r.name.includes('Parameter'));
 
       setTestResults({
         browserSafe,
         instantiation: {
-          success: instantiationTests.length > 0 && instantiationTests.every(t => t.status === 'passed'),
+          success: instantiationTests.length > 0 && instantiationTests.every((t: ServiceTestResult) => t.status === 'passed'),
           errors: instantiationTests
-            .filter(t => t.status === 'failed')
-            .map(t => t.error?.message || `${t.name} failed`)
+            .filter((t: ServiceTestResult) => t.status === 'failed')
+            .map((t: ServiceTestResult) => t.error?.message || `${t.name} failed`)
         },
         validation: {
-          success: validationTests.length > 0 && validationTests.every(t => t.status === 'passed'),
+          success: validationTests.length > 0 && validationTests.every((t: ServiceTestResult) => t.status === 'passed'),
           errors: validationTests
-            .filter(t => t.status === 'failed')
-            .map(t => t.error?.message || `${t.name} failed`)
+            .filter((t: ServiceTestResult) => t.status === 'failed')
+            .map((t: ServiceTestResult) => t.error?.message || `${t.name} failed`)
         },
       });
       
