@@ -25,7 +25,7 @@ export interface AnalysisEntity {
   dependencies: string[]
   complexity: number
   size: number
-  lastModified: string
+  lastModified: string | Date
   issues: AnalysisIssue[]
   metrics: {
     maintainability: number

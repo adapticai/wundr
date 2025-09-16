@@ -10,9 +10,9 @@ import {
   ReportFilters,
   ExportFormat,
   HistoricalReport,
-  CompleteAnalysisData,
   ReportContent,
 } from '../../types/reports/index';
+import { CompleteAnalysisData, AnalysisRecommendation } from '../../types/data';
 import { ReportService } from '../../lib/services/report-service';
 
 // Enhanced report templates with real analysis capabilities
@@ -452,8 +452,16 @@ export function useReports() {
       
       // Parse analysis data using ReportService
       const normalizedData = await ReportService.parseAnalysisFile(file, 'auto', 'analysis');
-      
+
       // Convert to CompleteAnalysisData format
+      const issuesArray = (normalizedData as any).issues || [];
+      const recommendationsArray = (normalizedData as any).recommendations || [];
+      const summaryData = (normalizedData as any).summary || {
+        totalItems: 0,
+        successCount: 0,
+        errorCount: 0
+      };
+
       const analysisData: CompleteAnalysisData = {
         metadata: {
           version: '1.0.0',
@@ -472,6 +480,8 @@ export function useReports() {
         duplicates: [],
         circularDependencies: [],
         securityIssues: [],
+        issues: issuesArray,
+        summary: summaryData,
         metrics: {
           overview: {
             totalFiles: 1,
@@ -487,7 +497,13 @@ export function useReports() {
               rating: 'A'
             },
             duplicateLines: 0,
-            duplicateRatio: 0
+            duplicateRatio: 0,
+            testCoverage: {
+              lines: 0,
+              functions: 0,
+              branches: 0,
+              statements: 0
+            }
           },
           complexity: {
             average: 1,
@@ -500,16 +516,16 @@ export function useReports() {
             }
           },
           issues: {
-            total: normalizedData.issues.length,
-            byType: normalizedData.issues.reduce((acc, issue) => {
+            total: issuesArray.length,
+            byType: issuesArray.reduce((acc: Record<string, number>, issue: any) => {
               acc[issue.category] = (acc[issue.category] || 0) + 1;
               return acc;
             }, {} as Record<string, number>),
             bySeverity: {
-              critical: normalizedData.issues.filter(i => i.severity === 'critical').length,
-              high: normalizedData.issues.filter(i => i.severity === 'high').length,
-              medium: normalizedData.issues.filter(i => i.severity === 'medium').length,
-              low: normalizedData.issues.filter(i => i.severity === 'low').length
+              critical: issuesArray.filter((i: any) => i.severity === 'critical').length,
+              high: issuesArray.filter((i: any) => i.severity === 'high').length,
+              medium: issuesArray.filter((i: any) => i.severity === 'medium').length,
+              low: issuesArray.filter((i: any) => i.severity === 'low').length
             }
           },
           dependencies: {
@@ -520,30 +536,24 @@ export function useReports() {
             vulnerable: 0
           }
         },
-        recommendations: normalizedData.recommendations.map((rec, index) => ({
+        recommendations: recommendationsArray.map((rec: any, index: number) => ({
           id: rec.id || `rec-${index}`,
           title: rec.title,
           description: rec.description,
-          category: 'maintainability' as const,
+          type: rec.type || 'general',
+          category: 'Maintainability' as const,
           priority: 'medium' as const,
-          effort: {
-            level: 'medium' as const,
-            hours: 2,
-            description: 'Estimated effort to implement'
-          },
-          impact: {
-            level: 'medium' as const,
-            metrics: ['maintainability'],
-            description: 'Expected impact on code quality'
-          },
-          affectedFiles: [],
-          implementation: {
-            steps: rec.actionItems || ['Review and implement'],
-            automatable: false,
-            tools: []
-          },
-          references: [],
-          tags: []
+          impact: rec.impact || 'Expected impact on code quality',
+          estimatedEffort: rec.estimatedEffort || '2 hours',
+          suggestion: rec.suggestion,
+          entities: rec.entities || [],
+          status: 'pending' as const,
+          assignedTo: rec.assignedTo,
+          dueDate: rec.dueDate,
+          dependencies: rec.dependencies || [],
+          autoFixAvailable: rec.autoFixAvailable || false,
+          actionItems: rec.actionItems || ['Review and implement'],
+          quickFix: rec.quickFix
         })),
         rawData: {
           dependencies: {},
@@ -572,9 +582,9 @@ export function useReports() {
             { label: 'Success Rate', value: `${((normalizedData.summary.successCount || 0) / Math.max(normalizedData.summary.totalItems || 1, 1) * 100).toFixed(1)}%` }
           ],
           riskAssessment: {
-            level: (normalizedData.summary.errorCount || 0) > 0 ? 'medium' : 'low',
-            factors: normalizedData.issues.map(i => i.message) || [],
-            mitigation: normalizedData.recommendations.map(r => r.title) || []
+            level: (summaryData.errorCount || 0) > 0 ? 'medium' : 'low',
+            factors: issuesArray.map((i: any) => i.message) || [],
+            mitigation: recommendationsArray.map((r: any) => r.title) || []
           }
         },
         sections: [
@@ -584,7 +594,7 @@ export function useReports() {
             content: [
               {
                 type: 'text',
-                content: `This report contains analysis results with ${normalizedData.summary.totalItems || 0} total items analyzed.`
+                content: `This report contains analysis results with ${summaryData.totalItems || 0} total items analyzed.`
               }
             ],
             order: 1
