@@ -578,8 +578,8 @@ export function useReports() {
           keyFindings: ['Analysis completed successfully'],
           recommendations: ['Review generated insights'],
           metrics: [
-            { label: 'Total Items', value: normalizedData.summary.totalItems || 0 },
-            { label: 'Success Rate', value: `${((normalizedData.summary.successCount || 0) / Math.max(normalizedData.summary.totalItems || 1, 1) * 100).toFixed(1)}%` }
+            { label: 'Total Items', value: summaryData.totalItems || 0 },
+            { label: 'Success Rate', value: `${((summaryData.successCount || 0) / Math.max(summaryData.totalItems || 1, 1) * 100).toFixed(1)}%` }
           ],
           riskAssessment: {
             level: (summaryData.errorCount || 0) > 0 ? 'medium' : 'low',

@@ -197,14 +197,8 @@ Each template includes comprehensive documentation and usage examples.
     <DocsLayout currentPage={currentPage}>
       <div className="max-w-6xl space-y-6">
         {/* Search functionality */}
-        <SearchableContent 
+        <SearchableContent
           content={content}
-          onNavigate={(sectionId) => {
-            const element = document.getElementById(sectionId);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-            }
-          }}
         />
 
         {/* Introduction */}

@@ -165,15 +165,8 @@ export default async function GettingStartedPage() {
     <DocsLayout currentPage={currentPage}>
       <div className="max-w-4xl space-y-6">
         {/* Search functionality */}
-        <SearchableContent 
+        <SearchableContent
           content={content}
-          onNavigate={(sectionId) => {
-            // Scroll to section
-            const element = document.getElementById(sectionId);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-            }
-          }}
         />
 
         {/* Main content */}

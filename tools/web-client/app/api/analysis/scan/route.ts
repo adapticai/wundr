@@ -187,8 +187,8 @@ async function validatePaths(inputPaths: string[], projectRoot: string): Promise
 
 // Execute command with timeout and error handling
 async function execCommand(command: string, args: string[], cwd: string, timeout: number = 300000): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    const { spawn } = await import('child_process')
+  const { spawn } = await import('child_process')
+  return new Promise((resolve, reject) => {
     const child = spawn(command, args, { 
       cwd, 
       shell: false,

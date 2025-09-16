@@ -45,6 +45,7 @@ export interface AnalysisIssue {
   effort: 'low' | 'medium' | 'high'
   impact: 'low' | 'medium' | 'high'
   tags: string[]
+  autoFixAvailable: boolean
 }
 
 export interface AnalysisDuplicate {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useGitActivity } from '@/hooks/use-git-activity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -162,9 +162,9 @@ export default function GitDashboardPage() {
   };
 
   // Fetch git info on component mount
-  useState(() => {
+  useEffect(() => {
     fetchGitInfo();
-  });
+  }, []);
 
   // Process contributor statistics
   const contributorStats = useMemo((): ContributorStats[] => {

@@ -13,7 +13,7 @@ interface ConfigFile {
   type: 'json' | 'yaml' | 'yml' | 'js' | 'ts' | 'env' | 'toml'
   size: number
   lastModified: string
-  content?: any
+  content?: Record<string, unknown>
   schema?: ConfigSchema
 }
 
@@ -21,9 +21,9 @@ interface ConfigSchema {
   properties: Record<string, {
     type: 'string' | 'number' | 'boolean' | 'array' | 'object'
     description?: string
-    default?: any
+    default?: unknown
     required?: boolean
-    enum?: any[]
+    enum?: unknown[]
   }>
   required?: string[]
   additionalProperties?: boolean
@@ -47,7 +47,7 @@ interface ConfigTemplate {
   name: string
   description: string
   type: string
-  content: any
+  content: Record<string, unknown>
   schema?: ConfigSchema
   tags?: string[]
 }
@@ -55,7 +55,7 @@ interface ConfigTemplate {
 interface ConfigRequest {
   action: 'list' | 'read' | 'write' | 'validate' | 'template' | 'merge' | 'backup'
   configName?: string
-  content?: any
+  content?: Record<string, unknown>
   templateName?: string
   options?: {
     format?: 'json' | 'yaml' | 'env'

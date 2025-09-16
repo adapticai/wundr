@@ -117,7 +117,8 @@ class AnalysisService {
         category: categories[i % categories.length],
         effort: ['low', 'medium', 'high'][i % 3] as 'low' | 'medium' | 'high',
         impact: ['low', 'medium', 'high'][i % 3] as 'low' | 'medium' | 'high',
-        tags: ['performance', 'security', 'maintainability'].slice(0, Math.floor(Math.random() * 3) + 1)
+        tags: ['performance', 'security', 'maintainability'].slice(0, Math.floor(Math.random() * 3) + 1),
+        autoFixAvailable: Math.random() > 0.5
       })
     }
     

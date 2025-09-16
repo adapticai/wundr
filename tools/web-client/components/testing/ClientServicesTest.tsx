@@ -9,10 +9,7 @@ import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import {
   runClientServiceTests,
   isBrowserSafe,
-  testClientServicesInstantiation,
-  testClientServiceValidation,
   TestResult as ServiceTestResult,
-  TestSuite,
   MockService,
   createMockEndpoint
 } from '@/lib/services/client/test-client-services';
@@ -296,7 +293,7 @@ export default function ClientServicesTest() {
         <Card>
           <CardContent className="p-6">
             <p className="text-center text-muted-foreground">
-              Click "Run Tests" to verify client services are working correctly
+              Click &quot;Run Tests&quot; to verify client services are working correctly
             </p>
           </CardContent>
         </Card>
