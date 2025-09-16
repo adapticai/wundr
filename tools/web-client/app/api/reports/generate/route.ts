@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { reportService } from '@/lib/services/report-service';
-import { ReportTemplateRenderer, ReportTemplate as TemplateEngineTemplate } from '@/lib/report-templates';
+import { ReportService, reportService } from '@/lib/services/report-service';
+import { ReportTemplateRenderer } from '@/lib/templates/report-template-renderer';
+import { ReportTemplate as TemplateEngineTemplate } from '@/lib/report-templates';
 import {
   CompleteAnalysisData,
   ReportTemplate,
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Normalize analysis data (using parameters as data source)
-    const normalizedData = reportService.normalizeAnalysisData(body.parameters, 'analysis');
+    const normalizedData = ReportService.normalizeAnalysisData(body.parameters);
     
     // Convert template to engine format
     const engineTemplate: TemplateEngineTemplate = {
@@ -131,24 +132,16 @@ export async function POST(request: NextRequest) {
       name: template.name,
       description: template.description,
       type: template.type as TemplateEngineTemplate['type'],
-      sections: (template.sections || []).map(s => ({
-        id: s.id,
-        title: s.title,
-        order: s.order,
-        type: 'text' as const,
-        required: s.enabled,
-        template: `## ${s.title}\n\nContent for ${s.title} section.`
-      })),
-      metadata: {
-        version: '1.0.0',
-        author: 'Wundr Analysis Engine',
-        tags: ['generated', 'api'],
-        lastUpdated: new Date()
-      }
+      version: '1.0.0',
+      category: 'analysis',
+      tags: ['generated', 'api'],
+      template: '<html><body>{{ content }}</body></html>',
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     
     // Generate report content using template renderer
-    const reportContent = ReportTemplateRenderer.renderReport(engineTemplate, normalizedData);
+    const reportContent = await ReportTemplateRenderer.renderReport(engineTemplate.id, normalizedData);
     
     // Additional sections are now handled by the template system
     const sectionsData: any[] = [];

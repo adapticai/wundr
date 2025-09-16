@@ -2,22 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const scriptService = (await import('@/lib/services/script/ScriptRunnerService')).default;
     type ScriptCategory = import('@/lib/services/script/ScriptRunnerService').ScriptCategory;
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
     // Valid script categories
     const validCategories: string[] = [
-      'system', 'development', 'testing', 'deployment', 
-      'maintenance', 'analysis', 'utility', 'security', 'monitoring'
+      'automation', 'testing', 'deployment', 'monitoring',
+      'maintenance', 'analysis', 'utility', 'custom'
     ];
 
     let scripts;
     if (category && category !== 'all' && validCategories.includes(category)) {
-      scripts = ScriptRunnerService.getScriptsByCategory(category as any);
+      scripts = scriptService.getScriptsByCategory(category as any);
     } else {
-      scripts = ScriptRunnerService.getScripts();
+      scripts = await scriptService.getScripts();
     }
 
     return NextResponse.json({
@@ -39,10 +39,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const scriptService = (await import('@/lib/services/script/ScriptRunnerService')).default;
     const body = await request.json();
 
-    const script = ScriptRunnerService.registerScript(body);
+    const script = scriptService.registerScript(body);
     
     return NextResponse.json({
       success: true,

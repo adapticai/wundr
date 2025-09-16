@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, RenderOptions } from '@testing-library/react'
-import { AnalysisProvider } from '@/lib/contexts/analysis-context'
+import { AnalysisProvider } from '@/lib/contexts'
 import { ThemeProvider } from '@/components/theme-provider'
 
 interface AllTheProvidersProps {

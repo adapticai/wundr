@@ -5,11 +5,11 @@
 
 import React from 'react'
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { AnalysisProvider } from '@/lib/contexts/analysis-context'
+import { AnalysisProvider } from '@/lib/contexts'
 import { createTestFixtures } from '../../fixtures/real-test-data'
 
 // Mock the analysis context hook
-const mockUseAnalysis = () => {
+const useMockAnalysis = () => {
   const [data, setData] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -72,7 +72,7 @@ describe('useAnalysis Hook', () => {
 
   describe('Initial State', () => {
     it('starts with null data and no loading', () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -82,7 +82,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('provides all required methods', () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -94,7 +94,7 @@ describe('useAnalysis Hook', () => {
 
   describe('Loading Sample Data', () => {
     it('loads real sample data successfully', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -116,7 +116,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('sets loading state correctly during sample data load', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -144,7 +144,7 @@ describe('useAnalysis Hook', () => {
       const originalCreateTestFixtures = createTestFixtures
       ;(global as any).createTestFixtures = jest.fn().mockRejectedValue(new Error('Mock error'))
 
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -165,7 +165,7 @@ describe('useAnalysis Hook', () => {
 
   describe('Loading from File', () => {
     it('loads data from valid JSON file', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -188,7 +188,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('handles invalid JSON file', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -209,7 +209,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('handles empty file', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -226,7 +226,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('tracks loading state during file upload', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -248,7 +248,7 @@ describe('useAnalysis Hook', () => {
 
   describe('Data Clearing', () => {
     it('clears data and error state', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -269,7 +269,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('clears error state', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -292,7 +292,7 @@ describe('useAnalysis Hook', () => {
 
   describe('State Management', () => {
     it('maintains consistent state across multiple operations', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -318,7 +318,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('prevents race conditions in rapid successive calls', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -339,7 +339,7 @@ describe('useAnalysis Hook', () => {
 
   describe('Real Data Integration', () => {
     it('works with actual project analysis data', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -370,7 +370,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('handles real project complexity data', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -389,7 +389,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('processes real dependency data', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -415,7 +415,7 @@ describe('useAnalysis Hook', () => {
 
   describe('Error Recovery', () => {
     it('recovers from errors on subsequent successful operations', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 
@@ -438,7 +438,7 @@ describe('useAnalysis Hook', () => {
     })
 
     it('maintains error state until next operation', async () => {
-      const { result } = renderHook(() => mockUseAnalysis(), {
+      const { result } = renderHook(() => useMockAnalysis(), {
         wrapper: TestWrapper
       })
 

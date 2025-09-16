@@ -62,7 +62,7 @@ export async function POST(
 
     // Validate parameters
     const validation = templateService.validateParameters(template, parameters || {});
-    if (!validation.valid) {
+    if (!validation.isValid) {
       return NextResponse.json(
         {
           success: false,

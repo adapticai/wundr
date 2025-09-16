@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAnalysis } from '@/lib/contexts/analysis-context';
+import { useAnalysis } from '@/lib/contexts';
 import { useReports } from '@/hooks/reports/use-reports';
 import { ReportService } from '@/lib/services/report-service';
 import { useChartTheme } from '@/hooks/chart/useChartTheme';
@@ -116,7 +116,8 @@ interface ComparisonMetrics {
 }
 
 export default function LoadReportPage() {
-  const { data, loading, error, loadFromFile } = useAnalysis();
+  const { state } = useAnalysis();
+  const { data, loading, error } = state;
   const { templates, processAnalysisFile, exportReportEnhanced, getReportContent } = useReports();
   const chartTheme = useChartTheme();
   const { cache } = useDataCache<LoadedReport>('load-reports');
@@ -192,7 +193,9 @@ export default function LoadReportPage() {
       setSelectedReport(newReport);
       
       // Also load into analysis context for full dashboard features
-      await loadFromFile(file);
+      // TODO: Implement parseAnalysisFile integration with analysis context
+      // const parsedData = await parseAnalysisFile(file);
+      // importAnalysisData(parsedData);
       
       cache.set(newReport.id, newReport);
     } catch (error) {

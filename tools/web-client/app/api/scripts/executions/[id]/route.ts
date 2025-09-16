@@ -5,9 +5,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const scriptService = (await import('@/lib/services/script/ScriptRunnerService')).default;
     const { id } = await params;
-    const execution = ScriptRunnerService.getExecution(id);
+    const execution = await scriptService.getExecution(id);
     
     if (!execution) {
       return NextResponse.json(
@@ -41,9 +41,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { ScriptRunnerService } = await import('@/lib/services/script/ScriptRunnerService');
+    const scriptService = (await import('@/lib/services/script/ScriptRunnerService')).default;
     const { id } = await params;
-    await ScriptRunnerService.cancelExecution(id);
+    await scriptService.cancelExecution(id);
     
     return NextResponse.json({
       success: true,

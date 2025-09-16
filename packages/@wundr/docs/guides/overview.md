@@ -1,111 +1,275 @@
-# User Guides Overview
+---
+title: User Guides & Workflows
+sidebar_label: Overview
+sidebar_position: 1
+description: Comprehensive guides for mastering Wundr from quickstart to enterprise deployment
+keywords: [guides, workflows, tutorials, best-practices, enterprise]
+---
 
-Welcome to the comprehensive Wundr user guides! These step-by-step tutorials will help you master
-Wundr's powerful features and integrate them seamlessly into your development workflow.
+# Wundr User Guides & Workflows
 
-## 🚀 Quick Start Guides
+Master the art of intelligent code management with comprehensive guides covering everything from initial setup to enterprise-scale deployment. Whether you're a solo developer or managing a 500+ developer organization, these guides provide practical, actionable workflows.
 
-Perfect for getting up and running quickly:
+## 🚀 Quick Start Journeys
 
-- **[New Project Setup](./quickstart/new-project)** - Start fresh with Wundr
-- **[Existing Project Integration](./quickstart/existing-project)** - Add Wundr to your current
-  codebase
-- **[Monorepo Setup](./quickstart/monorepo-setup)** - Configure Wundr for monorepos
-- **[Team Onboarding](./quickstart/team-onboarding)** - Get your entire team started
+**Get productive with Wundr in under 30 minutes**
 
-## 🔄 Workflow Guides
+### [New Project Setup](/guides/quickstart/new-project)
+Bootstrap a new project with Wundr best practices from day one
+- **Time Investment:** 15 minutes
+- **Outcome:** Production-ready code quality pipeline
+- **Skills:** Basic CLI usage, configuration
 
-Master daily and weekly workflows:
+### [Existing Project Integration](/guides/quickstart/existing-project)
+Seamlessly integrate Wundr into your current codebase
+- **Time Investment:** 20 minutes
+- **Outcome:** Immediate code insights and actionable recommendations
+- **Skills:** Configuration customization, legacy code handling
 
-- **[Daily Usage Patterns](./workflow/daily-usage)** - Your daily Wundr routine
-- **[Weekly Maintenance](./workflow/weekly-maintenance)** - Keep your codebase healthy
-- **[Code Review Integration](./workflow/code-review)** - Enhance your review process
-- **[Release Preparation](./workflow/release-preparation)** - Prepare releases with confidence
+### [Team Onboarding](/guides/quickstart/team-setup)
+Scale Wundr adoption across your development team
+- **Time Investment:** 45 minutes
+- **Outcome:** Standardized team workflows and shared quality metrics
+- **Skills:** Team governance, collaborative workflows
 
-## ⭐ Best Practices
+## 🔄 Core Development Workflows
 
-Learn from the experts:
+**Essential day-to-day operations with Wundr**
 
-- **[Coding Standards](./best-practices/coding-standards)** - Establish and maintain quality
-- **[Pattern Enforcement](./best-practices/pattern-enforcement)** - Consistent code patterns
-- **[Quality Gates](./best-practices/quality-gates)** - Automated quality checks
-- **[Team Collaboration](./best-practices/team-collaboration)** - Work better together
+### Analysis & Quality Management
 
-## 🔌 Integration Guides
+#### [Comprehensive Code Analysis](/guides/workflows/analysis-workflow)
+Master the complete analysis lifecycle from triggering to action
+- **Deep Code Scanning** - Complexity, duplicates, security, performance
+- **Quality Trend Tracking** - Historical metrics and improvement patterns
+- **Automated Quality Gates** - Block poor quality code before merge
+- **Custom Rule Configuration** - Tailor analysis to your team standards
 
-Connect Wundr with your tools:
+#### [Quality Metrics Deep Dive](/guides/workflows/quality-metrics)
+Understand and optimize your codebase quality scores
+- **Metric Interpretation** - What scores mean and how to improve them
+- **Benchmark Comparison** - Industry standards vs. your codebase
+- **Quality Evolution** - Track improvements over time
+- **Goal Setting** - Establish realistic quality targets
 
-- **[CI/CD Setup](./integration/ci-cd-setup)** - Automated pipeline integration
-- **[GitHub Actions](./integration/github-actions)** - GitHub workflow automation
-- **[VS Code Setup](./integration/vscode-setup)** - IDE integration
-- **[Slack Notifications](./integration/slack-notifications)** - Team notifications
+#### [Automated Quality Gates](/guides/workflows/quality-gates)
+Implement robust quality controls in your development pipeline
+- **Gate Configuration** - Set up blocking and non-blocking gates
+- **Integration Points** - PR checks, deployment gates, CI/CD integration
+- **Exception Handling** - Manage legitimate gate bypasses
+- **Reporting** - Quality gate analytics and trends
 
-## 🎯 Advanced Usage
+### Refactoring & Code Improvement
 
-For power users and enterprise:
+#### [Intelligent Refactoring Workflows](/guides/workflows/refactoring)
+Systematically improve code quality with AI-powered suggestions
+- **Pattern Standardization** - Consistent error handling, imports, naming
+- **Automated Fixes** - Safe, bulk code improvements
+- **Refactoring Strategies** - Incremental vs. comprehensive approaches
+- **Risk Management** - Minimize regression risks during refactoring
 
-- **[Custom Analyzers](./advanced/custom-analyzers)** - Build custom analysis tools
-- **[Pattern Development](./advanced/pattern-development)** - Create custom patterns
-- **[Performance Optimization](./advanced/performance-optimization)** - Scale to large codebases
-- **[Large-scale Deployment](./advanced/large-scale-deployment)** - Enterprise deployment
+#### [Technical Debt Management](/guides/workflows/technical-debt)
+Identify, prioritize, and systematically reduce technical debt
+- **Debt Identification** - Automated debt detection and scoring
+- **Prioritization Matrix** - Impact vs. effort analysis
+- **Remediation Planning** - Sprint planning for debt reduction
+- **Progress Tracking** - Monitor debt reduction over time
 
-## 📹 Video Tutorials
+#### [Dependency Management](/guides/workflows/dependencies)
+Optimize your project's dependency health and security
+- **Dependency Analysis** - Unused, outdated, vulnerable dependencies
+- **Circular Dependency Resolution** - Identify and resolve circular imports
+- **Security Scanning** - Automated vulnerability detection
+- **Upgrade Planning** - Strategic dependency update workflows
 
-Visual learning resources:
+## 🏢 Enterprise & Advanced Workflows
 
-- **[Getting Started Video](./videos/getting-started)** - 10-minute intro to Wundr
-- **[Dashboard Walkthrough](./videos/dashboard-walkthrough)** - Web interface tour
-- **[Advanced Features](./videos/advanced-features)** - Power user techniques
-- **[Troubleshooting Guide](./videos/troubleshooting)** - Common issue resolution
+**Scale Wundr across large organizations and complex architectures**
 
-## 💡 Real-world Examples
+### Enterprise Architecture
 
-Learn from practical examples:
+#### [Monorepo Management](/guides/advanced/monorepo)
+Manage code quality across complex monorepo architectures
+- **Multi-Package Analysis** - Coordinated analysis across packages
+- **Shared Standards** - Organization-wide coding standards
+- **Performance Optimization** - Efficient analysis of large codebases
+- **Team Coordination** - Cross-team quality collaboration
 
-- **[React Project](./examples/react-project)** - Frontend application analysis
-- **[Node.js Backend](./examples/nodejs-backend)** - Server-side optimization
-- **[Monorepo Migration](./examples/monorepo-migration)** - Large-scale refactoring
-- **[Enterprise Setup](./examples/enterprise-setup)** - Organization-wide deployment
+#### [Multi-Team Governance](/guides/advanced/multi-team)
+Coordinate quality standards across development teams
+- **Governance Models** - Centralized vs. federated quality management
+- **Standard Templates** - Reusable configuration templates
+- **Team Autonomy** - Balance consistency with team flexibility
+- **Escalation Workflows** - Handle quality standard conflicts
 
-## Getting Help
+#### [Custom Rule Development](/guides/advanced/custom-rules)
+Create organization-specific analysis rules and patterns
+- **Rule Creation** - Build custom analysis rules
+- **Pattern Libraries** - Develop reusable pattern libraries
+- **Testing & Validation** - Ensure rule reliability
+- **Distribution** - Share rules across teams and projects
 
-Need assistance? We're here to help:
+### Integration & Automation
 
-- **[Community Discussions](https://github.com/adapticai/wundr/discussions)** - Ask questions and
-  share knowledge
-- **[Discord Server](https://discord.gg/wundr)** - Real-time community support
-- **[GitHub Issues](https://github.com/adapticai/wundr/issues)** - Report bugs or request features
-- **[Support Email](mailto:support@wundr.io)** - Direct support for enterprise customers
+#### [CI/CD Pipeline Integration](/guides/integration/cicd)
+Seamlessly integrate Wundr into your deployment pipeline
+- **GitHub Actions** - Complete workflows and examples
+- **GitLab CI** - Pipeline configuration and best practices
+- **Jenkins** - Plugin setup and job configuration
+- **Azure DevOps** - Extension installation and usage
 
-## Contributing to Guides
+#### [IDE & Editor Integration](/guides/integration/ide)
+Bring Wundr insights directly to your development environment
+- **VS Code Extension** - Real-time analysis and suggestions
+- **IntelliJ Plugin** - Code quality insights within your IDE
+- **Vim/Neovim** - Command-line integration for terminal users
+- **Custom Integrations** - API-based custom tool integration
 
-Want to contribute to our documentation?
+#### [Webhook & API Automation](/guides/integration/automation)
+Build custom workflows with Wundr's powerful API
+- **Webhook Configuration** - Real-time notifications and triggers
+- **API Integration** - Custom dashboard and reporting solutions
+- **Automated Workflows** - Event-driven quality management
+- **Third-party Integrations** - Slack, Jira, PagerDuty, and more
 
-1. **[Fork the repository](https://github.com/adapticai/wundr/fork)**
-2. **Create a new guide** in the appropriate directory
-3. **Follow our [documentation standards](../contributing/docs-standards)**
-4. **Submit a pull request** with your improvements
+## 📊 Analytics & Reporting
 
-## What's Next?
+**Transform code insights into actionable business intelligence**
 
-Ready to dive in? Here are some recommended paths:
+### [Executive Reporting](/guides/reporting/executive)
+Create compelling reports for stakeholders and decision makers
+- **Executive Dashboards** - High-level quality metrics and trends
+- **ROI Analysis** - Quantify the value of code quality improvements
+- **Risk Assessment** - Identify and communicate technical risks
+- **Compliance Reporting** - Meet regulatory and audit requirements
 
-### For New Users
+### [Team Performance Analytics](/guides/reporting/team-analytics)
+Track and improve team productivity and code quality
+- **Team Metrics** - Individual and team performance indicators
+- **Quality Trends** - Long-term quality evolution tracking
+- **Benchmark Comparison** - Compare against industry standards
+- **Goal Tracking** - Monitor progress against quality objectives
 
-1. Start with [New Project Setup](./quickstart/new-project)
-2. Try the [Daily Usage Patterns](./workflow/daily-usage)
-3. Explore [Best Practices](./best-practices/coding-standards)
+### [Custom Dashboard Creation](/guides/reporting/dashboards)
+Build tailored dashboards for your organization's needs
+- **Dashboard Design** - User experience best practices
+- **Metric Selection** - Choose the right KPIs for your audience
+- **Visualization Techniques** - Effective charts and graphs
+- **Automation** - Scheduled dashboard generation and delivery
 
-### For Teams
+## 🎥 Video Learning Resources
 
-1. Begin with [Team Onboarding](./quickstart/team-onboarding)
-2. Set up [CI/CD Integration](./integration/ci-cd-setup)
-3. Establish [Quality Gates](./best-practices/quality-gates)
+**Visual guides for hands-on learning**
 
-### For Enterprise
+### [Getting Started Video Series](/guides/videos/getting-started)
+Complete video walkthrough from installation to first analysis
+- **Installation & Setup** (8 min) - Get Wundr running
+- **First Analysis** (12 min) - Run and interpret your first analysis
+- **Dashboard Tour** (15 min) - Navigate the web dashboard
+- **Basic Configuration** (10 min) - Customize for your project
 
-1. Review [Large-scale Deployment](./advanced/large-scale-deployment)
-2. Implement [Custom Analyzers](./advanced/custom-analyzers)
-3. Configure [Performance Optimization](./advanced/performance-optimization)
+### [Advanced Feature Tutorials](/guides/videos/advanced)
+Deep dive into powerful Wundr capabilities
+- **Batch Processing** (18 min) - Analyze multiple projects efficiently
+- **Custom Rules** (25 min) - Create organization-specific rules
+- **API Integration** (20 min) - Build custom integrations
+- **Enterprise Setup** (30 min) - Multi-team deployment strategies
 
-Happy coding with Wundr! 🎉
+### [Real-World Case Studies](/guides/videos/case-studies)
+Learn from successful Wundr implementations
+- **Startup Growth** (15 min) - Scaling from 5 to 50 developers
+- **Enterprise Migration** (22 min) - Legacy codebase modernization
+- **Open Source Project** (18 min) - Community-driven quality standards
+
+## 🛠️ Troubleshooting & Support
+
+**Resolve issues quickly and get back to coding**
+
+### [Common Issues & Solutions](/guides/troubleshooting/common-issues)
+Quick fixes for the most frequent problems
+- **Installation Problems** - Platform-specific troubleshooting
+- **Analysis Failures** - Debug failed or incomplete analyses
+- **Performance Issues** - Optimize for large codebases
+- **Configuration Errors** - Fix common configuration mistakes
+
+### [Advanced Troubleshooting](/guides/troubleshooting/advanced)
+Deep diagnostic techniques for complex issues
+- **Log Analysis** - Interpret and analyze Wundr logs
+- **Performance Profiling** - Identify and resolve bottlenecks
+- **Network Issues** - Debug connectivity and API problems
+- **Environment Conflicts** - Resolve tool and dependency conflicts
+
+### [Getting Help](/guides/troubleshooting/getting-help)
+Connect with the Wundr community and support team
+- **Community Forums** - GitHub Discussions and Discord
+- **Documentation Search** - Find answers in the knowledge base
+- **Support Tickets** - When and how to contact support
+- **Bug Reporting** - Contribute to Wundr's improvement
+
+## 📚 Best Practices Library
+
+**Learn from the community and industry experts**
+
+### [Code Quality Standards](/guides/best-practices/quality-standards)
+Establish and maintain high code quality across your organization
+- **Quality Baselines** - Set realistic yet ambitious quality targets
+- **Standard Templates** - Reusable quality configurations
+- **Evolution Strategies** - Gradually improve existing codebases
+- **Team Adoption** - Drive quality culture change
+
+### [Performance Optimization](/guides/best-practices/performance)
+Maximize Wundr's efficiency for your specific use case
+- **Large Codebase Strategies** - Handle 100K+ file repositories
+- **Analysis Optimization** - Reduce analysis time and resource usage
+- **Caching Strategies** - Leverage caching for faster results
+- **Resource Management** - Balance thoroughness with speed
+
+### [Security & Compliance](/guides/best-practices/security)
+Implement security-first development practices
+- **Security Scanning** - Automated vulnerability detection
+- **Compliance Frameworks** - SOC 2, GDPR, HIPAA considerations
+- **Access Control** - Manage team permissions and data access
+- **Audit Trails** - Maintain comprehensive activity logs
+
+## 🤝 Community & Contribution
+
+**Join the Wundr community and contribute to its growth**
+
+### [Community Guidelines](/guides/community/guidelines)
+Be part of the welcoming and inclusive Wundr community
+- **Code of Conduct** - Community standards and expectations
+- **Communication Channels** - Discord, GitHub, and forums
+- **Event Calendar** - Webinars, office hours, and community calls
+- **Mentorship Program** - Learn from and teach other users
+
+### [Contributing to Wundr](/guides/community/contributing)
+Help improve Wundr for everyone
+- **Code Contributions** - Submit bug fixes and new features
+- **Documentation** - Improve guides and API documentation
+- **Community Support** - Help other users in forums
+- **Feature Requests** - Suggest and prioritize new capabilities
+
+### [Success Stories](/guides/community/success-stories)
+Learn from organizations that have transformed their development with Wundr
+- **Case Study Collection** - Real-world transformation stories
+- **Metrics & Outcomes** - Quantified benefits and improvements
+- **Lessons Learned** - Avoid common pitfalls and challenges
+- **Implementation Strategies** - Proven approaches to adoption
+
+---
+
+## 🆘 Need Help?
+
+**Can't find what you're looking for? Get personalized assistance:**
+
+- **💬 [Community Discord](https://discord.gg/wundr)** - Real-time chat with users and experts
+- **🐛 [GitHub Issues](https://github.com/adapticai/wundr/issues)** - Bug reports and feature requests
+- **📧 [Email Support](mailto:support@wundr.io)** - Direct support for enterprise customers
+- **📖 [Knowledge Base](https://help.wundr.io)** - Searchable help articles and FAQs
+
+**Response Times:**
+- Community Discord: Usually < 2 hours during business hours
+- GitHub Issues: 1-3 business days
+- Email Support: 4-24 hours (enterprise), 2-5 days (community)
+
+Ready to get started? Begin with our **[New Project Setup](/guides/quickstart/new-project)** guide! 🚀

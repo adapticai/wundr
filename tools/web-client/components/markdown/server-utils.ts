@@ -25,7 +25,7 @@ export async function readMarkdownFile(filePath: string): Promise<ExtendedMarkdo
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf8');
-    const { metadata, content: extractedContent } = extractFrontMatter(fileContent);
+    const { data: metadata, content: extractedContent } = extractFrontMatter(fileContent);
     const htmlContent = await markdownToHtml(extractedContent);
     
     return {

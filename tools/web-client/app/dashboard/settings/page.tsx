@@ -68,8 +68,10 @@ function GeneralSettings() {
         <ConfigThemeSelect
           label="Theme"
           description="Choose your preferred color theme"
-          value={config.theme}
-          onChange={(value) => updateConfig({ theme: value as 'light' | 'dark' | 'system' })}
+          value={config.theme.mode}
+          onChange={(value) => updateConfig({
+            theme: { ...config.theme, mode: value as 'light' | 'dark' | 'system' }
+          })}
           error={errors.theme}
           section="general"
           field="theme"
@@ -566,7 +568,7 @@ function ExportSettings() {
 }
 
 function ConfigurationManagement() {
-  const { exportConfig, importConfig, save, isDirty, resetAll } = useConfig();
+  const { exportConfig, importConfig, save, isDirty, resetAll, updateConfig } = useConfig();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -720,9 +722,9 @@ function ConfigurationManagement() {
                 <CardContent className="p-4">
                   <div className="space-y-2">
                     <div className="flex items-start justify-between">
-                      <h4 className="font-medium">{template.name}</h4>
+                      <h4 className="font-medium">{template.metadata.name}</h4>
                       <div className="flex gap-1">
-                        {template.tags.slice(0, 2).map((tag) => (
+                        {template.metadata.tags.slice(0, 2).map((tag: string) => (
                           <Badge key={tag} variant="secondary" className="text-xs">
                             {tag}
                           </Badge>
@@ -730,14 +732,13 @@ function ConfigurationManagement() {
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {template.description}
+                      {template.metadata.description}
                     </p>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="w-full"
                       onClick={() => {
-                        // Apply template logic would go here
-                        console.log('Applying template:', template.id);
+                        updateConfig(template.config);
                       }}
                     >
                       Apply Template

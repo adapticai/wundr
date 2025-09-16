@@ -24,9 +24,55 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Features',
+      items: [
+        'features/overview',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Configuration',
+      items: [
+        'configuration/overview',
+        'configuration/patterns',
+        'configuration/analysis',
+        'configuration/reporting',
+      ],
+    },
+    {
+      type: 'category',
       label: 'CLI Commands',
       items: [
         'cli/commands',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Web Dashboard',
+      items: [
+        'web-dashboard/overview',
+        'web-dashboard/setup',
+        'web-dashboard/analysis',
+        'web-dashboard/team',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Integrations',
+      items: [
+        'integrations/ci-cd',
+        'integrations/github-actions',
+        'integrations/jenkins',
+        'integrations/thresholds',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Team Collaboration',
+      items: [
+        'team/collaboration',
+        'team/quality-gates',
+        'team/metrics',
       ],
     },
     {
@@ -36,6 +82,15 @@ const sidebars: SidebarsConfig = {
         'migration/from-other-tools',
       ],
     },
+    {
+      type: 'category',
+      label: 'Troubleshooting',
+      items: [
+        'troubleshooting/common-issues',
+      ],
+    },
+    'faq',
+    'i18n-workflow',
   ],
 };
 

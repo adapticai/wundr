@@ -1,5 +1,9 @@
 // Type definitions for dashboard data structures
 
+// Severity and priority level types
+export type SeverityLevel = 'low' | 'medium' | 'high' | 'critical'
+export type PriorityLevel = 'low' | 'medium' | 'high' | 'critical'
+
 export interface PerformanceMetrics {
   timestamp: string
   buildTime: number
@@ -72,6 +76,7 @@ export interface AnalysisRecommendation {
   dueDate?: string
   dependencies: string[]
   autoFixAvailable: boolean
+  actionItems?: string[]
   quickFix?: {
     available: boolean
     action: string
@@ -259,6 +264,13 @@ export interface CompleteAnalysisData {
   duplicates: AnalysisDuplicate[]
   circularDependencies: CircularDependency[]
   securityIssues: AnalysisIssue[]
+  issues: AnalysisIssue[]
+  summary: {
+    totalItems: number
+    successCount: number
+    errorCount: number
+    warningCount?: number
+  }
   metrics: {
     overview: {
       totalFiles: number
@@ -275,7 +287,7 @@ export interface CompleteAnalysisData {
       }
       duplicateLines: number
       duplicateRatio: number
-      testCoverage: {
+      testCoverage?: {
         lines: number
         functions: number
         branches: number
@@ -311,4 +323,8 @@ export interface CompleteAnalysisData {
     }
   }
   recommendations: AnalysisRecommendation[]
+  rawData?: {
+    dependencies: Record<string, unknown>
+    fileTree: Record<string, unknown>
+  }
 }

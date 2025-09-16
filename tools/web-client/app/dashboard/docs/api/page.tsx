@@ -1,5 +1,3 @@
-'use client';
-
 import React, { Suspense } from 'react';
 import { DocsLayout } from '@/components/docs/DocsLayout';
 import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
@@ -12,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Code, Copy, PlayCircle, FileText, Package, Settings } from 'lucide-react';
-import { readDocFile, generateApiDocs, getCurrentDocVersion } from '@/lib/docs-utils';
+// Server-side imports moved to API endpoints
 
 interface APIEndpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -419,25 +417,58 @@ function ApiDocsContent() {
 }
 
 export default async function ApiDocsPage() {
-  // Try to load API documentation from file system
-  let docs: any = null;
-  
-  try {
-    // Create a sample OpenAPI spec for demonstration
-    const sampleApiSpec = {
-      info: {
-        title: 'Wundr Analysis API',
-        version: '1.0.0',
-        description: 'API for code analysis and metrics'
+  // Create sample API endpoints for demonstration
+  const mockApiEndpoints = [
+    {
+      method: 'POST' as const,
+      path: '/api/analysis',
+      description: 'Analyze code quality and generate metrics',
+      parameters: [
+        { name: 'files', type: 'array', required: true, description: 'Array of file paths to analyze' }
+      ],
+      responses: [
+        { status: 200, description: 'Analysis completed successfully' },
+        { status: 400, description: 'Invalid request parameters' }
+      ]
+    },
+    {
+      method: 'GET' as const,
+      path: '/api/reports',
+      description: 'Get list of available reports',
+      responses: [
+        { status: 200, description: 'List of reports' }
+      ]
+    },
+    {
+      method: 'POST' as const,
+      path: '/api/reports/generate',
+      description: 'Generate a new report',
+      parameters: [
+        { name: 'templateId', type: 'string', required: true, description: 'Report template ID' }
+      ],
+      responses: [
+        { status: 201, description: 'Report generation started' }
+      ]
+    }
+  ];
+
+  // Create API documentation directly without server-side dependencies
+  const docs = {
+    title: 'Wundr Analysis API',
+    version: '1.0.0',
+    description: 'API for code analysis and metrics',
+    endpoints: mockApiEndpoints,
+    sections: [
+      {
+        title: 'Overview',
+        content: 'The Wundr Analysis API provides endpoints for analyzing code quality, generating reports, and managing projects.'
       },
-      servers: [{ url: '/api' }],
-      paths: {},
-      components: { schemas: {} }
-    };
-    docs = generateApiDocs(sampleApiSpec);
-  } catch (error) {
-    console.error('Failed to load API documentation:', error);
-  }
+      {
+        title: 'Authentication',
+        content: 'All API requests require authentication via API key in the Authorization header.'
+      }
+    ]
+  };
 
   return (
     <DocsLayout>

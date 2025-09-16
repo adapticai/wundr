@@ -707,7 +707,7 @@ export async function POST(request: NextRequest) {
         
         const { promises: fs } = await import('fs')
         
-        let allFiles: string[] = []
+        const allFiles: string[] = []
         for (const scanPath of pathValidation.resolvedPaths) {
           const stats = await fs.stat(scanPath)
           if (stats.isDirectory()) {

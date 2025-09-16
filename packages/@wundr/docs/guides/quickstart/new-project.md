@@ -1,7 +1,13 @@
+---
+title: New Project Setup
+description: Bootstrap a new project with Wundr best practices from day one
+keywords: [quickstart, new-project, setup, configuration, best-practices]
+sidebar_position: 1
+---
+
 # New Project Setup Guide
 
-This guide will walk you through setting up Wundr in a new project from scratch. By the end, you'll
-have a fully configured Wundr environment with analysis, quality gates, and dashboard integration.
+Set up Wundr in a new project with production-ready best practices in just 15 minutes. This guide walks you through creating a robust code quality foundation from day one.
 
 ## Prerequisites
 

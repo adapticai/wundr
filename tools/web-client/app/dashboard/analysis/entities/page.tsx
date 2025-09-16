@@ -32,7 +32,7 @@ import { EntityRelationshipGraph } from '@/components/analysis/entity-relationsh
 import { EntityDetailsTable } from '@/components/analysis/entity-details-table';
 import { EntityExportModal } from '@/components/analysis/entity-export-modal';
 // Entity type imported but used via data?.entities
-// import type { Entity } from '@/lib/contexts/analysis-context';
+// import type { Entity } from '@/lib/contexts';
 
 interface EntityFilters {
   search: string;

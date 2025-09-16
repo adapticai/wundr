@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAnalysis } from '@/lib/contexts/analysis-context';
+import { useAnalysis } from '@/lib/contexts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 
 export default function HighPriorityRecommendationsPage() {
-  const { data, loading, error } = useAnalysis();
+  const { state } = useAnalysis();
+  const { data, loading, error } = state;
 
   if (loading) {
     return (
@@ -37,7 +38,7 @@ export default function HighPriorityRecommendationsPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-lg text-muted-foreground mb-4">{error}</p>
+          <p className="text-lg text-muted-foreground mb-4">{error?.message || 'An error occurred'}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>

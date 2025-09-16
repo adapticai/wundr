@@ -6,7 +6,7 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '../utils/test-utils'
 import { createTestFixtures, E2ETestUtils } from '../fixtures/real-test-data'
-import { AnalysisProvider } from '@/lib/contexts/analysis-context'
+import { AnalysisProvider } from '@/lib/contexts'
 
 // Mock components that would be tested in full E2E
 const MockDashboardPage = () => {

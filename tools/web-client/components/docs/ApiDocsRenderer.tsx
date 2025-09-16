@@ -135,12 +135,12 @@ export function ApiDocsRenderer({ apiDocs, className = '' }: ApiDocsRendererProp
             </h3>
             
             <div className="space-y-3">
-              {(docs as ApiDocEntry[]).map((doc) => (
+              {(docs as ApiDocEntry[]).map((doc, index) => (
                 <ApiDocItem
-                  key={doc.id}
+                  key={index}
                   doc={doc}
-                  isExpanded={expandedItems.has(doc.id)}
-                  onToggle={() => toggleExpanded(doc.id)}
+                  isExpanded={expandedItems.has(index.toString())}
+                  onToggle={() => toggleExpanded(index.toString())}
                   onCopy={copyToClipboard}
                   getMethodBadgeVariant={getMethodBadgeVariant}
                 />

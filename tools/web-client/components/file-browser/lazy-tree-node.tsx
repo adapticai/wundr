@@ -59,7 +59,7 @@ export function LazyTreeNode({
     if (item.type === 'directory') {
       return <FolderIcon className={cn('h-4 w-4', typeInfo.color)} />;
     }
-    const IconComponent = typeInfo.icon;
+    const IconComponent = typeInfo.icon as unknown as React.ComponentType<{ className?: string }>;
     return <IconComponent className={cn('h-4 w-4', typeInfo.color)} />;
   };
 

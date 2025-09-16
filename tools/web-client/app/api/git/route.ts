@@ -321,7 +321,7 @@ function parseGitLog(output: string, withStats: boolean = false): GitCommit[] {
     }
     
     // Parse additional message body and stats
-    let bodyLines: string[] = []
+    const bodyLines: string[] = []
     let inStats = false
     
     for (const line of rest) {

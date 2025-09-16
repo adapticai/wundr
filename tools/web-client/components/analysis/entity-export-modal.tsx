@@ -203,7 +203,7 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
 
     const headers = Object.keys(data[0]);
     
-    let html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -270,11 +270,18 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
             fields: exportOptions.includeFields,
             exportedAt: new Date().toISOString(),
             totalEntities: filteredEntities.length
-          }, filename);
+          }, {
+            filename,
+            pretty: true,
+            autoDownload: true
+          });
           break;
         case 'csv':
           filename = `entities-export-${timestamp}.csv`;
-          exportToCSV(data, filename);
+          exportToCSV(data, {
+            filename,
+            autoDownload: true
+          });
           break;
         case 'markdown':
           const blob = exportAsMarkdown(data);

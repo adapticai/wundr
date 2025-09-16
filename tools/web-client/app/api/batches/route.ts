@@ -2,20 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { BatchProcessingService } = await import('@/lib/services/batch/BatchProcessingService');
+    const { default: batchService } = await import('../../../lib/services/batch/BatchProcessingService');
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
 
     let batches: any[];
     switch (type) {
       case 'active':
-        batches = (await BatchProcessingService.getAllBatches()).filter((b: any) => b.status === 'running');
+        batches = (await batchService.getAllBatches()).filter((b: any) => b.status === 'running');
         break;
       case 'history':
-        batches = (await BatchProcessingService.getAllBatches()).filter((b: any) => b.status === 'completed' || b.status === 'failed');
+        batches = (await batchService.getAllBatches()).filter((b: any) => b.status === 'completed' || b.status === 'failed');
         break;
       default:
-        batches = await BatchProcessingService.getAllBatches();
+        batches = await batchService.getAllBatches();
     }
 
     return NextResponse.json({
@@ -37,14 +37,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { BatchProcessingService } = await import('@/lib/services/batch/BatchProcessingService');
+    const { default: batchService } = await import('../../../lib/services/batch/BatchProcessingService');
     const body = await request.json();
 
-    const batch = await BatchProcessingService.createBatch({
-      name: body.name || 'New Batch',
-      type: body.type || 'default',
-      data: body.items || []
-    });
+    const batch = await batchService.createBatch(
+      body.name || 'New Batch',
+      (body.items || []).map((item: any) => ({
+        name: item.name || 'Job',
+        type: item.type || 'default',
+        data: item.data || item,
+        priority: item.priority || 5,
+        retryCount: 0,
+        maxRetries: 3
+      }))
+    );
     
     return NextResponse.json({
       success: true,

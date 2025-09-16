@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 import { ConfigProvider } from '@/lib/contexts/config/config-context';
-import { AnalysisProvider } from '@/lib/contexts/analysis-context';
+import { AnalysisProvider } from '@/lib/contexts';
 
 export function DashboardProviders({ children }: { children: ReactNode }) {
   return (

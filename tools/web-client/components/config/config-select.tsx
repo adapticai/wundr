@@ -72,7 +72,7 @@ export function ConfigSelect({
     if (!section || !field || !validateOnChange) return;
     
     const validationResult = configValidator.validateField(field, val);
-    setLocalError(validationResult.error || '');
+    setLocalError(validationResult.errors.length > 0 ? validationResult.errors[0].message : '');
     setIsValid(validationResult.isValid);
   }, [section, field, validateOnChange]);
   

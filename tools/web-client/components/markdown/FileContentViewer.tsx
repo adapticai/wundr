@@ -47,33 +47,31 @@ export function FileContentViewer({
   const [showRawContent, setShowRawContent] = useState(false);
 
   const fileType = detectFileType(fileName);
-  const isMarkdown = fileType === 'markdown' || fileType === 'mdx';
+  const isMarkdown = fileType.type === 'markdown' || fileType.type === 'text';
   const isTooLarge = fileSize > maxPreviewSize;
 
   const getFileInfo = (): FileInfo => {
     const getIcon = () => {
-      switch (fileType) {
+      switch (fileType.type) {
         case 'markdown':
-        case 'mdx':
+        case 'text':
           return <FileTextIcon className="h-4 w-4" />;
         case 'javascript':
         case 'typescript':
         case 'json':
           return <CodeIcon className="h-4 w-4" />;
-        case 'text':
-          return <FileTextIcon className="h-4 w-4" />;
         default:
           return <FileIcon className="h-4 w-4" />;
       }
     };
 
     const isPreviewable = [
-      'markdown', 'mdx', 'text', 'javascript', 'typescript', 'json', 'css', 'html', 'xml', 'yaml'
-    ].includes(fileType);
+      'markdown', 'text', 'javascript', 'typescript', 'json', 'css', 'html', 'yaml'
+    ].includes(fileType.type);
 
     return {
       name: fileName,
-      type: fileType,
+      type: fileType.type,
       size: fileSize,
       isPreviewable,
       icon: getIcon()

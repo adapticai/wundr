@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     
     // Apply filters
     if (category) {
-      templates = templates.filter(t => t.category === category);
+      templates = templates.filter(t => t.categoryId === category);
     }
     if (search) {
       templates = templateService.searchTemplates(search);

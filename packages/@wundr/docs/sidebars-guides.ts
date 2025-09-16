@@ -12,9 +12,33 @@ const sidebarGuides: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Videos',
+      label: 'Advanced Guides',
+      items: [
+        'advanced/performance-optimization',
+        'advanced/pattern-development',
+        'advanced/scaling',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Hands-on Exercises',
+      items: [
+        'exercises/video-workshop',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Video Tutorials',
       items: [
         'videos/getting-started',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Troubleshooting',
+      items: [
+        'troubleshooting/common-issues',
+        'troubleshooting/faq',
       ],
     },
   ],

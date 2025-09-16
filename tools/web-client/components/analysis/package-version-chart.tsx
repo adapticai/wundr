@@ -66,7 +66,7 @@ export function PackageVersionChart({ dependencies: initialDependencies = [] }: 
     
     try {
       // Mock data - in production this would parse package.json files
-      let packages: any[] = []
+      const packages: any[] = []
       
       setDependencies(packages)
     } catch (err) {
@@ -101,7 +101,11 @@ export function PackageVersionChart({ dependencies: initialDependencies = [] }: 
     }
     
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
-    exportToJSON(exportData, `package-version-analysis-${timestamp}.json`)
+    exportToJSON(exportData, {
+      filename: `package-version-analysis-${timestamp}.json`,
+      pretty: true,
+      autoDownload: true
+    })
   }
 
   const compareVersions = (current: string, latest: string) => {

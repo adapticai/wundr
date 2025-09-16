@@ -26,7 +26,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { DocPage, searchDocs, SearchResult, docCategories } from '@/lib/docs-utils';
+import { DocPage, docCategories } from '@/lib/docs-utils';
 
 interface AdvancedSearchProps {
   pages: DocPage[];
@@ -45,7 +45,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     pages.forEach(page => {
-      page.tags?.forEach((tag) => tags.add(tag));
+      page.frontmatter.tags?.forEach((tag) => tags.add(tag));
     });
     return Array.from(tags).sort();
   }, [pages]);
@@ -54,10 +54,10 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
   const filteredPages = useMemo(() => {
     return pages.filter(page => {
       const categoryMatch = selectedCategories.length === 0 || 
-        selectedCategories.includes(page.category);
+        selectedCategories.includes(page.frontmatter.category || '');
       
       const tagMatch = selectedTags.length === 0 || 
-        selectedTags.some(tag => page.tags?.includes(tag));
+        selectedTags.some(tag => page.frontmatter.tags?.includes(tag));
       
       return categoryMatch && tagMatch;
     });
@@ -66,8 +66,35 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
   // Perform search
   const searchResults = useMemo(() => {
     if (!query.trim()) return [];
-    
-    const results = searchDocs(query, filteredPages);
+
+    // Simple text search through filtered pages
+    const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 0);
+
+    const results = filteredPages
+      .map(page => {
+        let score = 0;
+        const title = page.title.toLowerCase();
+        const content = page.content.toLowerCase();
+        const description = page.frontmatter.description?.toLowerCase() || '';
+
+        // Calculate relevance score
+        searchTerms.forEach(term => {
+          if (title.includes(term)) score += 10;
+          if (description.includes(term)) score += 5;
+          if (content.includes(term)) score += 1;
+        });
+
+        return { page, score };
+      })
+      .filter(result => result.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20) // Limit results
+      .map(result => ({
+        page: result.page,
+        score: result.score,
+        relevance: Math.min(100, (result.score / searchTerms.length) * 10)
+      }));
+
     return results;
   }, [query, filteredPages]);
 
@@ -81,7 +108,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
     }
   }, [recentSearches]);
 
-  const handleResultClick = useCallback((result: SearchResult, snippet?: string) => {
+  const handleResultClick = useCallback((result: { page: DocPage; score: number; relevance: number }, snippet?: string) => {
     onResultSelect?.(result.page, snippet);
     setIsOpen(false);
     setQuery('');
@@ -163,9 +190,9 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
               </DropdownMenuLabel>
               {docCategories.map(category => (
                 <DropdownMenuCheckboxItem
-                  key={category.value}
-                  checked={selectedCategories.includes(category.value)}
-                  onCheckedChange={() => toggleCategory(category.value)}
+                  key={category.id}
+                  checked={selectedCategories.includes(category.id)}
+                  onCheckedChange={() => toggleCategory(category.id)}
                 >
                   {category.label}
                 </DropdownMenuCheckboxItem>
@@ -194,7 +221,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
       {hasFilters && (
         <div className="flex flex-wrap gap-1 mt-2">
           {selectedCategories.map(category => {
-            const cat = docCategories.find(c => c.value === category);
+            const cat = docCategories.find(c => c.id === category);
             return (
               <Badge 
                 key={category} 
@@ -305,16 +332,16 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
 }
 
 interface SearchResultItemProps {
-  result: SearchResult;
-  onClick: (result: SearchResult, snippet?: string) => void;
+  result: { page: DocPage; score: number; relevance: number };
+  onClick: (result: { page: DocPage; score: number; relevance: number }, snippet?: string) => void;
   rank: number;
 }
 
 function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
-  const { page, matchType, relevanceScore } = result;
-  
+  const { page, score, relevance } = result;
+
   // Create a simple match representation
-  const primaryMatch = { field: matchType, content: page.title, snippet: page.description?.substring(0, 150) + '...' || '' };
+  const primaryMatch = { field: 'title', content: page.title, snippet: page.frontmatter.description?.substring(0, 150) + '...' || '' };
 
   return (
     <button
@@ -332,16 +359,16 @@ function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
                 dangerouslySetInnerHTML={{ __html: page.title }} 
             />
             <Badge variant="outline" className="text-xs flex-shrink-0">
-              {page.category}
+              {page.frontmatter.category}
             </Badge>
-            {relevanceScore > 50 && (
+            {relevance > 50 && (
               <TrendingUp className="h-3 w-3 text-green-500 flex-shrink-0" />
             )}
           </div>
           
           <p className="text-xs text-muted-foreground mb-2 line-clamp-2" 
              dangerouslySetInnerHTML={{ 
-               __html: page.description || '' 
+               __html: page.frontmatter.description || '' 
              }} 
           />
           
@@ -352,7 +379,7 @@ function SearchResultItem({ result, onClick, rank }: SearchResultItemProps) {
           )}
           
           <div className="flex items-center gap-2 mt-2">
-            {page.tags?.slice(0, 3)?.map((tag) => (
+            {page.frontmatter.tags?.slice(0, 3)?.map((tag) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>

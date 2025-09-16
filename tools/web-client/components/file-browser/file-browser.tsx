@@ -153,7 +153,7 @@ export function FileBrowser({
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
     // Use the filterFileSystemItems utility function
-    let filtered = filterFileSystemItems(currentDirectoryItems, searchQuery, showHidden);
+    let filtered = filterFileSystemItems(currentDirectoryItems, { query: searchQuery }, showHidden);
     
     // Then filter by file types if any are selected
     if (selectedFileTypes.length > 0) {
@@ -288,8 +288,8 @@ export function FileBrowser({
             {item.size !== undefined && (
               <span>{formatFileSize(item.size)}</span>
             )}
-            {(item.modified || item.modifiedAt) && (
-              <span>{formatDate(item.modified || item.modifiedAt)}</span>
+            {item.modifiedAt && (
+              <span>{formatDate(item.modifiedAt)}</span>
             )}
           </div>
         </div>

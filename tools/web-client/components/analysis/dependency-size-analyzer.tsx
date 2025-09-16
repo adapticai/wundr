@@ -20,10 +20,12 @@ import {
   Layers
 } from "lucide-react"
 
-import { 
+import {
   formatBytes,
   exportToCSV,
-  exportToJSON
+  exportToJSON,
+  type JSONExportOptions,
+  type CSVExportOptions
 } from '@/lib/utils'
 import type { DependencyData } from '@/app/api/analysis/dependencies/route'
 
@@ -90,7 +92,7 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
     
     try {
       // Mock data - in production this would parse package.json files
-      let packages: any[] = []
+      const packages: any[] = []
       
       // Mock download statistics
       const downloadStats: any = {}
@@ -254,7 +256,11 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
       analysis: exportData,
       distribution: sizeDistribution,
       exportedAt: new Date().toISOString()
-    }, `dependency-size-analysis-${timestamp}.json`)
+    }, {
+      filename: `dependency-size-analysis-${timestamp}.json`,
+      pretty: true,
+      autoDownload: true
+    })
   }
 
   const getCategoryColor = (category: string) => {

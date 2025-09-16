@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
-import { 
-  runClientServiceTests, 
-  isBrowserSafe, 
+import {
+  runClientServiceTests,
+  isBrowserSafe,
   testClientServicesInstantiation,
   testClientServiceValidation,
   TestResult as ServiceTestResult,
-  TestSuite
+  TestSuite,
+  MockService,
+  createMockEndpoint
 } from '@/lib/services/client/test-client-services';
 
 interface TestResult {
@@ -32,22 +34,65 @@ export default function ClientServicesTest() {
 
   const runTests = async () => {
     setIsLoading(true);
-    
+
     try {
+      // Create a mock service for testing
+      const mockService: MockService = {
+        id: 'test-service',
+        name: 'Test Service',
+        baseUrl: 'https://api.test.com',
+        endpoints: [
+          createMockEndpoint('GET', '/health', { status: 'ok' }, 200),
+          createMockEndpoint('GET', '/api/status', { healthy: true }, 200)
+        ],
+        config: {
+          enableLogging: false,
+          logLevel: 'info',
+          persistState: false,
+          enableCors: true,
+          defaultDelay: 0
+        },
+        state: {
+          data: {},
+          status: 'pending',
+          requestCount: 0,
+          errorCount: 0,
+          metrics: {
+            avgResponseTime: 0,
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            errorRate: 0,
+            memoryUsage: 0,
+            lastUpdated: new Date()
+          }
+        },
+        interceptors: []
+      };
+
       // Run tests
-      const browserSafe = isBrowserSafe();
-      const results = await runClientServiceTests();
-      
+      const browserSafe = isBrowserSafe(mockService);
+      const services = ['ClientReportService', 'ClientScriptService', 'ClientBatchService', 'ClientTemplateService'];
+      const results = await runClientServiceTests(services);
+
+      // Group results by test type
+      const instantiationTests = results.filter(r => r.name.includes('instantiation') || r.name.includes('Health check'));
+      const validationTests = results.filter(r => r.name.includes('validation') || r.name.includes('Parameter'));
+
       setTestResults({
         browserSafe,
-        instantiation: results[0] ? {
-          success: results[0].passed > 0 && results[0].failed === 0,
-          errors: results[0].tests.filter((t: ServiceTestResult) => !t.success).map((t: ServiceTestResult) => t.message || 'Unknown error')
-        } : { success: false, errors: ['No instantiation tests found'] },
-        validation: results[1] ? {
-          success: results[1].passed > 0 && results[1].failed === 0,
-          errors: results[1].tests.filter((t: ServiceTestResult) => !t.success).map((t: ServiceTestResult) => t.message || 'Unknown error')
-        } : { success: false, errors: ['No validation tests found'] },
+        instantiation: {
+          success: instantiationTests.length > 0 && instantiationTests.every(t => t.status === 'passed'),
+          errors: instantiationTests
+            .filter(t => t.status === 'failed')
+            .map(t => t.error?.message || `${t.name} failed`)
+        },
+        validation: {
+          success: validationTests.length > 0 && validationTests.every(t => t.status === 'passed'),
+          errors: validationTests
+            .filter(t => t.status === 'failed')
+            .map(t => t.error?.message || `${t.name} failed`)
+        },
       });
       
     } catch (error) {

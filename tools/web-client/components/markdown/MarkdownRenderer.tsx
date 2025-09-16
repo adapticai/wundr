@@ -6,7 +6,38 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon, UserIcon, TagIcon, ClockIcon, Copy, Check, ExternalLink } from 'lucide-react';
 import { markdownToHtml, ParsedMarkdown, extractTableOfContents, extractFrontMatter, highlightCode, detectFileType } from '@/lib/markdown-utils';
-import { DocFrontmatter, extractDocHeaders } from '@/lib/docs-utils';
+
+// Local interface definition to avoid server-side dependency
+interface DocFrontmatter {
+  title: string;
+  description?: string;
+  version?: string;
+  category?: string;
+  tags?: string[];
+  author?: string;
+  lastUpdated?: string;
+  draft?: boolean;
+  private?: boolean;
+  weight?: number;
+}
+
+// Simple header extraction function
+function extractDocHeaders(content: string): Array<{title: string, level: number, id: string}> {
+  const headers = [];
+  const lines = content.split('\n');
+
+  for (const line of lines) {
+    const match = line.match(/^(#{1,6})\s+(.+)$/);
+    if (match) {
+      const level = match[1].length;
+      const title = match[2].trim();
+      const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      headers.push({ title, level, id });
+    }
+  }
+
+  return headers;
+}
 
 // Import highlight.js styles
 import 'highlight.js/styles/github-dark.css';
@@ -105,12 +136,12 @@ export function MarkdownRenderer({
         let extractedFrontmatter = frontmatter;
         
         if (!frontmatter || Object.keys(frontmatter).length === 0) {
-          const { metadata, content: contentWithoutFrontmatter } = extractFrontMatter(content);
+          const { data: metadata, content: contentWithoutFrontmatter } = extractFrontMatter(content);
           extractedFrontmatter = metadata;
           processedContent = contentWithoutFrontmatter;
         }
         
-        setProcessedFrontmatter(extractedFrontmatter);
+        setProcessedFrontmatter(extractedFrontmatter as DocFrontmatter);
         
         // Generate table of contents
         if (showTableOfContents) {
@@ -253,10 +284,10 @@ export function MarkdownRenderer({
                 </div>
               )}
               
-              {'date' in processedFrontmatter && processedFrontmatter.date && (
+              {(processedFrontmatter as any)?.date && (
                 <div className="flex items-center gap-1">
                   <CalendarIcon className="h-4 w-4" />
-                  <span>{formatDate(processedFrontmatter.date)}</span>
+                  <span>{formatDate((processedFrontmatter as any).date)}</span>
                 </div>
               )}
               
@@ -349,7 +380,7 @@ export function MarkdownRenderer({
       </div>
     </div>
   );
-};
+}
 
 // Separate component to handle the HTML content with interactive features
 const MarkdownContent: React.FC<{

@@ -1,0 +1,17 @@
+wundr-team:
+  name: Wundr Team
+  title: Documentation Team
+  url: https://github.com/adapticai/wundr
+  image_url: https://github.com/adapticai.png
+
+adaptic:
+  name: Adaptic.ai
+  title: AI Development Team
+  url: https://github.com/adapticai
+  image_url: https://github.com/adapticai.png
+
+ruvnet:
+  name: rUv
+  title: Lead Developer
+  url: https://github.com/ruvnet
+  image_url: https://github.com/ruvnet.png

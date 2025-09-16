@@ -17,7 +17,7 @@ const config: Config = {
   organizationName: 'adapticai',
   projectName: 'wundr',
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
@@ -164,16 +164,24 @@ const config: Config = {
           title: 'Documentation',
           items: [
             {
-              label: 'Getting Started',
-              to: '/getting-started',
+              label: 'Introduction',
+              to: '/intro',
             },
             {
-              label: 'User Guide',
+              label: 'Getting Started',
+              to: '/getting-started/installation',
+            },
+            {
+              label: 'User Guides',
               to: '/guides',
             },
             {
               label: 'API Reference',
               to: '/api',
+            },
+            {
+              label: 'Features',
+              to: '/features/overview',
             },
           ],
         },
@@ -200,6 +208,14 @@ const config: Config = {
             {
               label: 'Blog',
               to: '/blog',
+            },
+            {
+              label: 'FAQ',
+              to: '/faq',
+            },
+            {
+              label: 'Troubleshooting',
+              to: '/troubleshooting/common-issues',
             },
             {
               label: 'GitHub',
