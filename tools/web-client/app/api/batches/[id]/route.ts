@@ -58,7 +58,7 @@ export async function PATCH(
       case 'cancel':
         await batchService.updateBatch(id, { status: BatchStatus.FAILED });
         break;
-      case 'retry':
+      case 'retry': {
         // Retry logic - create a new batch with same items
         const oldBatch = await batchService.getBatch(id);
         if (!oldBatch) {
@@ -79,6 +79,7 @@ export async function PATCH(
           success: true,
           data: { newBatchId: newBatch.id }
         });
+      }
       case 'rollback':
         // Rollback not implemented - just mark as failed
         await batchService.updateBatch(id, { status: BatchStatus.FAILED });

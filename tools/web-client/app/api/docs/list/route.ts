@@ -91,7 +91,7 @@ async function getAllDocFiles(docsDir: string): Promise<DocFile[]> {
 
 export async function GET(request: NextRequest) {
   try {
-    const fs = await import('fs-extra');
+    // const fs = await import('fs-extra');
     const path = await import('path');
     
     const searchParams = request.nextUrl.searchParams;

@@ -57,33 +57,35 @@ function checkRateLimit(clientId: string): boolean {
 
 // Execute command and return output
 async function execCommand(command: string, args: string[], cwd: string): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    const { spawn } = await import('child_process')
-    const child = spawn(command, args, { cwd, shell: true })
-    let stdout = ''
-    let stderr = ''
-    
-    child.stdout.on('data', (data) => {
-      stdout += data.toString()
-    })
-    
-    child.stderr.on('data', (data) => {
-      stderr += data.toString()
-    })
-    
-    child.on('close', (code) => {
-      if (code === 0 || stdout) {
-        resolve(stdout)
-      } else {
-        reject(new Error(stderr || `Command failed with code ${code}`))
-      }
-    })
-    
-    // Timeout after 60 seconds for build commands
-    setTimeout(() => {
-      child.kill('SIGTERM')
-      reject(new Error('Command timeout'))
-    }, 60000)
+  return new Promise((resolve, reject) => {
+    (async () => {
+      const { spawn } = await import('child_process')
+      const child = spawn(command, args, { cwd, shell: true })
+      let stdout = ''
+      let stderr = ''
+
+      child.stdout.on('data', (data) => {
+        stdout += data.toString()
+      })
+
+      child.stderr.on('data', (data) => {
+        stderr += data.toString()
+      })
+
+      child.on('close', (code) => {
+        if (code === 0 || stdout) {
+          resolve(stdout)
+        } else {
+          reject(new Error(stderr || `Command failed with code ${code}`))
+        }
+      })
+
+      // Timeout after 60 seconds for build commands
+      setTimeout(() => {
+        child.kill('SIGTERM')
+        reject(new Error('Command timeout'))
+      }, 60000)
+    })().catch(reject)
   })
 }
 

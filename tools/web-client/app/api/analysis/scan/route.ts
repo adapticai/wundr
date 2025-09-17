@@ -164,7 +164,8 @@ async function validatePaths(inputPaths: string[], projectRoot: string): Promise
       }
       
       // Check if path exists
-      if (!require('fs').existsSync(resolvedPath)) {
+      const fs = await import('fs')
+      if (!fs.existsSync(resolvedPath)) {
         return {
           isValid: false,
           resolvedPaths: [],
@@ -277,7 +278,7 @@ async function analyzeFile(filePath: string): Promise<CodeMetric> {
     if (unusedVarMatches) {
       for (const match of unusedVarMatches) {
         const varName = match.match(/const\s+(\w+)/)?.[1]
-        if (varName && !new RegExp(`\\b${varName}\\b`, 'g').test(content.replace(match, ''))) {
+        if (varName && !new RegExp(`\\b${varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g').test(content.replace(match, ''))) {
           issues.push({
             type: 'warning',
             severity: 'low',
@@ -698,7 +699,7 @@ export async function POST(request: NextRequest) {
         data = await analyzeDependencies(projectRoot)
         break
         
-      case 'duplicates':
+      case 'duplicates': {
         // Collect files first
         const pathValidation = await validatePaths(scanOptions.paths, projectRoot)
         if (!pathValidation.isValid) {
@@ -720,8 +721,9 @@ export async function POST(request: NextRequest) {
         
         data = await detectDuplications(allFiles)
         break
-        
-      default:
+      }
+
+      default: {
         const response: ApiResponse<null> = {
           success: false,
           data: null,
@@ -729,6 +731,7 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString()
         }
         return NextResponse.json(response, { status: 400 })
+      }
     }
     
     const processingTime = Date.now() - startTime

@@ -65,33 +65,35 @@ function checkRateLimit(clientId: string): boolean {
 
 // Execute command and return output
 function execCommand(command: string, args: string[], cwd: string): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    const { spawn } = await import('child_process')
-    const child = spawn(command, args, { cwd, shell: true })
-    let stdout = ''
-    let stderr = ''
-    
-    child.stdout.on('data', (data) => {
-      stdout += data.toString()
-    })
-    
-    child.stderr.on('data', (data) => {
-      stderr += data.toString()
-    })
-    
-    child.on('close', (code) => {
-      if (code === 0 || stdout) {
-        resolve(stdout)
-      } else {
-        reject(new Error(stderr || `Command failed with code ${code}`))
-      }
-    })
-    
-    // Timeout after 30 seconds
-    setTimeout(() => {
-      child.kill('SIGTERM')
-      reject(new Error('Command timeout'))
-    }, 30000)
+  return new Promise((resolve, reject) => {
+    (async () => {
+      const { spawn } = await import('child_process')
+      const child = spawn(command, args, { cwd, shell: true })
+      let stdout = ''
+      let stderr = ''
+
+      child.stdout.on('data', (data) => {
+        stdout += data.toString()
+      })
+
+      child.stderr.on('data', (data) => {
+        stderr += data.toString()
+      })
+
+      child.on('close', (code) => {
+        if (code === 0 || stdout) {
+          resolve(stdout)
+        } else {
+          reject(new Error(stderr || `Command failed with code ${code}`))
+        }
+      })
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        child.kill('SIGTERM')
+        reject(new Error('Command timeout'))
+      }, 30000)
+    })().catch(reject)
   })
 }
 
@@ -310,7 +312,7 @@ async function analyzeESLintIssues(projectRoot: string): Promise<{ codeSmells: n
   } catch (error) {
     // Fallback: count TODO comments and common patterns
     try {
-      const todoOutput = await execCommand('grep', ['-r', '--include=*.ts', '--include=*.tsx', '-i', 'todo\|fixme\|hack\|xxx', '.'], projectRoot)
+      const todoOutput = await execCommand('grep', ['-r', '--include=*.ts', '--include=*.tsx', '-i', 'todo|fixme|hack|xxx', '.'], projectRoot)
       const todoCount = todoOutput.split('\n').filter(Boolean).length
       
       return {

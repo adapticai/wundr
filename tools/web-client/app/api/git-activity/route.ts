@@ -15,14 +15,14 @@ interface GitCommit {
   files: string[]
 }
 
-interface GitStats {
-  totalCommits: number
-  totalAdditions: number
-  totalDeletions: number
-  totalFiles: number
-  contributors: Set<string>
-  branches: string[]
-}
+// interface GitStats {
+//   totalCommits: number
+//   totalAdditions: number
+//   totalDeletions: number
+//   totalFiles: number
+//   contributors: Set<string>
+//   branches: string[]
+// }
 
 interface GitCache {
   [key: string]: {
@@ -239,7 +239,7 @@ async function getGitActivity(projectRoot: string, timeRange: TimeRange): Promis
 }
 
 // Try to enrich data with pull request information
-async function enrichWithPullRequestData(data: GitActivity[], projectRoot: string, timeRange: TimeRange): Promise<void> {
+async function enrichWithPullRequestData(data: GitActivity[], projectRoot: string, _timeRange: TimeRange): Promise<void> {
   try {
     // Try to get remote URL to determine hosting service
     const remoteOutput = await execGitCommand(['remote', 'get-url', 'origin'], projectRoot)
@@ -250,7 +250,7 @@ async function enrichWithPullRequestData(data: GitActivity[], projectRoot: strin
       // In a production environment, you would use the GitHub API here
       // For now, we'll estimate PRs based on branch activity
       const branchesOutput = await execGitCommand(['branch', '-r'], projectRoot)
-      const remoteBranches = branchesOutput.split('\n').filter(Boolean).length
+      const _remoteBranches = branchesOutput.split('\n').filter(Boolean).length
       
       // Estimate PRs and issues based on commit and branch activity
       for (const item of data) {

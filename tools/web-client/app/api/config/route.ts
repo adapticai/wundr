@@ -250,10 +250,10 @@ async function parseConfigContent(filePath: string, type: ConfigFile['type']): P
         return JSON.parse(content)
         
       case 'yaml':
-      case 'yml':
+      case 'yml': {
         // Basic YAML parsing (simplified - in production use a proper YAML parser)
         const yamlLines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'))
-        const yamlObj: any = {}
+        const yamlObj: Record<string, unknown> = {}
         
         for (const line of yamlLines) {
           const [key, ...valueParts] = line.split(':')
@@ -271,9 +271,10 @@ async function parseConfigContent(filePath: string, type: ConfigFile['type']): P
           }
         }
         return yamlObj
+      }
         
-      case 'env':
-        const envObj: any = {}
+      case 'env': {
+        const envObj: Record<string, string> = {}
         const envLines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'))
         
         for (const line of envLines) {
@@ -284,6 +285,7 @@ async function parseConfigContent(filePath: string, type: ConfigFile['type']): P
           }
         }
         return envObj
+      }
         
       case 'js':
       case 'ts':
@@ -302,11 +304,12 @@ async function parseConfigContent(filePath: string, type: ConfigFile['type']): P
 function serializeConfigContent(data: any, type: ConfigFile['type']): string {
   try {
     switch (type) {
-      case 'json':
+      case 'json': {
         return JSON.stringify(data, null, 2)
-        
+      }
+
       case 'yaml':
-      case 'yml':
+      case 'yml': {
         // Basic YAML serialization
         let yamlContent = ''
         for (const [key, value] of Object.entries(data)) {
@@ -317,14 +320,16 @@ function serializeConfigContent(data: any, type: ConfigFile['type']): string {
           }
         }
         return yamlContent
-        
-      case 'env':
+      }
+
+      case 'env': {
         let envContent = ''
         for (const [key, value] of Object.entries(data)) {
           envContent += `${key}=${value}\n`
         }
         return envContent
-        
+      }
+
       default:
         return JSON.stringify(data, null, 2)
     }
@@ -409,7 +414,7 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
 async function readConfigurationFile(filePath: string): Promise<ConfigFile> {
   try {
     const { promises: fs } = await import('fs')
-    const path = await import('path')
+    // const path = await import('path') // Unused
     
     const stats = await fs.stat(filePath)
     const type = getConfigType(filePath)

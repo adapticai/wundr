@@ -57,12 +57,12 @@ interface GitTag {
   author?: string
 }
 
-interface GitStash {
-  index: number
-  branch: string
-  message: string
-  date: string
-}
+// interface GitStash {
+//   index: number
+//   branch: string
+//   message: string
+//   date: string
+// }
 
 interface GitOperationRequest {
   action: 'status' | 'log' | 'branches' | 'remotes' | 'tags' | 'stash' | 'diff' | 'blame' | 'show'
@@ -102,8 +102,8 @@ function checkRateLimit(clientId: string): boolean {
 }
 
 // Execute git command safely
-function execGitCommand(args: string[], cwd: string, timeout: number = 30000): Promise<string> {
-  return new Promise((resolve, reject) => {
+async function execGitCommand(args: string[], cwd: string, timeout: number = 30000): Promise<string> {
+  return new Promise(async (resolve, reject) => {
     // Sanitize arguments to prevent command injection
     const sanitizedArgs = args.map(arg => {
       if (typeof arg !== 'string') {
@@ -112,8 +112,8 @@ function execGitCommand(args: string[], cwd: string, timeout: number = 30000): P
       // Remove dangerous characters
       return arg.replace(/[;&|`$(){}[\]<>]/g, '')
     })
-    
-    const { spawn } = require('child_process')
+
+    const { spawn } = await import('child_process')
     const child = spawn('git', sanitizedArgs, { 
       cwd, 
       shell: false, // Disable shell for security

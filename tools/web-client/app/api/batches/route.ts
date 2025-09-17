@@ -6,13 +6,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
 
-    let batches: any[];
+    let batches: Array<{ id: string; status: string; name?: string; jobs?: unknown[] }>;
     switch (type) {
       case 'active':
-        batches = (await batchService.getAllBatches()).filter((b: any) => b.status === 'running');
+        batches = (await batchService.getAllBatches()).filter((b: { status: string }) => b.status === 'running');
         break;
       case 'history':
-        batches = (await batchService.getAllBatches()).filter((b: any) => b.status === 'completed' || b.status === 'failed');
+        batches = (await batchService.getAllBatches()).filter((b: { status: string }) => b.status === 'completed' || b.status === 'failed');
         break;
       default:
         batches = await batchService.getAllBatches();
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const batch = await batchService.createBatch(
       body.name || 'New Batch',
-      (body.items || []).map((item: any) => ({
+      (body.items || []).map((item: { name?: string; type?: string; data?: unknown; priority?: number }) => ({
         name: item.name || 'Job',
         type: item.type || 'default',
         data: item.data || item,

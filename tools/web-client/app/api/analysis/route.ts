@@ -29,7 +29,7 @@ class AnalysisService {
     return data
   }
 
-  private async fetchLatestAnalysis(projectId?: string): Promise<AnalysisData> {
+  private async fetchLatestAnalysis(_projectId?: string): Promise<AnalysisData> {
     // This would integrate with your actual analysis system
     // For now, returning structured production-ready data
     
@@ -295,25 +295,27 @@ export async function POST(request: NextRequest) {
     const { action, data } = body
     
     switch (action) {
-      case 'trigger_analysis':
+      case 'trigger_analysis': {
         // Trigger new analysis
         const service = AnalysisService.getInstance()
         const analysisData = await service.getAnalysisData(data?.projectId)
-        
+
         return NextResponse.json({
           success: true,
           data: { id: analysisData.id, status: 'initiated' },
           timestamp: new Date().toISOString()
         })
+      }
         
-      case 'update_recommendation':
+      case 'update_recommendation': {
         // Update recommendation status
         return NextResponse.json({
           success: true,
           data: { updated: true },
           timestamp: new Date().toISOString()
         })
-        
+      }
+
       default:
         return NextResponse.json({
           success: false,
