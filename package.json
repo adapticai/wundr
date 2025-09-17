@@ -29,7 +29,15 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": ["dist", "bin", "src", "templates", "docs", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "bin",
+    "src",
+    "templates",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "turbo build",
     "build:parallel": "turbo build --parallel",
@@ -90,8 +98,8 @@
     "@types/react": "^19.1.9",
     "@types/semver": "^7.7.0",
     "@types/uuid": "^10.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
     "chokidar": "^4.0.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
@@ -118,8 +126,16 @@
     "npm": ">=8.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
-    "*.{js,jsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
-    "*.{json,yaml,yml,md}": ["prettier --write"]
+    "*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{js,jsx}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{json,yaml,yml,md}": [
+      "prettier --write"
+    ]
   }
 }

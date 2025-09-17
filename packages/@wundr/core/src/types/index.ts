@@ -16,31 +16,33 @@ export interface Logger {
   info(message: string, meta?: Record<string, unknown>): void;
   warn(message: string, meta?: Record<string, unknown>): void;
   error(message: string | Error, meta?: Record<string, unknown>): void;
+  child(defaultMeta: Record<string, unknown>): Logger;
+  setLevel(level: string): void;
 }
 
-export interface EventBusEvent {
+export interface EventBusEvent<TPayload = Record<string, unknown>> {
   readonly id: string;
   readonly type: string;
   readonly timestamp: Date;
-  readonly payload: unknown;
+  readonly payload: TPayload;
   readonly source?: string;
 }
 
-export interface EventHandler<T = unknown> {
-  (event: EventBusEvent & { payload: T }): void | Promise<void>;
+export interface EventHandler<TPayload = Record<string, unknown>> {
+  (event: EventBusEvent<TPayload>): void | Promise<void>;
 }
 
 export interface EventBus {
-  emit<T = unknown>(type: string, payload: T, source?: string): void;
-  on<T = unknown>(type: string, handler: EventHandler<T>): () => void;
-  off(type: string, handler: EventHandler): void;
-  once<T = unknown>(type: string, handler: EventHandler<T>): void;
+  emit<TPayload = Record<string, unknown>>(type: string, payload: TPayload, source?: string): void;
+  on<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): () => void;
+  off<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): void;
+  once<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): void;
   removeAllListeners(type?: string): void;
 }
 
-export interface ValidationResult<T = unknown> {
+export interface ValidationResult<TData = Record<string, unknown>> {
   success: boolean;
-  data?: T;
+  data?: TData;
   errors?: ValidationError[];
 }
 
@@ -50,12 +52,12 @@ export interface ValidationError {
   code: string;
 }
 
-export interface UtilityFunction<T = unknown, R = unknown> {
-  (...args: T[]): R;
+export interface UtilityFunction<TArgs extends readonly unknown[] = readonly unknown[], TReturn = unknown> {
+  (...args: TArgs): TReturn;
 }
 
-export interface AsyncUtilityFunction<T = unknown, R = unknown> {
-  (...args: T[]): Promise<R>;
+export interface AsyncUtilityFunction<TArgs extends readonly unknown[] = readonly unknown[], TReturn = unknown> {
+  (...args: TArgs): Promise<TReturn>;
 }
 
 // Generic result type for operations that can fail
@@ -79,3 +81,129 @@ export const CORE_EVENTS = {
 } as const;
 
 export type CoreEventType = typeof CORE_EVENTS[keyof typeof CORE_EVENTS];
+
+// Enhanced type system for enterprise patterns
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+export interface JsonObject {
+  readonly [key: string]: JsonValue;
+}
+export interface JsonArray extends ReadonlyArray<JsonValue> {}
+
+// Metadata types for extensible objects
+export interface MetadataContainer {
+  readonly metadata: JsonObject;
+}
+
+// Configuration interfaces
+export interface ComponentConfiguration {
+  readonly enabled: boolean;
+  readonly options: JsonObject;
+  readonly version?: string;
+}
+
+// Service base interfaces
+export interface Service {
+  readonly name: string;
+  readonly version: string;
+  initialize(): Promise<void>;
+  shutdown(): Promise<void>;
+  health(): Promise<ServiceHealthStatus>;
+}
+
+export interface ServiceHealthStatus {
+  readonly status: 'healthy' | 'degraded' | 'unhealthy';
+  readonly timestamp: Date;
+  readonly details: JsonObject;
+  readonly dependencies: readonly DependencyHealth[];
+}
+
+export interface DependencyHealth {
+  readonly name: string;
+  readonly status: 'healthy' | 'degraded' | 'unhealthy';
+  readonly responseTime?: number;
+  readonly lastCheck: Date;
+  readonly error?: string;
+}
+
+// Enterprise audit types
+export interface AuditableOperation {
+  readonly operationId: string;
+  readonly userId?: string;
+  readonly sessionId?: string;
+  readonly timestamp: Date;
+  readonly operation: string;
+  readonly resource: string;
+  readonly changes?: readonly AuditChange[];
+  readonly metadata: JsonObject;
+}
+
+export interface AuditChange {
+  readonly field: string;
+  readonly oldValue: JsonValue;
+  readonly newValue: JsonValue;
+  readonly changeType: 'create' | 'update' | 'delete';
+}
+
+// Security and access control
+export interface SecurityContext {
+  readonly principal: Principal;
+  readonly permissions: readonly Permission[];
+  readonly sessionId: string;
+  readonly issuedAt: Date;
+  readonly expiresAt?: Date;
+}
+
+export interface Principal {
+  readonly id: string;
+  readonly type: 'user' | 'service' | 'system';
+  readonly name: string;
+  readonly roles: readonly string[];
+  readonly attributes: JsonObject;
+}
+
+export interface Permission {
+  readonly resource: string;
+  readonly actions: readonly string[];
+  readonly conditions?: JsonObject;
+}
+
+// Data processing types
+export interface ProcessingResult<TData = JsonValue> {
+  readonly success: boolean;
+  readonly data?: TData;
+  readonly errors: readonly ProcessingError[];
+  readonly warnings: readonly ProcessingWarning[];
+  readonly metadata: JsonObject;
+  readonly processingTime: number;
+}
+
+export interface ProcessingError {
+  readonly code: string;
+  readonly message: string;
+  readonly field?: string;
+  readonly value?: JsonValue;
+  readonly severity: 'low' | 'medium' | 'high' | 'critical';
+}
+
+export interface ProcessingWarning {
+  readonly code: string;
+  readonly message: string;
+  readonly suggestion?: string;
+}
+
+// Typed configuration management
+export interface TypedConfiguration<TSchema = JsonObject> {
+  readonly schema: TSchema;
+  readonly version: string;
+  readonly environment: string;
+  readonly sources: readonly ConfigurationSource[];
+  readonly validatedAt: Date;
+}
+
+export interface ConfigurationSource {
+  readonly name: string;
+  readonly type: 'file' | 'environment' | 'remote' | 'database';
+  readonly priority: number;
+  readonly lastLoaded: Date;
+}

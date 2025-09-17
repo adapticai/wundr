@@ -5,10 +5,31 @@
 
 // Common Node.js modules that might not have complete types
 declare module 'shelljs' {
-  export function exec(command: string, options?: any): any;
-  export function mkdir(path: string, options?: any): void;
-  export function cp(source: string, dest: string, options?: any): void;
-  export function rm(path: string, options?: any): void;
+  interface ExecOptions {
+    readonly silent?: boolean;
+    readonly async?: boolean;
+    readonly timeout?: number;
+    readonly maxBuffer?: number;
+    readonly encoding?: string;
+    readonly env?: Record<string, string>;
+  }
+
+  interface ExecResult {
+    readonly code: number;
+    readonly stdout: string;
+    readonly stderr: string;
+  }
+
+  interface FileOptions {
+    readonly force?: boolean;
+    readonly recursive?: boolean;
+    readonly silent?: boolean;
+  }
+
+  export function exec(command: string, options?: ExecOptions): ExecResult;
+  export function mkdir(path: string, options?: FileOptions): void;
+  export function cp(source: string, dest: string, options?: FileOptions): void;
+  export function rm(path: string, options?: FileOptions): void;
   export function cd(path: string): void;
   export function pwd(): string;
   export function ls(path?: string): string[];
@@ -35,10 +56,10 @@ declare module 'glob' {
     stat?: boolean;
     silent?: boolean;
     strict?: boolean;
-    cache?: any;
-    statCache?: any;
-    symlinks?: any;
-    realpathCache?: any;
+    cache?: Map<string, unknown>;
+    statCache?: Map<string, unknown>;
+    symlinks?: Map<string, boolean>;
+    realpathCache?: Map<string, string>;
     noext?: boolean;
     nocase?: boolean;
     matchBase?: boolean;
@@ -70,7 +91,7 @@ declare module 'glob' {
 
 declare module 'ts-morph' {
   export class Project {
-    constructor(options?: any);
+    constructor(options?: GlobOptions);
     addSourceFilesAtPaths(patterns: string[]): void;
     getSourceFiles(): SourceFile[];
     getSourceFile(path: string): SourceFile | undefined;
@@ -158,12 +179,12 @@ declare module 'commander' {
   export interface Command {
     version(version: string): Command;
     description(description: string): Command;
-    option(flags: string, description?: string, defaultValue?: any): Command;
+    option(flags: string, description?: string, defaultValue?: string | number | boolean): Command;
     argument(name: string, description?: string): Command;
-    action(fn: (...args: any[]) => void | Promise<void>): Command;
+    action(fn: (...args: readonly unknown[]) => void | Promise<void>): Command;
     command(nameAndArgs: string): Command;
     parse(argv?: string[]): Command;
-    opts(): any;
+    opts(): Record<string, unknown>;
     args: string[];
   }
 
@@ -244,15 +265,15 @@ declare module 'inquirer' {
   interface Question {
     type?: string;
     name: string;
-    message: string | ((answers: any) => string);
-    default?: any;
-    choices?: any[];
-    validate?: (input: any) => boolean | string;
-    filter?: (input: any) => any;
-    when?: (answers: any) => boolean;
+    message: string | ((answers: Record<string, unknown>) => string);
+    default?: unknown;
+    choices?: readonly unknown[];
+    validate?: (input: unknown) => boolean | string;
+    filter?: (input: unknown) => unknown;
+    when?: (answers: Record<string, unknown>) => boolean;
   }
 
-  function prompt(questions: Question[]): Promise<any>;
+  function prompt(questions: readonly Question[]): Promise<Record<string, unknown>>;
   export { prompt, Question };
 }
 
@@ -293,16 +314,16 @@ declare module 'semver' {
 
 // Custom modules for this toolkit
 declare module '@scripts/*' {
-  const module: any;
+  const module: NodeModule;
   export default module;
 }
 
 declare module '@config/*' {
-  const module: any;
+  const module: NodeModule;
   export default module;
 }
 
 declare module '@templates/*' {
-  const module: any;
+  const module: NodeModule;
   export default module;
 }

@@ -4,7 +4,10 @@
 
 import winston from 'winston';
 import chalk from 'chalk';
-import { Logger } from '../types/index.js';
+import { type Logger } from '../types/index.js';
+
+// Re-export the Logger type for convenience
+export { type Logger };
 
 export interface LoggerConfig {
   level?: string;
