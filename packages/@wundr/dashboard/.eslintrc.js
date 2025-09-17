@@ -1,8 +1,9 @@
 module.exports = {
-  env: {
-    browser: true,
-    node: true,
-    es2021: true,
+  root: true,
+  extends: ['../../../config/eslint-config/nextjs.js'],
+  parserOptions: {
+    project: './tsconfig.json',
+    tsconfigRootDir: __dirname,
   },
   globals: {
     WebSocket: 'readonly',
@@ -16,7 +17,13 @@ module.exports = {
   rules: {
     'no-console': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
-  extends: ['next/core-web-vitals'],
+  ignorePatterns: [
+    'dist/',
+    'build/',
+    '.next/',
+    'coverage/',
+    'node_modules/',
+    '*.min.js',
+  ],
 };
