@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running post-commit build validation..."
+
+# Run post-commit validation in background to not block workflow
+node scripts/build-validation.js validate &
+
+echo "✅ Post-commit validation started in background"

@@ -1,19 +1,20 @@
 module.exports = {
   extends: [
-    'next/core-web-vitals'
+    'next/core-web-vitals',
+    'plugin:@typescript-eslint/recommended'
   ],
   parser: '@typescript-eslint/parser',
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    ecmaFeatures: {
-      jsx: true
-    }
-  },
   env: {
     browser: true,
     node: true,
     es2022: true
+  },
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true
+    },
+    ecmaVersion: 'latest',
+    sourceType: 'module'
   },
   rules: {
     // React specific rules
@@ -23,18 +24,25 @@ module.exports = {
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
 
-    // Allow console in development scripts
-    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
-
-    // TypeScript rules
+    // TypeScript rules (minimal set to avoid conflicts)
     '@typescript-eslint/no-unused-vars': ['error', {
       argsIgnorePattern: '^_',
       varsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_'
+      caughtErrorsIgnorePattern: '^_',
     }],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn'
+    '@typescript-eslint/no-explicit-any': 'warn',
+
+    // Accessibility adjustments for Next.js
+    'jsx-a11y/anchor-is-valid': ['error', {
+      components: ['Link'],
+      specialLink: ['hrefLeft', 'hrefRight'],
+      aspects: ['invalidHref', 'preferButton']
+    }],
+
+    // Allow console in development scripts
+    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }]
   },
   settings: {
     react: {

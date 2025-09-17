@@ -1,1 +1,24 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔧 Running pre-commit checks..."
+
+# Run lint-staged first
 npx lint-staged
+
+if [ $? -ne 0 ]; then
+  echo "❌ Linting failed. Commit aborted."
+  exit 1
+fi
+
+# Run build validation
+echo "🔧 Running build validation..."
+node scripts/build-validation.js build
+
+if [ $? -ne 0 ]; then
+  echo "❌ Build validation failed. Commit aborted."
+  echo "💡 Fix build errors before committing."
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
