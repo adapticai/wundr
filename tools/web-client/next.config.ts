@@ -152,7 +152,7 @@ const nextConfig: NextConfig = {
           contextRegExp: /client/,
         })
       );
-    } catch (error) {
+    } catch (_error) {
       // webpack not available in this context, skip the plugin
       console.warn('Webpack IgnorePlugin not configured - webpack not available');
     }

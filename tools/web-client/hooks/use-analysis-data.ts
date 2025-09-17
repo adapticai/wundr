@@ -47,7 +47,7 @@ export function useAnalysisData(options: UseAnalysisDataOptions = {}): UseAnalys
     onMessage: handleRealtimeUpdate
   })
 
-  function handleRealtimeUpdate(message: any) {
+  function handleRealtimeUpdate(message: { type: string; data?: AnalysisData; timestamp?: string }) {
     if (message.type === 'analysis' && message.data) {
       setData(prev => {
         if (!prev) return message.data
@@ -188,7 +188,7 @@ export function useAnalysisData(options: UseAnalysisDataOptions = {}): UseAnalys
         
         const updatedRecommendations = prev.recommendations.map(rec => 
           rec.id === recommendationId 
-            ? { ...rec, status: status as any }
+            ? { ...rec, status: status as 'pending' | 'in_progress' | 'completed' | 'dismissed' }
             : rec
         )
         

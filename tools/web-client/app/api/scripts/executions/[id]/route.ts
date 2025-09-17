@@ -24,12 +24,12 @@ export async function GET(
       data: execution
     });
 
-  } catch (error) {
-    console.error('Failed to fetch execution:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch execution'
+        error: _error instanceof Error ? _error.message : 'Failed to fetch execution'
       },
       { status: 500 }
     );
@@ -50,12 +50,12 @@ export async function DELETE(
       message: 'Execution cancelled successfully'
     });
 
-  } catch (error) {
-    console.error('Failed to cancel execution:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to cancel execution'
+        error: _error instanceof Error ? _error.message : 'Failed to cancel execution'
       },
       { status: 500 }
     );

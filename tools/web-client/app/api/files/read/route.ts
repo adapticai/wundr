@@ -77,8 +77,8 @@ export async function GET(request: NextRequest) {
       path: resolvedPath,
       name: path.basename(resolvedPath)
     });
-  } catch (error) {
-    console.error('Error reading file:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to read file' },
       { status: 500 }

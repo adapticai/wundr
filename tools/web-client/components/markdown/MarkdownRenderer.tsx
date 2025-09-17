@@ -44,7 +44,7 @@ import 'highlight.js/styles/github-dark.css';
 
 interface MarkdownRendererProps {
   content: string;
-  frontmatter?: DocFrontmatter | Record<string, any>;
+  frontmatter?: DocFrontmatter | Record<string, unknown>;
   showMetadata?: boolean;
   showTableOfContents?: boolean;
   enableSyntaxHighlighting?: boolean;
@@ -284,10 +284,10 @@ export function MarkdownRenderer({
                 </div>
               )}
               
-              {(processedFrontmatter as any)?.date && (
+              {(processedFrontmatter as DocFrontmatter & Record<string, unknown>)?.date && (
                 <div className="flex items-center gap-1">
                   <CalendarIcon className="h-4 w-4" />
-                  <span>{formatDate((processedFrontmatter as any).date)}</span>
+                  <span>{formatDate((processedFrontmatter as DocFrontmatter & Record<string, unknown>).date as string)}</span>
                 </div>
               )}
               

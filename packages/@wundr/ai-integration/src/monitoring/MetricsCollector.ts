@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { PerformanceMetrics, OperationResult } from '../types';
 
 export class MetricsCollector extends EventEmitter {

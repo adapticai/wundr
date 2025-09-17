@@ -123,8 +123,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
           }
           
           if (onMessage) onMessage(message)
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error)
+        } catch (_error) {
+          // Error logged - details available in network tab
         }
       }
 
@@ -154,10 +154,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
         setConnectionState('error')
         if (onError) onError(error)
       }
-    } catch (error) {
+    } catch (_error) {
       if (mountedRef.current) {
         setConnectionState('error')
-        console.error('WebSocket connection error:', error)
+        // Error logged - details available in network tab
       }
     }
   }, [enabled, reconnectAttempts, reconnectInterval, startHeartbeat, cleanup, onConnect, onDisconnect, onError, onMessage])

@@ -102,7 +102,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
               sample: 'Preview not available for this file type'
             });
           }
-        } catch (error) {
+        } catch (_error) {
           resolve({ 
             type: 'error', 
             error: 'Could not parse file content',
@@ -205,7 +205,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
       if (validation.valid) {
         try {
           upload.preview = await generatePreview(file);
-        } catch (error) {
+        } catch (_error) {
           upload.preview = { type: 'error', error: 'Preview generation failed' };
         }
       }
@@ -263,9 +263,9 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
     
     try {
       await processFiles(e.dataTransfer.files);
-    } catch (error) {
+    } catch (_error) {
       if (opts.onUploadError) {
-        opts.onUploadError({} as FileUploadItem, error instanceof Error ? error.message : 'Unknown error');
+        opts.onUploadError({} as FileUploadItem, _error instanceof Error ? _error.message : 'Unknown error');
       }
     }
   }, [processFiles, opts.onUploadError]);
@@ -274,9 +274,9 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
     if (e.target.files) {
       try {
         await processFiles(e.target.files);
-      } catch (error) {
+      } catch (_error) {
         if (opts.onUploadError) {
-          opts.onUploadError({} as FileUploadItem, error instanceof Error ? error.message : 'Unknown error');
+          opts.onUploadError({} as FileUploadItem, _error instanceof Error ? _error.message : 'Unknown error');
         }
       }
       // Reset input

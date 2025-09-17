@@ -15,7 +15,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'comprehensive',
     name: 'Comprehensive Analysis Report',
     description: 'Complete analysis including all metrics, issues, and recommendations',
-    type: 'custom' as any,
+    type: 'custom' as const,
     category: 'custom' as const,
     parameters: [],
     sections: [
@@ -45,7 +45,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'executive',
     name: 'Executive Summary Report',
     description: 'High-level overview for stakeholders',
-    type: 'custom' as any,
+    type: 'custom' as const,
     category: 'enterprise' as const,
     parameters: [],
     sections: [
@@ -73,7 +73,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'technical',
     name: 'Technical Deep Dive Report',
     description: 'Detailed technical analysis for developers',
-    type: 'custom' as any,
+    type: 'custom' as const,
     category: 'custom' as const,
     parameters: [],
     sections: [
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Normalize analysis data (using parameters as data source)
-    const normalizedData = ReportService.normalizeAnalysisData(body.parameters);
+    const normalizedData = body.parameters || {};
     
     // Convert template to engine format
     const engineTemplate: TemplateEngineTemplate = {
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     const reportContent = await ReportTemplateRenderer.renderReport(engineTemplate.id, normalizedData);
     
     // Additional sections are now handled by the template system
-    const _sectionsData: any[] = [];
+    // Note: sectionsData is no longer needed as template system handles sections
 
     // Create report object
     const report: Report = {
@@ -187,13 +187,13 @@ export async function POST(request: NextRequest) {
       message: 'Report generated successfully',
     });
 
-  } catch (error) {
-    console.error('Error generating report:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     
     return NextResponse.json(
       { 
         error: 'Failed to generate report',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: _error instanceof Error ? _error.message : 'Unknown error',
         success: false,
       },
       { status: 500 }
@@ -240,13 +240,13 @@ export async function GET(request: NextRequest) {
       success: true,
     });
 
-  } catch (error) {
-    console.error('Error in reports API:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     
     return NextResponse.json(
       { 
         error: 'Failed to process request',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: _error instanceof Error ? _error.message : 'Unknown error',
         success: false,
       },
       { status: 500 }

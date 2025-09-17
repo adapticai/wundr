@@ -5,8 +5,9 @@
  * PR enhancement, and swarm-based quality assurance workflows.
  */
 
-import { EventEmitter } from 'eventemitter3';
 import { Octokit } from '@octokit/rest';
+import { EventEmitter } from 'eventemitter3';
+
 import { 
   GitHubConfig,
   Agent,
@@ -73,7 +74,7 @@ export class GitHubIntegration extends EventEmitter {
     
     try {
       const { data: user } = await this.octokit.users.getAuthenticated();
-      console.log(`GitHub authenticated as: ${user.login}`);
+      console.info(`GitHub authenticated as: ${user.login}`);
     } catch (error) {
       throw new Error(`GitHub authentication failed: ${error.message}`);
     }
@@ -660,7 +661,7 @@ export class GitHubIntegration extends EventEmitter {
   }
 
   private async escalateIssue(repository: string, issue: any): Promise<void> {
-    console.log(`Escalating high-priority issue: ${issue.title} in ${repository}`);
+    console.info(`Escalating high-priority issue: ${issue.title} in ${repository}`);
   }
 
   private async analyzePushQuality(repository: string, commits: any[]): Promise<void> {

@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { 
   AgentConfig,
   Agent,

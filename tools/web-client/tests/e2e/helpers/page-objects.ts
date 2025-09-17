@@ -68,7 +68,7 @@ export class BasePage {
           if (!response.ok()) {
             brokenLinks.push(`${href} - ${response.status()}`);
           }
-        } catch (error) {
+        } catch (_error) {
           brokenLinks.push(`${href} - Network Error`);
         }
       }
@@ -89,7 +89,7 @@ export class BasePage {
           if (!response.ok()) {
             missingImages.push(`${src} - ${response.status()}`);
           }
-        } catch (error) {
+        } catch (_error) {
           missingImages.push(`${src} - Network Error`);
         }
       }

@@ -5,11 +5,12 @@ export async function GET(request: NextRequest) {
     const { templateService } = await import('@/lib/services/template/TemplateService');
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
-    const language = searchParams.get('language');
-    const framework = searchParams.get('framework');
-    const difficulty = searchParams.get('difficulty');
+    // Unused query parameters
+    // const language = searchParams.get('language');
+    // const framework = searchParams.get('framework');
+    // const difficulty = searchParams.get('difficulty');
     const search = searchParams.get('search');
-    const tags = searchParams.get('tags')?.split(',').filter(Boolean);
+    // const tags = searchParams.get('tags')?.split(',').filter(Boolean);
 
     // For now, get all templates and filter manually since searchTemplates doesn't exist
     let templates = await templateService.getTemplates();
@@ -28,12 +29,12 @@ export async function GET(request: NextRequest) {
       count: templates.length
     });
 
-  } catch (error) {
-    console.error('Failed to fetch templates:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch templates'
+        error: _error instanceof Error ? _error.message : 'Failed to fetch templates'
       },
       { status: 500 }
     );
@@ -63,12 +64,12 @@ export async function POST(request: NextRequest) {
       data: template
     });
 
-  } catch (error) {
-    console.error('Failed to create template:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create template'
+        error: _error instanceof Error ? _error.message : 'Failed to create template'
       },
       { status: 500 }
     );

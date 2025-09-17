@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import type { PreProps, CodeProps, HeadingProps, LinkProps, TableProps, TableCellProps, BlockquoteProps, ListProps } from '@/types/mdx';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ import {
 // Custom MDX components for enhanced documentation
 export const mdxComponents = {
   // Enhanced code blocks with copy functionality
-  pre: ({ children, className, ...props }: any) => (
+  pre: ({ children, className, ...props }: PreProps) => (
     <div className="relative group">
       <pre 
         className={`bg-muted p-4 rounded-lg overflow-x-auto text-sm ${className || ''}`}
@@ -46,7 +47,7 @@ export const mdxComponents = {
   ),
 
   // Inline code with better styling
-  code: ({ children, className, ...props }: any) => (
+  code: ({ children, className, ...props }: CodeProps) => (
     <code 
       className={`bg-muted px-1.5 py-0.5 rounded text-sm font-mono ${className || ''}`}
       {...props}
@@ -276,24 +277,24 @@ export const mdxComponents = {
   hr: () => <Separator className="my-8" />,
 
   // Enhanced headings with anchors
-  h1: ({ children, id }: any) => (
+  h1: ({ children, id }: HeadingProps) => (
     <h1 id={id} className="text-3xl font-bold tracking-tight mb-6 scroll-mt-20">
       {children}
     </h1>
   ),
-  h2: ({ children, id }: any) => (
+  h2: ({ children, id }: HeadingProps) => (
     <h2 id={id} className="text-2xl font-semibold tracking-tight mb-4 mt-8 scroll-mt-20">
       {children}
     </h2>
   ),
-  h3: ({ children, id }: any) => (
+  h3: ({ children, id }: HeadingProps) => (
     <h3 id={id} className="text-xl font-semibold mb-3 mt-6 scroll-mt-20">
       {children}
     </h3>
   ),
 
   // Enhanced links
-  a: ({ href, children, ...props }: any) => (
+  a: ({ href, children, ...props }: LinkProps) => (
     <a 
       href={href} 
       className="text-primary hover:text-primary/80 underline underline-offset-4"
@@ -304,38 +305,38 @@ export const mdxComponents = {
   ),
 
   // Enhanced tables
-  table: ({ children }: any) => (
+  table: ({ children }: TableProps) => (
     <div className="overflow-x-auto my-6">
       <table className="w-full border-collapse border border-border">
         {children}
       </table>
     </div>
   ),
-  th: ({ children }: any) => (
+  th: ({ children }: TableCellProps) => (
     <th className="border border-border bg-muted p-3 text-left font-semibold">
       {children}
     </th>
   ),
-  td: ({ children }: any) => (
+  td: ({ children }: TableCellProps) => (
     <td className="border border-border p-3">
       {children}
     </td>
   ),
 
   // Enhanced blockquotes
-  blockquote: ({ children }: any) => (
+  blockquote: ({ children }: BlockquoteProps) => (
     <blockquote className="border-l-4 border-primary pl-4 py-2 my-4 bg-muted/30 italic">
       {children}
     </blockquote>
   ),
 
   // Enhanced lists
-  ul: ({ children }: any) => (
+  ul: ({ children }: ListProps) => (
     <ul className="list-disc list-inside space-y-1 my-4 ml-4">
       {children}
     </ul>
   ),
-  ol: ({ children }: any) => (
+  ol: ({ children }: ListProps) => (
     <ol className="list-decimal list-inside space-y-1 my-4 ml-4">
       {children}
     </ol>

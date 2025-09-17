@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import {
   PerformanceConfig,
   PerformanceMetrics,
@@ -252,7 +253,7 @@ export class PerformanceAnalyzer extends EventEmitter {
 
   private async executeOptimizationAction(action: string): Promise<void> {
     // Simulate optimization action execution
-    console.log(`Executing optimization action: ${action}`);
+    console.info(`Executing optimization action: ${action}`);
     
     switch (action) {
       case 'trigger-memory-cleanup':
@@ -271,7 +272,7 @@ export class PerformanceAnalyzer extends EventEmitter {
         break;
         
       default:
-        console.log(`Action ${action} not implemented yet`);
+        console.info(`Action ${action} not implemented yet`);
     }
     
     // Simulate execution time

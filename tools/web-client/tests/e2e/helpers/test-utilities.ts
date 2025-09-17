@@ -15,7 +15,7 @@ export class TestUtilities {
     try {
       const response = await this.page.request.get(url);
       return response.status() === expectedStatus;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -51,7 +51,7 @@ export class TestUtilities {
           } else {
             results.brokenLinks.push(fullUrl);
           }
-        } catch (error) {
+        } catch (_error) {
           results.brokenLinks.push(fullUrl);
         }
       }
@@ -209,7 +209,7 @@ export class TestUtilities {
         } else {
           results.unhealthy.push(`${endpoint} - ${response.status()}`);
         }
-      } catch (error) {
+      } catch (_error) {
         results.errors.push(`${endpoint} - ${error}`);
       }
     }

@@ -13,6 +13,7 @@ import {
   exportToJSON
 } from '@/lib/utils'
 import type { DependencyData } from '@/app/api/analysis/dependencies/route'
+import type { PackageInfo } from '@/types/analysis'
 
 interface PackageVersionChartProps {
   dependencies?: DependencyData[]
@@ -66,7 +67,7 @@ export function PackageVersionChart({ dependencies: initialDependencies = [] }: 
     
     try {
       // Mock data - in production this would parse package.json files
-      const packages: any[] = []
+      const packages: PackageInfo[] = []
       
       setDependencies(packages)
     } catch (err) {

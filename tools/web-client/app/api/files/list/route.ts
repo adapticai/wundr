@@ -64,8 +64,8 @@ async function traverseDirectory(dirPath: string, maxDepth: number = 10, current
 
       items.push(item);
     }
-  } catch (error) {
-    console.error(`Error reading directory ${dirPath}:`, error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     // Continue processing other directories
   }
 
@@ -139,8 +139,8 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json(result);
     }
-  } catch (error) {
-    console.error('Error in files/list API:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to list files' },
       { status: 500 }

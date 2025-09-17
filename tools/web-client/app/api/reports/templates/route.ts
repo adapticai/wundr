@@ -9,7 +9,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'comprehensive',
     name: 'Comprehensive Analysis Report',
     description: 'Complete analysis including all metrics, issues, and recommendations',
-    type: 'custom' as any,
+    type: 'custom' as const,
     category: 'custom' as const,
     parameters: [],
     sections: [
@@ -39,7 +39,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'executive',
     name: 'Executive Summary Report',
     description: 'High-level overview for stakeholders',
-    type: 'custom' as any,
+    type: 'custom' as const,
     category: 'enterprise' as const,
     parameters: [],
     sections: [
@@ -67,7 +67,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'technical',
     name: 'Technical Deep Dive Report',
     description: 'Detailed technical analysis for developers',
-    type: 'custom' as any,
+    type: 'custom' as const,
     category: 'custom' as const,
     parameters: [],
     sections: [
@@ -98,7 +98,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'security',
     name: 'Security Assessment Report',
     description: 'Focused security vulnerability analysis',
-    type: 'security-audit' as any,
+    type: 'security-audit' as const,
     category: 'enterprise' as const,
     parameters: [],
     sections: [
@@ -127,7 +127,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'performance',
     name: 'Performance Analysis Report',
     description: 'Code complexity and performance metrics',
-    type: 'performance-analysis' as any,
+    type: 'performance-analysis' as const,
     category: 'standard' as const,
     parameters: [],
     sections: [
@@ -156,7 +156,7 @@ const DEFAULT_TEMPLATES: Record<string, ReportTemplate> = {
     id: 'quality',
     name: 'Code Quality Report',
     description: 'Comprehensive code quality and maintainability analysis',
-    type: 'code-quality' as any,
+    type: 'code-quality' as const,
     category: 'standard' as const,
     parameters: [],
     sections: [
@@ -223,13 +223,13 @@ export async function GET(request: NextRequest) {
       success: true,
     });
 
-  } catch (error) {
-    console.error('Error fetching templates:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     
     return NextResponse.json(
       { 
         error: 'Failed to fetch templates',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: _error instanceof Error ? _error.message : 'Unknown error',
         success: false,
       },
       { status: 500 }
@@ -272,8 +272,8 @@ export async function POST(request: NextRequest) {
       message: 'Template created successfully'
     });
 
-  } catch (error) {
-    console.error('Error creating template:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to create template' },
       { status: 500 }

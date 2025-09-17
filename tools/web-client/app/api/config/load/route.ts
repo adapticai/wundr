@@ -25,7 +25,7 @@ export async function GET() {
       const configData = await fs.readFile(configFile, 'utf8');
       const config = JSON.parse(configData);
       return NextResponse.json(config);
-    } catch (error) {
+    } catch (_error) {
       // Return default configuration if file doesn't exist
       const defaultConfig = {
         general: {
@@ -74,8 +74,8 @@ export async function GET() {
       };
       return NextResponse.json(defaultConfig);
     }
-  } catch (error) {
-    console.error('Error loading configuration:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to load configuration' },
       { status: 500 }

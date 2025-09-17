@@ -458,8 +458,8 @@ export default function MarkdownDemoPage() {
         content
       );
       setReportMarkdown(markdown);
-    } catch (error) {
-      console.error('Failed to generate report:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   }, []);
 

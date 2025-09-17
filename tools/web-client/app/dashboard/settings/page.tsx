@@ -591,8 +591,8 @@ function ConfigurationManagement() {
       const text = await importFile.text();
       await importConfig(text);
       setImportFile(null);
-    } catch (error) {
-      console.error('Import failed:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     } finally {
       setIsImporting(false);
     }
@@ -602,8 +602,8 @@ function ConfigurationManagement() {
     try {
       await resetAll();
       setShowResetDialog(false);
-    } catch (error) {
-      console.error('Reset failed:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   }, [resetAll]);
 

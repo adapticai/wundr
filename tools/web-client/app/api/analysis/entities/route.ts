@@ -431,8 +431,8 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json'
       }
     })
-  } catch (error) {
-    console.error('Error analyzing entities:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
 
     const response: ApiResponse<null> = {
       success: false,

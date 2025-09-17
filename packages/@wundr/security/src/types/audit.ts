@@ -10,11 +10,7 @@
 import {
   SecurityId,
   SecurityTimestamp,
-  SecurityContext,
-  SecurityResult,
-  SecurityError,
   SecuritySeverity,
-  SecurityOperationStatus,
   SecurityAttributeValue,
   SecuritySource,
   SecurityEnvironment,
@@ -22,7 +18,13 @@ import {
   DeviceFingerprint,
   NetworkContext,
   ComplianceFramework
-} from './index';
+} from './base';
+import {
+  ComparisonOperator,
+  DataClassification,
+  EvidenceType,
+  ReportFormat
+} from './shared-enums';
 
 /**
  * Audit event types following industry standards
@@ -244,16 +246,7 @@ export enum TargetType {
   CUSTOM = 'custom'
 }
 
-/**
- * Data classification levels
- */
-export enum DataClassification {
-  PUBLIC = 'public',
-  INTERNAL = 'internal',
-  CONFIDENTIAL = 'confidential',
-  RESTRICTED = 'restricted',
-  TOP_SECRET = 'top_secret'
-}
+// DataClassification is now imported from shared-enums
 
 /**
  * Target attributes for detailed context
@@ -397,21 +390,7 @@ export interface Evidence {
   readonly metadata?: Record<string, SecurityAttributeValue>;
 }
 
-/**
- * Evidence types
- */
-export enum EvidenceType {
-  SCREENSHOT = 'screenshot',
-  LOG_ENTRY = 'log_entry',
-  NETWORK_PACKET = 'network_packet',
-  FILE_CONTENT = 'file_content',
-  DATABASE_RECORD = 'database_record',
-  SYSTEM_STATE = 'system_state',
-  USER_INPUT = 'user_input',
-  API_RESPONSE = 'api_response',
-  CERTIFICATE = 'certificate',
-  CUSTOM = 'custom'
-}
+// EvidenceType is now imported from shared-enums
 
 /**
  * Event metrics for performance tracking
@@ -541,6 +520,75 @@ export interface AuditEventMetadata {
 /**
  * Audit log configuration
  */
+/**
+ * Missing audit interface definitions
+ */
+export interface AuditTransmission {
+  readonly enabled: boolean;
+  readonly encryption: boolean;
+  readonly compression: boolean;
+  readonly authentication: boolean;
+  readonly retry: TransmissionRetry;
+  readonly destinations: readonly TransmissionDestination[];
+}
+
+export interface TransmissionRetry {
+  readonly enabled: boolean;
+  readonly maxRetries: number;
+  readonly backoffMs: number;
+  readonly timeoutMs: number;
+}
+
+export interface TransmissionDestination {
+  readonly type: string;
+  readonly endpoint: string;
+  readonly credentials?: Record<string, string>;
+  readonly headers?: Record<string, string>;
+}
+
+export interface AuditRetention {
+  readonly policy: string;
+  readonly period: number; // milliseconds
+  readonly archival: boolean;
+  readonly destruction: boolean;
+  readonly jurisdiction: readonly string[];
+}
+
+export interface AuditSecurity {
+  readonly encryption: boolean;
+  readonly signing: boolean;
+  readonly integrity: boolean;
+  readonly nonRepudiation: boolean;
+  readonly accessControl: boolean;
+}
+
+export interface AuditComplianceConfig {
+  readonly frameworks: readonly ComplianceFramework[];
+  readonly requirements: readonly string[];
+  readonly reporting: boolean;
+  readonly validation: boolean;
+  readonly certification: boolean;
+}
+
+export interface AuditPerformanceConfig {
+  readonly batchSize: number;
+  readonly flushInterval: number; // milliseconds
+  readonly maxMemory: number; // bytes
+  readonly compressionLevel: number;
+  readonly parallelism: number;
+}
+
+export interface AuditMonitoringConfig {
+  readonly enabled: boolean;
+  readonly metrics: readonly string[];
+  readonly alerting: boolean;
+  readonly healthChecks: boolean;
+  readonly dashboards: boolean;
+}
+
+// Add missing type alias for ComparisonOperator to resolve conflict
+export type ConditionOperator = ComparisonOperator;
+
 export interface AuditLogConfig {
   readonly enabled: boolean;
   readonly level: AuditLevel;
@@ -603,24 +651,7 @@ export interface AuditCondition {
   readonly caseSensitive?: boolean;
 }
 
-/**
- * Condition operators for audit filters
- */
-export enum ConditionOperator {
-  EQUALS = 'equals',
-  NOT_EQUALS = 'not_equals',
-  CONTAINS = 'contains',
-  NOT_CONTAINS = 'not_contains',
-  STARTS_WITH = 'starts_with',
-  ENDS_WITH = 'ends_with',
-  REGEX = 'regex',
-  IN = 'in',
-  NOT_IN = 'not_in',
-  GREATER_THAN = 'greater_than',
-  LESS_THAN = 'less_than',
-  EXISTS = 'exists',
-  NOT_EXISTS = 'not_exists'
-}
+// ConditionOperator uses ComparisonOperator from shared-enums
 
 /**
  * Filter actions
@@ -1052,17 +1083,7 @@ export interface AlertCondition {
   readonly aggregation: AggregationFunction;
 }
 
-/**
- * Comparison operators for alerts
- */
-export enum ComparisonOperator {
-  EQUALS = 'equals',
-  NOT_EQUALS = 'not_equals',
-  GREATER_THAN = 'greater_than',
-  GREATER_THAN_OR_EQUAL = 'greater_than_or_equal',
-  LESS_THAN = 'less_than',
-  LESS_THAN_OR_EQUAL = 'less_than_or_equal'
-}
+// ComparisonOperator is imported from shared-enums
 
 /**
  * Aggregation functions for metrics
@@ -1154,17 +1175,7 @@ export enum ReportingFrequency {
   CUSTOM = 'custom'
 }
 
-/**
- * Report formats
- */
-export enum ReportFormat {
-  PDF = 'pdf',
-  HTML = 'html',
-  CSV = 'csv',
-  JSON = 'json',
-  XML = 'xml',
-  DASHBOARD = 'dashboard'
-}
+// ReportFormat is imported from shared-enums
 
 /**
  * Report content configuration

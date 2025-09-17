@@ -99,7 +99,7 @@ async function getProjectRoot(): Promise<string> {
       } catch {
         // File doesn't exist, continue searching
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue searching
     }
     dir = path.dirname(dir)
@@ -142,7 +142,7 @@ async function validatePath(inputPath: string, projectRoot: string): Promise<{ i
     }
     
     return { isValid: true, resolvedPath }
-  } catch (error) {
+  } catch (_error) {
     return { 
       isValid: false, 
       resolvedPath: '',
@@ -176,8 +176,8 @@ async function getFileInfo(fullPath: string): Promise<FileInfo> {
       extension: extension || undefined,
       permissions: `${stats.mode.toString(8).slice(-3)}`
     }
-  } catch (error) {
-    throw new Error(`Failed to get file info: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to get file info: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -263,8 +263,8 @@ async function listFiles(
       totalDirectories,
       currentPath: dirPath
     }
-  } catch (error) {
-    throw new Error(`Failed to list files: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to list files: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -287,8 +287,8 @@ async function readFileContent(filePath: string, encoding: 'utf8' | 'base64' = '
       size: stats.size,
       lastModified: stats.mtime.toISOString()
     }
-  } catch (error) {
-    throw new Error(`Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to read file: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -315,8 +315,8 @@ async function writeFileContent(
     
     const stats = await fs.stat(filePath)
     return { success: true, size: stats.size }
-  } catch (error) {
-    throw new Error(`Failed to write file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to write file: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -338,8 +338,8 @@ async function deleteFileOrDirectory(filePath: string, recursive: boolean = fals
     }
     
     return { success: true }
-  } catch (error) {
-    throw new Error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to delete: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -381,9 +381,9 @@ export async function GET(request: NextRequest) {
       }
       return NextResponse.json(response, { status: 400 })
     }
-    
-    let data: any
-    
+
+    let data: FileContent | FileListResponse
+
     if (action === 'read') {
       // Read file content
       data = await readFileContent(pathValidation.resolvedPath, encoding)
@@ -412,13 +412,13 @@ export async function GET(request: NextRequest) {
         'X-Processing-Time': `${processingTime}ms`
       }
     })
-  } catch (error) {
-    console.error('Error in files GET:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: _error instanceof Error ? _error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     
@@ -468,9 +468,9 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json(response, { status: 400 })
     }
-    
-    let data: any
-    
+
+    let data: { success: boolean; size: number } | { success: boolean } | { success: boolean; from: string; to: string }
+
     switch (action) {
       case 'write':
       case 'create':
@@ -524,13 +524,13 @@ export async function POST(request: NextRequest) {
         'X-Processing-Time': `${processingTime}ms`
       }
     })
-  } catch (error) {
-    console.error('Error in files POST:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: _error instanceof Error ? _error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     

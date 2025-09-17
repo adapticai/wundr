@@ -51,10 +51,10 @@ export function ConfigActions() {
         title: 'Configuration Imported',
         description: 'Your configuration has been successfully imported.',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Import Failed',
-        description: error instanceof Error ? error.message : 'Failed to import configuration.',
+        description: _error instanceof Error ? _error.message : 'Failed to import configuration.',
         variant: 'destructive',
       });
     }
@@ -82,10 +82,10 @@ export function ConfigActions() {
         title: 'Configuration Saved',
         description: 'Your configuration has been saved successfully.',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Save Failed',
-        description: error instanceof Error ? error.message : 'Failed to save configuration.',
+        description: _error instanceof Error ? _error.message : 'Failed to save configuration.',
         variant: 'destructive',
       });
     }

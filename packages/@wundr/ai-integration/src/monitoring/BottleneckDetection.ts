@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { PerformanceMetrics, Bottleneck, OperationResult } from '../types';
 
 export class BottleneckDetection extends EventEmitter {

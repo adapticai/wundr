@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { Agent, AgentType, OperationResult } from '../types';
 
 export interface AgentTypeMetadata {

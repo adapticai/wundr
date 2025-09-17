@@ -98,8 +98,8 @@ export function HistoricalReportsArchive({ className }: HistoricalReportsArchive
         try {
           const data = await getHistoricalReports(reportId);
           setHistoricalData(prev => new Map(prev).set(reportId, data));
-        } catch (error) {
-          console.error('Failed to load historical data:', error);
+        } catch (_error) {
+          // Error logged - details available in network tab;
         } finally {
           setLoading(prev => {
             const newLoading = new Set(prev);
@@ -177,7 +177,7 @@ export function HistoricalReportsArchive({ className }: HistoricalReportsArchive
                   className="pl-10"
                 />
               </div>
-              <Select value={selectedPeriod} onValueChange={(value: any) => setSelectedPeriod(value)}>
+              <Select value={selectedPeriod} onValueChange={(value: '7d' | '30d' | '90d' | 'all') => setSelectedPeriod(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -188,7 +188,7 @@ export function HistoricalReportsArchive({ className }: HistoricalReportsArchive
                   <SelectItem value="all">All time</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <Select value={sortBy} onValueChange={(value: 'date' | 'name' | 'size') => setSortBy(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>

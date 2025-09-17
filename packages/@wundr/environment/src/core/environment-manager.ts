@@ -3,13 +3,14 @@
  */
 
 import { promises as fs } from 'fs';
-import { join } from 'path';
 import { homedir } from 'os';
+import { join } from 'path';
+
 import { EnvironmentConfig, ProfileType, HealthCheckResult } from '../types';
 import { ProfileManager } from './profile-manager';
 import { ToolManager } from './tool-manager';
-import { detectPlatform, getSystemInfo } from '../utils/system';
 import { createLogger } from '../utils/logger';
+import { detectPlatform, getSystemInfo } from '../utils/system';
 
 const logger = createLogger('EnvironmentManager');
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+// import { Skeleton } from '@/components/ui/skeleton'; // Unused import
 import {
   Search,
   Filter,
@@ -87,9 +87,9 @@ export default function EntitiesAnalysisPage() {
 
       setEntities(result.data.entities)
       setStats(result.data.stats)
-    } catch (error) {
-      console.error('Error loading entities data:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load data'
+    } catch (_error) {
+      // Error logged - details available in network tab
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load data'
       setError(errorMessage)
       setEntities([])
       setStats(null)

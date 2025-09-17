@@ -10,14 +10,26 @@
 import {
   SecurityId,
   SecurityTimestamp,
-  SecurityContext,
-  SecurityResult,
-  SecurityError,
   SecuritySeverity,
-  SecurityOperationStatus,
   SecurityAttributeValue,
   ComplianceFramework
-} from './index';
+} from './base';
+import {
+  ImpactLevel,
+  ActionStatus,
+  EffortLevel,
+  SkillLevel,
+  DataClassification,
+  EvidenceType,
+  ResourceType,
+  ImplementationStatus,
+  ValidationMethod,
+  ReportFormat,
+  MeasurementFrequency,
+  ScheduleType,
+  PhaseStatus,
+  ConfidenceLevel
+} from './shared-enums';
 
 /**
  * Compliance status levels
@@ -48,23 +60,7 @@ export enum AssessmentType {
   THIRD_PARTY_ASSESSMENT = 'third_party_assessment'
 }
 
-/**
- * Evidence types for compliance
- */
-export enum EvidenceType {
-  DOCUMENT = 'document',
-  SCREENSHOT = 'screenshot',
-  LOG_FILE = 'log_file',
-  CONFIGURATION = 'configuration',
-  POLICY = 'policy',
-  PROCEDURE = 'procedure',
-  TRAINING_RECORD = 'training_record',
-  CERTIFICATE = 'certificate',
-  ATTESTATION = 'attestation',
-  TEST_RESULT = 'test_result',
-  INTERVIEW_NOTES = 'interview_notes',
-  CUSTOM = 'custom'
-}
+// EvidenceType is now imported from shared-enums
 
 /**
  * Control types for compliance frameworks
@@ -206,16 +202,7 @@ export interface MaturityGap {
   readonly dependencies: readonly string[];
 }
 
-/**
- * Implementation effort levels
- */
-export enum ImplementationEffort {
-  MINIMAL = 'minimal',     // < 1 week
-  LOW = 'low',            // 1-4 weeks
-  MEDIUM = 'medium',      // 1-3 months
-  HIGH = 'high',          // 3-6 months
-  VERY_HIGH = 'very_high' // > 6 months
-}
+// ImplementationEffort uses EffortLevel from shared-enums
 
 /**
  * Maturity roadmap
@@ -253,29 +240,9 @@ export interface RequiredResource {
   readonly external?: boolean;
 }
 
-/**
- * Resource types
- */
-export enum ResourceType {
-  HUMAN = 'human',
-  TECHNOLOGY = 'technology',
-  TRAINING = 'training',
-  CONSULTING = 'consulting',
-  TOOLS = 'tools',
-  INFRASTRUCTURE = 'infrastructure',
-  BUDGET = 'budget'
-}
+// ResourceType is now imported from shared-enums
 
-/**
- * Skill levels
- */
-export enum SkillLevel {
-  BASIC = 'basic',
-  INTERMEDIATE = 'intermediate',
-  ADVANCED = 'advanced',
-  EXPERT = 'expert',
-  SPECIALIST = 'specialist'
-}
+// SkillLevel is now imported from shared-enums
 
 /**
  * Implementation risk
@@ -315,17 +282,7 @@ export enum Probability {
   VERY_HIGH = 'very_high' // > 90%
 }
 
-/**
- * Impact levels
- */
-export enum ImpactLevel {
-  NEGLIGIBLE = 'negligible',
-  MINOR = 'minor',
-  MODERATE = 'moderate',
-  MAJOR = 'major',
-  SEVERE = 'severe',
-  CATASTROPHIC = 'catastrophic'
-}
+// ImpactLevel is now imported from shared-enums
 
 /**
  * Risk mitigation strategy
@@ -377,17 +334,7 @@ export enum ActionType {
   COMMUNICATION = 'communication'
 }
 
-/**
- * Action status
- */
-export enum ActionStatus {
-  NOT_STARTED = 'not_started',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  OVERDUE = 'overdue',
-  CANCELLED = 'cancelled',
-  ON_HOLD = 'on_hold'
-}
+// ActionStatus is now imported from shared-enums
 
 /**
  * Success criteria
@@ -425,18 +372,7 @@ export enum MeasurementMethod {
   CUSTOM = 'custom'
 }
 
-/**
- * Measurement frequency
- */
-export enum MeasurementFrequency {
-  CONTINUOUS = 'continuous',
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  QUARTERLY = 'quarterly',
-  ANNUALLY = 'annually',
-  ON_DEMAND = 'on_demand'
-}
+// MeasurementFrequency is now imported from shared-enums
 
 /**
  * Success target
@@ -458,18 +394,7 @@ export enum TargetCriticality {
   OPTIONAL = 'optional'
 }
 
-/**
- * Validation methods
- */
-export enum ValidationMethod {
-  AUTOMATED_TEST = 'automated_test',
-  MANUAL_REVIEW = 'manual_review',
-  AUDIT = 'audit',
-  ASSESSMENT = 'assessment',
-  CERTIFICATION = 'certification',
-  ATTESTATION = 'attestation',
-  THIRD_PARTY = 'third_party'
-}
+// ValidationMethod is now imported from shared-enums
 
 /**
  * Compliance control definition
@@ -526,16 +451,22 @@ export interface ControlImplementation {
   readonly timeline: ImplementationTimeline;
 }
 
+// ImplementationStatus is now imported from shared-enums
+
 /**
- * Implementation status
+ * Implementation effort levels (using EffortLevel from shared-enums)
  */
-export enum ImplementationStatus {
-  NOT_IMPLEMENTED = 'not_implemented',
-  IN_PROGRESS = 'in_progress',
-  IMPLEMENTED = 'implemented',
-  PARTIALLY_IMPLEMENTED = 'partially_implemented',
-  NEEDS_IMPROVEMENT = 'needs_improvement',
-  UNDER_REVIEW = 'under_review'
+export type ImplementationEffort = EffortLevel;
+
+/**
+ * Reporting requirements interface
+ */
+export interface ReportingRequirements {
+  readonly frequency: MeasurementFrequency;
+  readonly recipients: readonly string[];
+  readonly format: readonly ReportFormat[];
+  readonly distribution: readonly string[];
+  readonly retention: number; // milliseconds
 }
 
 /**
@@ -597,16 +528,7 @@ export enum DocumentType {
   CUSTOM = 'custom'
 }
 
-/**
- * Data classification levels
- */
-export enum DataClassification {
-  PUBLIC = 'public',
-  INTERNAL = 'internal',
-  CONFIDENTIAL = 'confidential',
-  RESTRICTED = 'restricted',
-  TOP_SECRET = 'top_secret'
-}
+// DataClassification is now imported from shared-enums
 
 /**
  * Implementation timeline
@@ -651,16 +573,7 @@ export interface TimelinePhase {
   readonly status: PhaseStatus;
 }
 
-/**
- * Phase status
- */
-export enum PhaseStatus {
-  NOT_STARTED = 'not_started',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  DELAYED = 'delayed',
-  CANCELLED = 'cancelled'
-}
+// PhaseStatus is now imported from shared-enums
 
 /**
  * Milestone definition
@@ -880,15 +793,7 @@ export interface AutomationSchedule {
   readonly exceptions?: readonly ScheduleException[];
 }
 
-/**
- * Schedule types
- */
-export enum ScheduleType {
-  CRON = 'cron',
-  INTERVAL = 'interval',
-  TRIGGERED = 'triggered',
-  MANUAL = 'manual'
-}
+// ScheduleType is now imported from shared-enums
 
 /**
  * Schedule exception
@@ -1543,13 +1448,7 @@ export enum VerificationMethod {
   WALKTHROUGH = 'walkthrough'
 }
 
-export enum ConfidenceLevel {
-  VERY_HIGH = 'very_high',
-  HIGH = 'high',
-  MEDIUM = 'medium',
-  LOW = 'low',
-  VERY_LOW = 'very_low'
-}
+// ConfidenceLevel is now imported from shared-enums
 
 export interface AssessmentMetadata {
   readonly methodology: string;
@@ -1624,13 +1523,7 @@ export interface TestingReporting {
   readonly retention: number; // milliseconds
 }
 
-export enum ReportFormat {
-  PDF = 'pdf',
-  HTML = 'html',
-  JSON = 'json',
-  CSV = 'csv',
-  XML = 'xml'
-}
+// ReportFormat is now imported from shared-enums
 
 export interface ReportingSchedule {
   readonly frequency: ReportingFrequency;

@@ -74,9 +74,9 @@ export default function DependenciesAnalysisPage() {
       setDependencies(result.data.dependencies)
       setVulnerabilities(result.data.vulnerabilities)
       setStats(result.data.stats)
-    } catch (error) {
-      console.error('Error loading dependency data:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load dependency data'
+    } catch (_error) {
+      // Error logged - details available in network tab
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load dependency data'
       setError(errorMessage)
       // Set empty data on error to avoid undefined state
       setDependencies([])

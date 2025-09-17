@@ -245,7 +245,7 @@ app.post('/api/users', validateUser, async (req, res) => {
     const user = await User.create(req.body);
     const token = generateToken(user.id);
     res.status(201).json({ user, token });
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({ error: error.message });
   }
 });`}</code>
@@ -335,7 +335,7 @@ export class UserResolver {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result)
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Internal server error' })

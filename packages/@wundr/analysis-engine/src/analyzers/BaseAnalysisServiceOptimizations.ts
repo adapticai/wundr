@@ -457,8 +457,20 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
       cacheHits: 0, // Handled by parent
       cacheSize: 0, // Handled by parent
       // Additional optimization metrics
-      workerMetrics: this.optimizedWorkerPool.getMetrics(),
-      streamingMetrics: this.optimizedStreamingProcessor.getMetrics(),
+      workerMetrics: {
+        workersSpawned: this.optimizedWorkerPool.getMetrics().activeWorkers + this.optimizedWorkerPool.getMetrics().idleWorkers,
+        workersActive: this.optimizedWorkerPool.getMetrics().activeWorkers,
+        averageTaskDuration: this.optimizedWorkerPool.getMetrics().averageExecutionTime,
+        queueLength: this.optimizedWorkerPool.getMetrics().queueSize,
+        errorRate: this.optimizedWorkerPool.getMetrics().errorRate
+      },
+      streamingMetrics: {
+        bytesProcessed: this.optimizedStreamingProcessor.getMetrics().bytesProcessed,
+        chunksProcessed: this.optimizedStreamingProcessor.getMetrics().chunksProcessed,
+        averageChunkSize: this.optimizedStreamingProcessor.getMetrics().bytesProcessed / Math.max(1, this.optimizedStreamingProcessor.getMetrics().chunksProcessed),
+        streamingDuration: Date.now() - startTime,
+        backpressureEvents: 0 // Default value
+      },
       memoryEfficiency: this.calculateMemoryEfficiency(files.length, memoryMetrics.peak.heapUsed)
     };
 

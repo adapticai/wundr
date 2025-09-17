@@ -6,14 +6,15 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { ClaudeFlowOrchestrator } from './ClaudeFlowOrchestrator';
 import { MCPToolsRegistry } from './MCPToolsRegistry';
+import { MemoryManager } from './MemoryManager';
 import { NeuralTrainingPipeline } from './NeuralTrainingPipeline';
 import { SwarmIntelligence } from './SwarmIntelligence';
-import { MemoryManager } from './MemoryManager';
 import { AgentCoordinator } from '../agents/AgentCoordinator';
-import { PerformanceAnalyzer } from '../monitoring/PerformanceAnalyzer';
 import { GitHubIntegration } from '../github/GitHubIntegration';
+import { PerformanceAnalyzer } from '../monitoring/PerformanceAnalyzer';
 import { 
   AIIntegrationConfig, 
   HiveStatus, 

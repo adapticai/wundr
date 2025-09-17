@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { OperationResult } from '../types';
 
 export class AutomationEngine extends EventEmitter {

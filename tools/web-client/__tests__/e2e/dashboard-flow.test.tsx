@@ -217,7 +217,7 @@ describe('Dashboard E2E Flow Tests', () => {
       try {
         const invalidFile = new File(['invalid'], 'invalid.txt', { type: 'text/plain' })
         fireEvent.change(fileInput, { target: { files: [invalidFile] } })
-      } catch (error) {
+      } catch (_error) {
         // Expected error - restore original
         global.File = originalImplementation
       }

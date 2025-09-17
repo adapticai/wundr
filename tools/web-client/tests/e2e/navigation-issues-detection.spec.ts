@@ -45,7 +45,7 @@ test.describe('Navigation Issues Detection', () => {
           inaccessibleRoutes.push(`${route} - Page loaded but no content`);
         }
 
-      } catch (error) {
+      } catch (_error) {
         inaccessibleRoutes.push(`${route} - ${error}`);
       }
     }
@@ -127,7 +127,7 @@ test.describe('Navigation Issues Detection', () => {
             }
           }
           
-        } catch (error) {
+        } catch (_error) {
           const text = await link.textContent();
           navigationIssues.push(`Navigation error for "${text}": ${error}`);
         }
@@ -182,7 +182,7 @@ test.describe('Navigation Issues Detection', () => {
                   breadcrumbIssues.push(`Broken breadcrumb link on ${route}: ${href}`);
                 }
               }
-            } catch (error) {
+            } catch (_error) {
               breadcrumbIssues.push(`Breadcrumb link error on ${route}: ${error}`);
             }
           }
@@ -273,7 +273,7 @@ test.describe('Navigation Issues Detection', () => {
           deepLinkIssues.push(`Deep link redirect unexpected: ${link} → ${currentUrl}`);
         }
 
-      } catch (error) {
+      } catch (_error) {
         deepLinkIssues.push(`Deep link error: ${link} - ${error}`);
       }
     }
@@ -315,7 +315,7 @@ test.describe('Navigation Issues Detection', () => {
             break;
           }
           
-        } catch (error) {
+        } catch (_error) {
           focusIssues.push(`Tab navigation error: ${error}`);
           break;
         }
@@ -406,7 +406,7 @@ test.describe('Navigation Issues Detection', () => {
           console.log(`Parameters processed: ${params} → ${currentUrl}`);
         }
 
-      } catch (error) {
+      } catch (_error) {
         parameterIssues.push(`Parameter route error: ${route}${params} - ${error}`);
       }
     }
@@ -462,7 +462,7 @@ test.describe('Navigation Issues Detection', () => {
           report.summary.criticalNavigationFailures++;
         }
 
-      } catch (error) {
+      } catch (_error) {
         report.issues.inaccessibleRoutes.push(route);
         report.summary.criticalNavigationFailures++;
       }

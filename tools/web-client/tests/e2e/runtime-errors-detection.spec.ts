@@ -78,7 +78,7 @@ test.describe('Runtime Errors Detection', () => {
           routeErrors[route] = errorsAfterNavigation;
         }
         
-      } catch (error) {
+      } catch (_error) {
         routeErrors[route] = [`Navigation error: ${error}`];
       }
     }
@@ -232,11 +232,11 @@ test.describe('Runtime Errors Detection', () => {
           try {
             await element.click({ timeout: 1000 });
             await page.waitForTimeout(500);
-          } catch (error) {
+          } catch (_error) {
             // Element might not be clickable, that's ok
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Selector might not exist, that's ok
       }
     }
@@ -277,7 +277,7 @@ test.describe('Runtime Errors Detection', () => {
               formErrors.push(...errorsAfterSubmit);
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Form submission might fail, that's expected for validation
         }
       }
@@ -321,7 +321,7 @@ test.describe('Runtime Errors Detection', () => {
       try {
         await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
         await page.waitForTimeout(2000);
-      } catch (error) {
+      } catch (_error) {
         console.log(`Error navigating to ${route}: ${error}`);
       }
     }

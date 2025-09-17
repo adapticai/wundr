@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { 
   SwarmConfig,
   SwarmTopology,
@@ -935,7 +936,7 @@ export class SwarmIntelligence extends EventEmitter {
 
   private async executeOptimizationAction(action: string): Promise<void> {
     // Simulate optimization action execution
-    console.log(`Applying optimization: ${action}`);
+    console.info(`Applying optimization: ${action}`);
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 

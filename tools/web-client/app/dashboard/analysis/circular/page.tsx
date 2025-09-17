@@ -22,13 +22,15 @@ import {
   AlertCircle,
   Info
 } from 'lucide-react';
-const d3 = require('d3');
+import { select, drag, forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } from 'd3';
+import type { D3DragEvent, SimulationNodeDatum, SimulationLinkDatum } from 'd3';
 
-import type { 
-  DependencyNode, 
-  CircularDependency, 
-  ResolutionSuggestion,
-  CircularAnalysisResponse 
+const d3 = { select, drag, forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide };
+
+import type {
+  DependencyNode,
+  CircularDependency,
+  CircularAnalysisResponse
 } from '@/app/api/analysis/circular/route'
 import type { ApiResponse } from '@/types/data'
 
@@ -47,11 +49,11 @@ interface D3SimulationNode extends DependencyNode {
   vy?: number;
 }
 
-interface D3SimulationLink {
-  source: D3SimulationNode;
-  target: D3SimulationNode;
-  type: 'dependency' | 'circular';
-}
+// interface D3SimulationLink {
+//   source: D3SimulationNode;
+//   target: D3SimulationNode;
+//   type: 'dependency' | 'circular';
+// }
 
 export default function CircularDependencyAnalysis() {
   const [dependencies, setDependencies] = useState<DependencyNode[]>([]);
@@ -86,9 +88,9 @@ export default function CircularDependencyAnalysis() {
 
       setDependencies(result.data.nodes);
       setCircularDeps(result.data.circularDependencies);
-    } catch (error) {
-      console.error('Error loading circular dependency data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load data';
+    } catch (_error) {
+      // Error loading circular dependency data
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load data';
       setError(errorMessage);
       setDependencies([]);
       setCircularDeps([]);
@@ -162,7 +164,7 @@ export default function CircularDependencyAnalysis() {
     });
 
     const simulation = d3.forceSimulation(graphData.nodes as D3SimulationNode[])
-      .force('link', d3.forceLink(graphData.links).id((d: any) => d.id).distance(100))
+      .force('link', d3.forceLink(graphData.links).id((d: DependencyNode) => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
@@ -172,11 +174,11 @@ export default function CircularDependencyAnalysis() {
     // Add zoom behavior
     const zoomBehavior = d3.zoom()
       .scaleExtent([0.1, 4])
-      .on('zoom', (event: any) => {
+      .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
         g.attr('transform', event.transform.toString());
       });
 
-    (svg as any).call(zoomBehavior);
+    svg.call(zoomBehavior);
 
     // Add links
     const link = g.append('g')
@@ -223,23 +225,24 @@ export default function CircularDependencyAnalysis() {
         }
       })
       .call(d3.drag()
-        .on('start', (event: any, d: D3SimulationNode) => {
+        .on('start', (event: d3.D3DragEvent<SVGCircleElement, D3SimulationNode, unknown>, d: D3SimulationNode) => {
           if (!event.active) simulation.alphaTarget(0.3).restart();
           d.fx = d.x;
           d.fy = d.y;
         })
-        .on('drag', (event: any, d: D3SimulationNode) => {
+        .on('drag', (event: d3.D3DragEvent<SVGCircleElement, D3SimulationNode, unknown>, d: D3SimulationNode) => {
           d.fx = event.x;
           d.fy = event.y;
         })
-        .on('end', (event: any, d: D3SimulationNode) => {
+        .on('end', (event: d3.D3DragEvent<SVGCircleElement, D3SimulationNode, unknown>, d: D3SimulationNode) => {
           if (!event.active) simulation.alphaTarget(0);
           d.fx = null;
           d.fy = null;
-        }) as any);
+        })
+      );
 
-    // Add node labels
-    const label = g.append('g')
+      // Add node labels
+      const label = g.append('g')
       .selectAll('text')
       .data(graphData.nodes)
       .enter().append('text')
@@ -252,18 +255,18 @@ export default function CircularDependencyAnalysis() {
 
     simulation.on('tick', () => {
       link
-        .attr('x1', (d: any) => d.source.x)
-        .attr('y1', (d: any) => d.source.y)
-        .attr('x2', (d: any) => d.target.x)
-        .attr('y2', (d: any) => d.target.y);
+        .attr('x1', (d: d3.SimulationLinkDatum<D3SimulationNode>) => (d.source as D3SimulationNode).x)
+        .attr('y1', (d: d3.SimulationLinkDatum<D3SimulationNode>) => (d.source as D3SimulationNode).y)
+        .attr('x2', (d: d3.SimulationLinkDatum<D3SimulationNode>) => (d.target as D3SimulationNode).x)
+        .attr('y2', (d: d3.SimulationLinkDatum<D3SimulationNode>) => (d.target as D3SimulationNode).y);
 
       node
-        .attr('cx', (d: any) => d.x)
-        .attr('cy', (d: any) => d.y);
+        .attr('cx', (d: D3SimulationNode) => d.x)
+        .attr('cy', (d: D3SimulationNode) => d.y);
 
       label
-        .attr('x', (d: any) => d.x)
-        .attr('y', (d: any) => d.y + 4);
+        .attr('x', (d: D3SimulationNode) => d.x)
+        .attr('y', (d: D3SimulationNode) => d.y + 4);
     });
   }, [dependencies, circularDeps]);
 

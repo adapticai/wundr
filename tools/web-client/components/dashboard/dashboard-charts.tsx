@@ -18,6 +18,7 @@ import {
 import { Bar, Doughnut, Line } from "react-chartjs-2"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { CompleteAnalysisData } from "@/types/reports"
+import type { ChartOptions, DoughnutChartOptions } from "@/types/charts"
 
 ChartJS.register(
   CategoryScale,
@@ -176,13 +177,13 @@ export function DashboardCharts({ data }: DashboardChartsProps) {
     ],
   }
 
-  const chartOptions: any = {
+  const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     animation: mounted ? {
       duration: 750,
       easing: 'easeInOutQuart' as const,
-    } : false,
+    } : undefined,
     plugins: {
       legend: {
         display: false,
@@ -207,7 +208,7 @@ export function DashboardCharts({ data }: DashboardChartsProps) {
     },
   }
 
-  const doughnutOptions: any = {
+  const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: false,
     animation: mounted ? {
@@ -215,7 +216,7 @@ export function DashboardCharts({ data }: DashboardChartsProps) {
       animateScale: false,
       duration: 750,
       easing: 'easeInOutQuart' as const,
-    } : false,
+    } : undefined,
     plugins: {
       legend: {
         position: "right" as const,

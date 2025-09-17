@@ -5,9 +5,11 @@
  * and adaptive optimization of the AI integration ecosystem.
  */
 
+import * as path from 'path';
+
 import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
-import * as path from 'path';
+
 import {
   NeuralConfig,
   NeuralModel,

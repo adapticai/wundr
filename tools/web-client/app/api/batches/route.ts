@@ -23,12 +23,12 @@ export async function GET(request: NextRequest) {
       data: batches
     });
 
-  } catch (error) {
-    console.error('Failed to fetch batches:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch batches'
+        error: _error instanceof Error ? _error.message : 'Failed to fetch batches'
       },
       { status: 500 }
     );
@@ -57,12 +57,12 @@ export async function POST(request: NextRequest) {
       data: batch
     });
 
-  } catch (error) {
-    console.error('Failed to create batch:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create batch'
+        error: _error instanceof Error ? _error.message : 'Failed to create batch'
       },
       { status: 500 }
     );

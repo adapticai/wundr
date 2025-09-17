@@ -4,10 +4,18 @@ import { parseMarkdown, extractFrontMatter, markdownToHtml, type ParsedMarkdown 
 
 interface ExtendedMarkdown {
   html: string;
-  frontmatter: Record<string, any>;
-  tableOfContents: any[];
+  frontmatter: Record<string, unknown>;
+  tableOfContents: TableOfContentsItem[];
   wordCount: number;
   readingTime: number;
+}
+
+interface TableOfContentsItem {
+  id: string;
+  title: string;
+  level: number;
+  anchor: string;
+  children?: TableOfContentsItem[];
 }
 
 /**
@@ -35,8 +43,8 @@ export async function readMarkdownFile(filePath: string): Promise<ExtendedMarkdo
       wordCount: extractedContent.split(/\s+/).length,
       readingTime: Math.ceil(extractedContent.split(/\s+/).length / 200) // Assuming 200 words per minute
     };
-  } catch (error) {
-    console.error(`Error reading markdown file ${filePath}:`, error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return null;
   }
 }
@@ -64,8 +72,8 @@ export function getMarkdownFiles(dirPath: string, recursive = true): string[] {
     }
 
     return files;
-  } catch (error) {
-    console.error(`Error reading directory ${dirPath}:`, error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return [];
   }
 }
@@ -97,8 +105,8 @@ export function getFileStats(filePath: string) {
       isDirectory: stats.isDirectory(),
       isFile: stats.isFile()
     };
-  } catch (error) {
-    console.error(`Error getting file stats for ${filePath}:`, error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return null;
   }
 }

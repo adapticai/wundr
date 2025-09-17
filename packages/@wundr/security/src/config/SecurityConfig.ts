@@ -1,7 +1,9 @@
+import { EventEmitter } from 'events';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { EventEmitter } from 'events';
+
 import { FSWatcher } from 'chokidar';
+
 import { logger } from '../utils/logger';
 
 export interface SecurityConfig {

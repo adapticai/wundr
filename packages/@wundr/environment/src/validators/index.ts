@@ -2,10 +2,10 @@
  * Environment validation system
  */
 
-import { EnvironmentConfig, ValidationResult, HealthCheckResult, SystemInfo, ToolConfiguration } from '../types';
 import { ToolManager } from '../core/tool-manager';
-import { getSystemInfo } from '../utils/system';
+import { EnvironmentConfig, ValidationResult, HealthCheckResult, SystemInfo, ToolConfiguration } from '../types';
 import { createLogger } from '../utils/logger';
+import { getSystemInfo } from '../utils/system';
 
 const logger = createLogger('Validator');
 

@@ -171,7 +171,7 @@ describe('Component Snapshots', () => {
               type: chart.getAttribute('data-testid'),
               config: JSON.parse(config)
             })
-          } catch (e) {
+          } catch (_e) {
             chartConfigs.push({
               type: chart.getAttribute('data-testid'),
               config: 'invalid'
@@ -273,7 +273,7 @@ describe('Component Snapshots', () => {
         const { container } = render(<TestWrapper />)
         const normalizedSnapshot = SnapshotTestUtils.normalizeSnapshot(container)
         expect(normalizedSnapshot).toMatchSnapshot('error-state')
-      } catch (error) {
+      } catch (_error) {
         // Expected error - test the error boundary behavior
         expect(error).toBeDefined()
       }

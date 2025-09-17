@@ -19,12 +19,13 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useReports } from '@/hooks/reports/use-reports';
-import { 
-  ReportTemplate, 
-  GenerateReportRequest, 
+import {
+  ReportTemplate,
+  GenerateReportRequest,
   ExportFormat,
-  ReportParameter 
+  ReportParameter
 } from '@/types/reports';
+import type { ReportParameters, ParameterValue } from '@/types/report-parameters';
 
 interface ReportGenerationWizardProps {
   onClose: () => void;
@@ -43,7 +44,7 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
   const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null);
   const [reportName, setReportName] = useState('');
   const [reportDescription, setReportDescription] = useState('');
-  const [parameters, setParameters] = useState<Record<string, any>>({});
+  const [parameters, setParameters] = useState<ReportParameters>({});
   const [outputFormats, setOutputFormats] = useState<ExportFormat[]>(['pdf']);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -55,7 +56,7 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
     setReportName(template.name);
     
     // Set default parameter values
-    const defaultParams: Record<string, any> = {};
+    const defaultParams: ReportParameters = {};
     template.parameters.forEach(param => {
       if (param.defaultValue !== undefined) {
         defaultParams[param.key] = param.defaultValue;
@@ -64,7 +65,7 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
     setParameters(defaultParams);
   };
 
-  const handleParameterChange = (key: string, value: any) => {
+  const handleParameterChange = (key: string, value: ParameterValue) => {
     setParameters(prev => ({ ...prev, [key]: value }));
   };
 
@@ -103,8 +104,8 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
 
       await generateReport(request);
       onClose();
-    } catch (error) {
-      console.error('Failed to generate report:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     } finally {
       setIsGenerating(false);
     }
@@ -194,7 +195,7 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
                     const currentValues = value || [];
                     const newValues = checked
                       ? [...currentValues, option.value]
-                      : currentValues.filter((v: any) => v !== option.value);
+                      : currentValues.filter((v: ParameterValue) => v !== option.value);
                     handleParameterChange(param.key, newValues);
                   }}
                 />

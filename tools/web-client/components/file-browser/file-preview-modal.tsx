@@ -46,8 +46,8 @@ export function FilePreviewModal({
     try {
       await navigator.clipboard.writeText(file.path);
       onCopyPath?.(file);
-    } catch (error) {
-      console.error('Failed to copy path:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   };
 

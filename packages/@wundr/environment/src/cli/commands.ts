@@ -4,9 +4,10 @@
 
 /* eslint-disable no-console */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import ora from 'ora';
+
 import { EnvironmentManager } from '../core/environment-manager';
 import { QuickstartInstaller } from '../installers/quickstart-installer';
 import { ProfileType, EnvironmentConfig } from '../types';

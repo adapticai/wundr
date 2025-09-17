@@ -14,13 +14,12 @@ const FileBrowser = dynamic(
 );
 
 export default function FilesPage() {
-  const handleFileSelect = (file: FileSystemItem) => {
-    console.log('File selected:', file);
+  const handleFileSelect = (_file: FileSystemItem) => {
+    // File selection handler - could implement file preview logic
   };
 
-  const handleFileDoubleClick = (file: FileSystemItem) => {
-    console.log('File double-clicked:', file);
-    // You could implement file opening logic here
+  const handleFileDoubleClick = (_file: FileSystemItem) => {
+    // File double-click handler - could implement file opening logic
     // For example, opening in a new tab, editor, etc.
   };
 

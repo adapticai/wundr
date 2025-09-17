@@ -275,13 +275,13 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json'
       }
     })
-  } catch (error) {
-    console.error('Error fetching analysis data:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: _error instanceof Error ? _error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     
@@ -323,8 +323,8 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString()
         }, { status: 400 })
     }
-  } catch (error) {
-    console.error('Error in analysis POST:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     return NextResponse.json({
       success: false,

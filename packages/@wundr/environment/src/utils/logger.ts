@@ -5,8 +5,8 @@
 /* eslint-disable no-console */
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join } from 'path';
 import { homedir } from 'os';
+import { join } from 'path';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 

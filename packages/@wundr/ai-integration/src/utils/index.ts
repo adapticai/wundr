@@ -55,7 +55,7 @@ export function calculateHash(data: any): string {
 
 export class Logger {
   static info(message: string, data?: any): void {
-    console.log(`[INFO] ${new Date().toISOString()} ${message}`, data ? data : '');
+    console.info(`[INFO] ${new Date().toISOString()} ${message}`, data ? data : '');
   }
   
   static error(message: string, error?: any): void {

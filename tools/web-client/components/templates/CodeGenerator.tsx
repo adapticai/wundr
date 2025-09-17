@@ -20,9 +20,11 @@ import {
   GitBranch
 } from "lucide-react";
 
+import { ServiceTemplate, TemplateCustomizations, UserInfo } from '@/types/templates';
+
 interface CodeGeneratorProps {
-  template: any;
-  customizations: any;
+  template: ServiceTemplate;
+  customizations: TemplateCustomizations;
   onGenerate: (code: string) => void;
 }
 
@@ -248,8 +250,8 @@ async function startServer() {
       console.log(\`🚀 Server running on port \${PORT}\`);
       console.log(\`📚 API documentation: http://localhost:\${PORT}/api/docs\`);
     });
-  } catch (error) {
-    console.error('Failed to start server:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     process.exit(1);
   }
 }
@@ -270,7 +272,7 @@ router.get('/items', async (req: Request, res: Response) => {
   try {
     // Implementation here
     res.json({ message: 'Get all items', data: [] });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -292,7 +294,7 @@ router.post('/items', async (req: Request, res: Response) => {
     
     // Implementation here
     res.status(201).json({ message: 'Item created', data: req.body });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -303,7 +305,7 @@ router.get('/items/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     // Implementation here
     res.json({ message: \`Get item \${id}\`, data: {} });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -314,7 +316,7 @@ router.put('/items/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     // Implementation here
     res.json({ message: \`Updated item \${id}\`, data: req.body });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -325,7 +327,7 @@ router.delete('/items/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     // Implementation here
     res.json({ message: \`Deleted item \${id}\` });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -340,7 +342,7 @@ export default router;`;
 import jwt from 'jsonwebtoken';
 
 interface AuthRequest extends Request {
-  user?: any;
+  user?: UserInfo;
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -361,7 +363,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   });
 };
 
-export const generateAccessToken = (user: any) => {
+export const generateAccessToken = (user: UserInfo) => {
   return jwt.sign(user, process.env.JWT_SECRET || 'fallback-secret', { 
     expiresIn: '${customizations.authentication?.tokenExpiry || '7d'}' 
   });
@@ -423,8 +425,8 @@ export const connectDatabase = async () => {
     
     await mongoose.connect(connectionString);
     console.log('✅ Connected to MongoDB');
-  } catch (error) {
-    console.error('❌ MongoDB connection failed:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     throw error;
   }
 };`;

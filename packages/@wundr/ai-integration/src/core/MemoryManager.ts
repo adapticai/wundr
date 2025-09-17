@@ -5,10 +5,12 @@
  * Implements intelligent memory compression, retention policies, and context restoration.
  */
 
+import * as path from 'path';
+
 import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import { Database } from 'sqlite3';
+
 import { 
   MemoryConfig, 
   MemoryEntry, 
@@ -450,7 +452,7 @@ export class MemoryManager extends EventEmitter {
    */
   async getMemory(memoryId: string): Promise<MemoryEntry | null> {
     // Check cache first
-    let memory = this.memoryCache.get(memoryId);
+    const memory = this.memoryCache.get(memoryId);
     
     if (memory) {
       // Update access information

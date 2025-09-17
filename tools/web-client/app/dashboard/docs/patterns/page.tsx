@@ -171,7 +171,7 @@ const UserSchema = z.object({
 export function validateUser(input: unknown) {
   try {
     return UserSchema.parse(input);
-  } catch (error) {
+  } catch (_error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError(error.errors);
     }

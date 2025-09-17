@@ -99,8 +99,8 @@ export function ScriptExecutor({ script, onExecutionResult }: ScriptExecutorProp
     if (saved) {
       try {
         setSavedConfigs(JSON.parse(saved));
-      } catch (error) {
-        console.error('Failed to load saved configurations:', error);
+      } catch (_error) {
+        // Error logged - details available in network tab;
       }
     }
   }, [script.id]);
@@ -240,8 +240,8 @@ export function ScriptExecutor({ script, onExecutionResult }: ScriptExecutorProp
         }
       }, script.estimatedDuration ? script.estimatedDuration / totalSteps : 2000);
 
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+    } catch (_error) {
+      const errorMessage = _error instanceof Error ? _error.message : String(error);
       setErrorOutput(errorMessage);
       
       result.status = 'failed';

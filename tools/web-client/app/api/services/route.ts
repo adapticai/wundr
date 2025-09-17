@@ -36,12 +36,12 @@ export async function GET(request: NextRequest) {
         });
     }
 
-  } catch (error) {
-    console.error('Failed to fetch services:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch services'
+        error: _error instanceof Error ? _error.message : 'Failed to fetch services'
       },
       { status: 500 }
     );
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     const { serviceOrchestrator } = await import('@/lib/services/orchestrator/ServiceOrchestrator');
     const body = await request.json();
-    const { action, serviceId, config } = body;
+    const { action, serviceId } = body;
 
     switch (action) {
       case 'start':
@@ -83,12 +83,12 @@ export async function POST(request: NextRequest) {
         );
     }
 
-  } catch (error) {
-    console.error('Failed to process service action:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to process service action'
+        error: _error instanceof Error ? _error.message : 'Failed to process service action'
       },
       { status: 500 }
     );

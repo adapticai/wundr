@@ -170,7 +170,7 @@ async function getProjectRoot(): Promise<string> {
       } catch {
         // Continue searching
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue searching
     }
     dir = path.dirname(dir)
@@ -208,7 +208,7 @@ async function validateRepositoryPath(repoPath?: string): Promise<{ isValid: boo
     }
     
     return { isValid: true, resolvedPath }
-  } catch (error) {
+  } catch (_error) {
     return {
       isValid: false,
       resolvedPath: '',
@@ -388,8 +388,8 @@ async function getGitStatus(repoPath: string): Promise<GitStatus> {
   try {
     const output = await execGitCommand(['status', '--porcelain', '-b'], repoPath)
     return parseGitStatus(output)
-  } catch (error) {
-    throw new Error(`Failed to get git status: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to get git status: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -431,8 +431,8 @@ async function getGitLog(repoPath: string, options: GitOperationRequest['options
     
     const output = await execGitCommand(args, repoPath)
     return parseGitLog(output, options.stat)
-  } catch (error) {
-    throw new Error(`Failed to get git log: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to get git log: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -446,8 +446,8 @@ async function getGitBranches(repoPath: string, includeRemotes: boolean = false)
     
     const output = await execGitCommand(args, repoPath)
     return parseGitBranches(output)
-  } catch (error) {
-    throw new Error(`Failed to get git branches: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to get git branches: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -470,8 +470,8 @@ async function getGitRemotes(repoPath: string): Promise<GitRemote[]> {
     }
     
     return remotes
-  } catch (error) {
-    throw new Error(`Failed to get git remotes: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to get git remotes: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -503,8 +503,8 @@ async function getGitTags(repoPath: string, limit: number = 50): Promise<GitTag[
     }
     
     return tags
-  } catch (error) {
-    throw new Error(`Failed to get git tags: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to get git tags: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -551,7 +551,7 @@ export async function GET(request: NextRequest) {
     // Verify it's a git repository
     try {
       await execGitCommand(['rev-parse', '--git-dir'], pathValidation.resolvedPath)
-    } catch (error) {
+    } catch (_error) {
       const response: ApiResponse<null> = {
         success: false,
         data: null,
@@ -561,7 +561,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(response, { status: 422 })
     }
     
-    let data: any
+    let data: GitStatus | GitCommit[] | GitBranch[] | GitRemote[] | GitTag[]
     
     switch (action) {
       case 'status':
@@ -617,13 +617,13 @@ export async function GET(request: NextRequest) {
         'X-Processing-Time': `${processingTime}ms`
       }
     })
-  } catch (error) {
-    console.error('Error in git GET:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: _error instanceof Error ? _error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     

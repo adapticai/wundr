@@ -323,7 +323,7 @@ export const useBatchManagement = () => {
           const history = await fetchBatchHistory();
           setBatchHistory(history);
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('Failed to update batch progress:', error);
       }
     }, 5000); // Update every 5 seconds

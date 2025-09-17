@@ -40,7 +40,7 @@ test.describe('Comprehensive UI Audit', () => {
           const title = await page.title();
           expect(title).toBeTruthy();
           
-        } catch (error) {
+        } catch (_error) {
           failedRoutes.push(`${route}: ${error}`);
         }
       }
@@ -212,7 +212,7 @@ test.describe('Comprehensive UI Audit', () => {
             if (!response.ok()) {
               missingImages.push(src);
             }
-          } catch (error) {
+          } catch (_error) {
             missingImages.push(src);
           }
         }

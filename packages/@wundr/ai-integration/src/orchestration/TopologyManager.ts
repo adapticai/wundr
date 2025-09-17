@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { SwarmTopology, Agent, OperationResult } from '../types';
 
 export class TopologyManager extends EventEmitter {

@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { NeuralModel, ModelType, ModelStatus, ModelPerformance, OperationResult } from '../types';
 
 export interface TrainingConfig {

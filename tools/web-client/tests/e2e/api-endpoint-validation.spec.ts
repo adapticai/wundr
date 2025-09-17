@@ -82,7 +82,7 @@ test.describe('API Endpoint Validation', () => {
           endpointResults.unhealthy.push(`${endpoint} - ${response.status()}`);
         }
         
-      } catch (error) {
+      } catch (_error) {
         endpointResults.errors.push(`${endpoint} - ${error}`);
       }
     }
@@ -166,7 +166,7 @@ test.describe('API Endpoint Validation', () => {
           console.log(`${endpoint}: Not available (${response.status()})`);
         }
         
-      } catch (error) {
+      } catch (_error) {
         console.log(`${endpoint}: Request failed - ${error}`);
       }
     }
@@ -210,7 +210,7 @@ test.describe('API Endpoint Validation', () => {
 
         console.log(`${method} ${endpoint}: ${response.status()}`);
         
-      } catch (error) {
+      } catch (_error) {
         if (expectSuccess) {
           methodIssues.push(`${method} ${endpoint}: Request failed - ${error}`);
         } else {
@@ -321,12 +321,12 @@ test.describe('API Endpoint Validation', () => {
             if (!errorData.hasOwnProperty('error') && !errorData.hasOwnProperty('message')) {
               console.log(`${endpoint}: Error response lacks standard error fields`);
             }
-          } catch (e) {
+          } catch (_e) {
             console.log(`${endpoint}: Non-JSON error response`);
           }
         }
 
-      } catch (error) {
+      } catch (_error) {
         errorHandlingIssues.push(`${endpoint}: Request failed unexpectedly - ${error}`);
       }
     }
@@ -369,7 +369,7 @@ test.describe('API Endpoint Validation', () => {
 
         console.log(`${endpoint}: ${responseTime}ms - ${response.status()}`);
         
-      } catch (error) {
+      } catch (_error) {
         console.log(`${endpoint}: Performance test failed - ${error}`);
       }
     }
@@ -465,7 +465,7 @@ test.describe('API Endpoint Validation', () => {
           console.log(`${endpoint}: CORS enabled`);
         }
 
-      } catch (error) {
+      } catch (_error) {
         console.log(`${endpoint}: Security test failed - ${error}`);
       }
     }
@@ -534,7 +534,7 @@ test.describe('API Endpoint Validation', () => {
           }
         }
 
-      } catch (error) {
+      } catch (_error) {
         report.summary.unhealthyEndpoints++;
         report.details.failedEndpoints.push(`${endpoint} - ${error}`);
         report.summary.criticalFailures++;

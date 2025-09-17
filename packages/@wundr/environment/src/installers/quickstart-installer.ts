@@ -3,14 +3,17 @@
  * Parallel execution, smart caching, and optimized workflows
  */
 
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { homedir, platform, cpus } from 'os';
 import { execSync, spawn } from 'child_process';
+import { promises as fs } from 'fs';
+import { homedir, platform, cpus } from 'os';
+import { join } from 'path';
+
+import ora from 'ora';
+
 import { ProfileType, Platform } from '../types';
 import { createLogger } from '../utils/logger';
 import { detectPlatform } from '../utils/system';
-import ora from 'ora';
+
 
 const logger = createLogger('QuickstartInstaller');
 
@@ -241,7 +244,7 @@ export class QuickstartInstaller {
       spinner.succeed(`System analyzed: ${analysis.existingTools.length} tools found, ${analysis.missingTools.length} needed`);
       
       return analysis;
-    } catch (error) {
+    } catch (_error) {
       spinner.fail('System analysis failed');
       throw error;
     }
@@ -293,7 +296,7 @@ export class QuickstartInstaller {
           
           const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1);
           spinner.text = `Completed ${task.name} (${elapsed}s elapsed)`;
-        } catch (error) {
+        } catch (_error) {
           inProgress.delete(taskId);
           logger.error(`Task ${taskId} failed:`, error);
           throw error;
@@ -335,7 +338,7 @@ export class QuickstartInstaller {
 
       const totalTime = ((Date.now() - this.startTime) / 1000).toFixed(1);
       spinner.succeed(`All tools installed successfully in ${totalTime}s`);
-    } catch (error) {
+    } catch (_error) {
       const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1);
       spinner.fail(`Installation failed after ${elapsed}s`);
       throw error;
@@ -362,7 +365,7 @@ export class QuickstartInstaller {
       await this.setupDevelopmentPaths();
       
       spinner.succeed('Environment configured successfully');
-    } catch (error) {
+    } catch (_error) {
       spinner.fail('Environment configuration failed');
       throw error;
     }
@@ -390,7 +393,7 @@ export class QuickstartInstaller {
       await this.createProjectTemplate();
       
       spinner.succeed('AI agents configured (basic setup)');
-    } catch (error) {
+    } catch (_error) {
       spinner.fail('AI agents setup failed');
       throw error;
     }
@@ -553,7 +556,7 @@ export class QuickstartInstaller {
     for (const ext of extensions) {
       try {
         await this.executeCommand(`code --install-extension ${ext}`);
-      } catch (error) {
+      } catch (_error) {
         logger.warn(`Failed to install VS Code extension ${ext}:`, error);
       }
     }
@@ -562,7 +565,7 @@ export class QuickstartInstaller {
   private async installClaudeCore(): Promise<void> {
     try {
       await this.executeCommand('npm install -g @anthropic-ai/claude-code');
-    } catch (error) {
+    } catch (_error) {
       // Fallback to curl installation
       logger.warn('NPM install failed, trying curl method');
       await this.executeCommand('curl -fsSL claude.ai/install.sh | bash');
@@ -574,7 +577,7 @@ export class QuickstartInstaller {
     
     try {
       await this.executeCommand('npm install -g claude-flow@alpha');
-    } catch (error) {
+    } catch (_error) {
       logger.warn('Claude Flow installation failed:', error);
     }
   }
@@ -642,7 +645,7 @@ export class QuickstartInstaller {
           content += '\n' + aliases;
           await fs.writeFile(filePath, content);
         }
-      } catch (error) {
+      } catch (_error) {
         logger.warn(`Failed to update ${file}:`, error);
       }
     }
@@ -654,7 +657,7 @@ export class QuickstartInstaller {
       await this.executeCommand('git config --global init.defaultBranch main');
       await this.executeCommand('git config --global user.name "Developer"');
       await this.executeCommand('git config --global user.email "developer@local"');
-    } catch (error) {
+    } catch (_error) {
       // Git config might already be set
       logger.debug('Git configuration warning:', error);
     }

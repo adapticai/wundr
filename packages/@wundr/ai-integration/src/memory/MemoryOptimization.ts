@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { MemoryEntry, OperationResult } from '../types';
 
 export interface MemoryOptimizationConfig {
@@ -186,7 +187,7 @@ export class MemoryOptimization extends EventEmitter {
           fragmentationRatio: this.metrics.fragmentationRatio - initialMetrics.fragmentationRatio
         }
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         strategy: strategy.name,
         entriesProcessed: 0,

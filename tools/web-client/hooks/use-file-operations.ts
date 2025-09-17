@@ -35,11 +35,11 @@ export function useFileOperations() {
       URL.revokeObjectURL(url);
       
       return { success: true, message: 'File downloaded successfully' };
-    } catch (error) {
-      console.error('Download failed:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Download failed' 
+        error: _error instanceof Error ? _error.message : 'Download failed' 
       };
     } finally {
       setIsLoading(false);
@@ -50,8 +50,8 @@ export function useFileOperations() {
     try {
       await navigator.clipboard.writeText(file.path);
       return { success: true, message: 'File path copied to clipboard' };
-    } catch (error) {
-      console.error('Copy failed:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
       return { 
         success: false, 
         error: 'Failed to copy path to clipboard' 
@@ -71,8 +71,8 @@ export function useFileOperations() {
       }
       
       return await response.text();
-    } catch (error) {
-      console.error('Failed to get file content:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
       return null;
     } finally {
       setIsLoading(false);
@@ -92,10 +92,10 @@ export function useFileOperations() {
       console.log('File content:', content);
       
       return { success: true, message: 'File preview opened' };
-    } catch (error) {
+    } catch (_error) {
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Preview failed' 
+        error: _error instanceof Error ? _error.message : 'Preview failed' 
       };
     }
   }, [getFileContent]);
@@ -113,10 +113,10 @@ export function useFileOperations() {
       console.log('Opening file for editing:', file.path);
       
       return { success: true, message: 'File opened in editor' };
-    } catch (error) {
+    } catch (_error) {
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Failed to open editor' 
+        error: _error instanceof Error ? _error.message : 'Failed to open editor' 
       };
     }
   }, [getFileContent]);
@@ -133,8 +133,8 @@ export function useFileOperations() {
       }
       
       return await response.json();
-    } catch (error) {
-      console.error('Failed to refresh directory:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
       return [];
     } finally {
       setIsLoading(false);

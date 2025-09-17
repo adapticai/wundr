@@ -6,6 +6,7 @@ import { Bar } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { EntityData } from '@/app/api/analysis/entities/route';
+import type { TooltipItem } from 'chart.js';
 
 interface ComplexityMetricsProps {
   entities: EntityData[];
@@ -118,10 +119,10 @@ export function ComplexityMetrics({ entities }: ComplexityMetricsProps) {
       },
       tooltip: {
         callbacks: {
-          title: function (context: any) {
+          title: function (context: TooltipItem<'bar'>[]) {
             return `Complexity: ${context[0].label}`;
           },
-          label: function (context: any) {
+          label: function (context: TooltipItem<'bar'>) {
             const value = context.parsed.y;
             const total = entities.length;
             const percentage = ((value / total) * 100).toFixed(1);

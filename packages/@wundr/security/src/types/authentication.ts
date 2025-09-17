@@ -13,16 +13,29 @@ import {
   SecurityToken,
   SecurityContext,
   SecurityResult,
-  SecurityError,
-  SecuritySeverity,
-  SecurityOperationStatus,
   SecurityAlgorithm,
   DeviceFingerprint,
   NetworkContext
-} from './index';
+} from './base';
 
 /**
  * Authentication method types
+ */
+export enum AuthenticationMethodType {
+  PASSWORD = 'password',
+  MFA = 'mfa',
+  BIOMETRIC = 'biometric',
+  CERTIFICATE = 'certificate',
+  TOKEN = 'token',
+  SSO = 'sso',
+  OAUTH = 'oauth',
+  SAML = 'saml',
+  LDAP = 'ldap',
+  API_KEY = 'api_key'
+}
+
+/**
+ * Authentication method types (alias for compatibility)
  */
 export enum AuthenticationMethod {
   PASSWORD = 'password',
@@ -46,6 +59,18 @@ export enum AuthenticationFactor {
   INHERENCE = 'inherence',  // Something you are (biometric)
   LOCATION = 'location',    // Somewhere you are (geo-location)
   TIME = 'time'            // Somewhen you are (time-based)
+}
+
+/**
+ * Token types
+ */
+export enum TokenType {
+  ACCESS_TOKEN = 'access_token',
+  REFRESH_TOKEN = 'refresh_token',
+  ID_TOKEN = 'id_token',
+  AUTHORIZATION_CODE = 'authorization_code',
+  API_KEY = 'api_key',
+  BEARER = 'bearer'
 }
 
 /**
@@ -84,6 +109,40 @@ export enum OAuthScope {
   READ = 'read',
   WRITE = 'write',
   ADMIN = 'admin'
+}
+
+/**
+ * Session status enumeration
+ */
+export enum SessionStatus {
+  ACTIVE = 'active',
+  EXPIRED = 'expired',
+  REVOKED = 'revoked',
+  SUSPENDED = 'suspended',
+  LOCKED = 'locked'
+}
+
+/**
+ * Biometric types
+ */
+export enum BiometricType {
+  FINGERPRINT = 'fingerprint',
+  FACE = 'face',
+  VOICE = 'voice',
+  IRIS = 'iris',
+  PALM = 'palm'
+}
+
+/**
+ * Authentication status
+ */
+export enum AuthenticationStatus {
+  SUCCESS = 'success',
+  FAILED = 'failed',
+  PENDING = 'pending',
+  LOCKED = 'locked',
+  EXPIRED = 'expired',
+  REQUIRES_MFA = 'requires_mfa'
 }
 
 /**
@@ -762,9 +821,12 @@ export const createAuthenticationContext = (
 ): SecurityContext => ({
   ...baseContext,
   metadata: {
-    ...baseContext.metadata,
-    authMethod: method,
-    device
+    ...(baseContext.metadata || {}),
+    device,
+    customAttributes: {
+      ...(baseContext.metadata?.customAttributes || {}),
+      authenticationMethod: method
+    }
   }
 });
 

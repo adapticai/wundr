@@ -39,15 +39,15 @@ export function EntityDetailsTable({ entities }: EntityDetailsTableProps) {
 
   const sortedEntities = useMemo(() => {
     return [...entities].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number | string[];
+      let bValue: string | number | string[];
 
       if (sortKey === 'dependencyCount') {
         aValue = a.dependencies.length;
         bValue = b.dependencies.length;
       } else {
-        aValue = a[sortKey];
-        bValue = b[sortKey];
+        aValue = a[sortKey] as string | number | string[];
+        bValue = b[sortKey] as string | number | string[];
       }
 
       // Handle undefined/null values

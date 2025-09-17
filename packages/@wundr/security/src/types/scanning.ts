@@ -10,14 +10,22 @@
 import {
   SecurityId,
   SecurityTimestamp,
-  SecurityContext,
-  SecurityResult,
-  SecurityError,
   SecuritySeverity,
-  SecurityOperationStatus,
-  SecurityHash,
   ComplianceFramework
-} from './index';
+} from './base';
+import {
+  ComparisonOperator,
+  ImpactLevel,
+  RiskLevel,
+  LikelihoodLevel,
+  ReportFormat,
+  ResourceType,
+  EffortLevel,
+  SkillLevel,
+  NotificationChannelType,
+  ScheduleType,
+  ConfidenceLevel
+} from './shared-enums';
 
 /**
  * Scan types for different security assessments
@@ -40,6 +48,34 @@ export enum ScanType {
 }
 
 /**
+ * Finding severity levels following CVSS standards
+ */
+export enum FindingSeverity {
+  CRITICAL = 'critical', // CVSS 9.0-10.0
+  HIGH = 'high',         // CVSS 7.0-8.9
+  MEDIUM = 'medium',     // CVSS 4.0-6.9
+  LOW = 'low',          // CVSS 0.1-3.9
+  INFO = 'info'         // CVSS 0.0
+}
+
+/**
+ * Vulnerability types classification
+ */
+export enum VulnerabilityType {
+  INJECTION = 'injection',
+  BROKEN_AUTHENTICATION = 'broken_authentication',
+  SENSITIVE_DATA_EXPOSURE = 'sensitive_data_exposure',
+  XXE = 'xxe',
+  BROKEN_ACCESS_CONTROL = 'broken_access_control',
+  SECURITY_MISCONFIGURATION = 'security_misconfiguration',
+  XSS = 'xss',
+  INSECURE_DESERIALIZATION = 'insecure_deserialization',
+  COMPONENTS_WITH_KNOWN_VULNERABILITIES = 'components_with_known_vulnerabilities',
+  INSUFFICIENT_LOGGING = 'insufficient_logging',
+  CUSTOM = 'custom'
+}
+
+/**
  * Vulnerability severity levels (CVSS-based)
  */
 export enum VulnerabilitySeverity {
@@ -48,6 +84,20 @@ export enum VulnerabilitySeverity {
   MEDIUM = 'medium',     // CVSS 4.0-6.9
   LOW = 'low',          // CVSS 0.1-3.9
   INFO = 'info'         // CVSS 0.0
+}
+
+/**
+ * Finding status for vulnerabilities
+ */
+export enum FindingStatus {
+  OPEN = 'open',
+  CONFIRMED = 'confirmed',
+  FALSE_POSITIVE = 'false_positive',
+  MITIGATED = 'mitigated',
+  FIXED = 'fixed',
+  ACCEPTED_RISK = 'accepted_risk',
+  WONT_FIX = 'wont_fix',
+  DUPLICATE = 'duplicate'
 }
 
 /**
@@ -62,6 +112,45 @@ export enum VulnerabilityStatus {
   ACCEPTED_RISK = 'accepted_risk',
   WONT_FIX = 'wont_fix',
   DUPLICATE = 'duplicate'
+}
+
+/**
+ * Scanner engine types
+ */
+export enum ScannerEngine {
+  STATIC_ANALYSIS = 'static_analysis',
+  DYNAMIC_ANALYSIS = 'dynamic_analysis',
+  DEPENDENCY_CHECK = 'dependency_check',
+  SECRET_SCANNER = 'secret_scanner',
+  CONTAINER_SCANNER = 'container_scanner',
+  INFRASTRUCTURE_SCANNER = 'infrastructure_scanner',
+  CUSTOM = 'custom'
+}
+
+/**
+ * Scan status
+ */
+export enum ScanStatus {
+  PENDING = 'pending',
+  QUEUED = 'queued',
+  RUNNING = 'running',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
+  TIMEOUT = 'timeout',
+  PARTIAL = 'partial'
+}
+
+/**
+ * Report type enumeration
+ */
+export enum ReportType {
+  SUMMARY = 'summary',
+  DETAILED = 'detailed',
+  EXECUTIVE = 'executive',
+  TECHNICAL = 'technical',
+  COMPLIANCE = 'compliance',
+  CUSTOM = 'custom'
 }
 
 /**
@@ -108,9 +197,9 @@ export interface ScanSchedule {
 }
 
 /**
- * Schedule types
+ * Schedule interval types (renamed to avoid conflict)
  */
-export enum ScheduleType {
+export enum ScheduleIntervalType {
   CRON = 'cron',
   INTERVAL = 'interval',
   MANUAL = 'manual',
@@ -244,20 +333,7 @@ export interface ScanReporting {
   readonly filtering?: ReportFiltering;
 }
 
-/**
- * Report formats
- */
-export enum ReportFormat {
-  JSON = 'json',
-  XML = 'xml',
-  HTML = 'html',
-  PDF = 'pdf',
-  CSV = 'csv',
-  SARIF = 'sarif', // Static Analysis Results Interchange Format
-  JUNIT = 'junit',
-  SONARQUBE = 'sonarqube',
-  CUSTOM = 'custom'
-}
+// ReportFormat is now imported from shared-enums
 
 /**
  * Report destinations
@@ -437,16 +513,56 @@ export interface NotificationChannel {
   readonly metadata?: Record<string, unknown>;
 }
 
+// NotificationChannelType is imported from shared-enums
+
 /**
- * Notification channel types
+ * Scan trigger types
  */
-export enum NotificationChannelType {
-  EMAIL = 'email',
-  SLACK = 'slack',
-  TEAMS = 'teams',
+export enum ScanTriggerType {
+  SCHEDULED = 'scheduled',
+  MANUAL = 'manual',
+  API = 'api',
   WEBHOOK = 'webhook',
-  SMS = 'sms',
+  CI_CD = 'ci_cd',
+  FILE_CHANGE = 'file_change',
+  THRESHOLD = 'threshold',
   CUSTOM = 'custom'
+}
+
+/**
+ * Filter operators for search and filtering
+ */
+export enum FilterOperator {
+  EQUALS = 'equals',
+  NOT_EQUALS = 'not_equals',
+  CONTAINS = 'contains',
+  NOT_CONTAINS = 'not_contains',
+  STARTS_WITH = 'starts_with',
+  ENDS_WITH = 'ends_with',
+  GREATER_THAN = 'greater_than',
+  LESS_THAN = 'less_than',
+  IN = 'in',
+  NOT_IN = 'not_in'
+}
+
+/**
+ * Sort order enumeration
+ */
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc'
+}
+
+/**
+ * Export format types
+ */
+export enum ExportFormat {
+  JSON = 'json',
+  XML = 'xml',
+  CSV = 'csv',
+  PDF = 'pdf',
+  HTML = 'html',
+  SARIF = 'sarif'
 }
 
 /**
@@ -620,17 +736,7 @@ export interface QualityCondition {
   readonly severity: VulnerabilitySeverity;
 }
 
-/**
- * Comparison operators for quality gates
- */
-export enum ComparisonOperator {
-  EQUALS = 'equals',
-  NOT_EQUALS = 'not_equals',
-  GREATER_THAN = 'greater_than',
-  GREATER_THAN_OR_EQUAL = 'greater_than_or_equal',
-  LESS_THAN = 'less_than',
-  LESS_THAN_OR_EQUAL = 'less_than_or_equal'
-}
+// ComparisonOperator is now imported from shared-enums
 
 /**
  * Vulnerability interface
@@ -782,16 +888,7 @@ export interface ImpactAssessment {
   readonly riskRating: RiskRating;
 }
 
-/**
- * Impact levels
- */
-export enum ImpactLevel {
-  NONE = 'none',
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical'
-}
+// ImpactLevel is now imported from shared-enums (with extended values)
 
 /**
  * Business impact assessment
@@ -817,16 +914,7 @@ export interface TechnicalImpact {
   readonly dataCorruption: ImpactLevel;
 }
 
-/**
- * Likelihood levels
- */
-export enum LikelihoodLevel {
-  VERY_LOW = 'very_low',
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  VERY_HIGH = 'very_high'
-}
+// LikelihoodLevel is now imported from shared-enums
 
 /**
  * Risk rating
@@ -838,17 +926,7 @@ export interface RiskRating {
   readonly mitigation: MitigationStrategy;
 }
 
-/**
- * Risk levels
- */
-export enum RiskLevel {
-  VERY_LOW = 'very_low',
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  VERY_HIGH = 'very_high',
-  CRITICAL = 'critical'
-}
+// RiskLevel is now imported from shared-enums
 
 /**
  * Risk factors
@@ -967,16 +1045,7 @@ export interface EffortEstimate {
   readonly skillLevel: SkillLevel;
 }
 
-/**
- * Effort levels
- */
-export enum EffortLevel {
-  MINIMAL = 'minimal',   // < 1 hour
-  LOW = 'low',          // 1-4 hours
-  MEDIUM = 'medium',    // 1-2 days
-  HIGH = 'high',        // 3-5 days
-  VERY_HIGH = 'very_high' // > 1 week
-}
+// EffortLevel is imported from shared-enums
 
 /**
  * Complexity levels
@@ -989,16 +1058,7 @@ export enum ComplexityLevel {
   VERY_COMPLEX = 'very_complex'
 }
 
-/**
- * Skill levels required
- */
-export enum SkillLevel {
-  JUNIOR = 'junior',
-  INTERMEDIATE = 'intermediate',
-  SENIOR = 'senior',
-  EXPERT = 'expert',
-  SPECIALIST = 'specialist'
-}
+// SkillLevel is imported from shared-enums
 
 /**
  * Validation guidance
@@ -1180,16 +1240,7 @@ export enum FindingType {
   CUSTOM = 'custom'
 }
 
-/**
- * Confidence levels
- */
-export enum ConfidenceLevel {
-  VERY_HIGH = 'very_high',
-  HIGH = 'high',
-  MEDIUM = 'medium',
-  LOW = 'low',
-  VERY_LOW = 'very_low'
-}
+// ConfidenceLevel is imported from shared-enums
 
 /**
  * Result metrics

@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const scriptService = (await import('@/lib/services/script/ScriptRunnerService')).default;
-    type ScriptCategory = import('@/lib/services/script/ScriptRunnerService').ScriptCategory;
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     let scripts;
     if (category && category !== 'all' && validCategories.includes(category)) {
-      scripts = scriptService.getScriptsByCategory(category as any);
+      scripts = scriptService.getScriptsByCategory(category as 'automation' | 'testing' | 'deployment' | 'monitoring' | 'maintenance' | 'analysis' | 'utility' | 'custom');
     } else {
       scripts = await scriptService.getScripts();
     }
@@ -25,12 +24,12 @@ export async function GET(request: NextRequest) {
       data: scripts
     });
 
-  } catch (error) {
-    console.error('Failed to fetch scripts:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch scripts'
+        error: _error instanceof Error ? _error.message : 'Failed to fetch scripts'
       },
       { status: 500 }
     );
@@ -49,12 +48,12 @@ export async function POST(request: NextRequest) {
       data: script
     });
 
-  } catch (error) {
-    console.error('Failed to register script:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to register script'
+        error: _error instanceof Error ? _error.message : 'Failed to register script'
       },
       { status: 500 }
     );

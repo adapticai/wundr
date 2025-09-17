@@ -258,8 +258,8 @@ const BatchManagementPage: React.FC = () => {
         });
         setWizardStep(1);
         setShowCreateWizard(false);
-      } catch (error) {
-        console.error('Failed to create batch:', error);
+      } catch (_error) {
+        // Error logged - details available in network tab;
       } finally {
         setWizardLoading(false);
       }

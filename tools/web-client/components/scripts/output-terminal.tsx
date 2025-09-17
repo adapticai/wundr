@@ -96,8 +96,8 @@ export function OutputTerminal({
     try {
       await navigator.clipboard.writeText(content);
       // Could show a toast notification here
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   };
 

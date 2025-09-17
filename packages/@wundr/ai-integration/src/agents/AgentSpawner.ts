@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { Agent, AgentType, AgentConfig, OperationResult } from '../types';
 
 export class AgentSpawner extends EventEmitter {

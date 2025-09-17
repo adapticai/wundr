@@ -28,6 +28,7 @@ import {
   type CSVExportOptions
 } from '@/lib/utils'
 import type { DependencyData } from '@/app/api/analysis/dependencies/route'
+import type { PackageInfo, DownloadStats } from '@/types/analysis'
 
 interface DependencySizeAnalyzerProps {
   dependencies: DependencyData[]
@@ -92,10 +93,10 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
     
     try {
       // Mock data - in production this would parse package.json files
-      const packages: any[] = []
+      const packages: PackageInfo[] = []
       
       // Mock download statistics
-      const downloadStats: any = {}
+      const downloadStats: DownloadStats = {}
       
       const enrichedDependencies: DependencyData[] = packages.map(pkg => ({
         ...pkg,

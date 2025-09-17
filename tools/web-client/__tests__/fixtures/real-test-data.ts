@@ -100,7 +100,7 @@ export class TestApiServer {
 
     try {
       return handler({ body, method, path })
-    } catch (error) {
+    } catch (_error) {
       return { status: 500, error: (error as Error).message }
     }
   }

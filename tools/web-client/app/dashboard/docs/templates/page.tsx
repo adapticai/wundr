@@ -54,7 +54,7 @@ const getTemplatesContent = async () => {
     
     return templates;
   } catch (_error) {
-    console.log('Could not read templates from filesystem, using fallback');
+    // Could not read templates from filesystem, using fallback
     return getFallbackTemplates();
   }
 };

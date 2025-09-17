@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { Agent, OperationResult } from '../types';
 
 export class CodeReviewSwarm extends EventEmitter {

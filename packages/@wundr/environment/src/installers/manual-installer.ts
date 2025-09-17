@@ -3,8 +3,9 @@
  */
 
 import { promises as fs } from 'fs';
-import { join } from 'path';
 import { homedir } from 'os';
+import { join } from 'path';
+
 import { ToolConfiguration, InstallationResult, ValidationResult } from '../types';
 import { BaseInstaller } from './base-installer';
 import { createLogger } from '../utils/logger';
@@ -212,7 +213,7 @@ export class ManualInstaller extends BaseInstaller {
       try {
         const existingData = await fs.readFile(settingsPath, 'utf8');
         existingSettings = JSON.parse(existingData);
-      } catch (error) {
+      } catch (_error) {
         // File doesn't exist or is invalid JSON, start with empty object
       }
 
@@ -221,7 +222,7 @@ export class ManualInstaller extends BaseInstaller {
       await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2));
       
       logger.info('VS Code settings applied');
-    } catch (error) {
+    } catch (_error) {
       logger.error('Failed to apply VS Code settings:', error);
       throw error;
     }

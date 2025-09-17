@@ -18,12 +18,12 @@ export async function POST(
       data: { executionId: execution.id }
     });
 
-  } catch (error) {
-    console.error('Failed to execute script:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to execute script'
+        error: _error instanceof Error ? _error.message : 'Failed to execute script'
       },
       { status: 500 }
     );

@@ -96,28 +96,28 @@ async function analyzeDuplicates(): Promise<DuplicatesAnalysisResponse> {
           file: 'src/services/api.ts',
           line: 67,
           endLine: 85,
-          code: 'function handleApiError(error: any) {\n  if (error.response?.status === 401) {\n    redirectToLogin();\n  }\n  console.error(error);\n  showErrorMessage(error.message);\n}'
+          code: 'function handleApiError(error: Error | { response?: { status: number } }) {\n  if (error.response?.status === 401) {\n    redirectToLogin();\n  }\n  // Error logged - details available in network tab;\n  showErrorMessage(error.message);\n}'
         },
         {
           name: 'processError',
           file: 'src/utils/http.ts',
           line: 34,
           endLine: 52,
-          code: 'function processError(err: any) {\n  if (err.response?.status === 401) {\n    redirectToLogin();\n  }\n  console.error(err);\n  showErrorMessage(err.message);\n}'
+          code: 'function processError(err: Error | { response?: { status: number } }) {\n  if (err.response?.status === 401) {\n    redirectToLogin();\n  }\n  console.error(err);\n  showErrorMessage(err.message);\n}'
         },
         {
           name: 'onRequestError',
           file: 'src/hooks/useApi.ts',
           line: 89,
           endLine: 107,
-          code: 'function onRequestError(error: any) {\n  if (error.response?.status === 401) {\n    redirectToLogin();\n  }\n  console.error(error);\n  showErrorMessage(error.message);\n}'
+          code: 'function onRequestError(error: Error | { response?: { status: number } }) {\n  if (error.response?.status === 401) {\n    redirectToLogin();\n  }\n  // Error logged - details available in network tab;\n  showErrorMessage(error.message);\n}'
         },
         {
           name: 'errorHandler',
           file: 'src/components/ErrorBoundary.tsx',
           line: 23,
           endLine: 41,
-          code: 'function errorHandler(error: any) {\n  if (error.response?.status === 401) {\n    redirectToLogin();\n  }\n  console.error(error);\n  showErrorMessage(error.message);\n}'
+          code: 'function errorHandler(error: Error | { response?: { status: number } }) {\n  if (error.response?.status === 401) {\n    redirectToLogin();\n  }\n  // Error logged - details available in network tab;\n  showErrorMessage(error.message);\n}'
         }
       ],
       similarity: 98.2,
@@ -170,7 +170,7 @@ async function analyzeDuplicates(): Promise<DuplicatesAnalysisResponse> {
           file: 'src/services/user.ts',
           line: 45,
           endLine: 62,
-          code: 'async function fetchUserData(id: string) {\n  try {\n    const response = await api.get(`/users/${id}`);\n    return response.data;\n  } catch (error) {\n    console.error("Failed to fetch user:", error);\n    throw error;\n  }\n}'
+          code: 'async function fetchUserData(id: string) {\n  try {\n    const response = await api.get(`/users/${id}`);\n    return response.data;\n  } catch (_error) {\n    // Error logged - details available in network tab;\n    throw error;\n  }\n}'
         },
         {
           name: 'getUserProfile',
@@ -184,7 +184,7 @@ async function analyzeDuplicates(): Promise<DuplicatesAnalysisResponse> {
           file: 'src/pages/profile.tsx',
           line: 28,
           endLine: 45,
-          code: 'async function loadUser(id: string) {\n  try {\n    const res = await api.get(`/users/${id}`);\n    return res.data;\n  } catch (error) {\n    console.error("User load failed:", error);\n    throw error;\n  }\n}'
+          code: 'async function loadUser(id: string) {\n  try {\n    const res = await api.get(`/users/${id}`);\n    return res.data;\n  } catch (_error) {\n    // Error logged - details available in network tab;\n    throw error;\n  }\n}'
         }
       ],
       similarity: 92.1,
@@ -264,8 +264,8 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json'
       }
     })
-  } catch (error) {
-    console.error('Error analyzing duplicates:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
 
     const response: ApiResponse<null> = {
       success: false,

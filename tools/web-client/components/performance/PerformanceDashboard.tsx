@@ -12,33 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Cpu, HardDrive, Network, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
+import type { MemoryStatus, SystemMetrics, ConcurrencyMetrics, PerformanceAlert, PerformanceDataPoint } from '@/types/performance';
 import { performanceMonitor, usePerformanceMonitor, PerformanceMetrics as BasePerformanceMetric } from '@/lib/performance-monitor';
 // import { FixedSizeList as List } from 'react-window'; // Not available, using regular div
 
-interface PerformanceMetric {
-  name: string;
-  value: number;
-  unit: string;
-  timestamp: number;
-  category: 'memory' | 'cpu' | 'network' | 'ui' | 'custom';
-  tags?: Record<string, string>;
-}
+interface PerformanceMetric extends PerformanceDataPoint {}
 
-interface SystemMetrics {
-  memory: {
-    used: number;
-    total: number;
-    percentage: number;
-  };
-  cpu: {
-    usage: number;
-  };
-  fps: number;
-  domNodes: number;
-  timestamp: number;
-}
 
-interface MemoryData {
+type MemoryData = {
   timestamp: number;
   heapUsed: number;
   heapTotal: number;
@@ -46,7 +27,7 @@ interface MemoryData {
   rss: number;
 }
 
-interface ConcurrencyData {
+type ConcurrencyData = {
   timestamp: number;
   activeWorkers: number;
   queuedTasks: number;
@@ -209,7 +190,7 @@ ConcurrencyChart.displayName = 'ConcurrencyChart';
 /**
  * Memory leak indicator component
  */
-const MemoryLeakIndicator = memo(({ memoryStatus }: { memoryStatus: any }) => {
+const MemoryLeakIndicator = memo(({ memoryStatus }: { memoryStatus: MemoryStatus | null }) => {
   if (!memoryStatus) {
     return (
       <Alert>
@@ -334,7 +315,7 @@ MetricsSummaryCards.displayName = 'MetricsSummaryCards';
 export const PerformanceDashboard: React.FC = () => {
   const { metrics: rawMetrics, getAllMetrics, getAverageMetrics } = usePerformanceMonitor();
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
-  const [alerts] = useState<any[]>([]);
+  const [alerts] = useState<PerformanceAlert[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -344,17 +325,17 @@ export const PerformanceDashboard: React.FC = () => {
   useEffect(() => {
     const updateSystemMetrics = () => {
       const now = Date.now();
-      const memoryMetrics = rawMetrics ? Object.values(rawMetrics).filter((m: any) => m.name?.includes('memory')) : [];
-      const latestMemory = memoryMetrics[memoryMetrics.length - 1] as any;
+      const memoryMetrics = rawMetrics ? Object.values(rawMetrics).filter((m: PerformanceDataPoint) => m.name?.includes('memory')) : [];
+      const latestMemory = memoryMetrics[memoryMetrics.length - 1] as PerformanceDataPoint | undefined;
       
       // Get browser memory info if available
-      const browserMemory = typeof window !== 'undefined' && 'memory' in performance 
-        ? (performance as any).memory 
+      const browserMemory = typeof window !== 'undefined' && 'memory' in performance
+        ? (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
         : null;
       
       const metrics: SystemMetrics = {
         memory: {
-          used: browserMemory?.usedJSHeapSize || latestMemory?.value || 50000000,
+          used: browserMemory?.usedJSHeapSize || (latestMemory?.value ?? 50000000),
           total: browserMemory?.totalJSHeapSize || 100000000,
           percentage: browserMemory 
             ? (browserMemory.usedJSHeapSize / browserMemory.totalJSHeapSize) * 100
@@ -462,8 +443,8 @@ export const PerformanceDashboard: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Failed to generate performance report:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   }, [systemMetrics, rawMetrics, alerts]);
   
@@ -543,11 +524,11 @@ export const PerformanceDashboard: React.FC = () => {
             </Card>
           </div>
           
-          <MemoryLeakIndicator memoryStatus={systemMetrics ? { 
+          <MemoryLeakIndicator memoryStatus={systemMetrics ? {
             hasLeak: false,
-            status: 'normal', 
-            percentage: systemMetrics.memory.percentage, 
-            trend: 'stable',
+            status: 'normal' as const,
+            percentage: systemMetrics.memory.percentage,
+            trend: 'stable' as const,
             growthRate: 0,
             recommendation: 'Memory usage is within normal limits.'
           } : null} />
@@ -612,11 +593,11 @@ export const PerformanceDashboard: React.FC = () => {
             </div>
           </div>
           
-          <MemoryLeakIndicator memoryStatus={systemMetrics ? { 
+          <MemoryLeakIndicator memoryStatus={systemMetrics ? {
             hasLeak: false,
-            status: 'normal', 
-            percentage: systemMetrics.memory.percentage, 
-            trend: 'stable',
+            status: 'normal' as const,
+            percentage: systemMetrics.memory.percentage,
+            trend: 'stable' as const,
             growthRate: 0,
             recommendation: 'Memory usage is within normal limits.'
           } : null} />

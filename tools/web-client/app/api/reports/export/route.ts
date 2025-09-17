@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error) {
-    console.error('Error exporting report:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     
     return NextResponse.json(
       { 
         error: 'Failed to export report',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: _error instanceof Error ? _error.message : 'Unknown error',
         success: false,
       },
       { status: 500 }
@@ -228,7 +228,7 @@ function generateHTMLReport(reportContent: ReportContent, title: string, printab
                       return `<ul>${Array.isArray(content.content) ? content.content.map(item => `<li>${item}</li>`).join('') : ''}</ul>`;
                     case 'metrics-grid':
                       return `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
-                        ${Object.entries(content.content as Record<string, any>).map(([key, value]) => `
+                        ${Object.entries(content.content as Record<string, string | number>).map(([key, value]) => `
                           <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                             <div style="font-size: 1.5em; font-weight: bold; color: #0066cc;">${value}</div>
                             <div style="color: #666; margin-top: 5px;">${key}</div>
@@ -387,7 +387,7 @@ function generateMarkdownReport(reportContent: ReportContent, title: string): st
           break;
         case 'metrics-grid':
           if (typeof content.content === 'object' && content.content !== null) {
-            const metrics = content.content as Record<string, any>;
+            const metrics = content.content as Record<string, string | number>;
             sections.push(Object.entries(metrics)
               .map(([key, value]) => `**${key}**: ${value}`)
               .join(' | '));

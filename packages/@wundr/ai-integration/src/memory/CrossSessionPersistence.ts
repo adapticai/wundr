@@ -5,9 +5,11 @@
  * storage, retrieval, and cross-session pattern learning.
  */
 
+import * as path from 'path';
+
 import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
-import * as path from 'path';
+
 import { MemoryEntry, OperationResult } from '../types';
 
 export interface PersistentMemoryEntry extends MemoryEntry {

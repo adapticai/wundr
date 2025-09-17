@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
+import { EventEmitter } from 'events';
 
 // Enterprise-grade metadata interface for user context
 export interface UserMetadata {
@@ -524,18 +524,18 @@ export class RoleBasedAccessControl extends EventEmitter {
   // Access Control
   async checkAccess(request: AccessRequest): Promise<AccessResult> {
     const startTime = Date.now();
-    const requestId = request.requestId || this.generateId();
+    const _requestId = request.requestId || this.generateId();
 
     // Check cache first
     if (this.options.enableCaching) {
       const cacheKey = this.generateCacheKey(request);
-      const cached = this.accessCache.get(cacheKey);
-      if (cached && Date.now() < cached.expiresAt) {
+      const _cached = this.accessCache.get(cacheKey);
+      if (_cached && Date.now() < _cached.expiresAt) {
         // Add cache hit metadata
         return {
-          ...cached.result,
+          ..._cached.result,
           metadata: {
-            ...cached.result.metadata,
+            ..._cached.result.metadata,
             cacheHit: true,
             evaluationTimeMs: Date.now() - startTime
           }

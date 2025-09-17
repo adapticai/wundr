@@ -5,9 +5,11 @@
  * Provides a unified interface for all MCP tool interactions.
  */
 
+import * as path from 'path';
+
 import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
-import * as path from 'path';
+
 import { 
   MCPToolsConfig, 
   MCPTool, 
@@ -576,7 +578,7 @@ class DefaultMCPHandler {
 
   async execute(operation: string, params: any): Promise<any> {
     // Default implementation - could interface with MCP protocol directly
-    console.log(`Executing ${this.toolId} operation: ${operation}`, params);
+    console.info(`Executing ${this.toolId} operation: ${operation}`, params);
     
     return {
       toolId: this.toolId,

@@ -5,10 +5,13 @@
  * Implements concurrent execution patterns and swarm topology management.
  */
 
-import { EventEmitter } from 'eventemitter3';
 import { spawn } from 'child_process';
-import * as fs from 'fs-extra';
 import * as path from 'path';
+
+import { EventEmitter } from 'eventemitter3';
+import * as fs from 'fs-extra';
+
+
 import { 
   ClaudeFlowConfig, 
   Agent, 
@@ -136,7 +139,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       if (!hasClaudeFlow) {
         throw new Error('Claude Flow MCP server not configured');
       }
-    } catch (error) {
+    } catch (_error) {
       // Auto-install Claude Flow MCP server
       await this.installClaudeFlowMCP();
     }

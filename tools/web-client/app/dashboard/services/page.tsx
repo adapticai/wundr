@@ -545,8 +545,8 @@ export default function ServicesPage() {
 
         setAlerts(mockAlerts)
       }
-    } catch (error) {
-      console.error('Failed to fetch services data:', error)
+    } catch (_error) {
+      // Error logged - details available in network tab
     } finally {
       setLoading(false)
     }

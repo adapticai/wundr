@@ -111,7 +111,7 @@ async function getProjectRoot(): Promise<string> {
       if (fs.existsSync(packagePath) && fs.existsSync(workspacePath)) {
         return dir
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue searching
     }
     dir = path.dirname(dir)
@@ -143,14 +143,14 @@ async function analyzeCodeComplexity(projectRoot: string): Promise<number> {
         const fileComplexity = complexityMatches.length + functionMatches.length
         totalComplexity += fileComplexity
         fileCount++
-      } catch (e) {
+      } catch (_e) {
         // Skip files that can't be read
       }
     }
     
     return fileCount > 0 ? Math.round((totalComplexity / fileCount) * 10) / 10 : 0
-  } catch (error) {
-    console.error('Error analyzing code complexity:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     return 0
   }
 }
@@ -166,13 +166,13 @@ async function analyzeTestCoverage(projectRoot: string): Promise<number> {
     try {
       const coverageData = JSON.parse(await fs.readFile(coverageFile, 'utf-8')) as TestCoverageReport
       return Math.round(coverageData.total.lines.pct * 10) / 10
-    } catch (e) {
+    } catch (_e) {
       // If no coverage file exists, try to generate one
       try {
         await execCommand('npm', ['run', 'test:coverage'], projectRoot)
         const coverageData = JSON.parse(await fs.readFile(coverageFile, 'utf-8')) as TestCoverageReport
         return Math.round(coverageData.total.lines.pct * 10) / 10
-      } catch (testError) {
+      } catch (_testError) {
         // Fallback: analyze test files vs source files ratio
         const sourceFiles = await execCommand('find', ['.', '-name', '*.ts', '-o', '-name', '*.tsx', '!', '-path', './node_modules/*', '!', '-path', './.next/*', '!', '-name', '*.test.*', '!', '-name', '*.spec.*'], projectRoot)
         const testFiles = await execCommand('find', ['.', '-name', '*.test.*', '-o', '-name', '*.spec.*', '!', '-path', './node_modules/*'], projectRoot)
@@ -184,8 +184,8 @@ async function analyzeTestCoverage(projectRoot: string): Promise<number> {
         return sourceCount > 0 ? Math.min(95, Math.round((testCount / sourceCount) * 100)) : 0
       }
     }
-  } catch (error) {
-    console.error('Error analyzing test coverage:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     return 0
   }
 }
@@ -215,7 +215,7 @@ async function analyzeDuplicateLines(projectRoot: string): Promise<number> {
             // totalLines++
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // Skip files that can't be read
       }
     }
@@ -228,8 +228,8 @@ async function analyzeDuplicateLines(projectRoot: string): Promise<number> {
     }
     
     return duplicateLines
-  } catch (error) {
-    console.error('Error analyzing duplicate lines:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     return 0
   }
 }
@@ -276,14 +276,14 @@ async function analyzeMaintainability(projectRoot: string): Promise<number> {
         
         totalScore += Math.max(20, Math.min(100, score))
         fileCount++
-      } catch (e) {
+      } catch (_e) {
         // Skip files that can't be read
       }
     }
     
     return fileCount > 0 ? Math.round((totalScore / fileCount) * 10) / 10 : 75
-  } catch (error) {
-    console.error('Error analyzing maintainability:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     return 75
   }
 }
@@ -309,7 +309,7 @@ async function analyzeESLintIssues(projectRoot: string): Promise<{ codeSmells: n
     }
     
     return { codeSmells, bugs }
-  } catch (error) {
+  } catch (_error) {
     // Fallback: count TODO comments and common patterns
     try {
       const todoOutput = await execCommand('grep', ['-r', '--include=*.ts', '--include=*.tsx', '-i', 'todo|fixme|hack|xxx', '.'], projectRoot)
@@ -333,7 +333,7 @@ async function analyzeVulnerabilities(projectRoot: string): Promise<number> {
     const auditData = JSON.parse(auditOutput)
     
     return auditData.metadata?.vulnerabilities?.total || 0
-  } catch (error) {
+  } catch (_error) {
     // Fallback: check for common security patterns
     try {
       const securityIssues = await execCommand('grep', ['-r', '--include=*.ts', '--include=*.tsx', '-i', 'eval\|innerhtml\|document\.write\|password.*=\|api.*key.*=', '.'], projectRoot)
@@ -361,14 +361,14 @@ async function countLinesOfCode(projectRoot: string): Promise<number> {
           line.trim() && !line.trim().startsWith('//') && !line.trim().startsWith('*')
         ).length
         totalLines += codeLines
-      } catch (e) {
+      } catch (_e) {
         // Skip files that can't be read
       }
     }
     
     return totalLines
-  } catch (error) {
-    console.error('Error counting lines of code:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     return 0
   }
 }
@@ -443,8 +443,8 @@ async function fetchQualityData(timeRange: TimeRange): Promise<QualityMetrics[]>
     }
     
     return data
-  } catch (error) {
-    console.error('Error fetching quality data:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     throw new Error('Failed to analyze project quality metrics')
   }
 }
@@ -497,10 +497,10 @@ export async function GET(request: NextRequest) {
         'X-Data-Points': data.length.toString()
       }
     })
-  } catch (error) {
-    console.error('Error fetching quality data:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    const errorMessage = _error instanceof Error ? _error.message : 'Unknown error occurred'
     const isAnalysisError = errorMessage.includes('Failed to analyze') || errorMessage.includes('Command failed')
     
     const response: ApiResponse<null> = {

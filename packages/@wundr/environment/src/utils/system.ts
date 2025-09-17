@@ -2,8 +2,9 @@
  * System detection and information utilities
  */
 
-import { platform, arch } from 'os';
 import { execSync } from 'child_process';
+import { platform, arch } from 'os';
+
 import { Platform, SystemInfo } from '../types';
 
 /**
@@ -51,7 +52,7 @@ function getVersion(command: string): string {
       .toString()
       .trim()
       .replace(/^v/, ''); // Remove 'v' prefix if present
-  } catch (error) {
+  } catch (_error) {
     return 'not installed';
   }
 }
@@ -91,7 +92,7 @@ export function isRunningInDocker(): boolean {
   try {
     return execSync('cat /proc/1/cgroup', { encoding: 'utf8' })
       .includes('docker');
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }

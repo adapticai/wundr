@@ -12,14 +12,62 @@ import {
   SecurityTimestamp,
   SecurityContext,
   SecurityResult,
-  SecurityError,
   SecuritySeverity,
-  SecurityOperationStatus,
   SecurityAttributeValue,
   GeographicLocation,
   DeviceFingerprint,
   NetworkContext
-} from './index';
+} from './base';
+import {
+  ComparisonOperator,
+  ResourceType
+} from './shared-enums';
+
+/**
+ * Policy types
+ */
+export enum PolicyType {
+  RBAC_POLICY = 'rbac_policy',
+  ABAC_POLICY = 'abac_policy',
+  PRIVACY_POLICY = 'privacy_policy',
+  DATA_GOVERNANCE = 'data_governance',
+  COMPLIANCE_POLICY = 'compliance_policy',
+  SECURITY_POLICY = 'security_policy',
+  CUSTOM_POLICY = 'custom_policy'
+}
+
+/**
+ * Decision types for authorization
+ */
+export enum DecisionType {
+  ALLOW = 'allow',
+  DENY = 'deny',
+  INDETERMINATE = 'indeterminate',
+  NOT_APPLICABLE = 'not_applicable'
+}
+
+/**
+ * Resource access types
+ */
+export enum ResourceAccessType {
+  READ = 'read',
+  WRITE = 'write',
+  EXECUTE = 'execute',
+  DELETE = 'delete',
+  ADMIN = 'admin',
+  FULL_CONTROL = 'full_control'
+}
+
+/**
+ * Policy evaluation modes
+ */
+export enum PolicyEvaluationMode {
+  STRICT = 'strict',
+  PERMISSIVE = 'permissive',
+  AUDIT_ONLY = 'audit_only',
+  FAIL_OPEN = 'fail_open',
+  FAIL_CLOSED = 'fail_closed'
+}
 
 /**
  * Authorization model types
@@ -44,6 +92,15 @@ export enum AccessDecision {
 }
 
 /**
+ * Permission effect enumeration
+ */
+export enum PermissionEffect {
+  ALLOW = 'allow',
+  DENY = 'deny',
+  CONDITIONAL = 'conditional'
+}
+
+/**
  * Permission types
  */
 export enum PermissionType {
@@ -52,22 +109,7 @@ export enum PermissionType {
   CONDITIONAL = 'conditional'
 }
 
-/**
- * Resource types for authorization
- */
-export enum ResourceType {
-  FILE = 'file',
-  DIRECTORY = 'directory',
-  DATABASE = 'database',
-  TABLE = 'table',
-  RECORD = 'record',
-  API_ENDPOINT = 'api_endpoint',
-  SERVICE = 'service',
-  APPLICATION = 'application',
-  SYSTEM = 'system',
-  NETWORK = 'network',
-  CUSTOM = 'custom'
-}
+// ResourceType is now imported from shared-enums
 
 /**
  * Action types for authorization
@@ -392,18 +434,7 @@ export interface AuthorizationPolicy {
   readonly metadata?: PolicyMetadata;
 }
 
-/**
- * Policy types
- */
-export enum PolicyType {
-  RBAC_POLICY = 'rbac_policy',
-  ABAC_POLICY = 'abac_policy',
-  PRIVACY_POLICY = 'privacy_policy',
-  DATA_GOVERNANCE = 'data_governance',
-  COMPLIANCE_POLICY = 'compliance_policy',
-  SECURITY_POLICY = 'security_policy',
-  CUSTOM_POLICY = 'custom_policy'
-}
+// PolicyType is already defined above
 
 /**
  * Policy target (when policy applies)
@@ -425,26 +456,7 @@ export interface TargetExpression {
   readonly dataType?: DataType;
 }
 
-/**
- * Comparison operators for conditions
- */
-export enum ComparisonOperator {
-  EQUALS = 'equals',
-  NOT_EQUALS = 'not_equals',
-  GREATER_THAN = 'greater_than',
-  GREATER_THAN_OR_EQUAL = 'greater_than_or_equal',
-  LESS_THAN = 'less_than',
-  LESS_THAN_OR_EQUAL = 'less_than_or_equal',
-  IN = 'in',
-  NOT_IN = 'not_in',
-  CONTAINS = 'contains',
-  NOT_CONTAINS = 'not_contains',
-  STARTS_WITH = 'starts_with',
-  ENDS_WITH = 'ends_with',
-  MATCHES = 'matches', // Regex
-  EXISTS = 'exists',
-  NOT_EXISTS = 'not_exists'
-}
+// ComparisonOperator is now imported from shared-enums
 
 /**
  * Data types for attribute values
@@ -927,7 +939,7 @@ export const createAuthorizationRequest = (
   attributes,
   environment: {
     timestamp: context.timestamp,
-    customAttributes: context.metadata?.customAttributes
+    customAttributes: context.metadata?.customAttributes as Record<string, SecurityAttributeValue> | undefined
   }
 });
 

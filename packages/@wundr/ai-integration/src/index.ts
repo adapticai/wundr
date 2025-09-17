@@ -36,6 +36,7 @@ export * from './github/GitHubIntegration';
 export * from './github/CodeReviewSwarm';
 export * from './github/AutomationEngine';
 
-export * from './types';
-export * from './utils';
-export * from './config';
+// Types and utilities - use specific exports to avoid conflicts
+export { default as aiIntegrationTypes } from './types';
+export { default as aiIntegrationUtils } from './utils';
+export { default as aiIntegrationConfig } from './config';

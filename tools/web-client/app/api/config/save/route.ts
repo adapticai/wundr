@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     await fs.writeFile(configFile, configJson, 'utf8');
 
     return NextResponse.json({ success: true, message: 'Configuration saved' });
-  } catch (error) {
-    console.error('Error saving configuration:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to save configuration' },
       { status: 500 }

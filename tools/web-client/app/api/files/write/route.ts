@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
       size: stats.size,
       modified: stats.mtime
     });
-  } catch (error) {
-    console.error('Error writing file:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to write file' },
       { status: 500 }

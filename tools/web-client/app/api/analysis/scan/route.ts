@@ -133,7 +133,7 @@ async function getProjectRoot(): Promise<string> {
       } catch {
         // File doesn't exist, continue searching
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue searching
     }
     dir = path.dirname(dir)
@@ -177,7 +177,7 @@ async function validatePaths(inputPaths: string[], projectRoot: string): Promise
     }
     
     return { isValid: true, resolvedPaths }
-  } catch (error) {
+  } catch (_error) {
     return { 
       isValid: false, 
       resolvedPaths: [],
@@ -302,8 +302,8 @@ async function analyzeFile(filePath: string): Promise<CodeMetric> {
       exports,
       issues
     }
-  } catch (error) {
-    throw new Error(`Failed to analyze file ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to analyze file ${filePath}: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -403,7 +403,7 @@ async function scanDirectory(
         }
       }
     }
-  } catch (error) {
+  } catch (_error) {
     console.warn(`Failed to scan directory ${dirPath}:`, error)
   }
   
@@ -441,7 +441,7 @@ async function analyzeDependencies(projectRoot: string): Promise<DependencyAnaly
       unused,
       outdated
     }
-  } catch (error) {
+  } catch (_error) {
     console.warn('Failed to analyze dependencies:', error)
     return {
       internal: [],
@@ -465,7 +465,7 @@ async function detectDuplications(files: string[]): Promise<CodeDuplication[]> {
       const { promises: fs } = await import('fs')
       const content = await fs.readFile(file, 'utf8')
       fileContents.set(file, content.split('\n'))
-    } catch (error) {
+    } catch (_error) {
       continue
     }
   }
@@ -573,7 +573,7 @@ async function performScan(options: ScanOptions, projectRoot: string): Promise<S
           try {
             const metric = await analyzeFile(file)
             metrics.push(metric)
-          } catch (error) {
+          } catch (_error) {
             console.warn(`Failed to analyze ${file}:`, error)
           }
         }
@@ -638,8 +638,8 @@ async function performScan(options: ScanOptions, projectRoot: string): Promise<S
     }
     
     return result
-  } catch (error) {
-    throw new Error(`Scan failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Scan failed: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -687,7 +687,7 @@ export async function POST(request: NextRequest) {
     
     const projectRoot = await getProjectRoot()
     
-    let data: any
+    let data: ScanResult | DependencyAnalysis | CodeDuplication[]
     
     switch (action) {
       case 'scan':
@@ -749,13 +749,13 @@ export async function POST(request: NextRequest) {
         'X-Cache-Control': 'private, no-cache' // Analysis results shouldn't be cached
       }
     })
-  } catch (error) {
-    console.error('Error in analysis scan POST:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: _error instanceof Error ? _error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     

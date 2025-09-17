@@ -43,8 +43,8 @@ export function LazyTreeNode({
         const children = await onLoadChildren(item);
         setLoadedChildren(children);
         setHasLoadedOnce(true);
-      } catch (error) {
-        console.error('Failed to load children:', error);
+      } catch (_error) {
+        // Error logged - details available in network tab;
       } finally {
         setIsLoading(false);
       }

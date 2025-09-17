@@ -194,8 +194,8 @@ export function ReportFiltersPanel({ filters, onChange }: ReportFiltersPanelProp
                 <div key={option.value} className="flex items-center space-x-2">
                   <Checkbox
                     id={`severity-${option.value}`}
-                    checked={filters.severity?.includes(option.value as any) || false}
-                    onCheckedChange={() => toggleSeverity(option.value as any)}
+                    checked={filters.severity?.includes(option.value as 'low' | 'medium' | 'high' | 'critical') || false}
+                    onCheckedChange={() => toggleSeverity(option.value as 'low' | 'medium' | 'high' | 'critical')}
                   />
                   <Label htmlFor={`severity-${option.value}`} className="text-sm">
                     <Badge className={option.color} variant="secondary">

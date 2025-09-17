@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import type { ApiSchema } from '@/types/mdx';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,7 +26,7 @@ interface Parameter {
 
 interface RequestBody {
   contentType: string;
-  schema: any;
+  schema: ApiSchema;
   required: boolean;
 }
 
@@ -33,7 +34,7 @@ interface Response {
   status: number;
   description: string;
   contentType?: string;
-  schema?: any;
+  schema?: ApiSchema;
 }
 
 interface Example {
@@ -43,12 +44,12 @@ interface Example {
     method: string;
     path: string;
     headers?: Record<string, string>;
-    body?: any;
+    body?: unknown;
   };
   response?: {
     status: number;
     headers?: Record<string, string>;
-    body?: any;
+    body?: unknown;
   };
 }
 

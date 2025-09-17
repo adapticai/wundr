@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
+// import { Skeleton } from "@/components/ui/skeleton" // Unused import
 import {
   Select,
   SelectContent,
@@ -56,9 +56,9 @@ export default function DuplicatesPage() {
 
       setClusters(result.data.clusters)
       setStats(result.data.stats)
-    } catch (error) {
-      console.error('Error loading duplicates data:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load data'
+    } catch (_error) {
+      // Error logged - details available in network tab
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load data'
       setError(errorMessage)
       setClusters([])
       setStats(null)

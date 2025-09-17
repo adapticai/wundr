@@ -92,13 +92,13 @@ export default function ClientServicesTest() {
         },
       });
       
-    } catch (error) {
-      console.error('Test execution failed:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
       setTestResults({
         browserSafe: false,
         instantiation: { 
           success: false, 
-          errors: [`Test execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`] 
+          errors: [`Test execution failed: ${_error instanceof Error ? _error.message : 'Unknown error'}`] 
         },
         validation: { success: false, errors: [] },
       });

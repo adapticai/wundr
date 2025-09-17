@@ -34,7 +34,7 @@ test.describe('Broken Links Audit', () => {
         
         await page.waitForTimeout(500); // Rate limiting
         
-      } catch (error) {
+      } catch (_error) {
         console.log(`Error auditing ${route}: ${error}`);
       }
     }
@@ -101,7 +101,7 @@ test.describe('Broken Links Audit', () => {
         if (!response.ok()) {
           brokenExternalLinks.push(`${link} - ${response.status()}`);
         }
-      } catch (error) {
+      } catch (_error) {
         brokenExternalLinks.push(`${link} - Timeout/Network Error`);
       }
     }
@@ -137,7 +137,7 @@ test.describe('Broken Links Audit', () => {
             brokenNavLinks.push(`${href} - Navigated to ${currentUrl} instead`);
           }
         }
-      } catch (error) {
+      } catch (_error) {
         const href = await link.getAttribute('href');
         brokenNavLinks.push(`${href} - Navigation error: ${error}`);
       }
@@ -177,12 +177,12 @@ test.describe('Broken Links Audit', () => {
               } else {
                 allBrokenImages.push(`${src} - ${response.status()}`);
               }
-            } catch (error) {
+            } catch (_error) {
               allBrokenImages.push(`${src} - Network Error`);
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         console.log(`Error checking images on ${route}: ${error}`);
       }
     }
@@ -274,7 +274,7 @@ test.describe('Broken Links Audit', () => {
         report.details.brokenLinksList.push(...linkAudit.brokenLinks);
         report.details.redirectLinksList.push(...linkAudit.redirectLinks);
         
-      } catch (error) {
+      } catch (_error) {
         console.log(`Error in comprehensive audit for ${route}: ${error}`);
       }
     }

@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { MemoryEntry, MemoryType, Agent, Task, OperationResult } from '../types';
 
 export interface SessionContext {

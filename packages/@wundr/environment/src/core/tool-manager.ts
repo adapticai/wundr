@@ -2,11 +2,11 @@
  * Tool installation and management system
  */
 
-import { ToolConfiguration, Platform, InstallationResult, ValidationResult } from '../types';
 import { BaseInstaller } from '../installers/base-installer';
 import { BrewInstaller } from '../installers/brew-installer';
-import { NpmInstaller } from '../installers/npm-installer';
 import { ManualInstaller } from '../installers/manual-installer';
+import { NpmInstaller } from '../installers/npm-installer';
+import { ToolConfiguration, Platform, InstallationResult, ValidationResult } from '../types';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('ToolManager');

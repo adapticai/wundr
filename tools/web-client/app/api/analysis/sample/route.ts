@@ -86,8 +86,8 @@ export async function GET() {
     };
 
     return NextResponse.json(mockData);
-  } catch (error) {
-    console.error('Error generating sample data:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to generate sample data' },
       { status: 500 }

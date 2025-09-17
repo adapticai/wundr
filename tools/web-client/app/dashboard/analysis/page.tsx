@@ -84,8 +84,8 @@ export default function AnalysisOverviewPage() {
               highComplexityCount: entitiesData.data.stats.byComplexity?.high || 0,
             };
           }
-        } catch (e) {
-          console.warn('Failed to parse entities data:', e);
+        } catch (_e) {
+          // Failed to parse entities data - using fallback
         }
       }
 
@@ -97,11 +97,11 @@ export default function AnalysisOverviewPage() {
             summaryData.duplicates = {
               totalClusters: duplicatesData.data.stats.totalClusters || 0,
               totalDuplicates: duplicatesData.data.stats.totalDuplicates || 0,
-              criticalClusters: duplicatesData.data.clusters?.filter((c: any) => c.severity === 'critical').length || 0,
+              criticalClusters: duplicatesData.data.clusters?.filter((c) => 'severity' in c && c.severity === 'critical').length || 0,
             };
           }
-        } catch (e) {
-          console.warn('Failed to parse duplicates data:', e);
+        } catch (_e) {
+          // Failed to parse duplicates data - using fallback
         }
       }
 
@@ -117,8 +117,8 @@ export default function AnalysisOverviewPage() {
               circularCount: 0, // This will be filled from circular analysis
             };
           }
-        } catch (e) {
-          console.warn('Failed to parse dependencies data:', e);
+        } catch (_e) {
+          // Failed to parse dependencies data - using fallback
         }
       }
 
@@ -131,20 +131,20 @@ export default function AnalysisOverviewPage() {
             summaryData.circular = {
               totalDependencies: circularData.data.nodes?.length || 0,
               circularDependencies: circularDeps.length,
-              criticalIssues: circularDeps.filter((dep: any) => dep.severity === 'critical').length,
+              criticalIssues: circularDeps.filter((dep) => dep.severity === 'critical').length,
               healthScore: Math.max(0, 100 - (circularDeps.length * 10)),
             };
             // Update circular count in dependencies
             summaryData.dependencies.circularCount = circularDeps.length;
           }
-        } catch (e) {
-          console.warn('Failed to parse circular dependencies data:', e);
+        } catch (_e) {
+          // Failed to parse circular dependencies data - using fallback
         }
       }
 
       setSummary(summaryData);
-    } catch (error) {
-      console.error('Error loading analysis summary:', error);
+    } catch (_error) {
+      // Error loading analysis summary
       setError('Failed to load analysis data');
     } finally {
       setLoading(false);

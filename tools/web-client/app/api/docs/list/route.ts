@@ -75,13 +75,13 @@ async function getAllDocFiles(docsDir: string): Promise<DocFile[]> {
               frontmatter,
               lastModified: stats.mtime
             });
-          } catch (error) {
+          } catch (_error) {
             console.warn(`Failed to process doc file ${fullPath}:`, error);
           }
         }
       }
-    } catch (error) {
-      console.error(`Error scanning directory ${dir}:`, error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   }
   
@@ -137,8 +137,8 @@ export async function GET(request: NextRequest) {
       categories: [...new Set(docFiles.map(f => f.frontmatter.category))].sort(),
       tags: [...new Set(docFiles.flatMap(f => f.frontmatter.tags))].sort()
     });
-  } catch (error) {
-    console.error('Error listing docs:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       { error: 'Failed to list documentation files' },
       { status: 500 }

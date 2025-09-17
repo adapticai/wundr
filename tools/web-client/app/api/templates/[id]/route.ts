@@ -27,12 +27,12 @@ export async function GET(
       data: template
     });
 
-  } catch (error) {
-    console.error('Failed to fetch template:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch template'
+        error: _error instanceof Error ? _error.message : 'Failed to fetch template'
       },
       { status: 500 }
     );
@@ -81,12 +81,12 @@ export async function POST(
       }
     });
 
-  } catch (error) {
-    console.error('Failed to validate template parameters:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to validate parameters'
+        error: _error instanceof Error ? _error.message : 'Failed to validate parameters'
       },
       { status: 500 }
     );

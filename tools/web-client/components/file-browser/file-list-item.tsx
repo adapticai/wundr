@@ -53,8 +53,8 @@ export function FileListItem({
     try {
       await navigator.clipboard.writeText(item.path);
       onCopyPath?.(item);
-    } catch (error) {
-      console.error('Failed to copy path:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   };
 

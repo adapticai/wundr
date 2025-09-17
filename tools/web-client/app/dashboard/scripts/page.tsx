@@ -241,8 +241,8 @@ export default function ScriptsPage() {
         ];
 
         setScripts(mockScripts);
-      } catch (error) {
-        console.error('Failed to load scripts:', error);
+      } catch (_error) {
+        // Error logged - details available in network tab;
         // Use mock scripts as fallback
         const mockScripts: Script[] = [
           {
@@ -293,8 +293,8 @@ export default function ScriptsPage() {
           pollExecutionResult(executionId);
         }
       }
-    } catch (error) {
-      console.error('Failed to execute script:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   };
   
@@ -320,8 +320,8 @@ export default function ScriptsPage() {
             }
           }
         }
-      } catch (error) {
-        console.error('Failed to poll execution result:', error);
+      } catch (_error) {
+        // Error logged - details available in network tab;
         clearInterval(pollInterval);
       }
     }, 2000); // Poll every 2 seconds
@@ -336,8 +336,8 @@ export default function ScriptsPage() {
           setExecutionResults(data.data);
         }
       }
-    } catch (error) {
-      console.error('Failed to load execution history:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   };
   

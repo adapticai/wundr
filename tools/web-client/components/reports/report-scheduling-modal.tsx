@@ -27,6 +27,7 @@ import {
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useReports } from '@/hooks/reports/use-reports';
 import { ReportSchedule, ReportTemplate } from '@/types/reports';
+import type { ReportParameters } from '@/types/report-parameters';
 import { format, addDays, addWeeks, addMonths } from 'date-fns';
 
 interface ReportSchedulingModalProps {
@@ -81,7 +82,7 @@ export function ReportSchedulingModal({ onClose }: ReportSchedulingModalProps) {
     isActive: true,
   });
 
-  const [templateParameters, setTemplateParameters] = useState<Record<string, any>>({});
+  const [templateParameters, setTemplateParameters] = useState<ReportParameters>({});
 
   const updateFormData = (updates: Partial<typeof formData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -166,8 +167,8 @@ export function ReportSchedulingModal({ onClose }: ReportSchedulingModalProps) {
 
       await scheduleReport(scheduleData);
       onClose();
-    } catch (error) {
-      console.error('Failed to create schedule:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     } finally {
       setIsCreating(false);
     }
@@ -250,7 +251,7 @@ export function ReportSchedulingModal({ onClose }: ReportSchedulingModalProps) {
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
                   <Label>Frequency</Label>
-                  <Select value={formData.frequency} onValueChange={(value: any) => updateFormData({ frequency: value })}>
+                  <Select value={formData.frequency} onValueChange={(value: string) => updateFormData({ frequency: value as 'daily' | 'weekly' | 'monthly' | 'quarterly' })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

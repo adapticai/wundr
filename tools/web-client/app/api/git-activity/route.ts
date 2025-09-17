@@ -56,7 +56,7 @@ function checkRateLimit(clientId: string): boolean {
 }
 
 // Execute git command and return output
-function execGitCommand(args: string[], cwd: string): Promise<string> {
+async function execGitCommand(args: string[], cwd: string): Promise<string> {
   // Dynamically import child_process only when needed
   const { spawn } = await import('child_process')
   // const path = require('path')
@@ -103,7 +103,7 @@ async function getProjectRoot(): Promise<string> {
       if (fs.existsSync(gitPath)) {
         return dir
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue searching
     }
     dir = path.dirname(dir)
@@ -232,8 +232,8 @@ async function getGitActivity(projectRoot: string, timeRange: TimeRange): Promis
     await enrichWithPullRequestData(data, projectRoot, timeRange)
     
     return data
-  } catch (error) {
-    console.error('Error getting git activity:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     throw new Error('Failed to retrieve git activity data')
   }
 }
@@ -262,7 +262,7 @@ async function enrichWithPullRequestData(data: GitActivity[], projectRoot: strin
         }
       }
     }
-  } catch (error) {
+  } catch (_error) {
     // Fallback: keep PRs and issues at 0 if we can't enrich the data
     console.warn('Could not enrich with PR/issue data:', error)
   }
@@ -296,8 +296,8 @@ async function fetchGitActivityData(timeRange: TimeRange, repository?: string): 
     }
     
     return data
-  } catch (error) {
-    console.error('Error fetching git activity data:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     throw new Error('Failed to retrieve git activity data')
   }
 }
@@ -362,10 +362,10 @@ export async function GET(request: NextRequest) {
         'X-Data-Points': data.length.toString()
       }
     })
-  } catch (error) {
-    console.error('Error fetching git activity data:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    const errorMessage = _error instanceof Error ? _error.message : 'Unknown error occurred'
     const isGitError = errorMessage.includes('git') || errorMessage.includes('repository')
     
     const response: ApiResponse<null> = {

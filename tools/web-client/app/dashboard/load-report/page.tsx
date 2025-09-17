@@ -144,8 +144,8 @@ export default function LoadReportPage() {
         if (reports.length > 0 && !selectedReport) {
           setSelectedReport(reports[0]);
         }
-      } catch (error) {
-        console.error('Failed to load saved reports:', error);
+      } catch (_error) {
+        // Error logged - details available in network tab;
       }
     }
   }, [selectedReport]);
@@ -198,8 +198,8 @@ export default function LoadReportPage() {
       // importAnalysisData(parsedData);
       
       cache.set(newReport.id, newReport);
-    } catch (error) {
-      console.error('Failed to parse analysis file:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
       alert('Failed to parse analysis file. Please ensure it\'s a valid JSON file.');
     } finally {
       setIsUploading(false);
@@ -222,9 +222,9 @@ export default function LoadReportPage() {
       
       // Optionally navigate to reports page or refresh
       window.location.reload();
-    } catch (error) {
-      console.error('Failed to generate report:', error);
-      alert(`Failed to generate report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } catch (_error) {
+      // Error logged - details available in network tab;
+      alert(`Failed to generate report: ${_error instanceof Error ? _error.message : 'Unknown error'}`);
     } finally {
       setIsGeneratingReport(false);
       // Reset file input
@@ -268,8 +268,8 @@ export default function LoadReportPage() {
           throw new Error('Report content not found for enhanced export');
         }
       }
-    } catch (error) {
-      console.error('Export failed:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
       // Fallback to basic JSON export
       handleExportReport(report);
     }

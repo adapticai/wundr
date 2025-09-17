@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { Doughnut } from 'react-chartjs-2';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { EntityData } from '@/app/api/analysis/entities/route';
+import type { ChartContext } from '@/types/analysis';
 
 interface EntityTypeChartProps {
   entities: EntityData[];
@@ -85,7 +86,7 @@ export function EntityTypeChart({ entities }: EntityTypeChartProps) {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: ChartContext) {
             const label = context.label || '';
             const value = context.parsed;
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);

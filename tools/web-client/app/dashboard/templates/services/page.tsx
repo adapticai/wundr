@@ -28,8 +28,9 @@ import {
   ExternalLink
 } from "lucide-react";
 import { ServiceTemplateGallery } from "@/components/templates/ServiceTemplateGallery";
-import { TemplatePreview } from "@/components/templates/TemplatePreview";
 import { TemplateCustomizer } from "@/components/templates/TemplateCustomizer";
+import type { ServiceTemplate as ServiceTemplateType } from '@/types/templates';
+import { TemplatePreview } from "@/components/templates/TemplatePreview";
 import { CodeGenerator } from "@/components/templates/CodeGenerator";
 import { TemplateStats } from "@/components/templates/TemplateStats";
 import { TemplateDocumentation } from "@/components/templates/TemplateDocumentation";
@@ -180,7 +181,7 @@ server.get('/health', async (request, reply) => {
       statusCode: 200,
       body: JSON.stringify(result),
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Internal server error' }),
@@ -262,8 +263,8 @@ export default function ServiceTemplatesPage() {
         } else {
           setTemplates(mockTemplates);
         }
-      } catch (error) {
-        console.error('Failed to load templates:', error);
+      } catch (_error) {
+        // Error logged - details available in network tab;
         setTemplates(mockTemplates);
       } finally {
         setLoadingTemplates(false);
@@ -548,7 +549,7 @@ export default class ${template.name.replace(/\s+/g, '')}Service {
           template={selectedTemplate}
           open={showCustomizer}
           onOpenChange={setShowCustomizer}
-          onGenerate={handleGenerateCode as any}
+          onGenerate={(customizations) => handleGenerateCode(selectedTemplate as ServiceTemplateType, customizations)}
         />
       )}
 

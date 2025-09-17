@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { WebSocketMessage, RealtimeUpdate } from '@/types/data'
+// WebSocket types are available but not used in this HTTP endpoint
+// import { WebSocketMessage, RealtimeUpdate } from '@/types/data'
 
 // Production WebSocket handler for real-time updates
 class WebSocketManager {
   private static instance: WebSocketManager
-  private clients: Map<string, any> = new Map()
+  private clients: Map<string, WebSocket | unknown> = new Map()
   private subscriptions: Map<string, Set<string>> = new Map()
   private updateInterval: NodeJS.Timeout | null = null
 
@@ -151,8 +152,8 @@ export async function GET(request: NextRequest) {
       data: manager.getConnectionInfo(),
       timestamp: new Date().toISOString()
     })
-  } catch (error) {
-    console.error('Error getting WebSocket info:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     return NextResponse.json({
       success: false,

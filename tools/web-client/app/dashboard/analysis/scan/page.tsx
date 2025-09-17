@@ -239,9 +239,9 @@ export default function CodeScanAnalysisPage() {
       } else if (result.data.scans.length > 0) {
         setCurrentScan(result.data.scans[0])
       }
-    } catch (error) {
-      console.error('Error loading scan data:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load scan data'
+    } catch (_error) {
+      // Error loading scan data - using fallback
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load scan data'
       setError(errorMessage)
       setScans([])
       setScanHistory([])
@@ -280,9 +280,9 @@ export default function CodeScanAnalysisPage() {
       if (result.data.status === 'running') {
         pollScanProgress(result.data.id)
       }
-    } catch (error) {
-      console.error('Error starting scan:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start scan'
+    } catch (_error) {
+      // Error starting scan
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to start scan'
       setError(errorMessage)
     } finally {
       setLoading(false)
@@ -311,8 +311,8 @@ export default function CodeScanAnalysisPage() {
             clearInterval(pollInterval)
           }
         }
-      } catch (error) {
-        console.error('Error polling scan progress:', error)
+      } catch (_error) {
+        // Error polling scan progress
         clearInterval(pollInterval)
       }
     }, 2000)
@@ -337,8 +337,8 @@ export default function CodeScanAnalysisPage() {
       if (response.ok) {
         setCurrentScan(prev => prev ? { ...prev, status: 'cancelled' } : null)
       }
-    } catch (error) {
-      console.error('Error cancelling scan:', error)
+    } catch (_error) {
+      // Error cancelling scan
     }
   }, [currentScan])
 
@@ -375,8 +375,8 @@ export default function CodeScanAnalysisPage() {
 
   // Sort issues
   const sortedIssues = [...filteredIssues].sort((a, b) => {
-    let aVal: any = a[sortBy as keyof ScanIssue]
-    let bVal: any = b[sortBy as keyof ScanIssue]
+    const aVal = a[sortBy as keyof ScanIssue]
+    const bVal = b[sortBy as keyof ScanIssue]
     
     if (sortBy === 'severity') {
       const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 }

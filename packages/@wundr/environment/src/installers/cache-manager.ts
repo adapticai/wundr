@@ -3,11 +3,12 @@
  * Handles package caching, installer caching, and smart cache invalidation
  */
 
-import { promises as fs } from 'fs';
-import { join } from 'path';
-import { homedir } from 'os';
-import { createHash } from 'crypto';
 import { execSync } from 'child_process';
+import { createHash } from 'crypto';
+import { promises as fs } from 'fs';
+import { homedir } from 'os';
+import { join } from 'path';
+
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('CacheManager');

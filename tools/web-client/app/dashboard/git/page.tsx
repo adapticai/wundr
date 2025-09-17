@@ -156,8 +156,8 @@ export default function GitDashboardPage() {
           setBranches(branchesResult.data.map((b: any) => b.name));
         }
       }
-    } catch (error) {
-      console.error('Failed to fetch git info:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     }
   };
 

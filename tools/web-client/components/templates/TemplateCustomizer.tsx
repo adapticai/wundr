@@ -23,31 +23,13 @@ import {
   Download
 } from "lucide-react";
 
-interface ServiceTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  language: string;
-  framework: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
-  tags: string[];
-  downloads: number;
-  rating: number;
-  lastUpdated: string;
-  author: string;
-  version: string;
-  dependencies: string[];
-  features: string[];
-  codePreview: string;
-  documentation: string;
-}
+import { ServiceTemplate, TemplateCustomizations } from '@/types/templates';
 
 interface TemplateCustomizerProps {
   template: ServiceTemplate;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onGenerate: (template: ServiceTemplate, customizations: any) => void;
+  onGenerate: (template: ServiceTemplate, customizations: TemplateCustomizations) => void;
 }
 
 export function TemplateCustomizer({ template, open, onOpenChange, onGenerate }: TemplateCustomizerProps) {

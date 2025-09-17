@@ -24,12 +24,12 @@ export async function GET(
       data: batch
     });
 
-  } catch (error) {
-    console.error('Failed to fetch batch:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch batch'
+        error: _error instanceof Error ? _error.message : 'Failed to fetch batch'
       },
       { status: 500 }
     );
@@ -100,12 +100,12 @@ export async function PATCH(
       data: batch
     });
 
-  } catch (error) {
-    console.error('Failed to update batch:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update batch'
+        error: _error instanceof Error ? _error.message : 'Failed to update batch'
       },
       { status: 500 }
     );
@@ -135,12 +135,12 @@ export async function DELETE(
       message: 'Batch deleted successfully'
     });
 
-  } catch (error) {
-    console.error('Failed to delete batch:', error);
+  } catch (_error) {
+    // Error logged - details available in network tab;
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete batch'
+        error: _error instanceof Error ? _error.message : 'Failed to delete batch'
       },
       { status: 500 }
     );

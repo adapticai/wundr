@@ -6,6 +6,7 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
+
 import { NeuralModel, ModelType, Agent, Task, OperationResult } from '../types';
 import { NeuralModels, TrainingConfig } from './NeuralModels';
 

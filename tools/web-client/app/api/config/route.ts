@@ -100,7 +100,7 @@ async function getProjectRoot(): Promise<string> {
       } catch {
         // File doesn't exist, continue searching
       }
-    } catch (e) {
+    } catch (_e) {
       // Continue searching
     }
     dir = path.dirname(dir)
@@ -205,7 +205,7 @@ async function validateConfigAccess(configName: string, projectRoot: string): Pr
     }
     
     return { isValid: true, resolvedPath }
-  } catch (error) {
+  } catch (_error) {
     return {
       isValid: false,
       resolvedPath: '',
@@ -240,7 +240,7 @@ function getConfigType(filePath: string): ConfigFile['type'] {
 }
 
 // Parse configuration file content
-async function parseConfigContent(filePath: string, type: ConfigFile['type']): Promise<any> {
+async function parseConfigContent(filePath: string, type: ConfigFile['type']): Promise<Record<string, unknown> | { _raw: string; _note?: string }> {
   try {
     const { promises: fs } = await import('fs')
     const content = await fs.readFile(filePath, 'utf8')
@@ -295,13 +295,13 @@ async function parseConfigContent(filePath: string, type: ConfigFile['type']): P
       default:
         return { _raw: content }
     }
-  } catch (error) {
-    throw new Error(`Failed to parse ${type} configuration: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to parse ${type} configuration: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
 // Serialize configuration content
-function serializeConfigContent(data: any, type: ConfigFile['type']): string {
+function serializeConfigContent(data: Record<string, unknown>, type: ConfigFile['type']): string {
   try {
     switch (type) {
       case 'json': {
@@ -333,8 +333,8 @@ function serializeConfigContent(data: any, type: ConfigFile['type']): string {
       default:
         return JSON.stringify(data, null, 2)
     }
-  } catch (error) {
-    throw new Error(`Failed to serialize ${type} configuration: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to serialize ${type} configuration: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -405,8 +405,8 @@ async function listConfigurationFiles(projectRoot: string): Promise<ConfigFile[]
     configFiles.sort((a, b) => a.name.localeCompare(b.name))
     
     return configFiles
-  } catch (error) {
-    throw new Error(`Failed to list configuration files: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to list configuration files: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
@@ -428,15 +428,15 @@ async function readConfigurationFile(filePath: string): Promise<ConfigFile> {
       lastModified: stats.mtime.toISOString(),
       content
     }
-  } catch (error) {
-    throw new Error(`Failed to read configuration file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to read configuration file: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
 // Write configuration file
 async function writeConfigurationFile(
   filePath: string,
-  content: any,
+  content: Record<string, unknown>,
   type: ConfigFile['type'],
   backup: boolean = true
 ): Promise<{ success: boolean; size: number; backupPath?: string }> {
@@ -470,13 +470,13 @@ async function writeConfigurationFile(
     
     const stats = await fs.stat(filePath)
     return { success: true, size: stats.size, backupPath }
-  } catch (error) {
-    throw new Error(`Failed to write configuration file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  } catch (_error) {
+    throw new Error(`Failed to write configuration file: ${_error instanceof Error ? _error.message : 'Unknown error'}`)
   }
 }
 
 // Validate configuration
-function validateConfiguration(content: any, schema?: ConfigSchema): ConfigValidationResult {
+function validateConfiguration(content: Record<string, unknown>, schema?: ConfigSchema): ConfigValidationResult {
   const result: ConfigValidationResult = {
     valid: true,
     errors: [],
@@ -623,9 +623,9 @@ export async function GET(request: NextRequest) {
     const templateName = searchParams.get('template') || ''
     
     const projectRoot = await getProjectRoot()
-    
-    let data: any
-    
+
+    let data: ConfigFile[] | ConfigFile | ConfigTemplate[] | ConfigTemplate
+
     switch (action) {
       case 'read':
         if (!configName) {
@@ -650,10 +650,11 @@ export async function GET(request: NextRequest) {
       case 'template':
         const templates = getConfigurationTemplates()
         if (templateName) {
-          data = templates.find(t => t.name === templateName)
-          if (!data) {
+          const template = templates.find(t => t.name === templateName)
+          if (!template) {
             throw new Error('Template not found')
           }
+          data = template
         } else {
           data = templates
         }
@@ -680,13 +681,13 @@ export async function GET(request: NextRequest) {
         'X-Processing-Time': `${processingTime}ms`
       }
     })
-  } catch (error) {
-    console.error('Error in config GET:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: _error instanceof Error ? _error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     
@@ -725,9 +726,9 @@ export async function POST(request: NextRequest) {
     }
     
     const projectRoot = await getProjectRoot()
-    
-    let data: any
-    
+
+    let data: { success: boolean; size: number; backupPath?: string } | ConfigValidationResult | { success: boolean; backupPath: string }
+
     switch (action) {
       case 'write':
         if (!configName || content === undefined) {
@@ -776,7 +777,7 @@ export async function POST(request: NextRequest) {
         const templates = getConfigurationTemplates()
         const template = templates.find(t => t.name === templateName)
         
-        data = validateConfiguration(configFile.content, template?.schema)
+        data = validateConfiguration(configFile.content || {}, template?.schema)
         break
         
       case 'backup':
@@ -827,13 +828,13 @@ export async function POST(request: NextRequest) {
         'X-Processing-Time': `${processingTime}ms`
       }
     })
-  } catch (error) {
-    console.error('Error in config POST:', error)
+  } catch (_error) {
+    // Error logged - details available in network tab
     
     const response: ApiResponse<null> = {
       success: false,
       data: null,
-      error: error instanceof Error ? error.message : 'Internal server error',
+      error: _error instanceof Error ? _error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     }
     

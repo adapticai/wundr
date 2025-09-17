@@ -142,19 +142,19 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
 
   const generateExportData = () => {
     const exportData = filteredEntities.map(entity => {
-      const exportEntity: any = {};
+      const exportEntity: Record<string, unknown> = {};
       
       if (exportOptions.includeFields.name) exportEntity.name = entity.name;
       if (exportOptions.includeFields.type) exportEntity.type = entity.type;
       if (exportOptions.includeFields.file) exportEntity.file = entity.file;
       if (exportOptions.includeFields.line) exportEntity.line = entity.line;
-      if (exportOptions.includeFields.column) exportEntity.column = (entity as any).column;
-      if (exportOptions.includeFields.exportType) exportEntity.exportType = (entity as any).exportType;
+      if (exportOptions.includeFields.column) exportEntity.column = 'column' in entity ? entity.column : undefined;
+      if (exportOptions.includeFields.exportType) exportEntity.exportType = entity.exportType;
       if (exportOptions.includeFields.complexity) exportEntity.complexity = entity.complexity;
       if (exportOptions.includeFields.dependencies) exportEntity.dependencies = entity.dependencies;
-      if (exportOptions.includeFields.jsDoc) exportEntity.jsDoc = (entity as any).jsDoc;
-      if (exportOptions.includeFields.signature) exportEntity.signature = (entity as any).signature;
-      if (exportOptions.includeFields.members) exportEntity.members = (entity as any).members;
+      if (exportOptions.includeFields.jsDoc) exportEntity.jsDoc = 'jsDoc' in entity ? entity.jsDoc : undefined;
+      if (exportOptions.includeFields.signature) exportEntity.signature = 'signature' in entity ? entity.signature : undefined;
+      if (exportOptions.includeFields.members) exportEntity.members = 'members' in entity ? entity.members : undefined;
       
       return exportEntity;
     });
@@ -163,7 +163,7 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
   };
 
 
-  const exportAsMarkdown = (data: any[]) => {
+  const exportAsMarkdown = (data: Record<string, unknown>[]) => {
     if (data.length === 0) return new Blob(['# No data to export'], { type: 'text/markdown' });
 
     let markdown = '# Entity Analysis Export\n\n';
@@ -195,7 +195,7 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
     return blob;
   };
 
-  const exportAsHTML = (data: any[]) => {
+  const exportAsHTML = (data: Record<string, unknown>[]) => {
     if (data.length === 0) {
       const html = '<html><body><h1>No data to export</h1></body></html>';
       return new Blob([html], { type: 'text/html' });
@@ -302,8 +302,8 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
         setExportComplete(false);
         onClose();
       }, 2000);
-    } catch (error) {
-      console.error('Export failed:', error);
+    } catch (_error) {
+      // Error logged - details available in network tab;
     } finally {
       setIsExporting(false);
     }

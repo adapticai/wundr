@@ -1,6 +1,8 @@
-import * as keytar from 'keytar';
 import { randomBytes, createHash } from 'crypto';
 import { EventEmitter } from 'events';
+
+import * as keytar from 'keytar';
+
 import { logger } from '../utils/logger';
 
 export interface CredentialOptions {
