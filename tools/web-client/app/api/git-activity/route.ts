@@ -59,7 +59,7 @@ function checkRateLimit(clientId: string): boolean {
 function execGitCommand(args: string[], cwd: string): Promise<string> {
   // Dynamically import child_process only when needed
   const { spawn } = require('child_process')
-  const path = require('path')
+  // const path = require('path')
   
   return new Promise((resolve, reject) => {
     const child = spawn('git', args, { cwd, shell: true })

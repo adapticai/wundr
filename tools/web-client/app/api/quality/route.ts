@@ -201,7 +201,7 @@ async function analyzeDuplicateLines(projectRoot: string): Promise<number> {
     const fileList = files.split('\n').filter(Boolean).slice(0, 100) // Limit for performance
     
     const lineMap = new Map<string, number>()
-    let totalLines = 0
+    let _totalLines = 0
     
     for (const file of fileList) {
       try {
@@ -212,7 +212,7 @@ async function analyzeDuplicateLines(projectRoot: string): Promise<number> {
           const trimmedLine = line.trim()
           if (trimmedLine && !trimmedLine.startsWith('//') && !trimmedLine.startsWith('*') && trimmedLine.length > 10) {
             lineMap.set(trimmedLine, (lineMap.get(trimmedLine) || 0) + 1)
-            totalLines++
+            // totalLines++
           }
         }
       } catch (e) {
@@ -419,7 +419,7 @@ async function fetchQualityData(timeRange: TimeRange): Promise<QualityMetrics[]>
       
       // Add some variation to show trends (in production, use actual historical data)
       const variation = (Math.random() - 0.5) * 0.1
-      const timeDecay = i / dataPoints // More variation in older data
+      const _timeDecay = i / dataPoints // More variation in older data
       
       data.push({
         timestamp: timestamp.toISOString(),

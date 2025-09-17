@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ReportService, reportService } from '@/lib/services/report-service';
+// import { ReportService, reportService } from '@/lib/services/report-service';
 import { ReportTemplateRenderer } from '@/lib/templates/report-template-renderer';
 import { ReportTemplate as TemplateEngineTemplate } from '@/lib/report-templates';
 import {
-  CompleteAnalysisData,
+  // CompleteAnalysisData,
   ReportTemplate,
   GenerateReportRequest,
   Report,
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     const reportContent = await ReportTemplateRenderer.renderReport(engineTemplate.id, normalizedData);
     
     // Additional sections are now handled by the template system
-    const sectionsData: any[] = [];
+    const _sectionsData: any[] = [];
 
     // Create report object
     const report: Report = {

@@ -937,7 +937,7 @@ export class RoleBasedAccessControl extends EventEmitter {
     return this.evaluateConditionValue(locationValue, condition.operator, condition.value);
   }
 
-  private getNestedValue(obj: unknown, field: string): unknown {
+  private getNestedValue(obj: any, field: string): unknown {
     const parts = field.split('.');
     let value = obj;
 
@@ -1017,7 +1017,7 @@ export class RoleBasedAccessControl extends EventEmitter {
 
   private getNestedContextValue(context: AccessContext, field: string): unknown {
     const parts = field.split('.');
-    let value: unknown = context;
+    let value: any = context;
 
     for (const part of parts) {
       if (value && typeof value === 'object' && part in value) {

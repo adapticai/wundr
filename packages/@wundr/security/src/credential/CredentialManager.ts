@@ -239,7 +239,7 @@ export class CredentialManager extends EventEmitter {
     try {
       const credentials = await keytar.findCredentials(this.serviceName);
       
-      return credentials.map((cred: unknown) => {
+      return credentials.map((cred: any) => {
         const parsed: EncryptedCredential = JSON.parse(cred.password);
         return {
           id: parsed.id,

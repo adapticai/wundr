@@ -21,9 +21,9 @@ export type DeepRequired<T> = {
   [P in keyof T]-?: T[P] extends object | undefined ? DeepRequired<Required<T[P]>> : T[P];
 };
 
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-export type RequiredKeys<T, K extends keyof T> = T & Required<Pick<T, K>>;
+export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // Type-safe object operations
 export type KeysOfType<T, U> = {
@@ -52,7 +52,7 @@ export type NonEmptyString<T extends string> = T extends '' ? never : T;
 // Conditional type utilities
 export type NonNullable<T> = T extends null | undefined ? never : T;
 export type Nullable<T> = T | null;
-export type Optional<T> = T | undefined;
+export type OptionalValue<T> = T | undefined;
 
 // Union/intersection utilities
 export type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
@@ -345,31 +345,4 @@ export type TypedEnvironmentConfig<T extends Record<string, unknown>> = {
   readonly [K in keyof T]: T[K] extends string ? string : T[K] extends number ? number : string;
 };
 
-// Export utility for easy imports
-export type {
-  SafeAny,
-  SafeFunction,
-  SafeAsyncFunction,
-  DeepReadonly,
-  DeepPartial,
-  DeepRequired,
-  Result,
-  AsyncResult,
-  Maybe,
-  Some,
-  Brand,
-  TypeGuard,
-  TypeAssertion,
-  ValidationResult,
-  ValidationError,
-  ApiResponse,
-  ApiError,
-  EntityBase,
-  Repository,
-  ServiceContext,
-  Logger,
-  PerformanceMetrics,
-  Cache,
-  TestCase,
-  MockFunction
-};
+// Utility types are already exported above

@@ -162,7 +162,7 @@ export class SecurityMonitor extends EventEmitter {
       case 'login:success':
         this.securityCounters.successfulLogins++;
         if (metadata?.userId) {
-          this.securityCounters.activeUsers.add(metadata.userId);
+          this.securityCounters.activeUsers.add(metadata.userId as string);
         }
         break;
       case 'login:failed':
@@ -185,7 +185,7 @@ export class SecurityMonitor extends EventEmitter {
         break;
       case 'user:logout':
         if (metadata?.userId) {
-          this.securityCounters.activeUsers.delete(metadata.userId);
+          this.securityCounters.activeUsers.delete(metadata.userId as string);
         }
         break;
     }

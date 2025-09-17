@@ -367,7 +367,7 @@ async function fetchPerformanceData(timeRange: TimeRange): Promise<PerformanceMe
       
       // Add realistic variation to metrics (in production, use actual historical data)
       const variation = (Math.random() - 0.5) * 0.2
-      const timeDecay = Math.max(0.8, 1 - (i / dataPoints) * 0.3) // More variation in older data
+      const _timeDecay = Math.max(0.8, 1 - (i / dataPoints) * 0.3) // More variation in older data
       
       data.push({
         timestamp: timestamp.toISOString(),

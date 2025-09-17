@@ -21,9 +21,9 @@ export class WundrEventBus implements EventBus {
     this.maxHistorySize = maxHistorySize;
   }
 
-  emit<T = unknown>(type: string, payload: T, source?: string): void {
+  emit<TPayload = Record<string, unknown>>(type: string, payload: TPayload, source?: string): void {
     try {
-      const event: EventBusEvent & { source: string | undefined } = {
+      const event: EventBusEvent<TPayload> = {
         id: uuidv4(),
         type,
         timestamp: new Date(),
@@ -32,7 +32,7 @@ export class WundrEventBus implements EventBus {
       };
 
       // Add to history
-      this.addToHistory(event);
+      this.addToHistory(event as EventBusEvent<Record<string, unknown>>);
 
       // Emit the event
       this.emitter.emit(type, event);
@@ -84,7 +84,7 @@ export class WundrEventBus implements EventBus {
     }
   }
 
-  off(type: string, handler: EventHandler): void {
+  off<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): void {
     try {
       this.emitter.off(type, handler);
     } catch (error) {
@@ -176,7 +176,7 @@ export class WundrEventBus implements EventBus {
     return this.emitter.eventNames() as string[];
   }
 
-  private addToHistory(event: EventBusEvent): void {
+  private addToHistory(event: EventBusEvent<Record<string, unknown>>): void {
     this.eventHistory.push(event);
 
     // Trim history if it exceeds max size

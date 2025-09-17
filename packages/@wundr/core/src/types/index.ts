@@ -207,3 +207,45 @@ export interface ConfigurationSource {
   readonly priority: number;
   readonly lastLoaded: Date;
 }
+
+// Re-export specific utility types to avoid conflicts
+export type {
+  SafeAny,
+  SafeFunction,
+  SafeAsyncFunction,
+  DeepReadonly,
+  DeepPartial,
+  DeepRequired,
+  OptionalFields,
+  RequiredFields,
+  Result as UtilityResult,
+  AsyncResult,
+  Maybe,
+  Some,
+  Brand,
+  TypeGuard,
+  TypeAssertion,
+  UserId,
+  EmailAddress,
+  Timestamp,
+  UUID
+} from './utility-types.js';
+
+// Re-export web client types
+export type {
+  ChartDataPoint,
+  ChartDataset,
+  ChartConfiguration,
+  DashboardMetrics as WebDashboardMetrics,
+  FileItem,
+  ProjectInfo,
+  AnalysisReport as WebAnalysisReport,
+  AnalysisResults as WebAnalysisResults,
+  TableColumn,
+  TableProps,
+  FormField,
+  FormProps,
+  NavigationItem,
+  ThemeConfig,
+  NotificationConfig
+} from './web-client-types.js';

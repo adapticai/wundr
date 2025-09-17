@@ -508,7 +508,7 @@ export class SecurityConfigManager extends EventEmitter {
     return this.mergeDeep(defaults, loaded) as SecurityConfig;
   }
 
-  private mergeDeep(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
+  private mergeDeep(target: any, source: any): any {
     if (source === null || source === undefined) {
       return target;
     }
