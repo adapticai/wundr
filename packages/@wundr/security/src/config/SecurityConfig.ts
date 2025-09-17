@@ -179,7 +179,7 @@ export class SecurityConfigManager extends EventEmitter {
       
       return this.config;
     } catch (error: unknown) {
-      const nodeError = error as NodeJS.ErrnoException;
+      const nodeError = error as { code?: string };
       if (nodeError.code === 'ENOENT') {
         logger.info('No configuration file found, using defaults');
         await this.saveConfig();
@@ -508,7 +508,7 @@ export class SecurityConfigManager extends EventEmitter {
     return this.mergeDeep(defaults, loaded) as SecurityConfig;
   }
 
-  private mergeDeep(target: any, source: any): any {
+  private mergeDeep(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
     if (source === null || source === undefined) {
       return target;
     }
@@ -516,7 +516,7 @@ export class SecurityConfigManager extends EventEmitter {
     const result = { ...target };
     
     for (const key in source) {
-      if (source.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           result[key] = this.mergeDeep(target[key] || {}, source[key]);
         } else {

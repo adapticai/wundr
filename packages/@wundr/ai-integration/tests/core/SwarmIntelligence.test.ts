@@ -119,7 +119,7 @@ describe('SwarmIntelligence', () => {
     });
 
     it('should select hierarchical topology for large-scale tasks', async () => {
-      const agentTypes = Array.from({ length: 15 }, (_, i) => 'coder');
+      const agentTypes = Array.from({ length: 15 }, (_, _i) => 'coder');
       const largeTask = 'Refactor large monorepo codebase';
       
       const topology = await swarmIntelligence.selectOptimalTopology(agentTypes, largeTask);

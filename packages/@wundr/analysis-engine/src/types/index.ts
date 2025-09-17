@@ -19,7 +19,7 @@ export interface EntityInfo {
   complexity?: ComplexityMetrics;
   dependencies: string[];
   members?: EntityMembers;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export type EntityType = 
@@ -123,8 +123,8 @@ export interface CircularDependency {
   suggestions: string[];
   source?: string;
   weight?: number;
-  impact?: any;
-  breakPoints?: any[];
+  impact?: CircularDependencyImpact;
+  breakPoints?: CircularDependencyBreakPoint[];
   relatedCycles?: string[];
 }
 
@@ -252,8 +252,8 @@ export interface PerformanceMetrics {
   cacheHits: number;
   cacheSize: number;
   // Additional optimization metrics
-  workerMetrics?: any;
-  streamingMetrics?: any;
+  workerMetrics?: WorkerPerformanceMetrics;
+  streamingMetrics?: StreamingPerformanceMetrics;
   memoryEfficiency?: number;
 }
 
@@ -311,10 +311,10 @@ export interface AnalysisEngine {
   setConfig(config: Partial<AnalysisConfig>): void;
 }
 
-export interface BaseAnalyzer<T = any> {
+export interface BaseAnalyzer<TResult = AnalysisResult> {
   name: string;
   version: string;
-  analyze(entities: EntityInfo[], config: AnalysisConfig): Promise<T>;
+  analyze(entities: EntityInfo[], config: AnalysisConfig): Promise<TResult>;
 }
 
 // Event types for progress tracking
@@ -328,3 +328,50 @@ export interface AnalysisProgressEvent {
 }
 
 export type AnalysisProgressCallback = (event: AnalysisProgressEvent) => void;
+
+// Additional interfaces to replace any types
+export interface CircularDependencyImpact {
+  readonly affectedFiles: string[];
+  readonly complexityIncrease: number;
+  readonly maintainabilityScore: number;
+  readonly refactoringEffort: 'low' | 'medium' | 'high';
+}
+
+export interface CircularDependencyBreakPoint {
+  readonly fromFile: string;
+  readonly toFile: string;
+  readonly type: 'import' | 'export' | 'require';
+  readonly line: number;
+  readonly suggestion: string;
+}
+
+export interface WorkerPerformanceMetrics {
+  readonly workersSpawned: number;
+  readonly workersActive: number;
+  readonly averageTaskDuration: number;
+  readonly queueLength: number;
+  readonly errorRate: number;
+}
+
+export interface StreamingPerformanceMetrics {
+  readonly bytesProcessed: number;
+  readonly chunksProcessed: number;
+  readonly averageChunkSize: number;
+  readonly streamingDuration: number;
+  readonly backpressureEvents: number;
+}
+
+export interface AnalysisResult {
+  readonly success: boolean;
+  readonly data?: unknown;
+  readonly errors: readonly AnalysisError[];
+  readonly metrics: PerformanceMetrics;
+}
+
+export interface AnalysisError {
+  readonly code: string;
+  readonly message: string;
+  readonly file?: string;
+  readonly line?: number;
+  readonly severity: SeverityLevel;
+}

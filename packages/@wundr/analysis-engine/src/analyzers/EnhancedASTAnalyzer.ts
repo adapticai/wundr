@@ -824,7 +824,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private calculateNodeComplexity(node: ts.Node): ComplexityMetrics {
     let cyclomatic = 1;
     let cognitive = 0;
-    let depth = 0;
+    let _depth = 0;
     let maxDepth = 0;
     let parameters = 0;
     let lines = 0;
@@ -842,7 +842,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
     // Calculate complexity
     const visit = (child: ts.Node, currentDepth: number) => {
-      depth = currentDepth;
+      _depth = currentDepth;
       maxDepth = Math.max(maxDepth, currentDepth);
 
       switch (child.kind) {
@@ -1014,7 +1014,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
     };
   }
 
-  private generateCircularDependencySuggestions(cycle: string[]): string[] {
+  private generateCircularDependencySuggestions(_cycle: string[]): string[] {
     return [
       'Extract common interfaces to break circular dependencies',
       'Use dependency injection to invert dependencies',

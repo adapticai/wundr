@@ -11,7 +11,7 @@ import inquirer from 'inquirer';
 import validatePackageName from 'validate-npm-package-name';
 import { execSync } from 'child_process';
 import Handlebars from 'handlebars';
-import { getLogger } from '@wundr/core';
+import { getLogger } from '@wundr.io/core';
 import {
   ProjectOptions,
   ProjectType,

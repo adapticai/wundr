@@ -81,7 +81,7 @@ export class StaticAnalyzer extends EventEmitter {
       description: 'Passwords should not be hardcoded in source code',
       severity: 'critical',
       category: 'security',
-      pattern: /(?:password|pwd|passwd)\s*[:=]\s*['""][^'""]+['""](?!\s*\+)/gi,
+      pattern: /(?:password|pwd|passwd)\s*[:=]\s*['""][^'"]+['""](?!\s*\+)/gi,
       languages: ['js', 'ts', 'py', 'java', 'php', 'go'],
       cwe: 'CWE-798',
       owasp: ['A07:2021 - Identification and Authentication Failures'],
@@ -503,7 +503,7 @@ export class StaticAnalyzer extends EventEmitter {
     return snippet.join('\n');
   }
 
-  private generateFixSuggestion(rule: SecurityRule, match: string): string {
+  private generateFixSuggestion(rule: SecurityRule, _match: string): string {
     switch (rule.id) {
       case 'weak-crypto':
         return 'Replace with: createHash("sha256") for hashing or createCipherGCM("aes-256-gcm", key, iv) for encryption';

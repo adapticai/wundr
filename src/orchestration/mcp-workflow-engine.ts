@@ -4,13 +4,29 @@
  */
 
 import { EventEmitter } from 'events';
-import { 
-  MCPWorkflow, 
-  MCPWorkflowStep, 
+import {
+  MCPWorkflow,
+  MCPWorkflowStep,
   WorkflowExecution,
   AllMCPTools,
-  MCPResponse 
+  MCPResponse
 } from '../types/mcp-tools';
+import {
+  TypedWorkflowContext,
+  TypedStepExecutionResult,
+  TypedWorkflow,
+  TypedWorkflowStep,
+  TypedWorkflowExecution,
+  WorkflowError,
+  WorkflowValue,
+  ToolParameters,
+  ToolResponse,
+  WorkflowExecutionStatus,
+  ExecutionPerformance,
+  ResourceUsage,
+  isWorkflowValue,
+  isWorkflowError
+} from '../types/workflow-types';
 
 export interface WorkflowEngineConfig {
   maxConcurrentSteps: number;
@@ -28,23 +44,24 @@ export interface WorkflowEngineConfig {
 
 export interface WorkflowContext {
   executionId: string;
-  variables: Record<string, any>;
-  stepResults: Record<string, any>;
+  variables: Record<string, WorkflowValue>;
+  stepResults: Record<string, TypedStepExecutionResult>;
   metadata: {
     startedAt: number;
     userId?: string;
     sessionId?: string;
-    tags?: string[];
+    tags?: readonly string[];
   };
 }
 
 export interface StepExecutionResult {
   stepId: string;
   success: boolean;
-  result?: any;
-  error?: string;
+  result?: WorkflowValue;
+  error?: WorkflowError;
   executionTime: number;
   retryCount: number;
+  timestamp: number;
 }
 
 /**
@@ -133,7 +150,7 @@ export class WorkflowPatterns {
    * Automated Testing Workflow
    * Playwright + Browser MCP validation
    */
-  static createTestingWorkflow(testSuite: any): MCPWorkflow {
+  static createTestingWorkflow(testSuite: TestSuiteConfig): MCPWorkflow {
     return {
       id: `testing-${Date.now()}`,
       name: 'Comprehensive Testing Workflow',
@@ -212,7 +229,7 @@ export class WorkflowPatterns {
    * Web Monitoring & Alert Workflow
    * Firecrawl + Browser MCP + Context7 + Sequential Thinking
    */
-  static createMonitoringWorkflow(urls: string[], alertCriteria: any): MCPWorkflow {
+  static createMonitoringWorkflow(urls: string[], alertCriteria: AlertCriteria): MCPWorkflow {
     return {
       id: `monitoring-${Date.now()}`,
       name: 'Web Monitoring & Alert Workflow',
@@ -510,10 +527,10 @@ export class MCPWorkflowEngine extends EventEmitter {
    * Resolve parameter placeholders with context values
    */
   private resolveParameters(
-    parameters: Record<string, any>,
+    parameters: Record<string, WorkflowValue>,
     context: WorkflowContext
-  ): Record<string, any> {
-    const resolved: Record<string, any> = {};
+  ): Record<string, WorkflowValue> {
+    const resolved: Record<string, WorkflowValue> = {};
 
     for (const [key, value] of Object.entries(parameters)) {
       resolved[key] = this.resolveValue(value, context);
@@ -525,7 +542,7 @@ export class MCPWorkflowEngine extends EventEmitter {
   /**
    * Resolve a single value with placeholders
    */
-  private resolveValue(value: any, context: WorkflowContext): any {
+  private resolveValue(value: WorkflowValue, context: WorkflowContext): WorkflowValue {
     if (typeof value === 'string' && value.startsWith('${') && value.endsWith('}')) {
       const placeholder = value.slice(2, -1);
       
@@ -551,7 +568,7 @@ export class MCPWorkflowEngine extends EventEmitter {
     }
     
     if (typeof value === 'object' && value !== null) {
-      const resolved: Record<string, any> = {};
+      const resolved: Record<string, WorkflowValue> = {};
       for (const [k, v] of Object.entries(value)) {
         resolved[k] = this.resolveValue(v, context);
       }
@@ -564,7 +581,7 @@ export class MCPWorkflowEngine extends EventEmitter {
   /**
    * Get nested value from object using dot notation
    */
-  private getNestedValue(obj: any, path: string): any {
+  private getNestedValue(obj: WorkflowValue, path: string): WorkflowValue {
     if (!obj || !path) return obj;
     
     const keys = path.split('.');
@@ -574,7 +591,7 @@ export class MCPWorkflowEngine extends EventEmitter {
       if (current === null || current === undefined) {
         return undefined;
       }
-      current = current[key];
+      current = (current as WorkflowObjectValue)[key];
     }
     
     return current;
@@ -586,7 +603,7 @@ export class MCPWorkflowEngine extends EventEmitter {
   private async callMCPTool(
     toolName: string,
     action: string,
-    parameters: Record<string, any>
+    parameters: Record<string, WorkflowValue>
   ): Promise<MCPResponse> {
     const timeout = this.config.defaultTimeout;
     
@@ -630,7 +647,7 @@ export class MCPWorkflowEngine extends EventEmitter {
   /**
    * MCP Tool-specific call handlers
    */
-  private async callFirecrawl(action: string, params: any): Promise<MCPResponse> {
+  private async callFirecrawl(action: string, params: FirecrawlParameters): Promise<MCPResponse> {
     switch (action) {
       case 'crawl':
         return this.mcpTools.firecrawl.crawl(params);
@@ -645,7 +662,7 @@ export class MCPWorkflowEngine extends EventEmitter {
     }
   }
 
-  private async callContext7(action: string, params: any): Promise<MCPResponse> {
+  private async callContext7(action: string, params: Context7Parameters): Promise<MCPResponse> {
     switch (action) {
       case 'store':
         return this.mcpTools.context7.store(params);
@@ -660,7 +677,7 @@ export class MCPWorkflowEngine extends EventEmitter {
     }
   }
 
-  private async callPlaywright(action: string, params: any): Promise<MCPResponse> {
+  private async callPlaywright(action: string, params: PlaywrightParameters): Promise<MCPResponse> {
     switch (action) {
       case 'launch':
         return this.mcpTools.playwright.launch(params);
@@ -675,7 +692,7 @@ export class MCPWorkflowEngine extends EventEmitter {
     }
   }
 
-  private async callBrowserMCP(action: string, params: any): Promise<MCPResponse> {
+  private async callBrowserMCP(action: string, params: BrowserMCPParameters): Promise<MCPResponse> {
     switch (action) {
       case 'connectToChrome':
         return this.mcpTools.browserMCP.connectToChrome();
@@ -692,7 +709,7 @@ export class MCPWorkflowEngine extends EventEmitter {
     }
   }
 
-  private async callSequentialThinking(action: string, params: any): Promise<MCPResponse> {
+  private async callSequentialThinking(action: string, params: SequentialThinkingParameters): Promise<MCPResponse> {
     switch (action) {
       case 'startSession':
         return this.mcpTools.sequentialThinking.startSession(params);

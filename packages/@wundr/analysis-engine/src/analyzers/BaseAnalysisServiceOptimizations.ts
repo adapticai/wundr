@@ -9,7 +9,7 @@ import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
 import { WorkerPoolManager } from '../workers/WorkerPoolManager';
 import { MemoryMonitor } from '../monitoring/MemoryMonitor';
 import { EntityInfo, AnalysisConfig, AnalysisReport, AnalysisSummary, PerformanceMetrics } from '../types';
-import { createId, normalizeFilePath, formatDuration, formatFileSize, chunk } from '../utils';
+import { createId, formatDuration, formatFileSize, chunk } from '../utils';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
@@ -58,7 +58,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     return this.performAnalysisConcurrent(entities);
   }
 
-  protected override extractEntityFromNode(node: ts.Node, sourceFile: ts.SourceFile): EntityInfo | null {
+  protected override extractEntityFromNode(_node: ts.Node, _sourceFile: ts.SourceFile): EntityInfo | null {
     // Basic implementation - can be overridden by specific analyzers
     return null;
   }
@@ -300,7 +300,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     };
 
     // Use streaming file processor
-    const streamingMetrics = await this.optimizedStreamingProcessor.streamProcessFiles(files, entityProcessor);
+    const _streamingMetrics = await this.optimizedStreamingProcessor.streamProcessFiles(files, entityProcessor);
     
     this.emitProgress({ 
       type: 'phase', 

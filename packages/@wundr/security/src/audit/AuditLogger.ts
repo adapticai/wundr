@@ -197,7 +197,7 @@ export class AuditLogger extends EventEmitter {
   private storage: AuditStorage;
   private eventBuffer: AuditEvent[] = [];
   private bufferSize: number = 100;
-  private flushInterval: NodeJS.Timeout;
+  private flushInterval: ReturnType<typeof setInterval>;
   private anomalyDetector: AnomalyDetector;
 
   constructor(storage: AuditStorage, options: { bufferSize?: number; flushIntervalMs?: number } = {}) {

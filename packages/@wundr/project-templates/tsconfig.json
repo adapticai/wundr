@@ -17,8 +17,8 @@
     "downlevelIteration": true,
     "composite": true,
     "paths": {
-      "@wundr/core": ["../core/dist"],
-      "@wundr/config": ["../config/dist"]
+      "@wundr.io/core": ["../core/dist"],
+      "@wundr.io/config": ["../config/dist"]
     }
   },
   "include": ["src/**/*"],

@@ -19,6 +19,157 @@ import { RoleBasedAccessControl } from './rbac/RoleBasedAccessControl';
 import { SecurityConfigManager } from './config/SecurityConfig';
 
 /**
+ * Security scan result interfaces for type safety
+ */
+export interface SecurityScanResults {
+  secrets: {
+    findings: Array<{
+      file: string;
+      line: number;
+      type: string;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      description: string;
+      value?: string;
+    }>;
+    summary: {
+      totalFiles: number;
+      totalFindings: number;
+      criticalCount: number;
+      highCount: number;
+      mediumCount: number;
+      lowCount: number;
+    };
+  } | null;
+  vulnerabilities: {
+    packages: Array<{
+      name: string;
+      version: string;
+      vulnerabilities: Array<{
+        id: string;
+        severity: 'low' | 'medium' | 'high' | 'critical';
+        title: string;
+        description: string;
+        references: string[];
+      }>;
+    }>;
+    summary: {
+      totalPackages: number;
+      vulnerablePackages: number;
+      totalVulnerabilities: number;
+      criticalCount: number;
+      highCount: number;
+      mediumCount: number;
+      lowCount: number;
+    };
+  } | null;
+  staticAnalysis: {
+    issues: Array<{
+      file: string;
+      line: number;
+      column: number;
+      rule: string;
+      severity: 'error' | 'warning' | 'info';
+      message: string;
+      category: string;
+    }>;
+    metrics: {
+      linesOfCode: number;
+      complexity: number;
+      maintainabilityIndex: number;
+      testCoverage?: number;
+    };
+    summary: {
+      totalFiles: number;
+      totalIssues: number;
+      errorCount: number;
+      warningCount: number;
+      infoCount: number;
+    };
+  } | null;
+  compliance: {
+    framework: string;
+    status: 'compliant' | 'non-compliant' | 'partial';
+    score: number;
+    requirements: Array<{
+      id: string;
+      title: string;
+      status: 'pass' | 'fail' | 'manual-review';
+      evidence?: string[];
+      recommendations?: string[];
+    }>;
+    summary: {
+      totalRequirements: number;
+      passedRequirements: number;
+      failedRequirements: number;
+      manualReviewRequired: number;
+    };
+  } | null;
+}
+
+/**
+ * Security configuration interface
+ */
+export interface SecurityConfiguration {
+  scanning: {
+    secrets: {
+      enabled: boolean;
+      excludePaths?: string[];
+      includeExtensions?: string[];
+      patterns?: Record<string, string>;
+    };
+    vulnerabilities: {
+      enabled: boolean;
+      updateIntervalMs?: number;
+      offline?: boolean;
+      sources?: string[];
+    };
+    static: {
+      enabled: boolean;
+      rules?: string[];
+      excludePatterns?: string[];
+    };
+  };
+  audit: {
+    enabled: boolean;
+    storage: {
+      type: 'file' | 'database' | 'remote';
+      path: string;
+      retention?: {
+        days: number;
+        maxSize?: string;
+      };
+    };
+    format?: 'json' | 'csv' | 'syslog';
+  };
+  rbac: {
+    enabled: boolean;
+    caching: {
+      enabled: boolean;
+      expirationMs: number;
+    };
+    defaultDenyAll: boolean;
+    hierarchicalRoles?: boolean;
+    delegation?: {
+      enabled: boolean;
+      maxDepth: number;
+    };
+  };
+  encryption: {
+    algorithm: string;
+    keySize: number;
+    provider?: string;
+  };
+  compliance: {
+    frameworks: string[];
+    reporting: {
+      enabled: boolean;
+      schedule?: string;
+      recipients?: string[];
+    };
+  };
+}
+
+/**
  * Main Security Manager Class
  * Coordinates all security components and provides unified interface
  */
@@ -34,10 +185,10 @@ export class SecurityManager {
 
   constructor(configPath?: string) {
     this.configManager = new SecurityConfigManager(configPath);
-    
+
     // Initialize components with default configurations
     this.initializeComponents();
-    
+
     // Setup event forwarding
     this.setupEventForwarding();
   }
@@ -48,13 +199,13 @@ export class SecurityManager {
   async initialize(): Promise<void> {
     // Load configuration
     const config = await this.configManager.loadConfig();
-    
+
     // Apply environment overrides
     this.configManager.applyEnvironmentOverrides();
-    
+
     // Reinitialize components with loaded config
-    await this.reinitializeWithConfig(config);
-    
+    await this.reinitializeWithConfig(config as any);
+
     // Start configuration watching
     await this.configManager.watchConfig();
   }
@@ -118,12 +269,7 @@ export class SecurityManager {
   /**
    * Perform comprehensive security scan
    */
-  async performSecurityScan(targetPath: string): Promise<{
-    secrets: any;
-    vulnerabilities: any;
-    staticAnalysis: any;
-    compliance: any;
-  }> {
+  async performSecurityScan(targetPath: string): Promise<SecurityScanResults> {
     const results = await Promise.allSettled([
       this.secretScanner.scanDirectory(targetPath),
       this.vulnerabilityScanner.scanProject(targetPath),
@@ -132,10 +278,10 @@ export class SecurityManager {
     ]);
 
     return {
-      secrets: results[0].status === 'fulfilled' ? results[0].value : null,
-      vulnerabilities: results[1].status === 'fulfilled' ? results[1].value : null,
-      staticAnalysis: results[2].status === 'fulfilled' ? results[2].value : null,
-      compliance: results[3].status === 'fulfilled' ? results[3].value : null
+      secrets: results[0].status === 'fulfilled' ? results[0].value as any : null,
+      vulnerabilities: results[1].status === 'fulfilled' ? results[1].value as any : null,
+      staticAnalysis: results[2].status === 'fulfilled' ? results[2].value as any : null,
+      compliance: results[3].status === 'fulfilled' ? results[3].value as any : null
     };
   }
 
@@ -153,19 +299,19 @@ export class SecurityManager {
     }
 
     if (scanResults.vulnerabilities) {
-      const vulnReport = this.vulnerabilityScanner.generateReport(scanResults.vulnerabilities);
+      const vulnReport = this.vulnerabilityScanner.generateReport(scanResults.vulnerabilities as any);
       // Save report to file
       reports.push(`${outputPath}/vulnerability-report.html`);
     }
 
     if (scanResults.staticAnalysis) {
-      const staticReport = this.staticAnalyzer.generateReport(scanResults.staticAnalysis);
+      const staticReport = this.staticAnalyzer.generateReport(scanResults.staticAnalysis as any);
       // Save report to file
       reports.push(`${outputPath}/static-analysis-report.html`);
     }
 
     if (scanResults.compliance) {
-      await this.complianceReporter.exportReport(scanResults.compliance, 'html', outputPath);
+      await this.complianceReporter.exportReport(scanResults.compliance as any, 'html', outputPath);
       reports.push(`${outputPath}/compliance-report.html`);
     }
 
@@ -190,42 +336,45 @@ export class SecurityManager {
     this.vulnerabilityScanner = new VulnerabilityScanner();
     this.staticAnalyzer = new StaticAnalyzer();
     this.complianceReporter = new ComplianceReporter();
-    
+
     // Initialize audit logger with file storage
     const auditStorage = new FileAuditStorage('./logs/audit');
     this.auditLogger = new AuditLogger(auditStorage);
-    
+
     this.rbac = new RoleBasedAccessControl();
   }
 
-  private async reinitializeWithConfig(config: any): Promise<void> {
+  private async reinitializeWithConfig(config: SecurityConfiguration): Promise<void> {
     // Reinitialize components with loaded configuration
     // This would be implemented based on specific configuration needs
-    
-    if (config.scanning.secrets.enabled) {
+
+    if (config.scanning?.secrets?.enabled) {
       this.secretScanner = new SecretScanner({
         excludePaths: config.scanning.secrets.excludePaths,
         includeExtensions: config.scanning.secrets.includeExtensions
       });
     }
 
-    if (config.scanning.vulnerabilities.enabled) {
+    if (config.scanning?.vulnerabilities?.enabled) {
       this.vulnerabilityScanner = new VulnerabilityScanner({
         updateInterval: config.scanning.vulnerabilities.updateIntervalMs,
         offline: config.scanning.vulnerabilities.offline
       });
     }
 
-    if (config.audit.enabled) {
+    if (config.audit?.enabled && config.audit.storage) {
       const auditStorage = new FileAuditStorage(config.audit.storage.path);
       this.auditLogger = new AuditLogger(auditStorage);
     }
 
-    if (config.rbac.enabled) {
+    if (config.rbac?.enabled) {
       this.rbac = new RoleBasedAccessControl({
-        enableCaching: config.rbac.caching.enabled,
-        cacheExpirationMs: config.rbac.caching.expirationMs,
-        defaultDenyAll: config.rbac.defaultDenyAll
+        enableCaching: config.rbac.caching?.enabled ?? true,
+        cacheExpirationMs: config.rbac.caching?.expirationMs ?? 300000,
+        defaultDenyAll: config.rbac.defaultDenyAll,
+        enableHierarchicalRoles: config.rbac.hierarchicalRoles,
+        enableDelegation: config.rbac.delegation?.enabled,
+        maxDelegationDepth: config.rbac.delegation?.maxDepth
       });
     }
   }
@@ -289,6 +438,12 @@ export class SecurityManager {
 export const securityManager = new SecurityManager();
 
 // Export convenience functions
+/**
+ * Initialize security manager with optional configuration
+ * @param configPath - Path to security configuration file
+ * @returns Promise resolving to configured SecurityManager instance
+ * @throws {Error} If configuration is invalid or initialization fails
+ */
 export const initializeSecurity = async (configPath?: string): Promise<SecurityManager> => {
   const manager = new SecurityManager(configPath);
   await manager.initialize();

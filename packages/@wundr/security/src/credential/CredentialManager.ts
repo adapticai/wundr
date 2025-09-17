@@ -1,8 +1,5 @@
 import * as keytar from 'keytar';
-import { randomBytes, createHash, scrypt } from 'crypto';
-import { promisify } from 'util';
-
-const scryptAsync = promisify(scrypt);
+import { randomBytes, createHash } from 'crypto';
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
 
@@ -10,7 +7,7 @@ export interface CredentialOptions {
   service: string;
   account: string;
   password: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   expiresAt?: Date;
   rotationInterval?: number; // in milliseconds
 }
@@ -23,7 +20,7 @@ export interface EncryptedCredential {
   iv: string; // Initialization Vector for GCM
   authTag: string; // Authentication tag for GCM
   encryptionVersion: number; // For backward compatibility
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
   expiresAt?: Date;
@@ -35,7 +32,7 @@ export class CredentialManager extends EventEmitter {
   private readonly serviceName: string = '@wundr/security';
   private readonly encryptionKey: string;
   private readonly credentialStore: Map<string, EncryptedCredential> = new Map();
-  private rotationTimers: Map<string, NodeJS.Timeout> = new Map();
+  private rotationTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
   constructor(masterKey?: string) {
     super();
@@ -242,7 +239,7 @@ export class CredentialManager extends EventEmitter {
     try {
       const credentials = await keytar.findCredentials(this.serviceName);
       
-      return credentials.map((cred: any) => {
+      return credentials.map((cred: unknown) => {
         const parsed: EncryptedCredential = JSON.parse(cred.password);
         return {
           id: parsed.id,

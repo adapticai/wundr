@@ -17,8 +17,6 @@ import {
   isFailure,
 } from '@wundr.io/core';
 import {
-  Plugin,
-  PluginConstructor,
   PluginModule,
   PluginManifest,
   PluginInfo,

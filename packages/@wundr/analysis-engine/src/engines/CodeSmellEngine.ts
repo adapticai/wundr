@@ -744,7 +744,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     // Find references to other classes
     for (const otherEntity of allEntities) {
       if (otherEntity.type === 'class' && otherEntity.id !== entity.id) {
-        const referenceCount = (entity.signature.match(new RegExp(`\\b${otherEntity.name}\\b`, 'g')) || []).length;
+        const referenceCount = (entity.signature.match(new RegExp(`\\b${this.escapeRegExp(otherEntity.name)}\\b`, 'g')) || []).length;
         if (referenceCount > 3) { // Threshold for intimacy
           classReferences.set(otherEntity.name, referenceCount);
         }
@@ -817,5 +817,12 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     if (rule) {
       Object.assign(rule, updates);
     }
+  }
+
+  /**
+   * Escape string for regex
+   */
+  private escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }

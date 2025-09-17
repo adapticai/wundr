@@ -35,7 +35,7 @@ export interface ComplianceControl {
   evidence?: string[];
   status?: 'implemented' | 'not-implemented' | 'partial' | 'not-applicable';
   lastTested?: Date;
-  testResults?: any;
+  testResults?: unknown;
 }
 
 export interface ComplianceReport {
@@ -212,7 +212,7 @@ export class ComplianceReporter extends EventEmitter {
   /**
    * Track compliance over time
    */
-  async trackCompliance(frameworkId: string): Promise<{
+  async trackCompliance(_frameworkId: string): Promise<{
     trend: Array<{ date: Date; compliancePercentage: number }>;
     improvements: string[];
     degradations: string[];

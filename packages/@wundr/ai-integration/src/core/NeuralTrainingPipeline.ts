@@ -8,16 +8,14 @@
 import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { 
-  NeuralConfig, 
-  NeuralModel, 
-  ModelType, 
-  ModelStatus,
-  ModelPerformance,
+import {
+  NeuralConfig,
+  NeuralModel,
+  ModelType,
   Agent,
   Task,
   MemoryEntry,
-  OperationResult 
+  OperationResult
 } from '../types';
 
 export class NeuralTrainingPipeline extends EventEmitter {
@@ -497,7 +495,7 @@ export class NeuralTrainingPipeline extends EventEmitter {
     try {
       // Process training queue
       const batchSize = Math.min(this.trainingQueue.length, 100);
-      const batch = this.trainingQueue.splice(0, batchSize);
+      const _batch = this.trainingQueue.splice(0, batchSize);
       
       // Train models on batch
       for (const [modelId, model] of this.models.entries()) {
@@ -583,7 +581,7 @@ export class NeuralTrainingPipeline extends EventEmitter {
   async predictOptimalConfiguration(task: Task): Promise<any> {
     const predictions: any = {};
     
-    for (const [modelId, model] of this.models.entries()) {
+    for (const [_modelId, model] of this.models.entries()) {
       if (model.status === 'ready') {
         predictions[model.type] = await this.runModelPrediction(model, task);
       }
@@ -600,7 +598,7 @@ export class NeuralTrainingPipeline extends EventEmitter {
 
   private async runModelPrediction(model: NeuralModel, task: Task): Promise<any> {
     // Simulate model prediction
-    const taskFeatures = this.extractTaskFeatures(task);
+    const _taskFeatures = this.extractTaskFeatures(task);
     
     switch (model.type) {
       case 'agent-selection':

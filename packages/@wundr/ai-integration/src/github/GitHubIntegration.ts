@@ -320,7 +320,7 @@ export class GitHubIntegration extends EventEmitter {
     };
   }
 
-  private async performLogicReview(swarm: ReviewSwarm): Promise<any> {
+  private async performLogicReview(_swarm: ReviewSwarm): Promise<any> {
     const findings: ReviewFinding[] = [];
     
     // Simulate logic analysis
@@ -344,7 +344,7 @@ export class GitHubIntegration extends EventEmitter {
     };
   }
 
-  private async performPerformanceReview(swarm: ReviewSwarm): Promise<any> {
+  private async performPerformanceReview(_swarm: ReviewSwarm): Promise<any> {
     const findings: ReviewFinding[] = [];
     
     // Simulate performance analysis
@@ -368,7 +368,7 @@ export class GitHubIntegration extends EventEmitter {
     };
   }
 
-  private async performSecurityReview(swarm: ReviewSwarm): Promise<any> {
+  private async performSecurityReview(_swarm: ReviewSwarm): Promise<any> {
     const findings: ReviewFinding[] = [];
     
     // Simulate security analysis
@@ -602,7 +602,7 @@ export class GitHubIntegration extends EventEmitter {
     }
   }
 
-  private async selectReviewAgents(prDetails: any): Promise<Agent[]> {
+  private async selectReviewAgents(_prDetails: any): Promise<Agent[]> {
     // Create mock agents for review
     // In real implementation, these would be actual agents from the coordinator
     const mockAgents: Agent[] = [
@@ -645,7 +645,7 @@ export class GitHubIntegration extends EventEmitter {
   private async analyzeIssue(issue: any): Promise<any> {
     // Simple issue analysis
     const title = issue.title.toLowerCase();
-    const body = (issue.body || '').toLowerCase();
+    const _body = (issue.body || '').toLowerCase();
     
     let priority = 'medium';
     

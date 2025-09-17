@@ -6,13 +6,12 @@
  */
 
 import { EventEmitter } from 'eventemitter3';
-import { 
+import {
   PerformanceConfig,
   PerformanceMetrics,
   Bottleneck,
   Task,
-  Agent,
-  OperationResult 
+  OperationResult
 } from '../types';
 
 export class PerformanceAnalyzer extends EventEmitter {

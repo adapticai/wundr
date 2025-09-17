@@ -133,7 +133,7 @@ export interface Agent {
   createdAt: Date;
   lastActivity?: Date;
   metrics: AgentMetrics;
-  context?: any;
+  context?: AgentContext;
 }
 
 export type AgentStatus = 'initializing' | 'active' | 'busy' | 'idle' | 'error' | 'shutdown';
@@ -156,7 +156,7 @@ export interface SwarmTopology {
   connectionPattern: string;
   coordinationStyle: string;
   faultTolerance: 'low' | 'medium' | 'high';
-  metadata?: any;
+  metadata?: TopologyMetadata;
 }
 
 // SPARC Methodology
@@ -165,7 +165,7 @@ export type SPARCPhase = 'specification' | 'pseudocode' | 'architecture' | 'refi
 export interface SPARCExecution {
   phases: SPARCPhase[];
   currentPhase: SPARCPhase;
-  results: Record<SPARCPhase, any>;
+  results: Record<SPARCPhase, SPARCResult>;
   startedAt: Date;
   completedAt?: Date;
 }
@@ -180,12 +180,12 @@ export interface Task {
   status: TaskStatus;
   assignedAgents: string[];
   requiredCapabilities: string[];
-  context: any;
+  context: TaskContext;
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
-  result?: any;
-  error?: any;
+  result?: TaskResult;
+  error?: TaskError;
 }
 
 export type TaskType = 'coding' | 'review' | 'testing' | 'analysis' | 'documentation' | 'deployment' | 'optimization';
@@ -203,7 +203,7 @@ export interface MemoryEntry {
   createdAt: Date;
   expiresAt?: Date;
   tags: string[];
-  metadata: any;
+  metadata: MemoryMetadata;
 }
 
 export type MemoryType = 'session' | 'agent' | 'task' | 'pattern' | 'consensus' | 'performance';
@@ -212,7 +212,7 @@ export interface MemoryContext {
   sessionMemory: MemoryEntry[];
   agentMemory: Map<string, MemoryEntry[]>;
   taskMemory: Map<string, MemoryEntry[]>;
-  patterns: any[];
+  patterns: RecognizedPattern[];
 }
 
 // Neural Network Types
@@ -221,8 +221,8 @@ export interface NeuralModel {
   name: string;
   type: ModelType;
   status: ModelStatus;
-  trainingData: any[];
-  parameters: any;
+  trainingData: TrainingDataPoint[];
+  parameters: ModelParameters;
   performance: ModelPerformance;
   createdAt: Date;
   updatedAt: Date;
@@ -247,7 +247,7 @@ export interface MCPTool {
   category: string;
   capabilities: string[];
   status: 'available' | 'busy' | 'error';
-  metadata: any;
+  metadata: MCPToolMetadata;
 }
 
 // System Status
@@ -256,8 +256,8 @@ export type HiveStatus = 'initializing' | 'ready' | 'busy' | 'error' | 'shutting
 export interface OperationResult {
   success: boolean;
   message: string;
-  data?: any;
-  error?: any;
+  data?: OperationResultData;
+  error?: OperationError;
   timestamp?: Date;
 }
 
@@ -307,10 +307,165 @@ export interface AIEvent {
   id: string;
   type: string;
   source: string;
-  data: any;
+  data: EventData;
   timestamp: Date;
 }
 
 export interface EventHandler {
   (event: AIEvent): Promise<void>;
+}
+
+// Additional interfaces to replace any types
+export interface AgentContext {
+  readonly sessionId: string;
+  readonly userId?: string;
+  readonly requestId: string;
+  readonly configuration: Record<string, unknown>;
+  readonly state: Record<string, unknown>;
+}
+
+export interface TopologyMetadata {
+  readonly algorithm: string;
+  readonly parameters: Record<string, unknown>;
+  readonly constraints: Record<string, unknown>;
+  readonly optimizations: string[];
+}
+
+export interface SPARCResult {
+  readonly phase: SPARCPhase;
+  readonly success: boolean;
+  readonly artifacts: Artifact[];
+  readonly nextPhase?: SPARCPhase;
+  readonly metrics: PhaseMetrics;
+}
+
+export interface Artifact {
+  readonly type: 'specification' | 'pseudocode' | 'architecture' | 'code' | 'tests' | 'documentation';
+  readonly content: string;
+  readonly metadata: Record<string, unknown>;
+}
+
+export interface PhaseMetrics {
+  readonly duration: number;
+  readonly resourcesUsed: ResourceUsage;
+  readonly qualityScore: number;
+}
+
+export interface ResourceUsage {
+  readonly memory: number;
+  readonly cpu: number;
+  readonly tokens: number;
+}
+
+export interface TaskContext {
+  readonly parentTaskId?: string;
+  readonly dependencies: string[];
+  readonly configuration: Record<string, unknown>;
+  readonly environment: Record<string, unknown>;
+}
+
+export interface TaskResult {
+  readonly data: unknown;
+  readonly metadata: Record<string, unknown>;
+  readonly artifacts: Artifact[];
+  readonly metrics: TaskMetrics;
+}
+
+export interface TaskError {
+  readonly code: string;
+  readonly message: string;
+  readonly stack?: string;
+  readonly context: Record<string, unknown>;
+}
+
+export interface TaskMetrics {
+  readonly startTime: Date;
+  readonly endTime: Date;
+  readonly duration: number;
+  readonly resourcesUsed: ResourceUsage;
+}
+
+export interface MemoryMetadata {
+  readonly priority: number;
+  readonly source: string;
+  readonly compression: boolean;
+  readonly encryption: boolean;
+  readonly checksum: string;
+}
+
+export interface RecognizedPattern {
+  readonly id: string;
+  readonly type: 'code' | 'behavior' | 'performance' | 'error';
+  readonly confidence: number;
+  readonly occurrences: PatternOccurrence[];
+  readonly suggestions: string[];
+}
+
+export interface PatternOccurrence {
+  readonly location: string;
+  readonly context: Record<string, unknown>;
+  readonly timestamp: Date;
+}
+
+export interface TrainingDataPoint {
+  readonly input: Record<string, unknown>;
+  readonly output: Record<string, unknown>;
+  readonly metadata: Record<string, unknown>;
+  readonly quality: number;
+}
+
+export interface ModelParameters {
+  readonly layers: LayerConfiguration[];
+  readonly optimizer: OptimizerConfiguration;
+  readonly hyperparameters: Record<string, number>;
+  readonly regularization: RegularizationConfiguration;
+}
+
+export interface LayerConfiguration {
+  readonly type: string;
+  readonly size: number;
+  readonly activation: string;
+  readonly dropout?: number;
+}
+
+export interface OptimizerConfiguration {
+  readonly type: 'adam' | 'sgd' | 'rmsprop';
+  readonly learningRate: number;
+  readonly momentum?: number;
+  readonly beta1?: number;
+  readonly beta2?: number;
+}
+
+export interface RegularizationConfiguration {
+  readonly l1?: number;
+  readonly l2?: number;
+  readonly dropout?: number;
+}
+
+export interface MCPToolMetadata {
+  readonly version: string;
+  readonly dependencies: string[];
+  readonly configuration: Record<string, unknown>;
+  readonly permissions: string[];
+}
+
+export interface OperationResultData {
+  readonly type: string;
+  readonly payload: Record<string, unknown>;
+  readonly timestamp: Date;
+  readonly source: string;
+}
+
+export interface OperationError {
+  readonly code: string;
+  readonly message: string;
+  readonly details?: Record<string, unknown>;
+  readonly recoverable: boolean;
+}
+
+export interface EventData {
+  readonly category: string;
+  readonly action: string;
+  readonly properties: Record<string, unknown>;
+  readonly metadata: Record<string, unknown>;
 }

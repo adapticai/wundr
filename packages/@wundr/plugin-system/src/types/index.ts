@@ -20,7 +20,7 @@ export interface PluginMetadata {
 export interface PluginContext {
   readonly logger: Logger;
   readonly eventBus: EventBus;
-  readonly config: Record<string, any>;
+  readonly config: Record<string, unknown>;
   readonly pluginDir: string;
   readonly dataDir: string;
 }
@@ -45,7 +45,7 @@ export interface PluginModule {
 export interface PluginManifest extends PluginMetadata {
   readonly main: string;
   readonly enabled?: boolean;
-  readonly config?: Record<string, any>;
+  readonly config?: Record<string, unknown>;
 }
 
 export interface PluginInfo {
@@ -69,17 +69,17 @@ export enum PluginStatus {
   ERROR = 'error',
 }
 
-export interface PluginHook<T = any> {
+export interface PluginHook<T = unknown> {
   readonly name: string;
   readonly description?: string;
-  execute(...args: any[]): T | Promise<T>;
+  execute(...args: unknown[]): T | Promise<T>;
 }
 
 export interface PluginHookRegistry {
   register<T>(name: string, hook: PluginHook<T>): void;
   unregister(name: string, hook: PluginHook): void;
-  execute<T>(name: string, ...args: any[]): Promise<T[]>;
-  executeSync<T>(name: string, ...args: any[]): T[];
+  execute<T>(name: string, ...args: unknown[]): Promise<T[]>;
+  executeSync<T>(name: string, ...args: unknown[]): T[];
   has(name: string): boolean;
   getHooks(name: string): PluginHook[];
   clear(name?: string): void;
@@ -151,12 +151,12 @@ export type PluginEventType = typeof PLUGIN_EVENTS[keyof typeof PLUGIN_EVENTS];
 // Hook system types
 export interface HookExecutionContext {
   readonly hookName: string;
-  readonly args: any[];
+  readonly args: unknown[];
   readonly plugin: PluginInfo;
   readonly timestamp: Date;
 }
 
-export interface HookResult<T = any> {
+export interface HookResult<T = unknown> {
   readonly plugin: PluginInfo;
   readonly result: T;
   readonly duration: number;
@@ -169,7 +169,7 @@ export interface PluginConfigSchema {
   properties?: Record<string, PluginConfigSchema>;
   items?: PluginConfigSchema;
   required?: string[];
-  default?: any;
+  default?: unknown;
   description?: string;
-  examples?: any[];
+  examples?: unknown[];
 }

@@ -39,12 +39,12 @@ export interface AlertRule {
   enabled: boolean;
   cooldownMs: number;
   actions: AlertAction[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AlertAction {
   type: 'email' | 'webhook' | 'slack' | 'pagerduty' | 'custom';
-  configuration: Record<string, any>;
+  configuration: Record<string, unknown>;
   enabled: boolean;
 }
 
@@ -61,7 +61,7 @@ export interface SecurityAlert {
   acknowledgedAt?: Date;
   resolvedBy?: string;
   resolvedAt?: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MonitoringOptions {
@@ -78,8 +78,8 @@ export class SecurityMonitor extends EventEmitter {
   private alertRules: Map<string, AlertRule> = new Map();
   private activeAlerts: Map<string, SecurityAlert> = new Map();
   private alertCooldowns: Map<string, number> = new Map();
-  private metricsCollectionTimer?: NodeJS.Timeout;
-  private alertEvaluationTimer?: NodeJS.Timeout;
+  private metricsCollectionTimer?: ReturnType<typeof setInterval>;
+  private alertEvaluationTimer?: ReturnType<typeof setInterval>;
   private options: Required<MonitoringOptions>;
   
   // Counters for security metrics
@@ -157,7 +157,7 @@ export class SecurityMonitor extends EventEmitter {
   /**
    * Record security event
    */
-  recordSecurityEvent(event: string, metadata?: Record<string, any>): void {
+  recordSecurityEvent(event: string, metadata?: Record<string, unknown>): void {
     switch (event) {
       case 'login:success':
         this.securityCounters.successfulLogins++;
@@ -196,7 +196,7 @@ export class SecurityMonitor extends EventEmitter {
   /**
    * Record performance data
    */
-  recordPerformanceData(type: string, value: number, metadata?: Record<string, any>): void {
+  recordPerformanceData(type: string, value: number, metadata?: Record<string, unknown>): void {
     switch (type) {
       case 'response_time':
         this.performanceData.responseTimesMs.push(value);
@@ -592,7 +592,7 @@ export class SecurityMonitor extends EventEmitter {
     }
   }
 
-  private async sendEmailAlert(config: Record<string, any>, alert: SecurityAlert): Promise<void> {
+  private async sendEmailAlert(config: Record<string, unknown>, alert: SecurityAlert): Promise<void> {
     // Mock email implementation
     logger.info(`Would send email alert to ${config.recipients}:`, {
       subject: `Security Alert: ${alert.title}`,
@@ -600,17 +600,17 @@ export class SecurityMonitor extends EventEmitter {
     });
   }
 
-  private async sendWebhookAlert(config: Record<string, any>, alert: SecurityAlert): Promise<void> {
+  private async sendWebhookAlert(config: Record<string, unknown>, alert: SecurityAlert): Promise<void> {
     // Mock webhook implementation
     logger.info(`Would send webhook to ${config.url}:`, alert);
   }
 
-  private async sendSlackAlert(config: Record<string, any>, alert: SecurityAlert): Promise<void> {
+  private async sendSlackAlert(config: Record<string, unknown>, alert: SecurityAlert): Promise<void> {
     // Mock Slack implementation
     logger.info(`Would send Slack message to ${config.channel}:`, alert.title);
   }
 
-  private async executeCustomAction(config: Record<string, any>, alert: SecurityAlert): Promise<void> {
+  private async executeCustomAction(config: Record<string, unknown>, _alert: SecurityAlert): Promise<void> {
     // Execute custom action based on configuration
     logger.info('Executing custom alert action:', config);
   }

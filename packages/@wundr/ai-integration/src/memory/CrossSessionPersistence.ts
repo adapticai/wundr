@@ -8,7 +8,7 @@
 import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { MemoryEntry, MemoryType, OperationResult } from '../types';
+import { MemoryEntry, OperationResult } from '../types';
 
 export interface PersistentMemoryEntry extends MemoryEntry {
   persistedAt: Date;

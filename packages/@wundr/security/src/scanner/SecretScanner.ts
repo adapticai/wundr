@@ -54,7 +54,7 @@ export class SecretScanner extends EventEmitter {
     },
     {
       name: 'AWS Secret Key',
-      pattern: /aws_secret_access_key\s*=\s*['\"]?([A-Za-z0-9/+=]{40})['\"]?/gi,
+      pattern: /aws_secret_access_key\s*=\s*['"]?([A-Za-z0-9/+=]{40})['"]?/gi,
       description: 'AWS Secret Access Key',
       severity: 'critical',
       category: 'cloud'
@@ -68,7 +68,7 @@ export class SecretScanner extends EventEmitter {
     },
     {
       name: 'Generic API Key',
-      pattern: /(?:api[_-]?key|apikey)\s*[:=]\s*['\"]?([a-zA-Z0-9_\-]{20,})['\"]?/gi,
+      pattern: /(?:api[_-]?key|apikey)\s*[:=]\s*['"]?([a-zA-Z0-9_-]{20,})['"]?/gi,
       description: 'Generic API Key',
       severity: 'medium',
       category: 'api'
@@ -103,14 +103,14 @@ export class SecretScanner extends EventEmitter {
     },
     {
       name: 'Google API Key',
-      pattern: /AIza[0-9A-Za-z\\-_]{35}/g,
+      pattern: /AIza[0-9A-Za-z\-_]{35}/g,
       description: 'Google API Key',
       severity: 'medium',
       category: 'cloud'
     },
     {
       name: 'Password in URL',
-      pattern: /[a-zA-Z]{3,10}:\/\/[^\/\s:]*:[^\/\s:@]*@[^\/\s@]+/gi,
+      pattern: /[a-zA-Z]{3,10}:\/\/[^/\s:]*:[^/\s:@]*@[^/\s@]+/gi,
       description: 'Password in URL',
       severity: 'high',
       category: 'auth'
@@ -250,8 +250,8 @@ export class SecretScanner extends EventEmitter {
 
       return matches;
 
-    } catch (error: any) {
-      if (error?.code === 'EISDIR') {
+    } catch (error: unknown) {
+      if ((error as any)?.code === 'EISDIR') {
         return [];
       }
       throw error;

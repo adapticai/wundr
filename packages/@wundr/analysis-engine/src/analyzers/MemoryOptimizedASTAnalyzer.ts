@@ -5,7 +5,7 @@
 
 import * as ts from 'typescript';
 import { Project } from "ts-morph";
-import { Worker } from 'worker_threads';
+// import { Worker } from 'worker_threads'; // Unused import
 import { Transform, Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { performance } from 'perf_hooks';
@@ -14,15 +14,12 @@ import { memoryUsage } from 'process';
 import { BaseAnalysisService } from './BaseAnalysisService';
 import {
   EntityInfo,
-  ComplexityMetrics,
   AnalysisConfig,
   ServiceConfig,
   MemoryMetrics,
   ConcurrencyStats
 } from '../types';
 import {
-  generateNormalizedHash,
-  generateSemanticHash,
   createId,
   normalizeFilePath
 } from '../utils';
@@ -79,7 +76,7 @@ class MemoryPressureMonitor {
   start(intervalMs = 1000): void {
     this.intervalId = setInterval(() => {
       const usage = memoryUsage();
-      const totalMem = process.memoryUsage.rss();
+      const _totalMem = process.memoryUsage.rss();
       const usageRatio = usage.heapUsed / usage.heapTotal;
       
       let level: 'normal' | 'warning' | 'critical' = 'normal';

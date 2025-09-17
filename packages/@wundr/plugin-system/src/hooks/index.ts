@@ -67,7 +67,7 @@ export class WundrHookRegistry implements PluginHookRegistry {
     }
   }
 
-  async execute<T>(name: string, ...args: any[]): Promise<T[]> {
+  async execute<T>(name: string, ...args: unknown[]): Promise<T[]> {
     const hooks = this.hooks.get(name);
     if (!hooks || hooks.length === 0) {
       return [];
@@ -88,7 +88,7 @@ export class WundrHookRegistry implements PluginHookRegistry {
         const result = await hook.execute(...args);
         const duration = performance.now() - hookStartTime;
         
-        results.push(result);
+        results.push(result as T);
         
         this.logger.debug(`Hook executed successfully: ${name}`, {
           hookName: name,
@@ -117,7 +117,7 @@ export class WundrHookRegistry implements PluginHookRegistry {
     return results;
   }
 
-  executeSync<T>(name: string, ...args: any[]): T[] {
+  executeSync<T>(name: string, ...args: unknown[]): T[] {
     const hooks = this.hooks.get(name);
     if (!hooks || hooks.length === 0) {
       return [];

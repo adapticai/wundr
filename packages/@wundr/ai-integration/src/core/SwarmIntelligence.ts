@@ -481,7 +481,7 @@ export class SwarmIntelligence extends EventEmitter {
     }
   }
 
-  private async decomposeTask(task: Task, agentCount: number): Promise<SubTask[]> {
+  private async decomposeTask(task: Task, _agentCount: number): Promise<SubTask[]> {
     // Intelligent task decomposition based on task type and complexity
     const subTasks: SubTask[] = [];
     
@@ -545,9 +545,9 @@ export class SwarmIntelligence extends EventEmitter {
   }
 
   private async selectOptimalAgent(
-    subTask: SubTask, 
-    swarm: SwarmInstance, 
-    tools: any[]
+    subTask: SubTask,
+    swarm: SwarmInstance,
+    _tools: any[]
   ): Promise<Agent> {
     let bestAgent: Agent | null = null;
     let bestScore = -1;
@@ -668,7 +668,7 @@ export class SwarmIntelligence extends EventEmitter {
     return results;
   }
 
-  private async executeAssignment(assignment: Assignment, swarm: SwarmInstance): Promise<any> {
+  private async executeAssignment(assignment: Assignment, _swarm: SwarmInstance): Promise<any> {
     // Simulate task execution with swarm coordination
     const { subTask, agent, tools, estimatedTime } = assignment;
     
