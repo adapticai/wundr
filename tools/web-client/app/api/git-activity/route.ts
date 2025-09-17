@@ -58,7 +58,7 @@ function checkRateLimit(clientId: string): boolean {
 // Execute git command and return output
 function execGitCommand(args: string[], cwd: string): Promise<string> {
   // Dynamically import child_process only when needed
-  const { spawn } = require('child_process')
+  const { spawn } = await import('child_process')
   // const path = require('path')
   
   return new Promise((resolve, reject) => {
@@ -91,10 +91,10 @@ function execGitCommand(args: string[], cwd: string): Promise<string> {
 }
 
 // Get project root directory
-function getProjectRoot(): string {
-  const path = require('path')
-  const fs = require('fs')
-  
+async function getProjectRoot(): Promise<string> {
+  const path = await import('path')
+  const fs = await import('fs')
+
   // Look for the git repository root
   let dir = process.cwd()
   while (dir !== path.dirname(dir)) {

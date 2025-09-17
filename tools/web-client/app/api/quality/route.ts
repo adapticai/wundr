@@ -201,7 +201,7 @@ async function analyzeDuplicateLines(projectRoot: string): Promise<number> {
     const fileList = files.split('\n').filter(Boolean).slice(0, 100) // Limit for performance
     
     const lineMap = new Map<string, number>()
-    let _totalLines = 0
+    const _totalLines = 0
     
     for (const file of fileList) {
       try {

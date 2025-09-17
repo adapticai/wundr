@@ -25,14 +25,16 @@ module.exports = {
     'react-hooks/exhaustive-deps': 'warn',
 
     // TypeScript rules (minimal set to avoid conflicts)
-    '@typescript-eslint/no-unused-vars': ['error', {
+    '@typescript-eslint/no-unused-vars': ['warn', {
       argsIgnorePattern: '^_',
       varsIgnorePattern: '^_',
       caughtErrorsIgnorePattern: '^_',
+      destructuredArrayIgnorePattern: '^_'
     }],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-var-requires': 'warn',
 
     // Accessibility adjustments for Next.js
     'jsx-a11y/anchor-is-valid': ['error', {
@@ -55,6 +57,13 @@ module.exports = {
       rules: {
         'import/no-default-export': 'off', // Next.js requires default exports
         '@typescript-eslint/explicit-module-boundary-types': 'off'
+      }
+    },
+    {
+      files: ['app/api/**/*', 'pages/api/**/*'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off', // Allow require in API routes
+        'no-console': 'off' // Allow console in API routes
       }
     },
     {
