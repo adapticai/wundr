@@ -35,7 +35,7 @@ test.describe('Broken Links Audit', () => {
         await page.waitForTimeout(500); // Rate limiting
         
       } catch (_error) {
-        console.log(`Error auditing ${route}: ${error}`);
+        console.log(`Error auditing ${route}: ${_error}`);
       }
     }
 
@@ -139,7 +139,7 @@ test.describe('Broken Links Audit', () => {
         }
       } catch (_error) {
         const href = await link.getAttribute('href');
-        brokenNavLinks.push(`${href} - Navigation error: ${error}`);
+        brokenNavLinks.push(`${href} - Navigation error: ${_error}`);
       }
     }
 
@@ -183,7 +183,7 @@ test.describe('Broken Links Audit', () => {
           }
         }
       } catch (_error) {
-        console.log(`Error checking images on ${route}: ${error}`);
+        console.log(`Error checking images on ${route}: ${_error}`);
       }
     }
 
@@ -275,7 +275,7 @@ test.describe('Broken Links Audit', () => {
         report.details.redirectLinksList.push(...linkAudit.redirectLinks);
         
       } catch (_error) {
-        console.log(`Error in comprehensive audit for ${route}: ${error}`);
+        console.log(`Error in comprehensive audit for ${route}: ${_error}`);
       }
     }
 

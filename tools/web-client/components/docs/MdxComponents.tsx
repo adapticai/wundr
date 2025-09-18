@@ -204,7 +204,7 @@ export const mdxComponents = {
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-3">
             <XCircle className="h-5 w-5 text-red-500" />
-            <span className="font-semibold text-red-700 dark:text-red-400">Don't</span>
+            <span className="font-semibold text-red-700 dark:text-red-400">Don&apos;t</span>
           </div>
           {donts.map((item, index) => (
             <div key={index} className="flex gap-2">

@@ -139,28 +139,30 @@ export default function PerformancePage() {
 
   const isDark = mounted && (theme === 'dark' || resolvedTheme === 'dark')
 
-  // Chart colors with theme-aware values
-  const chartColors = isDark ? {
-    primary: '#3b82f6',
-    secondary: '#10b981',
-    accent: '#f59e0b',
-    danger: '#ef4444',
-    success: '#22c55e',
-    warning: '#f59e0b',
-    background: '#1f2937',
-    grid: '#374151',
-    text: '#f9fafb'
-  } : {
-    primary: '#2563eb',
-    secondary: '#059669',
-    accent: '#d97706',
-    danger: '#dc2626',
-    success: '#16a34a',
-    warning: '#ca8a04',
-    background: '#ffffff',
-    grid: '#e5e7eb',
-    text: '#111827'
-  }
+  // Chart colors with theme-aware values - memoized to prevent unnecessary re-renders
+  const chartColors = useMemo(() => {
+    return isDark ? {
+      primary: '#3b82f6',
+      secondary: '#10b981',
+      accent: '#f59e0b',
+      danger: '#ef4444',
+      success: '#22c55e',
+      warning: '#f59e0b',
+      background: '#1f2937',
+      grid: '#374151',
+      text: '#f9fafb'
+    } : {
+      primary: '#2563eb',
+      secondary: '#059669',
+      accent: '#d97706',
+      danger: '#dc2626',
+      success: '#16a34a',
+      warning: '#ca8a04',
+      background: '#ffffff',
+      grid: '#e5e7eb',
+      text: '#111827'
+    }
+  }, [isDark])
 
   // Performance score calculations
   const performanceScore = useMemo(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useGitActivity } from '@/hooks/use-git-activity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,7 +101,7 @@ export default function GitDashboardPage() {
   });
 
   // Fetch additional git information
-  const fetchGitInfo = async () => {
+  const fetchGitInfo = useCallback(async () => {
     try {
       // Get repository status
       const statusResponse = await fetch('/api/git?action=status');
@@ -134,7 +134,7 @@ export default function GitDashboardPage() {
         const logResult = await logResponse.json();
         if (logResult.success) {
           setCommits(logResult.data);
-          if (logResult.data.length > 0 && repoInfo) {
+          if (logResult.data.length > 0) {
             setRepoInfo(prev => prev ? {
               ...prev,
               lastCommit: {
@@ -159,12 +159,12 @@ export default function GitDashboardPage() {
     } catch (_error) {
       // Error logged - details available in network tab;
     }
-  };
+  }, []);
 
   // Fetch git info on component mount
   useEffect(() => {
     fetchGitInfo();
-  }, []);
+  }, [fetchGitInfo]);
 
   // Process contributor statistics
   const contributorStats = useMemo((): ContributorStats[] => {

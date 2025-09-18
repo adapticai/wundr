@@ -1504,18 +1504,18 @@ export type { LucideIcon } from 'lucide-react';
 export type { ReactNode, ReactElement } from 'react';
 
 // Default export for main types
-export default {
+const WebClientTypes = {
   // Core types
   ApiResponse,
   ErrorState,
   LoadingState,
   CacheEntry,
-  
+
   // File system
   FileInfo,
   FileOperations,
   FileUpload,
-  
+
   // Analysis
   AnalysisEntity,
   AnalysisIssue,
@@ -1523,44 +1523,46 @@ export default {
   CircularDependency,
   AnalysisData,
   DashboardSummary,
-  
+
   // Performance
   PerformanceMetrics,
   QualityMetrics,
   GitActivity,
-  
+
   // Reports
   Report,
   ReportTemplate,
   ReportSection,
-  
+
   // Configuration
   ConfigurationState,
   GeneralSettings,
   AnalysisSettings,
-  
+
   // Components
   SummaryCardProps,
   ChartProps,
   TableProps,
   ModalProps,
   FormFieldProps,
-  
+
   // Batch processing
   BatchJob,
   BatchResults,
   BatchConfig,
-  
+
   // WebSocket
   WebSocketMessage,
   RealtimeUpdate,
-  
+
   // Scripts
   Script,
   ScriptExecution,
   ScriptParameter,
-  
+
   // Templates
   Template,
   TemplateVariable,
 };
+
+export default WebClientTypes;

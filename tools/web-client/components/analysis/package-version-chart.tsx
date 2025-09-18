@@ -47,19 +47,132 @@ export function PackageVersionChart({ dependencies: initialDependencies = [] }: 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Helper functions declared first
+  const compareVersions = (current: string, latest: string) => {
+    const parseVersion = (v: string) => {
+      const parts = v.split('.').map(p => parseInt(p) || 0);
+      return { major: parts[0] || 0, minor: parts[1] || 0, patch: parts[2] || 0 };
+    };
+
+    const currentV = parseVersion(current);
+    const latestV = parseVersion(latest);
+
+    let updateType: 'major' | 'minor' | 'patch' = 'patch';
+    let versionsBehind = 0;
+
+    if (latestV.major > currentV.major) {
+      updateType = 'major';
+      versionsBehind = latestV.major - currentV.major;
+    } else if (latestV.minor > currentV.minor) {
+      updateType = 'minor';
+      versionsBehind = latestV.minor - currentV.minor;
+    } else if (latestV.patch > currentV.patch) {
+      updateType = 'patch';
+      versionsBehind = latestV.patch - currentV.patch;
+    }
+
+    return { updateType, versionsBehind };
+  };
+
+  const calculateRiskLevel = (versionsBehind: number, updateType: string, lastUpdated: string): 'low' | 'medium' | 'high' | 'critical' => {
+    const daysSinceUpdate = Math.floor((Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24))
+
+    if (versionsBehind === 0) return 'low'
+    if (updateType === 'major' && versionsBehind > 2) return 'critical'
+    if (updateType === 'major' && versionsBehind > 0) return 'high'
+    if (updateType === 'minor' && versionsBehind > 5) return 'high'
+    if (updateType === 'minor' && versionsBehind > 2) return 'medium'
+    if (daysSinceUpdate > 365) return 'high'
+    if (daysSinceUpdate > 180) return 'medium'
+
+    return 'low'
+  }
+
+  const calculateVersionDistribution = (analysis: VersionAnalysis[]) => {
+    const distribution: VersionDistribution[] = [
+      { range: 'Up to date', count: 0, percentage: 0 },
+      { range: '1-5 versions behind', count: 0, percentage: 0 },
+      { range: '6-10 versions behind', count: 0, percentage: 0 },
+      { range: '10+ versions behind', count: 0, percentage: 0 }
+    ]
+
+    analysis.forEach(pkg => {
+      if (pkg.versionsBehind === 0) {
+        distribution[0].count++
+      } else if (pkg.versionsBehind <= 5) {
+        distribution[1].count++
+      } else if (pkg.versionsBehind <= 10) {
+        distribution[2].count++
+      } else {
+        distribution[3].count++
+      }
+    })
+
+    const total = analysis.length
+    distribution.forEach(item => {
+      item.percentage = total > 0 ? Math.round((item.count / total) * 100) : 0
+    })
+
+    setVersionDistribution(distribution)
+  }
+
+  // Main analysis function
+  const analyzeVersions = useCallback(() => {
+    const analysis: VersionAnalysis[] = dependencies.map(dep => {
+      if (!dep.latestVersion) {
+        return {
+          package: dep.name,
+          currentVersion: dep.version || 'unknown',
+          latestVersion: 'unknown',
+          versionsBehind: 0,
+          riskLevel: 'low' as const,
+          updateType: 'patch' as const,
+          daysSinceUpdate: 0
+        }
+      }
+
+      const versionComparison = compareVersions(dep.version || '0.0.0', dep.latestVersion)
+      const riskLevel = calculateRiskLevel(
+        versionComparison.versionsBehind,
+        versionComparison.updateType,
+        dep.lastUpdated || new Date().toISOString()
+      )
+      const daysSinceUpdate = dep.lastUpdated ?
+        Math.floor((Date.now() - new Date(dep.lastUpdated).getTime()) / (1000 * 60 * 60 * 24)) : 0
+
+      return {
+        package: dep.name,
+        currentVersion: dep.version,
+        latestVersion: dep.latestVersion,
+        versionsBehind: versionComparison.versionsBehind,
+        riskLevel,
+        updateType: versionComparison.updateType,
+        daysSinceUpdate,
+        changelogUrl: dep.repositoryUrl ?
+          `${dep.repositoryUrl}/releases` :
+          `https://www.npmjs.com/package/${dep.name}?activeTab=versions`,
+        migrationGuide: versionComparison.updateType === 'major' ?
+          `https://github.com/search?q=${dep.name}+migration+guide&type=repositories` : undefined
+      }
+    })
+
+    setVersionAnalysis(analysis)
+    calculateVersionDistribution(analysis)
+  }, [dependencies])
+
   useEffect(() => {
     if (dependencies.length === 0) {
       loadPackageData()
     } else {
       analyzeVersions()
     }
-  }, [])
+  }, [dependencies.length, analyzeVersions])
 
   useEffect(() => {
     if (dependencies.length > 0) {
       analyzeVersions()
     }
-  }, [dependencies])
+  }, [dependencies, analyzeVersions])
 
   const loadPackageData = async () => {
     setLoading(true)
@@ -67,8 +180,8 @@ export function PackageVersionChart({ dependencies: initialDependencies = [] }: 
     
     try {
       // Mock data - in production this would parse package.json files
-      const packages: PackageInfo[] = []
-      
+      const packages: DependencyData[] = []
+
       setDependencies(packages)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load package data')
@@ -109,112 +222,6 @@ export function PackageVersionChart({ dependencies: initialDependencies = [] }: 
     })
   }
 
-  const compareVersions = (current: string, latest: string) => {
-    const parseVersion = (v: string) => {
-      const parts = v.split('.').map(p => parseInt(p) || 0);
-      return { major: parts[0] || 0, minor: parts[1] || 0, patch: parts[2] || 0 };
-    };
-    
-    const currentV = parseVersion(current);
-    const latestV = parseVersion(latest);
-    
-    let updateType: 'major' | 'minor' | 'patch' = 'patch';
-    let versionsBehind = 0;
-    
-    if (latestV.major > currentV.major) {
-      updateType = 'major';
-      versionsBehind = latestV.major - currentV.major;
-    } else if (latestV.minor > currentV.minor) {
-      updateType = 'minor';
-      versionsBehind = latestV.minor - currentV.minor;
-    } else if (latestV.patch > currentV.patch) {
-      updateType = 'patch';
-      versionsBehind = latestV.patch - currentV.patch;
-    }
-    
-    return { updateType, versionsBehind };
-  };
-
-  const analyzeVersions = useCallback(() => {
-    const analysis: VersionAnalysis[] = dependencies.map(dep => {
-      if (!dep.latestVersion) {
-        return {
-          package: dep.name,
-          currentVersion: dep.version || 'unknown',
-          latestVersion: 'unknown',
-          versionsBehind: 0,
-          riskLevel: 'low' as const,
-          updateType: 'patch' as const,
-          daysSinceUpdate: 0
-        }
-      }
-      
-      const versionComparison = compareVersions(dep.version || '0.0.0', dep.latestVersion)
-      const riskLevel = calculateRiskLevel(
-        versionComparison.versionsBehind, 
-        versionComparison.updateType, 
-        dep.lastUpdated || new Date().toISOString()
-      )
-      const daysSinceUpdate = dep.lastUpdated ? 
-        Math.floor((Date.now() - new Date(dep.lastUpdated).getTime()) / (1000 * 60 * 60 * 24)) : 0
-
-      return {
-        package: dep.name,
-        currentVersion: dep.version,
-        latestVersion: dep.latestVersion,
-        versionsBehind: versionComparison.versionsBehind,
-        riskLevel,
-        updateType: versionComparison.updateType,
-        daysSinceUpdate,
-        changelogUrl: dep.repositoryUrl ? 
-          `${dep.repositoryUrl}/releases` : 
-          `https://www.npmjs.com/package/${dep.name}?activeTab=versions`,
-        migrationGuide: versionComparison.updateType === 'major' ? 
-          `https://github.com/search?q=${dep.name}+migration+guide&type=repositories` : undefined
-      }
-    })
-
-    setVersionAnalysis(analysis)
-    calculateVersionDistribution(analysis)
-  }, [dependencies])
-
-
-
-  const calculateRiskLevel = (versionsBehind: number, updateType: string, lastUpdated: string): 'low' | 'medium' | 'high' | 'critical' => {
-    const daysSinceUpdate = Math.floor((Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24))
-    
-    if (versionsBehind === 0) return 'low'
-    if (updateType === 'major' && versionsBehind > 2) return 'critical'
-    if (daysSinceUpdate > 365) return 'critical'
-    if (updateType === 'major' || daysSinceUpdate > 180) return 'high'
-    if (versionsBehind > 5 || daysSinceUpdate > 90) return 'medium'
-    return 'low'
-  }
-
-  const calculateVersionDistribution = (analysis: VersionAnalysis[]) => {
-    const distribution = {
-      'Up to date': 0,
-      '1-3 versions behind': 0,
-      '4-10 versions behind': 0,
-      '10+ versions behind': 0
-    }
-
-    analysis.forEach(item => {
-      if (item.versionsBehind === 0) distribution['Up to date']++
-      else if (item.versionsBehind <= 3) distribution['1-3 versions behind']++
-      else if (item.versionsBehind <= 10) distribution['4-10 versions behind']++
-      else distribution['10+ versions behind']++
-    })
-
-    const total = analysis.length
-    const dist: VersionDistribution[] = Object.entries(distribution).map(([range, count]) => ({
-      range,
-      count,
-      percentage: total > 0 ? Math.round((count / total) * 100) : 0
-    }))
-
-    setVersionDistribution(dist)
-  }
 
   const filteredAnalysis = versionAnalysis.filter(item => {
     const matchesType = filterType === "all" || 

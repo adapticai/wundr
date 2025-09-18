@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,7 @@ export default function ClientServicesTest() {
   const [testResults, setTestResults] = useState<TestResults | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const runTests = async () => {
+  const runTests = useCallback(async () => {
     setIsLoading(true);
 
     try {
@@ -91,30 +91,30 @@ export default function ClientServicesTest() {
             .map((t: ServiceTestResult) => t.error?.message || `${t.name} failed`)
         },
       });
-      
+
     } catch (_error) {
       // Error logged - details available in network tab;
       setTestResults({
         browserSafe: false,
-        instantiation: { 
-          success: false, 
-          errors: [`Test execution failed: ${_error instanceof Error ? _error.message : 'Unknown error'}`] 
+        instantiation: {
+          success: false,
+          errors: [`Test execution failed: ${_error instanceof Error ? _error.message : 'Unknown error'}`]
         },
         validation: { success: false, errors: [] },
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setIsLoading, setTestResults]);
 
-  const runTestsOnMount = async () => {
+  const runTestsOnMount = useCallback(async () => {
     // Automatically run tests when component mounts
     await runTests();
-  };
+  }, [runTests]);
 
   useEffect(() => {
     runTestsOnMount();
-  }, []);
+  }, [runTestsOnMount]);
 
   const getStatusIcon = (success: boolean | undefined) => {
     if (success === undefined) return <AlertTriangle className="h-4 w-4 text-yellow-500" />;

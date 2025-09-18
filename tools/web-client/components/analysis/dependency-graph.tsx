@@ -45,7 +45,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
 
   const generateGraph = useCallback(() => {
     // Filter dependencies based on selected type
-    const filteredDeps = dependencies.filter(dep => 
+    const filteredDeps = dependencies.filter(dep =>
       filterType === "all" || dep.type === filterType
     )
 
@@ -85,7 +85,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
     } else if (layoutType === "hierarchical") {
       applyHierarchicalLayout(graphNodes, graphLinks)
     }
-  }, [dependencies, filterType, layoutType])
+  }, [dependencies, filterType, layoutType, applyForceLayout, applyCircularLayout, applyHierarchicalLayout])
 
   const applyForceLayout = useCallback((nodes: GraphNode[], links: GraphLink[]) => {
     // Simple force-directed layout simulation

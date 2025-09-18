@@ -17,4 +17,5 @@ export const {{className}}: React.FC<{{className}}Props> = (props) => {
   );
 };
 
-export default {{className}};
+const {{className}}Component = {{className}};
+export default {{className}}Component;

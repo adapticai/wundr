@@ -628,4 +628,5 @@ echo "✅ All quality checks passed!"
   }
 }
 
-export default (program: Command) => new ClaudeInitCommand(program);
+const createClaudeInitCommand = (program: Command) => new ClaudeInitCommand(program);
+export default createClaudeInitCommand;

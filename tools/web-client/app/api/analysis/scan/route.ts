@@ -404,7 +404,7 @@ async function scanDirectory(
       }
     }
   } catch (_error) {
-    console.warn(`Failed to scan directory ${dirPath}:`, error)
+    console.warn(`Failed to scan directory ${dirPath}:`, _error)
   }
   
   return files
@@ -442,7 +442,7 @@ async function analyzeDependencies(projectRoot: string): Promise<DependencyAnaly
       outdated
     }
   } catch (_error) {
-    console.warn('Failed to analyze dependencies:', error)
+    console.warn('Failed to analyze dependencies:', _error)
     return {
       internal: [],
       external: [],
@@ -574,7 +574,7 @@ async function performScan(options: ScanOptions, projectRoot: string): Promise<S
             const metric = await analyzeFile(file)
             metrics.push(metric)
           } catch (_error) {
-            console.warn(`Failed to analyze ${file}:`, error)
+            console.warn(`Failed to analyze ${file}:`, _error)
           }
         }
       }

@@ -101,10 +101,24 @@ export function ConfigColorPicker({
   const [customColor, setCustomColor] = useState(value);
   const { theme } = useTheme();
   
+  const isValidHex = useCallback((color: string) => {
+    return /^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
+  }, []);
+
+  const isValidRgb = useCallback((color: string) => {
+    return /^rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)$/.test(color) ||
+           /^rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9\.]+)\s*\)$/.test(color);
+  }, []);
+
+  const isValidHsl = useCallback((color: string) => {
+    return /^hsl\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})%\s*,\s*([0-9]{1,3})%\s*\)$/.test(color) ||
+           /^hsla\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})%\s*,\s*([0-9]{1,3})%\s*,\s*([0-9\.]+)\s*\)$/.test(color);
+  }, []);
+
   const handleColorChange = useCallback((color: string) => {
     onChange(color);
     setCustomColor(color);
-    
+
     // Add to history
     if (showHistory && color !== value) {
       setColorHistory(prev => {
@@ -112,30 +126,16 @@ export function ConfigColorPicker({
         return [color, ...filtered].slice(0, 12);
       });
     }
-    
+
     setIsOpen(false);
   }, [onChange, value, showHistory]);
-  
+
   const handleInputChange = useCallback((inputValue: string) => {
     setCustomColor(inputValue);
     if (isValidHex(inputValue) || isValidRgb(inputValue) || isValidHsl(inputValue)) {
       onChange(inputValue);
     }
-  }, [onChange]);
-  
-  const isValidHex = useCallback((color: string) => {
-    return /^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
-  }, []);
-  
-  const isValidRgb = useCallback((color: string) => {
-    return /^rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)$/.test(color) ||
-           /^rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9\.]+)\s*\)$/.test(color);
-  }, []);
-  
-  const isValidHsl = useCallback((color: string) => {
-    return /^hsl\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})%\s*,\s*([0-9]{1,3})%\s*\)$/.test(color) ||
-           /^hsla\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})%\s*,\s*([0-9]{1,3})%\s*,\s*([0-9\.]+)\s*\)$/.test(color);
-  }, []);
+  }, [onChange, isValidHex, isValidRgb, isValidHsl]);
   
   const isValidColor = useCallback((color: string) => {
     return isValidHex(color) || isValidRgb(color) || isValidHsl(color);

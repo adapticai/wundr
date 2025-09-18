@@ -25,17 +25,19 @@ export interface ServiceTemplate {
   /** Template version */
   version: string;
   /** Template category */
-  category: 'api' | 'frontend' | 'backend' | 'database' | 'integration' | 'microservice' | 'monolith';
+  category: 'api' | 'frontend' | 'backend' | 'database' | 'integration' | 'microservice' | 'monolith' | 'Serverless' | 'Real-time';
   /** Template type */
   type: 'rest-api' | 'graphql' | 'react-app' | 'node-service' | 'express-api' | 'next-app' | 'custom';
-  /** Template language/framework */
+  /** Template language */
+  language: string;
+  /** Template framework */
   framework: string;
   /** Template variables */
   variables: TemplateVariable[];
   /** Template files */
   files: TemplateFile[];
   /** Template dependencies */
-  dependencies: TemplateDependency[];
+  dependencies: (string | TemplateDependency)[];
   /** Template metadata */
   metadata: TemplateMetadata;
   /** Template configuration */
@@ -50,6 +52,16 @@ export interface ServiceTemplate {
   tags: string[];
   /** Template preview */
   preview?: TemplatePreview;
+  /** Template difficulty */
+  difficulty?: string;
+  /** Template code preview */
+  codePreview?: string;
+  /** Template usage statistics */
+  usageStats?: {
+    downloads: number;
+    stars: number;
+    lastUpdated: Date;
+  };
 }
 
 /**
@@ -324,6 +336,16 @@ export interface TemplatePreview {
  * Template customization data
  */
 export interface TemplateCustomizations {
+  /** Project name */
+  projectName?: string;
+  /** Package name */
+  packageName?: string;
+  /** Package version */
+  version?: string;
+  /** Package description */
+  description?: string;
+  /** Package author */
+  author?: string;
   /** Template variables values */
   variables: Record<string, TemplateVariableValue>;
   /** Selected options */
@@ -338,6 +360,46 @@ export interface TemplateCustomizations {
     includeExamples: boolean;
     /** Code formatting */
     formatCode: boolean;
+  };
+  /** Feature configurations */
+  features?: {
+    authentication?: boolean;
+    database?: boolean;
+    validation?: boolean;
+    logging?: boolean;
+    testing?: boolean;
+    docker?: boolean;
+    kubernetes?: boolean;
+    monitoring?: boolean;
+    caching?: boolean;
+    ratelimiting?: boolean;
+  };
+  /** Database configuration */
+  database?: {
+    type?: string;
+    host?: string;
+    port?: string;
+    name?: string;
+  };
+  /** Authentication configuration */
+  authentication?: {
+    strategy?: string;
+    provider?: string;
+    tokenExpiry?: string;
+  };
+  /** API configuration */
+  api?: {
+    version?: string;
+    prefix?: string;
+    cors?: boolean;
+    helmet?: boolean;
+  };
+  /** Deployment configuration */
+  deployment?: {
+    platform?: string;
+    environment?: string;
+    replicas?: number;
+    registry?: string;
   };
   /** Custom files to include */
   customFiles?: Array<{

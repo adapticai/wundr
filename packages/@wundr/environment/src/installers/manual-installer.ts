@@ -223,8 +223,8 @@ export class ManualInstaller extends BaseInstaller {
       
       logger.info('VS Code settings applied');
     } catch (_error) {
-      logger.error('Failed to apply VS Code settings:', error);
-      throw error;
+      logger.error('Failed to apply VS Code settings:', _error);
+      throw _error;
     }
   }
 

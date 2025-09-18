@@ -324,7 +324,7 @@ export const useBatchManagement = () => {
           setBatchHistory(history);
         }
       } catch (_error) {
-        console.warn('Failed to update batch progress:', error);
+        console.warn('Failed to update batch progress:', _error);
       }
     }, 5000); // Update every 5 seconds
 

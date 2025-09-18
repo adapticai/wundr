@@ -94,4 +94,5 @@ export class {{className}}Service {
   }
 }
 
-export default {{className}}Service;
+const {{className}}ServiceClass = {{className}}Service;
+export default {{className}}ServiceClass;

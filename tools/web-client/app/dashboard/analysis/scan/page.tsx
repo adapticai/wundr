@@ -213,6 +213,38 @@ export default function CodeScanAnalysisPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [showFixable, setShowFixable] = useState(false)
 
+  // Poll scan progress
+  const pollScanProgress = useCallback(async (scanId: string) => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/analysis/scan/${scanId}`)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const result: ApiResponse<ScanResult> = await response.json()
+
+        if (result.success) {
+          setCurrentScan(result.data)
+          setScans(prev => prev.map(scan =>
+            scan.id === scanId ? result.data : scan
+          ))
+
+          // Stop polling if scan is complete
+          if (result.data.status !== 'running') {
+            clearInterval(pollInterval)
+          }
+        }
+      } catch (_error) {
+        // Error polling scan progress
+        clearInterval(pollInterval)
+      }
+    }, 2000)
+
+    // Cleanup after 10 minutes
+    setTimeout(() => clearInterval(pollInterval), 600000)
+  }, [])
+
   // Load scan data
   const loadScanData = useCallback(async () => {
     setLoading(true)
@@ -224,14 +256,14 @@ export default function CodeScanAnalysisPage() {
       }
 
       const result: ApiResponse<{ scans: ScanResult[], history: ScanHistory[] }> = await response.json()
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to load scan data')
       }
 
       setScans(result.data.scans)
       setScanHistory(result.data.history)
-      
+
       // Set current scan to the latest running or most recent completed scan
       const runningScans = result.data.scans.filter(s => s.status === 'running')
       if (runningScans.length > 0) {
@@ -268,14 +300,14 @@ export default function CodeScanAnalysisPage() {
       }
 
       const result: ApiResponse<ScanResult> = await response.json()
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to start scan')
       }
 
       setCurrentScan(result.data)
       setScans(prev => [result.data, ...prev])
-      
+
       // Poll for updates while scan is running
       if (result.data.status === 'running') {
         pollScanProgress(result.data.id)
@@ -287,39 +319,7 @@ export default function CodeScanAnalysisPage() {
     } finally {
       setLoading(false)
     }
-  }, [config])
-
-  // Poll scan progress
-  const pollScanProgress = useCallback(async (scanId: string) => {
-    const pollInterval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/analysis/scan/${scanId}`)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const result: ApiResponse<ScanResult> = await response.json()
-        
-        if (result.success) {
-          setCurrentScan(result.data)
-          setScans(prev => prev.map(scan => 
-            scan.id === scanId ? result.data : scan
-          ))
-
-          // Stop polling if scan is complete
-          if (result.data.status !== 'running') {
-            clearInterval(pollInterval)
-          }
-        }
-      } catch (_error) {
-        // Error polling scan progress
-        clearInterval(pollInterval)
-      }
-    }, 2000)
-
-    // Cleanup after 10 minutes
-    setTimeout(() => clearInterval(pollInterval), 600000)
-  }, [])
+  }, [config, pollScanProgress])
 
   // Cancel current scan
   const cancelScan = useCallback(async () => {
@@ -375,15 +375,16 @@ export default function CodeScanAnalysisPage() {
 
   // Sort issues
   const sortedIssues = [...filteredIssues].sort((a, b) => {
-    const aVal = a[sortBy as keyof ScanIssue]
-    const bVal = b[sortBy as keyof ScanIssue]
-    
+    let aVal: any = a[sortBy as keyof ScanIssue]
+    let bVal: any = b[sortBy as keyof ScanIssue]
+
     if (sortBy === 'severity') {
       const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 }
       aVal = severityOrder[a.severity]
       bVal = severityOrder[b.severity]
     }
-    
+
+    if (aVal === undefined || bVal === undefined) return 0
     const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
     return sortOrder === "asc" ? comparison : -comparison
   })

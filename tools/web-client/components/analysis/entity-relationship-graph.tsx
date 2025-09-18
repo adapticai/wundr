@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -92,7 +92,7 @@ export function EntityRelationshipGraph({ entities }: EntityRelationshipGraphPro
   }, [entities]);
 
   // Apply layout algorithms
-  const applyLayout = (layoutType: string, nodes: Node[]) => {
+  const applyLayout = useCallback((layoutType: string, nodes: Node[]) => {
     const width = 800;
     const height = 600;
     const centerX = width / 2;
@@ -171,7 +171,7 @@ export function EntityRelationshipGraph({ entities }: EntityRelationshipGraphPro
         }
         break;
     }
-  };
+  }, [links]);
 
   // Drawing function
   const draw = React.useCallback(() => {
@@ -315,7 +315,7 @@ export function EntityRelationshipGraph({ entities }: EntityRelationshipGraphPro
     if (nodes.length > 0) {
       applyLayout(layoutType, nodes);
     }
-  }, [layoutType, nodes.length]);
+  }, [layoutType, nodes.length, nodes, applyLayout]);
 
   // Draw loop
   useEffect(() => {

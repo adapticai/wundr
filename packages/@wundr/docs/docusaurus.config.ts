@@ -42,8 +42,8 @@ const config: Config = {
           routeBasePath: '/',
           editUrl:
             'https://github.com/adapticai/wundr/tree/main/packages/@wundr/docs/',
-          showLastUpdateAuthor: true,
-          showLastUpdateTime: true,
+          showLastUpdateAuthor: false,
+          showLastUpdateTime: false,
           includeCurrentVersion: true,
           versions: {
             current: {

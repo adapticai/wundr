@@ -275,7 +275,7 @@ describe('Component Snapshots', () => {
         expect(normalizedSnapshot).toMatchSnapshot('error-state')
       } catch (_error) {
         // Expected error - test the error boundary behavior
-        expect(error).toBeDefined()
+        expect(_error).toBeDefined()
       }
       
       consoleSpy.mockRestore()

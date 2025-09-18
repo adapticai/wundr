@@ -81,28 +81,28 @@ export const FooterExample: React.FC = () => (
             </h3>
             <ul className='mt-4 space-y-2'>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Features
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Pricing
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Changelog
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -112,28 +112,28 @@ export const FooterExample: React.FC = () => (
             </h3>
             <ul className='mt-4 space-y-2'>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Documentation
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   API Reference
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Examples
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -143,28 +143,28 @@ export const FooterExample: React.FC = () => (
             </h3>
             <ul className='mt-4 space-y-2'>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Help Center
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Community
-                </a>
+                </button>
               </li>
               <li>
-                <a
-                  href='#'
-                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm'
+                <button
+                  type='button'
+                  className='text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm text-left'
                 >
                   Contact
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -218,30 +218,30 @@ export const SidebarExample: React.FC = () => (
       />
     </div>
     <nav className='space-y-2'>
-      <a
-        href='#'
-        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700'
+      <button
+        type='button'
+        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left'
       >
         Dashboard
-      </a>
-      <a
-        href='#'
-        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700'
+      </button>
+      <button
+        type='button'
+        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left'
       >
         Analysis
-      </a>
-      <a
-        href='#'
-        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700'
+      </button>
+      <button
+        type='button'
+        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left'
       >
         Refactoring
-      </a>
-      <a
-        href='#'
-        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700'
+      </button>
+      <button
+        type='button'
+        className='flex items-center px-2 py-2 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left'
       >
         Settings
-      </a>
+      </button>
     </nav>
   </aside>
 );

@@ -75,7 +75,10 @@ declare global {
     [key: string]: JSONValue;
   }
   
-  interface JSONArray extends Array<JSONValue> {}
+  interface JSONArray extends Array<JSONValue> {
+    // JSON array type extending Array<JSONValue>
+    // Provides type safety for JSON arrays in global context
+  }
 
   // Error handling
   type ErrorLevel = 'low' | 'medium' | 'high' | 'critical';

@@ -12,8 +12,10 @@ import type {
   ReportStatus,
   ReportFilters,
   ExportFormat,
-  AnalysisData,
   CompleteAnalysisData
+} from './reports'
+import type {
+  AnalysisData
 } from './data'
 
 // =============================================================================
@@ -781,15 +783,5 @@ export interface ServiceHealthStatus {
 // EXPORTS
 // =============================================================================
 
-// Re-export all interfaces
-export type { ApiResponse, ApiResponseMeta, PaginatedApiResponse, ApiErrorResponse };
-export type { GenerateReportRequest, GenerateReportResponse, Report, ReportMetadata, ReportTemplateDefinition, ReportParameterDefinition, ReportSectionDefinition, ReportStyling, ReportServiceData };
-export type { GitOperationRequest, GitOperationOptions, GitStatus, GitCommit, GitBranch, GitRemote, GitTag };
-export type { AnalysisRequest, AnalysisRequestData, AnalysisServiceInterface };
-export type { ConfigFile, ConfigSchema, ConfigPropertySchema, ConfigValidationResult, ConfigValidationError, ConfigValidationWarning, ConfigTemplate, ConfigRequest, ConfigRequestOptions };
-export type { FileSystemItem, FilePermissions, FileOperationRequest, FileOperationOptions };
-export type { BatchJobInfo, BatchOperationRequest, BatchConfiguration, BatchConfigurationOptions };
-export type { WebSocketMessage, WebSocketPayload, WebSocketSubscriptionOptions };
-export type { PerformanceMetricsResponse, PerformanceMetric, AggregatedPerformanceMetrics, PerformanceTrends, TrendDirection };
-export type { SearchRequest, SearchFilters, SearchSorting, SearchPagination, SearchResponse, SearchFacets };
-export type { ValidationResult as ApiValidationResult, ValidationError as ApiValidationError, ValidationWarning as ApiValidationWarning, RateLimitInfo, HealthCheckResponse, ServiceHealthStatus };
+// All interfaces are already exported directly above
+// Re-exports removed to prevent TypeScript declaration conflicts

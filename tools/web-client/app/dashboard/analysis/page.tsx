@@ -97,7 +97,7 @@ export default function AnalysisOverviewPage() {
             summaryData.duplicates = {
               totalClusters: duplicatesData.data.stats.totalClusters || 0,
               totalDuplicates: duplicatesData.data.stats.totalDuplicates || 0,
-              criticalClusters: duplicatesData.data.clusters?.filter((c) => 'severity' in c && c.severity === 'critical').length || 0,
+              criticalClusters: duplicatesData.data.clusters?.filter((c: any) => 'severity' in c && c.severity === 'critical').length || 0,
             };
           }
         } catch (_e) {
@@ -131,7 +131,7 @@ export default function AnalysisOverviewPage() {
             summaryData.circular = {
               totalDependencies: circularData.data.nodes?.length || 0,
               circularDependencies: circularDeps.length,
-              criticalIssues: circularDeps.filter((dep) => dep.severity === 'critical').length,
+              criticalIssues: circularDeps.filter((dep: any) => dep.severity === 'critical').length,
               healthScore: Math.max(0, 100 - (circularDeps.length * 10)),
             };
             // Update circular count in dependencies

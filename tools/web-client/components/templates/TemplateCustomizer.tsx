@@ -33,12 +33,21 @@ interface TemplateCustomizerProps {
 }
 
 export function TemplateCustomizer({ template, open, onOpenChange, onGenerate }: TemplateCustomizerProps) {
-  const [customizations, setCustomizations] = useState({
-    projectName: "",
-    packageName: "",
-    description: "",
-    author: "",
-    version: "1.0.0",
+  const [customizations, setCustomizations] = useState<TemplateCustomizations>({
+    variables: {
+      projectName: "",
+      packageName: "",
+      description: "",
+      author: "",
+      version: "1.0.0"
+    },
+    options: {
+      outputFormat: 'zip' as const,
+      includeDocumentation: true,
+      includeTests: true,
+      includeExamples: false,
+      formatCode: true
+    },
     features: {
       authentication: true,
       database: true,
@@ -170,8 +179,11 @@ export function TemplateCustomizer({ template, open, onOpenChange, onGenerate }:
                           <Input
                             id="projectName"
                             placeholder="my-awesome-service"
-                            value={customizations.projectName}
-                            onChange={(e) => setCustomizations(prev => ({ ...prev, projectName: e.target.value }))}
+                            value={String(customizations.variables.projectName || "")}
+                            onChange={(e) => setCustomizations(prev => ({
+                              ...prev,
+                              variables: { ...prev.variables, projectName: e.target.value }
+                            }))}
                           />
                         </div>
                         <div className="space-y-2">
@@ -179,8 +191,11 @@ export function TemplateCustomizer({ template, open, onOpenChange, onGenerate }:
                           <Input
                             id="packageName"
                             placeholder="@myorg/my-awesome-service"
-                            value={customizations.packageName}
-                            onChange={(e) => setCustomizations(prev => ({ ...prev, packageName: e.target.value }))}
+                            value={String(customizations.variables.packageName || "")}
+                            onChange={(e) => setCustomizations(prev => ({
+                              ...prev,
+                              variables: { ...prev.variables, packageName: e.target.value }
+                            }))}
                           />
                         </div>
                       </div>
@@ -189,8 +204,11 @@ export function TemplateCustomizer({ template, open, onOpenChange, onGenerate }:
                         <Input
                           id="description"
                           placeholder="A brief description of your service"
-                          value={customizations.description}
-                          onChange={(e) => setCustomizations(prev => ({ ...prev, description: e.target.value }))}
+                          value={String(customizations.variables.description || "")}
+                          onChange={(e) => setCustomizations(prev => ({
+                            ...prev,
+                            variables: { ...prev.variables, description: e.target.value }
+                          }))}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -199,8 +217,11 @@ export function TemplateCustomizer({ template, open, onOpenChange, onGenerate }:
                           <Input
                             id="author"
                             placeholder="Your Name"
-                            value={customizations.author}
-                            onChange={(e) => setCustomizations(prev => ({ ...prev, author: e.target.value }))}
+                            value={String(customizations.variables.author || "")}
+                            onChange={(e) => setCustomizations(prev => ({
+                              ...prev,
+                              variables: { ...prev.variables, author: e.target.value }
+                            }))}
                           />
                         </div>
                         <div className="space-y-2">
@@ -208,8 +229,11 @@ export function TemplateCustomizer({ template, open, onOpenChange, onGenerate }:
                           <Input
                             id="version"
                             placeholder="1.0.0"
-                            value={customizations.version}
-                            onChange={(e) => setCustomizations(prev => ({ ...prev, version: e.target.value }))}
+                            value={String(customizations.variables.version || "")}
+                            onChange={(e) => setCustomizations(prev => ({
+                              ...prev,
+                              variables: { ...prev.variables, version: e.target.value }
+                            }))}
                           />
                         </div>
                       </div>

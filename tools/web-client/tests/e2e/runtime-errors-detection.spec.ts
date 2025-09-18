@@ -79,7 +79,7 @@ test.describe('Runtime Errors Detection', () => {
         }
         
       } catch (_error) {
-        routeErrors[route] = [`Navigation error: ${error}`];
+        routeErrors[route] = [`Navigation error: ${_error}`];
       }
     }
 
@@ -322,7 +322,7 @@ test.describe('Runtime Errors Detection', () => {
         await page.goto(`${TEST_CONFIG.dashboards.webClient.baseURL}${route}`);
         await page.waitForTimeout(2000);
       } catch (_error) {
-        console.log(`Error navigating to ${route}: ${error}`);
+        console.log(`Error navigating to ${route}: ${_error}`);
       }
     }
 

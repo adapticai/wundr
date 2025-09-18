@@ -98,7 +98,7 @@ export function ConfigInput({
     if (value && section && field) {
       validateValue(value);
     }
-  }, []);  // Only run on mount
+  }, [value, section, field, validateValue]);  // Include all dependencies
   
   const getValidationIcon = () => {
     if (!showValidationIcon || !isTouched) return null;

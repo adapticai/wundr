@@ -404,4 +404,5 @@ Examples:
   }
 }
 
-export default (program: Command) => new ClaudeSetupCommands(program);
+const createClaudeSetupCommands = (program: Command) => new ClaudeSetupCommands(program);
+export default createClaudeSetupCommands;

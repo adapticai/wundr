@@ -26,7 +26,7 @@ module.exports = {
     '<rootDir>/tests/setup.ts'
   ],
   testTimeout: 30000,
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@tests/(.*)$': '<rootDir>/tests/$1'
   },

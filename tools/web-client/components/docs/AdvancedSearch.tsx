@@ -308,7 +308,7 @@ export function AdvancedSearch({ pages, onResultSelect, className = '' }: Advanc
             {query && searchResults.length === 0 && (
               <div className="p-6 text-center text-muted-foreground">
                 <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No results found for "{query}"</p>
+                <p className="text-sm">No results found for &ldquo;{query}&rdquo;</p>
                 <p className="text-xs mt-1">Try different keywords or check your filters</p>
               </div>
             )}

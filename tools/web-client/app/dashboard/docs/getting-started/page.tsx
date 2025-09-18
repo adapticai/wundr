@@ -8,7 +8,7 @@ import { readDocFile } from '@/lib/docs-utils';
 // Remove path import - not needed in client component
 
 // This would be fetched from the filesystem in a real app
-const getGettingStartedContent = async () => {
+const getGettingStartedContent = () => {
   // Client-side component can't read from filesystem directly
   // Return static content instead
 
@@ -148,8 +148,8 @@ Ready to transform your codebase? Let's get started! 🎉
   };
 };
 
-export default async function GettingStartedPage() {
-  const { content, frontmatter } = await getGettingStartedContent();
+export default function GettingStartedPage() {
+  const { content, frontmatter } = getGettingStartedContent();
 
   const currentPage = {
     title: 'Getting Started',

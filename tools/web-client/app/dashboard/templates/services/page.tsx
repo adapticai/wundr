@@ -35,30 +35,8 @@ import { CodeGenerator } from "@/components/templates/CodeGenerator";
 import { TemplateStats } from "@/components/templates/TemplateStats";
 import { TemplateDocumentation } from "@/components/templates/TemplateDocumentation";
 
-interface ServiceTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  language: string;
-  framework: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
-  tags: string[];
-  downloads: number;
-  rating: number;
-  lastUpdated: string;
-  author: string;
-  version: string;
-  dependencies: string[];
-  features: string[];
-  codePreview: string;
-  documentation: string;
-  usageStats: {
-    monthly: number;
-    total: number;
-    trending: boolean;
-  };
-}
+// Remove local interface - use imported ServiceTemplateType
+type ServiceTemplate = ServiceTemplateType;
 
 // This would be loaded from the real TemplateService
 const mockTemplates: ServiceTemplate[] = [
@@ -66,7 +44,7 @@ const mockTemplates: ServiceTemplate[] = [
     id: "rest-api-express",
     name: "REST API with Express",
     description: "Complete REST API template with authentication, validation, and database integration",
-    category: "API",
+    category: "api",
     language: "TypeScript",
     framework: "Express.js",
     difficulty: "intermediate",
@@ -76,7 +54,12 @@ const mockTemplates: ServiceTemplate[] = [
     lastUpdated: "2024-12-15",
     author: "Wundr Team",
     version: "2.1.0",
-    dependencies: ["express", "mongoose", "jsonwebtoken", "joi"],
+    dependencies: [
+      { name: "express", version: "^4.18.0", type: "npm" },
+      { name: "mongoose", version: "^7.0.0", type: "npm" },
+      { name: "jsonwebtoken", version: "^9.0.0", type: "npm" },
+      { name: "joi", version: "^17.0.0", type: "npm" }
+    ],
     features: ["JWT Authentication", "Input Validation", "Error Handling", "MongoDB Integration"],
     codePreview: `import express from 'express';
 import { authenticateToken } from './middleware/auth';
@@ -98,7 +81,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
     id: "graphql-apollo",
     name: "GraphQL Server with Apollo",
     description: "Modern GraphQL server with type-safe resolvers and real-time subscriptions",
-    category: "API",
+    category: "api",
     language: "TypeScript",
     framework: "Apollo Server",
     difficulty: "advanced",
@@ -108,7 +91,11 @@ app.get('/api/users', authenticateToken, async (req, res) => {
     lastUpdated: "2024-12-10",
     author: "Wundr Team",
     version: "1.8.0",
-    dependencies: ["apollo-server-express", "graphql", "type-graphql"],
+    dependencies: [
+      { name: "apollo-server-express", version: "^3.12.0", type: "npm" },
+      { name: "graphql", version: "^16.6.0", type: "npm" },
+      { name: "type-graphql", version: "^1.1.0", type: "npm" }
+    ],
     features: ["Real-time Subscriptions", "Type-safe Resolvers", "Schema Federation"],
     codePreview: `@Resolver(User)
 export class UserResolver {
@@ -129,7 +116,7 @@ export class UserResolver {
     id: "microservice-fastify",
     name: "Microservice with Fastify",
     description: "High-performance microservice template with health checks and monitoring",
-    category: "Microservice",
+    category: "microservice",
     language: "TypeScript",
     framework: "Fastify",
     difficulty: "intermediate",
@@ -139,7 +126,11 @@ export class UserResolver {
     lastUpdated: "2024-12-12",
     author: "Wundr Team",
     version: "1.5.2",
-    dependencies: ["fastify", "prometheus-client", "pino"],
+    dependencies: [
+      { name: "fastify", version: "^4.15.0", type: "npm" },
+      { name: "prometheus-client", version: "^14.2.0", type: "npm" },
+      { name: "pino", version: "^8.11.0", type: "npm" }
+    ],
     features: ["High Performance", "Built-in Monitoring", "Health Checks", "Logging"],
     codePreview: `import fastify from 'fastify';
 

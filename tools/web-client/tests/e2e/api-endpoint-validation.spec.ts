@@ -83,7 +83,7 @@ test.describe('API Endpoint Validation', () => {
         }
         
       } catch (_error) {
-        endpointResults.errors.push(`${endpoint} - ${error}`);
+        endpointResults.errors.push(`${endpoint} - ${_error}`);
       }
     }
 
@@ -167,7 +167,7 @@ test.describe('API Endpoint Validation', () => {
         }
         
       } catch (_error) {
-        console.log(`${endpoint}: Request failed - ${error}`);
+        console.log(`${endpoint}: Request failed - ${_error}`);
       }
     }
 
@@ -212,7 +212,7 @@ test.describe('API Endpoint Validation', () => {
         
       } catch (_error) {
         if (expectSuccess) {
-          methodIssues.push(`${method} ${endpoint}: Request failed - ${error}`);
+          methodIssues.push(`${method} ${endpoint}: Request failed - ${_error}`);
         } else {
           console.log(`${method} ${endpoint}: Request failed as expected`);
         }
@@ -327,7 +327,7 @@ test.describe('API Endpoint Validation', () => {
         }
 
       } catch (_error) {
-        errorHandlingIssues.push(`${endpoint}: Request failed unexpectedly - ${error}`);
+        errorHandlingIssues.push(`${endpoint}: Request failed unexpectedly - ${_error}`);
       }
     }
 
@@ -370,7 +370,7 @@ test.describe('API Endpoint Validation', () => {
         console.log(`${endpoint}: ${responseTime}ms - ${response.status()}`);
         
       } catch (_error) {
-        console.log(`${endpoint}: Performance test failed - ${error}`);
+        console.log(`${endpoint}: Performance test failed - ${_error}`);
       }
     }
 
@@ -466,7 +466,7 @@ test.describe('API Endpoint Validation', () => {
         }
 
       } catch (_error) {
-        console.log(`${endpoint}: Security test failed - ${error}`);
+        console.log(`${endpoint}: Security test failed - ${_error}`);
       }
     }
 
@@ -536,7 +536,7 @@ test.describe('API Endpoint Validation', () => {
 
       } catch (_error) {
         report.summary.unhealthyEndpoints++;
-        report.details.failedEndpoints.push(`${endpoint} - ${error}`);
+        report.details.failedEndpoints.push(`${endpoint} - ${_error}`);
         report.summary.criticalFailures++;
       }
     }

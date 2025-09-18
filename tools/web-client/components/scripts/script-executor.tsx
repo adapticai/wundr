@@ -241,7 +241,7 @@ export function ScriptExecutor({ script, onExecutionResult }: ScriptExecutorProp
       }, script.estimatedDuration ? script.estimatedDuration / totalSteps : 2000);
 
     } catch (_error) {
-      const errorMessage = _error instanceof Error ? _error.message : String(error);
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
       setErrorOutput(errorMessage);
       
       result.status = 'failed';

@@ -31,7 +31,7 @@ import {
   Activity,
   Bell,
 } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { AnalysisRecommendation } from '@/types/data';
 
@@ -133,7 +133,7 @@ export default function RecommendationsPage() {
     }
   }, [isConnected, subscribe]);
 
-  const recommendations = data?.recommendations || [];
+  const recommendations = useMemo(() => data?.recommendations || [], [data?.recommendations]);
 
   const categories = useMemo(() => {
     const cats = new Set(recommendations.map(r => r.category));
@@ -145,7 +145,7 @@ export default function RecommendationsPage() {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(r => 
+      filtered = filtered.filter(r =>
         r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -169,8 +169,8 @@ export default function RecommendationsPage() {
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'priority':
-          const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-          return priorityOrder[a.priority] - priorityOrder[b.priority];
+          const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+          return (priorityOrder[a.priority] || 99) - (priorityOrder[b.priority] || 99);
         case 'effort':
           return parseEffort(a.estimatedEffort) - parseEffort(b.estimatedEffort);
         case 'impact':
@@ -512,19 +512,19 @@ function RecommendationsList({
   );
 }
 
-function RecommendationCard({ 
+function RecommendationCard({
   recommendation,
-  updateRecommendation 
-}: { 
+  updateRecommendation
+}: {
   recommendation: AnalysisRecommendation
   updateRecommendation: (id: string, status: string) => Promise<void>
 }) {
   const PriorityIcon = getPriorityIcon(recommendation.priority);
   const CategoryIcon = getCategoryIcon(recommendation.category);
 
-  const handleStatusUpdate = async (newStatus: string) => {
+  const handleStatusUpdate = useCallback(async (newStatus: string) => {
     await updateRecommendation(recommendation.id, newStatus);
-  };
+  }, [updateRecommendation, recommendation.id]);
 
   return (
     <Card className="relative">

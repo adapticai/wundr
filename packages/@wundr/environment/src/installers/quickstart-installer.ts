@@ -246,7 +246,7 @@ export class QuickstartInstaller {
       return analysis;
     } catch (_error) {
       spinner.fail('System analysis failed');
-      throw error;
+      throw _error;
     }
   }
 
@@ -298,8 +298,8 @@ export class QuickstartInstaller {
           spinner.text = `Completed ${task.name} (${elapsed}s elapsed)`;
         } catch (_error) {
           inProgress.delete(taskId);
-          logger.error(`Task ${taskId} failed:`, error);
-          throw error;
+          logger.error(`Task ${taskId} failed:`, _error);
+          throw _error;
         }
       };
 
@@ -341,7 +341,7 @@ export class QuickstartInstaller {
     } catch (_error) {
       const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1);
       spinner.fail(`Installation failed after ${elapsed}s`);
-      throw error;
+      throw _error;
     }
   }
 
@@ -367,7 +367,7 @@ export class QuickstartInstaller {
       spinner.succeed('Environment configured successfully');
     } catch (_error) {
       spinner.fail('Environment configuration failed');
-      throw error;
+      throw _error;
     }
   }
 
@@ -395,7 +395,7 @@ export class QuickstartInstaller {
       spinner.succeed('AI agents configured (basic setup)');
     } catch (_error) {
       spinner.fail('AI agents setup failed');
-      throw error;
+      throw _error;
     }
   }
 
@@ -557,7 +557,7 @@ export class QuickstartInstaller {
       try {
         await this.executeCommand(`code --install-extension ${ext}`);
       } catch (_error) {
-        logger.warn(`Failed to install VS Code extension ${ext}:`, error);
+        logger.warn(`Failed to install VS Code extension ${ext}:`, _error);
       }
     }
   }
@@ -578,7 +578,7 @@ export class QuickstartInstaller {
     try {
       await this.executeCommand('npm install -g claude-flow@alpha');
     } catch (_error) {
-      logger.warn('Claude Flow installation failed:', error);
+      logger.warn('Claude Flow installation failed:', _error);
     }
   }
 
@@ -646,7 +646,7 @@ export class QuickstartInstaller {
           await fs.writeFile(filePath, content);
         }
       } catch (_error) {
-        logger.warn(`Failed to update ${file}:`, error);
+        logger.warn(`Failed to update ${file}:`, _error);
       }
     }
   }
@@ -659,7 +659,7 @@ export class QuickstartInstaller {
       await this.executeCommand('git config --global user.email "developer@local"');
     } catch (_error) {
       // Git config might already be set
-      logger.debug('Git configuration warning:', error);
+      logger.debug('Git configuration warning:', _error);
     }
   }
 

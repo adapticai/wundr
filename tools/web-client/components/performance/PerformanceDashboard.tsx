@@ -16,7 +16,8 @@ import type { MemoryStatus, SystemMetrics, ConcurrencyMetrics, PerformanceAlert,
 import { performanceMonitor, usePerformanceMonitor, PerformanceMetrics as BasePerformanceMetric } from '@/lib/performance-monitor';
 // import { FixedSizeList as List } from 'react-window'; // Not available, using regular div
 
-interface PerformanceMetric extends PerformanceDataPoint {}
+// Type alias for PerformanceDataPoint with additional semantic meaning
+type PerformanceMetric = PerformanceDataPoint;
 
 
 type MemoryData = {

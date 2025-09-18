@@ -663,7 +663,7 @@ MIT`;
                     <span className="font-medium">Framework:</span> {template.framework}
                   </div>
                   <div>
-                    <span className="font-medium">Features:</span> {Object.values(customizations.features).filter(Boolean).length}
+                    <span className="font-medium">Features:</span> {Object.values(customizations.features || {}).filter(Boolean).length}
                   </div>
                 </div>
                 <Button onClick={generateCode} className="w-full">

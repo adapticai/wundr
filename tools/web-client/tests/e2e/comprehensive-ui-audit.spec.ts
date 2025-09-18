@@ -41,7 +41,7 @@ test.describe('Comprehensive UI Audit', () => {
           expect(title).toBeTruthy();
           
         } catch (_error) {
-          failedRoutes.push(`${route}: ${error}`);
+          failedRoutes.push(`${route}: ${_error}`);
         }
       }
 

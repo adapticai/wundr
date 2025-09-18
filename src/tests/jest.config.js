@@ -23,7 +23,7 @@ module.exports = {
     'html'
   ],
   setupFilesAfterEnv: [],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   extensionsToTreatAsEsm: ['.ts'],

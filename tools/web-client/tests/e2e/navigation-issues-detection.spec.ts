@@ -46,7 +46,7 @@ test.describe('Navigation Issues Detection', () => {
         }
 
       } catch (_error) {
-        inaccessibleRoutes.push(`${route} - ${error}`);
+        inaccessibleRoutes.push(`${route} - ${_error}`);
       }
     }
 
@@ -129,7 +129,7 @@ test.describe('Navigation Issues Detection', () => {
           
         } catch (_error) {
           const text = await link.textContent();
-          navigationIssues.push(`Navigation error for "${text}": ${error}`);
+          navigationIssues.push(`Navigation error for "${text}": ${_error}`);
         }
       }
     }
@@ -183,7 +183,7 @@ test.describe('Navigation Issues Detection', () => {
                 }
               }
             } catch (_error) {
-              breadcrumbIssues.push(`Breadcrumb link error on ${route}: ${error}`);
+              breadcrumbIssues.push(`Breadcrumb link error on ${route}: ${_error}`);
             }
           }
           break;
@@ -274,7 +274,7 @@ test.describe('Navigation Issues Detection', () => {
         }
 
       } catch (_error) {
-        deepLinkIssues.push(`Deep link error: ${link} - ${error}`);
+        deepLinkIssues.push(`Deep link error: ${link} - ${_error}`);
       }
     }
 
@@ -316,7 +316,7 @@ test.describe('Navigation Issues Detection', () => {
           }
           
         } catch (_error) {
-          focusIssues.push(`Tab navigation error: ${error}`);
+          focusIssues.push(`Tab navigation error: ${_error}`);
           break;
         }
       }
@@ -407,7 +407,7 @@ test.describe('Navigation Issues Detection', () => {
         }
 
       } catch (_error) {
-        parameterIssues.push(`Parameter route error: ${route}${params} - ${error}`);
+        parameterIssues.push(`Parameter route error: ${route}${params} - ${_error}`);
       }
     }
 

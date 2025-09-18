@@ -76,7 +76,7 @@ async function getAllDocFiles(docsDir: string): Promise<DocFile[]> {
               lastModified: stats.mtime
             });
           } catch (_error) {
-            console.warn(`Failed to process doc file ${fullPath}:`, error);
+            console.warn(`Failed to process doc file ${fullPath}:`, _error);
           }
         }
       }

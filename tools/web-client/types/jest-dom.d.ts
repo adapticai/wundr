@@ -32,6 +32,9 @@ declare global {
   
   // Add custom jest matchers to expect
   namespace Vi {
-    interface Assertion<T = any> extends jest.Matchers<void, T> {}
+    interface Assertion<T = any> extends jest.Matchers<void, T> {
+      // Extended from jest.Matchers - inherits all matchers
+      // This interface provides type safety for Vitest assertions
+    }
   }
 }

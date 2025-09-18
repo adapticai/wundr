@@ -210,7 +210,7 @@ export class TestUtilities {
           results.unhealthy.push(`${endpoint} - ${response.status()}`);
         }
       } catch (_error) {
-        results.errors.push(`${endpoint} - ${error}`);
+        results.errors.push(`${endpoint} - ${_error}`);
       }
     }
 

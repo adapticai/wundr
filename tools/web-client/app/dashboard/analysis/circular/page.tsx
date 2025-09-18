@@ -22,10 +22,12 @@ import {
   AlertCircle,
   Info
 } from 'lucide-react';
-import { select, drag, forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } from 'd3';
-import type { D3DragEvent, SimulationNodeDatum, SimulationLinkDatum } from 'd3';
+import * as d3 from 'd3';
 
-const d3 = { select, drag, forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide };
+// Types for D3 simulation - simplified for compatibility
+type D3DragEvent = any;
+type SimulationNodeDatum = any;
+type SimulationLinkDatum = any;
 
 import type {
   DependencyNode,
@@ -164,7 +166,7 @@ export default function CircularDependencyAnalysis() {
     });
 
     const simulation = d3.forceSimulation(graphData.nodes as D3SimulationNode[])
-      .force('link', d3.forceLink(graphData.links).id((d: DependencyNode) => d.id).distance(100))
+      .force('link', d3.forceLink(graphData.links).id((d: any) => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
@@ -174,11 +176,11 @@ export default function CircularDependencyAnalysis() {
     // Add zoom behavior
     const zoomBehavior = d3.zoom()
       .scaleExtent([0.1, 4])
-      .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+      .on('zoom', (event: any) => {
         g.attr('transform', event.transform.toString());
       });
 
-    svg.call(zoomBehavior);
+    svg.call(zoomBehavior as any);
 
     // Add links
     const link = g.append('g')
@@ -224,17 +226,17 @@ export default function CircularDependencyAnalysis() {
           setSelectedCycle(cycle);
         }
       })
-      .call(d3.drag()
-        .on('start', (event: d3.D3DragEvent<SVGCircleElement, D3SimulationNode, unknown>, d: D3SimulationNode) => {
+      .call((d3.drag() as any)
+        .on('start', (event: any, d: any) => {
           if (!event.active) simulation.alphaTarget(0.3).restart();
           d.fx = d.x;
           d.fy = d.y;
         })
-        .on('drag', (event: d3.D3DragEvent<SVGCircleElement, D3SimulationNode, unknown>, d: D3SimulationNode) => {
+        .on('drag', (event: any, d: any) => {
           d.fx = event.x;
           d.fy = event.y;
         })
-        .on('end', (event: d3.D3DragEvent<SVGCircleElement, D3SimulationNode, unknown>, d: D3SimulationNode) => {
+        .on('end', (event: any, d: any) => {
           if (!event.active) simulation.alphaTarget(0);
           d.fx = null;
           d.fy = null;

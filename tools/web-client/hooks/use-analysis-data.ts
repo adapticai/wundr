@@ -50,15 +50,15 @@ export function useAnalysisData(options: UseAnalysisDataOptions = {}): UseAnalys
   function handleRealtimeUpdate(message: { type: string; data?: AnalysisData; timestamp?: string }) {
     if (message.type === 'analysis' && message.data) {
       setData(prev => {
-        if (!prev) return message.data
-        
+        if (!prev) return message.data || null
+
         // Merge real-time updates with existing data
         const updatedData = {
           ...prev,
           ...message.data,
           timestamp: message.timestamp || new Date().toISOString()
         }
-        
+
         if (onUpdate) onUpdate(updatedData)
         return updatedData
       })

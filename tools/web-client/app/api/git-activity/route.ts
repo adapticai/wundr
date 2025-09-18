@@ -264,7 +264,7 @@ async function enrichWithPullRequestData(data: GitActivity[], projectRoot: strin
     }
   } catch (_error) {
     // Fallback: keep PRs and issues at 0 if we can't enrich the data
-    console.warn('Could not enrich with PR/issue data:', error)
+    console.warn('Could not enrich with PR/issue data:', _error)
   }
 }
 

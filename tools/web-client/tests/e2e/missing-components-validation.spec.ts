@@ -57,7 +57,7 @@ test.describe('Missing Components Validation', () => {
         }
 
       } catch (_error) {
-        missingComponentsByRoute[route] = [`Navigation Error: ${error}`];
+        missingComponentsByRoute[route] = [`Navigation Error: ${_error}`];
       }
     }
 
@@ -293,7 +293,7 @@ test.describe('Missing Components Validation', () => {
         }
 
       } catch (_error) {
-        formIssues[route] = [`Route error: ${error}`];
+        formIssues[route] = [`Route error: ${_error}`];
       }
     }
 
@@ -455,7 +455,7 @@ test.describe('Missing Components Validation', () => {
         }
 
       } catch (_error) {
-        report.details.missingByRoute[route] = [`Navigation error: ${error}`];
+        report.details.missingByRoute[route] = [`Navigation error: ${_error}`];
       }
     }
 

@@ -1082,7 +1082,7 @@ export class MCPAgentFactory {
   }
 }
 
-export default {
+const MCPAgentPatternsExports = {
   MCPAgent,
   MCPToolRegistry,
   FirecrawlResearchAgent,
@@ -1092,3 +1092,5 @@ export default {
   SequentialReasoningAgent,
   MCPAgentFactory
 };
+
+export default MCPAgentPatternsExports;

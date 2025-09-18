@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -79,13 +79,13 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
     } else {
       loadRealDependencies()
     }
-  }, [])
+  }, [dependencies.length, analyzeDependencySizes])
 
   useEffect(() => {
     if (dependencies.length > 0) {
       analyzeDependencySizes()
     }
-  }, [dependencies])
+  }, [dependencies, analyzeDependencySizes])
 
   const loadRealDependencies = async () => {
     setLoading(true)
@@ -101,7 +101,11 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
       const enrichedDependencies: DependencyData[] = packages.map(pkg => ({
         ...pkg,
         size: pkg.size || 0,
-        weeklyDownloads: downloadStats[pkg.name] || 0
+        weeklyDownloads: downloadStats[pkg.name]?.weekly || 0,
+        latestVersion: pkg.version || '1.0.0',
+        type: 'dependency' as const,
+        lastUpdated: new Date().toISOString(),
+        maintainers: 1
       }))
       
       setDependencies(enrichedDependencies)
@@ -112,9 +116,9 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
     }
   }
 
-  const analyzeDependencySizes = () => {
+  const analyzeDependencySizes = useCallback(() => {
     const totalSize = dependencies.reduce((sum, dep) => sum + (dep.size || 0), 0)
-    
+
     // Analyze individual packages
     const analysis: SizeAnalysis[] = dependencies.map(dep => {
       const percentage = (dep.size / totalSize) * 100
@@ -156,7 +160,7 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
 
     // Calculate size distribution
     calculateSizeDistribution(analysis)
-  }
+  }, [dependencies, setSizeAnalysis, setBundleImpact, calculateSizeDistribution])
 
   const getSizeCategory = (size: number): 'tiny' | 'small' | 'medium' | 'large' | 'huge' => {
     if (size < 50000) return 'tiny'        // < 50KB
@@ -213,7 +217,7 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
     return undefined
   }
 
-  const calculateSizeDistribution = (analysis: SizeAnalysis[]) => {
+  const calculateSizeDistribution = useCallback((analysis: SizeAnalysis[]) => {
     const ranges = [
       { range: '< 50KB (Tiny)', min: 0, max: 50000 },
       { range: '50KB - 500KB (Small)', min: 50000, max: 500000 },
@@ -226,7 +230,7 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
       const packages = analysis.filter(pkg => pkg.size >= range.min && pkg.size < range.max)
       const totalSize = packages.reduce((sum, pkg) => sum + pkg.size, 0)
       const totalProjectSize = analysis.reduce((sum, pkg) => sum + pkg.size, 0)
-      
+
       return {
         range: range.range,
         count: packages.length,
@@ -236,7 +240,7 @@ export function DependencySizeAnalyzer({ dependencies: initialDependencies }: De
     })
 
     setSizeDistribution(distribution)
-  }
+  }, [setSizeDistribution])
 
   const handleExport = () => {
     const exportData = sizeAnalysis.map(item => ({

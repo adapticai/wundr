@@ -766,7 +766,9 @@ export class MCPWorkflowEngine extends EventEmitter {
   }
 }
 
-export default {
+const MCPWorkflowEngineExports = {
   MCPWorkflowEngine,
   WorkflowPatterns
 };
+
+export default MCPWorkflowEngineExports;

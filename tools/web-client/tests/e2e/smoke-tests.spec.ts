@@ -136,7 +136,7 @@ test.describe('Smoke Tests - Web Client Dashboard', () => {
         }
       } catch (_error) {
         // Endpoint might not be implemented yet
-        console.log(`Endpoint ${endpoint} not available:`, error);
+        console.log(`Endpoint ${endpoint} not available:`, _error);
       }
     }
 

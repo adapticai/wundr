@@ -88,7 +88,7 @@ export function ConfigSelect({
     if (value && section && field) {
       validateValue(value);
     }
-  }, []);  // Only run on mount
+  }, [value, section, field, validateValue]);  // Include all dependencies
   
   const getValidationIcon = () => {
     if (!showValidationIcon) return null;
@@ -221,7 +221,7 @@ export function ConfigSelect({
                 <div className="border-t my-1" />
                 <div className="p-2">
                   <div className="text-xs text-muted-foreground mb-2">
-                    Can't find what you're looking for?
+                    Can&apos;t find what you&apos;re looking for?
                   </div>
                   <input
                     type="text"

@@ -180,7 +180,7 @@ export function validateUser(input: unknown) {
 }
 
 // SQL injection prevention
-export async function getUser(id: string) {
+async function getUser(id: string) {
   // Use parameterized queries
   const query = 'SELECT * FROM users WHERE id = $1';
   const result = await db.query(query, [id]);

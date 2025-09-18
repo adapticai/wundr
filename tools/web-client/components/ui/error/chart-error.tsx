@@ -10,7 +10,7 @@ interface ChartErrorProps {
 }
 
 export function ChartError({ error, onRetry, height = 300 }: ChartErrorProps) {
-  const errorMessage = _error instanceof Error ? _error.message : error || "Failed to load chart data"
+  const errorMessage = error instanceof Error ? error.message : error || "Failed to load chart data"
 
   return (
     <Card className="h-full">

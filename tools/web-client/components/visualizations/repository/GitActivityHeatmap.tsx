@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTheme } from "next-themes"
@@ -19,13 +19,59 @@ interface GitActivityHeatmapProps {
   days?: number
 }
 
+// Helper functions moved outside component to avoid recreating on every render
+function isConsecutiveDay(date1: string, date2: string) {
+  const d1 = new Date(date1)
+  const d2 = new Date(date2)
+  const diffTime = Math.abs(d2.getTime() - d1.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays === 1
+}
+
+function calculateLongestStreak(activities: GitActivity[]) {
+  let maxStreak = 0
+  let currentStreak = 0
+
+  activities
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .forEach((activity, index, arr) => {
+      if (activity.commits > 0) {
+        if (index === 0 || isConsecutiveDay(arr[index - 1].date, activity.date)) {
+          currentStreak++
+          maxStreak = Math.max(maxStreak, currentStreak)
+        } else {
+          currentStreak = 1
+        }
+      } else {
+        currentStreak = 0
+      }
+    })
+
+  return maxStreak
+}
+
+function calculateCurrentStreak(activities: GitActivity[]) {
+  const sorted = activities.sort((a, b) => b.date.localeCompare(a.date))
+  let streak = 0
+
+  for (const activity of sorted) {
+    if (activity.commits > 0) {
+      streak++
+    } else {
+      break
+    }
+  }
+
+  return streak
+}
+
 export function GitActivityHeatmap({ activities, days = 365 }: GitActivityHeatmapProps) {
   const { theme } = useTheme()
 
   const processedData = useMemo(() => {
     const endDate = new Date()
     const startDate = subDays(endDate, days)
-    
+
     // Create a map of activities by date
     const activityMap = new Map(
       activities.map(a => [a.date, a])
@@ -33,7 +79,7 @@ export function GitActivityHeatmap({ activities, days = 365 }: GitActivityHeatma
 
     // Generate all days in the range
     const allDays = eachDayOfInterval({ start: startDate, end: endDate })
-    
+
     // Group by weeks
     const weeks: { startDate: Date; days: (GitActivity | null)[] }[] = []
     let currentWeek: (GitActivity | null)[] = []
@@ -42,7 +88,7 @@ export function GitActivityHeatmap({ activities, days = 365 }: GitActivityHeatma
     allDays.forEach(day => {
       const dayStr = format(day, "yyyy-MM-dd")
       const activity = activityMap.get(dayStr) || null
-      
+
       if (startOfWeek(day).getTime() !== weekStart.getTime()) {
         if (currentWeek.length > 0) {
           weeks.push({ startDate: weekStart, days: currentWeek })
@@ -50,7 +96,7 @@ export function GitActivityHeatmap({ activities, days = 365 }: GitActivityHeatma
         currentWeek = []
         weekStart = startOfWeek(day)
       }
-      
+
       currentWeek.push(activity)
     })
 
@@ -61,21 +107,21 @@ export function GitActivityHeatmap({ activities, days = 365 }: GitActivityHeatma
     return weeks
   }, [activities, days])
 
-  const getIntensity = (commits: number) => {
+  const getIntensity = useCallback((commits: number) => {
     if (commits === 0) return 0
     if (commits <= 2) return 1
     if (commits <= 5) return 2
     if (commits <= 10) return 3
     return 4
-  }
+  }, [])
 
-  const getColor = (intensity: number) => {
-    const colors = theme === "dark" 
+  const getColor = useCallback((intensity: number) => {
+    const colors = theme === "dark"
       ? ["#0e1117", "#0e4429", "#006d32", "#26a641", "#39d353"]
       : ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"]
-    
+
     return colors[intensity]
-  }
+  }, [theme])
 
   const months = useMemo(() => {
     const monthsSet = new Set<string>()
@@ -91,7 +137,7 @@ export function GitActivityHeatmap({ activities, days = 365 }: GitActivityHeatma
     const totalAdditions = activities.reduce((sum, a) => sum + a.additions, 0)
     const totalDeletions = activities.reduce((sum, a) => sum + a.deletions, 0)
     const activeDays = activities.filter(a => a.commits > 0).length
-    
+
     return {
       totalCommits,
       totalAdditions,
@@ -102,51 +148,6 @@ export function GitActivityHeatmap({ activities, days = 365 }: GitActivityHeatma
       currentStreak: calculateCurrentStreak(activities),
     }
   }, [activities, days])
-
-  function calculateLongestStreak(activities: GitActivity[]) {
-    let maxStreak = 0
-    let currentStreak = 0
-    
-    activities
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .forEach((activity, index, arr) => {
-        if (activity.commits > 0) {
-          if (index === 0 || isConsecutiveDay(arr[index - 1].date, activity.date)) {
-            currentStreak++
-            maxStreak = Math.max(maxStreak, currentStreak)
-          } else {
-            currentStreak = 1
-          }
-        } else {
-          currentStreak = 0
-        }
-      })
-    
-    return maxStreak
-  }
-
-  function calculateCurrentStreak(activities: GitActivity[]) {
-    const sorted = activities.sort((a, b) => b.date.localeCompare(a.date))
-    let streak = 0
-    
-    for (const activity of sorted) {
-      if (activity.commits > 0) {
-        streak++
-      } else {
-        break
-      }
-    }
-    
-    return streak
-  }
-
-  function isConsecutiveDay(date1: string, date2: string) {
-    const d1 = new Date(date1)
-    const d2 = new Date(date2)
-    const diffTime = Math.abs(d2.getTime() - d1.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays === 1
-  }
 
   return (
     <div className="space-y-4">
