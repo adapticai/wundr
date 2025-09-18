@@ -1,9 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, ChevronRight, ChevronLeft, Wand2, FileText, Settings, Calendar } from 'lucide-react';
+import {
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  Wand2,
+  FileText,
+  Settings,
+  Calendar,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,15 +31,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { useReports } from '@/hooks/reports/use-reports';
 import {
   ReportTemplate,
   GenerateReportRequest,
   ExportFormat,
-  ReportParameter
+  ReportParameter,
 } from '@/types/reports';
-import type { ReportParameters, ParameterValue } from '@/types/report-parameters';
+import type {
+  ReportParameters,
+  ParameterValue,
+} from '@/types/report-parameters';
 
 interface ReportGenerationWizardProps {
   onClose: () => void;
@@ -38,10 +59,13 @@ const steps = [
   { id: 'review', label: 'Review', icon: Check },
 ];
 
-export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps) {
+export function ReportGenerationWizard({
+  onClose,
+}: ReportGenerationWizardProps) {
   const { templates, generateReport } = useReports();
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<ReportTemplate | null>(null);
   const [reportName, setReportName] = useState('');
   const [reportDescription, setReportDescription] = useState('');
   const [parameters, setParameters] = useState<ReportParameters>({});
@@ -54,7 +78,7 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
   const handleTemplateSelect = (template: ReportTemplate) => {
     setSelectedTemplate(template);
     setReportName(template.name);
-    
+
     // Set default parameter values
     const defaultParams: ReportParameters = {};
     template.parameters.forEach(param => {
@@ -70,10 +94,8 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
   };
 
   const handleFormatToggle = (format: ExportFormat) => {
-    setOutputFormats(prev => 
-      prev.includes(format) 
-        ? prev.filter(f => f !== format)
-        : [...prev, format]
+    setOutputFormats(prev =>
+      prev.includes(format) ? prev.filter(f => f !== format) : [...prev, format]
     );
   };
 
@@ -128,7 +150,7 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
 
   const validateParameters = () => {
     if (!selectedTemplate) return false;
-    
+
     return selectedTemplate.parameters.every(param => {
       if (!param.required) return true;
       const value = parameters[param.key];
@@ -143,17 +165,19 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
       case 'string':
         return (
           <Input
-            value={value || ''}
-            onChange={(e) => handleParameterChange(param.key, e.target.value)}
+            value={String(value || '')}
+            onChange={e => handleParameterChange(param.key, e.target.value)}
             placeholder={param.description}
           />
         );
       case 'number':
         return (
           <Input
-            type="number"
-            value={value || ''}
-            onChange={(e) => handleParameterChange(param.key, Number(e.target.value))}
+            type='number'
+            value={String(value || '')}
+            onChange={e =>
+              handleParameterChange(param.key, Number(e.target.value))
+            }
             min={param.validation?.min}
             max={param.validation?.max}
           />
@@ -161,21 +185,25 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
       case 'boolean':
         return (
           <Switch
-            checked={value || false}
-            onCheckedChange={(checked) => handleParameterChange(param.key, checked)}
+            checked={Boolean(value)}
+            onCheckedChange={checked =>
+              handleParameterChange(param.key, checked)
+            }
           />
         );
       case 'select':
         return (
           <Select
             value={value?.toString() || ''}
-            onValueChange={(newValue) => handleParameterChange(param.key, newValue)}
+            onValueChange={newValue =>
+              handleParameterChange(param.key, newValue)
+            }
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select an option" />
+              <SelectValue placeholder='Select an option' />
             </SelectTrigger>
             <SelectContent>
-              {param.options?.map((option) => (
+              {param.options?.map(option => (
                 <SelectItem key={option.value} value={option.value.toString()}>
                   {option.label}
                 </SelectItem>
@@ -185,17 +213,23 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
         );
       case 'multiselect':
         return (
-          <div className="space-y-2">
-            {param.options?.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
+          <div className='space-y-2'>
+            {param.options?.map(option => (
+              <div key={option.value} className='flex items-center space-x-2'>
                 <Checkbox
                   id={`${param.key}-${option.value}`}
-                  checked={(value || []).includes(option.value)}
-                  onCheckedChange={(checked) => {
-                    const currentValues = value || [];
+                  checked={
+                    Array.isArray(value)
+                      ? (value as any[]).includes(option.value)
+                      : false
+                  }
+                  onCheckedChange={checked => {
+                    const currentValues = Array.isArray(value)
+                      ? (value as ParameterValue[])
+                      : [];
                     const newValues = checked
                       ? [...currentValues, option.value]
-                      : currentValues.filter((v: ParameterValue) => v !== option.value);
+                      : currentValues.filter(v => v !== option.value);
                     handleParameterChange(param.key, newValues);
                   }}
                 />
@@ -221,58 +255,75 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
       </DialogHeader>
 
       {/* Progress Steps */}
-      <div className="flex items-center justify-between mb-6">
+      <div className='flex items-center justify-between mb-6'>
         {steps.map((step, index) => (
-          <div key={step.id} className="flex items-center">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-              index <= currentStep 
-                ? 'bg-primary border-primary text-primary-foreground' 
-                : 'border-muted-foreground text-muted-foreground'
-            }`}>
+          <div key={step.id} className='flex items-center'>
+            <div
+              className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                index <= currentStep
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'border-muted-foreground text-muted-foreground'
+              }`}
+            >
               {index < currentStep ? (
-                <Check className="w-4 h-4" />
+                <Check className='w-4 h-4' />
               ) : (
-                <step.icon className="w-4 h-4" />
+                <step.icon className='w-4 h-4' />
               )}
             </div>
-            <span className={`ml-2 text-sm font-medium ${
-              index <= currentStep ? 'text-foreground' : 'text-muted-foreground'
-            }`}>
+            <span
+              className={`ml-2 text-sm font-medium ${
+                index <= currentStep
+                  ? 'text-foreground'
+                  : 'text-muted-foreground'
+              }`}
+            >
               {step.label}
             </span>
             {index < steps.length - 1 && (
-              <ChevronRight className="w-4 h-4 mx-4 text-muted-foreground" />
+              <ChevronRight className='w-4 h-4 mx-4 text-muted-foreground' />
             )}
           </div>
         ))}
       </div>
 
       {/* Step Content */}
-      <div className="min-h-[400px]">
+      <div className='min-h-[400px]'>
         {currentStep === 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Select a Report Template</h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              {templates.map((template) => (
-                <Card 
+          <div className='space-y-4'>
+            <h3 className='text-lg font-semibold'>Select a Report Template</h3>
+            <div className='grid gap-4 md:grid-cols-2'>
+              {templates.map(template => (
+                <Card
                   key={template.id}
                   className={`cursor-pointer transition-colors ${
-                    selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
+                    selectedTemplate?.id === template.id
+                      ? 'ring-2 ring-primary'
+                      : ''
                   }`}
                   onClick={() => handleTemplateSelect(template)}
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">{template.name}</CardTitle>
-                      <Badge variant={template.category === 'standard' ? 'default' : 'secondary'}>
+                    <div className='flex items-center justify-between'>
+                      <CardTitle className='text-base'>
+                        {template.name}
+                      </CardTitle>
+                      <Badge
+                        variant={
+                          template.category === 'standard'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                      >
                         {template.category}
                       </Badge>
                     </div>
                     <CardDescription>{template.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm text-muted-foreground">
-                      Estimated: {Math.floor((template.estimatedDuration || 0) / 60)}m
+                    <div className='text-sm text-muted-foreground'>
+                      Estimated:{' '}
+                      {Math.floor((template.estimatedDuration || 0) / 60)}m
                     </div>
                   </CardContent>
                 </Card>
@@ -282,26 +333,26 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
         )}
 
         {currentStep === 1 && selectedTemplate && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Configure Report</h3>
-            
-            <div className="grid gap-4 md:grid-cols-2">
+          <div className='space-y-6'>
+            <h3 className='text-lg font-semibold'>Configure Report</h3>
+
+            <div className='grid gap-4 md:grid-cols-2'>
               <div>
-                <Label htmlFor="name">Report Name</Label>
+                <Label htmlFor='name'>Report Name</Label>
                 <Input
-                  id="name"
+                  id='name'
                   value={reportName}
-                  onChange={(e) => setReportName(e.target.value)}
-                  placeholder="Enter report name"
+                  onChange={e => setReportName(e.target.value)}
+                  placeholder='Enter report name'
                 />
               </div>
               <div>
-                <Label htmlFor="description">Description (Optional)</Label>
+                <Label htmlFor='description'>Description (Optional)</Label>
                 <Textarea
-                  id="description"
+                  id='description'
                   value={reportDescription}
-                  onChange={(e) => setReportDescription(e.target.value)}
-                  placeholder="Describe the purpose of this report"
+                  onChange={e => setReportDescription(e.target.value)}
+                  placeholder='Describe the purpose of this report'
                   rows={3}
                 />
               </div>
@@ -309,16 +360,18 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
 
             {selectedTemplate.parameters.length > 0 && (
               <div>
-                <h4 className="font-medium mb-4">Template Parameters</h4>
-                <div className="space-y-4">
-                  {selectedTemplate.parameters.map((param) => (
+                <h4 className='font-medium mb-4'>Template Parameters</h4>
+                <div className='space-y-4'>
+                  {selectedTemplate.parameters.map(param => (
                     <div key={param.key}>
-                      <Label className="flex items-center gap-2">
+                      <Label className='flex items-center gap-2'>
                         {param.label}
-                        {param.required && <span className="text-red-500">*</span>}
+                        {param.required && (
+                          <span className='text-red-500'>*</span>
+                        )}
                       </Label>
                       {param.description && (
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className='text-sm text-muted-foreground mb-2'>
                           {param.description}
                         </p>
                       )}
@@ -331,21 +384,26 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
 
             <div>
               <Label>Tags (Optional)</Label>
-              <div className="flex gap-2 mt-2">
+              <div className='flex gap-2 mt-2'>
                 <Input
                   value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add a tag"
-                  onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                  onChange={e => setNewTag(e.target.value)}
+                  placeholder='Add a tag'
+                  onKeyPress={e => e.key === 'Enter' && addTag()}
                 />
-                <Button type="button" onClick={addTag} variant="outline">
+                <Button type='button' onClick={addTag} variant='outline'>
                   Add
                 </Button>
               </div>
               {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
+                <div className='flex flex-wrap gap-2 mt-2'>
+                  {tags.map(tag => (
+                    <Badge
+                      key={tag}
+                      variant='secondary'
+                      className='cursor-pointer'
+                      onClick={() => removeTag(tag)}
+                    >
                       {tag} ×
                     </Badge>
                   ))}
@@ -356,42 +414,47 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
         )}
 
         {currentStep === 2 && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Export & Schedule Options</h3>
-            
+          <div className='space-y-6'>
+            <h3 className='text-lg font-semibold'>Export & Schedule Options</h3>
+
             <div>
               <Label>Export Formats</Label>
-              <div className="grid grid-cols-2 gap-4 mt-2">
-                {(['pdf', 'excel', 'csv', 'json'] as ExportFormat[]).map((format) => (
-                  <div key={format} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={format}
-                      checked={outputFormats.includes(format)}
-                      onCheckedChange={() => handleFormatToggle(format)}
-                    />
-                    <Label htmlFor={format} className="capitalize">
-                      {format.toUpperCase()}
-                    </Label>
-                  </div>
-                ))}
+              <div className='grid grid-cols-2 gap-4 mt-2'>
+                {(['pdf', 'excel', 'csv', 'json'] as ExportFormat[]).map(
+                  format => (
+                    <div key={format} className='flex items-center space-x-2'>
+                      <Checkbox
+                        id={format}
+                        checked={outputFormats.includes(format)}
+                        onCheckedChange={() => handleFormatToggle(format)}
+                      />
+                      <Label htmlFor={format} className='capitalize'>
+                        {format.toUpperCase()}
+                      </Label>
+                    </div>
+                  )
+                )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className='flex items-center space-x-2'>
               <Switch
-                id="schedule"
+                id='schedule'
                 checked={scheduleReport}
                 onCheckedChange={setScheduleReport}
               />
-              <Label htmlFor="schedule">Schedule this report to run regularly</Label>
+              <Label htmlFor='schedule'>
+                Schedule this report to run regularly
+              </Label>
             </div>
 
             {scheduleReport && (
               <Card>
-                <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground">
-                    Scheduling options will be available after report generation.
-                    You can set up recurring schedules from the reports dashboard.
+                <CardContent className='pt-6'>
+                  <p className='text-sm text-muted-foreground'>
+                    Scheduling options will be available after report
+                    generation. You can set up recurring schedules from the
+                    reports dashboard.
                   </p>
                 </CardContent>
               </Card>
@@ -400,33 +463,37 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
         )}
 
         {currentStep === 3 && selectedTemplate && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Review & Generate</h3>
-            
+          <div className='space-y-6'>
+            <h3 className='text-lg font-semibold'>Review & Generate</h3>
+
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Report Summary</CardTitle>
+                <CardTitle className='text-base'>Report Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className='space-y-4'>
                 <div>
-                  <Label className="text-sm font-medium">Template</Label>
-                  <p className="text-sm text-muted-foreground">{selectedTemplate.name}</p>
+                  <Label className='text-sm font-medium'>Template</Label>
+                  <p className='text-sm text-muted-foreground'>
+                    {selectedTemplate.name}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Name</Label>
-                  <p className="text-sm text-muted-foreground">{reportName}</p>
+                  <Label className='text-sm font-medium'>Name</Label>
+                  <p className='text-sm text-muted-foreground'>{reportName}</p>
                 </div>
                 {reportDescription && (
                   <div>
-                    <Label className="text-sm font-medium">Description</Label>
-                    <p className="text-sm text-muted-foreground">{reportDescription}</p>
+                    <Label className='text-sm font-medium'>Description</Label>
+                    <p className='text-sm text-muted-foreground'>
+                      {reportDescription}
+                    </p>
                   </div>
                 )}
                 <div>
-                  <Label className="text-sm font-medium">Export Formats</Label>
-                  <div className="flex gap-1 mt-1">
-                    {outputFormats.map((format) => (
-                      <Badge key={format} variant="outline">
+                  <Label className='text-sm font-medium'>Export Formats</Label>
+                  <div className='flex gap-1 mt-1'>
+                    {outputFormats.map(format => (
+                      <Badge key={format} variant='outline'>
                         {format.toUpperCase()}
                       </Badge>
                     ))}
@@ -434,18 +501,24 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
                 </div>
                 {tags.length > 0 && (
                   <div>
-                    <Label className="text-sm font-medium">Tags</Label>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">{tag}</Badge>
+                    <Label className='text-sm font-medium'>Tags</Label>
+                    <div className='flex flex-wrap gap-1 mt-1'>
+                      {tags.map(tag => (
+                        <Badge key={tag} variant='secondary'>
+                          {tag}
+                        </Badge>
                       ))}
                     </div>
                   </div>
                 )}
                 <div>
-                  <Label className="text-sm font-medium">Estimated Duration</Label>
-                  <p className="text-sm text-muted-foreground">
-                    ~{Math.floor((selectedTemplate.estimatedDuration || 0) / 60)} minutes
+                  <Label className='text-sm font-medium'>
+                    Estimated Duration
+                  </Label>
+                  <p className='text-sm text-muted-foreground'>
+                    ~
+                    {Math.floor((selectedTemplate.estimatedDuration || 0) / 60)}{' '}
+                    minutes
                   </p>
                 </div>
               </CardContent>
@@ -455,23 +528,23 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between pt-6 border-t">
+      <div className='flex justify-between pt-6 border-t'>
         <Button
-          variant="outline"
+          variant='outline'
           onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
           disabled={currentStep === 0}
         >
-          <ChevronLeft className="mr-2 h-4 w-4" />
+          <ChevronLeft className='mr-2 h-4 w-4' />
           Previous
         </Button>
-        
+
         {currentStep < steps.length - 1 ? (
           <Button
             onClick={() => setCurrentStep(currentStep + 1)}
             disabled={!canProceed()}
           >
             Next
-            <ChevronRight className="ml-2 h-4 w-4" />
+            <ChevronRight className='ml-2 h-4 w-4' />
           </Button>
         ) : (
           <Button
@@ -480,12 +553,12 @@ export function ReportGenerationWizard({ onClose }: ReportGenerationWizardProps)
           >
             {isGenerating ? (
               <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
                 Generating...
               </>
             ) : (
               <>
-                <Wand2 className="mr-2 h-4 w-4" />
+                <Wand2 className='mr-2 h-4 w-4' />
                 Generate Report
               </>
             )}

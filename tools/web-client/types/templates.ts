@@ -25,9 +25,25 @@ export interface ServiceTemplate {
   /** Template version */
   version: string;
   /** Template category */
-  category: 'api' | 'frontend' | 'backend' | 'database' | 'integration' | 'microservice' | 'monolith' | 'Serverless' | 'Real-time';
+  category:
+    | 'api'
+    | 'frontend'
+    | 'backend'
+    | 'database'
+    | 'integration'
+    | 'microservice'
+    | 'monolith'
+    | 'Serverless'
+    | 'Real-time';
   /** Template type */
-  type: 'rest-api' | 'graphql' | 'react-app' | 'node-service' | 'express-api' | 'next-app' | 'custom';
+  type:
+    | 'rest-api'
+    | 'graphql'
+    | 'react-app'
+    | 'node-service'
+    | 'express-api'
+    | 'next-app'
+    | 'custom';
   /** Template language */
   language: string;
   /** Template framework */
@@ -61,7 +77,20 @@ export interface ServiceTemplate {
     downloads: number;
     stars: number;
     lastUpdated: Date;
+    monthly?: number;
+    total?: number;
+    trending?: boolean;
   };
+  /** Template rating */
+  rating?: number;
+  /** Template downloads count */
+  downloads?: number;
+  /** Last updated timestamp */
+  lastUpdated?: Date;
+  /** Template features */
+  features?: string[];
+  /** Template documentation */
+  documentation?: string;
 }
 
 /**
@@ -75,7 +104,14 @@ export interface TemplateVariable {
   /** Variable description */
   description?: string;
   /** Variable type */
-  type: 'string' | 'number' | 'boolean' | 'select' | 'multiselect' | 'object' | 'array';
+  type:
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'select'
+    | 'multiselect'
+    | 'object'
+    | 'array';
   /** Default value */
   defaultValue?: TemplateVariableValue;
   /** Whether variable is required */
@@ -120,7 +156,12 @@ export interface TemplateVariableValidation {
   requiredWhen?: Array<{
     variable: string;
     value: TemplateVariableValue;
-    operator: 'equals' | 'not-equals' | 'contains' | 'greater-than' | 'less-than';
+    operator:
+      | 'equals'
+      | 'not-equals'
+      | 'contains'
+      | 'greater-than'
+      | 'less-than';
   }>;
 }
 
@@ -149,7 +190,12 @@ export interface TemplateVariableDependency {
   /** Dependency condition */
   condition: {
     /** Comparison operator */
-    operator: 'equals' | 'not-equals' | 'contains' | 'greater-than' | 'less-than';
+    operator:
+      | 'equals'
+      | 'not-equals'
+      | 'contains'
+      | 'greater-than'
+      | 'less-than';
     /** Comparison value */
     value: TemplateVariableValue;
   };
@@ -224,7 +270,15 @@ export interface TemplateDependency {
   /** Dependency version */
   version: string;
   /** Dependency type */
-  type: 'npm' | 'pip' | 'gem' | 'maven' | 'nuget' | 'cargo' | 'go-mod' | 'composer';
+  type:
+    | 'npm'
+    | 'pip'
+    | 'gem'
+    | 'maven'
+    | 'nuget'
+    | 'cargo'
+    | 'go-mod'
+    | 'composer';
   /** Whether dependency is dev-only */
   devDependency?: boolean;
   /** Dependency description */
@@ -294,14 +348,27 @@ export interface TemplateConfiguration {
   /** Build system configuration */
   buildSystem?: {
     /** Build tool */
-    tool: 'webpack' | 'vite' | 'rollup' | 'parcel' | 'esbuild' | 'tsc' | 'babel';
+    tool:
+      | 'webpack'
+      | 'vite'
+      | 'rollup'
+      | 'parcel'
+      | 'esbuild'
+      | 'tsc'
+      | 'babel';
     /** Build configuration */
     configuration: Record<string, unknown>;
   };
   /** Testing configuration */
   testing?: {
     /** Testing framework */
-    framework: 'jest' | 'vitest' | 'mocha' | 'jasmine' | 'cypress' | 'playwright';
+    framework:
+      | 'jest'
+      | 'vitest'
+      | 'mocha'
+      | 'jasmine'
+      | 'cypress'
+      | 'playwright';
     /** Test configuration */
     configuration: Record<string, unknown>;
   };
