@@ -24,12 +24,15 @@ class WundrLogger implements Logger {
   constructor(component: string) {
     this.component = component;
     const logDir = join(homedir(), '.wundr', 'logs');
-    
+
     if (!existsSync(logDir)) {
       mkdirSync(logDir, { recursive: true });
     }
-    
-    this.logFile = join(logDir, `environment-${new Date().toISOString().split('T')[0]}.log`);
+
+    this.logFile = join(
+      logDir,
+      `environment-${new Date().toISOString().split('T')[0]}.log`
+    );
   }
 
   debug(message: string, ...args: unknown[]): void {
@@ -52,12 +55,15 @@ class WundrLogger implements Logger {
     const timestamp = new Date().toISOString();
     const formattedArgs = args.length > 0 ? ` ${JSON.stringify(args)}` : '';
     const logEntry = `[${timestamp}] ${level.toUpperCase()} [${this.component}] ${message}${formattedArgs}\\n`;
-    
+
     // Console output with colors - legitimate logging for CLI tool
     const color = this.getColor(level);
     if (typeof console !== 'undefined' && console.log) {
       // eslint-disable-next-line no-console -- legitimate logging output for CLI tool
-      console.log(`${color}[${this.component}]${this.resetColor()} ${message}`, ...args);
+      console.log(
+        `${color}[${this.component}]${this.resetColor()} ${message}`,
+        ...args
+      );
     }
 
     // File output
@@ -73,11 +79,16 @@ class WundrLogger implements Logger {
 
   private getColor(level: LogLevel): string {
     switch (level) {
-      case 'debug': return '\\033[36m'; // Cyan
-      case 'info': return '\\033[32m';  // Green
-      case 'warn': return '\\033[33m';  // Yellow
-      case 'error': return '\\033[31m'; // Red
-      default: return '';
+      case 'debug':
+        return '\\033[36m'; // Cyan
+      case 'info':
+        return '\\033[32m'; // Green
+      case 'warn':
+        return '\\033[33m'; // Yellow
+      case 'error':
+        return '\\033[31m'; // Red
+      default:
+        return '';
     }
   }
 

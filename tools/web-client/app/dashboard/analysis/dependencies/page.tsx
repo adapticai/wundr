@@ -125,7 +125,7 @@ export default function DependenciesAnalysisPage() {
                          dep.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = filterType === "all" || dep.type === filterType
     const matchesSeverity = severityFilter === "all" || 
-                           (severityFilter === "vulnerable" && dep.vulnerabilities > 0) ||
+                           (severityFilter === "vulnerable" && dep.vulnerabilityCount > 0) ||
                            (severityFilter === "outdated" && dep.version !== dep.latestVersion)
     
     return matchesSearch && matchesType && matchesSeverity
@@ -355,10 +355,10 @@ export default function DependenciesAnalysisPage() {
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-semibold">{dep.name}</h3>
                           <Badge variant="outline">{dep.type}</Badge>
-                          {dep.vulnerabilities > 0 && (
+                          {dep.vulnerabilityCount > 0 && (
                             <Badge variant="destructive">
                               <AlertTriangle className="h-3 w-3 mr-1" />
-                              {dep.vulnerabilities} vulnerabilities
+                              {dep.vulnerabilityCount} vulnerabilities
                             </Badge>
                           )}
                           {dep.version !== dep.latestVersion && (

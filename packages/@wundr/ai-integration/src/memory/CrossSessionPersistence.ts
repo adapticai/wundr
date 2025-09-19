@@ -1,6 +1,6 @@
 /**
  * Cross Session Persistence - Long-term memory storage
- * 
+ *
  * Manages persistent memory across sessions, handling data serialization,
  * storage, retrieval, and cross-session pattern learning.
  */
@@ -63,7 +63,7 @@ export class CrossSessionPersistence extends EventEmitter {
       await Promise.all([
         fs.ensureDir(this.memoriesPath),
         fs.ensureDir(this.patternsPath),
-        fs.ensureDir(this.snapshotsPath)
+        fs.ensureDir(this.snapshotsPath),
       ]);
 
       // Load existing patterns
@@ -74,13 +74,13 @@ export class CrossSessionPersistence extends EventEmitter {
 
       return {
         success: true,
-        message: 'Cross Session Persistence initialized successfully'
+        message: 'Cross Session Persistence initialized successfully',
       };
     } catch (error) {
       return {
         success: false,
         message: `Initialization failed: ${(error as Error).message}`,
-        error
+        error,
       };
     }
   }
@@ -100,7 +100,7 @@ export class CrossSessionPersistence extends EventEmitter {
         accessCount: 0,
         lastAccessed: entry.createdAt,
         importance: this.calculateImportance(entry, importance),
-        crossSessionRelevance: this.calculateRelevance(entry)
+        crossSessionRelevance: this.calculateRelevance(entry),
       }));
 
       // Store in file system
@@ -109,7 +109,10 @@ export class CrossSessionPersistence extends EventEmitter {
 
       // Update cache with high-importance entries
       persistentEntries.forEach(entry => {
-        if (entry.importance > 0.7 && this.memoryCache.size < this.maxCacheSize) {
+        if (
+          entry.importance > 0.7 &&
+          this.memoryCache.size < this.maxCacheSize
+        ) {
           this.memoryCache.set(entry.id, entry);
         }
       });
@@ -117,17 +120,20 @@ export class CrossSessionPersistence extends EventEmitter {
       // Analyze and update patterns
       await this.analyzeSessionPatterns(sessionId, persistentEntries);
 
-      this.emit('session-persisted', { sessionId, count: persistentEntries.length });
+      this.emit('session-persisted', {
+        sessionId,
+        count: persistentEntries.length,
+      });
 
       return {
         success: true,
-        message: `Persisted ${persistentEntries.length} entries from session ${sessionId}`
+        message: `Persisted ${persistentEntries.length} entries from session ${sessionId}`,
       };
     } catch (error) {
       return {
         success: false,
         message: `Persistence failed: ${(error as Error).message}`,
-        error
+        error,
       };
     }
   }
@@ -146,7 +152,10 @@ export class CrossSessionPersistence extends EventEmitter {
     limit: number = 50
   ): Promise<PersistentMemoryEntry[]> {
     try {
-      const relevantMemories: Array<{ memory: PersistentMemoryEntry; score: number }> = [];
+      const relevantMemories: Array<{
+        memory: PersistentMemoryEntry;
+        score: number;
+      }> = [];
 
       // Check cache first
       for (const memory of this.memoryCache.values()) {
@@ -158,13 +167,16 @@ export class CrossSessionPersistence extends EventEmitter {
 
       // If we need more, search files
       if (relevantMemories.length < limit) {
-        const fileMemories = await this.searchMemoryFiles(context, limit - relevantMemories.length);
+        const fileMemories = await this.searchMemoryFiles(
+          context,
+          limit - relevantMemories.length
+        );
         relevantMemories.push(...fileMemories);
       }
 
       // Sort by relevance score and return top results
       relevantMemories.sort((a, b) => b.score - a.score);
-      
+
       const results = relevantMemories.slice(0, limit).map(({ memory }) => {
         // Update access tracking
         memory.accessCount++;
@@ -183,21 +195,26 @@ export class CrossSessionPersistence extends EventEmitter {
   /**
    * Search for cross-session patterns
    */
-  async findCrossSessionPatterns(
-    criteria: {
-      pattern?: string;
-      minFrequency?: number;
-      minConfidence?: number;
-      sessionCount?: number;
-    }
-  ): Promise<CrossSessionPattern[]> {
+  async findCrossSessionPatterns(criteria: {
+    pattern?: string;
+    minFrequency?: number;
+    minConfidence?: number;
+    sessionCount?: number;
+  }): Promise<CrossSessionPattern[]> {
     const patterns = Array.from(this.patternCache.values());
-    
+
     return patterns.filter(pattern => {
-      if (criteria.pattern && !pattern.pattern.includes(criteria.pattern)) return false;
-      if (criteria.minFrequency && pattern.frequency < criteria.minFrequency) return false;
-      if (criteria.minConfidence && pattern.confidence < criteria.minConfidence) return false;
-      if (criteria.sessionCount && pattern.sessions.length < criteria.sessionCount) return false;
+      if (criteria.pattern && !pattern.pattern.includes(criteria.pattern))
+        return false;
+      if (criteria.minFrequency && pattern.frequency < criteria.minFrequency)
+        return false;
+      if (criteria.minConfidence && pattern.confidence < criteria.minConfidence)
+        return false;
+      if (
+        criteria.sessionCount &&
+        pattern.sessions.length < criteria.sessionCount
+      )
+        return false;
       return true;
     });
   }
@@ -208,7 +225,7 @@ export class CrossSessionPersistence extends EventEmitter {
   async createSnapshot(sessionId: string, metadata?: any): Promise<string> {
     try {
       const snapshotId = `snapshot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Load session memories
       const sessionFile = path.join(this.memoriesPath, `${sessionId}.json`);
       const entries = await this.readMemoryFile(sessionFile);
@@ -218,7 +235,7 @@ export class CrossSessionPersistence extends EventEmitter {
         sessionId,
         timestamp: new Date(),
         entries,
-        metadata: metadata || {}
+        metadata: metadata || {},
       };
 
       const snapshotFile = path.join(this.snapshotsPath, `${snapshotId}.json`);
@@ -240,7 +257,10 @@ export class CrossSessionPersistence extends EventEmitter {
       const snapshot: MemorySnapshot = await this.readMemoryFile(snapshotFile);
 
       // Restore session memories
-      const sessionFile = path.join(this.memoriesPath, `${snapshot.sessionId}.json`);
+      const sessionFile = path.join(
+        this.memoriesPath,
+        `${snapshot.sessionId}.json`
+      );
       await this.writeMemoryFile(sessionFile, snapshot.entries);
 
       // Update cache
@@ -254,13 +274,13 @@ export class CrossSessionPersistence extends EventEmitter {
 
       return {
         success: true,
-        message: `Restored ${snapshot.entries.length} entries from snapshot ${snapshotId}`
+        message: `Restored ${snapshot.entries.length} entries from snapshot ${snapshotId}`,
       };
     } catch (error) {
       return {
         success: false,
         message: `Restore failed: ${(error as Error).message}`,
-        error
+        error,
       };
     }
   }
@@ -282,12 +302,18 @@ export class CrossSessionPersistence extends EventEmitter {
         if (!file.endsWith('.json')) continue;
 
         const filePath = path.join(this.memoriesPath, file);
-        const entries: PersistentMemoryEntry[] = await this.readMemoryFile(filePath);
+        const entries: PersistentMemoryEntry[] =
+          await this.readMemoryFile(filePath);
 
         // Remove low-importance, rarely accessed entries
         const filtered = entries.filter(entry => {
-          const daysSinceAccess = (Date.now() - entry.lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
-          return entry.importance > 0.3 || daysSinceAccess < 30 || entry.accessCount > 5;
+          const daysSinceAccess =
+            (Date.now() - entry.lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
+          return (
+            entry.importance > 0.3 ||
+            daysSinceAccess < 30 ||
+            entry.accessCount > 5
+          );
         });
 
         totalRemoved += entries.length - filtered.length;
@@ -298,32 +324,38 @@ export class CrossSessionPersistence extends EventEmitter {
         }
       }
 
-      this.emit('compression-completed', { filesCompressed: totalCompressed, entriesRemoved: totalRemoved });
+      this.emit('compression-completed', {
+        filesCompressed: totalCompressed,
+        entriesRemoved: totalRemoved,
+      });
 
       return {
         success: true,
-        message: `Compressed ${totalCompressed} files, removed ${totalRemoved} entries`
+        message: `Compressed ${totalCompressed} files, removed ${totalRemoved} entries`,
       };
     } catch (error) {
       return {
         success: false,
         message: `Compression failed: ${(error as Error).message}`,
-        error
+        error,
       };
     }
   }
 
-  private calculateImportance(entry: MemoryEntry, baseImportance: number): number {
+  private calculateImportance(
+    entry: MemoryEntry,
+    baseImportance: number
+  ): number {
     let importance = baseImportance;
 
     // Boost importance based on entry type
     const typeBoost = {
-      'consensus': 0.3,
-      'performance': 0.2,
-      'pattern': 0.25,
-      'session': 0.1,
-      'agent': 0.15,
-      'task': 0.2
+      consensus: 0.3,
+      performance: 0.2,
+      pattern: 0.25,
+      session: 0.1,
+      agent: 0.15,
+      task: 0.2,
     };
     importance += typeBoost[entry.type] || 0;
 
@@ -354,14 +386,18 @@ export class CrossSessionPersistence extends EventEmitter {
     }
 
     // Age factor - newer entries are more relevant
-    const ageInDays = (Date.now() - entry.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    const ageFactor = Math.max(0, 1 - (ageInDays / 30)); // Decay over 30 days
-    relevance *= (0.5 + ageFactor * 0.5);
+    const ageInDays =
+      (Date.now() - entry.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    const ageFactor = Math.max(0, 1 - ageInDays / 30); // Decay over 30 days
+    relevance *= 0.5 + ageFactor * 0.5;
 
     return Math.min(relevance, 1);
   }
 
-  private calculateContextRelevance(memory: PersistentMemoryEntry, context: any): number {
+  private calculateContextRelevance(
+    memory: PersistentMemoryEntry,
+    context: any
+  ): number {
     let score = memory.crossSessionRelevance * 0.4 + memory.importance * 0.3;
 
     // Task type matching
@@ -381,32 +417,37 @@ export class CrossSessionPersistence extends EventEmitter {
 
     // Capability matching
     if (context.capabilities && memory.metadata?.capabilities) {
-      const matches = context.capabilities.filter(cap => 
+      const matches = context.capabilities.filter(cap =>
         memory.metadata.capabilities.includes(cap)
       ).length;
       score += (matches / context.capabilities.length) * 0.2;
     }
 
     // Recency boost
-    const daysSinceCreation = (Date.now() - memory.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    const recencyFactor = Math.max(0, 1 - (daysSinceCreation / 90)); // 90 day decay
-    score *= (0.7 + recencyFactor * 0.3);
+    const daysSinceCreation =
+      (Date.now() - memory.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    const recencyFactor = Math.max(0, 1 - daysSinceCreation / 90); // 90 day decay
+    score *= 0.7 + recencyFactor * 0.3;
 
     return score;
   }
 
-  private async searchMemoryFiles(context: any, limit: number): Promise<Array<{ memory: PersistentMemoryEntry; score: number }>> {
+  private async searchMemoryFiles(
+    context: any,
+    limit: number
+  ): Promise<Array<{ memory: PersistentMemoryEntry; score: number }>> {
     const results: Array<{ memory: PersistentMemoryEntry; score: number }> = [];
-    
+
     try {
       const files = await fs.readdir(this.memoriesPath);
-      
+
       for (const file of files) {
         if (!file.endsWith('.json') || results.length >= limit) continue;
-        
+
         const filePath = path.join(this.memoriesPath, file);
-        const memories: PersistentMemoryEntry[] = await this.readMemoryFile(filePath);
-        
+        const memories: PersistentMemoryEntry[] =
+          await this.readMemoryFile(filePath);
+
         for (const memory of memories) {
           const score = this.calculateContextRelevance(memory, context);
           if (score > 0.3) {
@@ -421,19 +462,25 @@ export class CrossSessionPersistence extends EventEmitter {
     return results;
   }
 
-  private async analyzeSessionPatterns(sessionId: string, entries: PersistentMemoryEntry[]): Promise<void> {
+  private async analyzeSessionPatterns(
+    sessionId: string,
+    entries: PersistentMemoryEntry[]
+  ): Promise<void> {
     // Extract patterns from the session
     const patterns = this.extractPatterns(entries);
-    
+
     for (const patternData of patterns) {
       const existingPattern = this.patternCache.get(patternData.pattern);
-      
+
       if (existingPattern) {
         // Update existing pattern
         existingPattern.frequency++;
         existingPattern.sessions.push(sessionId);
         existingPattern.lastSeen = new Date();
-        existingPattern.confidence = Math.min(existingPattern.confidence + 0.1, 1);
+        existingPattern.confidence = Math.min(
+          existingPattern.confidence + 0.1,
+          1
+        );
       } else {
         // Create new pattern
         const newPattern: CrossSessionPattern = {
@@ -443,7 +490,7 @@ export class CrossSessionPersistence extends EventEmitter {
           sessions: [sessionId],
           confidence: 0.5,
           lastSeen: new Date(),
-          metadata: patternData.metadata
+          metadata: patternData.metadata,
         };
         this.patternCache.set(newPattern.pattern, newPattern);
       }
@@ -453,7 +500,9 @@ export class CrossSessionPersistence extends EventEmitter {
     await this.savePatterns();
   }
 
-  private extractPatterns(entries: PersistentMemoryEntry[]): Array<{ pattern: string; metadata: any }> {
+  private extractPatterns(
+    entries: PersistentMemoryEntry[]
+  ): Array<{ pattern: string; metadata: any }> {
     const patterns: Array<{ pattern: string; metadata: any }> = [];
 
     // Agent-task patterns
@@ -471,7 +520,11 @@ export class CrossSessionPersistence extends EventEmitter {
       if (tasks.size >= 3) {
         patterns.push({
           pattern: `agent-${agentId}-multitask`,
-          metadata: { agentId, taskCount: tasks.size, tasks: Array.from(tasks) }
+          metadata: {
+            agentId,
+            taskCount: tasks.size,
+            tasks: Array.from(tasks),
+          },
         });
       }
     });
@@ -481,7 +534,10 @@ export class CrossSessionPersistence extends EventEmitter {
     entries.forEach(entry => {
       if (entry.tags.length >= 2) {
         const sortedTags = entry.tags.sort().join(',');
-        tagCombinations.set(sortedTags, (tagCombinations.get(sortedTags) || 0) + 1);
+        tagCombinations.set(
+          sortedTags,
+          (tagCombinations.get(sortedTags) || 0) + 1
+        );
       }
     });
 
@@ -489,7 +545,7 @@ export class CrossSessionPersistence extends EventEmitter {
       if (count >= 3) {
         patterns.push({
           pattern: `tags-${tags}`,
-          metadata: { tags: tags.split(','), frequency: count }
+          metadata: { tags: tags.split(','), frequency: count },
         });
       }
     });
@@ -501,7 +557,8 @@ export class CrossSessionPersistence extends EventEmitter {
     try {
       const patternsFile = path.join(this.patternsPath, 'patterns.json');
       if (await fs.pathExists(patternsFile)) {
-        const patterns: CrossSessionPattern[] = await this.readMemoryFile(patternsFile);
+        const patterns: CrossSessionPattern[] =
+          await this.readMemoryFile(patternsFile);
         patterns.forEach(pattern => {
           this.patternCache.set(pattern.pattern, pattern);
         });
@@ -542,19 +599,25 @@ export class CrossSessionPersistence extends EventEmitter {
 
   private setupMaintenanceTasks(): void {
     // Daily compression
-    setInterval(() => {
-      this.compressMemories();
-    }, 24 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.compressMemories();
+      },
+      24 * 60 * 60 * 1000
+    );
 
     // Weekly pattern cleanup
-    setInterval(() => {
-      this.cleanupOldPatterns();
-    }, 7 * 24 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupOldPatterns();
+      },
+      7 * 24 * 60 * 60 * 1000
+    );
   }
 
   private cleanupOldPatterns(): void {
     const cutoffDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // 90 days
-    
+
     for (const [key, pattern] of this.patternCache.entries()) {
       if (pattern.lastSeen < cutoffDate && pattern.frequency < 5) {
         this.patternCache.delete(key);
@@ -571,7 +634,7 @@ export class CrossSessionPersistence extends EventEmitter {
 
     return {
       success: true,
-      message: 'Cross Session Persistence shutdown completed'
+      message: 'Cross Session Persistence shutdown completed',
     };
   }
 }

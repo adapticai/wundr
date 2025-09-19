@@ -2,7 +2,11 @@
  * Homebrew installer for macOS and Linux
  */
 
-import { ToolConfiguration, InstallationResult, ValidationResult } from '../types';
+import {
+  ToolConfiguration,
+  InstallationResult,
+  ValidationResult,
+} from '../types';
 import { BaseInstaller } from './base-installer';
 import { createLogger } from '../utils/logger';
 
@@ -18,7 +22,7 @@ export class BrewInstaller extends BaseInstaller {
         success: false,
         tool: tool.name,
         message: 'Homebrew is not installed',
-        errors: ['Homebrew must be installed first']
+        errors: ['Homebrew must be installed first'],
       };
     }
 
@@ -34,14 +38,14 @@ export class BrewInstaller extends BaseInstaller {
           tool: tool.name,
           ...(validation.version && { version: validation.version }),
           message: `Successfully installed ${tool.name}`,
-          ...(result.stderr && { warnings: [result.stderr] })
+          ...(result.stderr && { warnings: [result.stderr] }),
         };
       } else {
         return {
           success: false,
           tool: tool.name,
           message: 'Installation completed but validation failed',
-          ...(validation.issues && { errors: validation.issues })
+          ...(validation.issues && { errors: validation.issues }),
         };
       }
     }
@@ -50,7 +54,7 @@ export class BrewInstaller extends BaseInstaller {
       success: false,
       tool: tool.name,
       message: `Failed to install ${tool.name}`,
-      errors: [result.stderr || 'Unknown error']
+      errors: [result.stderr || 'Unknown error'],
     };
   }
 
@@ -63,20 +67,22 @@ export class BrewInstaller extends BaseInstaller {
         valid: false,
         tool: tool.name,
         issues: [`Command '${commandName}' not found in PATH`],
-        suggestions: [`Install ${tool.name} using: brew install ${this.getBrewPackageName(tool.name)}`]
+        suggestions: [
+          `Install ${tool.name} using: brew install ${this.getBrewPackageName(tool.name)}`,
+        ],
       };
     }
 
     // Get version
     const versionCommand = this.getVersionCommand(tool.name);
     const versionResult = await this.executeCommand(versionCommand);
-    
+
     if (!versionResult.success) {
       return {
         valid: false,
         tool: tool.name,
         issues: ['Could not determine version'],
-        suggestions: [`Verify ${tool.name} installation`]
+        suggestions: [`Verify ${tool.name} installation`],
       };
     }
 
@@ -88,15 +94,19 @@ export class BrewInstaller extends BaseInstaller {
         valid: false,
         tool: tool.name,
         version,
-        issues: [`Version ${version} does not meet requirement ${tool.version}`],
-        suggestions: [`Update ${tool.name}: brew upgrade ${this.getBrewPackageName(tool.name)}`]
+        issues: [
+          `Version ${version} does not meet requirement ${tool.version}`,
+        ],
+        suggestions: [
+          `Update ${tool.name}: brew upgrade ${this.getBrewPackageName(tool.name)}`,
+        ],
       };
     }
 
     return {
       valid: true,
       tool: tool.name,
-      version
+      version,
     };
   }
 
@@ -110,7 +120,7 @@ export class BrewInstaller extends BaseInstaller {
   private getInstallCommand(tool: ToolConfiguration): string {
     const packageName = this.getBrewPackageName(tool.name);
     const caskFlag = this.isCaskPackage(tool.name) ? '--cask' : '';
-    
+
     return `brew install ${caskFlag} ${packageName}`.trim();
   }
 
@@ -119,11 +129,11 @@ export class BrewInstaller extends BaseInstaller {
    */
   private getBrewPackageName(toolName: string): string {
     const packageMap: Record<string, string> = {
-      'node': 'node@18', // Default to LTS
-      'vscode': 'visual-studio-code',
-      'docker': 'docker',
+      node: 'node@18', // Default to LTS
+      vscode: 'visual-studio-code',
+      docker: 'docker',
       'docker-compose': 'docker-compose',
-      'claude-code': 'claude-ai/claude-code/claude-code'
+      'claude-code': 'claude-ai/claude-code/claude-code',
     };
 
     return packageMap[toolName] || toolName;
@@ -142,9 +152,9 @@ export class BrewInstaller extends BaseInstaller {
    */
   private getCommandName(toolName: string): string {
     const commandMap: Record<string, string> = {
-      'vscode': 'code',
+      vscode: 'code',
       'docker-compose': 'docker-compose',
-      'claude-code': 'claude'
+      'claude-code': 'claude',
     };
 
     return commandMap[toolName] || toolName;
@@ -155,16 +165,16 @@ export class BrewInstaller extends BaseInstaller {
    */
   private getVersionCommand(toolName: string): string {
     const versionCommands: Record<string, string> = {
-      'node': 'node --version',
-      'npm': 'npm --version',
-      'pnpm': 'pnpm --version',
-      'yarn': 'yarn --version',
-      'git': 'git --version',
-      'docker': 'docker --version',
+      node: 'node --version',
+      npm: 'npm --version',
+      pnpm: 'pnpm --version',
+      yarn: 'yarn --version',
+      git: 'git --version',
+      docker: 'docker --version',
       'docker-compose': 'docker-compose --version',
-      'vscode': 'code --version',
+      vscode: 'code --version',
       'claude-code': 'claude --version',
-      'gh': 'gh --version'
+      gh: 'gh --version',
     };
 
     return versionCommands[toolName] || `${toolName} --version`;

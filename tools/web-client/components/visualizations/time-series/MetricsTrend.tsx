@@ -39,6 +39,31 @@ interface MetricDataPoint {
   timestamp: string
   value: number
   label?: string
+  isAnomaly?: boolean
+}
+
+interface ProcessedDataPoint {
+  timestamp: string
+  value: number
+  isAnomaly?: boolean
+}
+
+interface TooltipContext {
+  dataIndex: number
+  dataset: {
+    data: ProcessedDataPoint[]
+    label: string
+  }
+  parsed: {
+    y: number
+  }
+  raw: ProcessedDataPoint
+}
+
+interface ChartSelectEvent {
+  target: {
+    value: string
+  }
 }
 
 interface MetricSeries {
@@ -135,11 +160,11 @@ export function MetricsTrend({
         backgroundColor: `${s.color || Object.values(chartTheme.colors)[index % Object.values(chartTheme.colors).length]}20`,
         fill: true,
         tension: 0.4,
-        pointRadius: processedData.map((d: any) => d.isAnomaly ? 6 : 3),
-        pointBackgroundColor: processedData.map((d: any) => 
+        pointRadius: processedData.map((d: ProcessedDataPoint) => d.isAnomaly ? 6 : 3),
+        pointBackgroundColor: processedData.map((d: ProcessedDataPoint) =>
           d.isAnomaly ? "#ef4444" : s.color || Object.values(chartTheme.colors)[index % Object.values(chartTheme.colors).length]
         ),
-        pointBorderColor: processedData.map((d: any) => 
+        pointBorderColor: processedData.map((d: ProcessedDataPoint) =>
           d.isAnomaly ? "#ef4444" : s.color || Object.values(chartTheme.colors)[index % Object.values(chartTheme.colors).length]
         ),
       }
@@ -163,7 +188,7 @@ export function MetricsTrend({
       tooltip: {
         ...chartTheme.tooltip,
         callbacks: {
-          label: (context: any) => {
+          label: (context: TooltipContext) => {
             const label = context.dataset.label || ""
             const value = context.parsed.y
             const unit = comparisonMode === "percentage" ? "%" : 
@@ -194,7 +219,7 @@ export function MetricsTrend({
         grid: chartTheme.grid,
         ticks: {
           ...chartTheme.ticks,
-          callback: (value: any) => {
+          callback: (value: number) => {
             return comparisonMode === "percentage" ? `${value}%` : value
           }
         },
@@ -228,7 +253,7 @@ export function MetricsTrend({
           <CardTitle>{title}</CardTitle>
           <div className="flex items-center gap-2">
             {enableComparison && (
-              <Select value={comparisonMode} onValueChange={(v: any) => setComparisonMode(v)}>
+              <Select value={comparisonMode} onValueChange={(v: string) => setComparisonMode(v as 'absolute' | 'percentage')}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -238,7 +263,7 @@ export function MetricsTrend({
                 </SelectContent>
               </Select>
             )}
-            <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
+            <Select value={timeRange} onValueChange={(v: string) => setTimeRange(v as '7d' | '30d' | '90d' | '1y')}>
               <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>
@@ -289,7 +314,7 @@ export function MetricsTrend({
             <Line data={chartData} options={chartOptions as any} />
           </div>
 
-          {showAnomalies && filteredSeries.some(s => detectAnomalies(s.data).some((d: any) => d.isAnomaly)) && (
+          {showAnomalies && filteredSeries.some(s => detectAnomalies(s.data).some((d: ProcessedDataPoint) => d.isAnomaly)) && (
             <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg">
               <AlertCircle className="w-4 h-4 text-destructive" />
               <span className="text-sm">Anomalies detected in the data</span>

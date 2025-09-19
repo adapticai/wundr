@@ -8,44 +8,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Code2, 
-  Download, 
-  Star, 
-  Calendar, 
-  User, 
-  Package, 
-  FileText, 
+import {
+  Code2,
+  Download,
+  Star,
+  Calendar,
+  User,
+  Package,
+  FileText,
   Settings,
   ExternalLink,
   Copy,
   CheckCircle
 } from "lucide-react";
-
-interface ServiceTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  language: string;
-  framework: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
-  tags: string[];
-  downloads: number;
-  rating: number;
-  lastUpdated: string;
-  author: string;
-  version: string;
-  dependencies: string[];
-  features: string[];
-  codePreview: string;
-  documentation: string;
-  usageStats: {
-    monthly: number;
-    total: number;
-    trending: boolean;
-  };
-}
+import { ServiceTemplate, ServiceTemplateDifficulty } from "@/types/templates";
 
 interface TemplatePreviewProps {
   template: ServiceTemplate;
@@ -63,7 +39,7 @@ export function TemplatePreview({ template, open, onOpenChange, onCustomize }: T
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: ServiceTemplateDifficulty) => {
     switch (difficulty) {
       case "beginner": return "bg-green-100 text-green-800";
       case "intermediate": return "bg-yellow-100 text-yellow-800";
@@ -147,7 +123,7 @@ export function TemplatePreview({ template, open, onOpenChange, onCustomize }: T
                           <div className="flex items-center text-sm">
                             <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                             <span className="font-medium">Updated:</span>
-                            <span className="ml-2">{new Date(template.lastUpdated).toLocaleDateString()}</span>
+                            <span className="ml-2">{template.lastUpdated.toLocaleDateString()}</span>
                           </div>
                         </div>
                       </div>
@@ -258,7 +234,7 @@ export function TemplatePreview({ template, open, onOpenChange, onCustomize }: T
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => copyToClipboard(template.codePreview)}
+                        onClick={() => copyToClipboard(template.codePreview || '')}
                       >
                         {copied ? (
                           <CheckCircle className="h-4 w-4 mr-2" />
@@ -271,7 +247,7 @@ export function TemplatePreview({ template, open, onOpenChange, onCustomize }: T
                   </CardHeader>
                   <CardContent>
                     <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono">
-                      <code>{template.codePreview}</code>
+                      <code>{template.codePreview || 'No code preview available'}</code>
                     </pre>
                   </CardContent>
                 </Card>
@@ -286,9 +262,11 @@ export function TemplatePreview({ template, open, onOpenChange, onCustomize }: T
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {template.dependencies.map((dep) => (
-                        <div key={dep} className="flex items-center justify-between p-2 border rounded">
-                          <code className="text-sm font-mono">{dep}</code>
+                      {template.dependencies.map((dep, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 border rounded">
+                          <code className="text-sm font-mono">
+                            {typeof dep === 'string' ? dep : dep.name}
+                          </code>
                           <Button size="sm" variant="ghost">
                             <ExternalLink className="h-4 w-4" />
                           </Button>
@@ -309,7 +287,7 @@ export function TemplatePreview({ template, open, onOpenChange, onCustomize }: T
                   <CardContent>
                     <div className="prose prose-sm max-w-none">
                       <pre className="whitespace-pre-wrap text-sm">
-                        {template.documentation}
+                        {template.documentation || 'No documentation available'}
                       </pre>
                     </div>
                   </CardContent>

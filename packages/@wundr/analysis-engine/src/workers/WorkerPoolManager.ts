@@ -76,7 +76,10 @@ export class WorkerPoolManager extends EventEmitter {
   private config: WorkerPoolConfig;
   private workers = new Map<string, WorkerInfo>();
   private taskQueue: WorkerTask[] = [];
-  private activeTasks = new Map<string, { task: WorkerTask; workerId: string; startTime: number }>();
+  private activeTasks = new Map<
+    string,
+    { task: WorkerTask; workerId: string; startTime: number }
+  >();
   private completedTasks: WorkerResult[] = [];
   private metrics: WorkerMetrics;
   private metricsInterval: NodeJS.Timer | null = null;
@@ -85,9 +88,9 @@ export class WorkerPoolManager extends EventEmitter {
 
   constructor(config: Partial<WorkerPoolConfig> = {}) {
     super();
-    
+
     const cpuCount = os.cpus().length;
-    
+
     this.config = {
       minWorkers: Math.max(2, Math.floor(cpuCount * 0.5)),
       maxWorkers: Math.max(30, cpuCount * 4), // Target 30+ workers
@@ -97,10 +100,10 @@ export class WorkerPoolManager extends EventEmitter {
       enableAutoScaling: true,
       resourceThresholds: {
         cpu: 0.8, // 80% CPU threshold
-        memory: 0.85 // 85% memory threshold
+        memory: 0.85, // 85% memory threshold
       },
       workerScript: path.join(__dirname, 'analysis-worker.js'),
-      ...config
+      ...config,
     };
 
     this.metrics = {
@@ -113,7 +116,7 @@ export class WorkerPoolManager extends EventEmitter {
       queueSize: 0,
       throughput: 0,
       errorRate: 0,
-      resourceUsage: { cpu: 0, memory: 0 }
+      resourceUsage: { cpu: 0, memory: 0 },
     };
 
     this.initializePool();
@@ -128,10 +131,10 @@ export class WorkerPoolManager extends EventEmitter {
     for (let i = 0; i < this.config.minWorkers; i++) {
       await this.createWorker();
     }
-    
+
     this.emit('pool-initialized', {
       minWorkers: this.config.minWorkers,
-      maxWorkers: this.config.maxWorkers
+      maxWorkers: this.config.maxWorkers,
     });
   }
 
@@ -152,17 +155,17 @@ export class WorkerPoolManager extends EventEmitter {
         ...task,
         resolve,
         reject,
-        submittedAt: Date.now()
+        submittedAt: Date.now(),
       } as any;
 
       // Insert task based on priority
       this.insertTaskByPriority(taskWithCallback);
-      
+
       this.metrics.totalTasks++;
       this.metrics.queueSize = this.taskQueue.length;
-      
+
       this.emit('task-queued', task);
-      
+
       // Try to process immediately
       this.processNextTask();
     });
@@ -183,26 +186,24 @@ export class WorkerPoolManager extends EventEmitter {
     tasks: WorkerTask<T>[],
     batchSize?: number
   ): Promise<WorkerResult<R>[]> {
-    const actualBatchSize = batchSize || Math.min(
-      tasks.length,
-      this.workers.size * 2
-    );
-    
+    const actualBatchSize =
+      batchSize || Math.min(tasks.length, this.workers.size * 2);
+
     const results: WorkerResult<R>[] = [];
-    
+
     for (let i = 0; i < tasks.length; i += actualBatchSize) {
       const batch = tasks.slice(i, i + actualBatchSize);
       const batchResults = await this.submitTasks<T, R>(batch);
       results.push(...batchResults);
-      
+
       // Emit batch progress
       this.emit('batch-progress', {
         completed: i + batch.length,
         total: tasks.length,
-        progress: ((i + batch.length) / tasks.length) * 100
+        progress: ((i + batch.length) / tasks.length) * 100,
       });
     }
-    
+
     return results;
   }
 
@@ -210,19 +211,25 @@ export class WorkerPoolManager extends EventEmitter {
    * Insert task into queue based on priority
    */
   private insertTaskByPriority(task: any): void {
-    const priorities: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+    const priorities: Record<string, number> = {
+      critical: 4,
+      high: 3,
+      medium: 2,
+      low: 1,
+    };
     const taskPriority = priorities[task.priority as string] || 1;
-    
+
     let insertIndex = this.taskQueue.length;
-    
+
     for (let i = 0; i < this.taskQueue.length; i++) {
-      const queuedPriority = priorities[(this.taskQueue[i] as any).priority as string] || 1;
+      const queuedPriority =
+        priorities[(this.taskQueue[i] as any).priority as string] || 1;
       if (taskPriority > queuedPriority) {
         insertIndex = i;
         break;
       }
     }
-    
+
     this.taskQueue.splice(insertIndex, 0, task);
   }
 
@@ -250,15 +257,15 @@ export class WorkerPoolManager extends EventEmitter {
    */
   private async executeTask(workerInfo: WorkerInfo, task: any): Promise<void> {
     const startTime = Date.now();
-    
+
     workerInfo.state = 'busy';
     workerInfo.currentTask = task.id;
     workerInfo.lastActivity = startTime;
-    
+
     this.activeTasks.set(task.id, {
       task,
       workerId: workerInfo.id,
-      startTime
+      startTime,
     });
 
     // Set up timeout
@@ -275,21 +282,20 @@ export class WorkerPoolManager extends EventEmitter {
           id: task.id,
           type: task.type,
           data: task.data,
-          metadata: task.metadata
-        }
+          metadata: task.metadata,
+        },
       });
 
       // Wait for result
       const result = await this.waitForTaskResult(task.id, timeoutHandle);
-      
+
       // Handle successful completion
       this.handleTaskCompletion(task, result, startTime);
       task.resolve(result);
-
     } catch (error) {
       // Handle task failure
       this.handleTaskFailure(task, error as Error, startTime);
-      
+
       // Retry if configured
       if (task.retryCount < (task.maxRetries || 0)) {
         task.retryCount = (task.retryCount || 0) + 1;
@@ -302,7 +308,7 @@ export class WorkerPoolManager extends EventEmitter {
       clearTimeout(timeoutHandle);
       this.releaseWorker(workerInfo);
       this.metrics.queueSize = this.taskQueue.length;
-      
+
       // Process next task
       setImmediate(() => this.processNextTask());
     }
@@ -311,13 +317,16 @@ export class WorkerPoolManager extends EventEmitter {
   /**
    * Wait for task result from worker
    */
-  private waitForTaskResult(taskId: string, timeoutHandle: NodeJS.Timeout): Promise<WorkerResult> {
+  private waitForTaskResult(
+    taskId: string,
+    timeoutHandle: NodeJS.Timeout
+  ): Promise<WorkerResult> {
     return new Promise((resolve, reject) => {
       const handler = (result: WorkerResult) => {
         if (result.taskId === taskId) {
           this.removeListener('task-result', handler);
           clearTimeout(timeoutHandle);
-          
+
           if (result.success) {
             resolve(result);
           } else {
@@ -333,16 +342,20 @@ export class WorkerPoolManager extends EventEmitter {
   /**
    * Handle task completion
    */
-  private handleTaskCompletion(task: any, result: WorkerResult, startTime: number): void {
+  private handleTaskCompletion(
+    task: any,
+    result: WorkerResult,
+    startTime: number
+  ): void {
     const executionTime = Date.now() - startTime;
-    
+
     this.activeTasks.delete(task.id);
     this.completedTasks.push(result);
-    
+
     // Update metrics
     this.metrics.completedTasks++;
     this.updateAverageExecutionTime(executionTime);
-    
+
     this.emit('task-completed', { task, result, executionTime });
   }
 
@@ -351,10 +364,10 @@ export class WorkerPoolManager extends EventEmitter {
    */
   private handleTaskFailure(task: any, error: Error, startTime: number): void {
     const executionTime = Date.now() - startTime;
-    
+
     this.activeTasks.delete(task.id);
     this.metrics.failedTasks++;
-    
+
     this.emit('task-failed', { task, error, executionTime });
   }
 
@@ -370,7 +383,7 @@ export class WorkerPoolManager extends EventEmitter {
 
     // Terminate worker due to timeout
     this.terminateWorker(workerInfo.id, 'Task timeout');
-    
+
     this.metrics.failedTasks++;
     this.emit('task-timeout', { taskId, workerId: activeTask.workerId });
   }
@@ -406,14 +419,14 @@ export class WorkerPoolManager extends EventEmitter {
     }
 
     const workerId = `worker-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     try {
       const worker = new Worker(this.config.workerScript, {
-        workerData: { workerId }
+        workerData: { workerId },
       });
 
       const { port1, port2 } = new MessageChannel();
-      
+
       const workerInfo: WorkerInfo = {
         id: workerId,
         worker,
@@ -422,19 +435,19 @@ export class WorkerPoolManager extends EventEmitter {
         tasksCompleted: 0,
         totalExecutionTime: 0,
         lastActivity: Date.now(),
-        port: port1
+        port: port1,
       };
 
       // Set up worker message handling
-      port1.on('message', (message) => {
+      port1.on('message', message => {
         this.handleWorkerMessage(workerId, message);
       });
 
-      worker.on('error', (error) => {
+      worker.on('error', error => {
         this.handleWorkerError(workerId, error);
       });
 
-      worker.on('exit', (code) => {
+      worker.on('exit', code => {
         this.handleWorkerExit(workerId, code);
       });
 
@@ -443,11 +456,13 @@ export class WorkerPoolManager extends EventEmitter {
 
       this.workers.set(workerId, workerInfo);
       this.metrics.idleWorkers++;
-      
-      this.emit('worker-created', { workerId, totalWorkers: this.workers.size });
-      
-      return workerInfo;
 
+      this.emit('worker-created', {
+        workerId,
+        totalWorkers: this.workers.size,
+      });
+
+      return workerInfo;
     } catch (error) {
       this.emit('worker-creation-error', { workerId, error });
       throw error;
@@ -478,10 +493,10 @@ export class WorkerPoolManager extends EventEmitter {
    */
   private handleWorkerError(workerId: string, error: Error): void {
     this.emit('worker-error', { workerId, error });
-    
+
     // Terminate and replace worker
     this.terminateWorker(workerId, 'Worker error');
-    
+
     // Create replacement if below minimum
     if (this.workers.size < this.config.minWorkers && !this.isShuttingDown) {
       this.createWorker().catch(err => {
@@ -498,14 +513,18 @@ export class WorkerPoolManager extends EventEmitter {
     if (!workerInfo) return;
 
     this.workers.delete(workerId);
-    
+
     if (workerInfo.state === 'idle') {
       this.metrics.idleWorkers--;
     } else {
       this.metrics.activeWorkers--;
     }
 
-    this.emit('worker-exited', { workerId, code, totalWorkers: this.workers.size });
+    this.emit('worker-exited', {
+      workerId,
+      code,
+      totalWorkers: this.workers.size,
+    });
   }
 
   /**
@@ -516,7 +535,7 @@ export class WorkerPoolManager extends EventEmitter {
     if (!workerInfo) return;
 
     workerInfo.state = 'terminating';
-    
+
     // Handle active task if any
     if (workerInfo.currentTask) {
       const activeTask = this.activeTasks.get(workerInfo.currentTask);
@@ -537,23 +556,23 @@ export class WorkerPoolManager extends EventEmitter {
    */
   private async scaleUp(): Promise<void> {
     if (this.workers.size >= this.config.maxWorkers) return;
-    
-    const queuePressure = this.taskQueue.length / Math.max(1, this.workers.size);
+
+    const queuePressure =
+      this.taskQueue.length / Math.max(1, this.workers.size);
     const resourceUsage = await this.getResourceUsage();
-    
+
     // Scale up conditions
-    const shouldScale = (
+    const shouldScale =
       queuePressure > 2 && // More than 2 tasks per worker
       resourceUsage.cpu < this.config.resourceThresholds.cpu &&
-      resourceUsage.memory < this.config.resourceThresholds.memory
-    );
+      resourceUsage.memory < this.config.resourceThresholds.memory;
 
     if (shouldScale) {
       const newWorkers = Math.min(
         Math.ceil(queuePressure / 2),
         this.config.maxWorkers - this.workers.size
       );
-      
+
       for (let i = 0; i < newWorkers; i++) {
         try {
           await this.createWorker();
@@ -562,11 +581,11 @@ export class WorkerPoolManager extends EventEmitter {
           break;
         }
       }
-      
-      this.emit('scaled-up', { 
-        newWorkers, 
+
+      this.emit('scaled-up', {
+        newWorkers,
         totalWorkers: this.workers.size,
-        reason: 'queue-pressure' 
+        reason: 'queue-pressure',
       });
     }
   }
@@ -576,13 +595,14 @@ export class WorkerPoolManager extends EventEmitter {
    */
   private async scaleDown(): Promise<void> {
     const now = Date.now();
-    const idleWorkers = Array.from(this.workers.values())
-      .filter(w => 
-        w.state === 'idle' && 
-        (now - w.lastActivity) > this.config.idleTimeout
-      );
+    const idleWorkers = Array.from(this.workers.values()).filter(
+      w => w.state === 'idle' && now - w.lastActivity > this.config.idleTimeout
+    );
 
-    const excessWorkers = Math.max(0, this.workers.size - this.config.minWorkers);
+    const excessWorkers = Math.max(
+      0,
+      this.workers.size - this.config.minWorkers
+    );
     const workersToTerminate = Math.min(idleWorkers.length, excessWorkers);
 
     if (workersToTerminate > 0) {
@@ -597,7 +617,7 @@ export class WorkerPoolManager extends EventEmitter {
       this.emit('scaled-down', {
         terminatedWorkers: workersToTerminate,
         totalWorkers: this.workers.size,
-        reason: 'idle-timeout'
+        reason: 'idle-timeout',
       });
     }
   }
@@ -611,7 +631,7 @@ export class WorkerPoolManager extends EventEmitter {
     this.scalingInterval = setInterval(async () => {
       try {
         await this.scaleDown();
-        
+
         if (this.taskQueue.length > 0) {
           await this.scaleUp();
         }
@@ -635,25 +655,28 @@ export class WorkerPoolManager extends EventEmitter {
    * Update metrics
    */
   private async updateMetrics(): Promise<void> {
-    this.metrics.activeWorkers = Array.from(this.workers.values())
-      .filter(w => w.state === 'busy').length;
-    
-    this.metrics.idleWorkers = Array.from(this.workers.values())
-      .filter(w => w.state === 'idle').length;
-    
+    this.metrics.activeWorkers = Array.from(this.workers.values()).filter(
+      w => w.state === 'busy'
+    ).length;
+
+    this.metrics.idleWorkers = Array.from(this.workers.values()).filter(
+      w => w.state === 'idle'
+    ).length;
+
     this.metrics.queueSize = this.taskQueue.length;
-    
+
     // Calculate throughput (tasks per second)
     const completedInLastMinute = this.completedTasks.filter(
       task => Date.now() - (task as any).completedAt < 60000
     ).length;
     this.metrics.throughput = completedInLastMinute / 60;
-    
+
     // Calculate error rate
-    this.metrics.errorRate = this.metrics.totalTasks > 0 
-      ? this.metrics.failedTasks / this.metrics.totalTasks
-      : 0;
-    
+    this.metrics.errorRate =
+      this.metrics.totalTasks > 0
+        ? this.metrics.failedTasks / this.metrics.totalTasks
+        : 0;
+
     // Update resource usage
     this.metrics.resourceUsage = await this.getResourceUsage();
   }
@@ -664,13 +687,13 @@ export class WorkerPoolManager extends EventEmitter {
   private async getResourceUsage(): Promise<{ cpu: number; memory: number }> {
     const memUsage = process.memoryUsage();
     const memoryPercent = memUsage.heapUsed / memUsage.heapTotal;
-    
+
     // Simple CPU estimation based on active workers
     const cpuPercent = this.metrics.activeWorkers / os.cpus().length;
-    
+
     return {
       cpu: Math.min(1, cpuPercent),
-      memory: Math.min(1, memoryPercent)
+      memory: Math.min(1, memoryPercent),
     };
   }
 
@@ -678,8 +701,10 @@ export class WorkerPoolManager extends EventEmitter {
    * Update average execution time
    */
   private updateAverageExecutionTime(executionTime: number): void {
-    const total = this.metrics.averageExecutionTime * this.metrics.completedTasks;
-    this.metrics.averageExecutionTime = (total + executionTime) / (this.metrics.completedTasks + 1);
+    const total =
+      this.metrics.averageExecutionTime * this.metrics.completedTasks;
+    this.metrics.averageExecutionTime =
+      (total + executionTime) / (this.metrics.completedTasks + 1);
   }
 
   /**
@@ -700,21 +725,21 @@ export class WorkerPoolManager extends EventEmitter {
         state: w.state,
         currentTask: w.currentTask,
         tasksCompleted: w.tasksCompleted,
-        lastActivity: w.lastActivity
+        lastActivity: w.lastActivity,
       })),
       queue: {
         size: this.taskQueue.length,
         tasks: this.taskQueue.map(t => ({
           id: t.id,
           type: t.type,
-          priority: t.priority
-        }))
+          priority: t.priority,
+        })),
       },
       activeTasks: Array.from(this.activeTasks.values()).map(t => ({
         taskId: t.task.id,
         workerId: t.workerId,
-        duration: Date.now() - t.startTime
-      }))
+        duration: Date.now() - t.startTime,
+      })),
     };
   }
 
@@ -723,7 +748,7 @@ export class WorkerPoolManager extends EventEmitter {
    */
   async shutdown(timeout: number = 30000): Promise<void> {
     if (this.isShuttingDown) return;
-    
+
     this.isShuttingDown = true;
     this.emit('shutdown-started');
 
@@ -736,7 +761,7 @@ export class WorkerPoolManager extends EventEmitter {
     }
 
     // Wait for active tasks to complete or timeout
-    const shutdownPromise = new Promise<void>((resolve) => {
+    const shutdownPromise = new Promise<void>(resolve => {
       const checkActiveTasks = () => {
         if (this.activeTasks.size === 0) {
           resolve();
@@ -750,7 +775,7 @@ export class WorkerPoolManager extends EventEmitter {
     try {
       await Promise.race([
         shutdownPromise,
-        new Promise(resolve => setTimeout(resolve, timeout))
+        new Promise(resolve => setTimeout(resolve, timeout)),
       ]);
     } catch (error) {
       this.emit('shutdown-timeout', error);
@@ -762,7 +787,7 @@ export class WorkerPoolManager extends EventEmitter {
     );
 
     await Promise.all(terminationPromises);
-    
+
     this.emit('shutdown-complete');
   }
 }

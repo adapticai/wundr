@@ -20,7 +20,7 @@ import {
   EntityInfo,
   PerformanceMetrics,
   AnalysisProgressEvent,
-  AnalysisProgressCallback
+  AnalysisProgressCallback,
 } from '../types';
 import {
   createId,
@@ -28,7 +28,7 @@ import {
   formatDuration,
   formatFileSize,
   processConcurrently,
-  chunk
+  chunk,
 } from '../utils';
 
 export interface ServiceResult<T> {
@@ -54,14 +54,17 @@ export abstract class BaseAnalysisService {
   protected checker: ts.TypeChecker | null = null;
   protected spinner: Ora;
   protected progressCallback?: AnalysisProgressCallback;
-  
+
   // Performance tracking and optimization
   private startTime: number = 0;
   private fileCache = new Map<string, ts.SourceFile>();
   private analysisCache = new Map<string, any>();
-  private memoryUsage: { peak: number; average: number } = { peak: 0, average: 0 };
+  private memoryUsage: { peak: number; average: number } = {
+    peak: 0,
+    average: 0,
+  };
   private cacheHits = 0;
-  
+
   // Memory optimization components
   private streamingProcessor: StreamingFileProcessor;
   private workerPool: WorkerPoolManager;
@@ -69,7 +72,7 @@ export abstract class BaseAnalysisService {
   private objectPools = {
     entities: [] as EntityInfo[],
     buffers: [] as Buffer[],
-    arrays: [] as any[][]
+    arrays: [] as any[][],
   };
 
   constructor(name: string, config: Partial<AnalysisConfig & ServiceConfig>) {
@@ -77,57 +80,74 @@ export abstract class BaseAnalysisService {
       name,
       version: '2.0.0',
       targetDir: process.cwd(),
-      excludeDirs: ['node_modules', 'dist', 'build', 'coverage', '.git', '.next'],
+      excludeDirs: [
+        'node_modules',
+        'dist',
+        'build',
+        'coverage',
+        '.git',
+        '.next',
+      ],
       includePatterns: ['**/*.{ts,tsx,js,jsx}'],
-      excludePatterns: ['**/*.{test,spec}.{ts,tsx,js,jsx}', '**/__tests__/**/*'],
+      excludePatterns: [
+        '**/*.{test,spec}.{ts,tsx,js,jsx}',
+        '**/__tests__/**/*',
+      ],
       includeTests: false,
       enableAIAnalysis: false,
       outputFormats: ['json'],
-      outputDir: path.join(process.cwd(), 'analysis-output', name.toLowerCase()),
+      outputDir: path.join(
+        process.cwd(),
+        'analysis-output',
+        name.toLowerCase()
+      ),
       verbose: false,
       performance: {
         maxConcurrency: 10,
         chunkSize: 100,
-        enableCaching: true
+        enableCaching: true,
       },
       thresholds: {
         complexity: {
           cyclomatic: 10,
-          cognitive: 15
+          cognitive: 15,
         },
         duplicates: {
-          minSimilarity: 0.8
+          minSimilarity: 0.8,
         },
         fileSize: {
-          maxLines: 500
-        }
-      }
+          maxLines: 500,
+        },
+      },
     };
 
     this.config = { ...defaultConfig, ...config };
     this.spinner = ora({ color: 'cyan' });
-    
+
     // Initialize optimization components
     this.streamingProcessor = new StreamingFileProcessor({
       chunkSize: 32 * 1024, // 32KB chunks for memory efficiency
       maxMemoryUsage: 100 * 1024 * 1024, // 100MB limit
       workerPoolSize: this.config.performance.maxConcurrency,
-      bufferSize: 512 * 1024 // 512KB buffer
+      bufferSize: 512 * 1024, // 512KB buffer
     });
-    
+
     this.workerPool = new WorkerPoolManager({
-      minWorkers: Math.max(2, Math.floor(this.config.performance.maxConcurrency * 0.5)),
+      minWorkers: Math.max(
+        2,
+        Math.floor(this.config.performance.maxConcurrency * 0.5)
+      ),
       maxWorkers: Math.max(30, this.config.performance.maxConcurrency * 2), // Target 30+ workers
       enableAutoScaling: true,
-      workerScript: path.join(__dirname, '../workers/analysis-worker.js')
+      workerScript: path.join(__dirname, '../workers/analysis-worker.js'),
     });
-    
+
     this.memoryMonitor = new MemoryMonitor({
       snapshotInterval: 10000, // 10 second intervals
       maxSnapshots: 500,
-      outputDir: path.join(this.config.outputDir || '.', 'memory-profiles')
+      outputDir: path.join(this.config.outputDir || '.', 'memory-profiles'),
     });
-    
+
     this.setupMemoryOptimizations();
   }
 
@@ -145,7 +165,7 @@ export abstract class BaseAnalysisService {
     if (this.progressCallback) {
       this.progressCallback(event);
     }
-    
+
     if (this.config.verbose) {
       switch (event.type) {
         case 'phase':
@@ -172,8 +192,11 @@ export abstract class BaseAnalysisService {
    */
   async analyze(): Promise<ServiceResult<AnalysisReport>> {
     this.startTime = Date.now();
-    this.emitProgress({ type: 'phase', message: 'Initializing high-performance analysis...' });
-    
+    this.emitProgress({
+      type: 'phase',
+      message: 'Initializing high-performance analysis...',
+    });
+
     try {
       if (this.config.verbose) {
         this.spinner.start('Starting optimized analysis...');
@@ -181,9 +204,9 @@ export abstract class BaseAnalysisService {
 
       // Start memory monitoring
       await this.memoryMonitor.startMonitoring();
-      
+
       await this.initialize();
-      
+
       // Get target files
       const files = await this.getTargetFiles();
       if (files.length === 0) {
@@ -195,46 +218,49 @@ export abstract class BaseAnalysisService {
         phase: 'file-discovery',
         progress: files.length,
         total: files.length,
-        message: `Found ${files.length} files`
+        message: `Found ${files.length} files`,
       });
 
       // Create program and extract entities
       this.createOptimizedProgram(files);
       const entities = await this.extractEntitiesOptimized(files);
       const analysisResults = await this.performAnalysis(entities);
-      
+
       // Generate report
-      const report = await this.generateReport(files, entities, analysisResults);
-      
+      const report = await this.generateReport(
+        files,
+        entities,
+        analysisResults
+      );
+
       // Save report in multiple formats
       await this.saveReport(report);
-      
+
       const duration = Date.now() - this.startTime;
       const memoryMetrics = this.memoryMonitor.getMetrics();
-      
-      this.emitProgress({ 
-        type: 'complete', 
-        message: `Analysis completed in ${formatDuration(duration)} (Peak memory: ${formatFileSize(memoryMetrics.peak.heapUsed)})`
+
+      this.emitProgress({
+        type: 'complete',
+        message: `Analysis completed in ${formatDuration(duration)} (Peak memory: ${formatFileSize(memoryMetrics.peak.heapUsed)})`,
       });
 
       return {
         success: true,
         data: report,
-        duration
+        duration,
       };
-
     } catch (error) {
       const duration = Date.now() - this.startTime;
-      this.emitProgress({ 
-        type: 'error', 
+      this.emitProgress({
+        type: 'error',
         message: `Analysis failed: ${error instanceof Error ? error.message : String(error)}`,
-        error: error instanceof Error ? error : new Error(String(error))
+        error: error instanceof Error ? error : new Error(String(error)),
       });
-      
+
       return {
         success: false,
         error: error instanceof Error ? error : new Error(String(error)),
-        duration
+        duration,
       };
     } finally {
       await this.cleanup();
@@ -246,7 +272,10 @@ export abstract class BaseAnalysisService {
    */
   protected async getTargetFiles(): Promise<string[]> {
     const cacheKey = 'target-files';
-    if (this.config.performance.enableCaching && this.analysisCache.has(cacheKey)) {
+    if (
+      this.config.performance.enableCaching &&
+      this.analysisCache.has(cacheKey)
+    ) {
       this.cacheHits++;
       return this.analysisCache.get(cacheKey);
     }
@@ -260,18 +289,18 @@ export abstract class BaseAnalysisService {
         absolute: true,
         ignore: [
           ...this.config.excludeDirs.map(dir => `${dir}/**`),
-          ...(this.config.includeTests ? [] : this.config.excludePatterns)
-        ]
+          ...(this.config.includeTests ? [] : this.config.excludePatterns),
+        ],
       });
       allFiles.push(...patternFiles);
     }
 
     // Remove duplicates and normalize paths
     const uniqueFiles = [...new Set(allFiles.map(normalizeFilePath))];
-    
+
     // Filter by file size and other criteria
     const filteredFiles = await this.filterFilesByCriteria(uniqueFiles);
-    
+
     if (this.config.performance.enableCaching) {
       this.analysisCache.set(cacheKey, filteredFiles);
     }
@@ -288,27 +317,33 @@ export abstract class BaseAnalysisService {
 
     await processConcurrently(
       files,
-      async (file) => {
+      async file => {
         try {
           const stats = await fs.stat(file);
-          if (stats.size > 1024 * 1024) { // Skip files > 1MB
+          if (stats.size > 1024 * 1024) {
+            // Skip files > 1MB
             if (this.config.verbose) {
-              console.warn(`Skipping large file: ${file} (${formatFileSize(stats.size)})`);
+              console.warn(
+                `Skipping large file: ${file} (${formatFileSize(stats.size)})`
+              );
             }
             return;
           }
 
           const content = await fs.readFile(file, 'utf-8');
           const lines = content.split('\n').length;
-          
-          if (lines <= maxLines * 2) { // Allow some flexibility
+
+          if (lines <= maxLines * 2) {
+            // Allow some flexibility
             filteredFiles.push(file);
           } else if (this.config.verbose) {
             console.warn(`Skipping file with ${lines} lines: ${file}`);
           }
         } catch (error) {
           if (this.config.verbose) {
-            console.warn(`Error reading file ${file}: ${error instanceof Error ? error.message : String(error)}`);
+            console.warn(
+              `Error reading file ${file}: ${error instanceof Error ? error.message : String(error)}`
+            );
           }
         }
       },
@@ -337,7 +372,7 @@ export abstract class BaseAnalysisService {
       skipLibCheck: true,
       skipDefaultLibCheck: true,
       noResolve: false,
-      maxNodeModuleJsDepth: 0
+      maxNodeModuleJsDepth: 0,
     };
 
     if (configPath) {
@@ -364,10 +399,12 @@ export abstract class BaseAnalysisService {
   /**
    * Extract entities with performance optimization
    */
-  private async extractEntitiesOptimized(files: string[]): Promise<EntityInfo[]> {
+  private async extractEntitiesOptimized(
+    files: string[]
+  ): Promise<EntityInfo[]> {
     this.emitProgress({
       type: 'phase',
-      message: 'Extracting entities from source files...'
+      message: 'Extracting entities from source files...',
     });
 
     const allEntities: EntityInfo[] = [];
@@ -377,28 +414,32 @@ export abstract class BaseAnalysisService {
     for (const fileChunk of fileChunks) {
       const chunkEntities = await processConcurrently(
         fileChunk,
-        async (filePath) => {
+        async filePath => {
           const entities = await this.extractEntitiesFromFile(filePath);
           processedFiles++;
-          
+
           this.emitProgress({
             type: 'progress',
             progress: processedFiles,
             total: files.length,
-            message: `Processing files...`
+            message: `Processing files...`,
           });
-          
+
           return entities;
         },
         Math.min(this.config.performance.maxConcurrency, fileChunk.length)
       );
 
       allEntities.push(...chunkEntities.flat());
-      
+
       // Track memory usage
       const memUsage = process.memoryUsage();
-      this.memoryUsage.peak = Math.max(this.memoryUsage.peak, memUsage.heapUsed);
-      this.memoryUsage.average = (this.memoryUsage.average + memUsage.heapUsed) / 2;
+      this.memoryUsage.peak = Math.max(
+        this.memoryUsage.peak,
+        memUsage.heapUsed
+      );
+      this.memoryUsage.average =
+        (this.memoryUsage.average + memUsage.heapUsed) / 2;
     }
 
     return allEntities;
@@ -407,9 +448,14 @@ export abstract class BaseAnalysisService {
   /**
    * Extract entities from a single file with caching
    */
-  protected async extractEntitiesFromFile(filePath: string): Promise<EntityInfo[]> {
+  protected async extractEntitiesFromFile(
+    filePath: string
+  ): Promise<EntityInfo[]> {
     const cacheKey = `entities-${filePath}`;
-    if (this.config.performance.enableCaching && this.analysisCache.has(cacheKey)) {
+    if (
+      this.config.performance.enableCaching &&
+      this.analysisCache.has(cacheKey)
+    ) {
       this.cacheHits++;
       return this.analysisCache.get(cacheKey);
     }
@@ -420,9 +466,9 @@ export abstract class BaseAnalysisService {
     }
 
     const entities: EntityInfo[] = [];
-    
+
     // Extract different types of entities
-    this.visitNode(sourceFile, (node) => {
+    this.visitNode(sourceFile, node => {
       const entity = this.extractEntityFromNode(node, sourceFile);
       if (entity) {
         entities.push(entity);
@@ -458,8 +504,8 @@ export abstract class BaseAnalysisService {
       maintainabilityIndex: this.calculateMaintainabilityIndex(entities),
       technicalDebt: {
         score: this.calculateTechnicalDebtScore(analysisResults),
-        estimatedHours: this.estimateTechnicalDebtHours(analysisResults)
-      }
+        estimatedHours: this.estimateTechnicalDebtHours(analysisResults),
+      },
     };
 
     const performance: PerformanceMetrics = {
@@ -468,7 +514,7 @@ export abstract class BaseAnalysisService {
       entitiesPerSecond: Math.round(entities.length / (duration / 1000)),
       memoryUsage: this.memoryUsage,
       cacheHits: this.cacheHits,
-      cacheSize: this.analysisCache.size
+      cacheSize: this.analysisCache.size,
     };
 
     return {
@@ -485,7 +531,7 @@ export abstract class BaseAnalysisService {
       codeSmells: analysisResults.codeSmells || [],
       recommendations: analysisResults.recommendations || [],
       performance,
-      visualizations: analysisResults.visualizations
+      visualizations: analysisResults.visualizations,
     };
   }
 
@@ -494,14 +540,14 @@ export abstract class BaseAnalysisService {
    */
   protected async saveReport(report: AnalysisReport): Promise<void> {
     await fs.ensureDir(this.config.outputDir!);
-    
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const baseFilename = `analysis-report-${timestamp}`;
-    
+
     for (const format of this.config.outputFormats) {
       const filename = `${baseFilename}.${format}`;
       const filePath = path.join(this.config.outputDir!, filename);
-      
+
       let content: string;
       switch (format) {
         case 'json':
@@ -519,14 +565,14 @@ export abstract class BaseAnalysisService {
         default:
           content = JSON.stringify(report, null, 2);
       }
-      
+
       await fs.writeFile(filePath, content);
-      
+
       // Also save as latest
       const latestPath = path.join(this.config.outputDir!, `latest.${format}`);
       await fs.writeFile(latestPath, content);
     }
-    
+
     if (this.config.verbose) {
       console.log(chalk.green(`📊 Reports saved to ${this.config.outputDir}/`));
     }
@@ -537,52 +583,60 @@ export abstract class BaseAnalysisService {
     const complexities = entities
       .filter(e => e.complexity?.cyclomatic)
       .map(e => e.complexity!.cyclomatic);
-    
-    return complexities.length > 0 
-      ? complexities.reduce((sum, c) => sum + c, 0) / complexities.length 
+
+    return complexities.length > 0
+      ? complexities.reduce((sum, c) => sum + c, 0) / complexities.length
       : 0;
   }
 
   protected calculateMaintainabilityIndex(entities: EntityInfo[]): number {
     // Simplified maintainability index calculation
     const avgComplexity = this.calculateAverageComplexity(entities);
-    const avgLines = entities.reduce((sum, e) => sum + (e.complexity?.lines || 0), 0) / entities.length;
-    
-    return Math.max(0, Math.min(100, 171 - 5.2 * Math.log(avgLines || 1) - 0.23 * avgComplexity));
+    const avgLines =
+      entities.reduce((sum, e) => sum + (e.complexity?.lines || 0), 0) /
+      entities.length;
+
+    return Math.max(
+      0,
+      Math.min(100, 171 - 5.2 * Math.log(avgLines || 1) - 0.23 * avgComplexity)
+    );
   }
 
   protected calculateTechnicalDebtScore(analysisResults: any): number {
     let score = 100;
-    
+
     if (analysisResults.duplicates?.length) {
       score -= analysisResults.duplicates.length * 5;
     }
-    
+
     if (analysisResults.circularDependencies?.length) {
       score -= analysisResults.circularDependencies.length * 10;
     }
-    
+
     if (analysisResults.codeSmells?.length) {
       score -= analysisResults.codeSmells.length * 2;
     }
-    
+
     return Math.max(0, score);
   }
 
   protected estimateTechnicalDebtHours(analysisResults: any): number {
     let hours = 0;
-    
+
     hours += (analysisResults.duplicates?.length || 0) * 2;
     hours += (analysisResults.circularDependencies?.length || 0) * 4;
     hours += (analysisResults.codeSmells?.length || 0) * 0.5;
-    
+
     return hours;
   }
 
   // Abstract methods to be implemented by specific analyzers
   protected abstract performAnalysis(entities: EntityInfo[]): Promise<any>;
-  protected abstract extractEntityFromNode(node: ts.Node, sourceFile: ts.SourceFile): EntityInfo | null;
-  
+  protected abstract extractEntityFromNode(
+    node: ts.Node,
+    sourceFile: ts.SourceFile
+  ): EntityInfo | null;
+
   // Add missing method implementations that were referenced
   protected setupMemoryOptimizations(): void {
     // Initialize object pools for memory efficiency
@@ -590,52 +644,54 @@ export abstract class BaseAnalysisService {
       this.objectPools.entities.push({} as EntityInfo);
       this.objectPools.arrays.push([]);
     }
-    
+
     for (let i = 0; i < 20; i++) {
       this.objectPools.buffers.push(Buffer.alloc(0));
     }
-    
+
     // Setup memory monitoring events
-    this.memoryMonitor.on('memory-alert', (alert) => {
+    this.memoryMonitor.on('memory-alert', alert => {
       if (this.config.verbose) {
-        console.warn(`Memory Alert: ${alert.type} - Current: ${formatFileSize(alert.current)}`);
+        console.warn(
+          `Memory Alert: ${alert.type} - Current: ${formatFileSize(alert.current)}`
+        );
       }
-      
+
       if (alert.severity === 'critical') {
         this.forceCleanup();
       }
     });
   }
-  
+
   private forceCleanup(): void {
     // Clear caches
     this.fileCache.clear();
     if (!this.config.performance.enableCaching) {
       this.analysisCache.clear();
     }
-    
+
     // Return objects to pools
     this.objectPools.entities.length = 0;
     this.objectPools.arrays.length = 0;
     this.objectPools.buffers.length = 0;
-    
+
     // Force garbage collection if available
     if (global.gc) {
       global.gc();
     }
   }
-  
+
   // Helper methods
   protected getSourceFile(filePath: string): ts.SourceFile | undefined {
     if (this.fileCache.has(filePath)) {
       return this.fileCache.get(filePath);
     }
-    
+
     const sourceFile = this.program?.getSourceFile(filePath);
     if (sourceFile && this.config.performance.enableCaching) {
       this.fileCache.set(filePath, sourceFile);
     }
-    
+
     return sourceFile;
   }
 
@@ -644,8 +700,13 @@ export abstract class BaseAnalysisService {
     ts.forEachChild(node, child => this.visitNode(child, visitor));
   }
 
-  protected getPositionInfo(node: ts.Node, sourceFile: ts.SourceFile): { line: number; column: number } {
-    const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+  protected getPositionInfo(
+    node: ts.Node,
+    sourceFile: ts.SourceFile
+  ): { line: number; column: number } {
+    const { line, character } = sourceFile.getLineAndCharacterOfPosition(
+      node.getStart(sourceFile)
+    );
     return { line: line + 1, column: character + 1 };
   }
 
@@ -705,14 +766,18 @@ export abstract class BaseAnalysisService {
     
     <div class="section">
       <h2>⚠️ Issues Found</h2>
-      ${report.recommendations.map(rec => `
+      ${report.recommendations
+        .map(
+          rec => `
         <div class="issue ${rec.priority}">
           <h4>${rec.title}</h4>
           <p>${rec.description}</p>
           <p><strong>Impact:</strong> ${rec.impact}</p>
           <p><strong>Effort:</strong> ${rec.effort}</p>
         </div>
-      `).join('')}
+      `
+        )
+        .join('')}
     </div>
   </div>
 </body>
@@ -748,7 +813,9 @@ export abstract class BaseAnalysisService {
 
 ## 💡 Recommendations
 
-${report.recommendations.map(rec => `
+${report.recommendations
+  .map(
+    rec => `
 ### ${rec.priority.toUpperCase()}: ${rec.title}
 
 ${rec.description}
@@ -757,26 +824,28 @@ ${rec.description}
 - **Effort:** ${rec.effort}
 ${rec.estimatedTimeHours ? `- **Estimated Time:** ${rec.estimatedTimeHours}h` : ''}
 
-`).join('')}`;
+`
+  )
+  .join('')}`;
   }
 
   protected generateCsvReport(report: AnalysisReport): string {
-    const rows = [
-      'Type,Name,File,Line,Complexity,Export,Dependencies'
-    ];
-    
+    const rows = ['Type,Name,File,Line,Complexity,Export,Dependencies'];
+
     report.entities.forEach(entity => {
-      rows.push([
-        entity.type,
-        `"${entity.name}"`,
-        `"${entity.file}"`,
-        entity.line,
-        entity.complexity?.cyclomatic || 0,
-        entity.exportType,
-        entity.dependencies.length
-      ].join(','));
+      rows.push(
+        [
+          entity.type,
+          `"${entity.name}"`,
+          `"${entity.file}"`,
+          entity.line,
+          entity.complexity?.cyclomatic || 0,
+          entity.exportType,
+          entity.dependencies.length,
+        ].join(',')
+      );
     });
-    
+
     return rows.join('\n');
   }
 
@@ -789,18 +858,18 @@ ${rec.estimatedTimeHours ? `- **Estimated Time:** ${rec.estimatedTimeHours}h` : 
   protected async cleanup(): Promise<void> {
     // Stop monitoring
     this.memoryMonitor.stopMonitoring();
-    
+
     // Shutdown worker pool gracefully
     await this.workerPool.shutdown(10000);
-    
+
     this.program = null;
     this.checker = null;
     this.fileCache.clear();
-    
+
     if (!this.config.performance.enableCaching) {
       this.analysisCache.clear();
     }
-    
+
     // Clear object pools
     this.objectPools.entities.length = 0;
     this.objectPools.arrays.length = 0;

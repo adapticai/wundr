@@ -4,8 +4,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { AnalysisReport } from '../analyzers';
-import { MetricsReport } from '../metrics';
+
+import type { AnalysisReport } from '../analyzers';
+import type { MetricsReport } from '../metrics';
 
 export interface ReportGenerator {
   generate(data: ReportData): Promise<string>;
@@ -38,7 +39,7 @@ export const DEFAULT_REPORT_CONFIG: ReportConfig = {
   includeSummary: true,
   includeMetrics: true,
   theme: 'light',
-  format: 'full'
+  format: 'full',
 };
 
 export class JSONReporter implements ReportGenerator {
@@ -50,11 +51,11 @@ export class JSONReporter implements ReportGenerator {
         title: this.config.title,
         timestamp: data.timestamp.toISOString(),
         projectName: data.projectName || path.basename(data.projectPath),
-        projectPath: data.projectPath
+        projectPath: data.projectPath,
       },
       summary: data.analysisReport?.summary,
       metrics: data.metricsReport?.summary,
-      issues: data.analysisReport?.results || []
+      issues: data.analysisReport?.results || [],
     };
 
     return JSON.stringify(reportData, null, 2);
@@ -151,9 +152,9 @@ export class MarkdownReporter implements ReportGenerator {
     content += `**Generated:** ${data.timestamp.toLocaleString()}\n\n`;
 
     if (summary) {
-      content += `## Summary\n\n`;
-      content += `| Metric | Count |\n`;
-      content += `|--------|-------|\n`;
+      content += '## Summary\n\n';
+      content += '| Metric | Count |\n';
+      content += '|--------|-------|\n';
       content += `| Total Issues | ${summary.totalIssues} |\n`;
       content += `| Critical | ${summary.criticalIssues} |\n`;
       content += `| Errors | ${summary.errorIssues} |\n`;
@@ -161,7 +162,7 @@ export class MarkdownReporter implements ReportGenerator {
       content += `| Info | ${summary.infoIssues} |\n\n`;
     }
 
-    content += `---\n\n*Generated with Wundr Analysis Engine*`;
+    content += '---\n\n*Generated with Wundr Analysis Engine*';
 
     return content;
   }
@@ -179,9 +180,9 @@ export class MarkdownReporter implements ReportGenerator {
 }
 
 export class MultiFormatReporter {
-  private reporters: Map<string, ReportGenerator> = new Map();
+  private reporters = new Map<string, ReportGenerator>();
 
-  constructor(formats: Array<{ format: 'html' | 'json' | 'markdown'; config?: ReportConfig }>) {
+  constructor(formats: { format: 'html' | 'json' | 'markdown'; config?: ReportConfig }[]) {
     formats.forEach(({ format, config }) => {
       switch (format) {
         case 'html':
@@ -235,14 +236,14 @@ export const ReporterUtils = {
   combineReports(
     analysisReport: AnalysisReport,
     metricsReport: MetricsReport,
-    projectName?: string
+    projectName?: string,
   ): ReportData {
     const data: ReportData = {
       timestamp: new Date(),
       projectPath: analysisReport.projectPath,
       analysisReport,
       metricsReport,
-      config: DEFAULT_REPORT_CONFIG
+      config: DEFAULT_REPORT_CONFIG,
     };
     
     if (projectName) {
@@ -250,5 +251,5 @@ export const ReporterUtils = {
     }
     
     return data;
-  }
+  },
 };

@@ -16,7 +16,7 @@ export interface WorkflowVariables {
 
 // Step results with typed responses
 export interface StepResults {
-  readonly [stepId: string]: StepExecutionResult;
+  readonly [stepId: string]: TypedStepExecutionResult;
 }
 
 // Workflow context with proper typing

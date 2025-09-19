@@ -229,7 +229,7 @@ server.get('/health', async (request, reply) => {
     name: 'Serverless Lambda Functions',
     description:
       'AWS Lambda functions with API Gateway integration and local development setup',
-    category: 'Serverless',
+    category: 'serverless',
     language: 'TypeScript',
     framework: 'AWS Lambda',
     difficulty: 'beginner',
@@ -279,7 +279,7 @@ server.get('/health', async (request, reply) => {
     name: 'WebSocket Real-time Service',
     description:
       'Real-time communication service with WebSocket support and room management',
-    category: 'Real-time',
+    category: 'real-time',
     language: 'TypeScript',
     framework: 'Socket.io',
     difficulty: 'intermediate',

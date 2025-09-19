@@ -440,7 +440,7 @@ export interface MdxComponents {
   /** Divider components */
   hr?: React.ComponentType<BaseMdxProps>;
   /** Custom components */
-  [key: string]: React.ComponentType<any> | undefined;
+  [key: string]: React.ComponentType<Record<string, unknown>> | undefined;
 }
 
 // Types are already exported as interfaces above

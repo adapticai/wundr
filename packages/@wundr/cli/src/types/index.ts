@@ -250,4 +250,3 @@ export interface WundrError extends Error {
   context?: Record<string, any>;
   recoverable?: boolean;
 }
-

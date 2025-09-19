@@ -26,10 +26,10 @@ class ErrorHandler {
    */
   handle(error: Error | WundrError): void {
     const wundrError = error as WundrError;
-    
+
     // Log the raw error in debug mode
     logger.debug('Raw error:', error);
-    
+
     if (this.isKnownError(wundrError)) {
       this.handleKnownError(wundrError);
     } else if (this.isSystemError(error)) {
@@ -57,13 +57,14 @@ class ErrorHandler {
    * Handle known Wundr errors
    */
   private handleKnownError(error: WundrError): void {
-    const description = this.errorCodes.get(error.code || '') || 'Unknown error';
-    
+    const description =
+      this.errorCodes.get(error.code || '') || 'Unknown error';
+
     console.error(chalk.red('✖ Wundr Error'));
     console.error(chalk.red(`  Code: ${error.code}`));
     console.error(chalk.red(`  Message: ${error.message}`));
     console.error(chalk.gray(`  Description: ${description}`));
-    
+
     if (error.context) {
       console.error(chalk.gray('  Context:'));
       Object.entries(error.context).forEach(([key, value]) => {
@@ -82,16 +83,16 @@ class ErrorHandler {
    */
   private handleSystemError(error: any): void {
     const description = this.errorCodes.get(error.code) || 'System error';
-    
+
     console.error(chalk.red('✖ System Error'));
     console.error(chalk.red(`  Code: ${error.code}`));
     console.error(chalk.red(`  Message: ${error.message}`));
     console.error(chalk.gray(`  Description: ${description}`));
-    
+
     if (error.path) {
       console.error(chalk.gray(`  Path: ${error.path}`));
     }
-    
+
     if (error.syscall) {
       console.error(chalk.gray(`  System Call: ${error.syscall}`));
     }
@@ -103,16 +104,18 @@ class ErrorHandler {
   private handleUnknownError(error: Error): void {
     console.error(chalk.red('✖ Unexpected Error'));
     console.error(chalk.red(`  Message: ${error.message}`));
-    
+
     if (error.stack) {
       console.error(chalk.gray('  Stack Trace:'));
       error.stack.split('\n').forEach(line => {
         console.error(chalk.gray(`    ${line}`));
       });
     }
-    
+
     console.error(chalk.yellow('\n💡 This appears to be an unexpected error.'));
-    console.error(chalk.yellow('   Please report this issue with the above details.'));
+    console.error(
+      chalk.yellow('   Please report this issue with the above details.')
+    );
   }
 
   /**
@@ -120,31 +123,31 @@ class ErrorHandler {
    */
   private suggestRecoveryActions(code: string): void {
     const suggestions: Record<string, string[]> = {
-      'WUNDR_CONFIG_INVALID': [
+      WUNDR_CONFIG_INVALID: [
         '• Check your wundr.config.json syntax',
         '• Run `wundr init` to create a new configuration',
-        '• Validate your configuration with `wundr config validate`'
+        '• Validate your configuration with `wundr config validate`',
       ],
-      'WUNDR_PLUGIN_LOAD_FAILED': [
+      WUNDR_PLUGIN_LOAD_FAILED: [
         '• Check if the plugin is properly installed',
         '• Verify plugin compatibility with current Wundr version',
-        '• Run `wundr plugins list` to see available plugins'
+        '• Run `wundr plugins list` to see available plugins',
       ],
-      'WUNDR_COMMAND_FAILED': [
+      WUNDR_COMMAND_FAILED: [
         '• Check command syntax and arguments',
         '• Verify you have necessary permissions',
-        '• Run with --verbose for more details'
+        '• Run with --verbose for more details',
       ],
-      'ENOENT': [
+      ENOENT: [
         '• Verify the file or directory path',
-        '• Check if you\'re in the correct directory',
-        '• Run `wundr init` if in a new project'
+        "• Check if you're in the correct directory",
+        '• Run `wundr init` if in a new project',
       ],
-      'EACCES': [
+      EACCES: [
         '• Check file permissions',
         '• Run with appropriate user privileges',
-        '• Verify directory access rights'
-      ]
+        '• Verify directory access rights',
+      ],
     };
 
     const actions = suggestions[code];
@@ -158,7 +161,12 @@ class ErrorHandler {
   /**
    * Create a standardized Wundr error
    */
-  createError(code: string, message: string, context?: Record<string, any>, recoverable = false): WundrError {
+  createError(
+    code: string,
+    message: string,
+    context?: Record<string, any>,
+    recoverable = false
+  ): WundrError {
     const error = new Error(message) as WundrError;
     error.code = code;
     error.context = context;

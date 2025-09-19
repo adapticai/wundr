@@ -3,7 +3,13 @@
  */
 
 import { ToolManager } from '../core/tool-manager';
-import { EnvironmentConfig, ValidationResult, HealthCheckResult, SystemInfo, ToolConfiguration } from '../types';
+import {
+  EnvironmentConfig,
+  ValidationResult,
+  HealthCheckResult,
+  SystemInfo,
+  ToolConfiguration,
+} from '../types';
 import { createLogger } from '../utils/logger';
 import { getSystemInfo } from '../utils/system';
 
@@ -19,17 +25,23 @@ export class EnvironmentValidator {
   /**
    * Perform comprehensive environment validation
    */
-  async validateEnvironment(config: EnvironmentConfig): Promise<HealthCheckResult> {
+  async validateEnvironment(
+    config: EnvironmentConfig
+  ): Promise<HealthCheckResult> {
     logger.info('Starting comprehensive environment validation');
 
     const systemInfo = await getSystemInfo();
     const toolValidations = await this.validateAllTools(config);
-    const platformValidation = this.validatePlatformCompatibility(config, systemInfo);
+    const platformValidation = this.validatePlatformCompatibility(
+      config,
+      systemInfo
+    );
     const dependencyValidation = this.validateDependencies(config);
 
-    const healthy = toolValidations.every(result => result.valid) && 
-                   platformValidation.valid && 
-                   dependencyValidation.valid;
+    const healthy =
+      toolValidations.every(result => result.valid) &&
+      platformValidation.valid &&
+      dependencyValidation.valid;
 
     const recommendations: string[] = [];
 
@@ -53,14 +65,16 @@ export class EnvironmentValidator {
       environment: config,
       tools: toolValidations,
       system: systemInfo,
-      ...(recommendations.length > 0 && { recommendations })
+      ...(recommendations.length > 0 && { recommendations }),
     };
   }
 
   /**
    * Validate all tools in the configuration
    */
-  private async validateAllTools(config: EnvironmentConfig): Promise<ValidationResult[]> {
+  private async validateAllTools(
+    config: EnvironmentConfig
+  ): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     for (const tool of config.tools) {
@@ -72,7 +86,7 @@ export class EnvironmentValidator {
         results.push({
           valid: false,
           tool: tool.name,
-          issues: [`Validation failed: ${error}`]
+          issues: [`Validation failed: ${error}`],
         });
       }
     }
@@ -83,30 +97,57 @@ export class EnvironmentValidator {
   /**
    * Validate platform compatibility
    */
-  private validatePlatformCompatibility(config: EnvironmentConfig, systemInfo: SystemInfo): ValidationResult {
+  private validatePlatformCompatibility(
+    config: EnvironmentConfig,
+    systemInfo: SystemInfo
+  ): ValidationResult {
     const issues: string[] = [];
     const suggestions: string[] = [];
 
     // Check if current platform matches configuration
     if (config.platform !== systemInfo.platform) {
-      issues.push(`Configuration platform (${config.platform}) doesn't match system platform (${systemInfo.platform})`);
-      suggestions.push(`Update configuration to match system platform: ${systemInfo.platform}`);
+      issues.push(
+        `Configuration platform (${config.platform}) doesn't match system platform (${systemInfo.platform})`
+      );
+      suggestions.push(
+        `Update configuration to match system platform: ${systemInfo.platform}`
+      );
     }
 
     // Check architecture compatibility
-    if (systemInfo.architecture !== 'x64' && systemInfo.architecture !== 'arm64') {
+    if (
+      systemInfo.architecture !== 'x64' &&
+      systemInfo.architecture !== 'arm64'
+    ) {
       issues.push(`Unsupported architecture: ${systemInfo.architecture}`);
-      suggestions.push('This environment manager supports x64 and arm64 architectures only');
+      suggestions.push(
+        'This environment manager supports x64 and arm64 architectures only'
+      );
     }
 
     // Platform-specific validations
     switch (systemInfo.platform) {
       case 'macos':
-        return this.validateMacOSCompatibility(config, systemInfo, issues, suggestions);
+        return this.validateMacOSCompatibility(
+          config,
+          systemInfo,
+          issues,
+          suggestions
+        );
       case 'linux':
-        return this.validateLinuxCompatibility(config, systemInfo, issues, suggestions);
+        return this.validateLinuxCompatibility(
+          config,
+          systemInfo,
+          issues,
+          suggestions
+        );
       case 'windows':
-        return this.validateWindowsCompatibility(config, systemInfo, issues, suggestions);
+        return this.validateWindowsCompatibility(
+          config,
+          systemInfo,
+          issues,
+          suggestions
+        );
       default:
         issues.push(`Unsupported platform: ${systemInfo.platform}`);
     }
@@ -115,7 +156,7 @@ export class EnvironmentValidator {
       valid: issues.length === 0,
       tool: 'platform',
       ...(issues.length > 0 && { issues }),
-      ...(suggestions.length > 0 && { suggestions })
+      ...(suggestions.length > 0 && { suggestions }),
     };
   }
 
@@ -131,11 +172,15 @@ export class EnvironmentValidator {
     // Check for Homebrew requirement
     const hasBrewTool = config.tools.some(tool => tool.installer === 'brew');
     if (hasBrewTool && !systemInfo.dockerVersion?.includes('not installed')) {
-      suggestions.push('Consider using Homebrew for package management on macOS');
+      suggestions.push(
+        'Consider using Homebrew for package management on macOS'
+      );
     }
 
     // Check Xcode Command Line Tools
-    if (config.tools.some(tool => tool.name === 'git' || tool.name === 'node')) {
+    if (
+      config.tools.some(tool => tool.name === 'git' || tool.name === 'node')
+    ) {
       suggestions.push('Ensure Xcode Command Line Tools are installed');
     }
 
@@ -143,7 +188,7 @@ export class EnvironmentValidator {
       valid: issues.length === 0,
       tool: 'platform-macos',
       ...(issues.length > 0 && { issues }),
-      ...(suggestions.length > 0 && { suggestions })
+      ...(suggestions.length > 0 && { suggestions }),
     };
   }
 
@@ -158,17 +203,19 @@ export class EnvironmentValidator {
   ): ValidationResult {
     // Check for common development tools
     suggestions.push('Ensure build-essential package is installed');
-    
+
     // Check for snap/flatpak if needed
     if (config.tools.some(tool => tool.name === 'vscode')) {
-      suggestions.push('VS Code can be installed via snap, flatpak, or distribution packages');
+      suggestions.push(
+        'VS Code can be installed via snap, flatpak, or distribution packages'
+      );
     }
 
     return {
       valid: issues.length === 0,
       tool: 'platform-linux',
       ...(issues.length > 0 && { issues }),
-      ...(suggestions.length > 0 && { suggestions })
+      ...(suggestions.length > 0 && { suggestions }),
     };
   }
 
@@ -183,7 +230,9 @@ export class EnvironmentValidator {
   ): ValidationResult {
     // Check for Windows-specific tools
     suggestions.push('Consider installing Windows Subsystem for Linux (WSL2)');
-    suggestions.push('PowerShell 7+ recommended for better cross-platform compatibility');
+    suggestions.push(
+      'PowerShell 7+ recommended for better cross-platform compatibility'
+    );
 
     if (config.tools.some(tool => tool.name === 'docker')) {
       suggestions.push('Docker Desktop requires Hyper-V or WSL2 backend');
@@ -193,7 +242,7 @@ export class EnvironmentValidator {
       valid: issues.length === 0,
       tool: 'platform-windows',
       ...(issues.length > 0 && { issues }),
-      ...(suggestions.length > 0 && { suggestions })
+      ...(suggestions.length > 0 && { suggestions }),
     };
   }
 
@@ -213,10 +262,14 @@ export class EnvironmentValidator {
         for (const depName of tool.dependencies) {
           const dependency = toolMap.get(depName);
           if (!dependency) {
-            issues.push(`Tool ${tool.name} depends on ${depName} which is not configured`);
+            issues.push(
+              `Tool ${tool.name} depends on ${depName} which is not configured`
+            );
             suggestions.push(`Add ${depName} to your tool configuration`);
           } else if (!dependency.required && tool.required) {
-            suggestions.push(`Consider making ${depName} required since ${tool.name} depends on it`);
+            suggestions.push(
+              `Consider making ${depName} required since ${tool.name} depends on it`
+            );
           }
         }
       }
@@ -225,7 +278,9 @@ export class EnvironmentValidator {
     // Check for circular dependencies
     const circularDeps = this.detectCircularDependencies(config.tools);
     if (circularDeps.length > 0) {
-      issues.push(`Circular dependencies detected: ${circularDeps.join(' -> ')}`);
+      issues.push(
+        `Circular dependencies detected: ${circularDeps.join(' -> ')}`
+      );
       suggestions.push('Remove circular dependencies from tool configuration');
     }
 
@@ -233,7 +288,7 @@ export class EnvironmentValidator {
       valid: issues.length === 0,
       tool: 'dependencies',
       ...(issues.length > 0 && { issues }),
-      ...(suggestions.length > 0 && { suggestions })
+      ...(suggestions.length > 0 && { suggestions }),
     };
   }
 
@@ -259,7 +314,7 @@ export class EnvironmentValidator {
 
       visiting.add(toolName);
       const tool = tools.find(t => t.name === toolName);
-      
+
       if (tool?.dependencies) {
         for (const dep of tool.dependencies) {
           if (visit(dep, [...path, toolName])) {
@@ -305,14 +360,16 @@ export class EnvironmentValidator {
 
     return {
       healthy: issues.length === 0,
-      issues
+      issues,
     };
   }
 
   /**
    * Execute shell command for validation
    */
-  private async executeCommand(command: string): Promise<{ success: boolean; output: string }> {
+  private async executeCommand(
+    command: string
+  ): Promise<{ success: boolean; output: string }> {
     const { exec } = await import('child_process');
     const { promisify } = await import('util');
     const execAsync = promisify(exec);

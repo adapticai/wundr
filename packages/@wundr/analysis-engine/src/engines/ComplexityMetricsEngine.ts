@@ -9,7 +9,6 @@ import {
   ComplexityMetrics,
   BaseAnalyzer,
   AnalysisConfig,
-  
 } from '../types';
 import { createId } from '../utils';
 
@@ -86,7 +85,11 @@ interface ComplexityHotspot {
 
 interface ComplexityRecommendation {
   id: string;
-  type: 'reduce-complexity' | 'extract-method' | 'split-class' | 'simplify-conditions';
+  type:
+    | 'reduce-complexity'
+    | 'extract-method'
+    | 'split-class'
+    | 'simplify-conditions';
   priority: 'critical' | 'high' | 'medium' | 'low';
   entity: EntityInfo;
   description: string;
@@ -110,36 +113,39 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         low: 5,
         medium: 10,
         high: 20,
-        critical: 30
+        critical: 30,
       },
       cognitive: {
         low: 7,
         medium: 15,
         high: 25,
-        critical: 40
+        critical: 40,
       },
       maintainability: {
         excellent: 85,
         good: 70,
         moderate: 50,
-        poor: 25
+        poor: 25,
       },
       nesting: {
         maxDepth: 4,
-        warningDepth: 3
+        warningDepth: 3,
       },
       size: {
         maxLines: 100,
-        maxParameters: 5
+        maxParameters: 5,
       },
-      ...thresholds
+      ...thresholds,
     };
   }
 
   /**
    * Analyze complexity metrics for all entities
    */
-  async analyze(entities: EntityInfo[], config: AnalysisConfig): Promise<ComplexityReport> {
+  async analyze(
+    entities: EntityInfo[],
+    config: AnalysisConfig
+  ): Promise<ComplexityReport> {
     const entityComplexities = new Map<string, ComplexityMetrics>();
     const fileComplexities = new Map<string, FileComplexityMetrics>();
 
@@ -156,11 +162,14 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     const overallMetrics = this.calculateOverallMetrics(entityComplexities);
 
     // Identify complexity hotspots
-    const complexityHotspots = this.identifyComplexityHotspots(entities, entityComplexities);
+    const complexityHotspots = this.identifyComplexityHotspots(
+      entities,
+      entityComplexities
+    );
 
     // Generate recommendations
     const recommendations = this.generateComplexityRecommendations(
-      entities, 
+      entities,
       entityComplexities
     );
 
@@ -169,14 +178,16 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       fileComplexities,
       overallMetrics,
       complexityHotspots,
-      recommendations
+      recommendations,
     };
   }
 
   /**
    * Calculate comprehensive complexity metrics for an entity
    */
-  private async calculateEntityComplexity(entity: EntityInfo): Promise<ComplexityMetrics> {
+  private async calculateEntityComplexity(
+    entity: EntityInfo
+  ): Promise<ComplexityMetrics> {
     // If complexity is already calculated, enhance it
     let baseComplexity = entity.complexity || {
       cyclomatic: 1,
@@ -184,20 +195,24 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       maintainability: 100,
       depth: 0,
       parameters: 0,
-      lines: 0
+      lines: 0,
     };
 
     // Enhance with additional calculations if we have signature data
     if (entity.signature) {
       const enhancedComplexity = this.calculateComplexityFromSignature(
-        entity.signature, 
+        entity.signature,
         entity.type
       );
-      baseComplexity = this.mergeComplexityMetrics(baseComplexity, enhancedComplexity);
+      baseComplexity = this.mergeComplexityMetrics(
+        baseComplexity,
+        enhancedComplexity
+      );
     }
 
     // Calculate maintainability index
-    baseComplexity.maintainability = this.calculateMaintainabilityIndex(baseComplexity);
+    baseComplexity.maintainability =
+      this.calculateMaintainabilityIndex(baseComplexity);
 
     return baseComplexity;
   }
@@ -206,12 +221,15 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Calculate complexity from source code signature
    */
   private calculateComplexityFromSignature(
-    signature: string, 
+    signature: string,
     entityType: string
   ): Partial<ComplexityMetrics> {
     const lines = signature.split('\n');
-    const codeLines = lines.filter(line => 
-      line.trim() && !line.trim().startsWith('//') && !line.trim().startsWith('*')
+    const codeLines = lines.filter(
+      line =>
+        line.trim() &&
+        !line.trim().startsWith('//') &&
+        !line.trim().startsWith('*')
     );
 
     // Parse the code to AST for accurate analysis
@@ -246,7 +264,11 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     const lines = end.line - start.line + 1;
 
     // Extract parameters for functions/methods
-    if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node) || ts.isArrowFunction(node)) {
+    if (
+      ts.isFunctionDeclaration(node) ||
+      ts.isMethodDeclaration(node) ||
+      ts.isArrowFunction(node)
+    ) {
       parameters = (node as any).parameters?.length || 0;
     }
 
@@ -292,7 +314,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       lines,
       parameters,
       depth: maxDepth,
-      maintainability: 0 // Will be calculated
+      maintainability: 0, // Will be calculated
     });
 
     return {
@@ -301,7 +323,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       maintainability,
       depth: maxDepth,
       parameters,
-      lines
+      lines,
     };
   }
 
@@ -334,9 +356,11 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Check if operator is logical (contributes to complexity)
    */
   private isLogicalOperator(kind: ts.SyntaxKind): boolean {
-    return kind === ts.SyntaxKind.AmpersandAmpersandToken || 
-           kind === ts.SyntaxKind.BarBarToken ||
-           kind === ts.SyntaxKind.QuestionQuestionToken;
+    return (
+      kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+      kind === ts.SyntaxKind.BarBarToken ||
+      kind === ts.SyntaxKind.QuestionQuestionToken
+    );
   }
 
   /**
@@ -352,16 +376,18 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       ts.SyntaxKind.WhileStatement,
       ts.SyntaxKind.TryStatement,
       ts.SyntaxKind.SwitchStatement,
-      ts.SyntaxKind.Block
+      ts.SyntaxKind.Block,
     ].includes(node.kind);
   }
 
   /**
    * Fallback text-based complexity calculation
    */
-  private calculateTextBasedComplexity(code: string): Partial<ComplexityMetrics> {
+  private calculateTextBasedComplexity(
+    code: string
+  ): Partial<ComplexityMetrics> {
     const lines = code.split('\n').filter(line => line.trim());
-    
+
     // Count complexity indicators
     const ifCount = (code.match(/\b(if|else if)\b/g) || []).length;
     const loopCount = (code.match(/\b(for|while|do)\b/g) || []).length;
@@ -370,22 +396,30 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     const ternaryCount = (code.match(/\?.*:/g) || []).length;
     const logicalCount = (code.match(/&&|\|\|/g) || []).length;
 
-    const cyclomatic = 1 + ifCount + loopCount + switchCount + catchCount + ternaryCount + logicalCount;
-    
+    const cyclomatic =
+      1 +
+      ifCount +
+      loopCount +
+      switchCount +
+      catchCount +
+      ternaryCount +
+      logicalCount;
+
     // Estimate cognitive complexity (simplified)
     const nestingPenalty = (code.match(/\{[^}]*\{/g) || []).length;
     const cognitive = cyclomatic + nestingPenalty;
 
     // Estimate parameters
     const paramMatch = code.match(/\(([^)]*)\)/);
-    const parameters = paramMatch ? 
-      paramMatch[1].split(',').filter(p => p.trim()).length : 0;
+    const parameters = paramMatch
+      ? paramMatch[1].split(',').filter(p => p.trim()).length
+      : 0;
 
     return {
       cyclomatic,
       cognitive,
       parameters,
-      lines: lines.length
+      lines: lines.length,
     };
   }
 
@@ -395,17 +429,24 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private calculateMaintainabilityIndex(metrics: ComplexityMetrics): number {
     const { cyclomatic, lines, parameters } = metrics;
-    
+
     // Simplified maintainability index calculation
     // MI = 171 - 5.2 * ln(HalsteadVolume) - 0.23 * CyclomaticComplexity - 16.2 * ln(LinesOfCode)
-    
+
     // Estimate Halstead volume based on lines and parameters
     const estimatedVolume = Math.max(1, lines * Math.log2(parameters + 1));
-    
-    const mi = Math.max(0, Math.min(100,
-      171 - 5.2 * Math.log(estimatedVolume) - 0.23 * cyclomatic - 16.2 * Math.log(lines || 1)
-    ));
-    
+
+    const mi = Math.max(
+      0,
+      Math.min(
+        100,
+        171 -
+          5.2 * Math.log(estimatedVolume) -
+          0.23 * cyclomatic -
+          16.2 * Math.log(lines || 1)
+      )
+    );
+
     return Math.round(mi * 100) / 100; // Round to 2 decimal places
   }
 
@@ -413,7 +454,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Merge complexity metrics
    */
   private mergeComplexityMetrics(
-    base: ComplexityMetrics, 
+    base: ComplexityMetrics,
     enhancement: Partial<ComplexityMetrics>
   ): ComplexityMetrics {
     return {
@@ -422,7 +463,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       maintainability: enhancement.maintainability ?? base.maintainability ?? 0,
       depth: Math.max(base.depth, enhancement.depth || 0),
       parameters: enhancement.parameters ?? base.parameters ?? 0,
-      lines: enhancement.lines ?? base.lines ?? 0
+      lines: enhancement.lines ?? base.lines ?? 0,
     };
   }
 
@@ -444,25 +485,32 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         maxComplexity: 0,
         entityCount: 0,
         maintainabilityIndex: 100,
-        technicalDebt: 0
+        technicalDebt: 0,
       });
     }
 
     const fileMetrics = fileComplexities.get(entity.file)!;
-    
+
     fileMetrics.entityCount++;
     fileMetrics.totalLines += complexity.lines;
     fileMetrics.codeLines += complexity.lines; // Simplified
-    fileMetrics.maxComplexity = Math.max(fileMetrics.maxComplexity, complexity.cyclomatic);
-    
+    fileMetrics.maxComplexity = Math.max(
+      fileMetrics.maxComplexity,
+      complexity.cyclomatic
+    );
+
     // Update average complexity
-    fileMetrics.averageComplexity = (fileMetrics.averageComplexity * (fileMetrics.entityCount - 1) + 
-                                   complexity.cyclomatic) / fileMetrics.entityCount;
-    
+    fileMetrics.averageComplexity =
+      (fileMetrics.averageComplexity * (fileMetrics.entityCount - 1) +
+        complexity.cyclomatic) /
+      fileMetrics.entityCount;
+
     // Update maintainability index (average)
-    fileMetrics.maintainabilityIndex = (fileMetrics.maintainabilityIndex * (fileMetrics.entityCount - 1) + 
-                                      complexity.maintainability) / fileMetrics.entityCount;
-    
+    fileMetrics.maintainabilityIndex =
+      (fileMetrics.maintainabilityIndex * (fileMetrics.entityCount - 1) +
+        complexity.maintainability) /
+      fileMetrics.entityCount;
+
     // Calculate technical debt based on complexity thresholds
     fileMetrics.technicalDebt += this.calculateTechnicalDebt(complexity);
   }
@@ -472,7 +520,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private calculateTechnicalDebt(complexity: ComplexityMetrics): number {
     let debt = 0;
-    
+
     // Cyclomatic complexity debt
     if (complexity.cyclomatic > this.thresholds.cyclomatic.critical) {
       debt += 8; // hours
@@ -481,7 +529,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     } else if (complexity.cyclomatic > this.thresholds.cyclomatic.medium) {
       debt += 1;
     }
-    
+
     // Cognitive complexity debt
     if (complexity.cognitive > this.thresholds.cognitive.critical) {
       debt += 6;
@@ -490,16 +538,20 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     } else if (complexity.cognitive > this.thresholds.cognitive.medium) {
       debt += 0.5;
     }
-    
+
     // Maintainability debt
     if (complexity.maintainability < this.thresholds.maintainability.poor) {
       debt += 10;
-    } else if (complexity.maintainability < this.thresholds.maintainability.moderate) {
+    } else if (
+      complexity.maintainability < this.thresholds.maintainability.moderate
+    ) {
       debt += 4;
-    } else if (complexity.maintainability < this.thresholds.maintainability.good) {
+    } else if (
+      complexity.maintainability < this.thresholds.maintainability.good
+    ) {
       debt += 1;
     }
-    
+
     return debt;
   }
 
@@ -510,20 +562,29 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     entityComplexities: Map<string, ComplexityMetrics>
   ): OverallComplexityMetrics {
     const complexities = Array.from(entityComplexities.values());
-    
-    const avgCyclomatic = complexities.reduce((sum, c) => sum + c.cyclomatic, 0) / complexities.length;
-    const avgCognitive = complexities.reduce((sum, c) => sum + c.cognitive, 0) / complexities.length;
-    const avgMaintainability = complexities.reduce((sum, c) => sum + c.maintainability, 0) / complexities.length;
-    const totalDebt = complexities.reduce((sum, c) => sum + this.calculateTechnicalDebt(c), 0);
-    
+
+    const avgCyclomatic =
+      complexities.reduce((sum, c) => sum + c.cyclomatic, 0) /
+      complexities.length;
+    const avgCognitive =
+      complexities.reduce((sum, c) => sum + c.cognitive, 0) /
+      complexities.length;
+    const avgMaintainability =
+      complexities.reduce((sum, c) => sum + c.maintainability, 0) /
+      complexities.length;
+    const totalDebt = complexities.reduce(
+      (sum, c) => sum + this.calculateTechnicalDebt(c),
+      0
+    );
+
     // Calculate distribution
     const distribution = {
       low: 0,
       medium: 0,
       high: 0,
-      critical: 0
+      critical: 0,
     };
-    
+
     complexities.forEach(complexity => {
       if (complexity.cyclomatic <= this.thresholds.cyclomatic.low) {
         distribution.low++;
@@ -535,13 +596,13 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         distribution.critical++;
       }
     });
-    
+
     return {
       averageCyclomaticComplexity: Math.round(avgCyclomatic * 100) / 100,
       averageCognitiveComplexity: Math.round(avgCognitive * 100) / 100,
       averageMaintainabilityIndex: Math.round(avgMaintainability * 100) / 100,
       totalTechnicalDebt: Math.round(totalDebt * 100) / 100,
-      complexityDistribution: distribution
+      complexityDistribution: distribution,
     };
   }
 
@@ -553,28 +614,32 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     complexities: Map<string, ComplexityMetrics>
   ): ComplexityHotspot[] {
     const hotspots: ComplexityHotspot[] = [];
-    
+
     entities.forEach((entity, index) => {
       const complexity = complexities.get(entity.id)!;
-      
+
       // Calculate hotspot score
       const score = this.calculateHotspotScore(complexity);
-      
-      if (score > 50) { // Threshold for hotspot
+
+      if (score > 50) {
+        // Threshold for hotspot
         const issues = this.identifyComplexityIssues(complexity);
-        const recommendations = this.generateHotspotRecommendations(entity, complexity);
-        
+        const recommendations = this.generateHotspotRecommendations(
+          entity,
+          complexity
+        );
+
         hotspots.push({
           id: createId(),
           entity,
           complexity,
           rank: score,
           issues,
-          recommendations
+          recommendations,
         });
       }
     });
-    
+
     // Sort by rank (highest first)
     return hotspots.sort((a, b) => b.rank - a.rank);
   }
@@ -584,7 +649,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private calculateHotspotScore(complexity: ComplexityMetrics): number {
     let score = 0;
-    
+
     // Cyclomatic complexity score
     if (complexity.cyclomatic > this.thresholds.cyclomatic.critical) {
       score += 40;
@@ -593,7 +658,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     } else if (complexity.cyclomatic > this.thresholds.cyclomatic.medium) {
       score += 10;
     }
-    
+
     // Cognitive complexity score
     if (complexity.cognitive > this.thresholds.cognitive.critical) {
       score += 30;
@@ -602,27 +667,29 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     } else if (complexity.cognitive > this.thresholds.cognitive.medium) {
       score += 8;
     }
-    
+
     // Maintainability penalty
     if (complexity.maintainability < this.thresholds.maintainability.poor) {
       score += 20;
-    } else if (complexity.maintainability < this.thresholds.maintainability.moderate) {
+    } else if (
+      complexity.maintainability < this.thresholds.maintainability.moderate
+    ) {
       score += 10;
     }
-    
+
     // Size penalties
     if (complexity.lines > this.thresholds.size.maxLines) {
       score += 15;
     }
-    
+
     if (complexity.parameters > this.thresholds.size.maxParameters) {
       score += 10;
     }
-    
+
     if (complexity.depth > this.thresholds.nesting.maxDepth) {
       score += 10;
     }
-    
+
     return score;
   }
 
@@ -631,37 +698,49 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private identifyComplexityIssues(complexity: ComplexityMetrics): string[] {
     const issues: string[] = [];
-    
+
     if (complexity.cyclomatic > this.thresholds.cyclomatic.critical) {
       issues.push(`Very high cyclomatic complexity (${complexity.cyclomatic})`);
     } else if (complexity.cyclomatic > this.thresholds.cyclomatic.high) {
       issues.push(`High cyclomatic complexity (${complexity.cyclomatic})`);
     }
-    
+
     if (complexity.cognitive > this.thresholds.cognitive.critical) {
       issues.push(`Very high cognitive complexity (${complexity.cognitive})`);
     } else if (complexity.cognitive > this.thresholds.cognitive.high) {
       issues.push(`High cognitive complexity (${complexity.cognitive})`);
     }
-    
+
     if (complexity.maintainability < this.thresholds.maintainability.poor) {
-      issues.push(`Poor maintainability index (${complexity.maintainability.toFixed(1)})`);
-    } else if (complexity.maintainability < this.thresholds.maintainability.moderate) {
-      issues.push(`Low maintainability index (${complexity.maintainability.toFixed(1)})`);
+      issues.push(
+        `Poor maintainability index (${complexity.maintainability.toFixed(1)})`
+      );
+    } else if (
+      complexity.maintainability < this.thresholds.maintainability.moderate
+    ) {
+      issues.push(
+        `Low maintainability index (${complexity.maintainability.toFixed(1)})`
+      );
     }
-    
-    if (complexity.depth && complexity.depth > this.thresholds.nesting.maxDepth) {
+
+    if (
+      complexity.depth &&
+      complexity.depth > this.thresholds.nesting.maxDepth
+    ) {
       issues.push(`Excessive nesting depth (${complexity.depth})`);
     }
-    
-    if (complexity.parameters && complexity.parameters > this.thresholds.size.maxParameters) {
+
+    if (
+      complexity.parameters &&
+      complexity.parameters > this.thresholds.size.maxParameters
+    ) {
       issues.push(`Too many parameters (${complexity.parameters})`);
     }
-    
+
     if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
       issues.push(`Function/method too long (${complexity.lines} lines)`);
     }
-    
+
     return issues;
   }
 
@@ -669,40 +748,54 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Generate hotspot-specific recommendations
    */
   private generateHotspotRecommendations(
-    entity: EntityInfo, 
+    entity: EntityInfo,
     complexity: ComplexityMetrics
   ): string[] {
     const recommendations: string[] = [];
-    
+
     if (complexity.cyclomatic > this.thresholds.cyclomatic.high) {
-      recommendations.push('Break down complex conditional logic into smaller functions');
+      recommendations.push(
+        'Break down complex conditional logic into smaller functions'
+      );
       recommendations.push('Use early returns to reduce nesting');
-      recommendations.push('Consider using strategy pattern for complex branching');
+      recommendations.push(
+        'Consider using strategy pattern for complex branching'
+      );
     }
-    
+
     if (complexity.cognitive > this.thresholds.cognitive.high) {
       recommendations.push('Simplify nested control structures');
-      recommendations.push('Extract complex conditions into well-named boolean variables');
+      recommendations.push(
+        'Extract complex conditions into well-named boolean variables'
+      );
       recommendations.push('Break long chains of logical operators');
     }
-    
+
     if (complexity.depth > this.thresholds.nesting.maxDepth) {
-      recommendations.push('Reduce nesting by extracting nested blocks into separate methods');
+      recommendations.push(
+        'Reduce nesting by extracting nested blocks into separate methods'
+      );
       recommendations.push('Use guard clauses to eliminate deep nesting');
     }
-    
+
     if (complexity.parameters > this.thresholds.size.maxParameters) {
       recommendations.push('Group related parameters into objects');
       recommendations.push('Use builder pattern for complex parameter sets');
-      recommendations.push('Consider if some parameters can be derived or have defaults');
+      recommendations.push(
+        'Consider if some parameters can be derived or have defaults'
+      );
     }
-    
+
     if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
-      recommendations.push('Break large function into smaller, focused functions');
+      recommendations.push(
+        'Break large function into smaller, focused functions'
+      );
       recommendations.push('Extract reusable logic into utility functions');
-      recommendations.push('Consider if the function has multiple responsibilities');
+      recommendations.push(
+        'Consider if the function has multiple responsibilities'
+      );
     }
-    
+
     return recommendations;
   }
 
@@ -714,13 +807,16 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     complexities: Map<string, ComplexityMetrics>
   ): ComplexityRecommendation[] {
     const recommendations: ComplexityRecommendation[] = [];
-    
+
     entities.forEach(entity => {
       const complexity = complexities.get(entity.id)!;
-      const entityRecommendations = this.generateEntityRecommendations(entity, complexity);
+      const entityRecommendations = this.generateEntityRecommendations(
+        entity,
+        complexity
+      );
       recommendations.push(...entityRecommendations);
     });
-    
+
     // Sort by priority
     return recommendations.sort((a, b) => {
       const priorities = { critical: 0, high: 1, medium: 2, low: 3 };
@@ -732,37 +828,47 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Generate recommendations for a specific entity
    */
   private generateEntityRecommendations(
-    entity: EntityInfo, 
+    entity: EntityInfo,
     complexity: ComplexityMetrics
   ): ComplexityRecommendation[] {
     const recommendations: ComplexityRecommendation[] = [];
-    
+
     // High cyclomatic complexity
     if (complexity.cyclomatic > this.thresholds.cyclomatic.high) {
       recommendations.push({
         id: createId(),
         type: 'reduce-complexity',
-        priority: complexity.cyclomatic > this.thresholds.cyclomatic.critical ? 'critical' : 'high',
+        priority:
+          complexity.cyclomatic > this.thresholds.cyclomatic.critical
+            ? 'critical'
+            : 'high',
         entity,
         description: `Reduce cyclomatic complexity from ${complexity.cyclomatic} to under ${this.thresholds.cyclomatic.medium}`,
         impact: 'Improves code readability, testability, and maintainability',
-        effort: complexity.cyclomatic > this.thresholds.cyclomatic.critical ? 'high' : 'medium',
+        effort:
+          complexity.cyclomatic > this.thresholds.cyclomatic.critical
+            ? 'high'
+            : 'medium',
         steps: [
           'Identify complex conditional logic',
           'Extract nested conditions into separate methods',
           'Use early returns to reduce branching',
           'Consider using strategy or state patterns',
-          'Add comprehensive unit tests for all paths'
-        ]
+          'Add comprehensive unit tests for all paths',
+        ],
       });
     }
-    
+
     // Large method/function
     if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
       recommendations.push({
         id: createId(),
         type: 'extract-method',
-        priority: (complexity.lines && complexity.lines > this.thresholds.size.maxLines * 2) ? 'high' : 'medium',
+        priority:
+          complexity.lines &&
+          complexity.lines > this.thresholds.size.maxLines * 2
+            ? 'high'
+            : 'medium',
         entity,
         description: `Break down large ${entity.type} (${complexity.lines} lines) into smaller functions`,
         impact: 'Improves code organization and reusability',
@@ -772,13 +878,16 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
           'Extract sections into well-named helper methods',
           'Ensure each extracted method has a single responsibility',
           'Update tests to cover extracted methods',
-          'Consider if extracted methods can be reused elsewhere'
-        ]
+          'Consider if extracted methods can be reused elsewhere',
+        ],
       });
     }
-    
+
     // Too many parameters
-    if (complexity.parameters && complexity.parameters > this.thresholds.size.maxParameters) {
+    if (
+      complexity.parameters &&
+      complexity.parameters > this.thresholds.size.maxParameters
+    ) {
       recommendations.push({
         id: createId(),
         type: 'simplify-conditions',
@@ -791,31 +900,36 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
           'Group related parameters into configuration objects',
           'Use builder pattern for complex parameter sets',
           'Consider dependency injection for external dependencies',
-          'Evaluate if some parameters can have sensible defaults'
-        ]
+          'Evaluate if some parameters can have sensible defaults',
+        ],
       });
     }
-    
+
     // Large class (if applicable)
-    if (entity.type === 'class' && entity.members?.methods && entity.members.methods.length > 15) {
+    if (
+      entity.type === 'class' &&
+      entity.members?.methods &&
+      entity.members.methods.length > 15
+    ) {
       recommendations.push({
         id: createId(),
         type: 'split-class',
         priority: 'medium',
         entity,
         description: `Consider splitting large class with ${entity.members.methods.length} methods`,
-        impact: 'Improves single responsibility principle and reduces complexity',
+        impact:
+          'Improves single responsibility principle and reduces complexity',
         effort: 'high',
         steps: [
           'Identify cohesive groups of methods and properties',
           'Extract related functionality into separate classes',
           'Use composition over inheritance where appropriate',
           'Update dependencies and injection configurations',
-          'Ensure comprehensive test coverage for split classes'
-        ]
+          'Ensure comprehensive test coverage for split classes',
+        ],
       });
     }
-    
+
     return recommendations;
   }
 }

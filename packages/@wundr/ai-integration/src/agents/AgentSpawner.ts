@@ -1,6 +1,6 @@
 /**
  * Agent Spawner - Handles dynamic agent creation and lifecycle
- * 
+ *
  * Manages the spawning, initialization, and lifecycle of the 54 specialized
  * agent types based on workload and system requirements.
  */
@@ -11,7 +11,11 @@ import { Agent, AgentType, AgentConfig, OperationResult } from '../types';
 
 export class AgentSpawner extends EventEmitter {
   private _config: AgentConfig;
-  private _spawnQueue: Array<{ type: AgentType; priority: number; context: any }> = [];
+  private _spawnQueue: Array<{
+    type: AgentType;
+    priority: number;
+    context: any;
+  }> = [];
   private spawningAgents: Set<string> = new Set();
 
   constructor(config: AgentConfig) {
@@ -22,13 +26,13 @@ export class AgentSpawner extends EventEmitter {
   async initialize(): Promise<OperationResult> {
     return {
       success: true,
-      message: 'Agent Spawner initialized successfully'
+      message: 'Agent Spawner initialized successfully',
     };
   }
 
   async spawnAgent(type: AgentType, context?: any): Promise<Agent> {
     const agentId = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const agent: Agent = {
       id: agentId,
       type,
@@ -42,20 +46,20 @@ export class AgentSpawner extends EventEmitter {
         tasksCompleted: 0,
         successRate: 0,
         averageResponseTime: 0,
-        healthScore: 100
+        healthScore: 100,
       },
-      context
+      context,
     };
 
     this.spawningAgents.add(agentId);
-    
+
     try {
       // Simulate initialization process
       await this.initializeAgent(agent);
-      
+
       agent.status = 'active';
       this.spawningAgents.delete(agentId);
-      
+
       this.emit('agent-spawned', agent);
       return agent;
     } catch (error) {
@@ -65,9 +69,12 @@ export class AgentSpawner extends EventEmitter {
     }
   }
 
-  async spawnMultipleAgents(types: AgentType[], context?: any): Promise<Agent[]> {
+  async spawnMultipleAgents(
+    types: AgentType[],
+    context?: any
+  ): Promise<Agent[]> {
     const agents: Agent[] = [];
-    
+
     for (const type of types) {
       try {
         const agent = await this.spawnAgent(type, context);
@@ -83,18 +90,18 @@ export class AgentSpawner extends EventEmitter {
   private async initializeAgent(agent: Agent): Promise<void> {
     // Simulate agent initialization
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     // Set agent capabilities based on type
     agent.capabilities = this.getCapabilitiesForAgentType(agent.type);
   }
 
   private getCategoryForAgentType(type: AgentType): string {
     const categoryMap: Record<string, string> = {
-      'coder': 'core',
-      'reviewer': 'core',
-      'tester': 'core',
-      'planner': 'core',
-      'researcher': 'core',
+      coder: 'core',
+      reviewer: 'core',
+      tester: 'core',
+      planner: 'core',
+      researcher: 'core',
       'hierarchical-coordinator': 'swarm',
       'mesh-coordinator': 'swarm',
       'adaptive-coordinator': 'swarm',
@@ -123,10 +130,10 @@ export class AgentSpawner extends EventEmitter {
       'multi-repo-swarm': 'github',
       'sparc-coord': 'sparc',
       'sparc-coder': 'sparc',
-      'specification': 'sparc',
-      'pseudocode': 'sparc',
-      'architecture': 'sparc',
-      'refinement': 'sparc',
+      specification: 'sparc',
+      pseudocode: 'sparc',
+      architecture: 'sparc',
+      refinement: 'sparc',
       'backend-dev': 'specialized',
       'mobile-dev': 'specialized',
       'ml-developer': 'specialized',
@@ -138,7 +145,7 @@ export class AgentSpawner extends EventEmitter {
       'tdd-london-swarm': 'testing',
       'production-validator': 'testing',
       'migration-planner': 'migration',
-      'swarm-init': 'migration'
+      'swarm-init': 'migration',
     };
 
     return categoryMap[type] || 'general';
@@ -146,15 +153,19 @@ export class AgentSpawner extends EventEmitter {
 
   private getCapabilitiesForAgentType(type: AgentType): string[] {
     const capabilityMap: Record<string, string[]> = {
-      'coder': ['coding', 'implementation', 'refactoring'],
-      'reviewer': ['code-review', 'quality-assurance', 'standards'],
-      'tester': ['testing', 'validation', 'quality-assurance'],
-      'planner': ['planning', 'architecture', 'coordination'],
-      'researcher': ['research', 'analysis', 'documentation'],
+      coder: ['coding', 'implementation', 'refactoring'],
+      reviewer: ['code-review', 'quality-assurance', 'standards'],
+      tester: ['testing', 'validation', 'quality-assurance'],
+      planner: ['planning', 'architecture', 'coordination'],
+      researcher: ['research', 'analysis', 'documentation'],
       'hierarchical-coordinator': ['coordination', 'hierarchy', 'management'],
       'mesh-coordinator': ['coordination', 'mesh-topology', 'distributed'],
       'adaptive-coordinator': ['coordination', 'adaptation', 'optimization'],
-      'collective-intelligence-coordinator': ['coordination', 'intelligence', 'consensus'],
+      'collective-intelligence-coordinator': [
+        'coordination',
+        'intelligence',
+        'consensus',
+      ],
       'swarm-memory-manager': ['memory', 'persistence', 'coordination'],
       'byzantine-coordinator': ['consensus', 'fault-tolerance', 'distributed'],
       'raft-manager': ['consensus', 'raft-protocol', 'leadership'],
@@ -179,10 +190,10 @@ export class AgentSpawner extends EventEmitter {
       'multi-repo-swarm': ['multi-repo', 'swarm', 'coordination'],
       'sparc-coord': ['sparc', 'coordination', 'methodology'],
       'sparc-coder': ['sparc', 'coding', 'implementation'],
-      'specification': ['specification', 'requirements', 'analysis'],
-      'pseudocode': ['pseudocode', 'algorithm', 'design'],
-      'architecture': ['architecture', 'system-design', 'structure'],
-      'refinement': ['refinement', 'optimization', 'iteration'],
+      specification: ['specification', 'requirements', 'analysis'],
+      pseudocode: ['pseudocode', 'algorithm', 'design'],
+      architecture: ['architecture', 'system-design', 'structure'],
+      refinement: ['refinement', 'optimization', 'iteration'],
       'backend-dev': ['backend', 'server', 'api'],
       'mobile-dev': ['mobile', 'ios', 'android'],
       'ml-developer': ['machine-learning', 'ai', 'data-science'],
@@ -194,7 +205,7 @@ export class AgentSpawner extends EventEmitter {
       'tdd-london-swarm': ['tdd', 'london-style', 'swarm'],
       'production-validator': ['validation', 'production', 'quality'],
       'migration-planner': ['migration', 'planning', 'strategy'],
-      'swarm-init': ['initialization', 'setup', 'configuration']
+      'swarm-init': ['initialization', 'setup', 'configuration'],
     };
 
     return capabilityMap[type] || ['general'];
@@ -203,7 +214,7 @@ export class AgentSpawner extends EventEmitter {
   async shutdown(): Promise<OperationResult> {
     return {
       success: true,
-      message: 'Agent Spawner shutdown completed'
+      message: 'Agent Spawner shutdown completed',
     };
   }
 }

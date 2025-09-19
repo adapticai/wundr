@@ -497,7 +497,7 @@ export interface DashboardSummary {
   /** Bugs count */
   bugs: number;
   /** Vulnerabilities count */
-  vulnerabilities: number;
+  vulnerabilityCount: number;
   /** Technical debt in hours */
   technicalDebtHours: number;
   /** Maintainability index (0-100) */
@@ -598,7 +598,7 @@ export interface QualityMetrics {
   /** Bugs count */
   bugs: number;
   /** Vulnerabilities count */
-  vulnerabilities: number;
+  vulnerabilityCount: number;
   /** Lines of code */
   linesOfCode: number;
 }

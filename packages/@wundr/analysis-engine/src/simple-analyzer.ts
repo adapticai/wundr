@@ -7,14 +7,14 @@ import * as path from 'path';
 import * as ts from 'typescript';
 import { glob } from 'glob';
 import { createId, generateNormalizedHash } from './utils';
-import { 
-  AnalysisConfig, 
-  AnalysisReport, 
-  EntityInfo, 
+import {
+  AnalysisConfig,
+  AnalysisReport,
+  EntityInfo,
   DuplicateCluster,
   ComplexityMetrics,
   AnalysisSummary,
-  PerformanceMetrics
+  PerformanceMetrics,
 } from './types';
 
 /**
@@ -35,20 +35,20 @@ export class SimpleAnalyzer {
       performance: {
         maxConcurrency: 10,
         chunkSize: 100,
-        enableCaching: true
+        enableCaching: true,
       },
       thresholds: {
         complexity: { cyclomatic: 10, cognitive: 15 },
         duplicates: { minSimilarity: 0.8 },
-        fileSize: { maxLines: 500 }
+        fileSize: { maxLines: 500 },
       },
-      ...config
+      ...config,
     };
   }
 
   async analyze(): Promise<AnalysisReport> {
     const startTime = Date.now();
-    
+
     // Get files to analyze
     const files = await this.getFiles();
     console.log(`Found ${files.length} files to analyze`);
@@ -75,8 +75,8 @@ export class SimpleAnalyzer {
       maintainabilityIndex: 85,
       technicalDebt: {
         score: Math.max(0, 100 - duplicates.length * 10),
-        estimatedHours: duplicates.length * 2
-      }
+        estimatedHours: duplicates.length * 2,
+      },
     };
 
     const duration = Date.now() - startTime;
@@ -84,9 +84,12 @@ export class SimpleAnalyzer {
       analysisTime: duration,
       filesPerSecond: Math.round(files.length / (duration / 1000)),
       entitiesPerSecond: Math.round(entities.length / (duration / 1000)),
-      memoryUsage: { peak: process.memoryUsage().heapUsed, average: process.memoryUsage().heapUsed },
+      memoryUsage: {
+        peak: process.memoryUsage().heapUsed,
+        average: process.memoryUsage().heapUsed,
+      },
       cacheHits: 0,
-      cacheSize: 0
+      cacheSize: 0,
     };
 
     const report: AnalysisReport = {
@@ -102,7 +105,7 @@ export class SimpleAnalyzer {
       unusedExports: [],
       codeSmells: [],
       recommendations: this.generateRecommendations(duplicates),
-      performance
+      performance,
     };
 
     return report;
@@ -113,10 +116,10 @@ export class SimpleAnalyzer {
     const files = await glob(pattern, {
       ignore: [
         ...this.config.excludeDirs.map(dir => `${dir}/**`),
-        ...(this.config.includeTests ? [] : this.config.excludePatterns)
-      ]
+        ...(this.config.includeTests ? [] : this.config.excludePatterns),
+      ],
     });
-    
+
     return files.filter(file => {
       // Additional filtering
       const stat = fs.statSync(file);
@@ -134,9 +137,12 @@ export class SimpleAnalyzer {
     }
   }
 
-  private extractEntitiesFromContent(content: string, filePath: string): EntityInfo[] {
+  private extractEntitiesFromContent(
+    content: string,
+    filePath: string
+  ): EntityInfo[] {
     const entities: EntityInfo[] = [];
-    
+
     try {
       const sourceFile = ts.createSourceFile(
         filePath,
@@ -148,25 +154,45 @@ export class SimpleAnalyzer {
       const visitNode = (node: ts.Node) => {
         // Extract classes
         if (ts.isClassDeclaration(node) && node.name) {
-          const entity = this.createEntityFromNode(node, 'class', filePath, sourceFile);
+          const entity = this.createEntityFromNode(
+            node,
+            'class',
+            filePath,
+            sourceFile
+          );
           if (entity) entities.push(entity);
         }
-        
+
         // Extract interfaces
         if (ts.isInterfaceDeclaration(node)) {
-          const entity = this.createEntityFromNode(node, 'interface', filePath, sourceFile);
+          const entity = this.createEntityFromNode(
+            node,
+            'interface',
+            filePath,
+            sourceFile
+          );
           if (entity) entities.push(entity);
         }
-        
+
         // Extract functions
         if (ts.isFunctionDeclaration(node) && node.name) {
-          const entity = this.createEntityFromNode(node, 'function', filePath, sourceFile);
+          const entity = this.createEntityFromNode(
+            node,
+            'function',
+            filePath,
+            sourceFile
+          );
           if (entity) entities.push(entity);
         }
 
         // Extract type aliases
         if (ts.isTypeAliasDeclaration(node)) {
-          const entity = this.createEntityFromNode(node, 'type', filePath, sourceFile);
+          const entity = this.createEntityFromNode(
+            node,
+            'type',
+            filePath,
+            sourceFile
+          );
           if (entity) entities.push(entity);
         }
 
@@ -183,15 +209,17 @@ export class SimpleAnalyzer {
   }
 
   private createEntityFromNode(
-    node: ts.Node, 
-    type: string, 
-    filePath: string, 
+    node: ts.Node,
+    type: string,
+    filePath: string,
     sourceFile: ts.SourceFile
   ): EntityInfo | null {
     const name = this.getNodeName(node);
     if (!name) return null;
-    const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-    
+    const { line, character } = sourceFile.getLineAndCharacterOfPosition(
+      node.getStart()
+    );
+
     const complexity = this.calculateComplexity(node, sourceFile);
     const signature = node.getText();
 
@@ -208,7 +236,7 @@ export class SimpleAnalyzer {
       normalizedHash: generateNormalizedHash(signature),
       jsDoc: '',
       complexity,
-      dependencies: []
+      dependencies: [],
     };
   }
 
@@ -231,13 +259,16 @@ export class SimpleAnalyzer {
   private hasExportModifier(node: ts.Node): boolean {
     const modifiers = (node as any).modifiers;
     if (!modifiers) return false;
-    
-    return modifiers.some((modifier: any) => 
-      modifier.kind === ts.SyntaxKind.ExportKeyword
+
+    return modifiers.some(
+      (modifier: any) => modifier.kind === ts.SyntaxKind.ExportKeyword
     );
   }
 
-  private calculateComplexity(node: ts.Node, sourceFile: ts.SourceFile): ComplexityMetrics {
+  private calculateComplexity(
+    node: ts.Node,
+    sourceFile: ts.SourceFile
+  ): ComplexityMetrics {
     let cyclomatic = 1;
     const start = sourceFile.getLineAndCharacterOfPosition(node.getStart());
     const end = sourceFile.getLineAndCharacterOfPosition(node.getEnd());
@@ -264,19 +295,24 @@ export class SimpleAnalyzer {
       maintainability: Math.max(0, 100 - cyclomatic * 5),
       depth: 1,
       parameters: 0,
-      lines
+      lines,
     };
   }
 
-  private extractEntitiesFromText(content: string, filePath: string): EntityInfo[] {
+  private extractEntitiesFromText(
+    content: string,
+    filePath: string
+  ): EntityInfo[] {
     const entities: EntityInfo[] = [];
     const lines = content.split('\n');
 
     lines.forEach((line, index) => {
       const trimmed = line.trim();
-      
+
       // Simple pattern matching
-      const classMatch = trimmed.match(/export\s+(class|interface|type)\s+(\w+)/);
+      const classMatch = trimmed.match(
+        /export\s+(class|interface|type)\s+(\w+)/
+      );
       if (classMatch) {
         entities.push({
           id: createId(),
@@ -290,8 +326,15 @@ export class SimpleAnalyzer {
           signature: line,
           normalizedHash: generateNormalizedHash(classMatch[2]),
           jsDoc: '',
-          complexity: { cyclomatic: 1, cognitive: 1, maintainability: 90, depth: 1, parameters: 0, lines: 1 },
-          dependencies: []
+          complexity: {
+            cyclomatic: 1,
+            cognitive: 1,
+            maintainability: 90,
+            depth: 1,
+            parameters: 0,
+            lines: 1,
+          },
+          dependencies: [],
         });
       }
     });
@@ -325,7 +368,7 @@ export class SimpleAnalyzer {
           entities: duplicateEntities,
           structuralMatch: true,
           semanticMatch: false,
-          similarity: 1.0
+          similarity: 1.0,
         });
       }
     }
@@ -335,11 +378,12 @@ export class SimpleAnalyzer {
 
   private calculateAverageComplexity(entities: EntityInfo[]): number {
     if (entities.length === 0) return 0;
-    
-    const totalComplexity = entities.reduce((sum, entity) => 
-      sum + (entity.complexity?.cyclomatic || 1), 0
+
+    const totalComplexity = entities.reduce(
+      (sum, entity) => sum + (entity.complexity?.cyclomatic || 1),
+      0
     );
-    
+
     return totalComplexity / entities.length;
   }
 
@@ -352,13 +396,17 @@ export class SimpleAnalyzer {
       description: `Found ${cluster.entities.length} duplicate ${cluster.type}s that could be consolidated`,
       impact: 'Reduces code duplication and maintenance burden',
       effort: 'medium',
-      estimatedTimeHours: cluster.entities.length * 1.5
+      estimatedTimeHours: cluster.entities.length * 1.5,
     }));
   }
 }
 
 // Export convenience function
-export async function analyzeProject(targetDir?: string): Promise<AnalysisReport> {
-  const analyzer = new SimpleAnalyzer({ targetDir: targetDir || process.cwd() });
+export async function analyzeProject(
+  targetDir?: string
+): Promise<AnalysisReport> {
+  const analyzer = new SimpleAnalyzer({
+    targetDir: targetDir || process.cwd(),
+  });
   return analyzer.analyze();
 }

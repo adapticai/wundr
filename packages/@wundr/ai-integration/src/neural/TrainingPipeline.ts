@@ -1,6 +1,6 @@
 /**
  * Training Pipeline - Automated neural model training and optimization
- * 
+ *
  * Manages the continuous training pipeline for neural models, handling
  * data preparation, model training, validation, and deployment.
  */
@@ -52,7 +52,7 @@ export class TrainingPipeline extends EventEmitter {
 
     return {
       success: true,
-      message: 'Training Pipeline initialized successfully'
+      message: 'Training Pipeline initialized successfully',
     };
   }
 
@@ -67,26 +67,26 @@ export class TrainingPipeline extends EventEmitter {
         modelType: 'pattern-recognition',
         interval: 24 * 60 * 60 * 1000, // Daily
         minDataSize: 100,
-        autoTriggers: ['pattern-discovered', 'execution-completed']
+        autoTriggers: ['pattern-discovered', 'execution-completed'],
       },
       {
         modelType: 'performance-prediction',
         interval: 12 * 60 * 60 * 1000, // Twice daily
         minDataSize: 50,
-        autoTriggers: ['performance-data-collected']
+        autoTriggers: ['performance-data-collected'],
       },
       {
         modelType: 'task-classification',
         interval: 6 * 60 * 60 * 1000, // Every 6 hours
         minDataSize: 30,
-        autoTriggers: ['task-completed', 'new-task-type']
+        autoTriggers: ['task-completed', 'new-task-type'],
       },
       {
         modelType: 'agent-selection',
         interval: 8 * 60 * 60 * 1000, // Every 8 hours
         minDataSize: 40,
-        autoTriggers: ['agent-performance-updated']
-      }
+        autoTriggers: ['agent-performance-updated'],
+      },
     ];
 
     defaultSchedules.forEach(schedule => {
@@ -98,16 +98,25 @@ export class TrainingPipeline extends EventEmitter {
           interval: schedule.interval,
           minDataSize: schedule.minDataSize,
           autoTriggers: schedule.autoTriggers,
-          enabled: true
+          enabled: true,
         });
       });
     });
   }
 
   private setupEventHandlers(): void {
-    this.neuralModels.on('training-started', this.handleTrainingStarted.bind(this));
-    this.neuralModels.on('training-completed', this.handleTrainingCompleted.bind(this));
-    this.neuralModels.on('training-progress', this.handleTrainingProgress.bind(this));
+    this.neuralModels.on(
+      'training-started',
+      this.handleTrainingStarted.bind(this)
+    );
+    this.neuralModels.on(
+      'training-completed',
+      this.handleTrainingCompleted.bind(this)
+    );
+    this.neuralModels.on(
+      'training-progress',
+      this.handleTrainingProgress.bind(this)
+    );
   }
 
   private startProcessing(): void {
@@ -154,7 +163,9 @@ export class TrainingPipeline extends EventEmitter {
 
     const data = this.trainingData.get(model.type) || [];
     if (data.length === 0) {
-      throw new Error(`No training data available for model type ${model.type}`);
+      throw new Error(
+        `No training data available for model type ${model.type}`
+      );
     }
 
     const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -167,10 +178,10 @@ export class TrainingPipeline extends EventEmitter {
         batchSize: 32,
         learningRate: 0.001,
         validationSplit: 0.2,
-        ...config
+        ...config,
       },
       data: [...data], // Copy data to avoid mutations
-      progress: 0
+      progress: 0,
     };
 
     // Insert job based on priority
@@ -189,7 +200,10 @@ export class TrainingPipeline extends EventEmitter {
    * Process the training queue
    */
   private async processTrainingQueue(): Promise<void> {
-    if (this.activeJobs.size >= this.maxConcurrentJobs || this.trainingQueue.length === 0) {
+    if (
+      this.activeJobs.size >= this.maxConcurrentJobs ||
+      this.trainingQueue.length === 0
+    ) {
       return;
     }
 
@@ -201,12 +215,16 @@ export class TrainingPipeline extends EventEmitter {
     this.emit('job-started', job);
 
     try {
-      const result = await this.neuralModels.trainModel(job.modelId, job.data, job.config);
-      
+      const result = await this.neuralModels.trainModel(
+        job.modelId,
+        job.data,
+        job.config
+      );
+
       job.status = result.success ? 'completed' : 'failed';
       job.endTime = new Date();
       job.progress = 100;
-      
+
       if (!result.success) {
         job.error = result.message;
       } else {
@@ -218,7 +236,7 @@ export class TrainingPipeline extends EventEmitter {
       job.status = 'failed';
       job.endTime = new Date();
       job.error = (error as Error).message;
-      
+
       this.emit('job-failed', job);
     } finally {
       this.activeJobs.delete(job.id);
@@ -230,7 +248,7 @@ export class TrainingPipeline extends EventEmitter {
    */
   private checkAutoTraining(modelType: ModelType): void {
     const models = this.neuralModels.getModelsByType(modelType);
-    
+
     models.forEach(model => {
       const schedule = this.schedules.get(model.id);
       if (!schedule || !schedule.enabled) return;
@@ -240,10 +258,16 @@ export class TrainingPipeline extends EventEmitter {
         // Check if enough time has passed since last training
         const lastTraining = this.getLastTrainingTime(model.id);
         const now = new Date().getTime();
-        
-        if (!lastTraining || (now - lastTraining.getTime()) >= schedule.interval) {
+
+        if (
+          !lastTraining ||
+          now - lastTraining.getTime() >= schedule.interval
+        ) {
           this.scheduleTraining(model.id, undefined, 2); // Higher priority for auto-training
-          this.emit('auto-training-triggered', { modelId: model.id, reason: 'scheduled' });
+          this.emit('auto-training-triggered', {
+            modelId: model.id,
+            reason: 'scheduled',
+          });
         }
       }
     });
@@ -252,63 +276,75 @@ export class TrainingPipeline extends EventEmitter {
   /**
    * Collect execution data for training
    */
-  async collectExecutionData(task: Task, agents: Agent[], result: any): Promise<void> {
+  async collectExecutionData(
+    task: Task,
+    agents: Agent[],
+    result: any
+  ): Promise<void> {
     // Task classification data
-    this.addTrainingData('task-classification', [{
-      input: {
-        description: task.description,
-        requiredCapabilities: task.requiredCapabilities,
-        priority: task.priority,
-        context: task.context
+    this.addTrainingData('task-classification', [
+      {
+        input: {
+          description: task.description,
+          requiredCapabilities: task.requiredCapabilities,
+          priority: task.priority,
+          context: task.context,
+        },
+        output: {
+          type: task.type,
+          complexity: this.estimateComplexity(task),
+          estimatedTime: result.executionTime || 0,
+        },
       },
-      output: {
-        type: task.type,
-        complexity: this.estimateComplexity(task),
-        estimatedTime: result.executionTime || 0
-      }
-    }]);
+    ]);
 
     // Agent selection data
-    this.addTrainingData('agent-selection', [{
-      input: {
-        taskType: task.type,
-        requiredCapabilities: task.requiredCapabilities,
-        context: task.context
+    this.addTrainingData('agent-selection', [
+      {
+        input: {
+          taskType: task.type,
+          requiredCapabilities: task.requiredCapabilities,
+          context: task.context,
+        },
+        output: {
+          selectedAgents: agents.map(a => a.type),
+          success: result.success,
+          performance: agents.map(a => a.metrics.successRate || 0),
+        },
       },
-      output: {
-        selectedAgents: agents.map(a => a.type),
-        success: result.success,
-        performance: agents.map(a => a.metrics.successRate || 0)
-      }
-    }]);
+    ]);
 
     // Performance prediction data
-    this.addTrainingData('performance-prediction', [{
-      input: {
-        taskType: task.type,
-        agentTypes: agents.map(a => a.type),
-        complexity: this.estimateComplexity(task)
+    this.addTrainingData('performance-prediction', [
+      {
+        input: {
+          taskType: task.type,
+          agentTypes: agents.map(a => a.type),
+          complexity: this.estimateComplexity(task),
+        },
+        output: {
+          executionTime: result.executionTime || 0,
+          success: result.success,
+          resourceUsage: result.resourceUsage || {},
+        },
       },
-      output: {
-        executionTime: result.executionTime || 0,
-        success: result.success,
-        resourceUsage: result.resourceUsage || {}
-      }
-    }]);
+    ]);
 
     // Pattern recognition data
-    this.addTrainingData('pattern-recognition', [{
-      input: {
-        taskPattern: this.extractTaskPattern(task),
-        agentPattern: this.extractAgentPattern(agents),
-        contextPattern: this.extractContextPattern(task.context)
+    this.addTrainingData('pattern-recognition', [
+      {
+        input: {
+          taskPattern: this.extractTaskPattern(task),
+          agentPattern: this.extractAgentPattern(agents),
+          contextPattern: this.extractContextPattern(task.context),
+        },
+        output: {
+          outcome: result.success ? 'success' : 'failure',
+          efficiency: this.calculateEfficiency(task, result),
+          insights: result.insights || [],
+        },
       },
-      output: {
-        outcome: result.success ? 'success' : 'failure',
-        efficiency: this.calculateEfficiency(task, result),
-        insights: result.insights || []
-      }
-    }]);
+    ]);
   }
 
   private estimateComplexity(task: Task): number {
@@ -326,7 +362,7 @@ export class TrainingPipeline extends EventEmitter {
       type: task.type,
       capabilityCount: task.requiredCapabilities.length,
       descriptionLength: task.description.length,
-      priority: task.priority
+      priority: task.priority,
     };
   }
 
@@ -335,7 +371,9 @@ export class TrainingPipeline extends EventEmitter {
       count: agents.length,
       types: agents.map(a => a.type),
       categories: [...new Set(agents.map(a => a.category))],
-      avgSuccessRate: agents.reduce((sum, a) => sum + (a.metrics.successRate || 0), 0) / agents.length
+      avgSuccessRate:
+        agents.reduce((sum, a) => sum + (a.metrics.successRate || 0), 0) /
+        agents.length,
     };
   }
 
@@ -343,12 +381,14 @@ export class TrainingPipeline extends EventEmitter {
     return {
       hasContext: !!context,
       contextKeys: context ? Object.keys(context).length : 0,
-      contextSize: context ? JSON.stringify(context).length : 0
+      contextSize: context ? JSON.stringify(context).length : 0,
     };
   }
 
   private calculateEfficiency(_task: Task, result: any): number {
-    const timeEfficiency = result.executionTime ? Math.max(0, 1 - (result.executionTime / 3600)) : 0.5;
+    const timeEfficiency = result.executionTime
+      ? Math.max(0, 1 - result.executionTime / 3600)
+      : 0.5;
     const successEfficiency = result.success ? 1 : 0;
     return (timeEfficiency + successEfficiency) / 2;
   }
@@ -362,9 +402,11 @@ export class TrainingPipeline extends EventEmitter {
    * Get training job status
    */
   getJobStatus(jobId: string): TrainingJob | null {
-    return this.activeJobs.get(jobId) || 
-           this.trainingQueue.find(job => job.id === jobId) || 
-           null;
+    return (
+      this.activeJobs.get(jobId) ||
+      this.trainingQueue.find(job => job.id === jobId) ||
+      null
+    );
   }
 
   /**
@@ -402,10 +444,15 @@ export class TrainingPipeline extends EventEmitter {
       queueLength: this.trainingQueue.length,
       activeJobs: this.activeJobs.size,
       totalSchedules: this.schedules.size,
-      enabledSchedules: Array.from(this.schedules.values()).filter(s => s.enabled).length,
+      enabledSchedules: Array.from(this.schedules.values()).filter(
+        s => s.enabled
+      ).length,
       trainingDataSizes: Object.fromEntries(
-        Array.from(this.trainingData.entries()).map(([type, data]) => [type, data.length])
-      )
+        Array.from(this.trainingData.entries()).map(([type, data]) => [
+          type,
+          data.length,
+        ])
+      ),
     };
   }
 
@@ -446,7 +493,7 @@ export class TrainingPipeline extends EventEmitter {
 
     return {
       success: true,
-      message: 'Training Pipeline shutdown completed'
+      message: 'Training Pipeline shutdown completed',
     };
   }
 }

@@ -34,7 +34,7 @@ export class DashboardCommands {
       .option('--host <host>', 'dashboard host', 'localhost')
       .option('--open', 'open browser automatically')
       .option('--dev', 'start in development mode')
-      .action(async (options) => {
+      .action(async options => {
         await this.startDashboard(options);
       });
 
@@ -60,7 +60,11 @@ export class DashboardCommands {
       .description('generate dashboard reports')
       .option('--output <path>', 'output directory')
       .option('--format <format>', 'report format (html, pdf, json)', 'html')
-      .option('--period <period>', 'report period (daily, weekly, monthly)', 'weekly')
+      .option(
+        '--period <period>',
+        'report period (daily, weekly, monthly)',
+        'weekly'
+      )
       .action(async (type, options) => {
         await this.generateReport(type, options);
       });
@@ -87,9 +91,7 @@ export class DashboardCommands {
       });
 
     // Configure dashboard
-    dashboardCmd
-      .command('config')
-      .description('configure dashboard settings');
+    dashboardCmd.command('config').description('configure dashboard settings');
 
     dashboardCmd
       .command('config set <key> <value>')
@@ -101,14 +103,12 @@ export class DashboardCommands {
     dashboardCmd
       .command('config get [key]')
       .description('get dashboard configuration')
-      .action(async (key) => {
+      .action(async key => {
         await this.getDashboardConfig(key);
       });
 
     // Manage widgets
-    dashboardCmd
-      .command('widget')
-      .description('manage dashboard widgets');
+    dashboardCmd.command('widget').description('manage dashboard widgets');
 
     dashboardCmd
       .command('widget add <type>')
@@ -122,7 +122,7 @@ export class DashboardCommands {
     dashboardCmd
       .command('widget remove <id>')
       .description('remove a widget')
-      .action(async (id) => {
+      .action(async id => {
         await this.removeWidget(id);
       });
 
@@ -150,7 +150,7 @@ export class DashboardCommands {
   private async startDashboard(options: any): Promise<void> {
     try {
       logger.info('Starting Wundr dashboard...');
-      
+
       // Check if dashboard is already running
       const isRunning = await this.isDashboardRunning();
       if (isRunning) {
@@ -166,21 +166,24 @@ export class DashboardCommands {
 
       // Start the dashboard server
       const dashboardProcess = await this.startDashboardServer(options);
-      
+
       // Save process info
       await this.saveDashboardProcess(dashboardProcess, options);
-      
-      logger.success(`Dashboard started at http://${options.host}:${options.port}`);
-      
+
+      logger.success(
+        `Dashboard started at http://${options.host}:${options.port}`
+      );
+
       if (options.open) {
         await this.openBrowser(`http://${options.host}:${options.port}`);
       }
 
       // Keep the process alive if not in dev mode
       if (!options.dev) {
-        logger.info('Dashboard is running in the background. Use "wundr dashboard stop" to stop it.');
+        logger.info(
+          'Dashboard is running in the background. Use "wundr dashboard stop" to stop it.'
+        );
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_START_FAILED',
@@ -197,7 +200,7 @@ export class DashboardCommands {
   private async stopDashboard(): Promise<void> {
     try {
       logger.info('Stopping dashboard...');
-      
+
       const processInfo = await this.loadDashboardProcess();
       if (!processInfo) {
         logger.warn('No running dashboard found');
@@ -206,12 +209,11 @@ export class DashboardCommands {
 
       // Kill the dashboard process
       process.kill(processInfo.pid, 'SIGTERM');
-      
+
       // Clean up process info
       await this.cleanupDashboardProcess();
-      
-      logger.success('Dashboard stopped successfully');
 
+      logger.success('Dashboard stopped successfully');
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_STOP_FAILED',
@@ -229,15 +231,18 @@ export class DashboardCommands {
     try {
       const isRunning = await this.isDashboardRunning();
       const processInfo = await this.loadDashboardProcess();
-      
+
       if (isRunning && processInfo) {
-        logger.success(`Dashboard is running on http://${processInfo.host}:${processInfo.port}`);
+        logger.success(
+          `Dashboard is running on http://${processInfo.host}:${processInfo.port}`
+        );
         logger.info(`Process ID: ${processInfo.pid}`);
-        logger.info(`Started: ${new Date(processInfo.started).toLocaleString()}`);
+        logger.info(
+          `Started: ${new Date(processInfo.started).toLocaleString()}`
+        );
       } else {
         logger.info('Dashboard is not running');
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_STATUS_FAILED',
@@ -254,15 +259,15 @@ export class DashboardCommands {
   private async generateReport(type: string, options: any): Promise<void> {
     try {
       logger.info(`Generating ${type} report...`);
-      
+
       const reportData = await this.collectReportData(type, options.period);
       const report = await this.formatReport(reportData, options.format);
-      
-      const outputPath = options.output || this.getDefaultReportPath(type, options.format);
-      await this.saveReport(report, outputPath);
-      
-      logger.success(`Report generated: ${outputPath}`);
 
+      const outputPath =
+        options.output || this.getDefaultReportPath(type, options.format);
+      await this.saveReport(report, outputPath);
+
+      logger.success(`Report generated: ${outputPath}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_REPORT_FAILED',
@@ -279,15 +284,15 @@ export class DashboardCommands {
   private async exportData(type: string, options: any): Promise<void> {
     try {
       logger.info(`Exporting ${type} data...`);
-      
+
       const data = await this.collectExportData(type, options.filter);
       const exportedData = await this.formatExportData(data, options.format);
-      
-      const outputPath = options.output || this.getDefaultExportPath(type, options.format);
-      await this.saveExportData(exportedData, outputPath);
-      
-      logger.success(`Data exported: ${outputPath}`);
 
+      const outputPath =
+        options.output || this.getDefaultExportPath(type, options.format);
+      await this.saveExportData(exportedData, outputPath);
+
+      logger.success(`Data exported: ${outputPath}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_EXPORT_FAILED',
@@ -304,22 +309,21 @@ export class DashboardCommands {
   private async importData(file: string, options: any): Promise<void> {
     try {
       logger.info(`Importing data from ${chalk.cyan(file)}...`);
-      
-      if (!await fs.pathExists(file)) {
+
+      if (!(await fs.pathExists(file))) {
         throw new Error(`File not found: ${file}`);
       }
 
       const data = await this.loadImportData(file);
       const validatedData = await this.validateImportData(data, options.type);
-      
+
       if (options.merge) {
         await this.mergeImportData(validatedData, options.type);
       } else {
         await this.replaceImportData(validatedData, options.type);
       }
-      
-      logger.success(`Data imported successfully from ${file}`);
 
+      logger.success(`Data imported successfully from ${file}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_IMPORT_FAILED',
@@ -376,18 +380,19 @@ export class DashboardCommands {
   private async addWidget(type: string, options: any): Promise<void> {
     try {
       logger.info(`Adding ${type} widget...`);
-      
+
       const widget = {
         id: `widget-${Date.now()}`,
         type,
         config: options.config ? JSON.parse(options.config) : {},
-        position: options.position ? JSON.parse(options.position) : { x: 0, y: 0 },
-        created: new Date().toISOString()
+        position: options.position
+          ? JSON.parse(options.position)
+          : { x: 0, y: 0 },
+        created: new Date().toISOString(),
       };
 
       await this.saveWidget(widget);
       logger.success(`Widget added: ${widget.id}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_ADD_WIDGET_FAILED',
@@ -404,10 +409,9 @@ export class DashboardCommands {
   private async removeWidget(id: string): Promise<void> {
     try {
       logger.info(`Removing widget: ${chalk.cyan(id)}`);
-      
+
       await this.deleteWidget(id);
       logger.success(`Widget removed: ${id}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_REMOVE_WIDGET_FAILED',
@@ -424,20 +428,21 @@ export class DashboardCommands {
   private async listWidgets(): Promise<void> {
     try {
       const widgets = await this.getAllWidgets();
-      
+
       if (widgets.length === 0) {
         logger.info('No widgets configured');
         return;
       }
 
       logger.info(`Dashboard widgets (${widgets.length}):`);
-      console.table(widgets.map(widget => ({
-        ID: widget.id,
-        Type: widget.type,
-        Position: `(${widget.position.x}, ${widget.position.y})`,
-        Created: new Date(widget.created).toLocaleDateString()
-      })));
-
+      console.table(
+        widgets.map(widget => ({
+          ID: widget.id,
+          Type: widget.type,
+          Position: `(${widget.position.x}, ${widget.position.y})`,
+          Created: new Date(widget.created).toLocaleDateString(),
+        }))
+      );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_LIST_WIDGETS_FAILED',
@@ -497,7 +502,7 @@ export class DashboardCommands {
   private async ensureDashboardAssets(): Promise<void> {
     // Ensure dashboard assets are available
     const assetsPath = path.join(__dirname, '../../dashboard-assets');
-    if (!await fs.pathExists(assetsPath)) {
+    if (!(await fs.pathExists(assetsPath))) {
       logger.info('Dashboard assets not found, downloading...');
       // Download or copy dashboard assets
     }
@@ -506,16 +511,16 @@ export class DashboardCommands {
   private async startDashboardServer(options: any): Promise<any> {
     // Start the actual dashboard server process
     const serverPath = path.join(__dirname, '../../dashboard-server');
-    
+
     const child = spawn('node', [serverPath], {
       env: {
         ...process.env,
         PORT: options.port,
         HOST: options.host,
-        NODE_ENV: options.dev ? 'development' : 'production'
+        NODE_ENV: options.dev ? 'development' : 'production',
       },
       detached: !options.dev,
-      stdio: options.dev ? 'inherit' : 'ignore'
+      stdio: options.dev ? 'inherit' : 'ignore',
     });
 
     if (!options.dev) {
@@ -526,11 +531,14 @@ export class DashboardCommands {
       pid: child.pid,
       host: options.host,
       port: options.port,
-      started: Date.now()
+      started: Date.now(),
     };
   }
 
-  private async saveDashboardProcess(processInfo: any, options: any): Promise<void> {
+  private async saveDashboardProcess(
+    processInfo: any,
+    options: any
+  ): Promise<void> {
     const processFile = path.join(process.cwd(), '.wundr', 'dashboard.pid');
     await fs.ensureDir(path.dirname(processFile));
     await fs.writeJson(processFile, { ...processInfo, ...options });
@@ -619,13 +627,23 @@ export class DashboardCommands {
 
   // Widget management methods
   private async saveWidget(widget: any): Promise<void> {
-    const widgetFile = path.join(process.cwd(), '.wundr', 'widgets', `${widget.id}.json`);
+    const widgetFile = path.join(
+      process.cwd(),
+      '.wundr',
+      'widgets',
+      `${widget.id}.json`
+    );
     await fs.ensureDir(path.dirname(widgetFile));
     await fs.writeJson(widgetFile, widget, { spaces: 2 });
   }
 
   private async deleteWidget(id: string): Promise<void> {
-    const widgetFile = path.join(process.cwd(), '.wundr', 'widgets', `${id}.json`);
+    const widgetFile = path.join(
+      process.cwd(),
+      '.wundr',
+      'widgets',
+      `${id}.json`
+    );
     if (await fs.pathExists(widgetFile)) {
       await fs.remove(widgetFile);
     }
@@ -633,7 +651,7 @@ export class DashboardCommands {
 
   private async getAllWidgets(): Promise<any[]> {
     const widgetsDir = path.join(process.cwd(), '.wundr', 'widgets');
-    if (!await fs.pathExists(widgetsDir)) {
+    if (!(await fs.pathExists(widgetsDir))) {
       return [];
     }
 

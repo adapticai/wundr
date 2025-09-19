@@ -19,27 +19,7 @@ import {
   Calendar,
   Zap,
 } from 'lucide-react';
-
-interface ServiceTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  language: string;
-  framework: string;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
-  tags: string[];
-  downloads?: number;
-  rating?: number;
-  lastUpdated?: Date | string;
-  author: string;
-  version: string;
-  usageStats?: {
-    monthly: number;
-    total: number;
-    trending: boolean;
-  };
-}
+import { ServiceTemplate, ServiceTemplateDifficulty } from '@/types/templates';
 
 interface TemplateStatsProps {
   templates: ServiceTemplate[];
@@ -108,7 +88,7 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
     )
     .slice(0, 5);
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: ServiceTemplateDifficulty) => {
     switch (difficulty) {
       case 'beginner':
         return 'bg-green-100 text-green-800';
@@ -196,21 +176,25 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
           </CardHeader>
           <CardContent className='space-y-4'>
             {Object.entries(categoryStats)
-              .sort(([, a], [, b]) => b - a)
-              .map(([category, count]) => (
-                <div key={category} className='space-y-2'>
-                  <div className='flex items-center justify-between'>
-                    <span className='text-sm font-medium'>{category}</span>
-                    <span className='text-sm text-muted-foreground'>
-                      {count} templates
-                    </span>
+              .sort(([, a], [, b]) => Number(b) - Number(a))
+              .map(([category, count]) => {
+                const numCount = Number(count);
+                const percentage = (numCount / templates.length) * 100;
+                return (
+                  <div key={category} className='space-y-2'>
+                    <div className='flex items-center justify-between'>
+                      <span className='text-sm font-medium'>{category}</span>
+                      <span className='text-sm text-muted-foreground'>
+                        {numCount} templates
+                      </span>
+                    </div>
+                    <Progress
+                      value={percentage}
+                      className='h-2'
+                    />
                   </div>
-                  <Progress
-                    value={(count / templates.length) * 100}
-                    className='h-2'
-                  />
-                </div>
-              ))}
+                );
+              })}
           </CardContent>
         </Card>
 
@@ -227,21 +211,25 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
           </CardHeader>
           <CardContent className='space-y-4'>
             {Object.entries(languageStats)
-              .sort(([, a], [, b]) => b - a)
-              .map(([language, count]) => (
-                <div key={language} className='space-y-2'>
-                  <div className='flex items-center justify-between'>
-                    <span className='text-sm font-medium'>{language}</span>
-                    <span className='text-sm text-muted-foreground'>
-                      {count} templates
-                    </span>
+              .sort(([, a], [, b]) => Number(b) - Number(a))
+              .map(([language, count]) => {
+                const numCount = Number(count);
+                const percentage = (numCount / templates.length) * 100;
+                return (
+                  <div key={language} className='space-y-2'>
+                    <div className='flex items-center justify-between'>
+                      <span className='text-sm font-medium'>{language}</span>
+                      <span className='text-sm text-muted-foreground'>
+                        {numCount} templates
+                      </span>
+                    </div>
+                    <Progress
+                      value={percentage}
+                      className='h-2'
+                    />
                   </div>
-                  <Progress
-                    value={(count / templates.length) * 100}
-                    className='h-2'
-                  />
-                </div>
-              ))}
+                );
+              })}
           </CardContent>
         </Card>
       </div>
@@ -308,7 +296,7 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
                 </div>
                 <Badge
                   className={getDifficultyColor(
-                    template.difficulty || 'intermediate'
+                    (template.difficulty || 'intermediate') as ServiceTemplateDifficulty
                   )}
                   variant='secondary'
                 >
@@ -378,19 +366,23 @@ export function TemplateStats({ templates }: TemplateStatsProps) {
         </CardHeader>
         <CardContent>
           <div className='grid grid-cols-3 gap-4'>
-            {Object.entries(difficultyStats).map(([difficulty, count]) => (
-              <div key={difficulty} className='text-center space-y-2'>
-                <div
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getDifficultyColor(difficulty)}`}
-                >
-                  {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+            {Object.entries(difficultyStats).map(([difficulty, count]) => {
+              const numCount = Number(count);
+              const percentage = (numCount / templates.length) * 100;
+              return (
+                <div key={difficulty} className='text-center space-y-2'>
+                  <div
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getDifficultyColor(difficulty as ServiceTemplateDifficulty)}`}
+                  >
+                    {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                  </div>
+                  <div className='text-2xl font-bold'>{numCount}</div>
+                  <div className='text-sm text-muted-foreground'>
+                    {percentage.toFixed(1)}% of total
+                  </div>
                 </div>
-                <div className='text-2xl font-bold'>{count}</div>
-                <div className='text-sm text-muted-foreground'>
-                  {((count / templates.length) * 100).toFixed(1)}% of total
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

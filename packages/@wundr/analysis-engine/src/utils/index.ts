@@ -9,10 +9,11 @@ import * as path from 'path';
  * Generate a normalized hash from content for duplicate detection
  */
 export function generateNormalizedHash(content: any): string {
-  const normalized = typeof content === 'string' 
-    ? content.trim().replace(/\s+/g, ' ')
-    : JSON.stringify(content, Object.keys(content).sort());
-    
+  const normalized =
+    typeof content === 'string'
+      ? content.trim().replace(/\s+/g, ' ')
+      : JSON.stringify(content, Object.keys(content).sort());
+
   return crypto
     .createHash('sha256')
     .update(normalized)
@@ -30,9 +31,9 @@ export function generateSemanticHash(structure: any): string {
     properties: structure.properties?.map((p: any) => p.name).sort(),
     type: structure.type,
     baseClass: structure.baseClass,
-    interfaces: structure.interfaces?.sort()
+    interfaces: structure.interfaces?.sort(),
   };
-  
+
   return generateNormalizedHash(semanticContent);
 }
 
@@ -43,25 +44,25 @@ export function calculateSimilarity(entity1: any, entity2: any): number {
   if (entity1.normalizedHash === entity2.normalizedHash) {
     return 1.0;
   }
-  
+
   if (entity1.semanticHash === entity2.semanticHash) {
     return 0.9;
   }
-  
+
   // Calculate Jaccard similarity for method/property names
   const set1 = new Set([
     ...(entity1.members?.methods?.map((m: any) => m.name) || []),
-    ...(entity1.members?.properties?.map((p: any) => p.name) || [])
+    ...(entity1.members?.properties?.map((p: any) => p.name) || []),
   ]);
-  
+
   const set2 = new Set([
     ...(entity2.members?.methods?.map((m: any) => m.name) || []),
-    ...(entity2.members?.properties?.map((p: any) => p.name) || [])
+    ...(entity2.members?.properties?.map((p: any) => p.name) || []),
   ]);
-  
+
   const intersection = new Set([...set1].filter(x => set2.has(x)));
   const union = new Set([...set1, ...set2]);
-  
+
   return union.size > 0 ? intersection.size / union.size : 0;
 }
 
@@ -91,7 +92,7 @@ export function throttle<T extends (...args: any[]) => any>(
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 }
@@ -117,14 +118,12 @@ export async function processConcurrently<T, R>(
 ): Promise<R[]> {
   const results: R[] = [];
   const chunks = chunk(items, concurrency);
-  
+
   for (const chunk of chunks) {
-    const chunkResults = await Promise.all(
-      chunk.map(item => processor(item))
-    );
+    const chunkResults = await Promise.all(chunk.map(item => processor(item)));
     results.push(...chunkResults);
   }
-  
+
   return results;
 }
 
@@ -156,12 +155,12 @@ export function formatFileSize(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB'];
   let size = bytes;
   let unitIndex = 0;
-  
+
   while (size >= 1024 && unitIndex < units.length - 1) {
     size /= 1024;
     unitIndex++;
   }
-  
+
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
 
@@ -172,17 +171,17 @@ export function formatDuration(milliseconds: number): string {
   if (milliseconds < 1000) {
     return `${milliseconds}ms`;
   }
-  
+
   const seconds = milliseconds / 1000;
   if (seconds < 60) {
     return `${seconds.toFixed(1)}s`;
   }
-  
+
   const minutes = seconds / 60;
   if (minutes < 60) {
     return `${Math.floor(minutes)}m ${Math.floor(seconds % 60)}s`;
   }
-  
+
   const hours = minutes / 60;
   return `${Math.floor(hours)}h ${Math.floor(minutes % 60)}m`;
 }
@@ -195,12 +194,12 @@ export function deepMerge<T extends Record<string, any>>(
   ...sources: Partial<T>[]
 ): T {
   const result = { ...target };
-  
+
   for (const source of sources) {
     for (const key in source) {
       const targetValue = result[key];
       const sourceValue = source[key];
-      
+
       if (
         targetValue &&
         sourceValue &&
@@ -215,7 +214,7 @@ export function deepMerge<T extends Record<string, any>>(
       }
     }
   }
-  
+
   return result;
 }
 
@@ -250,26 +249,35 @@ export function filterEntities(
     if (criteria.types && !criteria.types.includes(entity.type)) {
       return false;
     }
-    
-    if (criteria.files && !criteria.files.some(file => entity.file.includes(file))) {
+
+    if (
+      criteria.files &&
+      !criteria.files.some(file => entity.file.includes(file))
+    ) {
       return false;
     }
-    
-    if (criteria.exported !== undefined && 
-        (entity.exportType === 'none') !== !criteria.exported) {
+
+    if (
+      criteria.exported !== undefined &&
+      (entity.exportType === 'none') !== !criteria.exported
+    ) {
       return false;
     }
-    
-    if (criteria.minComplexity !== undefined &&
-        (entity.complexity?.cyclomatic || 0) < criteria.minComplexity) {
+
+    if (
+      criteria.minComplexity !== undefined &&
+      (entity.complexity?.cyclomatic || 0) < criteria.minComplexity
+    ) {
       return false;
     }
-    
-    if (criteria.maxComplexity !== undefined &&
-        (entity.complexity?.cyclomatic || 0) > criteria.maxComplexity) {
+
+    if (
+      criteria.maxComplexity !== undefined &&
+      (entity.complexity?.cyclomatic || 0) > criteria.maxComplexity
+    ) {
       return false;
     }
-    
+
     return true;
   });
 }

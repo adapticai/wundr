@@ -260,18 +260,21 @@ export function DependencySizeAnalyzer({
       // Mock download statistics
       const downloadStats: DownloadStats = {};
 
-      const enrichedDependencies: DependencyData[] = packages.map(pkg => ({
-        ...pkg,
-        size: pkg.size || 0,
-        weeklyDownloads: downloadStats[pkg.name]?.weekly || 0,
-        latestVersion: pkg.version || '1.0.0',
-        type: 'dependency' as const,
-        lastUpdated: new Date().toISOString(),
-        maintainers: 1,
-        vulnerabilities: 0,
-        license: pkg.license || 'Unknown',
-        description: pkg.description || 'No description available',
-      }));
+      const enrichedDependencies: DependencyData[] = packages.map(pkg => {
+        const { vulnerabilities: _vulnerabilities, vulnerabilityCount: _vulnerabilityCount, ...pkgRest } = pkg;
+        return {
+          ...pkgRest,
+          size: pkg.size || 0,
+          weeklyDownloads: downloadStats[pkg.name]?.weekly || 0,
+          latestVersion: pkg.version || '1.0.0',
+          type: 'dependency' as const,
+          lastUpdated: new Date().toISOString(),
+          maintainers: 1,
+          vulnerabilityCount: pkg.vulnerabilityCount || 0,
+          license: pkg.license || 'Unknown',
+          description: pkg.description || 'No description available',
+        };
+      });
 
       setDependencies(enrichedDependencies);
     } catch (err) {

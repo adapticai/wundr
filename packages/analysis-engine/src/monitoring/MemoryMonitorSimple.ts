@@ -4,8 +4,9 @@
  */
 
 import { EventEmitter } from 'events';
-import * as fs from 'fs-extra';
 import * as path from 'path';
+
+import * as fs from 'fs-extra';
 
 export interface MemorySnapshot {
   timestamp: number;
@@ -71,14 +72,16 @@ export class MemoryMonitor extends EventEmitter {
         heapWarning: 256 * 1024 * 1024,
         heapCritical: 512 * 1024 * 1024,
         growthRateWarning: 10 * 1024 * 1024,
-        growthRateCritical: 50 * 1024 * 1024
+        growthRateCritical: 50 * 1024 * 1024,
       },
-      ...config
+      ...config,
     };
   }
 
   async startMonitoring(): Promise<void> {
-    if (this.isMonitoring) return;
+    if (this.isMonitoring) {
+return;
+}
 
     this.isMonitoring = true;
     this.snapshots = [];
@@ -94,7 +97,9 @@ export class MemoryMonitor extends EventEmitter {
   }
 
   async stopMonitoring(): Promise<void> {
-    if (!this.isMonitoring) return;
+    if (!this.isMonitoring) {
+return;
+}
 
     this.isMonitoring = false;
 
@@ -116,7 +121,7 @@ export class MemoryMonitor extends EventEmitter {
       heapTotal: memory.heapTotal,
       rss: memory.rss,
       external: memory.external,
-      arrayBuffers: memory.arrayBuffers
+      arrayBuffers: memory.arrayBuffers,
     };
 
     this.snapshots.push(snapshot);
@@ -135,14 +140,14 @@ export class MemoryMonitor extends EventEmitter {
         type: 'heap-critical',
         severity: 'critical',
         current: snapshot.heapUsed,
-        threshold: this.config.thresholds.heapCritical
+        threshold: this.config.thresholds.heapCritical,
       });
     } else if (snapshot.heapUsed > this.config.thresholds.heapWarning) {
       this.emit('memory-alert', {
         type: 'heap-warning',
         severity: 'warning',
         current: snapshot.heapUsed,
-        threshold: this.config.thresholds.heapWarning
+        threshold: this.config.thresholds.heapWarning,
       });
     }
   }
@@ -158,27 +163,27 @@ export class MemoryMonitor extends EventEmitter {
       return {
         data: {
           timestamp: Date.now(),
-          ...currentMemory
+          ...currentMemory,
         },
         peak: {
           heapUsed: currentMemory.heapUsed,
           heapTotal: currentMemory.heapTotal,
           rss: currentMemory.rss,
           external: currentMemory.external,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         },
         average: {
           heapUsed: currentMemory.heapUsed,
           heapTotal: currentMemory.heapTotal,
           rss: currentMemory.rss,
-          external: currentMemory.external
+          external: currentMemory.external,
         },
         leakAnalysis: {
           detected: false,
           growthRate: 0,
           leakDetected: false,
-          severity: 'low'
-        }
+          severity: 'low',
+        },
       };
     }
 
@@ -189,20 +194,20 @@ export class MemoryMonitor extends EventEmitter {
       heapTotal: Math.max(p.heapTotal, s.heapTotal),
       rss: Math.max(p.rss, s.rss),
       external: Math.max(p.external, s.external),
-      timestamp: s.heapUsed > p.heapUsed ? s.timestamp : p.timestamp
+      timestamp: s.heapUsed > p.heapUsed ? s.timestamp : p.timestamp,
     }), {
       heapUsed: 0,
       heapTotal: 0,
       rss: 0,
       external: 0,
-      timestamp: 0
+      timestamp: 0,
     });
 
     const average = this.snapshots.reduce((sum, s) => ({
       heapUsed: sum.heapUsed + s.heapUsed,
       heapTotal: sum.heapTotal + s.heapTotal,
       rss: sum.rss + s.rss,
-      external: sum.external + s.external
+      external: sum.external + s.external,
     }), { heapUsed: 0, heapTotal: 0, rss: 0, external: 0 });
 
     const count = this.snapshots.length;
@@ -219,8 +224,8 @@ export class MemoryMonitor extends EventEmitter {
         detected: false,
         growthRate: 0,
         leakDetected: false,
-        severity: 'low'
-      }
+        severity: 'low',
+      },
     };
   }
 
@@ -234,7 +239,7 @@ export class MemoryMonitor extends EventEmitter {
     const data = {
       config: this.config,
       metrics: this.getMetrics(),
-      snapshots: this.snapshots
+      snapshots: this.snapshots,
     };
     
     await fs.writeJSON(filepath, data, { spaces: 2 });

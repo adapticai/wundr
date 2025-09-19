@@ -13,6 +13,37 @@
 // =============================================================================
 
 /**
+ * Template category types
+ */
+export type ServiceTemplateCategory =
+  | 'api'
+  | 'frontend'
+  | 'backend'
+  | 'database'
+  | 'integration'
+  | 'microservice'
+  | 'monolith'
+  | 'serverless'
+  | 'real-time';
+
+/**
+ * Template type definitions
+ */
+export type ServiceTemplateType =
+  | 'rest-api'
+  | 'graphql'
+  | 'react-app'
+  | 'node-service'
+  | 'express-api'
+  | 'next-app'
+  | 'custom';
+
+/**
+ * Template difficulty levels
+ */
+export type ServiceTemplateDifficulty = 'beginner' | 'intermediate' | 'advanced';
+
+/**
  * Service template definition
  */
 export interface ServiceTemplate {
@@ -25,25 +56,9 @@ export interface ServiceTemplate {
   /** Template version */
   version: string;
   /** Template category */
-  category:
-    | 'api'
-    | 'frontend'
-    | 'backend'
-    | 'database'
-    | 'integration'
-    | 'microservice'
-    | 'monolith'
-    | 'Serverless'
-    | 'Real-time';
+  category: ServiceTemplateCategory;
   /** Template type */
-  type:
-    | 'rest-api'
-    | 'graphql'
-    | 'react-app'
-    | 'node-service'
-    | 'express-api'
-    | 'next-app'
-    | 'custom';
+  type: ServiceTemplateType;
   /** Template language */
   language: string;
   /** Template framework */
@@ -69,26 +84,26 @@ export interface ServiceTemplate {
   /** Template preview */
   preview?: TemplatePreview;
   /** Template difficulty */
-  difficulty?: string;
+  difficulty: ServiceTemplateDifficulty;
   /** Template code preview */
   codePreview?: string;
   /** Template usage statistics */
-  usageStats?: {
+  usageStats: {
     downloads: number;
     stars: number;
     lastUpdated: Date;
-    monthly?: number;
-    total?: number;
-    trending?: boolean;
+    monthly: number;
+    total: number;
+    trending: boolean;
   };
   /** Template rating */
-  rating?: number;
+  rating: number;
   /** Template downloads count */
-  downloads?: number;
+  downloads: number;
   /** Last updated timestamp */
-  lastUpdated?: Date;
+  lastUpdated: Date;
   /** Template features */
-  features?: string[];
+  features: string[];
   /** Template documentation */
   documentation?: string;
 }
@@ -736,4 +751,43 @@ export type GenerationProgressHandler = (progress: {
   currentStep: number;
 }) => void;
 
-// Types are already exported as interfaces above
+// =============================================================================
+// MOCK AND TESTING TYPES
+// =============================================================================
+
+/**
+ * Mock service template for testing and development
+ */
+export interface MockServiceTemplate extends Omit<ServiceTemplate, 'createdAt' | 'updatedAt' | 'lastUpdated'> {
+  /** Creation timestamp as string for easier mocking */
+  createdAt: string;
+  /** Last update timestamp as string for easier mocking */
+  updatedAt: string;
+  /** Last updated timestamp as string for easier mocking */
+  lastUpdated: string;
+}
+
+/**
+ * Template factory function type
+ */
+export type TemplateFactory<T = ServiceTemplate> = (overrides?: Partial<T>) => T;
+
+/**
+ * Template validation result
+ */
+export interface TemplateValidationResult {
+  /** Whether template is valid */
+  valid: boolean;
+  /** Validation errors */
+  errors: Array<{
+    field: string;
+    message: string;
+    code: string;
+  }>;
+  /** Validation warnings */
+  warnings: Array<{
+    field: string;
+    message: string;
+    code: string;
+  }>;
+}

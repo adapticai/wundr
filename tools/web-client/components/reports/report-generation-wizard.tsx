@@ -214,30 +214,34 @@ export function ReportGenerationWizard({
       case 'multiselect':
         return (
           <div className='space-y-2'>
-            {param.options?.map(option => (
-              <div key={option.value} className='flex items-center space-x-2'>
-                <Checkbox
-                  id={`${param.key}-${option.value}`}
-                  checked={
-                    Array.isArray(value)
-                      ? (value as any[]).includes(option.value)
-                      : false
-                  }
-                  onCheckedChange={checked => {
-                    const currentValues = Array.isArray(value)
-                      ? (value as ParameterValue[])
-                      : [];
-                    const newValues = checked
-                      ? [...currentValues, option.value]
-                      : currentValues.filter(v => v !== option.value);
-                    handleParameterChange(param.key, newValues);
-                  }}
-                />
-                <Label htmlFor={`${param.key}-${option.value}`}>
-                  {option.label}
-                </Label>
-              </div>
-            ))}
+            {param.options?.map(option => {
+              // Safely handle the multiselect array comparison
+              const currentValues = Array.isArray(value) ? value as ParameterValue[] : [];
+              const optionValue = option.value;
+
+              // Check if option value is included in current values
+              const isChecked = currentValues.some(v =>
+                typeof v === typeof optionValue && v === optionValue
+              );
+
+              return (
+                <div key={String(option.value)} className='flex items-center space-x-2'>
+                  <Checkbox
+                    id={`${param.key}-${option.value}`}
+                    checked={isChecked}
+                    onCheckedChange={checked => {
+                      const newValues = checked
+                        ? [...currentValues, optionValue]
+                        : currentValues.filter(v => v !== optionValue);
+                      handleParameterChange(param.key, newValues);
+                    }}
+                  />
+                  <Label htmlFor={`${param.key}-${option.value}`}>
+                    {option.label}
+                  </Label>
+                </div>
+              );
+            })}
           </div>
         );
       default:

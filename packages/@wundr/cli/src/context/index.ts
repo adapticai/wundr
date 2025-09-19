@@ -1,9 +1,9 @@
 export { ContextManager } from './context-manager';
-export type { 
-  ProjectContext, 
-  SessionContext, 
+export type {
+  ProjectContext,
+  SessionContext,
   CommandHistoryEntry,
   UserPreferences,
   GitInfo,
-  AnalysisContext 
+  AnalysisContext,
 } from './context-manager';

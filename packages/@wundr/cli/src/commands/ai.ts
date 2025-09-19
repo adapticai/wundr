@@ -45,7 +45,11 @@ export class AICommands {
     aiCmd
       .command('review [files...]')
       .description('AI-powered code review')
-      .option('--focus <aspect>', 'review focus (security, performance, style)', 'all')
+      .option(
+        '--focus <aspect>',
+        'review focus (security, performance, style)',
+        'all'
+      )
       .option('--severity <level>', 'minimum issue severity', 'info')
       .option('--suggest-fixes', 'suggest fixes for issues')
       .action(async (files, options) => {
@@ -56,8 +60,16 @@ export class AICommands {
     aiCmd
       .command('refactor <target>')
       .description('AI-assisted code refactoring')
-      .option('--type <type>', 'refactoring type (extract, rename, optimize)', 'optimize')
-      .option('--scope <scope>', 'refactoring scope (function, class, file)', 'function')
+      .option(
+        '--type <type>',
+        'refactoring type (extract, rename, optimize)',
+        'optimize'
+      )
+      .option(
+        '--scope <scope>',
+        'refactoring scope (function, class, file)',
+        'function'
+      )
       .option('--dry-run', 'show refactoring plan without applying')
       .action(async (target, options) => {
         await this.refactorCode(target, options);
@@ -67,8 +79,16 @@ export class AICommands {
     aiCmd
       .command('docs <target>')
       .description('generate documentation using AI')
-      .option('--type <type>', 'documentation type (api, readme, comments)', 'api')
-      .option('--format <format>', 'output format (markdown, html, json)', 'markdown')
+      .option(
+        '--type <type>',
+        'documentation type (api, readme, comments)',
+        'api'
+      )
+      .option(
+        '--format <format>',
+        'output format (markdown, html, json)',
+        'markdown'
+      )
       .option('--include-examples', 'include code examples')
       .action(async (target, options) => {
         await this.generateDocs(target, options);
@@ -78,8 +98,16 @@ export class AICommands {
     aiCmd
       .command('test <target>')
       .description('generate tests using AI')
-      .option('--framework <framework>', 'testing framework (jest, mocha, vitest)', 'jest')
-      .option('--coverage <level>', 'coverage level (unit, integration, e2e)', 'unit')
+      .option(
+        '--framework <framework>',
+        'testing framework (jest, mocha, vitest)',
+        'jest'
+      )
+      .option(
+        '--coverage <level>',
+        'coverage level (unit, integration, e2e)',
+        'unit'
+      )
       .option('--mocks', 'generate mock objects')
       .action(async (target, options) => {
         await this.generateTests(target, options);
@@ -93,7 +121,7 @@ export class AICommands {
       .option('--model <model>', 'AI model to use')
       .option('--context <path>', 'include project context')
       .option('--session <id>', 'resume existing session')
-      .action(async (options) => {
+      .action(async options => {
         await this.startChatSession(options);
       });
 
@@ -101,7 +129,11 @@ export class AICommands {
     aiCmd
       .command('analyze <target>')
       .description('AI-powered code analysis')
-      .option('--aspect <aspect>', 'analysis aspect (complexity, maintainability, security)', 'all')
+      .option(
+        '--aspect <aspect>',
+        'analysis aspect (complexity, maintainability, security)',
+        'all'
+      )
       .option('--suggestions', 'include improvement suggestions')
       .action(async (target, options) => {
         await this.analyzeCode(target, options);
@@ -111,7 +143,11 @@ export class AICommands {
     aiCmd
       .command('optimize <target>')
       .description('AI-powered performance optimization')
-      .option('--focus <focus>', 'optimization focus (speed, memory, bundle)', 'speed')
+      .option(
+        '--focus <focus>',
+        'optimization focus (speed, memory, bundle)',
+        'speed'
+      )
       .option('--benchmarks', 'run before/after benchmarks')
       .action(async (target, options) => {
         await this.optimizeCode(target, options);
@@ -124,7 +160,7 @@ export class AICommands {
       .option('--provider <provider>', 'AI provider (claude, openai)', 'claude')
       .option('--api-key <key>', 'API key for the provider')
       .option('--validate', 'validate the API key after setup')
-      .action(async (options) => {
+      .action(async options => {
         await this.setupAI(options);
       });
 
@@ -145,9 +181,7 @@ export class AICommands {
       });
 
     // Configuration
-    aiCmd
-      .command('config')
-      .description('configure AI settings');
+    aiCmd.command('config').description('configure AI settings');
 
     aiCmd
       .command('config set <key> <value>')
@@ -159,7 +193,7 @@ export class AICommands {
     aiCmd
       .command('config get [key]')
       .description('get AI configuration')
-      .action(async (key) => {
+      .action(async key => {
         await this.getAIConfig(key);
       });
   }
@@ -172,20 +206,24 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
       logger.info(`Generating ${chalk.cyan(type)} code...`);
-      
-      const prompt = options.prompt || await this.promptForGeneration(type);
-      const context = options.context ? await this.loadContext(options.context) : '';
-      
+
+      const prompt = options.prompt || (await this.promptForGeneration(type));
+      const context = options.context
+        ? await this.loadContext(options.context)
+        : '';
+
       const generatedCode = await this.callAI('generate', {
         type,
         prompt,
         context,
-        template: options.template
+        template: options.template,
       });
 
       if (options.output) {
@@ -195,7 +233,6 @@ export class AICommands {
         console.log(chalk.green('\nGenerated Code:'));
         console.log(generatedCode);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_GENERATE_FAILED',
@@ -214,40 +251,47 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
       logger.info('Starting AI code review...');
-      
-      const filesToReview = files.length > 0 ? files : await this.getChangedFiles();
-      const reviewResults: Array<{ file: string; issues: any; suggestions: any; score: any }> = [];
+
+      const filesToReview =
+        files.length > 0 ? files : await this.getChangedFiles();
+      const reviewResults: Array<{
+        file: string;
+        issues: any;
+        suggestions: any;
+        score: any;
+      }> = [];
 
       for (const file of filesToReview) {
         logger.debug(`Reviewing ${file}...`);
-        
+
         const code = await this.readFile(file);
         const review = await this.callAI('review', {
           code,
           file,
           focus: options.focus,
-          severity: options.severity
+          severity: options.severity,
         });
 
         reviewResults.push({
           file,
           issues: review.issues,
           suggestions: review.suggestions,
-          score: review.score
+          score: review.score,
         });
       }
 
       this.displayReviewResults(reviewResults);
-      
+
       if (options.suggestFixes) {
         await this.suggestFixes(reviewResults);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_REVIEW_FAILED',
@@ -266,18 +310,20 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
       logger.info(`Refactoring ${chalk.cyan(target)}...`);
-      
+
       const code = await this.readFile(target);
       const refactoringPlan = await this.callAI('refactor', {
         code,
         target,
         type: options.type,
-        scope: options.scope
+        scope: options.scope,
       });
 
       if (options.dryRun) {
@@ -290,18 +336,19 @@ export class AICommands {
         return;
       }
 
-      const { proceed } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'proceed',
-        message: 'Apply refactoring changes?',
-        default: false
-      }]);
+      const { proceed } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'proceed',
+          message: 'Apply refactoring changes?',
+          default: false,
+        },
+      ]);
 
       if (proceed) {
         await this.applyRefactoring(target, refactoringPlan);
         logger.success(`Refactoring applied to ${target}`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_REFACTOR_FAILED',
@@ -320,26 +367,33 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
-      logger.info(`Generating ${options.type} documentation for ${chalk.cyan(target)}...`);
-      
+      logger.info(
+        `Generating ${options.type} documentation for ${chalk.cyan(target)}...`
+      );
+
       const code = await this.readFile(target);
       const _docs = await this.callAI('docs', {
         code,
         target,
         type: options.type,
         format: options.format,
-        includeExamples: options.includeExamples
+        includeExamples: options.includeExamples,
       });
 
-      const outputPath = this.getDocsOutputPath(target, options.type, options.format);
+      const outputPath = this.getDocsOutputPath(
+        target,
+        options.type,
+        options.format
+      );
       await this.saveGeneratedDocs(_docs, outputPath);
-      
-      logger.success(`Documentation generated: ${outputPath}`);
 
+      logger.success(`Documentation generated: ${outputPath}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_DOCS_FAILED',
@@ -358,26 +412,27 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
       logger.info(`Generating tests for ${chalk.cyan(target)}...`);
-      
+
       const code = await this.readFile(target);
       const tests = await this.callAI('test', {
         code,
         target,
         framework: options.framework,
         coverage: options.coverage,
-        mocks: options.mocks
+        mocks: options.mocks,
       });
 
       const testPath = this.getTestOutputPath(target, options.framework);
       await this.saveGeneratedCode(tests, testPath);
-      
-      logger.success(`Tests generated: ${testPath}`);
 
+      logger.success(`Tests generated: ${testPath}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_TEST_FAILED',
@@ -396,18 +451,19 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
       logger.info('Starting AI chat session...');
-      
-      const session: ChatSession = options.session 
+
+      const session: ChatSession = options.session
         ? await this.loadChatSession(options.session)
         : await this.createChatSession(options);
 
       await this.runChatLoop(session);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_CHAT_FAILED',
@@ -426,22 +482,23 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
       logger.info(`Analyzing ${chalk.cyan(target)}...`);
-      
+
       const code = await this.readFile(target);
       const analysis = await this.callAI('analyze', {
         code,
         target,
         aspect: options.aspect,
-        suggestions: options.suggestions
+        suggestions: options.suggestions,
       });
 
       this.displayAnalysisResults(analysis);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_ANALYZE_FAILED',
@@ -460,15 +517,17 @@ export class AICommands {
       // Check if AI is ready
       if (!this.aiService.isReady()) {
         console.log(chalk.red('\n❌ AI service not configured'));
-        console.log(chalk.yellow('Run `wundr ai setup` to configure your API key first'));
+        console.log(
+          chalk.yellow('Run `wundr ai setup` to configure your API key first')
+        );
         return;
       }
 
       logger.info(`Optimizing ${chalk.cyan(target)}...`);
-      
+
       const code = await this.readFile(target);
       let beforeBenchmark = null;
-      
+
       if (options.benchmarks) {
         beforeBenchmark = await this.runBenchmark(target);
       }
@@ -476,27 +535,28 @@ export class AICommands {
       const _optimization = await this.callAI('optimize', {
         code,
         target,
-        focus: options.focus
+        focus: options.focus,
       });
 
-      const { apply } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'apply',
-        message: 'Apply optimization changes?',
-        default: false
-      }]);
+      const { apply } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'apply',
+          message: 'Apply optimization changes?',
+          default: false,
+        },
+      ]);
 
       if (apply) {
         await this.applyOptimization(target, _optimization);
-        
+
         if (options.benchmarks) {
           const afterBenchmark = await this.runBenchmark(target);
           this.displayBenchmarkComparison(beforeBenchmark, afterBenchmark);
         }
-        
+
         logger.success(`Code optimized: ${target}`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_OPTIMIZE_FAILED',
@@ -553,57 +613,66 @@ export class AICommands {
   private async setupAI(options: any): Promise<void> {
     try {
       console.log(chalk.blue('\n🤖 Wundr AI Setup'));
-      console.log(chalk.gray('Configure your AI assistant for enhanced CLI features\n'));
+      console.log(
+        chalk.gray('Configure your AI assistant for enhanced CLI features\n')
+      );
 
       let { provider, apiKey } = options;
 
       // Ask for provider if not specified
       if (!provider) {
-        const providerAnswer = await inquirer.prompt([{
-          type: 'list',
-          name: 'provider',
-          message: 'Select AI provider:',
-          choices: [
-            { name: 'Claude (Anthropic)', value: 'claude' },
-            { name: 'OpenAI GPT', value: 'openai' }
-          ],
-          default: 'claude'
-        }]);
+        const providerAnswer = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'provider',
+            message: 'Select AI provider:',
+            choices: [
+              { name: 'Claude (Anthropic)', value: 'claude' },
+              { name: 'OpenAI GPT', value: 'openai' },
+            ],
+            default: 'claude',
+          },
+        ]);
         provider = providerAnswer.provider;
       }
 
       // Ask for API key if not provided
       if (!apiKey) {
-        const keyPrompt = provider === 'claude' 
-          ? 'Enter your Claude API key (from https://console.anthropic.com):'
-          : 'Enter your OpenAI API key (from https://platform.openai.com):';
+        const keyPrompt =
+          provider === 'claude'
+            ? 'Enter your Claude API key (from https://console.anthropic.com):'
+            : 'Enter your OpenAI API key (from https://platform.openai.com):';
 
-        const keyAnswer = await inquirer.prompt([{
-          type: 'password',
-          name: 'apiKey',
-          message: keyPrompt,
-          validate: (input) => {
-            if (!input || input.length < 10) {
-              return 'Please enter a valid API key';
-            }
-            return true;
-          }
-        }]);
+        const keyAnswer = await inquirer.prompt([
+          {
+            type: 'password',
+            name: 'apiKey',
+            message: keyPrompt,
+            validate: input => {
+              if (!input || input.length < 10) {
+                return 'Please enter a valid API key';
+              }
+              return true;
+            },
+          },
+        ]);
         apiKey = keyAnswer.apiKey;
       }
 
       // Set up the AI service
       await this.aiService.setupAI(apiKey, provider);
-      
+
       // Validate if requested
       if (options.validate) {
         console.log(chalk.blue('\nValidating API key...'));
         const validation = await this.aiService.validateConnection();
-        
+
         if (validation.connected) {
           console.log(chalk.green('✅ API key is valid and working!'));
         } else {
-          console.log(chalk.red(`❌ API key validation failed: ${validation.error}`));
+          console.log(
+            chalk.red(`❌ API key validation failed: ${validation.error}`)
+          );
           return;
         }
       }
@@ -614,7 +683,6 @@ export class AICommands {
       console.log(chalk.gray('  • wundr ai generate - Code generation'));
       console.log(chalk.gray('  • wundr ai review - Code review'));
       console.log(chalk.gray('\nRun `wundr ai status` to check configuration'));
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_SETUP_FAILED',
@@ -631,23 +699,32 @@ export class AICommands {
   private async showAIStatus(): Promise<void> {
     try {
       const status = this.aiService.getStatus();
-      
+
       console.log(chalk.blue('\n🤖 AI Configuration Status\n'));
-      
+
       console.log(`Provider: ${chalk.cyan(status.provider)}`);
       console.log(`Model: ${chalk.cyan(status.model)}`);
-      console.log(`API Key: ${status.hasApiKey ? chalk.green('✅ Configured') : chalk.red('❌ Missing')}`);
-      console.log(`Status: ${status.ready ? chalk.green('✅ Ready') : chalk.yellow('⚠️  Not Ready')}`);
-      
+      console.log(
+        `API Key: ${status.hasApiKey ? chalk.green('✅ Configured') : chalk.red('❌ Missing')}`
+      );
+      console.log(
+        `Status: ${status.ready ? chalk.green('✅ Ready') : chalk.yellow('⚠️  Not Ready')}`
+      );
+
       if (!status.hasApiKey) {
         console.log(chalk.yellow('\n⚠️  API key not configured'));
-        console.log(chalk.gray('Run `wundr ai setup` to configure your API key'));
-        console.log(chalk.gray('Or set the CLAUDE_API_KEY environment variable'));
+        console.log(
+          chalk.gray('Run `wundr ai setup` to configure your API key')
+        );
+        console.log(
+          chalk.gray('Or set the CLAUDE_API_KEY environment variable')
+        );
       } else if (!status.ready) {
         console.log(chalk.yellow('\n⚠️  AI service not ready'));
-        console.log(chalk.gray('Try running `wundr ai validate` to check connection'));
+        console.log(
+          chalk.gray('Try running `wundr ai validate` to check connection')
+        );
       }
-      
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_STATUS_FAILED',
@@ -664,27 +741,32 @@ export class AICommands {
   private async validateAI(): Promise<void> {
     try {
       console.log(chalk.blue('\n🔍 Validating AI connection...'));
-      
+
       const validation = await this.aiService.validateConnection();
-      
+
       console.log(`\nProvider: ${chalk.cyan(validation.provider)}`);
       console.log(`Model: ${chalk.cyan(validation.model)}`);
-      
+
       if (validation.connected) {
         console.log(chalk.green('\n✅ Connection successful!'));
         console.log(chalk.gray('AI features are ready to use.'));
       } else {
         console.log(chalk.red('\n❌ Connection failed'));
         console.log(chalk.red(`Error: ${validation.error}`));
-        
+
         if (validation.error?.includes('API key')) {
           console.log(chalk.yellow('\n💡 Try:'));
-          console.log(chalk.gray('1. Run `wundr ai setup` to configure your API key'));
-          console.log(chalk.gray('2. Check your API key is valid and has sufficient credits'));
+          console.log(
+            chalk.gray('1. Run `wundr ai setup` to configure your API key')
+          );
+          console.log(
+            chalk.gray(
+              '2. Check your API key is valid and has sufficient credits'
+            )
+          );
           console.log(chalk.gray('3. Verify your internet connection'));
         }
       }
-      
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_AI_VALIDATE_FAILED',
@@ -705,7 +787,7 @@ export class AICommands {
     }
 
     logger.debug(`Calling AI for operation: ${operation}`);
-    
+
     // For now, return mock responses - these would be replaced with actual AI calls
     switch (operation) {
       case 'generate':
@@ -730,12 +812,14 @@ export class AICommands {
   }
 
   private async promptForGeneration(type: string): Promise<string> {
-    const { prompt } = await inquirer.prompt([{
-      type: 'input',
-      name: 'prompt',
-      message: `Describe the ${type} you want to generate:`,
-      validate: (input) => input.length > 0 || 'Prompt is required'
-    }]);
+    const { prompt } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'prompt',
+        message: `Describe the ${type} you want to generate:`,
+        validate: input => input.length > 0 || 'Prompt is required',
+      },
+    ]);
     return prompt;
   }
 
@@ -744,7 +828,10 @@ export class AICommands {
     return `// Context from ${contextPath}`;
   }
 
-  private async saveGeneratedCode(_code: string, outputPath: string): Promise<void> {
+  private async saveGeneratedCode(
+    _code: string,
+    outputPath: string
+  ): Promise<void> {
     // Save generated code to file
     logger.debug(`Saving generated code to ${outputPath}`);
   }
@@ -781,12 +868,19 @@ export class AICommands {
     logger.debug(`Applying refactoring to ${target}`);
   }
 
-  private getDocsOutputPath(target: string, type: string, format: string): string {
+  private getDocsOutputPath(
+    target: string,
+    type: string,
+    format: string
+  ): string {
     const ext = format === 'markdown' ? 'md' : format;
     return `docs/${target}.${type}.${ext}`;
   }
 
-  private async saveGeneratedDocs(_docs: string, outputPath: string): Promise<void> {
+  private async saveGeneratedDocs(
+    _docs: string,
+    outputPath: string
+  ): Promise<void> {
     // Save generated documentation
     logger.debug(`Saving documentation to ${outputPath}`);
   }
@@ -802,7 +896,7 @@ export class AICommands {
       model: 'claude-3',
       history: [],
       created: new Date(),
-      updated: new Date()
+      updated: new Date(),
     };
   }
 
@@ -813,7 +907,7 @@ export class AICommands {
       context: options.context,
       history: [],
       created: new Date(),
-      updated: new Date()
+      updated: new Date(),
     };
   }
 
@@ -825,12 +919,14 @@ export class AICommands {
     this.aiService.loadChatSession(session);
 
     while (true) {
-      const { message } = await inquirer.prompt([{
-        type: 'input',
-        name: 'message',
-        message: 'You:',
-        validate: (input) => input.length > 0 || 'Message cannot be empty'
-      }]);
+      const { message } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'message',
+          message: 'You:',
+          validate: input => input.length > 0 || 'Message cannot be empty',
+        },
+      ]);
 
       if (message.toLowerCase() === 'exit') {
         break;
@@ -840,9 +936,9 @@ export class AICommands {
         // Use real AI service for chat
         const response = await this.aiService.sendMessage(session.id, message, {
           projectPath: process.cwd(),
-          currentGoal: 'Interactive chat session'
+          currentGoal: 'Interactive chat session',
         });
-        
+
         console.log(chalk.cyan(`AI: ${response}`));
 
         // Update session history from AI service
@@ -850,7 +946,11 @@ export class AICommands {
         session.updated = new Date();
       } catch (error: any) {
         console.log(chalk.red(`Error: ${error.message}`));
-        console.log(chalk.yellow('\nTip: Try `wundr ai validate` to check your connection'));
+        console.log(
+          chalk.yellow(
+            '\nTip: Try `wundr ai validate` to check your connection'
+          )
+        );
       }
     }
 
@@ -861,7 +961,7 @@ export class AICommands {
     console.log(chalk.blue('\nCode Analysis Results:'));
     console.log(`Complexity: ${analysis.complexity}`);
     console.log(`Maintainability: ${analysis.maintainability}`);
-    
+
     if (analysis.suggestions.length > 0) {
       console.log('\nSuggestions:');
       analysis.suggestions.forEach((suggestion: string, i: number) => {
@@ -875,14 +975,21 @@ export class AICommands {
     return { time: 100, memory: 50 };
   }
 
-  private async applyOptimization(target: string, _optimization: any): Promise<void> {
+  private async applyOptimization(
+    target: string,
+    _optimization: any
+  ): Promise<void> {
     // Apply optimization changes
     logger.debug(`Applying optimization to ${target}`);
   }
 
   private displayBenchmarkComparison(before: any, after: any): void {
     console.log(chalk.blue('\nBenchmark Comparison:'));
-    console.log(`Time: ${before.time}ms → ${after.time}ms (${after.time - before.time}ms)`);
-    console.log(`Memory: ${before.memory}MB → ${after.memory}MB (${after.memory - before.memory}MB)`);
+    console.log(
+      `Time: ${before.time}ms → ${after.time}ms (${after.time - before.time}ms)`
+    );
+    console.log(
+      `Memory: ${before.memory}MB → ${after.memory}MB (${after.memory - before.memory}MB)`
+    );
   }
 }

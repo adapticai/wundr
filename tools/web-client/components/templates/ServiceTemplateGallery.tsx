@@ -7,27 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Download, Eye, Settings, Zap } from "lucide-react";
-
-interface ServiceTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  language: string;
-  framework: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
-  tags: string[];
-  downloads: number;
-  rating: number;
-  lastUpdated: string;
-  author: string;
-  version: string;
-  usageStats: {
-    monthly: number;
-    total: number;
-    trending: boolean;
-  };
-}
+import { ServiceTemplate, ServiceTemplateDifficulty } from "@/types/templates";
 
 interface ServiceTemplateGalleryProps {
   templates: ServiceTemplate[];
@@ -66,7 +46,7 @@ export function ServiceTemplateGallery({
         case "rating":
           return b.rating - a.rating;
         case "recent":
-          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+          return b.lastUpdated.getTime() - a.lastUpdated.getTime();
         case "name":
           return a.name.localeCompare(b.name);
         default:
@@ -74,7 +54,7 @@ export function ServiceTemplateGallery({
       }
     });
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: ServiceTemplateDifficulty) => {
     switch (difficulty) {
       case "beginner": return "bg-green-100 text-green-800";
       case "intermediate": return "bg-yellow-100 text-yellow-800";

@@ -18,15 +18,20 @@ class WundrLogger implements Logger {
 
   private shouldLog(level: string): boolean {
     if (this.silent) return false;
-    
+
     const levels = { debug: 0, info: 1, warn: 2, error: 3 };
     return levels[level as keyof typeof levels] >= levels[this.level];
   }
 
-  private formatMessage(level: string, message: string, ...args: any[]): string {
+  private formatMessage(
+    level: string,
+    message: string,
+    ...args: any[]
+  ): string {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
-    const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
+    const fullMessage =
+      args.length > 0 ? `${message} ${args.join(' ')}` : message;
     return `${prefix} ${fullMessage}`;
   }
 
@@ -83,13 +88,13 @@ class WundrLogger implements Logger {
     const bar = '█'.repeat(Math.round(percentage / 2));
     const empty = '░'.repeat(50 - Math.round(percentage / 2));
     const progress = `[${bar}${empty}] ${percentage}%`;
-    
-    const output = message 
+
+    const output = message
       ? `${chalk.cyan(progress)} ${message}`
       : chalk.cyan(progress);
-    
+
     process.stdout.write(`\r${output}`);
-    
+
     if (current === total) {
       process.stdout.write('\n');
     }

@@ -12,14 +12,14 @@ export class TestInitCommand {
       {
         type: 'input',
         name: 'baseURL',
-        message: 'What is your application\'s base URL?',
-        default: 'http://localhost:3000'
+        message: "What is your application's base URL?",
+        default: 'http://localhost:3000',
       },
       {
         type: 'input',
         name: 'apiURL',
         message: 'What is your API base URL?',
-        default: 'http://localhost:3000/api'
+        default: 'http://localhost:3000/api',
       },
       {
         type: 'checkbox',
@@ -27,11 +27,15 @@ export class TestInitCommand {
         message: 'Which test suites would you like to enable?',
         choices: [
           { name: 'Smoke Tests', value: 'smoke', checked: true },
-          { name: 'Accessibility Tests', value: 'accessibility', checked: true },
+          {
+            name: 'Accessibility Tests',
+            value: 'accessibility',
+            checked: true,
+          },
           { name: 'API Tests', value: 'api', checked: true },
           { name: 'Performance Tests', value: 'performance', checked: false },
-          { name: 'Security Tests', value: 'security', checked: false }
-        ]
+          { name: 'Security Tests', value: 'security', checked: false },
+        ],
       },
       {
         type: 'checkbox',
@@ -41,31 +45,33 @@ export class TestInitCommand {
           { name: 'Chromium', value: 'chromium', checked: true },
           { name: 'Firefox', value: 'firefox', checked: false },
           { name: 'Safari (WebKit)', value: 'webkit', checked: false },
-          { name: 'Mobile', value: 'mobile', checked: true }
-        ]
+          { name: 'Mobile', value: 'mobile', checked: true },
+        ],
       },
       {
         type: 'confirm',
         name: 'headless',
         message: 'Run tests in headless mode?',
-        default: true
+        default: true,
       },
       {
         type: 'confirm',
         name: 'ci',
         message: 'Would you like to add CI/CD configuration?',
-        default: true
-      }
+        default: true,
+      },
     ]);
 
     // Generate configuration
     const config = this.generateConfig(answers);
-    
+
     // Write configuration file
     const configPath = path.join(process.cwd(), 'wundr-test.config.js');
     await fs.writeFile(configPath, config);
-    
-    console.log(chalk.green('\n✅ Test configuration created: wundr-test.config.js'));
+
+    console.log(
+      chalk.green('\n✅ Test configuration created: wundr-test.config.js')
+    );
 
     // Add package.json scripts
     await this.updatePackageJson();
@@ -89,9 +95,10 @@ export class TestInitCommand {
       return acc;
     }, {});
 
-    const projects = answers.browsers.map((browser: string) => {
-      if (browser === 'mobile') {
-        return `    {
+    const projects = answers.browsers
+      .map((browser: string) => {
+        if (browser === 'mobile') {
+          return `    {
       name: 'mobile',
       use: {
         browserName: 'chromium',
@@ -99,15 +106,16 @@ export class TestInitCommand {
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)'
       }
     }`;
-      }
-      return `    {
+        }
+        return `    {
       name: '${browser}',
       use: { 
         browserName: '${browser}',
         viewport: { width: 1280, height: 720 }
       }
     }`;
-    }).join(',\n');
+      })
+      .join(',\n');
 
     return `/**
  * Wundr Test Configuration
@@ -153,19 +161,19 @@ ${projects}
 
   private async updatePackageJson(): Promise<void> {
     const packageJsonPath = path.join(process.cwd(), 'package.json');
-    
+
     if (await fs.pathExists(packageJsonPath)) {
       const packageJson = await fs.readJson(packageJsonPath);
-      
+
       packageJson.scripts = packageJson.scripts || {};
       packageJson.scripts['test:wundr'] = 'wundr test';
       packageJson.scripts['test:wundr:ui'] = 'wundr test --type ui';
       packageJson.scripts['test:wundr:api'] = 'wundr test --type api';
       packageJson.scripts['test:wundr:headed'] = 'wundr test --headed';
       packageJson.scripts['test:report'] = 'wundr test --report';
-      
+
       await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-      
+
       console.log(chalk.green('✅ Added test scripts to package.json'));
     }
   }
@@ -213,8 +221,12 @@ jobs:
     const githubDir = path.join(process.cwd(), '.github', 'workflows');
     await fs.ensureDir(githubDir);
     await fs.writeFile(path.join(githubDir, 'wundr-tests.yml'), githubWorkflow);
-    
-    console.log(chalk.green('✅ Created GitHub Actions workflow: .github/workflows/wundr-tests.yml'));
+
+    console.log(
+      chalk.green(
+        '✅ Created GitHub Actions workflow: .github/workflows/wundr-tests.yml'
+      )
+    );
   }
 }
 

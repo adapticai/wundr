@@ -22,7 +22,7 @@ export class CodeReviewSwarm extends EventEmitter {
       prId,
       reviewComments: [],
       approvals: 0,
-      suggestions: []
+      suggestions: [],
     };
   }
 

@@ -6,7 +6,11 @@ import { promises as fs } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 
-import { ToolConfiguration, InstallationResult, ValidationResult } from '../types';
+import {
+  ToolConfiguration,
+  InstallationResult,
+  ValidationResult,
+} from '../types';
 import { BaseInstaller } from './base-installer';
 import { createLogger } from '../utils/logger';
 
@@ -20,13 +24,17 @@ export class ManualInstaller extends BaseInstaller {
       case 'homebrew':
         return await this.installHomebrew();
       case 'vscode-extensions':
-        return await this.installVSCodeExtensions((tool.config?.extensions && Array.isArray(tool.config.extensions) ? tool.config.extensions : []) as string[]);
+        return await this.installVSCodeExtensions(
+          (tool.config?.extensions && Array.isArray(tool.config.extensions)
+            ? tool.config.extensions
+            : []) as string[]
+        );
       default:
         return {
           success: false,
           tool: tool.name,
           message: `Manual installation not implemented for ${tool.name}`,
-          errors: [`No manual installer available for ${tool.name}`]
+          errors: [`No manual installer available for ${tool.name}`],
         };
     }
   }
@@ -36,12 +44,16 @@ export class ManualInstaller extends BaseInstaller {
       case 'homebrew':
         return await this.validateHomebrew();
       case 'vscode-extensions':
-        return await this.validateVSCodeExtensions((tool.config?.extensions && Array.isArray(tool.config.extensions) ? tool.config.extensions : []) as string[]);
+        return await this.validateVSCodeExtensions(
+          (tool.config?.extensions && Array.isArray(tool.config.extensions)
+            ? tool.config.extensions
+            : []) as string[]
+        );
       default:
         return {
           valid: false,
           tool: tool.name,
-          issues: [`Manual validation not implemented for ${tool.name}`]
+          issues: [`Manual validation not implemented for ${tool.name}`],
         };
     }
   }
@@ -56,16 +68,17 @@ export class ManualInstaller extends BaseInstaller {
    */
   private async installHomebrew(): Promise<InstallationResult> {
     const exists = await this.commandExists('brew');
-    
+
     if (exists) {
       return {
         success: true,
         tool: 'homebrew',
-        message: 'Homebrew is already installed'
+        message: 'Homebrew is already installed',
       };
     }
 
-    const installCommand = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
+    const installCommand =
+      '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
     const result = await this.executeCommand(installCommand);
 
     if (result.success) {
@@ -73,7 +86,9 @@ export class ManualInstaller extends BaseInstaller {
         success: true,
         tool: 'homebrew',
         message: 'Homebrew installed successfully',
-        warnings: ['Please restart your terminal or run: eval "$(/opt/homebrew/bin/brew shellenv)"']
+        warnings: [
+          'Please restart your terminal or run: eval "$(/opt/homebrew/bin/brew shellenv)"',
+        ],
       };
     }
 
@@ -81,7 +96,7 @@ export class ManualInstaller extends BaseInstaller {
       success: false,
       tool: 'homebrew',
       message: 'Failed to install Homebrew',
-      errors: [result.stderr || 'Unknown error']
+      errors: [result.stderr || 'Unknown error'],
     };
   }
 
@@ -90,13 +105,13 @@ export class ManualInstaller extends BaseInstaller {
    */
   private async validateHomebrew(): Promise<ValidationResult> {
     const exists = await this.commandExists('brew');
-    
+
     if (!exists) {
       return {
         valid: false,
         tool: 'homebrew',
         issues: ['Homebrew is not installed'],
-        suggestions: ['Install Homebrew from https://brew.sh/']
+        suggestions: ['Install Homebrew from https://brew.sh/'],
       };
     }
 
@@ -105,7 +120,7 @@ export class ManualInstaller extends BaseInstaller {
       return {
         valid: false,
         tool: 'homebrew',
-        issues: ['Could not determine Homebrew version']
+        issues: ['Could not determine Homebrew version'],
       };
     }
 
@@ -113,22 +128,24 @@ export class ManualInstaller extends BaseInstaller {
     return {
       valid: true,
       tool: 'homebrew',
-      version
+      version,
     };
   }
 
   /**
    * Install VS Code extensions
    */
-  async installVSCodeExtensions(extensions: string[]): Promise<InstallationResult> {
+  async installVSCodeExtensions(
+    extensions: string[]
+  ): Promise<InstallationResult> {
     const codeExists = await this.commandExists('code');
-    
+
     if (!codeExists) {
       return {
         success: false,
         tool: 'vscode-extensions',
         message: 'VS Code is not installed',
-        errors: ['Install VS Code first']
+        errors: ['Install VS Code first'],
       };
     }
 
@@ -137,8 +154,10 @@ export class ManualInstaller extends BaseInstaller {
 
     for (const extension of extensions) {
       logger.info(`Installing VS Code extension: ${extension}`);
-      const result = await this.executeCommand(`code --install-extension ${extension}`);
-      
+      const result = await this.executeCommand(
+        `code --install-extension ${extension}`
+      );
+
       if (result.success) {
         results.push(`Installed ${extension}`);
       } else {
@@ -150,21 +169,23 @@ export class ManualInstaller extends BaseInstaller {
       success: errors.length === 0,
       tool: 'vscode-extensions',
       message: `Processed ${extensions.length} extensions`,
-      ...(errors.length > 0 && { warnings: errors })
+      ...(errors.length > 0 && { warnings: errors }),
     };
   }
 
   /**
    * Validate VS Code extensions
    */
-  private async validateVSCodeExtensions(extensions: string[]): Promise<ValidationResult> {
+  private async validateVSCodeExtensions(
+    extensions: string[]
+  ): Promise<ValidationResult> {
     const codeExists = await this.commandExists('code');
-    
+
     if (!codeExists) {
       return {
         valid: false,
         tool: 'vscode-extensions',
-        issues: ['VS Code is not installed']
+        issues: ['VS Code is not installed'],
       };
     }
 
@@ -173,7 +194,7 @@ export class ManualInstaller extends BaseInstaller {
       return {
         valid: false,
         tool: 'vscode-extensions',
-        issues: ['Could not list VS Code extensions']
+        issues: ['Could not list VS Code extensions'],
       };
     }
 
@@ -181,7 +202,11 @@ export class ManualInstaller extends BaseInstaller {
     const missingExtensions: string[] = [];
 
     for (const extension of extensions) {
-      if (!installedExtensions.some(installed => installed.includes(extension.toLowerCase()))) {
+      if (
+        !installedExtensions.some(installed =>
+          installed.includes(extension.toLowerCase())
+        )
+      ) {
         missingExtensions.push(extension);
       }
     }
@@ -191,13 +216,15 @@ export class ManualInstaller extends BaseInstaller {
         valid: false,
         tool: 'vscode-extensions',
         issues: [`Missing extensions: ${missingExtensions.join(', ')}`],
-        suggestions: [`Install missing extensions: code --install-extension ${missingExtensions.join(' ')}`]
+        suggestions: [
+          `Install missing extensions: code --install-extension ${missingExtensions.join(' ')}`,
+        ],
       };
     }
 
     return {
       valid: true,
-      tool: 'vscode-extensions'
+      tool: 'vscode-extensions',
     };
   }
 
@@ -205,11 +232,18 @@ export class ManualInstaller extends BaseInstaller {
    * Apply VS Code settings
    */
   async applyVSCodeSettings(settings: Record<string, unknown>): Promise<void> {
-    const settingsPath = join(homedir(), 'Library', 'Application Support', 'Code', 'User', 'settings.json');
-    
+    const settingsPath = join(
+      homedir(),
+      'Library',
+      'Application Support',
+      'Code',
+      'User',
+      'settings.json'
+    );
+
     try {
       let existingSettings = {};
-      
+
       try {
         const existingData = await fs.readFile(settingsPath, 'utf8');
         existingSettings = JSON.parse(existingData);
@@ -220,7 +254,7 @@ export class ManualInstaller extends BaseInstaller {
       const mergedSettings = { ...existingSettings, ...settings };
       await fs.mkdir(join(settingsPath, '..'), { recursive: true });
       await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2));
-      
+
       logger.info('VS Code settings applied');
     } catch (_error) {
       logger.error('Failed to apply VS Code settings:', _error);

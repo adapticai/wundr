@@ -26,7 +26,16 @@ export interface ToolConfiguration {
   profile?: ProfileType[];
 }
 
-export type InstallerType = 'brew' | 'apt' | 'npm' | 'yarn' | 'pnpm' | 'chocolatey' | 'winget' | 'docker' | 'manual';
+export type InstallerType =
+  | 'brew'
+  | 'apt'
+  | 'npm'
+  | 'yarn'
+  | 'pnpm'
+  | 'chocolatey'
+  | 'winget'
+  | 'docker'
+  | 'manual';
 
 export interface UserPreferences {
   email?: string;
@@ -39,7 +48,12 @@ export interface UserPreferences {
   theme: ThemePreference;
 }
 
-export type EditorPreference = 'vscode' | 'cursor' | 'webstorm' | 'vim' | 'emacs';
+export type EditorPreference =
+  | 'vscode'
+  | 'cursor'
+  | 'webstorm'
+  | 'vim'
+  | 'emacs';
 export type ShellPreference = 'bash' | 'zsh' | 'fish' | 'powershell';
 export type PackageManager = 'npm' | 'yarn' | 'pnpm';
 export type ThemePreference = 'dark' | 'light' | 'auto';

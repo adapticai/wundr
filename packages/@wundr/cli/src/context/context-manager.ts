@@ -112,12 +112,12 @@ export class ContextManager {
       lastActivity: new Date(),
       commandHistory: [],
       preferences: this.getDefaultPreferences(),
-      projectContext: await this.detectProjectContext()
+      projectContext: await this.detectProjectContext(),
     };
 
     await this.saveSession(this.currentSession);
     logger.info(`Initialized session: ${newSessionId}`);
-    
+
     return this.currentSession;
   }
 
@@ -148,7 +148,7 @@ export class ContextManager {
       success,
       duration,
       output,
-      error
+      error,
     };
 
     this.currentSession.commandHistory.push(entry);
@@ -156,7 +156,8 @@ export class ContextManager {
 
     // Keep only last 50 commands
     if (this.currentSession.commandHistory.length > 50) {
-      this.currentSession.commandHistory = this.currentSession.commandHistory.slice(-50);
+      this.currentSession.commandHistory =
+        this.currentSession.commandHistory.slice(-50);
     }
 
     await this.saveSession(this.currentSession);
@@ -178,16 +179,18 @@ export class ContextManager {
   /**
    * Update user preferences
    */
-  async updatePreferences(preferences: Partial<UserPreferences>): Promise<void> {
+  async updatePreferences(
+    preferences: Partial<UserPreferences>
+  ): Promise<void> {
     if (!this.currentSession) {
       throw new Error('No active session');
     }
 
     this.currentSession.preferences = {
       ...this.currentSession.preferences,
-      ...preferences
+      ...preferences,
     };
-    
+
     this.currentSession.lastActivity = new Date();
     await this.saveSession(this.currentSession);
   }
@@ -213,17 +216,19 @@ export class ContextManager {
       sessionMetadata: {
         sessionId: this.currentSession.sessionId,
         duration: Date.now() - this.currentSession.startTime.getTime(),
-        commandCount: this.currentSession.commandHistory.length
-      }
+        commandCount: this.currentSession.commandHistory.length,
+      },
     };
   }
 
   /**
    * Detect project context
    */
-  async detectProjectContext(projectPath?: string): Promise<ProjectContext | undefined> {
+  async detectProjectContext(
+    projectPath?: string
+  ): Promise<ProjectContext | undefined> {
     const targetPath = projectPath || process.cwd();
-    
+
     // Check cache first
     if (this.projectContextCache.has(targetPath)) {
       return this.projectContextCache.get(targetPath);
@@ -232,15 +237,19 @@ export class ContextManager {
     try {
       const context: ProjectContext = {
         path: targetPath,
-        type: 'unknown'
+        type: 'unknown',
       };
 
       // Read package.json
       const packageJsonPath = path.join(targetPath, 'package.json');
       if (await fs.pathExists(packageJsonPath)) {
         context.packageJson = await fs.readJson(packageJsonPath);
-        context.dependencies = Object.keys(context.packageJson.dependencies || {});
-        context.devDependencies = Object.keys(context.packageJson.devDependencies || {});
+        context.dependencies = Object.keys(
+          context.packageJson.dependencies || {}
+        );
+        context.devDependencies = Object.keys(
+          context.packageJson.devDependencies || {}
+        );
         context.scripts = context.packageJson.scripts || {};
         context.type = this.detectProjectType(context.packageJson);
       }
@@ -256,7 +265,7 @@ export class ContextManager {
 
       // Cache the context
       this.projectContextCache.set(targetPath, context);
-      
+
       return context;
     } catch (error) {
       logger.debug('Failed to detect project context:', error);
@@ -284,7 +293,7 @@ export class ContextManager {
       quality,
       duplicates,
       dependencies,
-      recommendations
+      recommendations,
     };
 
     await this.saveSession(this.currentSession);
@@ -299,7 +308,7 @@ export class ContextManager {
     }
 
     const commandFreq: Record<string, number> = {};
-    
+
     this.currentSession.commandHistory.forEach(entry => {
       const baseCommand = entry.command.split(' ').slice(0, 2).join(' ');
       commandFreq[baseCommand] = (commandFreq[baseCommand] || 0) + 1;
@@ -320,7 +329,7 @@ export class ContextManager {
 
     this.currentSession.lastActivity = new Date();
     await this.saveSession(this.currentSession);
-    
+
     logger.info(`Session ended: ${this.currentSession.sessionId}`);
     this.currentSession = undefined;
   }
@@ -328,20 +337,29 @@ export class ContextManager {
   /**
    * List all sessions
    */
-  async listSessions(): Promise<{ id: string; startTime: Date; lastActivity: Date; commandCount: number }[]> {
+  async listSessions(): Promise<
+    { id: string; startTime: Date; lastActivity: Date; commandCount: number }[]
+  > {
     try {
       const files = await fs.readdir(this.sessionsDir);
-      const sessions: Array<{ id: string; startTime: Date; lastActivity: Date; commandCount: number }> = [];
+      const sessions: Array<{
+        id: string;
+        startTime: Date;
+        lastActivity: Date;
+        commandCount: number;
+      }> = [];
 
       for (const file of files) {
         if (file.endsWith('.json')) {
           try {
-            const sessionData = await fs.readJson(path.join(this.sessionsDir, file));
+            const sessionData = await fs.readJson(
+              path.join(this.sessionsDir, file)
+            );
             sessions.push({
               id: sessionData.sessionId,
               startTime: new Date(sessionData.startTime),
               lastActivity: new Date(sessionData.lastActivity),
-              commandCount: sessionData.commandHistory.length
+              commandCount: sessionData.commandHistory.length,
             });
           } catch (error) {
             logger.debug(`Failed to read session file ${file}:`, error);
@@ -349,7 +367,9 @@ export class ContextManager {
         }
       }
 
-      return sessions.sort((a, b) => b.lastActivity.getTime() - a.lastActivity.getTime());
+      return sessions.sort(
+        (a, b) => b.lastActivity.getTime() - a.lastActivity.getTime()
+      );
     } catch (error) {
       logger.debug('Failed to list sessions:', error);
       return [];
@@ -362,20 +382,22 @@ export class ContextManager {
   private async loadSession(sessionId: string): Promise<SessionContext | null> {
     try {
       const sessionPath = path.join(this.sessionsDir, `${sessionId}.json`);
-      
+
       if (await fs.pathExists(sessionPath)) {
         const data = await fs.readJson(sessionPath);
-        
+
         // Convert date strings back to Date objects
         data.startTime = new Date(data.startTime);
         data.lastActivity = new Date(data.lastActivity);
         data.commandHistory = data.commandHistory.map((entry: any) => ({
           ...entry,
-          timestamp: new Date(entry.timestamp)
+          timestamp: new Date(entry.timestamp),
         }));
-        
+
         if (data.projectContext?.lastAnalysis) {
-          data.projectContext.lastAnalysis.timestamp = new Date(data.projectContext.lastAnalysis.timestamp);
+          data.projectContext.lastAnalysis.timestamp = new Date(
+            data.projectContext.lastAnalysis.timestamp
+          );
         }
 
         return data;
@@ -383,7 +405,7 @@ export class ContextManager {
     } catch (error) {
       logger.debug(`Failed to load session ${sessionId}:`, error);
     }
-    
+
     return null;
   }
 
@@ -392,7 +414,10 @@ export class ContextManager {
    */
   private async saveSession(session: SessionContext): Promise<void> {
     try {
-      const sessionPath = path.join(this.sessionsDir, `${session.sessionId}.json`);
+      const sessionPath = path.join(
+        this.sessionsDir,
+        `${session.sessionId}.json`
+      );
       await fs.writeJson(sessionPath, session, { spaces: 2 });
     } catch (error) {
       logger.error(`Failed to save session ${session.sessionId}:`, error);
@@ -415,7 +440,7 @@ export class ContextManager {
       confirmCommands: false,
       autoSuggest: true,
       theme: 'auto',
-      language: 'en'
+      language: 'en',
     };
   }
 
@@ -426,27 +451,33 @@ export class ContextManager {
     if (packageJson.dependencies?.react || packageJson.devDependencies?.react) {
       return 'react';
     }
-    
+
     if (packageJson.dependencies?.next || packageJson.devDependencies?.next) {
       return 'next';
     }
-    
+
     if (packageJson.dependencies?.vue || packageJson.devDependencies?.vue) {
       return 'vue';
     }
-    
-    if (packageJson.dependencies?.express || packageJson.devDependencies?.express) {
+
+    if (
+      packageJson.dependencies?.express ||
+      packageJson.devDependencies?.express
+    ) {
       return 'express';
     }
-    
-    if (packageJson.dependencies?.typescript || packageJson.devDependencies?.typescript) {
+
+    if (
+      packageJson.dependencies?.typescript ||
+      packageJson.devDependencies?.typescript
+    ) {
       return 'typescript';
     }
-    
+
     if (packageJson.type === 'module' || packageJson.main?.endsWith('.mjs')) {
       return 'esm';
     }
-    
+
     return 'node';
   }
 
@@ -465,18 +496,27 @@ export class ContextManager {
         return undefined;
       }
 
-      const branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd, encoding: 'utf8' }).trim();
-      
+      const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+        cwd,
+        encoding: 'utf8',
+      }).trim();
+
       let remote: string | undefined;
       try {
-        remote = execSync('git config --get remote.origin.url', { cwd, encoding: 'utf8' }).trim();
+        remote = execSync('git config --get remote.origin.url', {
+          cwd,
+          encoding: 'utf8',
+        }).trim();
       } catch {
         // No remote configured
       }
 
       let hasChanges = false;
       try {
-        const status = execSync('git status --porcelain', { cwd, encoding: 'utf8' });
+        const status = execSync('git status --porcelain', {
+          cwd,
+          encoding: 'utf8',
+        });
         hasChanges = status.trim().length > 0;
       } catch {
         // Can't determine changes
@@ -484,7 +524,10 @@ export class ContextManager {
 
       let lastCommit: string | undefined;
       try {
-        lastCommit = execSync('git log -1 --format="%h %s"', { cwd, encoding: 'utf8' }).trim();
+        lastCommit = execSync('git log -1 --format="%h %s"', {
+          cwd,
+          encoding: 'utf8',
+        }).trim();
       } catch {
         // No commits yet
       }
@@ -493,7 +536,7 @@ export class ContextManager {
         branch,
         remote,
         hasChanges,
-        lastCommit
+        lastCommit,
       };
     } catch (error) {
       logger.debug('Failed to get git info:', error);

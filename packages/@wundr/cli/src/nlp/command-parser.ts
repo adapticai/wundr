@@ -62,7 +62,7 @@ export class CommandParser {
     try {
       // First, try template-based parsing for common patterns
       const templateResult = this.tryTemplateMatching(input);
-      
+
       if (templateResult && templateResult.confidence > 0.8) {
         return {
           originalInput: input,
@@ -72,16 +72,19 @@ export class CommandParser {
           options: templateResult.options,
           confidence: templateResult.confidence,
           needsConfirmation: false,
-          executionPlan: [this.createExecutionStep(templateResult)]
+          executionPlan: [this.createExecutionStep(templateResult)],
         };
       }
 
       // Fall back to AI-powered parsing
-      const aiResult = await this.aiService.parseNaturalLanguageCommand(input, context);
-      
+      const aiResult = await this.aiService.parseNaturalLanguageCommand(
+        input,
+        context
+      );
+
       // Parse the command string into components
       const parsedComponents = this.parseCommandString(aiResult.command);
-      
+
       return {
         originalInput: input,
         intent: aiResult.intent,
@@ -91,12 +94,11 @@ export class CommandParser {
         confidence: aiResult.confidence,
         needsConfirmation: aiResult.needsConfirmation,
         clarificationQuestion: aiResult.clarificationQuestion,
-        executionPlan: [this.createExecutionStepFromParsed(parsedComponents)]
+        executionPlan: [this.createExecutionStepFromParsed(parsedComponents)],
       };
-
     } catch (error) {
       logger.error('Failed to parse command:', error);
-      
+
       return {
         originalInput: input,
         intent: 'unknown',
@@ -106,7 +108,7 @@ export class CommandParser {
         confidence: 0,
         needsConfirmation: true,
         clarificationQuestion: `I couldn't understand "${input}". Could you please rephrase or provide more specific details?`,
-        suggestions: await this.generateSuggestions(input, context)
+        suggestions: await this.generateSuggestions(input, context),
       };
     }
   }
@@ -124,11 +126,11 @@ export class CommandParser {
         /\s+and\s+/i,
         /\s+then\s+/i,
         /\s+after\s+/i,
-        /[;,]\s*/
+        /[;,]\s*/,
       ];
 
       const isComplex = complexPatterns.some(pattern => pattern.test(input));
-      
+
       if (!isComplex) {
         return await this.parseCommand(input, context);
       }
@@ -140,16 +142,16 @@ export class CommandParser {
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
         if (!step) continue;
-        
+
         const stepResult = await this.parseCommand(step, context);
-        
+
         executionPlan.push({
           step: i + 1,
           description: step,
           command: stepResult.command,
           args: stepResult.args,
           options: stepResult.options,
-          dependencies: i > 0 ? [i] : undefined
+          dependencies: i > 0 ? [i] : undefined,
         });
       }
 
@@ -161,9 +163,8 @@ export class CommandParser {
         options: { steps: executionPlan.length },
         confidence: 0.9,
         needsConfirmation: true,
-        executionPlan
+        executionPlan,
       };
-
     } catch (error) {
       logger.error('Failed to parse complex command:', error);
       return await this.parseCommand(input, context);
@@ -184,7 +185,9 @@ export class CommandParser {
     // Check if command exists
     if (!parsedCommand.command || parsedCommand.command.trim() === '') {
       issues.push('No valid command identified');
-      recommendations.push('Try rephrasing with a specific action like "analyze", "create", or "init"');
+      recommendations.push(
+        'Try rephrasing with a specific action like "analyze", "create", or "init"'
+      );
     }
 
     // Validate command format
@@ -200,7 +203,9 @@ export class CommandParser {
     // Check confidence level
     if (parsedCommand.confidence < 0.6) {
       issues.push('Low confidence in command interpretation');
-      recommendations.push('Consider providing more specific details about what you want to accomplish');
+      recommendations.push(
+        'Consider providing more specific details about what you want to accomplish'
+      );
     }
 
     // Validate required parameters for specific commands
@@ -209,7 +214,7 @@ export class CommandParser {
     return {
       valid: issues.length === 0,
       issues,
-      recommendations: recommendations.length > 0 ? recommendations : undefined
+      recommendations: recommendations.length > 0 ? recommendations : undefined,
     };
   }
 
@@ -225,7 +230,7 @@ export class CommandParser {
       return suggestions.map(s => s.command);
     } catch (error) {
       logger.error('Failed to generate suggestions:', error);
-      
+
       // Fallback to template-based suggestions
       return this.getFallbackSuggestions(input);
     }
@@ -240,73 +245,73 @@ export class CommandParser {
       {
         pattern: /analyze|check|scan|examine/i,
         command: 'wundr analyze',
-        extractParams: (match) => ({}),
-        confidence: 0.9
+        extractParams: match => ({}),
+        confidence: 0.9,
       },
       {
         pattern: /analyze.*dependencies|dependency analysis|check deps/i,
         command: 'wundr analyze --focus dependencies',
-        extractParams: (match) => ({ focus: 'dependencies' }),
-        confidence: 0.95
+        extractParams: match => ({ focus: 'dependencies' }),
+        confidence: 0.95,
       },
       {
         pattern: /analyze.*duplicates|find duplicates|duplicate analysis/i,
         command: 'wundr analyze --focus duplicates',
-        extractParams: (match) => ({ focus: 'duplicates' }),
-        confidence: 0.95
+        extractParams: match => ({ focus: 'duplicates' }),
+        confidence: 0.95,
       },
 
       // Initialization commands
       {
         pattern: /init|initialize|setup|start new/i,
         command: 'wundr init',
-        extractParams: (match) => ({}),
-        confidence: 0.9
+        extractParams: match => ({}),
+        confidence: 0.9,
       },
       {
         pattern: /init.*project|initialize project|setup project/i,
         command: 'wundr init --type project',
-        extractParams: (match) => ({ type: 'project' }),
-        confidence: 0.95
+        extractParams: match => ({ type: 'project' }),
+        confidence: 0.95,
       },
 
       // Creation commands
       {
         pattern: /create.*service|new service|generate service/i,
         command: 'wundr create service',
-        extractParams: (match) => ({}),
-        confidence: 0.9
+        extractParams: match => ({}),
+        confidence: 0.9,
       },
       {
         pattern: /create.*component|new component|generate component/i,
         command: 'wundr create component',
-        extractParams: (match) => ({}),
-        confidence: 0.9
+        extractParams: match => ({}),
+        confidence: 0.9,
       },
 
       // Dashboard commands
       {
         pattern: /show dashboard|open dashboard|start dashboard/i,
         command: 'wundr dashboard --start',
-        extractParams: (match) => ({ start: true }),
-        confidence: 0.9
+        extractParams: match => ({ start: true }),
+        confidence: 0.9,
       },
 
       // Governance commands
       {
         pattern: /apply governance|governance check|compliance check/i,
         command: 'wundr govern --check',
-        extractParams: (match) => ({ check: true }),
-        confidence: 0.9
+        extractParams: match => ({ check: true }),
+        confidence: 0.9,
       },
 
       // Watch commands
       {
         pattern: /watch.*files|monitor files|auto.*run/i,
         command: 'wundr watch',
-        extractParams: (match) => ({}),
-        confidence: 0.9
-      }
+        extractParams: match => ({}),
+        confidence: 0.9,
+      },
     ];
   }
 
@@ -322,21 +327,21 @@ export class CommandParser {
   } | null {
     for (const template of this.commandTemplates) {
       const match = input.match(template.pattern);
-      
+
       if (match) {
         const params = template.extractParams(match);
         const parsedCommand = this.parseCommandString(template.command);
-        
+
         return {
           intent: this.extractIntent(template.command),
           command: parsedCommand.command,
           args: parsedCommand.args,
           options: { ...parsedCommand.options, ...params },
-          confidence: template.confidence
+          confidence: template.confidence,
         };
       }
     }
-    
+
     return null;
   }
 
@@ -351,17 +356,17 @@ export class CommandParser {
     const parts = commandStr.trim().split(/\s+/);
     const command = parts.slice(0, 2).join(' '); // "wundr analyze"
     const remaining = parts.slice(2);
-    
+
     const args: string[] = [];
     const options: Record<string, any> = {};
-    
+
     for (let i = 0; i < remaining.length; i++) {
       const part = remaining[i];
-      
+
       if (part?.startsWith('--')) {
         const optionName = part.slice(2);
         const nextPart = remaining[i + 1];
-        
+
         if (nextPart && !nextPart.startsWith('-')) {
           options[optionName] = nextPart;
           i++; // Skip next part
@@ -375,7 +380,7 @@ export class CommandParser {
         args.push(part);
       }
     }
-    
+
     return { command, args, options };
   }
 
@@ -403,7 +408,7 @@ export class CommandParser {
       description: `Execute ${templateResult.command}`,
       command: templateResult.command,
       args: templateResult.args,
-      options: templateResult.options
+      options: templateResult.options,
     };
   }
 
@@ -420,7 +425,7 @@ export class CommandParser {
       description: `Execute ${parsedComponents.command}`,
       command: parsedComponents.command,
       args: parsedComponents.args,
-      options: parsedComponents.options
+      options: parsedComponents.options,
     };
   }
 
@@ -430,9 +435,16 @@ export class CommandParser {
   private splitIntoSteps(input: string): string[] {
     // Split on coordinating conjunctions and punctuation
     const separators = /\s+(and|then|after|next|followed by)[,\s]+|[;,]\s+/i;
-    return input.split(separators)
+    return input
+      .split(separators)
       .map(step => step.trim())
-      .filter(step => step.length > 0 && !['and', 'then', 'after', 'next', 'followed by'].includes(step.toLowerCase()));
+      .filter(
+        step =>
+          step.length > 0 &&
+          !['and', 'then', 'after', 'next', 'followed by'].includes(
+            step.toLowerCase()
+          )
+      );
   }
 
   /**
@@ -440,10 +452,18 @@ export class CommandParser {
    */
   private isValidWundrCommand(command: string): boolean {
     const validCommands = [
-      'init', 'create', 'analyze', 'govern', 'dashboard', 
-      'watch', 'batch', 'plugins', 'chat', 'help'
+      'init',
+      'create',
+      'analyze',
+      'govern',
+      'dashboard',
+      'watch',
+      'batch',
+      'plugins',
+      'chat',
+      'help',
     ];
-    
+
     const baseCommand = command.split(' ')[0];
     return baseCommand ? validCommands.includes(baseCommand) : false;
   }
@@ -462,28 +482,46 @@ export class CommandParser {
     switch (baseCommand) {
       case 'create':
         if (parsedCommand.args.length === 0) {
-          issues.push('Create command requires a type (service, component, etc.)');
-          recommendations.push('Specify what you want to create: "wundr create service MyService"');
+          issues.push(
+            'Create command requires a type (service, component, etc.)'
+          );
+          recommendations.push(
+            'Specify what you want to create: "wundr create service MyService"'
+          );
         }
         break;
 
       case 'analyze':
         // Analyze command is flexible, but we can suggest focus areas
         if (!parsedCommand.options['focus']) {
-          recommendations.push('Consider using --focus to target specific areas (dependencies, duplicates, quality)');
+          recommendations.push(
+            'Consider using --focus to target specific areas (dependencies, duplicates, quality)'
+          );
         }
         break;
 
       case 'watch':
-        if (!parsedCommand.options['pattern'] && parsedCommand.args.length === 0) {
-          recommendations.push('Specify file patterns to watch: "wundr watch --pattern "**/*.ts""');
+        if (
+          !parsedCommand.options['pattern'] &&
+          parsedCommand.args.length === 0
+        ) {
+          recommendations.push(
+            'Specify file patterns to watch: "wundr watch --pattern "**/*.ts""'
+          );
         }
         break;
 
       case 'batch':
-        if (!parsedCommand.options['file'] && !parsedCommand.options['interactive']) {
-          issues.push('Batch command requires either a batch file or interactive mode');
-          recommendations.push('Use --file <batch-file> or --interactive for step-by-step execution');
+        if (
+          !parsedCommand.options['file'] &&
+          !parsedCommand.options['interactive']
+        ) {
+          issues.push(
+            'Batch command requires either a batch file or interactive mode'
+          );
+          recommendations.push(
+            'Use --file <batch-file> or --interactive for step-by-step execution'
+          );
         }
         break;
     }

@@ -31,6 +31,7 @@ interface DocFrontmatter {
   tags?: string[];
   author?: string;
   lastUpdated?: string;
+  date?: string;
   draft?: boolean;
   private?: boolean;
   weight?: number;
@@ -57,6 +58,15 @@ function extractDocHeaders(
   }
 
   return headers;
+}
+
+// Type guard functions for safe property access
+function hasStringProperty(obj: unknown, prop: string): obj is Record<string, string> {
+  return typeof obj === 'object' && obj !== null && prop in obj && typeof (obj as any)[prop] === 'string';
+}
+
+function isValidDateString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && !isNaN(Date.parse(value));
 }
 
 // Import highlight.js styles
@@ -312,19 +322,18 @@ export function MarkdownRenderer({
             )}
 
             <div className='flex flex-wrap gap-4 text-sm text-muted-foreground'>
-              {'author' in processedFrontmatter &&
-                processedFrontmatter.author && (
-                  <div className='flex items-center gap-1'>
-                    <UserIcon className='h-4 w-4' />
-                    <span>{processedFrontmatter.author}</span>
-                  </div>
-                )}
+              {processedFrontmatter.author && (
+                <div className='flex items-center gap-1'>
+                  <UserIcon className='h-4 w-4' />
+                  <span>{processedFrontmatter.author}</span>
+                </div>
+              )}
 
-              {(processedFrontmatter as any).date && (
+              {(processedFrontmatter.date && isValidDateString(processedFrontmatter.date)) && (
                 <div className='flex items-center gap-1'>
                   <CalendarIcon className='h-4 w-4' />
                   <span>
-                    {formatDate((processedFrontmatter as any).date as string)}
+                    {formatDate(processedFrontmatter.date)}
                   </span>
                 </div>
               )}

@@ -20,11 +20,11 @@ export class WundrHookRegistry implements PluginHookRegistry {
     }
 
     const hooks = this.hooks.get(name)!;
-    
+
     // Prevent duplicate registration
     if (!hooks.includes(hook)) {
       hooks.push(hook);
-      
+
       this.logger.debug(`Hook registered: ${name}`, {
         hookName: name,
         hookDescription: hook.description,
@@ -48,7 +48,7 @@ export class WundrHookRegistry implements PluginHookRegistry {
     const index = hooks.indexOf(hook);
     if (index !== -1) {
       hooks.splice(index, 1);
-      
+
       this.logger.debug(`Hook unregistered: ${name}`, {
         hookName: name,
         remainingHooks: hooks.length,
@@ -87,9 +87,9 @@ export class WundrHookRegistry implements PluginHookRegistry {
         const hookStartTime = performance.now();
         const result = await hook.execute(...args);
         const duration = performance.now() - hookStartTime;
-        
+
         results.push(result as T);
-        
+
         this.logger.debug(`Hook executed successfully: ${name}`, {
           hookName: name,
           duration: `${duration.toFixed(2)}ms`,
@@ -99,14 +99,14 @@ export class WundrHookRegistry implements PluginHookRegistry {
           hookName: name,
           error: error instanceof Error ? error.message : String(error),
         });
-        
+
         // Continue with other hooks even if one fails
         continue;
       }
     }
 
     const totalDuration = performance.now() - startTime;
-    
+
     this.eventBus.emit(PLUGIN_EVENTS.HOOK_EXECUTED, {
       name,
       args,
@@ -136,15 +136,17 @@ export class WundrHookRegistry implements PluginHookRegistry {
         const hookStartTime = performance.now();
         const result = hook.execute(...args);
         const duration = performance.now() - hookStartTime;
-        
+
         // Ensure we're not dealing with a Promise
         if (result && typeof result === 'object' && 'then' in result) {
-          this.logger.warn(`Hook ${name} returned a Promise in synchronous execution`);
+          this.logger.warn(
+            `Hook ${name} returned a Promise in synchronous execution`
+          );
           continue;
         }
-        
+
         results.push(result as T);
-        
+
         this.logger.debug(`Hook executed synchronously: ${name}`, {
           hookName: name,
           duration: `${duration.toFixed(2)}ms`,
@@ -154,13 +156,13 @@ export class WundrHookRegistry implements PluginHookRegistry {
           hookName: name,
           error: error instanceof Error ? error.message : String(error),
         });
-        
+
         continue;
       }
     }
 
     const totalDuration = performance.now() - startTime;
-    
+
     this.eventBus.emit(PLUGIN_EVENTS.HOOK_EXECUTED, {
       name,
       args,
@@ -186,7 +188,7 @@ export class WundrHookRegistry implements PluginHookRegistry {
       const hooks = this.hooks.get(name);
       if (hooks) {
         this.hooks.delete(name);
-        
+
         this.logger.debug(`Cleared hooks: ${name}`, {
           hookName: name,
           clearedCount: hooks.length,
@@ -197,9 +199,9 @@ export class WundrHookRegistry implements PluginHookRegistry {
         (sum, hooks) => sum + hooks.length,
         0
       );
-      
+
       this.hooks.clear();
-      
+
       this.logger.debug('Cleared all hooks', {
         clearedCount: totalHooks,
       });

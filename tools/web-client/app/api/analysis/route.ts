@@ -42,7 +42,7 @@ class AnalysisService {
       unusedExports: 156,
       codeSmells: 89,
       bugs: 12,
-      vulnerabilities: 4,
+      vulnerabilityCount: 4,
       technicalDebtHours: 127.5,
       maintainabilityIndex: 74.2,
       testCoverage: 78.4,

@@ -3,16 +3,16 @@
  */
 
 // EventEmitter not used - removed
-import { 
-  getLogger, 
-  getEventBus, 
-  Logger, 
-  EventBus, 
-  BaseWundrError, 
-  getNestedValue, 
-  setNestedValue, 
+import {
+  getLogger,
+  getEventBus,
+  Logger,
+  EventBus,
+  BaseWundrError,
+  getNestedValue,
+  setNestedValue,
   deepMerge,
-  debounceAsync 
+  debounceAsync,
 } from '@wundr.io/core';
 import {
   ConfigSource,
@@ -38,7 +38,10 @@ export class WundrConfigManager implements ConfigManager {
   private readonly validationRules: ValidationRule[] = [];
   private readonly options: Required<ConfigOptions>;
   private config: Record<string, any> = {};
-  private watchers = new Map<string, Array<(value: any, oldValue: any) => void>>();
+  private watchers = new Map<
+    string,
+    Array<(value: any, oldValue: any) => void>
+  >();
   private globalWatchers: Array<(config: Record<string, any>) => void> = [];
   private sourceWatchers = new Map<string, () => void>();
   private readonly debouncedSave: () => Promise<void>;
@@ -72,7 +75,7 @@ export class WundrConfigManager implements ConfigManager {
       this.doSave.bind(this),
       this.options.debounceMs
     );
-    
+
     this.debouncedReload = debounceAsync(
       this.doReload.bind(this),
       this.options.debounceMs
@@ -91,7 +94,7 @@ export class WundrConfigManager implements ConfigManager {
     });
 
     await this.reload();
-    
+
     if (this.options.autoReload) {
       this.setupSourceWatchers();
     }
@@ -108,7 +111,7 @@ export class WundrConfigManager implements ConfigManager {
   set(key: string, value: any): void {
     const oldValue = this.get(key);
     setNestedValue(this.config, key, value);
-    
+
     this.logger.debug(`Configuration set: ${key}`, {
       key,
       valueType: typeof value,
@@ -142,7 +145,7 @@ export class WundrConfigManager implements ConfigManager {
     const oldValue = this.get(key);
     const keys = key.split('.');
     const lastKey = keys.pop()!;
-    
+
     let current = this.config;
     for (const k of keys) {
       if (!(k in current) || typeof current[k] !== 'object') {
@@ -152,7 +155,7 @@ export class WundrConfigManager implements ConfigManager {
     }
 
     delete current[lastKey];
-    
+
     this.logger.debug(`Configuration deleted: ${key}`, { key });
 
     // Notify watchers
@@ -178,7 +181,7 @@ export class WundrConfigManager implements ConfigManager {
   clear(): void {
     const oldConfig = { ...this.config };
     this.config = {};
-    
+
     this.logger.info('Configuration cleared');
 
     // Notify all watchers
@@ -202,7 +205,7 @@ export class WundrConfigManager implements ConfigManager {
   }
 
   getAll(): Record<string, any> {
-    return this.options.freezeConfig 
+    return this.options.freezeConfig
       ? Object.freeze({ ...this.config })
       : { ...this.config };
   }
@@ -215,25 +218,28 @@ export class WundrConfigManager implements ConfigManager {
     await this.doSave();
   }
 
-  watch(key: string, callback: (value: any, oldValue: any) => void): () => void {
+  watch(
+    key: string,
+    callback: (value: any, oldValue: any) => void
+  ): () => void {
     if (!this.watchers.has(key)) {
       this.watchers.set(key, []);
     }
-    
+
     const keyWatchers = this.watchers.get(key)!;
     keyWatchers.push(callback);
-    
+
     this.logger.debug(`Added watcher for key: ${key}`);
 
     return () => {
       const index = keyWatchers.indexOf(callback);
       if (index !== -1) {
         keyWatchers.splice(index, 1);
-        
+
         if (keyWatchers.length === 0) {
           this.watchers.delete(key);
         }
-        
+
         this.logger.debug(`Removed watcher for key: ${key}`);
       }
     };
@@ -241,7 +247,7 @@ export class WundrConfigManager implements ConfigManager {
 
   watchAll(callback: (config: Record<string, any>) => void): () => void {
     this.globalWatchers.push(callback);
-    
+
     this.logger.debug('Added global configuration watcher');
 
     return () => {
@@ -256,14 +262,16 @@ export class WundrConfigManager implements ConfigManager {
   addSource(source: ConfigSource): void {
     // Check for duplicate names
     if (this.sources.some(s => s.name === source.name)) {
-      throw new ConfigError(`Configuration source already exists: ${source.name}`);
+      throw new ConfigError(
+        `Configuration source already exists: ${source.name}`
+      );
     }
 
     this.sources.push(source);
-    
+
     // Sort by priority (higher priority first)
     this.sources.sort((a, b) => b.priority - a.priority);
-    
+
     this.logger.info(`Added configuration source: ${source.name}`, {
       priority: source.priority,
       totalSources: this.sources.length,
@@ -287,14 +295,14 @@ export class WundrConfigManager implements ConfigManager {
     }
 
     this.sources.splice(index, 1);
-    
+
     // Remove watcher
     const unwatch = this.sourceWatchers.get(sourceName);
     if (unwatch) {
       unwatch();
       this.sourceWatchers.delete(sourceName);
     }
-    
+
     this.logger.info(`Removed configuration source: ${sourceName}`);
 
     this.eventBus.emit(CONFIG_EVENTS.SOURCE_REMOVED, {
@@ -334,9 +342,10 @@ export class WundrConfigManager implements ConfigManager {
         if (result !== true) {
           errors.push({
             key: rule.key,
-            message: typeof result === 'string' 
-              ? result 
-              : `Validation failed for key: ${rule.key}`,
+            message:
+              typeof result === 'string'
+                ? result
+                : `Validation failed for key: ${rule.key}`,
             value,
           });
         }
@@ -370,15 +379,15 @@ export class WundrConfigManager implements ConfigManager {
 
   private async doReload(): Promise<void> {
     this.logger.debug('Reloading configuration from all sources');
-    
+
     const configs: Record<string, any>[] = [];
-    
+
     // Load from all sources
     for (const source of this.sources) {
       try {
         const sourceConfig = await source.load();
         configs.push(sourceConfig);
-        
+
         this.logger.debug(`Loaded configuration from source: ${source.name}`, {
           keyCount: Object.keys(sourceConfig).length,
         });
@@ -386,12 +395,12 @@ export class WundrConfigManager implements ConfigManager {
         this.logger.error(`Failed to load from source: ${source.name}`, {
           error: error instanceof Error ? error.message : String(error),
         });
-        
+
         this.eventBus.emit(CONFIG_EVENTS.CONFIG_ERROR, {
           sourceName: source.name,
           error,
         });
-        
+
         // Continue with other sources
       }
     }
@@ -399,7 +408,7 @@ export class WundrConfigManager implements ConfigManager {
     // Merge configurations (lower priority sources first)
     const oldConfig = { ...this.config };
     this.config = deepMerge({}, ...configs.reverse());
-    
+
     this.logger.info('Configuration reloaded', {
       sources: this.sources.length,
       totalKeys: Object.keys(this.config).length,
@@ -417,26 +426,28 @@ export class WundrConfigManager implements ConfigManager {
 
   private async doSave(): Promise<void> {
     this.logger.debug('Saving configuration to writable sources');
-    
-    const writableSources = this.sources.filter(s => typeof s.save === 'function');
-    
+
+    const writableSources = this.sources.filter(
+      s => typeof s.save === 'function'
+    );
+
     if (writableSources.length === 0) {
       this.logger.warn('No writable configuration sources available');
       return;
     }
 
     const config = this.getAll();
-    
+
     for (const source of writableSources) {
       try {
         await source.save!(config);
-        
+
         this.logger.debug(`Saved configuration to source: ${source.name}`);
       } catch (error) {
         this.logger.error(`Failed to save to source: ${source.name}`, {
           error: error instanceof Error ? error.message : String(error),
         });
-        
+
         this.eventBus.emit(CONFIG_EVENTS.CONFIG_ERROR, {
           sourceName: source.name,
           error,
@@ -449,7 +460,7 @@ export class WundrConfigManager implements ConfigManager {
       config,
       writableSources: writableSources.length,
     });
-    
+
     this.logger.info('Configuration saved', {
       writableSources: writableSources.length,
     });
@@ -467,17 +478,22 @@ export class WundrConfigManager implements ConfigManager {
     }
 
     const unwatch = source.watch(() => {
-      this.logger.debug(`Configuration change detected from source: ${source.name}`);
+      this.logger.debug(
+        `Configuration change detected from source: ${source.name}`
+      );
       this.debouncedReload().catch(error => {
-        this.logger.error('Failed to reload configuration after source change', {
-          sourceName: source.name,
-          error,
-        });
+        this.logger.error(
+          'Failed to reload configuration after source change',
+          {
+            sourceName: source.name,
+            error,
+          }
+        );
       });
     });
 
     this.sourceWatchers.set(source.name, unwatch);
-    
+
     this.logger.debug(`Setup watcher for configuration source: ${source.name}`);
   }
 
@@ -500,7 +516,7 @@ export class WundrConfigManager implements ConfigManager {
 
   private notifyGlobalWatchers(): void {
     const config = this.getAll();
-    
+
     for (const callback of this.globalWatchers) {
       try {
         callback(config);
@@ -525,7 +541,7 @@ export class WundrConfigManager implements ConfigManager {
     for (const key of allKeys) {
       const oldValue = getNestedValue(oldConfig, key);
       const newValue = getNestedValue(newConfig, key);
-      
+
       if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
         this.notifyWatchers(key, newValue, oldValue);
       }
@@ -534,16 +550,16 @@ export class WundrConfigManager implements ConfigManager {
 
   private getAllNestedKeys(obj: Record<string, any>, prefix = ''): string[] {
     const keys: string[] = [];
-    
+
     for (const [key, value] of Object.entries(obj)) {
       const fullKey = prefix ? `${prefix}.${key}` : key;
       keys.push(fullKey);
-      
+
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         keys.push(...this.getAllNestedKeys(value, fullKey));
       }
     }
-    
+
     return keys;
   }
 }

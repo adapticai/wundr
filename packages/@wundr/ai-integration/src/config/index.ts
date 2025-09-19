@@ -12,20 +12,26 @@ export const defaultConfig: AIIntegrationConfig = {
       preTask: true,
       postTask: true,
       sessionRestore: true,
-      exportMetrics: true
+      exportMetrics: true,
     },
     sparc: {
-      enabledPhases: ['specification', 'pseudocode', 'architecture', 'refinement', 'completion'],
+      enabledPhases: [
+        'specification',
+        'pseudocode',
+        'architecture',
+        'refinement',
+        'completion',
+      ],
       parallelExecution: true,
-      autoOptimization: true
-    }
+      autoOptimization: true,
+    },
   },
   mcpTools: {
     registryPath: './mcp-tools',
     enabledTools: [],
     autoDiscovery: true,
     cacheResults: true,
-    timeout: 30000
+    timeout: 30000,
   },
   neural: {
     modelsPath: './models',
@@ -33,14 +39,14 @@ export const defaultConfig: AIIntegrationConfig = {
     trainingInterval: 3600000,
     patternRecognition: true,
     crossSessionLearning: true,
-    maxMemorySize: 1000000
+    maxMemorySize: 1000000,
   },
   swarm: {
     defaultTopology: 'mesh',
     maxSwarmSize: 50,
     consensusThreshold: 0.66,
     faultTolerance: 'medium',
-    adaptiveScaling: true
+    adaptiveScaling: true,
   },
   memory: {
     persistencePath: './memory',
@@ -50,15 +56,15 @@ export const defaultConfig: AIIntegrationConfig = {
     retentionPolicy: {
       shortTerm: 24,
       longTerm: 30,
-      permanent: ['consensus', 'pattern']
-    }
+      permanent: ['consensus', 'pattern'],
+    },
   },
   agents: {
     maxConcurrentAgents: 25,
     spawningStrategy: 'adaptive',
     healthCheckInterval: 30000,
     autoRecovery: true,
-    loadBalancing: true
+    loadBalancing: true,
   },
   performance: {
     metricsCollection: true,
@@ -67,14 +73,14 @@ export const defaultConfig: AIIntegrationConfig = {
     alertThresholds: {
       responseTime: 5000,
       errorRate: 0.05,
-      memoryUsage: 0.8
-    }
+      memoryUsage: 0.8,
+    },
   },
   github: {
     autoReview: false,
     swarmReview: false,
-    integrationBranches: ['main', 'master', 'develop']
-  }
+    integrationBranches: ['main', 'master', 'develop'],
+  },
 };
 
 export * from '../types';

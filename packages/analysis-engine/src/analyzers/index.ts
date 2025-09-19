@@ -2,9 +2,11 @@
  * @fileoverview Code analyzers for static analysis
  */
 
-import { BaseEntity } from '@wundr.io/core-simple';
-import { glob } from 'glob';
 import * as path from 'path';
+
+import { glob } from 'glob';
+
+import type { BaseEntity } from '@wundr.io/core-simple';
 
 export interface AnalysisResult extends BaseEntity {
   filePath: string;
@@ -71,7 +73,7 @@ export class CodeAnalyzer {
           message: 'Test file detected',
           severity: 'info',
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       }
     }
@@ -93,7 +95,7 @@ export class CodeAnalyzer {
         infoIssues: results.filter(r => r.severity === 'info').length,
         ruleViolations: {},
         filesCovered: new Set(results.map(r => r.filePath)).size,
-        analysisTime
+        analysisTime,
       },
       metrics: {
         codeComplexity: 0,
@@ -103,9 +105,9 @@ export class CodeAnalyzer {
         codeSmells: 0,
         technicalDebt: {
           hours: 0,
-          priority: 'low'
-        }
-      }
+          priority: 'low',
+        },
+      },
     };
   }
 
@@ -114,7 +116,7 @@ export class CodeAnalyzer {
       path.join(projectPath, '**/*.ts'),
       path.join(projectPath, '**/*.tsx'),
       path.join(projectPath, '**/*.js'),
-      path.join(projectPath, '**/*.jsx')
+      path.join(projectPath, '**/*.jsx'),
     ];
 
     const allFiles: string[] = [];
@@ -124,8 +126,8 @@ export class CodeAnalyzer {
           ignore: [
             '**/node_modules/**',
             '**/dist/**',
-            '**/build/**'
-          ]
+            '**/build/**',
+          ],
         });
         allFiles.push(...files);
       } catch (error) {
@@ -149,6 +151,6 @@ export const DEFAULT_ANALYZER_CONFIG: Record<string, AnalyzerConfig> = {
     excludePatterns: ['node_modules/**', 'dist/**'],
     includePatterns: ['**/*.ts', '**/*.tsx'],
     rules: {},
-    severity: 'warning'
-  }
+    severity: 'warning',
+  },
 };

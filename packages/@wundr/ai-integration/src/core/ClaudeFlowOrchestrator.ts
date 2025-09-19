@@ -1,6 +1,6 @@
 /**
  * Claude Flow Orchestrator - Manages the 54 specialized agents
- * 
+ *
  * Handles agent spawning, coordination, and the SPARC methodology integration.
  * Implements concurrent execution patterns and swarm topology management.
  */
@@ -11,14 +11,13 @@ import * as path from 'path';
 import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
 
-
-import { 
-  ClaudeFlowConfig, 
-  Agent, 
-  AgentType, 
+import {
+  ClaudeFlowConfig,
+  Agent,
+  AgentType,
   SwarmTopology,
   OperationResult,
-  SPARCPhase 
+  SPARCPhase,
 } from '../types';
 
 export class ClaudeFlowOrchestrator extends EventEmitter {
@@ -30,71 +29,218 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
   // 54 Specialized Agents Registry
   private readonly AGENT_REGISTRY = {
     // Core Development (5)
-    coder: { category: 'core', capabilities: ['coding', 'implementation', 'refactoring'] },
-    reviewer: { category: 'core', capabilities: ['code-review', 'quality-assurance', 'standards'] },
-    tester: { category: 'core', capabilities: ['testing', 'validation', 'quality-assurance'] },
-    planner: { category: 'core', capabilities: ['planning', 'architecture', 'coordination'] },
-    researcher: { category: 'core', capabilities: ['research', 'analysis', 'documentation'] },
+    coder: {
+      category: 'core',
+      capabilities: ['coding', 'implementation', 'refactoring'],
+    },
+    reviewer: {
+      category: 'core',
+      capabilities: ['code-review', 'quality-assurance', 'standards'],
+    },
+    tester: {
+      category: 'core',
+      capabilities: ['testing', 'validation', 'quality-assurance'],
+    },
+    planner: {
+      category: 'core',
+      capabilities: ['planning', 'architecture', 'coordination'],
+    },
+    researcher: {
+      category: 'core',
+      capabilities: ['research', 'analysis', 'documentation'],
+    },
 
     // Swarm Coordination (5)
-    'hierarchical-coordinator': { category: 'swarm', capabilities: ['coordination', 'hierarchy', 'management'] },
-    'mesh-coordinator': { category: 'swarm', capabilities: ['coordination', 'mesh-topology', 'distributed'] },
-    'adaptive-coordinator': { category: 'swarm', capabilities: ['coordination', 'adaptation', 'optimization'] },
-    'collective-intelligence-coordinator': { category: 'swarm', capabilities: ['coordination', 'intelligence', 'consensus'] },
-    'swarm-memory-manager': { category: 'swarm', capabilities: ['memory', 'persistence', 'coordination'] },
+    'hierarchical-coordinator': {
+      category: 'swarm',
+      capabilities: ['coordination', 'hierarchy', 'management'],
+    },
+    'mesh-coordinator': {
+      category: 'swarm',
+      capabilities: ['coordination', 'mesh-topology', 'distributed'],
+    },
+    'adaptive-coordinator': {
+      category: 'swarm',
+      capabilities: ['coordination', 'adaptation', 'optimization'],
+    },
+    'collective-intelligence-coordinator': {
+      category: 'swarm',
+      capabilities: ['coordination', 'intelligence', 'consensus'],
+    },
+    'swarm-memory-manager': {
+      category: 'swarm',
+      capabilities: ['memory', 'persistence', 'coordination'],
+    },
 
     // Consensus & Distributed (7)
-    'byzantine-coordinator': { category: 'consensus', capabilities: ['consensus', 'fault-tolerance', 'distributed'] },
-    'raft-manager': { category: 'consensus', capabilities: ['consensus', 'raft-protocol', 'leadership'] },
-    'gossip-coordinator': { category: 'consensus', capabilities: ['gossip-protocol', 'distributed', 'communication'] },
-    'consensus-builder': { category: 'consensus', capabilities: ['consensus', 'agreement', 'coordination'] },
-    'crdt-synchronizer': { category: 'consensus', capabilities: ['crdt', 'synchronization', 'conflict-resolution'] },
-    'quorum-manager': { category: 'consensus', capabilities: ['quorum', 'voting', 'consensus'] },
-    'security-manager': { category: 'consensus', capabilities: ['security', 'encryption', 'authentication'] },
+    'byzantine-coordinator': {
+      category: 'consensus',
+      capabilities: ['consensus', 'fault-tolerance', 'distributed'],
+    },
+    'raft-manager': {
+      category: 'consensus',
+      capabilities: ['consensus', 'raft-protocol', 'leadership'],
+    },
+    'gossip-coordinator': {
+      category: 'consensus',
+      capabilities: ['gossip-protocol', 'distributed', 'communication'],
+    },
+    'consensus-builder': {
+      category: 'consensus',
+      capabilities: ['consensus', 'agreement', 'coordination'],
+    },
+    'crdt-synchronizer': {
+      category: 'consensus',
+      capabilities: ['crdt', 'synchronization', 'conflict-resolution'],
+    },
+    'quorum-manager': {
+      category: 'consensus',
+      capabilities: ['quorum', 'voting', 'consensus'],
+    },
+    'security-manager': {
+      category: 'consensus',
+      capabilities: ['security', 'encryption', 'authentication'],
+    },
 
     // Performance & Optimization (5)
-    'perf-analyzer': { category: 'performance', capabilities: ['performance', 'analysis', 'optimization'] },
-    'performance-benchmarker': { category: 'performance', capabilities: ['benchmarking', 'metrics', 'analysis'] },
-    'task-orchestrator': { category: 'performance', capabilities: ['orchestration', 'task-management', 'coordination'] },
-    'memory-coordinator': { category: 'performance', capabilities: ['memory', 'optimization', 'coordination'] },
-    'smart-agent': { category: 'performance', capabilities: ['intelligence', 'adaptation', 'learning'] },
+    'perf-analyzer': {
+      category: 'performance',
+      capabilities: ['performance', 'analysis', 'optimization'],
+    },
+    'performance-benchmarker': {
+      category: 'performance',
+      capabilities: ['benchmarking', 'metrics', 'analysis'],
+    },
+    'task-orchestrator': {
+      category: 'performance',
+      capabilities: ['orchestration', 'task-management', 'coordination'],
+    },
+    'memory-coordinator': {
+      category: 'performance',
+      capabilities: ['memory', 'optimization', 'coordination'],
+    },
+    'smart-agent': {
+      category: 'performance',
+      capabilities: ['intelligence', 'adaptation', 'learning'],
+    },
 
     // GitHub & Repository (9)
-    'github-modes': { category: 'github', capabilities: ['github', 'integration', 'automation'] },
-    'pr-manager': { category: 'github', capabilities: ['pull-requests', 'management', 'automation'] },
-    'code-review-swarm': { category: 'github', capabilities: ['code-review', 'swarm', 'quality'] },
-    'issue-tracker': { category: 'github', capabilities: ['issues', 'tracking', 'management'] },
-    'release-manager': { category: 'github', capabilities: ['releases', 'versioning', 'deployment'] },
-    'workflow-automation': { category: 'github', capabilities: ['workflows', 'automation', 'ci-cd'] },
-    'project-board-sync': { category: 'github', capabilities: ['project-boards', 'synchronization', 'management'] },
-    'repo-architect': { category: 'github', capabilities: ['repository', 'architecture', 'organization'] },
-    'multi-repo-swarm': { category: 'github', capabilities: ['multi-repo', 'swarm', 'coordination'] },
+    'github-modes': {
+      category: 'github',
+      capabilities: ['github', 'integration', 'automation'],
+    },
+    'pr-manager': {
+      category: 'github',
+      capabilities: ['pull-requests', 'management', 'automation'],
+    },
+    'code-review-swarm': {
+      category: 'github',
+      capabilities: ['code-review', 'swarm', 'quality'],
+    },
+    'issue-tracker': {
+      category: 'github',
+      capabilities: ['issues', 'tracking', 'management'],
+    },
+    'release-manager': {
+      category: 'github',
+      capabilities: ['releases', 'versioning', 'deployment'],
+    },
+    'workflow-automation': {
+      category: 'github',
+      capabilities: ['workflows', 'automation', 'ci-cd'],
+    },
+    'project-board-sync': {
+      category: 'github',
+      capabilities: ['project-boards', 'synchronization', 'management'],
+    },
+    'repo-architect': {
+      category: 'github',
+      capabilities: ['repository', 'architecture', 'organization'],
+    },
+    'multi-repo-swarm': {
+      category: 'github',
+      capabilities: ['multi-repo', 'swarm', 'coordination'],
+    },
 
     // SPARC Methodology (6)
-    'sparc-coord': { category: 'sparc', capabilities: ['sparc', 'coordination', 'methodology'] },
-    'sparc-coder': { category: 'sparc', capabilities: ['sparc', 'coding', 'implementation'] },
-    specification: { category: 'sparc', capabilities: ['specification', 'requirements', 'analysis'] },
-    pseudocode: { category: 'sparc', capabilities: ['pseudocode', 'algorithm', 'design'] },
-    architecture: { category: 'sparc', capabilities: ['architecture', 'system-design', 'structure'] },
-    refinement: { category: 'sparc', capabilities: ['refinement', 'optimization', 'iteration'] },
+    'sparc-coord': {
+      category: 'sparc',
+      capabilities: ['sparc', 'coordination', 'methodology'],
+    },
+    'sparc-coder': {
+      category: 'sparc',
+      capabilities: ['sparc', 'coding', 'implementation'],
+    },
+    specification: {
+      category: 'sparc',
+      capabilities: ['specification', 'requirements', 'analysis'],
+    },
+    pseudocode: {
+      category: 'sparc',
+      capabilities: ['pseudocode', 'algorithm', 'design'],
+    },
+    architecture: {
+      category: 'sparc',
+      capabilities: ['architecture', 'system-design', 'structure'],
+    },
+    refinement: {
+      category: 'sparc',
+      capabilities: ['refinement', 'optimization', 'iteration'],
+    },
 
     // Specialized Development (8)
-    'backend-dev': { category: 'specialized', capabilities: ['backend', 'server', 'api'] },
-    'mobile-dev': { category: 'specialized', capabilities: ['mobile', 'ios', 'android'] },
-    'ml-developer': { category: 'specialized', capabilities: ['machine-learning', 'ai', 'data-science'] },
-    'cicd-engineer': { category: 'specialized', capabilities: ['ci-cd', 'deployment', 'automation'] },
-    'api-docs': { category: 'specialized', capabilities: ['api', 'documentation', 'specification'] },
-    'system-architect': { category: 'specialized', capabilities: ['system-architecture', 'design', 'scalability'] },
-    'code-analyzer': { category: 'specialized', capabilities: ['code-analysis', 'quality', 'metrics'] },
-    'base-template-generator': { category: 'specialized', capabilities: ['templates', 'generation', 'scaffolding'] },
+    'backend-dev': {
+      category: 'specialized',
+      capabilities: ['backend', 'server', 'api'],
+    },
+    'mobile-dev': {
+      category: 'specialized',
+      capabilities: ['mobile', 'ios', 'android'],
+    },
+    'ml-developer': {
+      category: 'specialized',
+      capabilities: ['machine-learning', 'ai', 'data-science'],
+    },
+    'cicd-engineer': {
+      category: 'specialized',
+      capabilities: ['ci-cd', 'deployment', 'automation'],
+    },
+    'api-docs': {
+      category: 'specialized',
+      capabilities: ['api', 'documentation', 'specification'],
+    },
+    'system-architect': {
+      category: 'specialized',
+      capabilities: ['system-architecture', 'design', 'scalability'],
+    },
+    'code-analyzer': {
+      category: 'specialized',
+      capabilities: ['code-analysis', 'quality', 'metrics'],
+    },
+    'base-template-generator': {
+      category: 'specialized',
+      capabilities: ['templates', 'generation', 'scaffolding'],
+    },
 
     // Testing & Validation (2)
-    'tdd-london-swarm': { category: 'testing', capabilities: ['tdd', 'london-style', 'swarm'] },
-    'production-validator': { category: 'testing', capabilities: ['validation', 'production', 'quality'] },
+    'tdd-london-swarm': {
+      category: 'testing',
+      capabilities: ['tdd', 'london-style', 'swarm'],
+    },
+    'production-validator': {
+      category: 'testing',
+      capabilities: ['validation', 'production', 'quality'],
+    },
 
     // Migration & Planning (2)
-    'migration-planner': { category: 'migration', capabilities: ['migration', 'planning', 'strategy'] },
-    'swarm-init': { category: 'migration', capabilities: ['initialization', 'setup', 'configuration'] }
+    'migration-planner': {
+      category: 'migration',
+      capabilities: ['migration', 'planning', 'strategy'],
+    },
+    'swarm-init': {
+      category: 'migration',
+      capabilities: ['initialization', 'setup', 'configuration'],
+    },
   };
 
   constructor(config: ClaudeFlowConfig) {
@@ -107,7 +253,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     try {
       // Initialize Claude Flow MCP server
       await this.setupClaudeFlowMCP();
-      
+
       // Create session directory
       await this.createSessionDirectory();
 
@@ -116,26 +262,31 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
       return {
         success: true,
-        message: 'Claude Flow Orchestrator initialized successfully'
+        message: 'Claude Flow Orchestrator initialized successfully',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
         message: `Claude Flow initialization failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error))
+        error: error instanceof Error ? error : new Error(String(error)),
       };
     }
   }
 
   private async setupClaudeFlowMCP(): Promise<void> {
     // Check if Claude Flow MCP is installed and configured
-    const mcpConfigPath = path.join(process.env['HOME'] || '', '.claude', 'mcp.json');
-    
+    const mcpConfigPath = path.join(
+      process.env['HOME'] || '',
+      '.claude',
+      'mcp.json'
+    );
+
     try {
       const mcpConfig = await fs.readJson(mcpConfigPath);
       const hasClaudeFlow = mcpConfig.servers?.['claude-flow'];
-      
+
       if (!hasClaudeFlow) {
         throw new Error('Claude Flow MCP server not configured');
       }
@@ -147,15 +298,29 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
   private async installClaudeFlowMCP(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const installProcess = spawn('claude', ['mcp', 'add', 'claude-flow', 'npx', 'claude-flow@alpha', 'mcp', 'start'], {
-        stdio: 'inherit'
-      });
+      const installProcess = spawn(
+        'claude',
+        [
+          'mcp',
+          'add',
+          'claude-flow',
+          'npx',
+          'claude-flow@alpha',
+          'mcp',
+          'start',
+        ],
+        {
+          stdio: 'inherit',
+        }
+      );
 
-      installProcess.on('close', (code) => {
+      installProcess.on('close', code => {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Claude Flow MCP installation failed with code ${code}`));
+          reject(
+            new Error(`Claude Flow MCP installation failed with code ${code}`)
+          );
         }
       });
 
@@ -164,14 +329,17 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
   }
 
   private async createSessionDirectory(): Promise<void> {
-    const sessionDir = path.join(this.config.sessionPath || './memory/sessions', this.sessionId);
+    const sessionDir = path.join(
+      this.config.sessionPath || './memory/sessions',
+      this.sessionId
+    );
     await fs.ensureDir(sessionDir);
-    
+
     // Create session metadata
     await fs.writeJson(path.join(sessionDir, 'metadata.json'), {
       sessionId: this.sessionId,
       createdAt: new Date().toISOString(),
-      config: this.config
+      config: this.config,
     });
   }
 
@@ -182,7 +350,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       maxAgents: 10,
       connectionPattern: 'full-mesh',
       coordinationStyle: 'peer-to-peer',
-      faultTolerance: 'high'
+      faultTolerance: 'high',
     });
 
     // Hierarchical Topology for structured coordination
@@ -191,7 +359,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       maxAgents: 20,
       connectionPattern: 'tree',
       coordinationStyle: 'top-down',
-      faultTolerance: 'medium'
+      faultTolerance: 'medium',
     });
 
     // Adaptive Topology for dynamic coordination
@@ -200,20 +368,23 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       maxAgents: 15,
       connectionPattern: 'dynamic',
       coordinationStyle: 'adaptive',
-      faultTolerance: 'high'
+      faultTolerance: 'high',
     });
   }
 
   /**
    * Spawn agents using Claude Flow with specified topology
    */
-  async spawnAgents(agentTypes: AgentType[], topology: SwarmTopology): Promise<Agent[]> {
+  async spawnAgents(
+    agentTypes: AgentType[],
+    topology: SwarmTopology
+  ): Promise<Agent[]> {
     const agents: Agent[] = [];
 
     // Initialize swarm with topology
     await this.executeClaudeFlowCommand('swarm_init', {
       topology: topology.type,
-      maxAgents: agentTypes.length
+      maxAgents: agentTypes.length,
     });
 
     // Spawn each agent type
@@ -227,9 +398,12 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     return agents;
   }
 
-  private async spawnSingleAgent(agentType: AgentType, topology: SwarmTopology): Promise<Agent> {
+  private async spawnSingleAgent(
+    agentType: AgentType,
+    topology: SwarmTopology
+  ): Promise<Agent> {
     const agentConfig = this.AGENT_REGISTRY[agentType];
-    
+
     if (!agentConfig) {
       throw new Error(`Unknown agent type: ${agentType}`);
     }
@@ -239,7 +413,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       type: agentType,
       category: agentConfig.category,
       capabilities: agentConfig.capabilities,
-      topology: topology.type
+      topology: topology.type,
     });
 
     return {
@@ -254,48 +428,66 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       metrics: {
         tasksCompleted: 0,
         successRate: 0,
-        averageResponseTime: 0
-      }
+        averageResponseTime: 0,
+      },
     };
   }
 
   /**
    * Execute SPARC methodology workflow
    */
-  async executeSPARCWorkflow(task: string, phases: SPARCPhase[] = ['specification', 'pseudocode', 'architecture', 'refinement', 'completion']): Promise<OperationResult> {
+  async executeSPARCWorkflow(
+    task: string,
+    phases: SPARCPhase[] = [
+      'specification',
+      'pseudocode',
+      'architecture',
+      'refinement',
+      'completion',
+    ]
+  ): Promise<OperationResult> {
     try {
       const results: any = {};
 
       for (const phase of phases) {
         switch (phase) {
           case 'specification':
-            results.specification = await this.executeClaudeFlowCommand('sparc', {
-              mode: 'spec-pseudocode',
-              task: task
-            });
+            results.specification = await this.executeClaudeFlowCommand(
+              'sparc',
+              {
+                mode: 'spec-pseudocode',
+                task: task,
+              }
+            );
             break;
 
           case 'pseudocode':
             results.pseudocode = await this.executeClaudeFlowCommand('sparc', {
               mode: 'spec-pseudocode',
               task: task,
-              context: results.specification
+              context: results.specification,
             });
             break;
 
           case 'architecture':
-            results.architecture = await this.executeClaudeFlowCommand('sparc', {
-              mode: 'architect',
-              task: task,
-              context: { specification: results.specification, pseudocode: results.pseudocode }
-            });
+            results.architecture = await this.executeClaudeFlowCommand(
+              'sparc',
+              {
+                mode: 'architect',
+                task: task,
+                context: {
+                  specification: results.specification,
+                  pseudocode: results.pseudocode,
+                },
+              }
+            );
             break;
 
           case 'refinement':
             results.refinement = await this.executeClaudeFlowCommand('sparc', {
               mode: 'tdd',
               task: task,
-              context: results
+              context: results,
             });
             break;
 
@@ -303,7 +495,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
             results.completion = await this.executeClaudeFlowCommand('sparc', {
               mode: 'integration',
               task: task,
-              context: results
+              context: results,
             });
             break;
         }
@@ -314,14 +506,15 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       return {
         success: true,
         message: 'SPARC workflow completed successfully',
-        data: results
+        data: results,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
         message: `SPARC workflow failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error))
+        error: error instanceof Error ? error : new Error(String(error)),
       };
     }
   }
@@ -336,44 +529,56 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
     return results.map((result, _index) => ({
       success: result.status === 'fulfilled',
-      message: result.status === 'fulfilled' ? 'Operation completed' : `Operation failed: ${result.reason}`,
+      message:
+        result.status === 'fulfilled'
+          ? 'Operation completed'
+          : `Operation failed: ${result.reason}`,
       data: result.status === 'fulfilled' ? result.value : null,
-      error: result.status === 'rejected' ? result.reason : null
+      error: result.status === 'rejected' ? result.reason : null,
     }));
   }
 
   /**
    * Execute Claude Flow command via MCP
    */
-  private async executeClaudeFlowCommand(command: string, params: any): Promise<any> {
+  private async executeClaudeFlowCommand(
+    command: string,
+    params: any
+  ): Promise<any> {
     // This would integrate with the actual MCP protocol
     // For now, we'll simulate the command execution
-    
+
     const sessionCommand = await this.createSessionCommand(command, params);
-    
+
     // Execute pre-task hooks
     await this.executeHook('pre-task', { command, params });
-    
+
     // Execute main command (simulated)
     const result = await this.simulateClaudeFlowExecution(sessionCommand);
-    
+
     // Execute post-task hooks
     await this.executeHook('post-task', { command, params, result });
-    
+
     return result;
   }
 
-  private async createSessionCommand(command: string, params: any): Promise<string> {
+  private async createSessionCommand(
+    command: string,
+    params: any
+  ): Promise<string> {
     const hooks = {
       'pre-task': `npx claude-flow@alpha hooks pre-task --description "${params.task || command}"`,
       'session-restore': `npx claude-flow@alpha hooks session-restore --session-id "${this.sessionId}"`,
       'post-edit': `npx claude-flow@alpha hooks post-edit --file "${params.file || 'unknown'}" --memory-key "swarm/${command}/${Date.now()}"`,
-      'notify': `npx claude-flow@alpha hooks notify --message "${params.message || 'Command executed'}"`,
+      notify: `npx claude-flow@alpha hooks notify --message "${params.message || 'Command executed'}"`,
       'post-task': `npx claude-flow@alpha hooks post-task --task-id "${params.taskId || command}"`,
-      'session-end': `npx claude-flow@alpha hooks session-end --export-metrics true`
+      'session-end': `npx claude-flow@alpha hooks session-end --export-metrics true`,
     };
 
-    return (hooks as Record<string, string>)[command] || `npx claude-flow@alpha ${command}`;
+    return (
+      (hooks as Record<string, string>)[command] ||
+      `npx claude-flow@alpha ${command}`
+    );
   }
 
   private async executeHook(hookType: string, context: any): Promise<void> {
@@ -381,21 +586,22 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     const hookCommands = {
       'pre-task': [
         `npx claude-flow@alpha hooks pre-task --description "${context.command}"`,
-        `npx claude-flow@alpha hooks session-restore --session-id "${this.sessionId}"`
+        `npx claude-flow@alpha hooks session-restore --session-id "${this.sessionId}"`,
       ],
       'post-task': [
         `npx claude-flow@alpha hooks post-task --task-id "${context.command}"`,
-        `npx claude-flow@alpha hooks session-end --export-metrics true`
-      ]
+        `npx claude-flow@alpha hooks session-end --export-metrics true`,
+      ],
     };
 
     const commands = (hookCommands as Record<string, string[]>)[hookType] || [];
-    
+
     for (const command of commands) {
       try {
         await this.executeSystemCommand(command);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         console.warn(`Hook execution failed: ${errorMessage}`);
       }
     }
@@ -421,14 +627,14 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
   private async simulateClaudeFlowExecution(command: string): Promise<any> {
     // Simulate Claude Flow command execution
     // In a real implementation, this would interface with the actual MCP server
-    
+
     await new Promise(resolve => setTimeout(resolve, 100)); // Simulate execution time
-    
+
     return {
       command,
       executedAt: new Date().toISOString(),
       sessionId: this.sessionId,
-      success: true
+      success: true,
     };
   }
 
@@ -438,17 +644,17 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       activeAgents: this.activeAgents.size,
       availableAgentTypes: Object.keys(this.AGENT_REGISTRY).length,
       topologies: Array.from(this.topologies.keys()),
-      agentsByCategory: this.getAgentsByCategory()
+      agentsByCategory: this.getAgentsByCategory(),
     };
   }
 
   private getAgentsByCategory(): Record<string, number> {
     const categories: Record<string, number> = {};
-    
+
     for (const agent of this.activeAgents.values()) {
       categories[agent.category] = (categories[agent.category] || 0) + 1;
     }
-    
+
     return categories;
   }
 
@@ -460,7 +666,9 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
     try {
       // Shutdown all active agents
       for (const agent of this.activeAgents.values()) {
-        await this.executeClaudeFlowCommand('agent_shutdown', { agentId: agent.id });
+        await this.executeClaudeFlowCommand('agent_shutdown', {
+          agentId: agent.id,
+        });
       }
 
       this.activeAgents.clear();
@@ -468,14 +676,15 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
 
       return {
         success: true,
-        message: 'Claude Flow Orchestrator shutdown completed'
+        message: 'Claude Flow Orchestrator shutdown completed',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
         message: `Shutdown failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error))
+        error: error instanceof Error ? error : new Error(String(error)),
       };
     }
   }

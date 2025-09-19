@@ -43,7 +43,7 @@ export class InitCommands {
       .description('initialize Wundr configuration')
       .option('--interactive', 'use interactive setup')
       .option('--global', 'create global configuration')
-      .action(async (options) => {
+      .action(async options => {
         await this.initConfig(options);
       });
 
@@ -53,7 +53,7 @@ export class InitCommands {
       .description('initialize multi-project workspace')
       .option('--name <name>', 'workspace name')
       .option('--packages <pattern>', 'packages pattern', 'packages/*')
-      .action(async (options) => {
+      .action(async options => {
         await this.initWorkspace(options);
       });
 
@@ -62,7 +62,7 @@ export class InitCommands {
       .command('plugins')
       .description('initialize plugin system')
       .option('--install <plugins>', 'plugins to install (comma-separated)')
-      .action(async (options) => {
+      .action(async options => {
         await this.initPlugins(options);
       });
   }
@@ -72,7 +72,7 @@ export class InitCommands {
    */
   private async initProject(name: string, options: any): Promise<void> {
     try {
-      const projectName = name || await this.promptProjectName();
+      const projectName = name || (await this.promptProjectName());
       const projectPath = path.join(process.cwd(), projectName);
 
       logger.info(`Initializing project: ${chalk.cyan(projectName)}`);
@@ -84,8 +84,8 @@ export class InitCommands {
             type: 'confirm',
             name: 'overwrite',
             message: 'Directory already exists. Overwrite?',
-            default: false
-          }
+            default: false,
+          },
         ]);
 
         if (!overwrite) {
@@ -111,7 +111,6 @@ export class InitCommands {
       logger.info(`Next steps:`);
       logger.info(`  cd ${projectName}`);
       logger.info(`  wundr analyze`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_INIT_PROJECT_FAILED',
@@ -135,8 +134,10 @@ export class InitCommands {
       }
 
       const configPaths = this.configManager.getConfigPaths();
-      const configPath = options.global ? configPaths.user : configPaths.project;
-      
+      const configPath = options.global
+        ? configPaths.user
+        : configPaths.project;
+
       logger.info(`Configuration saved to: ${chalk.cyan(configPath)}`);
     } catch (error) {
       throw errorHandler.createError(
@@ -153,8 +154,8 @@ export class InitCommands {
    */
   private async initWorkspace(options: any): Promise<void> {
     try {
-      const workspaceName = options.name || await this.promptWorkspaceName();
-      
+      const workspaceName = options.name || (await this.promptWorkspaceName());
+
       logger.info(`Initializing workspace: ${chalk.cyan(workspaceName)}`);
 
       const workspaceConfig = {
@@ -162,22 +163,24 @@ export class InitCommands {
         version: '1.0.0',
         workspaces: [options.packages],
         scripts: {
-          'build': 'wundr build --workspace',
-          'test': 'wundr test --workspace',
-          'lint': 'wundr lint --workspace',
-          'analyze': 'wundr analyze --workspace'
+          build: 'wundr build --workspace',
+          test: 'wundr test --workspace',
+          lint: 'wundr lint --workspace',
+          analyze: 'wundr analyze --workspace',
         },
         devDependencies: {
-          '@wundr/cli': '^1.0.0'
-        }
+          '@wundr/cli': '^1.0.0',
+        },
       };
 
       await fs.writeJson('package.json', workspaceConfig, { spaces: 2 });
       await fs.ensureDir('packages');
-      
+
       // Create workspace-specific wundr config
       await this.configManager.loadConfig();
-      await this.configManager.saveConfig(path.join(process.cwd(), 'wundr.config.json'));
+      await this.configManager.saveConfig(
+        path.join(process.cwd(), 'wundr.config.json')
+      );
 
       logger.success('Workspace initialized successfully!');
     } catch (error) {
@@ -196,7 +199,7 @@ export class InitCommands {
   private async initPlugins(options: any): Promise<void> {
     try {
       logger.info('Initializing plugin system...');
-      
+
       await this.pluginManager.initialize();
 
       if (options.install) {
@@ -220,7 +223,10 @@ export class InitCommands {
   /**
    * Create project structure based on template
    */
-  private async createProjectStructure(projectPath: string, options: any): Promise<void> {
+  private async createProjectStructure(
+    projectPath: string,
+    options: any
+  ): Promise<void> {
     await fs.ensureDir(projectPath);
 
     const template = options.template || 'default';
@@ -235,14 +241,19 @@ export class InitCommands {
 
     // Create project-specific config
     const config = await this.configManager.loadConfig();
-    await this.configManager.saveConfig(path.join(projectPath, 'wundr.config.json'));
+    await this.configManager.saveConfig(
+      path.join(projectPath, 'wundr.config.json')
+    );
   }
 
   /**
    * Create default project structure
    */
-  private async createDefaultStructure(projectPath: string, options: any): Promise<void> {
-    const directories = options.monorepo 
+  private async createDefaultStructure(
+    projectPath: string,
+    options: any
+  ): Promise<void> {
+    const directories = options.monorepo
       ? ['packages', 'apps', 'tools', 'docs', 'scripts', '.claude-flow']
       : ['src', 'tests', 'docs', 'scripts', '.claude-flow'];
 
@@ -261,15 +272,17 @@ export class InitCommands {
         test: 'wundr test',
         lint: 'wundr lint',
         analyze: 'wundr analyze',
-        verify: './scripts/verify-claims.sh'
+        verify: './scripts/verify-claims.sh',
       },
       devDependencies: {
-        '@wundr/cli': '^1.0.0'
+        '@wundr/cli': '^1.0.0',
       },
-      ...(options.monorepo && { workspaces: ['packages/*', 'apps/*'] })
+      ...(options.monorepo && { workspaces: ['packages/*', 'apps/*'] }),
     };
 
-    await fs.writeJson(path.join(projectPath, 'package.json'), packageJson, { spaces: 2 });
+    await fs.writeJson(path.join(projectPath, 'package.json'), packageJson, {
+      spaces: 2,
+    });
 
     // Create README
     const readme = this.generateReadme(path.basename(projectPath), options);
@@ -292,54 +305,54 @@ export class InitCommands {
           { name: 'Command Line', value: 'cli' },
           { name: 'Interactive Wizard', value: 'interactive' },
           { name: 'Chat Interface', value: 'chat' },
-          { name: 'Terminal UI', value: 'tui' }
+          { name: 'Terminal UI', value: 'tui' },
         ],
-        default: 'cli'
+        default: 'cli',
       },
       {
         type: 'input',
         name: 'aiProvider',
         message: 'AI provider:',
-        default: 'claude'
+        default: 'claude',
       },
       {
         type: 'input',
         name: 'aiModel',
         message: 'AI model:',
-        default: 'claude-3'
+        default: 'claude-3',
       },
       {
         type: 'confirm',
         name: 'enableGitHub',
         message: 'Enable GitHub integration?',
-        default: false
+        default: false,
       },
       {
         type: 'input',
         name: 'githubToken',
         message: 'GitHub token:',
-        when: (answers) => answers.enableGitHub,
-        validate: (input) => input.length > 0 || 'GitHub token is required'
-      }
+        when: answers => answers.enableGitHub,
+        validate: input => input.length > 0 || 'GitHub token is required',
+      },
     ]);
 
     await this.configManager.loadConfig();
-    
+
     this.configManager.updateConfig({
       defaultMode: answers.defaultMode,
       ai: {
         provider: answers.aiProvider,
-        model: answers.aiModel
+        model: answers.aiModel,
       },
       ...(answers.enableGitHub && {
         integrations: {
           github: {
             token: answers.githubToken,
             owner: '',
-            repo: ''
-          }
-        }
-      })
+            repo: '',
+          },
+        },
+      }),
     });
 
     await this.configManager.saveConfig();
@@ -355,8 +368,8 @@ export class InitCommands {
         name: 'name',
         message: 'Project name:',
         default: 'my-wundr-project',
-        validate: (input) => input.length > 0 || 'Project name is required'
-      }
+        validate: input => input.length > 0 || 'Project name is required',
+      },
     ]);
     return name;
   }
@@ -368,8 +381,8 @@ export class InitCommands {
         name: 'name',
         message: 'Workspace name:',
         default: 'my-workspace',
-        validate: (input) => input.length > 0 || 'Workspace name is required'
-      }
+        validate: input => input.length > 0 || 'Workspace name is required',
+      },
     ]);
     return name;
   }
@@ -539,8 +552,14 @@ else
 fi
 `;
 
-    await fs.writeFile(path.join(projectPath, 'scripts', 'verify-claims.sh'), verifyScript);
-    await fs.chmod(path.join(projectPath, 'scripts', 'verify-claims.sh'), '755');
+    await fs.writeFile(
+      path.join(projectPath, 'scripts', 'verify-claims.sh'),
+      verifyScript
+    );
+    await fs.chmod(
+      path.join(projectPath, 'scripts', 'verify-claims.sh'),
+      '755'
+    );
 
     // Create FAILURES.md
     const failuresMd = `# Failure Tracking
@@ -567,7 +586,10 @@ _(None yet - will be populated when failures occur)_
 _(None yet - will be populated when failures are resolved)_
 `;
 
-    await fs.writeFile(path.join(projectPath, 'docs', 'FAILURES.md'), failuresMd);
+    await fs.writeFile(
+      path.join(projectPath, 'docs', 'FAILURES.md'),
+      failuresMd
+    );
 
     // Create verification hooks
     const verificationHooks = {
@@ -577,12 +599,12 @@ _(None yet - will be populated when failures are resolved)_
           enabled: true,
           required: true,
           commands: ['./scripts/verify-claims.sh'],
-          failureMessage: '❌ Cannot mark complete - verification failed!'
+          failureMessage: '❌ Cannot mark complete - verification failed!',
         },
         'post-implementation': {
           enabled: true,
           commands: ['npm run build', 'npm test'],
-          continueOnFailure: false
+          continueOnFailure: false,
         },
         'reality-check': {
           enabled: true,
@@ -591,16 +613,16 @@ _(None yet - will be populated when failures are resolved)_
             'build-passes',
             'tests-pass',
             'no-typescript-errors',
-            'dependencies-installed'
-          ]
-        }
+            'dependencies-installed',
+          ],
+        },
       },
       enforcement: {
         blockHallucinatedSuccess: true,
         requireActualOutput: true,
         documentFailures: true,
-        verifyBeforeClaiming: true
-      }
+        verifyBeforeClaiming: true,
+      },
     };
 
     await fs.writeJson(

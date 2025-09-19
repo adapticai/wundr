@@ -17,10 +17,10 @@ export { MemoryMonitor } from './monitoring';
 
 // Main analysis orchestrator (simplified)
 import { SimpleAnalyzer } from './simple-analyzer';
-import { 
-  AnalysisConfig, 
+import {
+  AnalysisConfig,
   AnalysisReport,
-  AnalysisProgressCallback 
+  AnalysisProgressCallback,
 } from './types';
 
 /**
@@ -36,7 +36,7 @@ export class AnalysisEngine {
   constructor(config: Partial<AnalysisConfig> = {}) {
     this.analyzer = new SimpleAnalyzer(config);
     this.useOptimizations = config.useOptimizations !== false;
-    
+
     if (this.useOptimizations) {
       this.initializeOptimizations();
     }
@@ -45,16 +45,16 @@ export class AnalysisEngine {
   private initializeOptimizations(): void {
     const { OptimizedDuplicateDetectionEngine } = require('./engines');
     const { MemoryMonitor } = require('./monitoring');
-    
+
     this.optimizedDuplicateEngine = new OptimizedDuplicateDetectionEngine({
       enableStreaming: true,
       maxMemoryUsage: 200 * 1024 * 1024, // 200MB
-      enableSemanticAnalysis: true
+      enableSemanticAnalysis: true,
     });
 
     this.memoryMonitor = new MemoryMonitor({
       snapshotInterval: 5000,
-      maxSnapshots: 200
+      maxSnapshots: 200,
     });
 
     console.log('🚀 Memory optimizations initialized');
@@ -92,14 +92,17 @@ export async function analyzeProjectWithProgress(
 ): Promise<AnalysisReport> {
   console.log('Starting analysis with progress tracking...');
   progressCallback({ type: 'phase', message: 'Initializing analysis...' });
-  
+
   const engine = new AnalysisEngine({
     targetDir,
-    ...config
+    ...config,
   });
 
   const result = await engine.analyze();
-  
-  progressCallback({ type: 'complete', message: 'Analysis completed successfully!' });
+
+  progressCallback({
+    type: 'complete',
+    message: 'Analysis completed successfully!',
+  });
   return result;
 }

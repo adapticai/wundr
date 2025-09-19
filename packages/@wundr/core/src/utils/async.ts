@@ -40,9 +40,10 @@ export async function retry<T>(
         throw error;
       }
 
-      const delayMs = backoff === 'exponential' 
-        ? baseDelay * Math.pow(2, attempt - 1)
-        : baseDelay * attempt;
+      const delayMs =
+        backoff === 'exponential'
+          ? baseDelay * Math.pow(2, attempt - 1)
+          : baseDelay * attempt;
 
       await delay(delayMs);
     }
@@ -78,17 +79,17 @@ export async function batchProcess<T, R>(
     delayBetweenBatches?: number;
   } = {}
 ): Promise<R[]> {
-  const {
-    batchSize = 10,
-    concurrency = 3,
-    delayBetweenBatches = 0,
-  } = options;
+  const { batchSize = 10, concurrency = 3, delayBetweenBatches = 0 } = options;
 
   const results: R[] = [];
-  
+
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
-    const batchResults = await processWithConcurrency(batch, processor, concurrency);
+    const batchResults = await processWithConcurrency(
+      batch,
+      processor,
+      concurrency
+    );
     results.push(...batchResults);
 
     if (delayBetweenBatches > 0 && i + batchSize < items.length) {
@@ -119,7 +120,10 @@ export async function processWithConcurrency<T, R>(
 
     if (executing.length >= concurrency) {
       await Promise.race(executing);
-      executing.splice(executing.findIndex(p => p === promise), 1);
+      executing.splice(
+        executing.findIndex(p => p === promise),
+        1
+      );
     }
   }
 
@@ -136,7 +140,7 @@ export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
   delay: number
 ): T {
   let timeoutId: ReturnType<typeof setTimeout>;
-  
+
   return ((...args: Parameters<T>) => {
     return new Promise<Awaited<ReturnType<T>>>((resolve, reject) => {
       clearTimeout(timeoutId);
@@ -162,12 +166,12 @@ export function throttleAsync<T extends (...args: any[]) => Promise<any>>(
 ): T {
   let lastCall = 0;
   let timeout: ReturnType<typeof setTimeout>;
-  
+
   return ((...args: Parameters<T>) => {
     return new Promise<Awaited<ReturnType<T>>>((resolve, reject) => {
       const now = Date.now();
       const timeSinceLastCall = now - lastCall;
-      
+
       const execute = async () => {
         lastCall = Date.now();
         try {
@@ -177,7 +181,7 @@ export function throttleAsync<T extends (...args: any[]) => Promise<any>>(
           reject(error);
         }
       };
-      
+
       if (timeSinceLastCall >= interval) {
         execute();
       } else {

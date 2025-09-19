@@ -30,17 +30,17 @@ export class TestCommand {
 
     try {
       // Check if tests are available
-      if (!await fs.pathExists(this.testsPath)) {
+      if (!(await fs.pathExists(this.testsPath))) {
         spinner.fail('Test suites not found. Please reinstall @wundr/cli');
         return;
       }
 
       // Load or create config
       const config = await this.loadConfig(options);
-      
+
       // Setup test environment
       await this.setupTestEnvironment(config);
-      
+
       spinner.succeed('Test environment ready');
 
       // Run tests based on type
@@ -66,7 +66,8 @@ export class TestCommand {
 
   private async loadConfig(options: TestOptions): Promise<any> {
     let config = {
-      baseUrl: options.baseUrl || process.env.TEST_BASE_URL || 'http://localhost:3000',
+      baseUrl:
+        options.baseUrl || process.env.TEST_BASE_URL || 'http://localhost:3000',
       testDir: this.testsPath,
       outputDir: path.join(process.cwd(), 'test-results'),
       timeout: 30000,
@@ -76,8 +77,8 @@ export class TestCommand {
         headless: !options.headed,
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
-        trace: 'on-first-retry'
-      }
+        trace: 'on-first-retry',
+      },
     };
 
     // Check for custom config
@@ -138,12 +139,12 @@ export default defineConfig({
 
   private async runUITests(config: any, options: TestOptions): Promise<void> {
     console.log(chalk.blue('\n🧪 Running UI Tests...'));
-    
+
     const args = [
       'playwright',
       'test',
       '--config',
-      path.join(config.outputDir, 'playwright.config.ts')
+      path.join(config.outputDir, 'playwright.config.ts'),
     ];
 
     if (options.browser) {
@@ -161,17 +162,17 @@ export default defineConfig({
       await this.runCommand('npx', [
         'playwright',
         'show-report',
-        path.join(config.outputDir, 'html-report')
+        path.join(config.outputDir, 'html-report'),
       ]);
     }
   }
 
   private async runAPITests(config: any, options: TestOptions): Promise<void> {
     console.log(chalk.blue('\n🔌 Running API Tests...'));
-    
+
     const testFiles = await fs.readdir(path.join(config.testDir, 'api'));
     const apiTests = testFiles.filter(f => f.endsWith('.spec.ts'));
-    
+
     for (const testFile of apiTests) {
       console.log(chalk.gray(`  Running ${testFile}...`));
       await this.runCommand('npx', [
@@ -179,17 +180,19 @@ export default defineConfig({
         'test',
         path.join(config.testDir, 'api', testFile),
         '--config',
-        path.join(config.outputDir, 'playwright.config.ts')
+        path.join(config.outputDir, 'playwright.config.ts'),
       ]);
     }
   }
 
   private async runUnitTests(config: any, options: TestOptions): Promise<void> {
     console.log(chalk.blue('\n🔬 Running Unit Tests...'));
-    
+
     // Check for Jest or Vitest
-    const packageJson = await fs.readJson(path.join(process.cwd(), 'package.json'));
-    
+    const packageJson = await fs.readJson(
+      path.join(process.cwd(), 'package.json')
+    );
+
     if (packageJson.scripts?.test) {
       await this.runCommand('npm', ['run', 'test']);
     } else {
@@ -199,7 +202,7 @@ export default defineConfig({
 
   private async runAllTests(config: any, options: TestOptions): Promise<void> {
     console.log(chalk.blue('\n🚀 Running All Tests...'));
-    
+
     await this.runUnitTests(config, options);
     await this.runAPITests(config, options);
     await this.runUITests(config, options);
@@ -209,10 +212,10 @@ export default defineConfig({
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, {
         stdio: 'inherit',
-        shell: true
+        shell: true,
       });
 
-      child.on('close', (code) => {
+      child.on('close', code => {
         if (code === 0) {
           resolve();
         } else {
@@ -228,14 +231,21 @@ export default defineConfig({
 export function createTestCommand(): Command {
   const command = new Command('test')
     .description('Run tests against your application')
-    .option('-t, --type <type>', 'Type of tests to run (ui, api, unit, all)', 'all')
-    .option('-b, --browser <browser>', 'Browser to use (chromium, firefox, webkit)')
+    .option(
+      '-t, --type <type>',
+      'Type of tests to run (ui, api, unit, all)',
+      'all'
+    )
+    .option(
+      '-b, --browser <browser>',
+      'Browser to use (chromium, firefox, webkit)'
+    )
     .option('--headed', 'Run tests in headed mode')
     .option('--base-url <url>', 'Base URL for the application')
     .option('-c, --config <path>', 'Path to custom test configuration')
     .option('-r, --report', 'Open HTML report after tests')
     .option('-w, --watch', 'Run tests in watch mode')
-    .action(async (options) => {
+    .action(async options => {
       const testCommand = new TestCommand();
       await testCommand.run(options);
     });

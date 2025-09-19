@@ -32,7 +32,7 @@ export class PluginCommands {
       .description('list installed plugins')
       .option('--available', 'show available plugins from registry')
       .option('--enabled-only', 'show only enabled plugins')
-      .action(async (options) => {
+      .action(async options => {
         await this.listPlugins(options);
       });
 
@@ -61,7 +61,7 @@ export class PluginCommands {
     pluginCmd
       .command('enable <plugin>')
       .description('enable a plugin')
-      .action(async (plugin) => {
+      .action(async plugin => {
         await this.enablePlugin(plugin);
       });
 
@@ -69,7 +69,7 @@ export class PluginCommands {
     pluginCmd
       .command('disable <plugin>')
       .description('disable a plugin')
-      .action(async (plugin) => {
+      .action(async plugin => {
         await this.disablePlugin(plugin);
       });
 
@@ -77,7 +77,7 @@ export class PluginCommands {
     pluginCmd
       .command('info <plugin>')
       .description('show plugin information')
-      .action(async (plugin) => {
+      .action(async plugin => {
         await this.showPluginInfo(plugin);
       });
 
@@ -106,7 +106,7 @@ export class PluginCommands {
       .description('publish plugin to registry')
       .option('--registry <url>', 'registry URL')
       .option('--dry-run', 'show what would be published')
-      .action(async (options) => {
+      .action(async options => {
         await this.publishPlugin(options);
       });
 
@@ -121,21 +121,19 @@ export class PluginCommands {
       });
 
     // Plugin development
-    pluginCmd
-      .command('dev')
-      .description('plugin development tools');
+    pluginCmd.command('dev').description('plugin development tools');
 
     pluginCmd
       .command('dev link <path>')
       .description('link local plugin for development')
-      .action(async (pluginPath) => {
+      .action(async pluginPath => {
         await this.linkPlugin(pluginPath);
       });
 
     pluginCmd
       .command('dev unlink <plugin>')
       .description('unlink development plugin')
-      .action(async (plugin) => {
+      .action(async plugin => {
         await this.unlinkPlugin(plugin);
       });
 
@@ -195,19 +193,23 @@ export class PluginCommands {
       logger.info(`Installing plugin: ${chalk.cyan(plugin)}`);
 
       // Check if plugin already exists
-      if (!options.force && await this.pluginManager.isPluginInstalled(plugin)) {
-        logger.warn(`Plugin ${plugin} is already installed. Use --force to reinstall.`);
+      if (
+        !options.force &&
+        (await this.pluginManager.isPluginInstalled(plugin))
+      ) {
+        logger.warn(
+          `Plugin ${plugin} is already installed. Use --force to reinstall.`
+        );
         return;
       }
 
       await this.pluginManager.installPlugin(plugin, {
         version: options.version,
         registry: options.registry,
-        force: options.force
+        force: options.force,
       });
 
       logger.success(`Plugin ${plugin} installed successfully`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_INSTALL_FAILED',
@@ -223,19 +225,21 @@ export class PluginCommands {
    */
   private async uninstallPlugin(plugin: string, options: any): Promise<void> {
     try {
-      if (!await this.pluginManager.isPluginInstalled(plugin)) {
+      if (!(await this.pluginManager.isPluginInstalled(plugin))) {
         logger.warn(`Plugin ${plugin} is not installed`);
         return;
       }
 
       if (!options.force) {
         const inquirer = await import('inquirer');
-        const { confirm } = await inquirer.default.prompt([{
-          type: 'confirm',
-          name: 'confirm',
-          message: `Uninstall plugin ${plugin}?`,
-          default: false
-        }]);
+        const { confirm } = await inquirer.default.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: `Uninstall plugin ${plugin}?`,
+            default: false,
+          },
+        ]);
 
         if (!confirm) {
           logger.info('Uninstall cancelled');
@@ -245,7 +249,6 @@ export class PluginCommands {
 
       await this.pluginManager.uninstallPlugin(plugin);
       logger.success(`Plugin ${plugin} uninstalled successfully`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_UNINSTALL_FAILED',
@@ -261,13 +264,12 @@ export class PluginCommands {
    */
   private async enablePlugin(plugin: string): Promise<void> {
     try {
-      if (!await this.pluginManager.isPluginInstalled(plugin)) {
+      if (!(await this.pluginManager.isPluginInstalled(plugin))) {
         throw new Error(`Plugin ${plugin} is not installed`);
       }
 
       await this.pluginManager.enablePlugin(plugin);
       logger.success(`Plugin ${plugin} enabled`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_ENABLE_FAILED',
@@ -283,13 +285,12 @@ export class PluginCommands {
    */
   private async disablePlugin(plugin: string): Promise<void> {
     try {
-      if (!await this.pluginManager.isPluginInstalled(plugin)) {
+      if (!(await this.pluginManager.isPluginInstalled(plugin))) {
         throw new Error(`Plugin ${plugin} is not installed`);
       }
 
       await this.pluginManager.disablePlugin(plugin);
       logger.success(`Plugin ${plugin} disabled`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_DISABLE_FAILED',
@@ -306,7 +307,7 @@ export class PluginCommands {
   private async showPluginInfo(plugin: string): Promise<void> {
     try {
       const pluginInfo = await this.pluginManager.getPluginInfo(plugin);
-      
+
       if (!pluginInfo) {
         logger.warn(`Plugin ${plugin} not found`);
         return;
@@ -320,11 +321,10 @@ export class PluginCommands {
       console.log(`Status: ${pluginInfo.enabled ? 'Enabled' : 'Disabled'}`);
       console.log(`Commands: ${pluginInfo.commands?.length || 0}`);
       console.log(`Hooks: ${pluginInfo.hooks?.length || 0}`);
-      
+
       if (pluginInfo.dependencies && pluginInfo.dependencies.length > 0) {
         console.log(`Dependencies: ${pluginInfo.dependencies.join(', ')}`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_INFO_FAILED',
@@ -351,7 +351,6 @@ export class PluginCommands {
       } else {
         throw new Error('Specify a plugin name or use --all');
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_UPDATE_FAILED',
@@ -374,7 +373,10 @@ export class PluginCommands {
       if (options.interactive) {
         pluginConfig = await this.createInteractivePlugin(name);
       } else {
-        pluginConfig = await this.createPluginFromTemplate(name, options.template);
+        pluginConfig = await this.createPluginFromTemplate(
+          name,
+          options.template
+        );
       }
 
       const pluginPath = path.join(process.cwd(), name);
@@ -385,7 +387,6 @@ export class PluginCommands {
       logger.info(`  cd ${name}`);
       logger.info('  npm install');
       logger.info('  wundr plugin dev link .');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_CREATE_FAILED',
@@ -408,11 +409,10 @@ export class PluginCommands {
         // Show what would be published
       } else {
         await this.pluginManager.publishPlugin({
-          registry: options.registry
+          registry: options.registry,
         });
         logger.success('Plugin published successfully');
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_PUBLISH_FAILED',
@@ -432,7 +432,7 @@ export class PluginCommands {
 
       const results = await this.pluginManager.searchPlugins(query, {
         registry: options.registry,
-        limit: parseInt(options.limit)
+        limit: parseInt(options.limit),
       });
 
       if (results.length === 0) {
@@ -441,14 +441,17 @@ export class PluginCommands {
       }
 
       console.log(`\nFound ${results.length} plugin(s):`);
-      console.table(results.map(plugin => ({
-        Name: plugin.name,
-        Version: plugin.version,
-        Description: plugin.description || 'No description',
-        Downloads: plugin.downloads || 0,
-        Updated: plugin.updated ? new Date(plugin.updated).toLocaleDateString() : 'Unknown'
-      })));
-
+      console.table(
+        results.map(plugin => ({
+          Name: plugin.name,
+          Version: plugin.version,
+          Description: plugin.description || 'No description',
+          Downloads: plugin.downloads || 0,
+          Updated: plugin.updated
+            ? new Date(plugin.updated).toLocaleDateString()
+            : 'Unknown',
+        }))
+      );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_SEARCH_FAILED',
@@ -465,14 +468,13 @@ export class PluginCommands {
   private async linkPlugin(pluginPath: string): Promise<void> {
     try {
       const absolutePath = path.resolve(pluginPath);
-      
-      if (!await fs.pathExists(absolutePath)) {
+
+      if (!(await fs.pathExists(absolutePath))) {
         throw new Error(`Plugin path does not exist: ${absolutePath}`);
       }
 
       await this.pluginManager.linkPlugin(absolutePath);
       logger.success(`Plugin linked: ${absolutePath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_LINK_FAILED',
@@ -490,7 +492,6 @@ export class PluginCommands {
     try {
       await this.pluginManager.unlinkPlugin(plugin);
       logger.success(`Plugin unlinked: ${plugin}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_UNLINK_FAILED',
@@ -509,11 +510,10 @@ export class PluginCommands {
       logger.info(`Testing plugin: ${chalk.cyan(plugin)}`);
 
       await this.pluginManager.testPlugin(plugin, {
-        coverage: options.coverage
+        coverage: options.coverage,
       });
 
       logger.success(`Plugin ${plugin} tests passed`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_TEST_FAILED',
@@ -527,10 +527,16 @@ export class PluginCommands {
   /**
    * Set plugin configuration
    */
-  private async setPluginConfig(plugin: string, key: string, value: string): Promise<void> {
+  private async setPluginConfig(
+    plugin: string,
+    key: string,
+    value: string
+  ): Promise<void> {
     try {
       await this.pluginManager.setPluginConfig(plugin, key, value);
-      logger.success(`Plugin configuration updated: ${plugin}.${key} = ${value}`);
+      logger.success(
+        `Plugin configuration updated: ${plugin}.${key} = ${value}`
+      );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_CONFIG_SET_FAILED',
@@ -566,23 +572,31 @@ export class PluginCommands {
   /**
    * Helper methods for plugin operations
    */
-  private async listInstalledPlugins(enabledOnly: boolean = false): Promise<void> {
+  private async listInstalledPlugins(
+    enabledOnly: boolean = false
+  ): Promise<void> {
     const plugins = await this.pluginManager.getInstalledPlugins();
-    const filteredPlugins = enabledOnly ? plugins.filter(p => p.enabled) : plugins;
+    const filteredPlugins = enabledOnly
+      ? plugins.filter(p => p.enabled)
+      : plugins;
 
     if (filteredPlugins.length === 0) {
-      logger.info(enabledOnly ? 'No enabled plugins found' : 'No plugins installed');
+      logger.info(
+        enabledOnly ? 'No enabled plugins found' : 'No plugins installed'
+      );
       return;
     }
 
-    logger.info(`${enabledOnly ? 'Enabled plugins' : 'Installed plugins'} (${filteredPlugins.length}):`);
-    
+    logger.info(
+      `${enabledOnly ? 'Enabled plugins' : 'Installed plugins'} (${filteredPlugins.length}):`
+    );
+
     const pluginData = filteredPlugins.map(plugin => ({
       Name: plugin.name,
       Version: plugin.version,
       Status: plugin.enabled ? '✅ Enabled' : '❌ Disabled',
       Commands: plugin.commands?.length || 0,
-      Description: plugin.description || 'No description'
+      Description: plugin.description || 'No description',
     }));
 
     console.table(pluginData);
@@ -597,13 +611,15 @@ export class PluginCommands {
     }
 
     logger.info(`Available plugins (${plugins.length}):`);
-    
+
     const pluginData = plugins.map(plugin => ({
       Name: plugin.name,
       Version: plugin.version,
       Downloads: plugin.downloads || 0,
-      Updated: plugin.updated ? new Date(plugin.updated).toLocaleDateString() : 'Unknown',
-      Description: plugin.description || 'No description'
+      Updated: plugin.updated
+        ? new Date(plugin.updated).toLocaleDateString()
+        : 'Unknown',
+      Description: plugin.description || 'No description',
     }));
 
     console.table(pluginData);
@@ -611,23 +627,23 @@ export class PluginCommands {
 
   private async createInteractivePlugin(name: string): Promise<any> {
     const inquirer = await import('inquirer');
-    
+
     return await inquirer.default.prompt([
       {
         type: 'input',
         name: 'description',
-        message: 'Plugin description:'
+        message: 'Plugin description:',
       },
       {
         type: 'input',
         name: 'author',
-        message: 'Author name:'
+        message: 'Author name:',
       },
       {
         type: 'input',
         name: 'version',
         message: 'Initial version:',
-        default: '1.0.0'
+        default: '1.0.0',
       },
       {
         type: 'checkbox',
@@ -638,32 +654,38 @@ export class PluginCommands {
           'Hooks',
           'Configuration',
           'Templates',
-          'Middleware'
-        ]
-      }
+          'Middleware',
+        ],
+      },
     ]);
   }
 
-  private async createPluginFromTemplate(name: string, template: string): Promise<any> {
+  private async createPluginFromTemplate(
+    name: string,
+    template: string
+  ): Promise<any> {
     const templates: Record<string, any> = {
       basic: {
         description: `A basic Wundr plugin: ${name}`,
-        features: ['Commands']
+        features: ['Commands'],
       },
       advanced: {
         description: `An advanced Wundr plugin: ${name}`,
-        features: ['Commands', 'Hooks', 'Configuration']
+        features: ['Commands', 'Hooks', 'Configuration'],
       },
       template: {
         description: `A template-based Wundr plugin: ${name}`,
-        features: ['Templates', 'Commands']
-      }
+        features: ['Templates', 'Commands'],
+      },
     };
 
     return templates[template] || templates['basic'];
   }
 
-  private async generatePluginStructure(pluginPath: string, config: any): Promise<void> {
+  private async generatePluginStructure(
+    pluginPath: string,
+    config: any
+  ): Promise<void> {
     await fs.ensureDir(pluginPath);
 
     // Create package.json
@@ -677,25 +699,27 @@ export class PluginCommands {
       scripts: {
         build: 'tsc',
         dev: 'tsc --watch',
-        test: 'jest'
+        test: 'jest',
       },
       peerDependencies: {
-        '@wundr/cli': '^1.0.0'
+        '@wundr/cli': '^1.0.0',
       },
       devDependencies: {
         typescript: '^5.0.0',
         '@types/node': '^20.0.0',
-        jest: '^29.0.0'
+        jest: '^29.0.0',
       },
       wundr: {
         plugin: true,
         commands: config.features?.includes('Commands') || false,
         hooks: config.features?.includes('Hooks') || false,
-        templates: config.features?.includes('Templates') || false
-      }
+        templates: config.features?.includes('Templates') || false,
+      },
     };
 
-    await fs.writeJson(path.join(pluginPath, 'package.json'), packageJson, { spaces: 2 });
+    await fs.writeJson(path.join(pluginPath, 'package.json'), packageJson, {
+      spaces: 2,
+    });
 
     // Create TypeScript config
     const tsConfig = {
@@ -710,20 +734,25 @@ export class PluginCommands {
         forceConsistentCasingInFileNames: true,
         declaration: true,
         declarationMap: true,
-        sourceMap: true
+        sourceMap: true,
       },
       include: ['src/**/*'],
-      exclude: ['node_modules', 'dist']
+      exclude: ['node_modules', 'dist'],
     };
 
-    await fs.writeJson(path.join(pluginPath, 'tsconfig.json'), tsConfig, { spaces: 2 });
+    await fs.writeJson(path.join(pluginPath, 'tsconfig.json'), tsConfig, {
+      spaces: 2,
+    });
 
     // Create source directory and files
     const srcDir = path.join(pluginPath, 'src');
     await fs.ensureDir(srcDir);
 
     // Create main plugin file
-    const pluginCode = this.generatePluginCode(path.basename(pluginPath), config);
+    const pluginCode = this.generatePluginCode(
+      path.basename(pluginPath),
+      config
+    );
     await fs.writeFile(path.join(srcDir, 'index.ts'), pluginCode);
 
     // Create README

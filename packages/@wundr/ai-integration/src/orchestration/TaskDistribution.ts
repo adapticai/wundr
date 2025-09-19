@@ -18,7 +18,10 @@ export class TaskDistribution extends EventEmitter {
     return { success: true, message: 'Task Distribution initialized' };
   }
 
-  async distributeTask(_task: Task, availableAgents: Agent[]): Promise<Agent[]> {
+  async distributeTask(
+    _task: Task,
+    availableAgents: Agent[]
+  ): Promise<Agent[]> {
     return availableAgents.slice(0, Math.min(3, availableAgents.length));
   }
 

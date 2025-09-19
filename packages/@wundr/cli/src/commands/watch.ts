@@ -47,7 +47,7 @@ export class WatchCommands {
     watchCmd
       .command('stop [name]')
       .description('stop specific watch or all watches')
-      .action(async (name) => {
+      .action(async name => {
         await this.stopWatching(name);
       });
 
@@ -64,7 +64,7 @@ export class WatchCommands {
     watchCmd
       .command('status [name]')
       .description('show watch status')
-      .action(async (name) => {
+      .action(async name => {
         await this.showWatchStatus(name);
       });
 
@@ -83,7 +83,7 @@ export class WatchCommands {
     watchCmd
       .command('config load <file>')
       .description('load watch configuration from file')
-      .action(async (file) => {
+      .action(async file => {
         await this.loadWatchConfig(file);
       });
 
@@ -99,10 +99,14 @@ export class WatchCommands {
     watchCmd
       .command('test')
       .description('watch and run tests on changes')
-      .option('--framework <framework>', 'test framework (jest, mocha, vitest)', 'jest')
+      .option(
+        '--framework <framework>',
+        'test framework (jest, mocha, vitest)',
+        'jest'
+      )
       .option('--coverage', 'run with coverage')
       .option('--changed-only', 'run tests for changed files only')
-      .action(async (options) => {
+      .action(async options => {
         await this.watchTests(options);
       });
 
@@ -112,7 +116,7 @@ export class WatchCommands {
       .description('watch and build on changes')
       .option('--target <target>', 'build target')
       .option('--incremental', 'enable incremental builds')
-      .action(async (options) => {
+      .action(async options => {
         await this.watchBuild(options);
       });
 
@@ -122,7 +126,7 @@ export class WatchCommands {
       .description('watch and lint on changes')
       .option('--fix', 'automatically fix linting issues')
       .option('--staged-only', 'lint staged files only')
-      .action(async (options) => {
+      .action(async options => {
         await this.watchLint(options);
       });
 
@@ -130,9 +134,13 @@ export class WatchCommands {
     watchCmd
       .command('analyze')
       .description('watch and analyze code quality')
-      .option('--type <type>', 'analysis type (quality, deps, security)', 'quality')
+      .option(
+        '--type <type>',
+        'analysis type (quality, deps, security)',
+        'quality'
+      )
       .option('--threshold <threshold>', 'quality threshold')
-      .action(async (options) => {
+      .action(async options => {
         await this.watchAnalysis(options);
       });
   }
@@ -159,8 +167,8 @@ export class WatchCommands {
         ignoreInitial: true,
         awaitWriteFinish: {
           stabilityThreshold: parseInt(options.debounce) || 300,
-          pollInterval: 100
-        }
+          pollInterval: 100,
+        },
       });
 
       // Set up event handlers
@@ -172,7 +180,6 @@ export class WatchCommands {
 
       logger.success(`Watching ${watchConfig.patterns.join(', ')}`);
       logger.info('Press Ctrl+C to stop watching');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_START_FAILED',
@@ -229,16 +236,17 @@ export class WatchCommands {
       }
 
       logger.info(`Active watches (${this.activeWatches.size}):`);
-      
-      const watchData = Array.from(this.activeWatches.entries()).map(([name, config]) => ({
-        Name: name,
-        Patterns: config.patterns.join(', '),
-        Commands: config.commands.length,
-        Debounce: `${config.debounce || 300}ms`
-      }));
+
+      const watchData = Array.from(this.activeWatches.entries()).map(
+        ([name, config]) => ({
+          Name: name,
+          Patterns: config.patterns.join(', '),
+          Commands: config.commands.length,
+          Debounce: `${config.debounce || 300}ms`,
+        })
+      );
 
       console.table(watchData);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_LIST_FAILED',
@@ -257,7 +265,7 @@ export class WatchCommands {
       if (name) {
         const config = this.activeWatches.get(name);
         const watcher = this.watchers.get(name);
-        
+
         if (!config || !watcher) {
           logger.warn(`Watch not found: ${name}`);
           return;
@@ -267,12 +275,14 @@ export class WatchCommands {
         console.log(`Patterns: ${config.patterns.join(', ')}`);
         console.log(`Commands: ${config.commands.length}`);
         console.log(`Debounce: ${config.debounce || 300}ms`);
-        console.log(`Watched Paths: ${Object.keys(watcher.getWatched()).length}`);
+        console.log(
+          `Watched Paths: ${Object.keys(watcher.getWatched()).length}`
+        );
       } else {
         console.log(chalk.blue('\nAll Watches Status:'));
         console.log(`Active Watches: ${this.activeWatches.size}`);
         console.log(`Total Watchers: ${this.watchers.size}`);
-        
+
         for (const [watchName] of this.activeWatches) {
           await this.showWatchStatus(watchName);
         }
@@ -299,18 +309,24 @@ export class WatchCommands {
       } else {
         config = {
           patterns: options.patterns ? options.patterns.split(',') : ['**/*'],
-          commands: options.commands ? this.parseWatchCommands(options.commands) : [],
+          commands: options.commands
+            ? this.parseWatchCommands(options.commands)
+            : [],
           debounce: 300,
-          recursive: true
+          recursive: true,
         };
       }
 
-      const configPath = path.join(process.cwd(), '.wundr', 'watch', `${name}.yaml`);
+      const configPath = path.join(
+        process.cwd(),
+        '.wundr',
+        'watch',
+        `${name}.yaml`
+      );
       await fs.ensureDir(path.dirname(configPath));
       await fs.writeFile(configPath, YAML.stringify(config));
 
       logger.success(`Watch configuration created: ${configPath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_CONFIG_CREATE_FAILED',
@@ -328,10 +344,9 @@ export class WatchCommands {
     try {
       const config = await this.loadWatchConfigFile(file);
       const name = path.basename(file, path.extname(file));
-      
+
       await this.startWatchingWithConfig(name, config);
       logger.success(`Loaded watch configuration: ${file}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_CONFIG_LOAD_FAILED',
@@ -352,12 +367,12 @@ export class WatchCommands {
         throw new Error(`Watch not found: ${name}`);
       }
 
-      const outputPath = file || path.join(process.cwd(), '.wundr', 'watch', `${name}.yaml`);
+      const outputPath =
+        file || path.join(process.cwd(), '.wundr', 'watch', `${name}.yaml`);
       await fs.ensureDir(path.dirname(outputPath));
       await fs.writeFile(outputPath, YAML.stringify(config));
 
       logger.success(`Watch configuration saved: ${outputPath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_CONFIG_SAVE_FAILED',
@@ -378,16 +393,17 @@ export class WatchCommands {
       const testPatterns = this.getTestPatterns(options.framework);
       const watchConfig: WatchConfig = {
         patterns: testPatterns,
-        commands: [{
-          trigger: 'change',
-          command: this.getTestCommand(options.framework, options),
-          condition: 'test-files'
-        }],
-        debounce: 1000
+        commands: [
+          {
+            trigger: 'change',
+            command: this.getTestCommand(options.framework, options),
+            condition: 'test-files',
+          },
+        ],
+        debounce: 1000,
       };
 
       await this.startWatchingWithConfig('test-watch', watchConfig);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_TEST_FAILED',
@@ -408,16 +424,17 @@ export class WatchCommands {
       const buildPatterns = ['src/**/*', 'lib/**/*', '*.config.*'];
       const watchConfig: WatchConfig = {
         patterns: buildPatterns,
-        commands: [{
-          trigger: 'change',
-          command: this.getBuildCommand(options),
-          condition: 'source-files'
-        }],
-        debounce: 500
+        commands: [
+          {
+            trigger: 'change',
+            command: this.getBuildCommand(options),
+            condition: 'source-files',
+          },
+        ],
+        debounce: 500,
       };
 
       await this.startWatchingWithConfig('build-watch', watchConfig);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_BUILD_FAILED',
@@ -438,16 +455,17 @@ export class WatchCommands {
       const lintPatterns = ['**/*.{ts,tsx,js,jsx}', '!node_modules/**'];
       const watchConfig: WatchConfig = {
         patterns: lintPatterns,
-        commands: [{
-          trigger: 'change',
-          command: this.getLintCommand(options),
-          condition: 'lint-files'
-        }],
-        debounce: 300
+        commands: [
+          {
+            trigger: 'change',
+            command: this.getLintCommand(options),
+            condition: 'lint-files',
+          },
+        ],
+        debounce: 300,
       };
 
       await this.startWatchingWithConfig('lint-watch', watchConfig);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_LINT_FAILED',
@@ -468,16 +486,17 @@ export class WatchCommands {
       const analysisPatterns = ['src/**/*', 'lib/**/*'];
       const watchConfig: WatchConfig = {
         patterns: analysisPatterns,
-        commands: [{
-          trigger: 'change',
-          command: this.getAnalysisCommand(options),
-          condition: 'analysis-files'
-        }],
-        debounce: 2000
+        commands: [
+          {
+            trigger: 'change',
+            command: this.getAnalysisCommand(options),
+            condition: 'analysis-files',
+          },
+        ],
+        debounce: 2000,
       };
 
       await this.startWatchingWithConfig('analysis-watch', watchConfig);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WATCH_ANALYSIS_FAILED',
@@ -491,10 +510,14 @@ export class WatchCommands {
   /**
    * Helper methods
    */
-  private setupWatchHandlers(watcher: FSWatcher, config: WatchConfig, name: string): void {
+  private setupWatchHandlers(
+    watcher: FSWatcher,
+    config: WatchConfig,
+    name: string
+  ): void {
     const executeCommands = async (eventType: string, filePath: string) => {
-      const relevantCommands = config.commands.filter(cmd => 
-        cmd.trigger === eventType || cmd.trigger === 'change'
+      const relevantCommands = config.commands.filter(
+        cmd => cmd.trigger === eventType || cmd.trigger === 'change'
       );
 
       for (const cmd of relevantCommands) {
@@ -504,22 +527,22 @@ export class WatchCommands {
       }
     };
 
-    watcher.on('add', (filePath) => {
+    watcher.on('add', filePath => {
       logger.debug(`File added: ${filePath}`);
       executeCommands('add', filePath);
     });
 
-    watcher.on('change', (filePath) => {
+    watcher.on('change', filePath => {
       logger.debug(`File changed: ${filePath}`);
       executeCommands('change', filePath);
     });
 
-    watcher.on('unlink', (filePath) => {
+    watcher.on('unlink', filePath => {
       logger.debug(`File deleted: ${filePath}`);
       executeCommands('delete', filePath);
     });
 
-    watcher.on('error', (error) => {
+    watcher.on('error', error => {
       logger.error(`Watch error in ${name}:`, error);
     });
 
@@ -546,55 +569,64 @@ export class WatchCommands {
     }
   }
 
-  private async executeWatchCommand(cmd: WatchCommand, filePath: string): Promise<void> {
+  private async executeWatchCommand(
+    cmd: WatchCommand,
+    filePath: string
+  ): Promise<void> {
     try {
       logger.info(`Executing: ${cmd.command}`);
-      
+
       // Replace placeholders in command
       const command = cmd.command.replace('{{file}}', filePath);
-      
+
       // Execute command
       const { spawn } = await import('child_process');
       const [cmdName, ...args] = command.split(' ');
-      
+
       if (!cmdName) {
         logger.error('Invalid command: empty command string');
         return;
       }
-      
+
       const child = spawn(cmdName, args, {
         stdio: 'inherit',
-        shell: true
+        shell: true,
       });
 
-      child.on('exit', (code) => {
+      child.on('exit', code => {
         if (code === 0) {
           logger.success(`Command completed: ${cmd.command}`);
         } else {
           logger.error(`Command failed with exit code ${code}: ${cmd.command}`);
         }
       });
-
     } catch (error) {
       logger.error(`Failed to execute command: ${cmd.command}`, error);
     }
   }
 
-  private createWatchConfigFromOptions(patterns: string[], options: any): WatchConfig {
+  private createWatchConfigFromOptions(
+    patterns: string[],
+    options: any
+  ): WatchConfig {
     return {
       patterns: patterns.length > 0 ? patterns : ['**/*'],
       ignore: options.ignore ? options.ignore.split(',') : [],
-      commands: options.command ? [{
-        trigger: 'change',
-        command: options.command
-      }] : [],
+      commands: options.command
+        ? [
+            {
+              trigger: 'change',
+              command: options.command,
+            },
+          ]
+        : [],
       debounce: parseInt(options.debounce) || 300,
-      recursive: options.recursive || true
+      recursive: options.recursive || true,
     };
   }
 
   private async loadWatchConfigFile(file: string): Promise<WatchConfig> {
-    if (!await fs.pathExists(file)) {
+    if (!(await fs.pathExists(file))) {
       throw new Error(`Configuration file not found: ${file}`);
     }
 
@@ -610,15 +642,18 @@ export class WatchCommands {
     }
   }
 
-  private async startWatchingWithConfig(name: string, config: WatchConfig): Promise<void> {
+  private async startWatchingWithConfig(
+    name: string,
+    config: WatchConfig
+  ): Promise<void> {
     const watcher = watch(config.patterns, {
       ignored: config.ignore || [],
       persistent: true,
       ignoreInitial: true,
       awaitWriteFinish: {
         stabilityThreshold: config.debounce || 300,
-        pollInterval: 100
-      }
+        pollInterval: 100,
+      },
     });
 
     this.setupWatchHandlers(watcher, config, name);
@@ -630,50 +665,52 @@ export class WatchCommands {
 
   private async createInteractiveWatchConfig(): Promise<WatchConfig> {
     const inquirer = await import('inquirer');
-    
+
     const answers = await inquirer.default.prompt([
       {
         type: 'input',
         name: 'patterns',
         message: 'File patterns to watch (comma-separated):',
-        default: '**/*'
+        default: '**/*',
       },
       {
         type: 'input',
         name: 'ignore',
         message: 'Patterns to ignore (comma-separated):',
-        default: 'node_modules/**,dist/**'
+        default: 'node_modules/**,dist/**',
       },
       {
         type: 'input',
         name: 'command',
         message: 'Command to run on changes:',
-        validate: (input) => input.length > 0 || 'Command is required'
+        validate: input => input.length > 0 || 'Command is required',
       },
       {
         type: 'number',
         name: 'debounce',
         message: 'Debounce delay (ms):',
-        default: 300
-      }
+        default: 300,
+      },
     ]);
 
     return {
       patterns: answers.patterns.split(',').map(p => p.trim()),
       ignore: answers.ignore.split(',').map(p => p.trim()),
-      commands: [{
-        trigger: 'change',
-        command: answers.command
-      }],
+      commands: [
+        {
+          trigger: 'change',
+          command: answers.command,
+        },
+      ],
       debounce: answers.debounce,
-      recursive: true
+      recursive: true,
     };
   }
 
   private parseWatchCommands(commandsStr: string): WatchCommand[] {
     return commandsStr.split(',').map(cmd => ({
       trigger: 'change',
-      command: cmd.trim()
+      command: cmd.trim(),
     }));
   }
 
@@ -693,15 +730,17 @@ export class WatchCommands {
   private getTestCommand(framework: string, options: any): string {
     const baseCmd = framework === 'npm' ? `npm test` : `npx ${framework}`;
     const flags: string[] = [];
-    
+
     if (options.coverage) flags.push('--coverage');
     if (options.changedOnly) flags.push('--changedSince=HEAD');
-    
+
     return `${baseCmd} ${flags.join(' ')}`;
   }
 
   private getBuildCommand(options: any): string {
-    const cmd = options.target ? `npm run build:${options.target}` : 'npm run build';
+    const cmd = options.target
+      ? `npm run build:${options.target}`
+      : 'npm run build';
     return options.incremental ? `${cmd} --incremental` : cmd;
   }
 

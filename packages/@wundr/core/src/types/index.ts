@@ -33,10 +33,23 @@ export interface EventHandler<TPayload = Record<string, unknown>> {
 }
 
 export interface EventBus {
-  emit<TPayload = Record<string, unknown>>(type: string, payload: TPayload, source?: string): void;
-  on<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): () => void;
-  off<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): void;
-  once<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): void;
+  emit<TPayload = Record<string, unknown>>(
+    type: string,
+    payload: TPayload,
+    source?: string
+  ): void;
+  on<TPayload = Record<string, unknown>>(
+    type: string,
+    handler: EventHandler<TPayload>
+  ): () => void;
+  off<TPayload = Record<string, unknown>>(
+    type: string,
+    handler: EventHandler<TPayload>
+  ): void;
+  once<TPayload = Record<string, unknown>>(
+    type: string,
+    handler: EventHandler<TPayload>
+  ): void;
   removeAllListeners(type?: string): void;
 }
 
@@ -52,16 +65,22 @@ export interface ValidationError {
   code: string;
 }
 
-export interface UtilityFunction<TArgs extends readonly unknown[] = readonly unknown[], TReturn = unknown> {
+export interface UtilityFunction<
+  TArgs extends readonly unknown[] = readonly unknown[],
+  TReturn = unknown,
+> {
   (...args: TArgs): TReturn;
 }
 
-export interface AsyncUtilityFunction<TArgs extends readonly unknown[] = readonly unknown[], TReturn = unknown> {
+export interface AsyncUtilityFunction<
+  TArgs extends readonly unknown[] = readonly unknown[],
+  TReturn = unknown,
+> {
   (...args: TArgs): Promise<TReturn>;
 }
 
 // Generic result type for operations that can fail
-export type Result<T, E = WundrError> = 
+export type Result<T, E = WundrError> =
   | { success: true; data: T }
   | { success: false; error: E };
 
@@ -80,7 +99,7 @@ export const CORE_EVENTS = {
   VALIDATION_FAILED: 'core:validation:failed',
 } as const;
 
-export type CoreEventType = typeof CORE_EVENTS[keyof typeof CORE_EVENTS];
+export type CoreEventType = (typeof CORE_EVENTS)[keyof typeof CORE_EVENTS];
 
 // Enhanced type system for enterprise patterns
 export type JsonPrimitive = string | number | boolean | null;
@@ -228,7 +247,7 @@ export type {
   UserId,
   EmailAddress,
   Timestamp,
-  UUID
+  UUID,
 } from './utility-types.js';
 
 // Re-export web client types
@@ -247,5 +266,5 @@ export type {
   FormProps,
   NavigationItem,
   ThemeConfig,
-  NotificationConfig
+  NotificationConfig,
 } from './web-client-types.js';

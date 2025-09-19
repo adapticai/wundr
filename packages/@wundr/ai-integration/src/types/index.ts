@@ -95,32 +95,65 @@ export interface GitHubConfig {
 }
 
 // Agent Types
-export type AgentType = 
+export type AgentType =
   // Core Development
-  | 'coder' | 'reviewer' | 'tester' | 'planner' | 'researcher'
+  | 'coder'
+  | 'reviewer'
+  | 'tester'
+  | 'planner'
+  | 'researcher'
   // Swarm Coordination
-  | 'hierarchical-coordinator' | 'mesh-coordinator' | 'adaptive-coordinator' 
-  | 'collective-intelligence-coordinator' | 'swarm-memory-manager'
+  | 'hierarchical-coordinator'
+  | 'mesh-coordinator'
+  | 'adaptive-coordinator'
+  | 'collective-intelligence-coordinator'
+  | 'swarm-memory-manager'
   // Consensus & Distributed
-  | 'byzantine-coordinator' | 'raft-manager' | 'gossip-coordinator' 
-  | 'consensus-builder' | 'crdt-synchronizer' | 'quorum-manager' | 'security-manager'
+  | 'byzantine-coordinator'
+  | 'raft-manager'
+  | 'gossip-coordinator'
+  | 'consensus-builder'
+  | 'crdt-synchronizer'
+  | 'quorum-manager'
+  | 'security-manager'
   // Performance & Optimization
-  | 'perf-analyzer' | 'performance-benchmarker' | 'task-orchestrator' 
-  | 'memory-coordinator' | 'smart-agent'
+  | 'perf-analyzer'
+  | 'performance-benchmarker'
+  | 'task-orchestrator'
+  | 'memory-coordinator'
+  | 'smart-agent'
   // GitHub & Repository
-  | 'github-modes' | 'pr-manager' | 'code-review-swarm' | 'issue-tracker' 
-  | 'release-manager' | 'workflow-automation' | 'project-board-sync' 
-  | 'repo-architect' | 'multi-repo-swarm'
+  | 'github-modes'
+  | 'pr-manager'
+  | 'code-review-swarm'
+  | 'issue-tracker'
+  | 'release-manager'
+  | 'workflow-automation'
+  | 'project-board-sync'
+  | 'repo-architect'
+  | 'multi-repo-swarm'
   // SPARC Methodology
-  | 'sparc-coord' | 'sparc-coder' | 'specification' | 'pseudocode' 
-  | 'architecture' | 'refinement'
+  | 'sparc-coord'
+  | 'sparc-coder'
+  | 'specification'
+  | 'pseudocode'
+  | 'architecture'
+  | 'refinement'
   // Specialized Development
-  | 'backend-dev' | 'mobile-dev' | 'ml-developer' | 'cicd-engineer' 
-  | 'api-docs' | 'system-architect' | 'code-analyzer' | 'base-template-generator'
+  | 'backend-dev'
+  | 'mobile-dev'
+  | 'ml-developer'
+  | 'cicd-engineer'
+  | 'api-docs'
+  | 'system-architect'
+  | 'code-analyzer'
+  | 'base-template-generator'
   // Testing & Validation
-  | 'tdd-london-swarm' | 'production-validator'
+  | 'tdd-london-swarm'
+  | 'production-validator'
   // Migration & Planning
-  | 'migration-planner' | 'swarm-init';
+  | 'migration-planner'
+  | 'swarm-init';
 
 export interface Agent {
   id: string;
@@ -136,7 +169,13 @@ export interface Agent {
   context?: AgentContext;
 }
 
-export type AgentStatus = 'initializing' | 'active' | 'busy' | 'idle' | 'error' | 'shutdown';
+export type AgentStatus =
+  | 'initializing'
+  | 'active'
+  | 'busy'
+  | 'idle'
+  | 'error'
+  | 'shutdown';
 
 export interface AgentMetrics {
   tasksCompleted: number;
@@ -148,7 +187,12 @@ export interface AgentMetrics {
 }
 
 // Topology Types
-export type TopologyType = 'mesh' | 'hierarchical' | 'adaptive' | 'ring' | 'star';
+export type TopologyType =
+  | 'mesh'
+  | 'hierarchical'
+  | 'adaptive'
+  | 'ring'
+  | 'star';
 
 export interface SwarmTopology {
   type: TopologyType;
@@ -160,7 +204,12 @@ export interface SwarmTopology {
 }
 
 // SPARC Methodology
-export type SPARCPhase = 'specification' | 'pseudocode' | 'architecture' | 'refinement' | 'completion';
+export type SPARCPhase =
+  | 'specification'
+  | 'pseudocode'
+  | 'architecture'
+  | 'refinement'
+  | 'completion';
 
 export interface SPARCExecution {
   phases: SPARCPhase[];
@@ -188,9 +237,22 @@ export interface Task {
   error?: TaskError;
 }
 
-export type TaskType = 'coding' | 'review' | 'testing' | 'analysis' | 'documentation' | 'deployment' | 'optimization';
+export type TaskType =
+  | 'coding'
+  | 'review'
+  | 'testing'
+  | 'analysis'
+  | 'documentation'
+  | 'deployment'
+  | 'optimization';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
-export type TaskStatus = 'pending' | 'assigned' | 'in-progress' | 'completed' | 'failed' | 'cancelled';
+export type TaskStatus =
+  | 'pending'
+  | 'assigned'
+  | 'in-progress'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
 
 // Memory Management
 export interface MemoryEntry {
@@ -206,7 +268,13 @@ export interface MemoryEntry {
   metadata: MemoryMetadata;
 }
 
-export type MemoryType = 'session' | 'agent' | 'task' | 'pattern' | 'consensus' | 'performance';
+export type MemoryType =
+  | 'session'
+  | 'agent'
+  | 'task'
+  | 'pattern'
+  | 'consensus'
+  | 'performance';
 
 export interface MemoryContext {
   sessionMemory: MemoryEntry[];
@@ -228,7 +296,11 @@ export interface NeuralModel {
   updatedAt: Date;
 }
 
-export type ModelType = 'pattern-recognition' | 'performance-prediction' | 'task-classification' | 'agent-selection';
+export type ModelType =
+  | 'pattern-recognition'
+  | 'performance-prediction'
+  | 'task-classification'
+  | 'agent-selection';
 export type ModelStatus = 'training' | 'ready' | 'updating' | 'error';
 
 export interface ModelPerformance {
@@ -251,7 +323,13 @@ export interface MCPTool {
 }
 
 // System Status
-export type HiveStatus = 'initializing' | 'ready' | 'busy' | 'error' | 'shutting-down' | 'shutdown';
+export type HiveStatus =
+  | 'initializing'
+  | 'ready'
+  | 'busy'
+  | 'error'
+  | 'shutting-down'
+  | 'shutdown';
 
 export interface OperationResult {
   success: boolean;
@@ -340,7 +418,13 @@ export interface SPARCResult {
 }
 
 export interface Artifact {
-  readonly type: 'specification' | 'pseudocode' | 'architecture' | 'code' | 'tests' | 'documentation';
+  readonly type:
+    | 'specification'
+    | 'pseudocode'
+    | 'architecture'
+    | 'code'
+    | 'tests'
+    | 'documentation';
   readonly content: string;
   readonly metadata: Record<string, unknown>;
 }

@@ -12,7 +12,10 @@ const logger = getLogger('cli:create');
 
 export const createCommand = new Command('create')
   .description('Create a new wundr-compliant project')
-  .argument('[type]', 'Project type (frontend|backend|fullstack|monorepo|library|cli)')
+  .argument(
+    '[type]',
+    'Project type (frontend|backend|fullstack|monorepo|library|cli)'
+  )
   .argument('[name]', 'Project name')
   .option('-f, --framework <framework>', 'Framework to use')
   .option('-d, --description <description>', 'Project description')
@@ -32,21 +35,28 @@ export const createCommand = new Command('create')
         projectTemplates.listTemplates();
         return;
       }
-      
+
       // Interactive mode if no arguments
       if (!type || !name) {
         await projectTemplates.createInteractive();
         return;
       }
-      
+
       // Validate project type
-      const validTypes = ['frontend', 'backend', 'fullstack', 'monorepo', 'library', 'cli'];
+      const validTypes = [
+        'frontend',
+        'backend',
+        'fullstack',
+        'monorepo',
+        'library',
+        'cli',
+      ];
       if (!validTypes.includes(type)) {
         console.error(chalk.red(`Invalid project type: ${type}`));
         console.log(chalk.yellow(`Valid types: ${validTypes.join(', ')}`));
         process.exit(1);
       }
-      
+
       // Create project with options
       await projectTemplates.createProject({
         name,
@@ -60,12 +70,15 @@ export const createCommand = new Command('create')
         testing: options.testing,
         ci: options.ci,
         docker: options.docker,
-        path: options.path
+        path: options.path,
       });
-      
     } catch (error) {
       logger.error('Failed to create project', error);
-      console.error(chalk.red(`\n❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      console.error(
+        chalk.red(
+          `\n❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        )
+      );
       process.exit(1);
     }
   });
@@ -81,21 +94,25 @@ createCommand
       type: 'frontend',
       framework: options.framework,
       install: true,
-      git: true
+      git: true,
     });
   });
 
 createCommand
   .command('backend <name>')
   .description('Create a backend API')
-  .option('-f, --framework <framework>', 'Framework (fastify|express|nestjs)', 'fastify')
+  .option(
+    '-f, --framework <framework>',
+    'Framework (fastify|express|nestjs)',
+    'fastify'
+  )
   .action(async (name: string, options: any) => {
     await projectTemplates.createProject({
       name,
       type: 'backend',
       framework: options.framework,
       install: true,
-      git: true
+      git: true,
     });
   });
 
@@ -108,7 +125,7 @@ createCommand
       type: 'monorepo',
       framework: 'turborepo',
       install: true,
-      git: true
+      git: true,
     });
   });
 
@@ -124,7 +141,7 @@ createCommand
       framework: 'turborepo',
       install: true,
       git: true,
-      description: 'Full-stack wundr-compliant application'
+      description: 'Full-stack wundr-compliant application',
     });
   });
 
@@ -139,7 +156,7 @@ createCommand
       typescript: true,
       testing: true,
       install: true,
-      git: true
+      git: true,
     });
   });
 
@@ -153,6 +170,6 @@ createCommand
       typescript: true,
       testing: true,
       install: true,
-      git: true
+      git: true,
     });
   });

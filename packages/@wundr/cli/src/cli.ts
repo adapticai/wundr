@@ -35,8 +35,11 @@ export class WundrCLI {
     this.program = new Command();
     this.configManager = new ConfigManager();
     this.pluginManager = new PluginManager(this.configManager);
-    this.interactiveMode = new InteractiveMode(this.configManager, this.pluginManager);
-    
+    this.interactiveMode = new InteractiveMode(
+      this.configManager,
+      this.pluginManager
+    );
+
     this.setupProgram();
     this.registerCommands();
     this.setupGlobalOptions();
@@ -49,18 +52,23 @@ export class WundrCLI {
   private setupProgram(): void {
     this.program
       .name('wundr')
-      .description('Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams')
+      .description(
+        'Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams'
+      )
       .version(version, '-v, --version', 'display version number')
       .helpOption('-h, --help', 'display help for command')
-      .addHelpText('before', `
+      .addHelpText(
+        'before',
+        `
 ╦ ╦╦ ╦╔╗╔╔╦╗╦═╗
 ║║║║ ║║║║ ║║╠╦╝
 ╚╩╝╚═╝╝╚╝═╩╝╩╚═
 The Unified Developer Platform
-      `)
+      `
+      )
       .configureOutput({
-        writeOut: (str) => process.stdout.write(str),
-        writeErr: (str) => process.stderr.write(str),
+        writeOut: str => process.stdout.write(str),
+        writeErr: str => process.stderr.write(str),
       });
   }
 
@@ -72,32 +80,32 @@ The Unified Developer Platform
     new SetupCommands(this.program, this.configManager, this.pluginManager);
     // Use the working computer-setup command instead of the broken one
     this.program.addCommand(createComputerSetupCommand());
-    
+
     // Code Analysis & Governance (original wundr features)
     new AnalyzeCommands(this.program, this.configManager, this.pluginManager);
     new GovernCommands(this.program, this.configManager, this.pluginManager);
-    
+
     // Project Management
     new InitCommands(this.program, this.configManager, this.pluginManager);
     new CreateCommands(this.program, this.configManager, this.pluginManager);
-    
+
     // AI & Automation
     new AICommands(this.program, this.configManager, this.pluginManager);
     new BatchCommands(this.program, this.configManager, this.pluginManager);
-    
+
     // Dashboard & Monitoring
     new DashboardCommands(this.program, this.configManager, this.pluginManager);
     new WatchCommands(this.program, this.configManager, this.pluginManager);
-    
+
     // Testing
     this.program.addCommand(createTestCommand());
-    
+
     // Interactive Modes
     new ChatCommands(this.program, this.configManager, this.pluginManager);
 
     // Plugin Management
     new PluginCommands(this.program, this.configManager, this.pluginManager);
-    
+
     // Claude Integration
     claudeInitCommand(this.program);
     claudeSetupCommand(this.program);
@@ -116,7 +124,7 @@ The Unified Developer Platform
       .option('--interactive', 'force interactive mode')
       .hook('preAction', (thisCommand, actionCommand) => {
         const options = thisCommand.opts();
-        
+
         // Setup logging level
         if (options['verbose']) {
           logger.setLevel('debug');
@@ -148,7 +156,7 @@ The Unified Developer Platform
       .alias('w')
       .description('launch interactive wizard mode')
       .option('--mode <type>', 'wizard mode (setup, analyze, create)', 'setup')
-      .action(async (options) => {
+      .action(async options => {
         await this.interactiveMode.launchWizard(options.mode);
       });
 
@@ -159,7 +167,7 @@ The Unified Developer Platform
       .description('launch natural language chat interface')
       .option('--model <model>', 'AI model to use', 'claude-3')
       .option('--context <path>', 'load context from directory')
-      .action(async (options) => {
+      .action(async options => {
         await this.interactiveMode.launchChat(options);
       });
 
@@ -168,8 +176,12 @@ The Unified Developer Platform
       .command('tui')
       .alias('t')
       .description('launch terminal user interface')
-      .option('--layout <type>', 'TUI layout (dashboard, monitor, debug)', 'dashboard')
-      .action(async (options) => {
+      .option(
+        '--layout <type>',
+        'TUI layout (dashboard, monitor, debug)',
+        'dashboard'
+      )
+      .action(async options => {
         await this.interactiveMode.launchTUI(options.layout);
       });
   }

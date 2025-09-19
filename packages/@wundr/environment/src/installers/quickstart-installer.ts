@@ -14,7 +14,6 @@ import { ProfileType, Platform } from '../types';
 import { createLogger } from '../utils/logger';
 import { detectPlatform } from '../utils/system';
 
-
 const logger = createLogger('QuickstartInstaller');
 
 export interface QuickstartOptions {
@@ -67,7 +66,7 @@ export class QuickstartInstaller {
     this.homePath = homedir();
     this.cachePath = join(this.homePath, '.wundr', 'cache');
     this.configPath = join(this.homePath, '.wundr');
-    
+
     this.initializeTasks();
   }
 
@@ -77,8 +76,25 @@ export class QuickstartInstaller {
   private initializeTasks(): void {
     const presets = {
       minimal: ['system-analysis', 'homebrew', 'git', 'node-basic'],
-      standard: ['system-analysis', 'homebrew', 'git', 'node-full', 'docker-lite', 'vscode-fast', 'claude-core'],
-      full: ['system-analysis', 'homebrew', 'git', 'node-full', 'docker-full', 'vscode-full', 'claude-full', 'ai-agents-quick']
+      standard: [
+        'system-analysis',
+        'homebrew',
+        'git',
+        'node-full',
+        'docker-lite',
+        'vscode-fast',
+        'claude-core',
+      ],
+      full: [
+        'system-analysis',
+        'homebrew',
+        'git',
+        'node-full',
+        'docker-full',
+        'vscode-full',
+        'claude-full',
+        'ai-agents-quick',
+      ],
     };
 
     const taskDefinitions: InstallTask[] = [
@@ -88,7 +104,7 @@ export class QuickstartInstaller {
         command: () => this.performSystemAnalysis(),
         dependencies: [],
         parallel: false,
-        estimatedTime: 5
+        estimatedTime: 5,
       },
       {
         id: 'homebrew',
@@ -97,16 +113,19 @@ export class QuickstartInstaller {
         dependencies: ['system-analysis'],
         skipIf: () => !!this.analysis?.hasHomebrew,
         parallel: false,
-        estimatedTime: 30
+        estimatedTime: 30,
       },
       {
         id: 'git',
         name: 'Git',
-        command: this.platform === 'macos' ? 'brew install git' : 'sudo apt-get install -y git',
+        command:
+          this.platform === 'macos'
+            ? 'brew install git'
+            : 'sudo apt-get install -y git',
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasGit,
         parallel: true,
-        estimatedTime: 20
+        estimatedTime: 20,
       },
       {
         id: 'node-basic',
@@ -115,7 +134,7 @@ export class QuickstartInstaller {
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasNode,
         parallel: true,
-        estimatedTime: 45
+        estimatedTime: 45,
       },
       {
         id: 'node-full',
@@ -124,7 +143,7 @@ export class QuickstartInstaller {
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasNode,
         parallel: true,
-        estimatedTime: 60
+        estimatedTime: 60,
       },
       {
         id: 'docker-lite',
@@ -133,7 +152,7 @@ export class QuickstartInstaller {
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasDocker,
         parallel: true,
-        estimatedTime: 40
+        estimatedTime: 40,
       },
       {
         id: 'docker-full',
@@ -142,7 +161,7 @@ export class QuickstartInstaller {
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasDocker,
         parallel: true,
-        estimatedTime: 90
+        estimatedTime: 90,
       },
       {
         id: 'vscode-fast',
@@ -151,7 +170,7 @@ export class QuickstartInstaller {
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasVSCode,
         parallel: true,
-        estimatedTime: 25
+        estimatedTime: 25,
       },
       {
         id: 'vscode-full',
@@ -160,7 +179,7 @@ export class QuickstartInstaller {
         dependencies: ['homebrew'],
         skipIf: () => !!this.analysis?.hasVSCode,
         parallel: true,
-        estimatedTime: 45
+        estimatedTime: 45,
       },
       {
         id: 'claude-core',
@@ -169,16 +188,17 @@ export class QuickstartInstaller {
         dependencies: ['node-basic'],
         skipIf: () => !!this.analysis?.hasClaude,
         parallel: true,
-        estimatedTime: 30
+        estimatedTime: 30,
       },
       {
         id: 'claude-full',
         name: 'Claude Code + Flow (Full)',
         command: () => this.installClaudeFull(),
         dependencies: ['node-full'],
-        skipIf: () => !!this.analysis?.hasClaude && !!this.analysis?.hasClaudeFlow,
+        skipIf: () =>
+          !!this.analysis?.hasClaude && !!this.analysis?.hasClaudeFlow,
         parallel: true,
-        estimatedTime: 50
+        estimatedTime: 50,
       },
       {
         id: 'ai-agents-quick',
@@ -186,8 +206,8 @@ export class QuickstartInstaller {
         command: () => this.setupAIAgentsQuick(),
         dependencies: ['claude-full'],
         parallel: false,
-        estimatedTime: 40
-      }
+        estimatedTime: 40,
+      },
     ];
 
     // Initialize tasks based on preset
@@ -202,10 +222,10 @@ export class QuickstartInstaller {
    */
   async analyze(): Promise<SystemAnalysis> {
     const spinner = ora('Analyzing system state...').start();
-    
+
     try {
       this.platform = await detectPlatform();
-      
+
       const analysis: SystemAnalysis = {
         platform: this.platform,
         hasHomebrew: await this.checkCommand('brew'),
@@ -214,10 +234,12 @@ export class QuickstartInstaller {
         hasDocker: await this.checkCommand('docker'),
         hasClaude: await this.checkCommand('claude'),
         hasClaudeFlow: await this.checkCommand('claude-flow'),
-        hasVSCode: await this.checkCommand('code') || await this.checkPath('/Applications/Visual Studio Code.app'),
+        hasVSCode:
+          (await this.checkCommand('code')) ||
+          (await this.checkPath('/Applications/Visual Studio Code.app')),
         existingTools: [],
         missingTools: [],
-        cacheSize: await this.getCacheSize()
+        cacheSize: await this.getCacheSize(),
       };
 
       // Collect existing and missing tools
@@ -228,7 +250,7 @@ export class QuickstartInstaller {
         { name: 'docker', exists: analysis.hasDocker },
         { name: 'claude', exists: analysis.hasClaude },
         { name: 'claude-flow', exists: analysis.hasClaudeFlow },
-        { name: 'vscode', exists: analysis.hasVSCode }
+        { name: 'vscode', exists: analysis.hasVSCode },
       ];
 
       toolChecks.forEach(({ name, exists }) => {
@@ -240,9 +262,11 @@ export class QuickstartInstaller {
       });
 
       this.analysis = analysis;
-      
-      spinner.succeed(`System analyzed: ${analysis.existingTools.length} tools found, ${analysis.missingTools.length} needed`);
-      
+
+      spinner.succeed(
+        `System analyzed: ${analysis.existingTools.length} tools found, ${analysis.missingTools.length} needed`
+      );
+
       return analysis;
     } catch (_error) {
       spinner.fail('System analysis failed');
@@ -293,7 +317,7 @@ export class QuickstartInstaller {
           }
           executed.add(taskId);
           inProgress.delete(taskId);
-          
+
           const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1);
           spinner.text = `Completed ${task.name} (${elapsed}s elapsed)`;
         } catch (_error) {
@@ -311,9 +335,11 @@ export class QuickstartInstaller {
         // Find ready tasks
         const readyTasks = taskQueue.filter(taskId => {
           const task = this.tasks.get(taskId)!;
-          return !executed.has(taskId) && 
-                 !inProgress.has(taskId) && 
-                 task.dependencies.every(dep => executed.has(dep));
+          return (
+            !executed.has(taskId) &&
+            !inProgress.has(taskId) &&
+            task.dependencies.every(dep => executed.has(dep))
+          );
         });
 
         if (readyTasks.length === 0) {
@@ -323,7 +349,10 @@ export class QuickstartInstaller {
         }
 
         // Execute ready tasks (respecting parallel limits)
-        const tasksToExecute = readyTasks.slice(0, maxConcurrent - inProgress.size);
+        const tasksToExecute = readyTasks.slice(
+          0,
+          maxConcurrent - inProgress.size
+        );
         const newPromises = tasksToExecute.map(taskId => executeTask(taskId));
         promises.push(...newPromises);
 
@@ -350,20 +379,20 @@ export class QuickstartInstaller {
    */
   async configure(): Promise<void> {
     const spinner = ora('Configuring environment...').start();
-    
+
     try {
       // Create directory structure
       await this.ensureDirectories();
-      
+
       // Configure shell aliases and PATH
       await this.configureShell();
-      
+
       // Configure Git if needed
       await this.configureGit();
-      
+
       // Setup development paths
       await this.setupDevelopmentPaths();
-      
+
       spinner.succeed('Environment configured successfully');
     } catch (_error) {
       spinner.fail('Environment configuration failed');
@@ -376,7 +405,7 @@ export class QuickstartInstaller {
    */
   async setupAIAgentsQuick(): Promise<void> {
     const spinner = ora('Setting up AI agents (quick mode)...').start();
-    
+
     try {
       if (this.options.skipAI) {
         spinner.text = 'AI agents skipped per configuration';
@@ -385,13 +414,13 @@ export class QuickstartInstaller {
 
       // Create minimal Claude configuration
       await this.createClaudeConfig();
-      
+
       // Setup basic Claude Flow configuration (not full 54 agents)
       await this.createClaudeFlowConfig();
-      
+
       // Create project template
       await this.createProjectTemplate();
-      
+
       spinner.succeed('AI agents configured (basic setup)');
     } catch (_error) {
       spinner.fail('AI agents setup failed');
@@ -433,21 +462,24 @@ export class QuickstartInstaller {
     }
   }
 
-  private async executeCommand(command: string, options: Record<string, unknown> = {}): Promise<string> {
+  private async executeCommand(
+    command: string,
+    options: Record<string, unknown> = {}
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const parts = command.split(' ');
       const cmd = parts[0];
       const args = parts.slice(1);
-      
+
       if (!cmd) {
         reject(new Error('Invalid command: empty command'));
         return;
       }
-      
+
       const childProcess = spawn(cmd, args, {
         stdio: 'pipe',
         timeout: this.options.timeout,
-        ...options
+        ...options,
       });
 
       let stdout = '';
@@ -475,13 +507,19 @@ export class QuickstartInstaller {
 
   private async installHomebrew(): Promise<void> {
     if (this.platform === 'macos') {
-      const script = 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
-      await this.executeCommand(`/bin/bash -c "${script}"`, { stdio: 'inherit' });
+      const script =
+        'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
+      await this.executeCommand(`/bin/bash -c "${script}"`, {
+        stdio: 'inherit',
+      });
     } else if (this.platform === 'linux') {
       await this.executeCommand('sudo apt-get update -y');
       await this.executeCommand('sudo apt-get install -y curl git');
-      const script = 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
-      await this.executeCommand(`/bin/bash -c "${script}"`, { stdio: 'inherit' });
+      const script =
+        'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
+      await this.executeCommand(`/bin/bash -c "${script}"`, {
+        stdio: 'inherit',
+      });
     }
   }
 
@@ -489,10 +527,12 @@ export class QuickstartInstaller {
     if (this.platform === 'macos') {
       await this.executeCommand('brew install node npm');
     } else {
-      await this.executeCommand('curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -');
+      await this.executeCommand(
+        'curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -'
+      );
       await this.executeCommand('sudo apt-get install -y nodejs');
     }
-    
+
     // Configure npm
     await this.executeCommand('npm config set init-author-name "Developer"');
     await this.executeCommand('npm config set init-license "MIT"');
@@ -500,7 +540,7 @@ export class QuickstartInstaller {
 
   private async installNodeFull(): Promise<void> {
     await this.installNodeBasic();
-    
+
     // Install essential global packages
     const packages = [
       'typescript',
@@ -508,9 +548,9 @@ export class QuickstartInstaller {
       'ts-node',
       'nodemon',
       'prettier',
-      'eslint'
+      'eslint',
     ];
-    
+
     await this.executeCommand(`npm install -g ${packages.join(' ')}`);
   }
 
@@ -533,9 +573,15 @@ export class QuickstartInstaller {
     if (this.platform === 'macos') {
       await this.executeCommand('brew install --cask visual-studio-code');
     } else {
-      await this.executeCommand('wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg');
-      await this.executeCommand('sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/');
-      await this.executeCommand('echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list');
+      await this.executeCommand(
+        'wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg'
+      );
+      await this.executeCommand(
+        'sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/'
+      );
+      await this.executeCommand(
+        'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list'
+      );
       await this.executeCommand('sudo apt-get update');
       await this.executeCommand('sudo apt-get install -y code');
     }
@@ -543,16 +589,16 @@ export class QuickstartInstaller {
 
   private async installVSCodeFull(): Promise<void> {
     await this.installVSCodeFast();
-    
+
     // Install essential extensions
     const extensions = [
       'ms-vscode.vscode-typescript-next',
       'esbenp.prettier-vscode',
       'ms-vscode.vscode-eslint',
       'bradlc.vscode-tailwindcss',
-      'ms-vscode-remote.remote-containers'
+      'ms-vscode-remote.remote-containers',
     ];
-    
+
     for (const ext of extensions) {
       try {
         await this.executeCommand(`code --install-extension ${ext}`);
@@ -574,7 +620,7 @@ export class QuickstartInstaller {
 
   private async installClaudeFull(): Promise<void> {
     await this.installClaudeCore();
-    
+
     try {
       await this.executeCommand('npm install -g claude-flow@alpha');
     } catch (_error) {
@@ -588,9 +634,9 @@ export class QuickstartInstaller {
       this.cachePath,
       join(this.homePath, 'Development'),
       join(this.homePath, 'Development', 'projects'),
-      join(this.homePath, 'Development', 'tools')
+      join(this.homePath, 'Development', 'tools'),
     ];
-    
+
     for (const dir of dirs) {
       await fs.mkdir(dir, { recursive: true });
     }
@@ -628,7 +674,7 @@ export class QuickstartInstaller {
       '# Claude Aliases',
       'alias cl="claude"',
       'alias clf="claude-flow"',
-      ''
+      '',
     ].join('\n');
 
     for (const file of shellFiles) {
@@ -640,7 +686,7 @@ export class QuickstartInstaller {
         } catch {
           // File doesn't exist, will be created
         }
-        
+
         if (!content.includes('# Wundr Environment Aliases')) {
           content += '\n' + aliases;
           await fs.writeFile(filePath, content);
@@ -656,7 +702,9 @@ export class QuickstartInstaller {
     try {
       await this.executeCommand('git config --global init.defaultBranch main');
       await this.executeCommand('git config --global user.name "Developer"');
-      await this.executeCommand('git config --global user.email "developer@local"');
+      await this.executeCommand(
+        'git config --global user.email "developer@local"'
+      );
     } catch (_error) {
       // Git config might already be set
       logger.debug('Git configuration warning:', _error);
@@ -667,15 +715,15 @@ export class QuickstartInstaller {
     const devPath = join(this.homePath, 'Development');
     const projectsPath = join(devPath, 'projects');
     const toolsPath = join(devPath, 'tools');
-    
+
     await fs.mkdir(devPath, { recursive: true });
     await fs.mkdir(projectsPath, { recursive: true });
     await fs.mkdir(toolsPath, { recursive: true });
-    
+
     // Create a sample project structure
     const sampleProject = join(projectsPath, 'sample-project');
     await fs.mkdir(sampleProject, { recursive: true });
-    
+
     const packageJson = {
       name: 'sample-project',
       version: '1.0.0',
@@ -684,42 +732,42 @@ export class QuickstartInstaller {
       scripts: {
         start: 'node index.js',
         dev: 'nodemon index.js',
-        test: 'echo "No tests specified"'
+        test: 'echo "No tests specified"',
       },
-      license: 'MIT'
+      license: 'MIT',
     };
-    
+
     await fs.writeFile(
       join(sampleProject, 'package.json'),
       JSON.stringify(packageJson, null, 2)
     );
-    
+
     const indexJs = [
       '// Sample project created by Wundr Environment Setup',
       'console.log("Hello from your development environment!");',
       'console.log("Environment ready for development 🚀");',
-      ''
+      '',
     ].join('\n');
-    
+
     await fs.writeFile(join(sampleProject, 'index.js'), indexJs);
   }
 
   private async createClaudeConfig(): Promise<void> {
     const claudeConfigDir = join(this.homePath, '.config', 'claude');
     await fs.mkdir(claudeConfigDir, { recursive: true });
-    
+
     const config = {
       model: {
         default: 'claude-3-5-sonnet-20241022',
         enforceModel: false,
-        preventDowngrade: false
+        preventDowngrade: false,
       },
       editor: 'code',
       theme: 'dark',
       autoSave: true,
-      telemetry: false
+      telemetry: false,
     };
-    
+
     await fs.writeFile(
       join(claudeConfigDir, 'config.json'),
       JSON.stringify(config, null, 2)
@@ -729,21 +777,21 @@ export class QuickstartInstaller {
   private async createClaudeFlowConfig(): Promise<void> {
     const claudeFlowDir = join(this.homePath, '.claude-flow');
     await fs.mkdir(claudeFlowDir, { recursive: true });
-    
+
     const config = {
       version: '2.0.0-alpha',
       global: {
         defaultModel: 'claude-3-5-sonnet-20241022',
         maxConcurrentAgents: 4, // Simplified for quickstart
         memoryBackend: 'sqlite',
-        enableHooks: true
+        enableHooks: true,
       },
       swarm: {
         enabled: true,
         queen: {
           model: 'claude-3-5-sonnet-20241022',
           temperature: 0.7,
-          maxTokens: 4096
+          maxTokens: 4096,
         },
         workers: {
           count: 8, // Reduced from 54 for quickstart
@@ -754,17 +802,20 @@ export class QuickstartInstaller {
             planner: { count: 1, model: 'claude-3-5-sonnet-20241022' },
             researcher: { count: 1, model: 'claude-3-5-sonnet-20241022' },
             'backend-dev': { count: 1, model: 'claude-3-5-sonnet-20241022' },
-            'system-architect': { count: 1, model: 'claude-3-5-sonnet-20241022' }
-          }
-        }
+            'system-architect': {
+              count: 1,
+              model: 'claude-3-5-sonnet-20241022',
+            },
+          },
+        },
       },
       logging: {
         level: 'info',
         file: 'claude-flow.log',
-        console: true
-      }
+        console: true,
+      },
     };
-    
+
     await fs.writeFile(
       join(claudeFlowDir, 'global-config.json'),
       JSON.stringify(config, null, 2)
@@ -774,7 +825,7 @@ export class QuickstartInstaller {
   private async createProjectTemplate(): Promise<void> {
     const templatesDir = join(this.homePath, 'Development', 'templates');
     await fs.mkdir(templatesDir, { recursive: true });
-    
+
     const claudeMd = [
       '# Claude Development Environment',
       '',
@@ -806,9 +857,9 @@ export class QuickstartInstaller {
       '1. Verify installation: `wundr-env validate`',
       '2. Check status: `wundr-env status`',
       '3. Start a project: `cd ~/Development/projects && mkdir my-project`',
-      ''
+      '',
     ].join('\n');
-    
+
     await fs.writeFile(join(templatesDir, 'CLAUDE.md'), claudeMd);
   }
 }

@@ -13,9 +13,13 @@ import {
   ComplexityMetrics,
   EntityMembers,
   BaseAnalyzer,
-  AnalysisConfig
+  AnalysisConfig,
 } from '../types';
-import { createId, generateNormalizedHash, generateSemanticHash } from '../utils';
+import {
+  createId,
+  generateNormalizedHash,
+  generateSemanticHash,
+} from '../utils';
 
 interface ASTParsingConfig {
   includePrivateMembers: boolean;
@@ -53,7 +57,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   private project: Project;
   private typeChecker?: ts.TypeChecker;
   private parsedFiles = new Map<string, ParsedFileResult>();
-  
+
   constructor(config: Partial<ASTParsingConfig> = {}) {
     this.config = {
       includePrivateMembers: false,
@@ -66,9 +70,9 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         allowJs: true,
         jsx: true,
         target: ts.ScriptTarget.ES2020,
-        module: ts.ModuleKind.ESNext
+        module: ts.ModuleKind.ESNext,
       },
-      ...config
+      ...config,
     };
 
     // Initialize ts-morph project
@@ -81,16 +85,19 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         strict: true,
         esModuleInterop: true,
         skipLibCheck: true,
-        forceConsistentCasingInFileNames: true
+        forceConsistentCasingInFileNames: true,
       },
-      useInMemoryFileSystem: false
+      useInMemoryFileSystem: false,
     });
   }
 
   /**
    * Analyze source files and extract entities
    */
-  async analyze(files: string[] | EntityInfo[], analysisConfig: AnalysisConfig): Promise<EntityInfo[]> {
+  async analyze(
+    files: string[] | EntityInfo[],
+    analysisConfig: AnalysisConfig
+  ): Promise<EntityInfo[]> {
     // If we receive EntityInfo[], we're being called as part of a pipeline - return them
     if (files.length > 0 && typeof files[0] === 'object' && 'id' in files[0]) {
       return files as EntityInfo[];
@@ -124,7 +131,6 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       await this.postProcessEntities(allEntities);
 
       return allEntities;
-
     } catch (error) {
       console.error('AST parsing failed:', error);
       return [];
@@ -134,9 +140,12 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Determine if file should be analyzed
    */
-  private async shouldAnalyzeFile(filePath: string, config: AnalysisConfig): Promise<boolean> {
+  private async shouldAnalyzeFile(
+    filePath: string,
+    config: AnalysisConfig
+  ): Promise<boolean> {
     // Check if file exists
-    if (!await fs.pathExists(filePath)) {
+    if (!(await fs.pathExists(filePath))) {
       return false;
     }
 
@@ -153,7 +162,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     // Check file extension
     const ext = path.extname(filePath).toLowerCase();
     const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx'];
-    
+
     if (this.config.includeTypeDefinitions) {
       supportedExtensions.push('.d.ts');
     }
@@ -178,7 +187,9 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Parse a source file and extract entities
    */
-  private async parseSourceFile(sourceFile: SourceFile): Promise<ParsedFileResult | null> {
+  private async parseSourceFile(
+    sourceFile: SourceFile
+  ): Promise<ParsedFileResult | null> {
     try {
       const filePath = sourceFile.getFilePath();
       const entities: EntityInfo[] = [];
@@ -191,7 +202,9 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       for (const importDecl of importDeclarations) {
         const moduleSpecifier = importDecl.getModuleSpecifierValue();
         imports.push(moduleSpecifier);
-        dependencies.push(this.resolveDependencyPath(moduleSpecifier, filePath));
+        dependencies.push(
+          this.resolveDependencyPath(moduleSpecifier, filePath)
+        );
       }
 
       // Parse AST nodes
@@ -216,9 +229,8 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         exports,
         dependencies,
         ast: sourceFile,
-        diagnostics: diagnostics as any
+        diagnostics: diagnostics as any,
       };
-
     } catch (error) {
       console.warn(`Failed to parse ${sourceFile.getFilePath()}:`, error);
       return null;
@@ -229,21 +241,32 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    * Visit AST node and extract entity information
    */
   private async visitNode(
-    node: Node, 
-    entities: EntityInfo[], 
-    filePath: string, 
+    node: Node,
+    entities: EntityInfo[],
+    filePath: string,
     dependencies: string[],
     parentEntity?: EntityInfo
   ): Promise<void> {
     // Extract entity based on node type
-    const entity = this.extractEntityFromNode(node, filePath, dependencies, parentEntity);
+    const entity = this.extractEntityFromNode(
+      node,
+      filePath,
+      dependencies,
+      parentEntity
+    );
     if (entity) {
       entities.push(entity);
     }
 
     // Recursively visit children
     for (const child of node.getChildren()) {
-      await this.visitNode(child, entities, filePath, dependencies, entity || parentEntity);
+      await this.visitNode(
+        child,
+        entities,
+        filePath,
+        dependencies,
+        entity || parentEntity
+      );
     }
   }
 
@@ -251,8 +274,8 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    * Extract entity information from AST node
    */
   private extractEntityFromNode(
-    node: Node, 
-    filePath: string, 
+    node: Node,
+    filePath: string,
     dependencies: string[],
     parent?: EntityInfo
   ): EntityInfo | null {
@@ -323,7 +346,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       case SyntaxKind.VariableDeclaration:
         const varDecl = node as any;
         name = varDecl.getName();
-        
+
         // Determine if it's const or variable
         const variableStatement = varDecl.getVariableStatement();
         if (variableStatement) {
@@ -338,7 +361,9 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       case SyntaxKind.ArrowFunction:
         entityType = 'function';
         const arrowFunc = node as any;
-        name = parent ? `${parent.name}_arrow_${Date.now()}` : `arrow_${Date.now()}`;
+        name = parent
+          ? `${parent.name}_arrow_${Date.now()}`
+          : `arrow_${Date.now()}`;
         signature = this.extractArrowFunctionSignature(arrowFunc);
         break;
 
@@ -393,8 +418,8 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         nodeKind: node.getKindName(),
         hasJSDoc: !!jsDoc,
         isExported: exportType !== 'none',
-        parentEntity: parent?.id
-      }
+        parentEntity: parent?.id,
+      },
     };
 
     return entity;
@@ -417,7 +442,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   private extractClassMembers(classDecl: any): EntityMembers {
     const members: EntityMembers = {
       properties: [],
-      methods: []
+      methods: [],
     };
 
     try {
@@ -428,21 +453,22 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
           name: prop.getName(),
           type: prop.getType()?.getText() || 'any',
           optional: prop.hasQuestionToken(),
-          visibility: this.getVisibility(prop)
+          visibility: this.getVisibility(prop),
         });
       }
 
       // Extract methods
       const methods = classDecl.getMethods();
       for (const method of methods) {
-        const complexity = this.config.calculateComplexity ? 
-          this.calculateNodeComplexity(method, method.getText()) : undefined;
-        
+        const complexity = this.config.calculateComplexity
+          ? this.calculateNodeComplexity(method, method.getText())
+          : undefined;
+
         members.methods!.push({
           name: method.getName(),
           signature: method.getText(),
           complexity: complexity?.cyclomatic,
-          visibility: this.getVisibility(method)
+          visibility: this.getVisibility(method),
         });
       }
     } catch (error) {
@@ -469,7 +495,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   private extractInterfaceMembers(interfaceDecl: any): EntityMembers {
     const members: EntityMembers = {
       properties: [],
-      methods: []
+      methods: [],
     };
 
     try {
@@ -479,7 +505,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         members.properties!.push({
           name: prop.getName(),
           type: prop.getType()?.getText() || 'any',
-          optional: prop.hasQuestionToken()
+          optional: prop.hasQuestionToken(),
         });
       }
 
@@ -488,7 +514,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       for (const method of methods) {
         members.methods!.push({
           name: method.getName(),
-          signature: method.getText()
+          signature: method.getText(),
         });
       }
     } catch (error) {
@@ -613,12 +639,15 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Calculate complexity metrics for a node
    */
-  private calculateNodeComplexity(node: Node, signature: string): ComplexityMetrics {
+  private calculateNodeComplexity(
+    node: Node,
+    signature: string
+  ): ComplexityMetrics {
     let cyclomatic = 1;
     let cognitive = 0;
     let maxDepth = 0;
     let parameters = 0;
-    
+
     const lines = signature.split('\n').filter(line => line.trim()).length;
 
     try {
@@ -648,7 +677,12 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
             const binExpr = child as any;
             if (binExpr.getOperatorToken) {
               const operatorKind = binExpr.getOperatorToken().getKind();
-              if ([SyntaxKind.AmpersandAmpersandToken, SyntaxKind.BarBarToken].includes(operatorKind)) {
+              if (
+                [
+                  SyntaxKind.AmpersandAmpersandToken,
+                  SyntaxKind.BarBarToken,
+                ].includes(operatorKind)
+              ) {
                 cyclomatic++;
                 cognitive += Math.max(1, depth);
               }
@@ -657,7 +691,9 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         }
 
         // Visit children with updated depth
-        const newDepth = this.isComplexityNestingNode(child) ? depth + 1 : depth;
+        const newDepth = this.isComplexityNestingNode(child)
+          ? depth + 1
+          : depth;
         child.getChildren().forEach(grandChild => visit(grandChild, newDepth));
       };
 
@@ -667,9 +703,16 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     }
 
     // Calculate maintainability index
-    const maintainability = Math.max(0, Math.min(100,
-      171 - 5.2 * Math.log(lines * Math.log2(parameters + 1)) - 0.23 * cyclomatic - 16.2 * Math.log(lines)
-    ));
+    const maintainability = Math.max(
+      0,
+      Math.min(
+        100,
+        171 -
+          5.2 * Math.log(lines * Math.log2(parameters + 1)) -
+          0.23 * cyclomatic -
+          16.2 * Math.log(lines)
+      )
+    );
 
     return {
       cyclomatic,
@@ -677,7 +720,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       maintainability: Math.round(maintainability * 100) / 100,
       depth: maxDepth,
       parameters,
-      lines
+      lines,
     };
   }
 
@@ -692,21 +735,27 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       SyntaxKind.ForInStatement,
       SyntaxKind.ForOfStatement,
       SyntaxKind.TryStatement,
-      SyntaxKind.SwitchStatement
+      SyntaxKind.SwitchStatement,
     ].includes(node.getKind());
   }
 
   /**
    * Resolve dependency path
    */
-  private resolveDependencyPath(moduleSpecifier: string, currentFile: string): string {
+  private resolveDependencyPath(
+    moduleSpecifier: string,
+    currentFile: string
+  ): string {
     try {
       // Handle relative imports
-      if (moduleSpecifier.startsWith('./') || moduleSpecifier.startsWith('../')) {
+      if (
+        moduleSpecifier.startsWith('./') ||
+        moduleSpecifier.startsWith('../')
+      ) {
         const currentDir = path.dirname(currentFile);
         return path.resolve(currentDir, moduleSpecifier);
       }
-      
+
       // Handle absolute imports or node_modules
       return moduleSpecifier;
     } catch {
@@ -741,8 +790,12 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
       // Add metadata about related entities
       entity.metadata = {
         ...entity.metadata,
-        relatedEntities: entityByName.get(entity.name)?.filter(e => e.id !== entity.id).map(e => e.id) || [],
-        fileEntityCount: entityByFile.get(entity.file)?.length || 1
+        relatedEntities:
+          entityByName
+            .get(entity.name)
+            ?.filter(e => e.id !== entity.id)
+            .map(e => e.id) || [],
+        fileEntityCount: entityByFile.get(entity.file)?.length || 1,
       };
     }
   }

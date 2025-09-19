@@ -29,7 +29,7 @@ export class InteractiveMode {
         mode: 'wizard',
         config: { wizardMode: mode },
         state: {},
-        active: true
+        active: true,
       };
 
       this.activeSessions.set(`wizard-${Date.now()}`, session);
@@ -50,7 +50,6 @@ export class InteractiveMode {
         default:
           await this.generalWizard();
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_WIZARD_FAILED',
@@ -71,21 +70,20 @@ export class InteractiveMode {
       // This would integrate with the chat commands
       const { spawn } = await import('child_process');
       const chatArgs = ['chat', 'start'];
-      
+
       if (options.model) chatArgs.push('--model', options.model);
       if (options.context) chatArgs.push('--context', options.context);
 
       const child = spawn('wundr', chatArgs, {
         stdio: 'inherit',
-        shell: true
+        shell: true,
       });
 
-      child.on('exit', (code) => {
+      child.on('exit', code => {
         if (code !== 0) {
           logger.error(`Chat interface exited with code ${code}`);
         }
       });
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_CHAT_LAUNCH_FAILED',
@@ -105,18 +103,17 @@ export class InteractiveMode {
 
       const screen = blessed.screen({
         smartCSR: true,
-        title: 'Wundr CLI Dashboard'
+        title: 'Wundr CLI Dashboard',
       });
 
       await this.setupTUILayout(screen, layout);
-      
+
       // Handle exit
       screen.key(['escape', 'q', 'C-c'], () => {
         return process.exit(0);
       });
 
       screen.render();
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_TUI_LAUNCH_FAILED',
@@ -138,7 +135,7 @@ export class InteractiveMode {
         type: 'confirm',
         name: 'initialize',
         message: 'Initialize Wundr in this directory?',
-        default: true
+        default: true,
       },
       {
         type: 'list',
@@ -147,9 +144,9 @@ export class InteractiveMode {
         choices: [
           { name: 'Single Package', value: 'single' },
           { name: 'Monorepo', value: 'monorepo' },
-          { name: 'Workspace', value: 'workspace' }
+          { name: 'Workspace', value: 'workspace' },
         ],
-        when: (answers) => answers.initialize
+        when: answers => answers.initialize,
       },
       {
         type: 'checkbox',
@@ -160,24 +157,24 @@ export class InteractiveMode {
           { name: 'Governance Rules', value: 'governance', checked: true },
           { name: 'AI Assistance', value: 'ai', checked: false },
           { name: 'Dashboard', value: 'dashboard', checked: true },
-          { name: 'Watch Mode', value: 'watch', checked: false }
+          { name: 'Watch Mode', value: 'watch', checked: false },
         ],
-        when: (answers) => answers.initialize
+        when: answers => answers.initialize,
       },
       {
         type: 'input',
         name: 'aiProvider',
         message: 'AI Provider:',
         default: 'claude',
-        when: (answers) => answers.features?.includes('ai')
+        when: answers => answers.features?.includes('ai'),
       },
       {
         type: 'password',
         name: 'aiApiKey',
         message: 'AI API Key (optional):',
         mask: '*',
-        when: (answers) => answers.features?.includes('ai')
-      }
+        when: answers => answers.features?.includes('ai'),
+      },
     ]);
 
     if (!answers.initialize) {
@@ -190,7 +187,7 @@ export class InteractiveMode {
 
     const setupCommands = [
       `wundr init ${answers.projectType === 'single' ? 'project' : answers.projectType}`,
-      'wundr init config'
+      'wundr init config',
     ];
 
     if (answers.features?.includes('governance')) {
@@ -207,11 +204,17 @@ export class InteractiveMode {
       await this.simulateCommand(command);
     }
 
-    console.log(chalk.green('\n🎉 Setup complete! Your Wundr project is ready.'));
+    console.log(
+      chalk.green('\n🎉 Setup complete! Your Wundr project is ready.')
+    );
     console.log(chalk.gray('\nNext steps:'));
     console.log(chalk.gray('  • Run "wundr analyze" to analyze your code'));
-    console.log(chalk.gray('  • Run "wundr dashboard start" to launch the dashboard'));
-    console.log(chalk.gray('  • Run "wundr --help" to see all available commands'));
+    console.log(
+      chalk.gray('  • Run "wundr dashboard start" to launch the dashboard')
+    );
+    console.log(
+      chalk.gray('  • Run "wundr --help" to see all available commands')
+    );
   }
 
   /**
@@ -230,8 +233,8 @@ export class InteractiveMode {
           { name: 'Code Quality', value: 'quality', checked: true },
           { name: 'Performance', value: 'perf', checked: false },
           { name: 'Architecture', value: 'arch', checked: false },
-          { name: 'Security', value: 'security', checked: true }
-        ]
+          { name: 'Security', value: 'security', checked: true },
+        ],
       },
       {
         type: 'list',
@@ -240,16 +243,16 @@ export class InteractiveMode {
         choices: [
           { name: 'Table (Console)', value: 'table' },
           { name: 'JSON File', value: 'json' },
-          { name: 'HTML Report', value: 'html' }
+          { name: 'HTML Report', value: 'html' },
         ],
-        default: 'table'
+        default: 'table',
       },
       {
         type: 'confirm',
         name: 'autoFix',
         message: 'Automatically fix issues where possible?',
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     console.log(chalk.green('\n🔬 Running analysis...\n'));
@@ -287,20 +290,20 @@ export class InteractiveMode {
           { name: 'Package (Monorepo)', value: 'package' },
           { name: 'Template', value: 'template' },
           { name: 'Workflow', value: 'workflow' },
-          { name: 'Configuration', value: 'config' }
-        ]
+          { name: 'Configuration', value: 'config' },
+        ],
       },
       {
         type: 'input',
         name: 'name',
         message: 'Name:',
-        validate: (input) => input.length > 0 || 'Name is required'
-      }
+        validate: input => input.length > 0 || 'Name is required',
+      },
     ]);
 
     // Get specific options based on type
     let specificAnswers = {};
-    
+
     switch (answers.createType) {
       case 'component':
         specificAnswers = await this.getComponentOptions();
@@ -315,10 +318,12 @@ export class InteractiveMode {
         specificAnswers = {};
     }
 
-    console.log(chalk.green(`\n🏗️  Creating ${answers.createType}: ${answers.name}\n`));
+    console.log(
+      chalk.green(`\n🏗️  Creating ${answers.createType}: ${answers.name}\n`)
+    );
 
     let command = `wundr create ${answers.createType} ${answers.name}`;
-    
+
     // Add specific options to command
     Object.entries(specificAnswers).forEach(([key, value]) => {
       if (typeof value === 'boolean' && value) {
@@ -331,7 +336,9 @@ export class InteractiveMode {
     console.log(chalk.blue(`Running: ${command}`));
     await this.simulateCommand(command);
 
-    console.log(chalk.green(`\n🎉 ${answers.createType} created successfully!`));
+    console.log(
+      chalk.green(`\n🎉 ${answers.createType} created successfully!`)
+    );
   }
 
   /**
@@ -350,8 +357,8 @@ export class InteractiveMode {
           { name: 'Security', value: 'security', checked: true },
           { name: 'Performance', value: 'performance', checked: false },
           { name: 'Testing', value: 'testing', checked: true },
-          { name: 'Documentation', value: 'docs', checked: false }
-        ]
+          { name: 'Documentation', value: 'docs', checked: false },
+        ],
       },
       {
         type: 'list',
@@ -360,16 +367,16 @@ export class InteractiveMode {
         choices: [
           { name: 'Error (Strict)', value: 'error' },
           { name: 'Warning (Balanced)', value: 'warning' },
-          { name: 'Info (Lenient)', value: 'info' }
+          { name: 'Info (Lenient)', value: 'info' },
         ],
-        default: 'warning'
+        default: 'warning',
       },
       {
         type: 'confirm',
         name: 'createQualityGate',
         message: 'Create a quality gate?',
-        default: true
-      }
+        default: true,
+      },
     ]);
 
     console.log(chalk.green('\n⚙️  Setting up governance rules...\n'));
@@ -391,13 +398,18 @@ export class InteractiveMode {
 
     // Create quality gate
     if (answers.createQualityGate) {
-      const gateCommand = 'wundr govern gate create default --conditions "coverage>80,complexity<10"';
+      const gateCommand =
+        'wundr govern gate create default --conditions "coverage>80,complexity<10"';
       console.log(chalk.blue(`Running: ${gateCommand}`));
       await this.simulateCommand(gateCommand);
     }
 
     console.log(chalk.green('\n✅ Governance setup complete!'));
-    console.log(chalk.gray('\nRun "wundr govern check" to validate your code against the rules.'));
+    console.log(
+      chalk.gray(
+        '\nRun "wundr govern check" to validate your code against the rules.'
+      )
+    );
   }
 
   /**
@@ -417,9 +429,9 @@ export class InteractiveMode {
           { name: 'Create new code', value: 'create' },
           { name: 'Setup governance', value: 'govern' },
           { name: 'Configure AI features', value: 'ai' },
-          { name: 'Launch dashboard', value: 'dashboard' }
-        ]
-      }
+          { name: 'Launch dashboard', value: 'dashboard' },
+        ],
+      },
     ]);
 
     switch (answers.action) {
@@ -458,14 +470,14 @@ export class InteractiveMode {
         choices: [
           { name: 'Claude (Anthropic)', value: 'claude' },
           { name: 'ChatGPT (OpenAI)', value: 'openai' },
-          { name: 'Local Model', value: 'local' }
-        ]
+          { name: 'Local Model', value: 'local' },
+        ],
       },
       {
         type: 'list',
         name: 'model',
         message: 'Model:',
-        choices: (answers) => {
+        choices: answers => {
           switch (answers.provider) {
             case 'claude':
               return ['claude-3', 'claude-3-haiku', 'claude-3-sonnet'];
@@ -476,14 +488,14 @@ export class InteractiveMode {
             default:
               return ['claude-3'];
           }
-        }
+        },
       },
       {
         type: 'password',
         name: 'apiKey',
         message: 'API Key:',
         mask: '*',
-        when: (answers) => answers.provider !== 'local'
+        when: answers => answers.provider !== 'local',
       },
       {
         type: 'checkbox',
@@ -494,9 +506,9 @@ export class InteractiveMode {
           { name: 'Code Review', value: 'review', checked: true },
           { name: 'Refactoring', value: 'refactor', checked: false },
           { name: 'Documentation', value: 'docs', checked: true },
-          { name: 'Test Generation', value: 'test', checked: false }
-        ]
-      }
+          { name: 'Test Generation', value: 'test', checked: false },
+        ],
+      },
     ]);
 
     console.log(chalk.green('\n🔧 Configuring AI features...\n'));
@@ -504,7 +516,7 @@ export class InteractiveMode {
     // Set AI configuration
     const commands = [
       `wundr ai config set provider ${answers.provider}`,
-      `wundr ai config set model ${answers.model}`
+      `wundr ai config set model ${answers.model}`,
     ];
 
     if (answers.apiKey) {
@@ -525,7 +537,7 @@ export class InteractiveMode {
    */
   private async launchDashboard(): Promise<void> {
     console.log(chalk.green('\n📊 Launching Wundr Dashboard...\n'));
-    
+
     const command = 'wundr dashboard start --open';
     console.log(chalk.blue(`Running: ${command}`));
     await this.simulateCommand(command);
@@ -563,15 +575,15 @@ export class InteractiveMode {
       content: `{center}${chalk.cyan('🚀 Wundr CLI Dashboard')}{/center}`,
       tags: true,
       border: {
-        type: 'line'
+        type: 'line',
       },
       style: {
         fg: 'white',
         bg: 'blue',
         border: {
-          fg: '#f0f0f0'
-        }
-      }
+          fg: '#f0f0f0',
+        },
+      },
     });
 
     // Sidebar
@@ -580,16 +592,17 @@ export class InteractiveMode {
       left: 0,
       width: '25%',
       height: '100%-6',
-      content: 'Navigation\n\n→ Overview\n  Analysis\n  Governance\n  AI Tools\n  Settings',
+      content:
+        'Navigation\n\n→ Overview\n  Analysis\n  Governance\n  AI Tools\n  Settings',
       border: {
-        type: 'line'
+        type: 'line',
       },
       style: {
         fg: 'white',
         border: {
-          fg: '#f0f0f0'
-        }
-      }
+          fg: '#f0f0f0',
+        },
+      },
     });
 
     // Main content
@@ -598,21 +611,22 @@ export class InteractiveMode {
       left: '25%',
       width: '75%',
       height: '100%-6',
-      content: 'Project Overview\n\n' +
-               '📁 Files: 1,234\n' +
-               '🔍 Issues: 5\n' +
-               '✅ Tests: 98% coverage\n' +
-               '📦 Dependencies: 45\n' +
-               '🚀 Performance: Good',
+      content:
+        'Project Overview\n\n' +
+        '📁 Files: 1,234\n' +
+        '🔍 Issues: 5\n' +
+        '✅ Tests: 98% coverage\n' +
+        '📦 Dependencies: 45\n' +
+        '🚀 Performance: Good',
       border: {
-        type: 'line'
+        type: 'line',
       },
       style: {
         fg: 'white',
         border: {
-          fg: '#f0f0f0'
-        }
-      }
+          fg: '#f0f0f0',
+        },
+      },
     });
 
     // Footer
@@ -624,15 +638,15 @@ export class InteractiveMode {
       content: '{center}Press q or Esc to exit{/center}',
       tags: true,
       border: {
-        type: 'line'
+        type: 'line',
       },
       style: {
         fg: 'white',
         bg: 'black',
         border: {
-          fg: '#f0f0f0'
-        }
-      }
+          fg: '#f0f0f0',
+        },
+      },
     });
 
     screen.append(header);
@@ -655,16 +669,16 @@ export class InteractiveMode {
       width: '100%',
       height: '100%',
       border: {
-        type: 'line'
+        type: 'line',
       },
       style: {
         fg: 'white',
         border: {
-          fg: '#f0f0f0'
-        }
+          fg: '#f0f0f0',
+        },
       },
       scrollable: true,
-      alwaysScroll: true
+      alwaysScroll: true,
     });
 
     screen.append(log);
@@ -687,21 +701,29 @@ export class InteractiveMode {
       left: 0,
       width: '100%',
       height: '100%',
-      content: 'Debug Information\n\n' +
-               'CLI Version: 1.0.0\n' +
-               'Node Version: ' + process.version + '\n' +
-               'Platform: ' + process.platform + '\n' +
-               'Working Directory: ' + process.cwd() + '\n' +
-               'Arguments: ' + process.argv.join(' '),
+      content:
+        'Debug Information\n\n' +
+        'CLI Version: 1.0.0\n' +
+        'Node Version: ' +
+        process.version +
+        '\n' +
+        'Platform: ' +
+        process.platform +
+        '\n' +
+        'Working Directory: ' +
+        process.cwd() +
+        '\n' +
+        'Arguments: ' +
+        process.argv.join(' '),
       border: {
-        type: 'line'
+        type: 'line',
       },
       style: {
         fg: 'white',
         border: {
-          fg: '#f0f0f0'
-        }
-      }
+          fg: '#f0f0f0',
+        },
+      },
     });
 
     screen.append(debugInfo);
@@ -718,20 +740,20 @@ export class InteractiveMode {
         name: 'type',
         message: 'Component type:',
         choices: ['react', 'vue', 'angular'],
-        default: 'react'
+        default: 'react',
       },
       {
         type: 'confirm',
         name: 'withTests',
         message: 'Generate test files?',
-        default: true
+        default: true,
       },
       {
         type: 'confirm',
         name: 'withStories',
         message: 'Generate Storybook stories?',
-        default: false
-      }
+        default: false,
+      },
     ]);
   }
 
@@ -742,27 +764,27 @@ export class InteractiveMode {
         name: 'type',
         message: 'Service type:',
         choices: ['api', 'worker', 'microservice'],
-        default: 'api'
+        default: 'api',
       },
       {
         type: 'list',
         name: 'framework',
         message: 'Framework:',
         choices: ['express', 'fastify', 'nest'],
-        default: 'express'
+        default: 'express',
       },
       {
         type: 'confirm',
         name: 'withTests',
         message: 'Generate test files?',
-        default: true
+        default: true,
       },
       {
         type: 'confirm',
         name: 'withDocs',
         message: 'Generate API documentation?',
-        default: true
-      }
+        default: true,
+      },
     ]);
   }
 
@@ -773,14 +795,14 @@ export class InteractiveMode {
         name: 'type',
         message: 'Package type:',
         choices: ['library', 'app', 'tool'],
-        default: 'library'
+        default: 'library',
       },
       {
         type: 'confirm',
         name: 'public',
         message: 'Make package public?',
-        default: false
-      }
+        default: false,
+      },
     ]);
   }
 
@@ -790,7 +812,7 @@ export class InteractiveMode {
       security: ['no-eval', 'no-unsafe-inline'],
       performance: ['no-inefficient-loops', 'prefer-map-over-loop'],
       testing: ['require-tests', 'no-skip-tests'],
-      docs: ['require-jsdoc', 'require-readme']
+      docs: ['require-jsdoc', 'require-readme'],
     };
 
     return rulesByCategory[category as keyof typeof rulesByCategory] || [];

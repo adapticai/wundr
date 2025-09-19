@@ -69,7 +69,7 @@ export class ClaudeClient {
   constructor(config: ClaudeConfig) {
     this.config = {
       baseUrl: 'https://api.anthropic.com',
-      ...config
+      ...config,
     };
 
     this.client = axios.create({
@@ -77,9 +77,9 @@ export class ClaudeClient {
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': this.config.apiKey,
-        'anthropic-version': '2023-06-01'
+        'anthropic-version': '2023-06-01',
       },
-      timeout: 30000
+      timeout: 30000,
     });
 
     // Add request/response interceptors for logging and error handling
@@ -96,18 +96,18 @@ export class ClaudeClient {
   ): Promise<string> {
     try {
       const messages: ClaudeMessage[] = [];
-      
+
       if (systemPrompt) {
         messages.push({ role: 'system', content: systemPrompt });
       }
-      
+
       messages.push({ role: 'user', content: message });
 
       const response = await this.client.post('/v1/messages', {
         model: options?.model || this.config.model,
         max_tokens: options?.maxTokens || this.config.maxTokens,
         temperature: options?.temperature ?? this.config.temperature,
-        messages
+        messages,
       });
 
       return this.extractContent(response.data);
@@ -126,7 +126,7 @@ export class ClaudeClient {
   ): Promise<string> {
     try {
       const conversationMessages = [...messages];
-      
+
       if (systemPrompt) {
         conversationMessages.unshift({ role: 'system', content: systemPrompt });
       }
@@ -135,7 +135,7 @@ export class ClaudeClient {
         model: options?.model || this.config.model,
         max_tokens: options?.maxTokens || this.config.maxTokens,
         temperature: options?.temperature ?? this.config.temperature,
-        messages: conversationMessages
+        messages: conversationMessages,
       });
 
       return this.extractContent(response.data);
@@ -154,23 +154,27 @@ export class ClaudeClient {
   ): AsyncGenerator<string, void, unknown> {
     try {
       const conversationMessages = [...messages];
-      
+
       if (systemPrompt) {
         conversationMessages.unshift({ role: 'system', content: systemPrompt });
       }
 
-      const response = await this.client.post('/v1/messages', {
-        model: options?.model || this.config.model,
-        max_tokens: options?.maxTokens || this.config.maxTokens,
-        temperature: options?.temperature ?? this.config.temperature,
-        messages: conversationMessages,
-        stream: true
-      }, {
-        responseType: 'stream'
-      });
+      const response = await this.client.post(
+        '/v1/messages',
+        {
+          model: options?.model || this.config.model,
+          max_tokens: options?.maxTokens || this.config.maxTokens,
+          temperature: options?.temperature ?? this.config.temperature,
+          messages: conversationMessages,
+          stream: true,
+        },
+        {
+          responseType: 'stream',
+        }
+      );
 
       let buffer = '';
-      
+
       for await (const chunk of response.data) {
         buffer += chunk.toString();
         const lines = buffer.split('\n');
@@ -180,7 +184,7 @@ export class ClaudeClient {
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
             if (data === '[DONE]') return;
-            
+
             try {
               const parsed: ClaudeStreamChunk = JSON.parse(data);
               const content = parsed.choices[0]?.delta?.content;
@@ -194,14 +198,20 @@ export class ClaudeClient {
         }
       }
     } catch (error) {
-      throw this.handleError(error, 'Failed to stream conversation with Claude');
+      throw this.handleError(
+        error,
+        'Failed to stream conversation with Claude'
+      );
     }
   }
 
   /**
    * Analyze intent from natural language input
    */
-  async analyzeIntent(input: string, availableCommands: string[]): Promise<{
+  async analyzeIntent(
+    input: string,
+    availableCommands: string[]
+  ): Promise<{
     intent: string;
     confidence: number;
     command?: string;
@@ -226,9 +236,9 @@ Respond with JSON only in this format:
     try {
       const response = await this.sendMessage(input, systemPrompt, {
         temperature: 0.2,
-        maxTokens: 1024
+        maxTokens: 1024,
       });
-      
+
       return JSON.parse(response);
     } catch (error) {
       throw this.handleError(error, 'Failed to analyze intent');
@@ -269,9 +279,9 @@ Respond with JSON only:
     try {
       const response = await this.sendMessage('', systemPrompt, {
         temperature: 0.3,
-        maxTokens: 1024
+        maxTokens: 1024,
       });
-      
+
       return JSON.parse(response);
     } catch (error) {
       throw this.handleError(error, 'Failed to generate command suggestions');
@@ -301,7 +311,7 @@ ${output}`;
     try {
       return await this.sendMessage(message, systemPrompt, {
         temperature: 0.4,
-        maxTokens: 2048
+        maxTokens: 2048,
       });
     } catch (error) {
       throw this.handleError(error, 'Failed to explain results');
@@ -333,7 +343,7 @@ User Context: ${userContext}`;
     try {
       return await this.sendMessage(message, systemPrompt, {
         temperature: 0.3,
-        maxTokens: 2048
+        maxTokens: 2048,
       });
     } catch (error) {
       throw this.handleError(error, 'Failed to generate help content');
@@ -345,9 +355,13 @@ User Context: ${userContext}`;
    */
   async validateConnection(): Promise<boolean> {
     try {
-      await this.sendMessage('Hello', 'Respond with just "OK" if you can understand this message.', {
-        maxTokens: 10
-      });
+      await this.sendMessage(
+        'Hello',
+        'Respond with just "OK" if you can understand this message.',
+        {
+          maxTokens: 10,
+        }
+      );
       return true;
     } catch (error) {
       logger.error('Claude API connection validation failed:', error);
@@ -366,7 +380,7 @@ User Context: ${userContext}`;
     return {
       model: this.config.model,
       maxTokens: this.config.maxTokens,
-      temperature: this.config.temperature
+      temperature: this.config.temperature,
     };
   }
 
@@ -375,7 +389,7 @@ User Context: ${userContext}`;
    */
   updateConfig(updates: Partial<ClaudeConfig>): void {
     this.config = { ...this.config, ...updates };
-    
+
     if (updates.apiKey) {
       this.client.defaults.headers['x-api-key'] = updates.apiKey;
     }
@@ -388,7 +402,7 @@ User Context: ${userContext}`;
     if (!response.choices || response.choices.length === 0) {
       throw new Error('No choices in Claude API response');
     }
-    
+
     return response.choices?.[0]?.message?.content || '';
   }
 
@@ -399,7 +413,9 @@ User Context: ${userContext}`;
     // Request interceptor
     this.client.interceptors.request.use(
       (config: any) => {
-        logger.debug(`Claude API Request: ${config.method?.toUpperCase()} ${config.url}`);
+        logger.debug(
+          `Claude API Request: ${config.method?.toUpperCase()} ${config.url}`
+        );
         return config;
       },
       (error: any) => {
@@ -411,7 +427,9 @@ User Context: ${userContext}`;
     // Response interceptor
     this.client.interceptors.response.use(
       (response: any) => {
-        logger.debug(`Claude API Response: ${response.status} ${response.statusText}`);
+        logger.debug(
+          `Claude API Response: ${response.status} ${response.statusText}`
+        );
         return response;
       },
       (error: any) => {
@@ -426,7 +444,7 @@ User Context: ${userContext}`;
    */
   private handleError(error: any, message: string): WundrError {
     logger.error(`Claude API Error: ${message}`, error);
-    
+
     let errorCode = 'CLAUDE_API_ERROR';
     let errorMessage = message;
     let recoverable = false;
@@ -434,11 +452,12 @@ User Context: ${userContext}`;
     if (error.response) {
       const status = error.response.status;
       const data = error.response.data;
-      
+
       switch (status) {
         case 401:
           errorCode = 'CLAUDE_AUTH_ERROR';
-          errorMessage = 'Invalid API key. Please check your Claude API configuration.';
+          errorMessage =
+            'Invalid API key. Please check your Claude API configuration.';
           recoverable = true;
           break;
         case 429:
@@ -456,7 +475,8 @@ User Context: ${userContext}`;
       }
     } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
       errorCode = 'CLAUDE_CONNECTION_ERROR';
-      errorMessage = 'Unable to connect to Claude API. Please check your internet connection.';
+      errorMessage =
+        'Unable to connect to Claude API. Please check your internet connection.';
       recoverable = true;
     }
 

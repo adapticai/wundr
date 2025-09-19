@@ -44,7 +44,7 @@ async function main() {
 }
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   logger.error('Uncaught Exception:', error);
   errorHandler.handle(error);
   process.exit(1);

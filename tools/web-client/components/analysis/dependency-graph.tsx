@@ -29,7 +29,7 @@ interface GraphNode {
   id: string;
   name: string;
   type: 'dependency' | 'devDependency' | 'peerDependency';
-  vulnerabilities: number;
+  vulnerabilityCount: number;
   size: number;
   x: number;
   y: number;
@@ -182,7 +182,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
       id: dep.name,
       name: dep.name,
       type: dep.type,
-      vulnerabilities: dep.vulnerabilities,
+      vulnerabilityCount: dep.vulnerabilityCount,
       size: dep.size,
       x: Math.random() * 400 + 200,
       y: Math.random() * 400 + 200,
@@ -279,7 +279,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
       let fillColor = '#60a5fa'; // Default blue
       if (node.type === 'devDependency') fillColor = '#34d399'; // Green
       if (node.type === 'peerDependency') fillColor = '#fbbf24'; // Yellow
-      if (node.vulnerabilities > 0) fillColor = '#ef4444'; // Red for vulnerabilities
+      if (node.vulnerabilityCount > 0) fillColor = '#ef4444'; // Red for vulnerabilities
 
       // Highlight selected node
       if (selectedNode && selectedNode.id === node.id) {
@@ -306,7 +306,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
       ctx.fillText(node.name, node.x, node.y + radius + 15);
 
       // Draw vulnerability indicator
-      if (node.vulnerabilities > 0) {
+      if (node.vulnerabilityCount > 0) {
         ctx.fillStyle = '#dc2626';
         ctx.beginPath();
         ctx.arc(node.x + radius - 3, node.y - radius + 3, 6, 0, 2 * Math.PI);
@@ -315,7 +315,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
         ctx.font = '10px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(
-          node.vulnerabilities.toString(),
+          node.vulnerabilityCount.toString(),
           node.x + radius - 3,
           node.y - radius + 7
         );
@@ -503,9 +503,9 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
                   <CardTitle className='text-lg'>{selectedNode.name}</CardTitle>
                   <div className='flex gap-2'>
                     <Badge variant='outline'>{selectedNode.type}</Badge>
-                    {selectedNode.vulnerabilities > 0 && (
+                    {selectedNode.vulnerabilityCount > 0 && (
                       <Badge variant='destructive'>
-                        {selectedNode.vulnerabilities} vulnerabilities
+                        {selectedNode.vulnerabilityCount} vulnerabilities
                       </Badge>
                     )}
                   </div>
@@ -558,7 +558,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
             </div>
             <div>
               <div className='text-2xl font-bold'>
-                {nodes.filter(n => n.vulnerabilities > 0).length}
+                {nodes.filter(n => n.vulnerabilityCount > 0).length}
               </div>
               <div className='text-sm text-muted-foreground'>Vulnerable</div>
             </div>

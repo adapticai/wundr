@@ -135,4 +135,5 @@ export const CONFIG_EVENTS = {
   VALIDATION_FAILED: 'config:validation:failed',
 } as const;
 
-export type ConfigEventType = typeof CONFIG_EVENTS[keyof typeof CONFIG_EVENTS];
+export type ConfigEventType =
+  (typeof CONFIG_EVENTS)[keyof typeof CONFIG_EVENTS];

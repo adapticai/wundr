@@ -33,35 +33,55 @@ import {
 // Custom MDX components for enhanced documentation
 export const mdxComponents = {
   // Enhanced code blocks with copy functionality
-  pre: ({ children, className, ...props }: PreProps) => (
-    <div className='relative group'>
-      <pre
-        className={`bg-muted p-4 rounded-lg overflow-x-auto text-sm ${className || ''}`}
-        {...props}
-      >
-        {children}
-      </pre>
-      <Button
-        variant='ghost'
-        size='sm'
-        onClick={() => {
-          const code =
-            children &&
-            typeof children === 'object' &&
-            'props' in children &&
-            children.props &&
-            typeof children.props === 'object' &&
-            'children' in children.props
-              ? String(children.props.children) || ''
-              : '';
-          navigator.clipboard.writeText(code);
-        }}
-        className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'
-      >
-        <Copy className='h-4 w-4' />
-      </Button>
-    </div>
-  ),
+  pre: ({ children, className, ...props }: PreProps) => {
+    // Helper function to safely extract code content from children
+    const extractCodeContent = (node: React.ReactNode): string => {
+      if (!node) return '';
+
+      // Handle string content directly
+      if (typeof node === 'string') return node;
+
+      // Handle number content
+      if (typeof node === 'number') return String(node);
+
+      // Handle React elements with props
+      if (React.isValidElement(node)) {
+        const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+        if (element.props && 'children' in element.props) {
+          return extractCodeContent(element.props.children);
+        }
+      }
+
+      // Handle arrays of children
+      if (Array.isArray(node)) {
+        return node.map(child => extractCodeContent(child)).join('');
+      }
+
+      return '';
+    };
+
+    return (
+      <div className='relative group'>
+        <pre
+          className={`bg-muted p-4 rounded-lg overflow-x-auto text-sm ${className || ''}`}
+          {...props}
+        >
+          {children}
+        </pre>
+        <Button
+          variant='ghost'
+          size='sm'
+          onClick={() => {
+            const code = extractCodeContent(children);
+            navigator.clipboard.writeText(code);
+          }}
+          className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'
+        >
+          <Copy className='h-4 w-4' />
+        </Button>
+      </div>
+    );
+  },
 
   // Inline code with better styling
   code: ({ children, className, ...props }: CodeProps) => (
@@ -79,7 +99,7 @@ export const mdxComponents = {
     children,
     title,
   }: {
-    type?: string;
+    type?: 'info' | 'warning' | 'error' | 'success' | 'tip' | 'security';
     children: React.ReactNode;
     title?: string;
   }) => {
@@ -132,7 +152,7 @@ export const mdxComponents = {
     examples,
   }: {
     name: string;
-    type: string;
+    type: 'function' | 'class' | 'interface' | 'type' | 'constant' | 'variable';
     signature?: string;
     description: string;
     properties?: Array<{

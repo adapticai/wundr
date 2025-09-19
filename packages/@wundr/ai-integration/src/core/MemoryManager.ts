@@ -1,6 +1,6 @@
 /**
  * Memory Manager - Cross-session memory persistence and optimization
- * 
+ *
  * Manages agent memories, session data, patterns, and cross-session learning.
  * Implements intelligent memory compression, retention policies, and context restoration.
  */
@@ -11,14 +11,14 @@ import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
 import { Database } from 'sqlite3';
 
-import { 
-  MemoryConfig, 
-  MemoryEntry, 
-  MemoryType, 
+import {
+  MemoryConfig,
+  MemoryEntry,
+  MemoryType,
   MemoryContext,
   Agent,
   Task,
-  OperationResult 
+  OperationResult,
 } from '../types';
 
 export class MemoryManager extends EventEmitter {
@@ -38,16 +38,16 @@ export class MemoryManager extends EventEmitter {
     try {
       // Ensure persistence directory exists
       await fs.ensureDir(this.config.persistencePath);
-      
+
       // Initialize SQLite database for persistent storage
       await this.initializeDatabase();
-      
+
       // Load existing memories into cache
       await this.loadMemoriesIntoCache();
-      
+
       // Setup retention policy enforcement
       this.setupRetentionPolicy();
-      
+
       // Initialize compression if enabled
       if (this.config.compressionEnabled) {
         await this.initializeCompression();
@@ -55,22 +55,22 @@ export class MemoryManager extends EventEmitter {
 
       return {
         success: true,
-        message: 'Memory Manager initialized successfully'
+        message: 'Memory Manager initialized successfully',
       };
     } catch (error) {
       return {
         success: false,
         message: `Memory Manager initialization failed: ${error.message}`,
-        error: error
+        error: error,
       };
     }
   }
 
   private async initializeDatabase(): Promise<void> {
     const dbPath = path.join(this.config.persistencePath, 'memory.db');
-    
+
     return new Promise((resolve, reject) => {
-      this.database = new Database(dbPath, (error) => {
+      this.database = new Database(dbPath, error => {
         if (error) {
           reject(error);
           return;
@@ -126,8 +126,8 @@ export class MemoryManager extends EventEmitter {
     if (!this.database) return;
 
     // Load recent and frequently accessed memories
-    const recentThreshold = Date.now() - (24 * 60 * 60 * 1000); // Last 24 hours
-    
+    const recentThreshold = Date.now() - 24 * 60 * 60 * 1000; // Last 24 hours
+
     return new Promise((resolve, reject) => {
       const query = `
         SELECT * FROM memories 
@@ -136,9 +136,9 @@ export class MemoryManager extends EventEmitter {
         ORDER BY access_count DESC, created_at DESC
         LIMIT ?
       `;
-      
+
       this.database!.all(
-        query, 
+        query,
         [recentThreshold, Date.now(), this.config.maxSessionMemory],
         (error, rows: any[]) => {
           if (error) {
@@ -168,24 +168,30 @@ export class MemoryManager extends EventEmitter {
       createdAt: new Date(row.created_at),
       expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
       tags: row.tags ? row.tags.split(',') : [],
-      metadata: row.metadata ? JSON.parse(row.metadata) : {}
+      metadata: row.metadata ? JSON.parse(row.metadata) : {},
     };
   }
 
   private setupRetentionPolicy(): void {
     // Run retention policy every hour
-    this.retentionTimer = setInterval(async () => {
-      await this.enforceRetentionPolicy();
-    }, 60 * 60 * 1000);
+    this.retentionTimer = setInterval(
+      async () => {
+        await this.enforceRetentionPolicy();
+      },
+      60 * 60 * 1000
+    );
   }
 
   private async initializeCompression(): Promise<void> {
     // Setup compression processing
-    setInterval(async () => {
-      if (this.compressionQueue.length > 0) {
-        await this.processCompressionQueue();
-      }
-    }, 5 * 60 * 1000); // Process every 5 minutes
+    setInterval(
+      async () => {
+        if (this.compressionQueue.length > 0) {
+          await this.processCompressionQueue();
+        }
+      },
+      5 * 60 * 1000
+    ); // Process every 5 minutes
   }
 
   /**
@@ -193,79 +199,93 @@ export class MemoryManager extends EventEmitter {
    */
   async createContext(task: Task): Promise<MemoryContext> {
     const contextId = `context-${task.id}-${Date.now()}`;
-    
+
     // Retrieve relevant memories
     const sessionMemory = await this.getMemoriesByType('session');
     const taskMemory = await this.getMemoriesForSimilarTasks(task);
     const patterns = await this.getRelevantPatterns(task);
-    
+
     // Create agent memory maps
     const agentMemory = new Map<string, MemoryEntry[]>();
     for (const agentId of task.assignedAgents) {
       const memories = await this.getMemoriesForAgent(agentId);
       agentMemory.set(agentId, memories);
     }
-    
+
     // Create task memory map
     const taskMemoryMap = new Map<string, MemoryEntry[]>();
     taskMemoryMap.set(task.id, taskMemory);
-    
+
     const context: MemoryContext = {
       sessionMemory,
       agentMemory,
       taskMemory: taskMemoryMap,
-      patterns
+      patterns,
     };
-    
+
     this.sessionContexts.set(contextId, context);
     this.emit('context-created', { contextId, task: task.id });
-    
+
     return context;
   }
 
   private async getMemoriesForSimilarTasks(task: Task): Promise<MemoryEntry[]> {
     // Find memories from similar tasks based on type and capabilities
     const similarMemories = Array.from(this.memoryCache.values())
-      .filter(memory => 
-        memory.type === 'task' &&
-        memory.metadata.taskType === task.type &&
-        this.hasOverlappingCapabilities(memory.metadata.requiredCapabilities, task.requiredCapabilities)
+      .filter(
+        memory =>
+          memory.type === 'task' &&
+          memory.metadata.taskType === task.type &&
+          this.hasOverlappingCapabilities(
+            memory.metadata.requiredCapabilities,
+            task.requiredCapabilities
+          )
       )
-      .sort((a, b) => this.calculateTaskSimilarity(b, task) - this.calculateTaskSimilarity(a, task))
+      .sort(
+        (a, b) =>
+          this.calculateTaskSimilarity(b, task) -
+          this.calculateTaskSimilarity(a, task)
+      )
       .slice(0, 10);
 
     return similarMemories;
   }
 
-  private hasOverlappingCapabilities(caps1: string[], caps2: string[]): boolean {
+  private hasOverlappingCapabilities(
+    caps1: string[],
+    caps2: string[]
+  ): boolean {
     if (!caps1 || !caps2) return false;
     return caps1.some(cap => caps2.includes(cap));
   }
 
   private calculateTaskSimilarity(memory: MemoryEntry, task: Task): number {
     let similarity = 0;
-    
+
     // Type match
     if (memory.metadata.taskType === task.type) similarity += 0.4;
-    
+
     // Priority match
     if (memory.metadata.priority === task.priority) similarity += 0.2;
-    
+
     // Capability overlap
-    const overlappingCaps = memory.metadata.requiredCapabilities?.filter((cap: string) =>
-      task.requiredCapabilities.includes(cap)
-    ).length || 0;
-    
+    const overlappingCaps =
+      memory.metadata.requiredCapabilities?.filter((cap: string) =>
+        task.requiredCapabilities.includes(cap)
+      ).length || 0;
+
     similarity += (overlappingCaps / task.requiredCapabilities.length) * 0.4;
-    
+
     return similarity;
   }
 
   private async getRelevantPatterns(task: Task): Promise<any[]> {
     return Array.from(this.memoryCache.values())
-      .filter(memory => 
-        memory.type === 'pattern' &&
-        (memory.metadata.taskType === task.type || memory.tags.includes(task.type))
+      .filter(
+        memory =>
+          memory.type === 'pattern' &&
+          (memory.metadata.taskType === task.type ||
+            memory.tags.includes(task.type))
       )
       .map(memory => memory.content)
       .slice(0, 20);
@@ -287,10 +307,10 @@ export class MemoryManager extends EventEmitter {
     } = {}
   ): Promise<string> {
     const memoryId = this.generateMemoryId(type, sessionId);
-    
+
     // Determine expiration based on retention policy
     const expiresAt = this.calculateExpiration(type, options.expiresAt);
-    
+
     const memoryEntry: MemoryEntry = {
       id: memoryId,
       type,
@@ -304,24 +324,24 @@ export class MemoryManager extends EventEmitter {
       metadata: {
         ...options.metadata,
         originalSize: JSON.stringify(content).length,
-        importance: this.calculateImportance(type, content, options.metadata)
-      }
+        importance: this.calculateImportance(type, content, options.metadata),
+      },
     };
 
     // Store in cache
     this.memoryCache.set(memoryId, memoryEntry);
-    
+
     // Persist to database
     await this.persistMemoryEntry(memoryEntry);
-    
+
     // Add to compression queue if applicable
     if (this.shouldCompress(memoryEntry)) {
       this.compressionQueue.push(memoryEntry);
     }
-    
+
     // Enforce memory limits
     await this.enforceMemoryLimits();
-    
+
     this.emit('memory-stored', memoryEntry);
     return memoryId;
   }
@@ -330,12 +350,15 @@ export class MemoryManager extends EventEmitter {
     return `${type}-${sessionId}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   }
 
-  private calculateExpiration(type: MemoryType, providedExpiration?: Date): Date | undefined {
+  private calculateExpiration(
+    type: MemoryType,
+    providedExpiration?: Date
+  ): Date | undefined {
     if (providedExpiration) return providedExpiration;
-    
+
     const now = Date.now();
     const retentionPolicy = this.config.retentionPolicy;
-    
+
     switch (type) {
       case 'session':
         return new Date(now + retentionPolicy.shortTerm * 60 * 60 * 1000);
@@ -345,7 +368,9 @@ export class MemoryManager extends EventEmitter {
         return new Date(now + retentionPolicy.longTerm * 24 * 60 * 60 * 1000);
       case 'pattern':
         // Patterns have longer retention
-        return new Date(now + retentionPolicy.longTerm * 7 * 24 * 60 * 60 * 1000);
+        return new Date(
+          now + retentionPolicy.longTerm * 7 * 24 * 60 * 60 * 1000
+        );
       case 'consensus':
         return new Date(now + retentionPolicy.longTerm * 24 * 60 * 60 * 1000);
       case 'performance':
@@ -369,13 +394,18 @@ export class MemoryManager extends EventEmitter {
     // Remove potentially circular or unnecessary data
     if (key.startsWith('_') || key === 'constructor') return undefined;
     if (value instanceof Date) return value.toISOString();
-    if (value instanceof Error) return { message: value.message, stack: value.stack };
+    if (value instanceof Error)
+      return { message: value.message, stack: value.stack };
     return value;
   }
 
-  private calculateImportance(type: MemoryType, content: any, metadata: any): number {
+  private calculateImportance(
+    type: MemoryType,
+    content: any,
+    metadata: any
+  ): number {
     let importance = 0.5; // Base importance
-    
+
     // Type-based importance
     const typeWeights = {
       pattern: 0.9,
@@ -383,29 +413,30 @@ export class MemoryManager extends EventEmitter {
       performance: 0.7,
       task: 0.6,
       agent: 0.5,
-      session: 0.4
+      session: 0.4,
     };
-    
+
     importance += (typeWeights[type] || 0.5) * 0.3;
-    
+
     // Content-based importance
     if (metadata?.success === true) importance += 0.2;
     if (metadata?.qualityScore > 0.8) importance += 0.15;
     if (metadata?.criticalTask === true) importance += 0.25;
-    
+
     // Size penalty for very large content
     const contentSize = JSON.stringify(content).length;
     if (contentSize > 10000) importance -= 0.1;
-    
+
     return Math.min(Math.max(importance, 0), 1);
   }
 
   private shouldCompress(memoryEntry: MemoryEntry): boolean {
     if (!this.config.compressionEnabled) return false;
-    
+
     const contentSize = JSON.stringify(memoryEntry.content).length;
-    const ageHours = (Date.now() - memoryEntry.createdAt.getTime()) / (1000 * 60 * 60);
-    
+    const ageHours =
+      (Date.now() - memoryEntry.createdAt.getTime()) / (1000 * 60 * 60);
+
     // Compress if content is large or old
     return contentSize > 5000 || ageHours > 24;
   }
@@ -434,10 +465,10 @@ export class MemoryManager extends EventEmitter {
         memoryEntry.expiresAt?.getTime() || null,
         Date.now(), // accessed_at
         1, // access_count
-        false // compressed
+        false, // compressed
       ];
 
-      this.database!.run(query, values, (error) => {
+      this.database!.run(query, values, error => {
         if (error) {
           reject(error);
         } else {
@@ -453,7 +484,7 @@ export class MemoryManager extends EventEmitter {
   async getMemory(memoryId: string): Promise<MemoryEntry | null> {
     // Check cache first
     const memory = this.memoryCache.get(memoryId);
-    
+
     if (memory) {
       // Update access information
       await this.updateAccessInfo(memoryId);
@@ -462,7 +493,7 @@ export class MemoryManager extends EventEmitter {
 
     // Load from database
     const dbMemory = await this.loadMemoryFromDatabase(memoryId);
-    
+
     if (dbMemory) {
       // Add to cache
       this.memoryCache.set(memoryId, dbMemory);
@@ -473,12 +504,14 @@ export class MemoryManager extends EventEmitter {
     return undefined;
   }
 
-  private async loadMemoryFromDatabase(memoryId: string): Promise<MemoryEntry | undefined> {
+  private async loadMemoryFromDatabase(
+    memoryId: string
+  ): Promise<MemoryEntry | undefined> {
     if (!this.database) return undefined;
 
     return new Promise((resolve, reject) => {
       const query = 'SELECT * FROM memories WHERE id = ?';
-      
+
       this.database!.get(query, [memoryId], (error, row: any) => {
         if (error) {
           reject(error);
@@ -505,8 +538,8 @@ export class MemoryManager extends EventEmitter {
         SET accessed_at = ?, access_count = access_count + 1 
         WHERE id = ?
       `;
-      
-      this.database!.run(query, [Date.now(), memoryId], (error) => {
+
+      this.database!.run(query, [Date.now(), memoryId], error => {
         if (error) {
           reject(error);
         } else {
@@ -519,7 +552,10 @@ export class MemoryManager extends EventEmitter {
   /**
    * Get memories by various criteria
    */
-  async getMemoriesByType(type: MemoryType, limit: number = 50): Promise<MemoryEntry[]> {
+  async getMemoriesByType(
+    type: MemoryType,
+    limit: number = 50
+  ): Promise<MemoryEntry[]> {
     const cached = Array.from(this.memoryCache.values())
       .filter(memory => memory.type === type)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -530,19 +566,31 @@ export class MemoryManager extends EventEmitter {
     }
 
     // Load additional from database
-    const additional = await this.loadMemoriesFromDatabase({ type }, limit - cached.length);
+    const additional = await this.loadMemoriesFromDatabase(
+      { type },
+      limit - cached.length
+    );
     return [...cached, ...additional];
   }
 
-  async getMemoriesForAgent(agentId: string, limit: number = 20): Promise<MemoryEntry[]> {
+  async getMemoriesForAgent(
+    agentId: string,
+    limit: number = 20
+  ): Promise<MemoryEntry[]> {
     return this.loadMemoriesFromDatabase({ agentId }, limit);
   }
 
-  async getMemoriesForSession(sessionId: string, limit: number = 100): Promise<MemoryEntry[]> {
+  async getMemoriesForSession(
+    sessionId: string,
+    limit: number = 100
+  ): Promise<MemoryEntry[]> {
     return this.loadMemoriesFromDatabase({ sessionId }, limit);
   }
 
-  private async loadMemoriesFromDatabase(criteria: any, limit: number = 50): Promise<MemoryEntry[]> {
+  private async loadMemoriesFromDatabase(
+    criteria: any,
+    limit: number = 50
+  ): Promise<MemoryEntry[]> {
     if (!this.database) return [];
 
     return new Promise((resolve, reject) => {
@@ -591,7 +639,10 @@ export class MemoryManager extends EventEmitter {
   /**
    * Update memory with new information
    */
-  async updateMemory(memoryId: string, updates: Partial<MemoryEntry>): Promise<void> {
+  async updateMemory(
+    memoryId: string,
+    updates: Partial<MemoryEntry>
+  ): Promise<void> {
     const memory = await this.getMemory(memoryId);
     if (!memory) return;
 
@@ -601,10 +652,10 @@ export class MemoryManager extends EventEmitter {
 
     // Update cache
     this.memoryCache.set(memoryId, memory);
-    
+
     // Update database
     await this.persistMemoryEntry(memory);
-    
+
     this.emit('memory-updated', memory);
   }
 
@@ -612,48 +663,63 @@ export class MemoryManager extends EventEmitter {
    * Track agent activity for learning
    */
   async trackAgent(agent: Agent): Promise<void> {
-    await this.storeMemory('agent', {
-      agentType: agent.type,
-      capabilities: agent.capabilities,
-      status: agent.status,
-      metrics: agent.metrics,
-      topology: agent.topology
-    }, agent.sessionId, {
-      agentId: agent.id,
-      tags: ['agent-tracking', agent.type, agent.category],
-      metadata: {
-        trackingStarted: new Date().toISOString(),
-        agentCategory: agent.category
+    await this.storeMemory(
+      'agent',
+      {
+        agentType: agent.type,
+        capabilities: agent.capabilities,
+        status: agent.status,
+        metrics: agent.metrics,
+        topology: agent.topology,
+      },
+      agent.sessionId,
+      {
+        agentId: agent.id,
+        tags: ['agent-tracking', agent.type, agent.category],
+        metadata: {
+          trackingStarted: new Date().toISOString(),
+          agentCategory: agent.category,
+        },
       }
-    });
+    );
   }
 
   /**
    * Store consensus decisions
    */
   async storeConsensus(decision: any): Promise<void> {
-    await this.storeMemory('consensus', decision, decision.sessionId || 'global', {
-      tags: ['consensus', 'decision'],
-      metadata: {
-        agreement: decision.agreement,
-        confidence: decision.confidence,
-        participatingAgents: decision.participatingAgents
+    await this.storeMemory(
+      'consensus',
+      decision,
+      decision.sessionId || 'global',
+      {
+        tags: ['consensus', 'decision'],
+        metadata: {
+          agreement: decision.agreement,
+          confidence: decision.confidence,
+          participatingAgents: decision.participatingAgents,
+        },
       }
-    });
+    );
   }
 
   /**
    * Track GitHub activity
    */
   async trackGitHubActivity(activity: any): Promise<void> {
-    await this.storeMemory('performance', activity, activity.sessionId || 'github', {
-      tags: ['github', 'integration', activity.type],
-      metadata: {
-        repository: activity.repository,
-        action: activity.action,
-        impact: activity.impact
+    await this.storeMemory(
+      'performance',
+      activity,
+      activity.sessionId || 'github',
+      {
+        tags: ['github', 'integration', activity.type],
+        metadata: {
+          repository: activity.repository,
+          action: activity.action,
+          impact: activity.impact,
+        },
       }
-    });
+    );
   }
 
   /**
@@ -661,19 +727,23 @@ export class MemoryManager extends EventEmitter {
    */
   private async processCompressionQueue(): Promise<void> {
     const batch = this.compressionQueue.splice(0, 10); // Process 10 at a time
-    
+
     for (const memory of batch) {
       try {
         const compressed = await this.compressMemory(memory);
         memory.content = compressed;
         memory.metadata.compressed = true;
-        memory.metadata.compressionRatio = compressed.length / memory.metadata.originalSize;
-        
+        memory.metadata.compressionRatio =
+          compressed.length / memory.metadata.originalSize;
+
         // Update in cache and database
         this.memoryCache.set(memory.id, memory);
         await this.persistMemoryEntry(memory);
-        
-        this.emit('memory-compressed', { memoryId: memory.id, ratio: memory.metadata.compressionRatio });
+
+        this.emit('memory-compressed', {
+          memoryId: memory.id,
+          ratio: memory.metadata.compressionRatio,
+        });
       } catch (error) {
         console.warn(`Failed to compress memory ${memory.id}:`, error);
       }
@@ -683,29 +753,29 @@ export class MemoryManager extends EventEmitter {
   private async compressMemory(memory: MemoryEntry): Promise<any> {
     // Simple compression by removing redundant information
     const content = memory.content;
-    
+
     if (typeof content === 'object') {
       // Remove verbose fields and compress structure
       const compressed = {
         ...content,
         _compressed: true,
-        _timestamp: memory.createdAt.toISOString()
+        _timestamp: memory.createdAt.toISOString(),
       };
-      
+
       // Remove large arrays beyond certain size
       for (const [key, value] of Object.entries(compressed)) {
         if (Array.isArray(value) && value.length > 100) {
           compressed[key] = {
             _truncated: true,
             _originalLength: value.length,
-            _sample: value.slice(0, 10)
+            _sample: value.slice(0, 10),
           };
         }
       }
-      
+
       return compressed;
     }
-    
+
     return content;
   }
 
@@ -716,13 +786,13 @@ export class MemoryManager extends EventEmitter {
     if (!this.database) return;
 
     const now = Date.now();
-    
+
     // Remove expired memories
     await this.removeExpiredMemories(now);
-    
+
     // Enforce memory limits
     await this.enforceMemoryLimits();
-    
+
     this.emit('retention-policy-enforced');
   }
 
@@ -730,9 +800,10 @@ export class MemoryManager extends EventEmitter {
     if (!this.database) return;
 
     return new Promise((resolve, reject) => {
-      const query = 'DELETE FROM memories WHERE expires_at IS NOT NULL AND expires_at < ?';
-      
-      this.database!.run(query, [currentTime], (error) => {
+      const query =
+        'DELETE FROM memories WHERE expires_at IS NOT NULL AND expires_at < ?';
+
+      this.database!.run(query, [currentTime], error => {
         if (error) {
           reject(error);
         } else {
@@ -750,27 +821,31 @@ export class MemoryManager extends EventEmitter {
 
   private async enforceMemoryLimits(): Promise<void> {
     const currentSize = this.memoryCache.size;
-    
+
     if (currentSize > this.config.maxSessionMemory) {
       // Remove least important/oldest memories
-      const sortedMemories = Array.from(this.memoryCache.entries())
-        .sort(([, a], [, b]) => {
+      const sortedMemories = Array.from(this.memoryCache.entries()).sort(
+        ([, a], [, b]) => {
           const importanceA = a.metadata.importance || 0.5;
           const importanceB = b.metadata.importance || 0.5;
-          
+
           if (importanceA !== importanceB) {
             return importanceA - importanceB; // Lower importance first
           }
-          
-          return a.createdAt.getTime() - b.createdAt.getTime(); // Older first
-        });
 
-      const toRemove = sortedMemories.slice(0, currentSize - this.config.maxSessionMemory);
-      
+          return a.createdAt.getTime() - b.createdAt.getTime(); // Older first
+        }
+      );
+
+      const toRemove = sortedMemories.slice(
+        0,
+        currentSize - this.config.maxSessionMemory
+      );
+
       for (const [memoryId] of toRemove) {
         this.memoryCache.delete(memoryId);
       }
-      
+
       this.emit('memory-limits-enforced', { removed: toRemove.length });
     }
   }
@@ -795,7 +870,7 @@ export class MemoryManager extends EventEmitter {
       totalMemorySize: totalSize,
       compressionQueue: this.compressionQueue.length,
       activeContexts: this.sessionContexts.size,
-      crossSessionEnabled: this.config.crossSessionEnabled
+      crossSessionEnabled: this.config.crossSessionEnabled,
     };
   }
 
@@ -815,7 +890,7 @@ export class MemoryManager extends EventEmitter {
       // Close database connection
       if (this.database) {
         await new Promise<void>((resolve, reject) => {
-          this.database!.close((error) => {
+          this.database!.close(error => {
             if (error) reject(error);
             else resolve();
           });
@@ -830,13 +905,13 @@ export class MemoryManager extends EventEmitter {
 
       return {
         success: true,
-        message: 'Memory Manager shutdown completed'
+        message: 'Memory Manager shutdown completed',
       };
     } catch (error) {
       return {
         success: false,
         message: `Shutdown failed: ${error.message}`,
-        error: error
+        error: error,
       };
     }
   }

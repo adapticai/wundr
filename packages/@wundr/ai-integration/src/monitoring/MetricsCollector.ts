@@ -25,7 +25,7 @@ export class MetricsCollector extends EventEmitter {
       memoryUsage: Math.random(),
       cpuUsage: Math.random(),
       activeConnections: Math.floor(Math.random() * 100),
-      queueLength: Math.floor(Math.random() * 50)
+      queueLength: Math.floor(Math.random() * 50),
     };
   }
 

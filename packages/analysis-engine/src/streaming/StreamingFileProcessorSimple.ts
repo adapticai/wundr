@@ -4,8 +4,9 @@
  */
 
 import { EventEmitter } from 'events';
-import * as fs from 'fs-extra';
 import * as path from 'path';
+
+import * as fs from 'fs-extra';
 
 export interface ProcessedFile {
   path: string;
@@ -47,7 +48,7 @@ export class StreamingFileProcessor extends EventEmitter {
       processingRate: 0,
       memoryUsage: 0,
       averageFileSize: 0,
-      errorCount: 0
+      errorCount: 0,
     };
   }
 
@@ -58,7 +59,7 @@ export class StreamingFileProcessor extends EventEmitter {
     this.resetStats();
     
     this.emit('processing-started', {
-      totalFiles: filePaths.length
+      totalFiles: filePaths.length,
     });
 
     try {
@@ -81,7 +82,7 @@ export class StreamingFileProcessor extends EventEmitter {
         totalProcessed: results.length,
         totalErrors: this.stats.errorCount,
         processingTime,
-        stats: this.stats
+        stats: this.stats,
       });
 
       return results;
@@ -99,7 +100,7 @@ export class StreamingFileProcessor extends EventEmitter {
       
       this.emit('file-started', {
         file: path.basename(filePath),
-        size: stats.size
+        size: stats.size,
       });
 
       const processedFile: ProcessedFile = {
@@ -113,8 +114,8 @@ export class StreamingFileProcessor extends EventEmitter {
           language: this.detectLanguage(filePath),
           complexity: this.calculateComplexity(content),
           imports: this.extractImports(content),
-          exports: this.extractExports(content)
-        }
+          exports: this.extractExports(content),
+        },
       };
       
       this.stats.filesProcessed++;
@@ -129,7 +130,7 @@ export class StreamingFileProcessor extends EventEmitter {
       this.emit('file-completed', {
         file: path.basename(filePath),
         lines: processedFile.lines,
-        size: processedFile.size
+        size: processedFile.size,
       });
 
       return processedFile;
@@ -140,24 +141,24 @@ export class StreamingFileProcessor extends EventEmitter {
 
   private detectMimeType(filePath: string): string {
     const ext = path.extname(filePath).toLowerCase();
-    const mimeTypes: { [key: string]: string } = {
+    const mimeTypes: Record<string, string> = {
       '.js': 'text/javascript',
       '.ts': 'text/typescript',
       '.jsx': 'text/jsx',
       '.tsx': 'text/tsx',
       '.json': 'application/json',
-      '.md': 'text/markdown'
+      '.md': 'text/markdown',
     };
     return mimeTypes[ext] || 'text/plain';
   }
 
   private detectLanguage(filePath: string): string {
     const ext = path.extname(filePath).toLowerCase();
-    const languages: { [key: string]: string } = {
+    const languages: Record<string, string> = {
       '.js': 'javascript',
       '.ts': 'typescript',
       '.jsx': 'javascript',
-      '.tsx': 'typescript'
+      '.tsx': 'typescript',
     };
     return languages[ext] || 'unknown';
   }
@@ -201,7 +202,7 @@ export class StreamingFileProcessor extends EventEmitter {
       processingRate: 0,
       memoryUsage: 0,
       averageFileSize: 0,
-      errorCount: 0
+      errorCount: 0,
     };
   }
 

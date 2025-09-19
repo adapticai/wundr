@@ -3,7 +3,10 @@
  */
 
 import { z, ZodSchema, ZodError } from 'zod';
-import { ValidationResult, ValidationError as IValidationError } from '../types/index.js';
+import {
+  ValidationResult,
+  ValidationError as IValidationError,
+} from '../types/index.js';
 
 /**
  * Validates data against a Zod schema and returns a ValidationResult
@@ -29,14 +32,17 @@ export function validateWithSchema<T>(
         })) as IValidationError[],
       };
     }
-    
+
     return {
       success: false,
-      errors: [{
-        path: [],
-        message: error instanceof Error ? error.message : 'Unknown validation error',
-        code: 'UNKNOWN_ERROR',
-      }] as IValidationError[],
+      errors: [
+        {
+          path: [],
+          message:
+            error instanceof Error ? error.message : 'Unknown validation error',
+          code: 'UNKNOWN_ERROR',
+        },
+      ] as IValidationError[],
     };
   }
 }
@@ -65,7 +71,8 @@ export function isValidUrl(url: string): boolean {
  * UUID validation (v4)
  */
 export function isValidUuid(uuid: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }
 
@@ -73,7 +80,8 @@ export function isValidUuid(uuid: string): boolean {
  * Semantic version validation
  */
 export function isValidSemver(version: string): boolean {
-  const semverRegex = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  const semverRegex =
+    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
   return semverRegex.test(version);
 }
 
@@ -86,11 +94,11 @@ export function isValidFilePath(path: string): boolean {
   if (invalidChars.test(path)) {
     return false;
   }
-  
+
   // Check for reserved names (Windows)
   const reservedNames = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.[^.]*)?$/i;
   const pathParts = path.split(/[\\/]/);
-  
+
   return !pathParts.some(part => reservedNames.test(part));
 }
 
@@ -106,7 +114,8 @@ export function isValidPort(port: number | string): boolean {
  * IP address validation (IPv4)
  */
 export function isValidIPv4(ip: string): boolean {
-  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  const ipv4Regex =
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   return ipv4Regex.test(ip);
 }
 
@@ -125,30 +134,30 @@ export function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) {
     return true;
   }
-  
+
   if (typeof value === 'string') {
     return value.trim() === '';
   }
-  
+
   if (Array.isArray(value)) {
     return value.length === 0;
   }
-  
+
   if (typeof value === 'object') {
     return Object.keys(value).length === 0;
   }
-  
+
   return false;
 }
 
 /**
  * Checks if a value is a plain object
  */
-export function isPlainObject(value: unknown): value is Record<string, unknown> {
+export function isPlainObject(
+  value: unknown
+): value is Record<string, unknown> {
   return (
-    value !== null &&
-    typeof value === 'object' &&
-    value.constructor === Object
+    value !== null && typeof value === 'object' && value.constructor === Object
   );
 }
 
@@ -213,9 +222,17 @@ export const CommonSchemas = {
   email: z.string().email(),
   url: z.string().url(),
   uuid: z.string().uuid(),
-  semver: z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/),
+  semver: z
+    .string()
+    .regex(
+      /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+    ),
   port: z.number().int().min(1).max(65535),
-  ipv4: z.string().regex(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/),
+  ipv4: z
+    .string()
+    .regex(
+      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+    ),
   nonEmptyString: z.string().min(1),
   positiveNumber: z.number().positive(),
   nonNegativeNumber: z.number().nonnegative(),

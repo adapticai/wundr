@@ -11,7 +11,11 @@ export class MemoryConfigSource implements ConfigSource {
   private config: Record<string, any>;
   private watchCallbacks: Array<(config: Record<string, any>) => void> = [];
 
-  constructor(initialConfig: Record<string, any> = {}, name = 'memory', priority = 0) {
+  constructor(
+    initialConfig: Record<string, any> = {},
+    name = 'memory',
+    priority = 0
+  ) {
     this.name = name;
     this.priority = priority;
     this.config = deepClone(initialConfig);

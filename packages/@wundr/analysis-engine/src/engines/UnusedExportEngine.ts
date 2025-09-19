@@ -9,7 +9,7 @@ import {
   EntityInfo,
   BaseAnalyzer,
   AnalysisConfig,
-  SeverityLevel
+  SeverityLevel,
 } from '../types';
 import { createId } from '../utils';
 
@@ -24,7 +24,7 @@ interface UnusedExport {
   usageAnalysis: UsageAnalysis;
 }
 
-type UnusedReason = 
+type UnusedReason =
   | 'never-imported'
   | 'imported-but-unused'
   | 'only-type-usage'
@@ -69,7 +69,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     imports: new Map(),
     exports: new Map(),
     usage: new Map(),
-    reExports: new Map()
+    reExports: new Map(),
   };
 
   constructor(config: Partial<UnusedExportConfig> = {}) {
@@ -80,14 +80,17 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       ignoreTestFiles: true,
       ignorePatterns: ['.test.', '.spec.', '__tests__', 'test/', 'tests/'],
       aggressiveAnalysis: false,
-      ...config
+      ...config,
     };
   }
 
   /**
    * Analyze entities for unused exports
    */
-  async analyze(entities: EntityInfo[], analysisConfig: AnalysisConfig): Promise<UnusedExport[]> {
+  async analyze(
+    entities: EntityInfo[],
+    analysisConfig: AnalysisConfig
+  ): Promise<UnusedExport[]> {
     // Build comprehensive dependency graph
     await this.buildDependencyGraph(entities, analysisConfig);
 
@@ -113,13 +116,16 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Build comprehensive dependency graph
    */
-  private async buildDependencyGraph(entities: EntityInfo[], config: AnalysisConfig): Promise<void> {
+  private async buildDependencyGraph(
+    entities: EntityInfo[],
+    config: AnalysisConfig
+  ): Promise<void> {
     // Clear previous analysis
     this.dependencyGraph = {
       imports: new Map(),
       exports: new Map(),
       usage: new Map(),
-      reExports: new Map()
+      reExports: new Map(),
     };
 
     // Group entities by file
@@ -133,7 +139,9 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
 
     // Build exports map
     entitiesByFile.forEach((fileEntities, filePath) => {
-      const exportedEntities = fileEntities.filter(e => e.exportType !== 'none');
+      const exportedEntities = fileEntities.filter(
+        e => e.exportType !== 'none'
+      );
       if (exportedEntities.length > 0) {
         this.dependencyGraph.exports.set(filePath, new Set(exportedEntities));
       }
@@ -152,13 +160,13 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    * Analyze imports and usage for a specific file
    */
   private async analyzeFileImportsAndUsage(
-    filePath: string, 
-    entities: EntityInfo[], 
+    filePath: string,
+    entities: EntityInfo[],
     config: AnalysisConfig
   ): Promise<void> {
     try {
       const fileContent = await fs.readFile(filePath, 'utf-8');
-      
+
       // Extract imports from file content
       const imports = this.extractImportsFromContent(fileContent, filePath);
       if (imports.size > 0) {
@@ -173,7 +181,6 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
 
       // Analyze usage within the file
       this.analyzeInFileUsage(fileContent, filePath, entities);
-
     } catch (error) {
       console.warn(`Failed to analyze file ${filePath}:`, error);
     }
@@ -182,9 +189,12 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Extract import statements from file content
    */
-  private extractImportsFromContent(content: string, filePath: string): Set<string> {
+  private extractImportsFromContent(
+    content: string,
+    filePath: string
+  ): Set<string> {
     const imports = new Set<string>();
-    
+
     // Regular expressions for different import patterns
     const importPatterns = [
       // import { ... } from '...'
@@ -198,7 +208,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       // const ... = require('...')
       /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
       // Dynamic imports
-      /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g
+      /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
     ];
 
     importPatterns.forEach(pattern => {
@@ -219,12 +229,12 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    */
   private extractReExportsFromContent(content: string): Set<string> {
     const reExports = new Set<string>();
-    
+
     // export { ... } from '...'
     const reExportPattern = /export\s+\{[^}]*\}\s+from\s+['"]([^'"]+)['"]/g;
     // export * from '...'
     const reExportAllPattern = /export\s+\*\s+from\s+['"]([^'"]+)['"]/g;
-    
+
     [reExportPattern, reExportAllPattern].forEach(pattern => {
       let match;
       while ((match = pattern.exec(content)) !== null) {
@@ -240,9 +250,14 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Analyze usage within a file
    */
-  private analyzeInFileUsage(content: string, filePath: string, entities: EntityInfo[]): void {
+  private analyzeInFileUsage(
+    content: string,
+    filePath: string,
+    entities: EntityInfo[]
+  ): void {
     // For each exported entity from other files, check if it's used in this file
-    for (const [exportFilePath, exportedEntities] of this.dependencyGraph.exports) {
+    for (const [exportFilePath, exportedEntities] of this.dependencyGraph
+      .exports) {
       if (exportFilePath === filePath) continue;
 
       exportedEntities.forEach(entity => {
@@ -262,21 +277,24 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   private isEntityUsedInContent(entity: EntityInfo, content: string): boolean {
     // Remove comments and strings to avoid false positives
     const cleanContent = this.removeCommentsAndStrings(content);
-    
+
     // Check for entity name usage
-    const namePattern = new RegExp(`\\b${this.escapeRegExp(entity.name)}\\b`, 'g');
-    
+    const namePattern = new RegExp(
+      `\\b${this.escapeRegExp(entity.name)}\\b`,
+      'g'
+    );
+
     // Don't count the entity's own declaration
     const lines = cleanContent.split('\n');
     const usageLines = lines.filter((line, index) => {
       const hasUsage = namePattern.test(line);
-      
+
       // Skip if it's likely the entity's own declaration/definition line
       if (hasUsage) {
         const isDeclaration = this.isLikelyDeclarationLine(line, entity);
         return !isDeclaration;
       }
-      
+
       return false;
     });
 
@@ -291,10 +309,10 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       `export\\s+(const|let|var|function|class|interface|type|enum)\\s+${entity.name}`,
       `^\\s*(const|let|var|function|class|interface|type|enum)\\s+${entity.name}`,
       `export\\s+default\\s+${entity.name}`,
-      `export\\s*\\{[^}]*${entity.name}[^}]*\\}`
+      `export\\s*\\{[^}]*${entity.name}[^}]*\\}`,
     ];
 
-    return declarationPatterns.some(pattern => 
+    return declarationPatterns.some(pattern =>
       new RegExp(pattern, 'i').test(line.trim())
     );
   }
@@ -307,7 +325,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     for (const [filePath, importedModules] of this.dependencyGraph.imports) {
       for (const importedModule of importedModules) {
         const resolvedPath = this.resolveImportPath(importedModule, filePath);
-        
+
         // Find exported entities from the imported module
         const exportedEntities = this.dependencyGraph.exports.get(resolvedPath);
         if (exportedEntities) {
@@ -325,9 +343,16 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Analyze entity usage to determine if it's unused
    */
-  private async analyzeEntityUsage(entity: EntityInfo, allEntities: EntityInfo[]): Promise<UnusedExport | null> {
+  private async analyzeEntityUsage(
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ): Promise<UnusedExport | null> {
     const usage = this.dependencyGraph.usage.get(entity.id) || new Set();
-    const usageAnalysis = await this.buildUsageAnalysis(entity, usage, allEntities);
+    const usageAnalysis = await this.buildUsageAnalysis(
+      entity,
+      usage,
+      allEntities
+    );
 
     // Determine if entity is unused
     const unusedReason = this.determineUnusedReason(entity, usageAnalysis);
@@ -335,10 +360,25 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       return null; // Entity is used
     }
 
-    const severity = this.calculateUnusedSeverity(entity, usageAnalysis, unusedReason);
-    const suggestions = this.generateUnusedSuggestions(entity, unusedReason, usageAnalysis);
-    const safeToRemove = this.isSafeToRemove(entity, usageAnalysis, unusedReason);
-    const potentialImpact = this.calculatePotentialImpact(entity, usageAnalysis);
+    const severity = this.calculateUnusedSeverity(
+      entity,
+      usageAnalysis,
+      unusedReason
+    );
+    const suggestions = this.generateUnusedSuggestions(
+      entity,
+      unusedReason,
+      usageAnalysis
+    );
+    const safeToRemove = this.isSafeToRemove(
+      entity,
+      usageAnalysis,
+      unusedReason
+    );
+    const potentialImpact = this.calculatePotentialImpact(
+      entity,
+      usageAnalysis
+    );
 
     return {
       id: createId(),
@@ -348,25 +388,32 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       suggestions,
       potentialImpact,
       safeToRemove,
-      usageAnalysis
+      usageAnalysis,
     };
   }
 
   /**
    * Build comprehensive usage analysis for an entity
    */
-  private async buildUsageAnalysis(entity: EntityInfo, usage: Set<string>, allEntities: EntityInfo[]): Promise<UsageAnalysis> {
+  private async buildUsageAnalysis(
+    entity: EntityInfo,
+    usage: Set<string>,
+    allEntities: EntityInfo[]
+  ): Promise<UsageAnalysis> {
     const usageFiles = Array.from(usage);
-    
+
     // Check for type-only usage
     const typeOnlyUsage = await this.isTypeOnlyUsage(entity, usageFiles);
-    
+
     // Check for external library usage (if entity is exported from index files)
     const externalLibraryUsage = this.checkExternalLibraryUsage(entity);
-    
+
     // Check for dynamic import usage
-    const dynamicImportUsage = await this.checkDynamicImportUsage(entity, usageFiles);
-    
+    const dynamicImportUsage = await this.checkDynamicImportUsage(
+      entity,
+      usageFiles
+    );
+
     // Find re-exports
     const reExportedBy = this.findReExports(entity);
 
@@ -376,16 +423,19 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       typeOnlyUsage,
       externalLibraryUsage,
       dynamicImportUsage,
-      reExportedBy
+      reExportedBy,
     };
   }
 
   /**
    * Find files that import the entity
    */
-  private findImporters(entity: EntityInfo, allEntities: EntityInfo[]): string[] {
+  private findImporters(
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ): string[] {
     const importers: string[] = [];
-    
+
     for (const [filePath, importedModules] of this.dependencyGraph.imports) {
       for (const importedModule of importedModules) {
         const resolvedPath = this.resolveImportPath(importedModule, filePath);
@@ -402,7 +452,10 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Check if entity usage is type-only
    */
-  private async isTypeOnlyUsage(entity: EntityInfo, usageFiles: string[]): Promise<boolean> {
+  private async isTypeOnlyUsage(
+    entity: EntityInfo,
+    usageFiles: string[]
+  ): Promise<boolean> {
     if (entity.type === 'type' || entity.type === 'interface') {
       return true;
     }
@@ -429,7 +482,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    */
   private hasRuntimeUsage(entityName: string, content: string): boolean {
     const cleanContent = this.removeCommentsAndStrings(content);
-    
+
     // Patterns that indicate runtime usage
     const runtimePatterns = [
       // Function calls
@@ -441,7 +494,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       // Assignment (not type annotation)
       new RegExp(`=\\s*${this.escapeRegExp(entityName)}\\b`),
       // Array/object literal usage
-      new RegExp(`[\\[{,]\\s*${this.escapeRegExp(entityName)}\\s*[\\]},]`)
+      new RegExp(`[\\[{,]\\s*${this.escapeRegExp(entityName)}\\s*[\\]},]`),
     ];
 
     return runtimePatterns.some(pattern => pattern.test(cleanContent));
@@ -453,15 +506,23 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   private checkExternalLibraryUsage(entity: EntityInfo): boolean {
     // Check if entity is in an index file or public API file
     const fileName = path.basename(entity.file);
-    const isPublicAPI = ['index.ts', 'index.js', 'public.ts', 'api.ts'].includes(fileName);
-    
+    const isPublicAPI = [
+      'index.ts',
+      'index.js',
+      'public.ts',
+      'api.ts',
+    ].includes(fileName);
+
     return isPublicAPI && entity.exportType !== 'none';
   }
 
   /**
    * Check for dynamic import usage
    */
-  private async checkDynamicImportUsage(entity: EntityInfo, usageFiles: string[]): Promise<boolean> {
+  private async checkDynamicImportUsage(
+    entity: EntityInfo,
+    usageFiles: string[]
+  ): Promise<boolean> {
     for (const filePath of usageFiles) {
       try {
         const content = await fs.readFile(filePath, 'utf-8');
@@ -481,8 +542,9 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    */
   private findReExports(entity: EntityInfo): string[] {
     const reExportedBy: string[] = [];
-    
-    for (const [filePath, reExportedModules] of this.dependencyGraph.reExports) {
+
+    for (const [filePath, reExportedModules] of this.dependencyGraph
+      .reExports) {
       for (const reExportedModule of reExportedModules) {
         const resolvedPath = this.resolveImportPath(reExportedModule, filePath);
         if (resolvedPath === entity.file) {
@@ -498,7 +560,10 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Determine the reason why an entity is unused
    */
-  private determineUnusedReason(entity: EntityInfo, usage: UsageAnalysis): UnusedReason | null {
+  private determineUnusedReason(
+    entity: EntityInfo,
+    usage: UsageAnalysis
+  ): UnusedReason | null {
     if (usage.usedBy.length === 0 && usage.importedBy.length === 0) {
       return 'never-imported';
     }
@@ -507,7 +572,11 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       return 'imported-but-unused';
     }
 
-    if (usage.typeOnlyUsage && entity.type !== 'type' && entity.type !== 'interface') {
+    if (
+      usage.typeOnlyUsage &&
+      entity.type !== 'type' &&
+      entity.type !== 'interface'
+    ) {
       return 'only-type-usage';
     }
 
@@ -521,7 +590,7 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       if (this.isDeadCode(entity)) {
         return 'dead-code';
       }
-      
+
       if (this.isRedundantExport(entity, usage)) {
         return 'redundant-export';
       }
@@ -547,10 +616,10 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     if (entity.name.includes('TODO') || entity.name.includes('FIXME')) {
       return true;
     }
-    
+
     // Check if it's a test utility in non-test files
     if (entity.name.includes('Mock') || entity.name.includes('Stub')) {
-      const isTestFile = this.config.ignorePatterns.some(pattern => 
+      const isTestFile = this.config.ignorePatterns.some(pattern =>
         entity.file.includes(pattern)
       );
       return !isTestFile;
@@ -564,15 +633,21 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
    */
   private isRedundantExport(entity: EntityInfo, usage: UsageAnalysis): boolean {
     // If only used internally and re-exported, might be redundant
-    return usage.usedBy.length === 1 && 
-           usage.usedBy[0] === entity.file &&
-           usage.reExportedBy.length === 0;
+    return (
+      usage.usedBy.length === 1 &&
+      usage.usedBy[0] === entity.file &&
+      usage.reExportedBy.length === 0
+    );
   }
 
   /**
    * Calculate severity of unused export
    */
-  private calculateUnusedSeverity(entity: EntityInfo, usage: UsageAnalysis, reason: UnusedReason): SeverityLevel {
+  private calculateUnusedSeverity(
+    entity: EntityInfo,
+    usage: UsageAnalysis,
+    reason: UnusedReason
+  ): SeverityLevel {
     // External library exports are critical
     if (usage.externalLibraryUsage) {
       return 'critical';
@@ -605,7 +680,11 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Check if entity is safe to remove
    */
-  private isSafeToRemove(entity: EntityInfo, usage: UsageAnalysis, reason: UnusedReason): boolean {
+  private isSafeToRemove(
+    entity: EntityInfo,
+    usage: UsageAnalysis,
+    reason: UnusedReason
+  ): boolean {
     // Not safe if used externally
     if (usage.externalLibraryUsage || usage.dynamicImportUsage) {
       return false;
@@ -633,7 +712,10 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Calculate potential impact of removal
    */
-  private calculatePotentialImpact(entity: EntityInfo, usage: UsageAnalysis): string {
+  private calculatePotentialImpact(
+    entity: EntityInfo,
+    usage: UsageAnalysis
+  ): string {
     if (usage.externalLibraryUsage) {
       return 'High - May break external consumers';
     }
@@ -652,7 +734,11 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   /**
    * Generate suggestions for unused exports
    */
-  private generateUnusedSuggestions(entity: EntityInfo, reason: UnusedReason, usage: UsageAnalysis): string[] {
+  private generateUnusedSuggestions(
+    entity: EntityInfo,
+    reason: UnusedReason,
+    usage: UsageAnalysis
+  ): string[] {
     const suggestions: string[] = [];
 
     switch (reason) {
@@ -671,7 +757,9 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
       case 'only-type-usage':
         suggestions.push('Convert to type-only export if appropriate');
         suggestions.push('Consider moving to types-only file');
-        suggestions.push('Remove runtime implementation if only types are needed');
+        suggestions.push(
+          'Remove runtime implementation if only types are needed'
+        );
         break;
 
       case 'dead-code':
@@ -710,14 +798,18 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     }
 
     // Skip type exports if configured
-    if (!this.config.includeTypeExports && 
-        (entity.type === 'type' || entity.type === 'interface')) {
+    if (
+      !this.config.includeTypeExports &&
+      (entity.type === 'type' || entity.type === 'interface')
+    ) {
       return false;
     }
 
     // Skip test files if configured
-    if (this.config.ignoreTestFiles && 
-        this.config.ignorePatterns.some(pattern => entity.file.includes(pattern))) {
+    if (
+      this.config.ignoreTestFiles &&
+      this.config.ignorePatterns.some(pattern => entity.file.includes(pattern))
+    ) {
       return false;
     }
 
@@ -731,18 +823,25 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
     if (importPath.startsWith('./') || importPath.startsWith('../')) {
       const currentDir = path.dirname(currentFile);
       let resolved = path.resolve(currentDir, importPath);
-      
+
       // Try common extensions
-      const extensions = ['.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.js'];
+      const extensions = [
+        '.ts',
+        '.tsx',
+        '.js',
+        '.jsx',
+        '/index.ts',
+        '/index.js',
+      ];
       for (const ext of extensions) {
         if (fs.existsSync(resolved + ext)) {
           return resolved + ext;
         }
       }
-      
+
       return resolved;
     }
-    
+
     return importPath;
   }
 
@@ -752,13 +851,13 @@ export class UnusedExportEngine implements BaseAnalyzer<UnusedExport[]> {
   private removeCommentsAndStrings(content: string): string {
     // Remove single-line comments
     let cleaned = content.replace(/\/\/.*$/gm, '');
-    
+
     // Remove multi-line comments
     cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, '');
-    
+
     // Remove string literals (simplified)
     cleaned = cleaned.replace(/["'`][^"'`]*["'`]/g, '""');
-    
+
     return cleaned;
   }
 

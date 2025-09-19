@@ -29,19 +29,23 @@ export class EnvironmentManager {
   /**
    * Initialize a new environment configuration
    */
-  async initialize(profile: ProfileType, options: {
-    email?: string;
-    fullName?: string;
-    githubUsername?: string;
-    company?: string;
-    developmentPath?: string;
-    skipPrompts?: boolean;
-  } = {}): Promise<EnvironmentConfig> {
+  async initialize(
+    profile: ProfileType,
+    options: {
+      email?: string;
+      fullName?: string;
+      githubUsername?: string;
+      company?: string;
+      developmentPath?: string;
+      skipPrompts?: boolean;
+    } = {}
+  ): Promise<EnvironmentConfig> {
     logger.info('Initializing environment', { profile, options });
 
     const platform = await detectPlatform();
-    const profileTemplate = await this.profileManager.getProfileTemplate(profile);
-    
+    const profileTemplate =
+      await this.profileManager.getProfileTemplate(profile);
+
     const config: EnvironmentConfig = {
       profile,
       platform,
@@ -49,22 +53,24 @@ export class EnvironmentManager {
       preferences: {
         ...(options.email && { email: options.email }),
         ...(options.fullName && { fullName: options.fullName }),
-        ...(options.githubUsername && { githubUsername: options.githubUsername }),
+        ...(options.githubUsername && {
+          githubUsername: options.githubUsername,
+        }),
         ...(options.company && { company: options.company }),
         editor: 'vscode',
         shell: platform === 'windows' ? 'powershell' : 'zsh',
         packageManager: 'pnpm',
         theme: 'dark',
-        ...profileTemplate.preferences
+        ...profileTemplate.preferences,
       },
       paths: {
         home: homedir(),
         development: options.developmentPath || join(homedir(), 'Development'),
         config: join(homedir(), '.wundr'),
         cache: join(homedir(), '.wundr', 'cache'),
-        logs: join(homedir(), '.wundr', 'logs')
+        logs: join(homedir(), '.wundr', 'logs'),
       },
-      version: '1.0.0'
+      version: '1.0.0',
     };
 
     this.config = config;
@@ -118,13 +124,17 @@ export class EnvironmentManager {
     await this.createDirectories();
 
     // Install tools in dependency order
-    const sortedTools = this.toolManager.sortToolsByDependencies(this.config.tools);
-    
+    const sortedTools = this.toolManager.sortToolsByDependencies(
+      this.config.tools
+    );
+
     for (const tool of sortedTools) {
       if (this.toolManager.isToolSupported(tool, this.config.platform)) {
         await this.toolManager.installTool(tool);
       } else {
-        logger.warn(`Tool ${tool.name} not supported on ${this.config.platform}`);
+        logger.warn(
+          `Tool ${tool.name} not supported on ${this.config.platform}`
+        );
       }
     }
 
@@ -161,14 +171,16 @@ export class EnvironmentManager {
       environment: this.config,
       tools: toolValidations,
       system: systemInfo,
-      ...(recommendations.length > 0 && { recommendations })
+      ...(recommendations.length > 0 && { recommendations }),
     };
   }
 
   /**
    * Update environment configuration
    */
-  async updateConfig(updates: Partial<EnvironmentConfig>): Promise<EnvironmentConfig> {
+  async updateConfig(
+    updates: Partial<EnvironmentConfig>
+  ): Promise<EnvironmentConfig> {
     if (!this.config) {
       throw new Error('No configuration loaded');
     }
@@ -178,12 +190,12 @@ export class EnvironmentManager {
       ...updates,
       preferences: {
         ...this.config.preferences,
-        ...(updates.preferences || {})
+        ...(updates.preferences || {}),
       },
       paths: {
         ...this.config.paths,
-        ...(updates.paths || {})
-      }
+        ...(updates.paths || {}),
+      },
     };
 
     await this.saveConfig();
@@ -205,7 +217,7 @@ export class EnvironmentManager {
     if (!this.config) return;
 
     const directories = Object.values(this.config.paths);
-    
+
     for (const dir of directories) {
       await fs.mkdir(dir, { recursive: true });
       logger.debug(`Created directory: ${dir}`);

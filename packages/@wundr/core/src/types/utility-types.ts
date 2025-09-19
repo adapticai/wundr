@@ -6,7 +6,9 @@
 // Base utility types that replace any
 export type SafeAny = Record<string, unknown>;
 export type SafeFunction = (...args: readonly unknown[]) => unknown;
-export type SafeAsyncFunction = (...args: readonly unknown[]) => Promise<unknown>;
+export type SafeAsyncFunction = (
+  ...args: readonly unknown[]
+) => Promise<unknown>;
 
 // Object utility types
 export type DeepReadonly<T> = {
@@ -18,10 +20,13 @@ export type DeepPartial<T> = {
 };
 
 export type DeepRequired<T> = {
-  [P in keyof T]-?: T[P] extends object | undefined ? DeepRequired<Required<T[P]>> : T[P];
+  [P in keyof T]-?: T[P] extends object | undefined
+    ? DeepRequired<Required<T[P]>>
+    : T[P];
 };
 
-export type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type OptionalFields<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;
 
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
@@ -34,19 +39,46 @@ export type PickByType<T, U> = Pick<T, KeysOfType<T, U>>;
 export type OmitByType<T, U> = Omit<T, KeysOfType<T, U>>;
 
 // Function utility types
-export type Parameters<T extends SafeFunction> = T extends (...args: infer P) => unknown ? P : never;
-export type ReturnType<T extends SafeFunction> = T extends (...args: readonly unknown[]) => infer R ? R : unknown;
+export type Parameters<T extends SafeFunction> = T extends (
+  ...args: infer P
+) => unknown
+  ? P
+  : never;
+export type ReturnType<T extends SafeFunction> = T extends (
+  ...args: readonly unknown[]
+) => infer R
+  ? R
+  : unknown;
 
-export type AsyncReturnType<T extends SafeAsyncFunction> = T extends (...args: readonly unknown[]) => Promise<infer R> ? R : unknown;
+export type AsyncReturnType<T extends SafeAsyncFunction> = T extends (
+  ...args: readonly unknown[]
+) => Promise<infer R>
+  ? R
+  : unknown;
 
 // Array utility types
 export type NonEmptyArray<T> = [T, ...T[]];
-export type ArrayElement<T extends readonly unknown[]> = T extends readonly (infer E)[] ? E : never;
-export type Head<T extends readonly unknown[]> = T extends readonly [infer H, ...unknown[]] ? H : never;
-export type Tail<T extends readonly unknown[]> = T extends readonly [unknown, ...infer R] ? R : [];
+export type ArrayElement<T extends readonly unknown[]> =
+  T extends readonly (infer E)[] ? E : never;
+export type Head<T extends readonly unknown[]> = T extends readonly [
+  infer H,
+  ...unknown[],
+]
+  ? H
+  : never;
+export type Tail<T extends readonly unknown[]> = T extends readonly [
+  unknown,
+  ...infer R,
+]
+  ? R
+  : [];
 
 // String utility types
-export type StringLiteral<T> = T extends string ? string extends T ? never : T : never;
+export type StringLiteral<T> = T extends string
+  ? string extends T
+    ? never
+    : T
+  : never;
 export type NonEmptyString<T extends string> = T extends '' ? never : T;
 
 // Conditional type utilities
@@ -55,11 +87,18 @@ export type Nullable<T> = T | null;
 export type OptionalValue<T> = T | undefined;
 
 // Union/intersection utilities
-export type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+export type UnionToIntersection<U> = (
+  U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void
+  ? I
+  : never;
 
 export type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true;
 
-export type UnionToTuple<T> = UnionToIntersection<T extends unknown ? () => T : never> extends () => infer W ? [...UnionToTuple<Exclude<T, W>>, W] : [];
+export type UnionToTuple<T> =
+  UnionToIntersection<T extends unknown ? () => T : never> extends () => infer W
+    ? [...UnionToTuple<Exclude<T, W>>, W]
+    : [];
 
 // Error handling types
 export type Result<TData, TError = Error> =
@@ -90,7 +129,8 @@ export type UUID = Brand<string, 'UUID'>;
 
 // Factory functions for branded types
 export const UserId = (value: string): UserId => value as UserId;
-export const EmailAddress = (value: string): EmailAddress => value as EmailAddress;
+export const EmailAddress = (value: string): EmailAddress =>
+  value as EmailAddress;
 export const Timestamp = (value: number): Timestamp => value as Timestamp;
 export const UUID = (value: string): UUID => value as UUID;
 
@@ -143,10 +183,21 @@ export interface EventHandler<TEvent extends TypedEvent<string, SafeAny>> {
   (event: TEvent): void | Promise<void>;
 }
 
-export interface EventEmitter<TEventMap extends Record<string, TypedEvent<string, SafeAny>>> {
-  on<TEventType extends keyof TEventMap>(type: TEventType, handler: EventHandler<TEventMap[TEventType]>): void;
-  off<TEventType extends keyof TEventMap>(type: TEventType, handler: EventHandler<TEventMap[TEventType]>): void;
-  emit<TEventType extends keyof TEventMap>(type: TEventType, payload: TEventMap[TEventType]['payload']): void;
+export interface EventEmitter<
+  TEventMap extends Record<string, TypedEvent<string, SafeAny>>,
+> {
+  on<TEventType extends keyof TEventMap>(
+    type: TEventType,
+    handler: EventHandler<TEventMap[TEventType]>
+  ): void;
+  off<TEventType extends keyof TEventMap>(
+    type: TEventType,
+    handler: EventHandler<TEventMap[TEventType]>
+  ): void;
+  emit<TEventType extends keyof TEventMap>(
+    type: TEventType,
+    payload: TEventMap[TEventType]['payload']
+  ): void;
 }
 
 // API types
@@ -177,7 +228,9 @@ export interface EntityBase {
 }
 
 export type CreateInput<T extends EntityBase> = Omit<T, keyof EntityBase>;
-export type UpdateInput<T extends EntityBase> = Partial<Omit<T, keyof EntityBase>>;
+export type UpdateInput<T extends EntityBase> = Partial<
+  Omit<T, keyof EntityBase>
+>;
 
 export interface Repository<TEntity extends EntityBase, TId = string> {
   findById(id: TId): Promise<TEntity | null>;
@@ -276,15 +329,23 @@ export interface MockFunction<TArgs extends readonly unknown[], TReturn> {
 }
 
 // Type predicates and guards
-export const isString = (value: unknown): value is string => typeof value === 'string';
-export const isNumber = (value: unknown): value is number => typeof value === 'number' && !isNaN(value);
-export const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
-export const isObject = (value: unknown): value is SafeAny => typeof value === 'object' && value !== null && !Array.isArray(value);
-export const isArray = (value: unknown): value is readonly unknown[] => Array.isArray(value);
-export const isFunction = (value: unknown): value is SafeFunction => typeof value === 'function';
-export const isPromise = (value: unknown): value is Promise<unknown> => value instanceof Promise;
+export const isString = (value: unknown): value is string =>
+  typeof value === 'string';
+export const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && !isNaN(value);
+export const isBoolean = (value: unknown): value is boolean =>
+  typeof value === 'boolean';
+export const isObject = (value: unknown): value is SafeAny =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+export const isArray = (value: unknown): value is readonly unknown[] =>
+  Array.isArray(value);
+export const isFunction = (value: unknown): value is SafeFunction =>
+  typeof value === 'function';
+export const isPromise = (value: unknown): value is Promise<unknown> =>
+  value instanceof Promise;
 export const isDate = (value: unknown): value is Date => value instanceof Date;
-export const isError = (value: unknown): value is Error => value instanceof Error;
+export const isError = (value: unknown): value is Error =>
+  value instanceof Error;
 
 // Assertion functions
 export const assertIsString = (value: unknown): asserts value is string => {
@@ -299,11 +360,15 @@ export const assertIsObject = (value: unknown): asserts value is SafeAny => {
   if (!isObject(value)) throw new TypeError('Expected object');
 };
 
-export const assertIsArray = (value: unknown): asserts value is readonly unknown[] => {
+export const assertIsArray = (
+  value: unknown
+): asserts value is readonly unknown[] => {
   if (!isArray(value)) throw new TypeError('Expected array');
 };
 
-export const assertIsFunction = (value: unknown): asserts value is SafeFunction => {
+export const assertIsFunction = (
+  value: unknown
+): asserts value is SafeFunction => {
   if (!isFunction(value)) throw new TypeError('Expected function');
 };
 
@@ -312,8 +377,8 @@ export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? RecursivePartial<U>[]
     : T[P] extends object
-    ? RecursivePartial<T[P]>
-    : T[P];
+      ? RecursivePartial<T[P]>
+      : T[P];
 };
 
 export type PathsToStringProps<T> = T extends string
@@ -322,11 +387,14 @@ export type PathsToStringProps<T> = T extends string
       [K in keyof T]: T[K] extends string
         ? [K]
         : T[K] extends object
-        ? [K, ...PathsToStringProps<T[K]>]
-        : never;
+          ? [K, ...PathsToStringProps<T[K]>]
+          : never;
     }[keyof T];
 
-export type Join<T extends readonly string[], D extends string> = T extends readonly [infer F, ...infer R]
+export type Join<
+  T extends readonly string[],
+  D extends string,
+> = T extends readonly [infer F, ...infer R]
   ? F extends string
     ? R extends readonly string[]
       ? R['length'] extends 0
@@ -342,7 +410,11 @@ export interface EnvironmentConfig {
 }
 
 export type TypedEnvironmentConfig<T extends Record<string, unknown>> = {
-  readonly [K in keyof T]: T[K] extends string ? string : T[K] extends number ? number : string;
+  readonly [K in keyof T]: T[K] extends string
+    ? string
+    : T[K] extends number
+      ? number
+      : string;
 };
 
 // Utility types are already exported above

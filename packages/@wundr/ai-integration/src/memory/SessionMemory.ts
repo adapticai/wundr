@@ -1,13 +1,19 @@
 /**
  * Session Memory - In-session memory management
- * 
+ *
  * Manages memory within active sessions, handling real-time data storage,
  * retrieval, and context management for AI Integration operations.
  */
 
 import { EventEmitter } from 'eventemitter3';
 
-import { MemoryEntry, MemoryType, Agent, Task, OperationResult } from '../types';
+import {
+  MemoryEntry,
+  MemoryType,
+  Agent,
+  Task,
+  OperationResult,
+} from '../types';
 
 export interface SessionContext {
   sessionId: string;
@@ -34,7 +40,7 @@ export class SessionMemory extends EventEmitter {
     this.setupCleanupInterval();
     return {
       success: true,
-      message: 'Session Memory initialized successfully'
+      message: 'Session Memory initialized successfully',
     };
   }
 
@@ -42,8 +48,10 @@ export class SessionMemory extends EventEmitter {
    * Create a new session
    */
   createSession(sessionId?: string, metadata?: any): string {
-    const id = sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+    const id =
+      sessionId ||
+      `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     const context: SessionContext = {
       sessionId: id,
       startTime: new Date(),
@@ -51,12 +59,12 @@ export class SessionMemory extends EventEmitter {
       agents: new Map(),
       tasks: new Map(),
       memory: new Map(),
-      metadata: metadata || {}
+      metadata: metadata || {},
     };
 
     this.sessions.set(id, context);
     this.currentSessionId = id;
-    
+
     this.emit('session-created', context);
     return id;
   }
@@ -78,11 +86,11 @@ export class SessionMemory extends EventEmitter {
     if (!this.sessions.has(sessionId)) {
       return false;
     }
-    
+
     this.currentSessionId = sessionId;
     const context = this.sessions.get(sessionId)!;
     context.lastActivity = new Date();
-    
+
     this.emit('session-switched', context);
     return true;
   }
@@ -122,7 +130,7 @@ export class SessionMemory extends EventEmitter {
       createdAt: new Date(),
       tags: options?.tags || [],
       metadata: {},
-      ...(options?.ttl && { expiresAt: new Date(Date.now() + options.ttl) })
+      ...(options?.ttl && { expiresAt: new Date(Date.now() + options.ttl) }),
     };
 
     // Check memory limits
@@ -204,7 +212,7 @@ export class SessionMemory extends EventEmitter {
 
     // Filter by tags
     if (criteria.tags && criteria.tags.length > 0) {
-      entries = entries.filter(e => 
+      entries = entries.filter(e =>
         criteria.tags!.some(tag => e.tags.includes(tag))
       );
     }
@@ -231,7 +239,7 @@ export class SessionMemory extends EventEmitter {
    * Update memory entry
    */
   update(
-    entryId: string, 
+    entryId: string,
     updates: Partial<MemoryEntry>,
     sessionId?: string
   ): boolean {
@@ -321,12 +329,18 @@ export class SessionMemory extends EventEmitter {
 
       // Count by agent
       if (entry.agentId) {
-        memoryByAgent.set(entry.agentId, (memoryByAgent.get(entry.agentId) || 0) + 1);
+        memoryByAgent.set(
+          entry.agentId,
+          (memoryByAgent.get(entry.agentId) || 0) + 1
+        );
       }
 
       // Count by task
       if (entry.taskId) {
-        memoryByTask.set(entry.taskId, (memoryByTask.get(entry.taskId) || 0) + 1);
+        memoryByTask.set(
+          entry.taskId,
+          (memoryByTask.get(entry.taskId) || 0) + 1
+        );
       }
     });
 
@@ -341,7 +355,7 @@ export class SessionMemory extends EventEmitter {
       memoryByType: Object.fromEntries(memoryByType),
       memoryByAgent: Object.fromEntries(memoryByAgent),
       memoryByTask: Object.fromEntries(memoryByTask),
-      availableTags: Array.from(this.memoryIndex.keys())
+      availableTags: Array.from(this.memoryIndex.keys()),
     };
   }
 
@@ -427,14 +441,20 @@ export class SessionMemory extends EventEmitter {
       this.delete(entries[i].id, context.sessionId);
     }
 
-    this.emit('memory-evicted', { sessionId: context.sessionId, count: toRemove });
+    this.emit('memory-evicted', {
+      sessionId: context.sessionId,
+      count: toRemove,
+    });
   }
 
   private setupCleanupInterval(): void {
     // Clean up expired entries every 5 minutes
-    setInterval(() => {
-      this.cleanupExpiredEntries();
-    }, 5 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupExpiredEntries();
+      },
+      5 * 60 * 1000
+    );
   }
 
   private cleanupExpiredEntries(): void {
@@ -443,7 +463,7 @@ export class SessionMemory extends EventEmitter {
 
     this.sessions.forEach(context => {
       const expiredIds: string[] = [];
-      
+
       context.memory.forEach(entry => {
         if (entry.expiresAt && entry.expiresAt <= now) {
           expiredIds.push(entry.id);
@@ -468,7 +488,7 @@ export class SessionMemory extends EventEmitter {
 
     return {
       success: true,
-      message: 'Session Memory shutdown completed'
+      message: 'Session Memory shutdown completed',
     };
   }
 }

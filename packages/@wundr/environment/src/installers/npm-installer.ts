@@ -2,7 +2,11 @@
  * NPM installer for Node.js packages
  */
 
-import { ToolConfiguration, InstallationResult, ValidationResult } from '../types';
+import {
+  ToolConfiguration,
+  InstallationResult,
+  ValidationResult,
+} from '../types';
 import { BaseInstaller } from './base-installer';
 import { createLogger } from '../utils/logger';
 
@@ -17,13 +21,13 @@ export class NpmInstaller extends BaseInstaller {
         success: false,
         tool: tool.name,
         message: 'NPM is not available',
-        errors: ['Node.js and NPM must be installed first']
+        errors: ['Node.js and NPM must be installed first'],
       };
     }
 
     const packageName = this.getPackageName(tool.name);
     const installCommand = `npm install -g ${packageName}`;
-    
+
     const result = await this.executeCommand(installCommand);
 
     if (result.success) {
@@ -34,14 +38,14 @@ export class NpmInstaller extends BaseInstaller {
           tool: tool.name,
           ...(validation.version && { version: validation.version }),
           message: `Successfully installed ${tool.name}`,
-          ...(result.stderr && { warnings: [result.stderr] })
+          ...(result.stderr && { warnings: [result.stderr] }),
         };
       } else {
         return {
           success: false,
           tool: tool.name,
           message: 'Installation completed but validation failed',
-          ...(validation.issues && { errors: validation.issues })
+          ...(validation.issues && { errors: validation.issues }),
         };
       }
     }
@@ -50,7 +54,7 @@ export class NpmInstaller extends BaseInstaller {
       success: false,
       tool: tool.name,
       message: `Failed to install ${tool.name}`,
-      errors: [result.stderr || 'Unknown error']
+      errors: [result.stderr || 'Unknown error'],
     };
   }
 
@@ -63,20 +67,22 @@ export class NpmInstaller extends BaseInstaller {
         valid: false,
         tool: tool.name,
         issues: [`Command '${commandName}' not found in PATH`],
-        suggestions: [`Install ${tool.name} using: npm install -g ${this.getPackageName(tool.name)}`]
+        suggestions: [
+          `Install ${tool.name} using: npm install -g ${this.getPackageName(tool.name)}`,
+        ],
       };
     }
 
     // Get version
     const versionCommand = this.getVersionCommand(tool.name);
     const versionResult = await this.executeCommand(versionCommand);
-    
+
     if (!versionResult.success) {
       return {
         valid: false,
         tool: tool.name,
         issues: ['Could not determine version'],
-        suggestions: [`Verify ${tool.name} installation`]
+        suggestions: [`Verify ${tool.name} installation`],
       };
     }
 
@@ -88,15 +94,19 @@ export class NpmInstaller extends BaseInstaller {
         valid: false,
         tool: tool.name,
         version,
-        issues: [`Version ${version} does not meet requirement ${tool.version}`],
-        suggestions: [`Update ${tool.name}: npm update -g ${this.getPackageName(tool.name)}`]
+        issues: [
+          `Version ${version} does not meet requirement ${tool.version}`,
+        ],
+        suggestions: [
+          `Update ${tool.name}: npm update -g ${this.getPackageName(tool.name)}`,
+        ],
       };
     }
 
     return {
       valid: true,
       tool: tool.name,
-      version
+      version,
     };
   }
 
@@ -109,12 +119,12 @@ export class NpmInstaller extends BaseInstaller {
    */
   private getPackageName(toolName: string): string {
     const packageMap: Record<string, string> = {
-      'pnpm': '@pnpm/exe',
-      'yarn': 'yarn',
+      pnpm: '@pnpm/exe',
+      yarn: 'yarn',
       'claude-flow': 'claude-flow@alpha',
-      'typescript': 'typescript',
-      'eslint': 'eslint',
-      'prettier': 'prettier'
+      typescript: 'typescript',
+      eslint: 'eslint',
+      prettier: 'prettier',
     };
 
     return packageMap[toolName] || toolName;
@@ -125,7 +135,7 @@ export class NpmInstaller extends BaseInstaller {
    */
   private getCommandName(toolName: string): string {
     const commandMap: Record<string, string> = {
-      'claude-flow': 'claude-flow'
+      'claude-flow': 'claude-flow',
     };
 
     return commandMap[toolName] || toolName;
@@ -136,12 +146,12 @@ export class NpmInstaller extends BaseInstaller {
    */
   private getVersionCommand(toolName: string): string {
     const versionCommands: Record<string, string> = {
-      'pnpm': 'pnpm --version',
-      'yarn': 'yarn --version',
+      pnpm: 'pnpm --version',
+      yarn: 'yarn --version',
       'claude-flow': 'claude-flow --version',
-      'typescript': 'tsc --version',
-      'eslint': 'eslint --version',
-      'prettier': 'prettier --version'
+      typescript: 'tsc --version',
+      eslint: 'eslint --version',
+      prettier: 'prettier --version',
     };
 
     return versionCommands[toolName] || `${toolName} --version`;

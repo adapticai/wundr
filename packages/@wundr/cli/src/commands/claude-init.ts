@@ -29,14 +29,22 @@ export class ClaudeInitCommand {
     this.program
       .command('claude-init')
       .alias('ci')
-      .description('Initialize Claude Code and Claude Flow in current repository')
+      .description(
+        'Initialize Claude Code and Claude Flow in current repository'
+      )
       .option('-i, --interactive', 'Interactive mode with prompts')
       .option('-a, --audit', 'Run repository audit first')
       .option('-f, --force', 'Force overwrite existing CLAUDE.md')
       .option('--agents <agents>', 'Comma-separated list of agents to enable')
-      .option('--mcp-tools <tools>', 'Comma-separated list of MCP tools to enable')
-      .option('--profile <profile>', 'Developer profile (fullstack, frontend, backend, devops)')
-      .action(async (options) => {
+      .option(
+        '--mcp-tools <tools>',
+        'Comma-separated list of MCP tools to enable'
+      )
+      .option(
+        '--profile <profile>',
+        'Developer profile (fullstack, frontend, backend, devops)'
+      )
+      .action(async options => {
         await this.execute(options);
       });
   }
@@ -46,7 +54,11 @@ export class ClaudeInitCommand {
 
     // Check if in a git repository
     if (!this.isGitRepo()) {
-      console.error(chalk.red('❌ Not in a git repository. Please run this command in a git repository.'));
+      console.error(
+        chalk.red(
+          '❌ Not in a git repository. Please run this command in a git repository.'
+        )
+      );
       process.exit(1);
     }
 
@@ -74,7 +86,9 @@ export class ClaudeInitCommand {
     await this.setupMcpTools(options.mcpTools);
 
     // Setup agents
-    await this.setupAgents(options.agents || this.getDefaultAgents(projectInfo));
+    await this.setupAgents(
+      options.agents || this.getDefaultAgents(projectInfo)
+    );
 
     // Setup quality hooks
     await this.setupQualityHooks(projectInfo);
@@ -104,7 +118,7 @@ export class ClaudeInitCommand {
       hasNext: false,
       isMonorepo: false,
       scripts: {},
-      dependencies: []
+      dependencies: [],
     };
 
     // Read package.json if it exists
@@ -116,18 +130,20 @@ export class ClaudeInitCommand {
       projectInfo.scripts = pkg.scripts || {};
       projectInfo.dependencies = [
         ...Object.keys(pkg.dependencies || {}),
-        ...Object.keys(pkg.devDependencies || {})
+        ...Object.keys(pkg.devDependencies || {}),
       ];
     }
 
     // Detect project type
     projectInfo.hasTypeScript = await fs.pathExists('tsconfig.json');
     projectInfo.hasReact = projectInfo.dependencies.includes('react');
-    projectInfo.hasNext = await fs.pathExists('next.config.js') || 
-                          await fs.pathExists('next.config.mjs');
-    projectInfo.isMonorepo = await fs.pathExists('lerna.json') || 
-                             await fs.pathExists('pnpm-workspace.yaml') ||
-                             await fs.pathExists('rush.json');
+    projectInfo.hasNext =
+      (await fs.pathExists('next.config.js')) ||
+      (await fs.pathExists('next.config.mjs'));
+    projectInfo.isMonorepo =
+      (await fs.pathExists('lerna.json')) ||
+      (await fs.pathExists('pnpm-workspace.yaml')) ||
+      (await fs.pathExists('rush.json'));
 
     // Determine project type
     if (projectInfo.hasNext) {
@@ -144,7 +160,9 @@ export class ClaudeInitCommand {
       projectInfo.type = 'javascript';
     }
 
-    this.spinner.succeed(`Project analyzed: ${projectInfo.name} (${projectInfo.type})`);
+    this.spinner.succeed(
+      `Project analyzed: ${projectInfo.name} (${projectInfo.type})`
+    );
     return projectInfo;
   }
 
@@ -159,31 +177,36 @@ export class ClaudeInitCommand {
         quality: { score: 0, maxScore: 20 },
         testing: { score: 0, maxScore: 20 },
         documentation: { score: 0, maxScore: 20 },
-        security: { score: 0, maxScore: 20 }
+        security: { score: 0, maxScore: 20 },
       },
-      recommendations: [] as string[]
+      recommendations: [] as string[],
     };
 
     // Structure checks
-    if (await fs.pathExists('src')) auditResults.categories.structure.score += 10;
-    if (await fs.pathExists('.gitignore')) auditResults.categories.structure.score += 5;
-    if (projectInfo.isMonorepo && await fs.pathExists('packages')) {
+    if (await fs.pathExists('src'))
+      auditResults.categories.structure.score += 10;
+    if (await fs.pathExists('.gitignore'))
+      auditResults.categories.structure.score += 5;
+    if (projectInfo.isMonorepo && (await fs.pathExists('packages'))) {
       auditResults.categories.structure.score += 5;
     }
 
     // Quality checks
-    if (await fs.pathExists('.eslintrc.json') || await fs.pathExists('.eslintrc.js')) {
+    if (
+      (await fs.pathExists('.eslintrc.json')) ||
+      (await fs.pathExists('.eslintrc.js'))
+    ) {
       auditResults.categories.quality.score += 10;
     } else {
       auditResults.recommendations.push('Add ESLint configuration');
     }
-    
+
     if (await fs.pathExists('.prettierrc')) {
       auditResults.categories.quality.score += 5;
     } else {
       auditResults.recommendations.push('Add Prettier configuration');
     }
-    
+
     if (projectInfo.hasTypeScript) {
       auditResults.categories.quality.score += 5;
     }
@@ -194,8 +217,11 @@ export class ClaudeInitCommand {
     } else {
       auditResults.recommendations.push('Add test script to package.json');
     }
-    
-    if (await fs.pathExists('jest.config.js') || await fs.pathExists('vitest.config.js')) {
+
+    if (
+      (await fs.pathExists('jest.config.js')) ||
+      (await fs.pathExists('vitest.config.js'))
+    ) {
       auditResults.categories.testing.score += 10;
     }
 
@@ -205,20 +231,22 @@ export class ClaudeInitCommand {
     } else {
       auditResults.recommendations.push('Add README.md');
     }
-    
+
     if (await fs.pathExists('docs')) {
       auditResults.categories.documentation.score += 10;
     }
 
     // Security checks
-    if (!await fs.pathExists('.env')) {
+    if (!(await fs.pathExists('.env'))) {
       auditResults.categories.security.score += 10;
     }
-    
+
     if (await fs.pathExists('.env.example')) {
       auditResults.categories.security.score += 10;
     } else if (await fs.pathExists('.env')) {
-      auditResults.recommendations.push('Add .env.example for environment variables');
+      auditResults.recommendations.push(
+        'Add .env.example for environment variables'
+      );
     }
 
     // Calculate total score
@@ -227,15 +255,28 @@ export class ClaudeInitCommand {
     }
 
     this.spinner.succeed('Audit complete');
-    
+
     // Display results
     console.log(chalk.cyan('\n📊 Audit Results:'));
-    console.log(chalk.white(`Overall Score: ${auditResults.score}/${auditResults.maxScore}`));
-    
+    console.log(
+      chalk.white(
+        `Overall Score: ${auditResults.score}/${auditResults.maxScore}`
+      )
+    );
+
     for (const [name, category] of Object.entries(auditResults.categories)) {
       const percentage = (category.score / category.maxScore) * 100;
-      const color = percentage >= 80 ? chalk.green : percentage >= 50 ? chalk.yellow : chalk.red;
-      console.log(color(`  ${name}: ${category.score}/${category.maxScore} (${percentage.toFixed(0)}%)`));
+      const color =
+        percentage >= 80
+          ? chalk.green
+          : percentage >= 50
+            ? chalk.yellow
+            : chalk.red;
+      console.log(
+        color(
+          `  ${name}: ${category.score}/${category.maxScore} (${percentage.toFixed(0)}%)`
+        )
+      );
     }
 
     if (auditResults.recommendations.length > 0) {
@@ -252,7 +293,7 @@ export class ClaudeInitCommand {
         type: 'confirm',
         name: 'setupClaudeFlow',
         message: 'Setup Claude Flow orchestration?',
-        default: true
+        default: true,
       },
       {
         type: 'checkbox',
@@ -263,9 +304,12 @@ export class ClaudeInitCommand {
           { name: 'Context7 (Context management)', value: 'context7' },
           { name: 'Playwright (Browser automation)', value: 'playwright' },
           { name: 'Browser MCP (Chrome control)', value: 'browser' },
-          { name: 'Sequential Thinking (MIT reasoning)', value: 'sequentialthinking' }
+          {
+            name: 'Sequential Thinking (MIT reasoning)',
+            value: 'sequentialthinking',
+          },
         ],
-        default: this.getDefaultMcpTools(projectInfo)
+        default: this.getDefaultMcpTools(projectInfo),
       },
       {
         type: 'list',
@@ -276,10 +320,10 @@ export class ClaudeInitCommand {
           { name: 'Frontend Developer', value: 'frontend' },
           { name: 'Backend Developer', value: 'backend' },
           { name: 'DevOps Engineer', value: 'devops' },
-          { name: 'Custom', value: 'custom' }
+          { name: 'Custom', value: 'custom' },
         ],
-        default: this.getDefaultProfile(projectInfo)
-      }
+        default: this.getDefaultProfile(projectInfo),
+      },
     ]);
 
     if (answers.profile === 'custom') {
@@ -289,8 +333,8 @@ export class ClaudeInitCommand {
           name: 'agents',
           message: 'Select agents to enable:',
           choices: this.getAllAgentChoices(),
-          default: this.getDefaultAgents(projectInfo)
-        }
+          default: this.getDefaultAgents(projectInfo),
+        },
       ]);
       answers.agents = customAgents.agents.join(',');
     }
@@ -307,11 +351,17 @@ export class ClaudeInitCommand {
   }
 
   private getDefaultProfile(projectInfo: ProjectInfo): string {
-    if (projectInfo.hasNext || (projectInfo.hasReact && projectInfo.dependencies.includes('express'))) {
+    if (
+      projectInfo.hasNext ||
+      (projectInfo.hasReact && projectInfo.dependencies.includes('express'))
+    ) {
       return 'fullstack';
     } else if (projectInfo.hasReact) {
       return 'frontend';
-    } else if (projectInfo.dependencies.includes('express') || projectInfo.dependencies.includes('fastify')) {
+    } else if (
+      projectInfo.dependencies.includes('express') ||
+      projectInfo.dependencies.includes('fastify')
+    ) {
       return 'backend';
     }
     return 'fullstack';
@@ -319,7 +369,7 @@ export class ClaudeInitCommand {
 
   private getDefaultAgents(projectInfo: ProjectInfo): string[] {
     const agents = ['coder', 'reviewer', 'tester', 'planner', 'researcher'];
-    
+
     if (projectInfo.hasTypeScript) {
       agents.push('system-architect');
     }
@@ -329,7 +379,7 @@ export class ClaudeInitCommand {
     if (projectInfo.isMonorepo) {
       agents.push('repo-architect', 'sync-coordinator');
     }
-    
+
     return agents;
   }
 
@@ -340,7 +390,10 @@ export class ClaudeInitCommand {
       { name: 'Tester - Testing specialist', value: 'tester' },
       { name: 'Planner - Strategic planning', value: 'planner' },
       { name: 'Researcher - Information gathering', value: 'researcher' },
-      { name: 'System Architect - Architecture design', value: 'system-architect' },
+      {
+        name: 'System Architect - Architecture design',
+        value: 'system-architect',
+      },
       { name: 'Mobile Dev - React Native development', value: 'mobile-dev' },
       { name: 'Backend Dev - API development', value: 'backend-dev' },
       { name: 'ML Developer - Machine learning', value: 'ml-developer' },
@@ -349,32 +402,40 @@ export class ClaudeInitCommand {
       { name: 'GitHub Modes - GitHub integration', value: 'github-modes' },
       { name: 'PR Manager - Pull request management', value: 'pr-manager' },
       { name: 'Issue Tracker - Issue management', value: 'issue-tracker' },
-      { name: 'Release Manager - Release coordination', value: 'release-manager' }
+      {
+        name: 'Release Manager - Release coordination',
+        value: 'release-manager',
+      },
     ];
   }
 
-  private async generateClaudeMd(projectInfo: ProjectInfo, options: any): Promise<void> {
+  private async generateClaudeMd(
+    projectInfo: ProjectInfo,
+    options: any
+  ): Promise<void> {
     this.spinner.start('Generating CLAUDE.md...');
 
     const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
-    
-    if (await fs.pathExists(claudeMdPath) && !options.force) {
+
+    if ((await fs.pathExists(claudeMdPath)) && !options.force) {
       const { overwrite } = await inquirer.prompt([
         {
           type: 'confirm',
           name: 'overwrite',
           message: 'CLAUDE.md already exists. Overwrite?',
-          default: false
-        }
+          default: false,
+        },
       ]);
-      
+
       if (!overwrite) {
         this.spinner.warn('Skipped CLAUDE.md generation');
         return;
       }
     }
 
-    const agents = options.agents ? options.agents.split(',') : this.getDefaultAgents(projectInfo);
+    const agents = options.agents
+      ? options.agents.split(',')
+      : this.getDefaultAgents(projectInfo);
     const mcpTools = options.mcpTools || this.getDefaultMcpTools(projectInfo);
 
     const content = `# Claude Code Configuration - ${projectInfo.name}
@@ -436,11 +497,11 @@ By: Wundr Claude Init
 
   private getAgentDescription(agent: string): string {
     const descriptions: Record<string, string> = {
-      'coder': 'Implementation and code generation',
-      'reviewer': 'Code review and quality assurance',
-      'tester': 'Testing and validation',
-      'planner': 'Task planning and orchestration',
-      'researcher': 'Research and information gathering',
+      coder: 'Implementation and code generation',
+      reviewer: 'Code review and quality assurance',
+      tester: 'Testing and validation',
+      planner: 'Task planning and orchestration',
+      researcher: 'Research and information gathering',
       'system-architect': 'System design and architecture',
       'mobile-dev': 'React Native mobile development',
       'backend-dev': 'Backend API development',
@@ -450,23 +511,26 @@ By: Wundr Claude Init
       'github-modes': 'GitHub integration and automation',
       'pr-manager': 'Pull request management',
       'issue-tracker': 'Issue tracking and management',
-      'release-manager': 'Release coordination and deployment'
+      'release-manager': 'Release coordination and deployment',
     };
     return descriptions[agent] || 'Specialized agent';
   }
 
   private getMcpToolDescription(tool: string): string {
     const descriptions: Record<string, string> = {
-      'firecrawl': 'Web scraping and crawling',
-      'context7': 'Context management and vector search',
-      'playwright': 'Browser automation and testing',
-      'browser': 'Real Chrome browser control',
-      'sequentialthinking': 'Structured reasoning and validation'
+      firecrawl: 'Web scraping and crawling',
+      context7: 'Context management and vector search',
+      playwright: 'Browser automation and testing',
+      browser: 'Real Chrome browser control',
+      sequentialthinking: 'Structured reasoning and validation',
     };
     return descriptions[tool] || 'MCP tool';
   }
 
-  private getWorkflowPatterns(projectInfo: ProjectInfo, agents: string[]): string {
+  private getWorkflowPatterns(
+    projectInfo: ProjectInfo,
+    agents: string[]
+  ): string {
     const patterns: string[] = [];
 
     if (projectInfo.hasReact || projectInfo.hasNext) {
@@ -496,7 +560,10 @@ By: Wundr Claude Init
     return patterns.join('\n\n');
   }
 
-  private async setupClaudeFlow(projectInfo: ProjectInfo, options: any): Promise<void> {
+  private async setupClaudeFlow(
+    projectInfo: ProjectInfo,
+    options: any
+  ): Promise<void> {
     if (!options.setupClaudeFlow) return;
 
     this.spinner.start('Setting up Claude Flow...');
@@ -509,15 +576,17 @@ By: Wundr Claude Init
       const config = {
         project: projectInfo.name,
         topology: projectInfo.isMonorepo ? 'hierarchical' : 'mesh',
-        agents: options.agents ? options.agents.split(',') : this.getDefaultAgents(projectInfo),
+        agents: options.agents
+          ? options.agents.split(',')
+          : this.getDefaultAgents(projectInfo),
         memory: {
           backend: 'sqlite',
-          path: '.claude-flow/memory.db'
+          path: '.claude-flow/memory.db',
         },
         neural: {
           enabled: true,
-          modelPath: '.claude-flow/models'
-        }
+          modelPath: '.claude-flow/models',
+        },
       };
 
       await fs.writeJson('.claude-flow/config.json', config, { spaces: 2 });
@@ -532,26 +601,38 @@ By: Wundr Claude Init
     if (!mcpTools) return;
 
     const tools = Array.isArray(mcpTools) ? mcpTools : mcpTools.split(',');
-    
+
     for (const tool of tools) {
       this.spinner.start(`Installing ${tool} MCP...`);
-      
+
       try {
         switch (tool) {
           case 'firecrawl':
-            execSync('npx claude mcp add firecrawl npx @firecrawl/mcp-server', { stdio: 'ignore' });
+            execSync('npx claude mcp add firecrawl npx @firecrawl/mcp-server', {
+              stdio: 'ignore',
+            });
             break;
           case 'context7':
-            execSync('npx claude mcp add context7 npx @context7/mcp-server', { stdio: 'ignore' });
+            execSync('npx claude mcp add context7 npx @context7/mcp-server', {
+              stdio: 'ignore',
+            });
             break;
           case 'playwright':
-            execSync('npx claude mcp add playwright npx @playwright/mcp-server', { stdio: 'ignore' });
+            execSync(
+              'npx claude mcp add playwright npx @playwright/mcp-server',
+              { stdio: 'ignore' }
+            );
             break;
           case 'browser':
-            execSync('npx claude mcp add browser npx @browser/mcp-server', { stdio: 'ignore' });
+            execSync('npx claude mcp add browser npx @browser/mcp-server', {
+              stdio: 'ignore',
+            });
             break;
           case 'sequentialthinking':
-            execSync('npm install -g @modelcontextprotocol/server-sequentialthinking', { stdio: 'ignore' });
+            execSync(
+              'npm install -g @modelcontextprotocol/server-sequentialthinking',
+              { stdio: 'ignore' }
+            );
             break;
         }
         this.spinner.succeed(`${tool} MCP installed`);
@@ -575,15 +656,13 @@ By: Wundr Claude Init
         configuration: {
           maxTokens: 8000,
           temperature: 0.7,
-          topP: 0.9
-        }
+          topP: 0.9,
+        },
       };
 
-      await fs.writeJson(
-        path.join(agentsDir, `${agent}.json`),
-        agentConfig,
-        { spaces: 2 }
-      );
+      await fs.writeJson(path.join(agentsDir, `${agent}.json`), agentConfig, {
+        spaces: 2,
+      });
     }
 
     this.spinner.succeed(`${agents.length} agents configured`);
@@ -608,10 +687,7 @@ ${projectInfo.scripts.test ? 'npm test || exit 1' : ''}
 echo "✅ All quality checks passed!"
 `;
 
-    await fs.writeFile(
-      path.join(hooksDir, 'pre-commit.sh'),
-      preCommitHook
-    );
+    await fs.writeFile(path.join(hooksDir, 'pre-commit.sh'), preCommitHook);
 
     await fs.chmod(path.join(hooksDir, 'pre-commit.sh'), '755');
 
@@ -622,11 +698,18 @@ echo "✅ All quality checks passed!"
     console.log(chalk.cyan('\n📋 Next Steps:'));
     console.log(chalk.white('1. Review and customize CLAUDE.md'));
     console.log(chalk.white('2. Configure API keys for MCP tools (if needed)'));
-    console.log(chalk.white('3. Restart Claude Desktop to load new configurations'));
-    console.log(chalk.white('4. Run: npx claude-flow@alpha sparc tdd "your first feature"'));
+    console.log(
+      chalk.white('3. Restart Claude Desktop to load new configurations')
+    );
+    console.log(
+      chalk.white(
+        '4. Run: npx claude-flow@alpha sparc tdd "your first feature"'
+      )
+    );
     console.log(chalk.cyan('\n🚀 Happy coding with Claude!\n'));
   }
 }
 
-const createClaudeInitCommand = (program: Command) => new ClaudeInitCommand(program);
+const createClaudeInitCommand = (program: Command) =>
+  new ClaudeInitCommand(program);
 export default createClaudeInitCommand;

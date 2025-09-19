@@ -58,9 +58,12 @@ export class ConversationManager extends EventEmitter {
   private config: ConversationConfig;
   private sessionCleanupTimer?: NodeJS.Timeout;
 
-  constructor(claudeClient: ClaudeClient, config: Partial<ConversationConfig> = {}) {
+  constructor(
+    claudeClient: ClaudeClient,
+    config: Partial<ConversationConfig> = {}
+  ) {
     super();
-    
+
     this.claudeClient = claudeClient;
     this.config = {
       maxHistoryLength: 100,
@@ -69,26 +72,30 @@ export class ConversationManager extends EventEmitter {
       persistencePath: path.join(process.cwd(), '.wundr', 'conversations'),
       autoSave: true,
       compressionThreshold: 50,
-      ...config
+      ...config,
     };
-    
+
     this.activeSessions = new Map();
-    
+
     this.initializeManager();
   }
 
   /**
    * Create a new conversation session
    */
-  async createSession(options: {
-    id?: string;
-    model?: string;
-    context?: string;
-    tags?: string[];
-    metadata?: Partial<SessionMetadata>;
-  } = {}): Promise<EnhancedChatSession> {
-    const sessionId = options.id || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+  async createSession(
+    options: {
+      id?: string;
+      model?: string;
+      context?: string;
+      tags?: string[];
+      metadata?: Partial<SessionMetadata>;
+    } = {}
+  ): Promise<EnhancedChatSession> {
+    const sessionId =
+      options.id ||
+      `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     const session: EnhancedChatSession = {
       id: sessionId,
       model: options.model || this.claudeClient.getModelInfo().model,
@@ -101,17 +108,21 @@ export class ConversationManager extends EventEmitter {
       tags: options.tags || [],
       metadata: {
         tokenUsage: { total: 0, prompt: 0, completion: 0 },
-        performance: { averageResponseTime: 0, totalRequests: 0, errorCount: 0 },
+        performance: {
+          averageResponseTime: 0,
+          totalRequests: 0,
+          errorCount: 0,
+        },
         context: {
           userPreferences: {},
-          ...options.metadata?.context
+          ...options.metadata?.context,
         },
-        ...options.metadata
-      }
+        ...options.metadata,
+      },
     };
 
     this.activeSessions.set(sessionId, session);
-    
+
     if (this.config.autoSave) {
       await this.persistSession(session);
     }
@@ -139,13 +150,13 @@ export class ConversationManager extends EventEmitter {
       if (await fs.pathExists(sessionPath)) {
         const data = await fs.readJson(sessionPath);
         const session = this.deserializeSession(data);
-        
+
         session.lastAccessed = new Date();
         this.activeSessions.set(sessionId, session);
-        
+
         this.emit('session_loaded', { sessionId, session });
         logger.debug(`Loaded conversation session: ${sessionId}`);
-        
+
         return session;
       }
     } catch (error) {
@@ -180,36 +191,49 @@ export class ConversationManager extends EventEmitter {
         role: 'user',
         content: message,
         timestamp: new Date(),
-        metadata: options.metadata
+        metadata: options.metadata,
       };
 
       session.history.push(userMessage);
-      
+
       // Optimize conversation context
       const contextMessages = this.optimizeContext(session);
-      
+
       // Convert to Claude message format
       const claudeMessages: ClaudeMessage[] = contextMessages.map(msg => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content,
       }));
 
       // Send to Claude
       let response: string | AsyncGenerator<string, void, unknown>;
-      
+
       if (options.streaming) {
-        response = this.claudeClient.streamConversation(claudeMessages, options.systemPrompt);
+        response = this.claudeClient.streamConversation(
+          claudeMessages,
+          options.systemPrompt
+        );
       } else {
-        response = await this.claudeClient.sendConversation(claudeMessages, options.systemPrompt);
+        response = await this.claudeClient.sendConversation(
+          claudeMessages,
+          options.systemPrompt
+        );
       }
 
       // Handle streaming response
       if (options.streaming) {
-        return this.handleStreamingResponse(session, response as AsyncGenerator<string, void, unknown>, startTime);
+        return this.handleStreamingResponse(
+          session,
+          response as AsyncGenerator<string, void, unknown>,
+          startTime
+        );
       } else {
-        return await this.handleSyncResponse(session, response as string, startTime);
+        return await this.handleSyncResponse(
+          session,
+          response as string,
+          startTime
+        );
       }
-
     } catch (error) {
       session.metadata.performance.errorCount++;
       this.emit('message_error', { sessionId, error, message });
@@ -240,15 +264,15 @@ export class ConversationManager extends EventEmitter {
     if (options.from) {
       history = history.filter(msg => msg.timestamp >= options.from!);
     }
-    
+
     if (options.to) {
       history = history.filter(msg => msg.timestamp <= options.to!);
     }
-    
+
     if (options.roles) {
       history = history.filter(msg => options.roles!.includes(msg.role));
     }
-    
+
     if (options.limit) {
       history = history.slice(-options.limit);
     }
@@ -288,7 +312,7 @@ export class ConversationManager extends EventEmitter {
     }
 
     session.updated = new Date();
-    
+
     if (this.config.autoSave) {
       await this.persistSession(session);
     }
@@ -299,11 +323,13 @@ export class ConversationManager extends EventEmitter {
   /**
    * Archive old or inactive sessions
    */
-  async archiveSessions(criteria: {
-    olderThan?: number; // days
-    inactiveFor?: number; // days
-    maxSessions?: number;
-  } = {}): Promise<string[]> {
+  async archiveSessions(
+    criteria: {
+      olderThan?: number; // days
+      inactiveFor?: number; // days
+      maxSessions?: number;
+    } = {}
+  ): Promise<string[]> {
     const archivedSessions: string[] = [];
     const now = new Date();
 
@@ -311,14 +337,17 @@ export class ConversationManager extends EventEmitter {
       let shouldArchive = false;
 
       if (criteria.olderThan) {
-        const ageInDays = (now.getTime() - session.created.getTime()) / (1000 * 60 * 60 * 24);
+        const ageInDays =
+          (now.getTime() - session.created.getTime()) / (1000 * 60 * 60 * 24);
         if (ageInDays > criteria.olderThan) {
           shouldArchive = true;
         }
       }
 
       if (criteria.inactiveFor) {
-        const inactiveInDays = (now.getTime() - session.lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
+        const inactiveInDays =
+          (now.getTime() - session.lastAccessed.getTime()) /
+          (1000 * 60 * 60 * 24);
         if (inactiveInDays > criteria.inactiveFor) {
           shouldArchive = true;
         }
@@ -333,9 +362,13 @@ export class ConversationManager extends EventEmitter {
     }
 
     // Handle maxSessions limit
-    if (criteria.maxSessions && this.activeSessions.size > criteria.maxSessions) {
-      const sessionsByAccess = Array.from(this.activeSessions.entries())
-        .sort(([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime());
+    if (
+      criteria.maxSessions &&
+      this.activeSessions.size > criteria.maxSessions
+    ) {
+      const sessionsByAccess = Array.from(this.activeSessions.entries()).sort(
+        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime()
+      );
 
       const excessCount = this.activeSessions.size - criteria.maxSessions;
       const toArchive = sessionsByAccess.slice(0, excessCount);
@@ -348,7 +381,10 @@ export class ConversationManager extends EventEmitter {
       }
     }
 
-    this.emit('sessions_archived', { count: archivedSessions.length, sessionIds: archivedSessions });
+    this.emit('sessions_archived', {
+      count: archivedSessions.length,
+      sessionIds: archivedSessions,
+    });
     logger.debug(`Archived ${archivedSessions.length} sessions`);
 
     return archivedSessions;
@@ -363,8 +399,14 @@ export class ConversationManager extends EventEmitter {
     dateRange?: { from: Date; to: Date };
     model?: string;
     limit?: number;
-  }): Promise<Array<{ sessionId: string; matches: ChatMessage[]; score: number }>> {
-    const results: Array<{ sessionId: string; matches: ChatMessage[]; score: number }> = [];
+  }): Promise<
+    Array<{ sessionId: string; matches: ChatMessage[]; score: number }>
+  > {
+    const results: Array<{
+      sessionId: string;
+      matches: ChatMessage[];
+      score: number;
+    }> = [];
 
     // Search active sessions
     for (const [sessionId, session] of this.activeSessions) {
@@ -373,7 +415,7 @@ export class ConversationManager extends EventEmitter {
         results.push({
           sessionId,
           matches,
-          score: this.calculateSearchScore(matches, query)
+          score: this.calculateSearchScore(matches, query),
         });
       }
     }
@@ -383,7 +425,7 @@ export class ConversationManager extends EventEmitter {
 
     // Sort by score and apply limit
     results.sort((a, b) => b.score - a.score);
-    
+
     if (query.limit) {
       results.splice(query.limit);
     }
@@ -405,23 +447,28 @@ export class ConversationManager extends EventEmitter {
         performance: session.metadata.performance,
         created: session.created,
         lastAccessed: session.lastAccessed,
-        tags: session.tags
+        tags: session.tags,
       };
     }
 
     // Global stats
     const totalSessions = this.activeSessions.size;
-    const totalMessages = Array.from(this.activeSessions.values())
-      .reduce((sum, session) => sum + session.history.length, 0);
-    
-    const totalTokens = Array.from(this.activeSessions.values())
-      .reduce((sum, session) => sum + session.metadata.tokenUsage.total, 0);
+    const totalMessages = Array.from(this.activeSessions.values()).reduce(
+      (sum, session) => sum + session.history.length,
+      0
+    );
+
+    const totalTokens = Array.from(this.activeSessions.values()).reduce(
+      (sum, session) => sum + session.metadata.tokenUsage.total,
+      0
+    );
 
     return {
       totalSessions,
       totalMessages,
       totalTokens,
-      averageMessagesPerSession: totalSessions > 0 ? totalMessages / totalSessions : 0
+      averageMessagesPerSession:
+        totalSessions > 0 ? totalMessages / totalSessions : 0,
     };
   }
 
@@ -435,7 +482,7 @@ export class ConversationManager extends EventEmitter {
 
     for (const [sessionId, session] of this.activeSessions) {
       const timeSinceAccess = now.getTime() - session.lastAccessed.getTime();
-      
+
       if (timeSinceAccess > timeoutMs) {
         expiredSessionIds.push(sessionId);
       }
@@ -443,12 +490,12 @@ export class ConversationManager extends EventEmitter {
 
     for (const sessionId of expiredSessionIds) {
       const session = this.activeSessions.get(sessionId)!;
-      
+
       // Persist before removing
       if (this.config.autoSave) {
         await this.persistSession(session);
       }
-      
+
       this.activeSessions.delete(sessionId);
       this.emit('session_expired', { sessionId });
     }
@@ -492,14 +539,14 @@ export class ConversationManager extends EventEmitter {
 
     const sessionData = JSON.parse(data);
     const session = this.deserializeSession(sessionData);
-    
+
     // Generate new ID to avoid conflicts
     session.id = `imported-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     session.created = new Date();
     session.lastAccessed = new Date();
 
     this.activeSessions.set(session.id, session);
-    
+
     if (this.config.autoSave) {
       await this.persistSession(session);
     }
@@ -511,28 +558,35 @@ export class ConversationManager extends EventEmitter {
   /**
    * List all sessions with pagination
    */
-  async listSessions(options: {
-    limit?: number;
-    offset?: number;
-    includeArchived?: boolean;
-    sortBy?: 'created' | 'updated' | 'lastAccessed';
-    sortOrder?: 'asc' | 'desc';
-  } = {}): Promise<{
-    sessions: Array<Pick<EnhancedChatSession, 'id' | 'created' | 'updated' | 'lastAccessed' | 'tags' | 'archived'>>;
+  async listSessions(
+    options: {
+      limit?: number;
+      offset?: number;
+      includeArchived?: boolean;
+      sortBy?: 'created' | 'updated' | 'lastAccessed';
+      sortOrder?: 'asc' | 'desc';
+    } = {}
+  ): Promise<{
+    sessions: Array<
+      Pick<
+        EnhancedChatSession,
+        'id' | 'created' | 'updated' | 'lastAccessed' | 'tags' | 'archived'
+      >
+    >;
     total: number;
     hasMore: boolean;
   }> {
     const allSessions = Array.from(this.activeSessions.values());
-    
+
     // Filter archived if needed
-    const filteredSessions = options.includeArchived 
-      ? allSessions 
+    const filteredSessions = options.includeArchived
+      ? allSessions
       : allSessions.filter(s => !s.archived);
 
     // Sort
     const sortBy = options.sortBy || 'lastAccessed';
     const sortOrder = options.sortOrder || 'desc';
-    
+
     filteredSessions.sort((a, b) => {
       const aValue = a[sortBy].getTime();
       const bValue = b[sortBy].getTime();
@@ -551,10 +605,10 @@ export class ConversationManager extends EventEmitter {
         updated: s.updated,
         lastAccessed: s.lastAccessed,
         tags: s.tags,
-        archived: s.archived
+        archived: s.archived,
       })),
       total: filteredSessions.length,
-      hasMore: offset + limit < filteredSessions.length
+      hasMore: offset + limit < filteredSessions.length,
     };
   }
 
@@ -563,28 +617,33 @@ export class ConversationManager extends EventEmitter {
   private async initializeManager(): Promise<void> {
     // Ensure persistence directory exists
     await fs.ensureDir(this.config.persistencePath);
-    
+
     // Start cleanup timer
-    this.sessionCleanupTimer = setInterval(() => {
-      this.cleanup().catch(error => {
-        logger.error('Session cleanup failed:', error);
-      });
-    }, 10 * 60 * 1000); // Every 10 minutes
+    this.sessionCleanupTimer = setInterval(
+      () => {
+        this.cleanup().catch(error => {
+          logger.error('Session cleanup failed:', error);
+        });
+      },
+      10 * 60 * 1000
+    ); // Every 10 minutes
 
     logger.debug('Conversation manager initialized');
   }
 
   private optimizeContext(session: EnhancedChatSession): ChatMessage[] {
     const { contextWindowSize, compressionThreshold } = this.config;
-    
+
     if (session.history.length <= contextWindowSize) {
       return session.history;
     }
 
     // Keep system messages and recent messages
     const systemMessages = session.history.filter(msg => msg.role === 'system');
-    const recentMessages = session.history.slice(-contextWindowSize + systemMessages.length);
-    
+    const recentMessages = session.history.slice(
+      -contextWindowSize + systemMessages.length
+    );
+
     // If we still have too many messages, apply compression
     if (recentMessages.length > compressionThreshold) {
       return this.compressHistory([...systemMessages, ...recentMessages]);
@@ -596,17 +655,17 @@ export class ConversationManager extends EventEmitter {
   private compressHistory(messages: ChatMessage[]): ChatMessage[] {
     // Simple compression: summarize older messages
     // In a production system, you might use Claude to generate summaries
-    
+
     const recentCount = 10;
     const recent = messages.slice(-recentCount);
     const older = messages.slice(0, -recentCount);
-    
+
     if (older.length === 0) return recent;
 
     const summary: ChatMessage = {
       role: 'system',
       content: `[Previous conversation summary: ${older.length} messages covering topics and discussions that led to the current context]`,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     return [summary, ...recent];
@@ -624,7 +683,7 @@ export class ConversationManager extends EventEmitter {
     const aiMessage: ChatMessage = {
       role: 'assistant',
       content: response,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     session.history.push(aiMessage);
@@ -641,7 +700,7 @@ export class ConversationManager extends EventEmitter {
     this.emit('message_complete', {
       sessionId: session.id,
       responseTime,
-      tokenCount: response.length // Rough approximation
+      tokenCount: response.length, // Rough approximation
     });
 
     return response;
@@ -672,7 +731,7 @@ export class ConversationManager extends EventEmitter {
     const aiMessage: ChatMessage = {
       role: 'assistant',
       content: fullResponse,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     session.history.push(aiMessage);
@@ -688,23 +747,25 @@ export class ConversationManager extends EventEmitter {
     this.emit('stream_complete', {
       sessionId: session.id,
       responseTime,
-      tokenCount: fullResponse.length
+      tokenCount: fullResponse.length,
     });
   }
 
-  private updatePerformanceMetrics(session: EnhancedChatSession, responseTime: number): void {
+  private updatePerformanceMetrics(
+    session: EnhancedChatSession,
+    responseTime: number
+  ): void {
     const perf = session.metadata.performance;
     perf.totalRequests++;
-    perf.averageResponseTime = (
-      (perf.averageResponseTime * (perf.totalRequests - 1) + responseTime) / 
-      perf.totalRequests
-    );
+    perf.averageResponseTime =
+      (perf.averageResponseTime * (perf.totalRequests - 1) + responseTime) /
+      perf.totalRequests;
   }
 
   private async persistSession(session: EnhancedChatSession): Promise<void> {
     const sessionPath = this.getSessionPath(session.id);
     const serialized = this.serializeSession(session);
-    
+
     await fs.ensureDir(path.dirname(sessionPath));
     await fs.writeJson(sessionPath, serialized, { spaces: 2 });
   }
@@ -721,8 +782,8 @@ export class ConversationManager extends EventEmitter {
       lastAccessed: session.lastAccessed.toISOString(),
       history: session.history.map(msg => ({
         ...msg,
-        timestamp: msg.timestamp.toISOString()
-      }))
+        timestamp: msg.timestamp.toISOString(),
+      })),
     };
   }
 
@@ -734,30 +795,36 @@ export class ConversationManager extends EventEmitter {
       lastAccessed: new Date(data.lastAccessed),
       history: data.history.map((msg: any) => ({
         ...msg,
-        timestamp: new Date(msg.timestamp)
-      }))
+        timestamp: new Date(msg.timestamp),
+      })),
     };
   }
 
-  private searchSession(session: EnhancedChatSession, query: any): ChatMessage[] {
+  private searchSession(
+    session: EnhancedChatSession,
+    query: any
+  ): ChatMessage[] {
     let matches = session.history;
 
     if (query.text) {
       const searchText = query.text.toLowerCase();
-      matches = matches.filter(msg => 
+      matches = matches.filter(msg =>
         msg.content.toLowerCase().includes(searchText)
       );
     }
 
     if (query.dateRange) {
-      matches = matches.filter(msg => 
-        msg.timestamp >= query.dateRange.from && 
-        msg.timestamp <= query.dateRange.to
+      matches = matches.filter(
+        msg =>
+          msg.timestamp >= query.dateRange.from &&
+          msg.timestamp <= query.dateRange.to
       );
     }
 
     if (query.tags && query.tags.length > 0) {
-      const hasMatchingTag = query.tags.some((tag: string) => session.tags.includes(tag));
+      const hasMatchingTag = query.tags.some((tag: string) =>
+        session.tags.includes(tag)
+      );
       if (!hasMatchingTag) {
         matches = [];
       }
@@ -775,7 +842,7 @@ export class ConversationManager extends EventEmitter {
 
     if (query.text) {
       // Boost score based on exact matches
-      const exactMatches = matches.filter(msg => 
+      const exactMatches = matches.filter(msg =>
         msg.content.toLowerCase().includes(query.text.toLowerCase())
       ).length;
       score += exactMatches * 2;
@@ -790,11 +857,11 @@ export class ConversationManager extends EventEmitter {
     markdown += `**Created:** ${session.created.toLocaleString()}\n`;
     markdown += `**Last Updated:** ${session.updated.toLocaleString()}\n`;
     markdown += `**Messages:** ${session.history.length}\n`;
-    
+
     if (session.tags.length > 0) {
       markdown += `**Tags:** ${session.tags.join(', ')}\n`;
     }
-    
+
     markdown += '\n---\n\n';
 
     session.history.forEach((msg, index) => {
@@ -817,7 +884,7 @@ export class ConversationManager extends EventEmitter {
         (index + 1).toString(),
         msg.role,
         `"${msg.content.replace(/"/g, '""')}"`, // Escape quotes
-        msg.timestamp.toISOString()
+        msg.timestamp.toISOString(),
       ]);
     });
 
@@ -831,7 +898,7 @@ export class ConversationManager extends EventEmitter {
     if (this.sessionCleanupTimer) {
       clearInterval(this.sessionCleanupTimer);
     }
-    
+
     this.activeSessions.clear();
     this.removeAllListeners();
   }

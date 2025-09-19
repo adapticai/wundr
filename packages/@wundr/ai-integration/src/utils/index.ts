@@ -47,7 +47,7 @@ export function calculateHash(data: any): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return hash.toString(36);
@@ -55,20 +55,32 @@ export function calculateHash(data: any): string {
 
 export class Logger {
   static info(message: string, data?: any): void {
-    console.info(`[INFO] ${new Date().toISOString()} ${message}`, data ? data : '');
+    console.info(
+      `[INFO] ${new Date().toISOString()} ${message}`,
+      data ? data : ''
+    );
   }
-  
+
   static error(message: string, error?: any): void {
-    console.error(`[ERROR] ${new Date().toISOString()} ${message}`, error ? error : '');
+    console.error(
+      `[ERROR] ${new Date().toISOString()} ${message}`,
+      error ? error : ''
+    );
   }
-  
+
   static warn(message: string, data?: any): void {
-    console.warn(`[WARN] ${new Date().toISOString()} ${message}`, data ? data : '');
+    console.warn(
+      `[WARN] ${new Date().toISOString()} ${message}`,
+      data ? data : ''
+    );
   }
-  
+
   static debug(message: string, data?: any): void {
     if (process.env['NODE_ENV'] === 'development') {
-      console.debug(`[DEBUG] ${new Date().toISOString()} ${message}`, data ? data : '');
+      console.debug(
+        `[DEBUG] ${new Date().toISOString()} ${message}`,
+        data ? data : ''
+      );
     }
   }
 }

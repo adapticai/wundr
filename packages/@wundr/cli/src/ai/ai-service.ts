@@ -50,21 +50,25 @@ export class AIService {
     try {
       if (this.config.provider === 'claude') {
         if (!this.config.apiKey) {
-          logger.warn('Claude API key not configured. AI features will be limited.');
+          logger.warn(
+            'Claude API key not configured. AI features will be limited.'
+          );
           logger.info('Configure your API key using: wundr ai setup');
           logger.info('Or set the CLAUDE_API_KEY environment variable');
           return; // Don't throw error, just warn
         }
-        
+
         this.claudeClient = new ClaudeClient({
           apiKey: this.config.apiKey,
           model: this.config.model || 'claude-3-opus-20240229',
           maxTokens: this.config.maxTokens || 4096,
           temperature: this.config.temperature || 0.7,
-          baseUrl: this.config.baseUrl
+          baseUrl: this.config.baseUrl,
         });
-        
-        logger.info(`Initialized Claude client with model: ${this.config.model}`);
+
+        logger.info(
+          `Initialized Claude client with model: ${this.config.model}`
+        );
       } else {
         throw new Error(`Unsupported AI provider: ${this.config.provider}`);
       }
@@ -81,14 +85,15 @@ export class AIService {
     try {
       const wundrConfig = this.configManager.getConfig();
       const apiKey = this.configManager.getAIApiKey();
-      
+
       return {
         provider: (wundrConfig.ai?.provider || 'claude') as 'claude',
         model: wundrConfig.ai?.model || 'claude-3-opus-20240229',
         apiKey: apiKey,
         maxTokens: 4096,
         temperature: 0.7,
-        systemPrompt: 'You are a helpful CLI assistant for the Wundr development platform.'
+        systemPrompt:
+          'You are a helpful CLI assistant for the Wundr development platform.',
       };
     } catch (error) {
       logger.warn('Failed to load AI configuration, using defaults');
@@ -98,7 +103,8 @@ export class AIService {
         apiKey: process.env['CLAUDE_API_KEY'],
         maxTokens: 4096,
         temperature: 0.7,
-        systemPrompt: 'You are a helpful CLI assistant for the Wundr development platform.'
+        systemPrompt:
+          'You are a helpful CLI assistant for the Wundr development platform.',
       };
     }
   }
@@ -115,11 +121,11 @@ export class AIService {
 
     try {
       const conversationMessages = this.getConversationHistory(sessionId);
-      
+
       // Add user message to history
       conversationMessages.push({
         role: 'user',
-        content: message
+        content: message,
       });
 
       const systemPrompt = this.buildSystemPrompt(context);
@@ -131,7 +137,7 @@ export class AIService {
       // Add AI response to history
       conversationMessages.push({
         role: 'assistant',
-        content: response
+        content: response,
       });
 
       // Store updated conversation history
@@ -156,11 +162,11 @@ export class AIService {
 
     try {
       const conversationMessages = this.getConversationHistory(sessionId);
-      
+
       // Add user message to history
       conversationMessages.push({
         role: 'user',
-        content: message
+        content: message,
       });
 
       const systemPrompt = this.buildSystemPrompt(context);
@@ -177,7 +183,7 @@ export class AIService {
       // Add AI response to history
       conversationMessages.push({
         role: 'assistant',
-        content: fullResponse
+        content: fullResponse,
       });
 
       // Store updated conversation history
@@ -215,18 +221,21 @@ export class AIService {
         'wundr dashboard',
         'wundr watch',
         'wundr batch',
-        'wundr plugins'
+        'wundr plugins',
       ];
 
-      const result = await this.claudeClient!.analyzeIntent(input, availableCommands);
-      
+      const result = await this.claudeClient!.analyzeIntent(
+        input,
+        availableCommands
+      );
+
       return {
         intent: result.intent,
         command: result.command || '',
         confidence: result.confidence,
         parameters: result.parameters || {},
         needsConfirmation: result.confidence < 0.8,
-        clarificationQuestion: result.clarification
+        clarificationQuestion: result.clarification,
       };
     } catch (error) {
       logger.error('Failed to parse natural language command:', error);
@@ -240,12 +249,14 @@ export class AIService {
   async suggestCommands(
     goal: string,
     context?: ConversationContext
-  ): Promise<Array<{
-    command: string;
-    description: string;
-    confidence: number;
-    rationale: string;
-  }>> {
+  ): Promise<
+    Array<{
+      command: string;
+      description: string;
+      confidence: number;
+      rationale: string;
+    }>
+  > {
     this.ensureClientInitialized();
 
     try {
@@ -259,7 +270,7 @@ export class AIService {
         'wundr watch - Monitor files and run automated tasks',
         'wundr batch - Execute batch operations',
         'wundr plugins - Manage CLI plugins',
-        'wundr chat - Interactive AI assistance'
+        'wundr chat - Interactive AI assistance',
       ];
 
       const result = await this.claudeClient!.suggestCommands(
@@ -270,7 +281,7 @@ export class AIService {
 
       return result.suggestions.map(suggestion => ({
         ...suggestion,
-        rationale: `Based on your goal and project context, this command will help you ${suggestion.description.toLowerCase()}`
+        rationale: `Based on your goal and project context, this command will help you ${suggestion.description.toLowerCase()}`,
       }));
     } catch (error) {
       logger.error('Failed to generate command suggestions:', error);
@@ -289,8 +300,14 @@ export class AIService {
     this.ensureClientInitialized();
 
     try {
-      const contextString = context ? this.buildProjectContext(context) : undefined;
-      return await this.claudeClient!.explainResults(command, output, contextString);
+      const contextString = context
+        ? this.buildProjectContext(context)
+        : undefined;
+      return await this.claudeClient!.explainResults(
+        command,
+        output,
+        contextString
+      );
     } catch (error) {
       logger.error('Failed to explain command results:', error);
       throw error;
@@ -309,7 +326,11 @@ export class AIService {
 
     try {
       const userContext = this.buildProjectContext(context);
-      return await this.claudeClient!.generateHelp(command, userContext, userLevel);
+      return await this.claudeClient!.generateHelp(
+        command,
+        userContext,
+        userLevel
+      );
     } catch (error) {
       logger.error('Failed to generate contextual help:', error);
       throw error;
@@ -322,9 +343,9 @@ export class AIService {
   loadChatSession(session: ChatSession): void {
     const messages: ClaudeMessage[] = session.history.map(msg => ({
       role: msg.role as 'user' | 'assistant' | 'system',
-      content: msg.content
+      content: msg.content,
     }));
-    
+
     this.conversationHistory.set(session.id, messages);
   }
 
@@ -333,12 +354,12 @@ export class AIService {
    */
   exportChatSession(sessionId: string): ChatMessage[] {
     const messages = this.conversationHistory.get(sessionId) || [];
-    
+
     return messages.map(msg => ({
       role: msg.role as 'user' | 'assistant' | 'system',
       content: msg.content,
       timestamp: new Date(),
-      metadata: {}
+      metadata: {},
     }));
   }
 
@@ -360,35 +381,37 @@ export class AIService {
    * Build system prompt with context
    */
   private buildSystemPrompt(context?: ConversationContext): string {
-    let systemPrompt = this.config.systemPrompt || 'You are a helpful CLI assistant for the Wundr development platform.';
-    
+    let systemPrompt =
+      this.config.systemPrompt ||
+      'You are a helpful CLI assistant for the Wundr development platform.';
+
     if (context) {
       systemPrompt += '\n\nContext Information:';
-      
+
       if (context.projectPath) {
         systemPrompt += `\n- Project Path: ${context.projectPath}`;
       }
-      
+
       if (context.projectType) {
         systemPrompt += `\n- Project Type: ${context.projectType}`;
       }
-      
+
       if (context.recentCommands?.length) {
         systemPrompt += `\n- Recent Commands: ${context.recentCommands.join(', ')}`;
       }
-      
+
       if (context.currentGoal) {
         systemPrompt += `\n- Current Goal: ${context.currentGoal}`;
       }
     }
-    
+
     systemPrompt += `\n\nYou should:
 1. Provide helpful, accurate responses
 2. Suggest appropriate CLI commands when relevant
 3. Explain technical concepts clearly
 4. Ask for clarification when needed
 5. Focus on practical, actionable advice`;
-    
+
     return systemPrompt;
   }
 
@@ -399,35 +422,35 @@ export class AIService {
     if (!context) {
       return 'No project context available';
     }
-    
+
     const parts: string[] = [];
-    
+
     if (context.projectPath) {
       parts.push(`Project: ${context.projectPath}`);
     }
-    
+
     if (context.projectType) {
       parts.push(`Type: ${context.projectType}`);
     }
-    
+
     if (context.recentCommands?.length) {
       parts.push(`Recent commands: ${context.recentCommands.join(', ')}`);
     }
-    
+
     if (context.currentGoal) {
       parts.push(`Goal: ${context.currentGoal}`);
     }
-    
+
     return parts.join(' | ') || 'Standard development project';
   }
 
   /**
    * Validate AI service connection
    */
-  async validateConnection(): Promise<{ 
-    connected: boolean; 
-    error?: string; 
-    provider: string; 
+  async validateConnection(): Promise<{
+    connected: boolean;
+    error?: string;
+    provider: string;
     model: string;
   }> {
     if (!this.claudeClient) {
@@ -435,16 +458,16 @@ export class AIService {
         connected: false,
         error: 'AI client not initialized. API key may be missing.',
         provider: this.config.provider,
-        model: this.config.model
+        model: this.config.model,
       };
     }
-    
+
     try {
       const isValid = await this.claudeClient.validateConnection();
       return {
         connected: isValid,
         provider: this.config.provider,
-        model: this.config.model
+        model: this.config.model,
       };
     } catch (error: any) {
       logger.error('AI connection validation failed:', error);
@@ -452,7 +475,7 @@ export class AIService {
         connected: false,
         error: error.message || 'Connection validation failed',
         provider: this.config.provider,
-        model: this.config.model
+        model: this.config.model,
       };
     }
   }
@@ -463,12 +486,16 @@ export class AIService {
   private ensureClientInitialized(): void {
     if (!this.claudeClient) {
       const configuredKey = this.configManager.getAIApiKey();
-      
+
       if (!configuredKey) {
-        throw new Error(`AI API key not configured.\n\nTo set up AI features:\n1. Run: wundr ai setup\n2. Or set environment variable: export CLAUDE_API_KEY=your_key_here\n3. Or add to config: wundr ai config set apiKey your_key_here`);
+        throw new Error(
+          `AI API key not configured.\n\nTo set up AI features:\n1. Run: wundr ai setup\n2. Or set environment variable: export CLAUDE_API_KEY=your_key_here\n3. Or add to config: wundr ai config set apiKey your_key_here`
+        );
       }
-      
-      throw new Error('AI client failed to initialize. Please check your configuration.');
+
+      throw new Error(
+        'AI client failed to initialize. Please check your configuration.'
+      );
     }
   }
 
@@ -479,13 +506,13 @@ export class AIService {
     try {
       // Save API key to config
       await this.configManager.setAIApiKey(apiKey, provider);
-      
+
       // Update service configuration
       this.config = this.loadAIConfig();
-      
+
       // Re-initialize provider
       this.initializeProvider();
-      
+
       logger.success(`AI configured successfully with ${provider} provider`);
     } catch (error) {
       logger.error('Failed to setup AI configuration:', error);
@@ -516,7 +543,7 @@ export class AIService {
       provider: this.config.provider,
       model: this.config.model,
       hasApiKey,
-      ready: this.isReady()
+      ready: this.isReady(),
     };
   }
 
@@ -525,13 +552,13 @@ export class AIService {
    */
   updateConfig(updates: Partial<AIServiceConfig>): void {
     this.config = { ...this.config, ...updates };
-    
+
     if (this.config.provider === 'claude' && this.claudeClient) {
       this.claudeClient.updateConfig({
         apiKey: this.config.apiKey,
         model: this.config.model,
         maxTokens: this.config.maxTokens,
-        temperature: this.config.temperature
+        temperature: this.config.temperature,
       });
     }
   }
@@ -561,8 +588,8 @@ export class AIService {
         'command-suggestions',
         'result-explanation',
         'contextual-help',
-        'conversation-memory'
-      ]
+        'conversation-memory',
+      ],
     };
   }
 }

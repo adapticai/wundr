@@ -7,5 +7,5 @@ export type {
   MemorySnapshot,
   MemoryLeakAnalysis,
   MemoryMetrics,
-  MemoryThresholds
+  MemoryThresholds,
 } from './MemoryMonitor';

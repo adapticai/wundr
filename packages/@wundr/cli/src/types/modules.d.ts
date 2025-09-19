@@ -48,6 +48,9 @@ declare module 'open' {
     background?: boolean;
     url?: boolean;
   }
-  function open(target: string, options?: Options): Promise<import('child_process').ChildProcess>;
+  function open(
+    target: string,
+    options?: Options
+  ): Promise<import('child_process').ChildProcess>;
   export = open;
 }

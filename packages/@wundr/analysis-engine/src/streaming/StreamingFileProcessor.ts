@@ -55,7 +55,7 @@ export class StreamingFileProcessor extends EventEmitter {
   private activeStreams = new Set<Readable>();
   private processingQueue = new Map<string, FileChunk[]>();
   private backpressureActive = false;
-  
+
   // Object pooling for memory efficiency
   private bufferPool: Buffer[] = [];
   private chunkPool: FileChunk[] = [];
@@ -63,15 +63,18 @@ export class StreamingFileProcessor extends EventEmitter {
 
   constructor(config: Partial<StreamingConfig> = {}) {
     super();
-    
+
     this.config = {
       chunkSize: 64 * 1024, // 64KB chunks
       maxMemoryUsage: 100 * 1024 * 1024, // 100MB limit
       enableGzipCompression: false,
-      workerPoolSize: Math.max(2, Math.floor(require('os').cpus().length * 0.75)),
+      workerPoolSize: Math.max(
+        2,
+        Math.floor(require('os').cpus().length * 0.75)
+      ),
       bufferSize: 1024 * 1024, // 1MB buffer
       backpressureThreshold: 0.8,
-      ...config
+      ...config,
     };
 
     this.metrics = {
@@ -81,7 +84,7 @@ export class StreamingFileProcessor extends EventEmitter {
       memoryPeak: 0,
       memoryAverage: 0,
       processingRate: 0,
-      errorCount: 0
+      errorCount: 0,
     };
 
     this.initializeMemoryMonitoring();
@@ -96,31 +99,34 @@ export class StreamingFileProcessor extends EventEmitter {
     processor: (chunk: FileChunk) => Promise<any>
   ): Promise<StreamingMetrics> {
     const startTime = Date.now();
-    
+
     try {
       // Process files in batches to manage memory
-      const batchSize = Math.max(1, Math.floor(this.config.maxMemoryUsage / (this.config.bufferSize * 2)));
+      const batchSize = Math.max(
+        1,
+        Math.floor(this.config.maxMemoryUsage / (this.config.bufferSize * 2))
+      );
       const batches = this.createBatches(filePaths, batchSize);
-      
+
       for (const batch of batches) {
         await this.processBatch(batch, processor);
-        
+
         // Force garbage collection between batches
         if (global.gc) {
           global.gc();
         }
-        
+
         // Check for backpressure
         await this.checkBackpressure();
       }
-      
+
       // Calculate final metrics
       const duration = Date.now() - startTime;
-      this.metrics.processingRate = this.metrics.bytesProcessed / (duration / 1000);
-      
+      this.metrics.processingRate =
+        this.metrics.bytesProcessed / (duration / 1000);
+
       this.emit('complete', this.metrics);
       return this.metrics;
-      
     } catch (error) {
       this.metrics.errorCount++;
       this.emit('error', error);
@@ -138,12 +144,12 @@ export class StreamingFileProcessor extends EventEmitter {
     processor: (chunk: FileChunk) => Promise<any>
   ): Promise<void> {
     const fileStats = await fs.stat(filePath);
-    
+
     // For small files, process directly
     if (fileStats.size < this.config.chunkSize * 2) {
       return this.processSmallFile(filePath, processor);
     }
-    
+
     // For large files, use streaming with chunks
     return this.processLargeFile(filePath, processor);
   }
@@ -166,10 +172,10 @@ export class StreamingFileProcessor extends EventEmitter {
       metadata: {
         size: content.length,
         encoding: 'utf8',
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     });
-    
+
     await processor(chunk);
     this.releaseChunk(chunk);
     this.metrics.filesProcessed++;
@@ -185,21 +191,21 @@ export class StreamingFileProcessor extends EventEmitter {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const fileStream = fs.createReadStream(filePath, {
-        highWaterMark: this.config.bufferSize
+        highWaterMark: this.config.bufferSize,
       });
-      
+
       const chunkTransform = this.createChunkTransform(filePath);
       const processingTransform = this.createProcessingTransform(processor);
-      
+
       this.activeStreams.add(fileStream);
-      
+
       pipeline(fileStream, chunkTransform, processingTransform)
         .then(() => {
           this.activeStreams.delete(fileStream);
           this.metrics.filesProcessed++;
           resolve();
         })
-        .catch((error) => {
+        .catch(error => {
           this.activeStreams.delete(fileStream);
           this.metrics.errorCount++;
           reject(error);
@@ -214,26 +220,30 @@ export class StreamingFileProcessor extends EventEmitter {
     let buffer = this.getBuffer();
     let chunkId = 0;
     let lineNumber = 1;
-    
+
     const self = this;
-    
+
     const transform = new Transform({
       objectMode: false,
       highWaterMark: this.config.bufferSize,
-      
-      transform(data: Buffer, encoding: BufferEncoding, callback: (error?: Error | null) => void) {
+
+      transform(
+        data: Buffer,
+        encoding: BufferEncoding,
+        callback: (error?: Error | null) => void
+      ) {
         try {
           buffer = Buffer.concat([buffer, data]);
-          
+
           // Process complete chunks
           while (buffer.length >= self.config.chunkSize) {
             const chunkData = buffer.slice(0, self.config.chunkSize);
             buffer = buffer.slice(self.config.chunkSize);
-            
+
             // Find line boundaries
             const lines = chunkData.toString().split('\n');
             const endLine = lineNumber + lines.length - 1;
-            
+
             const chunk = self.createChunk({
               id: `${path.basename(filePath)}-${chunkId++}`,
               filePath,
@@ -244,20 +254,20 @@ export class StreamingFileProcessor extends EventEmitter {
               metadata: {
                 size: chunkData.length,
                 encoding: 'utf8',
-                timestamp: Date.now()
-              }
+                timestamp: Date.now(),
+              },
             });
-            
+
             lineNumber = endLine + 1;
             this.push(chunk);
           }
-          
+
           callback();
         } catch (error) {
           callback(error as Error);
         }
       },
-      
+
       flush(callback: (error?: Error | null) => void) {
         try {
           // Process remaining buffer
@@ -273,21 +283,21 @@ export class StreamingFileProcessor extends EventEmitter {
               metadata: {
                 size: buffer.length,
                 encoding: 'utf8',
-                timestamp: Date.now()
-              }
+                timestamp: Date.now(),
+              },
             });
-            
+
             this.push(chunk);
           }
-          
+
           self.releaseBuffer(buffer);
           callback();
         } catch (error) {
           callback(error as Error);
         }
-      }
+      },
     });
-    
+
     return transform;
   }
 
@@ -298,24 +308,28 @@ export class StreamingFileProcessor extends EventEmitter {
     processor: (chunk: FileChunk) => Promise<any>
   ): Transform {
     const self = this;
-    
+
     return new Transform({
       objectMode: true,
       highWaterMark: 10,
-      
-      async transform(chunk: FileChunk, encoding: BufferEncoding, callback: (error?: Error | null) => void) {
+
+      async transform(
+        chunk: FileChunk,
+        encoding: BufferEncoding,
+        callback: (error?: Error | null) => void
+      ) {
         try {
           await processor(chunk);
           self.releaseChunk(chunk);
           self.metrics.chunksProcessed++;
           self.metrics.bytesProcessed += chunk.metadata.size;
-          
+
           callback();
         } catch (error) {
           self.metrics.errorCount++;
           callback(error as Error);
         }
-      }
+      },
     });
   }
 
@@ -326,10 +340,10 @@ export class StreamingFileProcessor extends EventEmitter {
     filePaths: string[],
     processor: (chunk: FileChunk) => Promise<any>
   ): Promise<void> {
-    const promises = filePaths.map(filePath => 
+    const promises = filePaths.map(filePath =>
       this.streamProcessFile(filePath, processor)
     );
-    
+
     await Promise.all(promises);
   }
 
@@ -350,28 +364,28 @@ export class StreamingFileProcessor extends EventEmitter {
   private async checkBackpressure(): Promise<void> {
     const memUsage = process.memoryUsage();
     const memoryRatio = memUsage.heapUsed / this.config.maxMemoryUsage;
-    
+
     if (memoryRatio > this.config.backpressureThreshold) {
       this.backpressureActive = true;
       this.emit('backpressure', { memoryUsage: memUsage, ratio: memoryRatio });
-      
+
       // Pause active streams
       this.activeStreams.forEach(stream => {
         if (stream.pause) {
           stream.pause();
         }
       });
-      
+
       // Wait for memory to be freed
       await this.waitForMemoryRelease();
-      
+
       // Resume streams
       this.activeStreams.forEach(stream => {
         if (stream.resume) {
           stream.resume();
         }
       });
-      
+
       this.backpressureActive = false;
       this.emit('backpressure-resolved');
     }
@@ -381,23 +395,23 @@ export class StreamingFileProcessor extends EventEmitter {
    * Wait for memory to be released
    */
   private async waitForMemoryRelease(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const checkMemory = () => {
         const memUsage = process.memoryUsage();
         const memoryRatio = memUsage.heapUsed / this.config.maxMemoryUsage;
-        
+
         if (memoryRatio < this.config.backpressureThreshold * 0.8) {
           resolve();
         } else {
           setTimeout(checkMemory, 100);
         }
       };
-      
+
       // Force garbage collection if available
       if (global.gc) {
         global.gc();
       }
-      
+
       checkMemory();
     });
   }
@@ -408,13 +422,17 @@ export class StreamingFileProcessor extends EventEmitter {
   private initializeMemoryMonitoring(): void {
     this.memoryMonitor = setInterval(() => {
       const memUsage = process.memoryUsage();
-      this.metrics.memoryPeak = Math.max(this.metrics.memoryPeak, memUsage.heapUsed);
-      this.metrics.memoryAverage = (this.metrics.memoryAverage + memUsage.heapUsed) / 2;
-      
+      this.metrics.memoryPeak = Math.max(
+        this.metrics.memoryPeak,
+        memUsage.heapUsed
+      );
+      this.metrics.memoryAverage =
+        (this.metrics.memoryAverage + memUsage.heapUsed) / 2;
+
       this.emit('memory-update', {
         current: memUsage.heapUsed,
         peak: this.metrics.memoryPeak,
-        average: this.metrics.memoryAverage
+        average: this.metrics.memoryAverage,
       });
     }, 1000);
   }
@@ -427,7 +445,7 @@ export class StreamingFileProcessor extends EventEmitter {
     for (let i = 0; i < 10; i++) {
       this.bufferPool.push(Buffer.alloc(0));
     }
-    
+
     // Pre-allocate chunk objects
     for (let i = 0; i < 20; i++) {
       this.chunkPool.push({} as FileChunk);
@@ -484,7 +502,8 @@ export class StreamingFileProcessor extends EventEmitter {
   private countLines(buffer: Buffer): number {
     let lines = 1;
     for (let i = 0; i < buffer.length; i++) {
-      if (buffer[i] === 10) { // \n
+      if (buffer[i] === 10) {
+        // \n
         lines++;
       }
     }
@@ -499,12 +518,12 @@ export class StreamingFileProcessor extends EventEmitter {
       clearInterval(this.memoryMonitor);
       this.memoryMonitor = null;
     }
-    
+
     // Clear pools
     this.bufferPool.length = 0;
     this.chunkPool.length = 0;
     this.transformPool.length = 0;
-    
+
     // Clear active streams
     this.activeStreams.clear();
     this.processingQueue.clear();
@@ -524,7 +543,7 @@ export class StreamingFileProcessor extends EventEmitter {
 export class StreamingASTProcessor {
   private streamProcessor: StreamingFileProcessor;
   private program: ts.Program | null = null;
-  
+
   constructor(config?: Partial<StreamingConfig>) {
     this.streamProcessor = new StreamingFileProcessor(config);
   }
@@ -542,13 +561,13 @@ export class StreamingASTProcessor {
       module: ts.ModuleKind.CommonJS,
       skipLibCheck: true,
       skipDefaultLibCheck: true,
-      noResolve: true
+      noResolve: true,
     });
 
-    return this.streamProcessor.streamProcessFiles(files, async (chunk) => {
+    return this.streamProcessor.streamProcessFiles(files, async chunk => {
       const sourceFile = this.program?.getSourceFile(chunk.filePath);
       if (!sourceFile) return;
-      
+
       // Process AST nodes in streaming fashion
       this.visitNodeStreaming(sourceFile, processor);
     });
@@ -563,14 +582,14 @@ export class StreamingASTProcessor {
   ): void {
     const sourceFile = node.getSourceFile();
     visitor(node, sourceFile);
-    
+
     // Process children iteratively to avoid deep recursion stack
     const stack: ts.Node[] = [node];
-    
+
     while (stack.length > 0) {
       const current = stack.pop()!;
-      
-      ts.forEachChild(current, (child) => {
+
+      ts.forEachChild(current, child => {
         visitor(child, sourceFile);
         stack.push(child);
       });

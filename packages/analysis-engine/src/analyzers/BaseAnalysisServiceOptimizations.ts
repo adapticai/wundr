@@ -4,11 +4,16 @@
  */
 
 import { EventEmitter } from 'events';
-import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Worker } from 'worker_threads';
+
+
+import * as fs from 'fs-extra';
 import { glob } from 'glob';
-import { CodeAnalyzer, AnalysisReport } from './index';
+
+import { CodeAnalyzer } from './index';
+
+import type { AnalysisReport } from './index';
+import type { Worker } from 'worker_threads';
 
 export interface OptimizedAnalysisConfig {
   targetDir: string;
@@ -65,7 +70,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
   private config: OptimizedAnalysisConfig;
   private analyzer: CodeAnalyzer;
   private workers: Worker[] = [];
-  private cache: Map<string, any> = new Map();
+  private cache = new Map<string, any>();
   private isInitialized = false;
 
   constructor(config: OptimizedAnalysisConfig) {
@@ -75,7 +80,9 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
   }
 
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+return;
+}
 
     // Ensure output directory exists
     await fs.ensureDir(this.config.outputDir);
@@ -102,14 +109,14 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
 
       this.emit('progress', {
         type: 'phase',
-        message: 'Starting optimized analysis...'
+        message: 'Starting optimized analysis...',
       });
 
       // Phase 1: File Discovery
       const discoveryStart = Date.now();
       this.emit('progress', {
         type: 'phase',
-        message: 'Discovering files...'
+        message: 'Discovering files...',
       });
 
       const files = await this.discoverFiles(directory);
@@ -121,22 +128,22 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         errors: [],
         metrics: {
           memoryUsed: process.memoryUsage().heapUsed,
-          throughput: files.length / ((Date.now() - discoveryStart) / 1000)
-        }
+          throughput: files.length / ((Date.now() - discoveryStart) / 1000),
+        },
       });
 
       this.emit('progress', {
         type: 'progress',
         message: `Discovered ${files.length} files`,
         progress: files.length,
-        total: files.length
+        total: files.length,
       });
 
       // Phase 2: Content Analysis
       const analysisStart = Date.now();
       this.emit('progress', {
         type: 'phase',
-        message: 'Analyzing content...'
+        message: 'Analyzing content...',
       });
 
       const analysisReport = await this.runContentAnalysis(files, directory);
@@ -148,15 +155,15 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         errors: [],
         metrics: {
           memoryUsed: process.memoryUsage().heapUsed,
-          throughput: files.length / ((Date.now() - analysisStart) / 1000)
-        }
+          throughput: files.length / ((Date.now() - analysisStart) / 1000),
+        },
       });
 
       // Phase 3: Duplicate Detection
       const duplicateStart = Date.now();
       this.emit('progress', {
         type: 'phase',
-        message: 'Detecting duplicates...'
+        message: 'Detecting duplicates...',
       });
 
       const duplicates = await this.detectDuplicates(files);
@@ -168,15 +175,15 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         errors: [],
         metrics: {
           memoryUsed: process.memoryUsage().heapUsed,
-          throughput: files.length / ((Date.now() - duplicateStart) / 1000)
-        }
+          throughput: files.length / ((Date.now() - duplicateStart) / 1000),
+        },
       });
 
       // Phase 4: Quality Analysis
       const qualityStart = Date.now();
       this.emit('progress', {
         type: 'phase',
-        message: 'Analyzing code quality...'
+        message: 'Analyzing code quality...',
       });
 
       const qualityMetrics = await this.analyzeCodeQuality(files);
@@ -188,15 +195,15 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         errors: [],
         metrics: {
           memoryUsed: process.memoryUsage().heapUsed,
-          throughput: files.length / ((Date.now() - qualityStart) / 1000)
-        }
+          throughput: files.length / ((Date.now() - qualityStart) / 1000),
+        },
       });
 
       // Phase 5: Report Generation
       const reportStart = Date.now();
       this.emit('progress', {
         type: 'phase',
-        message: 'Generating reports...'
+        message: 'Generating reports...',
       });
 
       await this.generateReports(analysisReport, duplicates, qualityMetrics);
@@ -208,15 +215,15 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         errors: [],
         metrics: {
           memoryUsed: process.memoryUsage().heapUsed,
-          throughput: 0
-        }
+          throughput: 0,
+        },
       });
 
       const totalDuration = Date.now() - startTime;
 
       this.emit('progress', {
         type: 'complete',
-        message: `Analysis completed in ${totalDuration}ms`
+        message: `Analysis completed in ${totalDuration}ms`,
       });
 
       return {
@@ -234,21 +241,21 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
             duplicateClusters: duplicates.length,
             circularDependencies: qualityMetrics.circularDependencies,
             codeSmells: qualityMetrics.codeSmells,
-            technicalDebt: qualityMetrics.technicalDebt
+            technicalDebt: qualityMetrics.technicalDebt,
           },
-          phases
-        }
+          phases,
+        },
       };
 
     } catch (error) {
       this.emit('progress', {
         type: 'error',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
 
       return {
         success: false,
-        error: error instanceof Error ? error : new Error(String(error))
+        error: error instanceof Error ? error : new Error(String(error)),
       };
     }
   }
@@ -260,7 +267,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
       try {
         const fullPattern = path.join(directory, pattern);
         const files = await glob(fullPattern, {
-          ignore: this.config.excludePatterns.map(p => path.join(directory, p))
+          ignore: this.config.excludePatterns.map(p => path.join(directory, p)),
         });
         allFiles.push(...files);
       } catch (error) {
@@ -285,7 +292,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         type: 'progress',
         message: `Analyzing chunk ${i + 1}/${chunks.length}`,
         progress: i + 1,
-        total: chunks.length
+        total: chunks.length,
       });
 
       // For this implementation, we'll use the existing analyzer
@@ -311,7 +318,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         this.emit('memory-leak-warning', {
           severity: 'high',
           growthRate: 0,
-          current: memoryUsage
+          current: memoryUsage,
         });
         
         // Force garbage collection if available
@@ -335,7 +342,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         infoIssues: 0,
         ruleViolations: {},
         filesCovered: 0,
-        analysisTime: 0
+        analysisTime: 0,
       },
       metrics: {
         codeComplexity: 0,
@@ -345,9 +352,9 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         codeSmells: 0,
         technicalDebt: {
           hours: 0,
-          priority: 'low'
-        }
-      }
+          priority: 'low',
+        },
+      },
     };
   }
 
@@ -377,7 +384,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
           type: 'potential-duplicate',
           files: fileList,
           size,
-          similarity: 0.8 // Mock similarity score
+          similarity: 0.8, // Mock similarity score
         });
       }
     }
@@ -413,14 +420,14 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
     return {
       circularDependencies,
       codeSmells,
-      technicalDebt
+      technicalDebt,
     };
   }
 
   private async generateReports(
     analysisReport: AnalysisReport,
     duplicates: any[],
-    qualityMetrics: any
+    qualityMetrics: any,
   ): Promise<void> {
     for (const format of this.config.outputFormats) {
       const reportData = {
@@ -428,7 +435,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
         duplicates,
         quality: qualityMetrics,
         timestamp: new Date(),
-        config: this.config
+        config: this.config,
       };
 
       switch (format) {
@@ -436,7 +443,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
           await fs.writeJSON(
             path.join(this.config.outputDir, 'analysis-report.json'),
             reportData,
-            { spaces: 2 }
+            { spaces: 2 },
           );
           break;
         case 'html':

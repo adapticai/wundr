@@ -3,10 +3,11 @@
  * Basic duplicate detection with proper TypeScript types
  */
 
-import { EventEmitter } from 'events';
-import * as fs from 'fs-extra';
 import * as crypto from 'crypto';
+import { EventEmitter } from 'events';
 import * as path from 'path';
+
+import * as fs from 'fs-extra';
 
 export interface DuplicateGroup {
   id: string;
@@ -52,7 +53,7 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter {
       similarDuplicates: 0,
       structuralDuplicates: 0,
       bytesAnalyzed: 0,
-      processingTime: 0
+      processingTime: 0,
     };
   }
 
@@ -69,7 +70,7 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter {
       
       this.emit('detection-completed', {
         duplicatesFound: exactDuplicates.length,
-        stats: this.stats
+        stats: this.stats,
       });
       
       return exactDuplicates;
@@ -85,12 +86,14 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter {
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (!file) continue;
+      if (!file) {
+continue;
+}
       
       this.emit('file-progress', {
         current: i + 1,
         total: files.length,
-        file: path.basename(file)
+        file: path.basename(file),
       });
       
       try {
@@ -104,7 +107,7 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter {
           endLine: content.split('\n').length,
           content,
           hash,
-          size: stats.size
+          size: stats.size,
         };
         
         if (!hashGroups.has(hash)) {
@@ -127,7 +130,9 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter {
     for (const [hash, files] of hashGroups.entries()) {
       if (files.length > 1) {
         const firstFile = files[0];
-        if (!firstFile) continue;
+        if (!firstFile) {
+continue;
+}
         
         const group: DuplicateGroup = {
           id: `exact-${groupId++}`,
@@ -136,7 +141,7 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter {
           similarity: 1.0,
           linesOfCode: firstFile.content.split('\n').length,
           tokenCount: this.countTokens(firstFile.content),
-          fingerprint: hash
+          fingerprint: hash,
         };
         
         duplicateGroups.push(group);
@@ -163,7 +168,7 @@ export class OptimizedDuplicateDetectionEngine extends EventEmitter {
       similarDuplicates: 0,
       structuralDuplicates: 0,
       bytesAnalyzed: 0,
-      processingTime: 0
+      processingTime: 0,
     };
   }
 

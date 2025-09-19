@@ -99,29 +99,29 @@ export interface PluginManagerOptions {
 export interface PluginManager {
   readonly options: PluginManagerOptions;
   readonly hookRegistry: PluginHookRegistry;
-  
+
   // Plugin lifecycle
   loadPlugin(pluginId: string): Promise<PluginInfo>;
   unloadPlugin(pluginId: string): Promise<void>;
   activatePlugin(pluginId: string): Promise<void>;
   deactivatePlugin(pluginId: string): Promise<void>;
   reloadPlugin(pluginId: string): Promise<PluginInfo>;
-  
+
   // Plugin management
   getPlugin(pluginId: string): PluginInfo | undefined;
   getAllPlugins(): PluginInfo[];
   getActivePlugins(): PluginInfo[];
   hasPlugin(pluginId: string): boolean;
-  
+
   // Plugin discovery
   discoverPlugins(): Promise<string[]>;
   validatePlugin(pluginId: string): Promise<boolean>;
-  
+
   // Batch operations
   loadAll(): Promise<PluginInfo[]>;
   activateAll(): Promise<void>;
   deactivateAll(): Promise<void>;
-  
+
   // Lifecycle
   initialize(): Promise<void>;
   destroy(): Promise<void>;
@@ -146,7 +146,8 @@ export const PLUGIN_EVENTS = {
   HOOK_EXECUTED: 'plugin:hook:executed',
 } as const;
 
-export type PluginEventType = typeof PLUGIN_EVENTS[keyof typeof PLUGIN_EVENTS];
+export type PluginEventType =
+  (typeof PLUGIN_EVENTS)[keyof typeof PLUGIN_EVENTS];
 
 // Hook system types
 export interface HookExecutionContext {

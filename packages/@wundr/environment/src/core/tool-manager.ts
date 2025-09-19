@@ -6,7 +6,12 @@ import { BaseInstaller } from '../installers/base-installer';
 import { BrewInstaller } from '../installers/brew-installer';
 import { ManualInstaller } from '../installers/manual-installer';
 import { NpmInstaller } from '../installers/npm-installer';
-import { ToolConfiguration, Platform, InstallationResult, ValidationResult } from '../types';
+import {
+  ToolConfiguration,
+  Platform,
+  InstallationResult,
+  ValidationResult,
+} from '../types';
 import { createLogger } from '../utils/logger';
 
 const logger = createLogger('ToolManager');
@@ -30,16 +35,16 @@ export class ToolManager {
         success: false,
         tool: tool.name,
         message: `Installer not found: ${tool.installer}`,
-        errors: [`Unknown installer type: ${tool.installer}`]
+        errors: [`Unknown installer type: ${tool.installer}`],
       };
     }
 
     try {
       const result = await installer.install(tool);
-      
+
       if (result.success) {
         logger.info(`Successfully installed ${tool.name}`);
-        
+
         // Apply configuration if provided
         if (tool.config) {
           await this.applyToolConfiguration(tool);
@@ -55,7 +60,7 @@ export class ToolManager {
         success: false,
         tool: tool.name,
         message: `Installation failed: ${error}`,
-        errors: [String(error)]
+        errors: [String(error)],
       };
     }
   }
@@ -71,7 +76,7 @@ export class ToolManager {
       return {
         valid: false,
         tool: tool.name,
-        issues: [`Unknown installer: ${tool.installer}`]
+        issues: [`Unknown installer: ${tool.installer}`],
       };
     }
 
@@ -82,7 +87,7 @@ export class ToolManager {
       return {
         valid: false,
         tool: tool.name,
-        issues: [`Validation failed: ${error}`]
+        issues: [`Validation failed: ${error}`],
       };
     }
   }
@@ -109,7 +114,7 @@ export class ToolManager {
       if (visiting.has(tool.name)) {
         throw new Error(`Circular dependency detected: ${tool.name}`);
       }
-      
+
       if (visited.has(tool.name)) {
         return;
       }
@@ -123,7 +128,9 @@ export class ToolManager {
           if (dependency) {
             visit(dependency);
           } else {
-            logger.warn(`Dependency not found: ${depName} for tool ${tool.name}`);
+            logger.warn(
+              `Dependency not found: ${depName} for tool ${tool.name}`
+            );
           }
         }
       }
@@ -173,16 +180,30 @@ export class ToolManager {
   /**
    * Configure VS Code extensions and settings
    */
-  private async configureVSCode(config?: Record<string, unknown>): Promise<void> {
+  private async configureVSCode(
+    config?: Record<string, unknown>
+  ): Promise<void> {
     if (!config) return;
 
     const vscodeInstaller = this.installers.get('manual') as ManualInstaller;
-    if (vscodeInstaller && config.extensions && Array.isArray(config.extensions)) {
-      await vscodeInstaller.installVSCodeExtensions(config.extensions as string[]);
+    if (
+      vscodeInstaller &&
+      config.extensions &&
+      Array.isArray(config.extensions)
+    ) {
+      await vscodeInstaller.installVSCodeExtensions(
+        config.extensions as string[]
+      );
     }
 
-    if (config.settings && typeof config.settings === 'object' && config.settings !== null) {
-      await vscodeInstaller.applyVSCodeSettings(config.settings as Record<string, unknown>);
+    if (
+      config.settings &&
+      typeof config.settings === 'object' &&
+      config.settings !== null
+    ) {
+      await vscodeInstaller.applyVSCodeSettings(
+        config.settings as Record<string, unknown>
+      );
     }
   }
 
@@ -197,7 +218,9 @@ export class ToolManager {
   /**
    * Configure Claude Code
    */
-  private async configureClaudeCode(config?: Record<string, unknown>): Promise<void> {
+  private async configureClaudeCode(
+    config?: Record<string, unknown>
+  ): Promise<void> {
     if (!config) return;
     // Claude Code configuration
   }

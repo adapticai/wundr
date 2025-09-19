@@ -21,7 +21,11 @@ export class WundrEventBus implements EventBus {
     this.maxHistorySize = maxHistorySize;
   }
 
-  emit<TPayload = Record<string, unknown>>(type: string, payload: TPayload, source?: string): void {
+  emit<TPayload = Record<string, unknown>>(
+    type: string,
+    payload: TPayload,
+    source?: string
+  ): void {
     try {
       const event: EventBusEvent<TPayload> = {
         id: uuidv4(),
@@ -43,10 +47,11 @@ export class WundrEventBus implements EventBus {
         payloadType: typeof payload,
       });
     } catch (error) {
-      const eventError = new EventBusError(
-        `Failed to emit event: ${type}`,
-        { type, source, error }
-      );
+      const eventError = new EventBusError(`Failed to emit event: ${type}`, {
+        type,
+        source,
+        error,
+      });
       logger.error(eventError);
       throw eventError;
     }
@@ -84,7 +89,10 @@ export class WundrEventBus implements EventBus {
     }
   }
 
-  off<TPayload = Record<string, unknown>>(type: string, handler: EventHandler<TPayload>): void {
+  off<TPayload = Record<string, unknown>>(
+    type: string,
+    handler: EventHandler<TPayload>
+  ): void {
     try {
       this.emitter.off(type, handler);
     } catch (error) {

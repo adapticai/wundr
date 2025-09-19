@@ -74,7 +74,10 @@ function emitPerformanceEvent(type: string, metrics: PerformanceMetrics): void {
       getEventBus().emit(`performance:${type}`, metrics, 'performance-monitor');
     } catch (error) {
       // Fallback to logger if event bus fails
-      getPerformanceLogger().warn('Failed to emit performance event', { type, error });
+      getPerformanceLogger().warn('Failed to emit performance event', {
+        type,
+        error,
+      });
     }
   }
 }
@@ -139,11 +142,11 @@ export class Timer {
   getDuration(fromMark?: string): number {
     const now = performance.now();
     const startPoint = fromMark ? this.marks.get(fromMark) : this.startTime;
-    
+
     if (!startPoint) {
       throw new Error(`Mark '${fromMark}' not found`);
     }
-    
+
     return now - startPoint;
   }
 
@@ -153,11 +156,11 @@ export class Timer {
   getDurationBetween(startMark: string, endMark: string): number {
     const start = this.marks.get(startMark);
     const end = this.marks.get(endMark);
-    
+
     if (!start || !end) {
       throw new Error(`Mark(s) not found: ${startMark}, ${endMark}`);
     }
-    
+
     return end - start;
   }
 
@@ -178,7 +181,8 @@ export class Timer {
     };
 
     // Log based on duration threshold
-    const logLevel = duration > (performanceConfig.timeThreshold || 1000) ? 'warn' : 'info';
+    const logLevel =
+      duration > (performanceConfig.timeThreshold || 1000) ? 'warn' : 'info';
 
     this.logger[logLevel]('Timer stopped', {
       ...metrics,
@@ -253,7 +257,7 @@ async function measureTimeImpl<T>(
     label = 'measureTime-operation',
     enableLogging = true,
     logLevel = 'info',
-    metadata = {}
+    metadata = {},
   } = options;
 
   const timer = createTimer(label);
@@ -289,7 +293,10 @@ async function measureTimeImpl<T>(
     };
 
     if (enableLogging) {
-      const actualLogLevel = duration > (performanceConfig.timeThreshold || 1000) ? 'warn' : logLevel;
+      const actualLogLevel =
+        duration > (performanceConfig.timeThreshold || 1000)
+          ? 'warn'
+          : logLevel;
 
       logger[actualLogLevel]('Function measurement completed', {
         ...metrics,
@@ -312,11 +319,14 @@ async function measureTimeImpl<T>(
       timestamp: Date.now(),
       metadata: {
         ...metadata,
-        error: error instanceof Error ? {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        } : String(error),
+        error:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+              }
+            : String(error),
       },
     };
 
@@ -360,7 +370,11 @@ export function getMemoryUsage(logUsage = false): {
     };
   } else if (typeof performance !== 'undefined' && 'memory' in performance) {
     // Fallback for browser environments
-    const mem = (performance as { memory: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory;
+    const mem = (
+      performance as {
+        memory: { usedJSHeapSize: number; totalJSHeapSize: number };
+      }
+    ).memory;
     memoryInfo = {
       used: mem.usedJSHeapSize,
       total: mem.totalJSHeapSize,
@@ -371,12 +385,16 @@ export function getMemoryUsage(logUsage = false): {
 
   if (logUsage) {
     const logger = getPerformanceLogger();
-    const logLevel = memoryInfo.usage > (performanceConfig.memoryThreshold || 80) ? 'warn' : 'debug';
+    const logLevel =
+      memoryInfo.usage > (performanceConfig.memoryThreshold || 80)
+        ? 'warn'
+        : 'debug';
 
     logger[logLevel]('Memory usage sampled', {
       ...memoryInfo,
       timestamp: Date.now(),
-      thresholdExceeded: memoryInfo.usage > (performanceConfig.memoryThreshold || 80),
+      thresholdExceeded:
+        memoryInfo.usage > (performanceConfig.memoryThreshold || 80),
     });
 
     if (memoryInfo.usage > (performanceConfig.memoryThreshold || 80)) {
@@ -405,13 +423,13 @@ export class LRUCache<K, V> {
 
   get(key: K): V | undefined {
     const value = this.cache.get(key);
-    
+
     if (value !== undefined) {
       // Move to end (most recent)
       this.cache.delete(key);
       this.cache.set(key, value);
     }
-    
+
     return value;
   }
 
@@ -425,7 +443,7 @@ export class LRUCache<K, V> {
         this.cache.delete(firstKey);
       }
     }
-    
+
     this.cache.set(key, value);
   }
 
@@ -476,7 +494,10 @@ export function memoize<T extends (...args: any[]) => any>(
     name = 'memoized-function',
   } = options;
 
-  const cache = new LRUCache<string, { value: ReturnType<T>; timestamp?: number }>(maxSize);
+  const cache = new LRUCache<
+    string,
+    { value: ReturnType<T>; timestamp?: number }
+  >(maxSize);
   const logger = enableLogging ? getPerformanceLogger() : null;
   let hitCount = 0;
   let missCount = 0;
@@ -487,7 +508,7 @@ export function memoize<T extends (...args: any[]) => any>(
     const now = ttl ? Date.now() : undefined;
 
     // Check if cached value is still valid
-    if (cached && (!ttl || !now || (now - (cached.timestamp || 0)) < ttl)) {
+    if (cached && (!ttl || !now || now - (cached.timestamp || 0) < ttl)) {
       hitCount++;
 
       if (logger) {
@@ -535,7 +556,8 @@ export function memoize<T extends (...args: any[]) => any>(
 export class Benchmark {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private tests: Array<{ name: string; fn: () => any | Promise<any> }> = [];
-  private results: Array<{ name: string; duration: number; error?: Error }> = [];
+  private results: Array<{ name: string; duration: number; error?: Error }> =
+    [];
   private logger: Logger;
   private suiteName: string;
   private startTime?: number;
@@ -566,7 +588,9 @@ export class Benchmark {
   /**
    * Run all benchmarks
    */
-  async run(iterations = 1): Promise<Array<{ name: string; duration: number; error?: Error }>> {
+  async run(
+    iterations = 1
+  ): Promise<Array<{ name: string; duration: number; error?: Error }>> {
     this.results = [];
 
     for (const test of this.tests) {
@@ -596,7 +620,9 @@ export class Benchmark {
   /**
    * Get benchmark results sorted by performance
    */
-  getResults(sortBy: 'name' | 'duration' = 'duration'): Array<{ name: string; duration: number; error?: Error }> {
+  getResults(
+    sortBy: 'name' | 'duration' = 'duration'
+  ): Array<{ name: string; duration: number; error?: Error }> {
     return [...this.results].sort((a, b) => {
       if (sortBy === 'name') {
         return a.name.localeCompare(b.name);
@@ -617,10 +643,21 @@ export class Benchmark {
         totalTests: results.length,
         successfulTests: results.filter(r => !r.error).length,
         failedTests: results.filter(r => r.error).length,
-        avgDuration: results.filter(r => !r.error).reduce((sum, r) => sum + r.duration, 0) / results.filter(r => !r.error).length || 0,
-        fastestTest: results.filter(r => !r.error).sort((a, b) => a.duration - b.duration)[0],
-        slowestTest: results.filter(r => !r.error).sort((a, b) => b.duration - a.duration)[0],
-        suiteDuration: this.endTime && this.startTime ? this.endTime - this.startTime : undefined,
+        avgDuration:
+          results
+            .filter(r => !r.error)
+            .reduce((sum, r) => sum + r.duration, 0) /
+            results.filter(r => !r.error).length || 0,
+        fastestTest: results
+          .filter(r => !r.error)
+          .sort((a, b) => a.duration - b.duration)[0],
+        slowestTest: results
+          .filter(r => !r.error)
+          .sort((a, b) => b.duration - a.duration)[0],
+        suiteDuration:
+          this.endTime && this.startTime
+            ? this.endTime - this.startTime
+            : undefined,
       };
 
       this.logger.info('Benchmark summary', summary);
@@ -630,10 +667,12 @@ export class Benchmark {
           testName: result.name,
           duration: result.duration,
           durationFormatted: `${result.duration.toFixed(2)}ms`,
-          error: result.error ? {
-            message: result.error.message,
-            name: result.error.name,
-          } : null,
+          error: result.error
+            ? {
+                message: result.error.message,
+                name: result.error.name,
+              }
+            : null,
           status: result.error ? 'failed' : 'success',
           suiteName: this.suiteName,
         });
@@ -662,7 +701,8 @@ export class Benchmark {
     // Always emit performance event for results
     emitPerformanceEvent('benchmark-results-logged', {
       operation: this.suiteName,
-      duration: this.endTime && this.startTime ? this.endTime - this.startTime : 0,
+      duration:
+        this.endTime && this.startTime ? this.endTime - this.startTime : 0,
       timestamp: Date.now(),
       metadata: { results, format },
     });
@@ -722,8 +762,10 @@ export async function monitorExecution<T>(
 
   // Temporarily override config if thresholds provided
   const originalConfig = { ...performanceConfig };
-  if (memoryThreshold !== undefined) performanceConfig.memoryThreshold = memoryThreshold;
-  if (timeThreshold !== undefined) performanceConfig.timeThreshold = timeThreshold;
+  if (memoryThreshold !== undefined)
+    performanceConfig.memoryThreshold = memoryThreshold;
+  if (timeThreshold !== undefined)
+    performanceConfig.timeThreshold = timeThreshold;
   if (!enableEvents) performanceConfig.enableEvents = false;
 
   try {
@@ -769,9 +811,14 @@ export function performanceMonitor<T extends (...args: any[]) => any>(
     logResults?: boolean;
   } = {}
 ) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
     const originalMethod = descriptor.value;
-    const methodName = options.name || `${target.constructor.name}.${propertyKey}`;
+    const methodName =
+      options.name || `${target.constructor.name}.${propertyKey}`;
 
     descriptor.value = async function (...args: Parameters<T>) {
       const { result } = await monitorExecution(
@@ -851,11 +898,15 @@ export class PerformanceAggregator {
       };
     }
 
-    const durations = filteredMetrics.map(m => m.duration).sort((a, b) => a - b);
+    const durations = filteredMetrics
+      .map(m => m.duration)
+      .sort((a, b) => a - b);
     const totalDuration = durations.reduce((sum, d) => sum + d, 0);
     const avgDuration = totalDuration / durations.length;
 
-    const variance = durations.reduce((sum, d) => sum + Math.pow(d - avgDuration, 2), 0) / durations.length;
+    const variance =
+      durations.reduce((sum, d) => sum + Math.pow(d - avgDuration, 2), 0) /
+      durations.length;
     const standardDeviation = Math.sqrt(variance);
 
     const p95Index = Math.floor(durations.length * 0.95) - 1;
@@ -877,7 +928,8 @@ export class PerformanceAggregator {
     if (metricsWithMemory.length > 0) {
       const memoryUsages = metricsWithMemory.map(m => m.memoryUsage!.usage);
       (stats as any).memoryStats = {
-        avgUsage: memoryUsages.reduce((sum, u) => sum + u, 0) / memoryUsages.length,
+        avgUsage:
+          memoryUsages.reduce((sum, u) => sum + u, 0) / memoryUsages.length,
         maxUsage: Math.max(...memoryUsages),
         minUsage: Math.min(...memoryUsages),
       };

@@ -2,7 +2,7 @@
  * @fileoverview Quality metrics for code analysis
  */
 
-import { BaseEntity } from '@wundr.io/core-simple';
+import type { BaseEntity } from '@wundr.io/core-simple';
 
 export interface QualityMetric extends BaseEntity {
   name: string;
@@ -48,9 +48,9 @@ export class MetricsAnalyzer {
         codeSmells: 0,
         technicalDebt: {
           hours: 0.5,
-          severity: 'low'
-        }
-      }
+          severity: 'low',
+        },
+      },
     };
   }
 }
@@ -62,5 +62,5 @@ export class MetricsFactory {
 }
 
 export const DEFAULT_METRICS_CONFIG = {
-  enabled: true
+  enabled: true,
 };

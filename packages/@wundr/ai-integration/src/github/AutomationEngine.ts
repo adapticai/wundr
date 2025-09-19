@@ -17,7 +17,10 @@ export class AutomationEngine extends EventEmitter {
     return { success: true, message: 'Automation Engine initialized' };
   }
 
-  async executeAutomation(_automationId: string, _context: any): Promise<OperationResult> {
+  async executeAutomation(
+    _automationId: string,
+    _context: any
+  ): Promise<OperationResult> {
     return { success: true, message: 'Automation executed successfully' };
   }
 

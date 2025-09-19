@@ -18,7 +18,7 @@ const projectTemplates = {
   createInteractive: async () => {
     console.log('Interactive project creation not yet implemented');
     // TODO: Implement interactive project creation
-  }
+  },
 };
 
 /**
@@ -36,7 +36,9 @@ export class CreateCommands {
   private registerCommands(): void {
     const createCmd = this.program
       .command('create')
-      .description('create new wundr-compliant projects, components, services, and templates');
+      .description(
+        'create new wundr-compliant projects, components, services, and templates'
+      );
 
     // Create new project (full wundr-compliant project)
     createCmd
@@ -61,28 +63,36 @@ export class CreateCommands {
     createCmd
       .command('frontend <name>')
       .description('create a frontend application')
-      .option('-f, --framework <framework>', 'framework (next|react|vue)', 'next')
+      .option(
+        '-f, --framework <framework>',
+        'framework (next|react|vue)',
+        'next'
+      )
       .action(async (name: string, options: any) => {
         await projectTemplates.createProject({
           name,
           type: 'frontend',
           framework: options.framework,
           install: true,
-          git: true
+          git: true,
         });
       });
 
     createCmd
       .command('backend <name>')
       .description('create a backend API')
-      .option('-f, --framework <framework>', 'framework (fastify|express|nestjs)', 'fastify')
+      .option(
+        '-f, --framework <framework>',
+        'framework (fastify|express|nestjs)',
+        'fastify'
+      )
       .action(async (name: string, options: any) => {
         await projectTemplates.createProject({
           name,
           type: 'backend',
           framework: options.framework,
           install: true,
-          git: true
+          git: true,
         });
       });
 
@@ -95,7 +105,7 @@ export class CreateCommands {
           type: 'monorepo',
           framework: 'turborepo',
           install: true,
-          git: true
+          git: true,
         });
       });
 
@@ -109,7 +119,7 @@ export class CreateCommands {
           framework: 'turborepo',
           install: true,
           git: true,
-          description: 'Full-stack wundr-compliant application'
+          description: 'Full-stack wundr-compliant application',
         });
       });
 
@@ -129,8 +139,16 @@ export class CreateCommands {
     createCmd
       .command('service <name>')
       .description('create a new service')
-      .option('--type <type>', 'service type (api, worker, microservice)', 'api')
-      .option('--framework <framework>', 'framework (express, fastify, nest)', 'express')
+      .option(
+        '--type <type>',
+        'service type (api, worker, microservice)',
+        'api'
+      )
+      .option(
+        '--framework <framework>',
+        'framework (express, fastify, nest)',
+        'express'
+      )
       .option('--with-tests', 'generate test files')
       .option('--with-docs', 'generate API documentation')
       .action(async (name, options) => {
@@ -163,7 +181,11 @@ export class CreateCommands {
       .command('workflow <name>')
       .description('create a new workflow or automation')
       .option('--type <type>', 'workflow type (ci, deployment, analysis)', 'ci')
-      .option('--platform <platform>', 'platform (github, gitlab, jenkins)', 'github')
+      .option(
+        '--platform <platform>',
+        'platform (github, gitlab, jenkins)',
+        'github'
+      )
       .action(async (name, options) => {
         await this.createWorkflow(name, options);
       });
@@ -172,7 +194,10 @@ export class CreateCommands {
     createCmd
       .command('config <name>')
       .description('create configuration files')
-      .option('--type <type>', 'config type (eslint, prettier, jest, typescript)')
+      .option(
+        '--type <type>',
+        'config type (eslint, prettier, jest, typescript)'
+      )
       .option('--preset <preset>', 'configuration preset')
       .action(async (name, options) => {
         await this.createConfig(name, options);
@@ -182,7 +207,11 @@ export class CreateCommands {
   /**
    * Create a new wundr-compliant project
    */
-  private async createProject(type: string, name: string | undefined, options: any): Promise<void> {
+  private async createProject(
+    type: string,
+    name: string | undefined,
+    options: any
+  ): Promise<void> {
     try {
       // If no name provided, launch interactive mode
       if (!name) {
@@ -191,7 +220,14 @@ export class CreateCommands {
       }
 
       // Validate project type
-      const validTypes = ['frontend', 'backend', 'fullstack', 'monorepo', 'library', 'cli'];
+      const validTypes = [
+        'frontend',
+        'backend',
+        'fullstack',
+        'monorepo',
+        'library',
+        'cli',
+      ];
       if (!validTypes.includes(type)) {
         logger.error(`Invalid project type: ${type}`);
         logger.info(`Valid types: ${validTypes.join(', ')}`);
@@ -213,9 +249,8 @@ export class CreateCommands {
         testing: options.testing,
         ci: options.ci,
         docker: options.docker,
-        path: options.path
+        path: options.path,
       });
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_CREATE_PROJECT_FAILED',
@@ -239,11 +274,19 @@ export class CreateCommands {
       await this.generateFromTemplate('component', componentData, outputPath);
 
       if (options.withTests) {
-        await this.generateFromTemplate('component-test', componentData, outputPath);
+        await this.generateFromTemplate(
+          'component-test',
+          componentData,
+          outputPath
+        );
       }
 
       if (options.withStories) {
-        await this.generateFromTemplate('component-stories', componentData, outputPath);
+        await this.generateFromTemplate(
+          'component-stories',
+          componentData,
+          outputPath
+        );
       }
 
       logger.success(`Component ${name} created successfully at ${outputPath}`);
@@ -270,7 +313,11 @@ export class CreateCommands {
       await this.generateFromTemplate('service', serviceData, outputPath);
 
       if (options.withTests) {
-        await this.generateFromTemplate('service-test', serviceData, outputPath);
+        await this.generateFromTemplate(
+          'service-test',
+          serviceData,
+          outputPath
+        );
       }
 
       if (options.withDocs) {
@@ -396,7 +443,7 @@ export class CreateCommands {
       fileName: this.toKebabCase(name),
       withTests: options.withTests,
       withStories: options.withStories,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -409,13 +456,13 @@ export class CreateCommands {
       fileName: this.toKebabCase(name),
       withTests: options.withTests,
       withDocs: options.withDocs,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
   private async gatherPackageData(name: string, options: any): Promise<any> {
     const packageName = name.startsWith('@') ? name : `@wundr/${name}`;
-    
+
     return {
       name: packageName,
       shortName: name,
@@ -424,7 +471,7 @@ export class CreateCommands {
       public: options.public,
       className: this.toPascalCase(name),
       fileName: this.toKebabCase(name),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -434,7 +481,7 @@ export class CreateCommands {
       type: options.type,
       platform: options.platform,
       fileName: this.toKebabCase(name),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -444,35 +491,46 @@ export class CreateCommands {
       type: options.type,
       preset: options.preset,
       fileName: this.getConfigFileName(name, options.type),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
   /**
    * Template generation methods
    */
-  private async generateFromTemplate(templateType: string, data: any, outputPath: string): Promise<void> {
+  private async generateFromTemplate(
+    templateType: string,
+    data: any,
+    outputPath: string
+  ): Promise<void> {
     const templatePath = this.getTemplatePath(templateType);
-    
-    if (!await fs.pathExists(templatePath)) {
+
+    if (!(await fs.pathExists(templatePath))) {
       throw new Error(`Template ${templateType} not found`);
     }
 
     await fs.ensureDir(outputPath);
-    
+
     // Copy template files and replace placeholders
     await this.copyTemplateWithReplacements(templatePath, outputPath, data);
   }
 
-  private async copyTemplateWithReplacements(srcPath: string, destPath: string, data: any): Promise<void> {
+  private async copyTemplateWithReplacements(
+    srcPath: string,
+    destPath: string,
+    data: any
+  ): Promise<void> {
     const files = await fs.readdir(srcPath);
-    
+
     for (const file of files) {
       const srcFile = path.join(srcPath, file);
-      const destFile = path.join(destPath, this.replacePlaceholders(file, data));
-      
+      const destFile = path.join(
+        destPath,
+        this.replacePlaceholders(file, data)
+      );
+
       const stat = await fs.stat(srcFile);
-      
+
       if (stat.isDirectory()) {
         await fs.ensureDir(destFile);
         await this.copyTemplateWithReplacements(srcFile, destFile, data);
@@ -486,38 +544,44 @@ export class CreateCommands {
 
   private replacePlaceholders(content: string, data: any): string {
     let result = content;
-    
+
     Object.entries(data).forEach(([key, value]) => {
       const placeholder = new RegExp(`{{${key}}}`, 'g');
       result = result.replace(placeholder, String(value));
     });
-    
+
     return result;
   }
 
   /**
    * Path determination methods
    */
-  private async determineOutputPath(category: string, name: string): Promise<string> {
+  private async determineOutputPath(
+    category: string,
+    name: string
+  ): Promise<string> {
     const projectRoot = process.cwd();
     const srcPath = path.join(projectRoot, 'src');
-    
+
     if (await fs.pathExists(srcPath)) {
       return path.join(srcPath, category, this.toKebabCase(name));
     }
-    
+
     return path.join(projectRoot, category, this.toKebabCase(name));
   }
 
-  private async determinePackagePath(name: string, type: string): Promise<string> {
+  private async determinePackagePath(
+    name: string,
+    type: string
+  ): Promise<string> {
     const projectRoot = process.cwd();
     const packagesPath = path.join(projectRoot, 'packages');
     const appsPath = path.join(projectRoot, 'apps');
-    
-    if (type === 'app' && await fs.pathExists(appsPath)) {
+
+    if (type === 'app' && (await fs.pathExists(appsPath))) {
       return path.join(appsPath, this.toKebabCase(name));
     }
-    
+
     return path.join(packagesPath, this.toKebabCase(name));
   }
 
@@ -525,9 +589,9 @@ export class CreateCommands {
     const paths = {
       github: '.github/workflows',
       gitlab: '.gitlab-ci',
-      jenkins: 'jenkins'
+      jenkins: 'jenkins',
     };
-    
+
     return paths[platform as keyof typeof paths] || '.github/workflows';
   }
 
@@ -540,9 +604,9 @@ export class CreateCommands {
       eslint: '.eslintrc.js',
       prettier: '.prettierrc.js',
       jest: 'jest.config.js',
-      typescript: 'tsconfig.json'
+      typescript: 'tsconfig.json',
     };
-    
+
     return fileNames[type as keyof typeof fileNames] || `${name}.config.js`;
   }
 
@@ -563,12 +627,15 @@ export class CreateCommands {
       .toLowerCase();
   }
 
-  private async updateWorkspaceConfig(name: string, type: string): Promise<void> {
+  private async updateWorkspaceConfig(
+    name: string,
+    type: string
+  ): Promise<void> {
     const packageJsonPath = path.join(process.cwd(), 'package.json');
-    
+
     if (await fs.pathExists(packageJsonPath)) {
       const packageJson = await fs.readJson(packageJsonPath);
-      
+
       if (packageJson.workspaces) {
         const workspace = type === 'app' ? 'apps/*' : 'packages/*';
         if (!packageJson.workspaces.includes(workspace)) {
@@ -579,11 +646,14 @@ export class CreateCommands {
     }
   }
 
-  private async generateApiDocs(serviceData: any, outputPath: string): Promise<void> {
+  private async generateApiDocs(
+    serviceData: any,
+    outputPath: string
+  ): Promise<void> {
     // Generate API documentation based on service type and framework
     const docsPath = path.join(outputPath, 'docs');
     await fs.ensureDir(docsPath);
-    
+
     const apiDoc = `# ${serviceData.name} API Documentation
 
 ## Overview
@@ -611,7 +681,7 @@ Create new ${serviceData.name}
 
 [Add error handling information here]
 `;
-    
+
     await fs.writeFile(path.join(docsPath, 'api.md'), apiDoc);
   }
 
@@ -620,7 +690,7 @@ Create new ${serviceData.name}
       {
         type: 'input',
         name: 'description',
-        message: 'Template description:'
+        message: 'Template description:',
       },
       {
         type: 'checkbox',
@@ -633,16 +703,19 @@ Create new ${serviceData.name}
           'Node.js',
           'Testing',
           'Storybook',
-          'Documentation'
-        ]
-      }
+          'Documentation',
+        ],
+      },
     ]);
-    
+
     // Create template based on answers
     logger.debug('Creating interactive template with:', answers);
   }
 
-  private async createTemplateFromSource(name: string, sourcePath: string): Promise<void> {
+  private async createTemplateFromSource(
+    name: string,
+    sourcePath: string
+  ): Promise<void> {
     logger.debug(`Creating template ${name} from source: ${sourcePath}`);
     // Implementation for creating template from existing source
   }

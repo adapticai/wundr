@@ -1,6 +1,6 @@
 /**
  * Pattern Recognition - Neural pattern analysis and learning
- * 
+ *
  * Identifies patterns in agent behavior, task execution, and system performance
  * to improve swarm intelligence and coordination effectiveness.
  */
@@ -21,11 +21,11 @@ export interface Pattern {
   updatedAt: Date;
 }
 
-export type PatternType = 
-  | 'task-execution' 
-  | 'agent-behavior' 
-  | 'performance-trend' 
-  | 'error-pattern' 
+export type PatternType =
+  | 'task-execution'
+  | 'agent-behavior'
+  | 'performance-trend'
+  | 'error-pattern'
   | 'coordination-pattern'
   | 'resource-usage';
 
@@ -55,20 +55,24 @@ export class PatternRecognition extends EventEmitter {
   async initialize(): Promise<OperationResult> {
     return {
       success: true,
-      message: 'Pattern Recognition initialized successfully'
+      message: 'Pattern Recognition initialized successfully',
     };
   }
 
   /**
    * Analyze execution data to identify patterns
    */
-  async analyzeExecution(task: Task, agents: Agent[], result: any): Promise<PatternAnalysis> {
+  async analyzeExecution(
+    task: Task,
+    agents: Agent[],
+    result: any
+  ): Promise<PatternAnalysis> {
     // Store execution history
     this.executionHistory.push({
       task,
       agents,
       result,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     // Maintain history size limit
@@ -86,7 +90,7 @@ export class PatternRecognition extends EventEmitter {
       ...taskPatterns,
       ...agentPatterns,
       ...performancePatterns,
-      ...coordinationPatterns
+      ...coordinationPatterns,
     ];
 
     // Update pattern registry
@@ -102,7 +106,7 @@ export class PatternRecognition extends EventEmitter {
       insights: this.generateInsights(allPatterns),
       recommendations: this.generateRecommendations(allPatterns),
       confidence: this.calculateOverallConfidence(allPatterns),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.emit('analysis-complete', analysis);
@@ -117,7 +121,8 @@ export class PatternRecognition extends EventEmitter {
       if (executions.length < 3) return; // Need minimum sample size
 
       // Success rate pattern
-      const successRate = executions.filter(e => e.result.success).length / executions.length;
+      const successRate =
+        executions.filter(e => e.result.success).length / executions.length;
       if (successRate > 0.8 || successRate < 0.5) {
         patterns.push({
           id: `task-success-${taskType}-${Date.now()}`,
@@ -128,12 +133,14 @@ export class PatternRecognition extends EventEmitter {
           triggers: ['task-type', taskType],
           outcomes: [successRate > 0.8 ? 'high-success' : 'low-success'],
           learnedAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       }
 
       // Execution time pattern
-      const avgTime = executions.reduce((sum, e) => sum + (e.result.executionTime || 0), 0) / executions.length;
+      const avgTime =
+        executions.reduce((sum, e) => sum + (e.result.executionTime || 0), 0) /
+        executions.length;
       if (avgTime > 0) {
         patterns.push({
           id: `task-time-${taskType}-${Date.now()}`,
@@ -144,7 +151,7 @@ export class PatternRecognition extends EventEmitter {
           triggers: ['task-type', taskType],
           outcomes: [`execution-time-${avgTime}`],
           learnedAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       }
     });
@@ -154,12 +161,15 @@ export class PatternRecognition extends EventEmitter {
 
   private analyzeAgentBehaviorPatterns(): Pattern[] {
     const patterns: Pattern[] = [];
-    const agentPerformance = new Map<string, {
-      successes: number;
-      failures: number;
-      avgTime: number;
-      tasks: string[];
-    }>();
+    const agentPerformance = new Map<
+      string,
+      {
+        successes: number;
+        failures: number;
+        avgTime: number;
+        tasks: string[];
+      }
+    >();
 
     // Aggregate agent performance data
     this.executionHistory.forEach(execution => {
@@ -169,7 +179,7 @@ export class PatternRecognition extends EventEmitter {
             successes: 0,
             failures: 0,
             avgTime: 0,
-            tasks: []
+            tasks: [],
           });
         }
 
@@ -198,7 +208,7 @@ export class PatternRecognition extends EventEmitter {
             triggers: ['agent-id', agentId],
             outcomes: ['high-performance'],
             learnedAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           });
         }
       }
@@ -209,7 +219,7 @@ export class PatternRecognition extends EventEmitter {
 
   private analyzePerformancePatterns(): Pattern[] {
     const patterns: Pattern[] = [];
-    
+
     // Memory usage trends
     const memoryUsages = this.executionHistory
       .map(e => e.result.memoryUsage)
@@ -227,7 +237,7 @@ export class PatternRecognition extends EventEmitter {
           triggers: ['memory-usage'],
           outcomes: [trend > 0 ? 'increasing-memory' : 'decreasing-memory'],
           learnedAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       }
     }
@@ -237,21 +247,27 @@ export class PatternRecognition extends EventEmitter {
 
   private analyzeCoordinationPatterns(): Pattern[] {
     const patterns: Pattern[] = [];
-    
+
     // Agent combination effectiveness
-    const combinations = new Map<string, {
-      successes: number;
-      failures: number;
-      combinations: string[];
-    }>();
+    const combinations = new Map<
+      string,
+      {
+        successes: number;
+        failures: number;
+        combinations: string[];
+      }
+    >();
 
     this.executionHistory.forEach(execution => {
-      const agentTypes = execution.agents.map(a => a.type).sort().join('-');
+      const agentTypes = execution.agents
+        .map(a => a.type)
+        .sort()
+        .join('-');
       if (!combinations.has(agentTypes)) {
         combinations.set(agentTypes, {
           successes: 0,
           failures: 0,
-          combinations: execution.agents.map(a => a.type)
+          combinations: execution.agents.map(a => a.type),
         });
       }
 
@@ -275,9 +291,11 @@ export class PatternRecognition extends EventEmitter {
             frequency: total,
             context: { agentCombination: combo.combinations, successRate },
             triggers: ['agent-combination', ...combo.combinations],
-            outcomes: [successRate > 0.8 ? 'effective-combo' : 'ineffective-combo'],
+            outcomes: [
+              successRate > 0.8 ? 'effective-combo' : 'ineffective-combo',
+            ],
             learnedAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           });
         }
       }
@@ -286,9 +304,12 @@ export class PatternRecognition extends EventEmitter {
     return patterns;
   }
 
-  private groupExecutionsByTaskType(): Record<string, typeof this.executionHistory> {
+  private groupExecutionsByTaskType(): Record<
+    string,
+    typeof this.executionHistory
+  > {
     const groups: Record<string, typeof this.executionHistory> = {};
-    
+
     this.executionHistory.forEach(execution => {
       const taskType = execution.task.type;
       if (!groups[taskType]) {
@@ -302,31 +323,38 @@ export class PatternRecognition extends EventEmitter {
 
   private calculateTrend(values: number[]): number {
     if (values.length < 2) return 0;
-    
+
     const n = values.length;
-    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-    
+    let sumX = 0,
+      sumY = 0,
+      sumXY = 0,
+      sumXX = 0;
+
     for (let i = 0; i < n; i++) {
       sumX += i;
       sumY += values[i];
       sumXY += i * values[i];
       sumXX += i * i;
     }
-    
+
     return (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
   }
 
   private generateInsights(patterns: Pattern[]): string[] {
     const insights: string[] = [];
-    
+
     const highConfidencePatterns = patterns.filter(p => p.confidence > 0.8);
     if (highConfidencePatterns.length > 0) {
-      insights.push(`Identified ${highConfidencePatterns.length} high-confidence patterns`);
+      insights.push(
+        `Identified ${highConfidencePatterns.length} high-confidence patterns`
+      );
     }
 
     const taskPatterns = patterns.filter(p => p.type === 'task-execution');
     if (taskPatterns.length > 0) {
-      insights.push(`Task execution patterns suggest optimization opportunities`);
+      insights.push(
+        `Task execution patterns suggest optimization opportunities`
+      );
     }
 
     const agentPatterns = patterns.filter(p => p.type === 'agent-behavior');
@@ -339,23 +367,35 @@ export class PatternRecognition extends EventEmitter {
 
   private generateRecommendations(patterns: Pattern[]): string[] {
     const recommendations: string[] = [];
-    
+
     // Performance-based recommendations
-    const performancePatterns = patterns.filter(p => p.type === 'performance-trend');
-    if (performancePatterns.some(p => p.outcomes.includes('increasing-memory'))) {
+    const performancePatterns = patterns.filter(
+      p => p.type === 'performance-trend'
+    );
+    if (
+      performancePatterns.some(p => p.outcomes.includes('increasing-memory'))
+    ) {
       recommendations.push('Consider memory optimization strategies');
     }
 
     // Agent-based recommendations
     const agentPatterns = patterns.filter(p => p.type === 'agent-behavior');
-    const highPerformers = agentPatterns.filter(p => p.outcomes.includes('high-performance'));
+    const highPerformers = agentPatterns.filter(p =>
+      p.outcomes.includes('high-performance')
+    );
     if (highPerformers.length > 0) {
-      recommendations.push('Prioritize high-performing agents for critical tasks');
+      recommendations.push(
+        'Prioritize high-performing agents for critical tasks'
+      );
     }
 
     // Coordination recommendations
-    const coordPatterns = patterns.filter(p => p.type === 'coordination-pattern');
-    const effectiveCombos = coordPatterns.filter(p => p.outcomes.includes('effective-combo'));
+    const coordPatterns = patterns.filter(
+      p => p.type === 'coordination-pattern'
+    );
+    const effectiveCombos = coordPatterns.filter(p =>
+      p.outcomes.includes('effective-combo')
+    );
     if (effectiveCombos.length > 0) {
       recommendations.push('Use proven agent combinations for similar tasks');
     }
@@ -385,7 +425,7 @@ export class PatternRecognition extends EventEmitter {
     this.executionHistory.length = 0;
     return {
       success: true,
-      message: 'Pattern Recognition shutdown completed'
+      message: 'Pattern Recognition shutdown completed',
     };
   }
 }

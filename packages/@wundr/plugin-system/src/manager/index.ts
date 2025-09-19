@@ -39,7 +39,7 @@ export class PluginError extends BaseWundrError {
 export class WundrPluginManager implements PluginManager {
   public readonly options: PluginManagerOptions;
   public readonly hookRegistry: PluginHookRegistry;
-  
+
   private readonly logger: Logger;
   private readonly eventBus: EventBus;
   private readonly plugins = new Map<string, PluginInfo>();
@@ -54,7 +54,7 @@ export class WundrPluginManager implements PluginManager {
       loadTimeout: 30000, // 30 seconds
       ...options,
     };
-    
+
     this.logger = options.logger || getLogger();
     this.eventBus = options.eventBus || getEventBus();
     this.hookRegistry = new WundrHookRegistry();
@@ -93,9 +93,9 @@ export class WundrPluginManager implements PluginManager {
     }
 
     this.logger.info('Destroying plugin manager');
-    
+
     await this.deactivateAll();
-    
+
     // Unload all plugins
     for (const pluginId of this.plugins.keys()) {
       await this.unloadPlugin(pluginId);
@@ -137,7 +137,7 @@ export class WundrPluginManager implements PluginManager {
 
   private async doLoadPlugin(pluginId: string): Promise<PluginInfo> {
     const startTime = performance.now();
-    
+
     this.logger.info(`Loading plugin: ${pluginId}`);
     this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_LOADING, { pluginId });
 
@@ -147,13 +147,13 @@ export class WundrPluginManager implements PluginManager {
 
       // Load manifest
       const manifest = await this.loadManifest(pluginId);
-      
+
       // Validate manifest
       this.validateManifest(manifest);
 
       // Load plugin module
       const pluginModule = await this.loadPluginModule(pluginId, manifest);
-      
+
       // Create plugin instance
       const PluginClass = pluginModule.default;
       const instance = new PluginClass();
@@ -167,12 +167,12 @@ export class WundrPluginManager implements PluginManager {
 
       // Create context
       const context = await this.createPluginContext(pluginId, manifest);
-      
+
       // Initialize plugin
       await instance.initialize(context);
 
       const loadTime = performance.now() - startTime;
-      
+
       const pluginInfo: PluginInfo = {
         id: pluginId,
         metadata,
@@ -183,11 +183,11 @@ export class WundrPluginManager implements PluginManager {
       };
 
       this.plugins.set(pluginId, pluginInfo);
-      
+
       this.logger.info(`Plugin loaded successfully: ${pluginId}`, {
         loadTime: `${loadTime.toFixed(2)}ms`,
       });
-      
+
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_LOADED, {
         pluginId,
         pluginInfo,
@@ -196,23 +196,31 @@ export class WundrPluginManager implements PluginManager {
 
       return pluginInfo;
     } catch (error) {
-      const pluginError = error instanceof Error
-        ? error
-        : new PluginError(`Failed to load plugin: ${pluginId}`, { pluginId, error });
+      const pluginError =
+        error instanceof Error
+          ? error
+          : new PluginError(`Failed to load plugin: ${pluginId}`, {
+              pluginId,
+              error,
+            });
 
       const pluginInfo: PluginInfo = {
         id: pluginId,
-        metadata: { name: pluginId, version: '0.0.0', description: 'Failed to load' },
+        metadata: {
+          name: pluginId,
+          version: '0.0.0',
+          description: 'Failed to load',
+        },
         status: PluginStatus.ERROR,
         error: pluginError,
       };
 
       this.plugins.set(pluginId, pluginInfo);
-      
+
       this.logger.error(`Plugin load failed: ${pluginId}`, {
         error: pluginError.message,
       });
-      
+
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_LOAD_ERROR, {
         pluginId,
         error: pluginError,
@@ -243,7 +251,7 @@ export class WundrPluginManager implements PluginManager {
       }
 
       this.plugins.delete(pluginId);
-      
+
       this.logger.info(`Plugin unloaded: ${pluginId}`);
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_UNLOADED, { pluginId });
     } catch (error) {
@@ -251,13 +259,13 @@ export class WundrPluginManager implements PluginManager {
         `Failed to unload plugin: ${pluginId}`,
         { pluginId, error }
       );
-      
+
       this.logger.error(pluginError);
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_ERROR, {
         pluginId,
         error: pluginError,
       });
-      
+
       throw pluginError;
     }
   }
@@ -280,26 +288,26 @@ export class WundrPluginManager implements PluginManager {
     }
 
     const startTime = performance.now();
-    
+
     this.logger.info(`Activating plugin: ${pluginId}`);
     this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_ACTIVATING, { pluginId });
 
     try {
       this.updatePluginStatus(pluginId, PluginStatus.ACTIVATING);
-      
+
       await pluginInfo.instance!.activate();
-      
+
       const activationTime = performance.now() - startTime;
-      
+
       this.updatePluginInfo(pluginId, {
         status: PluginStatus.ACTIVE,
         activationTime,
       });
-      
+
       this.logger.info(`Plugin activated: ${pluginId}`, {
         activationTime: `${activationTime.toFixed(2)}ms`,
       });
-      
+
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_ACTIVATED, {
         pluginId,
         activationTime,
@@ -309,18 +317,18 @@ export class WundrPluginManager implements PluginManager {
         `Failed to activate plugin: ${pluginId}`,
         { pluginId, error }
       );
-      
+
       this.updatePluginInfo(pluginId, {
         status: PluginStatus.ERROR,
         error: pluginError,
       });
-      
+
       this.logger.error(pluginError);
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_ACTIVATION_ERROR, {
         pluginId,
         error: pluginError,
       });
-      
+
       throw pluginError;
     }
   }
@@ -340,11 +348,11 @@ export class WundrPluginManager implements PluginManager {
 
     try {
       this.updatePluginStatus(pluginId, PluginStatus.DEACTIVATING);
-      
+
       await pluginInfo.instance!.deactivate();
-      
+
       this.updatePluginStatus(pluginId, PluginStatus.LOADED);
-      
+
       this.logger.info(`Plugin deactivated: ${pluginId}`);
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_DEACTIVATED, { pluginId });
     } catch (error) {
@@ -352,18 +360,18 @@ export class WundrPluginManager implements PluginManager {
         `Failed to deactivate plugin: ${pluginId}`,
         { pluginId, error }
       );
-      
+
       this.updatePluginInfo(pluginId, {
         status: PluginStatus.ERROR,
         error: pluginError,
       });
-      
+
       this.logger.error(pluginError);
       this.eventBus.emit(PLUGIN_EVENTS.PLUGIN_DEACTIVATION_ERROR, {
         pluginId,
         error: pluginError,
       });
-      
+
       throw pluginError;
     }
   }
@@ -391,12 +399,18 @@ export class WundrPluginManager implements PluginManager {
 
   async discoverPlugins(): Promise<string[]> {
     try {
-      const entries = await fs.readdir(this.options.pluginDir, { withFileTypes: true });
+      const entries = await fs.readdir(this.options.pluginDir, {
+        withFileTypes: true,
+      });
       const pluginIds: string[] = [];
 
       for (const entry of entries) {
         if (entry.isDirectory()) {
-          const manifestPath = path.join(this.options.pluginDir, entry.name, 'plugin.json');
+          const manifestPath = path.join(
+            this.options.pluginDir,
+            entry.name,
+            'plugin.json'
+          );
           try {
             await fs.access(manifestPath);
             pluginIds.push(entry.name);
@@ -428,7 +442,7 @@ export class WundrPluginManager implements PluginManager {
     const results: PluginInfo[] = [];
 
     // Load plugins with concurrency control
-    const loadPromises = pluginIds.map(async (pluginId) => {
+    const loadPromises = pluginIds.map(async pluginId => {
       try {
         const result = await this.loadPlugin(pluginId);
         results.push(result);
@@ -440,7 +454,7 @@ export class WundrPluginManager implements PluginManager {
 
     const loadResults = await Promise.all(loadPromises);
     const failedLoads = loadResults.filter(isFailure);
-    
+
     if (failedLoads.length > 0) {
       this.logger.warn(`Failed to load ${failedLoads.length} plugins`, {
         totalPlugins: pluginIds.length,
@@ -460,7 +474,9 @@ export class WundrPluginManager implements PluginManager {
       try {
         await this.activatePlugin(pluginInfo.id);
       } catch (error) {
-        this.logger.warn(`Failed to activate plugin: ${pluginInfo.id}`, { error });
+        this.logger.warn(`Failed to activate plugin: ${pluginInfo.id}`, {
+          error,
+        });
       }
     }
   }
@@ -473,7 +489,9 @@ export class WundrPluginManager implements PluginManager {
       try {
         await this.deactivatePlugin(pluginInfo.id);
       } catch (error) {
-        this.logger.warn(`Failed to deactivate plugin: ${pluginInfo.id}`, { error });
+        this.logger.warn(`Failed to deactivate plugin: ${pluginInfo.id}`, {
+          error,
+        });
       }
     }
   }
@@ -484,63 +502,77 @@ export class WundrPluginManager implements PluginManager {
   }
 
   private async loadManifest(pluginId: string): Promise<PluginManifest> {
-    const manifestPath = path.join(this.options.pluginDir, pluginId, 'plugin.json');
-    
+    const manifestPath = path.join(
+      this.options.pluginDir,
+      pluginId,
+      'plugin.json'
+    );
+
     try {
       const manifestContent = await fs.readFile(manifestPath, 'utf-8');
       return JSON.parse(manifestContent) as PluginManifest;
     } catch (error) {
-      throw new PluginError(
-        `Failed to load plugin manifest: ${pluginId}`,
-        { pluginId, manifestPath, error }
-      );
+      throw new PluginError(`Failed to load plugin manifest: ${pluginId}`, {
+        pluginId,
+        manifestPath,
+        error,
+      });
     }
   }
 
   private validateManifest(manifest: PluginManifest): void {
     const requiredFields = ['name', 'version', 'description', 'main'];
-    
+
     for (const field of requiredFields) {
       if (!(field in manifest) || !manifest[field as keyof PluginManifest]) {
-        throw new PluginError(
-          `Invalid plugin manifest: missing ${field}`,
-          { manifest }
-        );
+        throw new PluginError(`Invalid plugin manifest: missing ${field}`, {
+          manifest,
+        });
       }
     }
 
     if (!semver.valid(manifest.version)) {
-      throw new PluginError(
-        `Invalid plugin version: ${manifest.version}`,
-        { manifest }
-      );
+      throw new PluginError(`Invalid plugin version: ${manifest.version}`, {
+        manifest,
+      });
     }
   }
 
-  private async loadPluginModule(pluginId: string, manifest: PluginManifest): Promise<PluginModule> {
-    const pluginPath = path.join(this.options.pluginDir, pluginId, manifest.main);
-    
+  private async loadPluginModule(
+    pluginId: string,
+    manifest: PluginManifest
+  ): Promise<PluginModule> {
+    const pluginPath = path.join(
+      this.options.pluginDir,
+      pluginId,
+      manifest.main
+    );
+
     try {
       const moduleUrl = pathToFileURL(pluginPath).href;
       const module = await import(moduleUrl);
-      
+
       if (!module.default || typeof module.default !== 'function') {
         throw new PluginError(
           `Plugin module must export a default constructor function: ${pluginId}`,
           { pluginId, pluginPath }
         );
       }
-      
+
       return module as PluginModule;
     } catch (error) {
-      throw new PluginError(
-        `Failed to load plugin module: ${pluginId}`,
-        { pluginId, pluginPath, error }
-      );
+      throw new PluginError(`Failed to load plugin module: ${pluginId}`, {
+        pluginId,
+        pluginPath,
+        error,
+      });
     }
   }
 
-  private async createPluginContext(pluginId: string, manifest: PluginManifest): Promise<PluginContext> {
+  private async createPluginContext(
+    pluginId: string,
+    manifest: PluginManifest
+  ): Promise<PluginContext> {
     const pluginDataDir = path.join(this.options.dataDir, pluginId);
     await fs.mkdir(pluginDataDir, { recursive: true });
 
@@ -557,7 +589,10 @@ export class WundrPluginManager implements PluginManager {
     this.updatePluginInfo(pluginId, { status });
   }
 
-  private updatePluginInfo(pluginId: string, updates: Partial<PluginInfo>): void {
+  private updatePluginInfo(
+    pluginId: string,
+    updates: Partial<PluginInfo>
+  ): void {
     const existing = this.plugins.get(pluginId);
     if (existing) {
       this.plugins.set(pluginId, { ...existing, ...updates });

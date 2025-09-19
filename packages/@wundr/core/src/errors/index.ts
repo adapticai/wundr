@@ -75,21 +75,31 @@ export function success<T>(data: T): { success: true; data: T } {
 /**
  * Creates a Result type error value
  */
-export function failure<E = WundrError>(error: E): { success: false; error: E } {
+export function failure<E = WundrError>(
+  error: E
+): { success: false; error: E } {
   return { success: false, error };
 }
 
 /**
  * Type guard to check if a Result is successful
  */
-export function isSuccess<T, E>(result: { success: boolean; data?: T; error?: E }): result is { success: true; data: T } {
+export function isSuccess<T, E>(result: {
+  success: boolean;
+  data?: T;
+  error?: E;
+}): result is { success: true; data: T } {
   return result.success === true;
 }
 
 /**
  * Type guard to check if a Result is a failure
  */
-export function isFailure<T, E>(result: { success: boolean; data?: T; error?: E }): result is { success: false; error: E } {
+export function isFailure<T, E>(result: {
+  success: boolean;
+  data?: T;
+  error?: E;
+}): result is { success: false; error: E } {
   return result.success === false;
 }
 
@@ -98,19 +108,22 @@ export function isFailure<T, E>(result: { success: boolean; data?: T; error?: E 
  */
 export function wrapWithResult<T extends unknown[], R>(
   fn: (...args: T) => R
-): (...args: T) => { success: true; data: R } | { success: false; error: WundrError } {
+): (
+  ...args: T
+) => { success: true; data: R } | { success: false; error: WundrError } {
   return (...args: T) => {
     try {
       const result = fn(...args);
       return success(result);
     } catch (error) {
-      const wundrError = error instanceof BaseWundrError
-        ? error
-        : new BaseWundrError(
-            error instanceof Error ? error.message : String(error),
-            'UNKNOWN_ERROR',
-            { originalError: error }
-          );
+      const wundrError =
+        error instanceof BaseWundrError
+          ? error
+          : new BaseWundrError(
+              error instanceof Error ? error.message : String(error),
+              'UNKNOWN_ERROR',
+              { originalError: error }
+            );
       return failure(wundrError);
     }
   };
@@ -121,19 +134,24 @@ export function wrapWithResult<T extends unknown[], R>(
  */
 export function wrapWithResultAsync<T extends unknown[], R>(
   fn: (...args: T) => Promise<R>
-): (...args: T) => Promise<{ success: true; data: R } | { success: false; error: WundrError }> {
+): (
+  ...args: T
+) => Promise<
+  { success: true; data: R } | { success: false; error: WundrError }
+> {
   return async (...args: T) => {
     try {
       const result = await fn(...args);
       return success(result);
     } catch (error) {
-      const wundrError = error instanceof BaseWundrError
-        ? error
-        : new BaseWundrError(
-            error instanceof Error ? error.message : String(error),
-            'UNKNOWN_ERROR',
-            { originalError: error }
-          );
+      const wundrError =
+        error instanceof BaseWundrError
+          ? error
+          : new BaseWundrError(
+              error instanceof Error ? error.message : String(error),
+              'UNKNOWN_ERROR',
+              { originalError: error }
+            );
       return failure(wundrError);
     }
   };

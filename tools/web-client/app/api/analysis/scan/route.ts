@@ -87,7 +87,7 @@ interface ScanResult {
   dependencies: DependencyAnalysis
   duplications: CodeDuplication[]
   security: {
-    vulnerabilities: number
+    vulnerabilityCount: number
     hotspots: number
     issues: CodeIssue[]
   }
@@ -631,7 +631,7 @@ async function performScan(options: ScanOptions, projectRoot: string): Promise<S
       dependencies,
       duplications,
       security: {
-        vulnerabilities: securityIssues.filter(i => i.severity === 'critical').length,
+        vulnerabilityCount: securityIssues.filter(i => i.severity === 'critical').length,
         hotspots: securityIssues.filter(i => i.severity === 'high').length,
         issues: securityIssues
       }

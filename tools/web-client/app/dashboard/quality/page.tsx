@@ -288,7 +288,7 @@ export default function QualityDashboard() {
     (100 - Math.min(latest.codeComplexity * 5, 100)) + 
     (100 - Math.min(latest.technicalDebt / 10, 100)) +
     (100 - Math.min(latest.duplicateLines / 100, 100)) +
-    Math.min(100 - latest.vulnerabilities * 5, 100)
+    Math.min(100 - latest.vulnerabilityCount * 5, 100)
   ) / 6 : 0
 
   // Define quality gates
@@ -330,9 +330,9 @@ export default function QualityDashboard() {
     },
     {
       metric: 'security',
-      current: Math.max(0, 100 - latest.vulnerabilities * 5),
+      current: Math.max(0, 100 - latest.vulnerabilityCount * 5),
       threshold: 90,
-      status: latest.vulnerabilities === 0 ? 'pass' : latest.vulnerabilities <= 2 ? 'warning' : 'fail',
+      status: latest.vulnerabilityCount === 0 ? 'pass' : latest.vulnerabilityCount <= 2 ? 'warning' : 'fail',
       trend: 'stable'
     }
   ] : []
@@ -349,7 +349,7 @@ export default function QualityDashboard() {
           (100 - Math.min(d.codeComplexity * 5, 100)) + 
           (100 - Math.min(d.technicalDebt / 10, 100)) +
           (100 - Math.min(d.duplicateLines / 100, 100)) +
-          Math.min(100 - d.vulnerabilities * 5, 100)
+          Math.min(100 - d.vulnerabilityCount * 5, 100)
         ) / 6),
         borderColor: chartColors.primary,
         backgroundColor: `${chartColors.primary}20`,
@@ -400,7 +400,7 @@ export default function QualityDashboard() {
       },
       {
         label: 'Vulnerabilities',
-        data: data.map(d => d.vulnerabilities),
+        data: data.map(d => d.vulnerabilityCount),
         backgroundColor: '#8B5CF6',
         stack: 'issues',
       }
@@ -424,7 +424,7 @@ export default function QualityDashboard() {
         Math.max(0, 100 - latest.codeComplexity * 5),
         Math.max(0, 100 - latest.duplicateLines / 100),
         Math.max(0, 100 - latest.technicalDebt / 10),
-        Math.max(0, 100 - latest.vulnerabilities * 5)
+        Math.max(0, 100 - latest.vulnerabilityCount * 5)
       ] : [0, 0, 0, 0, 0, 0],
       borderColor: chartColors.primary,
       backgroundColor: `${chartColors.primary}20`,
@@ -563,7 +563,7 @@ export default function QualityDashboard() {
         />
         <MetricCard
           title="Vulnerabilities"
-          value={latest?.vulnerabilities || 0}
+          value={latest?.vulnerabilityCount || 0}
           unit=""
           threshold={0}
           icon={Shield}
@@ -789,7 +789,7 @@ export default function QualityDashboard() {
                   </div>
                   <div className="flex justify-between">
                     <span>Security Issues:</span>
-                    <span className="font-mono">{latest.vulnerabilities}</span>
+                    <span className="font-mono">{latest.vulnerabilityCount}</span>
                   </div>
                 </div>
               </CardContent>

@@ -10,7 +10,6 @@ import {
   CircularDependency,
   BaseAnalyzer,
   AnalysisConfig,
-  
 } from '../types';
 import { createId, normalizeFilePath } from '../utils';
 
@@ -31,7 +30,9 @@ interface CircularDetectionConfig {
 /**
  * High-performance circular dependency detection engine
  */
-export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency[]> {
+export class CircularDependencyEngine
+  implements BaseAnalyzer<CircularDependency[]>
+{
   public readonly name = 'CircularDependencyEngine';
   public readonly version = '2.0.0';
 
@@ -39,7 +40,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
   private dependencyGraph: DependencyGraph = {
     nodes: new Set(),
     edges: new Map(),
-    weights: new Map()
+    weights: new Map(),
   };
 
   constructor(config: Partial<CircularDetectionConfig> = {}) {
@@ -49,11 +50,14 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       maxCycleLength: 10,
       includeTransitive: true,
       weightThreshold: 1,
-      ...config
+      ...config,
     };
   }
 
-  async analyze(entities: EntityInfo[], analysisConfig: AnalysisConfig): Promise<CircularDependency[]> {
+  async analyze(
+    entities: EntityInfo[],
+    analysisConfig: AnalysisConfig
+  ): Promise<CircularDependency[]> {
     // Build dependency graph from entities
     this.buildDependencyGraph(entities);
 
@@ -69,7 +73,10 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
     if (this.config.enableInternalAnalysis) {
       const internalCycles = await this.detectWithInternalAlgorithm();
       // Merge with madge results, avoiding duplicates
-      const uniqueInternalCycles = this.filterUniqueCycles(circularDependencies, internalCycles);
+      const uniqueInternalCycles = this.filterUniqueCycles(
+        circularDependencies,
+        internalCycles
+      );
       circularDependencies.push(...uniqueInternalCycles);
     }
 
@@ -85,7 +92,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
     this.dependencyGraph = {
       nodes: new Set(),
       edges: new Map(),
-      weights: new Map()
+      weights: new Map(),
     };
 
     // Build file-to-entities mapping
@@ -102,17 +109,17 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
     // Build edges based on dependencies
     entities.forEach(entity => {
       const sourceFile = normalizeFilePath(entity.file);
-      
+
       entity.dependencies.forEach(depPath => {
         const targetFile = normalizeFilePath(depPath);
-        
+
         if (fileToEntities.has(targetFile) && sourceFile !== targetFile) {
           // Add edge
           if (!this.dependencyGraph.edges.has(sourceFile)) {
             this.dependencyGraph.edges.set(sourceFile, new Set());
           }
           this.dependencyGraph.edges.get(sourceFile)!.add(targetFile);
-          
+
           // Track weight (number of dependencies between files)
           const edgeKey = `${sourceFile}->${targetFile}`;
           const currentWeight = this.dependencyGraph.weights.get(edgeKey) || 0;
@@ -125,14 +132,16 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
   /**
    * Detect circular dependencies using madge
    */
-  private async detectWithMadge(targetDir: string): Promise<CircularDependency[]> {
+  private async detectWithMadge(
+    targetDir: string
+  ): Promise<CircularDependency[]> {
     try {
       const result = execSync(
         `npx madge --circular --extensions ts,tsx,js,jsx --json "${targetDir}"`,
-        { 
+        {
           encoding: 'utf-8',
           timeout: 60000, // 1 minute timeout
-          cwd: targetDir
+          cwd: targetDir,
         }
       );
 
@@ -141,17 +150,24 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
 
       return cycles.map((cycle: string[], index: number) => ({
         id: createId(),
-        cycle: cycle.map(file => normalizeFilePath(path.resolve(targetDir, file))),
+        cycle: cycle.map(file =>
+          normalizeFilePath(path.resolve(targetDir, file))
+        ),
         severity: this.calculateCycleSeverity(cycle),
         depth: cycle.length,
-        files: cycle.map(file => normalizeFilePath(path.resolve(targetDir, file))),
+        files: cycle.map(file =>
+          normalizeFilePath(path.resolve(targetDir, file))
+        ),
         suggestions: this.generateCycleSuggestions(cycle),
         source: 'madge',
-        weight: this.calculateCycleWeight(cycle.map(file => normalizeFilePath(path.resolve(targetDir, file))))
+        weight: this.calculateCycleWeight(
+          cycle.map(file => normalizeFilePath(path.resolve(targetDir, file)))
+        ),
       }));
-
     } catch (error) {
-      console.warn('⚠️ Madge analysis failed, falling back to internal analysis');
+      console.warn(
+        '⚠️ Madge analysis failed, falling back to internal analysis'
+      );
       return [];
     }
   }
@@ -167,7 +183,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
 
     // Tarjan's algorithm for finding strongly connected components
     const tarjanSCC = this.findStronglyConnectedComponents();
-    
+
     // Convert SCCs to cycles
     tarjanSCC.forEach(scc => {
       if (scc.length > 1) {
@@ -182,7 +198,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
             files: cycle,
             suggestions: this.generateCycleSuggestions(cycle),
             source: 'internal',
-            weight: this.calculateCycleWeight(cycle)
+            weight: this.calculateCycleWeight(cycle),
           });
         }
       }
@@ -217,9 +233,15 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       for (const neighbor of neighbors) {
         if (!indices.has(neighbor)) {
           strongConnect(neighbor);
-          lowlinks.set(node, Math.min(lowlinks.get(node)!, lowlinks.get(neighbor)!));
+          lowlinks.set(
+            node,
+            Math.min(lowlinks.get(node)!, lowlinks.get(neighbor)!)
+          );
         } else if (onStack.has(neighbor)) {
-          lowlinks.set(node, Math.min(lowlinks.get(node)!, indices.get(neighbor)!));
+          lowlinks.set(
+            node,
+            Math.min(lowlinks.get(node)!, indices.get(neighbor)!)
+          );
         }
       }
 
@@ -231,7 +253,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
           onStack.delete(w);
           scc.push(w);
         } while (w !== node);
-        
+
         if (scc.length > 1) {
           sccs.push(scc);
         }
@@ -273,7 +295,8 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
 
       const neighbors = this.dependencyGraph.edges.get(node) || new Set();
       for (const neighbor of neighbors) {
-        if (scc.includes(neighbor)) { // Only follow edges within SCC
+        if (scc.includes(neighbor)) {
+          // Only follow edges within SCC
           const cycle = dfs(neighbor);
           if (cycle) {
             return cycle;
@@ -291,7 +314,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       visited.clear();
       path.length = 0;
       inPath.clear();
-      
+
       const cycle = dfs(startNode);
       if (cycle && cycle.length > 1) {
         return cycle;
@@ -325,7 +348,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
               files: cycle,
               suggestions: this.generateCycleSuggestions(cycle),
               source: 'dfs',
-              weight: this.calculateCycleWeight(cycle)
+              weight: this.calculateCycleWeight(cycle),
             });
           }
         }
@@ -361,10 +384,12 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
   /**
    * Calculate cycle severity based on length and weight
    */
-  private calculateCycleSeverity(cycle: string[]): 'critical' | 'high' | 'medium' | 'low' {
+  private calculateCycleSeverity(
+    cycle: string[]
+  ): 'critical' | 'high' | 'medium' | 'low' {
     const depth = cycle.length;
     const weight = this.calculateCycleWeight(cycle);
-    
+
     if (depth > 6 || weight > 10) {
       return 'critical';
     } else if (depth > 4 || weight > 5) {
@@ -380,14 +405,14 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
    */
   private calculateCycleWeight(cycle: string[]): number {
     let weight = 0;
-    
+
     for (let i = 0; i < cycle.length; i++) {
       const current = cycle[i];
       const next = cycle[(i + 1) % cycle.length];
       const edgeKey = `${current}->${next}`;
       weight += this.dependencyGraph.weights.get(edgeKey) || 1;
     }
-    
+
     return weight;
   }
 
@@ -399,12 +424,14 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       'Extract common interfaces to break circular dependencies',
       'Use dependency injection to invert dependencies',
       'Move shared types to a separate module',
-      'Consider merging related modules if they are tightly coupled'
+      'Consider merging related modules if they are tightly coupled',
     ];
 
     // Add cycle-specific suggestions
     if (cycle.length > 4) {
-      suggestions.push('Break the cycle by introducing intermediate abstraction layers');
+      suggestions.push(
+        'Break the cycle by introducing intermediate abstraction layers'
+      );
     }
 
     if (cycle.length === 2) {
@@ -419,13 +446,13 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
    * Filter unique cycles to avoid duplicates between methods
    */
   private filterUniqueCycles(
-    existingCycles: CircularDependency[], 
+    existingCycles: CircularDependency[],
     newCycles: CircularDependency[]
   ): CircularDependency[] {
     const uniqueCycles: CircularDependency[] = [];
 
     for (const newCycle of newCycles) {
-      const isDuplicate = existingCycles.some(existing => 
+      const isDuplicate = existingCycles.some(existing =>
         this.cyclesAreEquivalent(existing.cycle, newCycle.cycle)
       );
 
@@ -487,7 +514,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       // Add break point suggestions
       breakPoints: this.identifyBreakPoints(cycle),
       // Add related cycles
-      relatedCycles: this.findRelatedCycles(cycle, cycles)
+      relatedCycles: this.findRelatedCycles(cycle, cycles),
     }));
   }
 
@@ -499,7 +526,8 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       affectedFiles: cycle.files.length,
       estimatedRefactoringHours: Math.max(2, cycle.depth * 2),
       riskLevel: cycle.severity,
-      buildTimeImprovement: (cycle.weight ?? 0) > 5 ? 'significant' : 'moderate'
+      buildTimeImprovement:
+        (cycle.weight ?? 0) > 5 ? 'significant' : 'moderate',
     };
   }
 
@@ -520,9 +548,10 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
         to: next,
         weight,
         difficulty: weight < 2 ? 'easy' : weight < 5 ? 'medium' : 'hard',
-        suggestion: weight === 1 ? 
-          'Extract interface or move shared types' : 
-          'Consider architectural refactoring'
+        suggestion:
+          weight === 1
+            ? 'Extract interface or move shared types'
+            : 'Consider architectural refactoring',
       });
     }
 
@@ -534,7 +563,7 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
    * Find cycles related to the current cycle
    */
   private findRelatedCycles(
-    currentCycle: CircularDependency, 
+    currentCycle: CircularDependency,
     allCycles: CircularDependency[]
   ): string[] {
     const currentFiles = new Set(currentCycle.files);
@@ -544,7 +573,9 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       if (otherCycle.id === currentCycle.id) continue;
 
       // Check if cycles share any files
-      const sharedFiles = otherCycle.files.filter(file => currentFiles.has(file));
+      const sharedFiles = otherCycle.files.filter(file =>
+        currentFiles.has(file)
+      );
       if (sharedFiles.length > 0) {
         relatedCycleIds.push(otherCycle.id);
       }
@@ -568,13 +599,13 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
       for (let i = 0; i < cycle.files.length; i++) {
         const from = cycle.files[i];
         const to = cycle.files[(i + 1) % cycle.files.length];
-        
+
         edges.push({
           source: from,
           target: to,
           type: 'circular',
           severity: cycle.severity,
-          weight: this.dependencyGraph.weights.get(`${from}->${to}`) || 1
+          weight: this.dependencyGraph.weights.get(`${from}->${to}`) || 1,
         });
       }
     });
@@ -584,9 +615,9 @@ export class CircularDependencyEngine implements BaseAnalyzer<CircularDependency
         id: file,
         label: path.basename(file),
         file,
-        inCycle: true
+        inCycle: true,
       })),
-      edges
+      edges,
     };
   }
 }

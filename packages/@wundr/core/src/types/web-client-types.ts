@@ -235,7 +235,13 @@ export interface AnalysisSummary {
 export interface AnalysisEntity {
   readonly id: string;
   readonly name: string;
-  readonly type: 'class' | 'function' | 'interface' | 'type' | 'enum' | 'variable';
+  readonly type:
+    | 'class'
+    | 'function'
+    | 'interface'
+    | 'type'
+    | 'enum'
+    | 'variable';
   readonly file: string;
   readonly line: number;
   readonly complexity: number;
@@ -345,7 +351,11 @@ export interface TableColumn<T = JsonValue> {
   readonly width?: number;
   readonly sortable?: boolean;
   readonly filterable?: boolean;
-  readonly render?: (value: T[keyof T], record: T, index: number) => React.ReactNode;
+  readonly render?: (
+    value: T[keyof T],
+    record: T,
+    index: number
+  ) => React.ReactNode;
 }
 
 export interface TableProps<T = JsonObject> {
@@ -371,13 +381,29 @@ export interface PaginationConfig {
 export interface RowSelectionConfig<T> {
   readonly type: 'checkbox' | 'radio';
   readonly selectedRowKeys: readonly string[];
-  readonly onChange: (selectedRowKeys: readonly string[], selectedRows: readonly T[]) => void;
-  readonly onSelect?: (record: T, selected: boolean, selectedRows: readonly T[]) => void;
-  readonly onSelectAll?: (selected: boolean, selectedRows: readonly T[], changeRows: readonly T[]) => void;
+  readonly onChange: (
+    selectedRowKeys: readonly string[],
+    selectedRows: readonly T[]
+  ) => void;
+  readonly onSelect?: (
+    record: T,
+    selected: boolean,
+    selectedRows: readonly T[]
+  ) => void;
+  readonly onSelectAll?: (
+    selected: boolean,
+    selectedRows: readonly T[],
+    changeRows: readonly T[]
+  ) => void;
 }
 
 export interface ExpandableConfig<T> {
-  readonly expandedRowRender: (record: T, index: number, indent: number, expanded: boolean) => React.ReactNode;
+  readonly expandedRowRender: (
+    record: T,
+    index: number,
+    indent: number,
+    expanded: boolean
+  ) => React.ReactNode;
   readonly expandedRowKeys?: readonly string[];
   readonly defaultExpandedRowKeys?: readonly string[];
   readonly onExpand?: (expanded: boolean, record: T) => void;
@@ -388,7 +414,16 @@ export interface ExpandableConfig<T> {
 export interface FormField<T = JsonValue> {
   readonly name: string;
   readonly label: string;
-  readonly type: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'date';
+  readonly type:
+    | 'text'
+    | 'number'
+    | 'email'
+    | 'password'
+    | 'textarea'
+    | 'select'
+    | 'checkbox'
+    | 'radio'
+    | 'date';
   readonly required?: boolean;
   readonly placeholder?: string;
   readonly defaultValue?: T;
@@ -599,7 +634,13 @@ export interface ToastConfig {
   readonly type: 'success' | 'info' | 'warning' | 'error';
   readonly message: string;
   readonly duration?: number;
-  readonly position?: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  readonly position?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right';
 }
 
 // Types are already exported above, no need to re-export

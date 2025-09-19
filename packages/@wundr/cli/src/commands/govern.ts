@@ -32,20 +32,18 @@ export class GovernCommands {
       .option('--severity <level>', 'minimum severity level', 'warning')
       .option('--fix', 'automatically fix violations where possible')
       .option('--report', 'generate compliance report')
-      .action(async (options) => {
+      .action(async options => {
         await this.checkCompliance(options);
       });
 
     // Manage rules
-    governCmd
-      .command('rules')
-      .description('manage governance rules');
+    governCmd.command('rules').description('manage governance rules');
 
     governCmd
       .command('rules list')
       .description('list all available rules')
       .option('--category <category>', 'filter by category')
-      .action(async (options) => {
+      .action(async options => {
         await this.listRules(options);
       });
 
@@ -61,14 +59,12 @@ export class GovernCommands {
     governCmd
       .command('rules remove <rule>')
       .description('remove a rule')
-      .action(async (rule) => {
+      .action(async rule => {
         await this.removeRule(rule);
       });
 
     // Policy management
-    governCmd
-      .command('policy')
-      .description('manage governance policies');
+    governCmd.command('policy').description('manage governance policies');
 
     governCmd
       .command('policy create <name>')
@@ -82,22 +78,24 @@ export class GovernCommands {
     governCmd
       .command('policy apply <policy>')
       .description('apply a policy to project')
-      .option('--scope <scope>', 'application scope (project, workspace)', 'project')
+      .option(
+        '--scope <scope>',
+        'application scope (project, workspace)',
+        'project'
+      )
       .action(async (policy, options) => {
         await this.applyPolicy(policy, options);
       });
 
     // Quality gates
-    governCmd
-      .command('gate')
-      .description('quality gate management');
+    governCmd.command('gate').description('quality gate management');
 
     governCmd
       .command('gate check')
       .description('run quality gate checks')
       .option('--gate <name>', 'specific gate to check')
       .option('--fail-on-error', 'fail if quality gate fails')
-      .action(async (options) => {
+      .action(async options => {
         await this.checkQualityGate(options);
       });
 
@@ -113,9 +111,13 @@ export class GovernCommands {
     governCmd
       .command('audit')
       .description('run governance audit')
-      .option('--scope <scope>', 'audit scope (security, quality, compliance)', 'all')
+      .option(
+        '--scope <scope>',
+        'audit scope (security, quality, compliance)',
+        'all'
+      )
       .option('--export <path>', 'export audit results')
-      .action(async (options) => {
+      .action(async options => {
         await this.runAudit(options);
       });
 
@@ -123,10 +125,18 @@ export class GovernCommands {
     governCmd
       .command('report')
       .description('generate governance reports')
-      .option('--type <type>', 'report type (compliance, quality, security)', 'compliance')
-      .option('--period <period>', 'report period (daily, weekly, monthly)', 'weekly')
+      .option(
+        '--type <type>',
+        'report type (compliance, quality, security)',
+        'compliance'
+      )
+      .option(
+        '--period <period>',
+        'report period (daily, weekly, monthly)',
+        'weekly'
+      )
       .option('--output <path>', 'output file path')
-      .action(async (options) => {
+      .action(async options => {
         await this.generateReport(options);
       });
   }
@@ -137,9 +147,11 @@ export class GovernCommands {
   private async checkCompliance(options: any): Promise<void> {
     try {
       logger.info('Running compliance checks...');
-      
+
       const config = this.configManager.getConfig();
-      const rules = options.rules ? options.rules.split(',') : config.governance.rules;
+      const rules = options.rules
+        ? options.rules.split(',')
+        : config.governance.rules;
       const violations: any[] = [];
 
       for (const rule of rules) {
@@ -150,7 +162,7 @@ export class GovernCommands {
 
       if (violations.length > 0) {
         logger.warn(`Found ${violations.length} compliance violations`);
-        
+
         if (options.fix) {
           const fixedCount = await this.autoFixViolations(violations);
           logger.success(`Fixed ${fixedCount} violations automatically`);
@@ -164,7 +176,6 @@ export class GovernCommands {
       if (options.report) {
         await this.generateComplianceReport(violations);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_CHECK_FAILED',
@@ -181,7 +192,7 @@ export class GovernCommands {
   private async listRules(options: any): Promise<void> {
     try {
       const rules = await this.getAllRules();
-      const filteredRules = options.category 
+      const filteredRules = options.category
         ? rules.filter(rule => rule.category === options.category)
         : rules;
 
@@ -191,14 +202,15 @@ export class GovernCommands {
       }
 
       logger.info(`Available rules (${filteredRules.length}):`);
-      console.table(filteredRules.map(rule => ({
-        Name: rule.name,
-        Category: rule.category,
-        Severity: rule.severity,
-        Description: rule.description,
-        Fixable: rule.fixable ? '✓' : '✗'
-      })));
-
+      console.table(
+        filteredRules.map(rule => ({
+          Name: rule.name,
+          Category: rule.category,
+          Severity: rule.severity,
+          Description: rule.description,
+          Fixable: rule.fixable ? '✓' : '✗',
+        }))
+      );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_LIST_RULES_FAILED',
@@ -215,7 +227,7 @@ export class GovernCommands {
   private async addRule(rule: string, options: any): Promise<void> {
     try {
       logger.info(`Adding rule: ${chalk.cyan(rule)}`);
-      
+
       const config = this.configManager.getConfig();
       if (!config.governance.rules.includes(rule)) {
         config.governance.rules.push(rule);
@@ -224,7 +236,6 @@ export class GovernCommands {
       } else {
         logger.warn(`Rule ${rule} already exists`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_ADD_RULE_FAILED',
@@ -241,10 +252,10 @@ export class GovernCommands {
   private async removeRule(rule: string): Promise<void> {
     try {
       logger.info(`Removing rule: ${chalk.cyan(rule)}`);
-      
+
       const config = this.configManager.getConfig();
       const index = config.governance.rules.indexOf(rule);
-      
+
       if (index > -1) {
         config.governance.rules.splice(index, 1);
         await this.configManager.saveConfig();
@@ -252,7 +263,6 @@ export class GovernCommands {
       } else {
         logger.warn(`Rule ${rule} not found`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_REMOVE_RULE_FAILED',
@@ -269,21 +279,25 @@ export class GovernCommands {
   private async createPolicy(name: string, options: any): Promise<void> {
     try {
       logger.info(`Creating policy: ${chalk.cyan(name)}`);
-      
+
       const policy = {
         name,
         description: `Policy: ${name}`,
         rules: options.rules ? options.rules.split(',') : [],
         severity: 'warning',
-        created: new Date().toISOString()
+        created: new Date().toISOString(),
       };
 
-      const policyPath = path.join(process.cwd(), '.wundr', 'policies', `${name}.json`);
+      const policyPath = path.join(
+        process.cwd(),
+        '.wundr',
+        'policies',
+        `${name}.json`
+      );
       await fs.ensureDir(path.dirname(policyPath));
       await fs.writeJson(policyPath, policy, { spaces: 2 });
 
       logger.success(`Policy ${name} created at ${policyPath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_CREATE_POLICY_FAILED',
@@ -300,25 +314,29 @@ export class GovernCommands {
   private async applyPolicy(policy: string, options: any): Promise<void> {
     try {
       logger.info(`Applying policy: ${chalk.cyan(policy)}`);
-      
-      const policyPath = path.join(process.cwd(), '.wundr', 'policies', `${policy}.json`);
-      
+
+      const policyPath = path.join(
+        process.cwd(),
+        '.wundr',
+        'policies',
+        `${policy}.json`
+      );
+
       if (await fs.pathExists(policyPath)) {
         const policyData = await fs.readJson(policyPath);
-        
+
         // Apply policy rules to configuration
         const config = this.configManager.getConfig();
         config.governance.rules.push(...policyData.rules);
-        
+
         // Remove duplicates
         config.governance.rules = [...new Set(config.governance.rules)];
-        
+
         await this.configManager.saveConfig();
         logger.success(`Policy ${policy} applied successfully`);
       } else {
         throw new Error(`Policy ${policy} not found`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_APPLY_POLICY_FAILED',
@@ -335,21 +353,23 @@ export class GovernCommands {
   private async checkQualityGate(options: any): Promise<void> {
     try {
       logger.info('Checking quality gates...');
-      
+
       const gates = await this.getQualityGates();
-      const gatesToCheck = options.gate ? [options.gate] : gates.map(g => g.name);
-      
+      const gatesToCheck = options.gate
+        ? [options.gate]
+        : gates.map(g => g.name);
+
       let allPassed = true;
-      
+
       for (const gateName of gatesToCheck) {
         const gate = gates.find(g => g.name === gateName);
         if (!gate) {
           logger.warn(`Quality gate ${gateName} not found`);
           continue;
         }
-        
+
         const result = await this.evaluateQualityGate(gate);
-        
+
         if (result.passed) {
           logger.success(`✓ Quality gate ${gateName} passed`);
         } else {
@@ -364,7 +384,6 @@ export class GovernCommands {
       if (!allPassed && options.failOnError) {
         process.exit(1);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_GATE_CHECK_FAILED',
@@ -381,20 +400,24 @@ export class GovernCommands {
   private async createQualityGate(name: string, options: any): Promise<void> {
     try {
       logger.info(`Creating quality gate: ${chalk.cyan(name)}`);
-      
+
       const gate = {
         name,
         description: `Quality gate: ${name}`,
         conditions: options.conditions ? options.conditions.split(',') : [],
-        created: new Date().toISOString()
+        created: new Date().toISOString(),
       };
 
-      const gatePath = path.join(process.cwd(), '.wundr', 'gates', `${name}.json`);
+      const gatePath = path.join(
+        process.cwd(),
+        '.wundr',
+        'gates',
+        `${name}.json`
+      );
       await fs.ensureDir(path.dirname(gatePath));
       await fs.writeJson(gatePath, gate, { spaces: 2 });
 
       logger.success(`Quality gate ${name} created at ${gatePath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_CREATE_GATE_FAILED',
@@ -411,15 +434,24 @@ export class GovernCommands {
   private async runAudit(options: any): Promise<void> {
     try {
       logger.info('Running governance audit...');
-      
+
       const auditResults = {
         timestamp: new Date().toISOString(),
         scope: options.scope,
         results: {
-          security: options.scope === 'all' || options.scope === 'security' ? await this.auditSecurity() : null,
-          quality: options.scope === 'all' || options.scope === 'quality' ? await this.auditQuality() : null,
-          compliance: options.scope === 'all' || options.scope === 'compliance' ? await this.auditCompliance() : null
-        }
+          security:
+            options.scope === 'all' || options.scope === 'security'
+              ? await this.auditSecurity()
+              : null,
+          quality:
+            options.scope === 'all' || options.scope === 'quality'
+              ? await this.auditQuality()
+              : null,
+          compliance:
+            options.scope === 'all' || options.scope === 'compliance'
+              ? await this.auditCompliance()
+              : null,
+        },
       };
 
       logger.info('Audit completed');
@@ -429,7 +461,6 @@ export class GovernCommands {
         await fs.writeJson(options.export, auditResults, { spaces: 2 });
         logger.success(`Audit results exported to ${options.export}`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_AUDIT_FAILED',
@@ -446,14 +477,17 @@ export class GovernCommands {
   private async generateReport(options: any): Promise<void> {
     try {
       logger.info(`Generating ${options.type} report...`);
-      
-      const report = await this.createGovernanceReport(options.type, options.period);
-      
-      const outputPath = options.output || `wundr-${options.type}-report-${Date.now()}.json`;
-      await fs.writeJson(outputPath, report, { spaces: 2 });
-      
-      logger.success(`Report generated: ${outputPath}`);
 
+      const report = await this.createGovernanceReport(
+        options.type,
+        options.period
+      );
+
+      const outputPath =
+        options.output || `wundr-${options.type}-report-${Date.now()}.json`;
+      await fs.writeJson(outputPath, report, { spaces: 2 });
+
+      logger.success(`Report generated: ${outputPath}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_REPORT_FAILED',
@@ -485,15 +519,15 @@ export class GovernCommands {
         category: 'quality',
         severity: 'warning',
         description: 'Disallow console statements',
-        fixable: true
+        fixable: true,
       },
       {
         name: 'require-tests',
         category: 'quality',
         severity: 'error',
         description: 'Require test files for all modules',
-        fixable: false
-      }
+        fixable: false,
+      },
     ];
   }
 
@@ -502,7 +536,9 @@ export class GovernCommands {
     return [];
   }
 
-  private async evaluateQualityGate(gate: any): Promise<{ passed: boolean; failures: string[] }> {
+  private async evaluateQualityGate(
+    gate: any
+  ): Promise<{ passed: boolean; failures: string[] }> {
     // Implementation for evaluating quality gates
     return { passed: true, failures: [] };
   }
@@ -522,28 +558,33 @@ export class GovernCommands {
     return { violations: [], score: 90 };
   }
 
-  private async createGovernanceReport(type: string, period: string): Promise<any> {
+  private async createGovernanceReport(
+    type: string,
+    period: string
+  ): Promise<any> {
     // Implementation for creating governance reports
     return {
       type,
       period,
       generated: new Date().toISOString(),
       summary: {},
-      details: []
+      details: [],
     };
   }
 
   private displayViolations(violations: any[]): void {
     if (violations.length === 0) return;
-    
+
     console.log(chalk.yellow('\nCompliance Violations:'));
-    console.table(violations.map(v => ({
-      Rule: v.rule,
-      Severity: v.severity,
-      File: v.file,
-      Line: v.line || 'N/A',
-      Description: v.description
-    })));
+    console.table(
+      violations.map(v => ({
+        Rule: v.rule,
+        Severity: v.severity,
+        File: v.file,
+        Line: v.line || 'N/A',
+        Description: v.description,
+      }))
+    );
   }
 
   private async generateComplianceReport(violations: any[]): Promise<void> {
@@ -551,7 +592,7 @@ export class GovernCommands {
       timestamp: new Date().toISOString(),
       totalViolations: violations.length,
       violations,
-      summary: this.createViolationsSummary(violations)
+      summary: this.createViolationsSummary(violations),
     };
 
     const reportPath = `compliance-report-${Date.now()}.json`;
@@ -563,11 +604,12 @@ export class GovernCommands {
     const summary = {
       bySeverity: {},
       byRule: {},
-      byFile: {}
+      byFile: {},
     };
 
     violations.forEach(v => {
-      summary.bySeverity[v.severity] = (summary.bySeverity[v.severity] || 0) + 1;
+      summary.bySeverity[v.severity] =
+        (summary.bySeverity[v.severity] || 0) + 1;
       summary.byRule[v.rule] = (summary.byRule[v.rule] || 0) + 1;
       summary.byFile[v.file] = (summary.byFile[v.file] || 0) + 1;
     });
@@ -577,15 +619,15 @@ export class GovernCommands {
 
   private displayAuditResults(results: any): void {
     console.log(chalk.blue('\nAudit Results:'));
-    
+
     if (results.results.security) {
       console.log(`Security Score: ${results.results.security.score}/100`);
     }
-    
+
     if (results.results.quality) {
       console.log(`Quality Score: ${results.results.quality.score}/100`);
     }
-    
+
     if (results.results.compliance) {
       console.log(`Compliance Score: ${results.results.compliance.score}/100`);
     }

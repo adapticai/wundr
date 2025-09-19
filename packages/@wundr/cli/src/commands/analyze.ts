@@ -34,8 +34,12 @@ export class AnalyzeCommands {
       .option('--unused', 'find unused dependencies')
       .option('--outdated', 'check for outdated packages')
       .option('--security', 'run security audit')
-      .option('--format <format>', 'output format (json, table, graph)', 'table')
-      .action(async (options) => {
+      .option(
+        '--format <format>',
+        'output format (json, table, graph)',
+        'table'
+      )
+      .action(async options => {
         await this.analyzeDependencies(options);
       });
 
@@ -48,7 +52,7 @@ export class AnalyzeCommands {
       .option('--duplication', 'detect code duplication')
       .option('--coverage', 'analyze test coverage')
       .option('--metrics', 'generate quality metrics')
-      .action(async (options) => {
+      .action(async options => {
         await this.analyzeQuality(options);
       });
 
@@ -60,7 +64,7 @@ export class AnalyzeCommands {
       .option('--bundle', 'analyze bundle size')
       .option('--runtime', 'analyze runtime performance')
       .option('--memory', 'analyze memory usage')
-      .action(async (options) => {
+      .action(async options => {
         await this.analyzePerformance(options);
       });
 
@@ -72,7 +76,7 @@ export class AnalyzeCommands {
       .option('--structure', 'analyze project structure')
       .option('--patterns', 'detect architectural patterns')
       .option('--violations', 'find architectural violations')
-      .action(async (options) => {
+      .action(async options => {
         await this.analyzeArchitecture(options);
       });
 
@@ -82,7 +86,7 @@ export class AnalyzeCommands {
       .description('run all analysis types')
       .option('--report', 'generate comprehensive report')
       .option('--export <path>', 'export results to file')
-      .action(async (options) => {
+      .action(async options => {
         await this.analyzeAll(options);
       });
 
@@ -104,13 +108,13 @@ export class AnalyzeCommands {
   private async analyzeDependencies(options: any): Promise<void> {
     try {
       logger.info('Analyzing dependencies...');
-      
+
       const results: AnalysisResult = {
         type: 'dependency',
         findings: [],
         metrics: {},
         recommendations: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       if (options.circular) {
@@ -139,7 +143,6 @@ export class AnalyzeCommands {
 
       await this.outputResults(results, options.format);
       logger.success('Dependency analysis completed');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_ANALYZE_DEPS_FAILED',
@@ -156,13 +159,13 @@ export class AnalyzeCommands {
   private async analyzeQuality(options: any): Promise<void> {
     try {
       logger.info('Analyzing code quality...');
-      
+
       const results: AnalysisResult = {
         type: 'quality',
         findings: [],
         metrics: {},
         recommendations: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       if (options['complexity']) {
@@ -190,7 +193,6 @@ export class AnalyzeCommands {
 
       await this.outputResults(results, 'table');
       logger.success('Quality analysis completed');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_ANALYZE_QUALITY_FAILED',
@@ -207,13 +209,13 @@ export class AnalyzeCommands {
   private async analyzePerformance(options: any): Promise<void> {
     try {
       logger.info('Analyzing performance...');
-      
+
       const results: AnalysisResult = {
         type: 'performance',
         findings: [],
         metrics: {},
         recommendations: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       if (options.bundle) {
@@ -236,7 +238,6 @@ export class AnalyzeCommands {
 
       await this.outputResults(results, 'table');
       logger.success('Performance analysis completed');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_ANALYZE_PERF_FAILED',
@@ -253,13 +254,13 @@ export class AnalyzeCommands {
   private async analyzeArchitecture(options: any): Promise<void> {
     try {
       logger.info('Analyzing architecture...');
-      
+
       const results: AnalysisResult = {
         type: 'dependency',
         findings: [],
         metrics: {},
         recommendations: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       if (options.structure) {
@@ -281,7 +282,6 @@ export class AnalyzeCommands {
 
       await this.outputResults(results, 'table');
       logger.success('Architecture analysis completed');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_ANALYZE_ARCH_FAILED',
@@ -298,12 +298,20 @@ export class AnalyzeCommands {
   private async analyzeAll(options: any): Promise<void> {
     try {
       logger.info('Running comprehensive analysis...');
-      
+
       const allResults: AnalysisResult[] = [];
 
       // Run all analysis types
-      await this.analyzeDependencies({ circular: true, unused: true, security: true });
-      await this.analyzeQuality({ complexity: true, duplication: true, coverage: true });
+      await this.analyzeDependencies({
+        circular: true,
+        unused: true,
+        security: true,
+      });
+      await this.analyzeQuality({
+        complexity: true,
+        duplication: true,
+        coverage: true,
+      });
       await this.analyzePerformance({ bundle: true, runtime: true });
       await this.analyzeArchitecture({ structure: true, patterns: true });
 
@@ -316,7 +324,6 @@ export class AnalyzeCommands {
       }
 
       logger.success('Comprehensive analysis completed');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_ANALYZE_ALL_FAILED',
@@ -333,9 +340,9 @@ export class AnalyzeCommands {
   private async scanForIssues(scanPath: string, options: any): Promise<void> {
     try {
       logger.info(`Scanning ${chalk.cyan(scanPath)} for issues...`);
-      
+
       const findings = await this.performDirectoryScan(scanPath, options);
-      
+
       if (options.fix) {
         const fixedCount = await this.autoFixIssues(findings);
         logger.success(`Fixed ${fixedCount} issues automatically`);
@@ -346,12 +353,11 @@ export class AnalyzeCommands {
         findings,
         metrics: { totalIssues: findings.length },
         recommendations: [],
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       await this.outputResults(results, 'table');
       logger.success(`Scan completed: ${findings.length} issues found`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_SCAN_FAILED',
@@ -367,51 +373,60 @@ export class AnalyzeCommands {
    */
   private async detectCircularDependencies(): Promise<Finding[]> {
     const findings: Finding[] = [];
-    
+
     // Implementation for detecting circular dependencies
     // This would integrate with existing analysis tools
-    
+
     return findings;
   }
 
   private async findUnusedDependencies(): Promise<Finding[]> {
     const findings: Finding[] = [];
-    
+
     // Implementation for finding unused dependencies
     // This would analyze package.json and actual usage
-    
+
     return findings;
   }
 
   private async checkOutdatedPackages(): Promise<Finding[]> {
     const findings: Finding[] = [];
-    
+
     // Implementation for checking outdated packages
     // This would check npm registry for newer versions
-    
+
     return findings;
   }
 
   private async runSecurityAudit(): Promise<Finding[]> {
     const findings: Finding[] = [];
-    
+
     // Implementation for security audit
     // This would use npm audit or similar tools
-    
+
     return findings;
   }
 
-  private async analyzeComplexity(): Promise<{ average: number; violations: Finding[] }> {
+  private async analyzeComplexity(): Promise<{
+    average: number;
+    violations: Finding[];
+  }> {
     // Implementation for complexity analysis
     return { average: 0, violations: [] };
   }
 
-  private async detectDuplication(): Promise<{ percentage: number; violations: Finding[] }> {
+  private async detectDuplication(): Promise<{
+    percentage: number;
+    violations: Finding[];
+  }> {
     // Implementation for duplication detection
     return { percentage: 0, violations: [] };
   }
 
-  private async analyzeCoverage(): Promise<{ percentage: number; violations: Finding[] }> {
+  private async analyzeCoverage(): Promise<{
+    percentage: number;
+    violations: Finding[];
+  }> {
     // Implementation for coverage analysis
     return { percentage: 0, violations: [] };
   }
@@ -421,27 +436,42 @@ export class AnalyzeCommands {
     return {};
   }
 
-  private async analyzeBundleSize(): Promise<{ totalSize: number; issues: Finding[] }> {
+  private async analyzeBundleSize(): Promise<{
+    totalSize: number;
+    issues: Finding[];
+  }> {
     // Implementation for bundle size analysis
     return { totalSize: 0, issues: [] };
   }
 
-  private async analyzeRuntimePerformance(): Promise<{ averageTime: number; issues: Finding[] }> {
+  private async analyzeRuntimePerformance(): Promise<{
+    averageTime: number;
+    issues: Finding[];
+  }> {
     // Implementation for runtime performance analysis
     return { averageTime: 0, issues: [] };
   }
 
-  private async analyzeMemoryUsage(): Promise<{ peakUsage: number; issues: Finding[] }> {
+  private async analyzeMemoryUsage(): Promise<{
+    peakUsage: number;
+    issues: Finding[];
+  }> {
     // Implementation for memory usage analysis
     return { peakUsage: 0, issues: [] };
   }
 
-  private async analyzeProjectStructure(): Promise<{ violations: Finding[]; recommendations: any[] }> {
+  private async analyzeProjectStructure(): Promise<{
+    violations: Finding[];
+    recommendations: any[];
+  }> {
     // Implementation for project structure analysis
     return { violations: [], recommendations: [] };
   }
 
-  private async detectArchitecturalPatterns(): Promise<{ violations: Finding[]; recommendations: any[] }> {
+  private async detectArchitecturalPatterns(): Promise<{
+    violations: Finding[];
+    recommendations: any[];
+  }> {
     // Implementation for architectural pattern detection
     return { violations: [], recommendations: [] };
   }
@@ -451,7 +481,10 @@ export class AnalyzeCommands {
     return [];
   }
 
-  private async performDirectoryScan(scanPath: string, options: any): Promise<Finding[]> {
+  private async performDirectoryScan(
+    scanPath: string,
+    options: any
+  ): Promise<Finding[]> {
     // Implementation for directory scanning
     return [];
   }
@@ -459,21 +492,24 @@ export class AnalyzeCommands {
   private async autoFixIssues(findings: Finding[]): Promise<number> {
     // Implementation for auto-fixing issues
     let fixedCount = 0;
-    
+
     for (const finding of findings) {
       if (finding.fixable && finding.fix) {
         // Apply fix
         fixedCount++;
       }
     }
-    
+
     return fixedCount;
   }
 
   /**
    * Output and reporting methods
    */
-  private async outputResults(results: AnalysisResult, format: string): Promise<void> {
+  private async outputResults(
+    results: AnalysisResult,
+    format: string
+  ): Promise<void> {
     switch (format) {
       case 'json':
         console.log(JSON.stringify(results, null, 2));
@@ -492,13 +528,15 @@ export class AnalyzeCommands {
   private outputTable(results: AnalysisResult): void {
     if (results.findings.length > 0) {
       console.log(chalk.yellow('\nFindings:'));
-      console.table(results.findings.map(f => ({
-        Severity: f.severity,
-        File: f.file,
-        Line: f.line || 'N/A',
-        Description: f.description,
-        Fixable: f.fixable ? '✓' : '✗'
-      })));
+      console.table(
+        results.findings.map(f => ({
+          Severity: f.severity,
+          File: f.file,
+          Line: f.line || 'N/A',
+          Description: f.description,
+          Fixable: f.fixable ? '✓' : '✗',
+        }))
+      );
     }
 
     if (Object.keys(results.metrics).length > 0) {
@@ -509,7 +547,9 @@ export class AnalyzeCommands {
     if (results.recommendations.length > 0) {
       console.log(chalk.green('\nRecommendations:'));
       results.recommendations.forEach((rec, i) => {
-        console.log(`${i + 1}. ${rec.title} (${rec.impact} impact, ${rec.effort} effort)`);
+        console.log(
+          `${i + 1}. ${rec.title} (${rec.impact} impact, ${rec.effort} effort)`
+        );
       });
     }
   }
@@ -519,12 +559,17 @@ export class AnalyzeCommands {
     logger.info('Graph visualization not yet implemented');
   }
 
-  private async generateComprehensiveReport(results: AnalysisResult[]): Promise<void> {
+  private async generateComprehensiveReport(
+    results: AnalysisResult[]
+  ): Promise<void> {
     // Implementation for comprehensive report generation
     logger.info('Generating comprehensive report...');
   }
 
-  private async exportResults(results: AnalysisResult[], exportPath: string): Promise<void> {
+  private async exportResults(
+    results: AnalysisResult[],
+    exportPath: string
+  ): Promise<void> {
     await fs.writeJson(exportPath, results, { spaces: 2 });
     logger.success(`Results exported to ${exportPath}`);
   }

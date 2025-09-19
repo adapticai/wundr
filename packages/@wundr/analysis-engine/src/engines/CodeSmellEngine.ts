@@ -10,7 +10,7 @@ import {
   SeverityLevel,
   ComplexityMetrics,
   BaseAnalyzer,
-  AnalysisConfig
+  AnalysisConfig,
 } from '../types';
 import { createId } from '../utils';
 
@@ -23,7 +23,10 @@ interface CodeSmellRule {
   severity: SeverityLevel;
   thresholds?: Record<string, number>;
   patterns?: RegExp[];
-  check: (entity: EntityInfo, allEntities: EntityInfo[]) => CodeSmellResult | null;
+  check: (
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ) => CodeSmellResult | null;
 }
 
 interface CodeSmellResult {
@@ -65,12 +68,12 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         'god-object',
         'wrapper-pattern',
         'deep-nesting',
-        'long-parameter-list'
+        'long-parameter-list',
       ],
       customThresholds: {} as Record<CodeSmellType, Record<string, number>>,
       strictMode: false,
       includeMinorSmells: true,
-      ...config
+      ...config,
     };
 
     this.initializeRules();
@@ -79,7 +82,10 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
   /**
    * Analyze entities for code smells
    */
-  async analyze(entities: EntityInfo[], analysisConfig: AnalysisConfig): Promise<CodeSmell[]> {
+  async analyze(
+    entities: EntityInfo[],
+    analysisConfig: AnalysisConfig
+  ): Promise<CodeSmell[]> {
     const codeSmells: CodeSmell[] = [];
     const entityMap = new Map(entities.map(e => [e.id, e]));
 
@@ -89,7 +95,10 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         const rule = this.rules.get(ruleType);
         if (rule && rule.enabled) {
           const result = rule.check(entity, entities);
-          if (result && (this.config.includeMinorSmells || result.confidence >= 0.7)) {
+          if (
+            result &&
+            (this.config.includeMinorSmells || result.confidence >= 0.7)
+          ) {
             codeSmells.push({
               id: createId(),
               type: ruleType,
@@ -98,7 +107,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
               line: entity.line,
               message: result.message,
               suggestion: result.suggestion,
-              entity
+              entity,
             });
           }
         }
@@ -124,8 +133,11 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Methods/functions that are too long and complex',
       enabled: true,
       severity: 'medium',
-      thresholds: { maxLines: 50, ...this.config.customThresholds['long-method'] },
-      check: (entity, allEntities) => this.checkLongMethod(entity)
+      thresholds: {
+        maxLines: 50,
+        ...this.config.customThresholds['long-method'],
+      },
+      check: (entity, allEntities) => this.checkLongMethod(entity),
     });
 
     // Large Class
@@ -136,8 +148,13 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Classes with too many methods or properties',
       enabled: true,
       severity: 'high',
-      thresholds: { maxMethods: 20, maxProperties: 15, maxLines: 500, ...this.config.customThresholds['large-class'] },
-      check: (entity, allEntities) => this.checkLargeClass(entity)
+      thresholds: {
+        maxMethods: 20,
+        maxProperties: 15,
+        maxLines: 500,
+        ...this.config.customThresholds['large-class'],
+      },
+      check: (entity, allEntities) => this.checkLargeClass(entity),
     });
 
     // Duplicate Code
@@ -148,8 +165,12 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Code that appears to be duplicated across entities',
       enabled: true,
       severity: 'medium',
-      thresholds: { similarity: 0.8, ...this.config.customThresholds['duplicate-code'] },
-      check: (entity, allEntities) => this.checkDuplicateCode(entity, allEntities)
+      thresholds: {
+        similarity: 0.8,
+        ...this.config.customThresholds['duplicate-code'],
+      },
+      check: (entity, allEntities) =>
+        this.checkDuplicateCode(entity, allEntities),
     });
 
     // Dead Code
@@ -160,7 +181,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Unused or unreachable code',
       enabled: true,
       severity: 'medium',
-      check: (entity, allEntities) => this.checkDeadCode(entity)
+      check: (entity, allEntities) => this.checkDeadCode(entity),
     });
 
     // Complex Conditional
@@ -171,8 +192,12 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Overly complex conditional statements',
       enabled: true,
       severity: 'medium',
-      thresholds: { maxConditions: 5, maxNesting: 3, ...this.config.customThresholds['complex-conditional'] },
-      check: (entity, allEntities) => this.checkComplexConditional(entity)
+      thresholds: {
+        maxConditions: 5,
+        maxNesting: 3,
+        ...this.config.customThresholds['complex-conditional'],
+      },
+      check: (entity, allEntities) => this.checkComplexConditional(entity),
     });
 
     // Feature Envy
@@ -183,8 +208,12 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Methods that use other classes more than their own',
       enabled: true,
       severity: 'medium',
-      thresholds: { externalUsageRatio: 0.6, ...this.config.customThresholds['feature-envy'] },
-      check: (entity, allEntities) => this.checkFeatureEnvy(entity, allEntities)
+      thresholds: {
+        externalUsageRatio: 0.6,
+        ...this.config.customThresholds['feature-envy'],
+      },
+      check: (entity, allEntities) =>
+        this.checkFeatureEnvy(entity, allEntities),
     });
 
     // Inappropriate Intimacy
@@ -195,8 +224,12 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Classes that are too tightly coupled',
       enabled: true,
       severity: 'medium',
-      thresholds: { maxIntimacy: 3, ...this.config.customThresholds['inappropriate-intimacy'] },
-      check: (entity, allEntities) => this.checkInappropriateIntimacy(entity, allEntities)
+      thresholds: {
+        maxIntimacy: 3,
+        ...this.config.customThresholds['inappropriate-intimacy'],
+      },
+      check: (entity, allEntities) =>
+        this.checkInappropriateIntimacy(entity, allEntities),
     });
 
     // God Object
@@ -207,8 +240,13 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Classes that know too much or do too much',
       enabled: true,
       severity: 'high',
-      thresholds: { maxComplexity: 100, maxDependencies: 15, maxMethods: 25, ...this.config.customThresholds['god-object'] },
-      check: (entity, allEntities) => this.checkGodObject(entity)
+      thresholds: {
+        maxComplexity: 100,
+        maxDependencies: 15,
+        maxMethods: 25,
+        ...this.config.customThresholds['god-object'],
+      },
+      check: (entity, allEntities) => this.checkGodObject(entity),
     });
 
     // Wrapper Pattern
@@ -219,8 +257,11 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Unnecessary wrapper classes or functions',
       enabled: true,
       severity: 'low',
-      thresholds: { maxWrapperMethods: 3, ...this.config.customThresholds['wrapper-pattern'] },
-      check: (entity, allEntities) => this.checkWrapperPattern(entity)
+      thresholds: {
+        maxWrapperMethods: 3,
+        ...this.config.customThresholds['wrapper-pattern'],
+      },
+      check: (entity, allEntities) => this.checkWrapperPattern(entity),
     });
 
     // Deep Nesting
@@ -231,8 +272,11 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Code with excessive nesting levels',
       enabled: true,
       severity: 'medium',
-      thresholds: { maxDepth: 4, ...this.config.customThresholds['deep-nesting'] },
-      check: (entity, allEntities) => this.checkDeepNesting(entity)
+      thresholds: {
+        maxDepth: 4,
+        ...this.config.customThresholds['deep-nesting'],
+      },
+      check: (entity, allEntities) => this.checkDeepNesting(entity),
     });
 
     // Long Parameter List
@@ -243,8 +287,11 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Functions with too many parameters',
       enabled: true,
       severity: 'medium',
-      thresholds: { maxParameters: 5, ...this.config.customThresholds['long-parameter-list'] },
-      check: (entity, allEntities) => this.checkLongParameterList(entity)
+      thresholds: {
+        maxParameters: 5,
+        ...this.config.customThresholds['long-parameter-list'],
+      },
+      check: (entity, allEntities) => this.checkLongParameterList(entity),
     });
   }
 
@@ -272,8 +319,8 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         evidence: [
           `Current length: ${lines} lines`,
           `Recommended maximum: ${maxLines} lines`,
-          `Cyclomatic complexity: ${entity.complexity?.cyclomatic || 'unknown'}`
-        ]
+          `Cyclomatic complexity: ${entity.complexity?.cyclomatic || 'unknown'}`,
+        ],
       };
     }
 
@@ -301,12 +348,16 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     let severity: SeverityLevel = 'low';
 
     if (methodCount > maxMethods) {
-      violations.push(`Too many methods: ${methodCount} (limit: ${maxMethods})`);
+      violations.push(
+        `Too many methods: ${methodCount} (limit: ${maxMethods})`
+      );
       severity = 'medium';
     }
 
     if (propertyCount > maxProperties) {
-      violations.push(`Too many properties: ${propertyCount} (limit: ${maxProperties})`);
+      violations.push(
+        `Too many properties: ${propertyCount} (limit: ${maxProperties})`
+      );
       severity = 'medium';
     }
 
@@ -322,8 +373,9 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         severity,
         confidence,
         message: `Class is too large: ${violations.join(', ')}`,
-        suggestion: 'Consider splitting this class into smaller, more focused classes using Single Responsibility Principle',
-        evidence: violations
+        suggestion:
+          'Consider splitting this class into smaller, more focused classes using Single Responsibility Principle',
+        evidence: violations,
       };
     }
 
@@ -333,7 +385,10 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
   /**
    * Check for duplicate code (simplified version)
    */
-  private checkDuplicateCode(entity: EntityInfo, allEntities: EntityInfo[]): CodeSmellResult | null {
+  private checkDuplicateCode(
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ): CodeSmellResult | null {
     if (!entity.signature) {
       return null;
     }
@@ -344,23 +399,28 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     // Find similar entities
     const similarEntities = allEntities.filter(other => {
       if (other.id === entity.id || !other.signature) return false;
-      return this.calculateSimilarity(entity.signature!, other.signature!) >= minSimilarity;
+      return (
+        this.calculateSimilarity(entity.signature!, other.signature!) >=
+        minSimilarity
+      );
     });
 
     if (similarEntities.length > 0) {
       const confidence = Math.min(1, similarEntities.length / 3);
-      const severity: SeverityLevel = similarEntities.length > 2 ? 'high' : 'medium';
+      const severity: SeverityLevel =
+        similarEntities.length > 2 ? 'high' : 'medium';
 
       return {
         severity,
         confidence,
         message: `Code appears to be duplicated in ${similarEntities.length} other location(s)`,
-        suggestion: 'Extract common functionality into a shared utility or base class',
+        suggestion:
+          'Extract common functionality into a shared utility or base class',
         evidence: [
           `Similar entities: ${similarEntities.length}`,
-          `Files: ${[...new Set(similarEntities.map(e => e.file))].join(', ')}`
+          `Files: ${[...new Set(similarEntities.map(e => e.file))].join(', ')}`,
         ],
-        relatedEntities: similarEntities.map(e => e.id)
+        relatedEntities: similarEntities.map(e => e.id),
       };
     }
 
@@ -372,30 +432,44 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   private checkDeadCode(entity: EntityInfo): CodeSmellResult | null {
     const deadCodeIndicators = [
-      'TODO', 'FIXME', 'HACK', 'XXX',
-      'unused', 'deprecated', 'obsolete',
-      'temp', 'temporary', 'test'
+      'TODO',
+      'FIXME',
+      'HACK',
+      'XXX',
+      'unused',
+      'deprecated',
+      'obsolete',
+      'temp',
+      'temporary',
+      'test',
     ];
 
-    const nameIndicators = deadCodeIndicators.filter(indicator => 
+    const nameIndicators = deadCodeIndicators.filter(indicator =>
       entity.name.toLowerCase().includes(indicator.toLowerCase())
     );
 
-    const signatureIndicators = entity.signature ? 
-      deadCodeIndicators.filter(indicator => 
-        entity.signature!.toLowerCase().includes(indicator.toLowerCase())
-      ) : [];
+    const signatureIndicators = entity.signature
+      ? deadCodeIndicators.filter(indicator =>
+          entity.signature!.toLowerCase().includes(indicator.toLowerCase())
+        )
+      : [];
 
-    const commentIndicators = entity.jsDoc ? 
-      deadCodeIndicators.filter(indicator => 
-        entity.jsDoc!.toLowerCase().includes(indicator.toLowerCase())
-      ) : [];
+    const commentIndicators = entity.jsDoc
+      ? deadCodeIndicators.filter(indicator =>
+          entity.jsDoc!.toLowerCase().includes(indicator.toLowerCase())
+        )
+      : [];
 
-    const totalIndicators = [...nameIndicators, ...signatureIndicators, ...commentIndicators];
+    const totalIndicators = [
+      ...nameIndicators,
+      ...signatureIndicators,
+      ...commentIndicators,
+    ];
 
     if (totalIndicators.length > 0) {
       const confidence = Math.min(1, totalIndicators.length / 3);
-      const severity: SeverityLevel = totalIndicators.length > 2 ? 'medium' : 'low';
+      const severity: SeverityLevel =
+        totalIndicators.length > 2 ? 'medium' : 'low';
 
       return {
         severity,
@@ -405,8 +479,8 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         evidence: [
           `Name indicators: ${nameIndicators.join(', ') || 'none'}`,
           `Code indicators: ${signatureIndicators.join(', ') || 'none'}`,
-          `Comment indicators: ${commentIndicators.join(', ') || 'none'}`
-        ]
+          `Comment indicators: ${commentIndicators.join(', ') || 'none'}`,
+        ],
       };
     }
 
@@ -426,13 +500,15 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     const maxNesting = rule.thresholds?.maxNesting || 3;
 
     // Count logical operators
-    const logicalOperators = (entity.signature.match(/&&|\|\||\?\s*:/g) || []).length;
-    
+    const logicalOperators = (entity.signature.match(/&&|\|\||\?\s*:/g) || [])
+      .length;
+
     // Estimate nesting depth
     const nestingDepth = entity.complexity?.depth || 0;
-    
+
     // Count if/else chains
-    const ifElseChains = (entity.signature.match(/\b(if|else if)\b/g) || []).length;
+    const ifElseChains = (entity.signature.match(/\b(if|else if)\b/g) || [])
+      .length;
 
     const violations: string[] = [];
     let severity: SeverityLevel = 'low';
@@ -459,8 +535,9 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         severity,
         confidence,
         message: `Complex conditional logic: ${violations.join(', ')}`,
-        suggestion: 'Simplify conditional logic using early returns, strategy pattern, or guard clauses',
-        evidence: violations
+        suggestion:
+          'Simplify conditional logic using early returns, strategy pattern, or guard clauses',
+        evidence: violations,
       };
     }
 
@@ -470,7 +547,10 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
   /**
    * Check for feature envy
    */
-  private checkFeatureEnvy(entity: EntityInfo, allEntities: EntityInfo[]): CodeSmellResult | null {
+  private checkFeatureEnvy(
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ): CodeSmellResult | null {
     if (entity.type !== 'method' && entity.type !== 'function') {
       return null;
     }
@@ -483,25 +563,32 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     const maxExternalUsageRatio = rule.thresholds?.externalUsageRatio || 0.6;
 
     // Count references to external entities vs own class/module
-    const externalReferences = this.countExternalReferences(entity, allEntities);
+    const externalReferences = this.countExternalReferences(
+      entity,
+      allEntities
+    );
     const totalReferences = this.countTotalReferences(entity.signature);
 
     if (totalReferences > 0) {
       const externalRatio = externalReferences / totalReferences;
-      
+
       if (externalRatio > maxExternalUsageRatio) {
-        const confidence = Math.min(1, (externalRatio - maxExternalUsageRatio) / (1 - maxExternalUsageRatio));
-        
+        const confidence = Math.min(
+          1,
+          (externalRatio - maxExternalUsageRatio) / (1 - maxExternalUsageRatio)
+        );
+
         return {
           severity: 'medium',
           confidence,
           message: `Method shows feature envy (${Math.round(externalRatio * 100)}% external usage)`,
-          suggestion: 'Consider moving this method to the class it envies, or extract the envied functionality',
+          suggestion:
+            'Consider moving this method to the class it envies, or extract the envied functionality',
           evidence: [
             `External references: ${externalReferences}`,
             `Total references: ${totalReferences}`,
-            `External usage ratio: ${Math.round(externalRatio * 100)}%`
-          ]
+            `External usage ratio: ${Math.round(externalRatio * 100)}%`,
+          ],
         };
       }
     }
@@ -512,7 +599,10 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
   /**
    * Check for inappropriate intimacy
    */
-  private checkInappropriateIntimacy(entity: EntityInfo, allEntities: EntityInfo[]): CodeSmellResult | null {
+  private checkInappropriateIntimacy(
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ): CodeSmellResult | null {
     if (entity.type !== 'class') {
       return null;
     }
@@ -522,19 +612,23 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
 
     // Find classes that this class is too intimate with
     const intimateClasses = this.findIntimateClasses(entity, allEntities);
-    
+
     if (intimateClasses.length > maxIntimacy) {
-      const confidence = Math.min(1, (intimateClasses.length - maxIntimacy) / maxIntimacy);
-      
+      const confidence = Math.min(
+        1,
+        (intimateClasses.length - maxIntimacy) / maxIntimacy
+      );
+
       return {
         severity: 'medium',
         confidence,
         message: `Class is inappropriately intimate with ${intimateClasses.length} other classes`,
-        suggestion: 'Reduce coupling by using interfaces, dependency injection, or extracting shared functionality',
+        suggestion:
+          'Reduce coupling by using interfaces, dependency injection, or extracting shared functionality',
         evidence: [
           `Intimate relationships: ${intimateClasses.length}`,
-          `Affected classes: ${intimateClasses.join(', ')}`
-        ]
+          `Affected classes: ${intimateClasses.join(', ')}`,
+        ],
       };
     }
 
@@ -578,13 +672,14 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
 
     if (violations.length >= 2) {
       const confidence = violations.length / 3;
-      
+
       return {
         severity: violations.length === 3 ? 'critical' : severity,
         confidence,
         message: `God object detected: ${violations.join(', ')}`,
-        suggestion: 'Break down this class into smaller, more focused classes with single responsibilities',
-        evidence: violations
+        suggestion:
+          'Break down this class into smaller, more focused classes with single responsibilities',
+        evidence: violations,
       };
     }
 
@@ -605,14 +700,15 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
 
     // Look for wrapper patterns
     const isWrapper = this.detectWrapperPattern(entity);
-    
+
     if (isWrapper.isWrapper) {
       return {
         severity: 'low',
         confidence: isWrapper.confidence,
         message: `Potential unnecessary wrapper: ${isWrapper.reason}`,
-        suggestion: 'Consider if this wrapper adds value or if functionality can be used directly',
-        evidence: isWrapper.evidence
+        suggestion:
+          'Consider if this wrapper adds value or if functionality can be used directly',
+        evidence: isWrapper.evidence,
       };
     }
 
@@ -628,18 +724,20 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     const depth = entity.complexity?.depth || 0;
 
     if (depth > maxDepth) {
-      const severity: SeverityLevel = depth > maxDepth * 1.5 ? 'high' : 'medium';
+      const severity: SeverityLevel =
+        depth > maxDepth * 1.5 ? 'high' : 'medium';
       const confidence = Math.min(1, (depth - maxDepth) / maxDepth);
 
       return {
         severity,
         confidence,
         message: `Excessive nesting depth: ${depth} levels (limit: ${maxDepth})`,
-        suggestion: 'Reduce nesting using early returns, guard clauses, or extracting nested logic into separate methods',
+        suggestion:
+          'Reduce nesting using early returns, guard clauses, or extracting nested logic into separate methods',
         evidence: [
           `Current depth: ${depth} levels`,
-          `Recommended maximum: ${maxDepth} levels`
-        ]
+          `Recommended maximum: ${maxDepth} levels`,
+        ],
       };
     }
 
@@ -659,18 +757,23 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     const parameters = entity.complexity?.parameters || 0;
 
     if (parameters > maxParameters) {
-      const severity: SeverityLevel = parameters > maxParameters * 1.5 ? 'high' : 'medium';
-      const confidence = Math.min(1, (parameters - maxParameters) / maxParameters);
+      const severity: SeverityLevel =
+        parameters > maxParameters * 1.5 ? 'high' : 'medium';
+      const confidence = Math.min(
+        1,
+        (parameters - maxParameters) / maxParameters
+      );
 
       return {
         severity,
         confidence,
         message: `Too many parameters: ${parameters} (limit: ${maxParameters})`,
-        suggestion: 'Group related parameters into objects, use builder pattern, or reduce parameter count',
+        suggestion:
+          'Group related parameters into objects, use builder pattern, or reduce parameter count',
         evidence: [
           `Current parameters: ${parameters}`,
-          `Recommended maximum: ${maxParameters}`
-        ]
+          `Recommended maximum: ${maxParameters}`,
+        ],
       };
     }
 
@@ -683,33 +786,47 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    * Calculate similarity between two strings
    */
   private calculateSimilarity(str1: string, str2: string): number {
-    const tokens1 = new Set(str1.toLowerCase().split(/\W+/).filter(t => t.length > 2));
-    const tokens2 = new Set(str2.toLowerCase().split(/\W+/).filter(t => t.length > 2));
-    
+    const tokens1 = new Set(
+      str1
+        .toLowerCase()
+        .split(/\W+/)
+        .filter(t => t.length > 2)
+    );
+    const tokens2 = new Set(
+      str2
+        .toLowerCase()
+        .split(/\W+/)
+        .filter(t => t.length > 2)
+    );
+
     const intersection = new Set([...tokens1].filter(x => tokens2.has(x)));
     const union = new Set([...tokens1, ...tokens2]);
-    
+
     return union.size > 0 ? intersection.size / union.size : 0;
   }
 
   /**
    * Count external references in entity
    */
-  private countExternalReferences(entity: EntityInfo, allEntities: EntityInfo[]): number {
+  private countExternalReferences(
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ): number {
     if (!entity.signature) return 0;
-    
+
     // Get entities from the same file/class
-    const sameContextEntities = allEntities.filter(e => 
-      e.file === entity.file || 
-      (entity.metadata?.parentEntity && e.id === entity.metadata.parentEntity)
+    const sameContextEntities = allEntities.filter(
+      e =>
+        e.file === entity.file ||
+        (entity.metadata?.parentEntity && e.id === entity.metadata.parentEntity)
     );
-    
+
     const sameContextNames = new Set(sameContextEntities.map(e => e.name));
-    
+
     // Count references to entities not in same context
     const words = entity.signature.split(/\W+/);
     let externalReferences = 0;
-    
+
     for (const word of words) {
       if (word.length > 2 && !sameContextNames.has(word)) {
         // Check if it's a reference to another entity
@@ -719,7 +836,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         }
       }
     }
-    
+
     return externalReferences;
   }
 
@@ -735,42 +852,58 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
   /**
    * Find classes that are inappropriately intimate
    */
-  private findIntimateClasses(entity: EntityInfo, allEntities: EntityInfo[]): string[] {
+  private findIntimateClasses(
+    entity: EntityInfo,
+    allEntities: EntityInfo[]
+  ): string[] {
     if (!entity.signature) return [];
-    
+
     const intimateClasses: string[] = [];
     const classReferences = new Map<string, number>();
-    
+
     // Find references to other classes
     for (const otherEntity of allEntities) {
       if (otherEntity.type === 'class' && otherEntity.id !== entity.id) {
-        const referenceCount = (entity.signature.match(new RegExp(`\\b${this.escapeRegExp(otherEntity.name)}\\b`, 'g')) || []).length;
-        if (referenceCount > 3) { // Threshold for intimacy
+        const referenceCount = (
+          entity.signature.match(
+            new RegExp(`\\b${this.escapeRegExp(otherEntity.name)}\\b`, 'g')
+          ) || []
+        ).length;
+        if (referenceCount > 3) {
+          // Threshold for intimacy
           classReferences.set(otherEntity.name, referenceCount);
         }
       }
     }
-    
+
     return Array.from(classReferences.keys());
   }
 
   /**
    * Detect wrapper pattern
    */
-  private detectWrapperPattern(entity: EntityInfo): { isWrapper: boolean; confidence: number; reason: string; evidence: string[] } {
+  private detectWrapperPattern(entity: EntityInfo): {
+    isWrapper: boolean;
+    confidence: number;
+    reason: string;
+    evidence: string[];
+  } {
     if (!entity.signature) {
       return { isWrapper: false, confidence: 0, reason: '', evidence: [] };
     }
 
     const evidence: string[] = [];
     let wrapperScore = 0;
-    
+
     // Check for simple delegation patterns
-    if (entity.signature.includes('return ') && entity.signature.split('return ').length === 2) {
+    if (
+      entity.signature.includes('return ') &&
+      entity.signature.split('return ').length === 2
+    ) {
       wrapperScore += 0.3;
       evidence.push('Single return statement delegation');
     }
-    
+
     // Check for method forwarding
     const forwardingPatterns = ['this.', 'super.', '.call(', '.apply('];
     for (const pattern of forwardingPatterns) {
@@ -779,26 +912,31 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         evidence.push(`Method forwarding: ${pattern}`);
       }
     }
-    
+
     // Check for minimal added logic
-    const lines = entity.signature.split('\n').filter(line => line.trim() && !line.trim().startsWith('//')).length;
+    const lines = entity.signature
+      .split('\n')
+      .filter(line => line.trim() && !line.trim().startsWith('//')).length;
     if (lines <= 3) {
       wrapperScore += 0.3;
       evidence.push(`Minimal logic: ${lines} lines`);
     }
-    
+
     // Check for wrapper-like naming
     const wrapperNames = ['wrapper', 'proxy', 'delegate', 'adapter'];
     if (wrapperNames.some(name => entity.name.toLowerCase().includes(name))) {
       wrapperScore += 0.4;
       evidence.push('Wrapper-like naming');
     }
-    
+
     return {
       isWrapper: wrapperScore >= 0.6,
       confidence: Math.min(1, wrapperScore),
-      reason: wrapperScore >= 0.6 ? 'Multiple wrapper pattern indicators detected' : '',
-      evidence
+      reason:
+        wrapperScore >= 0.6
+          ? 'Multiple wrapper pattern indicators detected'
+          : '',
+      evidence,
     };
   }
 

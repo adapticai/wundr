@@ -43,17 +43,21 @@ class WundrLogger implements Logger {
       formats.push(
         winston.format.printf(({ level, message, timestamp, ...meta }) => {
           const ts = timestamp ? `[${timestamp}]` : '';
-          const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-          
+          const metaStr = Object.keys(meta).length
+            ? ` ${JSON.stringify(meta)}`
+            : '';
+
           if (format === 'simple') {
             return `${ts} ${level}: ${message}${metaStr}`;
           }
-          
+
           // detailed format
-          const levelStr = colorize ? this.colorizeLevel(level) : level.toUpperCase();
+          const levelStr = colorize
+            ? this.colorizeLevel(level)
+            : level.toUpperCase();
           const messageStr = colorize ? chalk.white(message) : message;
           const tsStr = colorize && timestamp ? chalk.gray(ts) : ts;
-          
+
           return `${tsStr} ${levelStr} ${messageStr}${metaStr}`;
         })
       );
@@ -169,8 +173,12 @@ export function setDefaultLogger(logger: Logger): void {
  * Quick access to default logger methods
  */
 export const log = {
-  debug: (message: string, meta?: Record<string, unknown>) => getLogger().debug(message, meta),
-  info: (message: string, meta?: Record<string, unknown>) => getLogger().info(message, meta),
-  warn: (message: string, meta?: Record<string, unknown>) => getLogger().warn(message, meta),
-  error: (message: string | Error, meta?: Record<string, unknown>) => getLogger().error(message, meta),
+  debug: (message: string, meta?: Record<string, unknown>) =>
+    getLogger().debug(message, meta),
+  info: (message: string, meta?: Record<string, unknown>) =>
+    getLogger().info(message, meta),
+  warn: (message: string, meta?: Record<string, unknown>) =>
+    getLogger().warn(message, meta),
+  error: (message: string | Error, meta?: Record<string, unknown>) =>
+    getLogger().error(message, meta),
 };

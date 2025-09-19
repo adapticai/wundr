@@ -532,7 +532,7 @@ export class MCPWorkflowEngine extends EventEmitter {
   ): Record<string, WorkflowValue> {
     const resolved: Record<string, WorkflowValue> = {};
 
-    for (const [key, value] of Object.entries(parameters)) {
+    for (const [key, value] of Object.entries(parameters) as Array<[string, WorkflowValue]>) {
       resolved[key] = this.resolveValue(value, context);
     }
 
@@ -569,7 +569,7 @@ export class MCPWorkflowEngine extends EventEmitter {
     
     if (typeof value === 'object' && value !== null) {
       const resolved: Record<string, WorkflowValue> = {};
-      for (const [k, v] of Object.entries(value)) {
+      for (const [k, v] of Object.entries(value) as Array<[string, WorkflowValue]>) {
         resolved[k] = this.resolveValue(v, context);
       }
       return resolved;

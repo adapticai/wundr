@@ -12,7 +12,7 @@ import { Platform, SystemInfo } from '../types';
  */
 export async function detectPlatform(): Promise<Platform> {
   const platformName = platform();
-  
+
   switch (platformName) {
     case 'darwin':
       return 'macos';
@@ -30,7 +30,7 @@ export async function detectPlatform(): Promise<Platform> {
  */
 export async function getSystemInfo(): Promise<SystemInfo> {
   const detectedPlatform = await detectPlatform();
-  
+
   return {
     platform: detectedPlatform,
     architecture: arch(),
@@ -39,7 +39,7 @@ export async function getSystemInfo(): Promise<SystemInfo> {
     dockerVersion: getVersion('docker --version'),
     gitVersion: getVersion('git --version'),
     shell: getShellName(),
-    terminal: getTerminalName()
+    terminal: getTerminalName(),
   };
 }
 
@@ -62,12 +62,12 @@ function getVersion(command: string): string {
  */
 function getShellName(): string {
   const shell = process.env.SHELL || '';
-  
+
   if (shell.includes('zsh')) return 'zsh';
   if (shell.includes('bash')) return 'bash';
   if (shell.includes('fish')) return 'fish';
   if (platform() === 'win32') return 'powershell';
-  
+
   return 'unknown';
 }
 
@@ -76,12 +76,12 @@ function getShellName(): string {
  */
 function getTerminalName(): string {
   const term = process.env.TERM_PROGRAM || process.env.TERMINAL_EMULATOR || '';
-  
+
   if (term.includes('iTerm')) return 'iTerm2';
   if (term.includes('Terminal')) return 'Terminal.app';
   if (term.includes('VSCode')) return 'VS Code Terminal';
   if (term.includes('Hyper')) return 'Hyper';
-  
+
   return process.env.TERM || 'unknown';
 }
 
@@ -90,8 +90,9 @@ function getTerminalName(): string {
  */
 export function isRunningInDocker(): boolean {
   try {
-    return execSync('cat /proc/1/cgroup', { encoding: 'utf8' })
-      .includes('docker');
+    return execSync('cat /proc/1/cgroup', { encoding: 'utf8' }).includes(
+      'docker'
+    );
   } catch (_error) {
     return false;
   }

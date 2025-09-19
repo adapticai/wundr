@@ -19,13 +19,16 @@ export class ClaudeSetupCommands {
       .command('claude-setup')
       .alias('cs')
       .description('Setup Claude Code, Claude Flow, and MCP tools')
-      .addHelpText('after', chalk.gray(`
+      .addHelpText(
+        'after',
+        chalk.gray(`
 Examples:
   ${chalk.green('wundr claude-setup')}              Interactive Claude setup
   ${chalk.green('wundr claude-setup mcp')}          Install all MCP tools
   ${chalk.green('wundr claude-setup agents')}       Configure all 54 agents
   ${chalk.green('wundr claude-setup validate')}     Validate Claude installation
-      `));
+      `)
+      );
 
     // Main setup command
     claudeSetup
@@ -34,7 +37,7 @@ Examples:
       .option('--skip-chrome', 'Skip Chrome installation')
       .option('--skip-mcp', 'Skip MCP tools installation')
       .option('--skip-agents', 'Skip agent configuration')
-      .action(async (options) => {
+      .action(async options => {
         await this.runCompleteSetup(options);
       });
 
@@ -42,8 +45,11 @@ Examples:
     claudeSetup
       .command('mcp')
       .description('Install and configure MCP tools')
-      .option('--tool <tool>', 'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking)')
-      .action(async (options) => {
+      .option(
+        '--tool <tool>',
+        'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking)'
+      )
+      .action(async options => {
         await this.installMcpTools(options);
       });
 
@@ -54,7 +60,7 @@ Examples:
       .option('--list', 'List available agents')
       .option('--enable <agents>', 'Enable specific agents (comma-separated)')
       .option('--profile <profile>', 'Use profile-specific agents')
-      .action(async (options) => {
+      .action(async options => {
         await this.configureAgents(options);
       });
 
@@ -63,7 +69,7 @@ Examples:
       .command('validate')
       .description('Validate Claude installation')
       .option('--fix', 'Attempt to fix issues')
-      .action(async (options) => {
+      .action(async options => {
         await this.validateInstallation(options);
       });
 
@@ -123,11 +129,16 @@ Examples:
 
   private async installMcpTools(options: any): Promise<void> {
     const spinner = ora();
-    const scriptPath = path.join(__dirname, '../../../../scripts/install-mcp-tools.sh');
+    const scriptPath = path.join(
+      __dirname,
+      '../../../../scripts/install-mcp-tools.sh'
+    );
 
     if (!fs.existsSync(scriptPath)) {
       console.error(chalk.red('❌ MCP tools installation script not found'));
-      console.log(chalk.yellow('Please ensure the script exists at: ' + scriptPath));
+      console.log(
+        chalk.yellow('Please ensure the script exists at: ' + scriptPath)
+      );
       return;
     }
 
@@ -140,9 +151,11 @@ Examples:
         const installCommands: Record<string, string> = {
           firecrawl: 'npx claude mcp add firecrawl npx @firecrawl/mcp-server',
           context7: 'npx claude mcp add context7 npx @context7/mcp-server',
-          playwright: 'npx claude mcp add playwright npx @playwright/mcp-server',
+          playwright:
+            'npx claude mcp add playwright npx @playwright/mcp-server',
           browser: 'npx claude mcp add browser npx @browser/mcp-server',
-          sequentialthinking: 'npm install -g @modelcontextprotocol/server-sequentialthinking'
+          sequentialthinking:
+            'npm install -g @modelcontextprotocol/server-sequentialthinking',
         };
 
         const command = installCommands[options.tool];
@@ -158,17 +171,21 @@ Examples:
       }
     } else {
       // Install all tools using the script
-      console.log(chalk.gray('Running comprehensive MCP tools installation...'));
-      
+      console.log(
+        chalk.gray('Running comprehensive MCP tools installation...')
+      );
+
       const install = spawn('bash', [scriptPath], {
         stdio: 'inherit',
-        shell: true
+        shell: true,
       });
 
       return new Promise((resolve, reject) => {
-        install.on('close', (code) => {
+        install.on('close', code => {
           if (code === 0) {
-            console.log(chalk.green('\n✅ All MCP tools installed successfully'));
+            console.log(
+              chalk.green('\n✅ All MCP tools installed successfully')
+            );
             resolve();
           } else {
             reject(new Error(`Installation failed with code ${code}`));
@@ -180,7 +197,7 @@ Examples:
 
   private async configureAgents(options: any): Promise<void> {
     const spinner = ora();
-    
+
     if (options.list) {
       this.listAgents();
       return;
@@ -188,14 +205,14 @@ Examples:
 
     spinner.start('Configuring Claude Flow agents...');
 
-    const agents = options.enable ? 
-      options.enable.split(',') : 
-      this.getProfileAgents(options.profile || 'fullstack');
+    const agents = options.enable
+      ? options.enable.split(',')
+      : this.getProfileAgents(options.profile || 'fullstack');
 
     // Create agent configurations
     const homeDir = process.env.HOME || process.env.USERPROFILE || '';
     const agentsDir = path.join(homeDir, '.claude', 'agents');
-    
+
     try {
       fs.mkdirSync(agentsDir, { recursive: true });
 
@@ -223,7 +240,7 @@ Examples:
       { name: 'Chrome Browser', check: () => this.isChromeInstalled() },
       { name: 'Claude Directory', check: () => this.claudeDirExists() },
       { name: 'Agent Configurations', check: () => this.agentsConfigured() },
-      { name: 'MCP Servers', check: () => this.mcpServersConfigured() }
+      { name: 'MCP Servers', check: () => this.mcpServersConfigured() },
     ];
 
     let allPassed = true;
@@ -244,13 +261,17 @@ Examples:
       console.log(chalk.yellow('\n🔧 Attempting to fix issues...'));
       await this.runCompleteSetup({});
     } else {
-      console.log(chalk.yellow('\n⚠️ Some checks failed. Run with --fix to attempt repairs.'));
+      console.log(
+        chalk.yellow(
+          '\n⚠️ Some checks failed. Run with --fix to attempt repairs.'
+        )
+      );
     }
   }
 
   private async installChromeExtension(): Promise<void> {
     console.log(chalk.cyan('\n🔌 Browser MCP Chrome Extension Setup\n'));
-    
+
     const homeDir = process.env.HOME || process.env.USERPROFILE || '';
     const extensionDir = path.join(homeDir, '.claude', 'browser-extension');
 
@@ -265,33 +286,43 @@ Examples:
 
   private async installChrome(): Promise<void> {
     if (process.platform === 'darwin') {
-      execSync('curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"');
+      execSync(
+        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"'
+      );
       execSync('hdiutil attach ~/Downloads/googlechrome.dmg');
-      execSync('cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/');
+      execSync(
+        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/'
+      );
       execSync('hdiutil detach "/Volumes/Google Chrome"');
       execSync('rm ~/Downloads/googlechrome.dmg');
     } else {
-      console.log(chalk.yellow('Chrome installation is only automated for macOS'));
+      console.log(
+        chalk.yellow('Chrome installation is only automated for macOS')
+      );
     }
   }
 
   private async setupClaudeConfig(): Promise<void> {
     const homeDir = process.env.HOME || process.env.USERPROFILE || '';
     const configPath = path.join(homeDir, '.claude', 'settings.json');
-    
+
     const config = {
       claudeCodeOptions: {
         enabledMcpjsonServers: [
-          'claude-flow', 'firecrawl', 'context7', 
-          'playwright', 'browser', 'sequentialthinking'
+          'claude-flow',
+          'firecrawl',
+          'context7',
+          'playwright',
+          'browser',
+          'sequentialthinking',
         ],
         gitAutoCompact: true,
         contextCompactionThreshold: 100000,
         enableHooks: true,
         enableAgentCoordination: true,
         enableNeuralTraining: true,
-        enablePerformanceTracking: true
-      }
+        enablePerformanceTracking: true,
+      },
     };
 
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
@@ -332,7 +363,7 @@ Examples:
     const homeDir = process.env.HOME || process.env.USERPROFILE || '';
     const agentsDir = path.join(homeDir, '.claude', 'agents');
     if (!fs.existsSync(agentsDir)) return false;
-    
+
     const files = fs.readdirSync(agentsDir);
     return files.length > 0;
   }
@@ -340,9 +371,9 @@ Examples:
   private mcpServersConfigured(): boolean {
     const homeDir = process.env.HOME || process.env.USERPROFILE || '';
     const settingsPath = path.join(homeDir, '.claude', 'settings.json');
-    
+
     if (!fs.existsSync(settingsPath)) return false;
-    
+
     try {
       const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
       return settings.claudeCodeOptions?.enabledMcpjsonServers?.length > 0;
@@ -353,12 +384,32 @@ Examples:
 
   private listAgents(): void {
     console.log(chalk.cyan('\n📋 Available Claude Flow Agents:\n'));
-    
+
     const categories = {
-      'Core Development': ['coder', 'reviewer', 'tester', 'planner', 'researcher'],
-      'Swarm Coordination': ['hierarchical-coordinator', 'mesh-coordinator', 'adaptive-coordinator'],
-      'GitHub Integration': ['github-modes', 'pr-manager', 'issue-tracker', 'release-manager'],
-      'Specialized': ['backend-dev', 'mobile-dev', 'ml-developer', 'system-architect']
+      'Core Development': [
+        'coder',
+        'reviewer',
+        'tester',
+        'planner',
+        'researcher',
+      ],
+      'Swarm Coordination': [
+        'hierarchical-coordinator',
+        'mesh-coordinator',
+        'adaptive-coordinator',
+      ],
+      'GitHub Integration': [
+        'github-modes',
+        'pr-manager',
+        'issue-tracker',
+        'release-manager',
+      ],
+      Specialized: [
+        'backend-dev',
+        'mobile-dev',
+        'ml-developer',
+        'system-architect',
+      ],
     };
 
     for (const [category, agents] of Object.entries(categories)) {
@@ -371,12 +422,28 @@ Examples:
   private getProfileAgents(profile: string): string[] {
     const profileAgents: Record<string, string[]> = {
       frontend: ['coder', 'reviewer', 'tester', 'mobile-dev'],
-      backend: ['coder', 'reviewer', 'tester', 'backend-dev', 'system-architect'],
-      fullstack: ['coder', 'reviewer', 'tester', 'planner', 'researcher', 'system-architect'],
-      devops: ['planner', 'cicd-engineer', 'perf-analyzer', 'github-modes']
+      backend: [
+        'coder',
+        'reviewer',
+        'tester',
+        'backend-dev',
+        'system-architect',
+      ],
+      fullstack: [
+        'coder',
+        'reviewer',
+        'tester',
+        'planner',
+        'researcher',
+        'system-architect',
+      ],
+      devops: ['planner', 'cicd-engineer', 'perf-analyzer', 'github-modes'],
     };
 
-    return profileAgents[profile] || profileAgents.fullstack || ['coder', 'reviewer', 'tester'];
+    return (
+      profileAgents[profile] ||
+      profileAgents.fullstack || ['coder', 'reviewer', 'tester']
+    );
   }
 
   private generateAgentConfig(agentName: string): any {
@@ -389,20 +456,25 @@ Examples:
         temperature: 0.7,
         topP: 0.9,
         enableMemory: true,
-        enableLearning: true
-      }
+        enableLearning: true,
+      },
     };
   }
 
   private printNextSteps(): void {
     console.log(chalk.cyan('📋 Next Steps:'));
     console.log('1. Configure API keys for MCP tools (if needed)');
-    console.log('2. Install Browser MCP Chrome extension: wundr claude-setup extension');
+    console.log(
+      '2. Install Browser MCP Chrome extension: wundr claude-setup extension'
+    );
     console.log('3. Restart Claude Desktop to load new configurations');
     console.log('4. Initialize a project: wundr claude-init');
-    console.log('5. Start coding with Claude Flow: npx claude-flow@alpha sparc tdd "feature"');
+    console.log(
+      '5. Start coding with Claude Flow: npx claude-flow@alpha sparc tdd "feature"'
+    );
   }
 }
 
-const createClaudeSetupCommands = (program: Command) => new ClaudeSetupCommands(program);
+const createClaudeSetupCommands = (program: Command) =>
+  new ClaudeSetupCommands(program);
 export default createClaudeSetupCommands;

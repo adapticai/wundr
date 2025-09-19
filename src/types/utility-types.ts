@@ -416,12 +416,14 @@ export const validateConfiguration = <T extends Record<string, unknown>>(
   const result = {} as T;
 
   for (const [key, fieldSchema] of Object.entries(schema)) {
-    const value = config[key];
+    const typedKey = key as keyof T;
+    const typedSchema = fieldSchema as ConfigurationSchema<T>[keyof T];
+    const value = config[typedKey];
 
-    if (fieldSchema.required && (value === undefined || value === null)) {
+    if (typedSchema.required && (value === undefined || value === null)) {
       errors.push({
-        path: [key],
-        message: `Field '${key}' is required`,
+        path: [typedKey],
+        message: `Field '${typedKey}' is required`,
         code: 'REQUIRED_FIELD'
       });
       continue;
@@ -429,9 +431,9 @@ export const validateConfiguration = <T extends Record<string, unknown>>(
 
     if (value !== undefined && value !== null) {
       // Type validation would go here
-      (result as Record<string, unknown>)[key] = value;
-    } else if (fieldSchema.default !== undefined) {
-      (result as Record<string, unknown>)[key] = fieldSchema.default;
+      (result as Record<string, unknown>)[typedKey] = value;
+    } else if (typedSchema.default !== undefined) {
+      (result as Record<string, unknown>)[typedKey] = typedSchema.default;
     }
   }
 

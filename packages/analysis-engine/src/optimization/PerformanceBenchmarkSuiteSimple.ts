@@ -4,6 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
+
 import * as fs from 'fs-extra';
 // path import removed as unused
 
@@ -43,7 +44,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
       enableProfiling: false,
       memoryLimit: 1024 * 1024 * 1024,
       testDuration: 30000,
-      ...config
+      ...config,
     };
   }
 
@@ -61,14 +62,14 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
         improvement: {
           speedup: 1.5,
           memoryReduction: 0.2,
-          throughputIncrease: 0.3
-        }
-      }
+          throughputIncrease: 0.3,
+        },
+      },
     }];
 
     this.emit('benchmarks-completed', {
       totalResults: results.length,
-      outputDir: this.config.outputDir
+      outputDir: this.config.outputDir,
     });
 
     return results;

@@ -22,14 +22,14 @@ export interface EntityInfo {
   metadata?: Record<string, unknown>;
 }
 
-export type EntityType = 
-  | 'class' 
-  | 'interface' 
-  | 'type' 
-  | 'enum' 
-  | 'function' 
+export type EntityType =
+  | 'class'
+  | 'interface'
+  | 'type'
+  | 'enum'
+  | 'function'
   | 'method'
-  | 'const' 
+  | 'const'
   | 'variable'
   | 'service'
   | 'component'

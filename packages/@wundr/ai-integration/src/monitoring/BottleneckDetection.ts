@@ -19,15 +19,18 @@ export class BottleneckDetection extends EventEmitter {
 
   async analyzeBottlenecks(metrics: PerformanceMetrics): Promise<Bottleneck[]> {
     const bottlenecks: Bottleneck[] = [];
-    
+
     if (metrics.memoryUsage > 0.8) {
       bottlenecks.push({
         type: 'memory',
         severity: 'high',
         description: 'High memory usage detected',
         affectedComponents: ['memory-manager'],
-        suggestedActions: ['Optimize memory usage', 'Increase memory allocation'],
-        detectedAt: new Date()
+        suggestedActions: [
+          'Optimize memory usage',
+          'Increase memory allocation',
+        ],
+        detectedAt: new Date(),
       });
     }
 
@@ -35,6 +38,9 @@ export class BottleneckDetection extends EventEmitter {
   }
 
   async shutdown(): Promise<OperationResult> {
-    return { success: true, message: 'Bottleneck Detection shutdown completed' };
+    return {
+      success: true,
+      message: 'Bottleneck Detection shutdown completed',
+    };
   }
 }

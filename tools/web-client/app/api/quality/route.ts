@@ -430,7 +430,7 @@ async function fetchQualityData(timeRange: TimeRange): Promise<QualityMetrics[]>
         technicalDebt: Math.max(0, eslintIssues.codeSmells + eslintIssues.bugs + (variation * 10)),
         codeSmells: Math.max(0, eslintIssues.codeSmells + Math.floor(variation * 5)),
         bugs: Math.max(0, eslintIssues.bugs + Math.floor(variation * 3)),
-        vulnerabilities: Math.max(0, vulnerabilities + Math.floor(variation * 2)),
+        vulnerabilityCount: Math.max(0, vulnerabilities + Math.floor(variation * 2)),
         linesOfCode: Math.max(0, linesOfCode + Math.floor(variation * linesOfCode * 0.1))
       })
     }

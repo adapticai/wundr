@@ -1,6 +1,6 @@
 /**
  * AI Integration Hive Queen - Central orchestration system
- * 
+ *
  * Coordinates all AI capabilities including Claude Code, Claude Flow, and MCP tools.
  * Implements the main orchestration logic for the AI integration ecosystem.
  */
@@ -15,13 +15,13 @@ import { SwarmIntelligence } from './SwarmIntelligence';
 import { AgentCoordinator } from '../agents/AgentCoordinator';
 import { GitHubIntegration } from '../github/GitHubIntegration';
 import { PerformanceAnalyzer } from '../monitoring/PerformanceAnalyzer';
-import { 
-  AIIntegrationConfig, 
-  HiveStatus, 
+import {
+  AIIntegrationConfig,
+  HiveStatus,
   OperationResult,
   Agent,
   Task,
-  MemoryEntry 
+  MemoryEntry,
 } from '../types';
 
 export class AIIntegrationHive extends EventEmitter {
@@ -44,9 +44,13 @@ export class AIIntegrationHive extends EventEmitter {
 
   private initializeComponents(): void {
     // Initialize core orchestration components
-    this.claudeFlowOrchestrator = new ClaudeFlowOrchestrator(this.config.claudeFlow);
+    this.claudeFlowOrchestrator = new ClaudeFlowOrchestrator(
+      this.config.claudeFlow
+    );
     this.mcpToolsRegistry = new MCPToolsRegistry(this.config.mcpTools);
-    this.neuralTrainingPipeline = new NeuralTrainingPipeline(this.config.neural);
+    this.neuralTrainingPipeline = new NeuralTrainingPipeline(
+      this.config.neural
+    );
     this.swarmIntelligence = new SwarmIntelligence(this.config.swarm);
     this.memoryManager = new MemoryManager(this.config.memory);
     this.agentCoordinator = new AgentCoordinator(this.config.agents);
@@ -58,12 +62,30 @@ export class AIIntegrationHive extends EventEmitter {
 
   private setupEventHandlers(): void {
     // Cross-component event coordination
-    this.claudeFlowOrchestrator.on('agent-spawned', this.handleAgentSpawned.bind(this));
-    this.claudeFlowOrchestrator.on('task-completed', this.handleTaskCompleted.bind(this));
-    this.neuralTrainingPipeline.on('pattern-learned', this.handlePatternLearned.bind(this));
-    this.swarmIntelligence.on('consensus-reached', this.handleConsensusReached.bind(this));
-    this.memoryManager.on('memory-updated', this.handleMemoryUpdated.bind(this));
-    this.performanceAnalyzer.on('bottleneck-detected', this.handleBottleneckDetected.bind(this));
+    this.claudeFlowOrchestrator.on(
+      'agent-spawned',
+      this.handleAgentSpawned.bind(this)
+    );
+    this.claudeFlowOrchestrator.on(
+      'task-completed',
+      this.handleTaskCompleted.bind(this)
+    );
+    this.neuralTrainingPipeline.on(
+      'pattern-learned',
+      this.handlePatternLearned.bind(this)
+    );
+    this.swarmIntelligence.on(
+      'consensus-reached',
+      this.handleConsensusReached.bind(this)
+    );
+    this.memoryManager.on(
+      'memory-updated',
+      this.handleMemoryUpdated.bind(this)
+    );
+    this.performanceAnalyzer.on(
+      'bottleneck-detected',
+      this.handleBottleneckDetected.bind(this)
+    );
     this.githubIntegration.on('pr-ready', this.handlePRReady.bind(this));
   }
 
@@ -84,7 +106,7 @@ export class AIIntegrationHive extends EventEmitter {
         this.memoryManager.initialize(),
         this.agentCoordinator.initialize(),
         this.performanceAnalyzer.initialize(),
-        this.githubIntegration.initialize()
+        this.githubIntegration.initialize(),
       ]);
 
       this.status = 'ready';
@@ -93,7 +115,7 @@ export class AIIntegrationHive extends EventEmitter {
       return {
         success: true,
         message: 'AI Integration Hive initialized successfully',
-        data: { status: this.status }
+        data: { status: this.status },
       };
     } catch (error) {
       this.status = 'error';
@@ -101,7 +123,7 @@ export class AIIntegrationHive extends EventEmitter {
       return {
         success: false,
         message: `Initialization failed: ${(error as Error).message}`,
-        error: error
+        error: error,
       };
     }
   }
@@ -109,11 +131,20 @@ export class AIIntegrationHive extends EventEmitter {
   /**
    * Spawn AI agents using Claude Flow orchestration
    */
-  async spawnAgents(agentTypes: string[], task: string): Promise<OperationResult> {
+  async spawnAgents(
+    agentTypes: string[],
+    task: string
+  ): Promise<OperationResult> {
     try {
-      const topology = await this.swarmIntelligence.selectOptimalTopology(agentTypes, task);
-      const agents = await this.claudeFlowOrchestrator.spawnAgents(agentTypes as any, topology);
-      
+      const topology = await this.swarmIntelligence.selectOptimalTopology(
+        agentTypes,
+        task
+      );
+      const agents = await this.claudeFlowOrchestrator.spawnAgents(
+        agentTypes as any,
+        topology
+      );
+
       // Register agents with coordinator
       for (const agent of agents) {
         await this.agentCoordinator.registerAgent(agent);
@@ -125,13 +156,13 @@ export class AIIntegrationHive extends EventEmitter {
       return {
         success: true,
         message: `Spawned ${agents.length} agents successfully`,
-        data: { agents, topology }
+        data: { agents, topology },
       };
     } catch (error) {
       return {
         success: false,
         message: `Agent spawning failed: ${(error as Error).message}`,
-        error: error
+        error: error,
       };
     }
   }
@@ -143,7 +174,7 @@ export class AIIntegrationHive extends EventEmitter {
     try {
       // Analyze task complexity and requirements
       await this.performanceAnalyzer.analyzeTask(task);
-      
+
       // Select optimal agents and tools
       const agents = await this.agentCoordinator.selectAgentsForTask(task);
       const tools = await this.mcpToolsRegistry.selectToolsForTask(task);
@@ -152,7 +183,12 @@ export class AIIntegrationHive extends EventEmitter {
       const memoryContext = await this.memoryManager.createContext(task);
 
       // Execute task through swarm intelligence
-      const result = await this.swarmIntelligence.executeTask(task, agents, tools, memoryContext);
+      const result = await this.swarmIntelligence.executeTask(
+        task,
+        agents,
+        tools,
+        memoryContext
+      );
 
       // Train neural models on execution patterns
       await this.neuralTrainingPipeline.trainOnExecution(task, result);
@@ -166,7 +202,7 @@ export class AIIntegrationHive extends EventEmitter {
       return {
         success: false,
         message: `Task execution failed: ${(error as Error).message}`,
-        error: error
+        error: error,
       };
     }
   }
@@ -185,7 +221,7 @@ export class AIIntegrationHive extends EventEmitter {
     return {
       hive: {
         status: this.status,
-        uptime: process.uptime()
+        uptime: process.uptime(),
       },
       claudeFlow: await this.claudeFlowOrchestrator.getMetrics(),
       mcpTools: await this.mcpToolsRegistry.getMetrics(),
@@ -194,7 +230,7 @@ export class AIIntegrationHive extends EventEmitter {
       memory: await this.memoryManager.getMetrics(),
       agents: await this.agentCoordinator.getMetrics(),
       performance: await this.performanceAnalyzer.getMetrics(),
-      github: await this.githubIntegration.getMetrics()
+      github: await this.githubIntegration.getMetrics(),
     };
   }
 
@@ -251,7 +287,7 @@ export class AIIntegrationHive extends EventEmitter {
         this.memoryManager.shutdown(),
         this.agentCoordinator.shutdown(),
         this.performanceAnalyzer.shutdown(),
-        this.githubIntegration.shutdown()
+        this.githubIntegration.shutdown(),
       ]);
 
       this.status = 'shutdown';
@@ -259,13 +295,13 @@ export class AIIntegrationHive extends EventEmitter {
 
       return {
         success: true,
-        message: 'AI Integration Hive shutdown completed'
+        message: 'AI Integration Hive shutdown completed',
       };
     } catch (error) {
       return {
         success: false,
         message: `Shutdown failed: ${(error as Error).message}`,
-        error: error
+        error: error,
       };
     }
   }

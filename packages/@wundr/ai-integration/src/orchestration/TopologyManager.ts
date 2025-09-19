@@ -17,17 +17,22 @@ export class TopologyManager extends EventEmitter {
     return { success: true, message: 'Topology Manager initialized' };
   }
 
-  async selectOptimalTopology(agents: Agent[], _task: any): Promise<SwarmTopology> {
+  async selectOptimalTopology(
+    agents: Agent[],
+    _task: any
+  ): Promise<SwarmTopology> {
     return {
       type: 'mesh',
       maxAgents: agents.length,
       connectionPattern: 'full-mesh',
       coordinationStyle: 'distributed',
-      faultTolerance: 'medium'
+      faultTolerance: 'medium',
     };
   }
 
-  async optimizeTopology(currentTopology: SwarmTopology): Promise<SwarmTopology> {
+  async optimizeTopology(
+    currentTopology: SwarmTopology
+  ): Promise<SwarmTopology> {
     return currentTopology;
   }
 

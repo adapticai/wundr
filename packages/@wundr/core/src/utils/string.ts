@@ -52,15 +52,11 @@ export function capitalize(str: string): string {
 /**
  * Truncates a string to a specified length
  */
-export function truncate(
-  str: string,
-  length: number,
-  suffix = '...'
-): string {
+export function truncate(str: string, length: number, suffix = '...'): string {
   if (str.length <= length) {
     return str;
   }
-  
+
   return str.slice(0, length - suffix.length) + suffix;
 }
 
@@ -91,7 +87,10 @@ export function unescapeHtml(str: string): string {
     '&#39;': "'",
   };
 
-  return str.replace(/&(?:amp|lt|gt|quot|#39);/g, match => htmlUnescapes[match]);
+  return str.replace(
+    /&(?:amp|lt|gt|quot|#39);/g,
+    match => htmlUnescapes[match]
+  );
 }
 
 /**
@@ -108,7 +107,7 @@ export function pad(
   }
 
   const padLength = length - str.length;
-  
+
   switch (direction) {
     case 'left':
       return char.repeat(padLength) + str;
@@ -132,7 +131,10 @@ export function trim(str: string, chars?: string): string {
     return str.trim();
   }
 
-  const pattern = new RegExp(`^[${escapeRegExp(chars)}]+|[${escapeRegExp(chars)}]+$`, 'g');
+  const pattern = new RegExp(
+    `^[${escapeRegExp(chars)}]+|[${escapeRegExp(chars)}]+$`,
+    'g'
+  );
   return str.replace(pattern, '');
 }
 
@@ -152,11 +154,11 @@ export function randomString(
 ): string {
   let result = '';
   const charsetLength = charset.length;
-  
+
   for (let i = 0; i < length; i++) {
     result += charset.charAt(Math.floor(Math.random() * charsetLength));
   }
-  
+
   return result;
 }
 
@@ -164,7 +166,10 @@ export function randomString(
  * Counts the number of words in a string
  */
 export function wordCount(str: string): number {
-  return str.trim().split(/\s+/).filter(word => word.length > 0).length;
+  return str
+    .trim()
+    .split(/\s+/)
+    .filter(word => word.length > 0).length;
 }
 
 /**
@@ -178,21 +183,26 @@ export function pluralize(
   if (count === 1) {
     return word;
   }
-  
+
   if (pluralForm) {
     return pluralForm;
   }
-  
+
   // Simple pluralization rules
   if (word.endsWith('y') && !isVowel(word[word.length - 2])) {
     return word.slice(0, -1) + 'ies';
   }
-  
-  if (word.endsWith('s') || word.endsWith('sh') || word.endsWith('ch') ||
-      word.endsWith('x') || word.endsWith('z')) {
+
+  if (
+    word.endsWith('s') ||
+    word.endsWith('sh') ||
+    word.endsWith('ch') ||
+    word.endsWith('x') ||
+    word.endsWith('z')
+  ) {
     return word + 'es';
   }
-  
+
   return word + 's';
 }
 
@@ -218,19 +228,19 @@ export function template(
   } = {}
 ): string {
   const { prefix = '{{', suffix = '}}', transform } = options;
-  
+
   const regex = new RegExp(
     `${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(suffix)}`,
     'g'
   );
-  
+
   return str.replace(regex, (match, key) => {
     const value = data[key.trim()];
-    
+
     if (value === undefined || value === null) {
       return match; // Keep original if no replacement found
     }
-    
+
     return transform ? transform(key, value) : String(value);
   });
 }

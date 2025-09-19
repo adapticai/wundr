@@ -33,7 +33,7 @@ export type ReportStatus =
   | 'scheduled';
 
 export interface ReportMetadata {
-  parameters: Record<string, any>;
+  parameters: Record<string, import('../report-parameters').ParameterValue>;
   includedModules?: string[];
   excludedPaths?: string[];
   filters?: ReportFilters;
@@ -105,8 +105,8 @@ export interface ReportParameter {
   label: string;
   type: 'string' | 'number' | 'boolean' | 'select' | 'multiselect' | 'date' | 'daterange';
   required: boolean;
-  defaultValue?: any;
-  options?: Array<{ value: any; label: string }>;
+  defaultValue?: import('../report-parameters').ParameterValue;
+  options?: Array<{ value: import('../report-parameters').ParameterValue; label: string }>;
   validation?: {
     min?: number;
     max?: number;
@@ -119,7 +119,7 @@ export interface GenerateReportRequest {
   templateId: string;
   name: string;
   description?: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, import('../report-parameters').ParameterValue>;
   filters?: ReportFilters;
   outputFormats: ExportFormat[];
   schedule?: Omit<ReportSchedule, 'id' | 'lastRun' | 'nextRun'>;
@@ -360,7 +360,24 @@ export interface CompleteAnalysisData {
     version: string;
     generator: string;
     timestamp: Date;
-    configuration: Record<string, any>;
+    configuration: {
+      engines?: string[];
+      scanDepth?: number;
+      includeTests?: boolean;
+      excludePatterns?: string[];
+      customRules?: {
+        [ruleName: string]: {
+          enabled: boolean;
+          severity?: 'low' | 'medium' | 'high' | 'critical';
+          options?: Record<string, unknown>;
+        };
+      };
+      outputOptions?: {
+        format?: string;
+        includeMetrics?: boolean;
+        verboseLogging?: boolean;
+      };
+    };
     projectInfo: {
       name: string;
       path: string;
@@ -377,8 +394,22 @@ export interface CompleteAnalysisData {
   recommendations: AnalysisRecommendation[];
   rawData?: {
     dependencies: Record<string, string[]>;
-    fileTree: any;
-    packageInfo?: any;
+    fileTree: {
+      [path: string]: {
+        type: 'file' | 'directory';
+        size?: number;
+        lastModified?: Date;
+        children?: string[];
+      };
+    };
+    packageInfo?: {
+      name?: string;
+      version?: string;
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+      scripts?: Record<string, string>;
+      [key: string]: unknown;
+    };
   };
 }
 
@@ -418,7 +449,9 @@ export interface ReportSection {
 
 export interface ReportSectionContent {
   type: 'text' | 'list' | 'code' | 'markdown' | 'callout' | 'metrics-grid';
-  content: string | string[] | Record<string, any>;
+  content: string | string[] | {
+    [key: string]: string | number | boolean | Date | null;
+  };
   language?: string; // for code blocks
   level?: 'info' | 'warning' | 'error' | 'success'; // for callouts
 }
@@ -437,7 +470,34 @@ export interface ReportChart {
       tension?: number;
     }>;
   };
-  options?: Record<string, any>;
+  options?: {
+    responsive?: boolean;
+    plugins?: {
+      legend?: {
+        display?: boolean;
+        position?: 'top' | 'bottom' | 'left' | 'right';
+      };
+      tooltip?: {
+        enabled?: boolean;
+        mode?: 'point' | 'nearest' | 'index';
+      };
+    };
+    scales?: {
+      x?: {
+        display?: boolean;
+        title?: { display?: boolean; text?: string };
+      };
+      y?: {
+        display?: boolean;
+        title?: { display?: boolean; text?: string };
+        beginAtZero?: boolean;
+      };
+    };
+    animation?: {
+      duration?: number;
+      easing?: string;
+    };
+  };
 }
 
 export interface ReportTable {
@@ -450,7 +510,15 @@ export interface ReportTable {
     sortable?: boolean;
     filterable?: boolean;
   }>;
-  rows: Record<string, any>[];
+  rows: Array<{
+    [columnKey: string]: string | number | boolean | Date | null | {
+      type: 'badge' | 'progress' | 'link' | 'code';
+      value: string | number;
+      variant?: string;
+      href?: string;
+      language?: string;
+    };
+  }>;
   pagination?: {
     pageSize: number;
     currentPage: number;

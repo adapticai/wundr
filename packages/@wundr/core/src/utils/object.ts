@@ -1,28 +1,31 @@
 /**
  * Object manipulation utility functions
+ * Updated to use type-safe patterns
  */
 
+import { isObject, isArray, isDate, hasOwnProperty } from './type-guards.js';
+
 /**
- * Deep clones an object
+ * Deep clones an object with type safety
  */
 export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }
 
-  if (obj instanceof Date) {
-    return new Date(obj.getTime()) as unknown as T;
+  if (isDate(obj)) {
+    return new Date((obj as Date).getTime()) as T;
   }
 
-  if (obj instanceof Array) {
-    return obj.map(item => deepClone(item)) as unknown as T;
+  if (isArray(obj)) {
+    return (obj as unknown[]).map(item => deepClone(item)) as T;
   }
 
-  if (typeof obj === 'object') {
+  if (isObject(obj)) {
     const clonedObj = {} as T;
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        clonedObj[key] = deepClone(obj[key]);
+      if (hasOwnProperty(obj, key)) {
+        (clonedObj as Record<string, unknown>)[key] = deepClone(obj[key]);
       }
     }
     return clonedObj;
@@ -32,10 +35,11 @@ export function deepClone<T>(obj: T): T {
 }
 
 /**
- * Deep merges multiple objects
+ * Deep merges multiple objects with type safety
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function deepMerge<T extends Record<string, any>>(...objects: T[]): T {
+export function deepMerge<T extends Record<string, unknown>>(
+  ...objects: T[]
+): T {
   if (objects.length === 0) {
     return {} as T;
   }
@@ -47,16 +51,24 @@ export function deepMerge<T extends Record<string, any>>(...objects: T[]): T {
   const target = {} as T;
 
   for (const obj of objects) {
-    if (obj && typeof obj === 'object') {
+    if (isObject(obj)) {
       for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (hasOwnProperty(obj, key)) {
           const value = obj[key];
-          
-          if (value && typeof value === 'object' && !Array.isArray(value)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            target[key] = deepMerge(target[key] || {} as any, value);
+          const targetValue = (target as Record<string, unknown>)[key];
+
+          if (
+            isObject(value) &&
+            !isArray(value) &&
+            isObject(targetValue) &&
+            !isArray(targetValue)
+          ) {
+            (target as Record<string, unknown>)[key] = deepMerge(
+              targetValue as Record<string, unknown>,
+              value as Record<string, unknown>
+            );
           } else {
-            target[key] = deepClone(value);
+            (target as Record<string, unknown>)[key] = deepClone(value);
           }
         }
       }
@@ -67,21 +79,21 @@ export function deepMerge<T extends Record<string, any>>(...objects: T[]): T {
 }
 
 /**
- * Gets a nested property value using dot notation
+ * Gets a nested property value using dot notation with type safety
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getNestedValue<T = any>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: Record<string, any>,
+export function getNestedValue<T = unknown>(
+  obj: Record<string, unknown>,
   path: string,
   defaultValue?: T
 ): T | undefined {
+  if (!isObject(obj)) return defaultValue;
+
   const keys = path.split('.');
-  let current = obj;
+  let current: unknown = obj;
 
   for (const key of keys) {
-    if (current && typeof current === 'object' && key in current) {
-      current = current[key];
+    if (isObject(current) && hasOwnProperty(current, key)) {
+      current = (current as Record<string, unknown>)[key];
     } else {
       return defaultValue;
     }
@@ -91,24 +103,26 @@ export function getNestedValue<T = any>(
 }
 
 /**
- * Sets a nested property value using dot notation
+ * Sets a nested property value using dot notation with type safety
  */
 export function setNestedValue(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: Record<string, any>,
+  obj: Record<string, unknown>,
   path: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any
+  value: unknown
 ): void {
+  if (!isObject(obj)) return;
+
   const keys = path.split('.');
-  const lastKey = keys.pop()!;
-  let current = obj;
+  const lastKey = keys.pop();
+  if (!lastKey) return;
+
+  let current: Record<string, unknown> = obj;
 
   for (const key of keys) {
-    if (!(key in current) || typeof current[key] !== 'object') {
+    if (!isObject(current[key])) {
       current[key] = {};
     }
-    current = current[key];
+    current = current[key] as Record<string, unknown>;
   }
 
   current[lastKey] = value;
@@ -147,7 +161,11 @@ export function removeEmpty<T extends Record<string, any>>(
       shouldRemove = true;
     } else if (value === '' && removeEmptyStrings) {
       shouldRemove = true;
-    } else if (Array.isArray(value) && value.length === 0 && removeEmptyArrays) {
+    } else if (
+      Array.isArray(value) &&
+      value.length === 0 &&
+      removeEmptyArrays
+    ) {
       shouldRemove = true;
     } else if (
       value &&
@@ -184,52 +202,56 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
   keys: K[]
 ): Pick<T, K> {
   const result = {} as Pick<T, K>;
-  
+
   for (const key of keys) {
     if (key in obj) {
       result[key] = obj[key];
     }
   }
-  
+
   return result;
 }
 
 /**
  * Omits specific properties from an object
  */
-export function omit<T, K extends keyof T>(
+export function omit<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: readonly K[]
 ): Omit<T, K> {
-  const result = { ...obj } as Omit<T, K>;
-  
-  for (const key of keys) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (result as any)[key];
+  const result = { ...obj };
+  const keysSet = new Set(keys);
+
+  for (const key in result) {
+    if (keysSet.has(key as unknown as K)) {
+      delete result[key];
+    }
   }
-  
-  return result;
+
+  return result as Omit<T, K>;
 }
 
 /**
  * Flattens a nested object into a flat object with dot notation keys
  */
 export function flatten(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: Record<string, any>,
+  obj: Record<string, unknown>,
   prefix = '',
   separator = '.'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const flattened: Record<string, any> = {};
+): Record<string, unknown> {
+  const flattened: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(obj)) {
+  for (const key in obj) {
+    if (!hasOwnProperty(obj, key)) continue;
+
+    const value = obj[key];
     const newKey = prefix ? `${prefix}${separator}${key}` : key;
 
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      Object.assign(flattened, flatten(value as Record<string, any>, newKey, separator));
+    if (isObject(value) && !isArray(value)) {
+      Object.assign(
+        flattened,
+        flatten(value as Record<string, unknown>, newKey, separator)
+      );
     } else {
       flattened[newKey] = value;
     }
@@ -242,15 +264,15 @@ export function flatten(
  * Unflattens a flat object with dot notation keys into a nested object
  */
 export function unflatten(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: Record<string, any>,
+  obj: Record<string, unknown>,
   separator = '.'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result: Record<string, any> = {};
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(obj)) {
+  for (const key in obj) {
+    if (!hasOwnProperty(obj, key)) continue;
+
+    const value = obj[key];
     setNestedValue(result, key.split(separator).join('.'), value);
   }
 

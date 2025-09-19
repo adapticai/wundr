@@ -13,7 +13,9 @@ export class JsonConfigSource extends FileConfigSource {
     try {
       return JSON.parse(content) || {};
     } catch (error) {
-      throw new Error(`Invalid JSON in configuration file: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Invalid JSON in configuration file: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 

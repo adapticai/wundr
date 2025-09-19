@@ -17,7 +17,10 @@ export class WorkflowEngine extends EventEmitter {
     return { success: true, message: 'Workflow Engine initialized' };
   }
 
-  async executeWorkflow(_workflowId: string, _context: any): Promise<OperationResult> {
+  async executeWorkflow(
+    _workflowId: string,
+    _context: any
+  ): Promise<OperationResult> {
     return { success: true, message: 'Workflow executed successfully' };
   }
 

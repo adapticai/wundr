@@ -6,6 +6,16 @@ import { ChartError } from "@/components/ui/error/chart-error"
 import { ChartLoading } from "@/components/ui/loading/chart-loading"
 import { VisualizationSkeleton } from "@/components/ui/loading/visualization-skeleton"
 
+// Improved type definitions for component props
+type ComponentProps = Record<string, unknown>;
+
+interface VisualizationComponentProps extends ComponentProps {
+  data?: unknown;
+  config?: unknown;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
 interface WithErrorBoundaryProps {
   children: React.ReactNode
   fallback?: React.ReactNode
@@ -15,11 +25,17 @@ interface WithErrorBoundaryProps {
   visualizationType?: "chart" | "table" | "metric" | "heatmap" | "network"
 }
 
-export function withErrorBoundary(
-  Component: React.ComponentType<any>,
+interface WithAsyncBoundaryOptions {
+  loadingComponent?: React.ReactNode
+  errorComponent?: React.ReactNode
+  retryDelay?: number
+}
+
+export function withErrorBoundary<T extends VisualizationComponentProps>(
+  Component: React.ComponentType<T>,
   defaultProps?: Partial<WithErrorBoundaryProps>
 ) {
-  return function WrappedComponent(props: any) {
+  return function WrappedComponent(props: T & Partial<WithErrorBoundaryProps>) {
     const {
       fallback,
       onError,
@@ -61,15 +77,11 @@ export function withErrorBoundary(
 }
 
 // HOC for async components
-export function withAsyncBoundary(
-  Component: React.ComponentType<any>,
-  options?: {
-    loadingComponent?: React.ReactNode
-    errorComponent?: React.ReactNode
-    retryDelay?: number
-  }
+export function withAsyncBoundary<T extends VisualizationComponentProps>(
+  Component: React.ComponentType<T>,
+  options?: WithAsyncBoundaryOptions
 ) {
-  return function AsyncBoundaryWrapper(props: any) {
+  return function AsyncBoundaryWrapper(props: T) {
     const [error, setError] = React.useState<Error | null>(null)
     const [retryCount, setRetryCount] = React.useState(0)
 

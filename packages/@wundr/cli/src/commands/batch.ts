@@ -36,7 +36,10 @@ export class BatchCommands {
       .option('--dry-run', 'show what would be executed without running')
       .option('--parallel', 'run commands in parallel where possible')
       .option('--continue-on-error', 'continue execution on command failures')
-      .option('--vars <vars>', 'variables to pass to batch job (JSON or key=value)')
+      .option(
+        '--vars <vars>',
+        'variables to pass to batch job (JSON or key=value)'
+      )
       .option('--timeout <ms>', 'global timeout for batch job')
       .action(async (file, options) => {
         await this.runBatchJob(file, options);
@@ -59,7 +62,7 @@ export class BatchCommands {
       .alias('ls')
       .description('list available batch jobs')
       .option('--path <path>', 'custom batch jobs directory')
-      .action(async (options) => {
+      .action(async options => {
         await this.listBatchJobs(options);
       });
 
@@ -67,7 +70,7 @@ export class BatchCommands {
     batchCmd
       .command('validate <file>')
       .description('validate batch job YAML file')
-      .action(async (file) => {
+      .action(async file => {
         await this.validateBatchJob(file);
       });
 
@@ -75,7 +78,7 @@ export class BatchCommands {
     batchCmd
       .command('stop <jobId>')
       .description('stop a running batch job')
-      .action(async (jobId) => {
+      .action(async jobId => {
         await this.stopBatchJob(jobId);
       });
 
@@ -83,7 +86,7 @@ export class BatchCommands {
     batchCmd
       .command('status [jobId]')
       .description('show batch job status')
-      .action(async (jobId) => {
+      .action(async jobId => {
         await this.showJobStatus(jobId);
       });
 
@@ -102,7 +105,11 @@ export class BatchCommands {
     batchCmd
       .command('export <file>')
       .description('export batch job to different formats')
-      .option('--format <format>', 'export format (json, shell, dockerfile)', 'json')
+      .option(
+        '--format <format>',
+        'export format (json, shell, dockerfile)',
+        'json'
+      )
       .option('--output <path>', 'output file path')
       .action(async (file, options) => {
         await this.exportBatchJob(file, options);
@@ -112,16 +119,17 @@ export class BatchCommands {
     batchCmd
       .command('import <file>')
       .description('import batch job from different formats')
-      .option('--format <format>', 'source format (json, shell, package-scripts)')
+      .option(
+        '--format <format>',
+        'source format (json, shell, package-scripts)'
+      )
       .option('--name <name>', 'batch job name')
       .action(async (file, options) => {
         await this.importBatchJob(file, options);
       });
 
     // Template management
-    batchCmd
-      .command('template')
-      .description('manage batch job templates');
+    batchCmd.command('template').description('manage batch job templates');
 
     batchCmd
       .command('template list')
@@ -164,7 +172,7 @@ export class BatchCommands {
         file,
         job: processedJob,
         startTime: Date.now(),
-        status: 'running'
+        status: 'running',
       });
 
       try {
@@ -173,7 +181,6 @@ export class BatchCommands {
       } finally {
         this.runningJobs.delete(jobId);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_RUN_FAILED',
@@ -201,12 +208,16 @@ export class BatchCommands {
         job = this.createBasicBatchJob(name, options);
       }
 
-      const jobPath = path.join(process.cwd(), '.wundr', 'batch', `${name}.yaml`);
+      const jobPath = path.join(
+        process.cwd(),
+        '.wundr',
+        'batch',
+        `${name}.yaml`
+      );
       await fs.ensureDir(path.dirname(jobPath));
       await fs.writeFile(jobPath, YAML.stringify(job));
 
       logger.success(`Batch job created: ${jobPath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_CREATE_FAILED',
@@ -222,15 +233,18 @@ export class BatchCommands {
    */
   private async listBatchJobs(options: any): Promise<void> {
     try {
-      const batchDir = options.path || path.join(process.cwd(), '.wundr', 'batch');
-      
-      if (!await fs.pathExists(batchDir)) {
+      const batchDir =
+        options.path || path.join(process.cwd(), '.wundr', 'batch');
+
+      if (!(await fs.pathExists(batchDir))) {
         logger.info('No batch jobs directory found');
         return;
       }
 
       const files = await fs.readdir(batchDir);
-      const yamlFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+      const yamlFiles = files.filter(
+        f => f.endsWith('.yaml') || f.endsWith('.yml')
+      );
 
       if (yamlFiles.length === 0) {
         logger.info('No batch jobs found');
@@ -238,8 +252,13 @@ export class BatchCommands {
       }
 
       logger.info(`Batch jobs (${yamlFiles.length}):`);
-      
-      const jobs: Array<{ Name: string; Description: string; Commands: number | string; Parallel: string }> = [];
+
+      const jobs: Array<{
+        Name: string;
+        Description: string;
+        Commands: number | string;
+        Parallel: string;
+      }> = [];
       for (const file of yamlFiles) {
         const filePath = path.join(batchDir, file);
         try {
@@ -248,20 +267,19 @@ export class BatchCommands {
             Name: path.basename(file, path.extname(file)),
             Description: job.description || 'No description',
             Commands: job.commands.length,
-            Parallel: job.parallel ? '✓' : '✗'
+            Parallel: job.parallel ? '✓' : '✗',
           });
         } catch (error) {
           jobs.push({
             Name: path.basename(file, path.extname(file)),
             Description: 'Invalid YAML',
             Commands: 'N/A',
-            Parallel: 'N/A'
+            Parallel: 'N/A',
           });
         }
       }
 
       console.table(jobs);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_LIST_FAILED',
@@ -284,7 +302,7 @@ export class BatchCommands {
 
       if (validation.valid) {
         logger.success('Batch job is valid ✓');
-        
+
         // Show job summary
         console.log(chalk.blue('\nJob Summary:'));
         console.log(`Name: ${job.name}`);
@@ -299,7 +317,6 @@ export class BatchCommands {
         });
         process.exit(1);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_VALIDATE_FAILED',
@@ -316,7 +333,7 @@ export class BatchCommands {
   private async stopBatchJob(jobId: string): Promise<void> {
     try {
       const job = this.runningJobs.get(jobId);
-      
+
       if (!job) {
         logger.warn(`Job not found: ${jobId}`);
         return;
@@ -325,9 +342,8 @@ export class BatchCommands {
       // Stop the job (implementation would depend on how jobs are executed)
       job.status = 'stopped';
       this.runningJobs.delete(jobId);
-      
-      logger.success(`Batch job stopped: ${jobId}`);
 
+      logger.success(`Batch job stopped: ${jobId}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_STOP_FAILED',
@@ -362,12 +378,14 @@ export class BatchCommands {
         }
 
         console.log(chalk.blue(`\nRunning Jobs (${this.runningJobs.size}):`));
-        const jobData = Array.from(this.runningJobs.entries()).map(([id, job]) => ({
-          ID: id,
-          File: path.basename(job.file),
-          Status: job.status,
-          Duration: `${Date.now() - job.startTime}ms`
-        }));
+        const jobData = Array.from(this.runningJobs.entries()).map(
+          ([id, job]) => ({
+            ID: id,
+            File: path.basename(job.file),
+            Status: job.status,
+            Duration: `${Date.now() - job.startTime}ms`,
+          })
+        );
 
         console.table(jobData);
       }
@@ -405,7 +423,6 @@ export class BatchCommands {
       }
 
       logger.success('Batch job scheduled successfully');
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_SCHEDULE_FAILED',
@@ -440,11 +457,12 @@ export class BatchCommands {
           throw new Error(`Unsupported export format: ${options.format}`);
       }
 
-      const outputPath = options.output || `${path.basename(file, path.extname(file))}.${options.format}`;
+      const outputPath =
+        options.output ||
+        `${path.basename(file, path.extname(file))}.${options.format}`;
       await fs.writeFile(outputPath, exportedContent);
 
       logger.success(`Batch job exported: ${outputPath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_EXPORT_FAILED',
@@ -479,13 +497,17 @@ export class BatchCommands {
       }
 
       const jobName = options.name || path.basename(file, path.extname(file));
-      const jobPath = path.join(process.cwd(), '.wundr', 'batch', `${jobName}.yaml`);
-      
+      const jobPath = path.join(
+        process.cwd(),
+        '.wundr',
+        'batch',
+        `${jobName}.yaml`
+      );
+
       await fs.ensureDir(path.dirname(jobPath));
       await fs.writeFile(jobPath, YAML.stringify(job));
 
       logger.success(`Batch job imported: ${jobPath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_BATCH_IMPORT_FAILED',
@@ -500,7 +522,7 @@ export class BatchCommands {
    * Helper methods for batch job operations
    */
   private async loadBatchJob(file: string): Promise<BatchJob> {
-    if (!await fs.pathExists(file)) {
+    if (!(await fs.pathExists(file))) {
       throw new Error(`Batch job file not found: ${file}`);
     }
 
@@ -516,7 +538,9 @@ export class BatchCommands {
     }
   }
 
-  private async validateJobStructure(job: BatchJob): Promise<{ valid: boolean; errors: string[] }> {
+  private async validateJobStructure(
+    job: BatchJob
+  ): Promise<{ valid: boolean; errors: string[] }> {
     const errors: string[] = [];
 
     if (!job.name) {
@@ -536,7 +560,10 @@ export class BatchCommands {
     return { valid: errors.length === 0, errors };
   }
 
-  private async processJobVariables(job: BatchJob, vars?: string): Promise<BatchJob> {
+  private async processJobVariables(
+    job: BatchJob,
+    vars?: string
+  ): Promise<BatchJob> {
     let variables: Record<string, any> = {};
 
     if (vars) {
@@ -569,7 +596,7 @@ export class BatchCommands {
 
   private async showDryRun(job: BatchJob): Promise<void> {
     console.log(chalk.blue('\nDry Run - Commands to be executed:'));
-    console.log(chalk.gray('=' .repeat(50)));
+    console.log(chalk.gray('='.repeat(50)));
 
     job.commands.forEach((cmd, index) => {
       console.log(`${index + 1}. ${chalk.cyan(cmd.command)}`);
@@ -588,36 +615,43 @@ export class BatchCommands {
       console.log();
     });
 
-    console.log(chalk.gray('=' .repeat(50)));
+    console.log(chalk.gray('='.repeat(50)));
     console.log(`Total commands: ${job.commands.length}`);
     console.log(`Parallel execution: ${job.parallel ? 'Yes' : 'No'}`);
     console.log(`Continue on error: ${job.continueOnError ? 'Yes' : 'No'}`);
   }
 
-  private async executeBatchJob(job: BatchJob, _jobId: string, _options: any): Promise<void> {
+  private async executeBatchJob(
+    job: BatchJob,
+    _jobId: string,
+    _options: any
+  ): Promise<void> {
     const tasks = job.commands.map((cmd, _index) => ({
       title: cmd.command,
       task: async () => {
         await this.executeCommand(cmd, _options);
       },
       retry: cmd.retry || 0,
-      timeout: cmd.timeout
+      timeout: cmd.timeout,
     }));
 
     const listr = new Listr(tasks, {
       concurrent: job.parallel || _options.parallel,
       exitOnError: !(job.continueOnError || _options.continueOnError),
       rendererOptions: {
-        showSubtasks: true
-      }
+        showSubtasks: true,
+      },
     });
 
     await listr.run();
   }
 
-  private async executeCommand(cmd: BatchCommand, _options: any): Promise<void> {
+  private async executeCommand(
+    cmd: BatchCommand,
+    _options: any
+  ): Promise<void> {
     // Check condition if specified
-    if (cmd.condition && !await this.evaluateCondition(cmd.condition)) {
+    if (cmd.condition && !(await this.evaluateCondition(cmd.condition))) {
       logger.debug(`Skipping command due to condition: ${cmd.condition}`);
       return;
     }
@@ -629,7 +663,7 @@ export class BatchCommands {
     return new Promise((resolve, reject) => {
       const child = spawn(command ?? 'echo', finalArgs, {
         stdio: ['ignore', 'pipe', 'pipe'],
-        shell: true
+        shell: true,
       });
 
       let output = '';
@@ -677,25 +711,25 @@ export class BatchCommands {
 
   private async createInteractiveBatchJob(name: string): Promise<BatchJob> {
     const inquirer = await import('inquirer');
-    
+
     const answers = await inquirer.default.prompt([
       {
         type: 'input',
         name: 'description',
-        message: 'Job description:'
+        message: 'Job description:',
       },
       {
         type: 'confirm',
         name: 'parallel',
         message: 'Run commands in parallel?',
-        default: false
+        default: false,
       },
       {
         type: 'confirm',
         name: 'continueOnError',
         message: 'Continue on command failure?',
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     const commands: BatchCommand[] = [];
@@ -707,31 +741,31 @@ export class BatchCommands {
           type: 'input',
           name: 'command',
           message: 'Command:',
-          validate: (input) => input.length > 0 || 'Command is required'
+          validate: input => input.length > 0 || 'Command is required',
         },
         {
           type: 'input',
           name: 'condition',
-          message: 'Condition (optional):'
+          message: 'Condition (optional):',
         },
         {
           type: 'number',
           name: 'retry',
           message: 'Retry count:',
-          default: 0
+          default: 0,
         },
         {
           type: 'confirm',
           name: 'addMore',
           message: 'Add another command?',
-          default: true
-        }
+          default: true,
+        },
       ]);
 
       commands.push({
         command: cmdAnswers.command,
         condition: cmdAnswers.condition || undefined,
-        retry: cmdAnswers.retry || undefined
+        retry: cmdAnswers.retry || undefined,
       });
 
       addMore = cmdAnswers.addMore;
@@ -742,13 +776,15 @@ export class BatchCommands {
       description: answers.description,
       commands,
       parallel: answers.parallel,
-      continueOnError: answers.continueOnError
+      continueOnError: answers.continueOnError,
     };
   }
 
   private createBasicBatchJob(name: string, options: any): BatchJob {
-    const commands = options.commands 
-      ? options.commands.split(',').map((cmd: string) => ({ command: cmd.trim() }))
+    const commands = options.commands
+      ? options.commands
+          .split(',')
+          .map((cmd: string) => ({ command: cmd.trim() }))
       : [];
 
     return {
@@ -756,25 +792,32 @@ export class BatchCommands {
       description: `Batch job: ${name}`,
       commands,
       parallel: false,
-      continueOnError: false
+      continueOnError: false,
     };
   }
 
-  private async createJobFromTemplate(name: string, template: string): Promise<BatchJob> {
+  private async createJobFromTemplate(
+    name: string,
+    template: string
+  ): Promise<BatchJob> {
     // Load template and create job
-    const templatePath = path.join(__dirname, '../../templates/batch', `${template}.yaml`);
+    const templatePath = path.join(
+      __dirname,
+      '../../templates/batch',
+      `${template}.yaml`
+    );
     if (await fs.pathExists(templatePath)) {
       const templateJob = await this.loadBatchJob(templatePath);
       return { ...templateJob, name };
     }
-    
+
     throw new Error(`Template not found: ${template}`);
   }
 
   // Format conversion methods
   private convertToShellScript(job: BatchJob): string {
     let script = `#!/bin/bash\n# Generated from batch job: ${job.name}\n\n`;
-    
+
     if (job.description) {
       script += `# ${job.description}\n\n`;
     }
@@ -792,7 +835,7 @@ export class BatchCommands {
   private convertToDockerfile(job: BatchJob): string {
     let dockerfile = `# Generated from batch job: ${job.name}\n`;
     dockerfile += `FROM node:18-alpine\n\n`;
-    
+
     if (job.description) {
       dockerfile += `# ${job.description}\n`;
     }
@@ -812,7 +855,10 @@ export class BatchCommands {
     return { ...content, name: name || content.name };
   }
 
-  private async importFromShell(file: string, name?: string): Promise<BatchJob> {
+  private async importFromShell(
+    file: string,
+    name?: string
+  ): Promise<BatchJob> {
     const content = await fs.readFile(file, 'utf8');
     const commands = content
       .split('\n')
@@ -822,24 +868,27 @@ export class BatchCommands {
     return {
       name: name || path.basename(file, path.extname(file)),
       description: `Imported from shell script: ${file}`,
-      commands
+      commands,
     };
   }
 
-  private async importFromPackageScripts(file: string, name?: string): Promise<BatchJob> {
+  private async importFromPackageScripts(
+    file: string,
+    name?: string
+  ): Promise<BatchJob> {
     const packageJson = await fs.readJson(file);
     const scripts = packageJson.scripts || {};
-    
+
     const commands = Object.entries(scripts).map(([script, command]) => ({
       command: `npm run ${script}`,
       args: [],
-      condition: undefined
+      condition: undefined,
     }));
 
     return {
       name: name || 'package-scripts',
       description: `Imported from package.json scripts`,
-      commands
+      commands,
     };
   }
 
@@ -847,8 +896,10 @@ export class BatchCommands {
     const templatesDir = path.join(__dirname, '../../templates/batch');
     if (await fs.pathExists(templatesDir)) {
       const templates = await fs.readdir(templatesDir);
-      const yamlTemplates = templates.filter(t => t.endsWith('.yaml') || t.endsWith('.yml'));
-      
+      const yamlTemplates = templates.filter(
+        t => t.endsWith('.yaml') || t.endsWith('.yml')
+      );
+
       if (yamlTemplates.length > 0) {
         logger.info('Available templates:');
         yamlTemplates.forEach(template => {
@@ -864,14 +915,18 @@ export class BatchCommands {
 
   private async createTemplate(name: string, options: any): Promise<void> {
     logger.info(`Creating template: ${name}`);
-    
+
     if (options.from) {
       const job = await this.loadBatchJob(options.from);
-      const templatePath = path.join(__dirname, '../../templates/batch', `${name}.yaml`);
-      
+      const templatePath = path.join(
+        __dirname,
+        '../../templates/batch',
+        `${name}.yaml`
+      );
+
       await fs.ensureDir(path.dirname(templatePath));
       await fs.writeFile(templatePath, YAML.stringify(job));
-      
+
       logger.success(`Template created: ${templatePath}`);
     } else {
       logger.info('Template creation from scratch not yet implemented');

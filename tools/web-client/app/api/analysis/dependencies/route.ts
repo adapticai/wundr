@@ -7,7 +7,10 @@ export interface DependencyData {
   latestVersion: string;
   type: 'dependency' | 'devDependency' | 'peerDependency';
   size: number;
-  vulnerabilities: number;
+  /** Number of vulnerabilities found */
+  vulnerabilityCount: number;
+  /** Detailed vulnerability information */
+  vulnerabilities?: SecurityVulnerability[];
   lastUpdated: string;
   license: string;
   description: string;
@@ -70,7 +73,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
       latestVersion: '19.1.0',
       type: 'dependency',
       size: 2580000,
-      vulnerabilities: 0,
+      vulnerabilityCount: 0,
       lastUpdated: '2024-12-05',
       license: 'MIT',
       description:
@@ -87,7 +90,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
       latestVersion: '15.4.6',
       type: 'dependency',
       size: 45600000,
-      vulnerabilities: 1,
+      vulnerabilityCount: 1,
       lastUpdated: '2024-12-10',
       license: 'MIT',
       description: 'The React Framework for Production',
@@ -103,7 +106,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
       latestVersion: '4.17.21',
       type: 'dependency',
       size: 1400000,
-      vulnerabilities: 2,
+      vulnerabilityCount: 2,
       lastUpdated: '2021-02-20',
       license: 'MIT',
       description: 'Lodash modular utilities.',
@@ -119,7 +122,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
       latestVersion: '22.7.4',
       type: 'devDependency',
       size: 890000,
-      vulnerabilities: 0,
+      vulnerabilityCount: 0,
       lastUpdated: '2024-11-15',
       license: 'MIT',
       description: 'TypeScript definitions for Node.js',
@@ -134,7 +137,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
       latestVersion: '4.5.0',
       type: 'dependency',
       size: 1200000,
-      vulnerabilities: 0,
+      vulnerabilityCount: 0,
       lastUpdated: '2024-10-22',
       license: 'MIT',
       description: 'Simple HTML5 Charts using the canvas element',
@@ -150,7 +153,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
       latestVersion: '1.7.9',
       type: 'dependency',
       size: 1100000,
-      vulnerabilities: 0,
+      vulnerabilityCount: 0,
       lastUpdated: '2024-11-30',
       license: 'MIT',
       description: 'Promise based HTTP client for the browser and node.js',
@@ -165,7 +168,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
       latestVersion: '5.7.2',
       type: 'devDependency',
       size: 12000000,
-      vulnerabilities: 0,
+      vulnerabilityCount: 0,
       lastUpdated: '2024-12-01',
       license: 'Apache-2.0',
       description:
@@ -223,7 +226,7 @@ async function analyzeDependencies(): Promise<DependencyAnalysisResponse> {
   const stats: DependencyStats = {
     total: dependencies.length,
     outdated: dependencies.filter(d => d.version !== d.latestVersion).length,
-    vulnerable: dependencies.filter(d => d.vulnerabilities > 0).length,
+    vulnerable: dependencies.filter(d => d.vulnerabilityCount > 0).length,
     totalSize: dependencies.reduce((sum, d) => sum + d.size, 0),
     directDependencies: dependencies.filter(d => d.type === 'dependency')
       .length,

@@ -364,7 +364,7 @@ export const isValidJson = (value: string): boolean => {
   }
 };
 
-export const parseJsonSafe = <T = unknown>(value: string): T | null => {
+export const parseJsonSafeSimple = <T = unknown>(value: string): T | null => {
   try {
     return JSON.parse(value) as T;
   } catch {
@@ -467,26 +467,26 @@ export const assertValidUuid = (value: string, name = 'UUID'): asserts value is 
   }
 };
 
-export const assertPositiveNumber = (value: number, name = 'value'): asserts value is number => {
+export const assertPositiveNumber: (value: number, name?: string) => asserts value is number = (value: number, name = 'value') => {
   assertNumber(value, name);
   if (value <= 0) {
     throw new Error(`Expected ${name} to be positive, got ${value}`);
   }
 };
 
-export const assertNonNegativeNumber = (value: number, name = 'value'): asserts value is number => {
+export const assertNonNegativeNumber: (value: number, name?: string) => asserts value is number = (value: number, name = 'value') => {
   assertNumber(value, name);
   if (value < 0) {
     throw new Error(`Expected ${name} to be non-negative, got ${value}`);
   }
 };
 
-export const assertInRange = (
+export const assertInRange: (value: number, min: number, max: number, name?: string) => asserts value is number = (
   value: number,
   min: number,
   max: number,
   name = 'value'
-): asserts value is number => {
+) => {
   assertNumber(value, name);
   if (value < min || value > max) {
     throw new Error(`Expected ${name} to be between ${min} and ${max}, got ${value}`);
@@ -533,33 +533,81 @@ export const assertInstanceOf = <T>(
   }
 };
 
-// Safe parsing utilities
-export const safeParseInt = (value: string, defaultValue = 0): number => {
+// Safe parsing utilities with enhanced error handling
+export const safeParseInt = (value: string | number | unknown, defaultValue = 0): number => {
+  if (isNumber(value)) return Math.floor(value);
+  if (!isString(value)) return defaultValue;
+
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
 };
 
-export const safeParseFloat = (value: string, defaultValue = 0): number => {
+export const safeParseFloat = (value: string | number | unknown, defaultValue = 0): number => {
+  if (isNumber(value)) return value;
+  if (!isString(value)) return defaultValue;
+
   const parsed = parseFloat(value);
   return isNaN(parsed) ? defaultValue : parsed;
 };
 
-export const safeParseBoolean = (value: string, defaultValue = false): boolean => {
-  const lowercased = value.toLowerCase();
-  if (lowercased === 'true' || lowercased === '1' || lowercased === 'yes') {
+export const safeParseBoolean = (value: string | boolean | unknown, defaultValue = false): boolean => {
+  if (isBoolean(value)) return value;
+  if (!isString(value)) return defaultValue;
+
+  const lowercased = value.toLowerCase().trim();
+  if (['true', '1', 'yes', 'on', 'enabled'].includes(lowercased)) {
     return true;
   }
-  if (lowercased === 'false' || lowercased === '0' || lowercased === 'no') {
+  if (['false', '0', 'no', 'off', 'disabled'].includes(lowercased)) {
     return false;
   }
   return defaultValue;
 };
 
-export const safeParseJson = <T>(value: string, defaultValue: T): T => {
+export const safeParseJson = <T>(
+  value: string | unknown,
+  defaultValue: T,
+  validator?: (parsed: unknown) => parsed is T
+): T => {
+  if (!isString(value)) return defaultValue;
+
   try {
-    return JSON.parse(value) as T;
+    const parsed = JSON.parse(value);
+    if (validator && !validator(parsed)) {
+      return defaultValue;
+    }
+    return parsed as T;
   } catch {
     return defaultValue;
+  }
+};
+
+// Enhanced JSON utilities with type safety
+export const parseJsonSafe = <T = unknown>(value: string): { success: true; data: T } | { success: false; error: string } => {
+  if (!isString(value)) {
+    return { success: false, error: 'Input is not a string' };
+  }
+
+  try {
+    const data = JSON.parse(value) as T;
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown JSON parsing error'
+    };
+  }
+};
+
+export const stringifyJsonSafe = (value: unknown): { success: true; data: string } | { success: false; error: string } => {
+  try {
+    const data = JSON.stringify(value);
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown JSON stringify error'
+    };
   }
 };
 
@@ -571,12 +619,12 @@ export const validateRequired = <T>(value: T | null | undefined, name: string): 
   return value;
 };
 
-export const validateStringLength = (
+export const validateStringLength: (value: string, minLength: number, maxLength?: number, name?: string) => string = (
   value: string,
   minLength: number,
   maxLength?: number,
   name = 'value'
-): string => {
+) => {
   assertString(value, name);
   assertMinLength(value, minLength, name);
   if (maxLength !== undefined) {
@@ -585,12 +633,12 @@ export const validateStringLength = (
   return value;
 };
 
-export const validateNumberRange = (
+export const validateNumberRange: (value: number, min?: number, max?: number, name?: string) => number = (
   value: number,
   min?: number,
   max?: number,
   name = 'value'
-): number => {
+) => {
   assertNumber(value, name);
   if (min !== undefined && value < min) {
     throw new Error(`${name} must be at least ${min}, got ${value}`);
@@ -653,7 +701,7 @@ export const createAssertion = <T>(
 export const isNonEmptyString = (value: unknown): value is string =>
   isString(value) && value.length > 0;
 
-export const isNonEmptyArray = <T>(value: unknown): value is readonly [T, ...T[]] =>
+export const isNonEmptyArrayTyped = <T>(value: unknown): value is readonly [T, ...T[]] =>
   isArray<T>(value) && value.length > 0;
 
 export const isPositiveNumber = (value: unknown): value is number =>
@@ -673,3 +721,325 @@ export const isValidPort = (value: unknown): value is number =>
 
 export const isValidPercentage = (value: unknown): value is number =>
   isNumber(value) && value >= 0 && value <= 100;
+
+// Advanced object type guards
+export const hasOwnProperty = <T extends object, K extends PropertyKey>(
+  obj: T,
+  key: K
+): obj is T & Record<K, unknown> => {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+};
+
+export const hasProperties = <T extends object, K extends PropertyKey>(
+  obj: T,
+  keys: readonly K[]
+): obj is T & Record<K, unknown> => {
+  return keys.every(key => hasOwnProperty(obj, key));
+};
+
+export const isObjectWithKeys = <K extends PropertyKey>(
+  value: unknown,
+  keys: readonly K[]
+): value is Record<K, unknown> => {
+  return isObject(value) && hasProperties(value, keys);
+};
+
+// Safe object property access
+export const getProperty = <T extends object, K extends keyof T>(
+  obj: T,
+  key: K,
+  defaultValue?: T[K]
+): T[K] | undefined => {
+  if (hasOwnProperty(obj, key)) {
+    return obj[key];
+  }
+  return defaultValue;
+};
+
+export const getNestedProperty = (
+  obj: unknown,
+  path: string,
+  separator = '.'
+): unknown => {
+  if (!isObject(obj)) return undefined;
+
+  const keys = path.split(separator);
+  let current: unknown = obj;
+
+  for (const key of keys) {
+    if (!isObject(current) || !hasOwnProperty(current, key)) {
+      return undefined;
+    }
+    current = current[key];
+  }
+
+  return current;
+};
+
+// Type-safe object merging
+export const mergeObjects = <T extends Record<string, unknown>>(
+  target: T,
+  ...sources: Partial<T>[]
+): T => {
+  const result = { ...target };
+
+  for (const source of sources) {
+    if (isObject(source)) {
+      Object.assign(result, source);
+    }
+  }
+
+  return result;
+};
+
+// Deep object comparison
+export const deepEqual = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+
+  if (a === null || b === null || a === undefined || b === undefined) {
+    return a === b;
+  }
+
+  if (typeof a !== typeof b) return false;
+
+  if (isDate(a) && isDate(b)) {
+    return a.getTime() === b.getTime();
+  }
+
+  if (isArray(a) && isArray(b)) {
+    if (a.length !== b.length) return false;
+    return a.every((item, index) => deepEqual(item, b[index]));
+  }
+
+  if (isObject(a) && isObject(b)) {
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+
+    if (keysA.length !== keysB.length) return false;
+
+    return keysA.every(key =>
+      hasOwnProperty(b, key) && deepEqual(a[key], b[key])
+    );
+  }
+
+  return false;
+};
+
+// Schema-based validation guards
+export const createSchemaGuard = <T>(
+  schema: Record<keyof T, (value: unknown) => boolean>
+) => {
+  return (value: unknown): value is T => {
+    if (!isObject(value)) return false;
+
+    return Object.entries(schema).every(([key, validator]) => {
+      if (!hasOwnProperty(value, key)) return false;
+      return validator(value[key]);
+    });
+  };
+};
+
+// Environment-specific guards
+export const isNodeEnvironment = (): boolean => {
+  return typeof process !== 'undefined' &&
+         process.versions != null &&
+         process.versions.node != null;
+};
+
+export const isBrowserEnvironment = (): boolean => {
+  return typeof window !== 'undefined' &&
+         typeof document !== 'undefined';
+};
+
+export const isWebWorkerEnvironment = (): boolean => {
+  return typeof importScripts === 'function' &&
+         typeof globalThis !== 'undefined' &&
+         'WorkerGlobalScope' in globalThis;
+};
+
+// Type-safe casting utilities
+export const safeCast = <T>(
+  value: unknown,
+  guard: (value: unknown) => value is T,
+  errorMessage?: string
+): T => {
+  if (guard(value)) {
+    return value;
+  }
+  throw new TypeError(errorMessage || `Failed to cast value to expected type`);
+};
+
+export const tryCast = <T>(
+  value: unknown,
+  guard: (value: unknown) => value is T
+): T | null => {
+  return guard(value) ? value : null;
+};
+
+export const castWithDefault = <T>(
+  value: unknown,
+  guard: (value: unknown) => value is T,
+  defaultValue: T
+): T => {
+  return guard(value) ? value : defaultValue;
+};
+
+// Collection type guards
+export const isReadonlyArray = <T>(value: unknown): value is readonly T[] => {
+  return Array.isArray(value);
+};
+
+export const isNonEmptyArray = <T>(value: unknown): value is [T, ...T[]] => {
+  return isArray(value) && value.length > 0;
+};
+
+export const isArrayOf = <T>(
+  value: unknown,
+  itemGuard: (item: unknown) => item is T
+): value is T[] => {
+  return isArray(value) && value.every(itemGuard);
+};
+
+export const isRecordOf = <T>(
+  value: unknown,
+  valueGuard: (item: unknown) => item is T
+): value is Record<string, T> => {
+  return isObject(value) && Object.values(value).every(valueGuard);
+};
+
+// Promise and async utilities
+export const isSettledPromise = <T>(
+  value: unknown
+): value is PromiseSettledResult<T> => {
+  return isObject(value) &&
+         hasOwnProperty(value, 'status') &&
+         (value.status === 'fulfilled' || value.status === 'rejected');
+};
+
+export const isFulfilledPromise = <T>(
+  value: unknown
+): value is PromiseFulfilledResult<T> => {
+  return isSettledPromise(value) && value.status === 'fulfilled';
+};
+
+export const isRejectedPromise = (
+  value: unknown
+): value is PromiseRejectedResult => {
+  return isSettledPromise(value) && value.status === 'rejected';
+};
+
+// File system guards
+export const isAbsolutePath = (path: string): boolean => {
+  if (!isString(path)) return false;
+
+  // Unix/Linux/Mac absolute path
+  if (path.startsWith('/')) return true;
+
+  // Windows absolute path
+  if (/^[A-Za-z]:[\\\/]/.test(path)) return true;
+
+  // UNC path
+  if (path.startsWith('\\\\')) return true;
+
+  return false;
+};
+
+export const isRelativePath = (path: string): boolean => {
+  return isString(path) && !isAbsolutePath(path);
+};
+
+// Network and URL guards
+export const isHttpUrl = (value: string): boolean => {
+  if (!isValidUrl(value)) return false;
+  const url = new URL(value);
+  return url.protocol === 'http:' || url.protocol === 'https:';
+};
+
+export const isSecureUrl = (value: string): boolean => {
+  if (!isValidUrl(value)) return false;
+  const url = new URL(value);
+  return url.protocol === 'https:';
+};
+
+export const isLocalhost = (value: string): boolean => {
+  if (!isValidUrl(value)) return false;
+  const url = new URL(value);
+  return url.hostname === 'localhost' ||
+         url.hostname === '127.0.0.1' ||
+         url.hostname === '::1';
+};
+
+// Error handling guards
+export const isErrorLike = (value: unknown): value is { message: string; name?: string; stack?: string } => {
+  return isObject(value) &&
+         hasOwnProperty(value, 'message') &&
+         isString(value.message);
+};
+
+export const isHttpError = (value: unknown): value is { status: number; message: string } => {
+  return isObject(value) &&
+         hasOwnProperty(value, 'status') &&
+         hasOwnProperty(value, 'message') &&
+         isNumber(value.status) &&
+         isString(value.message);
+};
+
+// Database and API guards
+export const isGenericApiResponse = <T>(
+  value: unknown,
+  dataGuard?: (data: unknown) => data is T
+): value is { success: boolean; data?: T; error?: string } => {
+  if (!isObject(value) || !hasOwnProperty(value, 'success') || !isBoolean(value.success)) {
+    return false;
+  }
+
+  if (dataGuard && hasOwnProperty(value, 'data')) {
+    return dataGuard(value.data);
+  }
+
+  return true;
+};
+
+export const isPaginatedResponse = <T>(
+  value: unknown,
+  itemGuard?: (item: unknown) => item is T
+): value is { data: T[]; total: number; page: number; limit: number } => {
+  if (!isObject(value)) return false;
+
+  const requiredProps = ['data', 'total', 'page', 'limit'] as const;
+  if (!hasProperties(value, requiredProps)) return false;
+
+  if (!isArray(value.data) || !isNumber(value.total) ||
+      !isNumber(value.page) || !isNumber(value.limit)) {
+    return false;
+  }
+
+  if (itemGuard) {
+    return value.data.every(itemGuard);
+  }
+
+  return true;
+};
+
+// Configuration and environment guards
+export const isConfigValue = (value: unknown): value is string | number | boolean | null => {
+  return isString(value) || isNumber(value) || isBoolean(value) || isNull(value);
+};
+
+export const isEnvironmentVariables = (value: unknown): value is Record<string, string> => {
+  return isObject(value) && Object.values(value).every(isString);
+};
+
+// Utility types for better type inference
+export type TypeGuardResult<T> = T extends (value: unknown) => value is infer U ? U : never;
+
+export type AssertionFunction<T> = (value: unknown, name?: string) => asserts value is T;
+
+export type SafeParser<T> = (value: unknown, defaultValue: T) => T;
+
+export type TypeValidator<T> = {
+  guard: (value: unknown) => value is T;
+  assert: AssertionFunction<T>;
+  parse: SafeParser<T>;
+  cast: (value: unknown) => T | null;
+};

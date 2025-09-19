@@ -1,6 +1,6 @@
 /**
  * Memory Optimization - Advanced memory management and optimization
- * 
+ *
  * Provides intelligent memory optimization, garbage collection, compression,
  * and performance tuning for the AI Integration memory system.
  */
@@ -56,7 +56,10 @@ export class MemoryOptimization extends EventEmitter {
   private config: MemoryOptimizationConfig;
   private metrics: MemoryMetrics;
   private memoryEntries: Map<string, MemoryEntry> = new Map();
-  private accessLog: Map<string, { count: number; lastAccess: Date; avgTime: number }> = new Map();
+  private accessLog: Map<
+    string,
+    { count: number; lastAccess: Date; avgTime: number }
+  > = new Map();
   private compressionCache: Map<string, any> = new Map();
   private gcTimer: NodeJS.Timeout | null = null;
   private strategyLastExecuted: Map<string, Date> = new Map();
@@ -71,16 +74,16 @@ export class MemoryOptimization extends EventEmitter {
     try {
       this.startGarbageCollection();
       this.setupOptimizationStrategies();
-      
+
       return {
         success: true,
-        message: 'Memory Optimization initialized successfully'
+        message: 'Memory Optimization initialized successfully',
       };
     } catch (error) {
       return {
         success: false,
         message: `Initialization failed: ${(error as Error).message}`,
-        error
+        error,
       };
     }
   }
@@ -96,7 +99,7 @@ export class MemoryOptimization extends EventEmitter {
       fragmentationRatio: 0,
       gcFrequency: 0,
       oldestEntryAge: 0,
-      newestEntryAge: 0
+      newestEntryAge: 0,
     };
   }
 
@@ -117,12 +120,13 @@ export class MemoryOptimization extends EventEmitter {
     if (existing) {
       existing.count++;
       existing.lastAccess = new Date();
-      existing.avgTime = (existing.avgTime * (existing.count - 1) + accessTime) / existing.count;
+      existing.avgTime =
+        (existing.avgTime * (existing.count - 1) + accessTime) / existing.count;
     } else {
       this.accessLog.set(entryId, {
         count: 1,
         lastAccess: new Date(),
-        avgTime: accessTime
+        avgTime: accessTime,
       });
     }
 
@@ -134,7 +138,7 @@ export class MemoryOptimization extends EventEmitter {
    */
   async optimize(): Promise<OptimizationResult[]> {
     const results: OptimizationResult[] = [];
-    
+
     this.emit('optimization-started', this.metrics);
 
     for (const strategy of this.config.optimizationStrategies) {
@@ -146,7 +150,10 @@ export class MemoryOptimization extends EventEmitter {
     }
 
     this.updateMetrics();
-    this.emit('optimization-completed', { results, finalMetrics: this.metrics });
+    this.emit('optimization-completed', {
+      results,
+      finalMetrics: this.metrics,
+    });
 
     return results;
   }
@@ -165,27 +172,36 @@ export class MemoryOptimization extends EventEmitter {
     return strategy.trigger(this.metrics);
   }
 
-  private async executeStrategy(strategy: OptimizationStrategy): Promise<OptimizationResult> {
+  private async executeStrategy(
+    strategy: OptimizationStrategy
+  ): Promise<OptimizationResult> {
     const startTime = Date.now();
     const initialMetrics = { ...this.metrics };
 
     try {
       await strategy.action(this);
-      
+
       const executionTime = Date.now() - startTime;
       this.updateMetrics();
 
       return {
         strategy: strategy.name,
         entriesProcessed: this.memoryEntries.size,
-        bytesReclaimed: Math.max(0, initialMetrics.totalSizeBytes - this.metrics.totalSizeBytes),
+        bytesReclaimed: Math.max(
+          0,
+          initialMetrics.totalSizeBytes - this.metrics.totalSizeBytes
+        ),
         executionTimeMs: executionTime,
         metricsImprovement: {
-          totalSizeBytes: this.metrics.totalSizeBytes - initialMetrics.totalSizeBytes,
-          memoryUsageMB: this.metrics.memoryUsageMB - initialMetrics.memoryUsageMB,
-          compressionRatio: this.metrics.compressionRatio - initialMetrics.compressionRatio,
-          fragmentationRatio: this.metrics.fragmentationRatio - initialMetrics.fragmentationRatio
-        }
+          totalSizeBytes:
+            this.metrics.totalSizeBytes - initialMetrics.totalSizeBytes,
+          memoryUsageMB:
+            this.metrics.memoryUsageMB - initialMetrics.memoryUsageMB,
+          compressionRatio:
+            this.metrics.compressionRatio - initialMetrics.compressionRatio,
+          fragmentationRatio:
+            this.metrics.fragmentationRatio - initialMetrics.fragmentationRatio,
+        },
       };
     } catch (_error) {
       return {
@@ -193,7 +209,7 @@ export class MemoryOptimization extends EventEmitter {
         entriesProcessed: 0,
         bytesReclaimed: 0,
         executionTimeMs: Date.now() - startTime,
-        metricsImprovement: {}
+        metricsImprovement: {},
       };
     }
   }
@@ -207,10 +223,14 @@ export class MemoryOptimization extends EventEmitter {
 
     for (const [entryId, entry] of this.memoryEntries.entries()) {
       const entrySize = this.calculateEntrySize(entry);
-      
-      if (entrySize > compressionThreshold && !this.compressionCache.has(entryId)) {
+
+      if (
+        entrySize > compressionThreshold &&
+        !this.compressionCache.has(entryId)
+      ) {
         const compressed = await this.compressEntry(entry, compressionLevel);
-        if (compressed.size < entrySize * 0.8) { // Only keep if 20%+ reduction
+        if (compressed.size < entrySize * 0.8) {
+          // Only keep if 20%+ reduction
           this.compressionCache.set(entryId, compressed);
           compressedCount++;
         }
@@ -224,14 +244,14 @@ export class MemoryOptimization extends EventEmitter {
   private async compressEntry(entry: MemoryEntry, level: number): Promise<any> {
     // Simulate compression - in real implementation, use actual compression library
     const serialized = JSON.stringify(entry);
-    const compressionRatio = Math.max(0.3, 1 - (level * 0.2));
-    
+    const compressionRatio = Math.max(0.3, 1 - level * 0.2);
+
     return {
       compressed: serialized,
       originalSize: serialized.length,
       size: Math.floor(serialized.length * compressionRatio),
       algorithm: `level-${level}`,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
@@ -241,12 +261,15 @@ export class MemoryOptimization extends EventEmitter {
   async garbageCollect(): Promise<number> {
     let collectedCount = 0;
     const now = new Date();
-    
-    for (const policy of this.config.retentionPolicies.sort((a, b) => b.priority - a.priority)) {
+
+    for (const policy of this.config.retentionPolicies.sort(
+      (a, b) => b.priority - a.priority
+    )) {
       for (const [entryId, entry] of this.memoryEntries.entries()) {
         if (policy.condition(entry)) {
-          const ageInDays = (now.getTime() - entry.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-          
+          const ageInDays =
+            (now.getTime() - entry.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+
           if (ageInDays > policy.retentionDays) {
             this.memoryEntries.delete(entryId);
             this.accessLog.delete(entryId);
@@ -259,7 +282,7 @@ export class MemoryOptimization extends EventEmitter {
 
     this.metrics.gcFrequency++;
     this.emit('garbage-collection-completed', { collectedCount });
-    
+
     return collectedCount;
   }
 
@@ -269,16 +292,16 @@ export class MemoryOptimization extends EventEmitter {
   async defragment(): Promise<number> {
     // Simulate defragmentation by reorganizing entries
     const entries = Array.from(this.memoryEntries.entries());
-    
+
     // Sort by access frequency and size for optimal layout
     entries.sort(([aId, aEntry], [bId, bEntry]) => {
       const aAccess = this.accessLog.get(aId)?.count || 0;
       const bAccess = this.accessLog.get(bId)?.count || 0;
       const aSize = this.calculateEntrySize(aEntry);
       const bSize = this.calculateEntrySize(bEntry);
-      
+
       // Prioritize frequently accessed, smaller entries
-      return (bAccess / bSize) - (aAccess / aSize);
+      return bAccess / bSize - aAccess / aSize;
     });
 
     // Rebuild the map with optimized layout
@@ -289,7 +312,7 @@ export class MemoryOptimization extends EventEmitter {
 
     const fragmentationReduction = Math.random() * 0.3 + 0.1; // 10-40% reduction
     this.emit('defragmentation-completed', { fragmentationReduction });
-    
+
     return entries.length;
   }
 
@@ -302,30 +325,30 @@ export class MemoryOptimization extends EventEmitter {
       coldEntries: [],
       accessDistribution: {},
       temporalPatterns: {},
-      sizeDistribution: {}
+      sizeDistribution: {},
     };
 
     // Identify hot and cold entries
     const accessThreshold = this.calculateAccessThreshold();
-    
+
     for (const [entryId, entry] of this.memoryEntries.entries()) {
       const accessInfo = this.accessLog.get(entryId);
       const accessCount = accessInfo?.count || 0;
       const entrySize = this.calculateEntrySize(entry);
-      
+
       if (accessCount > accessThreshold) {
         patterns.hotEntries.push({
           id: entryId,
           accessCount,
           size: entrySize,
           lastAccess: accessInfo?.lastAccess,
-          avgAccessTime: accessInfo?.avgTime
+          avgAccessTime: accessInfo?.avgTime,
         });
       } else if (accessCount === 0) {
         patterns.coldEntries.push({
           id: entryId,
           age: (Date.now() - entry.createdAt.getTime()) / (1000 * 60 * 60 * 24),
-          size: entrySize
+          size: entrySize,
         });
       }
     }
@@ -338,16 +361,20 @@ export class MemoryOptimization extends EventEmitter {
   }
 
   private calculateAccessThreshold(): number {
-    const accessCounts = Array.from(this.accessLog.values()).map(info => info.count);
+    const accessCounts = Array.from(this.accessLog.values()).map(
+      info => info.count
+    );
     if (accessCounts.length === 0) return 0;
-    
+
     const sum = accessCounts.reduce((a, b) => a + b, 0);
     const mean = sum / accessCounts.length;
-    
+
     // Threshold is mean + standard deviation
-    const variance = accessCounts.reduce((sum, count) => sum + Math.pow(count - mean, 2), 0) / accessCounts.length;
+    const variance =
+      accessCounts.reduce((sum, count) => sum + Math.pow(count - mean, 2), 0) /
+      accessCounts.length;
     const stdDev = Math.sqrt(variance);
-    
+
     return Math.floor(mean + stdDev);
   }
 
@@ -356,7 +383,7 @@ export class MemoryOptimization extends EventEmitter {
    */
   async preloadOptimizations(): Promise<void> {
     const patterns = this.analyzeAccessPatterns();
-    
+
     // Preload hot entries into compression cache
     for (const hotEntry of patterns.hotEntries.slice(0, 100)) {
       const entry = this.memoryEntries.get(hotEntry.id);
@@ -366,7 +393,9 @@ export class MemoryOptimization extends EventEmitter {
       }
     }
 
-    this.emit('preload-completed', { preloadedCount: Math.min(patterns.hotEntries.length, 100) });
+    this.emit('preload-completed', {
+      preloadedCount: Math.min(patterns.hotEntries.length, 100),
+    });
   }
 
   private calculateEntrySize(entry: MemoryEntry): number {
@@ -378,35 +407,57 @@ export class MemoryOptimization extends EventEmitter {
   private updateMetrics(): void {
     const entries = Array.from(this.memoryEntries.values());
     const now = new Date();
-    
+
     this.metrics.totalEntries = entries.length;
-    this.metrics.totalSizeBytes = entries.reduce((sum, entry) => sum + this.calculateEntrySize(entry), 0);
+    this.metrics.totalSizeBytes = entries.reduce(
+      (sum, entry) => sum + this.calculateEntrySize(entry),
+      0
+    );
     this.metrics.memoryUsageMB = this.metrics.totalSizeBytes / (1024 * 1024);
-    
+
     // Compression ratio
-    const compressedSize = Array.from(this.compressionCache.values()).reduce((sum, compressed) => sum + compressed.size, 0);
-    const originalCompressedSize = Array.from(this.compressionCache.values()).reduce((sum, compressed) => sum + compressed.originalSize, 0);
-    this.metrics.compressionRatio = originalCompressedSize > 0 ? compressedSize / originalCompressedSize : 1;
-    
+    const compressedSize = Array.from(this.compressionCache.values()).reduce(
+      (sum, compressed) => sum + compressed.size,
+      0
+    );
+    const originalCompressedSize = Array.from(
+      this.compressionCache.values()
+    ).reduce((sum, compressed) => sum + compressed.originalSize, 0);
+    this.metrics.compressionRatio =
+      originalCompressedSize > 0 ? compressedSize / originalCompressedSize : 1;
+
     // Hit rate (entries found in cache vs total requests)
-    const totalAccess = Array.from(this.accessLog.values()).reduce((sum, info) => sum + info.count, 0);
-    const cacheHits = Array.from(this.accessLog.entries()).filter(([id]) => this.compressionCache.has(id)).length;
+    const totalAccess = Array.from(this.accessLog.values()).reduce(
+      (sum, info) => sum + info.count,
+      0
+    );
+    const cacheHits = Array.from(this.accessLog.entries()).filter(([id]) =>
+      this.compressionCache.has(id)
+    ).length;
     this.metrics.hitRate = totalAccess > 0 ? cacheHits / totalAccess : 1;
-    
+
     // Average access time
-    const accessTimes = Array.from(this.accessLog.values()).map(info => info.avgTime).filter(time => time > 0);
-    this.metrics.avgAccessTime = accessTimes.length > 0 ? accessTimes.reduce((a, b) => a + b) / accessTimes.length : 0;
-    
+    const accessTimes = Array.from(this.accessLog.values())
+      .map(info => info.avgTime)
+      .filter(time => time > 0);
+    this.metrics.avgAccessTime =
+      accessTimes.length > 0
+        ? accessTimes.reduce((a, b) => a + b) / accessTimes.length
+        : 0;
+
     // Age statistics
     if (entries.length > 0) {
-      const ages = entries.map(entry => (now.getTime() - entry.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      const ages = entries.map(
+        entry =>
+          (now.getTime() - entry.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
       this.metrics.oldestEntryAge = Math.max(...ages);
       this.metrics.newestEntryAge = Math.min(...ages);
     }
-    
+
     // Fragmentation (simplified calculation)
     this.metrics.fragmentationRatio = Math.random() * 0.3; // Placeholder
-    
+
     this.emit('metrics-updated', this.metrics);
   }
 
@@ -438,28 +489,38 @@ export class MemoryOptimization extends EventEmitter {
    */
   getRecommendations(): string[] {
     const recommendations: string[] = [];
-    
+
     if (this.metrics.memoryUsageMB > this.config.maxMemoryUsage * 0.9) {
-      recommendations.push('Memory usage is critically high. Consider aggressive garbage collection.');
+      recommendations.push(
+        'Memory usage is critically high. Consider aggressive garbage collection.'
+      );
     }
-    
+
     if (this.metrics.compressionRatio > 0.8) {
-      recommendations.push('Compression ratio is low. Consider stronger compression algorithms.');
+      recommendations.push(
+        'Compression ratio is low. Consider stronger compression algorithms.'
+      );
     }
-    
+
     if (this.metrics.hitRate < 0.5) {
-      recommendations.push('Cache hit rate is low. Consider preloading hot entries.');
+      recommendations.push(
+        'Cache hit rate is low. Consider preloading hot entries.'
+      );
     }
-    
+
     if (this.metrics.fragmentationRatio > 0.3) {
-      recommendations.push('Memory fragmentation is high. Consider defragmentation.');
+      recommendations.push(
+        'Memory fragmentation is high. Consider defragmentation.'
+      );
     }
-    
+
     const patterns = this.analyzeAccessPatterns();
     if (patterns.coldEntries.length > this.metrics.totalEntries * 0.5) {
-      recommendations.push('Many entries are never accessed. Consider more aggressive retention policies.');
+      recommendations.push(
+        'Many entries are never accessed. Consider more aggressive retention policies.'
+      );
     }
-    
+
     return recommendations;
   }
 
@@ -467,15 +528,15 @@ export class MemoryOptimization extends EventEmitter {
     if (this.gcTimer) {
       clearInterval(this.gcTimer);
     }
-    
+
     this.memoryEntries.clear();
     this.accessLog.clear();
     this.compressionCache.clear();
     this.strategyLastExecuted.clear();
-    
+
     return {
       success: true,
-      message: 'Memory Optimization shutdown completed'
+      message: 'Memory Optimization shutdown completed',
     };
   }
 }

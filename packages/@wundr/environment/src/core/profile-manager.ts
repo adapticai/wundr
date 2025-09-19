@@ -110,14 +110,14 @@ export class ProfileManager {
               'bradlc.vscode-tailwindcss',
               'ms-vscode-remote.remote-containers',
               'GitHub.copilot',
-              'ms-vscode.vscode-eslint'
+              'ms-vscode.vscode-eslint',
             ],
             settings: {
               'editor.formatOnSave': true,
               'editor.defaultFormatter': 'esbenp.prettier-vscode',
-              'files.autoSave': 'onFocusChange'
-            }
-          }
+              'files.autoSave': 'onFocusChange',
+            },
+          },
         },
         {
           name: 'claude-code',
@@ -130,27 +130,28 @@ export class ProfileManager {
           required: true,
           installer: 'brew',
           dependencies: ['git'],
-        }
+        },
       ],
       preferences: {
         editor: 'vscode',
         shell: 'zsh',
         packageManager: 'pnpm',
-        theme: 'dark'
+        theme: 'dark',
       },
       agentConfig: {
         claudeCode: true,
         claudeFlow: true,
         mcpTools: ['claude-flow'],
         swarmCapabilities: true,
-        neuralFeatures: true
-      }
+        neuralFeatures: true,
+      },
     };
 
     // AI Agent Profile
     const aiAgentProfile: ProfileTemplate = {
       name: 'AI Agent Environment',
-      description: 'Optimized environment for AI agents and automated workflows',
+      description:
+        'Optimized environment for AI agents and automated workflows',
       profile: 'ai-agent',
       tools: [
         {
@@ -198,32 +199,33 @@ export class ProfileManager {
           required: true,
           installer: 'brew',
           dependencies: ['git'],
-        }
+        },
       ],
       preferences: {
         editor: 'vscode',
         shell: 'bash',
         packageManager: 'pnpm',
-        theme: 'dark'
+        theme: 'dark',
       },
       agentConfig: {
         claudeCode: true,
         claudeFlow: true,
         mcpTools: ['claude-flow', 'wundr-toolkit'],
         swarmCapabilities: true,
-        neuralFeatures: true
+        neuralFeatures: true,
       },
       customScripts: [
         'setup-swarm-topology.sh',
         'configure-neural-training.sh',
-        'optimize-agent-performance.sh'
-      ]
+        'optimize-agent-performance.sh',
+      ],
     };
 
     // CI Runner Profile
     const ciRunnerProfile: ProfileTemplate = {
       name: 'CI/CD Runner',
-      description: 'Minimal environment for CI/CD pipelines and automated builds',
+      description:
+        'Minimal environment for CI/CD pipelines and automated builds',
       profile: 'ci-runner',
       tools: [
         {
@@ -259,21 +261,21 @@ export class ProfileManager {
           required: true,
           installer: 'brew',
           dependencies: ['git'],
-        }
+        },
       ],
       preferences: {
         editor: 'vim',
         shell: 'bash',
         packageManager: 'pnpm',
-        theme: 'auto'
+        theme: 'auto',
       },
       agentConfig: {
         claudeCode: false,
         claudeFlow: false,
         mcpTools: [],
         swarmCapabilities: false,
-        neuralFeatures: false
-      }
+        neuralFeatures: false,
+      },
     };
 
     this.profiles.set('human', humanProfile);

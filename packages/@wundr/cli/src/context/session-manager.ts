@@ -27,8 +27,22 @@ export interface UserPreferences {
  */
 export interface ProjectContext {
   rootPath: string;
-  projectType: 'nodejs' | 'react' | 'vue' | 'angular' | 'python' | 'java' | 'unknown';
-  packageManager: 'npm' | 'yarn' | 'pnpm' | 'pip' | 'maven' | 'gradle' | 'unknown';
+  projectType:
+    | 'nodejs'
+    | 'react'
+    | 'vue'
+    | 'angular'
+    | 'python'
+    | 'java'
+    | 'unknown';
+  packageManager:
+    | 'npm'
+    | 'yarn'
+    | 'pnpm'
+    | 'pip'
+    | 'maven'
+    | 'gradle'
+    | 'unknown';
   gitRepository?: {
     remote: string;
     branch: string;
@@ -123,7 +137,7 @@ export class SessionManager extends EventEmitter {
       autoDetectProjects: true,
       enableContextLearning: true,
       backupInterval: 15, // 15 minutes
-      ...config
+      ...config,
     };
 
     this.activeSessions = new Map();
@@ -140,8 +154,10 @@ export class SessionManager extends EventEmitter {
     workspacePath?: string,
     sessionId?: string
   ): Promise<string> {
-    const id = sessionId || `session_${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+    const id =
+      sessionId ||
+      `session_${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     // Check if session already exists
     if (this.activeSessions.has(id)) {
       await this.resumeSession(id);
@@ -150,7 +166,7 @@ export class SessionManager extends EventEmitter {
 
     const workspace = workspacePath || process.cwd();
     const projectContext = await this.detectProjectContext(workspace);
-    
+
     const session: SessionState = {
       id,
       userId,
@@ -161,7 +177,7 @@ export class SessionManager extends EventEmitter {
       projectContext,
       temporaryData: {},
       created: new Date(),
-      lastAccessed: new Date()
+      lastAccessed: new Date(),
     };
 
     // Load workspace if it exists
@@ -175,7 +191,7 @@ export class SessionManager extends EventEmitter {
     this.currentSessionId = id;
 
     await this.persistSession(session);
-    
+
     this.emit('session_created', { sessionId: id, userId, workspace });
     logger.debug(`Created session: ${id} for user: ${userId}`);
 
@@ -187,10 +203,10 @@ export class SessionManager extends EventEmitter {
    */
   async resumeSession(sessionId: string): Promise<SessionState> {
     let session = this.activeSessions.get(sessionId);
-    
+
     if (!session) {
       // Try to load from persistence
-      session = await this.loadSession(sessionId) || undefined;
+      session = (await this.loadSession(sessionId)) || undefined;
       if (!session) {
         throw new Error(`Session not found: ${sessionId}`);
       }
@@ -202,11 +218,13 @@ export class SessionManager extends EventEmitter {
 
     // Refresh project context
     if (session.projectContext) {
-      session.projectContext = await this.detectProjectContext(session.currentWorkspace);
+      session.projectContext = await this.detectProjectContext(
+        session.currentWorkspace
+      );
     }
 
     await this.persistSession(session);
-    
+
     this.emit('session_resumed', { sessionId, session });
     logger.debug(`Resumed session: ${sessionId}`);
 
@@ -245,7 +263,7 @@ export class SessionManager extends EventEmitter {
     session.contextStack.push({
       type: contextType,
       context: contextData,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     // Limit context stack size
@@ -265,7 +283,7 @@ export class SessionManager extends EventEmitter {
 
     session.lastAccessed = new Date();
     await this.persistSession(session);
-    
+
     this.emit('context_updated', { sessionId, contextType, contextData });
   }
 
@@ -287,7 +305,7 @@ export class SessionManager extends EventEmitter {
       command,
       timestamp: new Date(),
       success,
-      duration
+      duration,
     });
 
     // Limit history size
@@ -328,7 +346,10 @@ export class SessionManager extends EventEmitter {
       }
     }
 
-    this.emit('preferences_updated', { userId, preferences: updatedPreferences });
+    this.emit('preferences_updated', {
+      userId,
+      preferences: updatedPreferences,
+    });
     logger.debug(`Updated preferences for user: ${userId}`);
   }
 
@@ -345,7 +366,7 @@ export class SessionManager extends EventEmitter {
       type: config.type || 'unknown',
       settings: config.settings || {},
       lastAccessed: new Date(),
-      bookmarked: config.bookmarked || false
+      bookmarked: config.bookmarked || false,
     };
 
     this.workspaces.set(workspacePath, workspace);
@@ -359,8 +380,9 @@ export class SessionManager extends EventEmitter {
    * Get workspace suggestions based on recent activity
    */
   getWorkspaceSuggestions(limit: number = 5): WorkspaceConfig[] {
-    const workspaces = Array.from(this.workspaces.values())
-      .sort((a, b) => b.lastAccessed.getTime() - a.lastAccessed.getTime());
+    const workspaces = Array.from(this.workspaces.values()).sort(
+      (a, b) => b.lastAccessed.getTime() - a.lastAccessed.getTime()
+    );
 
     return workspaces.slice(0, limit);
   }
@@ -389,15 +411,16 @@ export class SessionManager extends EventEmitter {
 
     if (query.command) {
       const searchTerm = query.command.toLowerCase();
-      history = history.filter(cmd => 
+      history = history.filter(cmd =>
         cmd.command.toLowerCase().includes(searchTerm)
       );
     }
 
     if (query.timeRange) {
-      history = history.filter(cmd => 
-        cmd.timestamp >= query.timeRange!.from && 
-        cmd.timestamp <= query.timeRange!.to
+      history = history.filter(
+        cmd =>
+          cmd.timestamp >= query.timeRange!.from &&
+          cmd.timestamp <= query.timeRange!.to
       );
     }
 
@@ -418,12 +441,14 @@ export class SessionManager extends EventEmitter {
   async getContextualSuggestions(
     sessionId: string,
     limit: number = 5
-  ): Promise<Array<{
-    type: 'command' | 'workspace' | 'conversation';
-    suggestion: string;
-    description: string;
-    confidence: number;
-  }>> {
+  ): Promise<
+    Array<{
+      type: 'command' | 'workspace' | 'conversation';
+      suggestion: string;
+      description: string;
+      confidence: number;
+    }>
+  > {
     const session = this.activeSessions.get(sessionId);
     if (!session) return [];
 
@@ -443,7 +468,10 @@ export class SessionManager extends EventEmitter {
     for (const cmd of recentCommands) {
       const baseCommand = cmd.command.split(' ')[0];
       if (baseCommand) {
-        commandFrequency.set(baseCommand, (commandFrequency.get(baseCommand) || 0) + 1);
+        commandFrequency.set(
+          baseCommand,
+          (commandFrequency.get(baseCommand) || 0) + 1
+        );
       }
     }
 
@@ -452,7 +480,7 @@ export class SessionManager extends EventEmitter {
         type: 'command',
         suggestion: command,
         description: `Recently used command (${frequency} times)`,
-        confidence: Math.min(0.9, frequency * 0.2)
+        confidence: Math.min(0.9, frequency * 0.2),
       });
     }
 
@@ -464,7 +492,7 @@ export class SessionManager extends EventEmitter {
           type: 'workspace',
           suggestion: workspace.path,
           description: `Switch to ${workspace.name}`,
-          confidence: 0.6
+          confidence: 0.6,
         });
       }
     }
@@ -506,7 +534,7 @@ export class SessionManager extends EventEmitter {
 
     for (const [sessionId, session] of this.activeSessions) {
       const timeSinceAccess = now.getTime() - session.lastAccessed.getTime();
-      
+
       if (timeSinceAccess > timeoutMs) {
         expiredSessions.push(sessionId);
       }
@@ -514,18 +542,19 @@ export class SessionManager extends EventEmitter {
 
     for (const sessionId of expiredSessions) {
       const session = this.activeSessions.get(sessionId)!;
-      
+
       // Final persist before cleanup
       await this.persistSession(session);
-      
+
       this.activeSessions.delete(sessionId);
       this.emit('session_expired', { sessionId });
     }
 
     // Limit active sessions
     if (this.activeSessions.size > this.config.maxSessions) {
-      const sessionsByAccess = Array.from(this.activeSessions.entries())
-        .sort(([,a], [,b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime());
+      const sessionsByAccess = Array.from(this.activeSessions.entries()).sort(
+        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime()
+      );
 
       const excessCount = this.activeSessions.size - this.config.maxSessions;
       const toRemove = sessionsByAccess.slice(0, excessCount);
@@ -553,14 +582,19 @@ export class SessionManager extends EventEmitter {
     workspaceCount: number;
   } {
     const activeSessions = this.activeSessions.size;
-    const totalCommands = Array.from(this.activeSessions.values())
-      .reduce((sum, session) => sum + session.recentCommands.length, 0);
+    const totalCommands = Array.from(this.activeSessions.values()).reduce(
+      (sum, session) => sum + session.recentCommands.length,
+      0
+    );
 
-    const sessionDurations = Array.from(this.activeSessions.values())
-      .map(session => session.lastAccessed.getTime() - session.created.getTime());
-    const averageSessionDuration = sessionDurations.length > 0 
-      ? sessionDurations.reduce((sum, duration) => sum + duration, 0) / sessionDurations.length
-      : 0;
+    const sessionDurations = Array.from(this.activeSessions.values()).map(
+      session => session.lastAccessed.getTime() - session.created.getTime()
+    );
+    const averageSessionDuration =
+      sessionDurations.length > 0
+        ? sessionDurations.reduce((sum, duration) => sum + duration, 0) /
+          sessionDurations.length
+        : 0;
 
     // Command frequency analysis
     const commandCounts = new Map<string, number>();
@@ -568,7 +602,10 @@ export class SessionManager extends EventEmitter {
       for (const cmd of session.recentCommands) {
         const baseCommand = cmd.command.split(' ')[0];
         if (baseCommand) {
-          commandCounts.set(baseCommand, (commandCounts.get(baseCommand) || 0) + 1);
+          commandCounts.set(
+            baseCommand,
+            (commandCounts.get(baseCommand) || 0) + 1
+          );
         }
       }
     }
@@ -583,7 +620,7 @@ export class SessionManager extends EventEmitter {
       totalCommands,
       averageSessionDuration,
       mostUsedCommands,
-      workspaceCount: this.workspaces.size
+      workspaceCount: this.workspaces.size,
     };
   }
 
@@ -606,25 +643,33 @@ export class SessionManager extends EventEmitter {
 
   private startBackgroundTasks(): void {
     // Periodic backup
-    this.backupTimer = setInterval(async () => {
-      try {
-        await this.backupActiveSessions();
-      } catch (error) {
-        logger.error('Session backup failed:', error);
-      }
-    }, this.config.backupInterval * 60 * 1000);
+    this.backupTimer = setInterval(
+      async () => {
+        try {
+          await this.backupActiveSessions();
+        } catch (error) {
+          logger.error('Session backup failed:', error);
+        }
+      },
+      this.config.backupInterval * 60 * 1000
+    );
 
     // Periodic cleanup
-    this.cleanupTimer = setInterval(async () => {
-      try {
-        await this.cleanupSessions();
-      } catch (error) {
-        logger.error('Session cleanup failed:', error);
-      }
-    }, 30 * 60 * 1000); // Every 30 minutes
+    this.cleanupTimer = setInterval(
+      async () => {
+        try {
+          await this.cleanupSessions();
+        } catch (error) {
+          logger.error('Session cleanup failed:', error);
+        }
+      },
+      30 * 60 * 1000
+    ); // Every 30 minutes
   }
 
-  private async detectProjectContext(workspacePath: string): Promise<ProjectContext | undefined> {
+  private async detectProjectContext(
+    workspacePath: string
+  ): Promise<ProjectContext | undefined> {
     if (!this.config.autoDetectProjects) return undefined;
 
     try {
@@ -634,7 +679,7 @@ export class SessionManager extends EventEmitter {
         packageManager: 'unknown',
         dependencies: [],
         devDependencies: [],
-        scripts: {}
+        scripts: {},
       };
 
       // Detect project type and package manager
@@ -642,7 +687,9 @@ export class SessionManager extends EventEmitter {
       if (await fs.pathExists(packageJsonPath)) {
         const packageJson = await fs.readJson(packageJsonPath);
         context.dependencies = Object.keys(packageJson.dependencies || {});
-        context.devDependencies = Object.keys(packageJson.devDependencies || {});
+        context.devDependencies = Object.keys(
+          packageJson.devDependencies || {}
+        );
         context.scripts = packageJson.scripts || {};
 
         // Detect project type from dependencies
@@ -661,7 +708,9 @@ export class SessionManager extends EventEmitter {
           context.packageManager = 'pnpm';
         } else if (await fs.pathExists(path.join(workspacePath, 'yarn.lock'))) {
           context.packageManager = 'yarn';
-        } else if (await fs.pathExists(path.join(workspacePath, 'package-lock.json'))) {
+        } else if (
+          await fs.pathExists(path.join(workspacePath, 'package-lock.json'))
+        ) {
           context.packageManager = 'npm';
         }
       }
@@ -673,7 +722,9 @@ export class SessionManager extends EventEmitter {
       } else if (await fs.pathExists(path.join(workspacePath, 'pom.xml'))) {
         context.projectType = 'java';
         context.packageManager = 'maven';
-      } else if (await fs.pathExists(path.join(workspacePath, 'build.gradle'))) {
+      } else if (
+        await fs.pathExists(path.join(workspacePath, 'build.gradle'))
+      ) {
         context.projectType = 'java';
         context.packageManager = 'gradle';
       }
@@ -685,20 +736,21 @@ export class SessionManager extends EventEmitter {
       }
 
       return context;
-
     } catch (error) {
       logger.debug('Failed to detect project context:', error);
       return undefined;
     }
   }
 
-  private async getGitInfo(workspacePath: string): Promise<ProjectContext['gitRepository']> {
+  private async getGitInfo(
+    workspacePath: string
+  ): Promise<ProjectContext['gitRepository']> {
     // Simplified git info extraction
     return {
       remote: 'origin',
       branch: 'main',
       status: 'clean',
-      hasUncommittedChanges: false
+      hasUncommittedChanges: false,
     };
   }
 
@@ -714,13 +766,17 @@ export class SessionManager extends EventEmitter {
       verbosity: 'normal',
       aliases: {},
       favorites: [],
-      workspacePreferences: {}
+      workspacePreferences: {},
     };
   }
 
   private async loadUserPreferences(userId: string): Promise<UserPreferences> {
-    const prefsPath = path.join(this.config.persistencePath, 'users', `${userId}.json`);
-    
+    const prefsPath = path.join(
+      this.config.persistencePath,
+      'users',
+      `${userId}.json`
+    );
+
     if (await fs.pathExists(prefsPath)) {
       try {
         const saved = await fs.readJson(prefsPath);
@@ -729,25 +785,38 @@ export class SessionManager extends EventEmitter {
         logger.warn(`Failed to load preferences for ${userId}:`, error);
       }
     }
-    
+
     return this.getDefaultPreferences();
   }
 
-  private async saveUserPreferences(userId: string, preferences: UserPreferences): Promise<void> {
-    const prefsPath = path.join(this.config.persistencePath, 'users', `${userId}.json`);
+  private async saveUserPreferences(
+    userId: string,
+    preferences: UserPreferences
+  ): Promise<void> {
+    const prefsPath = path.join(
+      this.config.persistencePath,
+      'users',
+      `${userId}.json`
+    );
     await fs.ensureDir(path.dirname(prefsPath));
     await fs.writeJson(prefsPath, preferences, { spaces: 2 });
   }
 
   private async persistSession(session: SessionState): Promise<void> {
-    const sessionPath = path.join(this.config.persistencePath, `${session.id}.json`);
+    const sessionPath = path.join(
+      this.config.persistencePath,
+      `${session.id}.json`
+    );
     const serialized = this.serializeSession(session);
     await fs.writeJson(sessionPath, serialized, { spaces: 2 });
   }
 
   private async loadSession(sessionId: string): Promise<SessionState | null> {
-    const sessionPath = path.join(this.config.persistencePath, `${sessionId}.json`);
-    
+    const sessionPath = path.join(
+      this.config.persistencePath,
+      `${sessionId}.json`
+    );
+
     if (await fs.pathExists(sessionPath)) {
       try {
         const data = await fs.readJson(sessionPath);
@@ -756,7 +825,7 @@ export class SessionManager extends EventEmitter {
         logger.warn(`Failed to load session ${sessionId}:`, error);
       }
     }
-    
+
     return null;
   }
 
@@ -767,19 +836,24 @@ export class SessionManager extends EventEmitter {
       lastAccessed: session.lastAccessed.toISOString(),
       recentCommands: session.recentCommands.map(cmd => ({
         ...cmd,
-        timestamp: cmd.timestamp.toISOString()
+        timestamp: cmd.timestamp.toISOString(),
       })),
       contextStack: session.contextStack.map(ctx => ({
         ...ctx,
-        timestamp: ctx.timestamp.toISOString()
+        timestamp: ctx.timestamp.toISOString(),
       })),
-      projectContext: session.projectContext ? {
-        ...session.projectContext,
-        lastAnalysis: session.projectContext.lastAnalysis ? {
-          ...session.projectContext.lastAnalysis,
-          timestamp: session.projectContext.lastAnalysis.timestamp.toISOString()
-        } : undefined
-      } : undefined
+      projectContext: session.projectContext
+        ? {
+            ...session.projectContext,
+            lastAnalysis: session.projectContext.lastAnalysis
+              ? {
+                  ...session.projectContext.lastAnalysis,
+                  timestamp:
+                    session.projectContext.lastAnalysis.timestamp.toISOString(),
+                }
+              : undefined,
+          }
+        : undefined,
     };
   }
 
@@ -790,26 +864,37 @@ export class SessionManager extends EventEmitter {
       lastAccessed: new Date(data.lastAccessed),
       recentCommands: data.recentCommands.map((cmd: any) => ({
         ...cmd,
-        timestamp: new Date(cmd.timestamp)
+        timestamp: new Date(cmd.timestamp),
       })),
       contextStack: data.contextStack.map((ctx: any) => ({
         ...ctx,
-        timestamp: new Date(ctx.timestamp)
+        timestamp: new Date(ctx.timestamp),
       })),
-      projectContext: data.projectContext ? {
-        ...data.projectContext,
-        lastAnalysis: data.projectContext.lastAnalysis ? {
-          ...data.projectContext.lastAnalysis,
-          timestamp: new Date(data.projectContext.lastAnalysis.timestamp)
-        } : undefined
-      } : undefined
+      projectContext: data.projectContext
+        ? {
+            ...data.projectContext,
+            lastAnalysis: data.projectContext.lastAnalysis
+              ? {
+                  ...data.projectContext.lastAnalysis,
+                  timestamp: new Date(
+                    data.projectContext.lastAnalysis.timestamp
+                  ),
+                }
+              : undefined,
+          }
+        : undefined,
     };
   }
 
-  private async loadWorkspace(workspacePath: string): Promise<WorkspaceConfig | null> {
+  private async loadWorkspace(
+    workspacePath: string
+  ): Promise<WorkspaceConfig | null> {
     const workspacesDir = path.join(this.config.persistencePath, 'workspaces');
-    const workspaceFile = path.join(workspacesDir, `${Buffer.from(workspacePath).toString('base64')}.json`);
-    
+    const workspaceFile = path.join(
+      workspacesDir,
+      `${Buffer.from(workspacePath).toString('base64')}.json`
+    );
+
     if (await fs.pathExists(workspaceFile)) {
       try {
         const data = await fs.readJson(workspaceFile);
@@ -819,27 +904,34 @@ export class SessionManager extends EventEmitter {
         logger.warn(`Failed to load workspace ${workspacePath}:`, error);
       }
     }
-    
+
     return null;
   }
 
   private async saveWorkspace(workspace: WorkspaceConfig): Promise<void> {
     const workspacesDir = path.join(this.config.persistencePath, 'workspaces');
-    const workspaceFile = path.join(workspacesDir, `${Buffer.from(workspace.path).toString('base64')}.json`);
-    
+    const workspaceFile = path.join(
+      workspacesDir,
+      `${Buffer.from(workspace.path).toString('base64')}.json`
+    );
+
     await fs.ensureDir(workspacesDir);
-    await fs.writeJson(workspaceFile, {
-      ...workspace,
-      lastAccessed: workspace.lastAccessed.toISOString()
-    }, { spaces: 2 });
+    await fs.writeJson(
+      workspaceFile,
+      {
+        ...workspace,
+        lastAccessed: workspace.lastAccessed.toISOString(),
+      },
+      { spaces: 2 }
+    );
   }
 
   private async loadAllWorkspaces(): Promise<void> {
     const workspacesDir = path.join(this.config.persistencePath, 'workspaces');
-    
+
     if (await fs.pathExists(workspacesDir)) {
       const files = await fs.readdir(workspacesDir);
-      
+
       for (const file of files) {
         if (file.endsWith('.json')) {
           try {
@@ -858,14 +950,14 @@ export class SessionManager extends EventEmitter {
     for (const session of this.activeSessions.values()) {
       await this.persistSession(session);
     }
-    
+
     logger.debug(`Backed up ${this.activeSessions.size} active sessions`);
   }
 
   private async analyzeCommandPatterns(session: SessionState): Promise<void> {
     // Simple pattern analysis for learning user behavior
     const recentCommands = session.recentCommands.slice(-10);
-    
+
     if (recentCommands.length >= 3) {
       // Look for command sequences
       const sequences: string[] = [];
@@ -876,16 +968,16 @@ export class SessionManager extends EventEmitter {
           sequences.push(`${current.command} -> ${next.command}`);
         }
       }
-      
+
       // Store patterns in temporary data for future suggestions
       if (!session.temporaryData['commandPatterns']) {
         session.temporaryData['commandPatterns'] = [];
       }
-      
+
       session.temporaryData['commandPatterns'].push(...sequences);
-      
+
       // Keep only recent patterns
-      session.temporaryData['commandPatterns'] = 
+      session.temporaryData['commandPatterns'] =
         session.temporaryData['commandPatterns'].slice(-20);
     }
   }
@@ -899,7 +991,7 @@ export class SessionManager extends EventEmitter {
         cmd.timestamp.toISOString(),
         `"${cmd.command.replace(/"/g, '""')}"`,
         cmd.success.toString(),
-        cmd.duration.toString()
+        cmd.duration.toString(),
       ]);
     });
 
@@ -913,11 +1005,11 @@ export class SessionManager extends EventEmitter {
     if (this.backupTimer) {
       clearInterval(this.backupTimer);
     }
-    
+
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     this.activeSessions.clear();
     this.workspaces.clear();
     this.removeAllListeners();

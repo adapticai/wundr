@@ -11,38 +11,50 @@ const WundrConfigSchema = z.object({
   version: z.string(),
   defaultMode: z.enum(['cli', 'interactive', 'chat', 'tui']).default('cli'),
   plugins: z.array(z.string()).default([]),
-  integrations: z.object({
-    github: z.object({
-      token: z.string(),
-      owner: z.string(),
-      repo: z.string(),
-      webhooks: z.boolean().optional()
-    }).optional(),
-    slack: z.object({
-      token: z.string(),
-      channel: z.string(),
-      webhooks: z.boolean().optional()
-    }).optional(),
-    jira: z.object({
-      url: z.string(),
-      email: z.string(),
-      token: z.string()
-    }).optional()
-  }).default({}),
+  integrations: z
+    .object({
+      github: z
+        .object({
+          token: z.string(),
+          owner: z.string(),
+          repo: z.string(),
+          webhooks: z.boolean().optional(),
+        })
+        .optional(),
+      slack: z
+        .object({
+          token: z.string(),
+          channel: z.string(),
+          webhooks: z.boolean().optional(),
+        })
+        .optional(),
+      jira: z
+        .object({
+          url: z.string(),
+          email: z.string(),
+          token: z.string(),
+        })
+        .optional(),
+    })
+    .default({}),
   ai: z.object({
     provider: z.string().default('claude'),
     model: z.string().default('claude-3'),
-    apiKey: z.string().optional()
+    apiKey: z.string().optional(),
   }),
   analysis: z.object({
-    patterns: z.array(z.string()).default(['**/*.ts', '**/*.js', '**/*.tsx', '**/*.jsx']),
-    excludes: z.array(z.string()).default(['**/node_modules/**', '**/dist/**', '**/build/**']),
-    maxDepth: z.number().default(10)
+    patterns: z
+      .array(z.string())
+      .default(['**/*.ts', '**/*.js', '**/*.tsx', '**/*.jsx']),
+    excludes: z
+      .array(z.string())
+      .default(['**/node_modules/**', '**/dist/**', '**/build/**']),
+    maxDepth: z.number().default(10),
   }),
   governance: z.object({
     rules: z.array(z.string()).default([]),
-    severity: z.enum(['error', 'warning', 'info']).default('warning')
-  })
+    severity: z.enum(['error', 'warning', 'info']).default('warning'),
+  }),
 });
 
 /**
@@ -63,7 +75,7 @@ export class ConfigManager {
    */
   async loadConfig(customPath?: string): Promise<WundrConfig> {
     const configFile = customPath || this.configPath;
-    
+
     try {
       // Ensure config directory exists
       await fs.ensureDir(path.dirname(configFile));
@@ -103,7 +115,7 @@ export class ConfigManager {
     }
 
     const configFile = customPath || this.configPath;
-    
+
     try {
       await fs.ensureDir(path.dirname(configFile));
       await fs.writeJson(configFile, this.config, { spaces: 2 });
@@ -145,7 +157,7 @@ export class ConfigManager {
    */
   validateConfig(config?: any): { valid: boolean; errors: string[] } {
     const configToValidate = config || this.config;
-    
+
     try {
       WundrConfigSchema.parse(configToValidate);
       return { valid: true, errors: [] };
@@ -153,9 +165,9 @@ export class ConfigManager {
       if (error instanceof z.ZodError) {
         return {
           valid: false,
-          errors: error.issues.map(issue => 
-            `${issue.path.join('.')}: ${issue.message}`
-          )
+          errors: error.issues.map(
+            issue => `${issue.path.join('.')}: ${issue.message}`
+          ),
         };
       }
       return { valid: false, errors: [error.message] };
@@ -172,7 +184,7 @@ export class ConfigManager {
 
     const keys = path.split('.');
     let value: any = this.config;
-    
+
     for (const key of keys) {
       if (value && typeof value === 'object' && key in value) {
         value = value[key];
@@ -180,7 +192,7 @@ export class ConfigManager {
         return defaultValue;
       }
     }
-    
+
     return value;
   }
 
@@ -194,7 +206,7 @@ export class ConfigManager {
 
     const keys = path.split('.');
     let current: any = this.config;
-    
+
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
       if (!key) {
@@ -208,7 +220,7 @@ export class ConfigManager {
       }
       current = current[key];
     }
-    
+
     const finalKey = keys[keys.length - 1];
     if (!finalKey) {
       throw new Error('Invalid path: empty final key');
@@ -230,17 +242,17 @@ export class ConfigManager {
       integrations: {},
       ai: {
         provider: 'claude',
-        model: 'claude-3-opus-20240229'
+        model: 'claude-3-opus-20240229',
       },
       analysis: {
         patterns: ['**/*.ts', '**/*.js', '**/*.tsx', '**/*.jsx'],
         excludes: ['**/node_modules/**', '**/dist/**', '**/build/**'],
-        maxDepth: 10
+        maxDepth: 10,
       },
       governance: {
         rules: [],
-        severity: 'warning'
-      }
+        severity: 'warning',
+      },
     };
   }
 
@@ -249,37 +261,41 @@ export class ConfigManager {
    */
   private mergeEnvironmentVariables(config: WundrConfig): WundrConfig {
     const envConfig = { ...config };
-    
+
     // AI API Key from environment
     if (process.env['CLAUDE_API_KEY'] && !envConfig.ai.apiKey) {
       envConfig.ai.apiKey = process.env['CLAUDE_API_KEY'];
     }
-    
-    if (process.env['OPENAI_API_KEY'] && envConfig.ai.provider === 'openai' && !envConfig.ai.apiKey) {
+
+    if (
+      process.env['OPENAI_API_KEY'] &&
+      envConfig.ai.provider === 'openai' &&
+      !envConfig.ai.apiKey
+    ) {
       envConfig.ai.apiKey = process.env['OPENAI_API_KEY'];
     }
-    
+
     // AI Provider and Model from environment
     if (process.env['WUNDR_AI_PROVIDER']) {
       envConfig.ai.provider = process.env['WUNDR_AI_PROVIDER'];
     }
-    
+
     if (process.env['WUNDR_AI_MODEL']) {
       envConfig.ai.model = process.env['WUNDR_AI_MODEL'];
     }
-    
+
     // GitHub integration
     if (process.env['GITHUB_TOKEN']) {
       envConfig.integrations.github = envConfig.integrations.github || {
         token: process.env['GITHUB_TOKEN'],
         owner: process.env['GITHUB_OWNER'] || '',
-        repo: process.env['GITHUB_REPO'] || ''
+        repo: process.env['GITHUB_REPO'] || '',
       };
       if (!envConfig.integrations.github.token) {
         envConfig.integrations.github.token = process.env['GITHUB_TOKEN'];
       }
     }
-    
+
     return envConfig;
   }
 
@@ -288,12 +304,12 @@ export class ConfigManager {
    */
   getAIApiKey(provider?: string): string | undefined {
     const currentProvider = provider || this.config?.ai?.provider || 'claude';
-    
+
     // First check config
     if (this.config?.ai?.apiKey) {
       return this.config.ai.apiKey;
     }
-    
+
     // Then check environment variables based on provider
     switch (currentProvider.toLowerCase()) {
       case 'claude':
@@ -312,11 +328,11 @@ export class ConfigManager {
     if (!this.config) {
       await this.loadConfig();
     }
-    
+
     if (provider && provider !== this.config!.ai.provider) {
       this.config!.ai.provider = provider;
     }
-    
+
     this.config!.ai.apiKey = apiKey;
     await this.saveConfig();
   }
@@ -327,7 +343,7 @@ export class ConfigManager {
   isAIConfigured(): boolean {
     const apiKey = this.getAIApiKey();
     const provider = this.config?.ai?.provider;
-    
+
     return !!(apiKey && provider);
   }
 
@@ -337,7 +353,7 @@ export class ConfigManager {
   getConfigPaths(): { user: string; project: string } {
     return {
       user: this.configPath,
-      project: path.join(process.cwd(), 'wundr.config.json')
+      project: path.join(process.cwd(), 'wundr.config.json'),
     };
   }
 
@@ -346,28 +362,30 @@ export class ConfigManager {
    */
   async loadProjectConfig(): Promise<WundrConfig> {
     const projectConfigPath = path.join(process.cwd(), 'wundr.config.json');
-    
+
     // Load user config first
     await this.loadConfig();
-    
+
     // Merge with project config if it exists
     if (await fs.pathExists(projectConfigPath)) {
       try {
         const projectConfig = await fs.readJson(projectConfigPath);
-        const validatedProjectConfig = WundrConfigSchema.partial().parse(projectConfig);
-        
+        const validatedProjectConfig =
+          WundrConfigSchema.partial().parse(projectConfig);
+
         this.config = {
           ...this.config!,
-          ...validatedProjectConfig
+          ...validatedProjectConfig,
         };
-        
+
         logger.debug(`Merged project config from: ${projectConfigPath}`);
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
+        const message =
+          error instanceof Error ? error.message : 'Unknown error';
         logger.warn(`Failed to load project config: ${message}`);
       }
     }
-    
+
     return this.config!;
   }
 }

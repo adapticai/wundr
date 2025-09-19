@@ -54,7 +54,7 @@ export class CacheManager {
       join(this.cachePath, 'installers'),
       join(this.cachePath, 'configs'),
       join(this.cachePath, 'downloads'),
-      join(this.cachePath, 'metadata')
+      join(this.cachePath, 'metadata'),
     ];
 
     for (const dir of directories) {
@@ -67,13 +67,16 @@ export class CacheManager {
       defaultTTL: 24 * 60 * 60 * 1000, // 24 hours
       cleanupInterval: 60 * 60 * 1000, // 1 hour
       compressionEnabled: true,
-      encryptionEnabled: false
+      encryptionEnabled: false,
     };
 
     try {
       await fs.access(this.configPath);
     } catch {
-      await fs.writeFile(this.configPath, JSON.stringify(defaultConfig, null, 2));
+      await fs.writeFile(
+        this.configPath,
+        JSON.stringify(defaultConfig, null, 2)
+      );
     }
   }
 
@@ -84,9 +87,11 @@ export class CacheManager {
     try {
       const cacheKey = this.generateCacheKey(key);
       const cachePath = join(this.cachePath, 'metadata', `${cacheKey}.json`);
-      
-      const cacheData = JSON.parse(await fs.readFile(cachePath, 'utf8')) as CacheEntry;
-      
+
+      const cacheData = JSON.parse(
+        await fs.readFile(cachePath, 'utf8')
+      ) as CacheEntry;
+
       // Check TTL
       if (Date.now() - cacheData.timestamp > cacheData.ttl) {
         await this.delete(key);
@@ -110,13 +115,17 @@ export class CacheManager {
       const config = await this.getConfig();
       const cacheKey = this.generateCacheKey(key);
       const cachePath = join(this.cachePath, 'metadata', `${cacheKey}.json`);
-      
+
       const cacheEntry: CacheEntry = {
         key,
         value,
         timestamp: Date.now(),
-        ttl: ttlMs || (typeof config.defaultTTL === 'number' ? config.defaultTTL : 24 * 60 * 60 * 1000),
-        checksum: this.generateChecksum(JSON.stringify(value))
+        ttl:
+          ttlMs ||
+          (typeof config.defaultTTL === 'number'
+            ? config.defaultTTL
+            : 24 * 60 * 60 * 1000),
+        checksum: this.generateChecksum(JSON.stringify(value)),
       };
 
       await fs.writeFile(cachePath, JSON.stringify(cacheEntry, null, 2));
@@ -144,13 +153,14 @@ export class CacheManager {
   async cacheInstaller(url: string, name: string): Promise<string> {
     const installerPath = join(this.cachePath, 'installers', `${name}.sh`);
     const metaPath = join(this.cachePath, 'metadata', `installer-${name}.json`);
-    
+
     try {
       // Check if cached version exists and is valid
       const meta = JSON.parse(await fs.readFile(metaPath, 'utf8'));
       const ageHours = (Date.now() - meta.timestamp) / (1000 * 60 * 60);
-      
-      if (ageHours < 24) { // Cache installers for 24 hours
+
+      if (ageHours < 24) {
+        // Cache installers for 24 hours
         await fs.access(installerPath);
         return installerPath;
       }
@@ -161,40 +171,54 @@ export class CacheManager {
     // Download installer
     const downloadCommand = `curl -fsSL "${url}" -o "${installerPath}"`;
     execSync(downloadCommand, { stdio: 'pipe' });
-    
+
     // Generate checksum and save metadata
     const content = await fs.readFile(installerPath, 'utf8');
     const checksum = this.generateChecksum(content);
-    
+
     const metadata = {
       url,
       timestamp: Date.now(),
       checksum,
-      size: content.length
+      size: content.length,
     };
-    
+
     await fs.writeFile(metaPath, JSON.stringify(metadata, null, 2));
-    
+
     return installerPath;
   }
 
   /**
    * Cache package downloads with version tracking
    */
-  async cachePackage(packageName: string, version: string, downloadUrl: string): Promise<string> {
+  async cachePackage(
+    packageName: string,
+    version: string,
+    downloadUrl: string
+  ): Promise<string> {
     const packageKey = `${packageName}-${version}`;
-    const packagePath = join(this.cachePath, 'packages', `${packageKey}.tar.gz`);
-    const metaPath = join(this.cachePath, 'metadata', `package-${packageKey}.json`);
-    
+    const packagePath = join(
+      this.cachePath,
+      'packages',
+      `${packageKey}.tar.gz`
+    );
+    const metaPath = join(
+      this.cachePath,
+      'metadata',
+      `package-${packageKey}.json`
+    );
+
     try {
       // Check if package is already cached
       const meta = JSON.parse(await fs.readFile(metaPath, 'utf8'));
       await fs.access(packagePath);
-      
+
       // Verify checksum if available
       if (meta.checksum) {
         const content = await fs.readFile(packagePath);
-        const actualChecksum = this.generateChecksum(content.toString('base64'));
+        const actualChecksum = this.generateChecksum(
+          content.toString('base64')
+        );
         if (actualChecksum === meta.checksum) {
           return packagePath;
         }
@@ -208,22 +232,22 @@ export class CacheManager {
     // Download package
     const downloadCommand = `curl -fsSL "${downloadUrl}" -o "${packagePath}"`;
     execSync(downloadCommand, { stdio: 'pipe' });
-    
+
     // Generate metadata
     const content = await fs.readFile(packagePath);
     const checksum = this.generateChecksum(content.toString('base64'));
-    
+
     const metadata = {
       packageName,
       version,
       downloadUrl,
       timestamp: Date.now(),
       checksum,
-      size: content.length
+      size: content.length,
     };
-    
+
     await fs.writeFile(metaPath, JSON.stringify(metadata, null, 2));
-    
+
     return packagePath;
   }
 
@@ -236,19 +260,23 @@ export class CacheManager {
       { name: 'npm', versions: ['latest'] },
       { name: 'typescript', versions: ['latest'] },
       { name: 'prettier', versions: ['latest'] },
-      { name: 'eslint', versions: ['latest'] }
+      { name: 'eslint', versions: ['latest'] },
     ];
 
     const downloadPromises = essentials.map(async ({ name, versions }) => {
       for (const version of versions) {
         try {
           // This would normally fetch from npm registry or specific URLs
-          await this.set(`precache:${name}:${version}`, { 
-            name, 
-            version, 
-            precached: true,
-            timestamp: Date.now()
-          }, 7 * 24 * 60 * 60 * 1000); // 7 days TTL for precached items
+          await this.set(
+            `precache:${name}:${version}`,
+            {
+              name,
+              version,
+              precached: true,
+              timestamp: Date.now(),
+            },
+            7 * 24 * 60 * 60 * 1000
+          ); // 7 days TTL for precached items
         } catch (error) {
           logger.warn(`Failed to precache ${name}@${version}:`, error);
         }
@@ -265,16 +293,23 @@ export class CacheManager {
   async cleanup(forceCleanup = false): Promise<void> {
     const config = await this.getConfig();
     const stats = await this.getStats();
-    
-    if (!forceCleanup && stats.totalSize < (typeof config.maxSize === 'number' ? config.maxSize : 1024 * 1024 * 1024) * 0.8) {
+
+    if (
+      !forceCleanup &&
+      stats.totalSize <
+        (typeof config.maxSize === 'number'
+          ? config.maxSize
+          : 1024 * 1024 * 1024) *
+          0.8
+    ) {
       return; // No cleanup needed
     }
 
     const metadataDir = join(this.cachePath, 'metadata');
     const files = await fs.readdir(metadataDir);
-    
+
     const entries: Array<{ file: string; meta: CacheEntry }> = [];
-    
+
     for (const file of files) {
       try {
         const filePath = join(metadataDir, file);
@@ -291,7 +326,7 @@ export class CacheManager {
       const ageB = Date.now() - b.meta.timestamp;
       const ttlRatioA = ageA / a.meta.ttl;
       const ttlRatioB = ageB / b.meta.ttl;
-      
+
       return ttlRatioB - ttlRatioA; // Remove oldest first
     });
 
@@ -302,15 +337,15 @@ export class CacheManager {
     for (const { file, meta } of toRemove) {
       try {
         await fs.unlink(file);
-        
+
         // Also remove associated cache files
         const cacheKey = this.generateCacheKey(meta.key);
         const associatedFiles = [
           join(this.cachePath, 'packages', `${cacheKey}.*`),
           join(this.cachePath, 'installers', `${cacheKey}.*`),
-          join(this.cachePath, 'downloads', `${cacheKey}.*`)
+          join(this.cachePath, 'downloads', `${cacheKey}.*`),
         ];
-        
+
         for (const pattern of associatedFiles) {
           try {
             execSync(`rm -f ${pattern}`, { stdio: 'pipe' });
@@ -333,17 +368,17 @@ export class CacheManager {
     try {
       const metadataDir = join(this.cachePath, 'metadata');
       const files = await fs.readdir(metadataDir);
-      
+
       let totalSize = 0;
       let oldestEntry = Date.now();
       let newestEntry = 0;
-      
+
       for (const file of files) {
         try {
           const filePath = join(metadataDir, file);
           const stats = await fs.stat(filePath);
           const meta = JSON.parse(await fs.readFile(filePath, 'utf8'));
-          
+
           totalSize += stats.size;
           oldestEntry = Math.min(oldestEntry, meta.timestamp);
           newestEntry = Math.max(newestEntry, meta.timestamp);
@@ -352,20 +387,21 @@ export class CacheManager {
         }
       }
 
-      const hitRate = this.hitCount + this.missCount > 0 
-        ? this.hitCount / (this.hitCount + this.missCount)
-        : 0;
+      const hitRate =
+        this.hitCount + this.missCount > 0
+          ? this.hitCount / (this.hitCount + this.missCount)
+          : 0;
 
       const stats: CacheStats = {
         totalSize,
         totalFiles: files.length,
         hitRate: Math.round(hitRate * 100) / 100,
         oldestEntry,
-        newestEntry
+        newestEntry,
       };
 
       await fs.writeFile(this.statsPath, JSON.stringify(stats, null, 2));
-      
+
       return stats;
     } catch (error) {
       logger.error('Failed to get cache stats:', error);
@@ -374,7 +410,7 @@ export class CacheManager {
         totalFiles: 0,
         hitRate: 0,
         oldestEntry: Date.now(),
-        newestEntry: Date.now()
+        newestEntry: Date.now(),
       };
     }
   }
@@ -399,15 +435,15 @@ export class CacheManager {
     try {
       const metadataDir = join(this.cachePath, 'metadata');
       const files = await fs.readdir(metadataDir);
-      
+
       let validEntries = 0;
       let invalidEntries = 0;
-      
+
       for (const file of files) {
         try {
           const filePath = join(metadataDir, file);
           const meta = JSON.parse(await fs.readFile(filePath, 'utf8'));
-          
+
           // Basic validation
           if (meta.key && meta.timestamp && meta.ttl) {
             validEntries++;
@@ -421,7 +457,9 @@ export class CacheManager {
         }
       }
 
-      logger.info(`Cache validation: ${validEntries} valid, ${invalidEntries} invalid entries cleaned`);
+      logger.info(
+        `Cache validation: ${validEntries} valid, ${invalidEntries} invalid entries cleaned`
+      );
       return invalidEntries === 0;
     } catch (error) {
       logger.error('Cache validation failed:', error);
@@ -447,7 +485,7 @@ export class CacheManager {
       return {
         maxSize: 1024 * 1024 * 1024,
         defaultTTL: 24 * 60 * 60 * 1000,
-        cleanupInterval: 60 * 60 * 1000
+        cleanupInterval: 60 * 60 * 1000,
       };
     }
   }

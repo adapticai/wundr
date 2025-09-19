@@ -95,7 +95,7 @@ export interface DashboardSummary {
   unusedExports: number
   codeSmells: number
   bugs: number
-  vulnerabilities: number
+  vulnerabilityCount: number
   technicalDebtHours: number
   maintainabilityIndex: number
   testCoverage: number
@@ -174,7 +174,7 @@ export interface QualityMetrics {
   technicalDebt: number
   codeSmells: number
   bugs: number
-  vulnerabilities: number
+  vulnerabilityCount: number
   linesOfCode: number
 }
 

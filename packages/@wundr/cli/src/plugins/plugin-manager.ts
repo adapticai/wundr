@@ -56,7 +56,6 @@ export class PluginManager {
       }
 
       logger.debug(`Loaded ${this.loadedPlugins.size} plugins successfully`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_LOAD_FAILED',
@@ -78,7 +77,7 @@ export class PluginManager {
       }
 
       const pluginPath = await this.getPluginPath(pluginName);
-      if (!await fs.pathExists(pluginPath)) {
+      if (!(await fs.pathExists(pluginPath))) {
         throw new Error(`Plugin not found: ${pluginName}`);
       }
 
@@ -94,9 +93,8 @@ export class PluginManager {
 
       // Store loaded plugin
       this.loadedPlugins.set(pluginName, plugin);
-      
-      logger.debug(`Plugin loaded: ${pluginName}`);
 
+      logger.debug(`Plugin loaded: ${pluginName}`);
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_LOAD_SINGLE_FAILED',
@@ -129,7 +127,6 @@ export class PluginManager {
       this.loadedPlugins.delete(pluginName);
 
       logger.debug(`Plugin unloaded: ${pluginName}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_UNLOAD_FAILED',
@@ -160,7 +157,6 @@ export class PluginManager {
       await this.addToEnabledPlugins(pluginName);
 
       logger.success(`Plugin ${pluginName} installed successfully`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_INSTALL_FAILED',
@@ -191,7 +187,6 @@ export class PluginManager {
       await this.removeFromEnabledPlugins(pluginName);
 
       logger.success(`Plugin ${pluginName} uninstalled successfully`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_UNINSTALL_FAILED',
@@ -207,7 +202,7 @@ export class PluginManager {
    */
   async enablePlugin(pluginName: string): Promise<void> {
     try {
-      if (!await this.isPluginInstalled(pluginName)) {
+      if (!(await this.isPluginInstalled(pluginName))) {
         throw new Error(`Plugin not installed: ${pluginName}`);
       }
 
@@ -215,7 +210,6 @@ export class PluginManager {
       await this.loadPlugin(pluginName);
 
       logger.success(`Plugin ${pluginName} enabled`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_ENABLE_FAILED',
@@ -235,7 +229,6 @@ export class PluginManager {
       await this.removeFromEnabledPlugins(pluginName);
 
       logger.success(`Plugin ${pluginName} disabled`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_DISABLE_FAILED',
@@ -254,7 +247,7 @@ export class PluginManager {
       const pluginPath = await this.getPluginPath(pluginName);
       const packageJsonPath = path.join(pluginPath, 'package.json');
 
-      if (!await fs.pathExists(packageJsonPath)) {
+      if (!(await fs.pathExists(packageJsonPath))) {
         return null;
       }
 
@@ -269,9 +262,10 @@ export class PluginManager {
         enabled: !!plugin,
         commands: plugin?.commands || [],
         hooks: plugin?.hooks || [],
-        dependencies: packageJson.dependencies ? Object.keys(packageJson.dependencies) : []
+        dependencies: packageJson.dependencies
+          ? Object.keys(packageJson.dependencies)
+          : [],
       };
-
     } catch (error) {
       return null;
     }
@@ -290,7 +284,7 @@ export class PluginManager {
    */
   async getInstalledPlugins(): Promise<any[]> {
     try {
-      if (!await fs.pathExists(this.pluginsDir)) {
+      if (!(await fs.pathExists(this.pluginsDir))) {
         return [];
       }
 
@@ -305,7 +299,6 @@ export class PluginManager {
       }
 
       return plugins;
-
     } catch (error) {
       logger.debug('Failed to get installed plugins:', error);
       return [];
@@ -325,17 +318,16 @@ export class PluginManager {
           version: '1.0.0',
           description: 'Git integration plugin',
           downloads: 1000,
-          updated: new Date().toISOString()
+          updated: new Date().toISOString(),
         },
         {
           name: '@wundr/plugin-docker',
           version: '1.2.0',
           description: 'Docker integration plugin',
           downloads: 800,
-          updated: new Date().toISOString()
-        }
+          updated: new Date().toISOString(),
+        },
       ];
-
     } catch (error) {
       logger.debug('Failed to get available plugins:', error);
       return [];
@@ -348,11 +340,13 @@ export class PluginManager {
   async searchPlugins(query: string, options: any = {}): Promise<any[]> {
     try {
       const available = await this.getAvailablePlugins();
-      return available.filter(plugin => 
-        plugin.name.toLowerCase().includes(query.toLowerCase()) ||
-        plugin.description.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, options.limit || 20);
-
+      return available
+        .filter(
+          plugin =>
+            plugin.name.toLowerCase().includes(query.toLowerCase()) ||
+            plugin.description.toLowerCase().includes(query.toLowerCase())
+        )
+        .slice(0, options.limit || 20);
     } catch (error) {
       logger.debug('Failed to search plugins:', error);
       return [];
@@ -365,14 +359,13 @@ export class PluginManager {
   async updatePlugin(pluginName: string): Promise<void> {
     try {
       logger.info(`Updating plugin: ${pluginName}`);
-      
+
       // This would check for updates and install newer version
       // For now, just reload the plugin
       await this.unloadPlugin(pluginName);
       await this.loadPlugin(pluginName);
 
       logger.success(`Plugin ${pluginName} updated`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_UPDATE_FAILED',
@@ -388,7 +381,7 @@ export class PluginManager {
    */
   async updateAllPlugins(): Promise<void> {
     const plugins = await this.getInstalledPlugins();
-    
+
     for (const plugin of plugins) {
       try {
         await this.updatePlugin(plugin.name);
@@ -406,7 +399,7 @@ export class PluginManager {
       const absolutePath = path.resolve(pluginPath);
       const packageJsonPath = path.join(absolutePath, 'package.json');
 
-      if (!await fs.pathExists(packageJsonPath)) {
+      if (!(await fs.pathExists(packageJsonPath))) {
         throw new Error('Invalid plugin: package.json not found');
       }
 
@@ -416,15 +409,14 @@ export class PluginManager {
       // Create symlink to plugin
       const linkPath = path.join(this.pluginsDir, pluginName);
       await fs.ensureDir(path.dirname(linkPath));
-      
+
       if (await fs.pathExists(linkPath)) {
         await fs.remove(linkPath);
       }
-      
+
       await fs.symlink(absolutePath, linkPath);
 
       logger.success(`Plugin linked: ${pluginName} -> ${absolutePath}`);
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_LINK_FAILED',
@@ -441,7 +433,7 @@ export class PluginManager {
   async unlinkPlugin(pluginName: string): Promise<void> {
     try {
       const pluginPath = path.join(this.pluginsDir, pluginName);
-      
+
       if (await fs.pathExists(pluginPath)) {
         const stats = await fs.lstat(pluginPath);
         if (stats.isSymbolicLink()) {
@@ -453,7 +445,6 @@ export class PluginManager {
       } else {
         throw new Error(`Plugin ${pluginName} not found`);
       }
-
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_UNLINK_FAILED',
@@ -470,11 +461,12 @@ export class PluginManager {
   async testPlugin(pluginName: string, options: any = {}): Promise<void> {
     try {
       const pluginPath = await this.getPluginPath(pluginName);
-      
-      const testCommand = options.coverage ? 'npm run test:coverage' : 'npm test';
-      
-      await this.runCommand(testCommand, { cwd: pluginPath });
 
+      const testCommand = options.coverage
+        ? 'npm run test:coverage'
+        : 'npm test';
+
+      await this.runCommand(testCommand, { cwd: pluginPath });
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_TEST_FAILED',
@@ -492,12 +484,11 @@ export class PluginManager {
     try {
       // This would publish to a plugin registry
       logger.info('Publishing plugin to registry...');
-      
+
       // Mock implementation
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      logger.success('Plugin published successfully');
 
+      logger.success('Plugin published successfully');
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_PUBLISH_FAILED',
@@ -511,7 +502,11 @@ export class PluginManager {
   /**
    * Plugin configuration management
    */
-  async setPluginConfig(pluginName: string, key: string, value: string): Promise<void> {
+  async setPluginConfig(
+    pluginName: string,
+    key: string,
+    value: string
+  ): Promise<void> {
     this.configManager.set(`plugins.${pluginName}.${key}`, value);
     await this.configManager.saveConfig();
   }
@@ -537,14 +532,14 @@ export class PluginManager {
     if (!this.pluginHooks.has(hook.event)) {
       this.pluginHooks.set(hook.event, []);
     }
-    
+
     this.pluginHooks.get(hook.event)!.push(hook);
     logger.debug(`Plugin hook registered: ${pluginName}:${hook.event}`);
   }
 
   async executePluginHooks(event: string, data: any): Promise<void> {
     const hooks = this.pluginHooks.get(event) || [];
-    
+
     for (const hook of hooks) {
       try {
         await hook.handler(data, this.createHookContext());
@@ -568,7 +563,7 @@ export class PluginManager {
   private async importPlugin(pluginPath: string): Promise<any> {
     // In a real implementation, this would handle different module formats
     const mainFile = path.join(pluginPath, 'index.js');
-    
+
     if (await fs.pathExists(mainFile)) {
       return require(mainFile);
     }
@@ -588,7 +583,10 @@ export class PluginManager {
     // Handle different export formats
     if (typeof pluginModule === 'function') {
       return new pluginModule();
-    } else if (pluginModule.default && typeof pluginModule.default === 'function') {
+    } else if (
+      pluginModule.default &&
+      typeof pluginModule.default === 'function'
+    ) {
       return new pluginModule.default();
     } else if (pluginModule.default) {
       return pluginModule.default;
@@ -606,14 +604,14 @@ export class PluginManager {
       },
       registerHook: (hook: PluginHook) => {
         this.registerPluginHook(pluginName, hook);
-      }
+      },
     };
   }
 
   private createHookContext(): any {
     return {
       config: this.configManager.getConfig(),
-      logger: logger
+      logger: logger,
     };
   }
 
@@ -627,7 +625,9 @@ export class PluginManager {
 
   private removePluginHooks(pluginName: string): void {
     for (const [event, hooks] of this.pluginHooks) {
-      const filteredHooks = hooks.filter(hook => !hook.event.startsWith(pluginName));
+      const filteredHooks = hooks.filter(
+        hook => !hook.event.startsWith(pluginName)
+      );
       this.pluginHooks.set(event, filteredHooks);
     }
   }
@@ -650,11 +650,19 @@ export class PluginManager {
   }
 
   private isLocalPath(pluginName: string): boolean {
-    return pluginName.startsWith('./') || pluginName.startsWith('../') || path.isAbsolute(pluginName);
+    return (
+      pluginName.startsWith('./') ||
+      pluginName.startsWith('../') ||
+      path.isAbsolute(pluginName)
+    );
   }
 
   private isGitUrl(pluginName: string): boolean {
-    return pluginName.startsWith('git+') || pluginName.includes('github.com') || pluginName.includes('.git');
+    return (
+      pluginName.startsWith('git+') ||
+      pluginName.includes('github.com') ||
+      pluginName.includes('.git')
+    );
   }
 
   private async installLocalPlugin(pluginPath: string): Promise<void> {
@@ -663,7 +671,7 @@ export class PluginManager {
     const targetPath = path.join(this.pluginsDir, pluginName);
 
     await fs.copy(absolutePath, targetPath);
-    
+
     // Install dependencies
     await this.runCommand('npm install', { cwd: targetPath });
   }
@@ -676,28 +684,31 @@ export class PluginManager {
     await this.runCommand('npm install', { cwd: targetPath });
   }
 
-  private async installNpmPlugin(pluginName: string, options: any): Promise<void> {
+  private async installNpmPlugin(
+    pluginName: string,
+    options: any
+  ): Promise<void> {
     const versionSpec = options.version ? `@${options.version}` : '';
     const targetPath = path.join(this.pluginsDir, pluginName);
-    
+
     await fs.ensureDir(targetPath);
-    
+
     // Create temporary package.json
     const tempPackageJson = {
       name: 'temp-plugin-installer',
       version: '1.0.0',
       dependencies: {
-        [pluginName]: versionSpec || 'latest'
-      }
+        [pluginName]: versionSpec || 'latest',
+      },
     };
-    
+
     await fs.writeJson(path.join(targetPath, 'package.json'), tempPackageJson);
     await this.runCommand('npm install', { cwd: targetPath });
-    
+
     // Move plugin to correct location
     const installedPath = path.join(targetPath, 'node_modules', pluginName);
     const finalPath = path.join(this.pluginsDir, pluginName);
-    
+
     if (finalPath !== targetPath) {
       await fs.move(installedPath, finalPath);
       await fs.remove(targetPath);
@@ -714,14 +725,16 @@ export class PluginManager {
       const child: ChildProcess = spawn(cmd, args, {
         stdio: 'inherit',
         shell: true,
-        ...options
+        ...options,
       });
 
-      child.on('exit', (code) => {
+      child.on('exit', code => {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Command failed with exit code ${code}: ${command}`));
+          reject(
+            new Error(`Command failed with exit code ${code}: ${command}`)
+          );
         }
       });
 

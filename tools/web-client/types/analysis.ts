@@ -51,7 +51,9 @@ export interface PackageInfo {
     /** Total downloads */
     total: number;
   };
-  /** Package vulnerability information */
+  /** Number of vulnerabilities found */
+  vulnerabilityCount: number;
+  /** Detailed vulnerability information */
   vulnerabilities?: VulnerabilityInfo[];
   /** Package deprecation status */
   deprecated?: boolean;
@@ -69,7 +71,9 @@ export interface EnrichedPackageInfo extends PackageInfo {
   securityAudit: {
     /** Audit score */
     score: number;
-    /** Found vulnerabilities */
+    /** Number of vulnerabilities found */
+    vulnerabilityCount: number;
+    /** Detailed vulnerability information */
     vulnerabilities: VulnerabilityInfo[];
     /** Security recommendations */
     recommendations: string[];
