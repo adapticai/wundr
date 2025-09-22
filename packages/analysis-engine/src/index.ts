@@ -5,11 +5,46 @@
 
 export * from './metrics';
 export * from './analyzers';
-export * from './reporters';
 
 // Optimized modules
-export * from './analyzers/BaseAnalysisServiceOptimizations';
-export * from './engines/DuplicateDetectionEngineSimple';
-export * from './streaming/StreamingFileProcessorSimple';
-export * from './monitoring/MemoryMonitorSimple';
-export * from './optimization/PerformanceBenchmarkSuiteSimple';
+export {
+  OptimizedBaseAnalysisService,
+  type OptimizedAnalysisConfig,
+  type OptimizedAnalysisResult,
+  type AnalysisPhaseResult,
+  type DuplicateGroup as OptimizedDuplicateGroup,
+  type QualityMetrics,
+  type ReportData as OptimizedReportData,
+} from './analyzers/BaseAnalysisServiceOptimizations';
+
+export {
+  OptimizedDuplicateDetectionEngine,
+  type DuplicateGroup as DuplicateDetectionGroup,
+  type DuplicateFile,
+  type DetectionStats,
+} from './engines/DuplicateDetectionEngineSimple';
+
+export {
+  StreamingFileProcessor,
+  type StreamingConfig,
+  type ProcessingResult,
+} from './streaming/StreamingFileProcessorSimple';
+
+export {
+  MemoryMonitorService,
+  type MemoryStats,
+  type MemoryAlert,
+} from './monitoring/MemoryMonitorSimple';
+
+export {
+  PerformanceBenchmarkSuite,
+  type BenchmarkResult,
+  type BenchmarkConfig,
+} from './optimization/PerformanceBenchmarkSuiteSimple';
+
+// Re-export reporters with specific names to avoid conflicts
+export {
+  SimpleHtmlReporter,
+  SimpleMarkdownReporter,
+  SimpleJsonReporter,
+} from './reporters';

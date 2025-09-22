@@ -16,7 +16,7 @@ export interface MetricsReport {
   filePath: string;
   metrics: QualityMetric[];
   overallScore: number;
-  violations: any[];
+  violations: QualityMetric[];
   summary: {
     totalFiles: number;
     totalFunctions: number;
@@ -31,7 +31,9 @@ export interface MetricsReport {
 }
 
 export class MetricsAnalyzer {
-  constructor(_config?: any) {}
+  constructor(_config?: Record<string, unknown>) {
+    // Initialize metrics analyzer with optional configuration
+  }
 
   analyze(): MetricsReport {
     return {

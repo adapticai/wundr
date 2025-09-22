@@ -19,6 +19,7 @@ import {
   OperationResult,
   SPARCPhase,
 } from '../types';
+import { convertErrorToOperationError } from '../utils';
 
 export class ClaudeFlowOrchestrator extends EventEmitter {
   private config: ClaudeFlowConfig;
@@ -270,7 +271,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       return {
         success: false,
         message: `Claude Flow initialization failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error)),
+        error: convertErrorToOperationError(error, 'CLAUDE_FLOW_INIT_ERROR'),
       };
     }
   }
@@ -514,7 +515,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       return {
         success: false,
         message: `SPARC workflow failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error)),
+        error: convertErrorToOperationError(error, 'CLAUDE_FLOW_INIT_ERROR'),
       };
     }
   }
@@ -684,7 +685,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       return {
         success: false,
         message: `Shutdown failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error)),
+        error: convertErrorToOperationError(error, 'CLAUDE_FLOW_INIT_ERROR'),
       };
     }
   }

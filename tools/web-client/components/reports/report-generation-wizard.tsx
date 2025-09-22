@@ -204,7 +204,10 @@ export function ReportGenerationWizard({
             </SelectTrigger>
             <SelectContent>
               {param.options?.map(option => (
-                <SelectItem key={option.value} value={option.value.toString()}>
+                <SelectItem
+                  key={String(option.value)}
+                  value={String(option.value)}
+                >
                   {option.label}
                 </SelectItem>
               ))}
@@ -216,27 +219,35 @@ export function ReportGenerationWizard({
           <div className='space-y-2'>
             {param.options?.map(option => {
               // Safely handle the multiselect array comparison
-              const currentValues = Array.isArray(value) ? value as ParameterValue[] : [];
+              const currentValues = Array.isArray(value)
+                ? (value as ParameterValue[])
+                : [];
               const optionValue = option.value;
 
               // Check if option value is included in current values
-              const isChecked = currentValues.some(v =>
-                typeof v === typeof optionValue && v === optionValue
+              const isChecked = currentValues.some(
+                v => typeof v === typeof optionValue && v === optionValue
               );
 
               return (
-                <div key={String(option.value)} className='flex items-center space-x-2'>
+                <div
+                  key={String(option.value)}
+                  className='flex items-center space-x-2'
+                >
                   <Checkbox
-                    id={`${param.key}-${option.value}`}
+                    id={`${param.key}-${String(option.value)}`}
                     checked={isChecked}
                     onCheckedChange={checked => {
                       const newValues = checked
                         ? [...currentValues, optionValue]
                         : currentValues.filter(v => v !== optionValue);
-                      handleParameterChange(param.key, newValues);
+                      handleParameterChange(
+                        param.key,
+                        newValues as ParameterValue
+                      );
                     }}
                   />
-                  <Label htmlFor={`${param.key}-${option.value}`}>
+                  <Label htmlFor={`${param.key}-${String(option.value)}`}>
                     {option.label}
                   </Label>
                 </div>

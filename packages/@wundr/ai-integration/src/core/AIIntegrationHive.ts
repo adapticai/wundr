@@ -115,7 +115,12 @@ export class AIIntegrationHive extends EventEmitter {
       return {
         success: true,
         message: 'AI Integration Hive initialized successfully',
-        data: { status: this.status },
+        data: {
+          type: 'initialization',
+          payload: { status: this.status },
+          timestamp: new Date(),
+          source: 'ai-integration-hive',
+        },
       };
     } catch (error) {
       this.status = 'error';
@@ -156,7 +161,12 @@ export class AIIntegrationHive extends EventEmitter {
       return {
         success: true,
         message: `Spawned ${agents.length} agents successfully`,
-        data: { agents, topology },
+        data: {
+          type: 'agent-spawn',
+          payload: { agents, topology },
+          timestamp: new Date(),
+          source: 'ai-integration-hive',
+        },
       };
     } catch (error) {
       return {

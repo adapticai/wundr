@@ -266,7 +266,7 @@ export class MemoryManager extends EventEmitter {
     if (memory.metadata.taskType === task.type) similarity += 0.4;
 
     // Priority match
-    if (memory.metadata.priority === task.priority) similarity += 0.2;
+    if (memory.metadata.priority.toString() === task.priority) similarity += 0.2;
 
     // Capability overlap
     const overlappingCaps =
@@ -648,7 +648,10 @@ export class MemoryManager extends EventEmitter {
 
     // Apply updates
     Object.assign(memory, updates);
-    memory.metadata.updatedAt = new Date().toISOString();
+    memory.metadata = {
+      ...memory.metadata,
+      updatedAt: new Date(),
+    };
 
     // Update cache
     this.memoryCache.set(memoryId, memory);
@@ -732,9 +735,11 @@ export class MemoryManager extends EventEmitter {
       try {
         const compressed = await this.compressMemory(memory);
         memory.content = compressed;
-        memory.metadata.compressed = true;
-        memory.metadata.compressionRatio =
-          compressed.length / memory.metadata.originalSize;
+        memory.metadata = {
+          ...memory.metadata,
+          compressed: true,
+          compressionRatio: compressed.length / (memory.metadata.originalSize || 1),
+        };
 
         // Update in cache and database
         this.memoryCache.set(memory.id, memory);

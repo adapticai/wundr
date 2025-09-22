@@ -129,7 +129,13 @@ export class SessionMemory extends EventEmitter {
       taskId: options?.taskId,
       createdAt: new Date(),
       tags: options?.tags || [],
-      metadata: {},
+      metadata: {
+        priority: 1,
+        source: 'session',
+        compression: false,
+        encryption: false,
+        checksum: '',
+      },
       ...(options?.ttl && { expiresAt: new Date(Date.now() + options.ttl) }),
     };
 

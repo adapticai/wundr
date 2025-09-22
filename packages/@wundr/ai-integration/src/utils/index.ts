@@ -2,6 +2,8 @@
  * Utility functions for AI Integration system
  */
 
+import { OperationError } from '../types';
+
 export function generateId(prefix: string = 'id'): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -51,6 +53,27 @@ export function calculateHash(data: any): string {
     hash = hash & hash;
   }
   return hash.toString(36);
+}
+
+export function createOperationError(
+  code: string,
+  message: string,
+  recoverable: boolean = true,
+  details?: Record<string, unknown>
+): OperationError {
+  return {
+    code,
+    message,
+    recoverable,
+    details,
+  };
+}
+
+export function convertErrorToOperationError(error: Error | unknown, code: string = 'UNKNOWN_ERROR'): OperationError {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  return createOperationError(code, errorMessage, true, {
+    originalError: error instanceof Error ? error.stack : undefined,
+  });
 }
 
 export class Logger {

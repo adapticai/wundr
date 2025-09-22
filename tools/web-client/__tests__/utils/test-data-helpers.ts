@@ -1,42 +1,50 @@
-import { CompleteAnalysisData, AnalysisEntity, AnalysisDuplicate } from '../../types/reports'
+import {
+  CompleteAnalysisData,
+  AnalysisEntity,
+  AnalysisDuplicate,
+} from '../../types/reports';
 
 /**
  * Helper to create complete metadata structure for tests
  */
-export function createTestMetadata(overrides: Partial<CompleteAnalysisData['metadata']> = {}): CompleteAnalysisData['metadata'] {
+export function createTestMetadata(
+  overrides: Partial<CompleteAnalysisData['metadata']> = {}
+): CompleteAnalysisData['metadata'] {
   return {
     version: '1.0.0',
     generator: 'test-fixture-generator',
     timestamp: new Date(),
-    configuration: { includeTests: true, analyzeTypes: true },
+    configuration: { includeTests: true },
     projectInfo: {
       name: 'wundr-dashboard',
       path: process.cwd(),
       language: 'TypeScript',
       framework: 'Next.js',
-      packageManager: 'npm'
+      packageManager: 'npm',
     },
-    ...overrides
-  }
+    ...overrides,
+  };
 }
 
 /**
  * Helper to create complete test metrics
  */
-export function createTestMetrics(overrides: Partial<CompleteAnalysisData['metrics']> = {}): CompleteAnalysisData['metrics'] {
+export function createTestMetrics(
+  overrides: Partial<CompleteAnalysisData['metrics']> = {}
+): CompleteAnalysisData['metrics'] {
   return {
     overview: {
       totalFiles: 0,
       totalLines: 0,
       totalEntities: 0,
       analysisTime: 0,
-      timestamp: new Date()
+      timestamp: new Date(),
     },
     quality: {
       maintainabilityIndex: 100,
       technicalDebt: {
         rating: 'A' as const,
-        minutes: 0
+        minutes: 0,
       },
       duplicateLines: 0,
       duplicateRatio: 0,
@@ -44,8 +52,8 @@ export function createTestMetrics(overrides: Partial<CompleteAnalysisData['metri
         lines: 0,
         functions: 0,
         branches: 0,
-        statements: 0
-      }
+        statements: 0,
+      },
     },
     complexity: {
       average: 0,
@@ -54,8 +62,8 @@ export function createTestMetrics(overrides: Partial<CompleteAnalysisData['metri
         low: 0,
         medium: 0,
         high: 0,
-        veryHigh: 0
-      }
+        veryHigh: 0,
+      },
     },
     issues: {
       total: 0,
@@ -64,24 +72,26 @@ export function createTestMetrics(overrides: Partial<CompleteAnalysisData['metri
         critical: 0,
         high: 0,
         medium: 0,
-        low: 0
-      }
+        low: 0,
+      },
     },
     dependencies: {
       total: 0,
       circular: 0,
       unused: 0,
       outdated: 0,
-      vulnerable: 0
+      vulnerable: 0,
     },
-    ...overrides
-  }
+    ...overrides,
+  };
 }
 
 /**
  * Helper to create minimal complete analysis data structure
  */
-export function createCompleteAnalysisData(overrides: Partial<CompleteAnalysisData> = {}): CompleteAnalysisData {
+export function createCompleteAnalysisData(
+  overrides: Partial<CompleteAnalysisData> = {}
+): CompleteAnalysisData {
   return {
     metadata: createTestMetadata(),
     entities: [],
@@ -90,8 +100,8 @@ export function createCompleteAnalysisData(overrides: Partial<CompleteAnalysisDa
     securityIssues: [],
     metrics: createTestMetrics(),
     recommendations: [],
-    ...overrides
-  }
+    ...overrides,
+  };
 }
 
 /**
@@ -100,12 +110,24 @@ export function createCompleteAnalysisData(overrides: Partial<CompleteAnalysisDa
 export function createSimpleEntity(data: {
   name?: string;
   path?: string;
-  type?: 'class' | 'function' | 'module' | 'component' | 'interface' | 'enum' | 'type';
+  type?:
+    | 'class'
+    | 'function'
+    | 'module'
+    | 'component'
+    | 'interface'
+    | 'enum'
+    | 'type';
   dependencies?: string[];
   complexity?: number;
   issues?: Array<{
     id: string;
-    type: 'code-smell' | 'bug' | 'vulnerability' | 'maintainability' | 'performance';
+    type:
+      | 'code-smell'
+      | 'bug'
+      | 'vulnerability'
+      | 'maintainability'
+      | 'performance';
     severity: 'low' | 'medium' | 'high' | 'critical';
     message: string;
     rule?: string;
@@ -118,22 +140,22 @@ export function createSimpleEntity(data: {
     id: data.name || 'test-entity',
     name: data.name || 'test-entity',
     path: data.path || 'test/path',
-    type: data.type || 'module' as const,
+    type: data.type || ('module' as const),
     dependencies: data.dependencies || [],
     dependents: [],
     complexity: {
       cyclomatic: data.complexity || 1,
-      cognitive: data.complexity || 1
+      cognitive: data.complexity || 1,
     },
     metrics: {
       linesOfCode: 10,
       maintainabilityIndex: 85,
-      testCoverage: 75
+      testCoverage: 75,
     },
     issues: data.issues || [],
     tags: [],
-    lastModified: new Date()
-  }
+    lastModified: new Date(),
+  };
 }
 
 /**
@@ -154,20 +176,22 @@ export function createSimpleDuplicate(data: {
 }): AnalysisDuplicate {
   return {
     id: data.id || 'test-duplicate',
-    type: data.type || 'structural' as const,
-    severity: data.severity || 'medium' as const,
+    type: data.type || ('structural' as const),
+    severity: data.severity || ('medium' as const),
     similarity: 85,
-    occurrences: data.occurrences || [{
-      path: 'test/path1',
-      startLine: 1,
-      endLine: 10,
-      content: 'test content',
-      context: 'test context'
-    }],
+    occurrences: data.occurrences || [
+      {
+        path: 'test/path1',
+        startLine: 1,
+        endLine: 10,
+        content: 'test content',
+        context: 'test context',
+      },
+    ],
     linesCount: data.linesCount || 10,
     tokensCount: 50,
     effort: 'medium' as const,
     impact: 'medium' as const,
-    recommendation: 'Extract common functionality'
-  }
+    recommendation: 'Extract common functionality',
+  };
 }

@@ -51,12 +51,14 @@ export interface AnalyzerConfig {
   enabled: boolean;
   excludePatterns: string[];
   includePatterns: string[];
-  rules: Record<string, any>;
+  rules: Record<string, unknown>;
   severity: 'info' | 'warning' | 'error' | 'critical';
 }
 
 export class CodeAnalyzer {
-  constructor(_config?: Record<string, AnalyzerConfig>) {}
+  constructor(_config?: Record<string, AnalyzerConfig>) {
+    // Initialize analyzer with optional configuration
+  }
 
   async analyze(projectPath: string): Promise<AnalysisReport> {
     const startTime = Date.now();

@@ -8,6 +8,7 @@
 import { EventEmitter } from 'eventemitter3';
 
 import { AgentConfig, Agent, AgentType, Task, OperationResult } from '../types';
+import { convertErrorToOperationError } from '../utils';
 
 /**
  * Agent Load Balancer - Manages agent workload distribution
@@ -183,7 +184,7 @@ export class AgentCoordinator extends EventEmitter {
       return {
         success: false,
         message: `Agent Coordinator initialization failed: ${(error as Error).message}`,
-        error: error as Error,
+        error: convertErrorToOperationError(error, 'AGENT_INIT_ERROR'),
       };
     }
   }
@@ -605,7 +606,7 @@ export class AgentCoordinator extends EventEmitter {
       return {
         success: false,
         message: `Shutdown failed: ${(error as Error).message}`,
-        error: error as Error,
+        error: convertErrorToOperationError(error, 'AGENT_SHUTDOWN_ERROR'),
       };
     }
   }

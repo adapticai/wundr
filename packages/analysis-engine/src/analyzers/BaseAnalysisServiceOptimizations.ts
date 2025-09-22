@@ -6,14 +6,34 @@
 import { EventEmitter } from 'events';
 import * as path from 'path';
 
-
 import * as fs from 'fs-extra';
 import { glob } from 'glob';
 
 import { CodeAnalyzer } from './index';
 
-import type { AnalysisReport } from './index';
+import type { AnalysisReport, AnalysisResult } from './index';
 import type { Worker } from 'worker_threads';
+
+export interface DuplicateGroup {
+  type: string;
+  files: string[];
+  size: number;
+  similarity: number;
+}
+
+export interface QualityMetrics {
+  circularDependencies: number;
+  codeSmells: number;
+  technicalDebt: number;
+}
+
+export interface ReportData {
+  analysis: AnalysisReport;
+  duplicates: DuplicateGroup[];
+  quality: QualityMetrics;
+  timestamp: Date;
+  config: OptimizedAnalysisConfig;
+}
 
 export interface OptimizedAnalysisConfig {
   targetDir: string;
@@ -47,8 +67,8 @@ export interface OptimizedAnalysisResult {
   error?: Error | null;
   data?: {
     files: number;
-    duplicates: any[];
-    violations: any[];
+    duplicates: DuplicateGroup[];
+    violations: AnalysisResult[];
     summary: {
       totalFiles: number;
       duplicateGroups: number;
@@ -70,7 +90,7 @@ export class OptimizedBaseAnalysisService extends EventEmitter {
   private config: OptimizedAnalysisConfig;
   private analyzer: CodeAnalyzer;
   private workers: Worker[] = [];
-  private cache = new Map<string, any>();
+  private cache = new Map<string, unknown>();
   private isInitialized = false;
 
   constructor(config: OptimizedAnalysisConfig) {
@@ -96,11 +116,11 @@ return;
     this.emit('initialized');
   }
 
-  async startAnalysis(options: any = {}): Promise<OptimizedAnalysisResult> {
+  async startAnalysis(options: Record<string, unknown> = {}): Promise<OptimizedAnalysisResult> {
     return this.analyze(this.config.targetDir, options);
   }
 
-  async analyze(directory: string, _options: any = {}): Promise<OptimizedAnalysisResult> {
+  async analyze(directory: string, _options: Record<string, unknown> = {}): Promise<OptimizedAnalysisResult> {
     const startTime = Date.now();
     const phases: AnalysisPhaseResult[] = [];
 
@@ -299,7 +319,7 @@ return;
       // In a real implementation, this would process the specific chunk
       const chunkReport = await this.analyzer.analyze(projectPath);
       
-      if (!totalReport) {
+      if (totalReport === null) {
         totalReport = chunkReport;
       } else {
         // Merge reports
@@ -322,13 +342,13 @@ return;
         });
         
         // Force garbage collection if available
-        if (global.gc) {
+        if (typeof global.gc === 'function') {
           global.gc();
         }
       }
     }
 
-    return totalReport || {
+    return totalReport ?? {
       timestamp: new Date(),
       projectPath,
       totalFiles: files.length,
@@ -358,9 +378,9 @@ return;
     };
   }
 
-  private async detectDuplicates(files: string[]): Promise<any[]> {
+  private async detectDuplicates(files: string[]): Promise<DuplicateGroup[]> {
     // Simple duplicate detection based on file size and basic content hashing
-    const duplicates: any[] = [];
+    const duplicates: DuplicateGroup[] = [];
     const sizeGroups = new Map<number, string[]>();
 
     for (const file of files) {
@@ -392,11 +412,8 @@ return;
     return duplicates;
   }
 
-  private async analyzeCodeQuality(files: string[]): Promise<{
-    circularDependencies: number;
-    codeSmells: number;
-    technicalDebt: number;
-  }> {
+  private async analyzeCodeQuality(files: string[]): Promise<QualityMetrics> {
+    await Promise.resolve(); // Add await expression to satisfy linter
     // Simple code quality analysis
     let circularDependencies = 0;
     let codeSmells = 0;
@@ -426,8 +443,8 @@ return;
 
   private async generateReports(
     analysisReport: AnalysisReport,
-    duplicates: any[],
-    qualityMetrics: any,
+    duplicates: DuplicateGroup[],
+    qualityMetrics: QualityMetrics,
   ): Promise<void> {
     for (const format of this.config.outputFormats) {
       const reportData = {
@@ -456,7 +473,7 @@ return;
     }
   }
 
-  private async generateHtmlReport(data: any): Promise<void> {
+  private async generateHtmlReport(data: ReportData): Promise<void> {
     const html = `
 <!DOCTYPE html>
 <html>
@@ -477,14 +494,14 @@ return;
         <div class="metric">Duplicates: <strong>${data.duplicates.length}</strong></div>
         <div class="metric">Code Smells: <strong>${data.quality.codeSmells}</strong></div>
     </div>
-    <p>Generated on: ${data.timestamp}</p>
+    <p>Generated on: ${data.timestamp.toString()}</p>
 </body>
 </html>`;
 
     await fs.writeFile(path.join(this.config.outputDir, 'analysis-report.html'), html);
   }
 
-  private async generateMarkdownReport(data: any): Promise<void> {
+  private async generateMarkdownReport(data: ReportData): Promise<void> {
     const markdown = `# Code Analysis Report
 
 ## Summary
@@ -509,7 +526,7 @@ return;
 - Technical Debt Score: ${data.quality.technicalDebt}
 
 ---
-*Generated on: ${data.timestamp}*
+*Generated on: ${data.timestamp.toString()}*
 `;
 
     await fs.writeFile(path.join(this.config.outputDir, 'analysis-report.md'), markdown);

@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist-test",
+    "rootDir": ".",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "types": ["node", "jest"]
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "dist-test",
+    "node_modules"
+  ]
+}

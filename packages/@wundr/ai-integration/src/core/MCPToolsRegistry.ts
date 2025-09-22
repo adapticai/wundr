@@ -11,6 +11,7 @@ import { EventEmitter } from 'eventemitter3';
 import * as fs from 'fs-extra';
 
 import { MCPToolsConfig, MCPTool, Task, OperationResult } from '../types';
+import { convertErrorToOperationError } from '../utils';
 
 export class MCPToolsRegistry extends EventEmitter {
   private config: MCPToolsConfig;
@@ -317,7 +318,7 @@ export class MCPToolsRegistry extends EventEmitter {
       return {
         success: false,
         message: `MCP Tools Registry initialization failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error)),
+        error: convertErrorToOperationError(error, 'MCP_REGISTRY_ERROR'),
       };
     }
   }
@@ -409,9 +410,11 @@ export class MCPToolsRegistry extends EventEmitter {
       capabilities: toolConfig.capabilities,
       status: 'available',
       metadata: {
+        version: toolConfig.version || '1.0.0',
+        dependencies: toolConfig.dependencies || [],
+        configuration: { ...toolConfig, registeredAt: new Date().toISOString() },
+        permissions: toolConfig.permissions || [],
         handler: toolConfig.handler,
-        config: toolConfig,
-        registeredAt: new Date().toISOString(),
       },
     };
 
@@ -470,9 +473,11 @@ export class MCPToolsRegistry extends EventEmitter {
         capabilities: ['external-integration'],
         status: 'available',
         metadata: {
+          version: serverConfig.version || '1.0.0',
+          dependencies: serverConfig.dependencies || [],
+          configuration: { ...serverConfig, discoveredAt: new Date().toISOString() },
+          permissions: serverConfig.permissions || [],
           server: serverName,
-          config: serverConfig,
-          discoveredAt: new Date().toISOString(),
         },
       };
 
@@ -692,7 +697,7 @@ export class MCPToolsRegistry extends EventEmitter {
       return {
         success: false,
         message: `Shutdown failed: ${errorMessage}`,
-        error: error instanceof Error ? error : new Error(String(error)),
+        error: convertErrorToOperationError(error, 'MCP_REGISTRY_ERROR'),
       };
     }
   }

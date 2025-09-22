@@ -193,6 +193,23 @@ export class NeuralTrainingPipeline extends EventEmitter {
       status: 'training',
       trainingData: [],
       parameters: {
+        layers: definition.architecture.layers || [],
+        optimizer: {
+          type: 'adam',
+          learningRate: 0.001,
+          beta1: 0.9,
+          beta2: 0.999,
+        },
+        hyperparameters: {
+          epochs: 100,
+          batchSize: 32,
+          learningRate: 0.001,
+          validationSplit: 0.2,
+        },
+        regularization: {
+          l2: 0.001,
+          dropout: 0.3,
+        },
         architecture: definition.architecture,
         features: definition.inputFeatures || definition.inputFeatures,
         outputs:

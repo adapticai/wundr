@@ -8,6 +8,22 @@ import * as path from 'path';
 
 import * as fs from 'fs-extra';
 
+export interface MemoryStats {
+  timestamp: number;
+  heapUsed: number;
+  heapTotal: number;
+  rss: number;
+  external: number;
+  arrayBuffers: number;
+}
+
+export interface MemoryAlert {
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  current: number;
+  threshold: number;
+}
+
 export interface MemorySnapshot {
   timestamp: number;
   heapUsed: number;
@@ -55,7 +71,7 @@ export interface MonitorConfig {
 /**
  * Simplified memory monitoring
  */
-export class MemoryMonitor extends EventEmitter {
+export class MemoryMonitorService extends EventEmitter {
   private config: MonitorConfig;
   private snapshots: MemorySnapshot[] = [];
   private monitoringInterval: NodeJS.Timeout | null = null;
@@ -98,18 +114,19 @@ return;
 
   async stopMonitoring(): Promise<void> {
     if (!this.isMonitoring) {
-return;
-}
+      return;
+    }
 
     this.isMonitoring = false;
 
-    if (this.monitoringInterval) {
+    if (this.monitoringInterval !== null) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
     }
 
     this.takeSnapshot();
     this.emit('monitoring-stopped');
+    await Promise.resolve(); // Add await expression to satisfy linter
   }
 
   private takeSnapshot(): void {
@@ -154,7 +171,7 @@ return;
 
   getSnapshot(): MemorySnapshot | null {
     const lastSnapshot = this.snapshots[this.snapshots.length - 1];
-    return lastSnapshot || null;
+    return lastSnapshot ?? null;
   }
 
   getMetrics(): MemoryMetrics {

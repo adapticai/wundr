@@ -63,9 +63,26 @@ export class NeuralModels extends EventEmitter {
         type: 'task-classification',
         status: 'ready',
         parameters: {
-          layers: ['dense', 'dropout', 'dense'],
-          activation: 'relu',
-          outputActivation: 'softmax',
+          layers: [
+            { type: 'dense', size: 128, activation: 'relu' },
+            { type: 'dropout', size: 128, activation: 'relu', dropout: 0.3 },
+            { type: 'dense', size: 64, activation: 'softmax' }
+          ],
+          optimizer: {
+            type: 'adam',
+            learningRate: 0.001,
+            beta1: 0.9,
+            beta2: 0.999
+          },
+          hyperparameters: {
+            epochs: 100,
+            batchSize: 32,
+            validationSplit: 0.2
+          },
+          regularization: {
+            l2: 0.001,
+            dropout: 0.3
+          }
         },
       },
       {
@@ -73,9 +90,25 @@ export class NeuralModels extends EventEmitter {
         type: 'agent-selection',
         status: 'ready',
         parameters: {
-          layers: ['dense', 'batch_norm', 'dense'],
-          activation: 'relu',
-          outputActivation: 'sigmoid',
+          layers: [
+            { type: 'dense', size: 256, activation: 'relu' },
+            { type: 'batch_norm', size: 256, activation: 'relu' },
+            { type: 'dense', size: 1, activation: 'sigmoid' }
+          ],
+          optimizer: {
+            type: 'adam',
+            learningRate: 0.0005,
+            beta1: 0.9,
+            beta2: 0.999
+          },
+          hyperparameters: {
+            epochs: 150,
+            batchSize: 64,
+            validationSplit: 0.25
+          },
+          regularization: {
+            l2: 0.0005
+          }
         },
       },
       {
@@ -83,9 +116,24 @@ export class NeuralModels extends EventEmitter {
         type: 'performance-prediction',
         status: 'ready',
         parameters: {
-          layers: ['lstm', 'dense', 'dense'],
-          activation: 'tanh',
-          outputActivation: 'linear',
+          layers: [
+            { type: 'lstm', size: 128, activation: 'tanh' },
+            { type: 'dense', size: 64, activation: 'relu' },
+            { type: 'dense', size: 1, activation: 'linear' }
+          ],
+          optimizer: {
+            type: 'rmsprop',
+            learningRate: 0.002
+          },
+          hyperparameters: {
+            epochs: 200,
+            batchSize: 16,
+            validationSplit: 0.3
+          },
+          regularization: {
+            l1: 0.001,
+            dropout: 0.2
+          }
         },
       },
       {
@@ -93,9 +141,25 @@ export class NeuralModels extends EventEmitter {
         type: 'pattern-recognition',
         status: 'ready',
         parameters: {
-          layers: ['conv1d', 'pool', 'dense'],
-          activation: 'relu',
-          outputActivation: 'softmax',
+          layers: [
+            { type: 'conv1d', size: 64, activation: 'relu', filters: 64, kernelSize: 3 },
+            { type: 'pool', size: 32, activation: 'relu', poolSize: 2 },
+            { type: 'dense', size: 10, activation: 'softmax', units: 10 }
+          ],
+          optimizer: {
+            type: 'sgd',
+            learningRate: 0.01,
+            momentum: 0.9
+          },
+          hyperparameters: {
+            epochs: 120,
+            batchSize: 128,
+            validationSplit: 0.2
+          },
+          regularization: {
+            l2: 0.01,
+            dropout: 0.4
+          }
         },
       },
     ];
@@ -178,14 +242,24 @@ export class NeuralModels extends EventEmitter {
       return {
         success: true,
         message: `Model ${model.name} trained successfully`,
-        data: { performance },
+        data: {
+          type: 'training-result',
+          payload: { performance },
+          timestamp: new Date(),
+          source: 'neural-models'
+        },
       };
     } catch (error) {
       model.status = 'error';
       return {
         success: false,
         message: `Training failed: ${(error as Error).message}`,
-        error,
+        error: {
+          code: 'TRAINING_FAILED',
+          message: (error as Error).message,
+          recoverable: true,
+          details: { modelId, error }
+        },
       };
     }
   }
@@ -220,7 +294,7 @@ export class NeuralModels extends EventEmitter {
     dataSize: number
   ): ModelPerformance {
     // Base performance varies by model type
-    const basePerformance = {
+    const basePerformance: Record<ModelType, { accuracy: number; precision: number; recall: number }> = {
       'pattern-recognition': { accuracy: 0.85, precision: 0.83, recall: 0.87 },
       'performance-prediction': {
         accuracy: 0.78,
@@ -229,6 +303,12 @@ export class NeuralModels extends EventEmitter {
       },
       'task-classification': { accuracy: 0.92, precision: 0.9, recall: 0.94 },
       'agent-selection': { accuracy: 0.88, precision: 0.86, recall: 0.9 },
+      'anomaly-detection': { accuracy: 0.84, precision: 0.82, recall: 0.86 },
+      'optimization': { accuracy: 0.81, precision: 0.79, recall: 0.83 },
+      'reinforcement-learning': { accuracy: 0.76, precision: 0.74, recall: 0.78 },
+      'natural-language-processing': { accuracy: 0.89, precision: 0.87, recall: 0.91 },
+      'time-series-forecasting': { accuracy: 0.82, precision: 0.8, recall: 0.84 },
+      'clustering': { accuracy: 0.77, precision: 0.75, recall: 0.79 },
     };
 
     const base = basePerformance[type] || {
@@ -458,13 +538,23 @@ export class NeuralModels extends EventEmitter {
       return {
         success: true,
         message: `Model ${model.name} imported successfully`,
-        data: { modelId: model.id },
+        data: {
+          type: 'import-result',
+          payload: { modelId: model.id },
+          timestamp: new Date(),
+          source: 'neural-models'
+        },
       };
     } catch (error) {
       return {
         success: false,
         message: `Import failed: ${(error as Error).message}`,
-        error,
+        error: {
+          code: 'IMPORT_FAILED',
+          message: (error as Error).message,
+          recoverable: true,
+          details: { error }
+        },
       };
     }
   }

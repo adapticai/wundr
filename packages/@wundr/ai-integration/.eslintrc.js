@@ -1,5 +1,6 @@
 module.exports = {
   root: true,
+  ignorePatterns: ['.eslintrc.js'],
   env: {
     node: true,
     es2022: true,
@@ -71,10 +72,18 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.test.ts', '*.spec.ts'],
+      files: ['tests/**/*.ts', '*.test.ts', '*.spec.ts'],
+      parserOptions: {
+        project: './tsconfig.test.json',
+        tsconfigRootDir: __dirname,
+      },
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
-        'import/no-default-export': 'off'
+        'import/no-default-export': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        'unused-imports/no-unused-imports': 'off',
+        'no-console': 'off',
+        'jest/expect-expect': 'off'
       }
     },
     {
@@ -89,7 +98,7 @@ module.exports = {
     'import/resolver': {
       typescript: {
         alwaysTryTypes: true,
-        project: './tsconfig.json'
+        project: ['./tsconfig.json', './tsconfig.test.json']
       }
     }
   }

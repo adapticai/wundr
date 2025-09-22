@@ -294,14 +294,50 @@ export interface NeuralModel {
   performance: ModelPerformance;
   createdAt: Date;
   updatedAt: Date;
+  version?: string;
+  description?: string;
+  inputShape?: number[];
+  outputShape?: number[];
+  modelSize?: number; // In bytes
+  checkpointPath?: string;
+  config?: {
+    readonly batchSize?: number;
+    readonly epochs?: number;
+    readonly validationSplit?: number;
+    readonly callbacks?: string[];
+  };
+  trainingHistory?: {
+    readonly epoch: number;
+    readonly loss: number;
+    readonly accuracy: number;
+    readonly val_loss?: number;
+    readonly val_accuracy?: number;
+  }[];
+  lastTrainingTime?: Date;
+  inferenceCount?: number;
 }
 
 export type ModelType =
   | 'pattern-recognition'
   | 'performance-prediction'
   | 'task-classification'
-  | 'agent-selection';
-export type ModelStatus = 'training' | 'ready' | 'updating' | 'error';
+  | 'agent-selection'
+  | 'anomaly-detection'
+  | 'optimization'
+  | 'reinforcement-learning'
+  | 'natural-language-processing'
+  | 'time-series-forecasting'
+  | 'clustering';
+export type ModelStatus =
+  | 'initializing'
+  | 'training'
+  | 'ready'
+  | 'updating'
+  | 'validating'
+  | 'deploying'
+  | 'error'
+  | 'deprecated'
+  | 'archived';
 
 export interface ModelPerformance {
   accuracy: number;
@@ -407,6 +443,12 @@ export interface TopologyMetadata {
   readonly parameters: Record<string, unknown>;
   readonly constraints: Record<string, unknown>;
   readonly optimizations: string[];
+  readonly communicationOverhead?: number;
+  readonly scalability?: number;
+  readonly decisionSpeed?: number;
+  readonly customizedFor?: string;
+  readonly createdAt?: string;
+  readonly optimalFor?: string[];
 }
 
 export interface SPARCResult {
@@ -475,6 +517,14 @@ export interface MemoryMetadata {
   readonly compression: boolean;
   readonly encryption: boolean;
   readonly checksum: string;
+  readonly taskType?: string;
+  readonly requiredCapabilities?: string[];
+  readonly updatedAt?: Date;
+  readonly compressed?: boolean;
+  readonly compressionRatio?: number;
+  readonly originalSize?: number;
+  readonly importance?: number;
+  readonly capabilities?: string[];
 }
 
 export interface RecognizedPattern {
@@ -492,10 +542,16 @@ export interface PatternOccurrence {
 }
 
 export interface TrainingDataPoint {
-  readonly input: Record<string, unknown>;
-  readonly output: Record<string, unknown>;
+  readonly input: Record<string, unknown> | number[];
+  readonly output: Record<string, unknown> | number[] | string;
+  readonly target?: number[] | string; // For supervised learning
+  readonly features?: number[]; // For feature-based models
+  readonly label?: string | number; // For classification
   readonly metadata: Record<string, unknown>;
   readonly quality: number;
+  readonly weight?: number; // Sample weight for training
+  readonly timestamp?: Date;
+  readonly source?: string;
 }
 
 export interface ModelParameters {
@@ -503,27 +559,57 @@ export interface ModelParameters {
   readonly optimizer: OptimizerConfiguration;
   readonly hyperparameters: Record<string, number>;
   readonly regularization: RegularizationConfiguration;
+  readonly architecture?: {
+    readonly layers: LayerConfiguration[];
+    readonly inputShape?: number[];
+    readonly outputShape?: number[];
+  } | Record<string, unknown>;
+  readonly features?: string[];
+  readonly outputs?: string[] | string;
+  readonly compilationOptions?: {
+    readonly loss?: string;
+    readonly metrics?: string[];
+    readonly lossWeights?: number[];
+  };
 }
 
 export interface LayerConfiguration {
   readonly type: string;
   readonly size: number;
-  readonly activation: string;
+  readonly activation?: string;
   readonly dropout?: number;
+  readonly rate?: number; // For dropout layers
+  readonly units?: number; // For LSTM layers
+  readonly returnSequences?: boolean; // For LSTM layers
+  readonly inputDim?: number; // For embedding layers
+  readonly filters?: number; // For conv1d layers
+  readonly kernelSize?: number; // For conv1d layers
+  readonly poolSize?: number; // For pooling layers
+  readonly strides?: number; // For convolutional layers
+  readonly padding?: 'valid' | 'same'; // For convolutional layers
 }
 
 export interface OptimizerConfiguration {
-  readonly type: 'adam' | 'sgd' | 'rmsprop';
+  readonly type: 'adam' | 'sgd' | 'rmsprop' | 'adamax' | 'nadam' | 'adagrad';
   readonly learningRate: number;
   readonly momentum?: number;
   readonly beta1?: number;
   readonly beta2?: number;
+  readonly rho?: number; // For rmsprop
+  readonly epsilon?: number; // For optimizers
+  readonly decay?: number; // Learning rate decay
+  readonly clipnorm?: number; // Gradient clipping
+  readonly clipvalue?: number; // Gradient clipping
 }
 
 export interface RegularizationConfiguration {
   readonly l1?: number;
   readonly l2?: number;
   readonly dropout?: number;
+  readonly batchNormalization?: boolean;
+  readonly earlyStoppingPatience?: number;
+  readonly validationSplit?: number;
+  readonly weightDecay?: number;
 }
 
 export interface MCPToolMetadata {
@@ -531,6 +617,8 @@ export interface MCPToolMetadata {
   readonly dependencies: string[];
   readonly configuration: Record<string, unknown>;
   readonly permissions: string[];
+  readonly handler?: (...args: unknown[]) => unknown;
+  readonly server?: string;
 }
 
 export interface OperationResultData {
@@ -538,6 +626,26 @@ export interface OperationResultData {
   readonly payload: Record<string, unknown>;
   readonly timestamp: Date;
   readonly source: string;
+  readonly status?: string;
+  readonly agents?: Agent[];
+  readonly performance?: ModelPerformance;
+  readonly modelId?: string;
+  readonly metrics?: {
+    readonly accuracy?: number;
+    readonly loss?: number;
+    readonly validationLoss?: number;
+    readonly epochs?: number;
+    readonly convergence?: boolean;
+    readonly trainingTime?: number;
+  };
+  readonly jobId?: string;
+  readonly progress?: number;
+  readonly batchSize?: number;
+  readonly validationResults?: {
+    readonly accuracy: number;
+    readonly loss: number;
+    readonly confusionMatrix?: number[][];
+  };
 }
 
 export interface OperationError {

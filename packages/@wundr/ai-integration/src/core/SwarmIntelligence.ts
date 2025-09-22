@@ -70,9 +70,13 @@ export class SwarmIntelligence extends EventEmitter {
       coordinationStyle: 'peer-to-peer',
       faultTolerance: 'high',
       metadata: {
-        communicationOverhead: 'high',
-        decisionSpeed: 'medium',
-        scalability: 'low',
+        algorithm: 'mesh-consensus',
+        parameters: { connectionDensity: 'full' },
+        constraints: { maxNodes: 10 },
+        optimizations: ['fault-tolerance', 'consensus'],
+        communicationOverhead: 0.8,
+        decisionSpeed: 0.6,
+        scalability: 0.3,
         optimalFor: ['consensus-critical', 'fault-tolerance', 'small-teams'],
       },
     });
@@ -85,9 +89,13 @@ export class SwarmIntelligence extends EventEmitter {
       coordinationStyle: 'top-down',
       faultTolerance: 'medium',
       metadata: {
-        communicationOverhead: 'low',
-        decisionSpeed: 'fast',
-        scalability: 'high',
+        algorithm: 'hierarchical-tree',
+        parameters: { depth: 3, branchingFactor: 5 },
+        constraints: { maxDepth: 4 },
+        optimizations: ['scalability', 'performance'],
+        communicationOverhead: 0.2,
+        decisionSpeed: 0.9,
+        scalability: 0.9,
         optimalFor: ['large-projects', 'structured-tasks', 'command-control'],
       },
     });
@@ -100,9 +108,13 @@ export class SwarmIntelligence extends EventEmitter {
       coordinationStyle: 'adaptive',
       faultTolerance: 'high',
       metadata: {
-        communicationOverhead: 'variable',
-        decisionSpeed: 'adaptive',
-        scalability: 'medium',
+        algorithm: 'adaptive-swarm',
+        parameters: { adaptationRate: 0.1, learningFactor: 0.05 },
+        constraints: { minAgents: 2, maxAgents: 20 },
+        optimizations: ['adaptation', 'learning'],
+        communicationOverhead: 0.5,
+        decisionSpeed: 0.7,
+        scalability: 0.6,
         optimalFor: [
           'complex-projects',
           'changing-requirements',
@@ -119,9 +131,13 @@ export class SwarmIntelligence extends EventEmitter {
       coordinationStyle: 'distributed',
       faultTolerance: 'medium',
       metadata: {
-        communicationOverhead: 'medium',
-        decisionSpeed: 'medium',
-        scalability: 'medium',
+        algorithm: 'ring-topology',
+        parameters: { ringSize: 10 },
+        constraints: { maxRingSize: 15 },
+        optimizations: ['balanced-load', 'predictability'],
+        communicationOverhead: 0.5,
+        decisionSpeed: 0.6,
+        scalability: 0.6,
         optimalFor: [
           'pipeline-tasks',
           'sequential-processing',
@@ -138,9 +154,13 @@ export class SwarmIntelligence extends EventEmitter {
       coordinationStyle: 'centralized',
       faultTolerance: 'low',
       metadata: {
-        communicationOverhead: 'low',
-        decisionSpeed: 'very-fast',
-        scalability: 'high',
+        algorithm: 'star-central',
+        parameters: { centralNode: 'coordinator' },
+        constraints: { maxSpokes: 20 },
+        optimizations: ['performance', 'speed'],
+        communicationOverhead: 0.1,
+        decisionSpeed: 0.95,
+        scalability: 0.9,
         optimalFor: ['coordination-intensive', 'real-time', 'simple-tasks'],
       },
     });
@@ -343,9 +363,9 @@ export class SwarmIntelligence extends EventEmitter {
 
     // Scalability match
     const scalabilityBonus = {
-      high: topology.metadata?.scalability === 'high' ? 15 : 0,
-      medium: topology.metadata?.scalability === 'medium' ? 10 : 0,
-      low: topology.metadata?.scalability === 'low' ? 5 : 0,
+      high: (topology.metadata?.scalability || 0) > 0.7 ? 15 : 0,
+      medium: (topology.metadata?.scalability || 0) > 0.4 && (topology.metadata?.scalability || 0) <= 0.7 ? 10 : 0,
+      low: (topology.metadata?.scalability || 0) <= 0.4 ? 5 : 0,
     };
     score += scalabilityBonus[analysis.scalabilityRequirement] || 0;
 
@@ -406,7 +426,7 @@ export class SwarmIntelligence extends EventEmitter {
 
     if (
       analysis.timeConstraints === 'tight' &&
-      topology.metadata?.decisionSpeed === 'medium'
+(topology.metadata?.decisionSpeed || 0) >= 0.5 && (topology.metadata?.decisionSpeed || 0) < 0.8
     ) {
       optimizations.push('Enable fast-track decision making');
     }
