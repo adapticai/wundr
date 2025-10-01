@@ -14,6 +14,7 @@ import {
   Upload,
 } from 'lucide-react';
 import * as React from 'react';
+import Link from 'next/link';
 
 import { NavMain } from '@/components/nav-main';
 import { NavProjects } from '@/components/nav-projects';
@@ -217,7 +218,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size='lg' asChild>
-              <a href='/dashboard'>
+              <Link href='/dashboard'>
                 <div className='flex aspect-square size-8 items-center justify-center'>
                   <WundrLogo size={32} theme='auto' />
                 </div>
@@ -227,7 +228,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     by Wundr, by Adaptic.ai
                   </span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

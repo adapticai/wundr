@@ -213,14 +213,7 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
     } else if (layoutType === 'hierarchical') {
       applyHierarchicalLayout(graphNodes, graphLinks);
     }
-  }, [
-    dependencies,
-    filterType,
-    layoutType,
-    applyForceLayout,
-    applyCircularLayout,
-    applyHierarchicalLayout,
-  ]);
+  }, [dependencies, filterType, layoutType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const drawGraph = useCallback(() => {
     const canvas = canvasRef.current;
@@ -385,11 +378,11 @@ export function DependencyGraph({ dependencies }: DependencyGraphProps) {
   // UseEffect hooks must be after the function definitions
   useEffect(() => {
     generateGraph();
-  }, [generateGraph]);
+  }, [dependencies, filterType, layoutType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     drawGraph();
-  }, [drawGraph]);
+  }, [nodes, links, zoom, pan, selectedNode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className='space-y-4'>

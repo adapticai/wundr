@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "echo 'Build temporarily disabled for ai-integration package - TypeScript errors need resolution'",
+    "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
     "dev": "tsc --watch",
