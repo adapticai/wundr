@@ -229,19 +229,24 @@ export class ClaudeInstaller implements BaseInstaller {
   }
 
   private async installClaudeCLI(): Promise<void> {
-    console.log('📦 Checking Claude CLI availability...');
+    console.log('📦 Installing Claude Code CLI...');
     const { execSync } = require('child_process');
-    
-    // Note: The official Claude CLI might not be publicly available yet
-    // For now, we'll skip the global CLI installation and rely on Claude Flow
+
     try {
       // Check if claude command exists
       execSync('which claude', { stdio: 'pipe' });
       console.log('✅ Claude CLI already available');
+      return;
     } catch {
-      console.log('ℹ️ Claude CLI not found (this is normal - using Claude Flow instead)');
-      // The official Claude CLI package might not be available
-      // Users can install it later when it becomes available
+      // Install @anthropic-ai/claude-code globally
+      console.log('Installing @anthropic-ai/claude-code globally...');
+      try {
+        execSync('npm install -g @anthropic-ai/claude-code', { stdio: 'inherit' });
+        console.log('✅ Claude Code CLI installed successfully');
+      } catch (error) {
+        console.error('❌ Failed to install Claude Code CLI:', error);
+        throw error;
+      }
     }
   }
 
@@ -291,25 +296,57 @@ export class ClaudeInstaller implements BaseInstaller {
   private async installMCPServers(): Promise<void> {
     console.log('🔧 Installing MCP servers...');
     const { execSync } = require('child_process');
-    
+
+    // Check if claude CLI is available
+    let claudeAvailable = false;
+    try {
+      execSync('which claude', { stdio: 'pipe' });
+      claudeAvailable = true;
+    } catch {
+      console.log('ℹ️  Claude CLI not found - MCP servers require Claude Code CLI to be installed first');
+      console.log('   You can install MCP servers later using: claude mcp add <name> <command>');
+      return;
+    }
+
+    const installMCP = (name: string, command: string) => {
+      try {
+        execSync(command, { stdio: 'pipe', timeout: 30000 });
+        console.log(`✓ Installed ${name}`);
+      } catch (error: any) {
+        const stderr = error.stderr?.toString() || '';
+        const stdout = error.stdout?.toString() || '';
+        if (stderr.includes('already exists') || stdout.includes('already exists')) {
+          console.log(`⚠️  ${name} already installed, skipping`);
+        } else if (stderr.includes('could not determine executable')) {
+          console.warn(`⚠️  ${name} package not found in npm registry, skipping`);
+        } else {
+          console.warn(`⚠️  Failed to install ${name}: ${error.message}`);
+        }
+      }
+    };
+
     // Install Claude Flow
-    execSync('npx claude mcp add claude-flow npx claude-flow@alpha mcp start');
-    
+    installMCP('claude-flow', 'claude mcp add claude-flow npx claude-flow@alpha mcp start');
+
     // Install Firecrawl MCP
-    execSync('npx claude mcp add firecrawl npx @firecrawl/mcp-server');
-    
+    installMCP('firecrawl', 'claude mcp add firecrawl npx @firecrawl/mcp-server');
+
     // Install Context7 MCP
-    execSync('npx claude mcp add context7 npx @context7/mcp-server');
-    
+    installMCP('context7', 'claude mcp add context7 npx @context7/mcp-server');
+
     // Install Playwright MCP
-    execSync('npx claude mcp add playwright npx @playwright/mcp-server');
-    
+    installMCP('playwright', 'claude mcp add playwright npx @playwright/mcp-server');
+
     // Install Browser MCP
-    execSync('npx claude mcp add browser npx @browser/mcp-server');
-    
+    installMCP('browser', 'claude mcp add browser npx @browser/mcp-server');
+
     // Install Sequential Thinking MCP
-    execSync('npm install -g @modelcontextprotocol/server-sequentialthinking');
-    execSync('npx claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js');
+    try {
+      execSync('npm install -g @modelcontextprotocol/server-sequentialthinking', { stdio: 'pipe' });
+      installMCP('sequentialthinking', 'claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js');
+    } catch (error) {
+      console.warn('⚠️  Sequential Thinking MCP not available in registry, skipping');
+    }
   }
 
   private async configureClaudeSettings(): Promise<void> {
