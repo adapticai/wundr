@@ -7,6 +7,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+import { execa } from 'execa';
 import { getLogger } from '../utils/logger';
 import { 
   DeveloperProfile, 
@@ -232,7 +233,12 @@ export class ConfiguratorService {
     logger.info('Configuring Git aliases');
 
     for (const [alias, command] of Object.entries(aliases)) {
-      execSync(`git config --global alias.${alias} "${command}"`);
+      try {
+        // Use array form to avoid shell escaping issues
+        await execa('git', ['config', '--global', `alias.${alias}`, command]);
+      } catch (error) {
+        logger.warn(`Failed to set git alias ${alias}:`, error);
+      }
     }
 
     this.recordConfigChange('~/.gitconfig', Object.keys(aliases).map(a => `alias.${a}`));
@@ -301,10 +307,18 @@ export class ConfiguratorService {
 
     for (const ext of extensions) {
       try {
-        execSync(`code --install-extension ${ext}`);
+        execSync(`code --install-extension ${ext}`, { stdio: 'pipe', timeout: 30000 });
         logger.info(`Installed extension: ${ext}`);
-      } catch (error) {
-        logger.warn(`Failed to install extension: ${ext}`, error);
+      } catch (error: any) {
+        // Check if already installed or actual error
+        if (error.stdout?.toString().includes('already installed')) {
+          logger.info(`Extension ${ext} already installed, skipping`);
+        } else if (error.status === 134) {
+          // VS Code crash - this is a known VS Code bug, not fatal
+          logger.warn(`VS Code crashed installing ${ext}, but may have succeeded`);
+        } else {
+          logger.warn(`Failed to install extension: ${ext}`, error.message);
+        }
       }
     }
   }
@@ -401,7 +415,7 @@ colorscheme gruvbox
   async generateShellConfig(profile: DeveloperProfile): Promise<void> {
     logger.info('Generating shell configuration');
 
-    const shell = profile.preferences.shell;
+    const shell = profile.preferences?.shell || 'bash';
     const rcFile = this.getShellRcFile(shell);
     
     const config = `
@@ -409,7 +423,7 @@ colorscheme gruvbox
 # Generated: ${new Date().toISOString()}
 
 # Environment variables
-export EDITOR="${profile.preferences.editor}"
+export EDITOR="${profile.preferences?.editor || 'vim'}"
 export WUNDR_PROFILE="${profile.name}"
 
 # Aliases

@@ -138,22 +138,22 @@ export class SetupValidator {
     validations.push(() => this.validateGit(profile.preferences.gitConfig.userName));
 
     // Validate Node.js
-    if (profile.tools.languages.node) {
-      validations.push(() => this.validateNode(profile.tools.languages.node.defaultVersion));
+    if (profile.tools?.languages?.node) {
+      validations.push(() => this.validateNode(profile.tools!.languages!.node!.defaultVersion));
     }
 
     // Validate Python
-    if (profile.tools.languages.python) {
-      validations.push(() => this.validatePython(profile.tools.languages.python.defaultVersion));
+    if (profile.tools?.languages?.python) {
+      validations.push(() => this.validatePython(profile.tools!.languages!.python!.defaultVersion));
     }
 
     // Validate Docker
-    if (profile.tools.containers.docker) {
+    if (profile.tools?.containers?.docker) {
       validations.push(() => this.validateDocker());
     }
 
     // Validate package managers
-    if (profile.tools.packageManagers.pnpm) {
+    if (profile.tools?.packageManagers?.pnpm) {
       validations.push(() => this.validatePackageManager('pnpm'));
     }
 

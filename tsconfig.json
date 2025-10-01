@@ -67,6 +67,7 @@
     "scripts/**/*",
     "config/**/*",
     "tools/**/*",
+    "packages/**/*",
     "*.ts",
     "*.d.ts"
   ],

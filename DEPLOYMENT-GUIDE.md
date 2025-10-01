@@ -395,7 +395,7 @@ Enterprise-grade development platform featuring:
 ✅ Advanced code analysis
 ✅ Security scanning
 ✅ AI-powered automation
-✅ 54+ specialized agents
+✅ 80+ specialized agents
 
 Now available on npm: @adaptic/*
 

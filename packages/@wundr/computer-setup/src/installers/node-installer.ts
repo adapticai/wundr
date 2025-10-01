@@ -35,7 +35,7 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    const nodeConfig = profile.tools.languages.node;
+    const nodeConfig = profile.tools?.languages?.node;
     if (!nodeConfig) {
       throw new Error('Node.js configuration not found in profile');
     }
@@ -88,7 +88,7 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
-    const nodeConfig = profile.tools.languages.node;
+    const nodeConfig = profile.tools?.languages?.node;
     if (!nodeConfig) return [];
 
     const steps: SetupStep[] = [
@@ -244,10 +244,11 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   private async installPackageManagers(profile: DeveloperProfile): Promise<void> {
-    const { packageManagers } = profile.tools;
+    const packageManagers = profile.tools?.packageManagers;
+    if (!packageManagers) return;
 
     // Install pnpm
-    if (packageManagers?.pnpm) {
+    if (packageManagers.pnpm) {
       await this.installPnpm();
     }
 
@@ -359,7 +360,7 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   private async setupNVMRC(profile: DeveloperProfile): Promise<void> {
-    const nodeConfig = profile.tools.languages.node;
+    const nodeConfig = profile.tools?.languages?.node;
     if (!nodeConfig) return;
 
     // This could be used to create .nvmrc files in common project directories
@@ -367,7 +368,8 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   private async configurePackageManagers(profile: DeveloperProfile): Promise<void> {
-    const { packageManagers } = profile.tools;
+    const packageManagers = profile.tools?.packageManagers;
+    if (!packageManagers) return;
 
     // Configure pnpm if installed
     if (packageManagers.pnpm) {

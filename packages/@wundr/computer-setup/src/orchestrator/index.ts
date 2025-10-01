@@ -347,21 +347,21 @@ export class SetupOrchestrator extends EventEmitter {
     steps.push(...await this.installerRegistry.getSystemSteps(options.platform));
 
     // Get tool installation steps
-    if (profile.tools.languages.node) {
+    if (profile.tools?.languages?.node) {
       steps.push(...await this.installerRegistry.getNodeSteps(profile.tools.languages.node));
     }
 
-    if (profile.tools.languages.python) {
+    if (profile.tools?.languages?.python) {
       steps.push(...await this.installerRegistry.getPythonSteps(profile.tools.languages.python));
     }
 
-    if (profile.tools.containers.docker) {
+    if (profile.tools?.containers?.docker) {
       steps.push(...await this.installerRegistry.getDockerSteps());
     }
 
     // Get configuration steps
     steps.push(...await this.configuratorService.getGitConfigSteps(profile.preferences.gitConfig));
-    steps.push(...await this.configuratorService.getEditorSteps(profile.preferences.editor));
+    steps.push(...await this.configuratorService.getEditorSteps(profile.preferences?.editor || 'vscode'));
 
     // Sort by dependencies
     return this.sortByDependencies(steps);

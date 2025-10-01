@@ -341,7 +341,7 @@ export class ComputerSetupManager extends EventEmitter {
     // Editor setup
     if (profile.preferences?.editor) {
       steps.push(...await this.configuratorService.getEditorSteps(
-        profile.preferences.editor
+        profile.preferences?.editor
       ));
     }
 
@@ -466,7 +466,7 @@ export class ComputerSetupManager extends EventEmitter {
     }
 
     // Install VS Code extensions
-    if (profile.preferences.editor === 'vscode') {
+    if (profile.preferences?.editor === 'vscode') {
       await this.configuratorService.installVSCodeExtensions();
     }
 
@@ -525,7 +525,7 @@ export class ComputerSetupManager extends EventEmitter {
       steps.push('3. Add your SSH key to GitHub/GitLab');
     }
     
-    if (profile.tools.communication.slack) {
+    if (profile.tools?.communication?.slack) {
       steps.push('4. Sign in to Slack workspaces');
     }
     

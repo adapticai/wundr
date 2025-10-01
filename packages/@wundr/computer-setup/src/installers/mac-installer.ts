@@ -197,7 +197,7 @@ export class MacInstaller implements BaseInstaller {
       'ripgrep',
       'fd',
       'bat',
-      'exa',
+      'eza',
       'fzf',
       'gh', // GitHub CLI
       'git-delta',
@@ -205,9 +205,9 @@ export class MacInstaller implements BaseInstaller {
     ];
 
     // Add shell-specific packages
-    if (profile.preferences.shell === 'zsh') {
+    if (profile.preferences?.shell === 'zsh') {
       essentialPackages.push('zsh-autosuggestions', 'zsh-syntax-highlighting');
-    } else if (profile.preferences.shell === 'fish') {
+    } else if (profile.preferences?.shell === 'fish') {
       essentialPackages.push('fish');
     }
 
@@ -228,8 +228,13 @@ export class MacInstaller implements BaseInstaller {
     for (const app of applications.casks) {
       try {
         await execa('brew', ['install', '--cask', app]);
-      } catch (error) {
-        console.warn(`Failed to install ${app}:`, error);
+        console.log(`✓ Installed ${app}`);
+      } catch (error: any) {
+        if (error.stderr?.includes('already an App at')) {
+          console.log(`⚠️  ${app} already installed, skipping`);
+        } else {
+          console.warn(`⚠️  Failed to install ${app}:`, error.message);
+        }
       }
     }
     
@@ -251,7 +256,8 @@ export class MacInstaller implements BaseInstaller {
     const masApps: Array<{ id: string; name: string }> = [];
     
     // Editor-specific applications
-    switch (profile.preferences.editor) {
+    const editor = profile.preferences?.editor || 'vscode';
+    switch (editor) {
       case 'vscode':
         casks.push('visual-studio-code');
         break;
@@ -283,16 +289,16 @@ export class MacInstaller implements BaseInstaller {
     }
     
     // Communication tools
-    if (profile.tools.communication.slack) {
+    if (profile.tools?.communication?.slack) {
       casks.push('slack');
     }
-    if (profile.tools.communication.teams) {
+    if (profile.tools?.communication?.teams) {
       casks.push('microsoft-teams');
     }
-    if (profile.tools.communication.discord) {
+    if (profile.tools?.communication?.discord) {
       casks.push('discord');
     }
-    if (profile.tools.communication.zoom) {
+    if (profile.tools?.communication?.zoom) {
       casks.push('zoom');
     }
     
@@ -379,8 +385,8 @@ export class MacInstaller implements BaseInstaller {
   }
 
   private async configureShell(profile: DeveloperProfile): Promise<void> {
-    const { shell } = profile.preferences;
-    
+    const shell = profile.preferences?.shell || 'bash';
+
     switch (shell) {
       case 'zsh':
         await this.configureZsh(profile);
@@ -600,8 +606,8 @@ node_modules/
   private async validateShellConfig(profile: DeveloperProfile): Promise<boolean> {
     try {
       const { stdout } = await execa('echo', ['$SHELL']);
-      const expectedShell = profile.preferences.shell === 'zsh' ? 'zsh' : 
-                          profile.preferences.shell === 'fish' ? 'fish' : 'bash';
+      const expectedShell = profile.preferences?.shell === 'zsh' ? 'zsh' :
+                          profile.preferences?.shell === 'fish' ? 'fish' : 'bash';
       return stdout.includes(expectedShell);
     } catch {
       return false;

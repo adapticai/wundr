@@ -199,21 +199,23 @@ export class GitInstaller implements BaseInstaller {
   }
 
   private async configureBasicGit(profile: DeveloperProfile): Promise<void> {
-    const { gitConfig } = profile.preferences;
-    
+    const gitConfig = profile.preferences?.gitConfig;
+    if (!gitConfig) return;
+
     // Set user identity
     await execa('git', ['config', '--global', 'user.name', gitConfig.userName]);
     await execa('git', ['config', '--global', 'user.email', gitConfig.userEmail]);
-    
+
     // Set default branch
     await execa('git', ['config', '--global', 'init.defaultBranch', gitConfig.defaultBranch]);
   }
 
   private async configureAdvancedGit(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     console.log('Configuring Git advanced settings...');
-    
-    const { gitConfig } = profile.preferences;
-    
+
+    const gitConfig = profile.preferences?.gitConfig;
+    if (!gitConfig) return;
+
     // Basic Git settings from the script
     await execa('git', ['config', '--global', 'init.defaultBranch', gitConfig.defaultBranch || 'main']);
     await execa('git', ['config', '--global', 'pull.rebase', 'false']);
@@ -275,8 +277,9 @@ export class GitInstaller implements BaseInstaller {
   }
 
   private async setupCommitSigning(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    const { gitConfig } = profile.preferences;
-    
+    const gitConfig = profile.preferences?.gitConfig;
+    if (!gitConfig) return;
+
     try {
       if (!gitConfig.gpgKey) {
         // Generate GPG key if not provided
@@ -455,7 +458,8 @@ Expire-Date: 2y
   private async validateAdvancedConfig(profile: DeveloperProfile): Promise<boolean> {
     try {
       // Check if aliases are configured
-      const { gitConfig } = profile.preferences;
+      const gitConfig = profile.preferences?.gitConfig;
+      if (!gitConfig) return true;
       for (const alias of Object.keys(gitConfig.aliases)) {
         const { stdout } = await execa('git', ['config', '--global', `alias.${alias}`]);
         if (!stdout) return false;

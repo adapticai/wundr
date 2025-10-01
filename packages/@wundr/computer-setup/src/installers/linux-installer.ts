@@ -228,7 +228,7 @@ export class LinuxInstaller implements BaseInstaller {
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
         'build-essential', 'software-properties-common', 'apt-transport-https',
         'ca-certificates', 'gnupg', 'lsb-release', 'jq', 'ripgrep', 'fd-find',
-        'bat', 'exa', 'fzf', 'zsh', 'fish', 'tmux', 'screen'
+        'bat', 'eza', 'fzf', 'zsh', 'fish', 'tmux', 'screen'
       ],
       yum: [
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
@@ -238,7 +238,7 @@ export class LinuxInstaller implements BaseInstaller {
       dnf: [
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
         'gcc', 'gcc-c++', 'make', 'kernel-devel', 'jq', 'ripgrep', 'fd-find',
-        'bat', 'exa', 'fzf', 'zsh', 'fish', 'tmux', 'screen'
+        'bat', 'eza', 'fzf', 'zsh', 'fish', 'tmux', 'screen'
       ],
       pacman: [
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
@@ -505,15 +505,15 @@ export class LinuxInstaller implements BaseInstaller {
     const packages: Array<{ name: string; options?: string[] }> = [];
     
     // Editor
-    if (profile.preferences.editor === 'vscode') {
+    if (profile.preferences?.editor === 'vscode') {
       packages.push({ name: 'code', options: ['--classic'] });
     }
     
     // Communication tools
-    if (profile.tools.communication.slack) {
+    if (profile.tools?.communication?.slack) {
       packages.push({ name: 'slack' });
     }
-    if (profile.tools.communication.discord) {
+    if (profile.tools?.communication?.discord) {
       packages.push({ name: 'discord' });
     }
     
@@ -530,7 +530,7 @@ export class LinuxInstaller implements BaseInstaller {
     packages.push('org.mozilla.firefox', 'com.google.Chrome');
     
     // Development tools
-    if (profile.preferences.editor === 'vscode') {
+    if (profile.preferences?.editor === 'vscode') {
       packages.push('com.visualstudio.code');
     }
     
@@ -553,8 +553,8 @@ export class LinuxInstaller implements BaseInstaller {
   }
 
   private async configureShell(profile: DeveloperProfile): Promise<void> {
-    const { shell } = profile.preferences;
-    
+    const shell = profile.preferences?.shell || 'bash';
+
     switch (shell) {
       case 'zsh':
         await this.configureZsh(profile);
@@ -753,7 +753,7 @@ Thumbs.db
   private async validateShellConfig(profile: DeveloperProfile): Promise<boolean> {
     try {
       const { stdout } = await execa('echo', ['$SHELL']);
-      return stdout.includes(profile.preferences.shell);
+      return stdout.includes(profile.preferences?.shell || 'bash');
     } catch {
       return false;
     }

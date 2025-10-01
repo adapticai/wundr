@@ -395,7 +395,8 @@ export class WindowsInstaller implements BaseInstaller {
     const packages = ['windows-terminal'];
 
     // Editor-specific installation
-    switch (profile.preferences.editor) {
+    const editor = profile.preferences?.editor || 'vscode';
+    switch (editor) {
       case 'vscode':
         packages.push('vscode');
         break;
@@ -411,16 +412,16 @@ export class WindowsInstaller implements BaseInstaller {
     }
 
     // Communication tools
-    if (profile.tools.communication.slack) {
+    if (profile.tools?.communication?.slack) {
       packages.push('slack');
     }
-    if (profile.tools.communication.teams) {
+    if (profile.tools?.communication?.teams) {
       packages.push('microsoft-teams');
     }
-    if (profile.tools.communication.discord) {
+    if (profile.tools?.communication?.discord) {
       packages.push('discord');
     }
-    if (profile.tools.communication.zoom) {
+    if (profile.tools?.communication?.zoom) {
       packages.push('zoom');
     }
 
@@ -590,7 +591,8 @@ default=${profile.name.toLowerCase().replace(/\s+/g, '')}
 
   private async validateDevelopmentTools(profile: DeveloperProfile): Promise<boolean> {
     // Basic validation - check if editor is installed
-    switch (profile.preferences.editor) {
+    const editor = profile.preferences?.editor || 'vscode';
+    switch (editor) {
       case 'vscode':
         try {
           await which('code');

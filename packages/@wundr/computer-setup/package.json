@@ -4,6 +4,10 @@
   "description": "Engineering team computer provisioning and setup tool - configure new developer machines with all required tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "resources"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

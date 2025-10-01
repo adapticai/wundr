@@ -36,8 +36,7 @@ export class DockerInstaller implements BaseInstaller {
   }
 
   async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    const { containers } = profile.tools;
-    if (!containers.docker) {
+    if (!profile.tools?.containers?.docker) {
       return;
     }
 
@@ -56,7 +55,7 @@ export class DockerInstaller implements BaseInstaller {
     }
 
     // Install Docker Compose if requested
-    if (containers.dockerCompose) {
+    if (profile.tools?.containers?.dockerCompose) {
       await this.installDockerCompose(platform);
     }
   }
@@ -134,8 +133,7 @@ export class DockerInstaller implements BaseInstaller {
   }
 
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
-    const { containers } = profile.tools;
-    if (!containers.docker) return [];
+    if (!profile.tools?.containers?.docker) return [];
 
     const steps: SetupStep[] = [
       {
@@ -162,7 +160,7 @@ export class DockerInstaller implements BaseInstaller {
       }
     ];
 
-    if (containers.dockerCompose) {
+    if (profile.tools?.containers?.dockerCompose) {
       steps.push({
         id: 'install-docker-compose',
         name: 'Install Docker Compose',
