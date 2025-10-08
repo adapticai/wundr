@@ -96,6 +96,17 @@ export class SecurityPolicy {
     const commandParts = command.split(/\s+/);
     const baseCommand = commandParts[0];
 
+    // Guard against empty command
+    if (!baseCommand) {
+      violations.push({
+        type: 'command',
+        severity: 'critical',
+        description: 'Empty command provided',
+        blocked: true,
+      });
+      return violations;
+    }
+
     // Check safety level restrictions
     if (safetyLevel === 'safe') {
       if (!this.SAFE_COMMANDS.includes(baseCommand)) {
@@ -244,7 +255,7 @@ export class ScriptExecutor {
     const mergedOptions: ScriptExecutionOptions = {
       ...options,
       safetyLevel: script.safetyLevel,
-      timeout: script.timeout || options.timeout,
+      timeout: script.timeout || options.timeout || undefined,
     };
 
     return this.executeCommand(script.command, mergedOptions);
@@ -415,7 +426,7 @@ export class ScriptExecutor {
   private async executeUnsafe(
     command: string,
     options: any,
-    monitor: ResourceMonitor
+    _monitor: ResourceMonitor
   ): Promise<ScriptExecutionResult> {
     console.warn('⚠️  Executing script in unsafe mode - use with extreme caution!');
     

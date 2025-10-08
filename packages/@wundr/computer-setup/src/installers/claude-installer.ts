@@ -21,6 +21,7 @@ export class ClaudeInstaller implements BaseInstaller {
   private readonly resourcesDir = path.join(__dirname, '../../resources');
   private readonly bundledAgentsDir = path.join(this.resourcesDir, 'agents');
   private readonly bundledTemplatesDir = path.join(this.resourcesDir, 'templates');
+  private readonly bundledCommandsDir = path.join(this.resourcesDir, 'commands');
   private readonly mcpServers = [
     'claude-flow',
     'ruv-swarm',
@@ -128,6 +129,19 @@ export class ClaudeInstaller implements BaseInstaller {
       }
     });
 
+    steps.push({
+      id: 'claude-commands',
+      name: 'Setup Slash Commands',
+      description: 'Install corrected hive-mind and other slash commands',
+      category: 'ai',
+      required: true,
+      dependencies: ['claude-config'],
+      estimatedTime: 10,
+      installer: async () => {
+        await this.setupCommands();
+      }
+    });
+
     return steps;
   }
 
@@ -162,6 +176,9 @@ export class ClaudeInstaller implements BaseInstaller {
 
     // Step 6: Setup all 54 agents
     await this.setupAgents();
+
+    // Step 6.5: Setup slash commands with correct MCP tool names
+    await this.setupCommands();
 
     // Step 7: Install Browser MCP Chrome extension
     await this.installBrowserExtension();
@@ -627,6 +644,32 @@ alias claude='npx @anthropic-ai/claude-code'
     }
 
     console.log('✅ Agent setup complete');
+  }
+
+  private async setupCommands(): Promise<void> {
+    console.log('📋 Setting up slash commands with corrected MCP tools...');
+    const fs = require('fs').promises;
+    const { execSync } = require('child_process');
+
+    // Copy bundled command .md files from package resources
+    const bundledCommandsExist = await fs.access(this.bundledCommandsDir).then(() => true).catch(() => false);
+
+    if (bundledCommandsExist) {
+      console.log('📝 Copying bundled command .md files...');
+      try {
+        // Copy all command .md files from bundled resources to global .claude/commands
+        execSync(`cp -R "${this.bundledCommandsDir}"/* "${this.commandsDir}"/`, { stdio: 'pipe' });
+        const commandCount = execSync(`find "${this.commandsDir}" -name "*.md" | wc -l`, { encoding: 'utf8' }).trim();
+        console.log(`✅ Installed ${commandCount} slash command files`);
+        console.log('   Available commands: /hive-swarm, /hive-strategic');
+      } catch (error) {
+        console.warn('⚠️  Could not copy bundled command files');
+      }
+    } else {
+      console.warn('⚠️  No bundled command files found at:', this.bundledCommandsDir);
+    }
+
+    console.log('✅ Command setup complete');
   }
 
   private async createAgentConfig(dir: string, agentName: string, category: string): Promise<void> {
