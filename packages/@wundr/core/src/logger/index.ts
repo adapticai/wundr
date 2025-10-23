@@ -2,9 +2,12 @@
  * Logging utilities for the Wundr platform
  */
 
-import winston from 'winston';
+/* eslint-disable import/no-named-as-default, import/no-named-as-default-member */
+// Winston is used as a default import and members are accessed via the default object
 import chalk from 'chalk';
-import { type Logger } from '../types/index.js';
+import winston from 'winston';
+
+import type { Logger } from '../types/index.js';
 
 // Re-export the Logger type for convenience
 export { type Logger };

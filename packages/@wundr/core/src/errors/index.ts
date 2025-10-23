@@ -2,7 +2,7 @@
  * Error handling utilities for the Wundr platform
  */
 
-import { WundrError } from '../types/index.js';
+import type { WundrError } from '../types/index.js';
 
 export class BaseWundrError extends Error implements WundrError {
   public override readonly name: string;

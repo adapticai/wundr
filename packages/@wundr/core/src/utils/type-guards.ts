@@ -19,8 +19,9 @@ export const isObject = (value: unknown): value is Record<string, unknown> =>
 export const isArray = <T>(value: unknown): value is readonly T[] =>
   Array.isArray(value);
 
-export const isFunction = (value: unknown): value is Function =>
-  typeof value === 'function';
+export const isFunction = (
+  value: unknown
+): value is (...args: unknown[]) => unknown => typeof value === 'function';
 
 export const isDate = (value: unknown): value is Date =>
   value instanceof Date && !isNaN(value.getTime());

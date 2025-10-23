@@ -2,8 +2,8 @@
  * Performance monitoring and optimization utilities with enterprise-grade logging
  */
 
-import { getLogger, createLogger, type Logger } from '../logger/index.js';
 import { getEventBus } from '../events/index.js';
+import { createLogger, type Logger } from '../logger/index.js';
 
 /**
  * Performance monitoring configuration
@@ -762,11 +762,15 @@ export async function monitorExecution<T>(
 
   // Temporarily override config if thresholds provided
   const originalConfig = { ...performanceConfig };
-  if (memoryThreshold !== undefined)
+  if (memoryThreshold !== undefined) {
     performanceConfig.memoryThreshold = memoryThreshold;
-  if (timeThreshold !== undefined)
+  }
+  if (timeThreshold !== undefined) {
     performanceConfig.timeThreshold = timeThreshold;
-  if (!enableEvents) performanceConfig.enableEvents = false;
+  }
+  if (!enableEvents) {
+    performanceConfig.enableEvents = false;
+  }
 
   try {
     const { result, duration, metrics } = await measureTimeOriginal(fn, {
@@ -802,6 +806,8 @@ export async function monitorExecution<T>(
 /**
  * Create a performance monitoring decorator
  */
+// Decorator signature requires any for maximum flexibility
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function performanceMonitor<T extends (...args: any[]) => any>(
   options: {
     name?: string;
@@ -812,7 +818,7 @@ export function performanceMonitor<T extends (...args: any[]) => any>(
   } = {}
 ) {
   return function (
-    target: any,
+    target: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
@@ -820,6 +826,7 @@ export function performanceMonitor<T extends (...args: any[]) => any>(
     const methodName =
       options.name || `${target.constructor.name}.${propertyKey}`;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     descriptor.value = async function (...args: Parameters<T>) {
       const { result } = await monitorExecution(
         () => originalMethod.apply(this, args),
@@ -927,6 +934,7 @@ export class PerformanceAggregator {
     const metricsWithMemory = filteredMetrics.filter(m => m.memoryUsage);
     if (metricsWithMemory.length > 0) {
       const memoryUsages = metricsWithMemory.map(m => m.memoryUsage!.usage);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (stats as any).memoryStats = {
         avgUsage:
           memoryUsages.reduce((sum, u) => sum + u, 0) / memoryUsages.length,

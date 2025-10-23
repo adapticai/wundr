@@ -2,11 +2,14 @@
  * Event bus system for the Wundr platform
  */
 
+// eslint-disable-next-line import/no-named-as-default
 import EventEmitter from 'eventemitter3';
 import { v4 as uuidv4 } from 'uuid';
-import { EventBus, EventBusEvent, EventHandler } from '../types/index.js';
+
 import { EventBusError } from '../errors/index.js';
 import { getLogger } from '../logger/index.js';
+
+import type { EventBus, EventBusEvent, EventHandler } from '../types/index.js';
 
 const logger = getLogger();
 

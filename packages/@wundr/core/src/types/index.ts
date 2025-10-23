@@ -107,7 +107,7 @@ export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 export interface JsonObject {
   readonly [key: string]: JsonValue;
 }
-export interface JsonArray extends ReadonlyArray<JsonValue> {}
+export type JsonArray = ReadonlyArray<JsonValue>;
 
 // Metadata types for extensible objects
 export interface MetadataContainer {

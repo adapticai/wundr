@@ -349,27 +349,37 @@ export const isError = (value: unknown): value is Error =>
 
 // Assertion functions
 export const assertIsString = (value: unknown): asserts value is string => {
-  if (!isString(value)) throw new TypeError('Expected string');
+  if (!isString(value)) {
+    throw new TypeError('Expected string');
+  }
 };
 
 export const assertIsNumber = (value: unknown): asserts value is number => {
-  if (!isNumber(value)) throw new TypeError('Expected number');
+  if (!isNumber(value)) {
+    throw new TypeError('Expected number');
+  }
 };
 
 export const assertIsObject = (value: unknown): asserts value is SafeAny => {
-  if (!isObject(value)) throw new TypeError('Expected object');
+  if (!isObject(value)) {
+    throw new TypeError('Expected object');
+  }
 };
 
 export const assertIsArray = (
   value: unknown
 ): asserts value is readonly unknown[] => {
-  if (!isArray(value)) throw new TypeError('Expected array');
+  if (!isArray(value)) {
+    throw new TypeError('Expected array');
+  }
 };
 
 export const assertIsFunction = (
   value: unknown
 ): asserts value is SafeFunction => {
-  if (!isFunction(value)) throw new TypeError('Expected function');
+  if (!isFunction(value)) {
+    throw new TypeError('Expected function');
+  }
 };
 
 // Helper types for complex scenarios

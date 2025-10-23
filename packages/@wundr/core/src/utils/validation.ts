@@ -2,11 +2,13 @@
  * Validation utility functions
  */
 
-import { z, ZodSchema, ZodError } from 'zod';
-import {
+import { z, ZodError } from 'zod';
+
+import type {
   ValidationResult,
   ValidationError as IValidationError,
 } from '../types/index.js';
+import type { ZodSchema } from 'zod';
 
 /**
  * Validates data against a Zod schema and returns a ValidationResult
@@ -185,7 +187,9 @@ export function isBoolean(value: unknown): value is boolean {
 /**
  * Type guard for checking if a value is a function
  */
-export function isFunction(value: unknown): value is Function {
+export function isFunction(
+  value: unknown
+): value is (...args: unknown[]) => unknown {
   return typeof value === 'function';
 }
 

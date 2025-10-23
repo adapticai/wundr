@@ -86,7 +86,9 @@ export function getNestedValue<T = unknown>(
   path: string,
   defaultValue?: T
 ): T | undefined {
-  if (!isObject(obj)) return defaultValue;
+  if (!isObject(obj)) {
+    return defaultValue;
+  }
 
   const keys = path.split('.');
   let current: unknown = obj;
@@ -110,11 +112,15 @@ export function setNestedValue(
   path: string,
   value: unknown
 ): void {
-  if (!isObject(obj)) return;
+  if (!isObject(obj)) {
+    return;
+  }
 
   const keys = path.split('.');
   const lastKey = keys.pop();
-  if (!lastKey) return;
+  if (!lastKey) {
+    return;
+  }
 
   let current: Record<string, unknown> = obj;
 
@@ -242,7 +248,9 @@ export function flatten(
   const flattened: Record<string, unknown> = {};
 
   for (const key in obj) {
-    if (!hasOwnProperty(obj, key)) continue;
+    if (!hasOwnProperty(obj, key)) {
+      continue;
+    }
 
     const value = obj[key];
     const newKey = prefix ? `${prefix}${separator}${key}` : key;
@@ -270,7 +278,9 @@ export function unflatten(
   const result: Record<string, unknown> = {};
 
   for (const key in obj) {
-    if (!hasOwnProperty(obj, key)) continue;
+    if (!hasOwnProperty(obj, key)) {
+      continue;
+    }
 
     const value = obj[key];
     setNestedValue(result, key.split(separator).join('.'), value);

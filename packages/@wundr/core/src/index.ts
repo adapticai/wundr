@@ -2,10 +2,9 @@
  * @wundr/core - Core utilities and shared functionality for the Wundr platform
  */
 
-// Types (excluding ValidationError to avoid conflict)
+// Types (Logger is re-exported from logger/index.js to avoid duplication)
 export type {
   WundrError,
-  Logger,
   EventBusEvent,
   EventHandler,
   EventBus,
@@ -14,7 +13,7 @@ export type {
   AsyncUtilityFunction,
   Result,
   BaseConfig,
-  CoreEventType
+  CoreEventType,
 } from './types/index.js';
 export { CORE_EVENTS } from './types/index.js';
 
@@ -33,14 +32,3 @@ export * from './utils/index.js';
 // Package info
 export const version = '1.0.0';
 export const name = '@wundr/core';
-
-// Default exports for convenience
-export { getLogger, log } from './logger/index.js';
-export { getEventBus } from './events/index.js';
-export { 
-  success, 
-  failure, 
-  isSuccess, 
-  isFailure,
-  BaseWundrError 
-} from './errors/index.js';
