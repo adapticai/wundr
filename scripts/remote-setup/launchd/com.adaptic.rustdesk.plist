@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchDaemon for RustDesk host - auto-start at boot
+  Managed by: setup_remote_mac.sh
+
+  This daemon ensures RustDesk runs automatically on system boot and stays running
+  in server/host mode. It will restart the service if it crashes.
+
+  Installation:
+    sudo cp com.adaptic.rustdesk.plist /Library/LaunchDaemons/
+    sudo chown root:wheel /Library/LaunchDaemons/com.adaptic.rustdesk.plist
+    sudo chmod 644 /Library/LaunchDaemons/com.adaptic.rustdesk.plist
+    sudo launchctl load -w /Library/LaunchDaemons/com.adaptic.rustdesk.plist
+
+  Uninstallation:
+    sudo launchctl unload /Library/LaunchDaemons/com.adaptic.rustdesk.plist
+    sudo rm /Library/LaunchDaemons/com.adaptic.rustdesk.plist
+-->
+<plist version="1.0">
+<dict>
+    <!-- Unique identifier for this daemon -->
+    <key>Label</key>
+    <string>com.adaptic.rustdesk</string>
+
+    <!-- Path to the RustDesk executable with --server flag for host mode -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/RustDesk.app/Contents/MacOS/RustDesk</string>
+        <string>--server</string>
+    </array>
+
+    <!-- Start automatically when the daemon is loaded (at boot) -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Keep the process running; restart if it crashes -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Log stdout to file -->
+    <key>StandardOutPath</key>
+    <string>/var/log/remote-setup/rustdesk.log</string>
+
+    <!-- Log stderr to file -->
+    <key>StandardErrorPath</key>
+    <string>/var/log/remote-setup/rustdesk.error.log</string>
+
+    <!-- Throttle rapid restarts (wait 30 seconds between restart attempts) -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <!-- Environment variables (optional) -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <!-- Process type hint -->
+    <key>ProcessType</key>
+    <string>Interactive</string>
+
+    <!-- Abandon process group on exit (prevents orphaned processes) -->
+    <key>AbandonProcessGroup</key>
+    <true/>
+</dict>
+</plist>
