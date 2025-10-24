@@ -258,7 +258,7 @@ export class WundrPluginManager implements PluginManager {
     } catch (error) {
       const pluginError = new PluginError(
         `Failed to unload plugin: ${pluginId}`,
-        { pluginId, error }
+        { pluginId, error },
       );
 
       this.logger.error(pluginError);
@@ -284,7 +284,7 @@ export class WundrPluginManager implements PluginManager {
     if (pluginInfo.status !== PluginStatus.LOADED) {
       throw new PluginError(
         `Plugin must be loaded before activation: ${pluginId}`,
-        { currentStatus: pluginInfo.status }
+        { currentStatus: pluginInfo.status },
       );
     }
 
@@ -316,7 +316,7 @@ export class WundrPluginManager implements PluginManager {
     } catch (error) {
       const pluginError = new PluginError(
         `Failed to activate plugin: ${pluginId}`,
-        { pluginId, error }
+        { pluginId, error },
       );
 
       this.updatePluginInfo(pluginId, {
@@ -359,7 +359,7 @@ export class WundrPluginManager implements PluginManager {
     } catch (error) {
       const pluginError = new PluginError(
         `Failed to deactivate plugin: ${pluginId}`,
-        { pluginId, error }
+        { pluginId, error },
       );
 
       this.updatePluginInfo(pluginId, {
@@ -410,7 +410,7 @@ export class WundrPluginManager implements PluginManager {
           const manifestPath = path.join(
             this.options.pluginDir,
             entry.name,
-            'plugin.json'
+            'plugin.json',
           );
           try {
             await fs.access(manifestPath);
@@ -468,7 +468,7 @@ export class WundrPluginManager implements PluginManager {
 
   async activateAll(): Promise<void> {
     const loadedPlugins = this.getAllPlugins().filter(
-      p => p.status === PluginStatus.LOADED
+      p => p.status === PluginStatus.LOADED,
     );
 
     for (const pluginInfo of loadedPlugins) {
@@ -506,7 +506,7 @@ export class WundrPluginManager implements PluginManager {
     const manifestPath = path.join(
       this.options.pluginDir,
       pluginId,
-      'plugin.json'
+      'plugin.json',
     );
 
     try {
@@ -541,12 +541,12 @@ export class WundrPluginManager implements PluginManager {
 
   private async loadPluginModule(
     pluginId: string,
-    manifest: PluginManifest
+    manifest: PluginManifest,
   ): Promise<PluginModule> {
     const pluginPath = path.join(
       this.options.pluginDir,
       pluginId,
-      manifest.main
+      manifest.main,
     );
 
     try {
@@ -556,7 +556,7 @@ export class WundrPluginManager implements PluginManager {
       if (!module.default || typeof module.default !== 'function') {
         throw new PluginError(
           `Plugin module must export a default constructor function: ${pluginId}`,
-          { pluginId, pluginPath }
+          { pluginId, pluginPath },
         );
       }
 
@@ -572,7 +572,7 @@ export class WundrPluginManager implements PluginManager {
 
   private async createPluginContext(
     pluginId: string,
-    manifest: PluginManifest
+    manifest: PluginManifest,
   ): Promise<PluginContext> {
     const pluginDataDir = path.join(this.options.dataDir, pluginId);
     await fs.mkdir(pluginDataDir, { recursive: true });
@@ -592,7 +592,7 @@ export class WundrPluginManager implements PluginManager {
 
   private updatePluginInfo(
     pluginId: string,
-    updates: Partial<PluginInfo>
+    updates: Partial<PluginInfo>,
   ): void {
     const existing = this.plugins.get(pluginId);
     if (existing) {

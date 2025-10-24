@@ -56,14 +56,14 @@ export class ProjectTemplateManager {
       const validation = this.validateProjectName(options.name);
       if (!validation.valid) {
         throw new Error(
-          `Invalid project name: ${validation.errors.join(', ')}`
+          `Invalid project name: ${validation.errors.join(', ')}`,
         );
       }
 
       // Determine project path
       const projectPath = path.resolve(
         options.path || process.cwd(),
-        options.name
+        options.name,
       );
 
       // Check if directory exists
@@ -175,7 +175,7 @@ export class ProjectTemplateManager {
           this.getFrameworkChoices((answers as { type: ProjectType }).type),
         when: (answers: Record<string, unknown>) =>
           ['frontend', 'backend', 'fullstack'].includes(
-            (answers as { type: ProjectType }).type
+            (answers as { type: ProjectType }).type,
           ),
       },
       {
@@ -280,7 +280,7 @@ export class ProjectTemplateManager {
    * Get framework choices based on project type
    */
   private getFrameworkChoices(
-    type: ProjectType
+    type: ProjectType,
   ): Array<{ name: string; value: string }> {
     switch (type) {
       case 'frontend':
@@ -334,7 +334,7 @@ export class ProjectTemplateManager {
   private async createPackageJson(
     projectPath: string,
     template: TemplateConfig,
-    context: TemplateContext
+    context: TemplateContext,
   ): Promise<void> {
     const packageJson = {
       name: context.projectNameKebab,
@@ -359,7 +359,7 @@ export class ProjectTemplateManager {
   private async copyTemplateFiles(
     projectPath: string,
     template: TemplateConfig,
-    context: TemplateContext
+    context: TemplateContext,
   ): Promise<void> {
     for (const file of template.files) {
       const filePath = path.join(projectPath, file.path);
@@ -383,7 +383,7 @@ export class ProjectTemplateManager {
    */
   private async addWundrFiles(
     projectPath: string,
-    context: TemplateContext
+    context: TemplateContext,
   ): Promise<void> {
     for (const file of wundrFiles) {
       const filePath = path.join(projectPath, file.path);
@@ -432,7 +432,7 @@ export class ProjectTemplateManager {
    */
   private async runPostInstall(
     projectPath: string,
-    commands: string[]
+    commands: string[],
   ): Promise<void> {
     for (const command of commands) {
       try {

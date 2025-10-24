@@ -83,11 +83,11 @@ export abstract class FileConfigSource implements ConfigSource {
               `Failed to reload configuration from ${this.filePath}`,
               {
                 error: error instanceof Error ? error.message : String(error),
-              }
+              },
             );
           }
         }
-      }
+      },
     );
 
     logger.debug(`Watching configuration file: ${this.filePath}`);

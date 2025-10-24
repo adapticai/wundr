@@ -139,7 +139,7 @@ export class WundrHookRegistry implements PluginHookRegistry {
         // Ensure we're not dealing with a Promise
         if (result && typeof result === 'object' && 'then' in result) {
           this.logger.warn(
-            `Hook ${name} returned a Promise in synchronous execution`
+            `Hook ${name} returned a Promise in synchronous execution`,
           );
           continue;
         }
@@ -196,7 +196,7 @@ export class WundrHookRegistry implements PluginHookRegistry {
     } else {
       const totalHooks = Array.from(this.hooks.values()).reduce(
         (sum, hooks) => sum + hooks.length,
-        0
+        0,
       );
 
       this.hooks.clear();

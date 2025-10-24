@@ -75,12 +75,12 @@ export class WundrConfigManager implements ConfigManager {
     // Create debounced functions
     this.debouncedSave = debounceAsync(
       this.doSave.bind(this),
-      this.options.debounceMs
+      this.options.debounceMs,
     );
 
     this.debouncedReload = debounceAsync(
       this.doReload.bind(this),
-      this.options.debounceMs
+      this.options.debounceMs,
     );
   }
 
@@ -226,7 +226,7 @@ export class WundrConfigManager implements ConfigManager {
 
   watch(
     key: string,
-    callback: (value: unknown, oldValue: unknown) => void
+    callback: (value: unknown, oldValue: unknown) => void,
   ): () => void {
     if (!this.watchers.has(key)) {
       this.watchers.set(key, []);
@@ -269,7 +269,7 @@ export class WundrConfigManager implements ConfigManager {
     // Check for duplicate names
     if (this.sources.some(s => s.name === source.name)) {
       throw new ConfigError(
-        `Configuration source already exists: ${source.name}`
+        `Configuration source already exists: ${source.name}`,
       );
     }
 
@@ -434,7 +434,7 @@ export class WundrConfigManager implements ConfigManager {
     this.logger.debug('Saving configuration to writable sources');
 
     const writableSources = this.sources.filter(
-      s => typeof s.save === 'function'
+      s => typeof s.save === 'function',
     );
 
     if (writableSources.length === 0) {
@@ -485,7 +485,7 @@ export class WundrConfigManager implements ConfigManager {
 
     const unwatch = source.watch(() => {
       this.logger.debug(
-        `Configuration change detected from source: ${source.name}`
+        `Configuration change detected from source: ${source.name}`,
       );
       this.debouncedReload().catch(error => {
         this.logger.error(
@@ -493,7 +493,7 @@ export class WundrConfigManager implements ConfigManager {
           {
             sourceName: source.name,
             error,
-          }
+          },
         );
       });
     });
@@ -536,7 +536,7 @@ export class WundrConfigManager implements ConfigManager {
 
   private notifyAllWatchersOfChanges(
     oldConfig: Record<string, unknown>,
-    newConfig: Record<string, unknown>
+    newConfig: Record<string, unknown>,
   ): void {
     // Find all keys that changed
     const allKeys = new Set([
@@ -556,7 +556,7 @@ export class WundrConfigManager implements ConfigManager {
 
   private getAllNestedKeys(
     obj: Record<string, unknown>,
-    prefix = ''
+    prefix = '',
   ): string[] {
     const keys: string[] = [];
 
@@ -566,7 +566,7 @@ export class WundrConfigManager implements ConfigManager {
 
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         keys.push(
-          ...this.getAllNestedKeys(value as Record<string, unknown>, fullKey)
+          ...this.getAllNestedKeys(value as Record<string, unknown>, fullKey),
         );
       }
     }

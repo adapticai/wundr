@@ -64,7 +64,7 @@ export class EnvConfigSource implements ConfigSource {
     }
 
     logger.debug(
-      `Loaded ${Object.keys(config).length} configuration keys from environment`
+      `Loaded ${Object.keys(config).length} configuration keys from environment`,
     );
     return config;
   }

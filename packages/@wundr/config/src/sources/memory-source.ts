@@ -15,7 +15,7 @@ export class MemoryConfigSource implements ConfigSource {
   constructor(
     initialConfig: Record<string, unknown> = {},
     name = 'memory',
-    priority = 0
+    priority = 0,
   ) {
     this.name = name;
     this.priority = priority;

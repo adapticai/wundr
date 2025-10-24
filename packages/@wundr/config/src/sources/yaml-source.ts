@@ -16,7 +16,7 @@ export class YamlConfigSource extends FileConfigSource {
       return YAML.parse(content) || {};
     } catch (error) {
       throw new Error(
-        `Invalid YAML in configuration file: ${error instanceof Error ? error.message : String(error)}`
+        `Invalid YAML in configuration file: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
