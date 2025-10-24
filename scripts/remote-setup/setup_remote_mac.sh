@@ -55,6 +55,7 @@ PREVENT_SLEEP="${PREVENT_SLEEP:-true}"
 DISPLAY_SLEEP_MINS="${DISPLAY_SLEEP_MINS:-10}"
 VERIFY_ONLY=false
 UNATTENDED=false
+MASTER_MODE=false
 
 # Color codes
 RED='\033[0;31m'
@@ -104,6 +105,22 @@ error_exit() {
 
 command_exists() {
     command -v "$1" &> /dev/null
+}
+
+# Get the actual user who ran sudo (not root)
+get_console_user() {
+    if [[ -n "${SUDO_USER:-}" ]]; then
+        echo "$SUDO_USER"
+    else
+        stat -f '%Su' /dev/console
+    fi
+}
+
+# Run brew commands as the console user (not root)
+brew_as_user() {
+    local console_user
+    console_user="$(get_console_user)"
+    sudo -u "$console_user" brew "$@"
 }
 
 wait_for_user() {
@@ -248,6 +265,10 @@ parse_arguments() {
                 UNATTENDED=true
                 shift
                 ;;
+            --master)
+                MASTER_MODE=true
+                shift
+                ;;
             --help)
                 show_usage
                 exit 0
@@ -258,15 +279,21 @@ parse_arguments() {
         esac
     done
 
-    # Validate stack choice
-    if [[ "$STACK" != "parsec" && "$STACK" != "rustdesk" ]]; then
-        error_exit "Invalid stack: $STACK. Must be 'parsec' or 'rustdesk'."
+    # Validate stack choice (only if not in master mode)
+    if [[ "$MASTER_MODE" == "false" ]]; then
+        if [[ "$STACK" != "parsec" && "$STACK" != "rustdesk" ]]; then
+            error_exit "Invalid stack: $STACK. Must be 'parsec' or 'rustdesk'."
+        fi
     fi
 }
 
 show_usage() {
     cat << 'EOF'
 Usage: sudo ./setup_remote_mac.sh [OPTIONS]
+
+Modes:
+  --master                        Setup as master/client machine (connects TO remote machines)
+  (default)                       Setup as remote/host machine (accepts connections FROM master)
 
 Options:
   --stack=[parsec|rustdesk]       Remote desktop stack (default: parsec)
@@ -288,11 +315,15 @@ Environment Variables:
   RUSTDESK_ID_SERVER
   RUSTDESK_RELAY_SERVER
 
-Example:
+Examples:
+  # Setup remote/host machine
   sudo ./setup_remote_mac.sh --stack=parsec \
     --tailscale-auth-key=tskey-XXX \
     --device-name=studio-01 \
     --ts-tags=tag:remote,tag:studio
+
+  # Setup master/client machine
+  sudo ./setup_remote_mac.sh --master
 
 EOF
 }
@@ -360,7 +391,7 @@ install_tailscale() {
 
         if command_exists brew; then
             log INFO "Installing Tailscale via Homebrew..."
-            brew install --cask tailscale || error_exit "Failed to install Tailscale via Homebrew"
+            brew_as_user install --cask tailscale || error_exit "Failed to install Tailscale via Homebrew"
         else
             log INFO "Installing Tailscale from official package..."
             local pkg_url="https://pkgs.tailscale.com/stable/Tailscale-latest.pkg"
@@ -531,7 +562,7 @@ install_parsec() {
 
         if command_exists brew; then
             log INFO "Installing Parsec via Homebrew..."
-            brew install --cask parsec || error_exit "Failed to install Parsec via Homebrew"
+            brew_as_user install --cask parsec || error_exit "Failed to install Parsec via Homebrew"
         else
             log INFO "Installing Parsec from official DMG..."
             local dmg_url="https://builds.parsec.app/package/parsec-macos.dmg"
@@ -658,7 +689,7 @@ install_rustdesk() {
 
         if command_exists brew; then
             log INFO "Installing RustDesk via Homebrew..."
-            brew install --cask rustdesk || error_exit "Failed to install RustDesk via Homebrew"
+            brew_as_user install --cask rustdesk || error_exit "Failed to install RustDesk via Homebrew"
         else
             log INFO "Installing RustDesk from official DMG..."
 
@@ -1078,6 +1109,170 @@ EOF
 }
 
 ################################################################################
+# MASTER MODE INSTALLATION
+################################################################################
+
+install_master() {
+    log STEP "Installing Master/Client Configuration..."
+
+    log INFO "Master mode will install client tools for connecting to remote machines"
+    log INFO "This includes: Tailscale client + Parsec/RustDesk client apps"
+    echo ""
+
+    # Detect system for informational purposes
+    detect_system
+
+    # Install Homebrew if needed
+    install_homebrew || log WARN "Continuing without Homebrew"
+
+    # Install Tailscale client
+    log STEP "Installing Tailscale client..."
+
+    if command_exists tailscale; then
+        log SUCCESS "Tailscale already installed"
+    else
+        if command_exists brew; then
+            log INFO "Installing Tailscale via Homebrew..."
+            brew_as_user install --cask tailscale || error_exit "Failed to install Tailscale via Homebrew"
+        else
+            log INFO "Installing Tailscale from official package..."
+            local pkg_url="https://pkgs.tailscale.com/stable/Tailscale-latest.pkg"
+            local tmp_pkg="/tmp/Tailscale.pkg"
+
+            curl -fsSL "$pkg_url" -o "$tmp_pkg" || error_exit "Failed to download Tailscale package"
+            installer -pkg "$tmp_pkg" -target / || error_exit "Failed to install Tailscale package"
+            rm -f "$tmp_pkg"
+        fi
+
+        log SUCCESS "Tailscale installed"
+    fi
+
+    # Start Tailscale and prompt for login
+    log INFO "Starting Tailscale..."
+    /Applications/Tailscale.app/Contents/MacOS/Tailscale &>/dev/null &
+    sleep 3
+
+    log WARN "Please sign in to Tailscale in your browser..."
+    log INFO "Once signed in, you'll be connected to your Tailscale network."
+
+    if [[ -n "$TAILSCALE_AUTH_KEY" ]]; then
+        log INFO "Using auth key for unattended setup..."
+        tailscale up --authkey="${TAILSCALE_AUTH_KEY}" --accept-dns=true --accept-routes=true --ssh=true || \
+            error_exit "Failed to bring up Tailscale with auth key"
+    else
+        log WARN "Opening Tailscale for interactive login..."
+        wait_for_user "Complete Tailscale sign-in in your browser, then press Enter to continue"
+        tailscale up --accept-dns=true --accept-routes=true --ssh=true || \
+            error_exit "Failed to bring up Tailscale"
+    fi
+
+    local ts_ip
+    ts_ip="$(tailscale ip -4 2>/dev/null | head -n1)" || ts_ip="unknown"
+    log SUCCESS "Tailscale is connected - IP: $ts_ip"
+
+    # Install remote desktop clients
+    log STEP "Installing remote desktop client applications..."
+
+    # Install both Parsec and RustDesk for flexibility
+    local apps_installed=0
+
+    # Install Parsec client
+    if [[ -d "/Applications/Parsec.app" ]]; then
+        log SUCCESS "Parsec client already installed"
+        ((apps_installed++))
+    else
+        if command_exists brew; then
+            log INFO "Installing Parsec client via Homebrew..."
+            if brew_as_user install --cask parsec; then
+                log SUCCESS "Parsec client installed"
+                ((apps_installed++))
+            else
+                log WARN "Failed to install Parsec - continuing"
+            fi
+        else
+            log WARN "Homebrew not available - skipping Parsec installation"
+            log INFO "You can manually install from: https://parsec.app/downloads"
+        fi
+    fi
+
+    # Install RustDesk client
+    if [[ -d "/Applications/RustDesk.app" ]]; then
+        log SUCCESS "RustDesk client already installed"
+        ((apps_installed++))
+    else
+        if command_exists brew; then
+            log INFO "Installing RustDesk client via Homebrew..."
+            if brew_as_user install --cask rustdesk; then
+                log SUCCESS "RustDesk client installed"
+                ((apps_installed++))
+            else
+                log WARN "Failed to install RustDesk - continuing"
+            fi
+        else
+            log WARN "Homebrew not available - skipping RustDesk installation"
+            log INFO "You can manually install from: https://rustdesk.com/download"
+        fi
+    fi
+
+    # Generate SSH key if not exists
+    log STEP "Checking SSH keys for Tailscale SSH..."
+
+    local console_user
+    console_user="$(get_console_user)"
+    local ssh_key="/Users/${console_user}/.ssh/id_ed25519"
+
+    if [[ ! -f "$ssh_key" ]]; then
+        log INFO "Generating SSH key for Tailscale SSH access..."
+        sudo -u "$console_user" ssh-keygen -t ed25519 -f "$ssh_key" -N "" -C "${console_user}@$(hostname)"
+        log SUCCESS "SSH key generated at $ssh_key"
+    else
+        log SUCCESS "SSH key already exists at $ssh_key"
+    fi
+
+    # Summary
+    echo ""
+    log SUCCESS "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log SUCCESS " Master/Client Installation Completed!"
+    log SUCCESS "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    log INFO "📦 Installed Components:"
+    log INFO "  ✅ Tailscale client (for VPN connectivity)"
+    [[ $apps_installed -gt 0 ]] && log INFO "  ✅ Remote desktop client(s) installed"
+    log INFO "  ✅ SSH keys configured"
+    echo ""
+
+    log INFO "📝 Next Steps:"
+    echo ""
+    log INFO "1. VIEW YOUR TAILSCALE NETWORK:"
+    log INFO "   tailscale status"
+    echo ""
+    log INFO "2. CONNECT TO REMOTE MACHINES:"
+    log INFO "   - Open Parsec → Sign in → See your connected machines"
+    log INFO "   - Open RustDesk → Enter Tailscale IP or connection ID"
+    echo ""
+    log INFO "3. USE TAILSCALE SSH:"
+    log INFO "   ssh user@<remote-device-name>"
+    log INFO "   Example: ssh eli@studio-01"
+    echo ""
+    log INFO "4. VIEW TAILSCALE DEVICES:"
+    log INFO "   Visit: https://login.tailscale.com/admin/machines"
+    echo ""
+
+    log INFO "🔗 Useful Commands:"
+    log INFO "  tailscale status              # View connected devices"
+    log INFO "  tailscale ping <device-name>  # Test connectivity"
+    log INFO "  tailscale ip -4               # Show your Tailscale IP"
+    echo ""
+
+    log INFO "💡 Tips:"
+    log INFO "  - Use Tailscale device names for easy access (no IP needed)"
+    log INFO "  - Enable MagicDNS for automatic DNS resolution"
+    log INFO "  - Set up Tailscale ACLs for access control"
+    echo ""
+}
+
+################################################################################
 # MAIN EXECUTION
 ################################################################################
 
@@ -1091,8 +1286,18 @@ main() {
     # Setup logging
     setup_logging
 
-    # Print configuration
-    banner "Remote Mac Setup - Starting Installation"
+    # Handle master mode separately
+    if [[ "$MASTER_MODE" == "true" ]]; then
+        banner "Remote Mac Setup - Master/Client Mode"
+        log INFO "Mode: MASTER (client machine for connecting to remote hosts)"
+        echo ""
+
+        install_master
+        exit 0
+    fi
+
+    # Print configuration for remote/host mode
+    banner "Remote Mac Setup - Remote/Host Mode"
     log INFO "Configuration:"
     log INFO "  Stack: $STACK"
     log INFO "  Device Name: $DEVICE_NAME"

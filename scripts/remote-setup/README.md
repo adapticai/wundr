@@ -1,13 +1,20 @@
 # macOS Remote Access Setup
 
-Production-grade automation for configuring headless or semi-headless **macOS 12–15** hosts (Apple Silicon or Intel) for low-latency remote access with video and keyboard/mouse support.
+Production-grade automation for configuring **macOS 12–15** (Apple Silicon or Intel) for low-latency
+remote access with video and keyboard/mouse support.
+
+Supports **two modes**:
+
+- **Master Mode**: Set up your laptop/workstation to CONNECT TO remote machines
+- **Remote/Host Mode**: Set up headless/semi-headless machines to ACCEPT connections
 
 ## Features
 
 - ✅ **Tailscale VPN** - Secure mesh networking with unattended auth
 - 🖥️ **Remote Desktop** - Parsec (default) or RustDesk support
-- 🚀 **Auto-start** - LaunchDaemons ensure services run at boot
-- ⚡ **Headless optimized** - Wake-on-LAN, no sleep, auto-restart
+- 💻 **Master Mode** - Quick setup for client machines (NEW!)
+- 🚀 **Auto-start** - LaunchDaemons ensure services run at boot (host mode)
+- ⚡ **Headless optimized** - Wake-on-LAN, no sleep, auto-restart (host mode)
 - 🔒 **TCC handling** - Guided permission setup for Screen Recording & Accessibility
 - 🔄 **Idempotent** - Safe to re-run; detects existing installations
 - ✨ **Verifiable** - Built-in verification and troubleshooting
@@ -22,19 +29,37 @@ Production-grade automation for configuring headless or semi-headless **macOS 12
 
 ## Quick Start
 
-### 1. Download the Setup Script
+### Master Mode (Your Main Computer)
+
+**Use this on your MacBook Pro, iMac, or primary workstation** - the machine you use to connect TO
+other machines.
 
 ```bash
-# Clone this repository or download the scripts
 cd /path/to/wundr/scripts/remote-setup
+chmod +x setup_remote_mac.sh
+sudo ./setup_remote_mac.sh --master
+```
 
-# Make scripts executable
+This installs: Tailscale client + Parsec/RustDesk clients + SSH keys
+
+**Done!** See [HOW_TO.md](HOW_TO.md) for detailed master setup instructions.
+
+---
+
+### Remote/Host Mode (Machines You Connect To)
+
+**Use this on Mac Studios, Mac minis, build servers** - machines you want to access remotely.
+
+#### 1. Download the Setup Script
+
+```bash
+cd /path/to/wundr/scripts/remote-setup
 chmod +x setup_remote_mac.sh uninstall_remote_mac.sh
 ```
 
-### 2. Run Installation
+#### 2. Run Installation
 
-#### Option A: Interactive Setup (Recommended for first-time)
+**Option A: Interactive Setup (Recommended for first-time)**
 
 ```bash
 sudo ./setup_remote_mac.sh \
@@ -43,11 +68,12 @@ sudo ./setup_remote_mac.sh \
 ```
 
 This will:
+
 - Prompt you to sign in to Tailscale in your browser
 - Guide you through TCC permission approval
 - Ask you to sign in to Parsec/RustDesk
 
-#### Option B: Unattended Setup (Requires auth key)
+**Option B: Unattended Setup (Requires auth key)**
 
 ```bash
 export TAILSCALE_AUTH_KEY="tskey-auth-XXXXXXXXXXXXXXXXXXXX"
@@ -60,7 +86,8 @@ sudo ./setup_remote_mac.sh \
   --unattended
 ```
 
-**Note:** Unattended mode will fail if TCC permissions or remote desktop sign-in is required. Use interactive mode for first-time setup.
+**Note:** Unattended mode will fail if TCC permissions or remote desktop sign-in is required. Use
+interactive mode for first-time setup.
 
 ### 3. Verify Installation
 
@@ -77,18 +104,19 @@ tailscale status
 
 ### Command-Line Flags
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--stack=[parsec\|rustdesk]` | Remote desktop stack | `parsec` |
-| `--tailscale-auth-key=<KEY>` | Tailscale auth key (unattended) | Interactive login |
-| `--device-name=<NAME>` | Hostname for Tailscale | System hostname |
-| `--ts-tags=<TAGS>` | Tailscale ACL tags | None |
-| `--rustdesk-id-server=<HOST>` | Custom RustDesk ID server | Official relay |
-| `--rustdesk-relay-server=<HOST>` | Custom RustDesk relay | Official relay |
-| `--prevent-sleep=[true\|false]` | Disable system sleep | `true` |
-| `--display-sleep-mins=<N>` | Display sleep timeout | `10` |
-| `--verify-only` | Run checks without changes | `false` |
-| `--unattended` | Non-interactive mode | `false` |
+| Flag                             | Description                                          | Default           |
+| -------------------------------- | ---------------------------------------------------- | ----------------- |
+| `--master`                       | Setup as master/client machine (connects TO remotes) | `false`           |
+| `--stack=[parsec\|rustdesk]`     | Remote desktop stack                                 | `parsec`          |
+| `--tailscale-auth-key=<KEY>`     | Tailscale auth key (unattended)                      | Interactive login |
+| `--device-name=<NAME>`           | Hostname for Tailscale                               | System hostname   |
+| `--ts-tags=<TAGS>`               | Tailscale ACL tags                                   | None              |
+| `--rustdesk-id-server=<HOST>`    | Custom RustDesk ID server                            | Official relay    |
+| `--rustdesk-relay-server=<HOST>` | Custom RustDesk relay                                | Official relay    |
+| `--prevent-sleep=[true\|false]`  | Disable system sleep (host mode only)                | `true`            |
+| `--display-sleep-mins=<N>`       | Display sleep timeout (host mode only)               | `10`              |
+| `--verify-only`                  | Run checks without changes                           | `false`           |
+| `--unattended`                   | Non-interactive mode                                 | `false`           |
 
 ### Environment Variables
 
@@ -109,12 +137,14 @@ export RUSTDESK_RELAY_SERVER="relay.example.com"
 Best for: Gaming, low-latency work, macOS → macOS/Windows/Linux
 
 **Features:**
+
 - Ultra-low latency (< 10ms on LAN)
 - 4K 60fps support
 - Hardware-accelerated encoding
 - Free for personal use
 
 **Setup:**
+
 1. Script installs Parsec
 2. Opens Parsec for sign-in (first run)
 3. Enable **Host** in Settings → Host
@@ -126,12 +156,14 @@ Best for: Gaming, low-latency work, macOS → macOS/Windows/Linux
 Best for: Open-source preference, self-hosted infrastructure
 
 **Features:**
+
 - Fully open-source
 - Self-hosted relay support
 - Cross-platform
 - Free and privacy-focused
 
 **Setup:**
+
 1. Script installs RustDesk
 2. TCC permissions guided setup
 3. Optionally configure custom ID/Relay servers
@@ -149,6 +181,7 @@ sudo ./setup_remote_mac.sh \
 ## TCC Permissions (Important!)
 
 macOS requires explicit user approval for:
+
 - **Screen Recording** - Capture screen content
 - **Accessibility** - Control keyboard/mouse
 
@@ -169,7 +202,8 @@ If needed, manually approve:
 4. Click **Accessibility** → Enable Parsec/RustDesk
 5. Restart the app if needed
 
-**Note:** These permissions CANNOT be scripted without MDM/PPPC profiles. This is a macOS security requirement.
+**Note:** These permissions CANNOT be scripted without MDM/PPPC profiles. This is a macOS security
+requirement.
 
 ## Connecting from Client Mac
 
@@ -212,6 +246,7 @@ For truly headless Macs (no display connected):
 - Recommended: 4K 60Hz dummy plug
 
 Without a dummy plug, macOS may:
+
 - Default to low resolution (1024x768)
 - Disable hardware acceleration
 - Cause black screens in remote sessions
@@ -219,6 +254,7 @@ Without a dummy plug, macOS may:
 ### Power Settings
 
 The script configures:
+
 - ✅ Wake-on-LAN enabled
 - ✅ Auto-restart after power failure
 - ✅ System sleep disabled (configurable)
@@ -232,6 +268,7 @@ Revert with: `--revert-pmset` during uninstall
 ### Issue: Black screen or low resolution
 
 **Solution:**
+
 - Use an HDMI dummy plug
 - In remote session, set display resolution via System Settings
 - Reboot after connecting dummy plug
@@ -239,6 +276,7 @@ Revert with: `--revert-pmset` during uninstall
 ### Issue: Can't connect via Tailscale
 
 **Solution:**
+
 ```bash
 # Check Tailscale status
 tailscale status
@@ -257,6 +295,7 @@ sudo launchctl load -w /Library/LaunchDaemons/com.tailscale.tailscaled.plist
 ### Issue: Parsec/RustDesk not starting
 
 **Solution:**
+
 ```bash
 # Check LaunchDaemon status
 sudo launchctl list | grep com.adaptic
@@ -276,6 +315,7 @@ sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
 ### Issue: Permission denied errors
 
 **Solution:**
+
 - Ensure running with `sudo`
 - Check file permissions: `ls -la /Library/LaunchDaemons/com.adaptic.*`
 - Verify log directory exists: `ls -la /var/log/remote-setup/`
@@ -283,6 +323,7 @@ sudo sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db \
 ### Issue: High latency or lag
 
 **Solution:**
+
 - Ensure both Macs on same Tailscale network (check with `tailscale status`)
 - Use wired Ethernet instead of Wi-Fi
 - Check for network congestion
@@ -366,6 +407,7 @@ sudo ./uninstall_remote_mac.sh --keep-apps
 - Never commit keys to version control
 
 **Create secure auth key:**
+
 1. Go to [Tailscale Admin Console](https://login.tailscale.com/admin/settings/keys)
 2. Generate Auth Key
 3. Enable: **Reusable**, **Ephemeral**, set **Expiry**
@@ -559,6 +601,4 @@ MIT License - See repository root for details
 
 ---
 
-**Version:** 1.0.0
-**Last Updated:** 2025-10-24
-**Maintained by:** Adaptic Development Team
+**Version:** 1.0.0 **Last Updated:** 2025-10-24 **Maintained by:** Adaptic Development Team

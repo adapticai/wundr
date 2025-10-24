@@ -1,0 +1,11 @@
+# Environment files with secrets
+.env.local
+*.env.local
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
+pmset_backup.txt
