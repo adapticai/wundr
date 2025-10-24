@@ -4,13 +4,16 @@
  */
 
 import * as path from 'path';
-import * as fs from 'fs-extra';
+
 import chalk from 'chalk';
 import { program } from 'commander';
+import * as fs from 'fs-extra';
 import ora from 'ora';
 
 import { AnalysisEngine, analyzeProjectWithProgress } from './index';
-import { AnalysisConfig, AnalysisProgressEvent } from './types';
+
+import type { AnalysisConfig, AnalysisProgressEvent } from './types';
+
 
 // Package info
 const packageJson = require('../package.json');
@@ -18,7 +21,7 @@ const packageJson = require('../package.json');
 program
   .name('wundr-analyze')
   .description(
-    'Advanced code analysis engine with AST parsing, duplicate detection, and complexity metrics'
+    'Advanced code analysis engine with AST parsing, duplicate detection, and complexity metrics',
   )
   .version(packageJson.version);
 
@@ -28,27 +31,27 @@ program
   .option(
     '-o, --output <directory>',
     'Output directory for reports',
-    './analysis-output'
+    './analysis-output',
   )
   .option(
     '-f, --format <formats>',
     'Output formats: json,html,markdown,csv',
-    'json,html'
+    'json,html',
   )
   .option('--include-tests', 'Include test files in analysis', false)
   .option(
     '--exclude <patterns>',
-    'Additional exclude patterns (comma-separated)'
+    'Additional exclude patterns (comma-separated)',
   )
   .option(
     '--max-complexity <number>',
     'Maximum cyclomatic complexity threshold',
-    '10'
+    '10',
   )
   .option(
     '--min-similarity <number>',
     'Minimum similarity for duplicate detection',
-    '0.8'
+    '0.8',
   )
   .option('--concurrency <number>', 'Maximum concurrent file processing', '10')
   .option('--enable-ai', 'Enable AI-powered analysis features', false)
@@ -116,7 +119,9 @@ program
           currentPhase = event.message || '';
           if (options.verbose) {
             spinner.text = chalk.cyan(currentPhase);
-            if (!spinner.isSpinning) spinner.start();
+            if (!spinner.isSpinning) {
+spinner.start();
+}
           }
           break;
 
@@ -127,20 +132,22 @@ program
             if (options.verbose) {
               const percent = Math.round((processed / total) * 100);
               spinner.text = chalk.cyan(
-                `${currentPhase} (${processed}/${total} - ${percent}%)`
+                `${currentPhase} (${processed}/${total} - ${percent}%)`,
               );
             }
           }
           break;
 
         case 'complete':
-          if (spinner.isSpinning)
-            spinner.succeed(chalk.green(event.message || 'Analysis completed'));
+          if (spinner.isSpinning) {
+spinner.succeed(chalk.green(event.message || 'Analysis completed'));
+}
           break;
 
         case 'error':
-          if (spinner.isSpinning)
-            spinner.fail(chalk.red(event.message || 'Analysis failed'));
+          if (spinner.isSpinning) {
+spinner.fail(chalk.red(event.message || 'Analysis failed'));
+}
           break;
       }
     };
@@ -157,7 +164,7 @@ program
       const report = await analyzeProjectWithProgress(
         targetDir,
         progressCallback,
-        config
+        config,
       );
 
       const duration = Date.now() - startTime;
@@ -167,47 +174,47 @@ program
       console.log(chalk.gray('─'.repeat(50)));
 
       console.log(
-        `${chalk.green('✓')} Files analyzed: ${chalk.bold(report.summary.totalFiles)}`
+        `${chalk.green('✓')} Files analyzed: ${chalk.bold(report.summary.totalFiles)}`,
       );
       console.log(
-        `${chalk.green('✓')} Entities found: ${chalk.bold(report.summary.totalEntities)}`
+        `${chalk.green('✓')} Entities found: ${chalk.bold(report.summary.totalEntities)}`,
       );
       console.log(
-        `${chalk.yellow('⚠')} Duplicate clusters: ${chalk.bold(report.summary.duplicateClusters)}`
+        `${chalk.yellow('⚠')} Duplicate clusters: ${chalk.bold(report.summary.duplicateClusters)}`,
       );
       console.log(
-        `${chalk.yellow('⚠')} Circular dependencies: ${chalk.bold(report.summary.circularDependencies)}`
+        `${chalk.yellow('⚠')} Circular dependencies: ${chalk.bold(report.summary.circularDependencies)}`,
       );
       console.log(
-        `${chalk.blue('ℹ')} Unused exports: ${chalk.bold(report.summary.unusedExports)}`
+        `${chalk.blue('ℹ')} Unused exports: ${chalk.bold(report.summary.unusedExports)}`,
       );
       console.log(
-        `${chalk.red('✗')} Code smells: ${chalk.bold(report.summary.codeSmells)}`
+        `${chalk.red('✗')} Code smells: ${chalk.bold(report.summary.codeSmells)}`,
       );
 
       console.log('\n🎯 ' + chalk.bold('Quality Metrics'));
       console.log(chalk.gray('─'.repeat(50)));
       console.log(
-        `Average complexity: ${chalk.bold(report.summary.averageComplexity.toFixed(1))}`
+        `Average complexity: ${chalk.bold(report.summary.averageComplexity.toFixed(1))}`,
       );
       console.log(
-        `Maintainability index: ${chalk.bold(report.summary.maintainabilityIndex.toFixed(1))}/100`
+        `Maintainability index: ${chalk.bold(report.summary.maintainabilityIndex.toFixed(1))}/100`,
       );
       console.log(
-        `Technical debt: ${chalk.bold(report.summary.technicalDebt.estimatedHours.toFixed(1))} hours`
+        `Technical debt: ${chalk.bold(report.summary.technicalDebt.estimatedHours.toFixed(1))} hours`,
       );
       console.log(
-        `Quality score: ${chalk.bold(report.summary.technicalDebt.score)}/100`
+        `Quality score: ${chalk.bold(report.summary.technicalDebt.score)}/100`,
       );
 
       console.log('\n⚡ ' + chalk.bold('Performance'));
       console.log(chalk.gray('─'.repeat(50)));
       console.log(`Analysis time: ${chalk.bold(formatDuration(duration))}`);
       console.log(
-        `Files/second: ${chalk.bold(report.performance.filesPerSecond)}`
+        `Files/second: ${chalk.bold(report.performance.filesPerSecond)}`,
       );
       console.log(
-        `Memory peak: ${chalk.bold(formatBytes(report.performance.memoryUsage.peak))}`
+        `Memory peak: ${chalk.bold(formatBytes(report.performance.memoryUsage.peak))}`,
       );
       console.log(`Cache hits: ${chalk.bold(report.performance.cacheHits)}`);
 
@@ -230,14 +237,14 @@ program
           console.log(`   ${chalk.gray(rec.description)}`);
           if (rec.estimatedTimeHours) {
             console.log(
-              `   ${chalk.gray(`Estimated effort: ${rec.estimatedTimeHours}h`)}`
+              `   ${chalk.gray(`Estimated effort: ${rec.estimatedTimeHours}h`)}`,
             );
           }
         });
 
         if (report.recommendations.length > 5) {
           console.log(
-            `\n   ${chalk.gray(`... and ${report.recommendations.length - 5} more recommendations`)}`
+            `\n   ${chalk.gray(`... and ${report.recommendations.length - 5} more recommendations`)}`,
           );
         }
       }
@@ -284,8 +291,8 @@ program
     if ((await fs.pathExists(configPath)) && !options.force) {
       console.log(
         chalk.yellow(
-          '⚠️ Configuration file already exists. Use --force to overwrite.'
-        )
+          '⚠️ Configuration file already exists. Use --force to overwrite.',
+        ),
       );
       return;
     }
@@ -322,7 +329,7 @@ program
 
     await fs.writeJson(configPath, defaultConfig, { spaces: 2 });
     console.log(
-      chalk.green('✅ Configuration file created: ') + chalk.bold(configPath)
+      chalk.green('✅ Configuration file created: ') + chalk.bold(configPath),
     );
     console.log('Edit the file to customize your analysis settings.');
   });
@@ -357,17 +364,17 @@ program
       console.log(chalk.gray('─'.repeat(40)));
       console.log(`Files processed: ${chalk.bold(report.summary.totalFiles)}`);
       console.log(
-        `Entities analyzed: ${chalk.bold(report.summary.totalEntities)}`
+        `Entities analyzed: ${chalk.bold(report.summary.totalEntities)}`,
       );
       console.log(`Total time: ${chalk.bold(formatDuration(duration))}`);
       console.log(
-        `Files/second: ${chalk.bold(report.performance.filesPerSecond)}`
+        `Files/second: ${chalk.bold(report.performance.filesPerSecond)}`,
       );
       console.log(
-        `Entities/second: ${chalk.bold(report.performance.entitiesPerSecond)}`
+        `Entities/second: ${chalk.bold(report.performance.entitiesPerSecond)}`,
       );
       console.log(
-        `Memory peak: ${chalk.bold(formatBytes(report.performance.memoryUsage.peak))}`
+        `Memory peak: ${chalk.bold(formatBytes(report.performance.memoryUsage.peak))}`,
       );
 
       // Cleanup benchmark directory
@@ -375,7 +382,7 @@ program
     } catch (error) {
       console.error(
         chalk.red('❌ Benchmark failed:'),
-        (error as Error).message
+        (error as Error).message,
       );
       process.exit(1);
     }
@@ -383,9 +390,13 @@ program
 
 // Utility functions
 function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
+  if (ms < 1000) {
+return `${ms}ms`;
+}
   const seconds = ms / 1000;
-  if (seconds < 60) return `${seconds.toFixed(1)}s`;
+  if (seconds < 60) {
+return `${seconds.toFixed(1)}s`;
+}
   const minutes = seconds / 60;
   return `${Math.floor(minutes)}m ${Math.floor(seconds % 60)}s`;
 }

@@ -3,23 +3,25 @@
  * Implements streaming processing, object pooling, and intelligent memory management
  */
 
-import * as ts from 'typescript';
-import { Project } from 'ts-morph';
 // import { Worker } from 'worker_threads'; // Unused import
-import { Transform, Readable } from 'stream';
-import { pipeline } from 'stream/promises';
 import { performance } from 'perf_hooks';
 import { memoryUsage } from 'process';
+import { Transform, Readable } from 'stream';
+import { pipeline } from 'stream/promises';
+
+import { Project } from 'ts-morph';
+import * as ts from 'typescript';
 
 import { BaseAnalysisService } from './BaseAnalysisService';
-import {
+import { createId, normalizeFilePath } from '../utils';
+
+import type {
   EntityInfo,
   AnalysisConfig,
   ServiceConfig,
   MemoryMetrics,
   ConcurrencyStats,
 } from '../types';
-import { createId, normalizeFilePath } from '../utils';
 
 /**
  * Object pool for reusing expensive objects
@@ -156,7 +158,7 @@ class ConcurrentTaskScheduler {
           // Apply backpressure by reducing concurrency temporarily
           this.maxConcurrency = Math.max(
             1,
-            Math.floor(this.maxConcurrency * 0.8)
+            Math.floor(this.maxConcurrency * 0.8),
           );
         }
 
@@ -197,7 +199,7 @@ class StreamingASTProcessor extends Transform {
   constructor(
     analyzer: MemoryOptimizedASTAnalyzer,
     entityPool: ObjectPool<EntityInfo>,
-    batchSize = 100
+    batchSize = 100,
   ) {
     super({ objectMode: true });
     this.analyzer = analyzer;
@@ -208,7 +210,7 @@ class StreamingASTProcessor extends Transform {
   override _transform(
     sourceFile: ts.SourceFile,
     encoding: string,
-    callback: Function
+    callback: Function,
   ): void {
     try {
       const entities = this.analyzer.extractEntitiesFromSourceFile(sourceFile);
@@ -247,7 +249,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   private entityPool!: ObjectPool<EntityInfo>;
   private memoryPressureMonitor: any = new MemoryPressureMonitor(); // Renamed to avoid conflict with base class
   private taskScheduler: ConcurrentTaskScheduler = new ConcurrentTaskScheduler(
-    4
+    4,
   );
   private memoryMetrics!: MemoryMetrics;
   private streamProcessor!: StreamingASTProcessor;
@@ -308,7 +310,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
         delete entity.members;
         delete entity.signature;
       },
-      200
+      200,
     );
 
     // Memory pressure monitoring
@@ -322,7 +324,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     // Concurrent task scheduler
     this.taskScheduler = new ConcurrentTaskScheduler(
       this.config.performance.maxConcurrency,
-      1000
+      1000,
     );
 
     // Initialize memory metrics
@@ -363,7 +365,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     this.streamProcessor = new StreamingASTProcessor(
       this,
       this.entityPool,
-      this.config.performance.chunkSize
+      this.config.performance.chunkSize,
     );
   }
 
@@ -424,7 +426,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
           Object.assign(results, chunk);
           yield chunk;
         }
-      }
+      },
     );
 
     return this.finalizeResults(results);
@@ -498,7 +500,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
    */
   protected extractEntityFromNode(
     node: ts.Node,
-    sourceFile: ts.SourceFile
+    sourceFile: ts.SourceFile,
   ): EntityInfo | null {
     const entity = this.entityPool.acquire();
     this.memoryMetrics.objectPoolHits++;
@@ -514,7 +516,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
             entity,
             node as ts.ClassDeclaration,
             filePath,
-            position
+            position,
           );
         case ts.SyntaxKind.InterfaceDeclaration:
           // return this.populateInterfaceEntity(entity, node as ts.InterfaceDeclaration, filePath, position);
@@ -539,7 +541,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     entity: EntityInfo,
     classDecl: ts.ClassDeclaration,
     filePath: string,
-    position: { line: number; column: number }
+    position: { line: number; column: number },
   ): EntityInfo {
     const name = classDecl.name?.getText();
     if (!name) {
@@ -636,7 +638,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     this.performanceStats.averageProcessingTime = endTime - startTime;
     this.performanceStats.memoryPeakUsage = Math.max(
       this.performanceStats.memoryPeakUsage,
-      finalMemory.heapUsed - initialMemory.heapUsed
+      finalMemory.heapUsed - initialMemory.heapUsed,
     );
 
     this.memoryMetrics.heapUsed = finalMemory.heapUsed;
@@ -645,7 +647,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     this.memoryMetrics.rss = finalMemory.rss;
     this.memoryMetrics.peakUsage = Math.max(
       this.memoryMetrics.peakUsage,
-      finalMemory.heapUsed
+      finalMemory.heapUsed,
     );
   }
 

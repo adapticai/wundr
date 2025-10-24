@@ -3,19 +3,21 @@
  * Tests throughput, latency, memory usage, and scalability improvements
  */
 
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 import { EventEmitter } from 'events';
-import chalk from 'chalk';
+import * as os from 'os';
+import * as path from 'path';
 
-import { OptimizedBaseAnalysisService } from '../analyzers/BaseAnalysisServiceOptimizations';
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
+
+
 import { BaseAnalysisService } from '../analyzers/BaseAnalysisService';
-import { OptimizedDuplicateDetectionEngine } from '../engines/DuplicateDetectionEngineOptimized';
+import { OptimizedBaseAnalysisService } from '../analyzers/BaseAnalysisServiceOptimizations';
 import { DuplicateDetectionEngine } from '../engines/DuplicateDetectionEngine';
+import { OptimizedDuplicateDetectionEngine } from '../engines/DuplicateDetectionEngineOptimized';
+import { MemoryMonitor } from '../monitoring/MemoryMonitor';
 import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
 import { WorkerPoolManager } from '../workers/WorkerPoolManager';
-import { MemoryMonitor } from '../monitoring/MemoryMonitor';
 
 export interface BenchmarkConfig {
   testDataSets: Array<{
@@ -166,8 +168,8 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
     console.log(chalk.cyan('\n🚀 Starting Performance Benchmark Suite\n'));
     console.log(
       chalk.gray(
-        `System Info: ${os.cpus().length} CPUs, ${Math.round(os.totalmem() / 1024 / 1024 / 1024)}GB RAM\n`
-      )
+        `System Info: ${os.cpus().length} CPUs, ${Math.round(os.totalmem() / 1024 / 1024 / 1024)}GB RAM\n`,
+      ),
     );
 
     for (const dataSet of this.config.testDataSets) {
@@ -201,8 +203,8 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
 
     console.log(
       chalk.gray(
-        `  Generated ${testData.entities.length} entities from ${testData.files.length} files`
-      )
+        `  Generated ${testData.entities.length} entities from ${testData.files.length} files`,
+      ),
     );
 
     const results = {
@@ -212,7 +214,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
 
     const improvement = this.calculateImprovements(
       results.baseline,
-      results.optimized
+      results.optimized,
     );
     const memoryProfile = await this.getMemoryProfile();
 
@@ -235,7 +237,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
    */
   private async benchmarkBaseline(
     testData: any,
-    dataSet: any
+    dataSet: any,
   ): Promise<PerformanceMetrics> {
     console.log(chalk.blue('    🔍 Benchmarking baseline implementation...'));
 
@@ -255,7 +257,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
 
       const results = await engine.analyze(
         testData.entities,
-        analysisConfig as any
+        analysisConfig as any,
       );
 
       const endTime = Date.now();
@@ -268,7 +270,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
         average: (startMemory.heapUsed + endMemory.heapUsed) / 2,
         efficiency: this.calculateMemoryEfficiency(
           testData.files.length,
-          endMemory.heapUsed
+          endMemory.heapUsed,
         ),
       };
 
@@ -301,7 +303,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
    */
   private async benchmarkOptimized(
     testData: any,
-    dataSet: any
+    dataSet: any,
   ): Promise<PerformanceMetrics> {
     console.log(chalk.blue('    ⚡ Benchmarking optimized implementation...'));
 
@@ -338,7 +340,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
       };
       const results = await engine.analyze(
         testData.entities,
-        analysisConfig as any
+        analysisConfig as any,
       );
 
       clearInterval(metricsInterval);
@@ -355,7 +357,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
         average: finalMetrics.memoryMetrics.average.heapUsed,
         efficiency: this.calculateMemoryEfficiency(
           testData.files.length,
-          finalMetrics.memoryMetrics.peak.heapUsed
+          finalMetrics.memoryMetrics.peak.heapUsed,
         ),
       };
 
@@ -377,7 +379,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
           maxWorkers,
           efficiency: this.calculateConcurrencyEfficiency(
             maxWorkers,
-            os.cpus().length
+            os.cpus().length,
           ),
         },
         cacheMetrics: {
@@ -401,7 +403,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
    */
   private calculateImprovements(
     baseline: PerformanceMetrics,
-    optimized: PerformanceMetrics
+    optimized: PerformanceMetrics,
   ): ImprovementMetrics {
     const speedup = baseline.executionTime / optimized.executionTime;
     const memoryReduction =
@@ -485,7 +487,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
     fileIndex: number,
     entityIndex: number,
     filePath: string,
-    dataSet: any
+    dataSet: any,
   ) {
     const types = ['function', 'class', 'interface', 'method', 'property'];
     const type = types[Math.floor(Math.random() * types.length)];
@@ -510,7 +512,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
         cognitive: complexityBase * 1.5 + Math.floor(Math.random() * 15),
       },
       dependencies: this.generateMockDependencies(
-        Math.floor(Math.random() * 8)
+        Math.floor(Math.random() * 8),
       ),
       normalizedHash: `hash_${fileIndex}_${entityIndex}`,
       semanticHash: `semantic_${fileIndex}_${entityIndex}`,
@@ -549,12 +551,12 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
    */
   private calculateMemoryEfficiency(
     fileCount: number,
-    memoryUsed: number
+    memoryUsed: number,
   ): number {
     const expectedMemory = fileCount * 50 * 1024; // 50KB per file baseline
     const efficiency = Math.max(
       0,
-      100 - ((memoryUsed - expectedMemory) / expectedMemory) * 100
+      100 - ((memoryUsed - expectedMemory) / expectedMemory) * 100,
     );
     return Math.min(100, efficiency);
   }
@@ -564,9 +566,11 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
    */
   private calculateConcurrencyEfficiency(
     workersUsed: number,
-    maxCpus: number
+    maxCpus: number,
   ): number {
-    if (workersUsed === 0) return 0;
+    if (workersUsed === 0) {
+return 0;
+}
     const optimalWorkers = maxCpus * 2; // Assume 2x CPU cores is optimal
     return Math.min(100, (workersUsed / optimalWorkers) * 100);
   }
@@ -609,25 +613,25 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
 
     if (improvement.speedup > 2) {
       recommendations.push(
-        `🚀 Excellent speedup of ${improvement.speedup.toFixed(1)}x achieved`
+        `🚀 Excellent speedup of ${improvement.speedup.toFixed(1)}x achieved`,
       );
     } else if (improvement.speedup > 1.5) {
       recommendations.push(
-        `⚡ Good speedup of ${improvement.speedup.toFixed(1)}x achieved`
+        `⚡ Good speedup of ${improvement.speedup.toFixed(1)}x achieved`,
       );
     } else {
       recommendations.push(
-        '📈 Consider further optimization for better performance gains'
+        '📈 Consider further optimization for better performance gains',
       );
     }
 
     if (improvement.memoryReduction > 30) {
       recommendations.push(
-        `💾 Outstanding memory reduction of ${improvement.memoryReduction.toFixed(1)}%`
+        `💾 Outstanding memory reduction of ${improvement.memoryReduction.toFixed(1)}%`,
       );
     } else if (improvement.memoryReduction > 0) {
       recommendations.push(
-        `💾 Memory usage reduced by ${improvement.memoryReduction.toFixed(1)}%`
+        `💾 Memory usage reduced by ${improvement.memoryReduction.toFixed(1)}%`,
       );
     } else {
       recommendations.push('🔍 Memory usage could be further optimized');
@@ -635,13 +639,13 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
 
     if (improvement.throughputIncrease > 50) {
       recommendations.push(
-        `📊 Excellent throughput improvement of ${improvement.throughputIncrease.toFixed(1)}%`
+        `📊 Excellent throughput improvement of ${improvement.throughputIncrease.toFixed(1)}%`,
       );
     }
 
     if (improvement.concurrencyImprovement > 100) {
       recommendations.push(
-        `🔄 Significant concurrency improvement with ${improvement.concurrencyImprovement.toFixed(0)}% more workers`
+        `🔄 Significant concurrency improvement with ${improvement.concurrencyImprovement.toFixed(0)}% more workers`,
       );
     }
 
@@ -666,19 +670,19 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
     console.log(chalk.gray(`    Speedup: ${improvement.speedup.toFixed(1)}x`));
     console.log(
       chalk.gray(
-        `    Memory reduction: ${improvement.memoryReduction.toFixed(1)}%`
-      )
+        `    Memory reduction: ${improvement.memoryReduction.toFixed(1)}%`,
+      ),
     );
     console.log(
       chalk.gray(
-        `    Throughput increase: ${improvement.throughputIncrease.toFixed(1)}%`
-      )
+        `    Throughput increase: ${improvement.throughputIncrease.toFixed(1)}%`,
+      ),
     );
     console.log(
-      chalk.gray(`    Max workers: ${optimized.concurrency.maxWorkers}`)
+      chalk.gray(`    Max workers: ${optimized.concurrency.maxWorkers}`),
     );
     console.log(
-      chalk.gray(`    Overall score: ${improvement.overallScore.toFixed(2)}`)
+      chalk.gray(`    Overall score: ${improvement.overallScore.toFixed(2)}`),
     );
     console.log();
   }
@@ -763,7 +767,7 @@ ${result.recommendations.map(rec => `- ${rec}`).join('\\n')}
    * Generate comprehensive comparison report
    */
   private async generateComparisonReport(
-    results: BenchmarkResult[]
+    results: BenchmarkResult[],
   ): Promise<void> {
     const comparisonData = {
       timestamp: new Date().toISOString(),
@@ -781,17 +785,17 @@ ${result.recommendations.map(rec => `- ${rec}`).join('\\n')}
         averageMemoryReduction:
           results.reduce(
             (sum, r) => sum + r.results.improvement.memoryReduction,
-            0
+            0,
           ) / results.length,
         averageThroughputIncrease:
           results.reduce(
             (sum, r) => sum + r.results.improvement.throughputIncrease,
-            0
+            0,
           ) / results.length,
         overallScore:
           results.reduce(
             (sum, r) => sum + r.results.improvement.overallScore,
-            0
+            0,
           ) / results.length,
       },
     };
@@ -811,18 +815,18 @@ ${result.recommendations.map(rec => `- ${rec}`).join('\\n')}
     console.log(chalk.green('📊 Comprehensive comparison report generated'));
     console.log(
       chalk.cyan(
-        `   Average speedup: ${comparisonData.summary.averageSpeedup.toFixed(1)}x`
-      )
+        `   Average speedup: ${comparisonData.summary.averageSpeedup.toFixed(1)}x`,
+      ),
     );
     console.log(
       chalk.cyan(
-        `   Average memory reduction: ${comparisonData.summary.averageMemoryReduction.toFixed(1)}%`
-      )
+        `   Average memory reduction: ${comparisonData.summary.averageMemoryReduction.toFixed(1)}%`,
+      ),
     );
     console.log(
       chalk.cyan(
-        `   Average throughput increase: ${comparisonData.summary.averageThroughputIncrease.toFixed(1)}%`
-      )
+        `   Average throughput increase: ${comparisonData.summary.averageThroughputIncrease.toFixed(1)}%`,
+      ),
     );
   }
 
@@ -849,7 +853,7 @@ ${result.recommendations.map(rec => `- ${rec}`).join('\\n')}
 ${data.results
   .map(
     (r: BenchmarkResult) =>
-      `| ${r.testName} | ${r.results.improvement.speedup.toFixed(1)}x | ${r.results.improvement.memoryReduction.toFixed(1)}% | ${r.results.improvement.throughputIncrease.toFixed(1)}% | ${r.results.optimized.concurrency.maxWorkers} | ${r.results.improvement.overallScore.toFixed(2)} |`
+      `| ${r.testName} | ${r.results.improvement.speedup.toFixed(1)}x | ${r.results.improvement.memoryReduction.toFixed(1)}% | ${r.results.improvement.throughputIncrease.toFixed(1)}% | ${r.results.optimized.concurrency.maxWorkers} | ${r.results.improvement.overallScore.toFixed(2)} |`,
   )
   .join('\\n')}
 
@@ -921,21 +925,23 @@ ${data.results
 
         console.log(
           chalk.gray(
-            `  Memory usage: ${Math.round((endMemory - startMemory) / 1024 / 1024)}MB delta`
-          )
+            `  Memory usage: ${Math.round((endMemory - startMemory) / 1024 / 1024)}MB delta`,
+          ),
         );
         console.log(chalk.gray(`  Time: ${endTime - startTime}ms`));
         console.log(
           chalk.gray(
-            `  Rate: ${Math.round(testData.entities.length / ((endTime - startTime) / 1000))} entities/sec`
-          )
+            `  Rate: ${Math.round(testData.entities.length / ((endTime - startTime) / 1000))} entities/sec`,
+          ),
         );
       } finally {
         await engine.shutdown();
       }
 
       // Force cleanup between tests
-      if (global.gc) global.gc();
+      if (global.gc) {
+global.gc();
+}
       console.log();
     }
   }

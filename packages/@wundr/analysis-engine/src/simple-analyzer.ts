@@ -2,12 +2,15 @@
  * Simplified Analysis Engine - Working implementation for demonstration
  */
 
-import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as ts from 'typescript';
+
+import * as fs from 'fs-extra';
 import { glob } from 'glob';
+import * as ts from 'typescript';
+
 import { createId, generateNormalizedHash } from './utils';
-import {
+
+import type {
   AnalysisConfig,
   AnalysisReport,
   EntityInfo,
@@ -139,7 +142,7 @@ export class SimpleAnalyzer {
 
   private extractEntitiesFromContent(
     content: string,
-    filePath: string
+    filePath: string,
   ): EntityInfo[] {
     const entities: EntityInfo[] = [];
 
@@ -148,7 +151,7 @@ export class SimpleAnalyzer {
         filePath,
         content,
         ts.ScriptTarget.ES2020,
-        true
+        true,
       );
 
       const visitNode = (node: ts.Node) => {
@@ -158,9 +161,11 @@ export class SimpleAnalyzer {
             node,
             'class',
             filePath,
-            sourceFile
+            sourceFile,
           );
-          if (entity) entities.push(entity);
+          if (entity) {
+entities.push(entity);
+}
         }
 
         // Extract interfaces
@@ -169,9 +174,11 @@ export class SimpleAnalyzer {
             node,
             'interface',
             filePath,
-            sourceFile
+            sourceFile,
           );
-          if (entity) entities.push(entity);
+          if (entity) {
+entities.push(entity);
+}
         }
 
         // Extract functions
@@ -180,9 +187,11 @@ export class SimpleAnalyzer {
             node,
             'function',
             filePath,
-            sourceFile
+            sourceFile,
           );
-          if (entity) entities.push(entity);
+          if (entity) {
+entities.push(entity);
+}
         }
 
         // Extract type aliases
@@ -191,9 +200,11 @@ export class SimpleAnalyzer {
             node,
             'type',
             filePath,
-            sourceFile
+            sourceFile,
           );
-          if (entity) entities.push(entity);
+          if (entity) {
+entities.push(entity);
+}
         }
 
         ts.forEachChild(node, visitNode);
@@ -212,12 +223,14 @@ export class SimpleAnalyzer {
     node: ts.Node,
     type: string,
     filePath: string,
-    sourceFile: ts.SourceFile
+    sourceFile: ts.SourceFile,
   ): EntityInfo | null {
     const name = this.getNodeName(node);
-    if (!name) return null;
+    if (!name) {
+return null;
+}
     const { line, character } = sourceFile.getLineAndCharacterOfPosition(
-      node.getStart()
+      node.getStart(),
     );
 
     const complexity = this.calculateComplexity(node, sourceFile);
@@ -258,16 +271,18 @@ export class SimpleAnalyzer {
 
   private hasExportModifier(node: ts.Node): boolean {
     const modifiers = (node as any).modifiers;
-    if (!modifiers) return false;
+    if (!modifiers) {
+return false;
+}
 
     return modifiers.some(
-      (modifier: any) => modifier.kind === ts.SyntaxKind.ExportKeyword
+      (modifier: any) => modifier.kind === ts.SyntaxKind.ExportKeyword,
     );
   }
 
   private calculateComplexity(
     node: ts.Node,
-    sourceFile: ts.SourceFile
+    sourceFile: ts.SourceFile,
   ): ComplexityMetrics {
     let cyclomatic = 1;
     const start = sourceFile.getLineAndCharacterOfPosition(node.getStart());
@@ -301,7 +316,7 @@ export class SimpleAnalyzer {
 
   private extractEntitiesFromText(
     content: string,
-    filePath: string
+    filePath: string,
   ): EntityInfo[] {
     const entities: EntityInfo[] = [];
     const lines = content.split('\n');
@@ -311,7 +326,7 @@ export class SimpleAnalyzer {
 
       // Simple pattern matching
       const classMatch = trimmed.match(
-        /export\s+(class|interface|type)\s+(\w+)/
+        /export\s+(class|interface|type)\s+(\w+)/,
       );
       if (classMatch) {
         entities.push({
@@ -377,11 +392,13 @@ export class SimpleAnalyzer {
   }
 
   private calculateAverageComplexity(entities: EntityInfo[]): number {
-    if (entities.length === 0) return 0;
+    if (entities.length === 0) {
+return 0;
+}
 
     const totalComplexity = entities.reduce(
       (sum, entity) => sum + (entity.complexity?.cyclomatic || 1),
-      0
+      0,
     );
 
     return totalComplexity / entities.length;
@@ -403,7 +420,7 @@ export class SimpleAnalyzer {
 
 // Export convenience function
 export async function analyzeProject(
-  targetDir?: string
+  targetDir?: string,
 ): Promise<AnalysisReport> {
   const analyzer = new SimpleAnalyzer({
     targetDir: targetDir || process.cwd(),

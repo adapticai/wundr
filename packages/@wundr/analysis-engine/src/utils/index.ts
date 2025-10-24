@@ -71,7 +71,7 @@ export function calculateSimilarity(entity1: any, entity2: any): number {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
@@ -85,7 +85,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
   return (...args: Parameters<T>) => {
@@ -114,7 +114,7 @@ export function chunk<T>(array: T[], size: number): T[][] {
 export async function processConcurrently<T, R>(
   items: T[],
   processor: (item: T) => Promise<R>,
-  concurrency: number = 10
+  concurrency: number = 10,
 ): Promise<R[]> {
   const results: R[] = [];
   const chunks = chunk(items, concurrency);
@@ -243,7 +243,7 @@ export function filterEntities(
     exported?: boolean;
     minComplexity?: number;
     maxComplexity?: number;
-  }
+  },
 ): any[] {
   return entities.filter(entity => {
     if (criteria.types && !criteria.types.includes(entity.type)) {

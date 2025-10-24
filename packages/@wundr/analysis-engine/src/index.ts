@@ -4,6 +4,15 @@
  */
 
 // Core types and interfaces
+// Main analysis orchestrator (simplified)
+import { SimpleAnalyzer } from './simple-analyzer';
+
+import type {
+  AnalysisConfig,
+  AnalysisReport,
+  AnalysisProgressCallback,
+} from './types';
+
 export * from './types';
 export * from './utils';
 
@@ -14,14 +23,6 @@ export { SimpleAnalyzer, analyzeProject } from './simple-analyzer';
 export { OptimizedDuplicateDetectionEngine } from './engines';
 export { WorkerPoolManager } from './workers/WorkerPoolManager';
 export { MemoryMonitor } from './monitoring';
-
-// Main analysis orchestrator (simplified)
-import { SimpleAnalyzer } from './simple-analyzer';
-import {
-  AnalysisConfig,
-  AnalysisReport,
-  AnalysisProgressCallback,
-} from './types';
 
 /**
  * Main Analysis Engine - Orchestrates all analysis components
@@ -88,7 +89,7 @@ export class AnalysisEngine {
 export async function analyzeProjectWithProgress(
   targetDir: string,
   progressCallback: AnalysisProgressCallback,
-  config?: Partial<AnalysisConfig>
+  config?: Partial<AnalysisConfig>,
 ): Promise<AnalysisReport> {
   console.log('Starting analysis with progress tracking...');
   progressCallback({ type: 'phase', message: 'Initializing analysis...' });

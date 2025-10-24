@@ -4,13 +4,15 @@
  */
 
 import * as ts from 'typescript';
-import {
+
+import { createId } from '../utils';
+
+import type {
   EntityInfo,
   ComplexityMetrics,
   BaseAnalyzer,
   AnalysisConfig,
 } from '../types';
-import { createId } from '../utils';
 
 interface ComplexityThresholds {
   cyclomatic: {
@@ -144,7 +146,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   async analyze(
     entities: EntityInfo[],
-    config: AnalysisConfig
+    config: AnalysisConfig,
   ): Promise<ComplexityReport> {
     const entityComplexities = new Map<string, ComplexityMetrics>();
     const fileComplexities = new Map<string, FileComplexityMetrics>();
@@ -164,13 +166,13 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     // Identify complexity hotspots
     const complexityHotspots = this.identifyComplexityHotspots(
       entities,
-      entityComplexities
+      entityComplexities,
     );
 
     // Generate recommendations
     const recommendations = this.generateComplexityRecommendations(
       entities,
-      entityComplexities
+      entityComplexities,
     );
 
     return {
@@ -186,7 +188,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Calculate comprehensive complexity metrics for an entity
    */
   private async calculateEntityComplexity(
-    entity: EntityInfo
+    entity: EntityInfo,
   ): Promise<ComplexityMetrics> {
     // If complexity is already calculated, enhance it
     let baseComplexity = entity.complexity || {
@@ -202,11 +204,11 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     if (entity.signature) {
       const enhancedComplexity = this.calculateComplexityFromSignature(
         entity.signature,
-        entity.type
+        entity.type,
       );
       baseComplexity = this.mergeComplexityMetrics(
         baseComplexity,
-        enhancedComplexity
+        enhancedComplexity,
       );
     }
 
@@ -222,14 +224,14 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private calculateComplexityFromSignature(
     signature: string,
-    entityType: string
+    entityType: string,
   ): Partial<ComplexityMetrics> {
     const lines = signature.split('\n');
     const codeLines = lines.filter(
       line =>
         line.trim() &&
         !line.trim().startsWith('//') &&
-        !line.trim().startsWith('*')
+        !line.trim().startsWith('*'),
     );
 
     // Parse the code to AST for accurate analysis
@@ -238,7 +240,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         'temp.ts',
         signature,
         ts.ScriptTarget.ES2020,
-        true
+        true,
       );
 
       return this.analyzeNodeComplexity(sourceFile);
@@ -384,7 +386,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Fallback text-based complexity calculation
    */
   private calculateTextBasedComplexity(
-    code: string
+    code: string,
   ): Partial<ComplexityMetrics> {
     const lines = code.split('\n').filter(line => line.trim());
 
@@ -443,8 +445,8 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         171 -
           5.2 * Math.log(estimatedVolume) -
           0.23 * cyclomatic -
-          16.2 * Math.log(lines || 1)
-      )
+          16.2 * Math.log(lines || 1),
+      ),
     );
 
     return Math.round(mi * 100) / 100; // Round to 2 decimal places
@@ -455,7 +457,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private mergeComplexityMetrics(
     base: ComplexityMetrics,
-    enhancement: Partial<ComplexityMetrics>
+    enhancement: Partial<ComplexityMetrics>,
   ): ComplexityMetrics {
     return {
       cyclomatic: enhancement.cyclomatic || base.cyclomatic,
@@ -473,7 +475,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
   private updateFileComplexity(
     entity: EntityInfo,
     complexity: ComplexityMetrics,
-    fileComplexities: Map<string, FileComplexityMetrics>
+    fileComplexities: Map<string, FileComplexityMetrics>,
   ): void {
     if (!fileComplexities.has(entity.file)) {
       fileComplexities.set(entity.file, {
@@ -496,7 +498,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     fileMetrics.codeLines += complexity.lines; // Simplified
     fileMetrics.maxComplexity = Math.max(
       fileMetrics.maxComplexity,
-      complexity.cyclomatic
+      complexity.cyclomatic,
     );
 
     // Update average complexity
@@ -559,7 +561,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    * Calculate overall complexity metrics
    */
   private calculateOverallMetrics(
-    entityComplexities: Map<string, ComplexityMetrics>
+    entityComplexities: Map<string, ComplexityMetrics>,
   ): OverallComplexityMetrics {
     const complexities = Array.from(entityComplexities.values());
 
@@ -574,7 +576,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       complexities.length;
     const totalDebt = complexities.reduce(
       (sum, c) => sum + this.calculateTechnicalDebt(c),
-      0
+      0,
     );
 
     // Calculate distribution
@@ -611,7 +613,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private identifyComplexityHotspots(
     entities: EntityInfo[],
-    complexities: Map<string, ComplexityMetrics>
+    complexities: Map<string, ComplexityMetrics>,
   ): ComplexityHotspot[] {
     const hotspots: ComplexityHotspot[] = [];
 
@@ -626,7 +628,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         const issues = this.identifyComplexityIssues(complexity);
         const recommendations = this.generateHotspotRecommendations(
           entity,
-          complexity
+          complexity,
         );
 
         hotspots.push({
@@ -713,13 +715,13 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
 
     if (complexity.maintainability < this.thresholds.maintainability.poor) {
       issues.push(
-        `Poor maintainability index (${complexity.maintainability.toFixed(1)})`
+        `Poor maintainability index (${complexity.maintainability.toFixed(1)})`,
       );
     } else if (
       complexity.maintainability < this.thresholds.maintainability.moderate
     ) {
       issues.push(
-        `Low maintainability index (${complexity.maintainability.toFixed(1)})`
+        `Low maintainability index (${complexity.maintainability.toFixed(1)})`,
       );
     }
 
@@ -749,31 +751,31 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private generateHotspotRecommendations(
     entity: EntityInfo,
-    complexity: ComplexityMetrics
+    complexity: ComplexityMetrics,
   ): string[] {
     const recommendations: string[] = [];
 
     if (complexity.cyclomatic > this.thresholds.cyclomatic.high) {
       recommendations.push(
-        'Break down complex conditional logic into smaller functions'
+        'Break down complex conditional logic into smaller functions',
       );
       recommendations.push('Use early returns to reduce nesting');
       recommendations.push(
-        'Consider using strategy pattern for complex branching'
+        'Consider using strategy pattern for complex branching',
       );
     }
 
     if (complexity.cognitive > this.thresholds.cognitive.high) {
       recommendations.push('Simplify nested control structures');
       recommendations.push(
-        'Extract complex conditions into well-named boolean variables'
+        'Extract complex conditions into well-named boolean variables',
       );
       recommendations.push('Break long chains of logical operators');
     }
 
     if (complexity.depth > this.thresholds.nesting.maxDepth) {
       recommendations.push(
-        'Reduce nesting by extracting nested blocks into separate methods'
+        'Reduce nesting by extracting nested blocks into separate methods',
       );
       recommendations.push('Use guard clauses to eliminate deep nesting');
     }
@@ -782,17 +784,17 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       recommendations.push('Group related parameters into objects');
       recommendations.push('Use builder pattern for complex parameter sets');
       recommendations.push(
-        'Consider if some parameters can be derived or have defaults'
+        'Consider if some parameters can be derived or have defaults',
       );
     }
 
     if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
       recommendations.push(
-        'Break large function into smaller, focused functions'
+        'Break large function into smaller, focused functions',
       );
       recommendations.push('Extract reusable logic into utility functions');
       recommendations.push(
-        'Consider if the function has multiple responsibilities'
+        'Consider if the function has multiple responsibilities',
       );
     }
 
@@ -804,7 +806,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private generateComplexityRecommendations(
     entities: EntityInfo[],
-    complexities: Map<string, ComplexityMetrics>
+    complexities: Map<string, ComplexityMetrics>,
   ): ComplexityRecommendation[] {
     const recommendations: ComplexityRecommendation[] = [];
 
@@ -812,7 +814,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       const complexity = complexities.get(entity.id)!;
       const entityRecommendations = this.generateEntityRecommendations(
         entity,
-        complexity
+        complexity,
       );
       recommendations.push(...entityRecommendations);
     });
@@ -829,7 +831,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private generateEntityRecommendations(
     entity: EntityInfo,
-    complexity: ComplexityMetrics
+    complexity: ComplexityMetrics,
   ): ComplexityRecommendation[] {
     const recommendations: ComplexityRecommendation[] = [];
 

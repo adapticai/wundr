@@ -3,7 +3,18 @@
  * Enhanced with streaming processing, object pooling, and advanced memory management
  */
 
+import { EventEmitter } from 'events';
+
+import { MemoryMonitor } from '../monitoring/MemoryMonitor';
 import {
+  generateNormalizedHash,
+  generateSemanticHash,
+  createId,
+  processConcurrently,
+} from '../utils';
+import { WorkerPoolManager } from '../workers/WorkerPoolManager';
+
+import type {
   EntityInfo,
   DuplicateCluster,
   SeverityLevel,
@@ -12,15 +23,6 @@ import {
   AnalysisConfig,
   EntityType,
 } from '../types';
-import {
-  generateNormalizedHash,
-  generateSemanticHash,
-  createId,
-  processConcurrently,
-} from '../utils';
-import { WorkerPoolManager } from '../workers/WorkerPoolManager';
-import { MemoryMonitor } from '../monitoring/MemoryMonitor';
-import { EventEmitter } from 'events';
 
 interface SimilarityMatrix {
   [key: string]: {
@@ -46,8 +48,7 @@ interface OptimizedDuplicateDetectionConfig {
  */
 export class OptimizedDuplicateDetectionEngine
   extends EventEmitter
-  implements BaseAnalyzer<DuplicateCluster[]>
-{
+  implements BaseAnalyzer<DuplicateCluster[]> {
   public readonly name = 'OptimizedDuplicateDetectionEngine';
   public readonly version = '3.0.0';
 
@@ -145,7 +146,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig
+    analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     await this.memoryMonitor.startMonitoring();
     this.emit('analysis-started', { entityCount: entities.length });
@@ -168,12 +169,12 @@ export class OptimizedDuplicateDetectionEngine
       if (this.config.enableStreaming && filteredEntities.length > 5000) {
         clusters = await this.performStreamingDuplicateAnalysis(
           filteredEntities,
-          analysisConfig
+          analysisConfig,
         );
       } else {
         clusters = await this.performOptimizedDuplicateAnalysis(
           filteredEntities,
-          analysisConfig
+          analysisConfig,
         );
       }
 
@@ -201,20 +202,26 @@ export class OptimizedDuplicateDetectionEngine
   private preFilterEntities(entities: EntityInfo[]): EntityInfo[] {
     return entities.filter(entity => {
       // Skip entities with insufficient information
-      if (!entity.name || entity.name.length < 3) return false;
+      if (!entity.name || entity.name.length < 3) {
+return false;
+}
 
       // Skip private/internal members
-      if (entity.name.startsWith('_') || entity.name.startsWith('__'))
-        return false;
+      if (entity.name.startsWith('_') || entity.name.startsWith('__')) {
+return false;
+}
 
       // Skip comments and trivial types
-      if (entity.type === 'comment' || entity.type === 'whitespace')
-        return false;
+      if (entity.type === 'comment' || entity.type === 'whitespace') {
+return false;
+}
 
       // Skip very small functions/methods (likely getters/setters)
       if (entity.type === 'function' || entity.type === 'method') {
         const complexity = entity.complexity?.cyclomatic || 1;
-        if (complexity < 2 && entity.name.length < 5) return false;
+        if (complexity < 2 && entity.name.length < 5) {
+return false;
+}
       }
 
       return true;
@@ -226,7 +233,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   private async performStreamingDuplicateAnalysis(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig
+    analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     this.emit('streaming-analysis-started', { totalEntities: entities.length });
 
@@ -238,7 +245,9 @@ export class OptimizedDuplicateDetectionEngine
     const entitiesByType = this.groupEntitiesByType(entities);
 
     for (const [entityType, typeEntities] of entitiesByType.entries()) {
-      if (typeEntities.length < 2) continue;
+      if (typeEntities.length < 2) {
+continue;
+}
 
       this.emit('processing-type', {
         type: entityType,
@@ -252,7 +261,7 @@ export class OptimizedDuplicateDetectionEngine
         // Process batch concurrently with multiple workers
         const batchClusters = await this.processBatchConcurrently(
           batch,
-          entityType
+          entityType,
         );
         allClusters.push(...batchClusters);
 
@@ -281,7 +290,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   private async performOptimizedDuplicateAnalysis(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig
+    analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
 
@@ -323,7 +332,7 @@ export class OptimizedDuplicateDetectionEngine
     // Phase 4: Advanced clustering with memory optimization
     const finalClusters = await this.performAdvancedClusteringOptimized(
       clusters,
-      entities
+      entities,
     );
 
     // Phase 5: Generate consolidation suggestions
@@ -335,14 +344,14 @@ export class OptimizedDuplicateDetectionEngine
    */
   private async processBatchConcurrently(
     batch: EntityInfo[],
-    entityType: string
+    entityType: string,
   ): Promise<DuplicateCluster[]> {
     const tasks = [];
 
     // Split batch into smaller chunks for parallel processing
     const chunkSize = Math.max(
       50,
-      Math.floor(batch.length / this.workerPool.getMetrics().activeWorkers)
+      Math.floor(batch.length / this.workerPool.getMetrics().activeWorkers),
     );
 
     for (let i = 0; i < batch.length; i += chunkSize) {
@@ -377,14 +386,16 @@ export class OptimizedDuplicateDetectionEngine
    * Concurrent hash-based duplicate detection
    */
   private async detectHashBasedDuplicatesConcurrent(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const entitiesByType = this.groupEntitiesByType(entities);
     const tasks = [];
 
     // Create concurrent tasks for each entity type
     for (const [entityType, typeEntities] of entitiesByType.entries()) {
-      if (typeEntities.length < 2) continue;
+      if (typeEntities.length < 2) {
+continue;
+}
 
       tasks.push({
         id: `hash-duplicates-${entityType}-${Date.now()}`,
@@ -413,14 +424,16 @@ export class OptimizedDuplicateDetectionEngine
    * Concurrent semantic duplicate detection
    */
   private async detectSemanticDuplicatesConcurrent(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const entitiesByType = this.groupEntitiesByType(entities);
     const tasks = [];
 
     // Process each type concurrently using workers
     for (const [entityType, typeEntities] of entitiesByType.entries()) {
-      if (typeEntities.length < 2) continue;
+      if (typeEntities.length < 2) {
+continue;
+}
 
       // Split large types into smaller chunks
       const chunkSize = Math.min(500, typeEntities.length);
@@ -459,13 +472,15 @@ export class OptimizedDuplicateDetectionEngine
    * Streaming fuzzy duplicate detection with memory management
    */
   private async detectFuzzyDuplicatesStreaming(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const entitiesByType = this.groupEntitiesByType(entities);
 
     for (const [entityType, typeEntities] of entitiesByType.entries()) {
-      if (typeEntities.length < 2) continue;
+      if (typeEntities.length < 2) {
+continue;
+}
 
       // Process in smaller chunks to manage memory
       const chunkSize = Math.min(300, typeEntities.length);
@@ -491,7 +506,7 @@ export class OptimizedDuplicateDetectionEngine
    * Find fuzzy clusters with memory optimization and object pooling
    */
   private async findFuzzyClustersForTypeOptimized(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const localProcessed = new Set<string>();
@@ -499,7 +514,9 @@ export class OptimizedDuplicateDetectionEngine
     // Use more efficient similarity calculation
     for (let i = 0; i < entities.length; i++) {
       const currentEntity = entities[i];
-      if (!currentEntity || localProcessed.has(currentEntity.id)) continue;
+      if (!currentEntity || localProcessed.has(currentEntity.id)) {
+continue;
+}
 
       const cluster = [currentEntity];
       localProcessed.add(currentEntity.id);
@@ -507,12 +524,13 @@ export class OptimizedDuplicateDetectionEngine
       // Find entities with fuzzy similarity
       for (let j = i + 1; j < entities.length; j++) {
         const comparisonEntity = entities[j];
-        if (!comparisonEntity || localProcessed.has(comparisonEntity.id))
-          continue;
+        if (!comparisonEntity || localProcessed.has(comparisonEntity.id)) {
+continue;
+}
 
         const similarity = this.getCachedSimilarity(
           currentEntity,
-          comparisonEntity
+          comparisonEntity,
         );
         if (similarity >= this.config.minSimilarity * 0.7) {
           cluster.push(comparisonEntity);
@@ -527,7 +545,7 @@ export class OptimizedDuplicateDetectionEngine
           cluster,
           currentEntity.type,
           false,
-          false
+          false,
         );
         clusters.push(clusterObj);
       }
@@ -541,11 +559,11 @@ export class OptimizedDuplicateDetectionEngine
    */
   private async performAdvancedClusteringOptimized(
     initialClusters: DuplicateCluster[],
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     // Filter out oversized clusters to save memory
     const validClusters = initialClusters.filter(
-      cluster => cluster.entities.length <= this.config.maxClusterSize
+      cluster => cluster.entities.length <= this.config.maxClusterSize,
     );
 
     this.emit('clustering-optimization', {
@@ -569,18 +587,18 @@ export class OptimizedDuplicateDetectionEngine
    */
   private mergeClustersOptimized(
     existingClusters: DuplicateCluster[],
-    newClusters: DuplicateCluster[]
+    newClusters: DuplicateCluster[],
   ): DuplicateCluster[] {
     const uniqueClusters: DuplicateCluster[] = [];
 
     // Create entity set for faster lookup
     const existingEntityIds = new Set(
-      existingClusters.flatMap(c => c.entities.map(e => e.id))
+      existingClusters.flatMap(c => c.entities.map(e => e.id)),
     );
 
     for (const newCluster of newClusters) {
       const hasOverlap = newCluster.entities.some(e =>
-        existingEntityIds.has(e.id)
+        existingEntityIds.has(e.id),
       );
 
       if (!hasOverlap) {
@@ -599,15 +617,19 @@ export class OptimizedDuplicateDetectionEngine
    * Hierarchical clustering with memory optimization
    */
   private async hierarchicalClusteringOptimized(
-    clusters: DuplicateCluster[]
+    clusters: DuplicateCluster[],
   ): Promise<DuplicateCluster[]> {
-    if (clusters.length === 0) return [];
+    if (clusters.length === 0) {
+return [];
+}
 
     const mergedClusters: DuplicateCluster[] = [];
     const processed = new Set<string>();
 
     for (const cluster of clusters) {
-      if (processed.has(cluster.id)) continue;
+      if (processed.has(cluster.id)) {
+continue;
+}
 
       const mergedCluster = { ...cluster };
       processed.add(cluster.id);
@@ -631,7 +653,7 @@ export class OptimizedDuplicateDetectionEngine
             mergedCluster.entities.push(...otherCluster.entities);
             mergedCluster.similarity = Math.min(
               mergedCluster.similarity,
-              otherCluster.similarity
+              otherCluster.similarity,
             );
             processed.add(otherCluster.id);
 
@@ -654,13 +676,13 @@ export class OptimizedDuplicateDetectionEngine
    */
   private async densityBasedClusteringOptimized(
     clusters: DuplicateCluster[],
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     // Simplified implementation to reduce memory usage
     return clusters.filter(
       cluster =>
         cluster.entities.length >= 2 &&
-        cluster.entities.length <= this.config.maxClusterSize
+        cluster.entities.length <= this.config.maxClusterSize,
     );
   }
 
@@ -668,13 +690,13 @@ export class OptimizedDuplicateDetectionEngine
    * Memory-efficient hash cluster optimization
    */
   private optimizeHashClustersMemoryEfficient(
-    clusters: DuplicateCluster[]
+    clusters: DuplicateCluster[],
   ): DuplicateCluster[] {
     return clusters
       .filter(
         cluster =>
           cluster.entities.length > 1 &&
-          cluster.entities.length <= this.config.maxClusterSize
+          cluster.entities.length <= this.config.maxClusterSize,
       )
       .sort((a, b) => {
         // Prioritize high similarity and reasonable size
@@ -723,12 +745,12 @@ export class OptimizedDuplicateDetectionEngine
    * Enhanced clusters with consolidation suggestions (memory optimized)
    */
   private enhanceClustersWithSuggestions(
-    clusters: DuplicateCluster[]
+    clusters: DuplicateCluster[],
   ): DuplicateCluster[] {
     return clusters.map(cluster => {
       cluster.consolidationSuggestion = this.generateConsolidationSuggestion(
         cluster.entities,
-        cluster.type
+        cluster.type,
       );
       return cluster;
     });
@@ -738,7 +760,7 @@ export class OptimizedDuplicateDetectionEngine
    * Group entities by type for efficient processing
    */
   private groupEntitiesByType(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Map<string, EntityInfo[]> {
     const groups = new Map<string, EntityInfo[]>();
 
@@ -757,7 +779,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   private getCachedSimilarity(
     entity1: EntityInfo,
-    entity2: EntityInfo
+    entity2: EntityInfo,
   ): number {
     const cacheKey =
       entity1.id < entity2.id
@@ -784,9 +806,11 @@ export class OptimizedDuplicateDetectionEngine
    */
   private calculateFuzzySimilarity(
     entity1: EntityInfo,
-    entity2: EntityInfo
+    entity2: EntityInfo,
   ): number {
-    if (entity1.type !== entity2.type) return 0;
+    if (entity1.type !== entity2.type) {
+return 0;
+}
 
     let similarity = 0;
     let factors = 0;
@@ -800,7 +824,7 @@ export class OptimizedDuplicateDetectionEngine
     if (entity1.signature && entity2.signature) {
       const sigSim = this.calculateStringSimilarity(
         entity1.signature,
-        entity2.signature
+        entity2.signature,
       );
       similarity += sigSim;
       factors++;
@@ -810,7 +834,7 @@ export class OptimizedDuplicateDetectionEngine
     if (entity1.jsDoc && entity2.jsDoc) {
       const jsdocSim = this.calculateStringSimilarity(
         entity1.jsDoc,
-        entity2.jsDoc
+        entity2.jsDoc,
       );
       similarity += jsdocSim * 0.5;
       factors += 0.5;
@@ -823,20 +847,24 @@ export class OptimizedDuplicateDetectionEngine
    * Calculate string similarity using Jaccard similarity
    */
   private calculateStringSimilarity(str1: string, str2: string): number {
-    if (str1 === str2) return 1.0;
-    if (!str1 || !str2) return 0;
+    if (str1 === str2) {
+return 1.0;
+}
+    if (!str1 || !str2) {
+return 0;
+}
 
     const tokens1 = new Set(
       str1
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2)
+        .filter(t => t.length > 2),
     );
     const tokens2 = new Set(
       str2
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2)
+        .filter(t => t.length > 2),
     );
 
     const intersection = new Set([...tokens1].filter(t => tokens2.has(t)));
@@ -852,7 +880,7 @@ export class OptimizedDuplicateDetectionEngine
     const count = entities.length;
     const totalComplexity = entities.reduce(
       (sum, e) => sum + (e.complexity?.cyclomatic || 0),
-      0
+      0,
     );
     const avgDependencies =
       entities.reduce((sum, e) => sum + e.dependencies.length, 0) / count;
@@ -872,7 +900,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   private generateConsolidationSuggestion(
     entities: EntityInfo[],
-    entityType: EntityType
+    entityType: EntityType,
   ): ConsolidationSuggestion {
     if (entities.length === 0) {
       throw new Error('Cannot generate suggestion for empty entity list');
@@ -910,7 +938,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   private generateConsolidationSteps(
     strategy: 'merge' | 'extract' | 'refactor',
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): string[] {
     const baseSteps = [
       'Review all duplicate implementations for functional differences',
@@ -956,7 +984,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   private shouldMergeClusters(
     cluster1: DuplicateCluster,
-    cluster2: DuplicateCluster
+    cluster2: DuplicateCluster,
   ): boolean {
     return (
       cluster1.type === cluster2.type &&
@@ -971,7 +999,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   private clustersOverlap(
     cluster1: DuplicateCluster,
-    cluster2: DuplicateCluster
+    cluster2: DuplicateCluster,
   ): boolean {
     const entities1 = new Set(cluster1.entities.map(e => e.id));
     const entities2 = new Set(cluster2.entities.map(e => e.id));
@@ -1046,7 +1074,7 @@ export class OptimizedDuplicateDetectionEngine
     entities: EntityInfo[],
     type: EntityType,
     structuralMatch: boolean,
-    semanticMatch: boolean
+    semanticMatch: boolean,
   ): void {
     cluster.id = createId();
     cluster.hash = generateNormalizedHash(entities.map(e => e.id).sort());
@@ -1062,8 +1090,12 @@ export class OptimizedDuplicateDetectionEngine
    * Calculate average similarity with optimization
    */
   private calculateAverageSimilarityOptimized(entities: EntityInfo[]): number {
-    if (entities.length < 2) return 1.0;
-    if (entities.length > 10) return 0.85; // Estimate for large clusters
+    if (entities.length < 2) {
+return 1.0;
+}
+    if (entities.length > 10) {
+return 0.85;
+} // Estimate for large clusters
 
     let totalSimilarity = 0;
     let pairs = 0;
@@ -1071,15 +1103,19 @@ export class OptimizedDuplicateDetectionEngine
     // Sample pairs instead of all pairs for large clusters
     const maxPairs = Math.min(
       15,
-      (entities.length * (entities.length - 1)) / 2
+      (entities.length * (entities.length - 1)) / 2,
     );
 
     for (let i = 0; i < entities.length && pairs < maxPairs; i++) {
       const entityI = entities[i];
-      if (!entityI) continue;
+      if (!entityI) {
+continue;
+}
       for (let j = i + 1; j < entities.length && pairs < maxPairs; j++) {
         const entityJ = entities[j];
-        if (!entityJ) continue;
+        if (!entityJ) {
+continue;
+}
         totalSimilarity += this.getCachedSimilarity(entityI, entityJ);
         pairs++;
       }
@@ -1095,7 +1131,7 @@ export class OptimizedDuplicateDetectionEngine
     const memUsage = process.memoryUsage();
     this.stats.memoryPeakUsage = Math.max(
       this.stats.memoryPeakUsage,
-      memUsage.heapUsed
+      memUsage.heapUsed,
     );
 
     if (memUsage.heapUsed > this.config.maxMemoryUsage * 0.8) {

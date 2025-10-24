@@ -3,25 +3,16 @@
  * Migrated and optimized from original AnalysisService with performance improvements
  */
 
-import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as ts from 'typescript';
-import { glob } from 'glob';
-import chalk from 'chalk';
-import ora, { Ora } from 'ora';
-import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
-import { WorkerPoolManager } from '../workers/WorkerPoolManager';
-import { MemoryMonitor } from '../monitoring/MemoryMonitor';
 
-import {
-  AnalysisConfig,
-  AnalysisReport,
-  AnalysisSummary,
-  EntityInfo,
-  PerformanceMetrics,
-  AnalysisProgressEvent,
-  AnalysisProgressCallback,
-} from '../types';
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
+import { glob } from 'glob';
+import ora from 'ora';
+import * as ts from 'typescript';
+
+import { MemoryMonitor } from '../monitoring/MemoryMonitor';
+import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
 import {
   createId,
   normalizeFilePath,
@@ -30,6 +21,18 @@ import {
   processConcurrently,
   chunk,
 } from '../utils';
+import { WorkerPoolManager } from '../workers/WorkerPoolManager';
+
+import type {
+  AnalysisConfig,
+  AnalysisReport,
+  AnalysisSummary,
+  EntityInfo,
+  PerformanceMetrics,
+  AnalysisProgressEvent,
+  AnalysisProgressCallback,
+} from '../types';
+import type { Ora } from 'ora';
 
 export interface ServiceResult<T> {
   success: boolean;
@@ -99,7 +102,7 @@ export abstract class BaseAnalysisService {
       outputDir: path.join(
         process.cwd(),
         'analysis-output',
-        name.toLowerCase()
+        name.toLowerCase(),
       ),
       verbose: false,
       performance: {
@@ -135,7 +138,7 @@ export abstract class BaseAnalysisService {
     this.workerPool = new WorkerPoolManager({
       minWorkers: Math.max(
         2,
-        Math.floor(this.config.performance.maxConcurrency * 0.5)
+        Math.floor(this.config.performance.maxConcurrency * 0.5),
       ),
       maxWorkers: Math.max(30, this.config.performance.maxConcurrency * 2), // Target 30+ workers
       enableAutoScaling: true,
@@ -230,7 +233,7 @@ export abstract class BaseAnalysisService {
       const report = await this.generateReport(
         files,
         entities,
-        analysisResults
+        analysisResults,
       );
 
       // Save report in multiple formats
@@ -324,7 +327,7 @@ export abstract class BaseAnalysisService {
             // Skip files > 1MB
             if (this.config.verbose) {
               console.warn(
-                `Skipping large file: ${file} (${formatFileSize(stats.size)})`
+                `Skipping large file: ${file} (${formatFileSize(stats.size)})`,
               );
             }
             return;
@@ -342,12 +345,12 @@ export abstract class BaseAnalysisService {
         } catch (error) {
           if (this.config.verbose) {
             console.warn(
-              `Error reading file ${file}: ${error instanceof Error ? error.message : String(error)}`
+              `Error reading file ${file}: ${error instanceof Error ? error.message : String(error)}`,
             );
           }
         }
       },
-      this.config.performance.maxConcurrency
+      this.config.performance.maxConcurrency,
     );
 
     return filteredFiles;
@@ -360,7 +363,7 @@ export abstract class BaseAnalysisService {
     const configPath = ts.findConfigFile(
       this.config.targetDir,
       ts.sys.fileExists,
-      'tsconfig.json'
+      'tsconfig.json',
     );
 
     let compilerOptions: ts.CompilerOptions = {
@@ -381,7 +384,7 @@ export abstract class BaseAnalysisService {
         const parsedConfig = ts.parseJsonConfigFileContent(
           configFile.config,
           ts.sys,
-          path.dirname(configPath)
+          path.dirname(configPath),
         );
         compilerOptions = { ...compilerOptions, ...parsedConfig.options };
       }
@@ -400,7 +403,7 @@ export abstract class BaseAnalysisService {
    * Extract entities with performance optimization
    */
   private async extractEntitiesOptimized(
-    files: string[]
+    files: string[],
   ): Promise<EntityInfo[]> {
     this.emitProgress({
       type: 'phase',
@@ -422,12 +425,12 @@ export abstract class BaseAnalysisService {
             type: 'progress',
             progress: processedFiles,
             total: files.length,
-            message: `Processing files...`,
+            message: 'Processing files...',
           });
 
           return entities;
         },
-        Math.min(this.config.performance.maxConcurrency, fileChunk.length)
+        Math.min(this.config.performance.maxConcurrency, fileChunk.length),
       );
 
       allEntities.push(...chunkEntities.flat());
@@ -436,7 +439,7 @@ export abstract class BaseAnalysisService {
       const memUsage = process.memoryUsage();
       this.memoryUsage.peak = Math.max(
         this.memoryUsage.peak,
-        memUsage.heapUsed
+        memUsage.heapUsed,
       );
       this.memoryUsage.average =
         (this.memoryUsage.average + memUsage.heapUsed) / 2;
@@ -449,7 +452,7 @@ export abstract class BaseAnalysisService {
    * Extract entities from a single file with caching
    */
   protected async extractEntitiesFromFile(
-    filePath: string
+    filePath: string,
   ): Promise<EntityInfo[]> {
     const cacheKey = `entities-${filePath}`;
     if (
@@ -488,7 +491,7 @@ export abstract class BaseAnalysisService {
   private async generateReport(
     files: string[],
     entities: EntityInfo[],
-    analysisResults: any
+    analysisResults: any,
   ): Promise<AnalysisReport> {
     const endTime = Date.now();
     const duration = endTime - this.startTime;
@@ -598,7 +601,7 @@ export abstract class BaseAnalysisService {
 
     return Math.max(
       0,
-      Math.min(100, 171 - 5.2 * Math.log(avgLines || 1) - 0.23 * avgComplexity)
+      Math.min(100, 171 - 5.2 * Math.log(avgLines || 1) - 0.23 * avgComplexity),
     );
   }
 
@@ -653,7 +656,7 @@ export abstract class BaseAnalysisService {
     this.memoryMonitor.on('memory-alert', alert => {
       if (this.config.verbose) {
         console.warn(
-          `Memory Alert: ${alert.type} - Current: ${formatFileSize(alert.current)}`
+          `Memory Alert: ${alert.type} - Current: ${formatFileSize(alert.current)}`,
         );
       }
 
@@ -702,10 +705,10 @@ export abstract class BaseAnalysisService {
 
   protected getPositionInfo(
     node: ts.Node,
-    sourceFile: ts.SourceFile
+    sourceFile: ts.SourceFile,
   ): { line: number; column: number } {
     const { line, character } = sourceFile.getLineAndCharacterOfPosition(
-      node.getStart(sourceFile)
+      node.getStart(sourceFile),
     );
     return { line: line + 1, column: character + 1 };
   }
@@ -775,7 +778,7 @@ export abstract class BaseAnalysisService {
           <p><strong>Impact:</strong> ${rec.impact}</p>
           <p><strong>Effort:</strong> ${rec.effort}</p>
         </div>
-      `
+      `,
         )
         .join('')}
     </div>
@@ -824,7 +827,7 @@ ${rec.description}
 - **Effort:** ${rec.effort}
 ${rec.estimatedTimeHours ? `- **Estimated Time:** ${rec.estimatedTimeHours}h` : ''}
 
-`
+`,
   )
   .join('')}`;
   }
@@ -842,7 +845,7 @@ ${rec.estimatedTimeHours ? `- **Estimated Time:** ${rec.estimatedTimeHours}h` : 
           entity.complexity?.cyclomatic || 0,
           entity.exportType,
           entity.dependencies.length,
-        ].join(',')
+        ].join(','),
       );
     });
 

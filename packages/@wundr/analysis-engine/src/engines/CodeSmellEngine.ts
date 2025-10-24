@@ -4,15 +4,17 @@
  */
 
 import {
+  ComplexityMetrics,
+} from '../types';
+import { createId } from '../utils';
+
+import type {
   EntityInfo,
   CodeSmell,
   CodeSmellType,
   SeverityLevel,
-  ComplexityMetrics,
   BaseAnalyzer,
-  AnalysisConfig,
-} from '../types';
-import { createId } from '../utils';
+  AnalysisConfig} from '../types';
 
 interface CodeSmellRule {
   id: string;
@@ -84,7 +86,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig
+    analysisConfig: AnalysisConfig,
   ): Promise<CodeSmell[]> {
     const codeSmells: CodeSmell[] = [];
     const entityMap = new Map(entities.map(e => [e.id, e]));
@@ -349,14 +351,14 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
 
     if (methodCount > maxMethods) {
       violations.push(
-        `Too many methods: ${methodCount} (limit: ${maxMethods})`
+        `Too many methods: ${methodCount} (limit: ${maxMethods})`,
       );
       severity = 'medium';
     }
 
     if (propertyCount > maxProperties) {
       violations.push(
-        `Too many properties: ${propertyCount} (limit: ${maxProperties})`
+        `Too many properties: ${propertyCount} (limit: ${maxProperties})`,
       );
       severity = 'medium';
     }
@@ -387,7 +389,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   private checkDuplicateCode(
     entity: EntityInfo,
-    allEntities: EntityInfo[]
+    allEntities: EntityInfo[],
   ): CodeSmellResult | null {
     if (!entity.signature) {
       return null;
@@ -398,7 +400,9 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
 
     // Find similar entities
     const similarEntities = allEntities.filter(other => {
-      if (other.id === entity.id || !other.signature) return false;
+      if (other.id === entity.id || !other.signature) {
+return false;
+}
       return (
         this.calculateSimilarity(entity.signature!, other.signature!) >=
         minSimilarity
@@ -445,18 +449,18 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     ];
 
     const nameIndicators = deadCodeIndicators.filter(indicator =>
-      entity.name.toLowerCase().includes(indicator.toLowerCase())
+      entity.name.toLowerCase().includes(indicator.toLowerCase()),
     );
 
     const signatureIndicators = entity.signature
       ? deadCodeIndicators.filter(indicator =>
-          entity.signature!.toLowerCase().includes(indicator.toLowerCase())
+          entity.signature!.toLowerCase().includes(indicator.toLowerCase()),
         )
       : [];
 
     const commentIndicators = entity.jsDoc
       ? deadCodeIndicators.filter(indicator =>
-          entity.jsDoc!.toLowerCase().includes(indicator.toLowerCase())
+          entity.jsDoc!.toLowerCase().includes(indicator.toLowerCase()),
         )
       : [];
 
@@ -549,7 +553,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   private checkFeatureEnvy(
     entity: EntityInfo,
-    allEntities: EntityInfo[]
+    allEntities: EntityInfo[],
   ): CodeSmellResult | null {
     if (entity.type !== 'method' && entity.type !== 'function') {
       return null;
@@ -565,7 +569,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     // Count references to external entities vs own class/module
     const externalReferences = this.countExternalReferences(
       entity,
-      allEntities
+      allEntities,
     );
     const totalReferences = this.countTotalReferences(entity.signature);
 
@@ -575,7 +579,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       if (externalRatio > maxExternalUsageRatio) {
         const confidence = Math.min(
           1,
-          (externalRatio - maxExternalUsageRatio) / (1 - maxExternalUsageRatio)
+          (externalRatio - maxExternalUsageRatio) / (1 - maxExternalUsageRatio),
         );
 
         return {
@@ -601,7 +605,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   private checkInappropriateIntimacy(
     entity: EntityInfo,
-    allEntities: EntityInfo[]
+    allEntities: EntityInfo[],
   ): CodeSmellResult | null {
     if (entity.type !== 'class') {
       return null;
@@ -616,7 +620,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
     if (intimateClasses.length > maxIntimacy) {
       const confidence = Math.min(
         1,
-        (intimateClasses.length - maxIntimacy) / maxIntimacy
+        (intimateClasses.length - maxIntimacy) / maxIntimacy,
       );
 
       return {
@@ -761,7 +765,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         parameters > maxParameters * 1.5 ? 'high' : 'medium';
       const confidence = Math.min(
         1,
-        (parameters - maxParameters) / maxParameters
+        (parameters - maxParameters) / maxParameters,
       );
 
       return {
@@ -790,13 +794,13 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       str1
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2)
+        .filter(t => t.length > 2),
     );
     const tokens2 = new Set(
       str2
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2)
+        .filter(t => t.length > 2),
     );
 
     const intersection = new Set([...tokens1].filter(x => tokens2.has(x)));
@@ -810,15 +814,17 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   private countExternalReferences(
     entity: EntityInfo,
-    allEntities: EntityInfo[]
+    allEntities: EntityInfo[],
   ): number {
-    if (!entity.signature) return 0;
+    if (!entity.signature) {
+return 0;
+}
 
     // Get entities from the same file/class
     const sameContextEntities = allEntities.filter(
       e =>
         e.file === entity.file ||
-        (entity.metadata?.parentEntity && e.id === entity.metadata.parentEntity)
+        (entity.metadata?.parentEntity && e.id === entity.metadata.parentEntity),
     );
 
     const sameContextNames = new Set(sameContextEntities.map(e => e.name));
@@ -854,9 +860,11 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   private findIntimateClasses(
     entity: EntityInfo,
-    allEntities: EntityInfo[]
+    allEntities: EntityInfo[],
   ): string[] {
-    if (!entity.signature) return [];
+    if (!entity.signature) {
+return [];
+}
 
     const intimateClasses: string[] = [];
     const classReferences = new Map<string, number>();
@@ -866,7 +874,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       if (otherEntity.type === 'class' && otherEntity.id !== entity.id) {
         const referenceCount = (
           entity.signature.match(
-            new RegExp(`\\b${this.escapeRegExp(otherEntity.name)}\\b`, 'g')
+            new RegExp(`\\b${this.escapeRegExp(otherEntity.name)}\\b`, 'g'),
           ) || []
         ).length;
         if (referenceCount > 3) {

@@ -3,10 +3,19 @@
  * Core component for analyzing source code structure and extracting entity information
  */
 
-import { Project, SourceFile, Node, SyntaxKind, ts } from 'ts-morph';
-import * as fs from 'fs-extra';
 import * as path from 'path';
+
+import * as fs from 'fs-extra';
+import { Project, SyntaxKind, ts } from 'ts-morph';
+
+
 import {
+  createId,
+  generateNormalizedHash,
+  generateSemanticHash,
+} from '../utils';
+
+import type {
   EntityInfo,
   EntityType,
   ExportType,
@@ -15,11 +24,7 @@ import {
   BaseAnalyzer,
   AnalysisConfig,
 } from '../types';
-import {
-  createId,
-  generateNormalizedHash,
-  generateSemanticHash,
-} from '../utils';
+import type { SourceFile, Node} from 'ts-morph';
 
 interface ASTParsingConfig {
   includePrivateMembers: boolean;
@@ -96,7 +101,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    */
   async analyze(
     files: string[] | EntityInfo[],
-    analysisConfig: AnalysisConfig
+    analysisConfig: AnalysisConfig,
   ): Promise<EntityInfo[]> {
     // If we receive EntityInfo[], we're being called as part of a pipeline - return them
     if (files.length > 0 && typeof files[0] === 'object' && 'id' in files[0]) {
@@ -142,7 +147,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    */
   private async shouldAnalyzeFile(
     filePath: string,
-    config: AnalysisConfig
+    config: AnalysisConfig,
   ): Promise<boolean> {
     // Check if file exists
     if (!(await fs.pathExists(filePath))) {
@@ -188,7 +193,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    * Parse a source file and extract entities
    */
   private async parseSourceFile(
-    sourceFile: SourceFile
+    sourceFile: SourceFile,
   ): Promise<ParsedFileResult | null> {
     try {
       const filePath = sourceFile.getFilePath();
@@ -203,7 +208,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         const moduleSpecifier = importDecl.getModuleSpecifierValue();
         imports.push(moduleSpecifier);
         dependencies.push(
-          this.resolveDependencyPath(moduleSpecifier, filePath)
+          this.resolveDependencyPath(moduleSpecifier, filePath),
         );
       }
 
@@ -245,14 +250,14 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     entities: EntityInfo[],
     filePath: string,
     dependencies: string[],
-    parentEntity?: EntityInfo
+    parentEntity?: EntityInfo,
   ): Promise<void> {
     // Extract entity based on node type
     const entity = this.extractEntityFromNode(
       node,
       filePath,
       dependencies,
-      parentEntity
+      parentEntity,
     );
     if (entity) {
       entities.push(entity);
@@ -265,7 +270,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         entities,
         filePath,
         dependencies,
-        entity || parentEntity
+        entity || parentEntity,
       );
     }
   }
@@ -277,7 +282,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     node: Node,
     filePath: string,
     dependencies: string[],
-    parent?: EntityInfo
+    parent?: EntityInfo,
   ): EntityInfo | null {
     let entityType: EntityType | null = null;
     let name: string = '';
@@ -641,7 +646,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    */
   private calculateNodeComplexity(
     node: Node,
-    signature: string
+    signature: string,
   ): ComplexityMetrics {
     let cyclomatic = 1;
     let cognitive = 0;
@@ -710,8 +715,8 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         171 -
           5.2 * Math.log(lines * Math.log2(parameters + 1)) -
           0.23 * cyclomatic -
-          16.2 * Math.log(lines)
-      )
+          16.2 * Math.log(lines),
+      ),
     );
 
     return {
@@ -744,7 +749,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    */
   private resolveDependencyPath(
     moduleSpecifier: string,
-    currentFile: string
+    currentFile: string,
   ): string {
     try {
       // Handle relative imports

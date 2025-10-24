@@ -4,9 +4,10 @@
  */
 
 import { EventEmitter } from 'events';
-import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as v8 from 'v8';
+
+import * as fs from 'fs-extra';
 
 export interface MemorySnapshot {
   timestamp: number;
@@ -98,7 +99,7 @@ export class MemoryMonitor extends EventEmitter {
       maxSnapshots?: number;
       outputDir?: string;
       thresholds?: Partial<MemoryThresholds>;
-    } = {}
+    } = {},
   ) {
     super();
 
@@ -123,7 +124,9 @@ export class MemoryMonitor extends EventEmitter {
    * Start memory monitoring
    */
   async startMonitoring(): Promise<void> {
-    if (this.isMonitoring) return;
+    if (this.isMonitoring) {
+return;
+}
 
     this.isMonitoring = true;
     await fs.ensureDir(this.outputDir);
@@ -147,7 +150,9 @@ export class MemoryMonitor extends EventEmitter {
    * Stop memory monitoring
    */
   stopMonitoring(): void {
-    if (!this.isMonitoring) return;
+    if (!this.isMonitoring) {
+return;
+}
 
     this.isMonitoring = false;
 
@@ -275,7 +280,9 @@ export class MemoryMonitor extends EventEmitter {
    * Analyze memory trends and detect leaks
    */
   private analyzeMemoryTrends(): void {
-    if (this.snapshots.length < 10) return; // Need minimum samples
+    if (this.snapshots.length < 10) {
+return;
+} // Need minimum samples
 
     const leakAnalysis = this.detectMemoryLeaks();
 
@@ -322,7 +329,7 @@ export class MemoryMonitor extends EventEmitter {
     const recommendations = this.generateRecommendations(
       severity,
       growthRate,
-      trendDirection
+      trendDirection,
     );
 
     return {
@@ -344,7 +351,9 @@ export class MemoryMonitor extends EventEmitter {
     correlation: number;
   } {
     const n = values.length;
-    if (n < 2) return { slope: 0, intercept: 0, correlation: 0 };
+    if (n < 2) {
+return { slope: 0, intercept: 0, correlation: 0 };
+}
 
     const x = Array.from({ length: n }, (_, i) => i);
     const sumX = x.reduce((a, b) => a + b, 0);
@@ -359,7 +368,7 @@ export class MemoryMonitor extends EventEmitter {
     // Calculate correlation coefficient
     const numerator = n * sumXY - sumX * sumY;
     const denominator = Math.sqrt(
-      (n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY)
+      (n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY),
     );
     const correlation = denominator !== 0 ? numerator / denominator : 0;
 
@@ -370,15 +379,21 @@ export class MemoryMonitor extends EventEmitter {
    * Calculate memory growth rate (bytes per second)
    */
   calculateGrowthRate(): number {
-    if (this.snapshots.length < 2) return 0;
+    if (this.snapshots.length < 2) {
+return 0;
+}
 
     const recent = this.snapshots.slice(-10); // Last 10 snapshots
-    if (recent.length < 2) return 0;
+    if (recent.length < 2) {
+return 0;
+}
 
     const firstSnapshot = recent[0];
     const lastSnapshot = recent[recent.length - 1];
 
-    if (!firstSnapshot || !lastSnapshot) return 0;
+    if (!firstSnapshot || !lastSnapshot) {
+return 0;
+}
 
     const heapDiff = lastSnapshot.heapUsed - firstSnapshot.heapUsed;
     const timeDiff = (lastSnapshot.timestamp - firstSnapshot.timestamp) / 1000; // seconds
@@ -400,58 +415,58 @@ export class MemoryMonitor extends EventEmitter {
   private generateRecommendations(
     severity: string,
     growthRate: number,
-    trend: string
+    trend: string,
   ): string[] {
     const recommendations: string[] = [];
 
     if (severity === 'critical') {
       recommendations.push(
-        'URGENT: Memory usage is critical. Consider restarting the application.'
+        'URGENT: Memory usage is critical. Consider restarting the application.',
       );
       recommendations.push(
-        'Take heap snapshot for detailed analysis of memory usage.'
+        'Take heap snapshot for detailed analysis of memory usage.',
       );
     }
 
     if (trend === 'growing') {
       recommendations.push(
-        'Memory usage is steadily increasing. Check for memory leaks.'
+        'Memory usage is steadily increasing. Check for memory leaks.',
       );
       recommendations.push(
-        'Review recent code changes that might cause memory retention.'
+        'Review recent code changes that might cause memory retention.',
       );
     }
 
     if (growthRate > 1024 * 1024) {
       // 1MB/s
       recommendations.push(
-        'High memory growth rate detected. Profile memory allocations.'
+        'High memory growth rate detected. Profile memory allocations.',
       );
       recommendations.push(
-        'Consider implementing object pooling for frequently created objects.'
+        'Consider implementing object pooling for frequently created objects.',
       );
     }
 
     if (this.gcStats.averageDuration > 100) {
       // 100ms
       recommendations.push(
-        'GC pauses are long. Consider tuning Node.js GC parameters.'
+        'GC pauses are long. Consider tuning Node.js GC parameters.',
       );
       recommendations.push(
-        'Reduce object allocation frequency to minimize GC pressure.'
+        'Reduce object allocation frequency to minimize GC pressure.',
       );
     }
 
     // General recommendations
     recommendations.push(
-      'Enable --expose-gc flag to manually trigger garbage collection.'
+      'Enable --expose-gc flag to manually trigger garbage collection.',
     );
     recommendations.push(
-      'Use WeakMap and WeakSet for temporary object references.'
+      'Use WeakMap and WeakSet for temporary object references.',
     );
     recommendations.push('Implement streaming for large data processing.');
     recommendations.push(
-      'Monitor and limit cache sizes to prevent unbounded growth.'
+      'Monitor and limit cache sizes to prevent unbounded growth.',
     );
 
     return recommendations;
@@ -582,7 +597,7 @@ export class MemoryMonitor extends EventEmitter {
       this.snapshots[this.snapshots.length - 1] || this.takeSnapshot();
     const peak = this.snapshots.reduce(
       (max, snapshot) => (snapshot.heapUsed > max.heapUsed ? snapshot : max),
-      current
+      current,
     );
 
     const average = this.calculateAverages();
@@ -620,7 +635,7 @@ export class MemoryMonitor extends EventEmitter {
         heapTotal: acc.heapTotal + snapshot.heapTotal,
         rss: acc.rss + snapshot.rss,
       }),
-      { heapUsed: 0, heapTotal: 0, rss: 0 }
+      { heapUsed: 0, heapTotal: 0, rss: 0 },
     );
 
     const count = this.snapshots.length;
@@ -635,7 +650,9 @@ export class MemoryMonitor extends EventEmitter {
    * Get monitoring duration in milliseconds
    */
   private getMonitoringDuration(): number {
-    if (this.snapshots.length < 2) return 0;
+    if (this.snapshots.length < 2) {
+return 0;
+}
     const lastSnapshot = this.snapshots[this.snapshots.length - 1];
     const firstSnapshot = this.snapshots[0];
     return lastSnapshot?.timestamp && firstSnapshot?.timestamp
@@ -659,7 +676,7 @@ export class MemoryMonitor extends EventEmitter {
       const rows = this.snapshots
         .map(
           s =>
-            `${s.timestamp},${s.heapUsed},${s.heapTotal},${s.external},${s.arrayBuffers},${s.rss},${s.cpu}`
+            `${s.timestamp},${s.heapUsed},${s.heapTotal},${s.external},${s.arrayBuffers},${s.rss},${s.cpu}`,
         )
         .join('\n');
       content = headers + rows;
@@ -678,7 +695,7 @@ export class MemoryMonitor extends EventEmitter {
           metrics: this.getMetrics(),
         },
         null,
-        2
+        2,
       );
     }
 

@@ -4,6 +4,13 @@
  */
 
 import {
+  generateNormalizedHash,
+  generateSemanticHash,
+  createId,
+  processConcurrently,
+} from '../utils';
+
+import type {
   EntityInfo,
   DuplicateCluster,
   SeverityLevel,
@@ -11,12 +18,6 @@ import {
   BaseAnalyzer,
   AnalysisConfig,
 } from '../types';
-import {
-  generateNormalizedHash,
-  generateSemanticHash,
-  createId,
-  processConcurrently,
-} from '../utils';
 
 interface SimilarityMatrix {
   [key: string]: {
@@ -37,8 +38,7 @@ interface DuplicateDetectionConfig {
  * High-performance duplicate detection engine with multiple algorithms
  */
 export class DuplicateDetectionEngine
-  implements BaseAnalyzer<DuplicateCluster[]>
-{
+  implements BaseAnalyzer<DuplicateCluster[]> {
   public readonly name = 'DuplicateDetectionEngine';
   public readonly version = '2.0.0';
 
@@ -61,7 +61,7 @@ export class DuplicateDetectionEngine
    */
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig
+    analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
 
@@ -86,7 +86,7 @@ export class DuplicateDetectionEngine
     // Phase 4: Advanced clustering
     const finalClusters = await this.performAdvancedClustering(
       clusters,
-      entities
+      entities,
     );
 
     // Phase 5: Generate consolidation suggestions
@@ -97,7 +97,7 @@ export class DuplicateDetectionEngine
    * Hash-based duplicate detection - fastest method
    */
   private async detectHashBasedDuplicates(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const normalizedGroups = new Map<string, EntityInfo[]>();
     const semanticGroups = new Map<string, EntityInfo[]>();
@@ -125,7 +125,9 @@ export class DuplicateDetectionEngine
     for (const [hash, duplicateEntities] of normalizedGroups.entries()) {
       if (duplicateEntities.length > 1) {
         const firstEntity = duplicateEntities[0];
-        if (!firstEntity) continue;
+        if (!firstEntity) {
+continue;
+}
 
         const cluster: DuplicateCluster = {
           id: createId(),
@@ -146,12 +148,14 @@ export class DuplicateDetectionEngine
       if (duplicateEntities.length > 1) {
         // Check if already covered by structural match
         const existingCluster = clusters.find(c =>
-          c.entities.some(e => duplicateEntities.includes(e))
+          c.entities.some(e => duplicateEntities.includes(e)),
         );
 
         if (!existingCluster) {
           const firstEntity = duplicateEntities[0];
-          if (!firstEntity) continue;
+          if (!firstEntity) {
+continue;
+}
 
           const cluster: DuplicateCluster = {
             id: createId(),
@@ -175,7 +179,7 @@ export class DuplicateDetectionEngine
    * Semantic duplicate detection using AST and type analysis
    */
   private async detectSemanticDuplicates(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const processed = new Set<string>();
@@ -195,7 +199,7 @@ export class DuplicateDetectionEngine
    * Find semantic clusters for entities of the same type
    */
   private async findSemanticClustersForType(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const processed = new Set<string>();
@@ -203,7 +207,9 @@ export class DuplicateDetectionEngine
     await processConcurrently(
       entities,
       async entity => {
-        if (processed.has(entity.id)) return;
+        if (processed.has(entity.id)) {
+return;
+}
 
         const similarEntities = [entity];
         processed.add(entity.id);
@@ -216,7 +222,7 @@ export class DuplicateDetectionEngine
 
           const similarity = this.calculateSemanticSimilarity(
             entity,
-            otherEntity
+            otherEntity,
           );
           if (similarity >= this.config.minSimilarity) {
             similarEntities.push(otherEntity);
@@ -237,7 +243,7 @@ export class DuplicateDetectionEngine
           });
         }
       },
-      10 // Reasonable concurrency for complex calculations
+      10, // Reasonable concurrency for complex calculations
     );
 
     return clusters;
@@ -247,7 +253,7 @@ export class DuplicateDetectionEngine
    * Fuzzy duplicate detection for partial matches
    */
   private async detectFuzzyDuplicates(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const entitiesByType = this.groupEntitiesByType(entities);
@@ -264,7 +270,7 @@ export class DuplicateDetectionEngine
    * Find fuzzy clusters using edit distance and token similarity
    */
   private async findFuzzyClustersForType(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
     const similarities = await this.calculateSimilarityMatrix(entities);
@@ -273,7 +279,9 @@ export class DuplicateDetectionEngine
     const processed = new Set<string>();
 
     for (const entity of entities) {
-      if (processed.has(entity.id)) continue;
+      if (processed.has(entity.id)) {
+continue;
+}
 
       const cluster = [entity];
       processed.add(entity.id);
@@ -313,7 +321,7 @@ export class DuplicateDetectionEngine
    * Calculate similarity matrix for fuzzy matching
    */
   private async calculateSimilarityMatrix(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<SimilarityMatrix> {
     const matrix: SimilarityMatrix = {};
 
@@ -332,7 +340,7 @@ export class DuplicateDetectionEngine
           matrix[entity.id]![otherEntity.id] = similarity;
         }
       },
-      8 // Reasonable concurrency for matrix calculation
+      8, // Reasonable concurrency for matrix calculation
     );
 
     return matrix;
@@ -343,9 +351,11 @@ export class DuplicateDetectionEngine
    */
   private calculateSemanticSimilarity(
     entity1: EntityInfo,
-    entity2: EntityInfo
+    entity2: EntityInfo,
   ): number {
-    if (entity1.type !== entity2.type) return 0;
+    if (entity1.type !== entity2.type) {
+return 0;
+}
 
     let similarity = 0;
     let factors = 0;
@@ -360,7 +370,7 @@ export class DuplicateDetectionEngine
     if (entity1.members && entity2.members) {
       const memberSimilarity = this.calculateMemberSimilarity(
         entity1.members,
-        entity2.members
+        entity2.members,
       );
       similarity += memberSimilarity;
       factors++;
@@ -370,7 +380,7 @@ export class DuplicateDetectionEngine
     if (entity1.complexity && entity2.complexity) {
       const complexitySimilarity = this.calculateComplexitySimilarity(
         entity1.complexity,
-        entity2.complexity
+        entity2.complexity,
       );
       similarity += complexitySimilarity;
       factors++;
@@ -379,7 +389,7 @@ export class DuplicateDetectionEngine
     // Dependency similarity
     const dependencySimilarity = this.calculateDependencySimilarity(
       entity1.dependencies,
-      entity2.dependencies
+      entity2.dependencies,
     );
     similarity += dependencySimilarity;
     factors++;
@@ -392,9 +402,11 @@ export class DuplicateDetectionEngine
    */
   private calculateFuzzySimilarity(
     entity1: EntityInfo,
-    entity2: EntityInfo
+    entity2: EntityInfo,
   ): number {
-    if (entity1.type !== entity2.type) return 0;
+    if (entity1.type !== entity2.type) {
+return 0;
+}
 
     let similarity = 0;
     let factors = 0;
@@ -402,7 +414,7 @@ export class DuplicateDetectionEngine
     // Name similarity (Levenshtein distance)
     const nameSimilarity = this.calculateStringSimilarity(
       entity1.name,
-      entity2.name
+      entity2.name,
     );
     similarity += nameSimilarity;
     factors++;
@@ -411,7 +423,7 @@ export class DuplicateDetectionEngine
     if (entity1.signature && entity2.signature) {
       const signatureSimilarity = this.calculateStringSimilarity(
         entity1.signature,
-        entity2.signature
+        entity2.signature,
       );
       similarity += signatureSimilarity;
       factors++;
@@ -421,7 +433,7 @@ export class DuplicateDetectionEngine
     if (entity1.jsDoc && entity2.jsDoc) {
       const jsdocSimilarity = this.calculateStringSimilarity(
         entity1.jsDoc,
-        entity2.jsDoc
+        entity2.jsDoc,
       );
       similarity += jsdocSimilarity * 0.5; // Lower weight for documentation
       factors += 0.5;
@@ -434,21 +446,25 @@ export class DuplicateDetectionEngine
    * Calculate string similarity using Jaro-Winkler distance
    */
   private calculateStringSimilarity(str1: string, str2: string): number {
-    if (str1 === str2) return 1.0;
-    if (str1.length === 0 || str2.length === 0) return 0;
+    if (str1 === str2) {
+return 1.0;
+}
+    if (str1.length === 0 || str2.length === 0) {
+return 0;
+}
 
     // Simple Jaccard similarity for tokens
     const tokens1 = new Set(
       str1
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2)
+        .filter(t => t.length > 2),
     );
     const tokens2 = new Set(
       str2
         .toLowerCase()
         .split(/\W+/)
-        .filter(t => t.length > 2)
+        .filter(t => t.length > 2),
     );
 
     const intersection = new Set([...tokens1].filter(t => tokens2.has(t)));
@@ -468,7 +484,7 @@ export class DuplicateDetectionEngine
     if (members1.methods && members2.methods) {
       const methodSimilarity = this.calculateArraySimilarity(
         members1.methods.map((m: any) => m.name),
-        members2.methods.map((m: any) => m.name)
+        members2.methods.map((m: any) => m.name),
       );
       similarity += methodSimilarity;
       factors++;
@@ -478,7 +494,7 @@ export class DuplicateDetectionEngine
     if (members1.properties && members2.properties) {
       const propertySimilarity = this.calculateArraySimilarity(
         members1.properties.map((p: any) => p.name),
-        members2.properties.map((p: any) => p.name)
+        members2.properties.map((p: any) => p.name),
       );
       similarity += propertySimilarity;
       factors++;
@@ -492,7 +508,7 @@ export class DuplicateDetectionEngine
    */
   private calculateComplexitySimilarity(
     complexity1: any,
-    complexity2: any
+    complexity2: any,
   ): number {
     const factors = ['cyclomatic', 'cognitive', 'depth', 'parameters'];
     let similarity = 0;
@@ -518,7 +534,7 @@ export class DuplicateDetectionEngine
    */
   private calculateDependencySimilarity(
     deps1: string[],
-    deps2: string[]
+    deps2: string[],
   ): number {
     return this.calculateArraySimilarity(deps1, deps2);
   }
@@ -541,7 +557,7 @@ export class DuplicateDetectionEngine
    */
   private async performAdvancedClustering(
     initialClusters: DuplicateCluster[],
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     switch (this.config.clusteringAlgorithm) {
       case 'hierarchical':
@@ -558,14 +574,16 @@ export class DuplicateDetectionEngine
    * Hierarchical clustering for better grouping
    */
   private async hierarchicalClustering(
-    clusters: DuplicateCluster[]
+    clusters: DuplicateCluster[],
   ): Promise<DuplicateCluster[]> {
     // Merge similar clusters
     const mergedClusters: DuplicateCluster[] = [];
     const processed = new Set<string>();
 
     for (const cluster of clusters) {
-      if (processed.has(cluster.id)) continue;
+      if (processed.has(cluster.id)) {
+continue;
+}
 
       const mergedCluster = { ...cluster };
       processed.add(cluster.id);
@@ -580,7 +598,7 @@ export class DuplicateDetectionEngine
           mergedCluster.entities.push(...otherCluster.entities);
           mergedCluster.similarity = Math.min(
             mergedCluster.similarity,
-            otherCluster.similarity
+            otherCluster.similarity,
           );
           processed.add(otherCluster.id);
         }
@@ -599,7 +617,7 @@ export class DuplicateDetectionEngine
    */
   private async densityBasedClustering(
     clusters: DuplicateCluster[],
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     // Implementation of density-based clustering
     const densityClusters: DuplicateCluster[] = [];
@@ -607,12 +625,14 @@ export class DuplicateDetectionEngine
 
     // For each entity, find dense neighborhoods
     for (const entity of entities) {
-      if (processed.has(entity.id)) continue;
+      if (processed.has(entity.id)) {
+continue;
+}
 
       const neighborhood = this.findNeighborhood(
         entity,
         entities,
-        this.config.minSimilarity
+        this.config.minSimilarity,
       );
 
       if (neighborhood.length >= 2) {
@@ -642,12 +662,14 @@ export class DuplicateDetectionEngine
   private findNeighborhood(
     centerEntity: EntityInfo,
     entities: EntityInfo[],
-    threshold: number
+    threshold: number,
   ): EntityInfo[] {
     const neighborhood = [centerEntity];
 
     for (const entity of entities) {
-      if (entity.id === centerEntity.id) continue;
+      if (entity.id === centerEntity.id) {
+continue;
+}
 
       const similarity = this.calculateSemanticSimilarity(centerEntity, entity);
       if (similarity >= threshold) {
@@ -662,7 +684,7 @@ export class DuplicateDetectionEngine
    * Optimize hash-based clusters
    */
   private optimizeHashClusters(
-    clusters: DuplicateCluster[]
+    clusters: DuplicateCluster[],
   ): DuplicateCluster[] {
     return clusters
       .filter(cluster => cluster.entities.length <= this.config.maxClusterSize)
@@ -674,13 +696,13 @@ export class DuplicateDetectionEngine
    */
   private mergeClusters(
     existingClusters: DuplicateCluster[],
-    newClusters: DuplicateCluster[]
+    newClusters: DuplicateCluster[],
   ): DuplicateCluster[] {
     const uniqueClusters: DuplicateCluster[] = [];
 
     for (const newCluster of newClusters) {
       const overlapping = existingClusters.find(existing =>
-        this.clustersOverlap(existing, newCluster)
+        this.clustersOverlap(existing, newCluster),
       );
 
       if (!overlapping) {
@@ -696,7 +718,7 @@ export class DuplicateDetectionEngine
    */
   private clustersOverlap(
     cluster1: DuplicateCluster,
-    cluster2: DuplicateCluster
+    cluster2: DuplicateCluster,
   ): boolean {
     const entities1 = new Set(cluster1.entities.map(e => e.id));
     const entities2 = new Set(cluster2.entities.map(e => e.id));
@@ -716,7 +738,7 @@ export class DuplicateDetectionEngine
    */
   private shouldMergeClusters(
     cluster1: DuplicateCluster,
-    cluster2: DuplicateCluster
+    cluster2: DuplicateCluster,
   ): boolean {
     return (
       cluster1.type === cluster2.type &&
@@ -730,7 +752,7 @@ export class DuplicateDetectionEngine
    * Group entities by type for efficient processing
    */
   private groupEntitiesByType(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Map<string, EntityInfo[]> {
     const groups = new Map<string, EntityInfo[]>();
 
@@ -748,7 +770,9 @@ export class DuplicateDetectionEngine
    * Calculate average similarity within a cluster
    */
   private calculateAverageSimilarity(entities: EntityInfo[]): number {
-    if (entities.length < 2) return 1.0;
+    if (entities.length < 2) {
+return 1.0;
+}
 
     let totalSimilarity = 0;
     let pairs = 0;
@@ -757,7 +781,7 @@ export class DuplicateDetectionEngine
       for (let j = i + 1; j < entities.length; j++) {
         totalSimilarity += this.calculateSemanticSimilarity(
           entities[i]!,
-          entities[j]!
+          entities[j]!,
         );
         pairs++;
       }
@@ -773,7 +797,7 @@ export class DuplicateDetectionEngine
     const count = entities.length;
     const totalComplexity = entities.reduce(
       (sum, e) => sum + (e.complexity?.cyclomatic || 0),
-      0
+      0,
     );
     const avgDependencies =
       entities.reduce((sum, e) => sum + e.dependencies.length, 0) / count;
@@ -792,13 +816,13 @@ export class DuplicateDetectionEngine
    * Enhance clusters with consolidation suggestions
    */
   private enhanceClustersWithSuggestions(
-    clusters: DuplicateCluster[]
+    clusters: DuplicateCluster[],
   ): DuplicateCluster[] {
     return clusters.map(cluster => ({
       ...cluster,
       consolidationSuggestion: this.generateConsolidationSuggestion(
         cluster.entities,
-        cluster.type
+        cluster.type,
       ),
     }));
   }
@@ -808,7 +832,7 @@ export class DuplicateDetectionEngine
    */
   private generateConsolidationSuggestion(
     entities: EntityInfo[],
-    entityType: string
+    entityType: string,
   ): ConsolidationSuggestion {
     const primaryEntity = entities[0];
     if (!primaryEntity) {
@@ -843,7 +867,7 @@ export class DuplicateDetectionEngine
    */
   private generateConsolidationSteps(
     strategy: 'merge' | 'extract' | 'refactor',
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): string[] {
     const baseSteps = [
       'Review all duplicate implementations for functional differences',

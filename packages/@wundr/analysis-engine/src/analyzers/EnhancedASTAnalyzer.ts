@@ -3,19 +3,13 @@
  * Migrated and optimized from original enhanced-ast-analyzer.ts
  */
 
-import * as ts from 'typescript';
-import { Project } from 'ts-morph';
 import { execSync } from 'child_process';
+
 import chalk from 'chalk';
+import { Project } from 'ts-morph';
+import * as ts from 'typescript';
 
 import { BaseAnalysisService } from './BaseAnalysisService';
-import {
-  EntityInfo,
-  ExportType,
-  ComplexityMetrics,
-  AnalysisConfig,
-  ServiceConfig,
-} from '../types';
 import {
   generateNormalizedHash,
   generateSemanticHash,
@@ -23,6 +17,14 @@ import {
   normalizeFilePath,
   processConcurrently,
 } from '../utils';
+
+import type {
+  EntityInfo,
+  ExportType,
+  ComplexityMetrics,
+  AnalysisConfig,
+  ServiceConfig,
+} from '../types';
 
 /**
  * Enhanced AST Analyzer with performance optimizations for large codebases
@@ -82,7 +84,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
    * Perform comprehensive AST analysis
    */
   protected override async performAnalysis(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<any> {
     this.emitProgress({
       type: 'phase',
@@ -133,7 +135,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
    */
   protected override extractEntityFromNode(
     node: ts.Node,
-    sourceFile: ts.SourceFile
+    sourceFile: ts.SourceFile,
   ): EntityInfo | null {
     const filePath = normalizeFilePath(sourceFile.fileName);
     const position = this.getPositionInfo(node, sourceFile);
@@ -143,42 +145,42 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         return this.extractClassEntity(
           node as ts.ClassDeclaration,
           filePath,
-          position
+          position,
         );
 
       case ts.SyntaxKind.InterfaceDeclaration:
         return this.extractInterfaceEntity(
           node as ts.InterfaceDeclaration,
           filePath,
-          position
+          position,
         );
 
       case ts.SyntaxKind.TypeAliasDeclaration:
         return this.extractTypeAliasEntity(
           node as ts.TypeAliasDeclaration,
           filePath,
-          position
+          position,
         );
 
       case ts.SyntaxKind.EnumDeclaration:
         return this.extractEnumEntity(
           node as ts.EnumDeclaration,
           filePath,
-          position
+          position,
         );
 
       case ts.SyntaxKind.FunctionDeclaration:
         return this.extractFunctionEntity(
           node as ts.FunctionDeclaration,
           filePath,
-          position
+          position,
         );
 
       case ts.SyntaxKind.VariableStatement:
         return this.extractVariableEntity(
           node as ts.VariableStatement,
           filePath,
-          position
+          position,
         );
 
       default:
@@ -192,10 +194,12 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private extractClassEntity(
     classDecl: ts.ClassDeclaration,
     filePath: string,
-    position: { line: number; column: number }
+    position: { line: number; column: number },
   ): EntityInfo | null {
     const name = classDecl.name?.getText();
-    if (!name) return null;
+    if (!name) {
+return null;
+}
 
     const isService = this.isServiceClass(classDecl, name);
     const isComponent = this.isReactComponent(classDecl, name);
@@ -235,7 +239,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private extractInterfaceEntity(
     interfaceDecl: ts.InterfaceDeclaration,
     filePath: string,
-    position: { line: number; column: number }
+    position: { line: number; column: number },
   ): EntityInfo {
     const name = interfaceDecl.name.getText();
     const properties = this.extractInterfaceProperties(interfaceDecl);
@@ -272,7 +276,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private extractTypeAliasEntity(
     typeAlias: ts.TypeAliasDeclaration,
     filePath: string,
-    position: { line: number; column: number }
+    position: { line: number; column: number },
   ): EntityInfo {
     const name = typeAlias.name.getText();
     const typeText = typeAlias.type.getText();
@@ -299,7 +303,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private extractEnumEntity(
     enumDecl: ts.EnumDeclaration,
     filePath: string,
-    position: { line: number; column: number }
+    position: { line: number; column: number },
   ): EntityInfo {
     const name = enumDecl.name.getText();
     const members = enumDecl.members.map(member => ({
@@ -330,10 +334,12 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private extractFunctionEntity(
     func: ts.FunctionDeclaration,
     filePath: string,
-    position: { line: number; column: number }
+    position: { line: number; column: number },
   ): EntityInfo | null {
     const name = func.name?.getText();
-    if (!name) return null;
+    if (!name) {
+return null;
+}
 
     const signature = func.getText();
     const complexity = this.calculateNodeComplexity(func);
@@ -367,7 +373,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   private extractVariableEntity(
     varStatement: ts.VariableStatement,
     filePath: string,
-    position: { line: number; column: number }
+    position: { line: number; column: number },
   ): EntityInfo | null {
     if (!this.hasExportModifier(varStatement)) {
       return null;
@@ -400,7 +406,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
    * Optimized duplicate detection with clustering
    */
   private async detectDuplicatesOptimized(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<any[]> {
     this.emitProgress({
       type: 'phase',
@@ -468,7 +474,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
           encoding: 'utf-8',
           timeout: 30000,
           cwd: this.config.targetDir,
-        }
+        },
       );
 
       const madgeOutput = JSON.parse(result.toString());
@@ -485,7 +491,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
     } catch (error) {
       if (this.config.verbose) {
         console.warn(
-          chalk.yellow('⚠️ Could not run madge for circular dependencies')
+          chalk.yellow('⚠️ Could not run madge for circular dependencies'),
         );
       }
 
@@ -613,7 +619,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         const smells = this.analyzeEntityForCodeSmells(entity);
         codeSmells.push(...smells);
       },
-      this.config.performance.maxConcurrency
+      this.config.performance.maxConcurrency,
     );
 
     return codeSmells;
@@ -716,7 +722,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         } else if (pattern.suffix && entity.name.endsWith(pattern.suffix)) {
           baseName = entity.name.substring(
             0,
-            entity.name.length - pattern.suffix.length
+            entity.name.length - pattern.suffix.length,
           );
           matched = true;
         }
@@ -727,7 +733,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
             e =>
               e.name === baseName &&
               e.type === entity.type &&
-              e.file !== entity.file
+              e.file !== entity.file,
           );
 
           if (baseEntity) {
@@ -751,7 +757,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private isServiceClass(
     classDecl: ts.ClassDeclaration,
-    name: string
+    name: string,
   ): boolean {
     return (
       name.toLowerCase().includes('service') ||
@@ -762,7 +768,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private isReactComponent(
     classDecl: ts.ClassDeclaration,
-    name: string
+    name: string,
   ): boolean {
     return (
       this.extendsBaseClass(classDecl, 'Component') ||
@@ -777,7 +783,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private isUtilityFunction(
     func: ts.FunctionDeclaration,
-    name: string
+    name: string,
   ): boolean {
     return (
       name.includes('util') ||
@@ -788,10 +794,12 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private extendsBaseClass(
     classDecl: ts.ClassDeclaration,
-    baseClassName: string
+    baseClassName: string,
   ): boolean {
     const heritage = classDecl.heritageClauses;
-    if (!heritage) return false;
+    if (!heritage) {
+return false;
+}
 
     for (const clause of heritage) {
       if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
@@ -839,7 +847,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   }
 
   private extractInterfaceProperties(
-    interfaceDecl: ts.InterfaceDeclaration
+    interfaceDecl: ts.InterfaceDeclaration,
   ): any[] {
     return interfaceDecl.members
       .filter(member => ts.isPropertySignature(member))
@@ -854,7 +862,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   }
 
   private extractInterfaceMethods(
-    interfaceDecl: ts.InterfaceDeclaration
+    interfaceDecl: ts.InterfaceDeclaration,
   ): any[] {
     return interfaceDecl.members
       .filter(member => ts.isMethodSignature(member))
@@ -868,14 +876,17 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   }
 
   private getVisibility(
-    node: ts.ClassElement
+    node: ts.ClassElement,
   ): 'public' | 'private' | 'protected' {
     const modifiers = (node as any).modifiers as ts.Modifier[] | undefined;
     if (modifiers) {
       for (const modifier of modifiers) {
-        if (modifier.kind === ts.SyntaxKind.PrivateKeyword) return 'private';
-        if (modifier.kind === ts.SyntaxKind.ProtectedKeyword)
-          return 'protected';
+        if (modifier.kind === ts.SyntaxKind.PrivateKeyword) {
+return 'private';
+}
+        if (modifier.kind === ts.SyntaxKind.ProtectedKeyword) {
+return 'protected';
+}
       }
     }
     return 'public';
@@ -883,14 +894,20 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private getExportType(node: ts.Node): ExportType {
     const modifiers = (node as any).modifiers;
-    if (!modifiers) return 'none';
+    if (!modifiers) {
+return 'none';
+}
 
     let hasExport = false;
     let hasDefault = false;
 
     for (const modifier of modifiers) {
-      if (modifier.kind === ts.SyntaxKind.ExportKeyword) hasExport = true;
-      if (modifier.kind === ts.SyntaxKind.DefaultKeyword) hasDefault = true;
+      if (modifier.kind === ts.SyntaxKind.ExportKeyword) {
+hasExport = true;
+}
+      if (modifier.kind === ts.SyntaxKind.DefaultKeyword) {
+hasDefault = true;
+}
     }
 
     if (hasExport) {
@@ -902,16 +919,20 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private hasExportModifier(node: ts.Node): boolean {
     const modifiers = (node as any).modifiers;
-    if (!modifiers) return false;
+    if (!modifiers) {
+return false;
+}
 
     return modifiers.some(
-      (modifier: ts.Modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword
+      (modifier: ts.Modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
     );
   }
 
   private extractJsDoc(node: ts.Node): string {
     const jsDocTags = ts.getJSDocTags(node);
-    if (jsDocTags.length === 0) return '';
+    if (jsDocTags.length === 0) {
+return '';
+}
 
     const comments = ts.getJSDocCommentsAndTags(node);
     return comments
@@ -989,8 +1010,8 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         171 -
           5.2 * Math.log(lines || 1) -
           0.23 * cyclomatic -
-          16.2 * Math.log(parameters + 1)
-      )
+          16.2 * Math.log(parameters + 1),
+      ),
     );
 
     return {
@@ -1018,7 +1039,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private extractNodeDependencies(
     node: ts.Node,
-    currentFile: string
+    currentFile: string,
   ): string[] {
     const dependencies = new Set<string>();
 
@@ -1044,7 +1065,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private extractImportedNames(
     importClause: ts.ImportClause,
-    usedNames: Set<string>
+    usedNames: Set<string>,
   ): void {
     // Default import
     if (importClause.name) {
@@ -1065,7 +1086,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private resolveImportPath(
     importPath: string,
-    fromFile: string
+    fromFile: string,
   ): string | null {
     try {
       const basePath = fromFile.substring(0, fromFile.lastIndexOf('/'));
@@ -1098,12 +1119,12 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   }
 
   private calculateDuplicateSeverity(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): 'critical' | 'high' | 'medium' | 'low' {
     const count = entities.length;
     const totalComplexity = entities.reduce(
       (sum, e) => sum + (e.complexity?.cyclomatic || 0),
-      0
+      0,
     );
     const avgDependencies =
       entities.reduce((sum, e) => sum + e.dependencies.length, 0) / count;
@@ -1119,19 +1140,27 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
   }
 
   private calculateCircularDependencySeverity(
-    cycle: string[]
+    cycle: string[],
   ): 'critical' | 'high' | 'medium' | 'low' {
     const depth = cycle.length;
 
-    if (depth > 5) return 'critical';
-    if (depth > 3) return 'high';
-    if (depth > 2) return 'medium';
+    if (depth > 5) {
+return 'critical';
+}
+    if (depth > 3) {
+return 'high';
+}
+    if (depth > 2) {
+return 'medium';
+}
     return 'low';
   }
 
   private generateConsolidationSuggestion(entities: EntityInfo[]): any {
     const primaryEntity = entities[0];
-    if (!primaryEntity) return null;
+    if (!primaryEntity) {
+return null;
+}
 
     const strategy =
       primaryEntity.type === 'interface'
@@ -1219,7 +1248,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
     // Code smells
     const criticalSmells =
       analysisResults.codeSmells?.filter(
-        (s: any) => s.severity === 'critical'
+        (s: any) => s.severity === 'critical',
       ) || [];
     if (criticalSmells.length > 0) {
       recommendations.push({
@@ -1246,13 +1275,13 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
 
   private generateVisualizationData(
     entities: EntityInfo[],
-    analysisResults: any
+    analysisResults: any,
   ): any {
     // Generate data for dependency graphs, duplicate networks, and complexity heatmaps
     return {
       dependencyGraph: this.generateDependencyGraphData(entities),
       duplicateNetworks: this.generateDuplicateNetworkData(
-        analysisResults.duplicates
+        analysisResults.duplicates,
       ),
       complexityHeatmap: this.generateComplexityHeatmapData(entities),
     };

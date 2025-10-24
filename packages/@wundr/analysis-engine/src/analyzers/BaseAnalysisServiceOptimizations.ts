@@ -3,22 +3,27 @@
  * Extends BaseAnalysisService with advanced performance optimizations
  */
 
-import * as ts from 'typescript';
+import * as path from 'path';
+
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
+
+
 import { BaseAnalysisService } from './BaseAnalysisService';
-import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
-import { WorkerPoolManager } from '../workers/WorkerPoolManager';
 import { MemoryMonitor } from '../monitoring/MemoryMonitor';
-import {
+import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
+import { createId, formatDuration, formatFileSize, chunk } from '../utils';
+import { WorkerPoolManager } from '../workers/WorkerPoolManager';
+
+import type {
   EntityInfo,
   AnalysisConfig,
   AnalysisReport,
   AnalysisSummary,
   PerformanceMetrics,
 } from '../types';
-import { createId, formatDuration, formatFileSize, chunk } from '../utils';
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import chalk from 'chalk';
+import type * as ts from 'typescript';
+
 
 export class OptimizedBaseAnalysisService extends BaseAnalysisService {
   // Memory optimization components (rename to avoid conflicts)
@@ -45,7 +50,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     this.optimizedWorkerPool = new WorkerPoolManager({
       minWorkers: Math.max(
         2,
-        Math.floor(this.config.performance.maxConcurrency * 0.5)
+        Math.floor(this.config.performance.maxConcurrency * 0.5),
       ),
       maxWorkers: Math.max(30, this.config.performance.maxConcurrency * 2), // Target 30+ workers
       enableAutoScaling: true,
@@ -69,7 +74,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
 
   protected override extractEntityFromNode(
     _node: ts.Node,
-    _sourceFile: ts.SourceFile
+    _sourceFile: ts.SourceFile,
   ): EntityInfo | null {
     // Basic implementation - can be overridden by specific analyzers
     return null;
@@ -93,7 +98,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     this.optimizedMemoryMonitor.on('memory-alert', alert => {
       if (this.config.verbose) {
         console.warn(
-          `Memory Alert: ${alert.type} - Current: ${formatFileSize(alert.current)}`
+          `Memory Alert: ${alert.type} - Current: ${formatFileSize(alert.current)}`,
         );
       }
 
@@ -169,7 +174,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
         files,
         entities,
         analysisResults,
-        startTime
+        startTime,
       );
 
       // Save report in multiple formats
@@ -218,7 +223,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
    * Filter files with streaming and memory-efficient processing
    */
   private async filterFilesByCriteriaOptimized(
-    files: string[]
+    files: string[],
   ): Promise<string[]> {
     const maxLines = this.config.thresholds.fileSize.maxLines;
     const filteredFiles: string[] = [];
@@ -227,7 +232,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     // Process files in smaller batches to reduce memory pressure
     const batchSize = Math.max(
       10,
-      Math.min(50, Math.floor(this.config.performance.maxConcurrency / 2))
+      Math.min(50, Math.floor(this.config.performance.maxConcurrency / 2)),
     );
 
     for (let i = 0; i < files.length; i += batchSize) {
@@ -242,7 +247,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
             if (stats.size > maxFileSize) {
               if (this.config.verbose) {
                 console.warn(
-                  `Skipping large file: ${file} (${formatFileSize(stats.size)})`
+                  `Skipping large file: ${file} (${formatFileSize(stats.size)})`,
                 );
               }
               return null;
@@ -255,7 +260,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
               if (lineCount > maxLines * 2) {
                 if (this.config.verbose) {
                   console.warn(
-                    `Skipping file with ${lineCount} lines: ${file}`
+                    `Skipping file with ${lineCount} lines: ${file}`,
                   );
                 }
                 return null;
@@ -266,12 +271,12 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
           } catch (error) {
             if (this.config.verbose) {
               console.warn(
-                `Error checking file ${file}: ${error instanceof Error ? error.message : String(error)}`
+                `Error checking file ${file}: ${error instanceof Error ? error.message : String(error)}`,
               );
             }
             return null;
           }
-        })
+        }),
       );
 
       filteredFiles.push(...(batchResults.filter(Boolean) as string[]));
@@ -281,7 +286,9 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
       if (memUsage.heapUsed > 200 * 1024 * 1024) {
         // 200MB threshold
         // Force cleanup
-        if (global.gc) global.gc();
+        if (global.gc) {
+global.gc();
+}
         await this.sleep(100); // Brief pause
       }
     }
@@ -314,7 +321,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
    * Perform streaming analysis for large codebases
    */
   private async performStreamingAnalysis(
-    files: string[]
+    files: string[],
   ): Promise<{ entities: EntityInfo[]; analysisResults: any }> {
     this.emitProgress({
       type: 'phase',
@@ -353,7 +360,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     const _streamingMetrics =
       await this.optimizedStreamingProcessor.streamProcessFiles(
         files,
-        entityProcessor
+        entityProcessor,
       );
 
     this.emitProgress({
@@ -371,7 +378,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
    * Extract entities with optimized concurrent processing
    */
   private async extractEntitiesOptimizedConcurrent(
-    files: string[]
+    files: string[],
   ): Promise<EntityInfo[]> {
     this.emitProgress({
       type: 'phase',
@@ -420,7 +427,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
    * Perform analysis with concurrent processing
    */
   private async performAnalysisConcurrent(
-    entities: EntityInfo[]
+    entities: EntityInfo[],
   ): Promise<any> {
     this.emitProgress({
       type: 'phase',
@@ -446,13 +453,13 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
           type: 'detect-duplicates',
           data: { entities, config: this.config.thresholds.duplicates },
           priority: 'high',
-        })
+        }),
       );
     }
 
     // Complexity analysis for functions and classes
     const complexEntities = entities.filter(e =>
-      ['function', 'class', 'method'].includes(e.type)
+      ['function', 'class', 'method'].includes(e.type),
     );
     if (complexEntities.length > 0) {
       const complexityChunks = chunk(complexEntities, 100);
@@ -463,7 +470,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
             type: 'calculate-complexity',
             data: { entities: entityChunk },
             priority: 'medium',
-          })
+          }),
         );
       });
     }
@@ -492,7 +499,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     files: string[],
     entities: EntityInfo[],
     analysisResults: any,
-    startTime: number
+    startTime: number,
   ): Promise<AnalysisReport> {
     const endTime = Date.now();
     const duration = endTime - startTime;
@@ -543,14 +550,14 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
           this.optimizedStreamingProcessor.getMetrics().bytesProcessed /
           Math.max(
             1,
-            this.optimizedStreamingProcessor.getMetrics().chunksProcessed
+            this.optimizedStreamingProcessor.getMetrics().chunksProcessed,
           ),
         streamingDuration: Date.now() - startTime,
         backpressureEvents: 0, // Default value
       },
       memoryEfficiency: this.calculateMemoryEfficiency(
         files.length,
-        memoryMetrics.peak.heapUsed
+        memoryMetrics.peak.heapUsed,
       ),
     };
 
@@ -585,13 +592,13 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
    */
   private calculateMemoryEfficiency(
     fileCount: number,
-    peakMemory: number
+    peakMemory: number,
   ): number {
     const expectedMemory = fileCount * 1024 * 50; // 50KB per file baseline
     return expectedMemory > 0
       ? Math.max(
           0,
-          100 - ((peakMemory - expectedMemory) / expectedMemory) * 100
+          100 - ((peakMemory - expectedMemory) / expectedMemory) * 100,
         )
       : 100;
   }
@@ -606,13 +613,13 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
 
     if (workerMetrics.throughput < 100) {
       recommendations.push(
-        'Consider increasing worker pool size for better throughput'
+        'Consider increasing worker pool size for better throughput',
       );
     }
 
     if (memoryMetrics.leakAnalysis.leakDetected) {
       recommendations.push(
-        'Memory leak detected - review object lifecycle management'
+        'Memory leak detected - review object lifecycle management',
       );
     }
 
@@ -658,14 +665,14 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
     // Final memory report
     if (this.config.verbose) {
       const finalMetrics = this.optimizedMemoryMonitor.getMetrics();
-      console.log(chalk.cyan(`\n📊 Final Memory Report:`));
+      console.log(chalk.cyan('\n📊 Final Memory Report:'));
       console.log(
-        chalk.gray(`Peak Usage: ${formatFileSize(finalMetrics.peak.heapUsed)}`)
+        chalk.gray(`Peak Usage: ${formatFileSize(finalMetrics.peak.heapUsed)}`),
       );
       console.log(
         chalk.gray(
-          `Average Usage: ${formatFileSize(finalMetrics.average.heapUsed)}`
-        )
+          `Average Usage: ${formatFileSize(finalMetrics.average.heapUsed)}`,
+        ),
       );
     }
   }
