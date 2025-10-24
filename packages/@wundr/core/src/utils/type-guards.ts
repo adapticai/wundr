@@ -20,7 +20,7 @@ export const isArray = <T>(value: unknown): value is readonly T[] =>
   Array.isArray(value);
 
 export const isFunction = (
-  value: unknown
+  value: unknown,
 ): value is (...args: unknown[]) => unknown => typeof value === 'function';
 
 export const isDate = (value: unknown): value is Date =>
@@ -34,7 +34,7 @@ export const isUndefined = (value: unknown): value is undefined =>
 // Object property helpers
 export const hasOwnProperty = <T extends object, K extends PropertyKey>(
   obj: T,
-  key: K
+  key: K,
 ): obj is T & Record<K, unknown> => {
   return Object.prototype.hasOwnProperty.call(obj, key);
 };

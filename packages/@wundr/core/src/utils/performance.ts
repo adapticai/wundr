@@ -251,7 +251,7 @@ async function measureTimeImpl<T>(
     enableLogging?: boolean;
     logLevel?: 'debug' | 'info' | 'warn';
     metadata?: Record<string, unknown>;
-  } = {}
+  } = {},
 ): Promise<{ result: T; duration: number; metrics: PerformanceMetrics }> {
   const {
     label = 'measureTime-operation',
@@ -484,7 +484,7 @@ export function memoize<T extends (...args: any[]) => any>(
     ttl?: number; // Time to live in milliseconds
     enableLogging?: boolean;
     name?: string;
-  } = {}
+  } = {},
 ): T {
   const {
     maxSize = 100,
@@ -589,7 +589,7 @@ export class Benchmark {
    * Run all benchmarks
    */
   async run(
-    iterations = 1
+    iterations = 1,
   ): Promise<Array<{ name: string; duration: number; error?: Error }>> {
     this.results = [];
 
@@ -621,7 +621,7 @@ export class Benchmark {
    * Get benchmark results sorted by performance
    */
   getResults(
-    sortBy: 'name' | 'duration' = 'duration'
+    sortBy: 'name' | 'duration' = 'duration',
   ): Array<{ name: string; duration: number; error?: Error }> {
     return [...this.results].sort((a, b) => {
       if (sortBy === 'name') {
@@ -740,7 +740,7 @@ export async function monitorExecution<T>(
     enableEvents?: boolean;
     memoryThreshold?: number;
     timeThreshold?: number;
-  }
+  },
 ): Promise<{
   result: T;
   metrics: PerformanceMetrics & {
@@ -815,12 +815,12 @@ export function performanceMonitor<T extends (...args: any[]) => any>(
     enableLogging?: boolean;
     logParams?: boolean;
     logResults?: boolean;
-  } = {}
+  } = {},
 ) {
   return function (
     target: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value;
     const methodName =
@@ -834,7 +834,7 @@ export function performanceMonitor<T extends (...args: any[]) => any>(
           name: methodName,
           category: options.category || 'method',
           enableLogging: options.enableLogging,
-        }
+        },
       );
 
       return result;

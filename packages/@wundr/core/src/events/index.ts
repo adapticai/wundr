@@ -27,7 +27,7 @@ export class WundrEventBus implements EventBus {
   emit<TPayload = Record<string, unknown>>(
     type: string,
     payload: TPayload,
-    source?: string
+    source?: string,
   ): void {
     try {
       const event: EventBusEvent<TPayload> = {
@@ -68,7 +68,7 @@ export class WundrEventBus implements EventBus {
         } catch (error) {
           const handlerError = new EventBusError(
             `Event handler failed for type: ${type}`,
-            { type, eventId: event.id, error }
+            { type, eventId: event.id, error },
           );
           logger.error(handlerError);
           // Re-emit as error event
@@ -85,7 +85,7 @@ export class WundrEventBus implements EventBus {
     } catch (error) {
       const subscribeError = new EventBusError(
         `Failed to subscribe to event: ${type}`,
-        { type, error }
+        { type, error },
       );
       logger.error(subscribeError);
       throw subscribeError;
@@ -94,14 +94,14 @@ export class WundrEventBus implements EventBus {
 
   off<TPayload = Record<string, unknown>>(
     type: string,
-    handler: EventHandler<TPayload>
+    handler: EventHandler<TPayload>,
   ): void {
     try {
       this.emitter.off(type, handler);
     } catch (error) {
       const unsubscribeError = new EventBusError(
         `Failed to unsubscribe from event: ${type}`,
-        { type, error }
+        { type, error },
       );
       logger.error(unsubscribeError);
       throw unsubscribeError;
@@ -116,7 +116,7 @@ export class WundrEventBus implements EventBus {
         } catch (error) {
           const handlerError = new EventBusError(
             `One-time event handler failed for type: ${type}`,
-            { type, eventId: event.id, error }
+            { type, eventId: event.id, error },
           );
           logger.error(handlerError);
           this.emit('error', handlerError, 'event-bus');
@@ -127,7 +127,7 @@ export class WundrEventBus implements EventBus {
     } catch (error) {
       const onceError = new EventBusError(
         `Failed to set one-time handler for event: ${type}`,
-        { type, error }
+        { type, error },
       );
       logger.error(onceError);
       throw onceError;
@@ -144,7 +144,7 @@ export class WundrEventBus implements EventBus {
     } catch (error) {
       const removeError = new EventBusError(
         `Failed to remove listeners${type ? ` for type: ${type}` : ''}`,
-        { type, error }
+        { type, error },
       );
       logger.error(removeError);
       throw removeError;

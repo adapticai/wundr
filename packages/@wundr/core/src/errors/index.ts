@@ -13,7 +13,7 @@ export class BaseWundrError extends Error implements WundrError {
   constructor(
     message: string,
     code: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -76,7 +76,7 @@ export function success<T>(data: T): { success: true; data: T } {
  * Creates a Result type error value
  */
 export function failure<E = WundrError>(
-  error: E
+  error: E,
 ): { success: false; error: E } {
   return { success: false, error };
 }
@@ -107,7 +107,7 @@ export function isFailure<T, E>(result: {
  * Wraps a function to catch errors and return a Result type
  */
 export function wrapWithResult<T extends unknown[], R>(
-  fn: (...args: T) => R
+  fn: (...args: T) => R,
 ): (
   ...args: T
 ) => { success: true; data: R } | { success: false; error: WundrError } {
@@ -122,7 +122,7 @@ export function wrapWithResult<T extends unknown[], R>(
           : new BaseWundrError(
               error instanceof Error ? error.message : String(error),
               'UNKNOWN_ERROR',
-              { originalError: error }
+              { originalError: error },
             );
       return failure(wundrError);
     }
@@ -133,7 +133,7 @@ export function wrapWithResult<T extends unknown[], R>(
  * Async version of wrapWithResult
  */
 export function wrapWithResultAsync<T extends unknown[], R>(
-  fn: (...args: T) => Promise<R>
+  fn: (...args: T) => Promise<R>,
 ): (
   ...args: T
 ) => Promise<
@@ -150,7 +150,7 @@ export function wrapWithResultAsync<T extends unknown[], R>(
           : new BaseWundrError(
               error instanceof Error ? error.message : String(error),
               'UNKNOWN_ERROR',
-              { originalError: error }
+              { originalError: error },
             );
       return failure(wundrError);
     }

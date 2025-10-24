@@ -89,7 +89,7 @@ export function unescapeHtml(str: string): string {
 
   return str.replace(
     /&(?:amp|lt|gt|quot|#39);/g,
-    match => htmlUnescapes[match]
+    match => htmlUnescapes[match],
   );
 }
 
@@ -100,7 +100,7 @@ export function pad(
   str: string,
   length: number,
   char = ' ',
-  direction: 'left' | 'right' | 'both' = 'left'
+  direction: 'left' | 'right' | 'both' = 'left',
 ): string {
   if (str.length >= length) {
     return str;
@@ -133,7 +133,7 @@ export function trim(str: string, chars?: string): string {
 
   const pattern = new RegExp(
     `^[${escapeRegExp(chars)}]+|[${escapeRegExp(chars)}]+$`,
-    'g'
+    'g',
   );
   return str.replace(pattern, '');
 }
@@ -150,7 +150,7 @@ export function escapeRegExp(str: string): string {
  */
 export function randomString(
   length: number,
-  charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
 ): string {
   let result = '';
   const charsetLength = charset.length;
@@ -178,7 +178,7 @@ export function wordCount(str: string): number {
 export function pluralize(
   word: string,
   count: number,
-  pluralForm?: string
+  pluralForm?: string,
 ): string {
   if (count === 1) {
     return word;
@@ -225,13 +225,13 @@ export function template(
     suffix?: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transform?: (key: string, value: any) => string;
-  } = {}
+  } = {},
 ): string {
   const { prefix = '{{', suffix = '}}', transform } = options;
 
   const regex = new RegExp(
     `${escapeRegExp(prefix)}\\s*([^${escapeRegExp(suffix)}]+)\\s*${escapeRegExp(suffix)}`,
-    'g'
+    'g',
   );
 
   return str.replace(regex, (match, key) => {

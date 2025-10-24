@@ -367,7 +367,7 @@ export const assertIsObject = (value: unknown): asserts value is SafeAny => {
 };
 
 export const assertIsArray = (
-  value: unknown
+  value: unknown,
 ): asserts value is readonly unknown[] => {
   if (!isArray(value)) {
     throw new TypeError('Expected array');
@@ -375,7 +375,7 @@ export const assertIsArray = (
 };
 
 export const assertIsFunction = (
-  value: unknown
+  value: unknown,
 ): asserts value is SafeFunction => {
   if (!isFunction(value)) {
     throw new TypeError('Expected function');

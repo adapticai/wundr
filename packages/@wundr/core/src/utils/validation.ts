@@ -15,7 +15,7 @@ import type { ZodSchema } from 'zod';
  */
 export function validateWithSchema<T>(
   data: unknown,
-  schema: ZodSchema<T>
+  schema: ZodSchema<T>,
 ): ValidationResult<T> {
   try {
     const validatedData = schema.parse(data);
@@ -156,7 +156,7 @@ export function isEmpty(value: unknown): boolean {
  * Checks if a value is a plain object
  */
 export function isPlainObject(
-  value: unknown
+  value: unknown,
 ): value is Record<string, unknown> {
   return (
     value !== null && typeof value === 'object' && value.constructor === Object
@@ -188,7 +188,7 @@ export function isBoolean(value: unknown): value is boolean {
  * Type guard for checking if a value is a function
  */
 export function isFunction(
-  value: unknown
+  value: unknown,
 ): value is (...args: unknown[]) => unknown {
   return typeof value === 'function';
 }
@@ -229,13 +229,13 @@ export const CommonSchemas = {
   semver: z
     .string()
     .regex(
-      /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+      /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/,
     ),
   port: z.number().int().min(1).max(65535),
   ipv4: z
     .string()
     .regex(
-      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
     ),
   nonEmptyString: z.string().min(1),
   positiveNumber: z.number().positive(),

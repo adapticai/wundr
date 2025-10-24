@@ -65,7 +65,7 @@ export function deepMerge<T extends Record<string, unknown>>(
           ) {
             (target as Record<string, unknown>)[key] = deepMerge(
               targetValue as Record<string, unknown>,
-              value as Record<string, unknown>
+              value as Record<string, unknown>,
             );
           } else {
             (target as Record<string, unknown>)[key] = deepClone(value);
@@ -84,7 +84,7 @@ export function deepMerge<T extends Record<string, unknown>>(
 export function getNestedValue<T = unknown>(
   obj: Record<string, unknown>,
   path: string,
-  defaultValue?: T
+  defaultValue?: T,
 ): T | undefined {
   if (!isObject(obj)) {
     return defaultValue;
@@ -110,7 +110,7 @@ export function getNestedValue<T = unknown>(
 export function setNestedValue(
   obj: Record<string, unknown>,
   path: string,
-  value: unknown
+  value: unknown,
 ): void {
   if (!isObject(obj)) {
     return;
@@ -146,7 +146,7 @@ export function removeEmpty<T extends Record<string, any>>(
     removeEmptyStrings?: boolean;
     removeEmptyArrays?: boolean;
     removeEmptyObjects?: boolean;
-  } = {}
+  } = {},
 ): Partial<T> {
   const {
     removeNull = true,
@@ -205,7 +205,7 @@ export function removeEmpty<T extends Record<string, any>>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function pick<T extends Record<string, any>, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Pick<T, K> {
   const result = {} as Pick<T, K>;
 
@@ -223,7 +223,7 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
  */
 export function omit<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
-  keys: readonly K[]
+  keys: readonly K[],
 ): Omit<T, K> {
   const result = { ...obj };
   const keysSet = new Set(keys);
@@ -243,7 +243,7 @@ export function omit<T extends Record<string, unknown>, K extends keyof T>(
 export function flatten(
   obj: Record<string, unknown>,
   prefix = '',
-  separator = '.'
+  separator = '.',
 ): Record<string, unknown> {
   const flattened: Record<string, unknown> = {};
 
@@ -258,7 +258,7 @@ export function flatten(
     if (isObject(value) && !isArray(value)) {
       Object.assign(
         flattened,
-        flatten(value as Record<string, unknown>, newKey, separator)
+        flatten(value as Record<string, unknown>, newKey, separator),
       );
     } else {
       flattened[newKey] = value;
@@ -273,7 +273,7 @@ export function flatten(
  */
 export function unflatten(
   obj: Record<string, unknown>,
-  separator = '.'
+  separator = '.',
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 

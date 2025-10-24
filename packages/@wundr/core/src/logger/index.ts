@@ -62,7 +62,7 @@ class WundrLogger implements Logger {
           const tsStr = colorize && timestamp ? chalk.gray(ts) : ts;
 
           return `${tsStr} ${levelStr} ${messageStr}${metaStr}`;
-        })
+        }),
       );
     }
 
@@ -72,7 +72,7 @@ class WundrLogger implements Logger {
       transports.push(
         new winston.transports.Console({
           format: winston.format.combine(...formats),
-        })
+        }),
       );
     }
 
@@ -82,9 +82,9 @@ class WundrLogger implements Logger {
           filename: file,
           format: winston.format.combine(
             winston.format.timestamp(),
-            winston.format.json()
+            winston.format.json(),
           ),
-        })
+        }),
       );
     }
 

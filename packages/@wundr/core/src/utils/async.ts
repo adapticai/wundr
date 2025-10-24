@@ -19,7 +19,7 @@ export async function retry<T>(
     delay?: number;
     backoff?: 'linear' | 'exponential';
     shouldRetry?: (error: unknown) => boolean;
-  } = {}
+  } = {},
 ): Promise<T> {
   const {
     attempts = 3,
@@ -58,7 +58,7 @@ export async function retry<T>(
 export async function withTimeout<T>(
   operation: Promise<T>,
   timeoutMs: number,
-  timeoutMessage = 'Operation timed out'
+  timeoutMessage = 'Operation timed out',
 ): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
@@ -77,7 +77,7 @@ export async function batchProcess<T, R>(
     batchSize?: number;
     concurrency?: number;
     delayBetweenBatches?: number;
-  } = {}
+  } = {},
 ): Promise<R[]> {
   const { batchSize = 10, concurrency = 3, delayBetweenBatches = 0 } = options;
 
@@ -88,7 +88,7 @@ export async function batchProcess<T, R>(
     const batchResults = await processWithConcurrency(
       batch,
       processor,
-      concurrency
+      concurrency,
     );
     results.push(...batchResults);
 
@@ -106,7 +106,7 @@ export async function batchProcess<T, R>(
 export async function processWithConcurrency<T, R>(
   items: T[],
   processor: (item: T) => Promise<R>,
-  concurrency: number
+  concurrency: number,
 ): Promise<R[]> {
   const results: R[] = [];
   const executing: Promise<void>[] = [];
@@ -122,7 +122,7 @@ export async function processWithConcurrency<T, R>(
       await Promise.race(executing);
       executing.splice(
         executing.findIndex(p => p === promise),
-        1
+        1,
       );
     }
   }
@@ -137,7 +137,7 @@ export async function processWithConcurrency<T, R>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
   fn: T,
-  delay: number
+  delay: number,
 ): T {
   let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -162,7 +162,7 @@ export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function throttleAsync<T extends (...args: any[]) => Promise<any>>(
   fn: T,
-  interval: number
+  interval: number,
 ): T {
   let lastCall = 0;
   let timeout: ReturnType<typeof setTimeout>;
