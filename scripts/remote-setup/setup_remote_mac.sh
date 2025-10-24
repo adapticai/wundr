@@ -410,6 +410,20 @@ install_tailscale() {
     /Applications/Tailscale.app/Contents/MacOS/Tailscale &>/dev/null &
     sleep 3
 
+    # Check if already logged in
+    local ts_check_status
+    ts_check_status="$(tailscale status 2>&1)"
+    local ts_check_exit=$?
+
+    if [[ $ts_check_exit -eq 0 ]] && echo "$ts_check_status" | grep -q "100\."; then
+        # Already logged in (has Tailscale IP)
+        local ts_ip
+        ts_ip="$(tailscale ip -4 2>/dev/null | head -n1)" || ts_ip="unknown"
+        log SUCCESS "Tailscale already logged in - IP: $ts_ip"
+        log INFO "Device name: $DEVICE_NAME"
+        return 0
+    fi
+
     # Bring up Tailscale
     local tailscale_cmd="tailscale up --hostname=\"${DEVICE_NAME}\" --accept-dns=true --accept-routes=true --ssh=true"
 
@@ -430,6 +444,15 @@ install_tailscale() {
 
     if [[ -z "$TAILSCALE_AUTH_KEY" ]]; then
         log WARN "No auth key provided. Starting interactive Tailscale authentication..."
+        log WARN "Opening browser for Tailscale login..."
+
+        # Open browser to Tailscale login
+        open "https://login.tailscale.com/start" 2>/dev/null || \
+            log WARN "Could not open browser automatically. Please visit: https://login.tailscale.com/start"
+
+        # Also open Tailscale app
+        open -a Tailscale 2>/dev/null || log WARN "Could not open Tailscale app"
+
         wait_for_user "Please complete Tailscale authentication in your browser, then return here."
         eval "$tailscale_cmd" || error_exit "Failed to bring up Tailscale"
     else
@@ -1147,28 +1170,49 @@ install_master() {
         log SUCCESS "Tailscale installed"
     fi
 
-    # Start Tailscale and prompt for login
+    # Start Tailscale and check if already logged in
     log INFO "Starting Tailscale..."
     /Applications/Tailscale.app/Contents/MacOS/Tailscale &>/dev/null &
     sleep 3
 
-    log WARN "Please sign in to Tailscale in your browser..."
-    log INFO "Once signed in, you'll be connected to your Tailscale network."
+    # Check if already logged in
+    local ts_status
+    ts_status="$(tailscale status 2>&1)"
+    local ts_exit_code=$?
 
-    if [[ -n "$TAILSCALE_AUTH_KEY" ]]; then
+    if [[ $ts_exit_code -eq 0 ]] && echo "$ts_status" | grep -q "100\."; then
+        # Already logged in (has Tailscale IP)
+        local ts_ip
+        ts_ip="$(tailscale ip -4 2>/dev/null | head -n1)" || ts_ip="unknown"
+        log SUCCESS "Tailscale already logged in - IP: $ts_ip"
+    elif [[ -n "$TAILSCALE_AUTH_KEY" ]]; then
         log INFO "Using auth key for unattended setup..."
         tailscale up --authkey="${TAILSCALE_AUTH_KEY}" --accept-dns=true --accept-routes=true --ssh=true || \
             error_exit "Failed to bring up Tailscale with auth key"
+
+        local ts_ip
+        ts_ip="$(tailscale ip -4 2>/dev/null | head -n1)" || ts_ip="unknown"
+        log SUCCESS "Tailscale is connected - IP: $ts_ip"
     else
-        log WARN "Opening Tailscale for interactive login..."
+        log WARN "Please sign in to Tailscale in your browser..."
+        log INFO "Once signed in, you'll be connected to your Tailscale network."
+        log WARN "Opening browser for Tailscale login..."
+
+        # Open browser to Tailscale login
+        open "https://login.tailscale.com/start" 2>/dev/null || \
+            log WARN "Could not open browser automatically. Please visit: https://login.tailscale.com/start"
+
+        # Also open Tailscale app
+        open -a Tailscale 2>/dev/null || log WARN "Could not open Tailscale app"
+
         wait_for_user "Complete Tailscale sign-in in your browser, then press Enter to continue"
         tailscale up --accept-dns=true --accept-routes=true --ssh=true || \
             error_exit "Failed to bring up Tailscale"
-    fi
 
-    local ts_ip
-    ts_ip="$(tailscale ip -4 2>/dev/null | head -n1)" || ts_ip="unknown"
-    log SUCCESS "Tailscale is connected - IP: $ts_ip"
+        local ts_ip
+        ts_ip="$(tailscale ip -4 2>/dev/null | head -n1)" || ts_ip="unknown"
+        log SUCCESS "Tailscale is connected - IP: $ts_ip"
+    fi
 
     # Install remote desktop clients
     log STEP "Installing remote desktop client applications..."
