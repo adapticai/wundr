@@ -451,7 +451,8 @@ install_tailscale() {
     fi
 
     # Bring up Tailscale
-    local tailscale_cmd="tailscale up --hostname=\"${DEVICE_NAME}\" --accept-dns=true --accept-routes=true --ssh=true"
+    # Note: --ssh flag removed as it's not supported in sandboxed GUI builds
+    local tailscale_cmd="tailscale up --hostname=\"${DEVICE_NAME}\" --accept-dns=true --accept-routes=true"
 
     if [[ -n "$TAILSCALE_AUTH_KEY" ]]; then
         tailscale_cmd+=" --authkey=\"${TAILSCALE_AUTH_KEY}\""
@@ -1239,7 +1240,8 @@ install_master() {
         log SUCCESS "Tailscale already logged in - IP: $ts_ip"
     elif [[ -n "$TAILSCALE_AUTH_KEY" ]]; then
         log INFO "Using auth key for unattended setup..."
-        tailscale up --authkey="${TAILSCALE_AUTH_KEY}" --accept-dns=true --accept-routes=true --ssh=true || \
+        # Note: --ssh flag removed as it's not supported in sandboxed GUI builds
+        tailscale up --authkey="${TAILSCALE_AUTH_KEY}" --accept-dns=true --accept-routes=true || \
             error_exit "Failed to bring up Tailscale with auth key"
 
         local ts_ip
@@ -1258,7 +1260,8 @@ install_master() {
         open -a Tailscale 2>/dev/null || log WARN "Could not open Tailscale app"
 
         wait_for_user "Complete Tailscale sign-in in your browser, then press Enter to continue"
-        tailscale up --accept-dns=true --accept-routes=true --ssh=true || \
+        # Note: --ssh flag removed as it's not supported in sandboxed GUI builds
+        tailscale up --accept-dns=true --accept-routes=true || \
             error_exit "Failed to bring up Tailscale"
 
         local ts_ip
@@ -1311,19 +1314,24 @@ install_master() {
     fi
 
     # Generate SSH key if not exists
-    log STEP "Checking SSH keys for Tailscale SSH..."
+    log STEP "Checking SSH keys for remote access..."
 
     local console_user
     console_user="$(get_console_user)"
     local ssh_key="/Users/${console_user}/.ssh/id_ed25519"
 
     if [[ ! -f "$ssh_key" ]]; then
-        log INFO "Generating SSH key for Tailscale SSH access..."
+        log INFO "Generating SSH key for remote access..."
         sudo -u "$console_user" ssh-keygen -t ed25519 -f "$ssh_key" -N "" -C "${console_user}@$(hostname)"
         log SUCCESS "SSH key generated at $ssh_key"
     else
         log SUCCESS "SSH key already exists at $ssh_key"
     fi
+
+    log INFO ""
+    log INFO "Note: Tailscale SSH server is not available in GUI builds."
+    log INFO "For SSH access, use standard SSH over Tailscale IPs:"
+    log INFO "  ssh user@<tailscale-ip>"
 
     # Summary
     echo ""
@@ -1347,9 +1355,10 @@ install_master() {
     log INFO "   - Open Parsec → Sign in → See your connected machines"
     log INFO "   - Open RustDesk → Enter Tailscale IP or connection ID"
     echo ""
-    log INFO "3. USE TAILSCALE SSH:"
-    log INFO "   ssh user@<remote-device-name>"
-    log INFO "   Example: ssh eli@studio-01"
+    log INFO "3. SSH OVER TAILSCALE:"
+    log INFO "   ssh user@<tailscale-ip>"
+    log INFO "   Example: ssh eli@100.x.x.x"
+    log INFO "   (Get IP with: tailscale status)"
     echo ""
     log INFO "4. VIEW TAILSCALE DEVICES:"
     log INFO "   Visit: https://login.tailscale.com/admin/machines"
