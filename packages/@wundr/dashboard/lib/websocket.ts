@@ -10,7 +10,7 @@ export interface WebSocketHook {
 
 export function useWebSocket(url?: string): WebSocketHook {
   const [isConnected, setIsConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState<any>(null);
+  const [lastMessage, _setLastMessage] = useState<any>(null);
 
   useEffect(() => {
     // WebSocket implementation would go here
@@ -20,7 +20,7 @@ export function useWebSocket(url?: string): WebSocketHook {
     };
   }, [url]);
 
-  const send = (data: any) => {
+  const send = (_data: any) => {
     // Send implementation would go here
   };
 
@@ -45,13 +45,13 @@ export function useWebSocket(url?: string): WebSocketHook {
 
 // Realtime store stub
 export const realtimeStore = {
-  subscribe: (callback: (data: any) => void) => {
+  subscribe: (_callback: (data: any) => void) => {
     // Subscribe implementation would go here
     return () => {
       // Unsubscribe
     };
   },
-  subscribeToMessages: (callback: (data: any) => void) => {
+  subscribeToMessages: (_callback: (data: any) => void) => {
     // Subscribe to messages implementation would go here
     return () => {
       // Unsubscribe

@@ -3,47 +3,48 @@
  * Complete platform with multiple apps and packages
  */
 
-import { TemplateConfig } from '../types';
+import type { TemplateConfig } from '../types';
 
 export const monorepoTurborepoTemplate: TemplateConfig = {
   name: 'monorepo-turborepo',
   type: 'monorepo',
   framework: 'turborepo',
   displayName: 'Turborepo Monorepo Platform',
-  description: 'Full-featured monorepo with frontend, backend, and shared packages',
-  
+  description:
+    'Full-featured monorepo with frontend, backend, and shared packages',
+
   dependencies: {
-    'turbo': '^2.0.0'
+    turbo: '^2.0.0',
   },
-  
+
   devDependencies: {
     '@changesets/cli': '^2.27.1',
     '@types/node': '^20.11.24',
-    'eslint': '^8.57.0',
-    'prettier': '^3.2.5',
-    'typescript': '^5.3.3',
-    'husky': '^9.0.11',
+    eslint: '^8.57.0',
+    prettier: '^3.2.5',
+    typescript: '^5.3.3',
+    husky: '^9.0.11',
     'lint-staged': '^15.2.2',
     '@commitlint/cli': '^19.0.3',
-    '@commitlint/config-conventional': '^19.0.3'
+    '@commitlint/config-conventional': '^19.0.3',
   },
-  
+
   scripts: {
-    'dev': 'turbo dev',
-    'build': 'turbo build',
-    'test': 'turbo test',
-    'lint': 'turbo lint',
-    'typecheck': 'turbo typecheck',
-    'format': 'prettier --write "**/*.{ts,tsx,md,json}"',
-    'clean': 'turbo clean && rm -rf node_modules',
-    'changeset': 'changeset',
-    'version': 'changeset version',
-    'publish': 'turbo build && changeset publish',
-    'analyze': 'wundr analyze',
-    'govern': 'wundr govern check',
-    'prepare': 'husky install'
+    dev: 'turbo dev',
+    build: 'turbo build',
+    test: 'turbo test',
+    lint: 'turbo lint',
+    typecheck: 'turbo typecheck',
+    format: 'prettier --write "**/*.{ts,tsx,md,json}"',
+    clean: 'turbo clean && rm -rf node_modules',
+    changeset: 'changeset',
+    version: 'changeset version',
+    publish: 'turbo build && changeset publish',
+    analyze: 'wundr analyze',
+    govern: 'wundr govern check',
+    prepare: 'husky install',
   },
-  
+
   files: [
     {
       path: 'turbo.json',
@@ -76,13 +77,13 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
       "cache": false
     }
   }
-}`
+}`,
     },
     {
       path: 'pnpm-workspace.yaml',
       content: `packages:
   - "apps/*"
-  - "packages/*"`
+  - "packages/*"`,
     },
     {
       path: 'apps/web/package.json',
@@ -113,7 +114,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "typescript": "^5.3.3"
   }
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'apps/api/package.json',
@@ -147,7 +148,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "ts-jest": "^29.1.2"
   }
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'apps/admin/package.json',
@@ -177,7 +178,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "typescript": "^5.3.3"
   }
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'packages/ui/package.json',
@@ -211,7 +212,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "react": ">=18"
   }
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'packages/database/package.json',
@@ -240,7 +241,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "typescript": "^5.3.3"
   }
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'packages/utils/package.json',
@@ -268,7 +269,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "typescript": "^5.3.3"
   }
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'packages/config/package.json',
@@ -282,7 +283,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "jest.config.js"
   ]
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'packages/tsconfig/package.json',
@@ -297,7 +298,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "react-library.json"
   ]
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'packages/tsconfig/base.json',
@@ -323,7 +324,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
     "resolveJsonModule": true
   },
   "exclude": ["node_modules"]
-}`
+}`,
     },
     {
       path: '.changeset/config.json',
@@ -337,7 +338,7 @@ export const monorepoTurborepoTemplate: TemplateConfig = {
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": []
-}`
+}`,
     },
     {
       path: 'README.md',
@@ -396,14 +397,14 @@ This project is wundr-compliant with:
 - **Prisma** - Database ORM
 - **TypeScript** - Type safety
 - **pnpm** - Package management`,
-      template: true
-    }
+      template: true,
+    },
   ],
-  
+
   postInstall: [
     'pnpm install',
     'npx husky install',
     'npx husky add .husky/pre-commit "pnpm lint && pnpm typecheck"',
-    'npx husky add .husky/commit-msg "npx --no -- commitlint --edit $1"'
-  ]
-}
+    'npx husky add .husky/commit-msg "npx --no -- commitlint --edit $1"',
+  ],
+};

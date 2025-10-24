@@ -5,29 +5,30 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { pathToFileURL } from 'url';
-import semver from 'semver';
+
 import {
-  getLogger,
-  getEventBus,
-  Logger,
-  EventBus,
   BaseWundrError,
-  success,
   failure,
+  getEventBus,
+  getLogger,
   isFailure,
+  success,
 } from '@wundr.io/core';
-import {
-  PluginModule,
-  PluginManifest,
-  PluginInfo,
-  PluginStatus,
+import { valid as semverValid } from 'semver';
+
+import { WundrHookRegistry } from '../hooks/index.js';
+import { PLUGIN_EVENTS, PluginStatus } from '../types/index.js';
+
+import type {
   PluginContext,
+  PluginHookRegistry,
+  PluginInfo,
   PluginManager,
   PluginManagerOptions,
-  PluginHookRegistry,
-  PLUGIN_EVENTS,
+  PluginManifest,
+  PluginModule,
 } from '../types/index.js';
-import { WundrHookRegistry } from '../hooks/index.js';
+import type { EventBus, Logger } from '@wundr.io/core';
 
 export class PluginError extends BaseWundrError {
   constructor(message: string, context?: Record<string, unknown>) {
@@ -513,9 +514,9 @@ export class WundrPluginManager implements PluginManager {
       return JSON.parse(manifestContent) as PluginManifest;
     } catch (error) {
       throw new PluginError(`Failed to load plugin manifest: ${pluginId}`, {
-        pluginId,
-        manifestPath,
         error,
+        manifestPath,
+        pluginId,
       });
     }
   }
@@ -531,7 +532,7 @@ export class WundrPluginManager implements PluginManager {
       }
     }
 
-    if (!semver.valid(manifest.version)) {
+    if (!semverValid(manifest.version)) {
       throw new PluginError(`Invalid plugin version: ${manifest.version}`, {
         manifest,
       });
@@ -562,9 +563,9 @@ export class WundrPluginManager implements PluginManager {
       return module as PluginModule;
     } catch (error) {
       throw new PluginError(`Failed to load plugin module: ${pluginId}`, {
+        error,
         pluginId,
         pluginPath,
-        error,
       });
     }
   }
@@ -577,11 +578,11 @@ export class WundrPluginManager implements PluginManager {
     await fs.mkdir(pluginDataDir, { recursive: true });
 
     return {
-      logger: this.logger,
-      eventBus: this.eventBus,
       config: manifest.config || {},
-      pluginDir: path.join(this.options.pluginDir, pluginId),
       dataDir: pluginDataDir,
+      eventBus: this.eventBus,
+      logger: this.logger,
+      pluginDir: path.join(this.options.pluginDir, pluginId),
     };
   }
 

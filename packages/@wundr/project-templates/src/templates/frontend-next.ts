@@ -3,18 +3,19 @@
  * Opinionated stack for modern web applications
  */
 
-import { TemplateConfig } from '../types';
+import type { TemplateConfig } from '../types';
 
 export const frontendNextTemplate: TemplateConfig = {
   name: 'frontend-next',
   type: 'frontend',
   framework: 'next',
   displayName: 'Next.js Frontend Application',
-  description: 'Modern Next.js 15 app with shadcn/ui, Tailwind CSS, and TypeScript',
-  
+  description:
+    'Modern Next.js 15 app with shadcn/ui, Tailwind CSS, and TypeScript',
+
   dependencies: {
-    'next': '^15.0.0',
-    'react': '^19.0.0',
+    next: '^15.0.0',
+    react: '^19.0.0',
     'react-dom': '^19.0.0',
     '@radix-ui/react-accordion': '^1.1.2',
     '@radix-ui/react-alert-dialog': '^1.0.5',
@@ -25,60 +26,60 @@ export const frontendNextTemplate: TemplateConfig = {
     '@radix-ui/react-slot': '^1.0.2',
     '@radix-ui/react-toast': '^1.1.5',
     'class-variance-authority': '^0.7.0',
-    'clsx': '^2.1.0',
+    clsx: '^2.1.0',
     'lucide-react': '^0.344.0',
     'tailwind-merge': '^2.2.1',
     'tailwindcss-animate': '^1.0.7',
     '@tanstack/react-query': '^5.28.4',
-    'zustand': '^4.5.1',
+    zustand: '^4.5.1',
     'react-hook-form': '^7.50.1',
-    'zod': '^3.22.4',
+    zod: '^3.22.4',
     '@hookform/resolvers': '^3.3.4',
     '@prisma/client': '^5.11.0',
-    'axios': '^1.6.7'
+    axios: '^1.6.7',
   },
-  
+
   devDependencies: {
     '@types/node': '^20.11.24',
     '@types/react': '^18.2.63',
     '@types/react-dom': '^18.2.20',
-    'typescript': '^5.3.3',
-    'eslint': '^8.57.0',
+    typescript: '^5.3.3',
+    eslint: '^8.57.0',
     'eslint-config-next': '^14.1.3',
-    'prettier': '^3.2.5',
+    prettier: '^3.2.5',
     'prettier-plugin-tailwindcss': '^0.5.11',
-    'tailwindcss': '^3.4.1',
-    'autoprefixer': '^10.4.18',
-    'postcss': '^8.4.35',
+    tailwindcss: '^3.4.1',
+    autoprefixer: '^10.4.18',
+    postcss: '^8.4.35',
     '@testing-library/react': '^14.2.1',
     '@testing-library/jest-dom': '^6.4.2',
-    'jest': '^29.7.0',
+    jest: '^29.7.0',
     'jest-environment-jsdom': '^29.7.0',
-    'prisma': '^5.11.0',
-    'husky': '^9.0.11',
+    prisma: '^5.11.0',
+    husky: '^9.0.11',
     'lint-staged': '^15.2.2',
     '@commitlint/cli': '^19.0.3',
-    '@commitlint/config-conventional': '^19.0.3'
+    '@commitlint/config-conventional': '^19.0.3',
   },
-  
+
   scripts: {
-    'dev': 'next dev',
-    'build': 'next build',
-    'start': 'next start',
-    'lint': 'next lint',
-    'typecheck': 'tsc --noEmit',
-    'format': 'prettier --write .',
-    'test': 'jest',
+    dev: 'next dev',
+    build: 'next build',
+    start: 'next start',
+    lint: 'next lint',
+    typecheck: 'tsc --noEmit',
+    format: 'prettier --write .',
+    test: 'jest',
     'test:watch': 'jest --watch',
     'test:coverage': 'jest --coverage',
-    'analyze': 'wundr analyze',
-    'govern': 'wundr govern check',
-    'prepare': 'husky install',
+    analyze: 'wundr analyze',
+    govern: 'wundr govern check',
+    prepare: 'husky install',
     'db:generate': 'prisma generate',
     'db:push': 'prisma db push',
-    'db:migrate': 'prisma migrate dev'
+    'db:migrate': 'prisma migrate dev',
   },
-  
+
   files: [
     {
       path: 'app/layout.tsx',
@@ -111,7 +112,7 @@ export default function RootLayout({
     </html>
   )
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'app/page.tsx',
@@ -153,7 +154,7 @@ export default function HomePage() {
     </main>
   )
 }`,
-      template: true
+      template: true,
     },
     {
       path: 'app/globals.css',
@@ -215,7 +216,7 @@ export default function HomePage() {
   body {
     @apply bg-background text-foreground;
   }
-}`
+}`,
     },
     {
       path: 'components/providers.tsx',
@@ -252,7 +253,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )
-}`
+}`,
     },
     {
       path: 'components/ui/button.tsx',
@@ -307,7 +308,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }`
+export { Button, buttonVariants }`,
     },
     {
       path: 'lib/utils.ts',
@@ -316,7 +317,7 @@ import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-}`
+}`,
     },
     {
       path: 'tailwind.config.ts',
@@ -399,7 +400,7 @@ const config = {
   plugins: [require("tailwindcss-animate")],
 } satisfies Config
 
-export default config`
+export default config`,
     },
     {
       path: 'next.config.mjs',
@@ -412,7 +413,7 @@ const nextConfig = {
   },
 }
 
-export default nextConfig`
+export default nextConfig`,
     },
     {
       path: 'tsconfig.json',
@@ -442,16 +443,16 @@ export default nextConfig`
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
-}`
-    }
+}`,
+    },
   ],
-  
+
   postInstall: [
     'npx shadcn-ui@latest init -y',
     'npx shadcn-ui@latest add card toast',
     'npx prisma init',
     'npx husky install',
     'npx husky add .husky/pre-commit "npm run lint && npm run typecheck"',
-    'npx husky add .husky/commit-msg "npx --no -- commitlint --edit $1"'
-  ]
-}
+    'npx husky add .husky/commit-msg "npx --no -- commitlint --edit $1"',
+  ],
+};

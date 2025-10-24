@@ -2,11 +2,13 @@
  * File-based configuration source
  */
 
+import { watch } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
-import { watch } from 'fs';
-import { ConfigSource } from '../types/index.js';
+
 import { getLogger } from '@wundr.io/core';
+
+import type { ConfigSource } from '../types/index.js';
 
 const logger = getLogger();
 
@@ -22,7 +24,7 @@ export abstract class FileConfigSource implements ConfigSource {
     this.priority = priority;
   }
 
-  async load(): Promise<Record<string, any>> {
+  async load(): Promise<Record<string, unknown>> {
     try {
       const content = await fs.readFile(this.filePath, 'utf-8');
       return this.parseContent(content);
@@ -40,7 +42,7 @@ export abstract class FileConfigSource implements ConfigSource {
     }
   }
 
-  async save(config: Record<string, any>): Promise<void> {
+  async save(config: Record<string, unknown>): Promise<void> {
     try {
       const content = this.stringifyContent(config);
       const dir = path.dirname(this.filePath);
@@ -63,7 +65,7 @@ export abstract class FileConfigSource implements ConfigSource {
     }
   }
 
-  watch(callback: (config: Record<string, any>) => void): () => void {
+  watch(callback: (config: Record<string, unknown>) => void): () => void {
     if (this.watcher) {
       this.watcher.close();
     }
@@ -99,6 +101,6 @@ export abstract class FileConfigSource implements ConfigSource {
     };
   }
 
-  protected abstract parseContent(content: string): Record<string, any>;
-  protected abstract stringifyContent(config: Record<string, any>): string;
+  protected abstract parseContent(content: string): Record<string, unknown>;
+  protected abstract stringifyContent(config: Record<string, unknown>): string;
 }

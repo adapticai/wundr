@@ -3,7 +3,7 @@
  * Governance, AI integration, and best practices
  */
 
-import { TemplateFile } from '../types';
+import type { TemplateFile } from '../types';
 
 export const wundrFiles: TemplateFile[] = [
   {
@@ -75,7 +75,7 @@ export const wundrFiles: TemplateFile[] = [
       "maxDepth": 4
     }
   }
-}`
+}`,
   },
   {
     path: '.wundr/config.yaml',
@@ -139,7 +139,7 @@ monitoring:
     - type: threshold
       metric: coverage
       value: 70
-      severity: warning`
+      severity: warning`,
   },
   {
     path: '.wundr/patterns.yaml',
@@ -213,7 +213,7 @@ patterns:
         - utils/
         - types/
         - services/
-      severity: info`
+      severity: info`,
   },
   {
     path: '.wundr/drift-check.yaml',
@@ -277,7 +277,7 @@ remediation:
   reporting:
     enabled: true
     format: markdown
-    output: .wundr/drift-report.md`
+    output: .wundr/drift-report.md`,
   },
   {
     path: 'CLAUDE.md',
@@ -396,7 +396,7 @@ wundr drift fix      # Auto-fix drift issues
 - Team Lead: {{author}}
 - Documentation: /docs
 - Issues: /issues`,
-    template: true
+    template: true,
   },
   {
     path: '.github/workflows/wundr-check.yml',
@@ -487,7 +487,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: comment
-            });`
+            });`,
   },
   {
     path: '.husky/pre-commit',
@@ -496,14 +496,14 @@ jobs:
 
 npm run lint
 npm run typecheck
-wundr drift check --quiet || (echo "❌ Drift detected! Run 'wundr drift fix' to resolve." && exit 1)`
+wundr drift check --quiet || (echo "❌ Drift detected! Run 'wundr drift fix' to resolve." && exit 1)`,
   },
   {
     path: '.husky/commit-msg',
     content: `#!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx --no -- commitlint --edit $1`
+npx --no -- commitlint --edit $1`,
   },
   {
     path: 'commitlint.config.js',
@@ -531,7 +531,7 @@ npx --no -- commitlint --edit $1`
     'subject-full-stop': [2, 'never', '.'],
     'header-max-length': [2, 'always', 100]
   }
-}`
+}`,
   },
   {
     path: '.eslintrc.json',
@@ -560,7 +560,7 @@ npx --no -- commitlint --edit $1`
     "no-var": "error"
   },
   "ignorePatterns": ["dist", "build", ".next", "node_modules", "coverage"]
-}`
+}`,
   },
   {
     path: '.prettierrc',
@@ -574,7 +574,7 @@ npx --no -- commitlint --edit $1`
   "bracketSpacing": true,
   "arrowParens": "always",
   "endOfLine": "lf"
-}`
+}`,
   },
   {
     path: '.gitignore',
@@ -626,6 +626,6 @@ lerna-debug.log*
 .wundr/*.log
 
 # OS
-Thumbs.db`
-  }
+Thumbs.db`,
+  },
 ];

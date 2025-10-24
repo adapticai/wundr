@@ -2,7 +2,7 @@
  * Plugin system type definitions
  */
 
-import { EventBus, Logger } from '@wundr.io/core';
+import type { EventBus, Logger } from '@wundr.io/core';
 
 export interface PluginMetadata {
   readonly name: string;

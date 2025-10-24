@@ -2,17 +2,18 @@
  * In-memory configuration source
  */
 
-import { ConfigSource } from '../types/index.js';
 import { deepClone } from '@wundr.io/core';
+
+import type { ConfigSource } from '../types/index.js';
 
 export class MemoryConfigSource implements ConfigSource {
   public readonly name: string;
   public readonly priority: number;
-  private config: Record<string, any>;
-  private watchCallbacks: Array<(config: Record<string, any>) => void> = [];
+  private config: Record<string, unknown>;
+  private watchCallbacks: Array<(config: Record<string, unknown>) => void> = [];
 
   constructor(
-    initialConfig: Record<string, any> = {},
+    initialConfig: Record<string, unknown> = {},
     name = 'memory',
     priority = 0
   ) {
@@ -21,16 +22,16 @@ export class MemoryConfigSource implements ConfigSource {
     this.config = deepClone(initialConfig);
   }
 
-  load(): Record<string, any> {
+  load(): Record<string, unknown> {
     return deepClone(this.config);
   }
 
-  save(config: Record<string, any>): void {
+  save(config: Record<string, unknown>): void {
     this.config = deepClone(config);
     this.notifyWatchers();
   }
 
-  watch(callback: (config: Record<string, any>) => void): () => void {
+  watch(callback: (config: Record<string, unknown>) => void): () => void {
     this.watchCallbacks.push(callback);
 
     return () => {
@@ -44,7 +45,7 @@ export class MemoryConfigSource implements ConfigSource {
   /**
    * Update the configuration and notify watchers
    */
-  update(updates: Record<string, any>): void {
+  update(updates: Record<string, unknown>): void {
     this.config = { ...this.config, ...deepClone(updates) };
     this.notifyWatchers();
   }
@@ -60,7 +61,7 @@ export class MemoryConfigSource implements ConfigSource {
   /**
    * Get a copy of the current configuration
    */
-  getConfig(): Record<string, any> {
+  getConfig(): Record<string, unknown> {
     return deepClone(this.config);
   }
 

@@ -9,7 +9,7 @@ export class JsonConfigSource extends FileConfigSource {
     super(filePath, name || `json:${filePath}`, priority);
   }
 
-  protected parseContent(content: string): Record<string, any> {
+  protected parseContent(content: string): Record<string, unknown> {
     try {
       return JSON.parse(content) || {};
     } catch (error) {
@@ -19,7 +19,7 @@ export class JsonConfigSource extends FileConfigSource {
     }
   }
 
-  protected stringifyContent(config: Record<string, any>): string {
+  protected stringifyContent(config: Record<string, unknown>): string {
     return JSON.stringify(config, null, 2);
   }
 }

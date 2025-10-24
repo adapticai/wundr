@@ -3,11 +3,10 @@
  */
 
 import { getLogger, getEventBus } from '@wundr.io/core';
-import {
-  PluginHook,
-  PluginHookRegistry,
-  PLUGIN_EVENTS,
-} from '../types/index.js';
+
+import { PLUGIN_EVENTS } from '../types/index.js';
+
+import type { PluginHook, PluginHookRegistry } from '../types/index.js';
 
 export class WundrHookRegistry implements PluginHookRegistry {
   private hooks = new Map<string, PluginHook[]>();

@@ -3,6 +3,7 @@
  */
 
 import YAML from 'yaml';
+
 import { FileConfigSource } from './file-source.js';
 
 export class YamlConfigSource extends FileConfigSource {
@@ -10,7 +11,7 @@ export class YamlConfigSource extends FileConfigSource {
     super(filePath, name || `yaml:${filePath}`, priority);
   }
 
-  protected parseContent(content: string): Record<string, any> {
+  protected parseContent(content: string): Record<string, unknown> {
     try {
       return YAML.parse(content) || {};
     } catch (error) {
@@ -20,7 +21,7 @@ export class YamlConfigSource extends FileConfigSource {
     }
   }
 
-  protected stringifyContent(config: Record<string, any>): string {
+  protected stringifyContent(config: Record<string, unknown>): string {
     return YAML.stringify(config, {
       indent: 2,
       lineWidth: 120,

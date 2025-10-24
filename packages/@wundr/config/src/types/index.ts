@@ -2,27 +2,30 @@
  * Configuration management type definitions
  */
 
-import { BaseConfig } from '@wundr.io/core';
+import type { BaseConfig } from '@wundr.io/core';
 
 export interface ConfigSource {
   readonly name: string;
   readonly priority: number;
-  load(): Promise<Record<string, any>> | Record<string, any>;
-  save?(config: Record<string, any>): Promise<void> | void;
-  watch?(callback: (config: Record<string, any>) => void): () => void;
+  load(): Promise<Record<string, unknown>> | Record<string, unknown>;
+  save?(config: Record<string, unknown>): Promise<void> | void;
+  watch?(callback: (config: Record<string, unknown>) => void): () => void;
 }
 
 export interface ConfigManager {
-  get<T = any>(key: string, defaultValue?: T): T;
-  set(key: string, value: any): void;
+  get<T = unknown>(key: string, defaultValue?: T): T;
+  set(key: string, value: unknown): void;
   has(key: string): boolean;
   delete(key: string): void;
   clear(): void;
-  getAll(): Record<string, any>;
+  getAll(): Record<string, unknown>;
   reload(): Promise<void>;
   save(): Promise<void>;
-  watch(key: string, callback: (value: any, oldValue: any) => void): () => void;
-  watchAll(callback: (config: Record<string, any>) => void): () => void;
+  watch(
+    key: string,
+    callback: (value: unknown, oldValue: unknown) => void
+  ): () => void;
+  watchAll(callback: (config: Record<string, unknown>) => void): () => void;
   addSource(source: ConfigSource): void;
   removeSource(sourceName: string): void;
   getSources(): ConfigSource[];
@@ -31,7 +34,7 @@ export interface ConfigManager {
 
 export interface ValidationRule {
   readonly key: string;
-  readonly validator: (value: any) => boolean | string;
+  readonly validator: (value: unknown) => boolean | string;
   readonly required?: boolean;
   readonly description?: string;
 }
@@ -44,7 +47,7 @@ export interface ValidationResult {
 export interface ValidationError {
   readonly key: string;
   readonly message: string;
-  readonly value: any;
+  readonly value: unknown;
 }
 
 export interface ConfigOptions {

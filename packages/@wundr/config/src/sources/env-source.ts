@@ -2,8 +2,9 @@
  * Environment variables configuration source
  */
 
-import { ConfigSource } from '../types/index.js';
 import { getLogger, setNestedValue } from '@wundr.io/core';
+
+import type { ConfigSource } from '../types/index.js';
 
 const logger = getLogger();
 
@@ -44,8 +45,8 @@ export class EnvConfigSource implements ConfigSource {
       : {};
   }
 
-  load(): Record<string, any> {
-    const config: Record<string, any> = {};
+  load(): Record<string, unknown> {
+    const config: Record<string, unknown> = {};
     const prefix = this.options.prefix;
     const separator = this.options.separator;
 
@@ -95,7 +96,7 @@ export class EnvConfigSource implements ConfigSource {
     }
   }
 
-  private transformValue(value: string): any {
+  private transformValue(value: string): unknown {
     if (this.options.transform.values === 'string') {
       return value;
     }
