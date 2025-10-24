@@ -405,15 +405,41 @@ install_tailscale() {
         log SUCCESS "Tailscale installed"
     fi
 
-    # Start Tailscale service
-    log INFO "Starting Tailscale service..."
-    /Applications/Tailscale.app/Contents/MacOS/Tailscale &>/dev/null &
-    sleep 3
+    # Start Tailscale daemon
+    log INFO "Starting Tailscale daemon..."
 
-    # Check if already logged in
+    # Check if daemon is already running
+    if pgrep -x "tailscaled" > /dev/null 2>&1; then
+        log INFO "Tailscale daemon already running"
+    else
+        # Start the daemon using launchctl
+        if [[ -f "/Library/LaunchDaemons/com.tailscale.tailscaled.plist" ]]; then
+            launchctl load -w /Library/LaunchDaemons/com.tailscale.tailscaled.plist 2>/dev/null || true
+            sleep 2
+        fi
+
+        # Start the GUI app in the background
+        open -a Tailscale 2>/dev/null || /Applications/Tailscale.app/Contents/MacOS/Tailscale &>/dev/null &
+        sleep 3
+    fi
+
+    # Check if already logged in with timeout
+    log INFO "Checking Tailscale status..."
     local ts_check_status
-    ts_check_status="$(tailscale status 2>&1)"
-    local ts_check_exit=$?
+    local ts_check_exit
+
+    # Use timeout to prevent hanging
+    if command -v timeout >/dev/null 2>&1; then
+        ts_check_status="$(timeout 5 tailscale status 2>&1)" || ts_check_status=""
+        ts_check_exit=$?
+    elif command -v gtimeout >/dev/null 2>&1; then
+        ts_check_status="$(gtimeout 5 tailscale status 2>&1)" || ts_check_status=""
+        ts_check_exit=$?
+    else
+        # No timeout available, try anyway
+        ts_check_status="$(tailscale status 2>&1)" || ts_check_status=""
+        ts_check_exit=$?
+    fi
 
     if [[ $ts_check_exit -eq 0 ]] && echo "$ts_check_status" | grep -q "100\."; then
         # Already logged in (has Tailscale IP)
@@ -1170,15 +1196,41 @@ install_master() {
         log SUCCESS "Tailscale installed"
     fi
 
-    # Start Tailscale and check if already logged in
-    log INFO "Starting Tailscale..."
-    /Applications/Tailscale.app/Contents/MacOS/Tailscale &>/dev/null &
-    sleep 3
+    # Start Tailscale daemon
+    log INFO "Starting Tailscale daemon..."
 
-    # Check if already logged in
+    # Check if daemon is already running
+    if pgrep -x "tailscaled" > /dev/null 2>&1; then
+        log INFO "Tailscale daemon already running"
+    else
+        # Start the daemon using launchctl
+        if [[ -f "/Library/LaunchDaemons/com.tailscale.tailscaled.plist" ]]; then
+            launchctl load -w /Library/LaunchDaemons/com.tailscale.tailscaled.plist 2>/dev/null || true
+            sleep 2
+        fi
+
+        # Start the GUI app in the background
+        open -a Tailscale 2>/dev/null || /Applications/Tailscale.app/Contents/MacOS/Tailscale &>/dev/null &
+        sleep 3
+    fi
+
+    # Check if already logged in with timeout
+    log INFO "Checking Tailscale status..."
     local ts_status
-    ts_status="$(tailscale status 2>&1)"
-    local ts_exit_code=$?
+    local ts_exit_code
+
+    # Use timeout to prevent hanging
+    if command -v timeout >/dev/null 2>&1; then
+        ts_status="$(timeout 5 tailscale status 2>&1)" || ts_status=""
+        ts_exit_code=$?
+    elif command -v gtimeout >/dev/null 2>&1; then
+        ts_status="$(gtimeout 5 tailscale status 2>&1)" || ts_status=""
+        ts_exit_code=$?
+    else
+        # No timeout available, try anyway
+        ts_status="$(tailscale status 2>&1)" || ts_status=""
+        ts_exit_code=$?
+    fi
 
     if [[ $ts_exit_code -eq 0 ]] && echo "$ts_status" | grep -q "100\."; then
         # Already logged in (has Tailscale IP)
