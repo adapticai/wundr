@@ -26,6 +26,7 @@ Examples:
   ${chalk.green('wundr claude-setup')}              Interactive Claude setup
   ${chalk.green('wundr claude-setup mcp')}          Install all MCP tools
   ${chalk.green('wundr claude-setup agents')}       Configure all 54 agents
+  ${chalk.green('wundr claude-setup optimize')}     Setup hardware-adaptive optimizations
   ${chalk.green('wundr claude-setup validate')}     Validate Claude installation
       `)
       );
@@ -79,6 +80,15 @@ Examples:
       .description('Install Browser MCP Chrome extension')
       .action(async () => {
         await this.installChromeExtension();
+      });
+
+    // Hardware optimization
+    claudeSetup
+      .command('optimize')
+      .description('Setup hardware-adaptive Claude Code optimizations')
+      .option('--force', 'Force reinstallation of optimization scripts')
+      .action(async options => {
+        await this.setupOptimizations(options);
       });
   }
 
@@ -282,6 +292,213 @@ Examples:
     console.log('3. Click "Load unpacked"');
     console.log(`4. Select: ${extensionDir}`);
     console.log('\n✅ The extension will then be active!');
+  }
+
+  private async setupOptimizations(options: any): Promise<void> {
+    const spinner = ora();
+    console.log(
+      chalk.cyan.bold('\n⚡ Claude Code Hardware-Adaptive Optimization Setup\n')
+    );
+
+    try {
+      const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+      const scriptsDir = path.join(homeDir, '.claude', 'scripts');
+      const resourcesDir = path.join(
+        __dirname,
+        '../../../computer-setup/resources/scripts'
+      );
+
+      // Check if optimization scripts already exist
+      const scriptsExist = fs.existsSync(scriptsDir);
+      if (scriptsExist && !options.force) {
+        const { overwrite } = await (
+          await import('inquirer')
+        ).default.prompt([
+          {
+            type: 'confirm',
+            name: 'overwrite',
+            message:
+              'Optimization scripts already exist. Do you want to reinstall?',
+            default: false,
+          },
+        ]);
+
+        if (!overwrite) {
+          console.log(chalk.yellow('Optimization setup cancelled'));
+          return;
+        }
+      }
+
+      // Step 1: Create scripts directory
+      spinner.start('Creating scripts directory...');
+      fs.mkdirSync(scriptsDir, { recursive: true });
+      spinner.succeed('Scripts directory ready');
+
+      // Step 2: Copy optimization scripts
+      spinner.start('Installing optimization scripts...');
+
+      if (!fs.existsSync(resourcesDir)) {
+        spinner.fail('Optimization scripts not found in resources');
+        console.error(
+          chalk.red(
+            `Expected scripts at: ${resourcesDir}\nPlease ensure @wundr/computer-setup is installed.`
+          )
+        );
+        return;
+      }
+
+      // Copy all scripts
+      const scripts = [
+        'detect-hardware-limits.js',
+        'claude-optimized',
+        'orchestrator.js',
+        'cleanup-zombies.sh',
+        'README-ORCHESTRATION.md',
+        'QUICK-START.md',
+      ];
+
+      for (const script of scripts) {
+        const src = path.join(resourcesDir, script);
+        const dest = path.join(scriptsDir, script);
+
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest);
+        } else {
+          console.warn(chalk.yellow(`⚠️  Script not found: ${script}`));
+        }
+      }
+
+      // Make executable scripts executable
+      const executableScripts = ['claude-optimized', 'cleanup-zombies.sh'];
+      for (const script of executableScripts) {
+        const scriptPath = path.join(scriptsDir, script);
+        if (fs.existsSync(scriptPath)) {
+          execSync(`chmod +x "${scriptPath}"`, { stdio: 'pipe' });
+        }
+      }
+
+      spinner.succeed('Optimization scripts installed');
+
+      // Step 3: Configure shell
+      spinner.start('Configuring shell environment...');
+      await this.addOptimizationToShell(homeDir);
+      spinner.succeed('Shell configuration updated');
+
+      console.log(chalk.green.bold('\n✅ Optimization setup complete!\n'));
+
+      // Show what was installed
+      console.log(chalk.cyan('📦 Installed Scripts:'));
+      console.log(
+        chalk.white('  • detect-hardware-limits.js - Hardware detection')
+      );
+      console.log(
+        chalk.white('  • claude-optimized - Optimized Claude wrapper')
+      );
+      console.log(
+        chalk.white('  • orchestrator.js - Fault-tolerant orchestration')
+      );
+      console.log(
+        chalk.white('  • cleanup-zombies.sh - Process cleanup utility')
+      );
+
+      console.log(chalk.cyan('\n🔧 Shell Aliases:'));
+      console.log(
+        chalk.white('  • claude - Hardware-optimized Claude wrapper')
+      );
+      console.log(chalk.white('  • claude-stats - Show hardware statistics'));
+      console.log(chalk.white('  • claude-cleanup - Clean up zombie processes'));
+      console.log(
+        chalk.white('  • claude-orchestrate - Run multi-task orchestrator')
+      );
+
+      console.log(chalk.cyan('\n📝 Next Steps:'));
+      console.log('1. Restart your terminal (or run: source ~/.zshrc)');
+      console.log('2. Run "claude-stats" to see your hardware configuration');
+      console.log('3. Use "claude" command as normal - now optimized!');
+      console.log(
+        '4. Read ~/.claude/scripts/QUICK-START.md for advanced usage'
+      );
+    } catch (error) {
+      spinner.fail('Optimization setup failed');
+      console.error(chalk.red(error));
+      throw error;
+    }
+  }
+
+  private async addOptimizationToShell(homeDir: string): Promise<void> {
+    const shellConfigs = [
+      path.join(homeDir, '.zshrc'),
+      path.join(homeDir, '.bashrc'),
+    ];
+
+    const optimizationConfig = `
+# ═══════════════════════════════════════════════════════════════════════════
+# Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Ensure PATH includes usr/local/bin
+export PATH="/usr/local/bin:$PATH"
+
+# Hardware-adaptive V8 memory configuration
+if [ -f "$HOME/.claude/scripts/detect-hardware-limits.js" ]; then
+  eval "$(node $HOME/.claude/scripts/detect-hardware-limits.js export 2>/dev/null)"
+fi
+
+# Alias 'claude' to use hardware-optimized wrapper
+if [ -f "$HOME/.claude/scripts/claude-optimized" ]; then
+  alias claude="$HOME/.claude/scripts/claude-optimized"
+else
+  # Fallback to standard claude if optimization scripts not available
+  alias claude='npx @anthropic-ai/claude-code'
+fi
+
+# Convenience aliases for Claude optimization tools
+alias claude-stats='node $HOME/.claude/scripts/detect-hardware-limits.js 2>/dev/null'
+alias claude-cleanup='$HOME/.claude/scripts/cleanup-zombies.sh 2>/dev/null'
+alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
+
+# ═══════════════════════════════════════════════════════════════════════════
+`;
+
+    for (const configFile of shellConfigs) {
+      if (fs.existsSync(configFile)) {
+        const content = fs.readFileSync(configFile, 'utf8');
+
+        // Check if optimization config already exists
+        if (
+          content.includes(
+            'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)'
+          )
+        ) {
+          // Remove old config and add new one
+          const lines = content.split('\n');
+          const startIdx = lines.findIndex(line =>
+            line.includes(
+              'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)'
+            )
+          );
+
+          if (startIdx !== -1) {
+            // Find the end of the config block
+            let endIdx = startIdx;
+            for (let i = startIdx + 1; i < lines.length; i++) {
+              if (lines[i]?.includes('═══════════════')) {
+                endIdx = i;
+                break;
+              }
+            }
+
+            // Remove old config
+            lines.splice(startIdx - 1, endIdx - startIdx + 3);
+            const newContent = lines.join('\n');
+            fs.writeFileSync(configFile, newContent + optimizationConfig);
+          }
+        } else {
+          // Add new config
+          fs.appendFileSync(configFile, optimizationConfig);
+        }
+      }
+    }
   }
 
   private async installChrome(): Promise<void> {
