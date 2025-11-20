@@ -19,7 +19,35 @@ This guide explains how to set up Claude Code hardware-adaptive optimizations on
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+First, ensure the `wundr` CLI is available. You have three options:
+
+**Option 1: Install Globally via npm** (recommended for end users)
+```bash
+npm install -g @wundr.io/cli
+```
+
+**Option 2: Link for Development** (for contributors)
+```bash
+cd /path/to/wundr/packages/@wundr/cli
+pnpm link --global
+```
+
+**Option 3: Run via npx** (no installation needed)
+```bash
+npx @wundr.io/cli claude-setup optimize
+```
+
+**Option 4: Run from source** (for development)
+```bash
+cd /path/to/wundr
+npx tsx packages/@wundr/cli/src/index.ts claude-setup optimize
+```
+
 ### One-Line Installation
+
+Once `wundr` is available, run:
 
 ```bash
 wundr claude-setup optimize

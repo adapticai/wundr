@@ -96,8 +96,21 @@ wundr computer-setup --team platform
 - ✅ Hardware-adaptive Claude Code optimizations
 
 **Standalone Claude Code Optimization**:
-Need just the performance optimizations without a full setup? Run:
+Need just the performance optimizations without a full setup?
 
+First, ensure `wundr` CLI is installed:
+```bash
+# Install globally
+npm install -g @wundr.io/cli
+
+# OR link for development
+cd packages/@wundr/cli && pnpm link --global
+
+# OR run via npx (no installation)
+npx @wundr.io/cli claude-setup optimize
+```
+
+Then run the optimization setup:
 ```bash
 # Setup hardware-adaptive Claude Code optimizations
 wundr claude-setup optimize
