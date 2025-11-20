@@ -9,9 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/adapticai/wundr.git"
+    "url": "https://github.com/adapticai/wundr.git",
+    "directory": "packages/@wundr/cli"
   },
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "author": "Wundr, by Adaptic.ai",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

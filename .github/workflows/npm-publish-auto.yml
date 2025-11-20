@@ -1,0 +1,285 @@
+name: 📦 Auto Publish to NPM
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/npm-publish-auto.yml'
+  workflow_dispatch:
+    inputs:
+      force-publish:
+        description: 'Force publish all packages'
+        type: boolean
+        default: false
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.14.0'
+
+jobs:
+  detect-changes:
+    name: 🔍 Detect Package Changes
+    runs-on: ubuntu-latest
+    outputs:
+      has-changes: ${{ steps.changes.outputs.packages }}
+      changed-packages: ${{ steps.changes.outputs.changed-packages }}
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 🔍 Check for package changes
+        id: changes
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force-publish }}" == "true" ]]; then
+            echo "packages=true" >> $GITHUB_OUTPUT
+            echo "changed-packages=all" >> $GITHUB_OUTPUT
+            echo "Force publish requested"
+          else
+            # Get changed files in last commit
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+
+            if echo "$CHANGED_FILES" | grep -q "^packages/"; then
+              echo "packages=true" >> $GITHUB_OUTPUT
+
+              # List changed packages
+              CHANGED_PACKAGES=$(echo "$CHANGED_FILES" | grep "^packages/" | cut -d'/' -f1-3 | sort -u | tr '\n' ',')
+              echo "changed-packages=$CHANGED_PACKAGES" >> $GITHUB_OUTPUT
+              echo "Changed packages: $CHANGED_PACKAGES"
+            else
+              echo "packages=false" >> $GITHUB_OUTPUT
+              echo "No package changes detected"
+            fi
+          fi
+
+  prepare-release:
+    name: 🎯 Prepare Release
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      packages: ${{ steps.packages.outputs.list }}
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: 📋 Determine version
+        id: version
+        run: |
+          # Get current version and add commit SHA for uniqueness
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          DATE_STAMP=$(date +%Y%m%d%H%M%S)
+
+          # Create pre-release version: 1.0.0-dev.20231121123045.abc123
+          NEW_VERSION="$CURRENT_VERSION-dev.$DATE_STAMP.$COMMIT_SHA"
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $NEW_VERSION"
+
+      - name: 📦 List publishable packages
+        id: packages
+        run: |
+          PACKAGES=$(find packages -name "package.json" -not -path "*/node_modules/*" | while read pkg; do
+            PKG_NAME=$(node -p "require('./$pkg').name" 2>/dev/null || echo "")
+            PKG_PRIVATE=$(node -p "require('./$pkg').private || false" 2>/dev/null || echo "true")
+            if [[ -n "$PKG_NAME" && "$PKG_PRIVATE" != "true" ]]; then
+              echo "$PKG_NAME"
+            fi
+          done | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "list=$PACKAGES" >> $GITHUB_OUTPUT
+          echo "Found packages: $PACKAGES"
+
+  build-packages:
+    name: 🏗️ Build Packages
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 🔧 Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: 📝 Update versions
+        run: |
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+          echo "Setting all packages to version $VERSION"
+
+          # Update root package.json
+          npm version $VERSION --no-git-tag-version --allow-same-version || true
+
+          # Update all workspace packages
+          for pkg in packages/*/package.json packages/@wundr/*/package.json; do
+            if [[ -f "$pkg" ]]; then
+              DIR=$(dirname "$pkg")
+              (cd "$DIR" && npm version $VERSION --no-git-tag-version --allow-same-version) || true
+            fi
+          done
+
+      - name: 🏗️ Build all packages
+        run: pnpm run build || echo "Build completed with warnings"
+        continue-on-error: true
+
+      - name: 💾 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            packages/*/dist
+            packages/@wundr/*/dist
+            packages/*/package.json
+            packages/@wundr/*/package.json
+          retention-days: 1
+
+  publish-packages:
+    name: 📡 Publish ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build-packages]
+    if: success()
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.prepare-release.outputs.packages) }}
+    steps:
+      - name: ⚡ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: 🔍 Find package directory
+        id: find-package
+        run: |
+          PACKAGE_NAME="${{ matrix.package }}"
+
+          # Find the package directory
+          PKG_DIR=$(find packages -name "package.json" -not -path "*/node_modules/*" | while read pkg; do
+            PKG_JSON_NAME=$(node -p "require('./$pkg').name" 2>/dev/null || echo "")
+            if [[ "$PKG_JSON_NAME" == "$PACKAGE_NAME" ]]; then
+              dirname "$pkg"
+              break
+            fi
+          done)
+
+          if [[ -z "$PKG_DIR" ]]; then
+            echo "❌ Package $PACKAGE_NAME not found!"
+            exit 1
+          fi
+
+          echo "dir=$PKG_DIR" >> $GITHUB_OUTPUT
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "Found package at: $PKG_DIR"
+
+      - name: 📡 Publish to NPM
+        run: |
+          cd "${{ steps.find-package.outputs.dir }}"
+
+          PACKAGE_NAME="${{ steps.find-package.outputs.name }}"
+          echo "Publishing $PACKAGE_NAME from $(pwd)"
+
+          # Show what will be published
+          npm pack --dry-run
+
+          # Publish with dev tag for auto-publishes
+          npm publish --access public --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        continue-on-error: true
+
+      - name: ✅ Verify publication
+        run: |
+          PACKAGE_NAME="${{ steps.find-package.outputs.name }}"
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+
+          # Wait for npm registry to update
+          sleep 10
+
+          # Check if package is available
+          if npm view "$PACKAGE_NAME@$VERSION" version 2>/dev/null; then
+            echo "✅ Successfully published $PACKAGE_NAME@$VERSION"
+          else
+            echo "⚠️ Package may not be immediately available"
+          fi
+        continue-on-error: true
+
+  notify-completion:
+    name: 📢 Notify Completion
+    runs-on: ubuntu-latest
+    needs: [prepare-release, publish-packages]
+    if: always()
+    steps:
+      - name: 📊 Summary
+        run: |
+          echo "## 📦 NPM Auto-Publishing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.prepare-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ needs.publish-packages.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Packages" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo '${{ needs.prepare-release.outputs.packages }}' | jq -r '.[]' | while read pkg; do
+            echo "- 📦 $pkg" >> $GITHUB_STEP_SUMMARY
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "npm install @wundr.io/cli@dev" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

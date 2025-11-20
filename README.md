@@ -431,6 +431,43 @@ wundr analyze --ci --fail-on-issues
 - [Computer Setup Guide](packages/@wundr/computer-setup/README.md)
 - [Project Templates](packages/@wundr/project-templates/README.md)
 
+## 📦 NPM Publishing
+
+This project automatically publishes to npm under the `@wundr.io` scope.
+
+### For End Users
+
+Install packages from npm:
+```bash
+# Install CLI globally
+npm install -g @wundr.io/cli
+
+# Or use specific packages
+npm install @wundr.io/core
+npm install @wundr.io/analysis-engine
+```
+
+### For Maintainers
+
+**Setup npm publishing** (one-time):
+See [NPM Organization Setup Guide](docs/NPM-ORGANIZATION-SETUP.md) for detailed instructions.
+
+Quick setup:
+1. Create npm account and organization `@wundr.io`
+2. Generate automation token
+3. Add `NPM_TOKEN` secret to GitHub
+4. Packages auto-publish on push to master
+
+**Publishing workflows:**
+- **Auto-publish (dev)**: Push to `master` → publishes `@wundr.io/cli@dev`
+- **Stable release**: Create tag `v1.0.0` → publishes `@wundr.io/cli@latest`
+
+See also:
+- [NPM Setup Checklist](docs/NPM-SETUP-CHECKLIST.md) - Quick 5-step guide
+- [NPM Organization Setup](docs/NPM-ORGANIZATION-SETUP.md) - Comprehensive guide
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
