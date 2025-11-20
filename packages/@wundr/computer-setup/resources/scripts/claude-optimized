@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+###############################################################################
+# claude-optimized: Hardware-Adaptive Claude Code Launcher
+#
+# Automatically detects system specs and launches claude-code with optimal
+# V8 memory settings. Works across M4 Mac Mini, Mac Studio, and future hardware.
+#
+# Usage:
+#   ./scripts/claude-optimized [claude-code arguments...]
+#   ./scripts/claude-optimized -p "Your prompt here"
+#   ./scripts/claude-optimized --dangerously-skip-permissions -p "Task"
+###############################################################################
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Determine script directory (supports both global ~/.claude/scripts and project-local paths)
+if [ -f "$HOME/.claude/scripts/detect-hardware-limits.js" ]; then
+  SCRIPT_DIR="$HOME/.claude/scripts"
+else
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
+# Logging functions
+log_info() {
+  echo -e "${BLUE}ℹ${NC} $*"
+}
+
+log_success() {
+  echo -e "${GREEN}✅${NC} $*"
+}
+
+log_warn() {
+  echo -e "${YELLOW}⚠${NC} $*"
+}
+
+log_error() {
+  echo -e "${RED}❌${NC} $*"
+}
+
+# Check if Node.js is available
+if ! command -v node &> /dev/null; then
+  log_error "Node.js not found. Please install Node.js to use this script."
+  exit 1
+fi
+
+# Check if claude is available
+if ! command -v claude &> /dev/null; then
+  log_error "claude-code not found in PATH."
+  log_info "Install with: npm install -g @anthropic-ai/claude-code"
+  exit 1
+fi
+
+# Detect hardware and calculate optimal limits
+log_info "Detecting hardware specifications..."
+
+# Run the hardware detection script
+if [ ! -f "$SCRIPT_DIR/detect-hardware-limits.js" ]; then
+  log_error "Hardware detection script not found"
+  log_info "Expected locations:"
+  log_info "  • Global: $HOME/.claude/scripts/detect-hardware-limits.js"
+  log_info "  • Local: $(dirname "${BASH_SOURCE[0]}")/detect-hardware-limits.js"
+  log_info ""
+  log_info "Run 'wundr computer-setup' to install globally, or copy scripts manually."
+  exit 1
+fi
+
+# Get environment configuration
+eval "$(node "$SCRIPT_DIR/detect-hardware-limits.js" export)"
+
+# Verify environment variables were set
+if [ -z "${NODE_OPTIONS:-}" ]; then
+  log_error "Failed to set NODE_OPTIONS. Hardware detection failed."
+  exit 1
+fi
+
+# Display configuration
+log_success "Hardware-adaptive configuration loaded"
+log_info "NODE_OPTIONS: $NODE_OPTIONS"
+log_info "V8_FLAGS: ${V8_FLAGS:-not set}"
+
+# Launch claude-code with optimized settings
+log_info "Launching claude-code with hardware-optimized settings..."
+echo ""
+
+# Pass all arguments to claude
+exec claude "$@"
