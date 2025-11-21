@@ -146,7 +146,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   async analyze(
     entities: EntityInfo[],
-    config: AnalysisConfig,
+    _config: AnalysisConfig,
   ): Promise<ComplexityReport> {
     const entityComplexities = new Map<string, ComplexityMetrics>();
     const fileComplexities = new Map<string, FileComplexityMetrics>();
@@ -224,10 +224,10 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
    */
   private calculateComplexityFromSignature(
     signature: string,
-    entityType: string,
+    _entityType: string,
   ): Partial<ComplexityMetrics> {
     const lines = signature.split('\n');
-    const codeLines = lines.filter(
+    const _codeLines = lines.filter(
       line =>
         line.trim() &&
         !line.trim().startsWith('//') &&
@@ -244,7 +244,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       );
 
       return this.analyzeNodeComplexity(sourceFile);
-    } catch (error) {
+    } catch (_error) {
       // Fallback to text-based analysis
       return this.calculateTextBasedComplexity(signature);
     }
@@ -257,7 +257,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     let cyclomatic = 1;
     let cognitive = 0;
     let maxDepth = 0;
-    let currentDepth = 0;
+    let _currentDepth = 0;
     let parameters = 0;
 
     const sourceFile = node.getSourceFile();
@@ -271,11 +271,11 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
       ts.isMethodDeclaration(node) ||
       ts.isArrowFunction(node)
     ) {
-      parameters = (node as any).parameters?.length || 0;
+      parameters = (node as ts.FunctionDeclaration | ts.MethodDeclaration | ts.ArrowFunction).parameters?.length || 0;
     }
 
     const visit = (child: ts.Node, depth: number) => {
-      currentDepth = depth;
+      _currentDepth = depth;
       maxDepth = Math.max(maxDepth, depth);
 
       // Cyclomatic complexity contributors
@@ -285,7 +285,6 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         case ts.SyntaxKind.ForStatement:
         case ts.SyntaxKind.ForInStatement:
         case ts.SyntaxKind.ForOfStatement:
-        case ts.SyntaxKind.WhileStatement:
         case ts.SyntaxKind.ConditionalExpression:
         case ts.SyntaxKind.CaseClause:
         case ts.SyntaxKind.DefaultClause:
@@ -294,13 +293,14 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
           cognitive += this.calculateCognitiveIncrement(child, depth);
           break;
 
-        case ts.SyntaxKind.BinaryExpression:
+        case ts.SyntaxKind.BinaryExpression: {
           const binExpr = child as ts.BinaryExpression;
           if (this.isLogicalOperator(binExpr.operatorToken.kind)) {
             cyclomatic++;
             cognitive += this.calculateCognitiveIncrement(child, depth);
           }
           break;
+        }
       }
 
       // Recursively visit children with updated depth
@@ -617,7 +617,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
   ): ComplexityHotspot[] {
     const hotspots: ComplexityHotspot[] = [];
 
-    entities.forEach((entity, index) => {
+    entities.forEach((entity, _index) => {
       const complexity = complexities.get(entity.id)!;
 
       // Calculate hotspot score

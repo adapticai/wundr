@@ -10,13 +10,13 @@ import { program } from 'commander';
 import * as fs from 'fs-extra';
 import ora from 'ora';
 
+import packageJson from '../package.json';
+
 import { AnalysisEngine, analyzeProjectWithProgress } from './index';
 
 import type { AnalysisConfig, AnalysisProgressEvent } from './types';
 
-
 // Package info
-const packageJson = require('../package.json');
 
 program
   .name('wundr-analyze')
@@ -104,7 +104,7 @@ program
 
     // Set output directory
     if (options.output) {
-      (config as any).outputDir = path.resolve(options.output);
+      (config as AnalysisConfig & { outputDir?: string }).outputDir = path.resolve(options.output);
     }
 
     // Progress tracking
@@ -252,7 +252,7 @@ spinner.fail(chalk.red(event.message || 'Analysis failed'));
       // Output location
       console.log('\n📁 ' + chalk.bold('Reports Generated'));
       console.log(chalk.gray('─'.repeat(50)));
-      const outputDir = (config as any).outputDir || './analysis-output';
+      const outputDir = (config as AnalysisConfig & { outputDir?: string }).outputDir || './analysis-output';
       console.log(`Reports saved to: ${chalk.bold(outputDir)}`);
 
       config.outputFormats?.forEach(format => {
@@ -349,10 +349,10 @@ program
       const startTime = Date.now();
       const engine = new AnalysisEngine({ targetDir: benchmarkDir });
 
-      let filesProcessed = 0;
+      let _filesProcessed = 0;
       engine.setProgressCallback(event => {
         if (event.type === 'progress' && event.progress !== undefined) {
-          filesProcessed = event.progress;
+          _filesProcessed = event.progress;
         }
       });
 

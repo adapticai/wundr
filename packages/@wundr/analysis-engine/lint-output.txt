@@ -1,0 +1,205 @@
+
+> @wundr.io/analysis-engine@1.0.1 lint
+> eslint src --ext .ts,.tsx --fix
+
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/analyzers/BaseAnalysisService.ts
+  604:7  warning  Unexpected console statement  no-console
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/cli.ts
+   62:5   warning  Unexpected console statement  no-console
+   63:5   warning  Unexpected console statement  no-console
+   64:5   warning  Unexpected console statement  no-console
+  161:9   warning  Unexpected console statement  no-console
+  173:7   warning  Unexpected console statement  no-console
+  174:7   warning  Unexpected console statement  no-console
+  176:7   warning  Unexpected console statement  no-console
+  179:7   warning  Unexpected console statement  no-console
+  182:7   warning  Unexpected console statement  no-console
+  185:7   warning  Unexpected console statement  no-console
+  188:7   warning  Unexpected console statement  no-console
+  191:7   warning  Unexpected console statement  no-console
+  195:7   warning  Unexpected console statement  no-console
+  196:7   warning  Unexpected console statement  no-console
+  197:7   warning  Unexpected console statement  no-console
+  200:7   warning  Unexpected console statement  no-console
+  203:7   warning  Unexpected console statement  no-console
+  206:7   warning  Unexpected console statement  no-console
+  210:7   warning  Unexpected console statement  no-console
+  211:7   warning  Unexpected console statement  no-console
+  212:7   warning  Unexpected console statement  no-console
+  213:7   warning  Unexpected console statement  no-console
+  216:7   warning  Unexpected console statement  no-console
+  219:7   warning  Unexpected console statement  no-console
+  223:9   warning  Unexpected console statement  no-console
+  224:9   warning  Unexpected console statement  no-console
+  236:11  warning  Unexpected console statement  no-console
+  237:11  warning  Unexpected console statement  no-console
+  239:13  warning  Unexpected console statement  no-console
+  246:11  warning  Unexpected console statement  no-console
+  253:7   warning  Unexpected console statement  no-console
+  254:7   warning  Unexpected console statement  no-console
+  256:7   warning  Unexpected console statement  no-console
+  259:9   warning  Unexpected console statement  no-console
+  262:7   warning  Unexpected console statement  no-console
+  292:7   warning  Unexpected console statement  no-console
+  331:5   warning  Unexpected console statement  no-console
+  334:5   warning  Unexpected console statement  no-console
+  342:5   warning  Unexpected console statement  no-console
+  343:5   warning  Unexpected console statement  no-console
+  362:7   warning  Unexpected console statement  no-console
+  363:7   warning  Unexpected console statement  no-console
+  364:7   warning  Unexpected console statement  no-console
+  365:7   warning  Unexpected console statement  no-console
+  366:7   warning  Unexpected console statement  no-console
+  369:7   warning  Unexpected console statement  no-console
+  370:7   warning  Unexpected console statement  no-console
+  373:7   warning  Unexpected console statement  no-console
+  376:7   warning  Unexpected console statement  no-console
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/engines/ASTParserEngine.ts
+  674:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/engines/CodeSmellEngine.ts
+  869:11  error  'intimateClasses' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/engines/DuplicateDetectionEngine.ts
+  879:5  error  'entities' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/engines/DuplicateDetectionEngineOptimized.ts
+  473:17  error  'entityType' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/engines/UnusedExportEngine.ts
+  168:5   error  'config' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  263:5   error  'entities' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  298:44  error  'index' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  332:33  error  'entities' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  444:5   error  'allEntities' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  749:5   error  'usage' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  846:16  error  'existsSync' not found in imported namespace 'fs'                              import/namespace
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/index.ts
+   69:5  warning  Unexpected console statement  no-console
+   83:5  warning  Unexpected console statement  no-console
+  102:3  warning  Unexpected console statement  no-console
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/monitoring/MemoryMonitor.ts
+  577:30  error  'createWriteStream' not found in imported namespace 'fs'  import/namespace
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/optimization/PerformanceBenchmarkSuite.ts
+   14:10  error    'BaseAnalysisService' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   15:10  error    'OptimizedBaseAnalysisService' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   19:10  error    'StreamingFileProcessor' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   20:10  error    'WorkerPoolManager' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  108:43  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  168:5   warning  Unexpected console statement                                                                    no-console
+  169:5   warning  Unexpected console statement                                                                    no-console
+  176:7   warning  Unexpected console statement                                                                    no-console
+  191:5   warning  Unexpected console statement                                                                    no-console
+  192:5   warning  Unexpected console statement                                                                    no-console
+  200:43  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  204:5   warning  Unexpected console statement                                                                    no-console
+  239:15  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  240:5   error    'dataSet' is defined but never used. Allowed unused args must match /^_/u                       @typescript-eslint/no-unused-vars
+  240:14  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  242:5   warning  Unexpected console statement                                                                    no-console
+  258:13  error    'results' is assigned a value but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  260:27  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  305:15  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  306:5   error    'dataSet' is defined but never used. Allowed unused args must match /^_/u                       @typescript-eslint/no-unused-vars
+  306:14  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  308:5   warning  Unexpected console statement                                                                    no-console
+  314:11  error    'startMemory' is assigned a value but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  341:13  error    'results' is assigned a value but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  343:27  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  350:13  error    'endMemory' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  440:38  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  447:5   warning  Unexpected console statement                                                                    no-console
+  490:14  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  526:45  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  667:13  error    'baseline' is assigned a value but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  669:5   warning  Unexpected console statement                                                                    no-console
+  670:5   warning  Unexpected console statement                                                                    no-console
+  671:5   warning  Unexpected console statement                                                                    no-console
+  676:5   warning  Unexpected console statement                                                                    no-console
+  681:5   warning  Unexpected console statement                                                                    no-console
+  684:5   warning  Unexpected console statement                                                                    no-console
+  687:5   warning  Unexpected console statement                                                                    no-console
+  815:5   warning  Unexpected console statement                                                                    no-console
+  816:5   warning  Unexpected console statement                                                                    no-console
+  821:5   warning  Unexpected console statement                                                                    no-console
+  826:5   warning  Unexpected console statement                                                                    no-console
+  836:44  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  897:5   warning  Unexpected console statement                                                                    no-console
+  902:7   warning  Unexpected console statement                                                                    no-console
+  921:55  warning  Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  926:9   warning  Unexpected console statement                                                                    no-console
+  931:9   warning  Unexpected console statement                                                                    no-console
+  932:9   warning  Unexpected console statement                                                                    no-console
+  945:7   warning  Unexpected console statement                                                                    no-console
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/simple-analyzer.ts
+   64:5   warning  Unexpected console statement                                                      no-console
+  135:23  error    'statSync' not found in imported namespace 'fs'                                   import/namespace
+  221:14  error    'error' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  249:21  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  280:32  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  286:18  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  342:34  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  414:68  warning  Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/streaming/StreamingFileProcessor.ts
+    8:13  error    'readline' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+    9:21  error    'PassThrough' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   11:10  error    'Worker' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   76:20  error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+  102:46  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  147:46  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  165:46  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  193:46  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  196:29  error    'createReadStream' not found in imported namespace 'fs'                        import/namespace
+  227:11  error    Unexpected aliasing of 'this' to local variable                                @typescript-eslint/no-this-alias
+  311:46  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  313:11  error    Unexpected aliasing of 'this' to local variable                                @typescript-eslint/no-this-alias
+  344:46  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  490:58  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/utils/index.ts
+   11:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   31:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   43:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   43:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   55:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  224:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  247:4   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/granfar/wundr/packages/@wundr/analysis-engine/src/workers/WorkerPoolManager.ts
+   13:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   21:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   24:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  228:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  256:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  350:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  369:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  483:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  686:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  775:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  778:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 170 problems (31 errors, 139 warnings)
+

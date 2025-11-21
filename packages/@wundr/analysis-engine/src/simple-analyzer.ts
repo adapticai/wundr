@@ -49,6 +49,13 @@ export class SimpleAnalyzer {
     };
   }
 
+  /**
+   * Get current configuration
+   */
+  getConfig(): AnalysisConfig {
+    return this.config;
+  }
+
   async analyze(): Promise<AnalysisReport> {
     const startTime = Date.now();
 
@@ -211,7 +218,7 @@ entities.push(entity);
       };
 
       ts.forEachChild(sourceFile, visitNode);
-    } catch (error) {
+    } catch (_error) {
       // Fallback to simple text-based extraction
       entities.push(...this.extractEntitiesFromText(content, filePath));
     }

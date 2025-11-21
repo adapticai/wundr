@@ -4,7 +4,7 @@
  */
 
 import {
-  ComplexityMetrics,
+  ComplexityMetrics as _ComplexityMetrics,
 } from '../types';
 import { createId } from '../utils';
 
@@ -86,10 +86,10 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    _analysisConfig: AnalysisConfig,
   ): Promise<CodeSmell[]> {
     const codeSmells: CodeSmell[] = [];
-    const entityMap = new Map(entities.map(e => [e.id, e]));
+    const _entityMap = new Map(entities.map(e => [e.id, e]));
 
     // Apply each enabled rule to all applicable entities
     for (const entity of entities) {
@@ -139,7 +139,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         maxLines: 50,
         ...this.config.customThresholds['long-method'],
       },
-      check: (entity, allEntities) => this.checkLongMethod(entity),
+      check: (entity, _allEntities) => this.checkLongMethod(entity),
     });
 
     // Large Class
@@ -156,7 +156,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         maxLines: 500,
         ...this.config.customThresholds['large-class'],
       },
-      check: (entity, allEntities) => this.checkLargeClass(entity),
+      check: (entity, _allEntities) => this.checkLargeClass(entity),
     });
 
     // Duplicate Code
@@ -183,7 +183,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
       description: 'Unused or unreachable code',
       enabled: true,
       severity: 'medium',
-      check: (entity, allEntities) => this.checkDeadCode(entity),
+      check: (entity, _allEntities) => this.checkDeadCode(entity),
     });
 
     // Complex Conditional
@@ -199,7 +199,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         maxNesting: 3,
         ...this.config.customThresholds['complex-conditional'],
       },
-      check: (entity, allEntities) => this.checkComplexConditional(entity),
+      check: (entity, _allEntities) => this.checkComplexConditional(entity),
     });
 
     // Feature Envy
@@ -248,7 +248,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         maxMethods: 25,
         ...this.config.customThresholds['god-object'],
       },
-      check: (entity, allEntities) => this.checkGodObject(entity),
+      check: (entity, _allEntities) => this.checkGodObject(entity),
     });
 
     // Wrapper Pattern
@@ -263,7 +263,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         maxWrapperMethods: 3,
         ...this.config.customThresholds['wrapper-pattern'],
       },
-      check: (entity, allEntities) => this.checkWrapperPattern(entity),
+      check: (entity, _allEntities) => this.checkWrapperPattern(entity),
     });
 
     // Deep Nesting
@@ -278,7 +278,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         maxDepth: 4,
         ...this.config.customThresholds['deep-nesting'],
       },
-      check: (entity, allEntities) => this.checkDeepNesting(entity),
+      check: (entity, _allEntities) => this.checkDeepNesting(entity),
     });
 
     // Long Parameter List
@@ -293,7 +293,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
         maxParameters: 5,
         ...this.config.customThresholds['long-parameter-list'],
       },
-      check: (entity, allEntities) => this.checkLongParameterList(entity),
+      check: (entity, _allEntities) => this.checkLongParameterList(entity),
     });
   }
 
@@ -615,23 +615,23 @@ return false;
     const maxIntimacy = rule.thresholds?.maxIntimacy || 3;
 
     // Find classes that this class is too intimate with
-    const intimateClasses = this.findIntimateClasses(entity, allEntities);
+    const _intimateClasses = this.findIntimateClasses(entity, allEntities);
 
-    if (intimateClasses.length > maxIntimacy) {
+    if (_intimateClasses.length > maxIntimacy) {
       const confidence = Math.min(
         1,
-        (intimateClasses.length - maxIntimacy) / maxIntimacy,
+        (_intimateClasses.length - maxIntimacy) / maxIntimacy,
       );
 
       return {
         severity: 'medium',
         confidence,
-        message: `Class is inappropriately intimate with ${intimateClasses.length} other classes`,
+        message: `Class is inappropriately intimate with ${_intimateClasses.length} other classes`,
         suggestion:
           'Reduce coupling by using interfaces, dependency injection, or extracting shared functionality',
         evidence: [
-          `Intimate relationships: ${intimateClasses.length}`,
-          `Affected classes: ${intimateClasses.join(', ')}`,
+          `Intimate relationships: ${_intimateClasses.length}`,
+          `Affected classes: ${_intimateClasses.join(', ')}`,
         ],
       };
     }
@@ -866,7 +866,7 @@ return 0;
 return [];
 }
 
-    const intimateClasses: string[] = [];
+    const _intimateClasses: string[] = [];
     const classReferences = new Map<string, number>();
 
     // Find references to other classes

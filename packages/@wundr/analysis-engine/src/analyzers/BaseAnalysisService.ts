@@ -31,6 +31,11 @@ import type {
   PerformanceMetrics,
   AnalysisProgressEvent,
   AnalysisProgressCallback,
+  DuplicateCluster,
+  CircularDependency,
+  CodeSmell,
+  Recommendation,
+  VisualizationData,
 } from '../types';
 import type { Ora } from 'ora';
 
@@ -48,6 +53,15 @@ export interface ServiceConfig {
   verbose?: boolean;
 }
 
+export interface AnalysisResults {
+  duplicates?: DuplicateCluster[];
+  circularDependencies?: CircularDependency[];
+  unusedExports?: EntityInfo[];
+  codeSmells?: CodeSmell[];
+  recommendations?: Recommendation[];
+  visualizations?: VisualizationData;
+}
+
 /**
  * Enhanced base class for all analysis services with performance optimizations
  */
@@ -61,7 +75,7 @@ export abstract class BaseAnalysisService {
   // Performance tracking and optimization
   private startTime: number = 0;
   private fileCache = new Map<string, ts.SourceFile>();
-  private analysisCache = new Map<string, any>();
+  private analysisCache = new Map<string, EntityInfo[] | string[] | AnalysisResults>();
   private memoryUsage: { peak: number; average: number } = {
     peak: 0,
     average: 0,
@@ -75,7 +89,7 @@ export abstract class BaseAnalysisService {
   private objectPools = {
     entities: [] as EntityInfo[],
     buffers: [] as Buffer[],
-    arrays: [] as any[][],
+    arrays: [] as unknown[][],
   };
 
   constructor(name: string, config: Partial<AnalysisConfig & ServiceConfig>) {
@@ -280,7 +294,10 @@ export abstract class BaseAnalysisService {
       this.analysisCache.has(cacheKey)
     ) {
       this.cacheHits++;
-      return this.analysisCache.get(cacheKey);
+      const cached = this.analysisCache.get(cacheKey);
+      return (cached && Array.isArray(cached) && typeof cached[0] === 'string'
+        ? cached
+        : []) as string[];
     }
 
     const patterns = this.config.includePatterns;
@@ -460,7 +477,14 @@ export abstract class BaseAnalysisService {
       this.analysisCache.has(cacheKey)
     ) {
       this.cacheHits++;
-      return this.analysisCache.get(cacheKey);
+      const cached = this.analysisCache.get(cacheKey);
+      if (cached && Array.isArray(cached) && cached.length > 0) {
+        const first = cached[0];
+        if (typeof first === 'object' && first !== null && 'id' in first) {
+          return cached as EntityInfo[];
+        }
+      }
+      return [];
     }
 
     const sourceFile = this.getSourceFile(filePath);
@@ -491,7 +515,7 @@ export abstract class BaseAnalysisService {
   private async generateReport(
     files: string[],
     entities: EntityInfo[],
-    analysisResults: any,
+    analysisResults: AnalysisResults,
   ): Promise<AnalysisReport> {
     const endTime = Date.now();
     const duration = endTime - this.startTime;
@@ -605,7 +629,7 @@ export abstract class BaseAnalysisService {
     );
   }
 
-  protected calculateTechnicalDebtScore(analysisResults: any): number {
+  protected calculateTechnicalDebtScore(analysisResults: AnalysisResults): number {
     let score = 100;
 
     if (analysisResults.duplicates?.length) {
@@ -623,7 +647,7 @@ export abstract class BaseAnalysisService {
     return Math.max(0, score);
   }
 
-  protected estimateTechnicalDebtHours(analysisResults: any): number {
+  protected estimateTechnicalDebtHours(analysisResults: AnalysisResults): number {
     let hours = 0;
 
     hours += (analysisResults.duplicates?.length || 0) * 2;
@@ -634,7 +658,7 @@ export abstract class BaseAnalysisService {
   }
 
   // Abstract methods to be implemented by specific analyzers
-  protected abstract performAnalysis(entities: EntityInfo[]): Promise<any>;
+  protected abstract performAnalysis(entities: EntityInfo[]): Promise<AnalysisResults>;
   protected abstract extractEntityFromNode(
     node: ts.Node,
     sourceFile: ts.SourceFile

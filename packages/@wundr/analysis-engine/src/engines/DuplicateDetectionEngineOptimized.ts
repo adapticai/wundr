@@ -4,13 +4,12 @@
  */
 
 import { EventEmitter } from 'events';
+import { cpus } from 'os';
 
 import { MemoryMonitor } from '../monitoring/MemoryMonitor';
 import {
   generateNormalizedHash,
-  generateSemanticHash,
   createId,
-  processConcurrently,
 } from '../utils';
 import { WorkerPoolManager } from '../workers/WorkerPoolManager';
 
@@ -23,12 +22,6 @@ import type {
   AnalysisConfig,
   EntityType,
 } from '../types';
-
-interface SimilarityMatrix {
-  [key: string]: {
-    [key: string]: number;
-  };
-}
 
 interface OptimizedDuplicateDetectionConfig {
   minSimilarity: number;
@@ -89,7 +82,7 @@ export class OptimizedDuplicateDetectionEngine
     // Initialize worker pool for concurrent analysis
     this.workerPool = new WorkerPoolManager({
       minWorkers: 4,
-      maxWorkers: Math.max(30, require('os').cpus().length * 4), // Target 30+ workers
+      maxWorkers: Math.max(30, cpus().length * 4), // Target 30+ workers
       enableAutoScaling: true,
       resourceThresholds: {
         cpu: 0.85,
@@ -146,7 +139,7 @@ export class OptimizedDuplicateDetectionEngine
    */
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    _analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     await this.memoryMonitor.startMonitoring();
     this.emit('analysis-started', { entityCount: entities.length });
@@ -169,12 +162,12 @@ export class OptimizedDuplicateDetectionEngine
       if (this.config.enableStreaming && filteredEntities.length > 5000) {
         clusters = await this.performStreamingDuplicateAnalysis(
           filteredEntities,
-          analysisConfig,
+          _analysisConfig,
         );
       } else {
         clusters = await this.performOptimizedDuplicateAnalysis(
           filteredEntities,
-          analysisConfig,
+          _analysisConfig,
         );
       }
 
@@ -233,7 +226,7 @@ return false;
    */
   private async performStreamingDuplicateAnalysis(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    _analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     this.emit('streaming-analysis-started', { totalEntities: entities.length });
 
@@ -290,7 +283,7 @@ continue;
    */
   private async performOptimizedDuplicateAnalysis(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    _analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
 
@@ -477,7 +470,7 @@ continue;
     const clusters: DuplicateCluster[] = [];
     const entitiesByType = this.groupEntitiesByType(entities);
 
-    for (const [entityType, typeEntities] of entitiesByType.entries()) {
+    for (const [_entityType, typeEntities] of entitiesByType.entries()) {
       if (typeEntities.length < 2) {
 continue;
 }
@@ -676,7 +669,7 @@ continue;
    */
   private async densityBasedClusteringOptimized(
     clusters: DuplicateCluster[],
-    entities: EntityInfo[],
+    _entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     // Simplified implementation to reduce memory usage
     return clusters.filter(
@@ -938,7 +931,7 @@ return 0;
    */
   private generateConsolidationSteps(
     strategy: 'merge' | 'extract' | 'refactor',
-    entities: EntityInfo[],
+    _entities: EntityInfo[],
   ): string[] {
     const baseSteps = [
       'Review all duplicate implementations for functional differences',

@@ -5,9 +5,12 @@
 
 import { EventEmitter } from 'events';
 import * as path from 'path';
+import { PerformanceObserver } from 'perf_hooks';
 import * as v8 from 'v8';
 
 import * as fs from 'fs-extra';
+
+import type { PerformanceEntry } from 'perf_hooks';
 
 export interface MemorySnapshot {
   timestamp: number;
@@ -73,7 +76,7 @@ export class MemoryMonitor extends EventEmitter {
   private snapshots: MemorySnapshot[] = [];
   private isMonitoring = false;
   private monitoringInterval: NodeJS.Timeout | null = null;
-  private gcObserver: any = null;
+  private gcObserver: PerformanceObserver | null = null;
   private thresholds: MemoryThresholds;
   private snapshotInterval: number;
   private maxSnapshots: number;
@@ -195,7 +198,7 @@ return;
         usedHeapSize: v8HeapStats.used_heap_size,
         heapSizeLimit: v8HeapStats.heap_size_limit,
       };
-    } catch (error) {
+    } catch (_error) {
       // V8 statistics not available
     }
 
@@ -514,12 +517,10 @@ return 0;
   private setupGCObserver(): void {
     try {
       // Use performance observer for GC tracking
-      const { PerformanceObserver } = require('perf_hooks');
-
-      this.gcObserver = new PerformanceObserver((list: any) => {
+      this.gcObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
 
-        entries.forEach((entry: any) => {
+        entries.forEach((entry: PerformanceEntry) => {
           if (entry.entryType === 'gc') {
             this.gcStats.count++;
             this.gcStats.totalDuration += entry.duration;
@@ -528,7 +529,7 @@ return 0;
             this.gcStats.lastGC = Date.now();
 
             this.emit('gc-event', {
-              type: entry.kind,
+              type: (entry as { kind?: number }).kind,
               duration: entry.duration,
               timestamp: entry.startTime,
             });
@@ -573,7 +574,7 @@ return 0;
       const filepath = path.join(this.outputDir, filename);
 
       const snapshot = v8.getHeapSnapshot();
-      const writeStream = fs.createWriteStream(filepath);
+      const writeStream = fs.createWriteStream(filepath) as NodeJS.WritableStream;
 
       await new Promise<void>((resolve, reject) => {
         snapshot.pipe(writeStream);

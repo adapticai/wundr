@@ -7,17 +7,25 @@
 // Main analysis orchestrator (simplified)
 import { SimpleAnalyzer } from './simple-analyzer';
 
+import type { OptimizedDuplicateDetectionEngine } from './engines';
+import type { MemoryMonitor } from './monitoring';
 import type {
   AnalysisConfig,
   AnalysisReport,
   AnalysisProgressCallback,
 } from './types';
 
-export * from './types';
 export * from './utils';
 
 // Simple working analyzer
 export { SimpleAnalyzer, analyzeProject } from './simple-analyzer';
+
+// Export types
+export type {
+  AnalysisConfig,
+  AnalysisReport,
+  AnalysisProgressCallback,
+} from './types';
 
 // Memory-optimized components
 export { OptimizedDuplicateDetectionEngine } from './engines';
@@ -30,8 +38,8 @@ export { MemoryMonitor } from './monitoring';
  */
 export class AnalysisEngine {
   private analyzer: SimpleAnalyzer;
-  private optimizedDuplicateEngine?: any; // OptimizedDuplicateDetectionEngine
-  private memoryMonitor?: any; // MemoryMonitor
+  private optimizedDuplicateEngine?: OptimizedDuplicateDetectionEngine;
+  private memoryMonitor?: MemoryMonitor;
   private useOptimizations: boolean;
 
   constructor(config: Partial<AnalysisConfig> = {}) {
@@ -43,9 +51,9 @@ export class AnalysisEngine {
     }
   }
 
-  private initializeOptimizations(): void {
-    const { OptimizedDuplicateDetectionEngine } = require('./engines');
-    const { MemoryMonitor } = require('./monitoring');
+  private async initializeOptimizations(): Promise<void> {
+    const { OptimizedDuplicateDetectionEngine } = await import('./engines');
+    const { MemoryMonitor } = await import('./monitoring');
 
     this.optimizedDuplicateEngine = new OptimizedDuplicateDetectionEngine({
       enableStreaming: true,
@@ -71,7 +79,7 @@ export class AnalysisEngine {
   /**
    * Set progress callback (placeholder)
    */
-  setProgressCallback(callback: AnalysisProgressCallback): void {
+  setProgressCallback(_callback: AnalysisProgressCallback): void {
     console.log('Progress callback set (placeholder implementation)');
   }
 
@@ -79,7 +87,7 @@ export class AnalysisEngine {
    * Get current configuration
    */
   getConfig(): AnalysisConfig {
-    return (this.analyzer as any).config;
+    return this.analyzer.getConfig();
   }
 }
 

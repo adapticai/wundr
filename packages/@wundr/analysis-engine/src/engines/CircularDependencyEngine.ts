@@ -149,7 +149,7 @@ export class CircularDependencyEngine
       const madgeOutput = JSON.parse(result.toString());
       const cycles = madgeOutput.circular || [];
 
-      return cycles.map((cycle: string[], index: number) => ({
+      return cycles.map((cycle: string[], _index: number) => ({
         id: createId(),
         cycle: cycle.map(file =>
           normalizeFilePath(path.resolve(targetDir, file)),
@@ -165,7 +165,7 @@ export class CircularDependencyEngine
           cycle.map(file => normalizeFilePath(path.resolve(targetDir, file))),
         ),
       }));
-    } catch (error) {
+    } catch (_error) {
       console.warn(
         '⚠️ Madge analysis failed, falling back to internal analysis',
       );
@@ -178,9 +178,6 @@ export class CircularDependencyEngine
    */
   private detectWithInternalAlgorithm(): Promise<CircularDependency[]> {
     const cycles: CircularDependency[] = [];
-    const visited = new Set<string>();
-    const recursionStack = new Set<string>();
-    const pathStack: string[] = [];
 
     // Tarjan's algorithm for finding strongly connected components
     const tarjanSCC = this.findStronglyConnectedComponents();
@@ -522,21 +519,43 @@ export class CircularDependencyEngine
   /**
    * Calculate impact of breaking a cycle
    */
-  private calculateCycleImpact(cycle: CircularDependency): any {
+  private calculateCycleImpact(cycle: CircularDependency): {
+    affectedFiles: string[];
+    complexityIncrease: number;
+    maintainabilityScore: number;
+    refactoringEffort: 'low' | 'medium' | 'high';
+  } {
+    const weight = cycle.weight ?? 0;
+    const depth = cycle.depth;
+
     return {
-      affectedFiles: cycle.files.length,
-      estimatedRefactoringHours: Math.max(2, cycle.depth * 2),
-      riskLevel: cycle.severity,
-      buildTimeImprovement:
-        (cycle.weight ?? 0) > 5 ? 'significant' : 'moderate',
+      affectedFiles: cycle.files,
+      complexityIncrease: Math.min(100, (depth * 10) + (weight * 5)),
+      maintainabilityScore: Math.max(0, 100 - (depth * 15) - (weight * 8)),
+      refactoringEffort:
+        depth > 5 || weight > 10 ? 'high' :
+        depth > 3 || weight > 5 ? 'medium' :
+        'low',
     };
   }
 
   /**
    * Identify potential break points in a cycle
    */
-  private identifyBreakPoints(cycle: CircularDependency): any[] {
-    const breakPoints: any[] = [];
+  private identifyBreakPoints(cycle: CircularDependency): Array<{
+    fromFile: string;
+    toFile: string;
+    type: 'import' | 'export' | 'require';
+    line: number;
+    suggestion: string;
+  }> {
+    const breakPoints: Array<{
+      fromFile: string;
+      toFile: string;
+      type: 'import' | 'export' | 'require';
+      line: number;
+      suggestion: string;
+    }> = [];
 
     for (let i = 0; i < cycle.files.length; i++) {
       const current = cycle.files[i];
@@ -545,10 +564,10 @@ export class CircularDependencyEngine
       const weight = this.dependencyGraph.weights.get(edgeKey) || 1;
 
       breakPoints.push({
-        from: current,
-        to: next,
-        weight,
-        difficulty: weight < 2 ? 'easy' : weight < 5 ? 'medium' : 'hard',
+        fromFile: current,
+        toFile: next,
+        type: 'import',
+        line: 0, // Line number would need to be extracted from actual import statements
         suggestion:
           weight === 1
             ? 'Extract interface or move shared types'
@@ -556,8 +575,7 @@ export class CircularDependencyEngine
       });
     }
 
-    // Sort by difficulty (easiest first)
-    return breakPoints.sort((a, b) => a.weight - b.weight);
+    return breakPoints;
   }
 
   /**
@@ -590,9 +608,24 @@ continue;
   /**
    * Generate visualization data for circular dependencies
    */
-  generate(cycles: CircularDependency[]): any {
+  generate(cycles: CircularDependency[]): {
+    nodes: Array<{ id: string; label: string; file: string; inCycle: boolean }>;
+    edges: Array<{
+      source: string;
+      target: string;
+      type: string;
+      severity: 'critical' | 'high' | 'medium' | 'low';
+      weight: number;
+    }>;
+  } {
     const nodes = new Set<string>();
-    const edges: any[] = [];
+    const edges: Array<{
+      source: string;
+      target: string;
+      type: string;
+      severity: 'critical' | 'high' | 'medium' | 'low';
+      weight: number;
+    }> = [];
 
     cycles.forEach(cycle => {
       // Add nodes

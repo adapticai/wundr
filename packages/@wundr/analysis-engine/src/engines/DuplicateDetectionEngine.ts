@@ -17,6 +17,8 @@ import type {
   ConsolidationSuggestion,
   BaseAnalyzer,
   AnalysisConfig,
+  EntityMembers,
+  ComplexityMetrics,
 } from '../types';
 
 interface SimilarityMatrix {
@@ -61,7 +63,7 @@ export class DuplicateDetectionEngine
    */
   async analyze(
     entities: EntityInfo[],
-    analysisConfig: AnalysisConfig,
+    _analysisConfig: AnalysisConfig,
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
 
@@ -182,12 +184,11 @@ continue;
     entities: EntityInfo[],
   ): Promise<DuplicateCluster[]> {
     const clusters: DuplicateCluster[] = [];
-    const processed = new Set<string>();
 
     // Group by type for more efficient comparison
     const entitiesByType = this.groupEntitiesByType(entities);
 
-    for (const [entityType, typeEntities] of entitiesByType.entries()) {
+    for (const [_entityType, typeEntities] of entitiesByType.entries()) {
       const typeClusters = await this.findSemanticClustersForType(typeEntities);
       clusters.push(...typeClusters);
     }
@@ -258,7 +259,7 @@ return;
     const clusters: DuplicateCluster[] = [];
     const entitiesByType = this.groupEntitiesByType(entities);
 
-    for (const [entityType, typeEntities] of entitiesByType.entries()) {
+    for (const [_entityType, typeEntities] of entitiesByType.entries()) {
       const fuzzyClusters = await this.findFuzzyClustersForType(typeEntities);
       clusters.push(...fuzzyClusters);
     }
@@ -476,15 +477,18 @@ return 0;
   /**
    * Calculate member similarity for classes and interfaces
    */
-  private calculateMemberSimilarity(members1: any, members2: any): number {
+  private calculateMemberSimilarity(
+    members1: EntityMembers,
+    members2: EntityMembers,
+  ): number {
     let similarity = 0;
     let factors = 0;
 
     // Method similarity
     if (members1.methods && members2.methods) {
       const methodSimilarity = this.calculateArraySimilarity(
-        members1.methods.map((m: any) => m.name),
-        members2.methods.map((m: any) => m.name),
+        members1.methods.map(m => m.name),
+        members2.methods.map(m => m.name),
       );
       similarity += methodSimilarity;
       factors++;
@@ -493,8 +497,8 @@ return 0;
     // Property similarity
     if (members1.properties && members2.properties) {
       const propertySimilarity = this.calculateArraySimilarity(
-        members1.properties.map((p: any) => p.name),
-        members2.properties.map((p: any) => p.name),
+        members1.properties.map(p => p.name),
+        members2.properties.map(p => p.name),
       );
       similarity += propertySimilarity;
       factors++;
@@ -507,16 +511,21 @@ return 0;
    * Calculate complexity similarity
    */
   private calculateComplexitySimilarity(
-    complexity1: any,
-    complexity2: any,
+    complexity1: ComplexityMetrics,
+    complexity2: ComplexityMetrics,
   ): number {
-    const factors = ['cyclomatic', 'cognitive', 'depth', 'parameters'];
+    const factors: Array<keyof ComplexityMetrics> = [
+      'cyclomatic',
+      'cognitive',
+      'depth',
+      'parameters',
+    ];
     let similarity = 0;
     let validFactors = 0;
 
     for (const factor of factors) {
-      const val1 = complexity1[factor] || 0;
-      const val2 = complexity2[factor] || 0;
+      const val1 = (complexity1[factor] as number) || 0;
+      const val2 = (complexity2[factor] as number) || 0;
 
       if (val1 > 0 || val2 > 0) {
         const maxVal = Math.max(val1, val2);
@@ -867,7 +876,7 @@ return 1.0;
    */
   private generateConsolidationSteps(
     strategy: 'merge' | 'extract' | 'refactor',
-    entities: EntityInfo[],
+    _entities: EntityInfo[],
   ): string[] {
     const baseSteps = [
       'Review all duplicate implementations for functional differences',

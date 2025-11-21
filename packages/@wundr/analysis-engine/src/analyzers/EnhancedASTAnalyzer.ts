@@ -24,7 +24,70 @@ import type {
   ComplexityMetrics,
   AnalysisConfig,
   ServiceConfig,
+  DuplicateCluster,
+  CircularDependency,
+  CodeSmell,
+  Recommendation,
+  VisualizationData,
+  SeverityLevel as _SeverityLevel,
+  ConsolidationSuggestion,
 } from '../types';
+
+// Internal type definitions
+interface EnhancedAnalysisResults {
+  duplicates: DuplicateCluster[];
+  circularDependencies: CircularDependency[];
+  unusedExports: EntityInfo[];
+  codeSmells: CodeSmell[];
+  wrapperPatterns: WrapperPattern[];
+  recommendations: Recommendation[];
+  visualizations: VisualizationData;
+}
+
+interface AnalysisResultsInput {
+  duplicates: DuplicateCluster[];
+  circularDeps: CircularDependency[];
+  unusedExports: EntityInfo[];
+  codeSmells: CodeSmell[];
+  wrapperPatterns: WrapperPattern[];
+}
+
+interface WrapperPattern {
+  id: string;
+  base: string;
+  wrapper: string;
+  confidence: number;
+  baseEntity: EntityInfo;
+  wrapperEntity: EntityInfo;
+}
+
+interface _DependencyGraphNode {
+  id: string;
+  label: string;
+  type: string;
+  file: string;
+  complexity?: number;
+}
+
+interface DependencyGraphEdge {
+  source: string;
+  target: string;
+  type: 'import' | 'extends' | 'implements' | 'uses';
+}
+
+interface MethodInfo {
+  name: string;
+  signature: string;
+  complexity?: number;
+  visibility?: 'public' | 'private' | 'protected';
+}
+
+interface PropertyInfo {
+  name: string;
+  type: string;
+  optional: boolean;
+  visibility?: 'public' | 'private' | 'protected';
+}
 
 /**
  * Enhanced AST Analyzer with performance optimizations for large codebases
@@ -67,14 +130,13 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
         noResolve: false,
         allowJs: true,
         checkJs: false,
-        target: ts.ScriptTarget.ES2020 as any,
-        module: ts.ModuleKind.CommonJS as any,
       },
     });
 
     // Get optimized TypeScript program and type checker
-    this.tsProgram = (this.project as any).getProgram?.()?.compilerObject;
-    this.typeChecker = this.tsProgram?.getTypeChecker();
+    const projectProgram = this.project.getProgram();
+    this.tsProgram = projectProgram.compilerObject as unknown as ts.Program;
+    this.typeChecker = this.tsProgram.getTypeChecker();
 
     // Initialize the program property for base class compatibility
     this.program = this.tsProgram;
@@ -85,7 +147,7 @@ export class EnhancedASTAnalyzer extends BaseAnalysisService {
    */
   protected override async performAnalysis(
     entities: EntityInfo[],
-  ): Promise<any> {
+  ): Promise<EnhancedAnalysisResults> {
     this.emitProgress({
       type: 'phase',
       message: 'Performing advanced AST analysis...',
@@ -407,7 +469,7 @@ return null;
    */
   private async detectDuplicatesOptimized(
     entities: EntityInfo[],
-  ): Promise<any[]> {
+  ): Promise<DuplicateCluster[]> {
     this.emitProgress({
       type: 'phase',
       message: 'Detecting duplicates with clustering...',
@@ -433,15 +495,16 @@ return null;
       }
     });
 
-    const duplicateClusters: any[] = [];
+    const duplicateClusters: DuplicateCluster[] = [];
 
     // Process structural duplicates
     for (const [hash, duplicateEntities] of hashGroups.entries()) {
       if (duplicateEntities.length > 1) {
-        const cluster = {
+        const entityType = duplicateEntities[0]?.type || 'class';
+        const cluster: DuplicateCluster = {
           id: createId(),
           hash,
-          type: duplicateEntities[0]?.type || 'unknown',
+          type: entityType,
           severity: this.calculateDuplicateSeverity(duplicateEntities),
           entities: duplicateEntities,
           structuralMatch: true,
@@ -460,7 +523,7 @@ return null;
   /**
    * Enhanced circular dependency detection
    */
-  private async detectCircularDependencies(): Promise<any[]> {
+  private async detectCircularDependencies(): Promise<CircularDependency[]> {
     try {
       this.emitProgress({
         type: 'phase',
@@ -503,7 +566,7 @@ return null;
   /**
    * Internal circular dependency detection as fallback
    */
-  private detectCircularDependenciesInternal(): any[] {
+  private detectCircularDependenciesInternal(): CircularDependency[] {
     const graph = new Map<string, Set<string>>();
 
     // Build dependency graph
@@ -608,10 +671,10 @@ return null;
   /**
    * Detect code smells with pattern recognition
    */
-  private async detectCodeSmells(entities: EntityInfo[]): Promise<any[]> {
+  private async detectCodeSmells(entities: EntityInfo[]): Promise<CodeSmell[]> {
     this.emitProgress({ type: 'phase', message: 'Detecting code smells...' });
 
-    const codeSmells: any[] = [];
+    const codeSmells: CodeSmell[] = [];
 
     await processConcurrently(
       entities,
@@ -628,8 +691,8 @@ return null;
   /**
    * Analyze entity for various code smells
    */
-  private analyzeEntityForCodeSmells(entity: EntityInfo): any[] {
-    const smells: any[] = [];
+  private analyzeEntityForCodeSmells(entity: EntityInfo): CodeSmell[] {
+    const smells: CodeSmell[] = [];
     const complexity = entity.complexity;
 
     // Long method/function
@@ -698,7 +761,7 @@ return null;
   /**
    * Detect wrapper patterns with confidence scoring
    */
-  private detectWrapperPatterns(entities: EntityInfo[]): any[] {
+  private detectWrapperPatterns(entities: EntityInfo[]): WrapperPattern[] {
     const patterns = [
       { prefix: 'Enhanced', confidence: 0.9 },
       { prefix: 'Extended', confidence: 0.9 },
@@ -709,7 +772,7 @@ return null;
       { suffix: 'Proxy', confidence: 0.85 },
     ];
 
-    const wrappers: any[] = [];
+    const wrappers: WrapperPattern[] = [];
 
     for (const entity of entities) {
       for (const pattern of patterns) {
@@ -818,21 +881,22 @@ return false;
     return jsDoc.some(jd => jd.tagName.getText() === tag);
   }
 
-  private extractMethods(classDecl: ts.ClassDeclaration): any[] {
+  private extractMethods(classDecl: ts.ClassDeclaration): MethodInfo[] {
     return classDecl.members
       .filter(member => ts.isMethodDeclaration(member))
       .map(method => {
         const methodDecl = method as ts.MethodDeclaration;
+        const complexityMetrics = this.calculateNodeComplexity(methodDecl);
         return {
           name: methodDecl.name?.getText() || 'unknown',
           signature: methodDecl.getText(),
-          complexity: this.calculateNodeComplexity(methodDecl),
+          complexity: complexityMetrics.cyclomatic,
           visibility: this.getVisibility(methodDecl),
         };
       });
   }
 
-  private extractProperties(classDecl: ts.ClassDeclaration): any[] {
+  private extractProperties(classDecl: ts.ClassDeclaration): PropertyInfo[] {
     return classDecl.members
       .filter(member => ts.isPropertyDeclaration(member))
       .map(property => {
@@ -848,7 +912,7 @@ return false;
 
   private extractInterfaceProperties(
     interfaceDecl: ts.InterfaceDeclaration,
-  ): any[] {
+  ): PropertyInfo[] {
     return interfaceDecl.members
       .filter(member => ts.isPropertySignature(member))
       .map(property => {
@@ -863,7 +927,7 @@ return false;
 
   private extractInterfaceMethods(
     interfaceDecl: ts.InterfaceDeclaration,
-  ): any[] {
+  ): MethodInfo[] {
     return interfaceDecl.members
       .filter(member => ts.isMethodSignature(member))
       .map(method => {
@@ -878,7 +942,9 @@ return false;
   private getVisibility(
     node: ts.ClassElement,
   ): 'public' | 'private' | 'protected' {
-    const modifiers = (node as any).modifiers as ts.Modifier[] | undefined;
+    const modifiers = ts.canHaveModifiers(node)
+      ? ts.getModifiers(node)
+      : undefined;
     if (modifiers) {
       for (const modifier of modifiers) {
         if (modifier.kind === ts.SyntaxKind.PrivateKeyword) {
@@ -893,7 +959,9 @@ return 'protected';
   }
 
   private getExportType(node: ts.Node): ExportType {
-    const modifiers = (node as any).modifiers;
+    const modifiers = ts.canHaveModifiers(node)
+      ? ts.getModifiers(node)
+      : undefined;
     if (!modifiers) {
 return 'none';
 }
@@ -918,13 +986,15 @@ hasDefault = true;
   }
 
   private hasExportModifier(node: ts.Node): boolean {
-    const modifiers = (node as any).modifiers;
+    const modifiers = ts.canHaveModifiers(node)
+      ? ts.getModifiers(node)
+      : undefined;
     if (!modifiers) {
 return false;
 }
 
     return modifiers.some(
-      (modifier: ts.Modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+      modifier => modifier.kind === ts.SyntaxKind.ExportKeyword,
     );
   }
 
@@ -1156,7 +1226,9 @@ return 'medium';
     return 'low';
   }
 
-  private generateConsolidationSuggestion(entities: EntityInfo[]): any {
+  private generateConsolidationSuggestion(
+    entities: EntityInfo[],
+  ): ConsolidationSuggestion | null {
     const primaryEntity = entities[0];
     if (!primaryEntity) {
 return null;
@@ -1195,13 +1267,15 @@ return null;
     ];
   }
 
-  private generateRecommendations(analysisResults: any): any[] {
-    const recommendations: any[] = [];
+  private generateRecommendations(
+    analysisResults: AnalysisResultsInput,
+  ): Recommendation[] {
+    const recommendations: Recommendation[] = [];
 
     // Critical duplicates
     analysisResults.duplicates
-      .filter((d: any) => d.severity === 'critical')
-      .forEach((cluster: any) => {
+      .filter(d => d.severity === 'critical')
+      .forEach(cluster => {
         recommendations.push({
           id: createId(),
           type: 'MERGE_DUPLICATES',
@@ -1210,7 +1284,7 @@ return null;
           description: `Found ${cluster.entities.length} duplicate ${cluster.type}s that should be consolidated`,
           impact: 'High - Reduces code duplication and maintenance burden',
           effort: cluster.consolidationSuggestion?.estimatedEffort || 'medium',
-          entities: cluster.entities.map((e: any) => `${e.name} (${e.file})`),
+          entities: cluster.entities,
           estimatedTimeHours: cluster.entities.length * 2,
           steps: cluster.consolidationSuggestion?.steps,
         });
@@ -1247,9 +1321,7 @@ return null;
 
     // Code smells
     const criticalSmells =
-      analysisResults.codeSmells?.filter(
-        (s: any) => s.severity === 'critical',
-      ) || [];
+      analysisResults.codeSmells?.filter(s => s.severity === 'critical') || [];
     if (criticalSmells.length > 0) {
       recommendations.push({
         id: createId(),
@@ -1275,8 +1347,11 @@ return null;
 
   private generateVisualizationData(
     entities: EntityInfo[],
-    analysisResults: any,
-  ): any {
+    analysisResults: {
+      duplicates: DuplicateCluster[];
+      circularDeps: CircularDependency[];
+    },
+  ): VisualizationData {
     // Generate data for dependency graphs, duplicate networks, and complexity heatmaps
     return {
       dependencyGraph: this.generateDependencyGraphData(entities),
@@ -1287,7 +1362,9 @@ return null;
     };
   }
 
-  private generateDependencyGraphData(entities: EntityInfo[]): any {
+  private generateDependencyGraphData(
+    entities: EntityInfo[],
+  ): VisualizationData['dependencyGraph'] {
     const nodes = entities.map(entity => ({
       id: entity.id,
       label: entity.name,
@@ -1296,7 +1373,7 @@ return null;
       complexity: entity.complexity?.cyclomatic,
     }));
 
-    const edges: any[] = [];
+    const edges: DependencyGraphEdge[] = [];
     const fileToEntities = new Map<string, EntityInfo[]>();
 
     entities.forEach(entity => {
@@ -1314,7 +1391,7 @@ return null;
           edges.push({
             source: entity.id,
             target: depEntity.id,
-            type: 'import',
+            type: 'import' as const,
           });
         });
       });
@@ -1323,10 +1400,12 @@ return null;
     return { nodes, edges };
   }
 
-  private generateDuplicateNetworkData(duplicates: any[]): any[] {
+  private generateDuplicateNetworkData(
+    duplicates: DuplicateCluster[],
+  ): VisualizationData['duplicateNetworks'] {
     return duplicates.map(cluster => ({
       clusterId: cluster.id,
-      nodes: cluster.entities.map((entity: any) => ({
+      nodes: cluster.entities.map(entity => ({
         id: entity.id,
         label: entity.name,
         file: entity.file,
@@ -1336,8 +1415,12 @@ return null;
     }));
   }
 
-  private generateDuplicateEdges(entities: any[], similarity: number): any[] {
-    const edges: any[] = [];
+  private generateDuplicateEdges(
+    entities: EntityInfo[],
+    similarity: number,
+  ): Array<{ source: string; target: string; similarity: number }> {
+    const edges: Array<{ source: string; target: string; similarity: number }> =
+      [];
 
     for (let i = 0; i < entities.length; i++) {
       for (let j = i + 1; j < entities.length; j++) {
@@ -1352,8 +1435,17 @@ return null;
     return edges;
   }
 
-  private generateComplexityHeatmapData(entities: EntityInfo[]): any[] {
-    const fileComplexity = new Map<string, any>();
+  private generateComplexityHeatmapData(
+    entities: EntityInfo[],
+  ): VisualizationData['complexityHeatmap'] {
+    const fileComplexity = new Map<
+      string,
+      {
+        file: string;
+        complexity: number;
+        entities: Array<{ name: string; complexity: number; line: number }>;
+      }
+    >();
 
     entities.forEach(entity => {
       if (!fileComplexity.has(entity.file)) {

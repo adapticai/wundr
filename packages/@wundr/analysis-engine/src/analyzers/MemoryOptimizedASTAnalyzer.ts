@@ -21,7 +21,13 @@ import type {
   ServiceConfig,
   MemoryMetrics,
   ConcurrencyStats,
+  DuplicateCluster,
+  CircularDependency,
+  CodeSmell,
+  Recommendation,
+  VisualizationData,
 } from '../types';
+import type { AnalysisResults } from './BaseAnalysisService';
 
 /**
  * Object pool for reusing expensive objects
@@ -97,8 +103,8 @@ class MemoryPressureMonitor {
     }
   }
 
-  onPressureChange(listener: (level: any) => void): void {
-    this.listeners.push(listener as any);
+  onPressureChange(listener: (level: 'normal' | 'warning' | 'critical') => void): void {
+    this.listeners.push(listener);
   }
 }
 
@@ -106,7 +112,7 @@ class MemoryPressureMonitor {
  * Concurrent task scheduler with backpressure handling
  */
 class ConcurrentTaskScheduler {
-  private queue: (() => Promise<any>)[] = [];
+  private queue: (() => Promise<unknown>)[] = [];
   private running = 0;
   private maxConcurrency: number;
   private backpressureThreshold: number;
@@ -247,7 +253,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
 
   // Memory and concurrency optimizations
   private entityPool!: ObjectPool<EntityInfo>;
-  private memoryPressureMonitor: any = new MemoryPressureMonitor(); // Renamed to avoid conflict with base class
+  private memoryPressureMonitor: MemoryPressureMonitor = new MemoryPressureMonitor(); // Renamed to avoid conflict with base class
   private taskScheduler: ConcurrentTaskScheduler = new ConcurrentTaskScheduler(
     4,
   );
@@ -287,21 +293,23 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
         ({
           id: '',
           name: '',
-          type: 'unknown' as any, // EntityType
+          type: 'whitespace',
           file: '',
           line: 0,
           column: 0,
+          startLine: 0,
           exportType: 'none',
           dependencies: [],
-        }) as any, // EntityInfo with startLine
+        }),
       entity => {
         // Reset entity for reuse
         entity.id = '';
         entity.name = '';
-        entity.type = 'unknown' as any; // EntityType
+        entity.type = 'whitespace';
         entity.file = '';
         entity.line = 0;
         entity.column = 0;
+        entity.startLine = 0;
         entity.dependencies.length = 0;
         delete entity.normalizedHash;
         delete entity.semanticHash;
@@ -315,7 +323,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
 
     // Memory pressure monitoring
     this.memoryPressureMonitor = new MemoryPressureMonitor();
-    this.memoryPressureMonitor.onPressureChange((level: any) => {
+    this.memoryPressureMonitor.onPressureChange((level: 'normal' | 'warning' | 'critical') => {
       if (level === 'critical') {
         this.handleMemoryPressure();
       }
@@ -340,7 +348,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     };
   }
 
-  private initializeTSProject(config: any): void {
+  private initializeTSProject(config: Partial<AnalysisConfig & ServiceConfig>): void {
     this.project = new Project({
       tsConfigFilePath: config.targetDir
         ? `${config.targetDir}/tsconfig.json`
@@ -353,12 +361,12 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
         noResolve: false,
         allowJs: true,
         checkJs: false,
-        target: ts.ScriptTarget.ES2020 as any,
-        module: ts.ModuleKind.CommonJS as any,
+        target: ts.ScriptTarget.ES2020 as unknown as number,
+        module: ts.ModuleKind.CommonJS as unknown as number,
       },
     });
 
-    this.tsProgram = (this.project as any).getProgram?.()?.compilerObject;
+    this.tsProgram = (this.project as unknown as { getProgram?: () => { compilerObject: ts.Program } }).getProgram?.()?.compilerObject;
     this.typeChecker = this.tsProgram?.getTypeChecker();
 
     // Initialize streaming processor
@@ -372,7 +380,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Enhanced analysis with streaming and memory management
    */
-  protected async performAnalysis(entities: EntityInfo[]): Promise<any> {
+  protected async performAnalysis(entities: EntityInfo[]): Promise<AnalysisResults> {
     this.memoryPressureMonitor.start();
     const startTime = performance.now();
     const initialMemory = memoryUsage();
@@ -399,18 +407,18 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Streaming analysis for large codebases (>5K files)
    */
-  private async performStreamingAnalysis(entities: EntityInfo[]): Promise<any> {
+  private async performStreamingAnalysis(entities: EntityInfo[]): Promise<AnalysisResults> {
     this.emitProgress({
       type: 'phase',
       message: 'Using streaming analysis for large codebase...',
     });
 
     const results = {
-      duplicates: [] as any[],
-      circularDependencies: [] as any[],
-      unusedExports: [] as any[],
-      codeSmells: [] as any[],
-      wrapperPatterns: [] as any[],
+      duplicates: [] as DuplicateCluster[],
+      circularDependencies: [] as CircularDependency[],
+      unusedExports: [] as EntityInfo[],
+      codeSmells: [] as CodeSmell[],
+      wrapperPatterns: [] as EntityInfo[],
     };
 
     // Process entities in streams
@@ -435,14 +443,14 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Batch analysis with optimized concurrency
    */
-  private async performBatchAnalysis(_entities: EntityInfo[]): Promise<any> {
+  private async performBatchAnalysis(_entities: EntityInfo[]): Promise<AnalysisResults> {
     this.emitProgress({
       type: 'phase',
       message: 'Using optimized batch analysis...',
     });
 
     // Dynamic concurrency adjustment based on memory pressure
-    this.memoryPressureMonitor.onPressureChange((level: any) => {
+    this.memoryPressureMonitor.onPressureChange((level: 'normal' | 'warning' | 'critical') => {
       if (level === 'critical') {
         this.taskScheduler.adjustConcurrency(0.5);
       } else if (level === 'warning') {
@@ -460,11 +468,11 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
       codeSmells,
       wrapperPatterns,
     ] = await Promise.all([
-      this.taskScheduler.schedule(() => Promise.resolve([])), // detectDuplicates placeholder
-      this.taskScheduler.schedule(() => Promise.resolve([])), // detectCircularDependencies placeholder
-      this.taskScheduler.schedule(() => Promise.resolve([])), // findUnusedExports placeholder
-      this.taskScheduler.schedule(() => Promise.resolve([])), // detectCodeSmells placeholder
-      this.taskScheduler.schedule(() => Promise.resolve([])), // detectWrapperPatterns placeholder
+      this.taskScheduler.schedule<DuplicateCluster[]>(() => Promise.resolve([])), // detectDuplicates placeholder
+      this.taskScheduler.schedule<CircularDependency[]>(() => Promise.resolve([])), // detectCircularDependencies placeholder
+      this.taskScheduler.schedule<EntityInfo[]>(() => Promise.resolve([])), // findUnusedExports placeholder
+      this.taskScheduler.schedule<CodeSmell[]>(() => Promise.resolve([])), // detectCodeSmells placeholder
+      this.taskScheduler.schedule<EntityInfo[]>(() => Promise.resolve([])), // detectWrapperPatterns placeholder
     ]);
 
     return this.finalizeResults({
@@ -587,7 +595,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     return {
       id: '',
       name: '',
-      type: 'unknown' as any,
+      type: 'whitespace',
       file: '',
       line: 0,
       column: 0,
@@ -632,7 +640,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Update performance statistics
    */
-  private updatePerformanceStats(startTime: number, initialMemory: any): void {
+  private updatePerformanceStats(startTime: number, initialMemory: NodeJS.MemoryUsage): void {
     const endTime = performance.now();
     const finalMemory = memoryUsage();
 
@@ -749,20 +757,45 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   }
 
   // Implement remaining abstract methods...
-  private finalizeResults(results: any): any {
+  private finalizeResults(results: {
+    duplicates: DuplicateCluster[];
+    circularDependencies: CircularDependency[];
+    unusedExports: EntityInfo[];
+    codeSmells: CodeSmell[];
+    wrapperPatterns: EntityInfo[];
+  }): AnalysisResults {
     return {
-      ...results,
+      duplicates: results.duplicates,
+      circularDependencies: results.circularDependencies,
+      unusedExports: results.unusedExports,
+      codeSmells: results.codeSmells,
       recommendations: this.generateRecommendations(results),
       visualizations: this.generateVisualizationData([], results),
     };
   }
 
-  private generateRecommendations(_results: any): any[] {
+  private generateRecommendations(_results: {
+    duplicates: DuplicateCluster[];
+    circularDependencies: CircularDependency[];
+    unusedExports: EntityInfo[];
+    codeSmells: CodeSmell[];
+    wrapperPatterns: EntityInfo[];
+  }): Recommendation[] {
     return [];
   }
 
-  private generateVisualizationData(_entities: EntityInfo[], _results: any): any {
-    return {};
+  private generateVisualizationData(_entities: EntityInfo[], _results: {
+    duplicates: DuplicateCluster[];
+    circularDependencies: CircularDependency[];
+    unusedExports: EntityInfo[];
+    codeSmells: CodeSmell[];
+    wrapperPatterns: EntityInfo[];
+  }): VisualizationData {
+    return {
+      dependencyGraph: { nodes: [], edges: [] },
+      duplicateNetworks: [],
+      complexityHeatmap: [],
+    };
   }
 
   // Add other required methods from the parent class...

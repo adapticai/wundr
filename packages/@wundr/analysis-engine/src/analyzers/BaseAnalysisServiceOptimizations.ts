@@ -15,14 +15,31 @@ import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
 import { createId, formatDuration, formatFileSize, chunk } from '../utils';
 import { WorkerPoolManager } from '../workers/WorkerPoolManager';
 
+import type { ServiceResult, AnalysisResults as BaseAnalysisResults } from './BaseAnalysisService';
 import type {
   EntityInfo,
   AnalysisConfig,
   AnalysisReport,
   AnalysisSummary,
   PerformanceMetrics,
+  DuplicateCluster as _DuplicateCluster,
+  CircularDependency as _CircularDependency,
+  CodeSmell as _CodeSmell,
+  Recommendation,
+  VisualizationData as _VisualizationData,
 } from '../types';
 import type * as ts from 'typescript';
+
+interface AnalysisResults extends BaseAnalysisResults {
+  complexityResults?: unknown[];
+}
+
+interface ServiceConfig {
+  name: string;
+  version: string;
+  outputDir?: string;
+  verbose?: boolean;
+}
 
 
 export class OptimizedBaseAnalysisService extends BaseAnalysisService {
@@ -33,10 +50,10 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
   private optimizedObjectPools = {
     entities: [] as EntityInfo[],
     buffers: [] as Buffer[],
-    arrays: [] as any[][],
+    arrays: [] as unknown[][],
   };
 
-  constructor(name: string, config: Partial<AnalysisConfig & any>) {
+  constructor(name: string, config: Partial<AnalysisConfig & ServiceConfig>) {
     super(name, config);
 
     // Initialize optimization components
@@ -67,7 +84,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
   }
 
   // Implement abstract methods from BaseAnalysisService
-  protected override performAnalysis(entities: EntityInfo[]): Promise<any> {
+  protected override performAnalysis(entities: EntityInfo[]): Promise<AnalysisResults> {
     // Use optimized concurrent analysis
     return this.performAnalysisConcurrent(entities);
   }
@@ -120,7 +137,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
   /**
    * Main analysis method with advanced memory optimization and concurrency
    */
-  override async analyze(): Promise<any> {
+  override async analyze(): Promise<ServiceResult<AnalysisReport>> {
     const startTime = Date.now();
     this.emitProgress({
       type: 'phase',
@@ -153,7 +170,7 @@ export class OptimizedBaseAnalysisService extends BaseAnalysisService {
 
       // Use streaming analysis for large codebases
       let entities: EntityInfo[];
-      let analysisResults: any;
+      let analysisResults: AnalysisResults;
 
       if (
         files.length > 1000 ||
@@ -322,7 +339,7 @@ global.gc();
    */
   private async performStreamingAnalysis(
     files: string[],
-  ): Promise<{ entities: EntityInfo[]; analysisResults: any }> {
+  ): Promise<{ entities: EntityInfo[]; analysisResults: AnalysisResults }> {
     this.emitProgress({
       type: 'phase',
       message: 'Starting streaming analysis for large codebase...',
@@ -331,7 +348,7 @@ global.gc();
     const entities: EntityInfo[] = [];
     let processedFiles = 0;
 
-    const entityProcessor = async (chunk: any) => {
+    const entityProcessor = async (chunk: { id: string; filePath: string }) => {
       const chunkEntities = await this.optimizedWorkerPool.submitTask({
         id: `extract-entities-${chunk.id}`,
         type: 'extract-entities',
@@ -428,7 +445,7 @@ global.gc();
    */
   private async performAnalysisConcurrent(
     entities: EntityInfo[],
-  ): Promise<any> {
+  ): Promise<AnalysisResults> {
     this.emitProgress({
       type: 'phase',
       message: 'Performing concurrent analysis...',
@@ -498,7 +515,7 @@ global.gc();
   private async generateReportOptimized(
     files: string[],
     entities: EntityInfo[],
-    analysisResults: any,
+    analysisResults: AnalysisResults,
     startTime: number,
   ): Promise<AnalysisReport> {
     const endTime = Date.now();
@@ -606,25 +623,45 @@ global.gc();
   /**
    * Generate optimization recommendations
    */
-  private generateOptimizationRecommendations(): string[] {
-    const recommendations = [];
+  private generateOptimizationRecommendations(): Recommendation[] {
+    const recommendations: Recommendation[] = [];
     const workerMetrics = this.optimizedWorkerPool.getMetrics();
     const memoryMetrics = this.optimizedMemoryMonitor.getMetrics();
 
     if (workerMetrics.throughput < 100) {
-      recommendations.push(
-        'Consider increasing worker pool size for better throughput',
-      );
+      recommendations.push({
+        id: createId(),
+        type: 'OPTIMIZE_IMPORTS',
+        priority: 'medium',
+        title: 'Increase Worker Pool Size',
+        description: 'Consider increasing worker pool size for better throughput',
+        impact: 'Improved analysis performance and throughput',
+        effort: 'low',
+      });
     }
 
     if (memoryMetrics.leakAnalysis.leakDetected) {
-      recommendations.push(
-        'Memory leak detected - review object lifecycle management',
-      );
+      recommendations.push({
+        id: createId(),
+        type: 'REFACTOR_WRAPPER',
+        priority: 'high',
+        title: 'Memory Leak Detection',
+        description: 'Memory leak detected - review object lifecycle management',
+        impact: 'Prevents memory exhaustion and improves stability',
+        effort: 'medium',
+      });
     }
 
     // Cache metrics are handled by parent class
-    recommendations.push('Cache performance is optimized');
+    recommendations.push({
+      id: createId(),
+      type: 'OPTIMIZE_IMPORTS',
+      priority: 'low',
+      title: 'Cache Performance Optimized',
+      description: 'Cache performance is optimized',
+      impact: 'Optimal caching performance',
+      effort: 'low',
+    });
 
     return recommendations;
   }
@@ -665,11 +702,11 @@ global.gc();
     // Final memory report
     if (this.config.verbose) {
       const finalMetrics = this.optimizedMemoryMonitor.getMetrics();
-      console.log(chalk.cyan('\n📊 Final Memory Report:'));
-      console.log(
+      this.spinner.info(chalk.cyan('📊 Final Memory Report:'));
+      this.spinner.info(
         chalk.gray(`Peak Usage: ${formatFileSize(finalMetrics.peak.heapUsed)}`),
       );
-      console.log(
+      this.spinner.info(
         chalk.gray(
           `Average Usage: ${formatFileSize(finalMetrics.average.heapUsed)}`,
         ),

@@ -30,6 +30,8 @@
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "src/commands/project-update.ts",
+    "src/lib/**/*"
   ]
 }

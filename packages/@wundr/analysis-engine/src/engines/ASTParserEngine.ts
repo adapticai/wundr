@@ -24,7 +24,7 @@ import type {
   BaseAnalyzer,
   AnalysisConfig,
 } from '../types';
-import type { SourceFile, Node} from 'ts-morph';
+import type { SourceFile, Node , ClassDeclaration, InterfaceDeclaration, TypeAliasDeclaration, EnumDeclaration, FunctionDeclaration, MethodDeclaration, VariableDeclaration, ArrowFunction, BinaryExpression } from 'ts-morph';
 
 interface ASTParsingConfig {
   includePrivateMembers: boolean;
@@ -83,8 +83,8 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     // Initialize ts-morph project
     this.project = new Project({
       compilerOptions: {
-        target: this.config.parseOptions.target as any,
-        module: this.config.parseOptions.module as any,
+        target: this.config.parseOptions.target,
+        module: this.config.parseOptions.module,
         allowJs: this.config.parseOptions.allowJs,
         jsx: this.config.parseOptions.jsx ? ts.JsxEmit.Preserve : undefined,
         strict: true,
@@ -234,7 +234,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
         exports,
         dependencies,
         ast: sourceFile,
-        diagnostics: diagnostics as any,
+        diagnostics: diagnostics.map(d => d.compilerObject),
       };
     } catch (error) {
       console.warn(`Failed to parse ${sourceFile.getFilePath()}:`, error);
@@ -293,63 +293,69 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
 
     // Determine entity type and extract information based on node kind
     switch (node.getKind()) {
-      case SyntaxKind.ClassDeclaration:
+      case SyntaxKind.ClassDeclaration: {
         entityType = 'class';
-        const classDecl = node as any;
+        const classDecl = node as ClassDeclaration;
         name = classDecl.getName() || 'AnonymousClass';
         signature = this.extractClassSignature(classDecl);
         members = this.extractClassMembers(classDecl);
         exportType = this.determineExportType(classDecl);
         jsDoc = this.extractJSDoc(classDecl);
         break;
+      }
 
-      case SyntaxKind.InterfaceDeclaration:
+      case SyntaxKind.InterfaceDeclaration: {
         entityType = 'interface';
-        const interfaceDecl = node as any;
+        const interfaceDecl = node as InterfaceDeclaration;
         name = interfaceDecl.getName();
         signature = this.extractInterfaceSignature(interfaceDecl);
         members = this.extractInterfaceMembers(interfaceDecl);
         exportType = this.determineExportType(interfaceDecl);
         jsDoc = this.extractJSDoc(interfaceDecl);
         break;
+      }
 
-      case SyntaxKind.TypeAliasDeclaration:
+      case SyntaxKind.TypeAliasDeclaration: {
         entityType = 'type';
-        const typeDecl = node as any;
+        const typeDecl = node as TypeAliasDeclaration;
         name = typeDecl.getName();
         signature = this.extractTypeSignature(typeDecl);
         exportType = this.determineExportType(typeDecl);
         jsDoc = this.extractJSDoc(typeDecl);
         break;
+      }
 
-      case SyntaxKind.EnumDeclaration:
+      case SyntaxKind.EnumDeclaration: {
         entityType = 'enum';
-        const enumDecl = node as any;
+        const enumDecl = node as EnumDeclaration;
         name = enumDecl.getName();
         signature = this.extractEnumSignature(enumDecl);
         exportType = this.determineExportType(enumDecl);
         jsDoc = this.extractJSDoc(enumDecl);
         break;
+      }
 
-      case SyntaxKind.FunctionDeclaration:
+      case SyntaxKind.FunctionDeclaration: {
         entityType = 'function';
-        const funcDecl = node as any;
+        const funcDecl = node as FunctionDeclaration;
         name = funcDecl.getName() || 'AnonymousFunction';
         signature = this.extractFunctionSignature(funcDecl);
         exportType = this.determineExportType(funcDecl);
         jsDoc = this.extractJSDoc(funcDecl);
         break;
+      }
 
-      case SyntaxKind.MethodDeclaration:
+      case SyntaxKind.MethodDeclaration: {
         entityType = 'method';
-        const methodDecl = node as any;
+        const methodDecl = node as MethodDeclaration;
         name = methodDecl.getName();
         signature = this.extractMethodSignature(methodDecl);
         jsDoc = this.extractJSDoc(methodDecl);
         break;
+      }
 
-      case SyntaxKind.VariableDeclaration:
-        const varDecl = node as any;
+      case SyntaxKind.VariableDeclaration: {
+        const varDecl = node as VariableDeclaration;
         name = varDecl.getName();
 
         // Determine if it's const or variable
@@ -362,15 +368,17 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
           jsDoc = this.extractJSDoc(variableStatement);
         }
         break;
+      }
 
-      case SyntaxKind.ArrowFunction:
+      case SyntaxKind.ArrowFunction: {
         entityType = 'function';
-        const arrowFunc = node as any;
+        const arrowFunc = node as ArrowFunction;
         name = parent
           ? `${parent.name}_arrow_${Date.now()}`
           : `arrow_${Date.now()}`;
         signature = this.extractArrowFunctionSignature(arrowFunc);
         break;
+      }
 
       default:
         return null;
@@ -433,7 +441,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract class signature
    */
-  private extractClassSignature(classDecl: any): string {
+  private extractClassSignature(classDecl: ClassDeclaration): string {
     try {
       return classDecl.getText();
     } catch {
@@ -444,7 +452,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract class members
    */
-  private extractClassMembers(classDecl: any): EntityMembers {
+  private extractClassMembers(classDecl: ClassDeclaration): EntityMembers {
     const members: EntityMembers = {
       properties: [],
       methods: [],
@@ -486,7 +494,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract interface signature
    */
-  private extractInterfaceSignature(interfaceDecl: any): string {
+  private extractInterfaceSignature(interfaceDecl: InterfaceDeclaration): string {
     try {
       return interfaceDecl.getText();
     } catch {
@@ -497,7 +505,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract interface members
    */
-  private extractInterfaceMembers(interfaceDecl: any): EntityMembers {
+  private extractInterfaceMembers(interfaceDecl: InterfaceDeclaration): EntityMembers {
     const members: EntityMembers = {
       properties: [],
       methods: [],
@@ -532,7 +540,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract type signature
    */
-  private extractTypeSignature(typeDecl: any): string {
+  private extractTypeSignature(typeDecl: TypeAliasDeclaration): string {
     try {
       return typeDecl.getText();
     } catch {
@@ -543,7 +551,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract enum signature
    */
-  private extractEnumSignature(enumDecl: any): string {
+  private extractEnumSignature(enumDecl: EnumDeclaration): string {
     try {
       return enumDecl.getText();
     } catch {
@@ -554,7 +562,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract function signature
    */
-  private extractFunctionSignature(funcDecl: any): string {
+  private extractFunctionSignature(funcDecl: FunctionDeclaration): string {
     try {
       return funcDecl.getText();
     } catch {
@@ -565,7 +573,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract method signature
    */
-  private extractMethodSignature(methodDecl: any): string {
+  private extractMethodSignature(methodDecl: MethodDeclaration): string {
     try {
       return methodDecl.getText();
     } catch {
@@ -576,7 +584,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract variable signature
    */
-  private extractVariableSignature(varDecl: any): string {
+  private extractVariableSignature(varDecl: VariableDeclaration): string {
     try {
       return varDecl.getText();
     } catch {
@@ -587,7 +595,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract arrow function signature
    */
-  private extractArrowFunctionSignature(arrowFunc: any): string {
+  private extractArrowFunctionSignature(arrowFunc: ArrowFunction): string {
     try {
       return arrowFunc.getText();
     } catch {
@@ -598,12 +606,12 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Determine export type
    */
-  private determineExportType(node: any): ExportType {
+  private determineExportType(node: Node): ExportType {
     try {
-      if (node.isDefaultExport && node.isDefaultExport()) {
+      if ('isDefaultExport' in node && typeof node.isDefaultExport === 'function' && node.isDefaultExport()) {
         return 'default';
       }
-      if (node.isExported && node.isExported()) {
+      if ('isExported' in node && typeof node.isExported === 'function' && node.isExported()) {
         return 'named';
       }
     } catch {
@@ -615,25 +623,30 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
   /**
    * Extract JSDoc comment
    */
-  private extractJSDoc(node: any): string {
+  private extractJSDoc(node: Node): string {
     try {
-      const jsDocs = node.getJsDocs();
-      return jsDocs.map((doc: any) => doc.getText()).join('\n');
+      if ('getJsDocs' in node && typeof node.getJsDocs === 'function') {
+        const jsDocs = node.getJsDocs();
+        return jsDocs.map((doc) => doc.getText()).join('\n');
+      }
     } catch {
       return '';
     }
+    return '';
   }
 
   /**
    * Get member visibility
    */
-  private getVisibility(node: any): 'public' | 'private' | 'protected' {
+  private getVisibility(node: Node): 'public' | 'private' | 'protected' {
     try {
-      if (node.hasModifier && node.hasModifier(SyntaxKind.PrivateKeyword)) {
-        return 'private';
-      }
-      if (node.hasModifier && node.hasModifier(SyntaxKind.ProtectedKeyword)) {
-        return 'protected';
+      if ('hasModifier' in node && typeof node.hasModifier === 'function') {
+        if (node.hasModifier(SyntaxKind.PrivateKeyword)) {
+          return 'private';
+        }
+        if (node.hasModifier(SyntaxKind.ProtectedKeyword)) {
+          return 'protected';
+        }
       }
     } catch {
       // Ignore errors
@@ -656,9 +669,10 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
     const lines = signature.split('\n').filter(line => line.trim()).length;
 
     try {
-      // Count parameters
+      // Count parameters for function-like nodes
       if ('getParameters' in node && typeof node.getParameters === 'function') {
-        parameters = (node.getParameters() as any[]).length;
+        const params = node.getParameters();
+        parameters = Array.isArray(params) ? params.length : 0;
       }
 
       // Walk the AST to calculate complexity
@@ -678,9 +692,9 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
             cognitive += Math.max(1, depth);
             break;
 
-          case SyntaxKind.BinaryExpression:
-            const binExpr = child as any;
-            if (binExpr.getOperatorToken) {
+          case SyntaxKind.BinaryExpression: {
+            const binExpr = child as BinaryExpression;
+            if ('getOperatorToken' in binExpr && typeof binExpr.getOperatorToken === 'function') {
               const operatorKind = binExpr.getOperatorToken().getKind();
               if (
                 [
@@ -693,6 +707,7 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
               }
             }
             break;
+          }
         }
 
         // Visit children with updated depth
@@ -817,9 +832,9 @@ export class ASTParserEngine implements BaseAnalyzer<EntityInfo[]> {
    */
   getDiagnostics(): ts.Diagnostic[] {
     const allDiagnostics: ts.Diagnostic[] = [];
-    for (const result of this.parsedFiles.values()) {
+    this.parsedFiles.forEach(result => {
       allDiagnostics.push(...result.diagnostics);
-    }
+    });
     return allDiagnostics;
   }
 

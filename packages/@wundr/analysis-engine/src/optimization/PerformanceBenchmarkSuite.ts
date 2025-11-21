@@ -11,13 +11,11 @@ import chalk from 'chalk';
 import * as fs from 'fs-extra';
 
 
-import { BaseAnalysisService } from '../analyzers/BaseAnalysisService';
-import { OptimizedBaseAnalysisService } from '../analyzers/BaseAnalysisServiceOptimizations';
 import { DuplicateDetectionEngine } from '../engines/DuplicateDetectionEngine';
 import { OptimizedDuplicateDetectionEngine } from '../engines/DuplicateDetectionEngineOptimized';
 import { MemoryMonitor } from '../monitoring/MemoryMonitor';
-import { StreamingFileProcessor } from '../streaming/StreamingFileProcessor';
-import { WorkerPoolManager } from '../workers/WorkerPoolManager';
+
+import type { EntityInfo, EntityType, ExportType } from '../types';
 
 export interface BenchmarkConfig {
   testDataSets: Array<{
@@ -105,7 +103,13 @@ export interface MemoryProfileData {
 export class PerformanceBenchmarkSuite extends EventEmitter {
   private config: BenchmarkConfig;
   private memoryMonitor: MemoryMonitor;
-  private testDataCache = new Map<string, any>();
+  private testDataCache = new Map<
+    string,
+    {
+      entities: EntityInfo[];
+      files: string[];
+    }
+  >();
 
   constructor(config: Partial<BenchmarkConfig> = {}) {
     super();
@@ -197,7 +201,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
   /**
    * Benchmark a specific data set
    */
-  private async benchmarkDataSet(dataSet: any): Promise<BenchmarkResult> {
+  private async benchmarkDataSet(dataSet: BenchmarkConfig['testDataSets'][number]): Promise<BenchmarkResult> {
     // Generate test data if not cached
     const testData = await this.getTestData(dataSet);
 
@@ -236,8 +240,8 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
    * Benchmark baseline (original) implementation
    */
   private async benchmarkBaseline(
-    testData: any,
-    dataSet: any,
+    testData: { entities: EntityInfo[]; files: string[] },
+    _dataSet: BenchmarkConfig['testDataSets'][number],
   ): Promise<PerformanceMetrics> {
     console.log(chalk.blue('    🔍 Benchmarking baseline implementation...'));
 
@@ -255,7 +259,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
         performance: { maxConcurrency: 8 },
       };
 
-      const results = await engine.analyze(
+      const _results = await engine.analyze(
         testData.entities,
         analysisConfig as any,
       );
@@ -302,8 +306,8 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
    * Benchmark optimized implementation
    */
   private async benchmarkOptimized(
-    testData: any,
-    dataSet: any,
+    testData: { entities: EntityInfo[]; files: string[] },
+    _dataSet: BenchmarkConfig['testDataSets'][number],
   ): Promise<PerformanceMetrics> {
     console.log(chalk.blue('    ⚡ Benchmarking optimized implementation...'));
 
@@ -311,7 +315,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
 
     const startTime = Date.now();
     const startCpu = process.cpuUsage();
-    const startMemory = process.memoryUsage();
+    const _startMemory = process.memoryUsage();
 
     try {
       // Use optimized engine
@@ -338,7 +342,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
         targetDir: '/tmp/test',
         performance: { maxConcurrency: 32 },
       };
-      const results = await engine.analyze(
+      const _results = await engine.analyze(
         testData.entities,
         analysisConfig as any,
       );
@@ -347,7 +351,7 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
 
       const endTime = Date.now();
       const endCpu = process.cpuUsage(startCpu);
-      const endMemory = process.memoryUsage();
+      const _endMemory = process.memoryUsage();
 
       const executionTime = endTime - startTime;
       const finalMetrics = engine.getMetrics();
@@ -437,11 +441,14 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
   /**
    * Generate test data for benchmarking
    */
-  private async getTestData(dataSet: any) {
+  private async getTestData(dataSet: BenchmarkConfig['testDataSets'][number]): Promise<{
+    entities: EntityInfo[];
+    files: string[];
+  }> {
     const cacheKey = `${dataSet.name}-${dataSet.fileCount}`;
 
     if (this.testDataCache.has(cacheKey)) {
-      return this.testDataCache.get(cacheKey);
+      return this.testDataCache.get(cacheKey)!;
     }
 
     console.log(chalk.gray(`    Generating test data for ${dataSet.name}...`));
@@ -487,9 +494,9 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
     fileIndex: number,
     entityIndex: number,
     filePath: string,
-    dataSet: any,
-  ) {
-    const types = ['function', 'class', 'interface', 'method', 'property'];
+    dataSet: BenchmarkConfig['testDataSets'][number],
+  ): EntityInfo {
+    const types: EntityType[] = ['function', 'class', 'interface', 'method', 'const'];
     const type = types[Math.floor(Math.random() * types.length)];
 
     const complexityBase =
@@ -499,13 +506,17 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
           ? 8
           : 3;
 
+    const lineNumber = entityIndex * 5 + 1;
     return {
       id: `${fileIndex}-${entityIndex}`,
       name: `${type}${fileIndex}_${entityIndex}`,
       type,
       file: filePath,
-      line: entityIndex * 5 + 1,
+      line: lineNumber,
+      startLine: lineNumber,
+      endLine: lineNumber + 3,
       column: 1,
+      exportType: (Math.random() > 0.5 ? 'named' : 'none') as ExportType,
       signature: `${type}${fileIndex}_${entityIndex}(param1: string, param2: number): void`,
       complexity: {
         cyclomatic: complexityBase + Math.floor(Math.random() * 10),
@@ -523,15 +534,13 @@ export class PerformanceBenchmarkSuite extends EventEmitter {
   /**
    * Generate duplicate entity
    */
-  private generateDuplicateEntity(original: any, newFileIndex: number) {
+  private generateDuplicateEntity(original: EntityInfo, newFileIndex: number): EntityInfo {
     return {
       ...original,
       id: `${newFileIndex}-dup`,
       file: `/test/file${newFileIndex}.ts`,
       line: Math.floor(Math.random() * 100) + 1,
       // Keep same hashes to make it a true duplicate
-      normalizedHash: original.normalizedHash,
-      semanticHash: original.semanticHash,
     };
   }
 
@@ -664,7 +673,7 @@ return 0;
    * Print benchmark summary
    */
   private printSummary(result: BenchmarkResult): void {
-    const { baseline, optimized, improvement } = result.results;
+    const { optimized, improvement } = result.results;
 
     console.log(chalk.gray('  Results:'));
     console.log(chalk.gray(`    Speedup: ${improvement.speedup.toFixed(1)}x`));
@@ -833,7 +842,17 @@ ${result.recommendations.map(rec => `- ${rec}`).join('\\n')}
   /**
    * Generate comparison markdown
    */
-  private generateComparisonMarkdown(data: any): string {
+  private generateComparisonMarkdown(data: {
+    timestamp: string;
+    systemInfo: { cpus: number; memory: number; platform: string; arch: string };
+    results: BenchmarkResult[];
+    summary: {
+      averageSpeedup: number;
+      averageMemoryReduction: number;
+      averageThroughputIncrease: number;
+      overallScore: number;
+    };
+  }): string {
     return `# Performance Optimization Summary
 
 **Generated:** ${new Date(data.timestamp).toLocaleString()}  
