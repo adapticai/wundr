@@ -39,7 +39,7 @@ jobs:
       - name: Run Build Validation
         run: |
           echo "🔧 Starting comprehensive build validation..."
-          node scripts/build-validation.js build
+          pnpm build 2>&1 || (echo "❌ Build failed, showing errors:" && exit 1)
 
       - name: Generate Build Report
         if: always()
