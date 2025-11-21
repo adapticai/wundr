@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable import/no-unresolved */
 import { Server } from '@modelcontextprotocol/sdk/server/index';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';
 import {
@@ -7,24 +8,25 @@ import {
   ErrorCode,
   McpError,
 } from '@modelcontextprotocol/sdk/types';
+/* eslint-enable import/no-unresolved */
 
 // Import tool handlers
-import { DriftDetectionHandler } from './tools/governance/drift-detection-handler.js';
-import { PatternStandardizeHandler } from './tools/standardization/pattern-standardize-handler.js';
-import { MonorepoManageHandler } from './tools/monorepo/monorepo-manage-handler.js';
-import { GovernanceReportHandler } from './tools/governance/governance-report-handler.js';
 import { DependencyAnalyzeHandler } from './tools/analysis/dependency-analyze-handler.js';
-import { TestBaselineHandler } from './tools/testing/test-baseline-handler.js';
 import { ClaudeConfigHandler } from './tools/config/claude-config-handler.js';
-
-// RAG tool handlers
+import { DriftDetectionHandler } from './tools/governance/drift-detection-handler.js';
+import { GovernanceReportHandler } from './tools/governance/governance-report-handler.js';
+import { MonorepoManageHandler } from './tools/monorepo/monorepo-manage-handler.js';
+import { RagContextBuilderHandler } from './tools/rag/rag-context-builder-handler.js';
 import { RagFileSearchHandler } from './tools/rag/rag-file-search-handler.js';
 import { RagStoreManageHandler } from './tools/rag/rag-store-manage-handler.js';
-import { RagContextBuilderHandler } from './tools/rag/rag-context-builder-handler.js';
+import { PatternStandardizeHandler } from './tools/standardization/pattern-standardize-handler.js';
+import { TestBaselineHandler } from './tools/testing/test-baseline-handler.js';
+
+// RAG tool handlers
 
 // Define common handler interface
 interface ToolHandler {
-  execute(args: any): Promise<string>;
+  execute(args: Record<string, unknown>): Promise<string>;
 }
 
 class WundrMCPServer {
@@ -41,7 +43,7 @@ class WundrMCPServer {
         capabilities: {
           tools: {},
         },
-      }
+      },
     );
 
     // Initialize handlers
@@ -361,14 +363,14 @@ class WundrMCPServer {
     }));
 
     // Handle tool calls
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
+    this.server.setRequestHandler(CallToolRequestSchema, async (request: { params: { name: string; arguments?: Record<string, unknown> } }) => {
       const { name, arguments: args } = request.params;
 
       const handler = this.handlers.get(name);
       if (!handler) {
         throw new McpError(
           ErrorCode.MethodNotFound,
-          `Unknown tool: ${name}`
+          `Unknown tool: ${name}`,
         );
       }
 
@@ -386,7 +388,7 @@ class WundrMCPServer {
         const errorMessage = error instanceof Error ? error.message : String(error);
         throw new McpError(
           ErrorCode.InternalError,
-          `Tool execution failed: ${errorMessage}`
+          `Tool execution failed: ${errorMessage}`,
         );
       }
     });

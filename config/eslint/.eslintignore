@@ -39,6 +39,10 @@ Thumbs.db
 # Test fixtures
 __fixtures__/
 fixtures/
+tests/fixtures/**
+
+# Integration tests that don't need strict linting
+tests/integration/rag/**/*.test.ts
 
 # Generated files
 *.generated.ts

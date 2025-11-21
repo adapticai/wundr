@@ -71,8 +71,7 @@
     "hooks/**/*",
     "templates/**/*",
     "mcp-tools/src/**/*",
-    "tests/fixtures/**/*",
-    "tests/integration/**/*",
+    "tests/**/*",
     "*.ts",
     "*.d.ts"
   ],

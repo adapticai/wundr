@@ -90,7 +90,7 @@ export class RagFileSearchHandler {
       message: `Found ${limitedResults.length} results for query: "${query}"`,
       results: limitedResults,
       totalMatches: results.length,
-      searchMode: _mode,
+      searchMode: mode,
     });
   }
 
@@ -143,7 +143,7 @@ export class RagFileSearchHandler {
   private calculateScore(
     content: string,
     queryTerms: string[],
-    mode: string,
+    _mode: string,
   ): number {
     const lowerContent = content.toLowerCase();
     let matchCount = 0;

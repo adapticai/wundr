@@ -18,6 +18,9 @@ module.exports = {
     'tools/web-client/',
     'packages/@wundr/dashboard/',
     'packages/web-client/',
+    // Test files that don't need strict linting
+    'tests/integration/rag/**/*.test.ts',
+    'tests/fixtures/**',
   ],
   overrides: [
     {

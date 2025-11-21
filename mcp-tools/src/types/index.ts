@@ -86,7 +86,7 @@ export interface MCPToolResult {
   success: boolean;
   action?: string;
   message: string;
-  details?: any;
+  details?: unknown;
   error?: string;
 }
 
@@ -98,5 +98,5 @@ export interface BaselineResult extends MCPToolResult {
 export interface ReportResult extends MCPToolResult {
   reportPath?: string;
   format?: string;
-  summary?: Record<string, any>;
+  summary?: Record<string, unknown>;
 }

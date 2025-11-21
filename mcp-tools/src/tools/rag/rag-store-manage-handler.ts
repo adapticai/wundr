@@ -7,8 +7,8 @@
  */
 
 import * as fs from 'fs';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
 
 import type { RagStoreManageArgs } from '../../types/index.js';
 
@@ -26,7 +26,7 @@ export class RagStoreManageHandler {
    * @returns Operation result as formatted string
    */
   async execute(args: RagStoreManageArgs): Promise<string> {
-    const { action, storeName, config, indexPaths, force } = args;
+    const { action, storeName, config, indexPaths, force: _force } = args;
 
     // Ensure store directory exists
     this.ensureStoreDir();
@@ -35,7 +35,7 @@ export class RagStoreManageHandler {
       case 'create':
         return this.createStore(storeName, config);
       case 'delete':
-        return this.deleteStore(storeName, _force);
+        return this.deleteStore(storeName);
       case 'list':
         return this.listStores();
       case 'status':
@@ -43,7 +43,7 @@ export class RagStoreManageHandler {
       case 'index':
         return this.indexFiles(storeName, indexPaths);
       case 'clear':
-        return this.clearStore(storeName, _force);
+        return this.clearStore(storeName);
       case 'optimize':
         return this.optimizeStore(storeName);
       case 'backup':
@@ -103,7 +103,7 @@ export class RagStoreManageHandler {
     });
   }
 
-  private deleteStore(name: string | undefined, force?: boolean): string {
+  private deleteStore(name: string | undefined): string {
     if (!name) {
       return JSON.stringify({
         success: false,
@@ -264,7 +264,7 @@ export class RagStoreManageHandler {
     });
   }
 
-  private clearStore(name: string | undefined, force?: boolean): string {
+  private clearStore(name: string | undefined): string {
     if (!name) {
       return JSON.stringify({
         success: false,
@@ -320,7 +320,9 @@ export class RagStoreManageHandler {
     const data = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
     const uniquePaths = new Set<string>();
     const uniqueDocs = data.documents.filter((doc: { path: string }) => {
-      if (uniquePaths.has(doc.path)) return false;
+      if (uniquePaths.has(doc.path)) {
+return false;
+}
       uniquePaths.add(doc.path);
       return true;
     });

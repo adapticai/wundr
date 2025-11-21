@@ -91,13 +91,9 @@ describe('MCPServer', () => {
           mimeType: 'application/json',
         },
         handler: async () => ({
-          contents: [
-            {
-              uri: 'test://resource',
-              mimeType: 'application/json',
-              text: '{}',
-            },
-          ],
+          uri: 'test://resource',
+          mimeType: 'application/json',
+          text: '{}',
         }),
       };
 
@@ -146,9 +142,9 @@ describe('Server Configuration', () => {
       name: 'capabilities-test',
       version: '1.0.0',
       capabilities: {
-        tools: true,
-        resources: true,
-        prompts: true,
+        tools: {},
+        resources: {},
+        prompts: {},
       },
     });
 

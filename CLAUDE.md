@@ -364,6 +364,58 @@ claude mcp list
 **Weekly Maintenance:**
 "Run weekly maintenance: create baseline, generate report, clean dependencies"
 
+## 🔍 RAG File Search Tools
+
+Semantic search tools for intelligent codebase exploration using vector embeddings.
+
+### Available RAG Tools
+
+1. **rag_file_search** - Semantic search across codebases
+   - "Find authentication implementations"
+   - "Search for error handling patterns"
+   - "Locate API endpoint definitions"
+
+2. **rag_store_manage** - Manage vector stores
+   - "Create vector store for project"
+   - "Update store with new files"
+   - "List available stores"
+   - "Delete outdated store"
+
+3. **rag_context_builder** - Build optimized context
+   - "Build context for feature implementation"
+   - "Gather related code for refactoring"
+   - "Assemble context for bug investigation"
+
+### Example Usage Patterns
+
+```bash
+# Semantic search for authentication code
+rag_file_search { query: "user authentication flow", limit: 10 }
+
+# Create/update vector store for a project
+rag_store_manage { action: "create", path: "./src" }
+rag_store_manage { action: "update", store_id: "project-store" }
+
+# Build optimized context for a task
+rag_context_builder {
+  query: "implement rate limiting",
+  max_tokens: 8000,
+  include_tests: true
+}
+```
+
+### When to Use RAG vs Regular Search
+
+| Use RAG When | Use Regular Search (Grep/Glob) When |
+|--------------|-------------------------------------|
+| Searching by concept or intent | Searching for exact text matches |
+| Finding similar implementations | Finding specific function names |
+| Exploring unfamiliar codebases | Navigating known file structures |
+| Building context for complex tasks | Quick file lookups |
+| Semantic code understanding | Pattern matching with regex |
+
+**KEY**: RAG finds conceptually related code; Grep/Glob finds exact matches.
+
 ## Support
 
 - Documentation: https://github.com/ruvnet/claude-flow
