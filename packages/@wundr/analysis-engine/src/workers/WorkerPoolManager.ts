@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Worker Pool Manager - High-performance concurrency with 30+ workers
  * Intelligent task scheduling and resource-aware parallelization

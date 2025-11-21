@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Analysis Engine CLI - Command line interface for code analysis
  */

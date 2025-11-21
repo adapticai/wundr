@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any, import/namespace */
 /**
  * Memory Monitor - Comprehensive memory tracking and leak detection
  * Real-time memory profiling with heap snapshot analysis

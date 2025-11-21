@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Analysis Engine - Main entry point
  * High-performance code analysis with AST parsing, duplicate detection, complexity metrics

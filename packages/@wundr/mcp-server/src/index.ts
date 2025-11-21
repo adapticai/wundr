@@ -40,13 +40,30 @@
 // =============================================================================
 
 // Server
-export { MCPServer, MCPServerOptions, createMCPServer, MCPServerBuilder, buildMCPServer } from './server/MCPServer';
+export {
+  MCPServer,
+  MCPServerOptions,
+  createMCPServer,
+  MCPServerBuilder,
+  buildMCPServer,
+} from './server/MCPServer';
 
 // Protocol Handler
-export { MCPProtocolHandler, ProtocolError, createTextResult, createJsonResult, createToolContext } from './protocol/handler';
+export {
+  MCPProtocolHandler,
+  ProtocolError,
+  createTextResult,
+  createJsonResult,
+  createToolContext,
+} from './protocol/handler';
 
 // Transport
-export { StdioTransport, TransportError, createStdioTransport, ResponseBuilder } from './protocol/transport';
+export {
+  StdioTransport,
+  TransportError,
+  createStdioTransport,
+  ResponseBuilder,
+} from './protocol/transport';
 
 // Logger
 export {
@@ -93,7 +110,7 @@ export {
   SamplingCapability,
 
   // Tool Types
-  Tool,
+  Tool as McpToolType,
   ToolInputSchema,
   JsonSchema,
   ToolCallParams,
@@ -241,7 +258,9 @@ export function getToolCountByCategory(): Record<string, number> {
  * });
  * ```
  */
-export async function startServer(options: import('./server/MCPServer').MCPServerOptions): Promise<import('./server/MCPServer').MCPServer> {
+export async function startServer(
+  options: import('./server/MCPServer').MCPServerOptions
+): Promise<import('./server/MCPServer').MCPServer> {
   const { createMCPServer: create } = await import('./server/MCPServer');
   const server = create(options);
   await server.start();
@@ -300,7 +319,7 @@ async function main(): Promise<void> {
 
 // Run main if this is the entry point
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

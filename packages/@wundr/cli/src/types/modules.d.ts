@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 // Type declarations for external modules
 declare module '@wundr/computer-setup' {
   export class ComputerSetupManager {

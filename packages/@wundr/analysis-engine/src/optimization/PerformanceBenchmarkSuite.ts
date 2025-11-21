@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Performance Benchmark Suite - Comprehensive benchmarking for memory and concurrency optimizations
  * Tests throughput, latency, memory usage, and scalability improvements

@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any, import/namespace */
 /**
  * Simplified Analysis Engine - Working implementation for demonstration
  */

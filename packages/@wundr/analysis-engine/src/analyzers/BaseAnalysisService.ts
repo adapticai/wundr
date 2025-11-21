@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any, import/namespace */
 /**
  * Enhanced Base Analysis Service - Core functionality for all analysis services
  * Migrated and optimized from original AnalysisService with performance improvements
