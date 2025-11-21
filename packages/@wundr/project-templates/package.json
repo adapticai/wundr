@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/project-templates",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Wundr-compliant project templates with opinionated best practices",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

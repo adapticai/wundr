@@ -1,6 +1,6 @@
 {
   "name": "@adapticai/wundr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Intelligent CLI-Based Coding Agents Orchestrator - Transform monolithic chaos into architectural elegance with AI-powered refactoring at scale",
   "keywords": [
     "wundr",

@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/web-client-simple",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared web components and utilities",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

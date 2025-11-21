@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/core-simple",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Core business logic and domain models for Wundr platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

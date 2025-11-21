@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/setup-toolkit-simple",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Environment setup and configuration tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
