@@ -4,21 +4,21 @@ on:
   pull_request:
     branches: [master, main]
     paths:
-      - 'src/**'
-      - 'packages/**'
-      - '*.ts'
-      - '*.tsx'
-      - '*.js'
-      - '*.jsx'
+      - "src/**"
+      - "packages/**"
+      - "*.ts"
+      - "*.tsx"
+      - "*.js"
+      - "*.jsx"
   schedule:
     # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
   workflow_dispatch:
     inputs:
       analysis_depth:
-        description: 'Analysis depth (basic, standard, comprehensive)'
+        description: "Analysis depth (basic, standard, comprehensive)"
         required: false
-        default: 'standard'
+        default: "standard"
         type: choice
         options:
           - basic
@@ -26,8 +26,8 @@ on:
           - comprehensive
 
 env:
-  NODE_VERSION: '18'
-  ANALYSIS_OUTPUT_DIR: 'drift-analysis'
+  NODE_VERSION: "18"
+  ANALYSIS_OUTPUT_DIR: "drift-analysis"
 
 jobs:
   setup:
@@ -67,8 +67,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'setup/package.json'
+          cache: "npm"
+          cache-dependency-path: "setup/package.json"
 
       - name: Install dependencies
         working-directory: setup
@@ -105,7 +105,7 @@ jobs:
         id: analysis
         run: |
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}
-          
+
           # Set analysis parameters based on depth
           case "${{ needs.setup.outputs.analysis-depth }}" in
             "basic")
@@ -118,9 +118,9 @@ jobs:
               ANALYZE_OPTS="--standard"
               ;;
           esac
-          
+
           echo "Running analysis with options: $ANALYZE_OPTS"
-          
+
           # Run the main analysis script
           bash ../scripts/analysis/analyze-all.sh .. || {
             echo "Analysis failed, continuing with partial results"
@@ -131,19 +131,19 @@ jobs:
         id: drift-report
         run: |
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}/*
-          
+
           # Create drift report
           cat > drift-report.md << 'EOF'
           # Code Drift Detection Report
-          
+
           **Analysis Date:** $(date)
           **Trigger:** ${{ github.event_name }}
           **Analysis Depth:** ${{ needs.setup.outputs.analysis-depth }}
-          
+
           ## Summary
-          
+
           EOF
-          
+
           # Add analysis results if available
           if [ -f "analysis-report.json" ]; then
             npx ts-node -e "
@@ -156,29 +156,29 @@ jobs:
               
               console.log(\`
           ### Key Metrics
-          
+
           - **Total Entities:** \${report.summary.totalEntities}
           - **Files Analyzed:** \${report.summary.totalFiles}
           - **Duplicate Clusters:** \${report.summary.duplicateClusters}
           - **Critical Issues:** \${criticalIssues}
           - **Unused Exports:** \${unusedExports}
-          
+
           ### Severity Breakdown
-          
+
           | Severity | Count | Action Required |
           |----------|-------|----------------|
           | Critical | \${criticalIssues} | ⚠️ Immediate |
           | High | \${report.duplicates.filter(d => d.severity === 'high').length} | 📅 This Week |
           | Medium | \${report.duplicates.filter(d => d.severity === 'medium').length} | 📋 Planned |
           | Low | \${report.duplicates.filter(d => d.severity === 'low').length} | 🔄 Backlog |
-          
+
           ### Top Issues
           \${report.duplicates
             .filter(d => d.severity === 'critical' || d.severity === 'high')
             .slice(0, 5)
             .map((d, i) => \`\${i + 1}. **\${d.type}**: \${d.entities.length} duplicates - \${d.entities.map(e => e.name).join(', ')}\`)
             .join('\\n')}
-          
+
           ### Recommendations
           \${report.recommendations
             .slice(0, 3)
@@ -189,7 +189,7 @@ jobs:
           else
             echo "⚠️ Analysis data not available - check logs for errors" >> drift-report.md
           fi
-          
+
           # Store report path for later use
           echo "report-path=$(pwd)/drift-report.md" >> $GITHUB_OUTPUT
 
@@ -197,7 +197,7 @@ jobs:
         id: drift-check
         run: |
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}/*
-          
+
           if [ -f "analysis-report.json" ]; then
             # Check if drift exceeds thresholds
             CRITICAL_COUNT=$(npx ts-node -e "
@@ -229,7 +229,7 @@ jobs:
         if: success() || failure()
         run: |
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}/*
-          
+
           if [ -f "analysis-report.json" ]; then
             # Create prioritized consolidation batches
             npx ts-node -e "
@@ -287,16 +287,16 @@ jobs:
           **Type:** \${batch.type}
           **Estimated Time:** \${batch.estimatedHours} hours
           **Items to Process:** \${batch.items.length}
-          
+
           ### Details
           \${batch.items.slice(0, 10).map(item => 
             batch.type === 'duplicates' 
               ? \`- **\${item.type}**: \${item.entities.map(e => \`\${e.name} (\${e.file})\`).join(', ')}\`
               : \`- \${item.name} in \${item.file}\`
           ).join('\\n')}
-          
+
           \${batch.items.length > 10 ? \`\\n_...and \${batch.items.length - 10} more items_\` : ''}
-          
+
           ### Auto-generated by drift detection workflow
           **Workflow:** ${{ github.workflow }}
           **Run:** ${{ github.run_id }}
@@ -309,7 +309,7 @@ jobs:
           fi
 
       - name: Upload analysis artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: drift-analysis-${{ env.TIMESTAMP }}
@@ -325,11 +325,11 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            
+
             // Find the drift report
             const analysisDir = '${{ env.ANALYSIS_OUTPUT_DIR }}';
             const reportPath = `${analysisDir}/*/*/drift-report.md`;
-            
+
             try {
               const reportContent = fs.readFileSync('${{ steps.drift-report.outputs.report-path }}', 'utf8');
               
@@ -373,7 +373,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             try {
               const issuesData = JSON.parse(fs.readFileSync('${{ env.ANALYSIS_OUTPUT_DIR }}/*/github-issues.json', 'utf8'));
               
@@ -418,21 +418,21 @@ jobs:
             const status = '${{ needs.drift-detection.result }}';
             const criticalCount = '${{ needs.drift-detection.outputs.critical-count || 0 }}';
             const unusedCount = '${{ needs.drift-detection.outputs.unused-count || 0 }}';
-            
+
             const title = status === 'success' 
               ? '✅ Daily Drift Check: All Clear' 
               : '⚠️ Daily Drift Check: Action Required';
-            
+
             const body = `## Daily Code Drift Report
-            
+
             **Status:** ${status}
             **Critical Issues:** ${criticalCount}
             **Unused Exports:** ${unusedCount}
             **Workflow:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
+
             ${status !== 'success' ? '**Action Required:** Review the analysis results and address critical issues.' : ''}
             `;
-            
+
             // Create or update a pinned issue for daily reports
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -440,7 +440,7 @@ jobs:
               labels: 'daily-drift-report',
               state: 'open'
             });
-            
+
             if (issues.data.length > 0) {
               // Update existing issue
               await github.rest.issues.createComment({

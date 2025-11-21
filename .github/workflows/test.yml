@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       test_scope:
-        description: 'Test scope (unit, integration, full)'
+        description: "Test scope (unit, integration, full)"
         required: false
-        default: 'full'
+        default: "full"
         type: choice
         options:
           - unit
@@ -18,7 +18,8 @@ on:
           - full
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: "18"
+  PNPM_VERSION: "8.15.0"
 
 jobs:
   setup:
@@ -60,23 +61,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'setup/package.json'
+          cache: "pnpm"
 
       - name: Install test dependencies
-        working-directory: setup
-        run: |
-          npm ci
-          npm install --save-dev \
-            jest \
-            @types/jest \
-            ts-jest \
-            typescript \
-            @types/node
+        run: pnpm install --no-frozen-lockfile
 
       - name: Setup Jest configuration
         run: |
@@ -116,7 +113,7 @@ jobs:
 
       - name: Upload coverage reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
@@ -129,24 +126,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'setup/package.json'
+          cache: "pnpm"
 
       - name: Install dependencies
-        working-directory: setup
-        run: |
-          npm ci
-          npm install --save-dev \
-            typescript \
-            ts-node \
-            @types/node \
-            ts-morph \
-            glob \
-            fastest-levenshtein
+        run: pnpm install --no-frozen-lockfile
 
       - name: Create test data
         run: |
@@ -154,14 +146,14 @@ jobs:
           mkdir -p test-project/src/components
           mkdir -p test-project/src/services
           mkdir -p test-project/src/utils
-          
+
           # Create duplicate TypeScript files for testing
           cat > test-project/src/components/Button.ts << 'EOF'
           export interface ButtonProps {
             label: string;
             onClick: () => void;
           }
-          
+
           export class Button {
             constructor(private props: ButtonProps) {}
             
@@ -170,13 +162,13 @@ jobs:
             }
           }
           EOF
-          
+
           cat > test-project/src/components/ActionButton.ts << 'EOF'
           export interface ActionButtonProps {
             label: string;
             onClick: () => void;
           }
-          
+
           export class ActionButton {
             constructor(private props: ActionButtonProps) {}
             
@@ -185,7 +177,7 @@ jobs:
             }
           }
           EOF
-          
+
           cat > test-project/src/services/ApiService.ts << 'EOF'
           export class ApiService {
             private baseUrl: string;
@@ -199,7 +191,7 @@ jobs:
             }
           }
           EOF
-          
+
           cat > test-project/src/services/HttpService.ts << 'EOF'
           export class HttpService {
             private baseUrl: string;
@@ -213,16 +205,16 @@ jobs:
             }
           }
           EOF
-          
+
           cat > test-project/src/utils/helpers.ts << 'EOF'
           export function formatDate(date: Date): string {
             return date.toISOString().split('T')[0];
           }
-          
+
           export function parseDate(dateStr: string): Date {
             return new Date(dateStr);
           }
-          
+
           export function unusedFunction(): void {
             console.log('This function is never imported');
           }
@@ -231,9 +223,9 @@ jobs:
       - name: Test AST analyzer
         run: |
           echo "Testing AST analyzer functionality..."
-          
+
           cd test-project
-          
+
           # Test if the AST analyzer can run without errors
           if timeout 60s npx ts-node ../scripts/analysis/enhanced-ast-analyzer.ts 2>/dev/null; then
             echo "✅ AST analyzer completed successfully"
@@ -265,9 +257,9 @@ jobs:
       - name: Test consolidation manager
         run: |
           echo "Testing consolidation manager functionality..."
-          
+
           cd test-project
-          
+
           # Test consolidation manager syntax and basic functionality
           if timeout 30s npx ts-node --transpile-only --check ../scripts/consolidation/consolidation-manager.ts; then
             echo "✅ Consolidation manager syntax is valid"
@@ -279,13 +271,13 @@ jobs:
       - name: Test analysis script orchestrator
         run: |
           echo "Testing main analysis script..."
-          
+
           cd test-project
-          
+
           # Create a temporary output directory
           mkdir -p analysis-output
           cd analysis-output
-          
+
           # Test the main analysis script with timeout
           if timeout 120s bash ../../scripts/analysis/analyze-all.sh ..; then
             echo "✅ Main analysis script completed successfully"
@@ -310,7 +302,7 @@ jobs:
       - name: Test monorepo setup script
         run: |
           echo "Testing monorepo setup functionality..."
-          
+
           # Test monorepo setup script syntax
           if npx ts-node --transpile-only --check scripts/monorepo/monorepo-setup.ts; then
             echo "✅ Monorepo setup script syntax is valid"
@@ -331,8 +323,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'setup/package.json'
+          cache: "npm"
+          cache-dependency-path: "setup/package.json"
 
       - name: Install dependencies
         working-directory: setup
@@ -350,12 +342,12 @@ jobs:
       - name: Test complete workflow integration
         run: |
           echo "Testing complete analysis workflow..."
-          
+
           # Create a more complex test project
           mkdir -p integration-test/packages/ui/src
           mkdir -p integration-test/packages/api/src
           mkdir -p integration-test/packages/shared/src
-          
+
           # Create package.json files
           cat > integration-test/packages/ui/package.json << 'EOF'
           {
@@ -364,7 +356,7 @@ jobs:
             "main": "src/index.ts"
           }
           EOF
-          
+
           cat > integration-test/packages/api/package.json << 'EOF'
           {
             "name": "@test/api",
@@ -372,7 +364,7 @@ jobs:
             "main": "src/index.ts"
           }
           EOF
-          
+
           cat > integration-test/packages/shared/package.json << 'EOF'
           {
             "name": "@test/shared",
@@ -380,7 +372,7 @@ jobs:
             "main": "src/index.ts"
           }
           EOF
-          
+
           # Create interconnected TypeScript files
           cat > integration-test/packages/shared/src/types.ts << 'EOF'
           export interface User {
@@ -388,26 +380,26 @@ jobs:
             name: string;
             email: string;
           }
-          
+
           export interface ApiResponse<T> {
             data: T;
             success: boolean;
           }
           EOF
-          
+
           cat > integration-test/packages/ui/src/UserComponent.ts << 'EOF'
           import { User } from '@test/shared';
-          
+
           export class UserComponent {
             render(user: User): string {
               return `<div>${user.name} (${user.email})</div>`;
             }
           }
           EOF
-          
+
           cat > integration-test/packages/api/src/UserService.ts << 'EOF'
           import { User, ApiResponse } from '@test/shared';
-          
+
           export class UserService {
             async getUser(id: string): Promise<ApiResponse<User>> {
               // Mock implementation
@@ -418,15 +410,15 @@ jobs:
             }
           }
           EOF
-          
+
           cd integration-test
-          
+
           # Run analysis on the integrated project
           timeout 90s bash ../scripts/analysis/analyze-all.sh . || {
             echo "⚠️ Integration test analysis timed out or failed"
             echo "This is not necessarily a failure in CI environment"
           }
-          
+
           echo "✅ Integration test completed"
 
   documentation-tests:
@@ -439,7 +431,7 @@ jobs:
       - name: Test documentation completeness
         run: |
           echo "Testing documentation completeness..."
-          
+
           # Check for required documentation files
           REQUIRED_DOCS=(
             "README.md"
@@ -448,7 +440,7 @@ jobs:
             "docs/architecture/MONOREPO_STRUCTURE.md"
             "scripts/README.md"
           )
-          
+
           for doc in "${REQUIRED_DOCS[@]}"; do
             if [ -f "$doc" ]; then
               echo "✅ Found documentation: $doc"
@@ -467,7 +459,7 @@ jobs:
       - name: Test example files
         run: |
           echo "Testing example files..."
-          
+
           # Check that example files are valid TypeScript
           find examples -name "*.ts" | while read -r file; do
             echo "Checking example: $file"
@@ -480,7 +472,14 @@ jobs:
 
   test-summary:
     runs-on: ubuntu-latest
-    needs: [setup, unit-tests, script-functionality-tests, integration-tests, documentation-tests]
+    needs:
+      [
+        setup,
+        unit-tests,
+        script-functionality-tests,
+        integration-tests,
+        documentation-tests,
+      ]
     if: always()
     steps:
       - name: Generate test summary
@@ -497,7 +496,7 @@ jobs:
           echo "- **Integration Tests:** ${{ needs.integration-tests.result || 'skipped' }}" >> test-summary.md
           echo "- **Documentation Tests:** ${{ needs.documentation-tests.result }}" >> test-summary.md
           echo "" >> test-summary.md
-          
+
           # Determine overall status
           if [ "${{ needs.script-functionality-tests.result }}" = "failure" ] || 
              [ "${{ needs.documentation-tests.result }}" = "failure" ]; then
@@ -513,7 +512,7 @@ jobs:
           fi
 
       - name: Upload test summary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-summary
           path: test-summary.md
@@ -537,7 +536,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             try {
               const summary = fs.readFileSync('test-summary.md', 'utf8');
               

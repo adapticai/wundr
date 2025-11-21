@@ -7,13 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to analyze'
+        description: "PR number to analyze"
         required: false
         type: string
       check_type:
-        description: 'Type of refactor check'
+        description: "Type of refactor check"
         required: false
-        default: 'full'
+        default: "full"
         type: choice
         options:
           - quick
@@ -22,8 +22,8 @@ on:
           - standardization
 
 env:
-  NODE_VERSION: '18'
-  ANALYSIS_OUTPUT_DIR: 'refactor-analysis'
+  NODE_VERSION: "18"
+  ANALYSIS_OUTPUT_DIR: "refactor-analysis"
 
 jobs:
   setup:
@@ -48,47 +48,47 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.payload.pull_request?.number || '${{ github.event.inputs.pr_number }}'
             });
-            
+
             const title = pr.title.toLowerCase();
             const body = (pr.body || '').toLowerCase();
             const labels = pr.labels.map(l => l.name.toLowerCase());
-            
+
             // Check if this is a refactor PR
             const refactorKeywords = [
               'refactor', 'consolidat', 'duplicate', 'cleanup', 'restructur',
               'monorepo', 'standardiz', 'pattern', 'merge', 'dedupe'
             ];
-            
+
             const isRefactorPR = 
               refactorKeywords.some(keyword => title.includes(keyword)) ||
               refactorKeywords.some(keyword => body.includes(keyword)) ||
               labels.some(label => ['refactor', 'consolidation', 'cleanup', 'monorepo'].includes(label));
-            
+
             // Determine check type
             let checkType = '${{ github.event.inputs.check_type }}' || 'full';
             if (labels.includes('consolidation')) checkType = 'consolidation';
             if (labels.includes('standardization')) checkType = 'standardization';
             if (labels.includes('quick-check')) checkType = 'quick';
-            
+
             core.setOutput('is-refactor-pr', isRefactorPR);
             core.setOutput('check-type', checkType);
-            
+
             // Get changed files
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number
             });
-            
+
             const changedFiles = files.map(f => f.filename);
             const tsFiles = changedFiles.filter(f => f.match(/\.(ts|tsx|js|jsx)$/));
-            
+
             core.setOutput('files-changed', JSON.stringify({
               total: changedFiles.length,
               typescript: tsFiles.length,
               files: tsFiles.slice(0, 50) // Limit for performance
             }));
-            
+
             console.log(`PR Analysis: isRefactor=${isRefactorPR}, checkType=${checkType}, files=${tsFiles.length}`);
 
   quality-checks:
@@ -115,8 +115,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'setup/package.json'
+          cache: "npm"
+          cache-dependency-path: "setup/package.json"
 
       - name: Install dependencies
         working-directory: setup
@@ -145,11 +145,11 @@ jobs:
         run: |
           echo "Running pre-refactor analysis on base branch..."
           git checkout ${{ github.base_ref }}
-          
+
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}
           mkdir -p before
           cd before
-          
+
           # Run analysis on base branch
           if bash ../../scripts/analysis/analyze-all.sh ../..; then
             echo "pre-analysis-success=true" >> $GITHUB_OUTPUT
@@ -164,11 +164,11 @@ jobs:
         run: |
           echo "Running post-refactor analysis on PR branch..."
           git checkout ${{ github.head_ref }}
-          
+
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}
           mkdir -p after
           cd after
-          
+
           # Run analysis on PR branch
           if bash ../../scripts/analysis/analyze-all.sh ../..; then
             echo "post-analysis-success=true" >> $GITHUB_OUTPUT
@@ -183,7 +183,7 @@ jobs:
         id: comparison
         run: |
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}
-          
+
           # Create comparison report
           npx ts-node -e "
             const fs = require('fs');
@@ -264,7 +264,7 @@ jobs:
             // Output key metrics
             console.log('comparison-data=' + JSON.stringify(comparison));
           " > comparison-output.txt
-          
+
           # Extract comparison data
           COMPARISON_DATA=$(cat comparison-output.txt | grep 'comparison-data=' | cut -d'=' -f2-)
           echo "comparison-data=$COMPARISON_DATA" >> $GITHUB_OUTPUT
@@ -273,12 +273,12 @@ jobs:
         id: refactor-checks
         run: |
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}
-          
+
           # Check for common refactor issues
           echo "Running refactor-specific validations..."
-          
+
           ISSUES=()
-          
+
           # Check 1: Ensure no new circular dependencies
           if [ -f "after/circular-deps.json" ]; then
             CIRCULAR_COUNT=$(jq '. | length' after/circular-deps.json 2>/dev/null || echo "0")
@@ -286,7 +286,7 @@ jobs:
               ISSUES+=("Circular dependencies detected: $CIRCULAR_COUNT cycles")
             fi
           fi
-          
+
           # Check 2: Validate imports are not broken
           echo "Checking for broken imports..."
           npx ts-node -e "
@@ -324,18 +324,18 @@ jobs:
               console.log('broken-imports=' + JSON.stringify(brokenImports));
             }
           " > broken-imports.txt
-          
+
           BROKEN_IMPORTS=$(cat broken-imports.txt | grep 'broken-imports=' | cut -d'=' -f2- || echo "[]")
           if [ "$BROKEN_IMPORTS" != "[]" ]; then
             ISSUES+=("Broken imports detected")
           fi
-          
+
           # Check 3: TypeScript compilation
           echo "Checking TypeScript compilation..."
           if ! npx tsc --noEmit --project ../setup 2>/dev/null; then
             ISSUES+=("TypeScript compilation errors")
           fi
-          
+
           # Output issues
           if [ ${#ISSUES[@]} -gt 0 ]; then
             echo "refactor-issues=$(printf '%s\n' "${ISSUES[@]}" | jq -R . | jq -s .)" >> $GITHUB_OUTPUT
@@ -348,17 +348,17 @@ jobs:
         id: quality-report
         run: |
           cd ${{ env.ANALYSIS_OUTPUT_DIR }}
-          
+
           # Create comprehensive quality report
           cat > quality-report.md << 'EOF'
           # 🔍 Refactor Quality Report
-          
+
           **Analysis Date:** $(date)
           **PR:** #${{ github.event.pull_request.number || github.event.inputs.pr_number }}
           **Check Type:** ${{ needs.setup.outputs.check-type }}
-          
+
           EOF
-          
+
           # Add comparison results if available
           if [ -f "comparison-report.json" ]; then
             npx ts-node -e "
@@ -373,21 +373,21 @@ jobs:
                 
                 console.log(\`
           ## Quality Assessment
-          
+
           **Overall Grade:** \${gradeEmoji} \${grade} (Score: \${comparison.qualityScore})
-          
+
           ### Improvements Made
           - ✅ Duplicate clusters reduced: **\${comparison.improvements.duplicatesReduced}**
           - ✅ Unused exports removed: **\${comparison.improvements.unusedExportsRemoved}**
           - ✅ Critical issues fixed: **\${comparison.improvements.criticalIssuesFixed}**
-          
+
           ### Potential Regressions
           - ❌ New duplicate clusters: **\${comparison.regressions.duplicatesAdded}**
           - ❌ New unused exports: **\${comparison.regressions.unusedExportsAdded}**
           - ❌ New critical issues: **\${comparison.regressions.criticalIssuesAdded}**
-          
+
           ### Metrics Comparison
-          
+
           | Metric | Before | After | Change |
           |--------|--------|--------|--------|
           | Total Entities | \${comparison.metrics.before.totalEntities} | \${comparison.metrics.after.totalEntities} | \${comparison.metrics.after.totalEntities - comparison.metrics.before.totalEntities > 0 ? '+' : ''}\${comparison.metrics.after.totalEntities - comparison.metrics.before.totalEntities} |
@@ -398,9 +398,9 @@ jobs:
               } else {
                 console.log(\`
           ## Current State Analysis
-          
+
           **Note:** No baseline comparison available (first-time analysis)
-          
+
           ### Current Metrics
           - **Total Entities:** \${comparison.metrics.after.totalEntities}
           - **Duplicate Clusters:** \${comparison.metrics.after.duplicateClusters}
@@ -410,7 +410,7 @@ jobs:
               }
             " >> quality-report.md
           fi
-          
+
           # Add refactor-specific issues if any
           if [ "${{ steps.refactor-checks.outputs.has-issues }}" = "true" ]; then
             echo '
@@ -423,17 +423,17 @@ jobs:
           else
             echo '
           ## ✅ No Issues Detected
-          
+
           All refactor validation checks passed successfully.
           ' >> quality-report.md
           fi
-          
+
           # Add recommendations
           echo '
           ## 📋 Recommendations
-          
+
           ' >> quality-report.md
-          
+
           if [ -f "post-refactor-report.json" ]; then
             npx ts-node -e "
               const report = JSON.parse(require('fs').readFileSync('post-refactor-report.json', 'utf8'));
@@ -442,11 +442,11 @@ jobs:
               });
             " >> quality-report.md
           fi
-          
+
           echo "report-path=$(pwd)/quality-report.md" >> $GITHUB_OUTPUT
 
       - name: Upload analysis artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: refactor-analysis-${{ env.TIMESTAMP }}
@@ -460,7 +460,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             try {
               const reportContent = fs.readFileSync('${{ steps.quality-report.outputs.report-path }}', 'utf8');
               const hasIssues = '${{ steps.refactor-checks.outputs.has-issues }}' === 'true';
@@ -513,9 +513,9 @@ jobs:
           script: |
             const hasIssues = '${{ steps.refactor-checks.outputs.has-issues }}' === 'true';
             const analysisSuccess = '${{ steps.post-analysis.outputs.post-analysis-success }}' === 'true';
-            
+
             let state, description;
-            
+
             if (!analysisSuccess) {
               state = 'failure';
               description = 'Analysis failed - check workflow logs';
@@ -526,7 +526,7 @@ jobs:
               state = 'success';
               description = 'All quality checks passed';
             }
-            
+
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -568,7 +568,7 @@ jobs:
                 **Workflow:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               });
             }
-            
+
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
