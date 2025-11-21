@@ -10,7 +10,7 @@ on:
 
 env:
   NODE_VERSION: "18"
-  PNPM_VERSION: "8.15.0"
+  PNPM_VERSION: "8.15.1""
   CACHE_VERSION: v1
 
 jobs:

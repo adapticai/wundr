@@ -22,7 +22,7 @@ on:
 
 env:
   NODE_VERSION: '20'
-  PNPM_VERSION: '8.15.0'
+  PNPM_VERSION: "8.15.1"'
 
 jobs:
   # Validate release readiness
