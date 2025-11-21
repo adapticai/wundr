@@ -225,7 +225,6 @@ jobs:
         run: |
           echo "Skipping AST analyzer test for now (will be fixed in separate task)"
           echo "Note: Analyzer tests can be re-enabled after fixing script issues"
-          fi
 
       - name: Test consolidation manager
         run: |

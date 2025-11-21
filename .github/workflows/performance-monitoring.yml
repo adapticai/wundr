@@ -2,12 +2,12 @@ name: Performance Monitoring
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
   schedule:
     # Run performance monitoring daily at 6 AM UTC
-    - cron: '0 6 * * *'
+    - cron: "0 6 * * *"
 
 jobs:
   performance-analysis:
@@ -15,153 +15,158 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
 
-    - name: Run performance baseline
-      id: baseline
-      run: |
-        echo "BASELINE_START=$(date +%s)" >> $GITHUB_OUTPUT
-        npm run build:performance-baseline || echo "BUILD_FAILED=true" >> $GITHUB_OUTPUT
-        echo "BASELINE_END=$(date +%s)" >> $GITHUB_OUTPUT
-      continue-on-error: true
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
 
-    - name: Count console usage
-      id: console-count
-      run: |
-        CONSOLE_COUNT=$(rg 'console\.(log|warn|error|info|debug)' --count --type ts --type tsx . | awk -F: '{sum += $2} END {print sum+0}')
-        echo "CONSOLE_COUNT=$CONSOLE_COUNT" >> $GITHUB_OUTPUT
-        echo "Console usage: $CONSOLE_COUNT instances"
+      - name: Run performance baseline
+        id: baseline
+        run: |
+          echo "BASELINE_START=$(date +%s)" >> $GITHUB_OUTPUT
+          pnpm run build:performance-baseline || echo "BUILD_FAILED=true" >> $GITHUB_OUTPUT
+          echo "BASELINE_END=$(date +%s)" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
-    - name: Measure build performance
-      id: build-perf
-      run: |
-        echo "BUILD_START=$(date +%s)" >> $GITHUB_OUTPUT
-        timeout 300 npm run build || echo "BUILD_TIMEOUT=true" >> $GITHUB_OUTPUT
-        echo "BUILD_END=$(date +%s)" >> $GITHUB_OUTPUT
-      continue-on-error: true
+      - name: Count console usage
+        id: console-count
+        run: |
+          CONSOLE_COUNT=$(rg 'console\.(log|warn|error|info|debug)' --count --type ts --type tsx . | awk -F: '{sum += $2} END {print sum+0}')
+          echo "CONSOLE_COUNT=$CONSOLE_COUNT" >> $GITHUB_OUTPUT
+          echo "Console usage: $CONSOLE_COUNT instances"
 
-    - name: Measure lint performance
-      id: lint-perf
-      run: |
-        echo "LINT_START=$(date +%s)" >> $GITHUB_OUTPUT
-        timeout 120 npm run lint || echo "LINT_TIMEOUT=true" >> $GITHUB_OUTPUT
-        echo "LINT_END=$(date +%s)" >> $GITHUB_OUTPUT
-      continue-on-error: true
+      - name: Measure build performance
+        id: build-perf
+        run: |
+          echo "BUILD_START=$(date +%s)" >> $GITHUB_OUTPUT
+          timeout 300 pnpm run build || echo "BUILD_TIMEOUT=true" >> $GITHUB_OUTPUT
+          echo "BUILD_END=$(date +%s)" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
-    - name: Calculate performance metrics
-      id: metrics
-      run: |
-        BUILD_TIME=$(((${{ steps.build-perf.outputs.BUILD_END || 0 }} - ${{ steps.build-perf.outputs.BUILD_START || 0 }})))
-        LINT_TIME=$(((${{ steps.lint-perf.outputs.LINT_END || 0 }} - ${{ steps.lint-perf.outputs.LINT_START || 0 }})))
+      - name: Measure lint performance
+        id: lint-perf
+        run: |
+          echo "LINT_START=$(date +%s)" >> $GITHUB_OUTPUT
+          timeout 120 pnpm run lint || echo "LINT_TIMEOUT=true" >> $GITHUB_OUTPUT
+          echo "LINT_END=$(date +%s)" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
-        echo "BUILD_TIME_SECONDS=$BUILD_TIME" >> $GITHUB_OUTPUT
-        echo "LINT_TIME_SECONDS=$LINT_TIME" >> $GITHUB_OUTPUT
+      - name: Calculate performance metrics
+        id: metrics
+        run: |
+          BUILD_TIME=$(((${{ steps.build-perf.outputs.BUILD_END || 0 }} - ${{ steps.build-perf.outputs.BUILD_START || 0 }})))
+          LINT_TIME=$(((${{ steps.lint-perf.outputs.LINT_END || 0 }} - ${{ steps.lint-perf.outputs.LINT_START || 0 }})))
 
-        # Performance thresholds
-        if [ "$BUILD_TIME" -gt 300 ]; then
-          echo "BUILD_REGRESSION=true" >> $GITHUB_OUTPUT
-        fi
+          echo "BUILD_TIME_SECONDS=$BUILD_TIME" >> $GITHUB_OUTPUT
+          echo "LINT_TIME_SECONDS=$LINT_TIME" >> $GITHUB_OUTPUT
 
-        if [ "$LINT_TIME" -gt 60 ]; then
-          echo "LINT_REGRESSION=true" >> $GITHUB_OUTPUT
-        fi
+          # Performance thresholds
+          if [ "$BUILD_TIME" -gt 300 ]; then
+            echo "BUILD_REGRESSION=true" >> $GITHUB_OUTPUT
+          fi
 
-        if [ "${{ steps.console-count.outputs.CONSOLE_COUNT }}" -gt 2500 ]; then
-          echo "CONSOLE_REGRESSION=true" >> $GITHUB_OUTPUT
-        fi
+          if [ "$LINT_TIME" -gt 60 ]; then
+            echo "LINT_REGRESSION=true" >> $GITHUB_OUTPUT
+          fi
 
-    - name: Generate performance report
-      run: |
-        cat > performance-report.md << EOF
-        # Performance Monitoring Report
+          if [ "${{ steps.console-count.outputs.CONSOLE_COUNT }}" -gt 2500 ]; then
+            echo "CONSOLE_REGRESSION=true" >> $GITHUB_OUTPUT
+          fi
 
-        **Date:** $(date)
-        **Commit:** ${{ github.sha }}
-        **Branch:** ${{ github.ref_name }}
+      - name: Generate performance report
+        run: |
+          cat > performance-report.md << EOF
+          # Performance Monitoring Report
 
-        ## Metrics
+          **Date:** $(date)
+          **Commit:** ${{ github.sha }}
+          **Branch:** ${{ github.ref_name }}
 
-        | Metric | Value | Status |
-        |--------|--------|--------|
-        | Build Time | ${{ steps.metrics.outputs.BUILD_TIME_SECONDS }}s | ${{ steps.metrics.outputs.BUILD_REGRESSION == 'true' && '🔴 REGRESSION' || '🟢 OK' }} |
-        | Lint Time | ${{ steps.metrics.outputs.LINT_TIME_SECONDS }}s | ${{ steps.metrics.outputs.LINT_REGRESSION == 'true' && '🔴 REGRESSION' || '🟢 OK' }} |
-        | Console Usage | ${{ steps.console-count.outputs.CONSOLE_COUNT }} instances | ${{ steps.metrics.outputs.CONSOLE_REGRESSION == 'true' && '🔴 TOO HIGH' || '🟢 OK' }} |
-        | Build Success | ${{ steps.baseline.outputs.BUILD_FAILED != 'true' && '✅ PASSED' || '❌ FAILED' }} |
+          ## Metrics
 
-        ## Performance Alerts
+          | Metric | Value | Status |
+          |--------|--------|--------|
+          | Build Time | ${{ steps.metrics.outputs.BUILD_TIME_SECONDS }}s | ${{ steps.metrics.outputs.BUILD_REGRESSION == 'true' && '🔴 REGRESSION' || '🟢 OK' }} |
+          | Lint Time | ${{ steps.metrics.outputs.LINT_TIME_SECONDS }}s | ${{ steps.metrics.outputs.LINT_REGRESSION == 'true' && '🔴 REGRESSION' || '🟢 OK' }} |
+          | Console Usage | ${{ steps.console-count.outputs.CONSOLE_COUNT }} instances | ${{ steps.metrics.outputs.CONSOLE_REGRESSION == 'true' && '🔴 TOO HIGH' || '🟢 OK' }} |
+          | Build Success | ${{ steps.baseline.outputs.BUILD_FAILED != 'true' && '✅ PASSED' || '❌ FAILED' }} |
 
-        ${{ steps.metrics.outputs.BUILD_REGRESSION == 'true' && '- 🚨 Build time exceeds 5 minutes threshold' || '' }}
-        ${{ steps.metrics.outputs.LINT_REGRESSION == 'true' && '- 🚨 Lint time exceeds 1 minute threshold' || '' }}
-        ${{ steps.metrics.outputs.CONSOLE_REGRESSION == 'true' && '- 🚨 Console usage exceeds 2500 instances' || '' }}
-        ${{ steps.baseline.outputs.BUILD_FAILED == 'true' && '- 🚨 Build failed - immediate attention required' || '' }}
+          ## Performance Alerts
 
-        ## Recommendations
+          ${{ steps.metrics.outputs.BUILD_REGRESSION == 'true' && '- 🚨 Build time exceeds 5 minutes threshold' || '' }}
+          ${{ steps.metrics.outputs.LINT_REGRESSION == 'true' && '- 🚨 Lint time exceeds 1 minute threshold' || '' }}
+          ${{ steps.metrics.outputs.CONSOLE_REGRESSION == 'true' && '- 🚨 Console usage exceeds 2500 instances' || '' }}
+          ${{ steps.baseline.outputs.BUILD_FAILED == 'true' && '- 🚨 Build failed - immediate attention required' || '' }}
 
-        ${{ steps.metrics.outputs.CONSOLE_REGRESSION == 'true' && '- Replace console.log statements with structured logging' || '' }}
-        ${{ steps.metrics.outputs.BUILD_REGRESSION == 'true' && '- Optimize TypeScript compilation settings' || '' }}
-        ${{ steps.metrics.outputs.LINT_REGRESSION == 'true' && '- Review ESLint rule complexity' || '' }}
-        EOF
+          ## Recommendations
 
-    - name: Comment on PR
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          const report = fs.readFileSync('performance-report.md', 'utf8');
+          ${{ steps.metrics.outputs.CONSOLE_REGRESSION == 'true' && '- Replace console.log statements with structured logging' || '' }}
+          ${{ steps.metrics.outputs.BUILD_REGRESSION == 'true' && '- Optimize TypeScript compilation settings' || '' }}
+          ${{ steps.metrics.outputs.LINT_REGRESSION == 'true' && '- Review ESLint rule complexity' || '' }}
+          EOF
 
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: report
-          });
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('performance-report.md', 'utf8');
 
-    - name: Check performance thresholds
-      run: |
-        FAILED=false
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
 
-        if [ "${{ steps.baseline.outputs.BUILD_FAILED }}" = "true" ]; then
-          echo "❌ Build failed - blocking deployment"
-          FAILED=true
-        fi
+      - name: Check performance thresholds
+        run: |
+          FAILED=false
 
-        if [ "${{ steps.metrics.outputs.BUILD_REGRESSION }}" = "true" ]; then
-          echo "❌ Build time regression detected"
-          FAILED=true
-        fi
+          if [ "${{ steps.baseline.outputs.BUILD_FAILED }}" = "true" ]; then
+            echo "❌ Build failed - blocking deployment"
+            FAILED=true
+          fi
 
-        if [ "${{ steps.metrics.outputs.LINT_REGRESSION }}" = "true" ]; then
-          echo "⚠️  Lint time regression detected"
-        fi
+          if [ "${{ steps.metrics.outputs.BUILD_REGRESSION }}" = "true" ]; then
+            echo "❌ Build time regression detected"
+            FAILED=true
+          fi
 
-        if [ "${{ steps.metrics.outputs.CONSOLE_REGRESSION }}" = "true" ]; then
-          echo "⚠️  High console usage detected"
-        fi
+          if [ "${{ steps.metrics.outputs.LINT_REGRESSION }}" = "true" ]; then
+            echo "⚠️  Lint time regression detected"
+          fi
 
-        if [ "$FAILED" = "true" ]; then
-          echo "Performance checks failed"
-          exit 1
-        fi
+          if [ "${{ steps.metrics.outputs.CONSOLE_REGRESSION }}" = "true" ]; then
+            echo "⚠️  High console usage detected"
+          fi
 
-    - name: Archive performance data
-      uses: actions/upload-artifact@v4
-      with:
-        name: performance-report-${{ github.sha }}
-        path: performance-report.md
-        retention-days: 30
+          if [ "$FAILED" = "true" ]; then
+            echo "Performance checks failed"
+            exit 1
+          fi
+
+      - name: Archive performance data
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report-${{ github.sha }}
+          path: performance-report.md
+          retention-days: 30
 
   performance-comparison:
     runs-on: ubuntu-latest
@@ -169,68 +174,68 @@ jobs:
     needs: performance-analysis
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Get baseline performance
-      run: |
-        # Fetch baseline performance from main branch
-        git checkout origin/master
-        BASELINE_CONSOLE=$(rg 'console\.(log|warn|error|info|debug)' --count --type ts --type tsx . | awk -F: '{sum += $2} END {print sum+0}') || echo "0"
-        echo "BASELINE_CONSOLE_COUNT=$BASELINE_CONSOLE" >> $GITHUB_ENV
+      - name: Get baseline performance
+        run: |
+          # Fetch baseline performance from main branch
+          git checkout origin/master
+          BASELINE_CONSOLE=$(rg 'console\.(log|warn|error|info|debug)' --count --type ts --type tsx . | awk -F: '{sum += $2} END {print sum+0}') || echo "0"
+          echo "BASELINE_CONSOLE_COUNT=$BASELINE_CONSOLE" >> $GITHUB_ENV
 
-        git checkout ${{ github.sha }}
-        CURRENT_CONSOLE=$(rg 'console\.(log|warn|error|info|debug)' --count --type ts --type tsx . | awk -F: '{sum += $2} END {print sum+0}') || echo "0"
-        echo "CURRENT_CONSOLE_COUNT=$CURRENT_CONSOLE" >> $GITHUB_ENV
+          git checkout ${{ github.sha }}
+          CURRENT_CONSOLE=$(rg 'console\.(log|warn|error|info|debug)' --count --type ts --type tsx . | awk -F: '{sum += $2} END {print sum+0}') || echo "0"
+          echo "CURRENT_CONSOLE_COUNT=$CURRENT_CONSOLE" >> $GITHUB_ENV
 
-    - name: Calculate performance delta
-      run: |
-        CONSOLE_DELTA=$(($CURRENT_CONSOLE_COUNT - $BASELINE_CONSOLE_COUNT))
-        echo "CONSOLE_DELTA=$CONSOLE_DELTA" >> $GITHUB_ENV
+      - name: Calculate performance delta
+        run: |
+          CONSOLE_DELTA=$(($CURRENT_CONSOLE_COUNT - $BASELINE_CONSOLE_COUNT))
+          echo "CONSOLE_DELTA=$CONSOLE_DELTA" >> $GITHUB_ENV
 
-        if [ "$CONSOLE_DELTA" -gt 0 ]; then
-          echo "⚠️  Console usage increased by $CONSOLE_DELTA instances"
-        elif [ "$CONSOLE_DELTA" -lt 0 ]; then
-          echo "✅ Console usage decreased by $((-$CONSOLE_DELTA)) instances"
-        else
-          echo "➡️  No change in console usage"
-        fi
+          if [ "$CONSOLE_DELTA" -gt 0 ]; then
+            echo "⚠️  Console usage increased by $CONSOLE_DELTA instances"
+          elif [ "$CONSOLE_DELTA" -lt 0 ]; then
+            echo "✅ Console usage decreased by $((-$CONSOLE_DELTA)) instances"
+          else
+            echo "➡️  No change in console usage"
+          fi
 
-    - name: Update PR with comparison
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const consoleDelta = process.env.CONSOLE_DELTA;
-          const currentCount = process.env.CURRENT_CONSOLE_COUNT;
-          const baselineCount = process.env.BASELINE_CONSOLE_COUNT;
+      - name: Update PR with comparison
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const consoleDelta = process.env.CONSOLE_DELTA;
+            const currentCount = process.env.CURRENT_CONSOLE_COUNT;
+            const baselineCount = process.env.BASELINE_CONSOLE_COUNT;
 
-          let status = '➡️ ';
-          let message = 'No significant performance impact';
+            let status = '➡️ ';
+            let message = 'No significant performance impact';
 
-          if (consoleDelta > 0) {
-            status = '⚠️ ';
-            message = `Console usage increased by ${consoleDelta} instances`;
-          } else if (consoleDelta < 0) {
-            status = '✅ ';
-            message = `Console usage decreased by ${Math.abs(consoleDelta)} instances`;
-          }
+            if (consoleDelta > 0) {
+              status = '⚠️ ';
+              message = `Console usage increased by ${consoleDelta} instances`;
+            } else if (consoleDelta < 0) {
+              status = '✅ ';
+              message = `Console usage decreased by ${Math.abs(consoleDelta)} instances`;
+            }
 
-          const comment = `## Performance Impact Analysis
+            const comment = `## Performance Impact Analysis
 
-          ${status} **${message}**
+            ${status} **${message}**
 
-          | Metric | Baseline | Current | Delta |
-          |--------|----------|---------|-------|
-          | Console Usage | ${baselineCount} | ${currentCount} | ${consoleDelta > 0 ? '+' : ''}${consoleDelta} |
+            | Metric | Baseline | Current | Delta |
+            |--------|----------|---------|-------|
+            | Console Usage | ${baselineCount} | ${currentCount} | ${consoleDelta > 0 ? '+' : ''}${consoleDelta} |
 
-          ${consoleDelta > 50 ? '🚨 **Action Required:** High increase in console usage detected. Please replace console.log statements with structured logging.' : ''}
-          `;
+            ${consoleDelta > 50 ? '🚨 **Action Required:** High increase in console usage detected. Please replace console.log statements with structured logging.' : ''}
+            `;
 
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: comment
-          });
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
