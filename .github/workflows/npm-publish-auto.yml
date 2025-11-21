@@ -5,14 +5,14 @@ on:
     branches:
       - master
     paths:
-      - 'packages/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/npm-publish-auto.yml'
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/npm-publish-auto.yml"
   workflow_dispatch:
     inputs:
       force-publish:
-        description: 'Force publish all packages'
+        description: "Force publish all packages"
         type: boolean
         default: false
 
@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '10.14.0'
+  NODE_VERSION: "20"
+  PNPM_VERSION: "8.15.0"
 
 jobs:
   detect-changes:
@@ -84,7 +84,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: 🔧 Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -134,7 +134,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: 🔧 Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
@@ -197,8 +197,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
 
       - name: 📥 Download build artifacts
         uses: actions/download-artifact@v4
