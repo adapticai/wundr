@@ -3,11 +3,11 @@
  * Extends BaseAnalysisService with advanced performance optimizations
  */
 
+import { createReadStream } from 'fs';
 import * as path from 'path';
 
 import chalk from 'chalk';
 import * as fs from 'fs-extra';
-
 
 import { BaseAnalysisService } from './BaseAnalysisService';
 import { MemoryMonitor } from '../monitoring/MemoryMonitor';
@@ -302,7 +302,7 @@ global.gc();
   private async getLineCountEfficient(filePath: string): Promise<number> {
     return new Promise((resolve, reject) => {
       let lineCount = 0;
-      const stream = fs.createReadStream(filePath, {
+      const stream = createReadStream(filePath, {
         encoding: 'utf8',
         highWaterMark: 64 * 1024,
       });

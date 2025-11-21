@@ -488,7 +488,7 @@ return null;
         files: cycle,
         suggestions: this.generateCircularDependencySuggestions(cycle),
       }));
-    } catch (error) {
+    } catch (_error) {
       if (this.config.verbose) {
         console.warn(
           chalk.yellow('⚠️ Could not run madge for circular dependencies'),
@@ -971,7 +971,6 @@ return '';
         case ts.SyntaxKind.ForStatement:
         case ts.SyntaxKind.ForInStatement:
         case ts.SyntaxKind.ForOfStatement:
-        case ts.SyntaxKind.WhileStatement:
         case ts.SyntaxKind.ConditionalExpression:
         case ts.SyntaxKind.CaseClause:
         case ts.SyntaxKind.CatchClause:
@@ -979,7 +978,7 @@ return '';
           cognitive += currentDepth === 0 ? 1 : currentDepth;
           break;
 
-        case ts.SyntaxKind.BinaryExpression:
+        case ts.SyntaxKind.BinaryExpression: {
           const binExpr = child as ts.BinaryExpression;
           if (
             binExpr.operatorToken.kind ===
@@ -990,6 +989,7 @@ return '';
             cognitive += currentDepth === 0 ? 1 : currentDepth;
           }
           break;
+        }
       }
 
       // Increase depth for nested structures

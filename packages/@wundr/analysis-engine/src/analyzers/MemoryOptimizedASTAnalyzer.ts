@@ -210,7 +210,7 @@ class StreamingASTProcessor extends Transform {
   override _transform(
     sourceFile: ts.SourceFile,
     encoding: string,
-    callback: Function,
+    callback: (error?: Error | null) => void,
   ): void {
     try {
       const entities = this.analyzer.extractEntitiesFromSourceFile(sourceFile);
@@ -222,11 +222,11 @@ class StreamingASTProcessor extends Transform {
 
       callback();
     } catch (error) {
-      callback(error);
+      callback(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
-  override _flush(callback: Function): void {
+  override _flush(callback: (error?: Error | null) => void): void {
     if (this.currentBatch.length > 0) {
       this.push(this.currentBatch);
       this.currentBatch = [];
@@ -435,7 +435,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Batch analysis with optimized concurrency
    */
-  private async performBatchAnalysis(entities: EntityInfo[]): Promise<any> {
+  private async performBatchAnalysis(_entities: EntityInfo[]): Promise<any> {
     this.emitProgress({
       type: 'phase',
       message: 'Using optimized batch analysis...',
@@ -481,7 +481,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
    */
   extractEntitiesFromSourceFile(sourceFile: ts.SourceFile): EntityInfo[] {
     const entities: EntityInfo[] = [];
-    const filePath = normalizeFilePath(sourceFile.fileName);
+    const _filePath = normalizeFilePath(sourceFile.fileName);
 
     const visitNode = (node: ts.Node) => {
       const entity = this.extractEntityFromNode(node, sourceFile);
@@ -525,11 +525,12 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
           // return this.populateFunctionEntity(entity, node as ts.FunctionDeclaration, filePath, position);
           return entity; // Method not implemented
         // Add more cases as needed
-        default:
+        default: {
           this.entityPool.release(entity);
           const newEntity = this.createEmptyEntity();
           newEntity.name = 'placeholder';
           return newEntity;
+        }
       }
     } catch (error) {
       this.entityPool.release(entity);
@@ -756,11 +757,11 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     };
   }
 
-  private generateRecommendations(results: any): any[] {
+  private generateRecommendations(_results: any): any[] {
     return [];
   }
 
-  private generateVisualizationData(entities: EntityInfo[], results: any): any {
+  private generateVisualizationData(_entities: EntityInfo[], _results: any): any {
     return {};
   }
 

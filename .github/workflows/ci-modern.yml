@@ -6,13 +6,14 @@ on:
   pull_request:
     branches: [main, master, develop]
   workflow_dispatch:
+  workflow_call:
     inputs:
       skip_tests:
-        description: 'Skip tests (for emergency deployments)'
+        description: "Skip tests (for emergency deployments)"
         type: boolean
         default: false
       environment:
-        description: 'Target environment'
+        description: "Target environment"
         type: choice
         options:
           - development
@@ -25,8 +26,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '8.15.0'
+  NODE_VERSION: "20"
+  PNPM_VERSION: "8.15.0"
 
 jobs:
   detect-changes:
@@ -90,7 +91,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -98,7 +99,7 @@ jobs:
       - name: Audit dependencies
         run: |
           pnpm audit --audit-level moderate --json > audit-results.json || true
-          
+
           # Check for high/critical vulnerabilities
           if pnpm audit --audit-level high --json > /dev/null 2>&1; then
             echo "✅ No high/critical vulnerabilities found"
@@ -134,7 +135,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -170,13 +171,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node-version: ['18', '20', '21']
+        node-version: ["18", "20", "21"]
         include:
           - os: ubuntu-latest
-            node-version: '20'
+            node-version: "20"
             coverage: true
           - os: ubuntu-latest
-            node-version: '20'
+            node-version: "20"
             e2e: true
     steps:
       - name: Checkout
@@ -191,7 +192,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -252,7 +253,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -271,12 +272,12 @@ jobs:
       - name: Store benchmark results
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          tool: 'benchmarkjs'
+          tool: "benchmarkjs"
           output-file-path: benchmark-results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           comment-on-alert: true
-          alert-threshold: '200%'
+          alert-threshold: "200%"
           fail-on-alert: false
 
       - name: Upload benchmark results
@@ -320,11 +321,11 @@ jobs:
       - name: Test Docker image
         run: |
           docker load --input /tmp/wundr-image.tar
-          
+
           # Test basic functionality
           docker run --rm wundr:latest --version
           docker run --rm wundr:latest --help
-          
+
           # Test health endpoint if available
           if docker run --rm -d --name wundr-test -p 3000:3000 wundr:latest; then
             sleep 10
@@ -364,7 +365,7 @@ jobs:
       - name: Check documentation completeness
         run: |
           echo "Checking for required documentation..."
-          
+
           REQUIRED_DOCS=(
             "README.md"
             "CHANGELOG.md"
@@ -372,7 +373,7 @@ jobs:
             "docs/guides/QUICK_START.md"
             "docs/guides/COMPLETE_STRATEGY.md"
           )
-          
+
           for doc in "${REQUIRED_DOCS[@]}"; do
             if [[ ! -f "$doc" ]]; then
               echo "❌ Missing required documentation: $doc"
@@ -384,20 +385,29 @@ jobs:
               echo "⚠️ Documentation file $doc appears incomplete"
             fi
           done
-          
+
           echo "✅ Documentation completeness check passed"
 
       - name: Validate markdown links
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
-          use-quiet-mode: 'yes'
-          use-verbose-mode: 'yes'
-          config-file: '.github/markdown-link-check-config.json'
+          use-quiet-mode: "yes"
+          use-verbose-mode: "yes"
+          config-file: ".github/markdown-link-check-config.json"
 
   status-summary:
     name: CI Status Summary
     runs-on: ubuntu-latest
-    needs: [security-audit, quality-checks, test-matrix, performance-benchmarks, docker-build, dependency-review, docs-check]
+    needs:
+      [
+        security-audit,
+        quality-checks,
+        test-matrix,
+        performance-benchmarks,
+        docker-build,
+        dependency-review,
+        docs-check,
+      ]
     if: always()
     steps:
       - name: Generate status summary
@@ -414,7 +424,7 @@ jobs:
           echo "| Dependency Review | ${{ needs.dependency-review.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Documentation Check | ${{ needs.docs-check.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Determine overall status
           if [[ "${{ needs.quality-checks.result }}" == "failure" ]] || 
              [[ "${{ needs.test-matrix.result }}" == "failure" ]] || 
@@ -437,11 +447,11 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             const summary = `## 🚀 CI Pipeline Results
-            
+
             **Overall Status:** ${{ env.overall_status == 'success' && '✅ SUCCESS' || env.overall_status == 'partial' && '⚠️ PARTIAL SUCCESS' || '❌ FAILURE' }}
-            
+
             | Component | Status | Details |
             |-----------|--------|---------|
             | 🛡️ Security | ${{ needs.security-audit.result || 'skipped' }} | Dependency vulnerabilities scan |
@@ -451,12 +461,12 @@ jobs:
             | 🐳 Docker | ${{ needs.docker-build.result || 'skipped' }} | Container build and test |
             | 📋 Dependencies | ${{ needs.dependency-review.result || 'skipped' }} | License and security review |
             | 📚 Documentation | ${{ needs.docs-check.result || 'skipped' }} | Completeness and link validation |
-            
+
             ---
-            
+
             **Workflow:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             `;
-            
+
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
