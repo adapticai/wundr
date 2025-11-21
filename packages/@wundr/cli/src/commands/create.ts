@@ -1,12 +1,15 @@
-import { Command } from 'commander';
-import inquirer from 'inquirer';
-import fs from 'fs-extra';
 import path from 'path';
+
 import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+import fs from 'fs-extra';
+import inquirer from 'inquirer';
+
 import { errorHandler } from '../utils/error-handler';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
 // import { projectTemplates } from '@wundr/project-templates';
 // TODO: Fix this import - project-templates package needs to be created
 const projectTemplates = {
@@ -28,7 +31,7 @@ export class CreateCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -37,7 +40,7 @@ export class CreateCommands {
     const createCmd = this.program
       .command('create')
       .description(
-        'create new wundr-compliant projects, components, services, and templates'
+        'create new wundr-compliant projects, components, services, and templates',
       );
 
     // Create new project (full wundr-compliant project)
@@ -66,7 +69,7 @@ export class CreateCommands {
       .option(
         '-f, --framework <framework>',
         'framework (next|react|vue)',
-        'next'
+        'next',
       )
       .action(async (name: string, options: any) => {
         await projectTemplates.createProject({
@@ -84,7 +87,7 @@ export class CreateCommands {
       .option(
         '-f, --framework <framework>',
         'framework (fastify|express|nestjs)',
-        'fastify'
+        'fastify',
       )
       .action(async (name: string, options: any) => {
         await projectTemplates.createProject({
@@ -142,12 +145,12 @@ export class CreateCommands {
       .option(
         '--type <type>',
         'service type (api, worker, microservice)',
-        'api'
+        'api',
       )
       .option(
         '--framework <framework>',
         'framework (express, fastify, nest)',
-        'express'
+        'express',
       )
       .option('--with-tests', 'generate test files')
       .option('--with-docs', 'generate API documentation')
@@ -184,7 +187,7 @@ export class CreateCommands {
       .option(
         '--platform <platform>',
         'platform (github, gitlab, jenkins)',
-        'github'
+        'github',
       )
       .action(async (name, options) => {
         await this.createWorkflow(name, options);
@@ -196,7 +199,7 @@ export class CreateCommands {
       .description('create configuration files')
       .option(
         '--type <type>',
-        'config type (eslint, prettier, jest, typescript)'
+        'config type (eslint, prettier, jest, typescript)',
       )
       .option('--preset <preset>', 'configuration preset')
       .action(async (name, options) => {
@@ -210,7 +213,7 @@ export class CreateCommands {
   private async createProject(
     type: string,
     name: string | undefined,
-    options: any
+    options: any,
   ): Promise<void> {
     try {
       // If no name provided, launch interactive mode
@@ -256,7 +259,7 @@ export class CreateCommands {
         'WUNDR_CREATE_PROJECT_FAILED',
         'Failed to create project',
         { type, name, options },
-        true
+        true,
       );
     }
   }
@@ -277,7 +280,7 @@ export class CreateCommands {
         await this.generateFromTemplate(
           'component-test',
           componentData,
-          outputPath
+          outputPath,
         );
       }
 
@@ -285,7 +288,7 @@ export class CreateCommands {
         await this.generateFromTemplate(
           'component-stories',
           componentData,
-          outputPath
+          outputPath,
         );
       }
 
@@ -295,7 +298,7 @@ export class CreateCommands {
         'WUNDR_CREATE_COMPONENT_FAILED',
         'Failed to create component',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -316,7 +319,7 @@ export class CreateCommands {
         await this.generateFromTemplate(
           'service-test',
           serviceData,
-          outputPath
+          outputPath,
         );
       }
 
@@ -330,7 +333,7 @@ export class CreateCommands {
         'WUNDR_CREATE_SERVICE_FAILED',
         'Failed to create service',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -354,7 +357,7 @@ export class CreateCommands {
         'WUNDR_CREATE_PACKAGE_FAILED',
         'Failed to create package',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -380,7 +383,7 @@ export class CreateCommands {
         'WUNDR_CREATE_TEMPLATE_FAILED',
         'Failed to create template',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -403,7 +406,7 @@ export class CreateCommands {
         'WUNDR_CREATE_WORKFLOW_FAILED',
         'Failed to create workflow',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -426,7 +429,7 @@ export class CreateCommands {
         'WUNDR_CREATE_CONFIG_FAILED',
         'Failed to create configuration',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -501,7 +504,7 @@ export class CreateCommands {
   private async generateFromTemplate(
     templateType: string,
     data: any,
-    outputPath: string
+    outputPath: string,
   ): Promise<void> {
     const templatePath = this.getTemplatePath(templateType);
 
@@ -518,7 +521,7 @@ export class CreateCommands {
   private async copyTemplateWithReplacements(
     srcPath: string,
     destPath: string,
-    data: any
+    data: any,
   ): Promise<void> {
     const files = await fs.readdir(srcPath);
 
@@ -526,7 +529,7 @@ export class CreateCommands {
       const srcFile = path.join(srcPath, file);
       const destFile = path.join(
         destPath,
-        this.replacePlaceholders(file, data)
+        this.replacePlaceholders(file, data),
       );
 
       const stat = await fs.stat(srcFile);
@@ -558,7 +561,7 @@ export class CreateCommands {
    */
   private async determineOutputPath(
     category: string,
-    name: string
+    name: string,
   ): Promise<string> {
     const projectRoot = process.cwd();
     const srcPath = path.join(projectRoot, 'src');
@@ -572,7 +575,7 @@ export class CreateCommands {
 
   private async determinePackagePath(
     name: string,
-    type: string
+    type: string,
   ): Promise<string> {
     const projectRoot = process.cwd();
     const packagesPath = path.join(projectRoot, 'packages');
@@ -629,7 +632,7 @@ export class CreateCommands {
 
   private async updateWorkspaceConfig(
     name: string,
-    type: string
+    type: string,
   ): Promise<void> {
     const packageJsonPath = path.join(process.cwd(), 'package.json');
 
@@ -648,7 +651,7 @@ export class CreateCommands {
 
   private async generateApiDocs(
     serviceData: any,
-    outputPath: string
+    outputPath: string,
   ): Promise<void> {
     // Generate API documentation based on service type and framework
     const docsPath = path.join(outputPath, 'docs');
@@ -714,7 +717,7 @@ Create new ${serviceData.name}
 
   private async createTemplateFromSource(
     name: string,
-    sourcePath: string
+    sourcePath: string,
   ): Promise<void> {
     logger.debug(`Creating template ${name} from source: ${sourcePath}`);
     // Implementation for creating template from existing source

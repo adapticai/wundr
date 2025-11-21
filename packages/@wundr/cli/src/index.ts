@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import figlet from 'figlet';
+
 import { version } from '../package.json';
 import { WundrCLI } from './cli';
-import { logger } from './utils/logger';
 import { errorHandler } from './utils/error-handler';
+import { logger } from './utils/logger';
 
 /**
  * Main CLI entry point
@@ -21,14 +22,14 @@ async function main() {
           font: 'ANSI Shadow',
           horizontalLayout: 'fitted',
           verticalLayout: 'fitted',
-        })
-      )
+        }),
+      ),
     );
 
     console.log(
       chalk.gray(
-        `The Intelligent CLI-Based Coding Agents Orchestrator v${version}\n`
-      )
+        `The Intelligent CLI-Based Coding Agents Orchestrator v${version}\n`,
+      ),
     );
 
     // Initialize CLI

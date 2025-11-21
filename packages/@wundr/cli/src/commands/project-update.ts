@@ -5,43 +5,49 @@
  * Orchestrates state detection, backup, merge, and conflict resolution.
  */
 
-import { Command } from 'commander';
+import { existsSync } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { existsSync } from 'fs';
+
 import chalk from 'chalk';
+import { Command } from 'commander';
 import inquirer from 'inquirer';
 import ora from 'ora';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
-import { errorHandler } from '../utils/error-handler';
 
-// Import lib modules
 import {
-  ProjectState,
-  detectProjectState,
-  CustomizationInfo,
-  getStateSummary
-} from '../lib/state-detection';
+  createConflictResolver,
+} from '../lib/conflict-resolution';
 import {
   MergeStrategyManager,
   MergeResult,
   threeWayMerge,
-  detectFileType
+  detectFileType,
 } from '../lib/merge-strategy';
 import {
-  SafetyManager,
-  UpdateBackup,
-  UpdateTransaction,
-  createSafetyManager
+  createSafetyManager,
 } from '../lib/safety-mechanisms';
 import {
+  detectProjectState,
+  CustomizationInfo,
+  getStateSummary,
+} from '../lib/state-detection';
+import { errorHandler } from '../utils/error-handler';
+import { logger } from '../utils/logger';
+
+// Import lib modules
+import type {
   ConflictResolver,
   UpdateConflict,
-  ConflictResolutionResult,
-  createConflictResolver
-} from '../lib/conflict-resolution';
+  ConflictResolutionResult} from '../lib/conflict-resolution';
+import type {
+  SafetyManager,
+  UpdateBackup,
+  UpdateTransaction} from '../lib/safety-mechanisms';
+import type {
+  ProjectState} from '../lib/state-detection';
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ConfigManager } from '../utils/config-manager';
+
 
 /**
  * Update options from CLI flags
@@ -82,7 +88,7 @@ const DEFAULT_UPDATE_OPTIONS: ProjectUpdateOptions = {
   verbose: false,
   showDiff: true,
   autoResolve: false,
-  rollbackOnFailure: true
+  rollbackOnFailure: true,
 };
 
 /**
@@ -164,17 +170,17 @@ export class ProjectUpdateManager {
     // Initialize managers
     this.mergeManager = new MergeStrategyManager({
       autoResolve: this.options.autoResolve,
-      preserveComments: true
+      preserveComments: true,
     });
     this.safetyManager = createSafetyManager({
       projectRoot,
       skipBackup: this.options.skipBackup,
-      dryRun: this.options.dryRun
+      dryRun: this.options.dryRun,
     });
     this.conflictResolver = createConflictResolver(projectRoot, {
       interactive: this.options.interactive && !this.options.autoResolve,
       autoResolveLow: true,
-      autoResolveMedium: this.options.autoResolve
+      autoResolveMedium: this.options.autoResolve,
     });
   }
 
@@ -187,7 +193,7 @@ export class ProjectUpdateManager {
     logger.info('Starting project update', {
       projectRoot: this.projectRoot,
       dryRun: this.options.dryRun,
-      force: this.options.force
+      force: this.options.force,
     });
 
     this.log('update', 'project', 'success', 'Starting project update');
@@ -196,7 +202,7 @@ export class ProjectUpdateManager {
       // Step 1: Detect current state
       this.startSpinner('Detecting project state...');
       const currentState = await detectProjectState(this.projectRoot, {
-        latestVersion: this.options.version || undefined
+        latestVersion: this.options.version || undefined,
       });
       this.stopSpinner();
 
@@ -234,7 +240,7 @@ export class ProjectUpdateManager {
           filesToBackup,
           'Pre-update backup',
           currentVersion,
-          this.options.version || 'latest'
+          this.options.version || 'latest',
         );
         this.stopSpinner();
         console.log(chalk.green(`Backup created: ${backup.id}`));
@@ -250,7 +256,7 @@ export class ProjectUpdateManager {
         const { filesUpdated, conflicts, errors } = await this.performUpdates(
           components,
           currentState,
-          transaction
+          transaction,
         );
 
         // Step 8: Resolve conflicts
@@ -284,7 +290,7 @@ export class ProjectUpdateManager {
           conflicts,
           backup,
           errors,
-          startTime
+          startTime,
         );
 
       } catch (error) {
@@ -311,7 +317,7 @@ export class ProjectUpdateManager {
         [],
         null,
         [error.message],
-        startTime
+        startTime,
       );
     }
   }
@@ -327,7 +333,7 @@ export class ProjectUpdateManager {
       components.push({
         name: 'claude-config',
         files: [state.claudeConfigPath],
-        needsUpdate: !state.hasClaudeConfig || state.isPartialInstallation
+        needsUpdate: !state.hasClaudeConfig || state.isPartialInstallation,
       });
     }
 
@@ -336,7 +342,7 @@ export class ProjectUpdateManager {
       components.push({
         name: 'mcp-config',
         files: [state.mcpConfigPath],
-        needsUpdate: !state.hasMCPConfig || state.isPartialInstallation
+        needsUpdate: !state.hasMCPConfig || state.isPartialInstallation,
       });
     }
 
@@ -345,7 +351,7 @@ export class ProjectUpdateManager {
       components.push({
         name: 'wundr-config',
         files: [state.wundrConfigPath],
-        needsUpdate: state.isWundrOutdated || false
+        needsUpdate: state.isWundrOutdated || false,
       });
     }
 
@@ -354,7 +360,7 @@ export class ProjectUpdateManager {
       components.push({
         name: 'agents',
         files: state.agents.agents.map(a => a.configPath),
-        needsUpdate: state.agents.agents.some(a => !a.isValid)
+        needsUpdate: state.agents.agents.some(a => !a.isValid),
       });
     }
 
@@ -363,7 +369,7 @@ export class ProjectUpdateManager {
       components.push({
         name: 'hooks',
         files: state.hooks.hooks.map(h => h.configPath),
-        needsUpdate: false
+        needsUpdate: false,
       });
     }
 
@@ -424,8 +430,8 @@ export class ProjectUpdateManager {
           type: 'confirm',
           name: 'confirmed',
           message: 'Proceed with update?',
-          default: true
-        }
+          default: true,
+        },
       ]);
       return confirmed;
     }
@@ -476,7 +482,7 @@ export class ProjectUpdateManager {
   private async performUpdates(
     components: UpdateComponent[],
     state: ProjectState,
-    transaction: UpdateTransaction
+    transaction: UpdateTransaction,
   ): Promise<{
     filesUpdated: string[];
     conflicts: UpdateConflict[];
@@ -490,7 +496,7 @@ export class ProjectUpdateManager {
     let componentsToUpdate = components;
     if (this.options.components.length > 0) {
       componentsToUpdate = components.filter(c =>
-        this.options.components.includes(c.name)
+        this.options.components.includes(c.name),
       );
     }
 
@@ -529,7 +535,7 @@ export class ProjectUpdateManager {
   private async updateComponent(
     component: UpdateComponent,
     state: ProjectState,
-    transaction: UpdateTransaction
+    transaction: UpdateTransaction,
   ): Promise<{
     updated: string[];
     conflicts: UpdateConflict[];
@@ -549,7 +555,7 @@ export class ProjectUpdateManager {
         transaction.recordOperation({
           type: 'update',
           path: filePath,
-          backupRef: null
+          backupRef: null,
         });
 
         // Get current content
@@ -574,7 +580,7 @@ export class ProjectUpdateManager {
           user: currentContent,
           target: targetContent,
           filePath,
-          fileType
+          fileType,
         });
 
         if (mergeResult.success && mergeResult.content) {
@@ -591,7 +597,7 @@ export class ProjectUpdateManager {
           // Create update conflicts
           for (const conflict of mergeResult.conflicts) {
             conflicts.push(
-              this.conflictResolver.createUpdateConflict(conflict, filePath)
+              this.conflictResolver.createUpdateConflict(conflict, filePath),
             );
           }
         }
@@ -610,7 +616,7 @@ export class ProjectUpdateManager {
    */
   private async getTargetContent(
     filePath: string,
-    component: UpdateComponent
+    component: UpdateComponent,
   ): Promise<string | null> {
     // In real implementation, would fetch from wundr registry
     // For now, return null (no update available)
@@ -628,7 +634,7 @@ export class ProjectUpdateManager {
     conflicts: UpdateConflict[],
     backup: UpdateBackup | null,
     errors: string[],
-    startTime: number
+    startTime: number,
   ): UpdateResult {
     return {
       success,
@@ -644,8 +650,8 @@ export class ProjectUpdateManager {
         filesChecked: 0,
         filesUpdated: filesUpdated.length,
         conflictsResolved: 0,
-        timeTaken: Date.now() - startTime
-      }
+        timeTaken: Date.now() - startTime,
+      },
     };
   }
 
@@ -658,7 +664,7 @@ export class ProjectUpdateManager {
       action,
       target,
       status,
-      details
+      details,
     });
   }
 
@@ -670,7 +676,7 @@ export class ProjectUpdateManager {
 
     try {
       const content = this.updateLog.map(entry =>
-        `[${entry.timestamp}] ${entry.action.toUpperCase()} ${entry.target} - ${entry.status}${entry.details ? `: ${entry.details}` : ''}`
+        `[${entry.timestamp}] ${entry.action.toUpperCase()} ${entry.target} - ${entry.status}${entry.details ? `: ${entry.details}` : ''}`,
       ).join('\n');
 
       await fs.writeFile(logPath, content);
@@ -712,7 +718,7 @@ export class ProjectUpdateCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -793,7 +799,7 @@ export class ProjectUpdateCommands {
         verbose: options.verbose,
         showDiff: options.showDiff,
         autoResolve: options.autoResolve,
-        rollbackOnFailure: options.rollback !== false
+        rollbackOnFailure: options.rollback !== false,
       };
 
       const manager = new ProjectUpdateManager(process.cwd(), updateOptions);
@@ -807,7 +813,7 @@ export class ProjectUpdateCommands {
         'WUNDR_UPDATE_FAILED',
         'Project update failed',
         { options },
-        true
+        true,
       );
     }
   }
@@ -889,7 +895,7 @@ export class ProjectUpdateCommands {
       for (const backup of backups) {
         console.log(
           `  ${chalk.white(backup.id)} - ${chalk.gray(new Date(backup.timestamp).toLocaleString())} ` +
-          `(${backup.files.length} files)`
+          `(${backup.files.length} files)`,
         );
       }
       console.log(chalk.cyan('\n=======================================\n'));
@@ -900,7 +906,7 @@ export class ProjectUpdateCommands {
 
     if (backupId) {
       backup = await safetyManager.listBackups().then(
-        backups => backups.find(b => b.id === backupId) || null
+        backups => backups.find(b => b.id === backupId) || null,
       );
     } else {
       backup = await safetyManager.getLatestBackup();
@@ -916,8 +922,8 @@ export class ProjectUpdateCommands {
         type: 'confirm',
         name: 'confirmed',
         message: `Rollback to ${backup.id}?`,
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (!confirmed) {
@@ -955,8 +961,8 @@ export class ProjectUpdateCommands {
         type: 'confirm',
         name: 'confirmed',
         message: `Delete ${toDelete.length} old backup(s)?`,
-        default: true
-      }
+        default: true,
+      },
     ]);
 
     if (!confirmed) {
@@ -1005,7 +1011,7 @@ export function createProjectUpdateCommand(): Command {
         version: options.version || null,
         interactive: options.interactive !== false,
         verbose: options.verbose,
-        autoResolve: options.autoResolve
+        autoResolve: options.autoResolve,
       };
 
       const manager = new ProjectUpdateManager(process.cwd(), updateOptions);

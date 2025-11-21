@@ -3,11 +3,11 @@
  * Integrates new-starter functionality into the unified wundr CLI
  */
 
-import { Command } from 'commander';
-import chalk from 'chalk';
-import ora from 'ora';
-import inquirer from 'inquirer';
 import { ComputerSetupManager } from '@wundr.io/computer-setup';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import inquirer from 'inquirer';
+import ora from 'ora';
 // import { getLogger } from '@wundr/core';
 const logger = { info: console.log, error: console.error, warn: console.warn };
 
@@ -18,17 +18,17 @@ export function createComputerSetupCommand(): Command {
     .alias('setup-machine')
     .alias('provision')
     .description(
-      'Set up a new developer machine with all required tools and configurations'
+      'Set up a new developer machine with all required tools and configurations',
     )
     .option(
       '-p, --profile <profile>',
-      'Use a specific profile (frontend, backend, fullstack, devops, ml)'
+      'Use a specific profile (frontend, backend, fullstack, devops, ml)',
     )
     .option('-t, --team <team>', 'Apply team-specific configurations')
     .option(
       '-m, --mode <mode>',
       'Setup mode (interactive, automated, minimal)',
-      'interactive'
+      'interactive',
     )
     .option('--dry-run', 'Show what would be installed without making changes')
     .option('--skip-existing', 'Skip tools that are already installed')
@@ -88,7 +88,7 @@ async function runComputerSetup(options: any): Promise<void> {
       profile = await manager.getProfile(options.profile);
       if (!profile) {
         console.log(
-          chalk.yellow(`Profile '${options.profile}' not found. Using default.`)
+          chalk.yellow(`Profile '${options.profile}' not found. Using default.`),
         );
         profile = await manager.getDefaultProfile();
       }
@@ -111,14 +111,14 @@ async function runComputerSetup(options: any): Promise<void> {
     console.log(chalk.white('Role:'), chalk.green(profile.role));
     console.log(
       chalk.white('Platform:'),
-      chalk.green(`${platform.os} ${platform.arch}`)
+      chalk.green(`${platform.os} ${platform.arch}`),
     );
     console.log(chalk.white('Mode:'), chalk.green(options.mode));
     console.log(chalk.gray('━'.repeat(50)));
 
     if (options.dryRun) {
       console.log(
-        chalk.yellow('\n⚠️  DRY RUN MODE - No changes will be made\n')
+        chalk.yellow('\n⚠️  DRY RUN MODE - No changes will be made\n'),
       );
     }
 
@@ -145,7 +145,7 @@ async function runComputerSetup(options: any): Promise<void> {
       console.log(chalk.cyan(`\n[${bar}] ${progress.percentage}%`));
       console.log(chalk.gray(`Current: ${progress.currentStep}`));
       console.log(
-        chalk.gray(`Steps: ${progress.completedSteps}/${progress.totalSteps}`)
+        chalk.gray(`Steps: ${progress.completedSteps}/${progress.totalSteps}`),
       );
     });
 
@@ -175,11 +175,11 @@ async function runComputerSetup(options: any): Promise<void> {
 
     console.log(chalk.white('Summary:'));
     console.log(
-      chalk.green(`  ✓ Completed: ${result.completedSteps?.length || 0} steps`)
+      chalk.green(`  ✓ Completed: ${result.completedSteps?.length || 0} steps`),
     );
     if (result.skippedSteps && result.skippedSteps.length > 0) {
       console.log(
-        chalk.yellow(`  ⊘ Skipped: ${result.skippedSteps.length} steps`)
+        chalk.yellow(`  ⊘ Skipped: ${result.skippedSteps.length} steps`),
       );
     }
     if (result.failedSteps && result.failedSteps.length > 0) {
@@ -194,12 +194,12 @@ async function runComputerSetup(options: any): Promise<void> {
     if (result.errors && result.errors.length > 0) {
       console.log(chalk.red('\n❌ Errors:'));
       result.errors.forEach(e =>
-        console.log(chalk.red(`  - ${(e as any)?.message || e}`))
+        console.log(chalk.red(`  - ${(e as any)?.message || e}`)),
       );
     }
 
     if (result.report) {
-      console.log(chalk.cyan(`\n📄 Setup report generated successfully`));
+      console.log(chalk.cyan('\n📄 Setup report generated successfully'));
     }
 
     // Display next steps
@@ -435,7 +435,7 @@ async function manageProfiles(): Promise<void> {
 
   if (profiles.length === 0) {
     console.log(
-      chalk.yellow('No profiles found. Create one with "wundr computer-setup"')
+      chalk.yellow('No profiles found. Create one with "wundr computer-setup"'),
     );
     return;
   }
@@ -462,7 +462,7 @@ async function validateSetup(): Promise<void> {
     if (profiles.length === 0) {
       spinner.stop();
       console.log(
-        chalk.yellow('No profile found. Run "wundr computer-setup" first.')
+        chalk.yellow('No profile found. Run "wundr computer-setup" first.'),
       );
       return;
     }
@@ -470,7 +470,7 @@ async function validateSetup(): Promise<void> {
     const profile = profiles[0]; // Use most recent
     if (!profile) {
       console.log(
-        chalk.yellow('No profile found. Run "wundr computer-setup" first.')
+        chalk.yellow('No profile found. Run "wundr computer-setup" first.'),
       );
       return;
     }
@@ -484,8 +484,8 @@ async function validateSetup(): Promise<void> {
       console.log(chalk.red('❌ Machine setup has issues'));
       console.log(
         chalk.yellow(
-          '\nRun "wundr computer-setup doctor" to diagnose and fix issues'
-        )
+          '\nRun "wundr computer-setup doctor" to diagnose and fix issues',
+        ),
       );
     }
   } catch (error) {
@@ -515,7 +515,7 @@ async function runDoctor(): Promise<void> {
       const { execa } = (await import('execa')) as any;
       const { stdout } = await execa(
         check.command.split(' ')[0],
-        check.command.split(' ').slice(1)
+        check.command.split(' ').slice(1),
       );
       spinner.succeed(`${check.name}: ${stdout.trim()}`);
     } catch (error) {

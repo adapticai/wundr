@@ -5,9 +5,11 @@
  * used by the git-worktree MCP tool handlers.
  */
 
-import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import type { ExecSyncOptionsWithStringEncoding } from 'child_process';
 
 // ============================================================================
 // Types
@@ -181,7 +183,9 @@ export function branchExists(branchName: string, repoRoot: string): boolean {
  */
 export function isBranchMerged(branchName: string, targetBranch: string, repoRoot: string): boolean {
   const result = execGit(`branch --merged "${targetBranch}"`, repoRoot);
-  if (!result.success) return false;
+  if (!result.success) {
+return false;
+}
 
   const mergedBranches = result.output.split('\n').map(b => b.trim().replace(/^\*?\s*/, ''));
   return mergedBranches.includes(branchName);
@@ -220,7 +224,9 @@ export function getBranchInfo(branchName: string, targetBranch: string, repoRoot
  */
 export function isBranchInWorktree(branchName: string, repoRoot: string): boolean {
   const result = execGit('worktree list --porcelain', repoRoot);
-  if (!result.success) return false;
+  if (!result.success) {
+return false;
+}
 
   return result.output.includes(`branch refs/heads/${branchName}`);
 }
@@ -238,7 +244,9 @@ export function deleteBranch(branchName: string, repoRoot: string, force: boolea
  */
 export function getMergedAgentBranches(targetBranch: string, repoRoot: string): string[] {
   const result = execGit(`branch --merged "${targetBranch}"`, repoRoot);
-  if (!result.success) return [];
+  if (!result.success) {
+return [];
+}
 
   return result.output
     .split('\n')
@@ -255,7 +263,9 @@ export function getMergedAgentBranches(targetBranch: string, repoRoot: string): 
  */
 export function listWorktrees(repoRoot: string): WorktreeInfo[] {
   const result = execGit('worktree list --porcelain', repoRoot);
-  if (!result.success) return [];
+  if (!result.success) {
+return [];
+}
 
   const worktrees: WorktreeInfo[] = [];
   const entries = result.output.split('\n\n').filter(Boolean);
@@ -304,11 +314,11 @@ export function createWorktree(
   worktreePath: string,
   branchName: string,
   baseBranch: string,
-  repoRoot: string
+  repoRoot: string,
 ): GitOperationResult {
   return execGit(
     `worktree add -b "${branchName}" "${worktreePath}" "${baseBranch}"`,
-    repoRoot
+    repoRoot,
   );
 }
 
@@ -333,7 +343,9 @@ export function pruneWorktrees(repoRoot: string, dryRun: boolean = false): GitOp
  */
 export function getUncommittedChanges(worktreePath: string): string[] {
   const result = execGit('status --porcelain', worktreePath);
-  if (!result.success || !result.output) return [];
+  if (!result.success || !result.output) {
+return [];
+}
 
   return result.output.split('\n').filter(Boolean);
 }
@@ -398,7 +410,7 @@ export function addRegistryEntry(repoRoot: string, entry: RegistryEntry): void {
 export function updateRegistryStatus(
   repoRoot: string,
   worktreeName: string,
-  status: RegistryEntry['status']
+  status: RegistryEntry['status'],
 ): void {
   const registryPath = getRegistryPath(repoRoot);
   const entries = readRegistry(repoRoot);
@@ -418,7 +430,7 @@ export function updateRegistryStatus(
   fs.writeFileSync(
     registryPath,
     updatedEntries.map(e => JSON.stringify(e)).join('\n') + '\n',
-    'utf-8'
+    'utf-8',
   );
 }
 
@@ -443,9 +455,15 @@ export function getRegistryStats(repoRoot: string): {
   };
 
   for (const entry of entries) {
-    if (entry.status === 'active') stats.active++;
-    if (entry.status === 'merged') stats.merged++;
-    if (entry.status === 'cleaned') stats.cleaned++;
+    if (entry.status === 'active') {
+stats.active++;
+}
+    if (entry.status === 'merged') {
+stats.merged++;
+}
+    if (entry.status === 'cleaned') {
+stats.cleaned++;
+}
 
     stats.byAgent[entry.agent] = (stats.byAgent[entry.agent] || 0) + 1;
   }
@@ -551,7 +569,7 @@ export function validateGitRepository(cwd?: string): { valid: boolean; repoRoot:
  */
 export function validateWorktreeParams(
   agentType: string,
-  taskId: string
+  taskId: string,
 ): { valid: boolean; error?: string } {
   if (!agentType || typeof agentType !== 'string') {
     return { valid: false, error: 'Agent type is required and must be a non-empty string' };

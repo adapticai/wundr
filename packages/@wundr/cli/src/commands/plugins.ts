@@ -1,11 +1,14 @@
-import { Command } from 'commander';
-import fs from 'fs-extra';
 import path from 'path';
+
 import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+import fs from 'fs-extra';
+
 import { errorHandler } from '../utils/error-handler';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
 
 /**
  * Plugin commands for managing CLI extensions
@@ -14,7 +17,7 @@ export class PluginCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -180,7 +183,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_LIST_FAILED',
         'Failed to list plugins',
         { options },
-        true
+        true,
       );
     }
   }
@@ -198,7 +201,7 @@ export class PluginCommands {
         (await this.pluginManager.isPluginInstalled(plugin))
       ) {
         logger.warn(
-          `Plugin ${plugin} is already installed. Use --force to reinstall.`
+          `Plugin ${plugin} is already installed. Use --force to reinstall.`,
         );
         return;
       }
@@ -215,7 +218,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_INSTALL_FAILED',
         'Failed to install plugin',
         { plugin, options },
-        true
+        true,
       );
     }
   }
@@ -254,7 +257,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_UNINSTALL_FAILED',
         'Failed to uninstall plugin',
         { plugin, options },
-        true
+        true,
       );
     }
   }
@@ -275,7 +278,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_ENABLE_FAILED',
         'Failed to enable plugin',
         { plugin },
-        true
+        true,
       );
     }
   }
@@ -296,7 +299,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_DISABLE_FAILED',
         'Failed to disable plugin',
         { plugin },
-        true
+        true,
       );
     }
   }
@@ -330,7 +333,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_INFO_FAILED',
         'Failed to show plugin info',
         { plugin },
-        true
+        true,
       );
     }
   }
@@ -356,7 +359,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_UPDATE_FAILED',
         'Failed to update plugin(s)',
         { plugin, options },
-        true
+        true,
       );
     }
   }
@@ -375,7 +378,7 @@ export class PluginCommands {
       } else {
         pluginConfig = await this.createPluginFromTemplate(
           name,
-          options.template
+          options.template,
         );
       }
 
@@ -392,7 +395,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_CREATE_FAILED',
         'Failed to create plugin',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -418,7 +421,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_PUBLISH_FAILED',
         'Failed to publish plugin',
         { options },
-        true
+        true,
       );
     }
   }
@@ -450,14 +453,14 @@ export class PluginCommands {
           Updated: plugin.updated
             ? new Date(plugin.updated).toLocaleDateString()
             : 'Unknown',
-        }))
+        })),
       );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_SEARCH_FAILED',
         'Failed to search plugins',
         { query, options },
-        true
+        true,
       );
     }
   }
@@ -480,7 +483,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_LINK_FAILED',
         'Failed to link plugin',
         { pluginPath },
-        true
+        true,
       );
     }
   }
@@ -497,7 +500,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_UNLINK_FAILED',
         'Failed to unlink plugin',
         { plugin },
-        true
+        true,
       );
     }
   }
@@ -519,7 +522,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_TEST_FAILED',
         'Failed to test plugin',
         { plugin, options },
-        true
+        true,
       );
     }
   }
@@ -530,19 +533,19 @@ export class PluginCommands {
   private async setPluginConfig(
     plugin: string,
     key: string,
-    value: string
+    value: string,
   ): Promise<void> {
     try {
       await this.pluginManager.setPluginConfig(plugin, key, value);
       logger.success(
-        `Plugin configuration updated: ${plugin}.${key} = ${value}`
+        `Plugin configuration updated: ${plugin}.${key} = ${value}`,
       );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_PLUGIN_CONFIG_SET_FAILED',
         'Failed to set plugin configuration',
         { plugin, key, value },
-        true
+        true,
       );
     }
   }
@@ -564,7 +567,7 @@ export class PluginCommands {
         'WUNDR_PLUGIN_CONFIG_GET_FAILED',
         'Failed to get plugin configuration',
         { plugin, key },
-        true
+        true,
       );
     }
   }
@@ -573,7 +576,7 @@ export class PluginCommands {
    * Helper methods for plugin operations
    */
   private async listInstalledPlugins(
-    enabledOnly: boolean = false
+    enabledOnly: boolean = false,
   ): Promise<void> {
     const plugins = await this.pluginManager.getInstalledPlugins();
     const filteredPlugins = enabledOnly
@@ -582,13 +585,13 @@ export class PluginCommands {
 
     if (filteredPlugins.length === 0) {
       logger.info(
-        enabledOnly ? 'No enabled plugins found' : 'No plugins installed'
+        enabledOnly ? 'No enabled plugins found' : 'No plugins installed',
       );
       return;
     }
 
     logger.info(
-      `${enabledOnly ? 'Enabled plugins' : 'Installed plugins'} (${filteredPlugins.length}):`
+      `${enabledOnly ? 'Enabled plugins' : 'Installed plugins'} (${filteredPlugins.length}):`,
     );
 
     const pluginData = filteredPlugins.map(plugin => ({
@@ -662,7 +665,7 @@ export class PluginCommands {
 
   private async createPluginFromTemplate(
     name: string,
-    template: string
+    template: string,
   ): Promise<any> {
     const templates: Record<string, any> = {
       basic: {
@@ -684,7 +687,7 @@ export class PluginCommands {
 
   private async generatePluginStructure(
     pluginPath: string,
-    config: any
+    config: any,
   ): Promise<void> {
     await fs.ensureDir(pluginPath);
 
@@ -751,7 +754,7 @@ export class PluginCommands {
     // Create main plugin file
     const pluginCode = this.generatePluginCode(
       path.basename(pluginPath),
-      config
+      config,
     );
     await fs.writeFile(path.join(srcDir, 'index.ts'), pluginCode);
 

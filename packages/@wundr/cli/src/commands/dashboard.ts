@@ -1,12 +1,15 @@
-import { Command } from 'commander';
 import { spawn } from 'child_process';
-import fs from 'fs-extra';
 import path from 'path';
+
 import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+import fs from 'fs-extra';
+
 import { errorHandler } from '../utils/error-handler';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
 
 /**
  * Dashboard commands for web interface and visualization
@@ -15,7 +18,7 @@ export class DashboardCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -63,7 +66,7 @@ export class DashboardCommands {
       .option(
         '--period <period>',
         'report period (daily, weekly, monthly)',
-        'weekly'
+        'weekly',
       )
       .action(async (type, options) => {
         await this.generateReport(type, options);
@@ -171,7 +174,7 @@ export class DashboardCommands {
       await this.saveDashboardProcess(dashboardProcess, options);
 
       logger.success(
-        `Dashboard started at http://${options.host}:${options.port}`
+        `Dashboard started at http://${options.host}:${options.port}`,
       );
 
       if (options.open) {
@@ -181,7 +184,7 @@ export class DashboardCommands {
       // Keep the process alive if not in dev mode
       if (!options.dev) {
         logger.info(
-          'Dashboard is running in the background. Use "wundr dashboard stop" to stop it.'
+          'Dashboard is running in the background. Use "wundr dashboard stop" to stop it.',
         );
       }
     } catch (error) {
@@ -189,7 +192,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_START_FAILED',
         'Failed to start dashboard',
         { options },
-        true
+        true,
       );
     }
   }
@@ -219,7 +222,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_STOP_FAILED',
         'Failed to stop dashboard',
         {},
-        true
+        true,
       );
     }
   }
@@ -234,11 +237,11 @@ export class DashboardCommands {
 
       if (isRunning && processInfo) {
         logger.success(
-          `Dashboard is running on http://${processInfo.host}:${processInfo.port}`
+          `Dashboard is running on http://${processInfo.host}:${processInfo.port}`,
         );
         logger.info(`Process ID: ${processInfo.pid}`);
         logger.info(
-          `Started: ${new Date(processInfo.started).toLocaleString()}`
+          `Started: ${new Date(processInfo.started).toLocaleString()}`,
         );
       } else {
         logger.info('Dashboard is not running');
@@ -248,7 +251,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_STATUS_FAILED',
         'Failed to check dashboard status',
         {},
-        true
+        true,
       );
     }
   }
@@ -273,7 +276,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_REPORT_FAILED',
         'Failed to generate report',
         { type, options },
-        true
+        true,
       );
     }
   }
@@ -298,7 +301,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_EXPORT_FAILED',
         'Failed to export data',
         { type, options },
-        true
+        true,
       );
     }
   }
@@ -329,7 +332,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_IMPORT_FAILED',
         'Failed to import data',
         { file, options },
-        true
+        true,
       );
     }
   }
@@ -347,7 +350,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_CONFIG_SET_FAILED',
         'Failed to set dashboard configuration',
         { key, value },
-        true
+        true,
       );
     }
   }
@@ -369,7 +372,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_CONFIG_GET_FAILED',
         'Failed to get dashboard configuration',
         { key },
-        true
+        true,
       );
     }
   }
@@ -398,7 +401,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_ADD_WIDGET_FAILED',
         'Failed to add widget',
         { type, options },
-        true
+        true,
       );
     }
   }
@@ -417,7 +420,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_REMOVE_WIDGET_FAILED',
         'Failed to remove widget',
         { id },
-        true
+        true,
       );
     }
   }
@@ -441,14 +444,14 @@ export class DashboardCommands {
           Type: widget.type,
           Position: `(${widget.position.x}, ${widget.position.y})`,
           Created: new Date(widget.created).toLocaleDateString(),
-        }))
+        })),
       );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_DASHBOARD_LIST_WIDGETS_FAILED',
         'Failed to list widgets',
         {},
-        true
+        true,
       );
     }
   }
@@ -479,7 +482,7 @@ export class DashboardCommands {
         'WUNDR_DASHBOARD_THEME_FAILED',
         'Failed to manage theme',
         { action, options },
-        true
+        true,
       );
     }
   }
@@ -489,7 +492,9 @@ export class DashboardCommands {
    */
   private async isDashboardRunning(): Promise<boolean> {
     const processInfo = await this.loadDashboardProcess();
-    if (!processInfo) return false;
+    if (!processInfo) {
+return false;
+}
 
     try {
       process.kill(processInfo.pid, 0);
@@ -537,7 +542,7 @@ export class DashboardCommands {
 
   private async saveDashboardProcess(
     processInfo: any,
-    options: any
+    options: any,
   ): Promise<void> {
     const processFile = path.join(process.cwd(), '.wundr', 'dashboard.pid');
     await fs.ensureDir(path.dirname(processFile));
@@ -631,7 +636,7 @@ export class DashboardCommands {
       process.cwd(),
       '.wundr',
       'widgets',
-      `${widget.id}.json`
+      `${widget.id}.json`,
     );
     await fs.ensureDir(path.dirname(widgetFile));
     await fs.writeJson(widgetFile, widget, { spaces: 2 });
@@ -642,7 +647,7 @@ export class DashboardCommands {
       process.cwd(),
       '.wundr',
       'widgets',
-      `${id}.json`
+      `${id}.json`,
     );
     if (await fs.pathExists(widgetFile)) {
       await fs.remove(widgetFile);

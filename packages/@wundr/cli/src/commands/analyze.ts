@@ -1,12 +1,14 @@
-import { Command } from 'commander';
-import fs from 'fs-extra';
-// import path from 'path';  // Unused import
 import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+import fs from 'fs-extra';
+
+// import path from 'path';  // Unused import
 import { errorHandler } from '../utils/error-handler';
-import { AnalysisResult, Finding } from '../types';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { AnalysisResult, Finding } from '../types';
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
 
 /**
  * Analyze commands for code analysis and dependency management
@@ -15,7 +17,7 @@ export class AnalyzeCommands {
   constructor(
     private program: Command,
     private _configManager: ConfigManager,
-    private _pluginManager: PluginManager
+    private _pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -37,7 +39,7 @@ export class AnalyzeCommands {
       .option(
         '--format <format>',
         'output format (json, table, graph)',
-        'table'
+        'table',
       )
       .action(async options => {
         await this.analyzeDependencies(options);
@@ -148,7 +150,7 @@ export class AnalyzeCommands {
         'WUNDR_ANALYZE_DEPS_FAILED',
         'Failed to analyze dependencies',
         { options },
-        true
+        true,
       );
     }
   }
@@ -198,7 +200,7 @@ export class AnalyzeCommands {
         'WUNDR_ANALYZE_QUALITY_FAILED',
         'Failed to analyze code quality',
         { options },
-        true
+        true,
       );
     }
   }
@@ -243,7 +245,7 @@ export class AnalyzeCommands {
         'WUNDR_ANALYZE_PERF_FAILED',
         'Failed to analyze performance',
         { options },
-        true
+        true,
       );
     }
   }
@@ -287,7 +289,7 @@ export class AnalyzeCommands {
         'WUNDR_ANALYZE_ARCH_FAILED',
         'Failed to analyze architecture',
         { options },
-        true
+        true,
       );
     }
   }
@@ -329,7 +331,7 @@ export class AnalyzeCommands {
         'WUNDR_ANALYZE_ALL_FAILED',
         'Failed to run comprehensive analysis',
         { options },
-        true
+        true,
       );
     }
   }
@@ -363,7 +365,7 @@ export class AnalyzeCommands {
         'WUNDR_SCAN_FAILED',
         'Failed to scan for issues',
         { scanPath, options },
-        true
+        true,
       );
     }
   }
@@ -483,7 +485,7 @@ export class AnalyzeCommands {
 
   private async performDirectoryScan(
     scanPath: string,
-    options: any
+    options: any,
   ): Promise<Finding[]> {
     // Implementation for directory scanning
     return [];
@@ -508,7 +510,7 @@ export class AnalyzeCommands {
    */
   private async outputResults(
     results: AnalysisResult,
-    format: string
+    format: string,
   ): Promise<void> {
     switch (format) {
       case 'json':
@@ -535,7 +537,7 @@ export class AnalyzeCommands {
           Line: f.line || 'N/A',
           Description: f.description,
           Fixable: f.fixable ? '✓' : '✗',
-        }))
+        })),
       );
     }
 
@@ -548,7 +550,7 @@ export class AnalyzeCommands {
       console.log(chalk.green('\nRecommendations:'));
       results.recommendations.forEach((rec, i) => {
         console.log(
-          `${i + 1}. ${rec.title} (${rec.impact} impact, ${rec.effort} effort)`
+          `${i + 1}. ${rec.title} (${rec.impact} impact, ${rec.effort} effort)`,
         );
       });
     }
@@ -560,7 +562,7 @@ export class AnalyzeCommands {
   }
 
   private async generateComprehensiveReport(
-    results: AnalysisResult[]
+    results: AnalysisResult[],
   ): Promise<void> {
     // Implementation for comprehensive report generation
     logger.info('Generating comprehensive report...');
@@ -568,7 +570,7 @@ export class AnalyzeCommands {
 
   private async exportResults(
     results: AnalysisResult[],
-    exportPath: string
+    exportPath: string,
   ): Promise<void> {
     await fs.writeJson(exportPath, results, { spaces: 2 });
     logger.success(`Results exported to ${exportPath}`);

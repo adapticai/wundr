@@ -3,10 +3,12 @@
  * Handles backup creation and restoration for configuration files
  */
 
+import { existsSync } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { existsSync } from 'fs';
+
 import chalk from 'chalk';
+
 import { logger } from './logger';
 
 export interface BackupMetadata {
@@ -65,7 +67,7 @@ export class BackupRollbackManager {
    */
   async createBackup(
     files: string[],
-    reason: string = 'Manual backup'
+    reason: string = 'Manual backup',
   ): Promise<BackupMetadata> {
     const backupId = this.generateBackupId();
     const timestamp = new Date().toISOString();
@@ -104,7 +106,7 @@ export class BackupRollbackManager {
 
         logger.info('Backed up file', {
           original: expandedPath,
-          backup: backupFilePath
+          backup: backupFilePath,
         });
       }
 
@@ -120,7 +122,7 @@ export class BackupRollbackManager {
 
       logger.info('Backup created successfully', {
         backupId,
-        filesBackedUp: backupFiles.length
+        filesBackedUp: backupFiles.length,
       });
 
       return metadata;
@@ -159,7 +161,7 @@ export class BackupRollbackManager {
       logger.info('Rolling back', {
         backupId: metadata.backupId,
         dryRun,
-        files: metadata.files.length
+        files: metadata.files.length,
       });
 
       if (dryRun) {
@@ -181,7 +183,7 @@ export class BackupRollbackManager {
         try {
           // Create directory structure
           await fs.mkdir(path.dirname(file.originalPath), {
-            recursive: true
+            recursive: true,
           });
 
           // Restore file
@@ -192,7 +194,7 @@ export class BackupRollbackManager {
         } catch (error) {
           logger.error('Failed to restore file', {
             file: file.originalPath,
-            error
+            error,
           });
           failedFiles.push(file.originalPath);
         }
@@ -223,7 +225,7 @@ export class BackupRollbackManager {
       const content = await fs.readFile(this.metadataFile, 'utf-8');
       const backups = JSON.parse(content) as BackupMetadata[];
       return backups.sort((a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
       );
     } catch (error) {
       logger.error('Failed to list backups', error);
@@ -256,7 +258,7 @@ export class BackupRollbackManager {
     if (backups.length <= retainCount) {
       logger.info('No backups to clean up', {
         current: backups.length,
-        retain: retainCount
+        retain: retainCount,
       });
       return;
     }
@@ -273,7 +275,7 @@ export class BackupRollbackManager {
       } catch (error) {
         logger.error('Failed to delete backup', {
           backupId: backup.backupId,
-          error
+          error,
         });
       }
     }
@@ -346,7 +348,7 @@ export class BackupRollbackManager {
     console.log(chalk.white('Timestamp:'), chalk.gray(metadata.timestamp));
     console.log(chalk.white('Reason:'), chalk.gray(metadata.reason));
     console.log(chalk.white('Status:'),
-      metadata.success ? chalk.green('Success') : chalk.red('Failed')
+      metadata.success ? chalk.green('Success') : chalk.red('Failed'),
     );
     console.log(chalk.white('Files:'), chalk.cyan(metadata.files.length));
 

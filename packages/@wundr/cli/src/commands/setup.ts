@@ -3,21 +3,25 @@
  * Provides the primary wundr setup commands that integrate with computer-setup
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
-import ora from 'ora';
 import inquirer from 'inquirer';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
-// Note: Using relative path import due to workspace resolution issues in this monorepo setup
-// The computer-setup package must be built first before building this CLI package
+import ora from 'ora';
+
 import {
-  SetupPlatform,
-  SetupProgress,
-  SetupResult,
   RealSetupOrchestrator,
 } from '../../../computer-setup/dist';
+import { logger } from '../utils/logger';
+
+import type {
+  SetupPlatform,
+  SetupProgress,
+  SetupResult} from '../../../computer-setup/dist';
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ConfigManager } from '../utils/config-manager';
+
+// Note: Using relative path import due to workspace resolution issues in this monorepo setup
+// The computer-setup package must be built first before building this CLI package
+import type { Command } from 'commander';
 
 export class SetupCommands {
   private orchestrator: RealSetupOrchestrator;
@@ -26,7 +30,7 @@ export class SetupCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.platform = this.detectPlatform();
     this.orchestrator = new RealSetupOrchestrator(this.platform);
@@ -41,11 +45,11 @@ export class SetupCommands {
       .option(
         '-p, --profile <profile>',
         'Use specific profile (frontend, backend, fullstack, devops)',
-        'fullstack'
+        'fullstack',
       )
       .option(
         '--dry-run',
-        'Show what would be installed without making changes'
+        'Show what would be installed without making changes',
       )
       .option('--interactive', 'Run in interactive mode')
       .action(async options => {
@@ -145,7 +149,7 @@ export class SetupCommands {
 
       // Try different matching strategies
       let profile = availableProfiles.find(
-        p => p.name.toLowerCase() === profileName.toLowerCase()
+        p => p.name.toLowerCase() === profileName.toLowerCase(),
       );
 
       if (!profile) {
@@ -155,7 +159,7 @@ export class SetupCommands {
             p.name.toLowerCase().includes(profileName.toLowerCase()) ||
             profileName
               .toLowerCase()
-              .includes(p.name.toLowerCase().split(' ')[0])
+              .includes(p.name.toLowerCase().split(' ')[0]),
         );
       }
 
@@ -180,23 +184,23 @@ export class SetupCommands {
         console.log(chalk.cyan('\n📋 Available profiles:'));
         availableProfiles.forEach(p =>
           console.log(
-            `  • ${chalk.white(p.name)}: ${chalk.gray(p.description)}`
-          )
+            `  • ${chalk.white(p.name)}: ${chalk.gray(p.description)}`,
+          ),
         );
         return;
       }
 
       console.log(
-        chalk.cyan(`\n📋 Selected Profile: ${chalk.white(profile.name)}`)
+        chalk.cyan(`\n📋 Selected Profile: ${chalk.white(profile.name)}`),
       );
       console.log(chalk.gray(`${profile.description}`));
       console.log(
-        chalk.gray(`Estimated time: ${profile.estimatedTimeMinutes} minutes\n`)
+        chalk.gray(`Estimated time: ${profile.estimatedTimeMinutes} minutes\n`),
       );
 
       if (options.dryRun) {
         console.log(
-          chalk.yellow('🔍 DRY RUN - Showing what would be installed:\n')
+          chalk.yellow('🔍 DRY RUN - Showing what would be installed:\n'),
         );
         console.log(chalk.cyan('Required tools:'));
         profile.requiredTools.forEach(tool => console.log(`  ✓ ${tool}`));
@@ -213,7 +217,7 @@ export class SetupCommands {
         process.stdout.cursorTo(0);
         const progressBar = this.createProgressBar(progress.percentage);
         process.stdout.write(
-          `${progressBar} ${progress.percentage.toFixed(1)}% - ${progress.currentStep}`
+          `${progressBar} ${progress.percentage.toFixed(1)}% - ${progress.currentStep}`,
         );
       };
 
@@ -227,7 +231,7 @@ export class SetupCommands {
           parallel: false,
           generateReport: true,
         },
-        progressCallback
+        progressCallback,
       );
 
       console.log('\n'); // New line after progress
@@ -235,7 +239,7 @@ export class SetupCommands {
       if (result.success) {
         console.log(chalk.green('\n✅ Setup completed successfully!'));
         console.log(
-          chalk.gray(`Duration: ${Math.round(result.duration / 1000)}s\n`)
+          chalk.gray(`Duration: ${Math.round(result.duration / 1000)}s\n`),
         );
 
         this.showSetupSummary(result);
@@ -311,7 +315,7 @@ export class SetupCommands {
         await this.runSetup({ profile: options.profile || 'fullstack' });
       } else {
         console.log(
-          chalk.cyan('\n💡 Fix issues with: wundr setup:validate --fix')
+          chalk.cyan('\n💡 Fix issues with: wundr setup:validate --fix'),
         );
       }
     } else {
@@ -327,7 +331,7 @@ export class SetupCommands {
       process.stdout.cursorTo(0);
       const progressBar = this.createProgressBar(progress.percentage);
       process.stdout.write(
-        `${progressBar} ${progress.percentage.toFixed(1)}% - ${progress.currentStep}`
+        `${progressBar} ${progress.percentage.toFixed(1)}% - ${progress.currentStep}`,
       );
     };
 
@@ -388,7 +392,7 @@ export class SetupCommands {
     try {
       await this.runCommand(`git config --global user.name "${answers.name}"`);
       await this.runCommand(
-        `git config --global user.email "${answers.email}"`
+        `git config --global user.email "${answers.email}"`,
       );
       console.log(chalk.green('✅ Git configured'));
     } catch (error) {
@@ -432,7 +436,7 @@ export class SetupCommands {
   private showSetupSummary(result: SetupResult): void {
     if (result.completedSteps.length > 0) {
       console.log(
-        chalk.cyan(`🎯 Completed (${result.completedSteps.length}):`)
+        chalk.cyan(`🎯 Completed (${result.completedSteps.length}):`),
       );
       result.completedSteps
         .slice(0, 5)
@@ -444,14 +448,14 @@ export class SetupCommands {
 
     if (result.skippedSteps.length > 0) {
       console.log(
-        chalk.yellow(`\n⏭️  Skipped (${result.skippedSteps.length}):`)
+        chalk.yellow(`\n⏭️  Skipped (${result.skippedSteps.length}):`),
       );
       result.skippedSteps
         .slice(0, 3)
         .forEach(step =>
           console.log(
-            `  ⏭️  ${step.replace('install-', '')} (already installed)`
-          )
+            `  ⏭️  ${step.replace('install-', '')} (already installed)`,
+          ),
         );
     }
   }
@@ -460,7 +464,7 @@ export class SetupCommands {
     if (result.failedSteps.length > 0) {
       console.log(chalk.red(`❌ Failed (${result.failedSteps.length}):`));
       result.failedSteps.forEach(step =>
-        console.log(`  ❌ ${step.replace('install-', '')}`)
+        console.log(`  ❌ ${step.replace('install-', '')}`),
       );
     }
 

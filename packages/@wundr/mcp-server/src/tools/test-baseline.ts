@@ -36,7 +36,7 @@ export const testBaselineTool: Tool = {
 };
 
 export async function handleTestBaseline(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const action = args['action'] as string;
   const path = (args['path'] as string) || process.cwd();
@@ -105,7 +105,7 @@ async function createTestBaseline(path: string): Promise<ToolResult> {
 async function compareBaseline(
   path: string,
   threshold: number,
-  failOnDecrease: boolean
+  failOnDecrease: boolean,
 ): Promise<ToolResult> {
   const comparison = {
     lines: { baseline: 78.5, current: 79.2, change: '+0.7%' },

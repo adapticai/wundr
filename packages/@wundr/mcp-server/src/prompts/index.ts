@@ -76,7 +76,7 @@ export function registerPrompts(): Prompt[] {
  */
 export async function handlePromptGet(
   name: string,
-  args: Record<string, string>
+  args: Record<string, string>,
 ): Promise<PromptResponse> {
   switch (name) {
     case 'quality-check':

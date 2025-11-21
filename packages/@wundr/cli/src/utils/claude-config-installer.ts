@@ -3,13 +3,15 @@
  * Handles installation of CLAUDE.md, hooks, conventions, and agent templates
  */
 
+import { existsSync } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { existsSync } from 'fs';
+
 import chalk from 'chalk';
 import ora from 'ora';
-import { logger } from './logger';
+
 import { BackupRollbackManager } from './backup-rollback-manager';
+import { logger } from './logger';
 
 export interface ClaudeConfigOptions {
   claudeDir?: string;
@@ -74,7 +76,7 @@ export class ClaudeConfigInstaller {
           const spinner = ora('Creating backup of existing configurations...').start();
           const backup = await this.backupManager.createBackup(
             existingFiles,
-            'Pre-installation backup'
+            'Pre-installation backup',
           );
           result.backupId = backup.backupId;
           spinner.succeed(`Backup created: ${backup.backupId}`);
@@ -109,7 +111,7 @@ export class ClaudeConfigInstaller {
       logger.error('Installation failed', error);
       result.errors.push({
         file: 'general',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       return result;
     }
@@ -120,7 +122,7 @@ export class ClaudeConfigInstaller {
    */
   private async installClaudeMd(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
   ): Promise<void> {
     const spinner = ora('Installing CLAUDE.md...').start();
 
@@ -157,7 +159,7 @@ export class ClaudeConfigInstaller {
       spinner.fail('Failed to install CLAUDE.md');
       result.errors.push({
         file: 'CLAUDE.md',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       logger.error('CLAUDE.md installation failed', error);
     }
@@ -168,7 +170,7 @@ export class ClaudeConfigInstaller {
    */
   private async installHooks(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
   ): Promise<void> {
     const spinner = ora('Installing hooks...').start();
 
@@ -202,7 +204,7 @@ export class ClaudeConfigInstaller {
       spinner.fail('Failed to install hooks');
       result.errors.push({
         file: 'hooks',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       logger.error('Hooks installation failed', error);
     }
@@ -213,7 +215,7 @@ export class ClaudeConfigInstaller {
    */
   private async installConventions(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
   ): Promise<void> {
     const spinner = ora('Installing conventions...').start();
 
@@ -242,7 +244,7 @@ export class ClaudeConfigInstaller {
       spinner.fail('Failed to install conventions');
       result.errors.push({
         file: 'conventions.json',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       logger.error('Conventions installation failed', error);
     }
@@ -253,7 +255,7 @@ export class ClaudeConfigInstaller {
    */
   private async installAgentTemplates(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
   ): Promise<void> {
     const spinner = ora('Installing agent templates...').start();
 
@@ -286,7 +288,7 @@ export class ClaudeConfigInstaller {
       spinner.fail('Failed to install agent templates');
       result.errors.push({
         file: 'agent-templates',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       logger.error('Agent templates installation failed', error);
     }
@@ -297,7 +299,7 @@ export class ClaudeConfigInstaller {
    */
   private async installGitWorktreeWorkflows(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
   ): Promise<void> {
     const spinner = ora('Installing git-worktree workflows...').start();
 
@@ -330,7 +332,7 @@ export class ClaudeConfigInstaller {
       spinner.fail('Failed to install git-worktree workflows');
       result.errors.push({
         file: 'git-worktree-workflows',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       logger.error('Git-worktree workflows installation failed', error);
     }
@@ -341,7 +343,7 @@ export class ClaudeConfigInstaller {
    */
   private async installValidationScripts(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
   ): Promise<void> {
     const spinner = ora('Installing validation scripts...').start();
 
@@ -375,7 +377,7 @@ export class ClaudeConfigInstaller {
       spinner.fail('Failed to install validation scripts');
       result.errors.push({
         file: 'validation-scripts',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       logger.error('Validation scripts installation failed', error);
     }

@@ -3,11 +3,13 @@
  * Enhanced CLI command for large-scale codebase analysis
  */
 
-import { Command } from 'commander';
-import chalk from 'chalk';
-import ora from 'ora';
-import * as fs from 'fs-extra';
 import * as path from 'path';
+
+import chalk from 'chalk';
+import { Command } from 'commander';
+import * as fs from 'fs-extra';
+import ora from 'ora';
+
 
 // Use analysis-engine modules for testing
 // Temporarily using inline implementation for CodeAnalyzer
@@ -158,24 +160,24 @@ export function createOptimizedAnalyzeCommand(): Command {
   const command = new Command('analyze-optimized')
     .alias('ao')
     .description(
-      'Run optimized analysis with memory management and high concurrency'
+      'Run optimized analysis with memory management and high concurrency',
     )
     .argument('<directory>', 'Directory to analyze')
     .option(
       '-o, --output <path>',
       'Output directory for results',
-      './wundr-analysis'
+      './wundr-analysis',
     )
     .option(
       '-f, --format <format>',
       'Output format (json, html, markdown, all)',
-      'json'
+      'json',
     )
     .option('-v, --verbose', 'Verbose output with detailed progress', false)
     .option(
       '--max-memory <size>',
       'Maximum memory usage (e.g., 250MB, 1GB)',
-      '250MB'
+      '250MB',
     )
     .option('--max-workers <count>', 'Maximum number of workers', '32')
     .option('--enable-streaming', 'Enable streaming for large codebases', true)
@@ -185,7 +187,7 @@ export function createOptimizedAnalyzeCommand(): Command {
     .option(
       '--cache-enabled',
       'Enable caching for faster repeated analysis',
-      true
+      true,
     )
     .option('--include <patterns...>', 'File patterns to include', [
       '**/*.{ts,tsx,js,jsx}',
@@ -206,7 +208,7 @@ export function createOptimizedAnalyzeCommand(): Command {
  */
 async function runOptimizedAnalysis(
   directory: string,
-  options: OptimizedAnalysisOptions
+  options: OptimizedAnalysisOptions,
 ): Promise<void> {
   const startTime = Date.now();
   const spinner = ora('Initializing optimized analysis...').start();
@@ -251,8 +253,8 @@ async function runOptimizedAnalysis(
       if (options.verbose) {
         spinner.warn(
           color(
-            `Memory Alert: ${alert.type} - ${Math.round(alert.current / 1024 / 1024)}MB`
-          )
+            `Memory Alert: ${alert.type} - ${Math.round(alert.current / 1024 / 1024)}MB`,
+          ),
         );
       }
     });
@@ -260,8 +262,8 @@ async function runOptimizedAnalysis(
     memoryMonitor.on('memory-leak-detected', (analysis: any) => {
       spinner.warn(
         chalk.red(
-          `Memory leak detected! Growth rate: ${Math.round(analysis.growthRate / 1024)}KB/s`
-        )
+          `Memory leak detected! Growth rate: ${Math.round(analysis.growthRate / 1024)}KB/s`,
+        ),
       );
     });
 
@@ -298,8 +300,8 @@ async function runOptimizedAnalysis(
       analysisService.on('memory-leak-warning', (warning: any) => {
         spinner.warn(
           chalk.yellow(
-            `Memory Warning: ${warning.severity} - Growth: ${Math.round(warning.growthRate / 1024)}KB/s`
-          )
+            `Memory Warning: ${warning.severity} - Growth: ${Math.round(warning.growthRate / 1024)}KB/s`,
+          ),
         );
       });
     }
@@ -327,27 +329,27 @@ async function runOptimizedAnalysis(
     console.log(chalk.cyan('📊 Performance Summary:'));
     console.log(chalk.gray(`   Duration: ${formatDuration(duration)}`));
     console.log(
-      chalk.gray(`   Files analyzed: ${result.data?.summary.totalFiles || 0}`)
+      chalk.gray(`   Files analyzed: ${result.data?.summary.totalFiles || 0}`),
     );
     console.log(
       chalk.gray(
-        `   Entities found: ${result.data?.summary.totalEntities || 0}`
-      )
+        `   Entities found: ${result.data?.summary.totalEntities || 0}`,
+      ),
     );
     console.log(
       chalk.gray(
-        `   Peak memory: ${formatFileSize(memoryMetrics.peak.heapUsed)}`
-      )
+        `   Peak memory: ${formatFileSize(memoryMetrics.peak.heapUsed)}`,
+      ),
     );
     console.log(
       chalk.gray(
-        `   Average memory: ${formatFileSize(memoryMetrics.average.heapUsed)}`
-      )
+        `   Average memory: ${formatFileSize(memoryMetrics.average.heapUsed)}`,
+      ),
     );
     console.log(
       chalk.gray(
-        `   Processing rate: ${Math.round((result.data?.summary.totalFiles || 0) / (duration / 1000))} files/sec`
-      )
+        `   Processing rate: ${Math.round((result.data?.summary.totalFiles || 0) / (duration / 1000))} files/sec`,
+      ),
     );
 
     // Analysis results
@@ -355,49 +357,49 @@ async function runOptimizedAnalysis(
       console.log(chalk.cyan('\n🔍 Analysis Results:'));
       console.log(
         chalk.gray(
-          `   Duplicate clusters: ${result.data.summary.duplicateClusters}`
-        )
+          `   Duplicate clusters: ${result.data.summary.duplicateClusters}`,
+        ),
       );
       console.log(
         chalk.gray(
-          `   Circular dependencies: ${result.data.summary.circularDependencies}`
-        )
+          `   Circular dependencies: ${result.data.summary.circularDependencies}`,
+        ),
       );
       console.log(
-        chalk.gray(`   Code smells: ${result.data.summary.codeSmells}`)
+        chalk.gray(`   Code smells: ${result.data.summary.codeSmells}`),
       );
       console.log(
         chalk.gray(
-          `   Technical debt score: ${result.data.summary.technicalDebt}/100`
-        )
+          `   Technical debt score: ${result.data.summary.technicalDebt}/100`,
+        ),
       );
     }
 
     // Memory efficiency
     const memoryEfficiency = calculateMemoryEfficiency(
       result.data?.summary.totalFiles || 0,
-      memoryMetrics.peak.heapUsed
+      memoryMetrics.peak.heapUsed,
     );
     console.log(chalk.cyan('\n💾 Memory Efficiency:'));
     console.log(
-      chalk.gray(`   Efficiency score: ${memoryEfficiency.toFixed(1)}%`)
+      chalk.gray(`   Efficiency score: ${memoryEfficiency.toFixed(1)}%`),
     );
     console.log(
       chalk.gray(
-        `   Memory per file: ${Math.round(memoryMetrics.average.heapUsed / Math.max(1, result.data?.summary.totalFiles || 1) / 1024)}KB`
-      )
+        `   Memory per file: ${Math.round(memoryMetrics.average.heapUsed / Math.max(1, result.data?.summary.totalFiles || 1) / 1024)}KB`,
+      ),
     );
 
     // Leak analysis
     if (memoryMetrics.leakAnalysis.leakDetected) {
       console.log(chalk.red('\n⚠️  Memory Leak Detected:'));
       console.log(
-        chalk.gray(`   Severity: ${memoryMetrics.leakAnalysis.severity}`)
+        chalk.gray(`   Severity: ${memoryMetrics.leakAnalysis.severity}`),
       );
       console.log(
         chalk.gray(
-          `   Growth rate: ${Math.round(memoryMetrics.leakAnalysis.growthRate / 1024)}KB/s`
-        )
+          `   Growth rate: ${Math.round(memoryMetrics.leakAnalysis.growthRate / 1024)}KB/s`,
+        ),
       );
     }
 
@@ -438,18 +440,18 @@ async function runOptimizedAnalysis(
         console.log(chalk.cyan('⚡ Benchmark Results:'));
         console.log(
           chalk.gray(
-            `   Speedup: ${mainResult.results.improvement.speedup.toFixed(1)}x`
-          )
+            `   Speedup: ${mainResult.results.improvement.speedup.toFixed(1)}x`,
+          ),
         );
         console.log(
           chalk.gray(
-            `   Memory reduction: ${mainResult.results.improvement.memoryReduction.toFixed(1)}%`
-          )
+            `   Memory reduction: ${mainResult.results.improvement.memoryReduction.toFixed(1)}%`,
+          ),
         );
         console.log(
           chalk.gray(
-            `   Throughput increase: ${mainResult.results.improvement.throughputIncrease.toFixed(1)}%`
-          )
+            `   Throughput increase: ${mainResult.results.improvement.throughputIncrease.toFixed(1)}%`,
+          ),
         );
       }
 
@@ -461,7 +463,7 @@ async function runOptimizedAnalysis(
     spinner.fail('Analysis failed');
     console.error(
       chalk.red('\n❌ Error:'),
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
 
     if (options.verbose && error instanceof Error) {
@@ -502,9 +504,15 @@ function parseMemoryLimit(memoryStr: string): number {
  * Format duration in milliseconds to human-readable string
  */
 function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`;
+  if (ms < 1000) {
+return `${ms}ms`;
+}
+  if (ms < 60000) {
+return `${(ms / 1000).toFixed(1)}s`;
+}
+  if (ms < 3600000) {
+return `${(ms / 60000).toFixed(1)}m`;
+}
   return `${(ms / 3600000).toFixed(1)}h`;
 }
 
@@ -529,12 +537,12 @@ function formatFileSize(bytes: number): string {
  */
 function calculateMemoryEfficiency(
   fileCount: number,
-  memoryUsed: number
+  memoryUsed: number,
 ): number {
   const expectedMemory = fileCount * 50 * 1024; // 50KB per file baseline
   const efficiency = Math.max(
     0,
-    100 - ((memoryUsed - expectedMemory) / expectedMemory) * 100
+    100 - ((memoryUsed - expectedMemory) / expectedMemory) * 100,
   );
   return Math.min(100, efficiency);
 }
@@ -546,12 +554,12 @@ export function createBenchmarkCommand(): Command {
   const command = new Command('benchmark')
     .alias('bench')
     .description(
-      'Run performance benchmarks for memory and concurrency optimizations'
+      'Run performance benchmarks for memory and concurrency optimizations',
     )
     .option(
       '-o, --output <path>',
       'Output directory for benchmark results',
-      './benchmark-results'
+      './benchmark-results',
     )
     .option('--iterations <count>', 'Number of benchmark iterations', '3')
     .option('--memory-limit <size>', 'Memory limit for testing', '500MB')
@@ -600,41 +608,41 @@ async function runBenchmarks(options: any): Promise<void> {
     const avgSpeedup =
       results.reduce(
         (sum: any, r: any) => sum + r.results.improvement.speedup,
-        0
+        0,
       ) / results.length;
     const avgMemoryReduction =
       results.reduce(
         (sum: any, r: any) => sum + r.results.improvement.memoryReduction,
-        0
+        0,
       ) / results.length;
     const avgThroughputIncrease =
       results.reduce(
         (sum: any, r: any) => sum + r.results.improvement.throughputIncrease,
-        0
+        0,
       ) / results.length;
 
     console.log(chalk.cyan(`🚀 Average Speedup: ${avgSpeedup.toFixed(1)}x`));
     console.log(
       chalk.cyan(
-        `💾 Average Memory Reduction: ${avgMemoryReduction.toFixed(1)}%`
-      )
+        `💾 Average Memory Reduction: ${avgMemoryReduction.toFixed(1)}%`,
+      ),
     );
     console.log(
       chalk.cyan(
-        `📊 Average Throughput Increase: ${avgThroughputIncrease.toFixed(1)}%`
-      )
+        `📊 Average Throughput Increase: ${avgThroughputIncrease.toFixed(1)}%`,
+      ),
     );
 
     console.log(
       chalk.green(
-        `\n📁 Results saved to: ${options.output || './benchmark-results'}\n`
-      )
+        `\n📁 Results saved to: ${options.output || './benchmark-results'}\n`,
+      ),
     );
   } catch (error) {
     spinner.fail('Benchmarks failed');
     console.error(
       chalk.red('\n❌ Error:'),
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
     process.exit(1);
   }

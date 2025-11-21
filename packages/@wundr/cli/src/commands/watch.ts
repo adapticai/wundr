@@ -1,14 +1,19 @@
-import { Command } from 'commander';
-import { watch, FSWatcher } from 'chokidar';
-import fs from 'fs-extra';
+
 import path from 'path';
+
 import chalk from 'chalk';
+import { watch } from 'chokidar';
+import fs from 'fs-extra';
 import YAML from 'yaml';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+
 import { errorHandler } from '../utils/error-handler';
-import { WatchConfig, WatchCommand } from '../types';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { WatchConfig, WatchCommand } from '../types';
+import type { ConfigManager } from '../utils/config-manager';
+import type { FSWatcher } from 'chokidar';
+import type { Command } from 'commander';
 
 /**
  * Watch commands for real-time monitoring
@@ -20,7 +25,7 @@ export class WatchCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -102,7 +107,7 @@ export class WatchCommands {
       .option(
         '--framework <framework>',
         'test framework (jest, mocha, vitest)',
-        'jest'
+        'jest',
       )
       .option('--coverage', 'run with coverage')
       .option('--changed-only', 'run tests for changed files only')
@@ -137,7 +142,7 @@ export class WatchCommands {
       .option(
         '--type <type>',
         'analysis type (quality, deps, security)',
-        'quality'
+        'quality',
       )
       .option('--threshold <threshold>', 'quality threshold')
       .action(async options => {
@@ -185,7 +190,7 @@ export class WatchCommands {
         'WUNDR_WATCH_START_FAILED',
         'Failed to start watching',
         { patterns, options },
-        true
+        true,
       );
     }
   }
@@ -220,7 +225,7 @@ export class WatchCommands {
         'WUNDR_WATCH_STOP_FAILED',
         'Failed to stop watching',
         { name },
-        true
+        true,
       );
     }
   }
@@ -243,7 +248,7 @@ export class WatchCommands {
           Patterns: config.patterns.join(', '),
           Commands: config.commands.length,
           Debounce: `${config.debounce || 300}ms`,
-        })
+        }),
       );
 
       console.table(watchData);
@@ -252,7 +257,7 @@ export class WatchCommands {
         'WUNDR_WATCH_LIST_FAILED',
         'Failed to list watches',
         {},
-        true
+        true,
       );
     }
   }
@@ -276,7 +281,7 @@ export class WatchCommands {
         console.log(`Commands: ${config.commands.length}`);
         console.log(`Debounce: ${config.debounce || 300}ms`);
         console.log(
-          `Watched Paths: ${Object.keys(watcher.getWatched()).length}`
+          `Watched Paths: ${Object.keys(watcher.getWatched()).length}`,
         );
       } else {
         console.log(chalk.blue('\nAll Watches Status:'));
@@ -292,7 +297,7 @@ export class WatchCommands {
         'WUNDR_WATCH_STATUS_FAILED',
         'Failed to show watch status',
         { name },
-        true
+        true,
       );
     }
   }
@@ -321,7 +326,7 @@ export class WatchCommands {
         process.cwd(),
         '.wundr',
         'watch',
-        `${name}.yaml`
+        `${name}.yaml`,
       );
       await fs.ensureDir(path.dirname(configPath));
       await fs.writeFile(configPath, YAML.stringify(config));
@@ -332,7 +337,7 @@ export class WatchCommands {
         'WUNDR_WATCH_CONFIG_CREATE_FAILED',
         'Failed to create watch configuration',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -352,7 +357,7 @@ export class WatchCommands {
         'WUNDR_WATCH_CONFIG_LOAD_FAILED',
         'Failed to load watch configuration',
         { file },
-        true
+        true,
       );
     }
   }
@@ -378,7 +383,7 @@ export class WatchCommands {
         'WUNDR_WATCH_CONFIG_SAVE_FAILED',
         'Failed to save watch configuration',
         { name, file },
-        true
+        true,
       );
     }
   }
@@ -409,7 +414,7 @@ export class WatchCommands {
         'WUNDR_WATCH_TEST_FAILED',
         'Failed to start test watcher',
         { options },
-        true
+        true,
       );
     }
   }
@@ -440,7 +445,7 @@ export class WatchCommands {
         'WUNDR_WATCH_BUILD_FAILED',
         'Failed to start build watcher',
         { options },
-        true
+        true,
       );
     }
   }
@@ -471,7 +476,7 @@ export class WatchCommands {
         'WUNDR_WATCH_LINT_FAILED',
         'Failed to start lint watcher',
         { options },
-        true
+        true,
       );
     }
   }
@@ -502,7 +507,7 @@ export class WatchCommands {
         'WUNDR_WATCH_ANALYSIS_FAILED',
         'Failed to start analysis watcher',
         { options },
-        true
+        true,
       );
     }
   }
@@ -513,11 +518,11 @@ export class WatchCommands {
   private setupWatchHandlers(
     watcher: FSWatcher,
     config: WatchConfig,
-    name: string
+    name: string,
   ): void {
     const executeCommands = async (eventType: string, filePath: string) => {
       const relevantCommands = config.commands.filter(
-        cmd => cmd.trigger === eventType || cmd.trigger === 'change'
+        cmd => cmd.trigger === eventType || cmd.trigger === 'change',
       );
 
       for (const cmd of relevantCommands) {
@@ -552,7 +557,9 @@ export class WatchCommands {
   }
 
   private shouldExecuteCommand(cmd: WatchCommand, filePath: string): boolean {
-    if (!cmd.condition) return true;
+    if (!cmd.condition) {
+return true;
+}
 
     // Implement condition checking logic
     switch (cmd.condition) {
@@ -571,7 +578,7 @@ export class WatchCommands {
 
   private async executeWatchCommand(
     cmd: WatchCommand,
-    filePath: string
+    filePath: string,
   ): Promise<void> {
     try {
       logger.info(`Executing: ${cmd.command}`);
@@ -607,7 +614,7 @@ export class WatchCommands {
 
   private createWatchConfigFromOptions(
     patterns: string[],
-    options: any
+    options: any,
   ): WatchConfig {
     return {
       patterns: patterns.length > 0 ? patterns : ['**/*'],
@@ -644,7 +651,7 @@ export class WatchCommands {
 
   private async startWatchingWithConfig(
     name: string,
-    config: WatchConfig
+    config: WatchConfig,
   ): Promise<void> {
     const watcher = watch(config.patterns, {
       ignored: config.ignore || [],
@@ -728,11 +735,15 @@ export class WatchCommands {
   }
 
   private getTestCommand(framework: string, options: any): string {
-    const baseCmd = framework === 'npm' ? `npm test` : `npx ${framework}`;
+    const baseCmd = framework === 'npm' ? 'npm test' : `npx ${framework}`;
     const flags: string[] = [];
 
-    if (options.coverage) flags.push('--coverage');
-    if (options.changedOnly) flags.push('--changedSince=HEAD');
+    if (options.coverage) {
+flags.push('--coverage');
+}
+    if (options.changedOnly) {
+flags.push('--changedSince=HEAD');
+}
 
     return `${baseCmd} ${flags.join(' ')}`;
   }

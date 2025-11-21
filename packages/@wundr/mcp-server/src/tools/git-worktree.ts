@@ -13,12 +13,11 @@
  */
 
 import * as path from 'path';
+
 import {
   // Types
   GitRepositoryInfo,
   WorktreeInfo,
-  WorktreeMetadata,
-  RegistryEntry,
   BranchInfo,
 
   // Core functions
@@ -65,6 +64,10 @@ import {
   validateWorktreeParams,
   validateMergeStrategy,
 } from './git-helpers.js';
+
+import type {
+  WorktreeMetadata,
+  RegistryEntry} from './git-helpers.js';
 
 // ============================================================================
 // MCP Tool Argument Types
@@ -221,7 +224,7 @@ export class GitWorktreeHandler {
     if (!branchExists(baseBranch, repoRoot)) {
       return this.formatError(
         'Base branch not found',
-        `Branch '${baseBranch}' does not exist in the repository`
+        `Branch '${baseBranch}' does not exist in the repository`,
       );
     }
 
@@ -256,7 +259,7 @@ export class GitWorktreeHandler {
       } catch {
         return this.formatError(
           'Cleanup failed',
-          `Directory exists at ${worktreePath} but could not be cleaned`
+          `Directory exists at ${worktreePath} but could not be cleaned`,
         );
       }
     }
@@ -266,7 +269,7 @@ export class GitWorktreeHandler {
       if (isBranchInWorktree(branchName, repoRoot)) {
         return this.formatError(
           'Branch in use',
-          `Branch '${branchName}' is already in use by another worktree`
+          `Branch '${branchName}' is already in use by another worktree`,
         );
       }
 
@@ -286,7 +289,7 @@ export class GitWorktreeHandler {
     if (!diskSpace.hasEnoughSpace) {
       return this.formatError(
         'Insufficient disk space',
-        `Available: ${Math.round(diskSpace.availableKB / 1024)}MB, Required: ${Math.round(diskSpace.requiredKB / 1024)}MB`
+        `Available: ${Math.round(diskSpace.availableKB / 1024)}MB, Required: ${Math.round(diskSpace.requiredKB / 1024)}MB`,
       );
     }
 
@@ -303,7 +306,7 @@ export class GitWorktreeHandler {
     if (!worktreeDirectoryExists(worktreePath)) {
       return this.formatError(
         'Verification failed',
-        'Worktree directory not found after creation'
+        'Worktree directory not found after creation',
       );
     }
 
@@ -374,7 +377,7 @@ export class GitWorktreeHandler {
     if (!worktreeDirectoryExists(worktreePath)) {
       return this.formatError(
         'Worktree not found',
-        `Worktree '${worktreeName}' not found at ${worktreePath}`
+        `Worktree '${worktreeName}' not found at ${worktreePath}`,
       );
     }
 
@@ -389,7 +392,7 @@ export class GitWorktreeHandler {
     if (!branchResult.success || !branchResult.output) {
       return this.formatError(
         'Branch detection failed',
-        'Could not determine current branch in worktree (detached HEAD?)'
+        'Could not determine current branch in worktree (detached HEAD?)',
       );
     }
 
@@ -404,12 +407,12 @@ export class GitWorktreeHandler {
         const timestamp = new Date().toISOString();
         execGit(
           `commit -m "chore: Auto-commit before merge\n\nWorktree: ${worktreeName}\nTimestamp: ${timestamp}"`,
-          worktreePath
+          worktreePath,
         );
       } else {
         return this.formatError(
           'Uncommitted changes',
-          `Worktree has ${uncommittedChanges.length} uncommitted changes. Set autoCommit: true to commit them automatically.`
+          `Worktree has ${uncommittedChanges.length} uncommitted changes. Set autoCommit: true to commit them automatically.`,
         );
       }
     }
@@ -453,7 +456,7 @@ export class GitWorktreeHandler {
       case 'no-ff':
         mergeResult = execGit(
           `merge --no-ff "${agentBranch}" -m "Merge agent work: ${worktreeName}\n\nCommits: ${commitCount}"`,
-          repoRoot
+          repoRoot,
         );
         break;
 
@@ -462,7 +465,7 @@ export class GitWorktreeHandler {
         if (mergeResult.success) {
           execGit(
             `commit -m "feat: ${worktreeName}\n\nSquashed ${commitCount} commits from ${agentBranch}"`,
-            repoRoot
+            repoRoot,
           );
         }
         break;
@@ -570,7 +573,7 @@ export class GitWorktreeHandler {
     if (uncommittedChanges.length > 0 && !force) {
       return this.formatError(
         'Uncommitted changes',
-        `Worktree has ${uncommittedChanges.length} uncommitted changes. Use force: true to discard them.`
+        `Worktree has ${uncommittedChanges.length} uncommitted changes. Use force: true to discard them.`,
       );
     }
 
@@ -580,7 +583,7 @@ export class GitWorktreeHandler {
     if (!isMerged && !force && branchName) {
       return this.formatError(
         'Branch not merged',
-        `Branch '${branchName}' is not merged into master. Use force: true to delete unmerged work.`
+        `Branch '${branchName}' is not merged into master. Use force: true to delete unmerged work.`,
       );
     }
 
@@ -744,7 +747,9 @@ export class GitWorktreeHandler {
     for (const branch of mergedBranches) {
       // Extract worktree name from branch (agents/agent-type/task-id -> agent-type-task-id)
       const parts = branch.split('/');
-      if (parts.length < 3) continue;
+      if (parts.length < 3) {
+continue;
+}
 
       const agentType = parts[1] || 'unknown';
       const taskId = parts.slice(2).join('-');
@@ -851,7 +856,9 @@ export class GitWorktreeHandler {
   }
 
   private formatStatusAsText(result: StatusResult): string {
-    if (!result.data) return 'No data available';
+    if (!result.data) {
+return 'No data available';
+}
 
     const lines: string[] = [];
 

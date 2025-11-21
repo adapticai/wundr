@@ -1,11 +1,14 @@
-import { Command } from 'commander';
-import fs from 'fs-extra';
 import path from 'path';
+
 import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+import fs from 'fs-extra';
+
 import { errorHandler } from '../utils/error-handler';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
 
 /**
  * Governance commands for compliance and quality control
@@ -14,7 +17,7 @@ export class GovernCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -81,7 +84,7 @@ export class GovernCommands {
       .option(
         '--scope <scope>',
         'application scope (project, workspace)',
-        'project'
+        'project',
       )
       .action(async (policy, options) => {
         await this.applyPolicy(policy, options);
@@ -114,7 +117,7 @@ export class GovernCommands {
       .option(
         '--scope <scope>',
         'audit scope (security, quality, compliance)',
-        'all'
+        'all',
       )
       .option('--export <path>', 'export audit results')
       .action(async options => {
@@ -128,12 +131,12 @@ export class GovernCommands {
       .option(
         '--type <type>',
         'report type (compliance, quality, security)',
-        'compliance'
+        'compliance',
       )
       .option(
         '--period <period>',
         'report period (daily, weekly, monthly)',
-        'weekly'
+        'weekly',
       )
       .option('--output <path>', 'output file path')
       .action(async options => {
@@ -181,7 +184,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_CHECK_FAILED',
         'Failed to run compliance checks',
         { options },
-        true
+        true,
       );
     }
   }
@@ -209,14 +212,14 @@ export class GovernCommands {
           Severity: rule.severity,
           Description: rule.description,
           Fixable: rule.fixable ? '✓' : '✗',
-        }))
+        })),
       );
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_GOVERN_LIST_RULES_FAILED',
         'Failed to list rules',
         { options },
-        true
+        true,
       );
     }
   }
@@ -241,7 +244,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_ADD_RULE_FAILED',
         'Failed to add rule',
         { rule, options },
-        true
+        true,
       );
     }
   }
@@ -268,7 +271,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_REMOVE_RULE_FAILED',
         'Failed to remove rule',
         { rule },
-        true
+        true,
       );
     }
   }
@@ -292,7 +295,7 @@ export class GovernCommands {
         process.cwd(),
         '.wundr',
         'policies',
-        `${name}.json`
+        `${name}.json`,
       );
       await fs.ensureDir(path.dirname(policyPath));
       await fs.writeJson(policyPath, policy, { spaces: 2 });
@@ -303,7 +306,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_CREATE_POLICY_FAILED',
         'Failed to create policy',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -319,7 +322,7 @@ export class GovernCommands {
         process.cwd(),
         '.wundr',
         'policies',
-        `${policy}.json`
+        `${policy}.json`,
       );
 
       if (await fs.pathExists(policyPath)) {
@@ -342,7 +345,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_APPLY_POLICY_FAILED',
         'Failed to apply policy',
         { policy, options },
-        true
+        true,
       );
     }
   }
@@ -389,7 +392,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_GATE_CHECK_FAILED',
         'Failed to check quality gate',
         { options },
-        true
+        true,
       );
     }
   }
@@ -412,7 +415,7 @@ export class GovernCommands {
         process.cwd(),
         '.wundr',
         'gates',
-        `${name}.json`
+        `${name}.json`,
       );
       await fs.ensureDir(path.dirname(gatePath));
       await fs.writeJson(gatePath, gate, { spaces: 2 });
@@ -423,7 +426,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_CREATE_GATE_FAILED',
         'Failed to create quality gate',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -466,7 +469,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_AUDIT_FAILED',
         'Failed to run audit',
         { options },
-        true
+        true,
       );
     }
   }
@@ -480,7 +483,7 @@ export class GovernCommands {
 
       const report = await this.createGovernanceReport(
         options.type,
-        options.period
+        options.period,
       );
 
       const outputPath =
@@ -493,7 +496,7 @@ export class GovernCommands {
         'WUNDR_GOVERN_REPORT_FAILED',
         'Failed to generate report',
         { options },
-        true
+        true,
       );
     }
   }
@@ -537,7 +540,7 @@ export class GovernCommands {
   }
 
   private async evaluateQualityGate(
-    gate: any
+    gate: any,
   ): Promise<{ passed: boolean; failures: string[] }> {
     // Implementation for evaluating quality gates
     return { passed: true, failures: [] };
@@ -560,7 +563,7 @@ export class GovernCommands {
 
   private async createGovernanceReport(
     type: string,
-    period: string
+    period: string,
   ): Promise<any> {
     // Implementation for creating governance reports
     return {
@@ -573,7 +576,9 @@ export class GovernCommands {
   }
 
   private displayViolations(violations: any[]): void {
-    if (violations.length === 0) return;
+    if (violations.length === 0) {
+return;
+}
 
     console.log(chalk.yellow('\nCompliance Violations:'));
     console.table(
@@ -583,7 +588,7 @@ export class GovernCommands {
         File: v.file,
         Line: v.line || 'N/A',
         Description: v.description,
-      }))
+      })),
     );
   }
 

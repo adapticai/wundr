@@ -1,9 +1,12 @@
 import { EventEmitter } from 'events';
-import fs from 'fs-extra';
 import path from 'path';
+
+import fs from 'fs-extra';
+
 import { logger } from '../utils/logger';
-import { ConversationManager } from '../ai/conversation-manager';
-import { CommandMapper } from '../nlp/command-mapper';
+
+import type { ConversationManager } from '../ai/conversation-manager';
+import type { CommandMapper } from '../nlp/command-mapper';
 
 /**
  * User preferences for personalized experience
@@ -124,7 +127,7 @@ export class SessionManager extends EventEmitter {
   constructor(
     conversationManager: ConversationManager,
     commandMapper: CommandMapper,
-    config: Partial<SessionManagerConfig> = {}
+    config: Partial<SessionManagerConfig> = {},
   ) {
     super();
 
@@ -152,7 +155,7 @@ export class SessionManager extends EventEmitter {
   async createSession(
     userId: string,
     workspacePath?: string,
-    sessionId?: string
+    sessionId?: string,
   ): Promise<string> {
     const id =
       sessionId ||
@@ -219,7 +222,7 @@ export class SessionManager extends EventEmitter {
     // Refresh project context
     if (session.projectContext) {
       session.projectContext = await this.detectProjectContext(
-        session.currentWorkspace
+        session.currentWorkspace,
       );
     }
 
@@ -235,7 +238,9 @@ export class SessionManager extends EventEmitter {
    * Get current session
    */
   getCurrentSession(): SessionState | null {
-    if (!this.currentSessionId) return null;
+    if (!this.currentSessionId) {
+return null;
+}
     return this.activeSessions.get(this.currentSessionId) || null;
   }
 
@@ -252,7 +257,7 @@ export class SessionManager extends EventEmitter {
   async updateSessionContext(
     sessionId: string,
     contextType: 'project' | 'command' | 'conversation',
-    contextData: any
+    contextData: any,
   ): Promise<void> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
@@ -294,7 +299,7 @@ export class SessionManager extends EventEmitter {
     sessionId: string,
     command: string,
     success: boolean,
-    duration: number
+    duration: number,
   ): Promise<void> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
@@ -330,7 +335,7 @@ export class SessionManager extends EventEmitter {
    */
   async updateUserPreferences(
     userId: string,
-    preferences: Partial<UserPreferences>
+    preferences: Partial<UserPreferences>,
   ): Promise<void> {
     const defaultPreferences = this.getDefaultPreferences();
     const currentPreferences = await this.loadUserPreferences(userId);
@@ -358,7 +363,7 @@ export class SessionManager extends EventEmitter {
    */
   async registerWorkspace(
     workspacePath: string,
-    config: Partial<WorkspaceConfig>
+    config: Partial<WorkspaceConfig>,
   ): Promise<void> {
     const workspace: WorkspaceConfig = {
       name: config.name || path.basename(workspacePath),
@@ -381,7 +386,7 @@ export class SessionManager extends EventEmitter {
    */
   getWorkspaceSuggestions(limit: number = 5): WorkspaceConfig[] {
     const workspaces = Array.from(this.workspaces.values()).sort(
-      (a, b) => b.lastAccessed.getTime() - a.lastAccessed.getTime()
+      (a, b) => b.lastAccessed.getTime() - a.lastAccessed.getTime(),
     );
 
     return workspaces.slice(0, limit);
@@ -397,7 +402,7 @@ export class SessionManager extends EventEmitter {
       timeRange?: { from: Date; to: Date };
       successOnly?: boolean;
       limit?: number;
-    }
+    },
   ): Array<{
     command: string;
     timestamp: Date;
@@ -405,14 +410,16 @@ export class SessionManager extends EventEmitter {
     duration: number;
   }> {
     const session = this.activeSessions.get(sessionId);
-    if (!session) return [];
+    if (!session) {
+return [];
+}
 
     let history = session.recentCommands;
 
     if (query.command) {
       const searchTerm = query.command.toLowerCase();
       history = history.filter(cmd =>
-        cmd.command.toLowerCase().includes(searchTerm)
+        cmd.command.toLowerCase().includes(searchTerm),
       );
     }
 
@@ -420,7 +427,7 @@ export class SessionManager extends EventEmitter {
       history = history.filter(
         cmd =>
           cmd.timestamp >= query.timeRange!.from &&
-          cmd.timestamp <= query.timeRange!.to
+          cmd.timestamp <= query.timeRange!.to,
       );
     }
 
@@ -440,7 +447,7 @@ export class SessionManager extends EventEmitter {
    */
   async getContextualSuggestions(
     sessionId: string,
-    limit: number = 5
+    limit: number = 5,
   ): Promise<
     Array<{
       type: 'command' | 'workspace' | 'conversation';
@@ -450,7 +457,9 @@ export class SessionManager extends EventEmitter {
     }>
   > {
     const session = this.activeSessions.get(sessionId);
-    if (!session) return [];
+    if (!session) {
+return [];
+}
 
     const suggestions: Array<{
       type: 'command' | 'workspace' | 'conversation';
@@ -470,7 +479,7 @@ export class SessionManager extends EventEmitter {
       if (baseCommand) {
         commandFrequency.set(
           baseCommand,
-          (commandFrequency.get(baseCommand) || 0) + 1
+          (commandFrequency.get(baseCommand) || 0) + 1,
         );
       }
     }
@@ -507,7 +516,7 @@ export class SessionManager extends EventEmitter {
    */
   async exportSession(
     sessionId: string,
-    format: 'json' | 'csv'
+    format: 'json' | 'csv',
   ): Promise<string> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
@@ -553,7 +562,7 @@ export class SessionManager extends EventEmitter {
     // Limit active sessions
     if (this.activeSessions.size > this.config.maxSessions) {
       const sessionsByAccess = Array.from(this.activeSessions.entries()).sort(
-        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime()
+        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime(),
       );
 
       const excessCount = this.activeSessions.size - this.config.maxSessions;
@@ -584,11 +593,11 @@ export class SessionManager extends EventEmitter {
     const activeSessions = this.activeSessions.size;
     const totalCommands = Array.from(this.activeSessions.values()).reduce(
       (sum, session) => sum + session.recentCommands.length,
-      0
+      0,
     );
 
     const sessionDurations = Array.from(this.activeSessions.values()).map(
-      session => session.lastAccessed.getTime() - session.created.getTime()
+      session => session.lastAccessed.getTime() - session.created.getTime(),
     );
     const averageSessionDuration =
       sessionDurations.length > 0
@@ -604,7 +613,7 @@ export class SessionManager extends EventEmitter {
         if (baseCommand) {
           commandCounts.set(
             baseCommand,
-            (commandCounts.get(baseCommand) || 0) + 1
+            (commandCounts.get(baseCommand) || 0) + 1,
           );
         }
       }
@@ -651,7 +660,7 @@ export class SessionManager extends EventEmitter {
           logger.error('Session backup failed:', error);
         }
       },
-      this.config.backupInterval * 60 * 1000
+      this.config.backupInterval * 60 * 1000,
     );
 
     // Periodic cleanup
@@ -663,14 +672,16 @@ export class SessionManager extends EventEmitter {
           logger.error('Session cleanup failed:', error);
         }
       },
-      30 * 60 * 1000
+      30 * 60 * 1000,
     ); // Every 30 minutes
   }
 
   private async detectProjectContext(
-    workspacePath: string
+    workspacePath: string,
   ): Promise<ProjectContext | undefined> {
-    if (!this.config.autoDetectProjects) return undefined;
+    if (!this.config.autoDetectProjects) {
+return undefined;
+}
 
     try {
       const context: ProjectContext = {
@@ -688,7 +699,7 @@ export class SessionManager extends EventEmitter {
         const packageJson = await fs.readJson(packageJsonPath);
         context.dependencies = Object.keys(packageJson.dependencies || {});
         context.devDependencies = Object.keys(
-          packageJson.devDependencies || {}
+          packageJson.devDependencies || {},
         );
         context.scripts = packageJson.scripts || {};
 
@@ -743,7 +754,7 @@ export class SessionManager extends EventEmitter {
   }
 
   private async getGitInfo(
-    workspacePath: string
+    workspacePath: string,
   ): Promise<ProjectContext['gitRepository']> {
     // Simplified git info extraction
     return {
@@ -774,7 +785,7 @@ export class SessionManager extends EventEmitter {
     const prefsPath = path.join(
       this.config.persistencePath,
       'users',
-      `${userId}.json`
+      `${userId}.json`,
     );
 
     if (await fs.pathExists(prefsPath)) {
@@ -791,12 +802,12 @@ export class SessionManager extends EventEmitter {
 
   private async saveUserPreferences(
     userId: string,
-    preferences: UserPreferences
+    preferences: UserPreferences,
   ): Promise<void> {
     const prefsPath = path.join(
       this.config.persistencePath,
       'users',
-      `${userId}.json`
+      `${userId}.json`,
     );
     await fs.ensureDir(path.dirname(prefsPath));
     await fs.writeJson(prefsPath, preferences, { spaces: 2 });
@@ -805,7 +816,7 @@ export class SessionManager extends EventEmitter {
   private async persistSession(session: SessionState): Promise<void> {
     const sessionPath = path.join(
       this.config.persistencePath,
-      `${session.id}.json`
+      `${session.id}.json`,
     );
     const serialized = this.serializeSession(session);
     await fs.writeJson(sessionPath, serialized, { spaces: 2 });
@@ -814,7 +825,7 @@ export class SessionManager extends EventEmitter {
   private async loadSession(sessionId: string): Promise<SessionState | null> {
     const sessionPath = path.join(
       this.config.persistencePath,
-      `${sessionId}.json`
+      `${sessionId}.json`,
     );
 
     if (await fs.pathExists(sessionPath)) {
@@ -877,7 +888,7 @@ export class SessionManager extends EventEmitter {
               ? {
                   ...data.projectContext.lastAnalysis,
                   timestamp: new Date(
-                    data.projectContext.lastAnalysis.timestamp
+                    data.projectContext.lastAnalysis.timestamp,
                   ),
                 }
               : undefined,
@@ -887,12 +898,12 @@ export class SessionManager extends EventEmitter {
   }
 
   private async loadWorkspace(
-    workspacePath: string
+    workspacePath: string,
   ): Promise<WorkspaceConfig | null> {
     const workspacesDir = path.join(this.config.persistencePath, 'workspaces');
     const workspaceFile = path.join(
       workspacesDir,
-      `${Buffer.from(workspacePath).toString('base64')}.json`
+      `${Buffer.from(workspacePath).toString('base64')}.json`,
     );
 
     if (await fs.pathExists(workspaceFile)) {
@@ -912,7 +923,7 @@ export class SessionManager extends EventEmitter {
     const workspacesDir = path.join(this.config.persistencePath, 'workspaces');
     const workspaceFile = path.join(
       workspacesDir,
-      `${Buffer.from(workspace.path).toString('base64')}.json`
+      `${Buffer.from(workspace.path).toString('base64')}.json`,
     );
 
     await fs.ensureDir(workspacesDir);
@@ -922,7 +933,7 @@ export class SessionManager extends EventEmitter {
         ...workspace,
         lastAccessed: workspace.lastAccessed.toISOString(),
       },
-      { spaces: 2 }
+      { spaces: 2 },
     );
   }
 

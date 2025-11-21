@@ -1,13 +1,16 @@
-import { Command } from 'commander';
-import inquirer from 'inquirer';
-import fs from 'fs-extra';
 import path from 'path';
+
 import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+import fs from 'fs-extra';
+import inquirer from 'inquirer';
+
 import { errorHandler } from '../utils/error-handler';
-import { ChatSession, ChatMessage } from '../types';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ChatSession, ChatMessage } from '../types';
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
 
 /**
  * Chat commands for natural language interface
@@ -18,7 +21,7 @@ export class ChatCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -38,7 +41,7 @@ export class ChatCommands {
       .option(
         '--persona <persona>',
         'AI persona (developer, architect, reviewer)',
-        'developer'
+        'developer',
       )
       .option('--session-name <name>', 'custom session name')
       .action(async options => {
@@ -81,7 +84,7 @@ export class ChatCommands {
       .option(
         '--format <format>',
         'export format (json, markdown, txt)',
-        'markdown'
+        'markdown',
       )
       .option('--output <path>', 'output file path')
       .action(async (sessionId, options) => {
@@ -130,7 +133,7 @@ export class ChatCommands {
       .option(
         '--action <action>',
         'action to perform (explain, review, improve)',
-        'explain'
+        'explain',
       )
       .option('--model <model>', 'AI model to use')
       .action(async (file, options) => {
@@ -145,7 +148,7 @@ export class ChatCommands {
       .option(
         '--action <action>',
         'action to perform (explain, review, improve)',
-        'explain'
+        'explain',
       )
       .action(async options => {
         await this.chatWithCode(options);
@@ -186,7 +189,7 @@ export class ChatCommands {
         console.log(chalk.gray(`Context: ${session.context}`));
       }
       console.log(
-        chalk.gray('Type "exit" to end the session, "help" for commands\n')
+        chalk.gray('Type "exit" to end the session, "help" for commands\n'),
       );
 
       await this.runChatLoop(session);
@@ -195,7 +198,7 @@ export class ChatCommands {
         'WUNDR_CHAT_START_FAILED',
         'Failed to start chat session',
         { options },
-        true
+        true,
       );
     }
   }
@@ -218,7 +221,7 @@ export class ChatCommands {
       console.log(chalk.gray(`Session ID: ${session.id}`));
       console.log(chalk.gray(`Messages: ${session.history.length}`));
       console.log(
-        chalk.gray(`Last updated: ${session.updated.toLocaleString()}\n`)
+        chalk.gray(`Last updated: ${session.updated.toLocaleString()}\n`),
       );
 
       // Show recent messages
@@ -241,7 +244,7 @@ export class ChatCommands {
         'WUNDR_CHAT_RESUME_FAILED',
         'Failed to resume chat session',
         { sessionId },
-        true
+        true,
       );
     }
   }
@@ -278,7 +281,7 @@ export class ChatCommands {
         'WUNDR_CHAT_LIST_FAILED',
         'Failed to list chat sessions',
         { options },
-        true
+        true,
       );
     }
   }
@@ -288,7 +291,7 @@ export class ChatCommands {
    */
   private async askSingleQuestion(
     message: string,
-    options: any
+    options: any,
   ): Promise<void> {
     try {
       logger.debug('Processing single question...');
@@ -323,7 +326,7 @@ export class ChatCommands {
         'WUNDR_CHAT_ASK_FAILED',
         'Failed to process question',
         { message, options },
-        true
+        true,
       );
     }
   }
@@ -333,7 +336,7 @@ export class ChatCommands {
    */
   private async exportChatSession(
     sessionId: string,
-    options: any
+    options: any,
   ): Promise<void> {
     try {
       logger.info(`Exporting chat session: ${sessionId}`);
@@ -369,7 +372,7 @@ export class ChatCommands {
         'WUNDR_CHAT_EXPORT_FAILED',
         'Failed to export chat session',
         { sessionId, options },
-        true
+        true,
       );
     }
   }
@@ -410,7 +413,7 @@ export class ChatCommands {
         'WUNDR_CHAT_IMPORT_FAILED',
         'Failed to import chat session',
         { file, options },
-        true
+        true,
       );
     }
   }
@@ -420,7 +423,7 @@ export class ChatCommands {
    */
   private async deleteChatSession(
     sessionId: string,
-    options: any
+    options: any,
   ): Promise<void> {
     try {
       const session = await this.loadChatSession(sessionId);
@@ -453,7 +456,7 @@ export class ChatCommands {
         'WUNDR_CHAT_DELETE_FAILED',
         'Failed to delete chat session',
         { sessionId, options },
-        true
+        true,
       );
     }
   }
@@ -487,7 +490,7 @@ export class ChatCommands {
         'WUNDR_CHAT_FILE_FAILED',
         'Failed to chat with file',
         { file, options },
-        true
+        true,
       );
     }
   }
@@ -530,7 +533,7 @@ export class ChatCommands {
         'WUNDR_CHAT_CODE_FAILED',
         'Failed to chat with code',
         { options },
-        true
+        true,
       );
     }
   }
@@ -582,7 +585,7 @@ export class ChatCommands {
       } catch (error) {
         logger.error('Chat error:', error);
         console.log(
-          chalk.red('Sorry, there was an error processing your message.\n')
+          chalk.red('Sorry, there was an error processing your message.\n'),
         );
       }
     }
@@ -595,7 +598,7 @@ export class ChatCommands {
 
   private async sendMessage(
     session: ChatSession,
-    message: string
+    message: string,
   ): Promise<string> {
     // Add user message to history
     const userMessage: ChatMessage = {
@@ -641,7 +644,7 @@ export class ChatCommands {
 
   private async handleChatCommand(
     session: ChatSession,
-    command: string
+    command: string,
   ): Promise<void> {
     const [cmd, ...args] = command.slice(1).split(' ');
 
@@ -690,20 +693,20 @@ export class ChatCommands {
       process.cwd(),
       '.wundr',
       'chat',
-      `${session.id}.json`
+      `${session.id}.json`,
     );
     await fs.ensureDir(path.dirname(sessionPath));
     await fs.writeJson(sessionPath, session, { spaces: 2 });
   }
 
   private async loadChatSession(
-    sessionId: string
+    sessionId: string,
   ): Promise<ChatSession | null> {
     const sessionPath = path.join(
       process.cwd(),
       '.wundr',
       'chat',
-      `${sessionId}.json`
+      `${sessionId}.json`,
     );
     if (await fs.pathExists(sessionPath)) {
       const data = await fs.readJson(sessionPath);
@@ -748,7 +751,7 @@ export class ChatCommands {
       process.cwd(),
       '.wundr',
       'chat',
-      `${sessionId}.json`
+      `${sessionId}.json`,
     );
     if (await fs.pathExists(sessionPath)) {
       await fs.remove(sessionPath);
@@ -866,7 +869,7 @@ export class ChatCommands {
       Object.entries(variables).forEach(([key, value]) => {
         processedTemplate = processedTemplate.replace(
           `{{${key}}}`,
-          String(value)
+          String(value),
         );
       });
     }

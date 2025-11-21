@@ -1,9 +1,12 @@
 import { EventEmitter } from 'events';
-import fs from 'fs-extra';
 import path from 'path';
-import { ClaudeClient, ClaudeMessage } from './claude-client';
-import { ChatSession, ChatMessage } from '../types';
+
+import fs from 'fs-extra';
+
 import { logger } from '../utils/logger';
+
+import type { ClaudeClient, ClaudeMessage } from './claude-client';
+import type { ChatSession, ChatMessage } from '../types';
 
 /**
  * Configuration for conversation management
@@ -60,7 +63,7 @@ export class ConversationManager extends EventEmitter {
 
   constructor(
     claudeClient: ClaudeClient,
-    config: Partial<ConversationConfig> = {}
+    config: Partial<ConversationConfig> = {},
   ) {
     super();
 
@@ -90,7 +93,7 @@ export class ConversationManager extends EventEmitter {
       context?: string;
       tags?: string[];
       metadata?: Partial<SessionMetadata>;
-    } = {}
+    } = {},
   ): Promise<EnhancedChatSession> {
     const sessionId =
       options.id ||
@@ -176,7 +179,7 @@ export class ConversationManager extends EventEmitter {
       systemPrompt?: string;
       streaming?: boolean;
       metadata?: Record<string, any>;
-    } = {}
+    } = {},
   ): Promise<string | AsyncGenerator<string, void, unknown>> {
     const session = await this.loadSession(sessionId);
     if (!session) {
@@ -211,12 +214,12 @@ export class ConversationManager extends EventEmitter {
       if (options.streaming) {
         response = this.claudeClient.streamConversation(
           claudeMessages,
-          options.systemPrompt
+          options.systemPrompt,
         );
       } else {
         response = await this.claudeClient.sendConversation(
           claudeMessages,
-          options.systemPrompt
+          options.systemPrompt,
         );
       }
 
@@ -225,13 +228,13 @@ export class ConversationManager extends EventEmitter {
         return this.handleStreamingResponse(
           session,
           response as AsyncGenerator<string, void, unknown>,
-          startTime
+          startTime,
         );
       } else {
         return await this.handleSyncResponse(
           session,
           response as string,
-          startTime
+          startTime,
         );
       }
     } catch (error) {
@@ -251,7 +254,7 @@ export class ConversationManager extends EventEmitter {
       from?: Date;
       to?: Date;
       roles?: ('user' | 'assistant' | 'system')[];
-    } = {}
+    } = {},
   ): ChatMessage[] {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
@@ -286,7 +289,7 @@ export class ConversationManager extends EventEmitter {
   async addContext(
     sessionId: string,
     contextType: 'project' | 'command' | 'preference' | 'workflow',
-    contextData: any
+    contextData: any,
   ): Promise<void> {
     const session = await this.loadSession(sessionId);
     if (!session) {
@@ -328,7 +331,7 @@ export class ConversationManager extends EventEmitter {
       olderThan?: number; // days
       inactiveFor?: number; // days
       maxSessions?: number;
-    } = {}
+    } = {},
   ): Promise<string[]> {
     const archivedSessions: string[] = [];
     const now = new Date();
@@ -367,7 +370,7 @@ export class ConversationManager extends EventEmitter {
       this.activeSessions.size > criteria.maxSessions
     ) {
       const sessionsByAccess = Array.from(this.activeSessions.entries()).sort(
-        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime()
+        ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime(),
       );
 
       const excessCount = this.activeSessions.size - criteria.maxSessions;
@@ -439,7 +442,9 @@ export class ConversationManager extends EventEmitter {
   getSessionStats(sessionId?: string): any {
     if (sessionId) {
       const session = this.activeSessions.get(sessionId);
-      if (!session) return null;
+      if (!session) {
+return null;
+}
 
       return {
         messageCount: session.history.length,
@@ -455,12 +460,12 @@ export class ConversationManager extends EventEmitter {
     const totalSessions = this.activeSessions.size;
     const totalMessages = Array.from(this.activeSessions.values()).reduce(
       (sum, session) => sum + session.history.length,
-      0
+      0,
     );
 
     const totalTokens = Array.from(this.activeSessions.values()).reduce(
       (sum, session) => sum + session.metadata.tokenUsage.total,
-      0
+      0,
     );
 
     return {
@@ -510,7 +515,7 @@ export class ConversationManager extends EventEmitter {
    */
   async exportSession(
     sessionId: string,
-    format: 'json' | 'markdown' | 'csv'
+    format: 'json' | 'markdown' | 'csv',
   ): Promise<string> {
     const session = await this.loadSession(sessionId);
     if (!session) {
@@ -565,7 +570,7 @@ export class ConversationManager extends EventEmitter {
       includeArchived?: boolean;
       sortBy?: 'created' | 'updated' | 'lastAccessed';
       sortOrder?: 'asc' | 'desc';
-    } = {}
+    } = {},
   ): Promise<{
     sessions: Array<
       Pick<
@@ -625,7 +630,7 @@ export class ConversationManager extends EventEmitter {
           logger.error('Session cleanup failed:', error);
         });
       },
-      10 * 60 * 1000
+      10 * 60 * 1000,
     ); // Every 10 minutes
 
     logger.debug('Conversation manager initialized');
@@ -641,7 +646,7 @@ export class ConversationManager extends EventEmitter {
     // Keep system messages and recent messages
     const systemMessages = session.history.filter(msg => msg.role === 'system');
     const recentMessages = session.history.slice(
-      -contextWindowSize + systemMessages.length
+      -contextWindowSize + systemMessages.length,
     );
 
     // If we still have too many messages, apply compression
@@ -660,7 +665,9 @@ export class ConversationManager extends EventEmitter {
     const recent = messages.slice(-recentCount);
     const older = messages.slice(0, -recentCount);
 
-    if (older.length === 0) return recent;
+    if (older.length === 0) {
+return recent;
+}
 
     const summary: ChatMessage = {
       role: 'system',
@@ -674,7 +681,7 @@ export class ConversationManager extends EventEmitter {
   private async handleSyncResponse(
     session: EnhancedChatSession,
     response: string,
-    startTime: number
+    startTime: number,
   ): Promise<string> {
     const endTime = Date.now();
     const responseTime = endTime - startTime;
@@ -709,7 +716,7 @@ export class ConversationManager extends EventEmitter {
   private async *handleStreamingResponse(
     session: EnhancedChatSession,
     responseGenerator: AsyncGenerator<string, void, unknown>,
-    startTime: number
+    startTime: number,
   ): AsyncGenerator<string, void, unknown> {
     let fullResponse = '';
     let firstChunk = true;
@@ -753,7 +760,7 @@ export class ConversationManager extends EventEmitter {
 
   private updatePerformanceMetrics(
     session: EnhancedChatSession,
-    responseTime: number
+    responseTime: number,
   ): void {
     const perf = session.metadata.performance;
     perf.totalRequests++;
@@ -802,14 +809,14 @@ export class ConversationManager extends EventEmitter {
 
   private searchSession(
     session: EnhancedChatSession,
-    query: any
+    query: any,
   ): ChatMessage[] {
     let matches = session.history;
 
     if (query.text) {
       const searchText = query.text.toLowerCase();
       matches = matches.filter(msg =>
-        msg.content.toLowerCase().includes(searchText)
+        msg.content.toLowerCase().includes(searchText),
       );
     }
 
@@ -817,13 +824,13 @@ export class ConversationManager extends EventEmitter {
       matches = matches.filter(
         msg =>
           msg.timestamp >= query.dateRange.from &&
-          msg.timestamp <= query.dateRange.to
+          msg.timestamp <= query.dateRange.to,
       );
     }
 
     if (query.tags && query.tags.length > 0) {
       const hasMatchingTag = query.tags.some((tag: string) =>
-        session.tags.includes(tag)
+        session.tags.includes(tag),
       );
       if (!hasMatchingTag) {
         matches = [];
@@ -843,7 +850,7 @@ export class ConversationManager extends EventEmitter {
     if (query.text) {
       // Boost score based on exact matches
       const exactMatches = matches.filter(msg =>
-        msg.content.toLowerCase().includes(query.text.toLowerCase())
+        msg.content.toLowerCase().includes(query.text.toLowerCase()),
       ).length;
       score += exactMatches * 2;
     }

@@ -1,7 +1,10 @@
-import { ClaudeClient, ClaudeMessage } from './claude-client';
-import { ConfigManager } from '../utils/config-manager';
+import { ClaudeClient } from './claude-client';
 import { logger } from '../utils/logger';
-import { ChatSession, ChatMessage } from '../types';
+
+import type { ChatSession, ChatMessage } from '../types';
+import type { ClaudeMessage } from './claude-client';
+import type { ConfigManager } from '../utils/config-manager';
+
 
 /**
  * AI service configuration
@@ -51,7 +54,7 @@ export class AIService {
       if (this.config.provider === 'claude') {
         if (!this.config.apiKey) {
           logger.warn(
-            'Claude API key not configured. AI features will be limited.'
+            'Claude API key not configured. AI features will be limited.',
           );
           logger.info('Configure your API key using: wundr ai setup');
           logger.info('Or set the CLAUDE_API_KEY environment variable');
@@ -67,7 +70,7 @@ export class AIService {
         });
 
         logger.info(
-          `Initialized Claude client with model: ${this.config.model}`
+          `Initialized Claude client with model: ${this.config.model}`,
         );
       } else {
         throw new Error(`Unsupported AI provider: ${this.config.provider}`);
@@ -115,7 +118,7 @@ export class AIService {
   async sendMessage(
     sessionId: string,
     message: string,
-    context?: ConversationContext
+    context?: ConversationContext,
   ): Promise<string> {
     this.ensureClientInitialized();
 
@@ -131,7 +134,7 @@ export class AIService {
       const systemPrompt = this.buildSystemPrompt(context);
       const response = await this.claudeClient!.sendConversation(
         conversationMessages,
-        systemPrompt
+        systemPrompt,
       );
 
       // Add AI response to history
@@ -156,7 +159,7 @@ export class AIService {
   async *streamMessage(
     sessionId: string,
     message: string,
-    context?: ConversationContext
+    context?: ConversationContext,
   ): AsyncGenerator<string, string, unknown> {
     this.ensureClientInitialized();
 
@@ -174,7 +177,7 @@ export class AIService {
 
       for await (const chunk of this.claudeClient!.streamConversation(
         conversationMessages,
-        systemPrompt
+        systemPrompt,
       )) {
         fullResponse += chunk;
         yield chunk;
@@ -201,7 +204,7 @@ export class AIService {
    */
   async parseNaturalLanguageCommand(
     input: string,
-    _context?: ConversationContext
+    _context?: ConversationContext,
   ): Promise<{
     intent: string;
     command: string;
@@ -226,7 +229,7 @@ export class AIService {
 
       const result = await this.claudeClient!.analyzeIntent(
         input,
-        availableCommands
+        availableCommands,
       );
 
       return {
@@ -248,7 +251,7 @@ export class AIService {
    */
   async suggestCommands(
     goal: string,
-    context?: ConversationContext
+    context?: ConversationContext,
   ): Promise<
     Array<{
       command: string;
@@ -276,7 +279,7 @@ export class AIService {
       const result = await this.claudeClient!.suggestCommands(
         projectContext,
         goal,
-        availableCommands
+        availableCommands,
       );
 
       return result.suggestions.map(suggestion => ({
@@ -295,7 +298,7 @@ export class AIService {
   async explainCommandResults(
     command: string,
     output: string,
-    context?: ConversationContext
+    context?: ConversationContext,
   ): Promise<string> {
     this.ensureClientInitialized();
 
@@ -306,7 +309,7 @@ export class AIService {
       return await this.claudeClient!.explainResults(
         command,
         output,
-        contextString
+        contextString,
       );
     } catch (error) {
       logger.error('Failed to explain command results:', error);
@@ -320,7 +323,7 @@ export class AIService {
   async generateContextualHelp(
     command: string,
     context?: ConversationContext,
-    userLevel: 'beginner' | 'intermediate' | 'advanced' = 'intermediate'
+    userLevel: 'beginner' | 'intermediate' | 'advanced' = 'intermediate',
   ): Promise<string> {
     this.ensureClientInitialized();
 
@@ -329,7 +332,7 @@ export class AIService {
       return await this.claudeClient!.generateHelp(
         command,
         userContext,
-        userLevel
+        userLevel,
       );
     } catch (error) {
       logger.error('Failed to generate contextual help:', error);
@@ -489,12 +492,12 @@ export class AIService {
 
       if (!configuredKey) {
         throw new Error(
-          `AI API key not configured.\n\nTo set up AI features:\n1. Run: wundr ai setup\n2. Or set environment variable: export CLAUDE_API_KEY=your_key_here\n3. Or add to config: wundr ai config set apiKey your_key_here`
+          'AI API key not configured.\n\nTo set up AI features:\n1. Run: wundr ai setup\n2. Or set environment variable: export CLAUDE_API_KEY=your_key_here\n3. Or add to config: wundr ai config set apiKey your_key_here',
         );
       }
 
       throw new Error(
-        'AI client failed to initialize. Please check your configuration.'
+        'AI client failed to initialize. Please check your configuration.',
       );
     }
   }

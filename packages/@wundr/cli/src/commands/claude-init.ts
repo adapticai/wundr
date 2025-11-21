@@ -1,10 +1,12 @@
-import { Command } from 'commander';
-import * as fs from 'fs-extra';
-import * as path from 'path';
 import { execSync } from 'child_process';
+import * as path from 'path';
+
 import chalk from 'chalk';
-import ora from 'ora';
+import * as fs from 'fs-extra';
 import inquirer from 'inquirer';
+import ora from 'ora';
+
+import type { Command } from 'commander';
 
 interface ProjectInfo {
   name: string;
@@ -30,7 +32,7 @@ export class ClaudeInitCommand {
       .command('claude-init')
       .alias('ci')
       .description(
-        'Initialize Claude Code and Claude Flow in current repository'
+        'Initialize Claude Code and Claude Flow in current repository',
       )
       .option('-i, --interactive', 'Interactive mode with prompts')
       .option('-a, --audit', 'Run repository audit first')
@@ -38,11 +40,11 @@ export class ClaudeInitCommand {
       .option('--agents <agents>', 'Comma-separated list of agents to enable')
       .option(
         '--mcp-tools <tools>',
-        'Comma-separated list of MCP tools to enable'
+        'Comma-separated list of MCP tools to enable',
       )
       .option(
         '--profile <profile>',
-        'Developer profile (fullstack, frontend, backend, devops)'
+        'Developer profile (fullstack, frontend, backend, devops)',
       )
       .action(async options => {
         await this.execute(options);
@@ -56,8 +58,8 @@ export class ClaudeInitCommand {
     if (!this.isGitRepo()) {
       console.error(
         chalk.red(
-          '❌ Not in a git repository. Please run this command in a git repository.'
-        )
+          '❌ Not in a git repository. Please run this command in a git repository.',
+        ),
       );
       process.exit(1);
     }
@@ -87,7 +89,7 @@ export class ClaudeInitCommand {
 
     // Setup agents
     await this.setupAgents(
-      options.agents || this.getDefaultAgents(projectInfo)
+      options.agents || this.getDefaultAgents(projectInfo),
     );
 
     // Setup quality hooks
@@ -161,7 +163,7 @@ export class ClaudeInitCommand {
     }
 
     this.spinner.succeed(
-      `Project analyzed: ${projectInfo.name} (${projectInfo.type})`
+      `Project analyzed: ${projectInfo.name} (${projectInfo.type})`,
     );
     return projectInfo;
   }
@@ -183,10 +185,12 @@ export class ClaudeInitCommand {
     };
 
     // Structure checks
-    if (await fs.pathExists('src'))
-      auditResults.categories.structure.score += 10;
-    if (await fs.pathExists('.gitignore'))
-      auditResults.categories.structure.score += 5;
+    if (await fs.pathExists('src')) {
+auditResults.categories.structure.score += 10;
+}
+    if (await fs.pathExists('.gitignore')) {
+auditResults.categories.structure.score += 5;
+}
     if (projectInfo.isMonorepo && (await fs.pathExists('packages'))) {
       auditResults.categories.structure.score += 5;
     }
@@ -245,7 +249,7 @@ export class ClaudeInitCommand {
       auditResults.categories.security.score += 10;
     } else if (await fs.pathExists('.env')) {
       auditResults.recommendations.push(
-        'Add .env.example for environment variables'
+        'Add .env.example for environment variables',
       );
     }
 
@@ -260,8 +264,8 @@ export class ClaudeInitCommand {
     console.log(chalk.cyan('\n📊 Audit Results:'));
     console.log(
       chalk.white(
-        `Overall Score: ${auditResults.score}/${auditResults.maxScore}`
-      )
+        `Overall Score: ${auditResults.score}/${auditResults.maxScore}`,
+      ),
     );
 
     for (const [name, category] of Object.entries(auditResults.categories)) {
@@ -274,8 +278,8 @@ export class ClaudeInitCommand {
             : chalk.red;
       console.log(
         color(
-          `  ${name}: ${category.score}/${category.maxScore} (${percentage.toFixed(0)}%)`
-        )
+          `  ${name}: ${category.score}/${category.maxScore} (${percentage.toFixed(0)}%)`,
+        ),
       );
     }
 
@@ -411,7 +415,7 @@ export class ClaudeInitCommand {
 
   private async generateClaudeMd(
     projectInfo: ProjectInfo,
-    options: any
+    options: any,
   ): Promise<void> {
     this.spinner.start('Generating CLAUDE.md...');
 
@@ -529,7 +533,7 @@ By: Wundr Claude Init
 
   private getWorkflowPatterns(
     projectInfo: ProjectInfo,
-    agents: string[]
+    agents: string[],
   ): string {
     const patterns: string[] = [];
 
@@ -562,9 +566,11 @@ By: Wundr Claude Init
 
   private async setupClaudeFlow(
     projectInfo: ProjectInfo,
-    options: any
+    options: any,
   ): Promise<void> {
-    if (!options.setupClaudeFlow) return;
+    if (!options.setupClaudeFlow) {
+return;
+}
 
     this.spinner.start('Setting up Claude Flow...');
 
@@ -598,7 +604,9 @@ By: Wundr Claude Init
   }
 
   private async setupMcpTools(mcpTools: string | string[]): Promise<void> {
-    if (!mcpTools) return;
+    if (!mcpTools) {
+return;
+}
 
     const tools = Array.isArray(mcpTools) ? mcpTools : mcpTools.split(',');
 
@@ -620,7 +628,7 @@ By: Wundr Claude Init
           case 'playwright':
             execSync(
               'npx claude mcp add playwright npx @playwright/mcp-server',
-              { stdio: 'ignore' }
+              { stdio: 'ignore' },
             );
             break;
           case 'browser':
@@ -631,7 +639,7 @@ By: Wundr Claude Init
           case 'sequentialthinking':
             execSync(
               'npm install -g @modelcontextprotocol/server-sequentialthinking',
-              { stdio: 'ignore' }
+              { stdio: 'ignore' },
             );
             break;
         }
@@ -699,12 +707,12 @@ echo "✅ All quality checks passed!"
     console.log(chalk.white('1. Review and customize CLAUDE.md'));
     console.log(chalk.white('2. Configure API keys for MCP tools (if needed)'));
     console.log(
-      chalk.white('3. Restart Claude Desktop to load new configurations')
+      chalk.white('3. Restart Claude Desktop to load new configurations'),
     );
     console.log(
       chalk.white(
-        '4. Run: npx claude-flow@alpha sparc tdd "your first feature"'
-      )
+        '4. Run: npx claude-flow@alpha sparc tdd "your first feature"',
+      ),
     );
     console.log(chalk.cyan('\n🚀 Happy coding with Claude!\n'));
   }

@@ -3,16 +3,20 @@
  * Implements intelligent optimization strategies for Wundr platform performance
  */
 
-import { Command } from 'commander';
-import fs from 'fs-extra';
-import path from 'path';
-import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { logger } from '../utils/logger';
-import { errorHandler } from '../utils/error-handler';
 import { spawn } from 'child_process';
+import path from 'path';
 import { performance } from 'perf_hooks';
 import { memoryUsage, cpuUsage } from 'process';
+
+import chalk from 'chalk';
+import fs from 'fs-extra';
+
+import { errorHandler } from '../utils/error-handler';
+import { logger } from '../utils/logger';
+
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
+
 
 interface OptimizationResult {
   category: 'memory' | 'concurrency' | 'cpu' | 'io' | 'network';
@@ -133,7 +137,7 @@ class MemoryOptimizer {
   }
 
   async optimizeMemoryUsage(
-    optimizations: OptimizationResult[]
+    optimizations: OptimizationResult[],
   ): Promise<void> {
     for (const opt of optimizations.filter(o => o.automated && !o.applied)) {
       logger.info(`Applying memory optimization: ${opt.description}`);
@@ -152,7 +156,7 @@ class MemoryOptimizer {
   }
 
   private async applyMemoryOptimization(
-    opt: OptimizationResult
+    opt: OptimizationResult,
   ): Promise<void> {
     // Force garbage collection if available
     if (
@@ -171,7 +175,7 @@ class MemoryOptimizer {
     ) {
       // 1GB
       logger.warn(
-        'Consider increasing Node.js heap size with --max-old-space-size'
+        'Consider increasing Node.js heap size with --max-old-space-size',
       );
     }
   }
@@ -247,7 +251,7 @@ class ConcurrencyOptimizer {
   }
 
   async optimizeConcurrency(
-    optimizations: OptimizationResult[]
+    optimizations: OptimizationResult[],
   ): Promise<void> {
     for (const opt of optimizations.filter(o => o.automated && !o.applied)) {
       logger.info(`Applying concurrency optimization: ${opt.description}`);
@@ -262,16 +266,16 @@ class ConcurrencyOptimizer {
   }
 
   private async applyConcurrencyOptimization(
-    opt: OptimizationResult
+    opt: OptimizationResult,
   ): Promise<void> {
     if (opt.metrics?.['utilization'] && opt.metrics['utilization'] < 0.7) {
       // Increase worker thread pool for better CPU utilization
       const newWorkerCount = Math.min(
         this.workerThreads,
-        Math.floor(this.workerThreads * 1.2)
+        Math.floor(this.workerThreads * 1.2),
       );
       logger.info(
-        `Increasing worker threads from ${this.activeWorkers} to ${newWorkerCount}`
+        `Increasing worker threads from ${this.activeWorkers} to ${newWorkerCount}`,
       );
       // Implementation would update the actual worker pool
     }
@@ -355,7 +359,7 @@ export class PerformanceOptimizerCommands {
 
   constructor(
     private program: Command,
-    private configManager: ConfigManager
+    private configManager: ConfigManager,
   ) {
     this.registerCommands();
   }
@@ -403,7 +407,7 @@ export class PerformanceOptimizerCommands {
       .description('run all optimization analyses and apply safe optimizations')
       .option(
         '--dry-run',
-        'show what would be optimized without applying changes'
+        'show what would be optimized without applying changes',
       )
       .option('--report <path>', 'generate comprehensive optimization report')
       .action(async options => {
@@ -443,7 +447,7 @@ export class PerformanceOptimizerCommands {
       }
 
       logger.info(
-        `Found ${optimizations.length} memory optimization opportunities:`
+        `Found ${optimizations.length} memory optimization opportunities:`,
       );
       optimizations.forEach(opt => {
         const impactColor =
@@ -453,7 +457,7 @@ export class PerformanceOptimizerCommands {
               ? 'yellow'
               : 'green';
         console.log(
-          `  ${chalk[impactColor](`[${opt.impact.toUpperCase()}]`)} ${opt.description}`
+          `  ${chalk[impactColor](`[${opt.impact.toUpperCase()}]`)} ${opt.description}`,
         );
       });
 
@@ -468,7 +472,7 @@ export class PerformanceOptimizerCommands {
         await this.generateOptimizationReport(
           optimizations,
           options.report,
-          'memory'
+          'memory',
         );
       }
     } catch (error) {
@@ -476,7 +480,7 @@ export class PerformanceOptimizerCommands {
         'WUNDR_MEMORY_OPTIMIZATION_FAILED',
         'Failed to optimize memory usage',
         { options },
-        true
+        true,
       );
     }
   }
@@ -487,7 +491,7 @@ export class PerformanceOptimizerCommands {
 
       if (options.workers) {
         this.concurrencyOptimizer.updateActiveWorkers(
-          parseInt(options.workers)
+          parseInt(options.workers),
         );
       }
 
@@ -500,7 +504,7 @@ export class PerformanceOptimizerCommands {
       }
 
       logger.info(
-        `Found ${optimizations.length} concurrency optimization opportunities:`
+        `Found ${optimizations.length} concurrency optimization opportunities:`,
       );
       optimizations.forEach(opt => {
         const impactColor =
@@ -510,7 +514,7 @@ export class PerformanceOptimizerCommands {
               ? 'yellow'
               : 'green';
         console.log(
-          `  ${chalk[impactColor](`[${opt.impact.toUpperCase()}]`)} ${opt.description}`
+          `  ${chalk[impactColor](`[${opt.impact.toUpperCase()}]`)} ${opt.description}`,
         );
       });
 
@@ -525,7 +529,7 @@ export class PerformanceOptimizerCommands {
         'WUNDR_CONCURRENCY_OPTIMIZATION_FAILED',
         'Failed to optimize concurrency',
         { options },
-        true
+        true,
       );
     }
   }
@@ -544,7 +548,7 @@ export class PerformanceOptimizerCommands {
       }
 
       logger.info(
-        `Found ${optimizations.length} bundle optimization opportunities:`
+        `Found ${optimizations.length} bundle optimization opportunities:`,
       );
       optimizations.forEach(opt => {
         const impactColor =
@@ -554,7 +558,7 @@ export class PerformanceOptimizerCommands {
               ? 'yellow'
               : 'green';
         console.log(
-          `  ${chalk[impactColor](`[${opt.impact.toUpperCase()}]`)} ${opt.description}`
+          `  ${chalk[impactColor](`[${opt.impact.toUpperCase()}]`)} ${opt.description}`,
         );
         opt.recommendations.forEach(rec => console.log(`    • ${rec}`));
       });
@@ -563,7 +567,7 @@ export class PerformanceOptimizerCommands {
         'WUNDR_BUNDLE_OPTIMIZATION_FAILED',
         'Failed to optimize bundle',
         { options },
-        true
+        true,
       );
     }
   }
@@ -579,7 +583,7 @@ export class PerformanceOptimizerCommands {
       const concurrencyOpts =
         await this.concurrencyOptimizer.analyzeConcurrency();
       const bundleOpts = await this.assetOptimizer.analyzeBundleSize(
-        process.cwd()
+        process.cwd(),
       );
 
       allOptimizations.push(...memoryOpts, ...concurrencyOpts, ...bundleOpts);
@@ -593,18 +597,20 @@ export class PerformanceOptimizerCommands {
       const grouped = allOptimizations.reduce(
         (acc, opt) => {
           if (opt && opt.category) {
-            if (!acc[opt.category]) acc[opt.category] = [];
+            if (!acc[opt.category]) {
+acc[opt.category] = [];
+}
             acc[opt.category]!.push(opt);
           }
           return acc;
         },
-        {} as Record<string, OptimizationResult[]>
+        {} as Record<string, OptimizationResult[]>,
       );
 
-      logger.info(`\n📊 Optimization Summary:`);
+      logger.info('\n📊 Optimization Summary:');
       Object.entries(grouped).forEach(([category, opts]) => {
         console.log(
-          `  ${chalk.bold(category.toUpperCase())}: ${opts.length} opportunities`
+          `  ${chalk.bold(category.toUpperCase())}: ${opts.length} opportunities`,
         );
       });
 
@@ -613,7 +619,7 @@ export class PerformanceOptimizerCommands {
         const automated = allOptimizations.filter(o => o.automated);
         if (automated.length > 0) {
           logger.info(
-            `\n🔧 Applying ${automated.length} automated optimizations...`
+            `\n🔧 Applying ${automated.length} automated optimizations...`,
           );
 
           for (const opt of automated) {
@@ -635,7 +641,7 @@ export class PerformanceOptimizerCommands {
         const manual = allOptimizations.filter(o => !o.automated).length;
         if (manual > 0) {
           logger.info(
-            `ℹ️  ${manual} optimizations require manual intervention`
+            `ℹ️  ${manual} optimizations require manual intervention`,
           );
         }
       }
@@ -644,7 +650,7 @@ export class PerformanceOptimizerCommands {
         await this.generateOptimizationReport(
           allOptimizations,
           options.report,
-          'comprehensive'
+          'comprehensive',
         );
       }
     } catch (error) {
@@ -652,7 +658,7 @@ export class PerformanceOptimizerCommands {
         'WUNDR_COMPREHENSIVE_OPTIMIZATION_FAILED',
         'Failed to run comprehensive optimization',
         { options },
-        true
+        true,
       );
     }
   }
@@ -663,7 +669,7 @@ export class PerformanceOptimizerCommands {
     const startTime = Date.now();
 
     logger.info(
-      `🔍 Starting performance monitoring for ${options.duration} seconds...`
+      `🔍 Starting performance monitoring for ${options.duration} seconds...`,
     );
 
     const metrics: SystemMetrics[] = [];
@@ -700,7 +706,7 @@ export class PerformanceOptimizerCommands {
       const heapMB = (memory.heapUsed / 1024 / 1024).toFixed(2);
       const rssMB = (memory.rss / 1024 / 1024).toFixed(2);
       process.stdout.write(
-        `\r💾 Heap: ${heapMB}MB | RSS: ${rssMB}MB | CPU: ${cpu.user}μs`
+        `\r💾 Heap: ${heapMB}MB | RSS: ${rssMB}MB | CPU: ${cpu.user}μs`,
       );
     }, interval);
 
@@ -716,7 +722,7 @@ export class PerformanceOptimizerCommands {
       const peakHeap = Math.max(...metrics.map(m => m.memory.heapUsed));
       const peakRSS = Math.max(...metrics.map(m => m.memory.rss));
 
-      console.log(`\nMemory Statistics:`);
+      console.log('\nMemory Statistics:');
       console.log(`  Average Heap: ${(avgHeap / 1024 / 1024).toFixed(2)} MB`);
       console.log(`  Average RSS:  ${(avgRSS / 1024 / 1024).toFixed(2)} MB`);
       console.log(`  Peak Heap:    ${(peakHeap / 1024 / 1024).toFixed(2)} MB`);
@@ -786,7 +792,7 @@ export class PerformanceOptimizerCommands {
         'WUNDR_BENCHMARK_FAILED',
         'Failed to run performance benchmarks',
         { options },
-        true
+        true,
       );
     }
   }
@@ -813,7 +819,7 @@ export class PerformanceOptimizerCommands {
     // Simulate concurrent task processing
     const tasks = Array.from(
       { length: 100 },
-      (_, i) => new Promise(resolve => setTimeout(resolve, Math.random() * 10))
+      (_, i) => new Promise(resolve => setTimeout(resolve, Math.random() * 10)),
     );
     await Promise.all(tasks);
   }
@@ -833,7 +839,7 @@ export class PerformanceOptimizerCommands {
   private async generateOptimizationReport(
     optimizations: OptimizationResult[],
     reportPath: string,
-    type: string
+    type: string,
   ): Promise<void> {
     const report = {
       timestamp: new Date().toISOString(),

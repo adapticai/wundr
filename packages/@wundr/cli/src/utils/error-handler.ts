@@ -1,6 +1,8 @@
 import chalk from 'chalk';
-import { WundrError } from '../types';
+
 import { logger } from './logger';
+
+import type { WundrError } from '../types';
 
 /**
  * Centralized error handling system
@@ -114,7 +116,7 @@ class ErrorHandler {
 
     console.error(chalk.yellow('\n💡 This appears to be an unexpected error.'));
     console.error(
-      chalk.yellow('   Please report this issue with the above details.')
+      chalk.yellow('   Please report this issue with the above details.'),
     );
   }
 
@@ -165,7 +167,7 @@ class ErrorHandler {
     code: string,
     message: string,
     context?: Record<string, any>,
-    recoverable = false
+    recoverable = false,
   ): WundrError {
     const error = new Error(message) as WundrError;
     error.code = code;

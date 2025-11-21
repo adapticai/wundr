@@ -1,7 +1,10 @@
-import fs from 'fs-extra';
 import path from 'path';
+
+import fs from 'fs-extra';
+
 import { logger } from '../utils/logger';
-import { ConversationContext } from '../ai/ai-service';
+
+import type { ConversationContext } from '../ai/ai-service';
 
 /**
  * Project context information
@@ -136,7 +139,7 @@ export class ContextManager {
     success: boolean,
     duration: number,
     output?: string,
-    error?: string
+    error?: string,
   ): Promise<void> {
     if (!this.currentSession) {
       throw new Error('No active session');
@@ -180,7 +183,7 @@ export class ContextManager {
    * Update user preferences
    */
   async updatePreferences(
-    preferences: Partial<UserPreferences>
+    preferences: Partial<UserPreferences>,
   ): Promise<void> {
     if (!this.currentSession) {
       throw new Error('No active session');
@@ -225,7 +228,7 @@ export class ContextManager {
    * Detect project context
    */
   async detectProjectContext(
-    projectPath?: string
+    projectPath?: string,
   ): Promise<ProjectContext | undefined> {
     const targetPath = projectPath || process.cwd();
 
@@ -245,10 +248,10 @@ export class ContextManager {
       if (await fs.pathExists(packageJsonPath)) {
         context.packageJson = await fs.readJson(packageJsonPath);
         context.dependencies = Object.keys(
-          context.packageJson.dependencies || {}
+          context.packageJson.dependencies || {},
         );
         context.devDependencies = Object.keys(
-          context.packageJson.devDependencies || {}
+          context.packageJson.devDependencies || {},
         );
         context.scripts = context.packageJson.scripts || {};
         context.type = this.detectProjectType(context.packageJson);
@@ -281,7 +284,7 @@ export class ContextManager {
     quality: number,
     duplicates: number,
     dependencies: number,
-    recommendations: string[]
+    recommendations: string[],
   ): Promise<void> {
     if (!this.currentSession?.projectContext) {
       return;
@@ -353,7 +356,7 @@ export class ContextManager {
         if (file.endsWith('.json')) {
           try {
             const sessionData = await fs.readJson(
-              path.join(this.sessionsDir, file)
+              path.join(this.sessionsDir, file),
             );
             sessions.push({
               id: sessionData.sessionId,
@@ -368,7 +371,7 @@ export class ContextManager {
       }
 
       return sessions.sort(
-        (a, b) => b.lastActivity.getTime() - a.lastActivity.getTime()
+        (a, b) => b.lastActivity.getTime() - a.lastActivity.getTime(),
       );
     } catch (error) {
       logger.debug('Failed to list sessions:', error);
@@ -396,7 +399,7 @@ export class ContextManager {
 
         if (data.projectContext?.lastAnalysis) {
           data.projectContext.lastAnalysis.timestamp = new Date(
-            data.projectContext.lastAnalysis.timestamp
+            data.projectContext.lastAnalysis.timestamp,
           );
         }
 
@@ -416,7 +419,7 @@ export class ContextManager {
     try {
       const sessionPath = path.join(
         this.sessionsDir,
-        `${session.sessionId}.json`
+        `${session.sessionId}.json`,
       );
       await fs.writeJson(sessionPath, session, { spaces: 2 });
     } catch (error) {

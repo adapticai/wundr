@@ -1,6 +1,8 @@
 import axios from 'axios';
+
 import { logger } from '../utils/logger';
-import { WundrError } from '../types';
+
+import type { WundrError } from '../types';
 
 /**
  * Claude API client configuration
@@ -92,7 +94,7 @@ export class ClaudeClient {
   async sendMessage(
     message: string,
     systemPrompt?: string,
-    options?: Partial<ClaudeConfig>
+    options?: Partial<ClaudeConfig>,
   ): Promise<string> {
     try {
       const messages: ClaudeMessage[] = [];
@@ -122,7 +124,7 @@ export class ClaudeClient {
   async sendConversation(
     messages: ClaudeMessage[],
     systemPrompt?: string,
-    options?: Partial<ClaudeConfig>
+    options?: Partial<ClaudeConfig>,
   ): Promise<string> {
     try {
       const conversationMessages = [...messages];
@@ -150,7 +152,7 @@ export class ClaudeClient {
   async *streamConversation(
     messages: ClaudeMessage[],
     systemPrompt?: string,
-    options?: Partial<ClaudeConfig>
+    options?: Partial<ClaudeConfig>,
   ): AsyncGenerator<string, void, unknown> {
     try {
       const conversationMessages = [...messages];
@@ -170,7 +172,7 @@ export class ClaudeClient {
         },
         {
           responseType: 'stream',
-        }
+        },
       );
 
       let buffer = '';
@@ -183,7 +185,9 @@ export class ClaudeClient {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
-            if (data === '[DONE]') return;
+            if (data === '[DONE]') {
+return;
+}
 
             try {
               const parsed: ClaudeStreamChunk = JSON.parse(data);
@@ -200,7 +204,7 @@ export class ClaudeClient {
     } catch (error) {
       throw this.handleError(
         error,
-        'Failed to stream conversation with Claude'
+        'Failed to stream conversation with Claude',
       );
     }
   }
@@ -210,7 +214,7 @@ export class ClaudeClient {
    */
   async analyzeIntent(
     input: string,
-    availableCommands: string[]
+    availableCommands: string[],
   ): Promise<{
     intent: string;
     confidence: number;
@@ -251,7 +255,7 @@ Respond with JSON only in this format:
   async suggestCommands(
     projectContext: string,
     userGoal: string,
-    availableCommands: string[]
+    availableCommands: string[],
   ): Promise<{
     suggestions: Array<{
       command: string;
@@ -294,7 +298,7 @@ Respond with JSON only:
   async explainResults(
     command: string,
     output: string,
-    context?: string
+    context?: string,
   ): Promise<string> {
     const systemPrompt = `You are a helpful CLI assistant. Explain the results of a CLI command in clear, natural language. Focus on:
 1. What the command did
@@ -324,7 +328,7 @@ ${output}`;
   async generateHelp(
     command: string,
     userContext: string,
-    difficulty: 'beginner' | 'intermediate' | 'advanced' = 'intermediate'
+    difficulty: 'beginner' | 'intermediate' | 'advanced' = 'intermediate',
   ): Promise<string> {
     const systemPrompt = `You are a CLI documentation assistant. Generate helpful, contextual guidance for CLI commands. Adapt the explanation level to: ${difficulty}
 
@@ -360,7 +364,7 @@ User Context: ${userContext}`;
         'Respond with just "OK" if you can understand this message.',
         {
           maxTokens: 10,
-        }
+        },
       );
       return true;
     } catch (error) {
@@ -414,28 +418,28 @@ User Context: ${userContext}`;
     this.client.interceptors.request.use(
       (config: any) => {
         logger.debug(
-          `Claude API Request: ${config.method?.toUpperCase()} ${config.url}`
+          `Claude API Request: ${config.method?.toUpperCase()} ${config.url}`,
         );
         return config;
       },
       (error: any) => {
         logger.error('Claude API Request Error:', error);
         return Promise.reject(error);
-      }
+      },
     );
 
     // Response interceptor
     this.client.interceptors.response.use(
       (response: any) => {
         logger.debug(
-          `Claude API Response: ${response.status} ${response.statusText}`
+          `Claude API Response: ${response.status} ${response.statusText}`,
         );
         return response;
       },
       (error: any) => {
         logger.error('Claude API Response Error:', error);
         return Promise.reject(error);
-      }
+      },
     );
   }
 

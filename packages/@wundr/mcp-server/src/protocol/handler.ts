@@ -8,31 +8,37 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+
 import {
-  JsonRpcId,
-  JsonRpcRequest,
-  JsonRpcNotification,
   JsonRpcErrorCodes,
   MCPMethods,
   MCP_PROTOCOL_VERSION,
+  InitializeParamsSchema,
+  CallToolParamsSchema,
+  ReadResourceParamsSchema,
+  GetPromptParamsSchema,
+  LogLevel,
+} from '../types';
+import { ResponseBuilder, TransportError } from './transport';
+
+import type {
+  JsonRpcId,
+  JsonRpcRequest,
+  JsonRpcNotification,
   ServerInfo,
   ServerCapabilities,
   ClientCapabilities,
   ClientInfo,
   InitializeParams,
   InitializeResult,
-  InitializeParamsSchema,
   ListToolsResult,
   CallToolParams,
-  CallToolParamsSchema,
   CallToolResult,
   ListResourcesResult,
   ReadResourceParams,
-  ReadResourceParamsSchema,
   ReadResourceResult,
   ListPromptsResult,
   GetPromptParams,
-  GetPromptParamsSchema,
   GetPromptResult,
   Tool,
   Resource,
@@ -44,11 +50,10 @@ import {
   ResourceContext,
   PromptContext,
   Logger,
-  LogLevel,
   MCPServerConfig,
-  TextContent,
-} from '../types';
-import { StdioTransport, ResponseBuilder, TransportError } from './transport';
+  TextContent} from '../types';
+import type { StdioTransport} from './transport';
+
 
 /**
  * MCP Protocol Handler State
@@ -278,7 +283,7 @@ export class MCPProtocolHandler {
         default:
           throw new ProtocolError(
             JsonRpcErrorCodes.METHOD_NOT_FOUND,
-            `Method not found: ${method}`
+            `Method not found: ${method}`,
           );
       }
 
@@ -319,7 +324,7 @@ export class MCPProtocolHandler {
     if (this.state !== 'uninitialized') {
       throw new ProtocolError(
         JsonRpcErrorCodes.INVALID_REQUEST,
-        'Server already initialized'
+        'Server already initialized',
       );
     }
 
@@ -330,7 +335,7 @@ export class MCPProtocolHandler {
     if (!validated.success) {
       throw new ProtocolError(
         JsonRpcErrorCodes.INVALID_PARAMS,
-        `Invalid initialize params: ${validated.error.message}`
+        `Invalid initialize params: ${validated.error.message}`,
       );
     }
 
@@ -346,7 +351,7 @@ export class MCPProtocolHandler {
       protocolVersion: MCP_PROTOCOL_VERSION,
       capabilities: this.serverCapabilities,
       serverInfo: this.serverInfo,
-      instructions: `Wundr MCP Server - Provides governance and code quality tools for development workflows.`,
+      instructions: 'Wundr MCP Server - Provides governance and code quality tools for development workflows.',
     };
   }
 
@@ -363,13 +368,13 @@ export class MCPProtocolHandler {
    */
   private async handleCallTool(
     requestId: JsonRpcId,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
   ): Promise<CallToolResult> {
     const validated = CallToolParamsSchema.safeParse(params);
     if (!validated.success) {
       throw new ProtocolError(
         JsonRpcErrorCodes.INVALID_PARAMS,
-        `Invalid call tool params: ${validated.error.message}`
+        `Invalid call tool params: ${validated.error.message}`,
       );
     }
 
@@ -379,7 +384,7 @@ export class MCPProtocolHandler {
     if (!registration) {
       throw new ProtocolError(
         JsonRpcErrorCodes.TOOL_NOT_FOUND,
-        `Tool not found: ${name}`
+        `Tool not found: ${name}`,
       );
     }
 
@@ -403,7 +408,7 @@ export class MCPProtocolHandler {
       if (abortController.signal.aborted) {
         throw new ProtocolError(
           JsonRpcErrorCodes.INTERNAL_ERROR,
-          'Request cancelled'
+          'Request cancelled',
         );
       }
 
@@ -427,7 +432,7 @@ export class MCPProtocolHandler {
    */
   private async handleListResources(): Promise<ListResourcesResult> {
     const resources: Resource[] = Array.from(this.resources.values()).map(
-      (reg) => reg.resource
+      (reg) => reg.resource,
     );
     return { resources };
   }
@@ -437,13 +442,13 @@ export class MCPProtocolHandler {
    */
   private async handleReadResource(
     requestId: JsonRpcId,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
   ): Promise<ReadResourceResult> {
     const validated = ReadResourceParamsSchema.safeParse(params);
     if (!validated.success) {
       throw new ProtocolError(
         JsonRpcErrorCodes.INVALID_PARAMS,
-        `Invalid read resource params: ${validated.error.message}`
+        `Invalid read resource params: ${validated.error.message}`,
       );
     }
 
@@ -453,7 +458,7 @@ export class MCPProtocolHandler {
     if (!registration) {
       throw new ProtocolError(
         JsonRpcErrorCodes.RESOURCE_NOT_FOUND,
-        `Resource not found: ${uri}`
+        `Resource not found: ${uri}`,
       );
     }
 
@@ -471,7 +476,7 @@ export class MCPProtocolHandler {
    */
   private async handleListPrompts(): Promise<ListPromptsResult> {
     const prompts: Prompt[] = Array.from(this.prompts.values()).map(
-      (reg) => reg.prompt
+      (reg) => reg.prompt,
     );
     return { prompts };
   }
@@ -481,13 +486,13 @@ export class MCPProtocolHandler {
    */
   private async handleGetPrompt(
     requestId: JsonRpcId,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
   ): Promise<GetPromptResult> {
     const validated = GetPromptParamsSchema.safeParse(params);
     if (!validated.success) {
       throw new ProtocolError(
         JsonRpcErrorCodes.INVALID_PARAMS,
-        `Invalid get prompt params: ${validated.error.message}`
+        `Invalid get prompt params: ${validated.error.message}`,
       );
     }
 
@@ -497,7 +502,7 @@ export class MCPProtocolHandler {
     if (!registration) {
       throw new ProtocolError(
         JsonRpcErrorCodes.PROMPT_NOT_FOUND,
-        `Prompt not found: ${name}`
+        `Prompt not found: ${name}`,
       );
     }
 
@@ -569,7 +574,7 @@ export class MCPProtocolHandler {
    */
   private async sendNotification(
     method: string,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
   ): Promise<void> {
     const notification = ResponseBuilder.notification(method, params);
     await this.transport.send(notification);
@@ -581,7 +586,7 @@ export class MCPProtocolHandler {
   private sendProgress(
     requestId: JsonRpcId,
     progress: number,
-    total?: number
+    total?: number,
   ): void {
     this.sendNotification(MCPMethods.PROGRESS, {
       progressToken: requestId,
@@ -599,14 +604,14 @@ export class MCPProtocolHandler {
     if (this.state === 'uninitialized' || this.state === 'initializing') {
       throw new ProtocolError(
         JsonRpcErrorCodes.INVALID_REQUEST,
-        'Server not initialized'
+        'Server not initialized',
       );
     }
 
     if (this.state === 'shutdown') {
       throw new ProtocolError(
         JsonRpcErrorCodes.INVALID_REQUEST,
-        'Server is shutting down'
+        'Server is shutting down',
       );
     }
   }
@@ -649,7 +654,7 @@ export class ProtocolError extends Error {
 export function createToolContext(
   requestId: JsonRpcId,
   logger: Logger,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): ToolContext {
   return {
     requestId,
@@ -676,7 +681,7 @@ export function createTextResult(text: string, isError = false): CallToolResult 
  */
 export function createJsonResult(
   data: unknown,
-  isError = false
+  isError = false,
 ): CallToolResult {
   return {
     content: [

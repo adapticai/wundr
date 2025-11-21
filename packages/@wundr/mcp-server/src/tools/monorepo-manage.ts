@@ -37,7 +37,7 @@ export const monorepoManageTool: Tool = {
 };
 
 export async function handleMonorepoManage(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const action = args['action'] as string;
   const path = (args['path'] as string) || process.cwd();
@@ -101,7 +101,7 @@ async function initMonorepo(path: string): Promise<ToolResult> {
 async function addPackage(
   path: string,
   packageName: string,
-  template: string
+  template: string,
 ): Promise<ToolResult> {
   if (!packageName) {
     return {

@@ -1,9 +1,13 @@
-import { Command } from 'commander';
-import chalk from 'chalk';
-import ora, { Ora } from 'ora';
 import { execSync, spawn } from 'child_process';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+
+import chalk from 'chalk';
+import { Command } from 'commander';
+import ora from 'ora';
+
+import type { Ora } from 'ora';
+
 
 // Type for ora spinner
 type OraSpinner = Ora;
@@ -67,7 +71,7 @@ Examples:
   ${chalk.green('wundr claude-setup optimize')}     Setup hardware-adaptive optimizations
   ${chalk.green('wundr claude-setup validate')}     Validate Claude installation
   ${chalk.green('wundr claude-setup project')}      Setup project with templates
-      `)
+      `),
       );
 
     // Main setup command (default)
@@ -101,7 +105,7 @@ Examples:
       .description('Install and configure MCP tools')
       .option(
         '--tool <tool>',
-        'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking, claude-flow)'
+        'Install specific tool (firecrawl, context7, playwright, browser, sequentialthinking, claude-flow)',
       )
       .action(async (options: McpOptions) => {
         await this.installMcpTools(options);
@@ -224,7 +228,7 @@ Examples:
           type: 'confirm',
           name: 'shouldInitGit',
           message: 'Not a git repository. Initialize git?',
-          default: true
+          default: true,
         }]);
 
         if (shouldInitGit) {
@@ -303,7 +307,7 @@ Examples:
     try {
       execSync('claude mcp add claude-flow npx claude-flow@alpha mcp start', {
         cwd: repoPath,
-        stdio: 'pipe'
+        stdio: 'pipe',
       });
     } catch {
       // MCP configuration might fail if Claude Desktop isn't installed
@@ -346,13 +350,13 @@ echo "Customize this script with your specific MCP tools"
         description: 'MCP Tools for Claude Code integration',
         private: true,
         scripts: {
-          install: './install.sh'
-        }
+          install: './install.sh',
+        },
       };
 
       fs.writeFileSync(
         path.join(mcpToolsPath, 'package.json'),
-        JSON.stringify(mcpPackageJson, null, 2)
+        JSON.stringify(mcpPackageJson, null, 2),
       );
     }
 
@@ -366,7 +370,7 @@ echo "Customize this script with your specific MCP tools"
     const spinner = ora();
     const scriptPath = path.join(
       __dirname,
-      '../../../../scripts/install-mcp-tools.sh'
+      '../../../../scripts/install-mcp-tools.sh',
     );
 
     console.log(chalk.cyan('\n📦 Installing MCP Tools...\n'));
@@ -462,7 +466,7 @@ echo "Customize this script with your specific MCP tools"
         const config = this.generateAgentConfig(agent);
         fs.writeFileSync(
           path.join(agentsDir, `${agent}.json`),
-          JSON.stringify(config, null, 2)
+          JSON.stringify(config, null, 2),
         );
       }
 
@@ -508,8 +512,8 @@ echo "Customize this script with your specific MCP tools"
     } else {
       console.log(
         chalk.yellow(
-          '\n⚠️ Some checks failed. Run with --fix to attempt repairs.'
-        )
+          '\n⚠️ Some checks failed. Run with --fix to attempt repairs.',
+        ),
       );
     }
   }
@@ -538,7 +542,7 @@ echo "Customize this script with your specific MCP tools"
   private async setupOptimizations(options: OptimizeOptions): Promise<void> {
     const spinner = ora();
     console.log(
-      chalk.cyan.bold('\n⚡ Claude Code Hardware-Adaptive Optimization Setup\n')
+      chalk.cyan.bold('\n⚡ Claude Code Hardware-Adaptive Optimization Setup\n'),
     );
 
     try {
@@ -546,7 +550,7 @@ echo "Customize this script with your specific MCP tools"
       const scriptsDir = path.join(homeDir, '.claude', 'scripts');
       const resourcesDir = path.join(
         __dirname,
-        '../../../computer-setup/resources/scripts'
+        '../../../computer-setup/resources/scripts',
       );
 
       // Check if optimization scripts already exist
@@ -581,8 +585,8 @@ echo "Customize this script with your specific MCP tools"
         spinner.fail('Optimization scripts not found in resources');
         console.error(
           chalk.red(
-            `Expected scripts at: ${resourcesDir}\nPlease ensure @wundr/computer-setup is installed.`
-          )
+            `Expected scripts at: ${resourcesDir}\nPlease ensure @wundr/computer-setup is installed.`,
+          ),
         );
         return;
       }
@@ -629,26 +633,26 @@ echo "Customize this script with your specific MCP tools"
       // Show what was installed
       console.log(chalk.cyan('📦 Installed Scripts:'));
       console.log(
-        chalk.white('  • detect-hardware-limits.js - Hardware detection')
+        chalk.white('  • detect-hardware-limits.js - Hardware detection'),
       );
       console.log(
-        chalk.white('  • claude-optimized - Optimized Claude wrapper')
+        chalk.white('  • claude-optimized - Optimized Claude wrapper'),
       );
       console.log(
-        chalk.white('  • orchestrator.js - Fault-tolerant orchestration')
+        chalk.white('  • orchestrator.js - Fault-tolerant orchestration'),
       );
       console.log(
-        chalk.white('  • cleanup-zombies.sh - Process cleanup utility')
+        chalk.white('  • cleanup-zombies.sh - Process cleanup utility'),
       );
 
       console.log(chalk.cyan('\n🔧 Shell Aliases:'));
       console.log(
-        chalk.white('  • claude - Hardware-optimized Claude wrapper')
+        chalk.white('  • claude - Hardware-optimized Claude wrapper'),
       );
       console.log(chalk.white('  • claude-stats - Show hardware statistics'));
       console.log(chalk.white('  • claude-cleanup - Clean up zombie processes'));
       console.log(
-        chalk.white('  • claude-orchestrate - Run multi-task orchestrator')
+        chalk.white('  • claude-orchestrate - Run multi-task orchestrator'),
       );
 
       console.log(chalk.cyan('\n📝 Next Steps:'));
@@ -656,7 +660,7 @@ echo "Customize this script with your specific MCP tools"
       console.log('2. Run "claude-stats" to see your hardware configuration');
       console.log('3. Use "claude" command as normal - now optimized!');
       console.log(
-        '4. Read ~/.claude/scripts/QUICK-START.md for advanced usage'
+        '4. Read ~/.claude/scripts/QUICK-START.md for advanced usage',
       );
     } catch (error) {
       spinner.fail('Optimization setup failed');
@@ -745,7 +749,7 @@ Run \`npx claude-flow sparc modes\` to see available modes.
       'typescript': () => this.setupTypeScriptTemplate(repoPath),
       'react': () => this.setupReactTemplate(repoPath),
       'nodejs': () => this.setupNodeTemplate(repoPath),
-      'monorepo': () => this.setupMonorepoTemplate(repoPath)
+      'monorepo': () => this.setupMonorepoTemplate(repoPath),
     };
 
     const setupFunction = templates[templateName];
@@ -773,10 +777,10 @@ Run \`npx claude-flow sparc modes\` to see available modes.
           forceConsistentCasingInFileNames: true,
           declaration: true,
           outDir: 'dist',
-          rootDir: 'src'
+          rootDir: 'src',
         },
         include: ['src/**/*'],
-        exclude: ['node_modules', 'dist']
+        exclude: ['node_modules', 'dist'],
       };
 
       fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2));
@@ -847,8 +851,8 @@ Run \`npx claude-flow sparc modes\` to see available modes.
         private: true,
         workspaces: ['packages/*', 'apps/*'],
         devDependencies: {
-          'turbo': '^2.0.0'
-        }
+          'turbo': '^2.0.0',
+        },
       };
 
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
@@ -865,7 +869,7 @@ Run \`npx claude-flow sparc modes\` to see available modes.
       // Initialize basic swarm configuration
       execSync('npx claude-flow@alpha init', {
         cwd: repoPath,
-        stdio: 'pipe'
+        stdio: 'pipe',
       });
     } catch {
       // Swarm init might fail if not properly configured
@@ -885,12 +889,12 @@ Run \`npx claude-flow sparc modes\` to see available modes.
     const validations = [
       { name: 'CLAUDE.md', path: path.join(repoPath, 'CLAUDE.md') },
       { name: 'MCP Tools', path: path.join(repoPath, 'mcp-tools') },
-      { name: 'Git repository', path: path.join(repoPath, '.git') }
+      { name: 'Git repository', path: path.join(repoPath, '.git') },
     ];
 
     const results = validations.map(validation => ({
       ...validation,
-      exists: fs.existsSync(validation.path)
+      exists: fs.existsSync(validation.path),
     }));
 
     const failures = results.filter(r => !r.exists);
@@ -946,15 +950,15 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         // Check if optimization config already exists
         if (
           content.includes(
-            'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)'
+            'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)',
           )
         ) {
           // Remove old config and add new one
           const lines = content.split('\n');
           const startIdx = lines.findIndex(line =>
             line.includes(
-              'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)'
-            )
+              'Claude Code - Hardware-Adaptive Configuration (Auto-generated by Wundr)',
+            ),
           );
 
           if (startIdx !== -1) {
@@ -986,17 +990,17 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   private async installChrome(): Promise<void> {
     if (process.platform === 'darwin') {
       execSync(
-        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"'
+        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"',
       );
       execSync('hdiutil attach ~/Downloads/googlechrome.dmg');
       execSync(
-        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/'
+        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/',
       );
       execSync('hdiutil detach "/Volumes/Google Chrome"');
       execSync('rm ~/Downloads/googlechrome.dmg');
     } else {
       console.log(
-        chalk.yellow('Chrome installation is only automated for macOS')
+        chalk.yellow('Chrome installation is only automated for macOS'),
       );
     }
   }
@@ -1066,7 +1070,9 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   private agentsConfigured(): boolean {
     const homeDir = process.env['HOME'] || process.env['USERPROFILE'] || '';
     const agentsDir = path.join(homeDir, '.claude', 'agents');
-    if (!fs.existsSync(agentsDir)) return false;
+    if (!fs.existsSync(agentsDir)) {
+return false;
+}
 
     const files = fs.readdirSync(agentsDir);
     return files.length > 0;
@@ -1076,7 +1082,9 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     const homeDir = process.env['HOME'] || process.env['USERPROFILE'] || '';
     const settingsPath = path.join(homeDir, '.claude', 'settings.json');
 
-    if (!fs.existsSync(settingsPath)) return false;
+    if (!fs.existsSync(settingsPath)) {
+return false;
+}
 
     try {
       const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
@@ -1165,7 +1173,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       console.log();
     }
 
-    console.log(chalk.gray(`Total: 54 agents available`));
+    console.log(chalk.gray('Total: 54 agents available'));
   }
 
   private getProfileAgents(profile: string): string[] {
@@ -1256,12 +1264,12 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     console.log(chalk.cyan('📋 Next Steps:'));
     console.log('1. Configure API keys for MCP tools (if needed)');
     console.log(
-      '2. Install Browser MCP Chrome extension: wundr claude-setup extension'
+      '2. Install Browser MCP Chrome extension: wundr claude-setup extension',
     );
     console.log('3. Restart Claude Desktop to load new configurations');
     console.log('4. Initialize a project: wundr claude-setup project');
     console.log(
-      '5. Start coding with Claude Flow: npx claude-flow@alpha sparc tdd "feature"'
+      '5. Start coding with Claude Flow: npx claude-flow@alpha sparc tdd "feature"',
     );
   }
 }

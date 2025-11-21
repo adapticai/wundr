@@ -37,7 +37,7 @@ export const patternStandardizeTool: Tool = {
 };
 
 export async function handlePatternStandardize(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const action = args['action'] as string;
   const pattern = (args['pattern'] as string) || 'all';

@@ -1,12 +1,15 @@
-import { Command } from 'commander';
-import inquirer from 'inquirer';
-import fs from 'fs-extra';
 import path from 'path';
+
 import chalk from 'chalk';
-import { ConfigManager } from '../utils/config-manager';
-import { PluginManager } from '../plugins/plugin-manager';
-import { logger } from '../utils/logger';
+import fs from 'fs-extra';
+import inquirer from 'inquirer';
+
 import { errorHandler } from '../utils/error-handler';
+import { logger } from '../utils/logger';
+
+import type { PluginManager } from '../plugins/plugin-manager';
+import type { ConfigManager } from '../utils/config-manager';
+import type { Command } from 'commander';
 
 /**
  * Init commands for project setup and configuration
@@ -15,7 +18,7 @@ export class InitCommands {
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private pluginManager: PluginManager
+    private pluginManager: PluginManager,
   ) {
     this.registerCommands();
   }
@@ -108,15 +111,15 @@ export class InitCommands {
       }
 
       logger.success(`Project ${projectName} initialized successfully!`);
-      logger.info(`Next steps:`);
+      logger.info('Next steps:');
       logger.info(`  cd ${projectName}`);
-      logger.info(`  wundr analyze`);
+      logger.info('  wundr analyze');
     } catch (error) {
       throw errorHandler.createError(
         'WUNDR_INIT_PROJECT_FAILED',
         'Failed to initialize project',
         { name, options },
-        true
+        true,
       );
     }
   }
@@ -144,7 +147,7 @@ export class InitCommands {
         'WUNDR_INIT_CONFIG_FAILED',
         'Failed to initialize configuration',
         { options },
-        true
+        true,
       );
     }
   }
@@ -179,7 +182,7 @@ export class InitCommands {
       // Create workspace-specific wundr config
       await this.configManager.loadConfig();
       await this.configManager.saveConfig(
-        path.join(process.cwd(), 'wundr.config.json')
+        path.join(process.cwd(), 'wundr.config.json'),
       );
 
       logger.success('Workspace initialized successfully!');
@@ -188,7 +191,7 @@ export class InitCommands {
         'WUNDR_INIT_WORKSPACE_FAILED',
         'Failed to initialize workspace',
         { options },
-        true
+        true,
       );
     }
   }
@@ -215,7 +218,7 @@ export class InitCommands {
         'WUNDR_INIT_PLUGINS_FAILED',
         'Failed to initialize plugins',
         { options },
-        true
+        true,
       );
     }
   }
@@ -225,7 +228,7 @@ export class InitCommands {
    */
   private async createProjectStructure(
     projectPath: string,
-    options: any
+    options: any,
   ): Promise<void> {
     await fs.ensureDir(projectPath);
 
@@ -242,7 +245,7 @@ export class InitCommands {
     // Create project-specific config
     const config = await this.configManager.loadConfig();
     await this.configManager.saveConfig(
-      path.join(projectPath, 'wundr.config.json')
+      path.join(projectPath, 'wundr.config.json'),
     );
   }
 
@@ -251,7 +254,7 @@ export class InitCommands {
    */
   private async createDefaultStructure(
     projectPath: string,
-    options: any
+    options: any,
   ): Promise<void> {
     const directories = options.monorepo
       ? ['packages', 'apps', 'tools', 'docs', 'scripts', '.claude-flow']
@@ -554,11 +557,11 @@ fi
 
     await fs.writeFile(
       path.join(projectPath, 'scripts', 'verify-claims.sh'),
-      verifyScript
+      verifyScript,
     );
     await fs.chmod(
       path.join(projectPath, 'scripts', 'verify-claims.sh'),
-      '755'
+      '755',
     );
 
     // Create FAILURES.md
@@ -588,7 +591,7 @@ _(None yet - will be populated when failures are resolved)_
 
     await fs.writeFile(
       path.join(projectPath, 'docs', 'FAILURES.md'),
-      failuresMd
+      failuresMd,
     );
 
     // Create verification hooks
@@ -628,7 +631,7 @@ _(None yet - will be populated when failures are resolved)_
     await fs.writeJson(
       path.join(projectPath, '.claude-flow', 'verification-hooks.json'),
       verificationHooks,
-      { spaces: 2 }
+      { spaces: 2 },
     );
 
     // Create agent verification protocol
@@ -669,7 +672,7 @@ Remember: It's better to report a failure honestly than to claim false success.
 
     await fs.writeFile(
       path.join(projectPath, 'docs', 'AGENT_VERIFICATION_PROTOCOL.md'),
-      agentProtocol
+      agentProtocol,
     );
 
     logger.debug('Verification files created');

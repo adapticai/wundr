@@ -5,8 +5,11 @@
  * @module @wundr/mcp-server/tools/registry
  */
 
-import { z } from 'zod';
-import { ToolSchemas, zodToJsonSchema, ToolName } from './schemas';
+import { ToolSchemas, zodToJsonSchema } from './schemas';
+
+import type { ToolName } from './schemas';
+import type { z } from 'zod';
+
 
 // ============================================================================
 // Types
@@ -127,7 +130,7 @@ export class ToolRegistry {
    */
   register<TInput, TOutput>(
     tool: McpTool<TInput, TOutput>,
-    options: ToolRegistrationOptions = {}
+    options: ToolRegistrationOptions = {},
   ): void {
     const { override = false, debug = false, version = this.version } = options;
 
@@ -257,7 +260,7 @@ export class ToolRegistry {
   async execute<TInput = unknown, TOutput = unknown>(
     name: string,
     input: TInput,
-    context: ToolExecutionContext = {}
+    context: ToolExecutionContext = {},
   ): Promise<McpToolResult<TOutput>> {
     const tool = this.tools.get(name);
     if (!tool) {
@@ -421,7 +424,7 @@ export function createToolRegistry(): ToolRegistry {
  */
 export function createToolFromSchema<TInput, TOutput>(
   name: ToolName,
-  handler: (input: TInput) => Promise<McpToolResult<TOutput>>
+  handler: (input: TInput) => Promise<McpToolResult<TOutput>>,
 ): McpTool<TInput, TOutput> {
   const schemaEntry = ToolSchemas[name];
 
@@ -478,7 +481,7 @@ export function successResult<T>(data: T, warnings?: string[]): McpToolResult<T>
 export function errorResult(
   error: string,
   code: string = 'ERROR',
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
 ): McpToolResult<never> {
   return {
     success: false,
@@ -501,7 +504,7 @@ export function errorResult(
  * @returns Wrapped function that returns McpToolResult
  */
 export function wrapHandler<TInput, TOutput>(
-  fn: (input: TInput) => Promise<TOutput>
+  fn: (input: TInput) => Promise<TOutput>,
 ): (input: TInput) => Promise<McpToolResult<TOutput>> {
   return async (input: TInput): Promise<McpToolResult<TOutput>> => {
     try {

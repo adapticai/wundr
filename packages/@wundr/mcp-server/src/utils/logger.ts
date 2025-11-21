@@ -5,7 +5,7 @@
  * (to avoid polluting stdout which is used for MCP protocol messages).
  */
 
-import { LogLevel as MCPLogLevel, Logger as MCPLogger } from '../types';
+import type { LogLevel as MCPLogLevel, Logger as MCPLogger } from '../types';
 
 /**
  * Log level enum for backward compatibility
@@ -130,7 +130,7 @@ export class ConsoleLogger implements MCPLogger {
         try {
           formatted += `\n  Data: ${JSON.stringify(data, null, 2)}`;
         } catch {
-          formatted += `\n  Data: [Circular or non-serializable object]`;
+          formatted += '\n  Data: [Circular or non-serializable object]';
         }
       } else {
         formatted += ` ${String(data)}`;
@@ -303,7 +303,7 @@ export class SilentLogger implements MCPLogger {
 export function createMCPLogger(
   level: MCPLogLevel = 'info',
   format: 'text' | 'json' = 'text',
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ): MCPLogger {
   if (format === 'json') {
     return new JsonLogger(level, metadata);

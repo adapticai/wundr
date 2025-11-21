@@ -1,10 +1,13 @@
-import fs from 'fs-extra';
-import path from 'path';
 import os from 'os';
+import path from 'path';
+
+import fs from 'fs-extra';
 import { z } from 'zod';
-import { WundrConfig } from '../types';
-import { logger } from './logger';
+
 import { errorHandler } from './error-handler';
+import { logger } from './logger';
+
+import type { WundrConfig } from '../types';
 
 // Zod schema for configuration validation
 const WundrConfigSchema = z.object({
@@ -101,7 +104,7 @@ export class ConfigManager {
         'WUNDR_CONFIG_INVALID',
         'Failed to load or parse configuration file',
         { configPath: configFile },
-        true
+        true,
       );
     }
   }
@@ -126,7 +129,7 @@ export class ConfigManager {
         'WUNDR_CONFIG_INVALID',
         'Failed to save configuration file',
         { configPath: configFile },
-        false
+        false,
       );
     }
   }
@@ -166,7 +169,7 @@ export class ConfigManager {
         return {
           valid: false,
           errors: error.issues.map(
-            issue => `${issue.path.join('.')}: ${issue.message}`
+            issue => `${issue.path.join('.')}: ${issue.message}`,
           ),
         };
       }
@@ -213,7 +216,7 @@ export class ConfigManager {
         throw new Error(`Invalid path: empty key at position ${i}`);
       }
       if (!current || typeof current !== 'object') {
-        throw new Error(`Invalid path: cannot set property on non-object`);
+        throw new Error('Invalid path: cannot set property on non-object');
       }
       if (!current[key] || typeof current[key] !== 'object') {
         current[key] = {};
@@ -226,7 +229,7 @@ export class ConfigManager {
       throw new Error('Invalid path: empty final key');
     }
     if (!finalKey || !current || typeof current !== 'object') {
-      throw new Error(`Invalid path: cannot set property`);
+      throw new Error('Invalid path: cannot set property');
     }
     current[finalKey] = value;
   }

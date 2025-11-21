@@ -8,16 +8,19 @@
  */
 
 import { EventEmitter } from 'events';
+
 import {
-  MCPTransport,
-  StdioTransportOptions,
-  JsonRpcMessage,
-  JsonRpcRequest,
-  JsonRpcNotification,
   JsonRpcRequestSchema,
   JsonRpcNotificationSchema,
   JSONRPC_VERSION,
 } from '../types';
+
+import type {
+  MCPTransport,
+  StdioTransportOptions,
+  JsonRpcMessage,
+  JsonRpcRequest,
+  JsonRpcNotification} from '../types';
 
 /**
  * Buffer size for reading from stdin (64KB)
@@ -122,7 +125,7 @@ export class StdioTransport extends EventEmitter implements MCPTransport {
     } catch (error) {
       const transportError = new TransportError(
         `Failed to send message: ${error instanceof Error ? error.message : String(error)}`,
-        'SEND_ERROR'
+        'SEND_ERROR',
       );
       this.handleError(transportError);
       throw transportError;
@@ -216,8 +219,8 @@ export class StdioTransport extends EventEmitter implements MCPTransport {
       this.handleError(
         new TransportError(
           `Failed to parse message: ${error instanceof Error ? error.message : String(error)}`,
-          'PARSE_ERROR'
-        )
+          'PARSE_ERROR',
+        ),
       );
     }
   }
@@ -233,8 +236,8 @@ export class StdioTransport extends EventEmitter implements MCPTransport {
         this.handleError(
           new TransportError(
             `Message handler error: ${error instanceof Error ? error.message : String(error)}`,
-            'HANDLER_ERROR'
-          )
+            'HANDLER_ERROR',
+          ),
         );
       }
     }
@@ -332,7 +335,7 @@ export const ResponseBuilder = {
     id: string | number | null,
     code: number,
     message: string,
-    data?: unknown
+    data?: unknown,
   ): JsonRpcMessage {
     return {
       jsonrpc: JSONRPC_VERSION,

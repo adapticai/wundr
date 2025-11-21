@@ -6,6 +6,9 @@
  */
 
 // Export schemas
+// Type aliases for backward compatibility
+import type { McpTool, McpToolResult } from './registry';
+
 export {
   // Common schemas
   CommonOptionsSchema,
@@ -81,9 +84,6 @@ export {
   errorResult,
   wrapHandler,
 } from './registry';
-
-// Type aliases for backward compatibility
-import type { McpTool, McpToolResult } from './registry';
 
 /**
  * @deprecated Use McpTool instead

@@ -1,7 +1,10 @@
+import { spawn } from 'child_process';
 import { EventEmitter } from 'events';
-import { spawn, ChildProcess } from 'child_process';
+
 import { logger } from '../utils/logger';
-import { IntentResult } from './intent-parser';
+
+import type { IntentResult } from './intent-parser';
+import type { ChildProcess } from 'child_process';
 
 /**
  * Command execution result
@@ -135,7 +138,7 @@ export class CommandMapper extends EventEmitter {
    */
   async mapIntentToCommand(
     intentResult: IntentResult,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<{
     command: string;
     args: string[];
@@ -147,7 +150,7 @@ export class CommandMapper extends EventEmitter {
 
     if (!template) {
       throw new Error(
-        `No command template found for intent: ${intentResult.intent}`
+        `No command template found for intent: ${intentResult.intent}`,
       );
     }
 
@@ -155,14 +158,14 @@ export class CommandMapper extends EventEmitter {
     const { command, args } = await this.buildCommand(
       template,
       intentResult.parameters || {},
-      context
+      context,
     );
 
     // Validate command
     const validation = await this.validateCommand(
       template,
       intentResult.parameters || {},
-      context
+      context,
     );
 
     this.emit('command_mapped', {
@@ -193,7 +196,7 @@ export class CommandMapper extends EventEmitter {
       streaming?: boolean;
       onOutput?: (output: string) => void;
       onError?: (error: string) => void;
-    } = {}
+    } = {},
   ): Promise<CommandResult> {
     const startTime = Date.now();
     const executionId = `cmd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -330,7 +333,7 @@ export class CommandMapper extends EventEmitter {
           if (this.runningCommands.has(executionId)) {
             childProcess.kill('SIGTERM');
             logger.warn(
-              `Command timed out after ${this.config.timeout}ms: ${command}`
+              `Command timed out after ${this.config.timeout}ms: ${command}`,
             );
           }
         }, this.config.timeout);
@@ -349,7 +352,7 @@ export class CommandMapper extends EventEmitter {
       streaming?: boolean;
       onOutput?: (output: string) => void;
       onError?: (error: string) => void;
-    } = {}
+    } = {},
   ): Promise<CommandResult> {
     // Map intent to command
     const mappedCommand = await this.mapIntentToCommand(intentResult, context);
@@ -357,7 +360,7 @@ export class CommandMapper extends EventEmitter {
     // Check validation
     if (!mappedCommand.validation.valid) {
       throw new Error(
-        `Command validation failed: ${mappedCommand.validation.errors.join(', ')}`
+        `Command validation failed: ${mappedCommand.validation.errors.join(', ')}`,
       );
     }
 
@@ -370,7 +373,7 @@ export class CommandMapper extends EventEmitter {
     ) {
       const confirmed = await this.confirmExecution(
         mappedCommand,
-        intentResult
+        intentResult,
       );
       if (!confirmed) {
         throw new Error('Command execution cancelled by user');
@@ -382,7 +385,7 @@ export class CommandMapper extends EventEmitter {
       mappedCommand.command,
       mappedCommand.args,
       context,
-      options
+      options,
     );
   }
 
@@ -401,7 +404,7 @@ export class CommandMapper extends EventEmitter {
   async validateCommand(
     template: CommandTemplate,
     parameters: Record<string, any>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<ValidationResult> {
     const result: ValidationResult = {
       valid: true,
@@ -421,7 +424,7 @@ export class CommandMapper extends EventEmitter {
         const isValid = await this.executeValidationRule(
           rule,
           parameters,
-          context
+          context,
         );
 
         if (!isValid) {
@@ -434,7 +437,7 @@ export class CommandMapper extends EventEmitter {
         }
       } catch (error) {
         result.errors.push(
-          `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
         result.valid = false;
       }
@@ -444,7 +447,7 @@ export class CommandMapper extends EventEmitter {
     for (const mapping of template.parameterMapping) {
       if (mapping.required && !parameters[mapping.intentParam]) {
         result.errors.push(
-          `Required parameter missing: ${mapping.intentParam}`
+          `Required parameter missing: ${mapping.intentParam}`,
         );
         result.valid = false;
       }
@@ -452,7 +455,7 @@ export class CommandMapper extends EventEmitter {
       if (parameters[mapping.intentParam] && mapping.validation) {
         if (!mapping.validation(parameters[mapping.intentParam])) {
           result.errors.push(
-            `Invalid value for parameter: ${mapping.intentParam}`
+            `Invalid value for parameter: ${mapping.intentParam}`,
           );
           result.valid = false;
         }
@@ -482,7 +485,7 @@ export class CommandMapper extends EventEmitter {
       successOnly?: boolean;
       intent?: string;
       since?: Date;
-    } = {}
+    } = {},
   ): CommandResult[] {
     let history = [...this.commandHistory];
 
@@ -490,7 +493,7 @@ export class CommandMapper extends EventEmitter {
       history = history.filter(
         cmd =>
           cmd.metadata?.['startTime'] &&
-          new Date(cmd.metadata['startTime']) >= filters.since!
+          new Date(cmd.metadata['startTime']) >= filters.since!,
       );
     }
 
@@ -500,7 +503,7 @@ export class CommandMapper extends EventEmitter {
 
     if (filters.intent) {
       history = history.filter(
-        cmd => cmd.metadata?.['intent'] === filters.intent
+        cmd => cmd.metadata?.['intent'] === filters.intent,
       );
     }
 
@@ -557,7 +560,7 @@ export class CommandMapper extends EventEmitter {
    */
   async previewCommand(
     intentResult: IntentResult,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<{
     command: string;
     explanation: string;
@@ -569,7 +572,7 @@ export class CommandMapper extends EventEmitter {
     const explanation = this.generateCommandExplanation(
       mappedCommand.command,
       mappedCommand.args,
-      intentResult
+      intentResult,
     );
 
     return {
@@ -599,7 +602,7 @@ export class CommandMapper extends EventEmitter {
             commandFlag: '--focus',
             validation: (value: string) =>
               ['dependencies', 'quality', 'security', 'performance'].includes(
-                value
+                value,
               ),
           },
           {
@@ -742,14 +745,14 @@ export class CommandMapper extends EventEmitter {
     ];
 
     defaultTemplates.forEach(template =>
-      this.registerCommandTemplate(template)
+      this.registerCommandTemplate(template),
     );
   }
 
   private async buildCommand(
     template: CommandTemplate,
     parameters: Record<string, any>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<{ command: string; args: string[] }> {
     const commandParts = template.commandTemplate.split(' ');
     const baseCommand = commandParts[0] || '';
@@ -793,7 +796,7 @@ export class CommandMapper extends EventEmitter {
   private async executeValidationRule(
     rule: ValidationRule,
     parameters: Record<string, any>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<boolean> {
     switch (rule.type) {
       case 'parameter':
@@ -807,7 +810,9 @@ export class CommandMapper extends EventEmitter {
       case 'directory_exists':
         const fsDir = await import('fs-extra');
         const dirPath = parameters[rule.rule as string];
-        if (!dirPath) return false;
+        if (!dirPath) {
+return false;
+}
         const stats = await fsDir.stat(dirPath).catch(() => null);
         return stats ? stats.isDirectory() : false;
 
@@ -835,14 +840,14 @@ export class CommandMapper extends EventEmitter {
 
   private async confirmExecution(
     mappedCommand: any,
-    intentResult: IntentResult
+    intentResult: IntentResult,
   ): Promise<boolean> {
     // In a real implementation, this would show a confirmation dialog
     // For now, we'll assume confirmation based on safety level
 
     if (mappedCommand.safetyLevel === 'dangerous') {
       logger.warn(
-        `Dangerous command requires confirmation: ${mappedCommand.command} ${mappedCommand.args.join(' ')}`
+        `Dangerous command requires confirmation: ${mappedCommand.command} ${mappedCommand.args.join(' ')}`,
       );
       // In a real CLI, this would prompt the user
       return false; // Default to not confirmed for dangerous commands
@@ -854,7 +859,7 @@ export class CommandMapper extends EventEmitter {
   private generateCommandExplanation(
     command: string,
     args: string[],
-    intentResult: IntentResult
+    intentResult: IntentResult,
   ): string {
     const fullCommand = `${command} ${args.join(' ')}`;
 

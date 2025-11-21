@@ -37,7 +37,7 @@ export const driftDetectionTool: Tool = {
 };
 
 export async function handleDriftDetection(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const action = args['action'] as string;
   const path = (args['path'] as string) || process.cwd();

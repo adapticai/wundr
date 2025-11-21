@@ -1,26 +1,27 @@
 import { Command } from 'commander';
+
 import { version } from '../package.json';
+
+// Import command modules
+import { AICommands } from './commands/ai';
+import { AnalyzeCommands } from './commands/analyze';
+import { BatchCommands } from './commands/batch';
+import { ChatCommands } from './commands/chat';
+import claudeInitCommand from './commands/claude-init';
+import claudeSetupCommand from './commands/claude-setup';
+import { createComputerSetupCommand } from './commands/computer-setup';
+import { CreateCommands } from './commands/create';
+import { DashboardCommands } from './commands/dashboard';
+import { GovernCommands } from './commands/govern';
+import { InitCommands } from './commands/init';
+import { PluginCommands } from './commands/plugins';
+import { SetupCommands } from './commands/setup';
+import { createTestCommand } from './commands/test';
+import { WatchCommands } from './commands/watch';
 import { InteractiveMode } from './interactive/interactive-mode';
 import { PluginManager } from './plugins/plugin-manager';
 import { ConfigManager } from './utils/config-manager';
 import { logger } from './utils/logger';
-
-// Import command modules
-import { InitCommands } from './commands/init';
-import { CreateCommands } from './commands/create';
-import { AnalyzeCommands } from './commands/analyze';
-import { GovernCommands } from './commands/govern';
-import { AICommands } from './commands/ai';
-import { DashboardCommands } from './commands/dashboard';
-import { WatchCommands } from './commands/watch';
-import { BatchCommands } from './commands/batch';
-import { ChatCommands } from './commands/chat';
-import { PluginCommands } from './commands/plugins';
-import { SetupCommands } from './commands/setup';
-import { createComputerSetupCommand } from './commands/computer-setup';
-import { createTestCommand } from './commands/test';
-import claudeInitCommand from './commands/claude-init';
-import claudeSetupCommand from './commands/claude-setup';
 
 /**
  * Main CLI class that orchestrates all commands and modes
@@ -37,7 +38,7 @@ export class WundrCLI {
     this.pluginManager = new PluginManager(this.configManager);
     this.interactiveMode = new InteractiveMode(
       this.configManager,
-      this.pluginManager
+      this.pluginManager,
     );
 
     this.setupProgram();
@@ -53,7 +54,7 @@ export class WundrCLI {
     this.program
       .name('wundr')
       .description(
-        'Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams'
+        'Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams',
       )
       .version(version, '-v, --version', 'display version number')
       .helpOption('-h, --help', 'display help for command')
@@ -64,7 +65,7 @@ export class WundrCLI {
 ║║║║ ║║║║ ║║╠╦╝
 ╚╩╝╚═╝╝╚╝═╩╝╩╚═
 The Unified Developer Platform
-      `
+      `,
       )
       .configureOutput({
         writeOut: str => process.stdout.write(str),
@@ -179,7 +180,7 @@ The Unified Developer Platform
       .option(
         '--layout <type>',
         'TUI layout (dashboard, monitor, debug)',
-        'dashboard'
+        'dashboard',
       )
       .action(async options => {
         await this.interactiveMode.launchTUI(options.layout);

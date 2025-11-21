@@ -41,7 +41,7 @@ export const governanceReportTool: Tool = {
 };
 
 export async function handleGovernanceReport(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const action = args['action'] as string;
   const path = (args['path'] as string) || process.cwd();
@@ -62,7 +62,7 @@ export async function handleGovernanceReport(
           path,
           format,
           args['startDate'] as string,
-          args['endDate'] as string
+          args['endDate'] as string,
         );
       default:
         return {
@@ -255,7 +255,7 @@ async function customReport(
   path: string,
   format: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ): Promise<ToolResult> {
   return {
     success: true,

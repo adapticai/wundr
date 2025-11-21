@@ -5,7 +5,12 @@
  * transport layer, and tool/resource/prompt registrations.
  */
 
-import {
+import { MCPProtocolHandler } from '../protocol/handler';
+import { createStdioTransport } from '../protocol/transport';
+import { ConsoleLogger } from '../utils/logger';
+
+import type { StdioTransport} from '../protocol/transport';
+import type {
   MCPServerConfig,
   ServerCapabilities,
   Tool,
@@ -20,9 +25,7 @@ import {
   Logger,
   LogLevel,
 } from '../types';
-import { MCPProtocolHandler } from '../protocol/handler';
-import { StdioTransport, createStdioTransport } from '../protocol/transport';
-import { ConsoleLogger } from '../utils/logger';
+
 
 /**
  * MCP Server Options

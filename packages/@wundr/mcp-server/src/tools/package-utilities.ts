@@ -9,6 +9,7 @@
  */
 
 import { z } from 'zod';
+
 import {
   ProjectInitializerAdapter,
   TemplateSelectorAdapter,
@@ -17,9 +18,11 @@ import {
   ClaudeConfigInstallerAdapter,
   BackupRollbackManagerAdapter,
   ProjectInitOrchestratorAdapter,
-  ProjectInitOptions,
-  TemplateSelectionCriteria,
 } from './adapters.js';
+
+import type {
+  ProjectInitOptions,
+  TemplateSelectionCriteria} from './adapters.js';
 
 /**
  * MCP Tool definition interface
@@ -294,7 +297,7 @@ Example usage:
     return await customizationEngine.customize(
       validated.content,
       context,
-      validated.filePath
+      validated.filePath,
     );
   },
 };
@@ -557,7 +560,7 @@ Example usage:
     const validated = ValidateProjectInputSchema.parse(input);
     return await projectOrchestrator.validateProject(
       validated.projectPath,
-      validated.autoFix
+      validated.autoFix,
     );
   },
 };

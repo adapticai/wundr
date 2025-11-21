@@ -229,7 +229,7 @@ export class ProjectInitializerAdapter {
         this.initializerInstance = {
           initialize: async () => {
             throw new Error('ProjectInitializer not available. Install @wundr/computer-setup package.');
-          }
+          },
         };
       }
     }
@@ -320,7 +320,7 @@ export class TemplateSelectorAdapter {
         workflows: ['tdd', 'review'],
         conventions: ['code-style', 'git-workflow', 'testing-standards'],
         complexity: 'basic',
-        requirements: { nodeVersion: '>=18.0.0', packageManager: ['npm', 'pnpm', 'yarn'] }
+        requirements: { nodeVersion: '>=18.0.0', packageManager: ['npm', 'pnpm', 'yarn'] },
       },
       {
         id: 'react-frontend',
@@ -333,7 +333,7 @@ export class TemplateSelectorAdapter {
         workflows: ['tdd', 'review', 'deployment'],
         conventions: ['code-style', 'component-structure', 'git-workflow', 'testing-standards'],
         complexity: 'intermediate',
-        requirements: { nodeVersion: '>=18.0.0', packageManager: ['pnpm', 'yarn'] }
+        requirements: { nodeVersion: '>=18.0.0', packageManager: ['pnpm', 'yarn'] },
       },
       {
         id: 'monorepo-workspace',
@@ -346,8 +346,8 @@ export class TemplateSelectorAdapter {
         workflows: ['sparc', 'tdd', 'review', 'deployment', 'release'],
         conventions: ['code-style', 'monorepo-structure', 'package-naming', 'git-workflow'],
         complexity: 'enterprise',
-        requirements: { nodeVersion: '>=18.0.0', packageManager: ['pnpm'], tools: ['turborepo'] }
-      }
+        requirements: { nodeVersion: '>=18.0.0', packageManager: ['pnpm'], tools: ['turborepo'] },
+      },
     ];
 
     return {
@@ -357,7 +357,7 @@ export class TemplateSelectorAdapter {
       getTemplate: (id: string) => templates.find(t => t.id === id),
       listTemplates: () => templates,
       getTemplatesForType: (type: string) => templates.filter(t => t.projectTypes.includes(type)),
-      validateTemplateRequirements: async () => true
+      validateTemplateRequirements: async () => true,
     };
   }
 
@@ -457,7 +457,7 @@ export class CustomizationEngineAdapter {
           },
           customizeProject: async () => {
             throw new Error('CustomizationEngine not available. Install @wundr/computer-setup package.');
-          }
+          },
         };
       }
     }
@@ -533,7 +533,7 @@ export class ValidationCheckerAdapter {
               check: '.claude directory exists',
               message: fs.existsSync(claudeDir) ? 'Found' : 'Missing',
               severity: 'error',
-              fixable: true
+              fixable: true,
             });
 
             results.push({
@@ -542,7 +542,7 @@ export class ValidationCheckerAdapter {
               check: 'CLAUDE.md exists',
               message: fs.existsSync(claudeMd) ? 'Found' : 'Missing',
               severity: 'error',
-              fixable: false
+              fixable: false,
             });
 
             const passed = results.filter(r => r.passed).length;
@@ -556,12 +556,12 @@ export class ValidationCheckerAdapter {
               failed,
               warnings: results.filter(r => !r.passed && r.severity === 'warning').length,
               results,
-              score: (passed / results.length) * 100
+              score: (passed / results.length) * 100,
             };
           },
           autoFix: async () => {
             throw new Error('ValidationChecker auto-fix not available. Install @wundr/computer-setup package.');
-          }
+          },
         };
       }
     }
@@ -658,8 +658,8 @@ export class ClaudeConfigInstallerAdapter {
             { id: 'claude-cli', name: 'Install Claude CLI', description: 'Install Claude command-line interface' },
             { id: 'claude-config', name: 'Configure Claude', description: 'Setup Claude directory and configurations' },
             { id: 'mcp-servers', name: 'Install MCP Servers', description: 'Install and configure MCP servers' },
-            { id: 'claude-agents', name: 'Setup Agents', description: 'Configure specialized agents' }
-          ]
+            { id: 'claude-agents', name: 'Setup Agents', description: 'Configure specialized agents' },
+          ],
         };
       }
     }
@@ -739,7 +739,7 @@ export class ClaudeConfigInstallerAdapter {
         { id: 'claude-cli', name: 'Install Claude CLI', description: 'Install Claude command-line interface' },
         { id: 'claude-config', name: 'Configure Claude', description: 'Setup Claude directory and configurations' },
         { id: 'mcp-servers', name: 'Install MCP Servers', description: 'Install and configure MCP servers' },
-        { id: 'claude-agents', name: 'Setup Agents', description: 'Configure specialized agents' }
+        { id: 'claude-agents', name: 'Setup Agents', description: 'Configure specialized agents' },
       ];
       return success(steps);
     } catch (err) {
@@ -904,7 +904,7 @@ export class ProjectInitOrchestratorAdapter {
           },
           updateTemplates: async () => {
             throw new Error('ProjectInitOrchestrator not available. Install @wundr/computer-setup package.');
-          }
+          },
         };
       }
     }

@@ -38,7 +38,7 @@ export const claudeConfigTool: Tool = {
 };
 
 export async function handleClaudeConfig(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const action = args['action'] as string;
   const path = (args['path'] as string) || process.cwd();
@@ -74,7 +74,7 @@ export async function handleClaudeConfig(
 async function generateClaudeMd(
   path: string,
   template: string,
-  features: string[]
+  features: string[],
 ): Promise<ToolResult> {
   const templates: Record<string, string[]> = {
     minimal: ['Project basics', 'Build commands', 'File structure'],

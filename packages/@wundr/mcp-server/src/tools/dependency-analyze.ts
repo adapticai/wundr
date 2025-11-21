@@ -37,7 +37,7 @@ export const dependencyAnalyzeTool: Tool = {
 };
 
 export async function handleDependencyAnalyze(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const action = args['action'] as string;
   const path = (args['path'] as string) || process.cwd();
@@ -155,7 +155,7 @@ async function findUnusedDependencies(path: string): Promise<ToolResult> {
 async function createDependencyGraph(
   path: string,
   depth: number,
-  format: string
+  format: string,
 ): Promise<ToolResult> {
   const mermaidGraph = `graph TD
     A[@wundr/core] --> B[zod]
