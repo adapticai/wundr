@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "semver": "^7.6.3",
-    "@wundr.io/core": "workspace:*"
+    "@wundr.io/core": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",

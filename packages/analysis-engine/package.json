@@ -21,7 +21,7 @@
     "minimatch": "^9.0.3",
     "@typescript-eslint/parser": "^6.21.0",
     "@typescript-eslint/typescript-estree": "^6.21.0",
-    "@wundr.io/core-simple": "workspace:*"
+    "@wundr.io/core-simple": "^1.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",

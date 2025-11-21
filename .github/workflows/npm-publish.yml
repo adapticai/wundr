@@ -120,6 +120,11 @@ jobs:
             fi
           done
 
+      - name: 🔧 Fix workspace dependencies
+        run: |
+          chmod +x scripts/fix-workspace-deps.sh
+          ./scripts/fix-workspace-deps.sh ${{ needs.prepare-release.outputs.version }}
+
       - name: 🏗️ Build all packages
         run: pnpm run build
 

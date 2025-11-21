@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@types/node-fetch": "^2.6.13",
-    "@wundr.io/config": "workspace:*",
-    "@wundr.io/core": "workspace:*",
+    "@wundr.io/config": "^1.0.0",
+    "@wundr.io/core": "^1.0.0",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "execa": "^8.0.1",

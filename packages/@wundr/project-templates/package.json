@@ -21,7 +21,7 @@
     "inquirer": "^9.2.12",
     "ora": "^8.0.1",
     "validate-npm-package-name": "^5.0.1",
-    "@wundr.io/core": "workspace:*"
+    "@wundr.io/core": "^1.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
