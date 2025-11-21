@@ -2,21 +2,111 @@
  * Drift Detection Tool
  *
  * Monitor code quality drift and track changes over time.
+ * Includes RAG-powered semantic pattern drift detection.
  */
 
 import type { Tool, ToolResult } from './index.js';
+import {
+  ragEnhancedDriftDetection,
+  createRagBaseline,
+  type RagDriftDetectionInput,
+  type PatternType,
+} from './drift-detection-rag.js';
+
+// ============================================================================
+// Helper Types and Functions
+// ============================================================================
+
+/**
+ * Data structure for drift check results
+ */
+interface DriftData {
+  status?: string;
+  recommendations?: string[];
+  [key: string]: unknown;
+}
+
+/**
+ * Data structure for semantic analysis results
+ */
+interface SemanticData {
+  overallStatus?: string;
+  recommendations?: string[];
+  [key: string]: unknown;
+}
+
+/**
+ * Helper to safely extract typed data from ToolResult
+ */
+function getDataAs<T>(result: ToolResult): T | null {
+  return result.data as T | null;
+}
+
+/**
+ * Merge traditional drift detection results with semantic analysis
+ */
+function mergeWithSemanticAnalysis(
+  traditionalResult: ToolResult,
+  semanticResult: ToolResult,
+): ToolResult {
+  if (!traditionalResult.success) {
+    return traditionalResult;
+  }
+
+  const traditionalData = getDataAs<DriftData>(traditionalResult) || {};
+  const semanticData = getDataAs<SemanticData>(semanticResult);
+
+  const mergedData = {
+    ...traditionalData,
+    semanticAnalysis: semanticResult.success ? semanticResult.data : null,
+    semanticError: !semanticResult.success ? semanticResult.error : undefined,
+  };
+
+  // Combine recommendations from both analyses
+  const traditionalRecs = traditionalData.recommendations || [];
+  const semanticRecs = semanticData?.recommendations || [];
+  const recommendations = [...traditionalRecs, ...semanticRecs];
+
+  // Update status based on both analyses
+  let combinedStatus = traditionalData.status || 'UNKNOWN';
+  if (semanticData?.overallStatus === 'critical') {
+    combinedStatus = 'CRITICAL_DRIFT';
+  } else if (
+    semanticData?.overallStatus === 'degraded' &&
+    combinedStatus === 'WITHIN_THRESHOLD'
+  ) {
+    combinedStatus = 'SEMANTIC_DRIFT_DETECTED';
+  }
+
+  // Deduplicate recommendations
+  const uniqueRecommendations = Array.from(new Set(recommendations));
+
+  return {
+    success: true,
+    message: `${traditionalResult.message}. Semantic: ${semanticResult.message || 'N/A'}`,
+    data: {
+      ...mergedData,
+      status: combinedStatus,
+      recommendations: uniqueRecommendations,
+    },
+  };
+}
+
+// ============================================================================
+// Tool Definition
+// ============================================================================
 
 export const driftDetectionTool: Tool = {
   name: 'drift_detection',
   description:
-    'Monitor code quality drift, create baselines, and track trends over time. Use for quality monitoring and regression detection.',
+    'Monitor code quality drift, create baselines, and track trends over time. Use for quality monitoring and regression detection. Supports RAG-powered semantic pattern analysis.',
   inputSchema: {
     type: 'object',
     properties: {
       action: {
         type: 'string',
-        enum: ['check', 'baseline', 'trends', 'compare'],
-        description: 'Action to perform: check for drift, create baseline, show trends, or compare',
+        enum: ['check', 'baseline', 'trends', 'compare', 'semantic'],
+        description: 'Action to perform: check for drift, create baseline, show trends, compare, or semantic analysis',
       },
       path: {
         type: 'string',
@@ -31,6 +121,20 @@ export const driftDetectionTool: Tool = {
         enum: ['day', 'week', 'month', 'quarter'],
         description: 'Time period for trend analysis',
       },
+      // RAG-enhanced parameters
+      baselineStoreName: {
+        type: 'string',
+        description: 'RAG store name containing baseline patterns for semantic comparison',
+      },
+      currentStoreName: {
+        type: 'string',
+        description: 'RAG store name containing current patterns for semantic comparison',
+      },
+      enableSemanticAnalysis: {
+        type: 'boolean',
+        description: 'Enable RAG-powered semantic pattern drift detection',
+        default: false,
+      },
     },
     required: ['action'],
   },
@@ -44,16 +148,80 @@ export async function handleDriftDetection(
   const threshold = (args['threshold'] as number) || 5;
   const period = (args['period'] as string) || 'week';
 
+  // RAG-enhanced parameters
+  const baselineStoreName = args['baselineStoreName'] as string | undefined;
+  const currentStoreName = args['currentStoreName'] as string | undefined;
+  const enableSemanticAnalysis = (args['enableSemanticAnalysis'] as boolean) || false;
+
   try {
     switch (action) {
       case 'check':
+        // If semantic analysis is enabled, augment check with RAG insights
+        if (enableSemanticAnalysis) {
+          const [traditionalResult, semanticResult] = await Promise.all([
+            checkDrift(path, threshold),
+            ragEnhancedDriftDetection({
+              baselineStoreName,
+              currentStoreName,
+              path,
+              enableSemanticAnalysis: true,
+            }),
+          ]);
+
+          return mergeWithSemanticAnalysis(traditionalResult, semanticResult);
+        }
         return await checkDrift(path, threshold);
+
       case 'baseline':
+        // If semantic analysis is enabled, also create RAG baseline
+        if (enableSemanticAnalysis && baselineStoreName) {
+          const [traditionalResult, ragBaselineResult] = await Promise.all([
+            createBaseline(path),
+            createRagBaseline(baselineStoreName, path),
+          ]);
+
+          const baselineData = getDataAs<Record<string, unknown>>(traditionalResult) || {};
+
+          return {
+            success: traditionalResult.success,
+            message: `${traditionalResult.message}. RAG baseline also created.`,
+            data: {
+              ...baselineData,
+              ragBaseline: ragBaselineResult.data,
+            },
+          };
+        }
         return await createBaseline(path);
+
       case 'trends':
         return await showTrends(path, period);
+
       case 'compare':
+        // If semantic analysis is enabled, add RAG comparison
+        if (enableSemanticAnalysis) {
+          const [traditionalResult, semanticResult] = await Promise.all([
+            compareDrift(path),
+            ragEnhancedDriftDetection({
+              baselineStoreName,
+              currentStoreName,
+              path,
+              enableSemanticAnalysis: true,
+            }),
+          ]);
+
+          return mergeWithSemanticAnalysis(traditionalResult, semanticResult);
+        }
         return await compareDrift(path);
+
+      case 'semantic':
+        // Dedicated semantic analysis action
+        return await ragEnhancedDriftDetection({
+          baselineStoreName,
+          currentStoreName,
+          path,
+          enableSemanticAnalysis: true,
+        });
+
       default:
         return {
           success: false,
@@ -67,6 +235,10 @@ export async function handleDriftDetection(
     };
   }
 }
+
+// ============================================================================
+// Private Helper Functions for Drift Detection
+// ============================================================================
 
 async function checkDrift(path: string, threshold: number): Promise<ToolResult> {
   // Placeholder implementation - would integrate with @wundr.io/core

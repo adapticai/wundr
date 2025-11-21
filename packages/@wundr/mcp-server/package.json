@@ -32,13 +32,17 @@
     "publish:dry-run": "./scripts/publish.sh --dry-run"
   },
   "dependencies": {
+    "@google/genai": "^1.30.0",
     "@wundr.io/cli": "workspace:*",
     "@wundr.io/core": "workspace:*",
+    "@wundr.io/rag-utils": "workspace:*",
     "eventemitter3": "^5.0.1",
     "uuid": "^11.0.3",
     "zod": "^3.25.76",
     "chalk": "^5.3.0",
-    "fs-extra": "^11.3.1"
+    "fs-extra": "^11.3.1",
+    "tiktoken": "^1.0.21",
+    "langchain": "^0.3.26"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",

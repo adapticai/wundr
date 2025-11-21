@@ -11,6 +11,7 @@ import claudeInitCommand from './commands/claude-init';
 import claudeSetupCommand from './commands/claude-setup';
 import { createComputerSetupCommand } from './commands/computer-setup';
 import { CreateCommands } from './commands/create';
+import { createRAGCommand } from './commands/rag';
 import { DashboardCommands } from './commands/dashboard';
 import { GovernCommands } from './commands/govern';
 import { InitCommands } from './commands/init';
@@ -100,6 +101,9 @@ The Unified Developer Platform
 
     // Testing
     this.program.addCommand(createTestCommand());
+
+    // RAG (Retrieval-Augmented Generation)
+    this.program.addCommand(createRAGCommand());
 
     // Interactive Modes
     new ChatCommands(this.program, this.configManager, this.pluginManager);

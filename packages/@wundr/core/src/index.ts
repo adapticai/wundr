@@ -29,6 +29,9 @@ export * from './events/index.js';
 // Utilities
 export * from './utils/index.js';
 
+// RAG (Retrieval-Augmented Generation)
+export * from './rag/index.js';
+
 // Package info
 export const version = '1.0.0';
 export const name = '@wundr/core';

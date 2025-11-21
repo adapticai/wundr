@@ -17,6 +17,11 @@ import { DependencyAnalyzeHandler } from './tools/analysis/dependency-analyze-ha
 import { TestBaselineHandler } from './tools/testing/test-baseline-handler.js';
 import { ClaudeConfigHandler } from './tools/config/claude-config-handler.js';
 
+// RAG tool handlers
+import { RagFileSearchHandler } from './tools/rag/rag-file-search-handler.js';
+import { RagStoreManageHandler } from './tools/rag/rag-store-manage-handler.js';
+import { RagContextBuilderHandler } from './tools/rag/rag-context-builder-handler.js';
+
 // Define common handler interface
 interface ToolHandler {
   execute(args: any): Promise<string>;
@@ -48,6 +53,11 @@ class WundrMCPServer {
     this.handlers.set('dependency_analyze', new DependencyAnalyzeHandler());
     this.handlers.set('test_baseline', new TestBaselineHandler());
     this.handlers.set('claude_config', new ClaudeConfigHandler());
+
+    // RAG tool handlers
+    this.handlers.set('rag_file_search', new RagFileSearchHandler());
+    this.handlers.set('rag_store_manage', new RagStoreManageHandler());
+    this.handlers.set('rag_context_builder', new RagContextBuilderHandler());
 
     this.setupHandlers();
   }
@@ -217,6 +227,134 @@ class WundrMCPServer {
               },
             },
             required: ['configType'],
+          },
+        },
+        // RAG Tools
+        {
+          name: 'rag_file_search',
+          description: 'Search files using semantic, keyword, or hybrid search with relevance scoring',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'Search query string',
+              },
+              paths: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Paths to search within (defaults to current directory)',
+              },
+              maxResults: {
+                type: 'number',
+                description: 'Maximum number of results to return (default: 10)',
+              },
+              minScore: {
+                type: 'number',
+                description: 'Minimum relevance score threshold 0-1 (default: 0.3)',
+              },
+              mode: {
+                type: 'string',
+                enum: ['semantic', 'keyword', 'hybrid'],
+                description: 'Search mode (default: hybrid)',
+              },
+              includeContent: {
+                type: 'boolean',
+                description: 'Include file content snippets in results (default: true)',
+              },
+            },
+            required: ['query'],
+          },
+        },
+        {
+          name: 'rag_store_manage',
+          description: 'Create, manage, and maintain vector stores for RAG operations',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              action: {
+                type: 'string',
+                enum: ['create', 'delete', 'list', 'status', 'index', 'clear', 'optimize', 'backup', 'restore'],
+                description: 'Store management action to perform',
+              },
+              storeName: {
+                type: 'string',
+                description: 'Store name/identifier',
+              },
+              config: {
+                type: 'object',
+                description: 'Store configuration for create action',
+                properties: {
+                  type: { type: 'string', enum: ['memory', 'chromadb', 'pinecone', 'qdrant', 'weaviate'] },
+                  embeddingModel: { type: 'string', enum: ['openai', 'cohere', 'local', 'custom'] },
+                  dimensions: { type: 'number' },
+                },
+              },
+              indexPaths: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Paths to index for index action',
+              },
+              backupPath: {
+                type: 'string',
+                description: 'Backup/restore file path',
+              },
+              force: {
+                type: 'boolean',
+                description: 'Force operation without confirmation',
+              },
+            },
+            required: ['action'],
+          },
+        },
+        {
+          name: 'rag_context_builder',
+          description: 'Build optimal context for LLM queries using multiple sources and strategies',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'Query or topic for context building',
+              },
+              strategy: {
+                type: 'string',
+                enum: ['relevant', 'recent', 'comprehensive', 'focused', 'custom'],
+                description: 'Context building strategy (default: relevant)',
+              },
+              sources: {
+                type: 'array',
+                items: { type: 'string', enum: ['files', 'store', 'memory', 'combined'] },
+                description: 'Sources to include in context (default: combined)',
+              },
+              maxTokens: {
+                type: 'number',
+                description: 'Maximum context tokens/length (default: 4000)',
+              },
+              storeName: {
+                type: 'string',
+                description: 'Store name to query',
+              },
+              additionalPaths: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Additional file paths to include',
+              },
+              includeCode: {
+                type: 'boolean',
+                description: 'Include code snippets in context (default: true)',
+              },
+              includeDocs: {
+                type: 'boolean',
+                description: 'Include documentation in context (default: true)',
+              },
+              format: {
+                type: 'string',
+                enum: ['plain', 'markdown', 'structured'],
+                description: 'Output format (default: markdown)',
+              },
+            },
+            required: ['query'],
           },
         },
       ],

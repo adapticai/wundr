@@ -8,6 +8,17 @@
 import { z } from 'zod';
 
 // ============================================================================
+// RAG Tool Schemas (imported from rag module)
+// ============================================================================
+
+import {
+  RagFileSearchSchema,
+  RagStoreManageSchema,
+  RagContextBuilderSchema,
+  RagToolSchemaEntries,
+} from './rag/schemas';
+
+// ============================================================================
 // Common Schema Types
 // ============================================================================
 
@@ -126,6 +137,10 @@ export const DriftDetectionSchema = z.object({
   threshold: z.number().optional().describe('Drift threshold percentage'),
   categories: z.array(z.string()).optional().describe('Categories to check (quality, security, performance)'),
   format: z.enum(['json', 'table', 'markdown']).optional().default('table').describe('Output format'),
+  // RAG-enhanced drift detection parameters
+  baselineStoreName: z.string().optional().describe('RAG store name containing baseline patterns for semantic comparison'),
+  currentStoreName: z.string().optional().describe('RAG store name containing current patterns for semantic comparison'),
+  enableSemanticAnalysis: z.boolean().optional().default(false).describe('Enable RAG-powered semantic pattern drift detection'),
 });
 
 export type DriftDetectionInput = z.infer<typeof DriftDetectionSchema>;
@@ -222,6 +237,101 @@ export const TestBaselineSchema = z.object({
 
 export type TestBaselineInput = z.infer<typeof TestBaselineSchema>;
 
+// Re-export RAG schemas for convenience
+export {
+  RagFileSearchSchema,
+  RagStoreManageSchema,
+  RagContextBuilderSchema,
+  RagToolSchemaEntries,
+};
+
+// Re-export RAG schema input types
+export type {
+  RagFileSearchInput,
+  RagStoreManageInput,
+  RagContextBuilderInput,
+  RagToolName,
+} from './rag/schemas';
+
+// ============================================================================
+// Error Debugger RAG Tool Schema
+// ============================================================================
+
+/**
+ * Schema for RAG-powered error debugging
+ *
+ * Analyzes error messages, extracts key identifiers, searches for relevant
+ * context and working examples using RAG, and generates actionable fix suggestions.
+ */
+export const ErrorDebuggerRagSchema = z.object({
+  errorType: z.enum(['lint', 'typecheck', 'build']).describe('Type of error to debug (lint, typecheck, or build)'),
+  errorMessages: z.array(z.string()).min(1).describe('Array of error messages to debug'),
+  targetPath: z.string().describe('Path to search for context and working examples'),
+  maxSuggestionsPerError: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .default(3)
+    .describe('Maximum number of fix suggestions per error'),
+});
+
+export type ErrorDebuggerRagInput = z.infer<typeof ErrorDebuggerRagSchema>;
+
+// ============================================================================
+// RAG-Enhanced Analysis Schemas
+// ============================================================================
+
+/**
+ * Schema for RAG-enhanced codebase analysis
+ */
+export const CodebaseAnalysisRagSchema = z.object({
+  targetPath: z.string().describe('Root directory path of the codebase to analyze'),
+  storeName: z.string().optional().describe('Name for the RAG store (auto-generated if not provided)'),
+  forceReindex: z.boolean().optional().default(false).describe('Force reindexing even if store exists'),
+  includePatterns: z.array(z.string()).optional().default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.md', '**/*.json']).describe('File patterns to include in analysis'),
+  excludePatterns: z.array(z.string()).optional().default(['**/node_modules/**', '**/dist/**', '**/.git/**', '**/coverage/**']).describe('File patterns to exclude from analysis'),
+  analysisCategories: z.array(z.enum([
+    'architecture',
+    'patterns',
+    'dependencies',
+    'tests',
+    'security',
+  ])).optional().default(['architecture', 'patterns', 'dependencies', 'tests', 'security']).describe('Categories to analyze'),
+  maxResultsPerCategory: z.number().int().positive().optional().default(10).describe('Maximum results per analysis category'),
+  generateSummary: z.boolean().optional().default(true).describe('Generate AI-powered summary of findings'),
+});
+
+export type CodebaseAnalysisRagInput = z.infer<typeof CodebaseAnalysisRagSchema>;
+
+/**
+ * Schema for refactoring impact analysis
+ */
+export const RefactoringImpactSchema = z.object({
+  targetPath: z.string().describe('Root directory path of the codebase'),
+  refactoringTarget: z.string().describe('The code element being refactored (function name, class name, module path, or pattern)'),
+  refactoringType: z.enum([
+    'rename',
+    'move',
+    'extract',
+    'inline',
+    'change-signature',
+    'restructure',
+    'deprecate',
+    'delete',
+  ]).describe('Type of refactoring operation'),
+  searchScope: z.enum(['local', 'project', 'workspace']).optional().default('project').describe('Scope of impact analysis'),
+  storeName: z.string().optional().describe('Name for the RAG store (auto-generated if not provided)'),
+  forceReindex: z.boolean().optional().default(false).describe('Force reindexing even if store exists'),
+  includePatterns: z.array(z.string()).optional().default(['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx']).describe('File patterns to include in analysis'),
+  excludePatterns: z.array(z.string()).optional().default(['**/node_modules/**', '**/dist/**', '**/.git/**']).describe('File patterns to exclude from analysis'),
+  includeTests: z.boolean().optional().default(true).describe('Include test files in impact analysis'),
+  includeDocs: z.boolean().optional().default(true).describe('Include documentation files in impact analysis'),
+  maxResults: z.number().int().positive().optional().default(50).describe('Maximum number of impacted files to return'),
+});
+
+export type RefactoringImpactInput = z.infer<typeof RefactoringImpactSchema>;
+
 // ============================================================================
 // Schema Registry Export
 // ============================================================================
@@ -289,6 +399,37 @@ export const ToolSchemas = {
     schema: TestBaselineSchema,
     description: 'Manage test coverage baselines',
     category: 'testing',
+  },
+  // RAG Tools
+  'rag-file-search': {
+    schema: RagFileSearchSchema,
+    description: 'Search files using semantic, keyword, or hybrid search with relevance scoring',
+    category: 'rag',
+  },
+  'rag-store-manage': {
+    schema: RagStoreManageSchema,
+    description: 'Create, manage, and maintain vector stores for RAG operations',
+    category: 'rag',
+  },
+  'rag-context-builder': {
+    schema: RagContextBuilderSchema,
+    description: 'Build optimal context for LLM queries using multiple sources and strategies',
+    category: 'rag',
+  },
+  'codebase-analysis-rag': {
+    schema: CodebaseAnalysisRagSchema,
+    description: 'Analyze a codebase using RAG-enhanced semantic search to understand architecture, patterns, dependencies, tests, and security measures',
+    category: 'rag',
+  },
+  'refactoring-impact': {
+    schema: RefactoringImpactSchema,
+    description: 'Analyze the potential impact of a refactoring operation using RAG search to find affected files, tests, and documentation',
+    category: 'rag',
+  },
+  'error-debugger-rag': {
+    schema: ErrorDebuggerRagSchema,
+    description: 'Debug errors using RAG-powered analysis with intelligent fix suggestions',
+    category: 'rag',
   },
 } as const;
 

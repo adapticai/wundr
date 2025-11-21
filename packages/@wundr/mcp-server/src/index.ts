@@ -187,7 +187,7 @@ export {
 // Existing Wundr CLI Tools Integration
 // =============================================================================
 
-// Re-export all tools functionality
+// Re-export all tools functionality (includes RAG tools)
 export * from './tools';
 
 // Export version
@@ -259,7 +259,7 @@ export function getToolCountByCategory(): Record<string, number> {
  * ```
  */
 export async function startServer(
-  options: import('./server/MCPServer').MCPServerOptions
+  options: import('./server/MCPServer').MCPServerOptions,
 ): Promise<import('./server/MCPServer').MCPServer> {
   const { createMCPServer: create } = await import('./server/MCPServer');
   const server = create(options);

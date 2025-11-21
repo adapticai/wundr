@@ -16,6 +16,8 @@ import {
   globalRegistry,
 } from './registry';
 
+import { registerRagTools, initializeRagTools as initRagTools } from './rag';
+
 import type {
   ToolRegistry,
   McpToolResult} from './registry';
@@ -1044,6 +1046,26 @@ export function initializeCliTools(): ToolRegistry {
   registerCliCommandTools(globalRegistry);
   return globalRegistry;
 }
+
+// ============================================================================
+// Unified Initialization
+// ============================================================================
+
+/**
+ * Initialize all tools (CLI + RAG) with the global registry
+ *
+ * @returns The global tool registry with all tools registered
+ */
+export function initializeAllTools(): ToolRegistry {
+  registerCliCommandTools(globalRegistry);
+  registerRagTools(globalRegistry);
+  return globalRegistry;
+}
+
+/**
+ * Re-export RAG tools initialization for convenience
+ */
+export { registerRagTools, initRagTools as initializeRagTools };
 
 // ============================================================================
 // Exports

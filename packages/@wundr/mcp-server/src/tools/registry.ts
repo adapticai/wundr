@@ -108,6 +108,7 @@ export class ToolRegistry {
     this.categories.set('governance', new Set());
     this.categories.set('analysis', new Set());
     this.categories.set('testing', new Set());
+    this.categories.set('rag', new Set());
   }
 
   /**

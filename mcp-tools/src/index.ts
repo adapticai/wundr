@@ -6,13 +6,22 @@ export { DependencyAnalyzeHandler } from './tools/analysis/dependency-analyze-ha
 export { TestBaselineHandler } from './tools/testing/test-baseline-handler.js';
 export { ClaudeConfigHandler } from './tools/config/claude-config-handler.js';
 
+// RAG tool handlers
+export { RagFileSearchHandler } from './tools/rag/rag-file-search-handler.js';
+export { RagStoreManageHandler } from './tools/rag/rag-store-manage-handler.js';
+export { RagContextBuilderHandler } from './tools/rag/rag-context-builder-handler.js';
+
 // Re-export types if needed
-export type { 
+export type {
   DriftDetectionArgs,
   PatternStandardizeArgs,
   MonorepoManageArgs,
   GovernanceReportArgs,
   DependencyAnalyzeArgs,
   TestBaselineArgs,
-  ClaudeConfigArgs
+  ClaudeConfigArgs,
+  // RAG types
+  RagFileSearchArgs,
+  RagStoreManageArgs,
+  RagContextBuilderArgs,
 } from './types/index.js';

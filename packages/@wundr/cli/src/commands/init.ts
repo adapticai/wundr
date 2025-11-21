@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
 
+import { initProjectRag, type RagInitOptions } from '@wundr.io/core';
 import { errorHandler } from '../utils/error-handler';
 import { logger } from '../utils/logger';
 
@@ -36,8 +37,20 @@ export class InitCommands {
       .option('--skip-git', 'skip git initialization')
       .option('--skip-install', 'skip dependency installation')
       .option('--monorepo', 'initialize as monorepo')
+      .option('--with-rag', 'initialize RAG (Retrieval-Augmented Generation) support')
       .action(async (name, options) => {
         await this.initProject(name, options);
+      });
+
+    // Initialize RAG for existing project
+    initCmd
+      .command('rag')
+      .description('initialize RAG support for an existing project')
+      .option('--force', 'force re-initialization even if config exists')
+      .option('--skip-indexing', 'skip initial file indexing')
+      .option('--project-name <name>', 'override project name')
+      .action(async options => {
+        await this.initRag(options);
       });
 
     // Initialize configuration
@@ -110,6 +123,32 @@ export class InitCommands {
         await this.installDependencies(projectPath);
       }
 
+      // Initialize RAG if --with-rag flag is provided
+      if (options.withRag) {
+        logger.info('Initializing RAG support...');
+        const ragResult = await initProjectRag(projectPath, {
+          projectName,
+        });
+
+        if (ragResult.success) {
+          logger.success(
+            `RAG initialized: ${ragResult.filesIndexed} files indexed`,
+          );
+          logger.info(
+            `  Framework detected: ${chalk.cyan(ragResult.framework.name)}`,
+          );
+        } else {
+          logger.warn('RAG initialization had issues:');
+          for (const error of ragResult.errors) {
+            logger.warn(`  - ${error}`);
+          }
+        }
+
+        for (const warning of ragResult.warnings) {
+          logger.warn(`  Warning: ${warning}`);
+        }
+      }
+
       logger.success(`Project ${projectName} initialized successfully!`);
       logger.info('Next steps:');
       logger.info(`  cd ${projectName}`);
@@ -119,6 +158,54 @@ export class InitCommands {
         'WUNDR_INIT_PROJECT_FAILED',
         'Failed to initialize project',
         { name, options },
+        true,
+      );
+    }
+  }
+
+  /**
+   * Initialize RAG support for existing project
+   */
+  private async initRag(options: {
+    force?: boolean;
+    skipIndexing?: boolean;
+    projectName?: string;
+  }): Promise<void> {
+    try {
+      const projectPath = process.cwd();
+      logger.info(`Initializing RAG support in: ${chalk.cyan(projectPath)}`);
+
+      const ragOptions: RagInitOptions = {
+        force: options.force,
+        skipIndexing: options.skipIndexing,
+        projectName: options.projectName,
+      };
+
+      const result = await initProjectRag(projectPath, ragOptions);
+
+      if (result.success) {
+        logger.success('RAG initialization complete!');
+        logger.info(`  Config: ${chalk.cyan(result.configPath)}`);
+        logger.info(`  Exclusions: ${chalk.cyan(result.excludePath)}`);
+        logger.info(`  Files indexed: ${chalk.cyan(result.filesIndexed)}`);
+        logger.info(
+          `  Framework: ${chalk.cyan(result.framework.name)} (${result.framework.projectType})`,
+        );
+      } else {
+        logger.error('RAG initialization failed:');
+        for (const error of result.errors) {
+          logger.error(`  - ${error}`);
+        }
+      }
+
+      for (const warning of result.warnings) {
+        logger.warn(`  Warning: ${warning}`);
+      }
+    } catch (error) {
+      throw errorHandler.createError(
+        'WUNDR_INIT_RAG_FAILED',
+        'Failed to initialize RAG',
+        { options },
         true,
       );
     }

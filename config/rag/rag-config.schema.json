@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.io/schemas/rag-config.schema.json",
+  "title": "RAG Configuration Schema",
+  "description": "Configuration schema for Wundr RAG (Retrieval-Augmented Generation) system",
+  "type": "object",
+  "properties": {
+    "geminiApiKey": {
+      "type": "string",
+      "description": "Gemini API key for embeddings. Can also be set via GEMINI_API_KEY environment variable.",
+      "minLength": 1
+    },
+    "storePath": {
+      "type": "string",
+      "description": "Path to store RAG vector databases. Defaults to ~/.wundr/rag-stores",
+      "default": "~/.wundr/rag-stores",
+      "minLength": 1
+    },
+    "maxFileSizeMb": {
+      "type": "number",
+      "description": "Maximum file size in megabytes to process",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "chunkSize": {
+      "type": "number",
+      "description": "Size of text chunks for embedding (in tokens/characters)",
+      "default": 500,
+      "minimum": 50,
+      "maximum": 8000
+    },
+    "overlap": {
+      "type": "number",
+      "description": "Overlap between consecutive chunks",
+      "default": 50,
+      "minimum": 0
+    },
+    "autoSync": {
+      "type": "boolean",
+      "description": "Automatically synchronize changes to the RAG store",
+      "default": true
+    },
+    "logLevel": {
+      "type": "string",
+      "description": "Log level for RAG operations",
+      "enum": ["debug", "info", "warn", "error"],
+      "default": "info"
+    },
+    "embeddingModel": {
+      "type": "string",
+      "description": "Embedding model identifier to use",
+      "default": "text-embedding-004",
+      "minLength": 1
+    },
+    "similarityThreshold": {
+      "type": "number",
+      "description": "Minimum similarity score for search results (0-1)",
+      "default": 0.7,
+      "minimum": 0,
+      "maximum": 1
+    },
+    "maxResults": {
+      "type": "number",
+      "description": "Maximum number of search results to return",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "maxConcurrentOperations": {
+      "type": "number",
+      "description": "Maximum number of concurrent file processing operations",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 50
+    },
+    "cacheTtlMs": {
+      "type": "number",
+      "description": "Cache time-to-live in milliseconds",
+      "default": 3600000,
+      "minimum": 0
+    },
+    "retryAttempts": {
+      "type": "number",
+      "description": "Number of retry attempts for failed API calls",
+      "default": 3,
+      "minimum": 0,
+      "maximum": 10
+    },
+    "retryDelayMs": {
+      "type": "number",
+      "description": "Delay between retry attempts in milliseconds",
+      "default": 1000,
+      "minimum": 0,
+      "maximum": 60000
+    },
+    "excludePatterns": {
+      "type": "array",
+      "description": "Additional glob patterns to exclude from indexing",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "includePatterns": {
+      "type": "array",
+      "description": "Override default include patterns for file selection",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "includeCategories": {
+      "type": "array",
+      "description": "File type categories to include in indexing",
+      "items": {
+        "type": "string",
+        "enum": ["code", "config", "docs", "tests", "scripts", "data"]
+      },
+      "uniqueItems": true,
+      "default": ["code", "config", "docs"]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "storePath": "~/.wundr/rag-stores",
+      "maxFileSizeMb": 100,
+      "chunkSize": 500,
+      "overlap": 50,
+      "autoSync": true,
+      "logLevel": "info",
+      "similarityThreshold": 0.7,
+      "maxResults": 10,
+      "includeCategories": ["code", "config", "docs"]
+    },
+    {
+      "storePath": "./local-rag-store",
+      "maxFileSizeMb": 50,
+      "chunkSize": 1000,
+      "overlap": 100,
+      "autoSync": false,
+      "logLevel": "debug",
+      "similarityThreshold": 0.8,
+      "maxResults": 20,
+      "excludePatterns": [
+        "**/legacy/**",
+        "**/deprecated/**"
+      ],
+      "includeCategories": ["code", "tests"]
+    }
+  ],
+  "definitions": {
+    "fileTypeCategory": {
+      "type": "string",
+      "enum": ["code", "config", "docs", "tests", "scripts", "data"],
+      "description": "Category of files for filtering"
+    },
+    "globPattern": {
+      "type": "string",
+      "description": "Glob pattern for file matching",
+      "pattern": "^[^\\x00]+$",
+      "minLength": 1
+    }
+  }
+}

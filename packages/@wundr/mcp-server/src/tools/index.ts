@@ -39,6 +39,12 @@ export {
   // Testing schemas
   TestBaselineSchema,
 
+  // RAG schemas
+  RagFileSearchSchema,
+  RagStoreManageSchema,
+  RagContextBuilderSchema,
+  RagToolSchemaEntries,
+
   // Schema registry and utilities
   ToolSchemas,
   zodToJsonSchema,
@@ -59,6 +65,12 @@ export {
   type DependencyAnalyzeInput,
   type TestBaselineInput,
   type ToolName,
+
+  // RAG types
+  type RagFileSearchInput,
+  type RagStoreManageInput,
+  type RagContextBuilderInput,
+  type RagToolName,
 } from './schemas';
 
 // Export registry
@@ -114,8 +126,62 @@ export {
   // Registration
   registerCliCommandTools,
   initializeCliTools,
+  initializeAllTools,
 
   // Command execution utilities
   executeCommand,
   executeWundrCommand,
 } from './cli-commands';
+
+// ============================================================================
+// RAG Tools
+// ============================================================================
+
+export {
+  // RAG handlers
+  ragFileSearchHandler,
+  ragStoreManageHandler,
+  ragContextBuilderHandler,
+
+  // RAG registration
+  registerRagTools,
+  initializeRagTools,
+  getRagToolDefinitions,
+  getRagToolJsonSchemas,
+
+  // RAG constants
+  DEFAULT_CONFIG as RAG_DEFAULT_CONFIG,
+  RAG_STORE_DIR,
+  RAG_CACHE_DIR,
+  RAG_TOOL_NAMES,
+  RAG_TOOL_DESCRIPTIONS,
+  SUPPORTED_STORE_TYPES,
+  SUPPORTED_EMBEDDING_MODELS,
+  SUPPORTED_CONTEXT_STRATEGIES,
+  DEFAULT_CODE_PATTERNS,
+  DEFAULT_DOC_PATTERNS,
+  DEFAULT_EXCLUDE_PATTERNS,
+  MAX_FILE_SIZE,
+  MAX_SNIPPET_LENGTH,
+  MAX_DOCUMENTS_PER_STORE,
+  MAX_CONTEXT_CHUNKS,
+
+  // RAG types
+  type EmbeddingModel,
+  type VectorStoreType,
+  type ScoringMethod,
+  type RagFileSearchOutput,
+  type FileSearchResult,
+  type StoreAction,
+  type RagStoreManageOutput,
+  type StoreInfo,
+  type ContextStrategy,
+  type ContextSource,
+  type RagContextBuilderOutput,
+  type ContextChunk,
+  type RagToolResult,
+  type RagFileSearchHandler,
+  type RagStoreManageHandler,
+  type RagContextBuilderHandler,
+  type RagToolsConfig,
+} from './rag';

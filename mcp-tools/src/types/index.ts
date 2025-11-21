@@ -41,6 +41,46 @@ export interface ClaudeConfigArgs {
   features?: string[];
 }
 
+// RAG Tool Arguments
+export interface RagFileSearchArgs {
+  query: string;
+  paths?: string[];
+  includePatterns?: string[];
+  excludePatterns?: string[];
+  maxResults?: number;
+  minScore?: number;
+  mode?: 'semantic' | 'keyword' | 'hybrid';
+  includeContent?: boolean;
+  maxContentLength?: number;
+}
+
+export interface RagStoreManageArgs {
+  action: 'create' | 'delete' | 'list' | 'status' | 'index' | 'clear' | 'optimize' | 'backup' | 'restore';
+  storeName?: string;
+  config?: {
+    type?: string;
+    embeddingModel?: string;
+    dimensions?: number;
+    metadata?: Record<string, unknown>;
+  };
+  indexPaths?: string[];
+  backupPath?: string;
+  force?: boolean;
+}
+
+export interface RagContextBuilderArgs {
+  query: string;
+  strategy?: 'relevant' | 'recent' | 'comprehensive' | 'focused' | 'custom';
+  sources?: Array<'files' | 'store' | 'memory' | 'combined'>;
+  maxTokens?: number;
+  storeName?: string;
+  additionalPaths?: string[];
+  includeCode?: boolean;
+  includeDocs?: boolean;
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  format?: 'plain' | 'markdown' | 'structured';
+}
+
 // Common result types
 export interface MCPToolResult {
   success: boolean;
