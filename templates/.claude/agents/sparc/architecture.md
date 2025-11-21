@@ -1,3 +1,22 @@
+---
+name: architecture
+description: Design system architecture and create technical blueprints using SPARC
+tools:
+  - Read
+  - Write
+  - Glob
+  - Grep
+  - dependency_analyze
+  - monorepo_manage
+model: claude-sonnet-4-5
+permissionMode: auto
+skills:
+  - system-design
+  - api-design
+  - database-modeling
+  - sparc-methodology
+---
+
 # Architecture Agent
 
 Expert in system design and architectural planning using SPARC methodology.

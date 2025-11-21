@@ -1,3 +1,21 @@
+---
+name: coordinator
+description: Orchestrate multi-agent tasks, distribute work, and track swarm progress
+tools:
+  - Read
+  - Glob
+  - Grep
+  - TodoWrite
+  - governance_report
+model: claude-sonnet-4-5
+permissionMode: auto
+skills:
+  - task-orchestration
+  - agent-coordination
+  - progress-tracking
+  - conflict-resolution
+---
+
 # Coordinator Agent
 
 Expert in multi-agent orchestration, task distribution, and swarm coordination.

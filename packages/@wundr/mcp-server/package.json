@@ -1,0 +1,107 @@
+{
+  "name": "@wundr.io/mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server - Model Context Protocol server for Claude Code integration with stdio transport",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "wundr-mcp": "./bin/mcp-server.js"
+  },
+  "scripts": {
+    "build": "./scripts/build.sh",
+    "build:tsc": "tsc",
+    "build:watch": "tsc --watch",
+    "build:prod": "./scripts/build.sh --prod",
+    "clean": "rm -rf dist coverage",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "start:dev": "ts-node src/index.ts",
+    "test": "./scripts/test.sh",
+    "test:unit": "./scripts/test.sh --unit",
+    "test:integration": "./scripts/test.sh --integration",
+    "test:watch": "jest --watch",
+    "test:coverage": "./scripts/test.sh --coverage",
+    "test:ci": "./scripts/test.sh --ci",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build:prod",
+    "publish:npm": "./scripts/publish.sh",
+    "publish:dry-run": "./scripts/publish.sh --dry-run"
+  },
+  "dependencies": {
+    "@wundr.io/cli": "workspace:*",
+    "@wundr.io/core": "workspace:*",
+    "eventemitter3": "^5.0.1",
+    "uuid": "^11.0.3",
+    "zod": "^3.25.76",
+    "chalk": "^5.3.0",
+    "fs-extra": "^11.3.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-jest": "^29.0.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "@wundr.io/ai-integration": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@wundr.io/ai-integration": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude-code",
+    "stdio-transport",
+    "ai-tools",
+    "wundr"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adapticai/wundr.git",
+    "directory": "packages/@wundr/mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/adapticai/wundr/issues"
+  },
+  "homepage": "https://wundr.io",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "mcp": {
+    "name": "wundr",
+    "description": "Wundr governance and code quality MCP tools for Claude Code",
+    "version": "1.0.0",
+    "installCommand": "claude mcp add wundr npx @wundr.io/mcp-server",
+    "capabilities": {
+      "tools": true,
+      "resources": true,
+      "prompts": true
+    }
+  }
+}

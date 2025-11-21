@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.dev/schemas/mcp-tools/dependency-analyze.json",
+  "title": "Dependency Analyze Tool Schema",
+  "description": "Schema for the dependency_analyze MCP tool that analyzes and maps dependencies in the codebase",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": ["all", "circular", "unused", "external"],
+      "description": "Scope of dependency analysis to perform"
+    },
+    "target": {
+      "type": "string",
+      "description": "Specific package or directory to analyze. Defaults to 'src' if not specified.",
+      "examples": ["src", "packages/auth", "apps/api"]
+    },
+    "outputFormat": {
+      "type": "string",
+      "enum": ["graph", "json", "markdown"],
+      "default": "json",
+      "description": "Format for analysis output"
+    }
+  },
+  "required": ["scope"],
+  "additionalProperties": false,
+  "definitions": {
+    "DependencyGraph": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" }
+            },
+            "required": ["id", "label"]
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" }
+            },
+            "required": ["from", "to"]
+          }
+        }
+      }
+    },
+    "AllScopeResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "scope": { "const": "all" },
+        "target": { "type": "string" },
+        "format": { "type": "string" },
+        "analysis": {
+          "type": "object",
+          "properties": {
+            "totalFiles": { "type": "integer" },
+            "totalDependencies": { "type": "integer" },
+            "internalDependencies": { "type": "integer" },
+            "externalDependencies": { "type": "integer" },
+            "circularDependencies": {
+              "type": "array",
+              "items": { "type": "array", "items": { "type": "string" } }
+            },
+            "unusedDependencies": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "dependencyGraph": { "$ref": "#/definitions/DependencyGraph" }
+          }
+        },
+        "summary": { "type": "string" },
+        "insights": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "output": { "type": "string" }
+      },
+      "required": ["success", "scope", "analysis"]
+    },
+    "CircularScopeResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "scope": { "const": "circular" },
+        "hasCircularDependencies": { "type": "boolean" },
+        "count": { "type": "integer", "minimum": 0 },
+        "circles": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "message": { "type": "string" },
+        "recommendations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["success", "scope", "hasCircularDependencies", "count"]
+    },
+    "UnusedScopeResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "scope": { "const": "unused" },
+        "totalDependencies": { "type": "integer" },
+        "unusedCount": { "type": "integer", "minimum": 0 },
+        "unusedDependencies": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "sizeSavings": { "type": "string" },
+        "recommendations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "scope", "unusedCount", "unusedDependencies"]
+    },
+    "ExternalScopeResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "scope": { "const": "external" },
+        "analysis": {
+          "type": "object",
+          "properties": {
+            "production": {
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" },
+                "list": { "type": "array", "items": { "type": "string" } },
+                "byCategory": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "development": {
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" },
+                "list": { "type": "array", "items": { "type": "string" } },
+                "byCategory": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "security": {
+              "type": "object",
+              "properties": {
+                "issues": { "type": "integer" },
+                "vulnerabilities": {
+                  "type": "array",
+                  "items": { "type": "object" }
+                },
+                "lastChecked": { "type": "string", "format": "date-time" }
+              }
+            },
+            "licenses": {
+              "type": "object",
+              "properties": {
+                "risks": { "type": "integer" },
+                "licenses": {
+                  "type": "object",
+                  "additionalProperties": { "type": "number" }
+                }
+              }
+            },
+            "outdated": {
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" },
+                "major": { "type": "integer" },
+                "minor": { "type": "integer" },
+                "patch": { "type": "integer" }
+              }
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "totalExternal": { "type": "integer" },
+            "productionDeps": { "type": "integer" },
+            "devDeps": { "type": "integer" },
+            "securityIssues": { "type": "integer" },
+            "licenseRisks": { "type": "integer" }
+          }
+        },
+        "recommendations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "scope", "analysis"]
+    }
+  },
+  "examples": [
+    {
+      "scope": "all"
+    },
+    {
+      "scope": "all",
+      "target": "packages/core",
+      "outputFormat": "markdown"
+    },
+    {
+      "scope": "circular"
+    },
+    {
+      "scope": "circular",
+      "target": "src"
+    },
+    {
+      "scope": "unused"
+    },
+    {
+      "scope": "external"
+    },
+    {
+      "scope": "all",
+      "outputFormat": "graph"
+    }
+  ]
+}

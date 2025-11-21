@@ -1,3 +1,20 @@
+---
+name: memory-manager
+description: Manage shared context, persist decisions, and enable cross-session memory
+tools:
+  - Read
+  - Write
+  - Glob
+  - Grep
+model: claude-sonnet-4-5
+permissionMode: auto
+skills:
+  - context-management
+  - knowledge-persistence
+  - session-restoration
+  - pattern-recognition
+---
+
 # Memory Manager Agent
 
 Expert in context management, knowledge persistence, and cross-session memory for swarm operations.

@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.dev/schemas/mcp-tools/claude-config.json",
+  "title": "Claude Config Tool Schema",
+  "description": "Schema for the claude_config MCP tool that generates optimized Claude Code configuration files",
+  "type": "object",
+  "properties": {
+    "configType": {
+      "type": "string",
+      "enum": ["claude-md", "hooks", "conventions", "all"],
+      "description": "Type of configuration to generate"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "ai-assistance",
+          "governance",
+          "auto-governance",
+          "strict-mode"
+        ]
+      },
+      "description": "Specific features to enable in the configuration",
+      "examples": [["governance", "ai-assistance"], ["strict-mode"]]
+    }
+  },
+  "required": ["configType"],
+  "additionalProperties": false,
+  "definitions": {
+    "AvailableFeatures": {
+      "type": "object",
+      "description": "Available configuration features",
+      "properties": {
+        "ai-assistance": {
+          "description": "Enable AI assistance features in CLAUDE.md including MCP tool usage guidance"
+        },
+        "governance": {
+          "description": "Enable governance workflow section in CLAUDE.md with baseline and compliance guidance"
+        },
+        "auto-governance": {
+          "description": "Enable automatic governance checking in session-start hook"
+        },
+        "strict-mode": {
+          "description": "Enable strict mode in conventions with error-level rules instead of warnings"
+        }
+      }
+    },
+    "ClaudeMdResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "generate-claude-md" },
+        "filePath": { "type": "string" },
+        "features": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" },
+        "sections": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["success", "action", "filePath"]
+    },
+    "HooksResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "generate-hooks" },
+        "hooks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of generated hook files"
+        },
+        "hooksDir": { "type": "string" },
+        "message": { "type": "string" },
+        "features": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["success", "action", "hooks", "hooksDir"]
+    },
+    "ConventionsResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "generate-conventions" },
+        "filePath": { "type": "string" },
+        "rules": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "autoFixEnabled": { "type": "boolean" },
+        "message": { "type": "string" },
+        "features": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["success", "action", "filePath", "rules"]
+    },
+    "AllConfigResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "generate-all" },
+        "generated": {
+          "type": "object",
+          "properties": {
+            "CLAUDE.md": { "type": "string" },
+            "hooks": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "conventions": { "type": "string" },
+            "vscode": { "type": "string" }
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" },
+        "nextSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["success", "action", "generated"]
+    },
+    "ConventionsConfig": {
+      "type": "object",
+      "description": "Structure of the generated .wundr-conventions.json file",
+      "properties": {
+        "version": { "type": "string" },
+        "extends": { "type": "string" },
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "level": { "type": "string", "enum": ["error", "warn", "off"] },
+              "prefer": { "type": "string" },
+              "disallow": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "rules": { "type": "object" }
+            }
+          }
+        },
+        "autoFix": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "on": { "type": "array", "items": { "type": "string" } },
+            "rules": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "configType": "all"
+    },
+    {
+      "configType": "claude-md"
+    },
+    {
+      "configType": "claude-md",
+      "features": ["governance", "ai-assistance"]
+    },
+    {
+      "configType": "hooks"
+    },
+    {
+      "configType": "hooks",
+      "features": ["auto-governance"]
+    },
+    {
+      "configType": "conventions"
+    },
+    {
+      "configType": "conventions",
+      "features": ["strict-mode"]
+    },
+    {
+      "configType": "all",
+      "features": ["governance", "ai-assistance", "strict-mode"]
+    }
+  ]
+}

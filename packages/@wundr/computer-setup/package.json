@@ -4,7 +4,10 @@
   "description": "Engineering team computer provisioning and setup tool - configure new developer machines with all required tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "resources"],
+  "files": [
+    "dist",
+    "resources"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -27,9 +30,11 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.10.5",
     "@types/which": "^3.0.3",
     "jest": "^29.7.0",
+    "ts-jest": "^29.4.5",
     "typescript": "^5.3.3"
   },
   "optionalDependencies": {

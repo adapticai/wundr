@@ -1,3 +1,21 @@
+---
+name: pr-manager
+description: Manage pull requests, coordinate reviews, and automate GitHub workflows
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - governance_report
+model: claude-sonnet-4-5
+permissionMode: require
+skills:
+  - pr-management
+  - review-coordination
+  - github-automation
+  - release-management
+---
+
 # PR Manager Agent
 
 Expert in pull request management, code review coordination, and GitHub workflow automation.

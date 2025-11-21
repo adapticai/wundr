@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Claude Code MCP configuration with Wundr server pre-configured",
+  "mcpServers": {
+    "wundr": {
+      "command": "npx",
+      "args": ["@wundr.io/mcp-server"],
+      "description": "Wundr governance and code quality MCP tools",
+      "env": {
+        "WUNDR_MCP_DEBUG": "false"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": true,
+        "prompts": true
+      }
+    }
+  },
+  "defaultServer": "wundr",
+  "settings": {
+    "autoConnect": true,
+    "reconnectOnFailure": true,
+    "maxReconnectAttempts": 3,
+    "reconnectDelayMs": 1000
+  },
+  "tools": {
+    "drift_detection": {
+      "enabled": true,
+      "description": "Monitor code quality drift and track trends",
+      "defaultAction": "check"
+    },
+    "pattern_standardize": {
+      "enabled": true,
+      "description": "Standardize code patterns and fix issues",
+      "defaultAction": "analyze"
+    },
+    "dependency_analyze": {
+      "enabled": true,
+      "description": "Analyze and manage dependencies",
+      "defaultAction": "analyze"
+    },
+    "governance_report": {
+      "enabled": true,
+      "description": "Generate governance and compliance reports",
+      "defaultAction": "quality"
+    },
+    "test_baseline": {
+      "enabled": true,
+      "description": "Manage test coverage baselines",
+      "defaultAction": "compare"
+    },
+    "monorepo_manage": {
+      "enabled": true,
+      "description": "Monorepo structure management",
+      "defaultAction": "list"
+    },
+    "claude_config": {
+      "enabled": true,
+      "description": "Configure Claude Code integration",
+      "defaultAction": "validate"
+    }
+  },
+  "resources": {
+    "wundr://config/current": {
+      "description": "Current Wundr configuration",
+      "autoLoad": false
+    },
+    "wundr://metrics/latest": {
+      "description": "Latest quality metrics",
+      "autoLoad": true
+    },
+    "wundr://baseline/current": {
+      "description": "Current quality baseline",
+      "autoLoad": false
+    },
+    "wundr://packages/list": {
+      "description": "Monorepo package list",
+      "autoLoad": false
+    }
+  },
+  "prompts": {
+    "quality-check": {
+      "description": "Comprehensive code quality check",
+      "shortcut": "qc"
+    },
+    "weekly-review": {
+      "description": "Weekly code review summary",
+      "shortcut": "wr"
+    },
+    "pre-commit": {
+      "description": "Pre-commit validation",
+      "shortcut": "pc"
+    },
+    "fix-patterns": {
+      "description": "Fix code pattern issues",
+      "shortcut": "fp"
+    }
+  },
+  "installCommand": "claude mcp add wundr npx @wundr.io/mcp-server"
+}

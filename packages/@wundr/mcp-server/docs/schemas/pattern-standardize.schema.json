@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.dev/schemas/mcp-tools/pattern-standardize.json",
+  "title": "Pattern Standardize Tool Schema",
+  "description": "Schema for the pattern_standardize MCP tool that applies standardization rules to fix code patterns",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["run", "review", "check"],
+      "description": "The standardization action to perform",
+      "examples": ["run", "review"]
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "consistent-error-handling",
+          "async-await-pattern",
+          "enum-standardization",
+          "service-lifecycle",
+          "import-ordering",
+          "naming-conventions",
+          "optional-chaining",
+          "type-assertions"
+        ]
+      },
+      "description": "Specific rules to apply. If not specified, all rules are applied.",
+      "examples": [["import-ordering"], ["consistent-error-handling", "async-await-pattern"]]
+    },
+    "dryRun": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preview changes without applying them to files"
+    }
+  },
+  "required": ["action"],
+  "additionalProperties": false,
+  "definitions": {
+    "AvailableRules": {
+      "type": "object",
+      "description": "Available standardization rules",
+      "properties": {
+        "consistent-error-handling": {
+          "description": "Replace string throws with AppError instances"
+        },
+        "async-await-pattern": {
+          "description": "Convert promise chains to async/await"
+        },
+        "enum-standardization": {
+          "description": "Convert const objects to proper TypeScript enums"
+        },
+        "service-lifecycle": {
+          "description": "Ensure services extend BaseService with proper lifecycle methods"
+        },
+        "import-ordering": {
+          "description": "Standardize import order: builtin, external, internal, relative"
+        },
+        "naming-conventions": {
+          "description": "Fix naming convention violations (camelCase, PascalCase, etc.)"
+        },
+        "optional-chaining": {
+          "description": "Use optional chaining (?.) where appropriate"
+        },
+        "type-assertions": {
+          "description": "Replace angle bracket assertions with 'as' keyword"
+        }
+      }
+    },
+    "RunResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "run" },
+        "totalFilesModified": { "type": "integer", "minimum": 0 },
+        "changesByRule": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        },
+        "summary": { "type": "string" },
+        "availableRules": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "totalFilesModified"]
+    },
+    "ReviewResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "review" },
+        "totalIssues": { "type": "integer", "minimum": 0 },
+        "issuesByCategory": {
+          "type": "object",
+          "properties": {
+            "complexPromiseChains": { "type": "integer" },
+            "nonStandardServices": { "type": "integer" },
+            "mixedErrorHandling": { "type": "integer" },
+            "inconsistentNaming": { "type": "integer" }
+          }
+        },
+        "reportPath": { "type": "string" },
+        "message": { "type": "string" },
+        "nextSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["success", "action", "totalIssues"]
+    },
+    "DryRunResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "dry-run" },
+        "mode": { "const": "preview" },
+        "selectedRules": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" },
+        "previewSummary": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "recommendation": { "type": "string" }
+      },
+      "required": ["success", "action", "mode", "selectedRules"]
+    }
+  },
+  "examples": [
+    {
+      "action": "run"
+    },
+    {
+      "action": "run",
+      "dryRun": true
+    },
+    {
+      "action": "run",
+      "rules": ["import-ordering", "consistent-error-handling"]
+    },
+    {
+      "action": "review"
+    },
+    {
+      "action": "check"
+    }
+  ]
+}

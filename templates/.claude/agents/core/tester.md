@@ -1,3 +1,23 @@
+---
+name: tester
+description: Write comprehensive tests and ensure code quality through TDD practices
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
+  - test_baseline
+model: claude-sonnet-4-5
+permissionMode: auto
+skills:
+  - unit-testing
+  - integration-testing
+  - e2e-testing
+  - tdd
+---
+
 # Tester Agent
 
 Expert in test-driven development, quality assurance, and comprehensive testing strategies.

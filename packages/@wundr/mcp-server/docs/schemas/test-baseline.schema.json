@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.dev/schemas/mcp-tools/test-baseline.json",
+  "title": "Test Baseline Tool Schema",
+  "description": "Schema for the test_baseline MCP tool that creates and manages test coverage baselines",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["create", "compare", "update"],
+      "description": "Test baseline action to perform"
+    },
+    "testType": {
+      "type": "string",
+      "enum": ["unit", "integration", "e2e", "all"],
+      "default": "all",
+      "description": "Type of tests to include in baseline"
+    },
+    "threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 80,
+      "description": "Coverage threshold percentage for passing status"
+    }
+  },
+  "required": ["action"],
+  "additionalProperties": false,
+  "definitions": {
+    "CoverageMetrics": {
+      "type": "object",
+      "properties": {
+        "overall": { "type": "number", "minimum": 0, "maximum": 100 },
+        "branches": { "type": "number", "minimum": 0, "maximum": 100 },
+        "functions": { "type": "number", "minimum": 0, "maximum": 100 },
+        "lines": { "type": "number", "minimum": 0, "maximum": 100 },
+        "statements": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "TestResults": {
+      "type": "object",
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "FileCoverage": {
+      "type": "object",
+      "properties": {
+        "file": { "type": "string" },
+        "coverage": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "CreateResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "create" },
+        "testType": { "type": "string" },
+        "baselineFile": { "type": "string" },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "coverage": { "type": "number" },
+            "tests": { "type": "string" },
+            "threshold": { "type": "string" },
+            "status": { "type": "string", "enum": ["PASSING", "FAILING"] }
+          }
+        },
+        "message": { "type": "string" },
+        "nextSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["success", "action", "testType", "summary"]
+    },
+    "CompareResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "compare" },
+        "testType": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["REGRESSION", "IMPROVED", "STABLE"]
+        },
+        "comparison": {
+          "type": "object",
+          "properties": {
+            "baseline": { "$ref": "#/definitions/CoverageMetrics" },
+            "current": { "type": "number" },
+            "delta": {
+              "type": "object",
+              "properties": {
+                "overall": { "type": "number" },
+                "branches": { "type": "number" },
+                "functions": { "type": "number" },
+                "lines": { "type": "number" },
+                "statements": { "type": "number" }
+              }
+            },
+            "testsComparison": {
+              "type": "object",
+              "properties": {
+                "baseline": { "$ref": "#/definitions/TestResults" },
+                "current": { "$ref": "#/definitions/TestResults" },
+                "newTests": { "type": "integer" }
+              }
+            },
+            "regressions": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "improvements": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "threshold": { "type": "number" },
+        "meetsThreshold": { "type": "boolean" },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "coverageChange": { "type": "string" },
+            "testChange": { "type": "string" },
+            "regressionCount": { "type": "integer" },
+            "improvementCount": { "type": "integer" }
+          }
+        },
+        "recommendations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "action", "status", "comparison"]
+    },
+    "UpdateResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "update" },
+        "testType": { "type": "string" },
+        "result": { "$ref": "#/definitions/CreateResponse" },
+        "archived": { "type": "boolean" },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "action", "testType", "archived"]
+    }
+  },
+  "examples": [
+    {
+      "action": "create"
+    },
+    {
+      "action": "create",
+      "testType": "all",
+      "threshold": 80
+    },
+    {
+      "action": "create",
+      "testType": "unit",
+      "threshold": 90
+    },
+    {
+      "action": "compare",
+      "testType": "all"
+    },
+    {
+      "action": "compare",
+      "testType": "integration"
+    },
+    {
+      "action": "update",
+      "testType": "all",
+      "threshold": 85
+    }
+  ]
+}

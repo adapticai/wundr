@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.dev/schemas/mcp-tools/drift-detection.json",
+  "title": "Drift Detection Tool Schema",
+  "description": "Schema for the drift_detection MCP tool that monitors code quality drift against baselines",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["create-baseline", "detect", "list-baselines", "trends"],
+      "description": "The drift detection action to perform",
+      "examples": ["detect", "create-baseline"]
+    },
+    "baselineVersion": {
+      "type": "string",
+      "description": "Baseline version to compare against. If not specified, defaults to the latest baseline.",
+      "pattern": "^[a-zA-Z0-9_-]+-[a-f0-9]+$",
+      "examples": ["main-abc123", "release-1.0-def456"]
+    }
+  },
+  "required": ["action"],
+  "additionalProperties": false,
+  "definitions": {
+    "CreateBaselineResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "create-baseline" },
+        "version": { "type": "string" },
+        "message": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "message"]
+    },
+    "DetectResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "detect" },
+        "severity": {
+          "type": "string",
+          "enum": ["none", "low", "medium", "high", "critical"]
+        },
+        "recommendations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reportPath": { "type": "string" },
+        "summary": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "severity"]
+    },
+    "ListBaselinesResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "list-baselines" },
+        "count": { "type": "integer", "minimum": 0 },
+        "baselines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "version": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "entities": { "type": "integer" }
+            }
+          }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "action", "count", "baselines"]
+    },
+    "TrendsResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "trends" },
+        "trends": {
+          "type": "object",
+          "properties": {
+            "entityGrowth": { "type": "string" },
+            "duplicateTrend": { "type": "string" },
+            "complexityTrend": { "type": "string" }
+          }
+        },
+        "reportPath": { "type": "string" },
+        "message": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "trends"]
+    }
+  },
+  "examples": [
+    {
+      "action": "create-baseline"
+    },
+    {
+      "action": "detect"
+    },
+    {
+      "action": "detect",
+      "baselineVersion": "release-1.0-abc123"
+    },
+    {
+      "action": "list-baselines"
+    },
+    {
+      "action": "trends"
+    }
+  ]
+}

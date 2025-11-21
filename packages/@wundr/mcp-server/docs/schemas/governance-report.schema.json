@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.dev/schemas/mcp-tools/governance-report.json",
+  "title": "Governance Report Tool Schema",
+  "description": "Schema for the governance_report MCP tool that generates compliance and quality reports",
+  "type": "object",
+  "properties": {
+    "reportType": {
+      "type": "string",
+      "enum": ["weekly", "drift", "quality", "compliance"],
+      "description": "Type of governance report to generate"
+    },
+    "format": {
+      "type": "string",
+      "enum": ["markdown", "json", "html"],
+      "default": "markdown",
+      "description": "Output format for the generated report"
+    },
+    "period": {
+      "type": "string",
+      "pattern": "^\\d+[dDwWmM]$",
+      "default": "7d",
+      "description": "Time period for the report (e.g., '7d' for 7 days, '30d' for 30 days)",
+      "examples": ["7d", "14d", "30d", "1w", "1m"]
+    }
+  },
+  "required": ["reportType"],
+  "additionalProperties": false,
+  "definitions": {
+    "WeeklyReportResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "reportType": { "const": "weekly" },
+        "format": { "type": "string" },
+        "reportPath": { "type": "string" },
+        "data": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "type": "object",
+              "properties": {
+                "start": { "type": "string", "format": "date-time" },
+                "end": { "type": "string", "format": "date-time" }
+              }
+            },
+            "summary": {
+              "type": "object",
+              "properties": {
+                "totalCommits": { "type": "integer" },
+                "filesChanged": { "type": "integer" },
+                "linesAdded": { "type": "integer" },
+                "linesRemoved": { "type": "integer" },
+                "contributors": { "type": "integer" }
+              }
+            },
+            "governance": {
+              "type": "object",
+              "properties": {
+                "driftChecks": { "type": "integer" },
+                "standardizationRuns": { "type": "integer" },
+                "complianceScore": { "type": "number" }
+              }
+            },
+            "highlights": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "issues": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "reportType"]
+    },
+    "DriftReportResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "reportType": { "const": "drift" },
+        "format": { "type": "string" },
+        "driftStatus": {
+          "type": "object",
+          "properties": {
+            "severity": { "type": "string" },
+            "hasIssues": { "type": "boolean" },
+            "requiresAction": { "type": "boolean" }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "newDuplicates": { "type": "integer" },
+            "complexityIncrease": { "type": "number" },
+            "newCircularDeps": { "type": "integer" }
+          }
+        },
+        "recommendations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "reportType", "driftStatus"]
+    },
+    "QualityReportResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "reportType": { "const": "quality" },
+        "format": { "type": "string" },
+        "period": { "type": "string" },
+        "reportPath": { "type": "string" },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "codeQuality": {
+              "type": "object",
+              "properties": {
+                "score": { "type": "number", "minimum": 0, "maximum": 100 },
+                "trend": { "type": "string" },
+                "issues": {
+                  "type": "object",
+                  "properties": {
+                    "critical": { "type": "integer" },
+                    "high": { "type": "integer" },
+                    "medium": { "type": "integer" },
+                    "low": { "type": "integer" }
+                  }
+                }
+              }
+            },
+            "testCoverage": {
+              "type": "object",
+              "properties": {
+                "overall": { "type": "number" },
+                "unit": { "type": "number" },
+                "integration": { "type": "number" },
+                "e2e": { "type": "number" }
+              }
+            },
+            "complexity": {
+              "type": "object",
+              "properties": {
+                "average": { "type": "number" },
+                "highest": { "type": "number" },
+                "trend": { "type": "string" }
+              }
+            },
+            "duplicates": {
+              "type": "object",
+              "properties": {
+                "count": { "type": "integer" },
+                "percentage": { "type": "number" },
+                "trend": { "type": "string" }
+              }
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "overallHealth": { "type": "string" },
+            "score": { "type": "number" },
+            "trend": { "type": "string" },
+            "actionItems": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "reportType", "metrics"]
+    },
+    "ComplianceReportResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "reportType": { "const": "compliance" },
+        "format": { "type": "string" },
+        "reportPath": { "type": "string" },
+        "compliance": {
+          "type": "object",
+          "properties": {
+            "standards": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "compliant": { "type": "boolean" },
+                  "violations": { "type": "integer" },
+                  "coverage": { "type": "string" }
+                }
+              }
+            },
+            "overallCompliance": { "type": "number", "minimum": 0, "maximum": 100 },
+            "certification": { "type": "string", "enum": ["PASSING", "FAILING", "WARNING"] },
+            "violations": {
+              "type": "object",
+              "properties": {
+                "total": { "type": "integer" },
+                "byCategory": {
+                  "type": "object",
+                  "additionalProperties": { "type": "integer" }
+                }
+              }
+            },
+            "recommendations": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "status": { "type": "string" },
+            "score": { "type": "number" },
+            "violations": { "type": "integer" },
+            "requiresAction": { "type": "boolean" }
+          }
+        },
+        "nextSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" }
+      },
+      "required": ["success", "reportType", "compliance"]
+    }
+  },
+  "examples": [
+    {
+      "reportType": "weekly"
+    },
+    {
+      "reportType": "weekly",
+      "format": "json"
+    },
+    {
+      "reportType": "quality",
+      "format": "markdown",
+      "period": "30d"
+    },
+    {
+      "reportType": "compliance",
+      "format": "json"
+    },
+    {
+      "reportType": "drift"
+    }
+  ]
+}

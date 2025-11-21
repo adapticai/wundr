@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wundr.dev/schemas/mcp-tools/monorepo-manage.json",
+  "title": "Monorepo Manage Tool Schema",
+  "description": "Schema for the monorepo_manage MCP tool that initializes and manages monorepo structure",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["init", "plan", "add-package", "check-deps"],
+      "description": "The monorepo management action to perform"
+    },
+    "packageName": {
+      "type": "string",
+      "description": "Package name for add-package action. Required when action is 'add-package'.",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "examples": ["auth-utils", "shared-components", "api-client"]
+    },
+    "packageType": {
+      "type": "string",
+      "enum": ["app", "package", "tool"],
+      "default": "package",
+      "description": "Type of package to create, determines target directory"
+    },
+    "analysisReport": {
+      "type": "string",
+      "description": "Path to analysis report JSON file. Required when action is 'plan'.",
+      "examples": [".governance/analysis/codebase-analysis.json"]
+    }
+  },
+  "required": ["action"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "action": { "const": "add-package" } }
+      },
+      "then": {
+        "required": ["action", "packageName"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "action": { "const": "plan" } }
+      },
+      "then": {
+        "required": ["action", "analysisReport"]
+      }
+    }
+  ],
+  "definitions": {
+    "InitResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "init" },
+        "structure": {
+          "type": "object",
+          "properties": {
+            "directories": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "configs": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "packageManager": { "type": "string" },
+        "nextSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "structure"]
+    },
+    "PlanResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "plan" },
+        "planPath": { "type": "string" },
+        "summary": { "type": "string" },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "phase": { "type": "integer" },
+              "name": { "type": "string" },
+              "targetPackage": { "type": "string" },
+              "filesToMove": { "type": "integer" }
+            }
+          }
+        },
+        "verificationSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "phases"]
+    },
+    "AddPackageResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "add-package" },
+        "package": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "type": { "type": "string" },
+            "path": { "type": "string" }
+          }
+        },
+        "createdFiles": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "nextSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "package", "createdFiles"]
+    },
+    "CheckDepsResponse": {
+      "type": "object",
+      "properties": {
+        "success": { "type": "boolean" },
+        "action": { "const": "check-deps" },
+        "hasCircularDependencies": { "type": "boolean" },
+        "circularDependencies": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "message": { "type": "string" },
+        "recommendation": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["success", "action", "hasCircularDependencies"]
+    }
+  },
+  "examples": [
+    {
+      "action": "init"
+    },
+    {
+      "action": "add-package",
+      "packageName": "auth-utils",
+      "packageType": "package"
+    },
+    {
+      "action": "add-package",
+      "packageName": "admin-dashboard",
+      "packageType": "app"
+    },
+    {
+      "action": "plan",
+      "analysisReport": ".governance/analysis/codebase-analysis.json"
+    },
+    {
+      "action": "check-deps"
+    }
+  ]
+}

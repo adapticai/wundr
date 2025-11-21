@@ -11,8 +11,9 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { createClaudeInitCommand } from './commands/claude-init.js';
-import { createClaudeAuditCommand } from './commands/claude-audit.js';  
-import { createClaudeSetupCommand } from './commands/claude-setup.js';
+import { createClaudeAuditCommand } from './commands/claude-audit.js';
+// Consolidated to @wundr/cli package - use createClaudeSetupCommand from there
+import { createClaudeSetupCommand } from '../../packages/@wundr/cli/src/commands/claude-setup.js';
 
 const program = new Command();
 

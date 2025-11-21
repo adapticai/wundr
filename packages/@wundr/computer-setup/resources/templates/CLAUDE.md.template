@@ -304,65 +304,338 @@ Message 4: Write "file.js"
 
 ## 🔧 Wundr MCP Tools Integration
 
-### Available MCP Tools for Claude Code
-
-The Wundr toolkit provides powerful MCP tools for governance and code quality:
-
-1. **drift_detection** - Monitor code quality drift
-   - "Check for code drift"
-   - "Create drift baseline"
-   - "Show drift trends"
-
-2. **pattern_standardize** - Auto-fix code patterns
-   - "Standardize error handling"
-   - "Fix import ordering"
-   - "Review patterns needing attention"
-
-3. **monorepo_manage** - Monorepo management
-   - "Initialize monorepo"
-   - "Add new package"
-   - "Check circular dependencies"
-
-4. **governance_report** - Generate reports
-   - "Create weekly report"
-   - "Show compliance status"
-   - "Generate quality metrics"
-
-5. **dependency_analyze** - Analyze dependencies
-   - "Find circular dependencies"
-   - "Show unused packages"
-   - "Create dependency graph"
-
-6. **test_baseline** - Manage test coverage
-   - "Create coverage baseline"
-   - "Compare against baseline"
-   - "Update test metrics"
-
-7. **claude_config** - Configure Claude Code
-   - "Generate CLAUDE.md"
-   - "Set up hooks"
-   - "Create conventions"
-
-### Quick MCP Setup
+### Installation & Setup
 
 ```bash
-# Install MCP tools
-cd mcp-tools && ./install.sh
+# Add Wundr MCP server to Claude Code
+claude mcp add wundr "node /path/to/wundr/mcp-tools/dist/server.js"
+
+# Or install globally
+npm install -g @wundr/mcp-tools
+claude mcp add wundr "wundr-mcp-server"
 
 # Verify installation
 claude mcp list
 ```
 
-### Example Workflows
+### Complete MCP Tool Reference (7 Core Tools)
 
-**Daily Quality Check:**
-"Run my daily quality check: detect drift, check dependencies, and show coverage"
+#### 1. **mcp__wundr__drift_detection** - Code Quality Drift Monitoring
 
-**Pre-Commit Validation:**
-"Make sure my code meets all standards before I commit"
+Detects code drift by comparing against established baselines.
 
-**Weekly Maintenance:**
-"Run weekly maintenance: create baseline, generate report, clean dependencies"
+| Action | Description | Example |
+|--------|-------------|---------|
+| `create-baseline` | Create new quality baseline | `mcp__wundr__drift_detection { action: "create-baseline" }` |
+| `detect` | Compare against baseline | `mcp__wundr__drift_detection { action: "detect", baselineVersion: "v1.0" }` |
+| `list-baselines` | List all baselines | `mcp__wundr__drift_detection { action: "list-baselines" }` |
+| `trends` | Show drift trends over time | `mcp__wundr__drift_detection { action: "trends" }` |
+
+**Usage Examples:**
+```javascript
+// Create baseline before major refactoring
+mcp__wundr__drift_detection { action: "create-baseline" }
+
+// Check for drift after changes
+mcp__wundr__drift_detection { action: "detect" }
+
+// View quality trends
+mcp__wundr__drift_detection { action: "trends" }
+```
+
+---
+
+#### 2. **mcp__wundr__pattern_standardize** - Code Pattern Standardization
+
+Automatically applies coding standards and fixes patterns.
+
+| Action | Description | Example |
+|--------|-------------|---------|
+| `run` | Apply fixes automatically | `mcp__wundr__pattern_standardize { action: "run" }` |
+| `review` | Show patterns needing manual review | `mcp__wundr__pattern_standardize { action: "review" }` |
+| `check` | Check which patterns need fixing | `mcp__wundr__pattern_standardize { action: "check" }` |
+
+**Available Rules:**
+- `consistent-error-handling` - Replace string throws with AppError
+- `async-await-pattern` - Convert promise chains to async/await
+- `enum-standardization` - Convert const objects to enums
+- `service-lifecycle` - Ensure services extend BaseService
+- `import-ordering` - Standardize import order
+- `naming-conventions` - Fix naming violations
+- `optional-chaining` - Use optional chaining
+- `type-assertions` - Use `as` keyword syntax
+
+**Usage Examples:**
+```javascript
+// Fix all patterns automatically
+mcp__wundr__pattern_standardize { action: "run" }
+
+// Preview changes without applying
+mcp__wundr__pattern_standardize { action: "run", dryRun: true }
+
+// Apply specific rules only
+mcp__wundr__pattern_standardize { action: "run", rules: ["import-ordering", "async-await-pattern"] }
+
+// Review complex patterns requiring manual attention
+mcp__wundr__pattern_standardize { action: "review" }
+```
+
+---
+
+#### 3. **mcp__wundr__monorepo_manage** - Monorepo Management
+
+Initialize and manage monorepo structure with pnpm workspaces.
+
+| Action | Description | Example |
+|--------|-------------|---------|
+| `init` | Initialize monorepo structure | `mcp__wundr__monorepo_manage { action: "init" }` |
+| `plan` | Generate migration plan | `mcp__wundr__monorepo_manage { action: "plan", analysisReport: "path/to/report.json" }` |
+| `add-package` | Create new package | `mcp__wundr__monorepo_manage { action: "add-package", packageName: "my-pkg" }` |
+| `check-deps` | Check circular dependencies | `mcp__wundr__monorepo_manage { action: "check-deps" }` |
+
+**Usage Examples:**
+```javascript
+// Initialize new monorepo
+mcp__wundr__monorepo_manage { action: "init" }
+
+// Add a new shared package
+mcp__wundr__monorepo_manage { action: "add-package", packageName: "utils", packageType: "package" }
+
+// Add a new application
+mcp__wundr__monorepo_manage { action: "add-package", packageName: "web-app", packageType: "app" }
+
+// Check for circular dependencies
+mcp__wundr__monorepo_manage { action: "check-deps" }
+```
+
+---
+
+#### 4. **mcp__wundr__governance_report** - Governance Reports
+
+Generate comprehensive governance and compliance reports.
+
+| Report Type | Description | Example |
+|-------------|-------------|---------|
+| `weekly` | Weekly summary report | `mcp__wundr__governance_report { reportType: "weekly" }` |
+| `drift` | Drift analysis report | `mcp__wundr__governance_report { reportType: "drift" }` |
+| `quality` | Code quality metrics | `mcp__wundr__governance_report { reportType: "quality" }` |
+| `compliance` | Standards compliance | `mcp__wundr__governance_report { reportType: "compliance" }` |
+
+**Output Formats:** `markdown`, `json`, `html`
+
+**Usage Examples:**
+```javascript
+// Generate weekly governance report
+mcp__wundr__governance_report { reportType: "weekly", format: "markdown" }
+
+// Generate compliance report for PR review
+mcp__wundr__governance_report { reportType: "compliance", format: "json" }
+
+// Quality metrics for last 30 days
+mcp__wundr__governance_report { reportType: "quality", period: "30d" }
+```
+
+---
+
+#### 5. **mcp__wundr__dependency_analyze** - Dependency Analysis
+
+Analyze and map dependencies in the codebase.
+
+| Scope | Description | Example |
+|-------|-------------|---------|
+| `all` | Complete dependency analysis | `mcp__wundr__dependency_analyze { scope: "all" }` |
+| `circular` | Find circular dependencies | `mcp__wundr__dependency_analyze { scope: "circular" }` |
+| `unused` | Find unused packages | `mcp__wundr__dependency_analyze { scope: "unused" }` |
+| `external` | Analyze external dependencies | `mcp__wundr__dependency_analyze { scope: "external" }` |
+
+**Output Formats:** `graph` (DOT format), `json`, `markdown`
+
+**Usage Examples:**
+```javascript
+// Complete dependency analysis
+mcp__wundr__dependency_analyze { scope: "all", outputFormat: "markdown" }
+
+// Find circular dependencies
+mcp__wundr__dependency_analyze { scope: "circular" }
+
+// Find unused dependencies for cleanup
+mcp__wundr__dependency_analyze { scope: "unused" }
+
+// Analyze specific directory
+mcp__wundr__dependency_analyze { scope: "all", target: "src/services" }
+```
+
+---
+
+#### 6. **mcp__wundr__test_baseline** - Test Coverage Management
+
+Create and manage test coverage baselines.
+
+| Action | Description | Example |
+|--------|-------------|---------|
+| `create` | Create coverage baseline | `mcp__wundr__test_baseline { action: "create" }` |
+| `compare` | Compare against baseline | `mcp__wundr__test_baseline { action: "compare" }` |
+| `update` | Update baseline | `mcp__wundr__test_baseline { action: "update" }` |
+
+**Test Types:** `unit`, `integration`, `e2e`, `all`
+
+**Usage Examples:**
+```javascript
+// Create baseline for all tests
+mcp__wundr__test_baseline { action: "create", testType: "all", threshold: 80 }
+
+// Compare current coverage against baseline
+mcp__wundr__test_baseline { action: "compare", testType: "unit" }
+
+// Update baseline after major changes
+mcp__wundr__test_baseline { action: "update", threshold: 85 }
+```
+
+---
+
+#### 7. **mcp__wundr__claude_config** - Claude Code Configuration
+
+Generate optimized Claude Code configuration files.
+
+| Config Type | Description | Example |
+|-------------|-------------|---------|
+| `claude-md` | Generate CLAUDE.md | `mcp__wundr__claude_config { configType: "claude-md" }` |
+| `hooks` | Generate automation hooks | `mcp__wundr__claude_config { configType: "hooks" }` |
+| `conventions` | Generate coding conventions | `mcp__wundr__claude_config { configType: "conventions" }` |
+| `all` | Generate all configs | `mcp__wundr__claude_config { configType: "all" }` |
+
+**Usage Examples:**
+```javascript
+// Generate complete configuration
+mcp__wundr__claude_config { configType: "all" }
+
+// Generate CLAUDE.md with specific features
+mcp__wundr__claude_config { configType: "claude-md", features: ["ai-assistance", "governance"] }
+
+// Set up automation hooks
+mcp__wundr__claude_config { configType: "hooks", features: ["auto-governance"] }
+```
+
+---
+
+### Agent Coordination with MCP Tools
+
+#### Parallel Execution Pattern (MANDATORY)
+
+**CORRECT - Single Message with Multiple MCP Calls:**
+```javascript
+[BatchTool]:
+  // Quality checks in parallel
+  mcp__wundr__drift_detection { action: "detect" }
+  mcp__wundr__dependency_analyze { scope: "circular" }
+  mcp__wundr__test_baseline { action: "compare" }
+
+  // Generate reports
+  mcp__wundr__governance_report { reportType: "compliance" }
+```
+
+**INCORRECT - Sequential Messages:**
+```javascript
+Message 1: mcp__wundr__drift_detection { action: "detect" }
+Message 2: mcp__wundr__dependency_analyze { scope: "circular" }
+// This breaks parallel execution!
+```
+
+---
+
+### Workflow Examples
+
+#### Daily Quality Check
+```javascript
+// Run all daily checks in parallel
+[BatchTool]:
+  mcp__wundr__drift_detection { action: "detect" }
+  mcp__wundr__dependency_analyze { scope: "circular" }
+  mcp__wundr__test_baseline { action: "compare" }
+  mcp__wundr__governance_report { reportType: "quality" }
+```
+
+#### Pre-Commit Validation
+```javascript
+// Validate before committing
+[BatchTool]:
+  mcp__wundr__pattern_standardize { action: "run" }
+  mcp__wundr__monorepo_manage { action: "check-deps" }
+  mcp__wundr__drift_detection { action: "detect" }
+```
+
+#### Weekly Maintenance
+```javascript
+// Weekly maintenance workflow
+[BatchTool]:
+  mcp__wundr__drift_detection { action: "create-baseline" }
+  mcp__wundr__test_baseline { action: "update", threshold: 80 }
+  mcp__wundr__governance_report { reportType: "weekly", format: "markdown" }
+  mcp__wundr__dependency_analyze { scope: "unused" }
+```
+
+#### PR Review Automation
+```javascript
+// Generate PR review artifacts
+[BatchTool]:
+  mcp__wundr__governance_report { reportType: "compliance", format: "markdown" }
+  mcp__wundr__dependency_analyze { scope: "all", outputFormat: "markdown" }
+  mcp__wundr__test_baseline { action: "compare" }
+```
+
+#### New Feature Setup
+```javascript
+// Set up new package with quality gates
+[BatchTool]:
+  mcp__wundr__monorepo_manage { action: "add-package", packageName: "new-feature", packageType: "package" }
+  mcp__wundr__claude_config { configType: "conventions" }
+  mcp__wundr__test_baseline { action: "create", threshold: 80 }
+```
+
+---
+
+### Troubleshooting
+
+#### MCP Server Not Found
+```bash
+# Check if wundr MCP is registered
+claude mcp list
+
+# Re-add the server
+claude mcp remove wundr
+claude mcp add wundr "node /path/to/wundr/mcp-tools/dist/server.js"
+```
+
+#### Tool Execution Errors
+```bash
+# Check server logs
+claude mcp logs wundr
+
+# Restart MCP server
+claude mcp restart wundr
+
+# Verify scripts exist
+ls -la scripts/governance/
+ls -la scripts/monorepo/
+```
+
+#### Baseline Not Found
+```javascript
+// Create baseline first
+mcp__wundr__drift_detection { action: "create-baseline" }
+
+// Then compare
+mcp__wundr__drift_detection { action: "detect" }
+```
+
+#### Circular Dependency Issues
+```javascript
+// Identify the cycles
+mcp__wundr__dependency_analyze { scope: "circular" }
+
+// Review recommendations in output
+// Apply suggested refactoring
+```
 
 ## Support
 
