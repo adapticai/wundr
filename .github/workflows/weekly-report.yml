@@ -3,28 +3,28 @@ name: Weekly Progress Report
 on:
   schedule:
     # Run every Sunday at 9 AM UTC
-    - cron: '0 9 * * 0'
+    - cron: "0 9 * * 0"
   workflow_dispatch:
     inputs:
       report_period:
-        description: 'Report period in days'
+        description: "Report period in days"
         required: false
-        default: '7'
+        default: "7"
         type: string
       include_detailed_analysis:
-        description: 'Include detailed code analysis'
+        description: "Include detailed code analysis"
         required: false
         default: true
         type: boolean
       send_notifications:
-        description: 'Send notifications'
+        description: "Send notifications"
         required: false
         default: true
         type: boolean
 
 env:
-  NODE_VERSION: '18'
-  REPORT_OUTPUT_DIR: 'weekly-reports'
+  NODE_VERSION: "18"
+  REPORT_OUTPUT_DIR: "weekly-reports"
 
 jobs:
   generate-report:
@@ -47,8 +47,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: 'setup/package.json'
+          cache: "npm"
+          cache-dependency-path: "setup/package.json"
 
       - name: Install dependencies
         working-directory: setup
@@ -76,26 +76,26 @@ jobs:
         id: git-activity
         run: |
           cd ${{ env.REPORT_OUTPUT_DIR }}
-          
+
           PERIOD_DAYS="${{ github.event.inputs.report_period || '7' }}"
           SINCE_DATE=$(date -d "$PERIOD_DAYS days ago" +'%Y-%m-%d')
-          
+
           echo "Collecting Git activity since $SINCE_DATE..."
-          
+
           # Get commit activity
           git log --since="$SINCE_DATE" --oneline --pretty=format:'%h|%an|%ad|%s' --date=short > commits.txt
-          
+
           # Get changed files statistics
           git log --since="$SINCE_DATE" --name-only --pretty=format: | sort | uniq -c | sort -nr > file-changes.txt
-          
+
           # Get contributor statistics
           git log --since="$SINCE_DATE" --pretty=format:'%an' | sort | uniq -c | sort -nr > contributors.txt
-          
+
           # Count totals
           TOTAL_COMMITS=$(wc -l < commits.txt)
           TOTAL_FILES_CHANGED=$(wc -l < file-changes.txt)
           TOTAL_CONTRIBUTORS=$(wc -l < contributors.txt)
-          
+
           echo "total-commits=$TOTAL_COMMITS" >> $GITHUB_OUTPUT
           echo "total-files-changed=$TOTAL_FILES_CHANGED" >> $GITHUB_OUTPUT
           echo "total-contributors=$TOTAL_CONTRIBUTORS" >> $GITHUB_OUTPUT
@@ -108,7 +108,7 @@ jobs:
             const periodDays = parseInt('${{ github.event.inputs.report_period || "7" }}');
             const sinceDate = new Date();
             sinceDate.setDate(sinceDate.getDate() - periodDays);
-            
+
             // Get PRs created in the period
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
@@ -118,9 +118,9 @@ jobs:
               direction: 'desc',
               per_page: 100
             });
-            
+
             const periodPRs = prs.filter(pr => new Date(pr.created_at) >= sinceDate);
-            
+
             // Categorize PRs
             const refactorPRs = periodPRs.filter(pr => {
               const title = pr.title.toLowerCase();
@@ -129,10 +129,10 @@ jobs:
                 title.includes(keyword) || labels.includes(keyword)
               );
             });
-            
+
             const mergedPRs = periodPRs.filter(pr => pr.merged_at);
             const openPRs = periodPRs.filter(pr => pr.state === 'open');
-            
+
             const prSummary = {
               total: periodPRs.length,
               refactor: refactorPRs.length,
@@ -140,9 +140,9 @@ jobs:
               open: openPRs.length,
               closed: periodPRs.filter(pr => pr.state === 'closed' && !pr.merged_at).length
             };
-            
+
             core.setOutput('pr-summary', JSON.stringify(prSummary));
-            
+
             // Save detailed PR data
             const fs = require('fs');
             fs.writeFileSync('${{ env.REPORT_OUTPUT_DIR }}/pr-data.json', JSON.stringify({
@@ -157,7 +157,7 @@ jobs:
                 labels: pr.labels.map(l => l.name)
               }))
             }, null, 2));
-            
+
             return prSummary;
 
       - name: Run current code analysis
@@ -167,7 +167,7 @@ jobs:
           cd ${{ env.REPORT_OUTPUT_DIR }}
           mkdir -p current-analysis
           cd current-analysis
-          
+
           echo "Running comprehensive code analysis..."
           if bash ../../scripts/analysis/analyze-all.sh ../..; then
             echo "analysis-success=true" >> $GITHUB_OUTPUT
@@ -193,7 +193,7 @@ jobs:
         id: historical-data
         run: |
           cd ${{ env.REPORT_OUTPUT_DIR }}
-          
+
           # Try to get the last weekly report for comparison
           LAST_REPORT=""
           if [ -f "../.github/data/last-weekly-report.json" ]; then
@@ -204,7 +204,7 @@ jobs:
             echo "No historical data found - this will be the baseline"
             echo "has-historical=false" >> $GITHUB_OUTPUT
           fi
-          
+
           echo 'historical-data<<EOF' >> $GITHUB_OUTPUT
           echo "$LAST_REPORT" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
@@ -213,7 +213,7 @@ jobs:
         id: generate
         run: |
           cd ${{ env.REPORT_OUTPUT_DIR }}
-          
+
           # Create the weekly report
           npx ts-node -e "
             const fs = require('fs');
@@ -397,16 +397,16 @@ jobs:
               hasImprovements: progressScore > 0
             }));
           "
-          
+
           echo "report-path=$(pwd)/weekly-report.md" >> $GITHUB_OUTPUT
 
       - name: Save historical data
         run: |
           cd ${{ env.REPORT_OUTPUT_DIR }}
-          
+
           # Create .github/data directory if it doesn't exist
           mkdir -p ../.github/data
-          
+
           # Save current report data as historical baseline for next week
           if [ -f "report-data.json" ]; then
             cp report-data.json ../.github/data/last-weekly-report.json
@@ -414,7 +414,7 @@ jobs:
           fi
 
       - name: Upload report artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: weekly-report-${{ env.REPORT_DATE }}
           path: |
@@ -442,20 +442,20 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             // Download the report artifact (in real scenario, you'd use actions/download-artifact)
             const reportContent = \`${{ needs.generate-report.outputs.report-path }}\`;
             const summaryData = JSON.parse('${{ needs.generate-report.outputs.summary-data }}');
-            
+
             const title = \`📊 Weekly Report - \${{ env.REPORT_DATE }}\`;
             const labels = ['weekly-report', 'automated'];
-            
+
             // Add additional labels based on report content
             if (summaryData.criticalIssues > 0) labels.push('critical-issues');
             if (summaryData.hasImprovements) labels.push('improvements');
             if (summaryData.overallScore >= 8) labels.push('excellent-progress');
             else if (summaryData.overallScore <= 4) labels.push('needs-attention');
-            
+
             // Check for existing weekly report issues
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -463,13 +463,13 @@ jobs:
               labels: 'weekly-report',
               state: 'open'
             });
-            
+
             // Close old weekly report issues (keep only the latest)
             const oldIssues = issues.filter(issue => 
               issue.title.includes('Weekly Report') && 
               !issue.title.includes('${{ env.REPORT_DATE }}')
             );
-            
+
             for (const issue of oldIssues.slice(0, 3)) { // Close max 3 old issues
               await github.rest.issues.update({
                 owner: context.repo.owner,
@@ -485,7 +485,7 @@ jobs:
                 body: 'Closed automatically - newer weekly report available.'
               });
             }
-            
+
             // Create the new weekly report issue
             const { data: issue } = await github.rest.issues.create({
               owner: context.repo.owner,
@@ -504,7 +504,7 @@ jobs:
               \`,
               labels: labels
             });
-            
+
             console.log(\`Created weekly report issue #\${issue.number}\`);
 
   notifications:
@@ -517,24 +517,24 @@ jobs:
         with:
           script: |
             const summaryData = JSON.parse('${{ needs.generate-report.outputs.summary-data }}');
-            
+
             // This could be extended to send notifications via:
             // - Slack webhook
             // - Teams webhook  
             // - Email
             // - Discord webhook
             // etc.
-            
+
             console.log('Weekly report generated with the following summary:');
             console.log('- Overall Score:', summaryData.overallScore);
             console.log('- Critical Issues:', summaryData.criticalIssues);
             console.log('- Refactor PRs:', summaryData.refactorPRs);
             console.log('- Has Improvements:', summaryData.hasImprovements);
-            
+
             // Example: Could post to team chat
             // await postToSlack({
             //   channel: '#refactoring-updates',
             //   message: `📊 Weekly refactoring report is ready! Score: ${summaryData.overallScore}/10`
             // });
-            
+
             console.log('Notification system ready for integration with team communication tools');
