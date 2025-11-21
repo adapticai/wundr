@@ -29,6 +29,7 @@ export interface ClaudeDirectoryStructure {
     specialized: string[];
     github: string[];
     testing: string[];
+    devops: string[];
   };
   commands: string[];
   hooks: string[];
@@ -64,6 +65,9 @@ export class ProjectInitializer {
       if (options.includeClaudeSetup) {
         await this.createClaudeDirectory(options);
       }
+
+      // Step 2.5: Setup deployment configuration if platforms detected
+      await this.setupDeploymentConfig(options);
 
       // Step 3: Copy and customize templates
       if (options.includeTemplates) {
@@ -129,6 +133,104 @@ export class ProjectInitializer {
   }
 
   /**
+   * Detect deployment platforms from config files and environment
+   */
+  private async detectDeploymentPlatform(projectPath: string): Promise<string[]> {
+    const platforms: string[] = [];
+
+    // Check for Railway
+    if (await fs.pathExists(path.join(projectPath, 'railway.json'))) {
+      platforms.push('railway');
+    }
+    if (process.env.RAILWAY_PROJECT_ID) {
+      if (!platforms.includes('railway')) platforms.push('railway');
+    }
+
+    // Check for Netlify
+    if (await fs.pathExists(path.join(projectPath, 'netlify.toml'))) {
+      platforms.push('netlify');
+    }
+    if (process.env.NETLIFY_SITE_ID) {
+      if (!platforms.includes('netlify')) platforms.push('netlify');
+    }
+
+    return platforms;
+  }
+
+  /**
+   * Setup deployment platform configuration
+   */
+  private async setupDeploymentConfig(options: ProjectInitOptions): Promise<void> {
+    const platforms = await this.detectDeploymentPlatform(options.projectPath);
+
+    if (platforms.length === 0) {
+      return; // No deployment platform detected
+    }
+
+    const claudeDir = path.join(options.projectPath, '.claude');
+    const deploymentConfig: Record<string, unknown> = {
+      version: '1.0.0',
+      platforms: {},
+      auto_monitor: true,
+      auto_fix: {
+        enabled: true,
+        max_cycles: 5,
+      },
+    };
+
+    if (platforms.includes('railway')) {
+      (deploymentConfig.platforms as Record<string, unknown>).railway = {
+        enabled: true,
+        project_id: '${RAILWAY_PROJECT_ID}',
+        poll_interval: 5000,
+        timeout: 300000,
+      };
+    }
+
+    if (platforms.includes('netlify')) {
+      (deploymentConfig.platforms as Record<string, unknown>).netlify = {
+        enabled: true,
+        site_id: '${NETLIFY_SITE_ID}',
+        poll_interval: 10000,
+        timeout: 600000,
+      };
+    }
+
+    await fs.writeJson(
+      path.join(claudeDir, 'deployment.config.json'),
+      deploymentConfig,
+      { spaces: 2 }
+    );
+
+    console.log(chalk.green(`✅ Deployment config created for: ${platforms.join(', ')}`));
+  }
+
+  /**
+   * Copy deployment agents to project
+   */
+  private async copyDeploymentAgents(claudeDir: string): Promise<void> {
+    const devopsDir = path.join(claudeDir, 'agents', 'devops');
+    await fs.ensureDir(devopsDir);
+
+    const deploymentAgents = [
+      'deployment-monitor.md',
+      'log-analyzer.md',
+      'debug-refactor.md',
+    ];
+
+    const sourceDir = path.join(this.resourcesDir, 'agents', 'devops');
+
+    for (const agent of deploymentAgents) {
+      const sourcePath = path.join(sourceDir, agent);
+      const targetPath = path.join(devopsDir, agent);
+
+      if (await fs.pathExists(sourcePath)) {
+        await fs.copy(sourcePath, targetPath);
+      }
+    }
+  }
+
+  /**
    * Create complete .claude directory structure
    */
   private async createClaudeDirectory(options: ProjectInitOptions): Promise<void> {
@@ -145,7 +247,8 @@ export class ProjectInitializer {
         testing: ['tdd-london-swarm', 'production-validator'],
         swarm: ['mesh-coordinator', 'hierarchical-coordinator'],
         consensus: ['byzantine-coordinator', 'raft-manager'],
-        templates: ['sparc-coordinator', 'task-orchestrator']
+        templates: ['sparc-coordinator', 'task-orchestrator'],
+        devops: ['deployment-monitor', 'log-analyzer', 'debug-refactor']
       },
       commands: ['coordination', 'monitoring', 'hooks', 'memory', 'github', 'optimization'],
       hooks: ['pre-task', 'post-task', 'pre-edit', 'post-edit', 'session-management'],

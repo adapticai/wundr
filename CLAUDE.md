@@ -416,6 +416,146 @@ rag_context_builder {
 
 **KEY**: RAG finds conceptually related code; Grep/Glob finds exact matches.
 
+## 🚂🌐 Deployment Platform Integration (Railway & Netlify)
+
+### Platform MCP Servers
+
+Wundr integrates with Railway and Netlify through their official MCP servers for seamless deployment monitoring and debugging.
+
+#### Railway MCP Server
+**Package**: `@railway/mcp-server`
+
+```bash
+# Setup (handled automatically by computer-setup)
+claude mcp add railway npx @railway/mcp-server
+
+# Required environment variables
+export RAILWAY_API_TOKEN="your-token"
+export RAILWAY_PROJECT_ID="your-project-id"
+```
+
+**Available Tools:**
+| Tool | Description | Example |
+|------|-------------|---------|
+| `mcp__railway__deploy_status` | Get deployment status | `{ projectId: "..." }` |
+| `mcp__railway__get_logs` | Fetch service logs | `{ serviceId: "...", lines: 100 }` |
+| `mcp__railway__get_deployments` | List deployments | `{ limit: 5 }` |
+| `mcp__railway__restart_service` | Restart service | `{ serviceId: "..." }` |
+
+#### Netlify MCP Server
+**Package**: `@netlify/mcp`
+
+```bash
+# Setup (handled automatically by computer-setup)
+claude mcp add netlify npx @netlify/mcp
+
+# Required environment variables
+export NETLIFY_ACCESS_TOKEN="your-token"
+export NETLIFY_SITE_ID="your-site-id"
+```
+
+**Available Tools:**
+| Tool | Description | Example |
+|------|-------------|---------|
+| `mcp__netlify__deploy_status` | Get deployment status | `{ siteId: "..." }` |
+| `mcp__netlify__get_build_logs` | Fetch build logs | `{ deployId: "..." }` |
+| `mcp__netlify__get_deploys` | List deployments | `{ limit: 5 }` |
+| `mcp__netlify__trigger_deploy` | Trigger new deploy | `{ siteId: "..." }` |
+
+### Continuous Deployment Workflow
+
+After pushing to `main` or `master`, Claude Code can automatically:
+
+1. **Detect Platform**: Identify Railway/Netlify from config files
+2. **Monitor Deployment**: Poll status until complete
+3. **Analyze Logs**: Check for errors and warnings
+4. **Auto-Fix Issues**: Apply code fixes for common errors
+5. **Re-deploy**: Push fixes and verify resolution
+6. **Report Status**: Provide comprehensive deployment report
+
+#### Trigger the Workflow
+
+```bash
+# After git push
+"Monitor my deployment and fix any issues"
+
+# Or via slash command
+/deploy-monitor
+
+# Platform-specific
+/deploy-monitor --platform railway
+/deploy-monitor --platform netlify
+```
+
+### Deployment Debugging Agents
+
+| Agent | Purpose |
+|-------|---------|
+| `deployment-monitor` | Monitors deployment status and health |
+| `log-analyzer` | Deep analysis of logs to identify root causes |
+| `debug-refactor` | Implements fixes and manages the debug cycle |
+
+### Example Workflows
+
+#### Post-Push Monitoring
+```
+User: "I just pushed to main, check if the deployment succeeds"
+
+Claude: [Invokes deployment-monitor agent]
+1. Detects Railway platform from railway.json
+2. Monitors deployment progress via mcp__railway__deploy_status
+3. Deployment completes successfully
+4. Fetches last 5 minutes of logs
+5. No errors detected
+6. Reports: "✅ Deployment successful, service healthy"
+```
+
+#### Automatic Error Resolution
+```
+User: "Deploy failed, analyze and fix"
+
+Claude: [Invokes log-analyzer → debug-refactor agents]
+1. Fetches build/runtime logs
+2. Identifies: "TypeError: Cannot read property 'id' of null"
+3. Traces to: src/handlers/user.ts:45
+4. Applies fix: Add null check before accessing property
+5. Runs local tests
+6. Commits and pushes fix
+7. Monitors new deployment
+8. Verifies error no longer in logs
+9. Reports: "✅ Issue resolved after 1 fix cycle"
+```
+
+### Configuration
+
+Add to your project's `.claude/deployment.config.json`:
+
+```json
+{
+  "version": "1.0.0",
+  "platforms": {
+    "railway": {
+      "enabled": true,
+      "project_id": "${RAILWAY_PROJECT_ID}",
+      "poll_interval": 5000,
+      "timeout": 300000
+    },
+    "netlify": {
+      "enabled": true,
+      "site_id": "${NETLIFY_SITE_ID}",
+      "poll_interval": 10000,
+      "timeout": 600000
+    }
+  },
+  "auto_monitor": true,
+  "auto_fix": {
+    "enabled": true,
+    "max_cycles": 5,
+    "categories": ["type_errors", "null_checks", "import_errors", "connection_retries"]
+  }
+}
+```
+
 ## Support
 
 - Documentation: https://github.com/ruvnet/claude-flow

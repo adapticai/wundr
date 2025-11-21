@@ -175,3 +175,66 @@ Why these changes are needed
 - Conflict resolution assistance
 - Alternative merge strategies
 - Rollback procedures
+
+## Deployment Integration
+
+### Post-Merge Deployment Monitoring
+
+After PR merge to main/master:
+1. Detect deployment platform (Railway/Netlify)
+2. Monitor deployment status
+3. Report deployment result in PR comment
+4. Create issue if deployment fails
+
+### Post-Merge Actions
+
+```bash
+# After successful merge
+gh pr comment $PR_NUMBER --body "🚀 Merged! Monitoring deployment..."
+
+# If Railway detected
+mcp__railway__deploy_status { projectId: "${RAILWAY_PROJECT_ID}" }
+
+# If Netlify detected
+mcp__netlify__deploy_status { siteId: "${NETLIFY_SITE_ID}" }
+
+# Update PR with deployment result
+gh pr comment $PR_NUMBER --body "✅ Deployment successful!"
+```
+
+### Deployment-Aware PR Workflow
+
+1. **Pre-Merge Check**: Verify no active deployments blocking
+2. **Merge Execution**: Complete merge with selected strategy
+3. **Deploy Trigger**: Automatic via git push to main/master
+4. **Status Tracking**: Monitor deployment via MCP tools
+5. **Result Reporting**: Comment final status on PR
+
+### Platform Detection
+
+```bash
+# Check for Railway
+if [ -f "railway.json" ] || [ -n "$RAILWAY_PROJECT_ID" ]; then
+  PLATFORM="railway"
+fi
+
+# Check for Netlify
+if [ -f "netlify.toml" ] || [ -n "$NETLIFY_SITE_ID" ]; then
+  PLATFORM="netlify"
+fi
+```
+
+### Integration with Deployment Agents
+
+- **deployment-monitor**: Called after merge for status tracking
+- **log-analyzer**: Invoked if deployment shows errors
+- **debug-refactor**: Can create follow-up PRs for fixes
+
+### Rollback Workflow
+
+If deployment fails after merge:
+1. Analyze failure logs
+2. Determine if rollback needed
+3. Create revert PR if necessary
+4. Monitor rollback deployment
+5. Report recovery status

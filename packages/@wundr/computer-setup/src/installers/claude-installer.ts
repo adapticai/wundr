@@ -43,6 +43,9 @@ export class ClaudeInstaller implements BaseInstaller {
     'playwright',
     'browser',
     'sequentialthinking',
+    // Deployment platform MCP servers
+    'railway',
+    'netlify',
   ];
 
   isSupported(platform: SetupPlatform): boolean {
@@ -548,6 +551,12 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         '⚠️  Sequential Thinking MCP not available in registry, skipping'
       );
     }
+
+    // Install Railway MCP Server for deployment monitoring
+    installMCP('railway', 'claude mcp add railway npx @railway/mcp-server');
+
+    // Install Netlify MCP Server for deployment monitoring
+    installMCP('netlify', 'claude mcp add netlify npx @netlify/mcp');
   }
 
   private async configureClaudeSettings(): Promise<void> {
@@ -684,6 +693,24 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
             '~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js',
           ],
         },
+        railway: {
+          command: 'npx',
+          args: ['@railway/mcp-server'],
+          env: {
+            RAILWAY_API_TOKEN: '${RAILWAY_API_TOKEN}',
+            RAILWAY_PROJECT_ID: '${RAILWAY_PROJECT_ID}',
+          },
+          description: 'Railway deployment platform monitoring and management',
+        },
+        netlify: {
+          command: 'npx',
+          args: ['@netlify/mcp'],
+          env: {
+            NETLIFY_ACCESS_TOKEN: '${NETLIFY_ACCESS_TOKEN}',
+            NETLIFY_SITE_ID: '${NETLIFY_SITE_ID}',
+          },
+          description: 'Netlify deployment and build monitoring',
+        },
       },
     };
     await fs.writeFile(
@@ -787,6 +814,11 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         'migration-planner',
         'swarm-init',
       ],
+      devops: [
+        'deployment-monitor',
+        'log-analyzer',
+        'debug-refactor',
+      ],
     };
 
     // Create JSON configs for agents that don't have .md files
@@ -808,6 +840,31 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     }
 
     console.log('✅ Agent setup complete');
+
+    // Setup deployment agents
+    await this.setupDeploymentAgents();
+  }
+
+  private async setupDeploymentAgents(): Promise<void> {
+    console.log('🚀 Setting up deployment monitoring agents...');
+
+    const devopsDir = path.join(this.agentsDir, 'devops');
+    await fs.mkdir(devopsDir, { recursive: true });
+
+    // Copy bundled deployment agent .md files
+    const bundledDeploymentAgentsDir = path.join(this.bundledAgentsDir, 'devops');
+    const bundledExists = await fs.access(bundledDeploymentAgentsDir)
+      .then(() => true)
+      .catch(() => false);
+
+    if (bundledExists) {
+      try {
+        execSync(`cp -R "${bundledDeploymentAgentsDir}"/* "${devopsDir}"/`, { stdio: 'pipe' });
+        console.log('✅ Installed deployment agents: deployment-monitor, log-analyzer, debug-refactor');
+      } catch (error) {
+        console.warn('⚠️ Could not copy deployment agent files');
+      }
+    }
   }
 
   private async setupCommands(): Promise<void> {

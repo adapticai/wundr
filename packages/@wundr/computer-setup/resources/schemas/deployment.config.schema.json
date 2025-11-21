@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Wundr Deployment Configuration",
+  "description": "Configuration schema for Railway and Netlify deployment monitoring",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Configuration schema version",
+      "default": "1.0.0"
+    },
+    "platforms": {
+      "type": "object",
+      "description": "Deployment platform configurations",
+      "properties": {
+        "railway": {
+          "type": "object",
+          "description": "Railway platform configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Railway monitoring",
+              "default": false
+            },
+            "project_id": {
+              "type": "string",
+              "description": "Railway project ID (or use ${RAILWAY_PROJECT_ID})"
+            },
+            "poll_interval": {
+              "type": "number",
+              "description": "Polling interval in milliseconds",
+              "default": 5000,
+              "minimum": 1000
+            },
+            "timeout": {
+              "type": "number",
+              "description": "Deployment timeout in milliseconds",
+              "default": 300000,
+              "minimum": 30000
+            },
+            "services": {
+              "type": "array",
+              "description": "List of service IDs to monitor",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "netlify": {
+          "type": "object",
+          "description": "Netlify platform configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Netlify monitoring",
+              "default": false
+            },
+            "site_id": {
+              "type": "string",
+              "description": "Netlify site ID (or use ${NETLIFY_SITE_ID})"
+            },
+            "poll_interval": {
+              "type": "number",
+              "description": "Polling interval in milliseconds",
+              "default": 10000,
+              "minimum": 5000
+            },
+            "timeout": {
+              "type": "number",
+              "description": "Build timeout in milliseconds",
+              "default": 600000,
+              "minimum": 60000
+            }
+          }
+        }
+      }
+    },
+    "auto_monitor": {
+      "type": "boolean",
+      "description": "Automatically monitor after push to main/master",
+      "default": true
+    },
+    "auto_fix": {
+      "type": "object",
+      "description": "Automatic fix configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable automatic fix attempts",
+          "default": true
+        },
+        "max_cycles": {
+          "type": "number",
+          "description": "Maximum fix cycles before giving up",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 10
+        },
+        "categories": {
+          "type": "array",
+          "description": "Categories of errors to auto-fix",
+          "items": {
+            "type": "string",
+            "enum": [
+              "type_errors",
+              "null_checks",
+              "import_errors",
+              "connection_retries",
+              "memory_optimization",
+              "build_errors",
+              "missing_dependencies"
+            ]
+          },
+          "default": [
+            "type_errors",
+            "null_checks",
+            "import_errors",
+            "connection_retries"
+          ]
+        }
+      }
+    },
+    "notifications": {
+      "type": "object",
+      "description": "Notification settings",
+      "properties": {
+        "on_deploy_start": {
+          "type": "boolean",
+          "description": "Notify when deployment starts",
+          "default": true
+        },
+        "on_deploy_complete": {
+          "type": "boolean",
+          "description": "Notify when deployment completes",
+          "default": true
+        },
+        "on_error_detected": {
+          "type": "boolean",
+          "description": "Notify when errors are detected",
+          "default": true
+        },
+        "on_fix_applied": {
+          "type": "boolean",
+          "description": "Notify when fixes are applied",
+          "default": true
+        },
+        "on_cycle_complete": {
+          "type": "boolean",
+          "description": "Notify when fix cycle completes",
+          "default": true
+        }
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "description": "Escalation settings",
+      "properties": {
+        "after_iterations": {
+          "type": "number",
+          "description": "Escalate after N failed iterations",
+          "default": 3
+        },
+        "on_repeated_failure": {
+          "type": "boolean",
+          "description": "Escalate on repeated failures",
+          "default": true
+        }
+      }
+    }
+  },
+  "required": ["version"]
+}
