@@ -1,0 +1,156 @@
+{
+  "$schema": "./hooks.schema.json",
+  "version": "1.0.0",
+  "enabled": true,
+  "hooks": {
+    "preTask": {
+      "enabled": true,
+      "script": "./templates/pre-task.sh",
+      "timeout": 60000,
+      "autoDetect": {
+        "agentType": true,
+        "complexity": true,
+        "topology": true
+      },
+      "features": {
+        "environmentValidation": true,
+        "agentAssignment": true,
+        "topologyOptimization": true,
+        "worktreePreparation": true,
+        "sessionRestore": true,
+        "memoryPreparation": true,
+        "resourceAllocation": true,
+        "preflightChecks": true
+      }
+    },
+    "postTask": {
+      "enabled": true,
+      "script": "./templates/post-task.sh",
+      "timeout": 120000,
+      "features": {
+        "taskValidation": true,
+        "resultsCollection": true,
+        "memoryUpdate": true,
+        "neuralTraining": true,
+        "worktreeCleanup": true,
+        "performanceAnalysis": true,
+        "summaryGeneration": true,
+        "notification": true
+      }
+    },
+    "preEdit": {
+      "enabled": true,
+      "script": "./templates/pre-edit.sh",
+      "timeout": 30000,
+      "features": {
+        "fileValidation": true,
+        "lockCheck": true,
+        "backupCreation": true,
+        "worktreeHandling": true,
+        "contextLoading": true,
+        "syntaxValidation": true,
+        "metadataCollection": true
+      }
+    },
+    "postEdit": {
+      "enabled": true,
+      "script": "./templates/post-edit.sh",
+      "timeout": 60000,
+      "features": {
+        "changeVerification": true,
+        "syntaxValidation": true,
+        "autoFormat": true,
+        "metadataUpdate": true,
+        "memoryStorage": true,
+        "gitOperations": true,
+        "linterExecution": true,
+        "patternLearning": true,
+        "lockRelease": true,
+        "notification": true
+      }
+    },
+    "sessionRestore": {
+      "enabled": true,
+      "script": "./templates/session-restore.sh",
+      "timeout": 120000,
+      "features": {
+        "sessionValidation": true,
+        "memoryRestore": true,
+        "topologyRebuild": true,
+        "metricsRestore": true,
+        "taskResume": true,
+        "worktreeRestore": true,
+        "cacheRestore": true,
+        "patternRestore": true,
+        "environmentRestore": true,
+        "healthCheck": true
+      }
+    },
+    "sessionEnd": {
+      "enabled": true,
+      "script": "./templates/session-end.sh",
+      "timeout": 180000,
+      "features": {
+        "sessionValidation": true,
+        "metricsCollection": true,
+        "memorySnapshot": true,
+        "topologySave": true,
+        "patternsSave": true,
+        "summaryGeneration": true,
+        "worktreeCleanup": true,
+        "analyticsExport": true,
+        "sessionArchival": true,
+        "tempCleanup": true,
+        "swarmShutdown": true
+      }
+    }
+  },
+  "autoFormat": true,
+  "autoStage": false,
+  "archiveTasks": true,
+  "git": {
+    "autoWorktree": true,
+    "autoCommit": false,
+    "branchPrefix": "task/",
+    "cleanupOnComplete": true
+  },
+  "memory": {
+    "autoStore": true,
+    "keyPrefix": "swarm/",
+    "ttl": 604800000,
+    "compression": true
+  },
+  "neural": {
+    "autoTrain": true,
+    "patternTypes": [
+      "task-completion",
+      "file-edit",
+      "agent-collaboration"
+    ],
+    "learningRate": 0.1
+  },
+  "backup": {
+    "enabled": true,
+    "retention": 7,
+    "compression": true
+  },
+  "logging": {
+    "level": "info",
+    "retention": 30,
+    "maxSize": "10MB"
+  },
+  "notifications": {
+    "enabled": true,
+    "events": [
+      "task-start",
+      "task-complete",
+      "task-fail",
+      "session-end"
+    ]
+  },
+  "performance": {
+    "trackMetrics": true,
+    "benchmarkEnabled": true,
+    "optimizationHints": true
+  }
+}

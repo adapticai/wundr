@@ -10,6 +10,8 @@ import inquirer from 'inquirer';
 import { ConfigManager } from '../utils/config-manager';
 import { PluginManager } from '../plugins/plugin-manager';
 import { logger } from '../utils/logger';
+import { BackupRollbackManager } from '../utils/backup-rollback-manager';
+import { ClaudeConfigInstaller } from '../utils/claude-config-installer';
 import { execSync } from 'child_process';
 import * as os from 'os';
 import * as fs from 'fs/promises';
@@ -38,6 +40,8 @@ interface LocalSetupOptions {
 export class ComputerSetupCommands {
   private orchestrator: RealSetupOrchestrator;
   private platform: SetupPlatform;
+  private backupManager: BackupRollbackManager;
+  private claudeInstaller: ClaudeConfigInstaller;
 
   constructor(
     private program: Command,
@@ -46,6 +50,8 @@ export class ComputerSetupCommands {
   ) {
     this.platform = this.detectPlatform();
     this.orchestrator = new RealSetupOrchestrator(this.platform);
+    this.backupManager = new BackupRollbackManager();
+    this.claudeInstaller = new ClaudeConfigInstaller();
     this.registerCommands();
   }
 
@@ -164,6 +170,41 @@ Examples:
       .option('--global', 'Install globally')
       .action(async (tool, options) => {
         await this.installTool(tool, options);
+      });
+
+    // Claude Code configuration commands
+    computerSetup
+      .command('claude-config')
+      .description('Install Claude Code configuration')
+      .option('--dry-run', 'Show what would be installed')
+      .option('--skip-backup', 'Skip backup creation')
+      .option('--overwrite', 'Overwrite existing configurations')
+      .option('--verbose', 'Show detailed output')
+      .action(async options => {
+        await this.installClaudeConfig(options);
+      });
+
+    // Backup management commands
+    computerSetup
+      .command('backup')
+      .description('Manage configuration backups')
+      .option('-l, --list', 'List all backups')
+      .option('-c, --create', 'Create new backup')
+      .option('-v, --verify <id>', 'Verify backup integrity')
+      .option('--cleanup', 'Clean up old backups')
+      .action(async options => {
+        await this.manageBackups(options);
+      });
+
+    // Rollback command
+    computerSetup
+      .command('rollback')
+      .description('Restore from backup')
+      .option('--backup <id>', 'Specific backup to restore')
+      .option('--dry-run', 'Show what would be restored')
+      .option('--verbose', 'Show detailed output')
+      .action(async options => {
+        await this.rollbackConfiguration(options);
       });
   }
 
@@ -704,6 +745,125 @@ Examples:
     console.log(chalk.yellow('\nAttempting fixes...'));
     for (const failure of failures) {
       console.log(chalk.gray(`  Fixing ${failure.name}...`));
+    }
+  }
+
+  /**
+   * Install Claude Code configuration
+   */
+  private async installClaudeConfig(options: any): Promise<void> {
+    console.log(chalk.cyan('\n🔧 Claude Code Configuration Installer\n'));
+
+    try {
+      // Initialize managers
+      await this.backupManager.initialize();
+      await this.claudeInstaller.initialize();
+
+      // Install configurations
+      const result = await this.claudeInstaller.install({
+        dryRun: options.dryRun,
+        skipBackup: options.skipBackup,
+        overwrite: options.overwrite,
+        verbose: options.verbose,
+      });
+
+      if (!result.success) {
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error(chalk.red('❌ Installation failed:'), error);
+      logger.error('Claude config installation failed', error);
+      process.exit(1);
+    }
+  }
+
+  /**
+   * Manage backups
+   */
+  private async manageBackups(options: any): Promise<void> {
+    await this.backupManager.initialize();
+
+    if (options.list) {
+      const backups = await this.backupManager.listBackups();
+
+      if (backups.length === 0) {
+        console.log(chalk.yellow('No backups found'));
+        return;
+      }
+
+      console.log(chalk.cyan('\n📦 Available Backups\n'));
+      backups.forEach(backup => {
+        const date = new Date(backup.timestamp).toLocaleString();
+        const status = backup.success
+          ? chalk.green('✅ Success')
+          : chalk.red('❌ Failed');
+
+        console.log(chalk.white(`ID: ${backup.backupId}`));
+        console.log(chalk.gray(`  Date: ${date}`));
+        console.log(chalk.gray(`  Reason: ${backup.reason}`));
+        console.log(chalk.gray(`  Status: ${status}`));
+        console.log(chalk.gray(`  Files: ${backup.files.length}`));
+        console.log();
+      });
+    } else if (options.create) {
+      const { files } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'files',
+          message: 'Enter file paths (comma-separated):',
+          validate: input => input.length > 0,
+        },
+      ]);
+
+      const fileList = files.split(',').map((f: string) => f.trim());
+      const backup = await this.backupManager.createBackup(
+        fileList,
+        'Manual backup'
+      );
+
+      this.backupManager.displayBackupInfo(backup);
+    } else if (options.verify) {
+      const isValid = await this.backupManager.verifyBackup(options.verify);
+
+      if (isValid) {
+        console.log(chalk.green(`✅ Backup ${options.verify} is valid`));
+      } else {
+        console.log(chalk.red(`❌ Backup ${options.verify} is invalid`));
+        process.exit(1);
+      }
+    } else if (options.cleanup) {
+      await this.backupManager.cleanupOldBackups();
+      console.log(chalk.green('✅ Old backups cleaned up'));
+    } else {
+      console.log(chalk.yellow('Please specify an option. Use --help for details.'));
+    }
+  }
+
+  /**
+   * Rollback configuration
+   */
+  private async rollbackConfiguration(options: any): Promise<void> {
+    console.log(chalk.cyan('\n🔄 Configuration Rollback\n'));
+
+    await this.backupManager.initialize();
+
+    const success = await this.backupManager.rollback({
+      backupId: options.backup,
+      dryRun: options.dryRun,
+      verbose: options.verbose,
+    });
+
+    if (!success) {
+      console.log(chalk.red('\n❌ Rollback failed'));
+      process.exit(1);
+    }
+
+    if (!options.dryRun) {
+      console.log(chalk.green('\n✅ Rollback completed successfully'));
+      console.log(chalk.cyan('\nNext steps:'));
+      console.log(chalk.white('  1. Verify restored configurations'));
+      console.log(chalk.white('  2. Restart terminal if needed'));
+      console.log(chalk.white('  3. Run validation script'));
     }
   }
 }

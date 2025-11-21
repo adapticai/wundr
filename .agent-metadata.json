@@ -1,9 +1,0 @@
-{
-  "worktree_name": "coder-test-feature-001",
-  "agent_type": "coder",
-  "task_id": "test-feature-001",
-  "branch": "agents/coder/test-feature-001",
-  "base_branch": "master",
-  "created": "2025-11-21T00:51:55Z",
-  "repo_root": "/Users/iroselli/wundr"
-}
