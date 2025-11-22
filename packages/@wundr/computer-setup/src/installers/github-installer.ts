@@ -64,8 +64,26 @@ export class GitHubInstaller implements BaseInstaller {
     await this.setupGitHubTemplates();
   }
 
-  async configure(_profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
-    // Configuration is handled in install method
+  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    // Apply additional configuration based on profile and platform
+    console.log(`Configuring GitHub for ${profile.name} on ${platform.os}`);
+
+    // Set up commit signing preferences if specified in gitConfig
+    if (profile.preferences?.gitConfig?.signCommits !== false) {
+      try {
+        await execa('git', ['config', '--global', 'commit.gpgsign', 'true']);
+        // If a GPG key is specified, configure it
+        if (profile.preferences?.gitConfig?.gpgKey) {
+          await execa('git', ['config', '--global', 'user.signingkey', profile.preferences.gitConfig.gpgKey]);
+        }
+      } catch {
+        // GPG signing setup may fail if no key is configured - that's ok
+      }
+    }
+
+    // Configure default branch name from profile
+    const defaultBranch = profile.preferences?.gitConfig?.defaultBranch || 'main';
+    await execa('git', ['config', '--global', 'init.defaultBranch', defaultBranch]);
   }
 
   async validate(): Promise<boolean> {

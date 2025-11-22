@@ -64,12 +64,16 @@ export class NodeInstaller implements BaseInstaller {
     await this.installPackageManagers(profile);
   }
 
-  async configure(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
+  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    console.log(`Configuring Node.js environment on ${platform.os} (${platform.arch})`);
+
     // Configure npm
     await this.configureNPM(profile);
 
-    // Setup .nvmrc for projects
-    await this.setupNVMRC(profile);
+    // Setup .nvmrc for projects (NVM is not supported on Windows)
+    if (platform.os !== 'win32') {
+      await this.setupNVMRC(profile);
+    }
 
     // Configure package managers
     await this.configurePackageManagers(profile);

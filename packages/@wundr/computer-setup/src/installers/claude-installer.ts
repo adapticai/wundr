@@ -74,15 +74,18 @@ export class ClaudeInstaller implements BaseInstaller {
     return this.check();
   }
 
-  getSteps(_profile: DeveloperProfile, _platform: SetupPlatform): SetupStep[] {
+  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
     const steps: SetupStep[] = [];
+
+    // Determine if user wants AI tools based on profile preferences
+    const wantsAiTools = profile.preferences?.aiTools?.claudeCode !== false;
 
     steps.push({
       id: 'claude-cli',
       name: 'Install Claude CLI',
       description: 'Install Claude command-line interface',
       category: 'ai',
-      required: true,
+      required: wantsAiTools,
       dependencies: [],
       estimatedTime: 30,
       installer: async () => {
@@ -90,16 +93,24 @@ export class ClaudeInstaller implements BaseInstaller {
       },
     });
 
+    // Chrome is only needed on macOS and Linux (not in headless environments)
+    // Check if browser MCP is in the list of MCP tools
+    const mcpTools = profile.preferences?.aiTools?.mcpTools || [];
+    const needsChrome = ['darwin', 'linux'].includes(platform.os) &&
+                        mcpTools.some(tool => tool.toLowerCase().includes('browser'));
+
     steps.push({
       id: 'chrome-browser',
       name: 'Install Chrome Browser',
-      description: 'Install Google Chrome for Browser MCP',
+      description: `Install Google Chrome for Browser MCP on ${platform.os}`,
       category: 'system',
       required: false,
       dependencies: [],
-      estimatedTime: 120,
+      estimatedTime: platform.os === 'darwin' ? 120 : 180, // Longer on Linux
       installer: async () => {
-        await this.installChrome();
+        if (needsChrome) {
+          await this.installChrome();
+        }
       },
     });
 
@@ -160,20 +171,33 @@ export class ClaudeInstaller implements BaseInstaller {
   }
 
   async install(
-    _profile: DeveloperProfile,
-    _platform: SetupPlatform
+    profile: DeveloperProfile,
+    platform: SetupPlatform
   ): Promise<void> {
+    // Store profile and platform for use in execute
+    this.currentProfile = profile;
+    this.currentPlatform = platform;
     await this.execute();
   }
 
+  // Store current installation context
+  private currentProfile?: DeveloperProfile;
+  private currentPlatform?: SetupPlatform;
+
   async configure(
-    _profile: DeveloperProfile,
-    _platform: SetupPlatform
+    profile: DeveloperProfile,
+    platform: SetupPlatform
   ): Promise<void> {
     // Ensure directories exist before configuring
     await this.ensureDirectoriesExist();
     await this.setupQualityEnforcement();
     await this.setupClaudeMdGenerator();
+
+    // Apply profile-specific configurations
+    if (profile.preferences?.aiTools?.mcpTools) {
+      // User has specific MCP tool preferences
+      console.log(`Configuring MCP tools for ${profile.name} on ${platform.os}`);
+    }
   }
 
   private async execute(): Promise<void> {

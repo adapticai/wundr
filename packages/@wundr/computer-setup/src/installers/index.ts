@@ -93,16 +93,30 @@ export class InstallerRegistry {
   }
 
   /**
-   * Get installers by category
-   * Note: Currently returns all installers as BaseInstaller does not have category info.
-   * To properly filter by category, extend BaseInstaller with a category property.
+   * Get installers by category based on installer name patterns.
+   * Categories are inferred from installer names:
+   * - 'system': homebrew, mac, linux, windows
+   * - 'development': git, node, python, docker
+   * - 'ai': claude
+   * - 'editor': vscode, slack
    */
-  getByCategory(_category: string): BaseInstaller[] {
-    // Currently all installers are returned as BaseInstaller lacks category property
-    // When BaseInstaller is extended with category, use: installer.category === _category
-    return Array.from(this.installers.values()).filter(installer => {
-      return installer.name !== undefined; // Always true, placeholder for category filter
-    });
+  getByCategory(category: string): BaseInstaller[] {
+    const categoryPatterns: Record<string, string[]> = {
+      system: ['homebrew', 'mac', 'linux', 'windows'],
+      development: ['git', 'node', 'python', 'docker', 'github'],
+      ai: ['claude'],
+      editor: ['vscode', 'slack'],
+    };
+
+    const patterns = categoryPatterns[category.toLowerCase()];
+    if (!patterns) {
+      // Unknown category - return empty array
+      return [];
+    }
+
+    return Array.from(this.installers.entries())
+      .filter(([name]) => patterns.some(pattern => name.includes(pattern)))
+      .map(([, installer]) => installer);
   }
 
   /**
