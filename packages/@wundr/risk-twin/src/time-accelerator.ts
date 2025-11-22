@@ -420,7 +420,7 @@ export class TimeAccelerator {
    */
   private emitEvent(
     type: TimeEventType,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): void {
     this.state.eventsProcessed++;
 
@@ -508,7 +508,7 @@ export class TimeAccelerator {
  */
 export function calculateSimulationDuration(
   simulatedDays: number,
-  accelerationFactor: number = DEFAULT_ACCELERATION_FACTOR
+  accelerationFactor: number = DEFAULT_ACCELERATION_FACTOR,
 ): {
   realMs: number;
   realSeconds: number;
@@ -542,7 +542,7 @@ export function calculateSimulationDuration(
  * @returns Configured TimeAccelerator instance
  */
 export function createRiskTwinAccelerator(
-  onTimeEvent?: TimeEventCallback
+  onTimeEvent?: TimeEventCallback,
 ): TimeAccelerator {
   const config: AcceleratorConfig = {
     accelerationFactor: 10,

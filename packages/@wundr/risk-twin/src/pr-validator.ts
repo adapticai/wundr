@@ -437,7 +437,7 @@ export class PRValidator {
     if (this.config.verbose) {
       const duration = Date.now() - startTime;
       console.log(
-        `PR #${prInfo.prNumber} validation completed in ${duration}ms: ${status}`
+        `PR #${prInfo.prNumber} validation completed in ${duration}ms: ${status}`,
       );
     }
 
@@ -499,7 +499,7 @@ export class PRValidator {
    * @returns Promise resolving to array of validation reports
    */
   async runValidation(
-    changes: GovernanceChange[]
+    changes: GovernanceChange[],
   ): Promise<ValidationReport[]> {
     const reports: ValidationReport[] = [];
 
@@ -558,10 +558,10 @@ export class PRValidator {
     lines.push('### Summary');
     lines.push(`- **Governance Changes**: ${result.summary.totalChanges}`);
     lines.push(
-      `- **Risk Score**: ${(result.summary.riskScore * 100).toFixed(1)}%`
+      `- **Risk Score**: ${(result.summary.riskScore * 100).toFixed(1)}%`,
     );
     lines.push(
-      `- **Guardian Review Required**: ${result.summary.requiresGuardianReview ? 'Yes' : 'No'}`
+      `- **Guardian Review Required**: ${result.summary.requiresGuardianReview ? 'Yes' : 'No'}`,
     );
     lines.push('');
 
@@ -622,7 +622,7 @@ export class PRValidator {
           ? 'Required'
           : 'Not Required';
         lines.push(
-          `| \`${change.fileChange.path}\` | ${this.formatChangeType(change.type)} | ${change.severity} | ${guardianReview} |`
+          `| \`${change.fileChange.path}\` | ${this.formatChangeType(change.type)} | ${change.severity} | ${guardianReview} |`,
         );
       }
       lines.push('');
@@ -631,7 +631,7 @@ export class PRValidator {
     // Footer
     lines.push('---');
     lines.push(
-      `*Validated at ${result.timestamp.toISOString()} by @wundr/risk-twin*`
+      `*Validated at ${result.timestamp.toISOString()} by @wundr/risk-twin*`,
     );
 
     return lines.join('\n');
@@ -707,7 +707,7 @@ export class PRValidator {
    */
   private determineChangeType(
     patternName: string,
-    filePath: string
+    filePath: string,
   ): GovernanceChangeType {
     const patternLower = patternName.toLowerCase();
     const pathLower = filePath.toLowerCase();
@@ -742,7 +742,7 @@ export class PRValidator {
    */
   private generateChangeDescription(
     type: GovernanceChangeType,
-    file: FileChange
+    file: FileChange,
   ): string {
     const action = {
       added: 'Added new',
@@ -771,7 +771,7 @@ export class PRValidator {
    */
   private createApprovedResult(
     prInfo: PRInfo,
-    changes: GovernanceChange[]
+    changes: GovernanceChange[],
   ): PRValidationResult {
     return {
       status: 'approved',
@@ -796,7 +796,7 @@ export class PRValidator {
    */
   private extractBlockers(
     validations: readonly ValidationReport[],
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): string[] {
     const blockers: string[] = [];
 
@@ -815,7 +815,7 @@ export class PRValidator {
       // This would typically check against PR labels/approvals
       // For now, we add it as a blocker requiring manual approval
       blockers.push(
-        `${criticalChanges.length} critical governance change(s) require Guardian approval`
+        `${criticalChanges.length} critical governance change(s) require Guardian approval`,
       );
     }
 
@@ -827,7 +827,7 @@ export class PRValidator {
    */
   private extractWarnings(
     validations: readonly ValidationReport[],
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): string[] {
     const warnings: string[] = [];
 
@@ -851,7 +851,7 @@ export class PRValidator {
     const highSeverityChanges = changes.filter(c => c.severity === 'high');
     if (highSeverityChanges.length > 0) {
       warnings.push(
-        `${highSeverityChanges.length} high-severity change(s) should be carefully reviewed`
+        `${highSeverityChanges.length} high-severity change(s) should be carefully reviewed`,
       );
     }
 
@@ -862,7 +862,7 @@ export class PRValidator {
    * Calculates summary statistics for governance changes
    */
   private calculateSummary(
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): ValidationSummary {
     const bySeverity: Record<string, number> = {};
     const byType: Record<string, number> = {};
@@ -914,7 +914,7 @@ export class PRValidator {
    * Validates schema compliance for governance changes
    */
   private async validateSchemaCompliance(
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): Promise<ValidationReport> {
     const startTime = Date.now();
     const issues: string[] = [];
@@ -946,7 +946,7 @@ export class PRValidator {
 
     if (issues.length > 0) {
       recommendations.push(
-        'Ensure all configuration files follow the expected schema'
+        'Ensure all configuration files follow the expected schema',
       );
     }
 
@@ -970,7 +970,7 @@ export class PRValidator {
    * Validates naming conventions for governance files
    */
   private async validateNamingConventions(
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): Promise<ValidationReport> {
     const startTime = Date.now();
     const issues: string[] = [];
@@ -984,7 +984,7 @@ export class PRValidator {
         // Agent charters should be kebab-case
         if (!/^[a-z0-9-]+\.(md|yaml|yml)$/i.test(fileName)) {
           issues.push(
-            `Agent charter "${fileName}" should use kebab-case naming (e.g., "my-agent.md")`
+            `Agent charter "${fileName}" should use kebab-case naming (e.g., "my-agent.md")`,
           );
         }
       }
@@ -992,7 +992,7 @@ export class PRValidator {
       // Check for descriptive names
       if (fileName.length < 5) {
         recommendations.push(
-          `Consider using a more descriptive name for "${fileName}"`
+          `Consider using a more descriptive name for "${fileName}"`,
         );
       }
     }
@@ -1017,7 +1017,7 @@ export class PRValidator {
    * Validates security constraints for governance changes
    */
   private async validateSecurityConstraints(
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): Promise<ValidationReport> {
     const startTime = Date.now();
     const issues: string[] = [];
@@ -1029,21 +1029,21 @@ export class PRValidator {
       // Check for potential secrets in content
       if (this.containsPotentialSecret(content)) {
         issues.push(
-          `Potential secret detected in ${change.fileChange.path}. Never commit secrets to governance files.`
+          `Potential secret detected in ${change.fileChange.path}. Never commit secrets to governance files.`,
         );
       }
 
       // Check for dangerous patterns
       if (this.containsDangerousPattern(content)) {
         issues.push(
-          `Potentially dangerous pattern detected in ${change.fileChange.path}. Review carefully.`
+          `Potentially dangerous pattern detected in ${change.fileChange.path}. Review carefully.`,
         );
       }
 
       // Recommend review for security policy changes
       if (change.type === 'security_policy') {
         recommendations.push(
-          `Security policy change in ${change.fileChange.path} should be reviewed by security team`
+          `Security policy change in ${change.fileChange.path} should be reviewed by security team`,
         );
       }
     }
@@ -1068,7 +1068,7 @@ export class PRValidator {
    * Validates policy consistency across governance changes
    */
   private async validatePolicyConsistency(
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): Promise<ValidationReport> {
     const startTime = Date.now();
     const issues: string[] = [];
@@ -1076,14 +1076,14 @@ export class PRValidator {
 
     // Check for conflicting changes
     const policyChanges = changes.filter(
-      c => c.type === 'ipre_policy' || c.type === 'security_policy'
+      c => c.type === 'ipre_policy' || c.type === 'security_policy',
     );
 
     // In a real implementation, this would check for conflicting policies
     // For now, we recommend review when multiple policies change
     if (policyChanges.length > 1) {
       recommendations.push(
-        `${policyChanges.length} policy files changed - verify policies don't conflict`
+        `${policyChanges.length} policy files changed - verify policies don't conflict`,
       );
     }
 
@@ -1091,12 +1091,12 @@ export class PRValidator {
     const deletedPolicies = changes.filter(
       c =>
         c.fileChange.status === 'deleted' &&
-        (c.type === 'ipre_policy' || c.type === 'security_policy')
+        (c.type === 'ipre_policy' || c.type === 'security_policy'),
     );
 
     if (deletedPolicies.length > 0) {
       issues.push(
-        `${deletedPolicies.length} policy file(s) deleted - ensure no other files reference them`
+        `${deletedPolicies.length} policy file(s) deleted - ensure no other files reference them`,
       );
     }
 
@@ -1120,7 +1120,7 @@ export class PRValidator {
    * Validates changes using the Risk Twin orchestrator
    */
   private async validateWithRiskTwin(
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): Promise<ValidationReport> {
     const startTime = Date.now();
     const issues: string[] = [];
@@ -1161,14 +1161,14 @@ export class PRValidator {
           recommendations.push(...result.recommendations);
         } else {
           issues.push(
-            `Risk Twin rejected change to ${change.fileChange.path}: ${result.report.issues.join(', ')}`
+            `Risk Twin rejected change to ${change.fileChange.path}: ${result.report.issues.join(', ')}`,
           );
         }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         issues.push(
-          `Risk Twin validation failed for ${change.fileChange.path}: ${errorMessage}`
+          `Risk Twin validation failed for ${change.fileChange.path}: ${errorMessage}`,
         );
       }
     }
@@ -1194,7 +1194,7 @@ export class PRValidator {
    */
   private async runCustomValidation(
     rule: ValidationRule,
-    changes: readonly GovernanceChange[]
+    changes: readonly GovernanceChange[],
   ): Promise<ValidationReport> {
     const startTime = Date.now();
     const issues: string[] = [];
@@ -1203,15 +1203,15 @@ export class PRValidator {
     // Filter changes that this rule applies to
     const applicableChanges = changes.filter(change =>
       rule.appliesTo.some(pattern =>
-        this.matchesPattern(change.fileChange.path, pattern)
-      )
+        this.matchesPattern(change.fileChange.path, pattern),
+      ),
     );
 
     // In a real implementation, this would run the custom rule logic
     // For now, we just note that the rule was applied
     if (applicableChanges.length > 0) {
       recommendations.push(
-        `Custom rule "${rule.name}" applied to ${applicableChanges.length} file(s)`
+        `Custom rule "${rule.name}" applied to ${applicableChanges.length} file(s)`,
       );
     }
 
@@ -1283,7 +1283,7 @@ export class PRValidator {
  * ```
  */
 export function createPRValidator(
-  options?: Partial<PRValidatorConfig>
+  options?: Partial<PRValidatorConfig>,
 ): PRValidator {
   return new PRValidator(options);
 }

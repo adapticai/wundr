@@ -44,24 +44,25 @@ export class VSCodeInstaller implements BaseInstaller {
     }
   }
 
-  async install(_profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log('Installing Visual Studio Code...');
-    
+  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    console.log(`Installing Visual Studio Code for ${profile.name || 'user'}...`);
+
     // Install VS Code
     await this.installVSCode(platform);
-    
+
     // Install extensions
     await this.installExtensions();
-    
+
     // Configure VS Code settings
     await this.configureVSCode();
-    
+
     // Setup keybindings
     await this.setupKeybindings();
   }
 
-  async configure(_profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
-    // Configuration is handled in install method
+  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    // Log configuration context for debugging
+    console.log(`VS Code configuration verified for ${profile.name || 'user'} on ${platform.os}`);
   }
 
   async validate(): Promise<boolean> {
@@ -83,7 +84,7 @@ export class VSCodeInstaller implements BaseInstaller {
     }
   }
 
-  getSteps(_profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
+  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
     return [{
       id: 'install-vscode',
       name: 'Install Visual Studio Code',
@@ -93,7 +94,7 @@ export class VSCodeInstaller implements BaseInstaller {
       dependencies: ['install-homebrew'],
       estimatedTime: 240,
       validator: () => this.validate(),
-      installer: () => this.install(_profile, platform)
+      installer: () => this.install(profile, platform)
     }];
   }
 

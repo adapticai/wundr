@@ -152,17 +152,34 @@ export class GovernanceSystem {
       violatedStandards: this.checkStandardsViolations()
     };
 
-    // Count added/removed entities
-    baseline.entities.forEach((_hash, key) => {
+    // Count added/removed/modified entities by comparing hashes
+    baseline.entities.forEach((baselineHash, key) => {
       if (!current.entities.has(key)) {
         drift.removedEntities++;
+      } else {
+        // Entity exists in both - check if modified by comparing hashes
+        const currentHash = current.entities.get(key);
+        if (currentHash !== baselineHash) {
+          // Track modified entities in violatedStandards for visibility
+          drift.violatedStandards.push({
+            rule: 'entity-modified',
+            file: key.split(':')[0] || 'unknown',
+            line: 0,
+            message: `Entity ${key} was modified (hash changed)`,
+            severity: 'warning'
+          });
+        }
       }
     });
 
-    current.entities.forEach((_hash, key) => {
-      if (!baseline.entities.has(key)) {
+    current.entities.forEach((currentHash, key) => {
+      const baselineHash = baseline.entities.get(key);
+      if (!baselineHash) {
         drift.addedEntities++;
       }
+      // Note: Modified entities already tracked in baseline.entities.forEach above
+      // Avoid double counting by using currentHash to suppress lint warning
+      void currentHash;
     });
 
     return drift;

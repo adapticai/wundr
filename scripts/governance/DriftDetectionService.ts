@@ -345,13 +345,56 @@ export class DriftDetectionService extends BaseService {
     return recommendations;
   }
 
-  private analyzeDetailedChanges(_baseline: BaselineSnapshot, _current: BaselineSnapshot): any {
-    // Simplified implementation - would need access to entity details
+  private analyzeDetailedChanges(baseline: BaselineSnapshot, current: BaselineSnapshot): DriftDetectionReport['detailedChanges'] {
+    const newEntities: Array<{ name: string; file: string; type: string }> = [];
+    const removedEntities: Array<{ name: string; file: string; type: string }> = [];
+    const modifiedEntities: Array<{ name: string; file: string; type: string; changes: string[] }> = [];
+
+    // Parse entity keys (format: "type:name:file")
+    const parseEntityKey = (key: string): { type: string; name: string; file: string } | null => {
+      const parts = key.split(':');
+      if (parts.length >= 3) {
+        return {
+          type: parts[0] || 'unknown',
+          name: parts[1] || 'unknown',
+          file: parts.slice(2).join(':') // Handle file paths with colons
+        };
+      }
+      return null;
+    };
+
+    // Find new entities (in current but not in baseline)
+    for (const [key, currentHash] of current.entityHashes) {
+      const baselineHash = baseline.entityHashes.get(key);
+      const parsed = parseEntityKey(key);
+
+      if (!parsed) continue;
+
+      if (!baselineHash) {
+        newEntities.push(parsed);
+      } else if (baselineHash !== currentHash) {
+        modifiedEntities.push({
+          ...parsed,
+          changes: ['Content hash changed - entity was modified']
+        });
+      }
+    }
+
+    // Find removed entities (in baseline but not in current)
+    for (const key of baseline.entityHashes.keys()) {
+      if (!current.entityHashes.has(key)) {
+        const parsed = parseEntityKey(key);
+        if (parsed) {
+          removedEntities.push(parsed);
+        }
+      }
+    }
+
     return {
-      newEntities: [],
-      removedEntities: [],
-      modifiedEntities: [],
-      newDuplicateClusters: []
+      newEntities,
+      removedEntities,
+      modifiedEntities,
+      newDuplicateClusters: [] // Would require duplicate detection data
     };
   }
 

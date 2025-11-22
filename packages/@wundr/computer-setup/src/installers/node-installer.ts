@@ -64,13 +64,13 @@ export class NodeInstaller implements BaseInstaller {
     await this.installPackageManagers(profile);
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
     // Configure npm
     await this.configureNPM(profile);
-    
+
     // Setup .nvmrc for projects
     await this.setupNVMRC(profile);
-    
+
     // Configure package managers
     await this.configurePackageManagers(profile);
   }
@@ -391,10 +391,23 @@ export class NodeInstaller implements BaseInstaller {
     }
   }
 
-  private async validateNodeVersions(_versions: string[]): Promise<boolean> {
+  private async validateNodeVersions(versions: string[]): Promise<boolean> {
     try {
-      // This would require checking if specific versions are installed
-      // Simplified validation for now
+      // Check if each version is installed via NVM
+      const nvmScript = `
+        export NVM_DIR="${os.homedir()}/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh"
+        nvm ls
+      `;
+      const { stdout } = await execa('bash', ['-c', nvmScript]);
+
+      // Check if all requested versions are present in NVM list
+      for (const version of versions) {
+        if (!stdout.includes(version)) {
+          console.log(`Node.js v${version} not found in NVM`);
+          return false;
+        }
+      }
       return true;
     } catch {
       return false;

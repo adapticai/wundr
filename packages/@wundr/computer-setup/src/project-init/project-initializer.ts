@@ -465,7 +465,7 @@ export class ProjectInitializer {
    */
   private async copyCommandTemplates(
     claudeDir: string,
-    _context: TemplateContext
+    context: TemplateContext
   ): Promise<void> {
     const commandsSourceDir = path.join(this.resourcesDir, 'commands');
     const commandsTargetDir = path.join(claudeDir, 'commands');
@@ -482,6 +482,22 @@ export class ProjectInitializer {
           const targetPath = path.join(commandsTargetDir, category.name);
 
           await fs.copy(sourcePath, targetPath);
+
+          // Customize copied command files with context
+          const files = await fs.readdir(targetPath);
+          for (const file of files) {
+            if (file.endsWith('.md') || file.endsWith('.yaml')) {
+              const filePath = path.join(targetPath, file);
+              let content = await fs.readFile(filePath, 'utf-8');
+              content = content
+                .replace(/\{\{PROJECT_NAME\}\}/g, context.project.name)
+                .replace(
+                  /\{\{PACKAGE_MANAGER\}\}/g,
+                  context.project.packageManager
+                );
+              await fs.writeFile(filePath, content);
+            }
+          }
         }
       }
     }
@@ -933,11 +949,33 @@ export class ProjectInitializer {
 
   private generateDefaultClaudeMarkdown(
     options: ProjectInitOptions,
-    _context: TemplateContext
+    context: TemplateContext
   ): string {
+    const packageManager = context.project.packageManager;
+    const author = context.project.author;
+    const organization = context.project.organization || 'Development Team';
+
     return `# Claude Code Configuration - ${options.projectName}
 
 ## Project Type: ${options.projectType}
+## Author: ${author}
+## Organization: ${organization}
+
+## Quick Commands
+
+\`\`\`bash
+# Install dependencies
+${packageManager} install
+
+# Run development server
+${packageManager} run dev
+
+# Run tests
+${packageManager} run test
+
+# Build for production
+${packageManager} run build
+\`\`\`
 
 See .claude/README.md for complete agent and workflow documentation.
 `;
@@ -946,11 +984,16 @@ See .claude/README.md for complete agent and workflow documentation.
   private customizeAgentTemplate(
     content: string,
     options: ProjectInitOptions,
-    _context: TemplateContext
+    context: TemplateContext
   ): string {
     return content
       .replace(/\{\{PROJECT_NAME\}\}/g, options.projectName)
-      .replace(/\{\{PROJECT_TYPE\}\}/g, options.projectType);
+      .replace(/\{\{PROJECT_TYPE\}\}/g, options.projectType)
+      .replace(/\{\{AUTHOR\}\}/g, context.project.author)
+      .replace(/\{\{ORGANIZATION\}\}/g, context.project.organization || '')
+      .replace(/\{\{PACKAGE_MANAGER\}\}/g, context.project.packageManager)
+      .replace(/\{\{NODE_VERSION\}\}/g, context.platform.nodeVersion)
+      .replace(/\{\{PLATFORM\}\}/g, context.platform.os);
   }
 
   private selectAgentsToCopy(
@@ -1030,17 +1073,44 @@ echo "Task completed"
 `;
   }
 
-  private generatePreEditHook(_context: TemplateContext): string {
+  private generatePreEditHook(context: TemplateContext): string {
+    const projectName = context.project.name;
+    const nodeVersion = context.platform.nodeVersion;
     return `#!/bin/bash
-# Pre-edit hook
+# Pre-edit hook for ${projectName}
+# Generated for Node ${nodeVersion}
+
 echo "Preparing to edit files..."
+
+# Verify project state before editing
+if [ -f "package.json" ]; then
+  echo "Checking package.json integrity..."
+fi
+
+# Optional: Create backup of files being edited
+# cp "$1" "$1.bak" 2>/dev/null || true
 `;
   }
 
-  private generatePostEditHook(_context: TemplateContext): string {
+  private generatePostEditHook(context: TemplateContext): string {
+    const projectName = context.project.name;
+    const packageManager = context.project.packageManager;
     return `#!/bin/bash
-# Post-edit hook
+# Post-edit hook for ${projectName}
+# Uses ${packageManager} for package management
+
 echo "Files edited, running checks..."
+
+# Run linting if configured
+if [ -f "package.json" ] && grep -q '"lint"' package.json; then
+  echo "Running lint checks..."
+  ${packageManager} run lint --fix 2>/dev/null || true
+fi
+
+# Notify claude-flow of changes
+if command -v npx &> /dev/null; then
+  npx claude-flow@alpha hooks notify --message "Files edited in ${projectName}" 2>/dev/null || true
+fi
 `;
   }
 
@@ -1051,93 +1121,360 @@ echo "Session started for ${context.project.name}"
 `;
   }
 
-  private generateSessionEndHook(_context: TemplateContext): string {
+  private generateSessionEndHook(context: TemplateContext): string {
+    const projectName = context.project.name;
+    const author = context.project.author;
     return `#!/bin/bash
-# Session end hook
+# Session end hook for ${projectName}
+# Author: ${author}
+
 echo "Session ending, cleaning up..."
+
+# Export session metrics
+if command -v npx &> /dev/null; then
+  npx claude-flow@alpha hooks session-end --export-metrics true 2>/dev/null || true
+fi
+
+# Cleanup temporary files
+find . -name "*.tmp" -type f -delete 2>/dev/null || true
+find . -name ".DS_Store" -type f -delete 2>/dev/null || true
+
+echo "Session cleanup complete for ${projectName}"
 `;
   }
 
   private generateCodeStyleConvention(
     options: ProjectInitOptions,
-    _context: TemplateContext
+    context: TemplateContext
   ): string {
+    const packageManager = context.project.packageManager;
     return `# Code Style Convention
 
 Project: ${options.projectName}
 Type: ${options.projectType}
+Package Manager: ${packageManager}
 
 ## Standards
 - Use consistent formatting
 - Follow language-specific best practices
 - Keep functions small and focused
+- Maximum file length: 500 lines
+- Maximum function length: 50 lines
+
+## Formatting Commands
+\`\`\`bash
+# Format code
+${packageManager} run format
+
+# Check formatting
+${packageManager} run format:check
+
+# Lint code
+${packageManager} run lint
+\`\`\`
+
+## TypeScript Guidelines
+- Prefer \`interface\` over \`type\` for object shapes
+- Use strict mode
+- Avoid \`any\` type - use \`unknown\` with type guards
 `;
   }
 
   private generateGitWorkflowConvention(
-    _options: ProjectInitOptions,
-    _context: TemplateContext
+    options: ProjectInitOptions,
+    context: TemplateContext
   ): string {
+    const defaultBranch =
+      context.profile?.preferences?.gitConfig?.defaultBranch || 'main';
     return `# Git Workflow Convention
 
+Project: ${options.projectName}
+Default Branch: ${defaultBranch}
+
 ## Branch Strategy
-- main: Production
-- develop: Development
-- feature/*: Features
+- ${defaultBranch}: Production-ready code
+- develop: Integration branch for features
+- feature/*: New features (e.g., feature/add-authentication)
+- bugfix/*: Bug fixes (e.g., bugfix/fix-login-error)
+- hotfix/*: Urgent production fixes
+- release/*: Release preparation
+
+## Commit Message Format
+\`\`\`
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+\`\`\`
+
+### Types
+- feat: New feature
+- fix: Bug fix
+- docs: Documentation
+- style: Formatting
+- refactor: Code restructuring
+- test: Adding tests
+- chore: Maintenance
+
+## Pull Request Guidelines
+1. Create feature branch from develop
+2. Make changes with atomic commits
+3. Push and create PR
+4. Request review
+5. Merge after approval
 `;
   }
 
   private generateTestingStandardsConvention(
-    _options: ProjectInitOptions,
-    _context: TemplateContext
+    options: ProjectInitOptions,
+    context: TemplateContext
   ): string {
+    const packageManager = context.project.packageManager;
     return `# Testing Standards
 
+Project: ${options.projectName}
+Type: ${options.projectType}
+
 ## Coverage Requirements
-- Minimum 80% coverage
+- Minimum 80% overall coverage
+- 100% coverage for critical paths
 - Test all public APIs
+- Test error handling paths
+
+## Test Commands
+\`\`\`bash
+# Run all tests
+${packageManager} run test
+
+# Run with coverage
+${packageManager} run test:coverage
+
+# Run in watch mode
+${packageManager} run test:watch
+
+# Run specific test file
+${packageManager} run test -- path/to/test.spec.ts
+\`\`\`
+
+## Test Structure
+\`\`\`
+tests/
+  unit/           # Unit tests
+  integration/    # Integration tests
+  e2e/           # End-to-end tests
+  fixtures/      # Test data
+  mocks/         # Mock implementations
+\`\`\`
+
+## TDD Workflow
+1. Write failing test (Red)
+2. Write minimal implementation (Green)
+3. Refactor with confidence (Refactor)
 `;
   }
 
   private generateDocumentationConvention(
-    _options: ProjectInitOptions,
-    _context: TemplateContext
+    options: ProjectInitOptions,
+    context: TemplateContext
   ): string {
+    const author = context.project.author;
+    const organization = context.project.organization || 'Development Team';
     return `# Documentation Convention
 
+Project: ${options.projectName}
+Author: ${author}
+Organization: ${organization}
+
 ## Requirements
-- All public APIs documented
-- README maintained
+- All public APIs documented with JSDoc/TSDoc
+- README maintained and up-to-date
+- CHANGELOG updated for each release
+- Architecture decisions documented (ADRs)
+
+## Documentation Structure
+\`\`\`
+docs/
+  api/           # API documentation
+  guides/        # User guides
+  architecture/  # Architecture decisions
+  contributing/  # Contribution guidelines
+\`\`\`
+
+## JSDoc Template
+\`\`\`typescript
+/**
+ * Brief description of function
+ * @param paramName - Description of parameter
+ * @returns Description of return value
+ * @throws {ErrorType} When error condition occurs
+ * @example
+ * const result = functionName(param);
+ */
+\`\`\`
+
+## README Sections
+1. Project Overview
+2. Installation
+3. Quick Start
+4. Configuration
+5. API Reference
+6. Contributing
+7. License
 `;
   }
 
   private generateSparcWorkflow(
-    _options: ProjectInitOptions,
-    _context: TemplateContext
+    options: ProjectInitOptions,
+    context: TemplateContext
   ): string {
+    const packageManager = context.project.packageManager;
     return `# SPARC Workflow
 
+Project: ${options.projectName}
+Type: ${options.projectType}
+
 Systematic development using Specification, Pseudocode, Architecture, Refinement, Completion.
+
+## Phases
+
+### 1. Specification
+- Define requirements clearly
+- Identify constraints and edge cases
+- Document acceptance criteria
+
+### 2. Pseudocode
+- Design algorithm in plain language
+- Identify data structures needed
+- Plan error handling strategy
+
+### 3. Architecture
+- Design component structure
+- Define interfaces and contracts
+- Plan integration points
+
+### 4. Refinement (TDD)
+- Write failing tests first
+- Implement minimal code to pass
+- Refactor for quality
+
+### 5. Completion
+- Integration testing
+- Documentation updates
+- Performance optimization
+
+## Commands
+\`\`\`bash
+# Run SPARC workflow
+npx claude-flow sparc tdd "<feature>"
+
+# Run specific phase
+npx claude-flow sparc run spec-pseudocode "<task>"
+npx claude-flow sparc run architect "<task>"
+
+# Check workflow status
+${packageManager} run workflow:status
+\`\`\`
 `;
   }
 
   private generateTddWorkflow(
-    _options: ProjectInitOptions,
-    _context: TemplateContext
+    options: ProjectInitOptions,
+    context: TemplateContext
   ): string {
+    const packageManager = context.project.packageManager;
     return `# TDD Workflow
 
-Test-Driven Development workflow.
+Project: ${options.projectName}
+Type: ${options.projectType}
+
+Test-Driven Development workflow following the Red-Green-Refactor cycle.
+
+## The TDD Cycle
+
+### 1. Red - Write a Failing Test
+- Write a test that describes expected behavior
+- Run the test - it should fail
+- Verify test failure message is meaningful
+
+### 2. Green - Make it Pass
+- Write the simplest code to pass the test
+- Don't over-engineer the solution
+- Focus on making the test pass
+
+### 3. Refactor - Improve the Code
+- Clean up the implementation
+- Remove duplication
+- Improve naming and structure
+- All tests should still pass
+
+## Commands
+\`\`\`bash
+# Run tests in watch mode
+${packageManager} run test:watch
+
+# Run tests with coverage
+${packageManager} run test:coverage
+
+# Run TDD workflow with claude-flow
+npx claude-flow sparc tdd "<feature>"
+\`\`\`
+
+## Best Practices
+- One assertion per test when possible
+- Use descriptive test names
+- Test behavior, not implementation
+- Keep tests fast and isolated
 `;
   }
 
   private generateReviewWorkflow(
-    _options: ProjectInitOptions,
-    _context: TemplateContext
+    options: ProjectInitOptions,
+    context: TemplateContext
   ): string {
+    const organization = context.project.organization || 'the team';
     return `# Review Workflow
 
-Code review process and checklist.
+Project: ${options.projectName}
+Type: ${options.projectType}
+Organization: ${organization}
+
+Code review process and checklist for ${organization}.
+
+## Review Checklist
+
+### Code Quality
+- [ ] Code follows project style guidelines
+- [ ] No unnecessary complexity
+- [ ] Functions are small and focused
+- [ ] Naming is clear and descriptive
+
+### Testing
+- [ ] All tests pass
+- [ ] New code has adequate test coverage
+- [ ] Edge cases are tested
+
+### Security
+- [ ] No hardcoded secrets or credentials
+- [ ] Input validation in place
+- [ ] No SQL injection vulnerabilities
+
+### Documentation
+- [ ] Public APIs are documented
+- [ ] Complex logic has comments
+- [ ] README updated if needed
+
+## Review Process
+1. Author creates PR with description
+2. Automated checks run (lint, tests, build)
+3. Reviewer examines code changes
+4. Feedback provided via inline comments
+5. Author addresses feedback
+6. Approval and merge
+
+## Response Times
+- Initial review: Within 24 hours
+- Follow-up review: Within 4 hours
 `;
   }
 
@@ -1486,11 +1823,18 @@ escalation:
    */
   private async copyPolicyTemplates(
     governanceDir: string,
-    _options: ProjectInitOptions
+    options: ProjectInitOptions
   ): Promise<void> {
     const policiesDir = path.join(governanceDir, 'policies');
 
+    const typeSpecificSecurityRules = this.getTypeSpecificSecurityRules(
+      options.projectType
+    );
+
     const securityPolicy = `# Security Policy
+
+Project: ${options.projectName}
+Type: ${options.projectType}
 
 ## Hard Constraints
 These constraints must NEVER be violated:
@@ -1507,6 +1851,8 @@ These constraints must NEVER be violated:
    - No dependencies with known critical vulnerabilities
    - Regular dependency audits required
 
+${typeSpecificSecurityRules}
+
 ## Enforcement
 - Pre-commit hooks scan for secrets
 - CI/CD blocks on security violations
@@ -1514,6 +1860,9 @@ These constraints must NEVER be violated:
 `;
 
     const qualityPolicy = `# Quality Policy
+
+Project: ${options.projectName}
+Type: ${options.projectType}
 
 ## Code Quality Standards
 1. **Test Coverage**: Minimum 80% coverage for new code
@@ -1536,12 +1885,64 @@ These constraints must NEVER be violated:
     await fs.writeFile(path.join(policiesDir, 'quality.md'), qualityPolicy);
   }
 
+  private getTypeSpecificSecurityRules(projectType: ProjectType): string {
+    const rules: Record<ProjectType, string> = {
+      react: `## React-Specific Security
+- Avoid dangerouslySetInnerHTML
+- Validate props for XSS prevention
+- Use Content Security Policy headers`,
+
+      vue: `## Vue-Specific Security
+- Avoid v-html with untrusted content
+- Validate props and data
+- Use Content Security Policy headers`,
+
+      node: `## Node.js-Specific Security
+- No SQL injection vulnerabilities
+- Rate limiting on all endpoints
+- Helmet.js for HTTP security headers
+- Input sanitization on all routes`,
+
+      python: `## Python-Specific Security
+- Use parameterized queries
+- Validate all file uploads
+- Escape output in templates
+- Use secure session handling`,
+
+      go: `## Go-Specific Security
+- Use prepared statements for SQL
+- Validate all user input
+- Use secure random generation
+- Implement proper error handling`,
+
+      rust: `## Rust-Specific Security
+- Validate unsafe blocks
+- Use proper error handling
+- Avoid memory leaks
+- Use cryptographically secure RNG`,
+
+      java: `## Java-Specific Security
+- Use prepared statements
+- Validate deserialization
+- Implement proper auth/authz
+- Use secure random generation`,
+
+      monorepo: `## Monorepo Security
+- Audit shared dependencies
+- Enforce package boundaries
+- Validate cross-package imports
+- Consistent security policies across packages`,
+    };
+
+    return rules[projectType] || '';
+  }
+
   /**
    * Setup policy enforcement hooks
    */
   private async setupPolicyHooks(
     options: ProjectInitOptions,
-    _governanceDir: string
+    governanceDir: string
   ): Promise<void> {
     const hooksDir = path.join(
       options.projectPath,
@@ -1551,11 +1952,17 @@ These constraints must NEVER be violated:
     );
     await fs.ensureDir(hooksDir);
 
+    // Create reference to governance policies
+    const policiesPath = path.relative(hooksDir, path.join(governanceDir, 'policies'));
+
     const preCommitHook = `# Quality Gate Pre-Commit Hook
 ---
 name: quality-gate-pre-commit
+project: ${options.projectName}
+projectType: ${options.projectType}
 trigger: pre_commit
 scope: ${options.enableFleetArchitecture ? 'sub_agents' : 'all_agents'}
+policiesPath: ${policiesPath}
 
 checks:
   - name: lint
@@ -1597,14 +2004,20 @@ failurePolicy:
    */
   private async initializeEvaluatorAgents(
     governanceDir: string,
-    _options: ProjectInitOptions
+    options: ProjectInitOptions
   ): Promise<void> {
+    const workforceSize = options.subAgentWorkforceSize
+      ? WORKFORCE_SIZE_MAP[options.subAgentWorkforceSize]
+      : 10;
     const evaluatorsDir = path.join(governanceDir, 'evaluators');
 
     const alignmentEvaluator = `---
 name: alignment-evaluator
 type: evaluator
 tier: 0
+project: ${options.projectName}
+projectType: ${options.projectType}
+workforceSize: ${workforceSize}
 
 purpose: >
   Continuously monitor agent behavior for alignment drift and escalate to Guardians when thresholds exceeded.
@@ -1638,6 +2051,8 @@ escalationProtocol:
 name: drift-detector
 type: evaluator
 tier: 1
+project: ${options.projectName}
+archetype: ${options.sessionManagerArchetype || 'engineering'}
 
 purpose: >
   Detect behavioral drift in agent outputs and flag concerning patterns for review.
@@ -1652,6 +2067,7 @@ monitoring:
   frequency: hourly
   sample_rate: 0.1  # 10% of outputs
   retention: 30d
+  maxAgentsMonitored: ${workforceSize}
 
 actions:
   on_drift_detected:
@@ -2041,18 +2457,40 @@ wundr init --session-manager-archetype engineering
   }
 
   private getProjectWorkflows(
-    _options: ProjectInitOptions
+    options: ProjectInitOptions
   ): Record<string, unknown> {
+    const specializedAgents = this.getSpecializedAgents(options.projectType);
+
     return {
       sparc: {
         name: 'SPARC Workflow',
-        agents: ['specification', 'pseudocode', 'architecture', 'refinement'],
+        project: options.projectName,
+        projectType: options.projectType,
+        agents: [
+          'specification',
+          'pseudocode',
+          'architecture',
+          'refinement',
+          ...specializedAgents,
+        ],
         steps: ['spec', 'design', 'implement', 'test', 'integrate'],
+        fleetEnabled: options.enableFleetArchitecture || false,
       },
       tdd: {
         name: 'TDD Workflow',
+        project: options.projectName,
+        projectType: options.projectType,
         agents: ['tester', 'coder', 'reviewer'],
         steps: ['test-first', 'implement', 'refactor'],
+        fleetEnabled: options.enableFleetArchitecture || false,
+      },
+      review: {
+        name: 'Review Workflow',
+        project: options.projectName,
+        projectType: options.projectType,
+        agents: ['reviewer', 'security-auditor'],
+        steps: ['lint', 'test', 'security-scan', 'review'],
+        fleetEnabled: options.enableFleetArchitecture || false,
       },
     };
   }
@@ -2064,20 +2502,161 @@ echo "Running workflow..."
 `;
   }
 
-  private async setupGitHooks(_options: ProjectInitOptions): Promise<void> {
-    // Git hooks setup logic
+  private async setupGitHooks(options: ProjectInitOptions): Promise<void> {
+    const gitHooksDir = path.join(options.projectPath, '.git', 'hooks');
+
+    // Only setup if .git directory exists
+    if (!(await fs.pathExists(path.join(options.projectPath, '.git')))) {
+      return;
+    }
+
+    await fs.ensureDir(gitHooksDir);
+
+    // Create pre-commit hook
+    const preCommitHook = `#!/bin/bash
+# Pre-commit hook for ${options.projectName}
+# Runs linting and type checking before commit
+
+echo "Running pre-commit checks..."
+
+# Run lint
+if [ -f "package.json" ] && grep -q '"lint"' package.json; then
+  npm run lint || exit 1
+fi
+
+# Run type check
+if [ -f "package.json" ] && grep -q '"typecheck"' package.json; then
+  npm run typecheck || exit 1
+fi
+
+echo "Pre-commit checks passed!"
+`;
+
+    const preCommitPath = path.join(gitHooksDir, 'pre-commit');
+    await fs.writeFile(preCommitPath, preCommitHook);
+    await fs.chmod(preCommitPath, '755');
+
+    // Create commit-msg hook for conventional commits
+    const commitMsgHook = `#!/bin/bash
+# Commit message validation hook for ${options.projectName}
+
+commit_msg=$(cat "$1")
+
+# Check for conventional commit format
+if ! echo "$commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\\(.+\\))?: .+"; then
+  echo "Error: Commit message must follow conventional commits format"
+  echo "Example: feat(auth): add login functionality"
+  exit 1
+fi
+
+echo "Commit message format valid!"
+`;
+
+    const commitMsgPath = path.join(gitHooksDir, 'commit-msg');
+    await fs.writeFile(commitMsgPath, commitMsgHook);
+    await fs.chmod(commitMsgPath, '755');
   }
 
   private async setupClaudeFlowHooks(
-    _options: ProjectInitOptions
+    options: ProjectInitOptions
   ): Promise<void> {
-    // Claude Flow hooks setup logic
+    const claudeFlowDir = path.join(
+      options.projectPath,
+      '.claude',
+      'hooks',
+      'claude-flow'
+    );
+    await fs.ensureDir(claudeFlowDir);
+
+    const preTaskHook = `#!/bin/bash
+# Claude Flow pre-task hook for ${options.projectName}
+
+task_description=$1
+
+echo "Starting Claude Flow task: $task_description"
+
+# Register with Claude Flow if available
+if command -v npx &> /dev/null; then
+  npx claude-flow@alpha hooks pre-task --description "$task_description" 2>/dev/null || true
+fi
+`;
+
+    const postTaskHook = `#!/bin/bash
+# Claude Flow post-task hook for ${options.projectName}
+
+task_id=$1
+
+echo "Completing Claude Flow task: $task_id"
+
+# Notify Claude Flow if available
+if command -v npx &> /dev/null; then
+  npx claude-flow@alpha hooks post-task --task-id "$task_id" 2>/dev/null || true
+fi
+`;
+
+    await fs.writeFile(path.join(claudeFlowDir, 'pre-task.sh'), preTaskHook);
+    await fs.chmod(path.join(claudeFlowDir, 'pre-task.sh'), '755');
+
+    await fs.writeFile(path.join(claudeFlowDir, 'post-task.sh'), postTaskHook);
+    await fs.chmod(path.join(claudeFlowDir, 'post-task.sh'), '755');
   }
 
   private async setupVerificationHooks(
-    _options: ProjectInitOptions
+    options: ProjectInitOptions
   ): Promise<void> {
-    // Verification hooks setup logic
+    const verificationDir = path.join(
+      options.projectPath,
+      '.claude',
+      'hooks',
+      'verification'
+    );
+    await fs.ensureDir(verificationDir);
+
+    const verifyBuildHook = `#!/bin/bash
+# Build verification hook for ${options.projectName}
+
+echo "Verifying build..."
+
+if [ -f "package.json" ]; then
+  if grep -q '"build"' package.json; then
+    npm run build || exit 1
+    echo "Build verification passed!"
+  else
+    echo "No build script found, skipping build verification"
+  fi
+else
+  echo "No package.json found, skipping build verification"
+fi
+`;
+
+    const verifyTestsHook = `#!/bin/bash
+# Test verification hook for ${options.projectName}
+
+echo "Verifying tests..."
+
+if [ -f "package.json" ]; then
+  if grep -q '"test"' package.json; then
+    npm run test || exit 1
+    echo "Test verification passed!"
+  else
+    echo "No test script found, skipping test verification"
+  fi
+else
+  echo "No package.json found, skipping test verification"
+fi
+`;
+
+    await fs.writeFile(
+      path.join(verificationDir, 'verify-build.sh'),
+      verifyBuildHook
+    );
+    await fs.chmod(path.join(verificationDir, 'verify-build.sh'), '755');
+
+    await fs.writeFile(
+      path.join(verificationDir, 'verify-tests.sh'),
+      verifyTestsHook
+    );
+    await fs.chmod(path.join(verificationDir, 'verify-tests.sh'), '755');
   }
 
   private generateProjectSetupDoc(options: ProjectInitOptions): string {
@@ -2093,27 +2672,219 @@ Type: ${options.projectType}
 `;
   }
 
-  private generateAgentGuideDoc(_options: ProjectInitOptions): string {
+  private generateAgentGuideDoc(options: ProjectInitOptions): string {
+    const specializedAgents = this.getSpecializedAgents(options.projectType);
     return `# Agent Guide
 
-## Available Agents
-See .claude/agents/ for full list.
+Project: ${options.projectName}
+Type: ${options.projectType}
+
+## Core Agents
+- **coder**: Implements features and writes code
+- **reviewer**: Reviews code for quality and best practices
+- **tester**: Creates and maintains tests
+- **planner**: Breaks down tasks and creates plans
+- **researcher**: Investigates solutions and gathers context
+
+## Specialized Agents for ${options.projectType}
+${specializedAgents.map(agent => `- **${agent}**: Specialized for ${options.projectType} development`).join('\n')}
+
+## Using Agents
+
+### Spawn an Agent
+\`\`\`bash
+npx claude-flow agent spawn --type coder --task "implement feature"
+\`\`\`
+
+### List Active Agents
+\`\`\`bash
+npx claude-flow agent list
+\`\`\`
+
+### Check Agent Status
+\`\`\`bash
+npx claude-flow agent status --id <agent-id>
+\`\`\`
+
+## Agent Files Location
+See .claude/agents/ for agent configurations and templates.
 `;
   }
 
-  private generateWorkflowGuideDoc(_options: ProjectInitOptions): string {
+  private generateWorkflowGuideDoc(options: ProjectInitOptions): string {
     return `# Workflow Guide
 
-## Workflows
-See .claude/workflows/ for configurations.
+Project: ${options.projectName}
+Type: ${options.projectType}
+
+## Available Workflows
+
+### SPARC Workflow
+Systematic development using Specification, Pseudocode, Architecture, Refinement, Completion.
+
+\`\`\`bash
+npx claude-flow sparc tdd "<feature description>"
+\`\`\`
+
+### TDD Workflow
+Test-Driven Development with Red-Green-Refactor cycle.
+
+\`\`\`bash
+npx claude-flow sparc run tdd "<feature description>"
+\`\`\`
+
+### Review Workflow
+Code review process with automated checks.
+
+\`\`\`bash
+npx claude-flow sparc run review "<PR or branch>"
+\`\`\`
+
+## Workflow Customization
+
+Workflows can be customized in \`.claude/workflows/\`:
+- \`sparc-workflow.md\` - SPARC methodology settings
+- \`tdd-workflow.md\` - TDD configuration
+- \`review-workflow.md\` - Review checklist and process
+
+## Running Workflows
+
+### Sequential Execution
+\`\`\`bash
+npx claude-flow sparc pipeline "<task>"
+\`\`\`
+
+### Parallel Execution
+\`\`\`bash
+npx claude-flow sparc batch spec,arch,test "<task>"
+\`\`\`
+
+See .claude/workflows/ for detailed configurations.
 `;
   }
 
-  private generateDevelopmentDoc(_options: ProjectInitOptions): string {
+  private generateDevelopmentDoc(options: ProjectInitOptions): string {
+    const typeSpecificGuide = this.getTypeSpecificDevelopmentGuide(
+      options.projectType
+    );
     return `# Development Guide
 
-Project-specific development guidelines.
+Project: ${options.projectName}
+Type: ${options.projectType}
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies: \`npm install\` or \`pnpm install\`
+3. Copy environment template: \`cp .env.example .env\`
+4. Start development server: \`npm run dev\`
+
+## Project Structure
+
+\`\`\`
+${options.projectName}/
+  src/              # Source code
+  tests/            # Test files
+  docs/             # Documentation
+  .claude/          # Claude Code configuration
+    agents/         # Agent definitions
+    hooks/          # Automation hooks
+    workflows/      # Workflow configurations
+\`\`\`
+
+${typeSpecificGuide}
+
+## Code Quality
+
+- Run linting: \`npm run lint\`
+- Run type check: \`npm run typecheck\`
+- Run tests: \`npm run test\`
+- Run all checks: \`npm run check\`
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Dependency issues**: Delete \`node_modules\` and reinstall
+2. **Type errors**: Run \`npm run typecheck\` for details
+3. **Test failures**: Check test output for specific failures
+
+### Getting Help
+
+- Check project documentation in \`docs/\`
+- Review agent configurations in \`.claude/agents/\`
+- Consult workflow guides in \`.claude/workflows/\`
 `;
+  }
+
+  private getTypeSpecificDevelopmentGuide(projectType: ProjectType): string {
+    const guides: Record<ProjectType, string> = {
+      react: `## React Development
+
+- Components in \`src/components/\`
+- Hooks in \`src/hooks/\`
+- State management in \`src/store/\`
+- Use functional components with hooks
+- Follow React best practices`,
+
+      vue: `## Vue Development
+
+- Components in \`src/components/\`
+- Composables in \`src/composables/\`
+- Store in \`src/store/\`
+- Use Composition API
+- Follow Vue 3 best practices`,
+
+      node: `## Node.js Development
+
+- Source code in \`src/\`
+- API routes in \`src/routes/\`
+- Services in \`src/services/\`
+- Use async/await for async operations
+- Follow Node.js best practices`,
+
+      python: `## Python Development
+
+- Source code in \`src/\`
+- Use virtual environments
+- Follow PEP 8 style guide
+- Use type hints
+- Document with docstrings`,
+
+      go: `## Go Development
+
+- Packages in \`pkg/\`
+- Commands in \`cmd/\`
+- Internal code in \`internal/\`
+- Follow Go conventions
+- Use go modules`,
+
+      rust: `## Rust Development
+
+- Source in \`src/\`
+- Libraries in \`src/lib.rs\`
+- Binaries in \`src/main.rs\`
+- Follow Rust conventions
+- Use cargo for dependencies`,
+
+      java: `## Java Development
+
+- Source in \`src/main/java/\`
+- Tests in \`src/test/java/\`
+- Follow Maven/Gradle conventions
+- Use dependency injection
+- Follow Java best practices`,
+
+      monorepo: `## Monorepo Development
+
+- Packages in \`packages/\`
+- Shared code in \`packages/shared/\`
+- Use workspace features
+- Maintain package boundaries
+- Use consistent versioning`,
+    };
+
+    return guides[projectType] || '## Development\n\nFollow project conventions.';
   }
 
   private getDefaultProfile(): DeveloperProfile {
@@ -2151,15 +2922,43 @@ Project-specific development guidelines.
     };
   }
 
-  private printNextSteps(_options: ProjectInitOptions): void {
+  private printNextSteps(options: ProjectInitOptions): void {
+    const fleetSteps = options.enableFleetArchitecture
+      ? [
+          chalk.white(
+            '4. Review governance in .claude/governance/'
+          ),
+          chalk.white('5. Configure session manager archetype'),
+        ]
+      : [];
+
+    const gitWorktreeSteps = options.includeGitWorktree
+      ? [chalk.white(`${fleetSteps.length + 4}. Setup git worktrees: ./scripts/manage-worktrees.sh`)]
+      : [];
+
     const nextSteps = [
-      chalk.cyan('Next Steps:'),
+      chalk.cyan(`Next Steps for ${options.projectName}:`),
       chalk.white('1. Review CLAUDE.md configuration'),
       chalk.white('2. Customize agent templates in .claude/agents/'),
       chalk.white('3. Review conventions in .claude/conventions/'),
-      chalk.white('4. Run: npx claude-flow@alpha mcp start'),
-      chalk.white('5. Start development with your chosen workflow'),
-    ].join('\n');
+      ...fleetSteps,
+      ...gitWorktreeSteps,
+      chalk.white(
+        `${4 + fleetSteps.length + gitWorktreeSteps.length}. Run: npx claude-flow@alpha mcp start`
+      ),
+      chalk.white(
+        `${5 + fleetSteps.length + gitWorktreeSteps.length}. Start development with your chosen workflow`
+      ),
+      '',
+      chalk.gray(`Project type: ${options.projectType}`),
+      options.enableFleetArchitecture
+        ? chalk.gray(
+            `Fleet architecture: enabled (${options.sessionManagerArchetype || 'engineering'} archetype)`
+          )
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
     this.spinner.info(nextSteps);
   }
 }

@@ -524,18 +524,18 @@ export class RoleBasedAccessControl extends EventEmitter {
   // Access Control
   async checkAccess(request: AccessRequest): Promise<AccessResult> {
     const startTime = Date.now();
-    const _requestId = request.requestId || this.generateId();
+    const requestId = request.requestId || this.generateId();
 
     // Check cache first
     if (this.options.enableCaching) {
       const cacheKey = this.generateCacheKey(request);
-      const _cached = this.accessCache.get(cacheKey);
-      if (_cached && Date.now() < _cached.expiresAt) {
+      const cached = this.accessCache.get(cacheKey);
+      if (cached && Date.now() < cached.expiresAt) {
         // Add cache hit metadata
         return {
-          ..._cached.result,
+          ...cached.result,
           metadata: {
-            ..._cached.result.metadata,
+            ...cached.result.metadata,
             cacheHit: true,
             evaluationTimeMs: Date.now() - startTime
           }
@@ -551,15 +551,16 @@ export class RoleBasedAccessControl extends EventEmitter {
         matchedPermissions: [],
         failedConditions: []
       };
-      
+
       if (this.options.enableAuditLogging) {
         this.emit('audit:log', {
           action: 'access.denied',
           resource: request.resource,
+          requestId,
           details: { reason: 'User not found', userId: request.userId }
         });
       }
-      
+
       return result;
     }
 
@@ -570,15 +571,16 @@ export class RoleBasedAccessControl extends EventEmitter {
         matchedPermissions: [],
         failedConditions: []
       };
-      
+
       if (this.options.enableAuditLogging) {
         this.emit('audit:log', {
           action: 'access.denied',
           resource: request.resource,
+          requestId,
           details: { reason: 'User inactive', userId: request.userId }
         });
       }
-      
+
       return result;
     }
 
@@ -643,6 +645,7 @@ export class RoleBasedAccessControl extends EventEmitter {
       this.emit('audit:log', {
         action: granted ? 'access.granted' : 'access.denied',
         resource: request.resource,
+        requestId,
         details: {
           userId: request.userId,
           action: request.action,
@@ -652,7 +655,7 @@ export class RoleBasedAccessControl extends EventEmitter {
       });
     }
 
-    this.emit(granted ? 'access:granted' : 'access:denied', { request, result });
+    this.emit(granted ? 'access:granted' : 'access:denied', { request, result, requestId });
 
     return result;
   }

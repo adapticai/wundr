@@ -19,6 +19,7 @@ import type {
   ComplexityMetrics,
   AnalysisSummary,
   PerformanceMetrics,
+  AnalysisProgressCallback,
 } from './types';
 
 /**
@@ -26,6 +27,7 @@ import type {
  */
 export class SimpleAnalyzer {
   private config: AnalysisConfig;
+  private progressCallback?: AnalysisProgressCallback;
 
   constructor(config: Partial<AnalysisConfig> = {}) {
     this.config = {
@@ -55,6 +57,22 @@ export class SimpleAnalyzer {
    */
   getConfig(): AnalysisConfig {
     return this.config;
+  }
+
+  /**
+   * Set progress callback for analysis updates
+   */
+  setProgressCallback(callback: AnalysisProgressCallback): void {
+    this.progressCallback = callback;
+  }
+
+  /**
+   * Emit progress event if callback is set
+   */
+  private emitProgress(event: { type: string; message: string; progress?: number }): void {
+    if (this.progressCallback) {
+      this.progressCallback(event as Parameters<AnalysisProgressCallback>[0]);
+    }
   }
 
   async analyze(): Promise<AnalysisReport> {
@@ -219,8 +237,10 @@ entities.push(entity);
       };
 
       ts.forEachChild(sourceFile, visitNode);
-    } catch (_error) {
-      // Fallback to simple text-based extraction
+    } catch (parseError) {
+      // TypeScript parsing failed, fallback to simple text-based extraction
+      const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+      console.warn(`Warning: TypeScript parsing failed for ${filePath}, using text-based extraction: ${errorMessage}`);
       entities.push(...this.extractEntitiesFromText(content, filePath));
     }
 

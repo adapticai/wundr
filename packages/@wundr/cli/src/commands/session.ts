@@ -164,7 +164,7 @@ Examples:
   ${chalk.green('wundr session pause <sessionId>')} Pause a running session
   ${chalk.green('wundr session resume <sessionId>')}Resume a paused session
   ${chalk.green('wundr session kill <sessionId>')}  Terminate a session
-      `)
+      `),
     );
 
   // List command (default)
@@ -174,7 +174,7 @@ Examples:
     .option('-a, --all', 'Show all sessions including completed and terminated')
     .option(
       '-s, --status <status>',
-      'Filter by status (active, paused, completed, error, terminated)'
+      'Filter by status (active, paused, completed, error, terminated)',
     )
     .option('-f, --format <format>', 'Output format (table, json)', 'table')
     .action(async options => {
@@ -236,7 +236,7 @@ async function listSessions(options: {
     } else if (!options.all) {
       // By default, only show active and paused sessions
       sessions = sessions.filter(
-        s => s.status === 'active' || s.status === 'paused'
+        s => s.status === 'active' || s.status === 'paused',
       );
     }
 
@@ -251,8 +251,8 @@ async function listSessions(options: {
             sessions: sessions,
           },
           null,
-          2
-        )
+          2,
+        ),
       );
       return;
     }
@@ -264,7 +264,7 @@ async function listSessions(options: {
       console.log(chalk.yellow('\nNo sessions found.'));
       if (!options.all && !options.status) {
         console.log(
-          chalk.gray('Use --all to show completed and terminated sessions.')
+          chalk.gray('Use --all to show completed and terminated sessions.'),
         );
       }
       console.log('');
@@ -278,8 +278,8 @@ async function listSessions(options: {
           padRight('Status', 12) +
           padRight('Started At', 22) +
           padRight('Slot ID', 10) +
-          padRight('Worktree Path', 36)
-      )
+          padRight('Worktree Path', 36),
+      ),
     );
     console.log(chalk.gray('-'.repeat(100)));
 
@@ -294,7 +294,7 @@ async function listSessions(options: {
           statusColor(padRight(getStatusIcon(session.status), 12)) +
           padRight(startedAt, 22) +
           padRight(session.slotId, 10) +
-          chalk.gray(padRight(worktreePath, 36))
+          chalk.gray(padRight(worktreePath, 36)),
       );
     }
 
@@ -304,14 +304,14 @@ async function listSessions(options: {
   } catch (error) {
     spinner.fail('Failed to load sessions');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
 
 async function showSessionInfo(
   sessionId: string,
-  options: { format?: 'table' | 'json' }
+  options: { format?: 'table' | 'json' },
 ): Promise<void> {
   const spinner = ora(`Loading session ${sessionId}...`).start();
 
@@ -337,32 +337,32 @@ async function showSessionInfo(
     // Basic info
     const statusColor = getStatusColor(session.status);
     console.log(
-      chalk.white('Session ID:    ') + chalk.green(session.sessionId)
+      chalk.white('Session ID:    ') + chalk.green(session.sessionId),
     );
     console.log(
       chalk.white('Status:        ') +
-        statusColor(getStatusIcon(session.status))
+        statusColor(getStatusIcon(session.status)),
     );
     console.log(chalk.white('Slot ID:       ') + session.slotId);
     console.log(
-      chalk.white('Worktree Path: ') + chalk.gray(session.worktreePath)
+      chalk.white('Worktree Path: ') + chalk.gray(session.worktreePath),
     );
     console.log(
       chalk.white('Started At:    ') +
-        new Date(session.startedAt).toLocaleString()
+        new Date(session.startedAt).toLocaleString(),
     );
 
     if (session.pausedAt) {
       console.log(
         chalk.white('Paused At:     ') +
-          new Date(session.pausedAt).toLocaleString()
+          new Date(session.pausedAt).toLocaleString(),
       );
     }
 
     if (session.lastActivity) {
       console.log(
         chalk.white('Last Activity: ') +
-          new Date(session.lastActivity).toLocaleString()
+          new Date(session.lastActivity).toLocaleString(),
       );
     }
 
@@ -397,8 +397,8 @@ async function showSessionInfo(
           padRight('Agent ID', 15) +
             padRight('Type', 15) +
             padRight('Status', 12) +
-            padRight('Tasks', 8)
-        )
+            padRight('Tasks', 8),
+        ),
       );
       console.log(chalk.gray('-'.repeat(50)));
 
@@ -413,7 +413,7 @@ async function showSessionInfo(
           padRight(agent.agentId, 15) +
             padRight(agent.type, 15) +
             agentStatusColor(padRight(`[${agent.status.toUpperCase()}]`, 12)) +
-            padRight(String(agent.taskCount), 8)
+            padRight(String(agent.taskCount), 8),
         );
       }
     } else {
@@ -426,17 +426,17 @@ async function showSessionInfo(
       console.log(chalk.cyan('Session Metrics'));
       console.log(
         chalk.white('Tasks:    ') +
-          `${session.metrics.tasksCompleted}/${session.metrics.tasksTotal}`
+          `${session.metrics.tasksCompleted}/${session.metrics.tasksTotal}`,
       );
       console.log(
-        chalk.white('Duration: ') + formatDuration(session.metrics.duration)
+        chalk.white('Duration: ') + formatDuration(session.metrics.duration),
       );
       console.log(
-        chalk.white('Tokens:   ') + session.metrics.tokensUsed.toLocaleString()
+        chalk.white('Tokens:   ') + session.metrics.tokensUsed.toLocaleString(),
       );
       console.log(
         chalk.white('Errors:   ') +
-          (session.metrics.errors > 0 ? chalk.red(session.metrics.errors) : '0')
+          (session.metrics.errors > 0 ? chalk.red(session.metrics.errors) : '0'),
       );
     }
 
@@ -445,7 +445,7 @@ async function showSessionInfo(
   } catch (error) {
     spinner.fail('Failed to load session info');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -456,7 +456,7 @@ async function pauseSession(sessionId: string): Promise<void> {
   try {
     const state = await loadSessionsState();
     const sessionIndex = state.sessions.findIndex(
-      s => s.sessionId === sessionId
+      s => s.sessionId === sessionId,
     );
 
     if (sessionIndex === -1) {
@@ -486,13 +486,13 @@ async function pauseSession(sessionId: string): Promise<void> {
 
     spinner.succeed(`Session paused: ${sessionId}`);
     console.log(
-      chalk.gray('Use "wundr session resume ' + sessionId + '" to resume.')
+      chalk.gray('Use "wundr session resume ' + sessionId + '" to resume.'),
     );
     console.log('');
   } catch (error) {
     spinner.fail('Failed to pause session');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -503,7 +503,7 @@ async function resumeSession(sessionId: string): Promise<void> {
   try {
     const state = await loadSessionsState();
     const sessionIndex = state.sessions.findIndex(
-      s => s.sessionId === sessionId
+      s => s.sessionId === sessionId,
     );
 
     if (sessionIndex === -1) {
@@ -537,21 +537,21 @@ async function resumeSession(sessionId: string): Promise<void> {
   } catch (error) {
     spinner.fail('Failed to resume session');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
 
 async function killSession(
   sessionId: string,
-  options: { force?: boolean }
+  options: { force?: boolean },
 ): Promise<void> {
   const spinner = ora(`Terminating session ${sessionId}...`).start();
 
   try {
     const state = await loadSessionsState();
     const sessionIndex = state.sessions.findIndex(
-      s => s.sessionId === sessionId
+      s => s.sessionId === sessionId,
     );
 
     if (sessionIndex === -1) {
@@ -610,19 +610,19 @@ async function killSession(
     console.log(chalk.gray('\nCleanup completed:'));
     if (session.subAgents && session.subAgents.length > 0) {
       console.log(
-        chalk.gray(`  - Terminated ${session.subAgents.length} sub-agent(s)`)
+        chalk.gray(`  - Terminated ${session.subAgents.length} sub-agent(s)`),
       );
     }
     if (session.memoryBankPath) {
       console.log(
-        chalk.gray(`  - Memory bank preserved at: ${session.memoryBankPath}`)
+        chalk.gray(`  - Memory bank preserved at: ${session.memoryBankPath}`),
       );
     }
     console.log('');
   } catch (error) {
     spinner.fail('Failed to terminate session');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }

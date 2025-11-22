@@ -45,36 +45,37 @@ export class NodeToolsInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
-    console.log('Installing Node.js tools...');
-    
+  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    console.log(`Installing Node.js tools on ${platform.os}...`);
+
     // Clear any npm conflicts before starting
     await this.clearNpmConflicts();
-    
+
     // Install NVM
     await this.installNVM();
-    
+
     // Install Node.js versions
     await this.installNodeVersions();
-    
+
     // Configure npm
     await this.configureNpm(profile);
-    
+
     // Install pnpm
     await this.installPnpm();
-    
+
     // Install Yarn
     await this.installYarn(profile);
-    
+
     // Install global packages
     await this.installGlobalPackages();
-    
+
     // Setup aliases
     await this.setupNodeAliases();
   }
 
-  async configure(_profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
-    // Configuration is handled in install method
+  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    // Log configuration context for debugging
+    console.log(`Node.js tools configured for ${profile.name || 'user'} on ${platform.os}`);
   }
 
   async validate(): Promise<boolean> {

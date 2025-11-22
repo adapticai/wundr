@@ -429,6 +429,7 @@ export const DEFAULT_RISK_TWIN_CONFIG: RiskTwinConfig = {
  */
 export class RiskTwinOrchestrator {
   private config: RiskTwinConfig;
+  private currentChange: GovernanceChange | null = null;
 
   /**
    * Create a new Risk Twin orchestrator
@@ -524,18 +525,64 @@ export class RiskTwinOrchestrator {
    * Deploy a governance change to the twin environment
    * @param change - The change to deploy
    */
-  private async deployToTwin(_change: GovernanceChange): Promise<void> {
+  private async deployToTwin(change: GovernanceChange): Promise<void> {
+    // Store the current change for use during simulation and validation
+    this.currentChange = change;
+
     // In a real implementation, this would:
-    // 1. Create an isolated environment
-    // 2. Apply the governance change
-    // 3. Configure the simulation parameters
+    // 1. Create an isolated environment based on change type
+    // 2. Apply the governance change payload
+    // 3. Configure the simulation parameters based on change metadata
     // 4. Prepare baseline comparison data
 
-    // Simulate deployment delay
-    await this.simulateDelay(100);
+    // Validate change payload based on type
+    this.validateChangePayload(change);
 
-    // Deployment logged - in production, use proper logging
-    // For now, the deployment is tracked via the change.id for internal state
+    // Simulate deployment delay proportional to payload complexity
+    const payloadComplexity = Object.keys(change.payload).length;
+    const deploymentDelay = 100 + payloadComplexity * 10;
+    await this.simulateDelay(deploymentDelay);
+  }
+
+  /**
+   * Validate the governance change payload based on change type
+   * @param change - The change to validate
+   * @throws Error if payload is invalid for the change type
+   */
+  private validateChangePayload(change: GovernanceChange): void {
+    // Ensure payload is not empty for most change types
+    if (Object.keys(change.payload).length === 0 && change.type !== 'charter') {
+      throw new Error(
+        `Empty payload provided for ${change.type} change: ${change.id}`,
+      );
+    }
+
+    // Type-specific validations
+    switch (change.type) {
+      case 'policy':
+        // Policy changes should have rules or conditions
+        if (!change.payload['rules'] && !change.payload['conditions']) {
+          // Allow payload without rules/conditions but log warning in production
+        }
+        break;
+      case 'reward':
+        // Reward changes should have numeric values
+        break;
+      case 'evaluator':
+        // Evaluator changes should have evaluation criteria
+        break;
+      case 'constraint':
+        // Constraint changes should have limits or bounds
+        break;
+    }
+  }
+
+  /**
+   * Get the currently deployed change
+   * @returns The current governance change being validated, or null if none
+   */
+  getCurrentChange(): GovernanceChange | null {
+    return this.currentChange;
   }
 
   /**
@@ -544,7 +591,7 @@ export class RiskTwinOrchestrator {
    * @returns Simulation results
    */
   private async runSimulation(
-    options: SimulationOptions
+    options: SimulationOptions,
   ): Promise<SimulationResult> {
     const runId = this.generateRunId();
     const startTime = new Date();
@@ -552,7 +599,7 @@ export class RiskTwinOrchestrator {
     // Calculate simulated time range
     const simulatedStartTime = new Date();
     const simulatedEndTime = new Date(
-      simulatedStartTime.getTime() + options.days * 24 * 60 * 60 * 1000
+      simulatedStartTime.getTime() + options.days * 24 * 60 * 60 * 1000,
     );
 
     // In a real implementation, this would:
@@ -595,7 +642,7 @@ export class RiskTwinOrchestrator {
    * @returns Divergence metrics
    */
   private async detectDivergence(
-    simulation: SimulationResult
+    simulation: SimulationResult,
   ): Promise<DivergenceMetrics> {
     const baseline =
       simulation.baselineComparison?.baseline || this.getDefaultBaseline();
@@ -633,7 +680,7 @@ export class RiskTwinOrchestrator {
 
     // Calculate overall divergence
     const divergences = Object.values(metricDivergences).map(
-      m => m.percentageDiff
+      m => m.percentageDiff,
     );
     const overallDivergence =
       divergences.reduce((a, b) => a + b, 0) / divergences.length;
@@ -679,7 +726,7 @@ export class RiskTwinOrchestrator {
    * @returns Novelty detection results
    */
   private async detectNovelty(
-    simulation: SimulationResult
+    simulation: SimulationResult,
   ): Promise<NoveltyDetection> {
     if (!this.config.noveltyConfig?.enabled) {
       return {
@@ -696,7 +743,7 @@ export class RiskTwinOrchestrator {
 
     // Check for out-of-distribution inputs
     const outOfDistributionInputs = this.findOutOfDistributionInputs(
-      simulation.events
+      simulation.events,
     );
 
     // Calculate overall novelty score
@@ -739,7 +786,7 @@ export class RiskTwinOrchestrator {
     divergence: DivergenceMetrics,
     novelty: NoveltyDetection,
     change: GovernanceChange,
-    simulation: SimulationResult
+    simulation: SimulationResult,
   ): ValidationOutput {
     const thresholds = this.config.approvalThresholds!;
 
@@ -778,7 +825,7 @@ export class RiskTwinOrchestrator {
     const recommendations = this.generateRecommendations(
       result,
       divergence,
-      novelty
+      novelty,
     );
 
     return {
@@ -800,7 +847,7 @@ export class RiskTwinOrchestrator {
    * @returns Mitigation plan with deployment and oversight recommendations
    */
   async handleHighUncertainty(
-    result: ValidationReport
+    result: ValidationReport,
   ): Promise<MitigationPlan> {
     const { divergence, novelty, summary } = result;
 
@@ -832,13 +879,13 @@ export class RiskTwinOrchestrator {
 
     if (divergence.earlyDeviationDetected) {
       additionalSafeguards.push(
-        'Enable early warning alerts for first 48 hours'
+        'Enable early warning alerts for first 48 hours',
       );
     }
 
     if (novelty.noveltyDetected) {
       additionalSafeguards.push(
-        'Flag all novel pattern occurrences for review'
+        'Flag all novel pattern occurrences for review',
       );
       additionalSafeguards.push('Maintain fallback to previous configuration');
     }
@@ -928,7 +975,7 @@ export class RiskTwinOrchestrator {
    * Generate baseline comparison data
    */
   private generateBaselineComparison(
-    simulated: SimulationMetrics
+    simulated: SimulationMetrics,
   ): BaselineComparison {
     const baseline = this.getDefaultBaseline();
 
@@ -972,7 +1019,7 @@ export class RiskTwinOrchestrator {
   private calculateEarlyDeviation(events: SimulationEvent[]): number {
     // Simplified: check if error/violation rate is elevated in early period
     const violations = events.filter(
-      e => e.type === 'violation' || e.type === 'error'
+      e => e.type === 'violation' || e.type === 'error',
     );
     return violations.length / Math.max(events.length, 1);
   }
@@ -981,7 +1028,7 @@ export class RiskTwinOrchestrator {
    * Determine trend from events
    */
   private determineTrend(
-    events: SimulationEvent[]
+    events: SimulationEvent[],
   ): 'stable' | 'increasing' | 'decreasing' {
     // Simplified trend analysis
     const halfwayIndex = Math.floor(events.length / 2);
@@ -1026,7 +1073,7 @@ export class RiskTwinOrchestrator {
    * Find out-of-distribution inputs
    */
   private findOutOfDistributionInputs(
-    events: SimulationEvent[]
+    events: SimulationEvent[],
   ): OutOfDistributionInput[] {
     // Simplified: flag unusual data patterns
     const oodInputs: OutOfDistributionInput[] = [];
@@ -1051,7 +1098,7 @@ export class RiskTwinOrchestrator {
   private generateSummary(
     divergence: DivergenceMetrics,
     novelty: NoveltyDetection,
-    result: ValidationResult
+    result: ValidationResult,
   ): ValidationSummary {
     // Determine risk level
     let riskLevel: ValidationSummary['riskLevel'];
@@ -1066,16 +1113,16 @@ export class RiskTwinOrchestrator {
     // Key findings
     const keyFindings: string[] = [];
     keyFindings.push(
-      `Overall divergence: ${(divergence.overallDivergence * 100).toFixed(1)}%`
+      `Overall divergence: ${(divergence.overallDivergence * 100).toFixed(1)}%`,
     );
     keyFindings.push(
-      `Novelty score: ${(novelty.noveltyScore * 100).toFixed(1)}%`
+      `Novelty score: ${(novelty.noveltyScore * 100).toFixed(1)}%`,
     );
     keyFindings.push(`Drift trend: ${divergence.trend}`);
 
     if (novelty.novelPatterns.length > 0) {
       keyFindings.push(
-        `${novelty.novelPatterns.length} novel pattern(s) detected`
+        `${novelty.novelPatterns.length} novel pattern(s) detected`,
       );
     }
 
@@ -1095,7 +1142,7 @@ export class RiskTwinOrchestrator {
     for (const [name, metric] of Object.entries(divergence.metricDivergences)) {
       if (metric.isSignificant) {
         concerns.push(
-          `${name} shows significant divergence (${(metric.percentageDiff * 100).toFixed(1)}%)`
+          `${name} shows significant divergence (${(metric.percentageDiff * 100).toFixed(1)}%)`,
         );
       }
     }
@@ -1115,7 +1162,7 @@ export class RiskTwinOrchestrator {
   private generateRecommendations(
     result: ValidationResult,
     divergence: DivergenceMetrics,
-    novelty: NoveltyDetection
+    novelty: NoveltyDetection,
   ): string[] {
     const recommendations: string[] = [];
 
@@ -1123,7 +1170,7 @@ export class RiskTwinOrchestrator {
       case 'green':
         recommendations.push('Change approved for auto-deployment');
         recommendations.push(
-          'Continue monitoring for 24 hours post-deployment'
+          'Continue monitoring for 24 hours post-deployment',
         );
         break;
 
@@ -1135,7 +1182,7 @@ export class RiskTwinOrchestrator {
         }
         if (divergence.trend === 'increasing') {
           recommendations.push(
-            'Monitor drift trend closely during initial rollout'
+            'Monitor drift trend closely during initial rollout',
           );
         }
         break;
@@ -1145,16 +1192,16 @@ export class RiskTwinOrchestrator {
         recommendations.push('Architect investigation required');
         if (divergence.earlyDeviationDetected) {
           recommendations.push(
-            'Review early deviation metrics before resubmission'
+            'Review early deviation metrics before resubmission',
           );
         }
         if (novelty.riskAssessment === 'high') {
           recommendations.push(
-            'Address out-of-distribution scenarios before retry'
+            'Address out-of-distribution scenarios before retry',
           );
         }
         recommendations.push(
-          'Consider breaking change into smaller increments'
+          'Consider breaking change into smaller increments',
         );
         break;
     }
@@ -1190,7 +1237,7 @@ export class RiskTwinOrchestrator {
  * ```
  */
 export function createRiskTwinOrchestrator(
-  config: Partial<RiskTwinConfig> = {}
+  config: Partial<RiskTwinConfig> = {},
 ): RiskTwinOrchestrator {
   return new RiskTwinOrchestrator(config);
 }

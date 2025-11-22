@@ -237,10 +237,10 @@ export class NoveltyDetector {
     // Check if model is initialized
     if (!this.distributionModel.initialized) {
       flags.push(
-        'WARNING: Distribution model not initialized with sufficient samples'
+        'WARNING: Distribution model not initialized with sufficient samples',
       );
       flags.push(
-        `Current samples: ${this.distributionModel.stats.sampleCount}, Required: ${this.config.minimumSamples}`
+        `Current samples: ${this.distributionModel.stats.sampleCount}, Required: ${this.config.minimumSamples}`,
       );
     }
 
@@ -270,27 +270,27 @@ export class NoveltyDetector {
     // Generate flags based on detection results
     if (detected) {
       flags.push(
-        `NOVELTY_DETECTED: Average score ${averageScore.toFixed(3)} exceeds threshold`
+        `NOVELTY_DETECTED: Average score ${averageScore.toFixed(3)} exceeds threshold`,
       );
     }
 
     if (outOfDistributionInputs.length > inputs.length * 0.5) {
       flags.push(
-        `HIGH_OOD_RATE: ${outOfDistributionInputs.length}/${inputs.length} inputs are out-of-distribution`
+        `HIGH_OOD_RATE: ${outOfDistributionInputs.length}/${inputs.length} inputs are out-of-distribution`,
       );
     }
 
     // Add limitation warnings for high-stakes scenarios
     if (detected && averageScore > 0.9) {
       flags.push(
-        'LIMITATION: Cannot determine if this represents a black swan event - recommend human review'
+        'LIMITATION: Cannot determine if this represents a black swan event - recommend human review',
       );
     }
 
     const recommendation = this.determineRecommendation(
       averageScore,
       outOfDistributionInputs.length,
-      inputs.length
+      inputs.length,
     );
 
     return {
@@ -355,7 +355,7 @@ export class NoveltyDetector {
    */
   private calculateZScoreNovelty(
     features: number[],
-    stats: DistributionStats
+    stats: DistributionStats,
   ): number {
     let maxZScore = 0;
     let sumZScores = 0;
@@ -384,7 +384,7 @@ export class NoveltyDetector {
    */
   private calculateMahalanobisScore(
     features: number[],
-    stats: DistributionStats
+    stats: DistributionStats,
   ): number {
     if (!stats.covarianceMatrix) {
       return this.calculateZScoreNovelty(features, stats);
@@ -488,7 +488,7 @@ export class NoveltyDetector {
       covarianceMatrix = this.computeCovarianceMatrix(
         samples,
         means,
-        featureCount
+        featureCount,
       );
     }
 
@@ -510,7 +510,7 @@ export class NoveltyDetector {
   private computeCovarianceMatrix(
     samples: InputVector[],
     means: number[],
-    featureCount: number
+    featureCount: number,
   ): number[][] {
     const matrix: number[][] = [];
     const n = samples.length;
@@ -557,7 +557,7 @@ export class NoveltyDetector {
   private determineRecommendation(
     score: number,
     oodCount: number,
-    totalCount: number
+    totalCount: number,
   ): 'proceed' | 'caution' | 'halt' {
     const oodRatio = totalCount > 0 ? oodCount / totalCount : 0;
 
@@ -580,7 +580,7 @@ export class NoveltyDetector {
    */
   private getNoveltyFactors(
     input: InputVector,
-    score: number
+    score: number,
   ): NoveltyFactor[] {
     const factors: NoveltyFactor[] = [];
     const { stats } = this.distributionModel;
@@ -611,7 +611,7 @@ export class NoveltyDetector {
           name: `feature_${i}_outlier`,
           contribution: Math.min(
             zScore / (this.config.standardDeviationMultiplier * 2),
-            0.5
+            0.5,
           ),
           description: `Feature ${i} value ${value.toFixed(3)} is ${zScore.toFixed(1)} std devs from mean`,
         });
@@ -660,7 +660,7 @@ export class NoveltyDetector {
    * @returns Array of mitigation recommendations
    */
   getMitigationRecommendations(
-    result: NoveltyResult
+    result: NoveltyResult,
   ): MitigationRecommendation[] {
     const recommendations: MitigationRecommendation[] = [];
 

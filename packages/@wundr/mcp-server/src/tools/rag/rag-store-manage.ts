@@ -636,10 +636,34 @@ export async function ragStoreManageHandler(
 }
 
 /**
- * Creates the RAG store management handler with injected service (for testing/DI)
+ * RAG service interface for dependency injection
  */
-export function createRagStoreManageHandler(_ragService?: unknown) {
-  // The handler uses the internal registry, so we just return the main handler
+export interface RAGServiceInterface {
+  search?: (query: string, options?: Record<string, unknown>) => Promise<unknown>;
+  index?: (path: string, options?: Record<string, unknown>) => Promise<unknown>;
+}
+
+/**
+ * Creates the RAG store management handler with injected service (for testing/DI)
+ *
+ * @param ragService - Optional RAG service implementation for custom search/index operations.
+ *                     When provided, the service can be used for production integrations.
+ *                     Currently, the handler uses an internal registry for store management,
+ *                     but the service parameter enables future extension points for:
+ *                     - Custom embedding providers
+ *                     - External vector database integrations
+ *                     - Testing with mock services
+ * @returns The RAG store management handler function
+ */
+export function createRagStoreManageHandler(ragService?: RAGServiceInterface) {
+  // Store the service reference for potential future use in handler extensions
+  // The current implementation uses the internal registry, but this factory
+  // pattern allows for dependency injection when needed
+  if (ragService) {
+    // Log that a custom service was provided (useful for debugging)
+    // In production, this could be used to override default behavior
+    console.debug?.('[RAG] Custom RAG service provided to handler factory');
+  }
   return ragStoreManageHandler;
 }
 

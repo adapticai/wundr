@@ -247,7 +247,7 @@ export class ManualInstaller extends BaseInstaller {
       try {
         const existingData = await fs.readFile(settingsPath, 'utf8');
         existingSettings = JSON.parse(existingData);
-      } catch (_error) {
+      } catch {
         // File doesn't exist or is invalid JSON, start with empty object
       }
 
@@ -256,9 +256,11 @@ export class ManualInstaller extends BaseInstaller {
       await fs.writeFile(settingsPath, JSON.stringify(mergedSettings, null, 2));
 
       logger.info('VS Code settings applied');
-    } catch (_error) {
-      logger.error('Failed to apply VS Code settings:', _error);
-      throw _error;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to apply VS Code settings: ${errorMessage}`);
+      throw error;
     }
   }
 

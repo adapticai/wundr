@@ -171,7 +171,7 @@ export class InterventionRecommender {
 
     if (driftData.evaluatorDisagreementRate !== undefined) {
       const rec = this.evaluateEvaluatorDisagreement(
-        driftData.evaluatorDisagreementRate
+        driftData.evaluatorDisagreementRate,
       );
       if (rec) {
         recommendations.push(rec);
@@ -180,7 +180,7 @@ export class InterventionRecommender {
 
     if (driftData.escalationSuppressionDropRate !== undefined) {
       const rec = this.evaluateEscalationSuppression(
-        driftData.escalationSuppressionDropRate
+        driftData.escalationSuppressionDropRate,
       );
       if (rec) {
         recommendations.push(rec);
@@ -207,7 +207,7 @@ export class InterventionRecommender {
    * Sort recommendations by severity and urgency
    */
   prioritizeRecommendations(
-    recommendations: InterventionRecommendation[]
+    recommendations: InterventionRecommendation[],
   ): InterventionRecommendation[] {
     const severityOrder: Record<InterventionSeverity, number> = {
       critical: 0,
@@ -233,7 +233,7 @@ export class InterventionRecommender {
    * Generate a complete action plan from recommendations
    */
   generateActionPlan(
-    recommendations: InterventionRecommendation[]
+    recommendations: InterventionRecommendation[],
   ): ActionPlan {
     const prioritized = this.prioritizeRecommendations(recommendations);
     const overallUrgency = this.determineOverallUrgency(prioritized);
@@ -259,7 +259,7 @@ export class InterventionRecommender {
    * Evaluate policy violation rate and generate recommendation
    */
   private evaluatePolicyViolations(
-    rate: number
+    rate: number,
   ): InterventionRecommendation | null {
     const threshold = this.thresholds.policyViolationRate;
 
@@ -285,7 +285,7 @@ export class InterventionRecommender {
    * Evaluate intent-outcome gap and generate recommendation
    */
   private evaluateIntentOutcomeGap(
-    gap: number
+    gap: number,
   ): InterventionRecommendation | null {
     const threshold = this.thresholds.intentOutcomeGap;
 
@@ -311,7 +311,7 @@ export class InterventionRecommender {
    * Evaluate evaluator disagreement rate and generate recommendation
    */
   private evaluateEvaluatorDisagreement(
-    rate: number
+    rate: number,
   ): InterventionRecommendation | null {
     const threshold = this.thresholds.evaluatorDisagreementRate;
 
@@ -337,7 +337,7 @@ export class InterventionRecommender {
    * Evaluate escalation suppression drop rate and generate recommendation
    */
   private evaluateEscalationSuppression(
-    dropRate: number
+    dropRate: number,
   ): InterventionRecommendation | null {
     const threshold = this.thresholds.escalationSuppressionDropRate;
 
@@ -363,7 +363,7 @@ export class InterventionRecommender {
    * Evaluate reward hacking instances and generate recommendation
    */
   private evaluateRewardHacking(
-    instances: number
+    instances: number,
   ): InterventionRecommendation | null {
     const threshold = this.thresholds.rewardHackingInstances;
 
@@ -394,7 +394,7 @@ export class InterventionRecommender {
    */
   private calculateSeverity(
     value: number,
-    threshold: number
+    threshold: number,
   ): InterventionSeverity {
     const ratio = value / threshold;
 
@@ -415,7 +415,7 @@ export class InterventionRecommender {
    */
   private calculateInstanceSeverity(
     instances: number,
-    threshold: number
+    threshold: number,
   ): InterventionSeverity {
     const excess = instances - threshold;
 
@@ -478,7 +478,7 @@ export class InterventionRecommender {
    * Get action recommendation for evaluator disagreement
    */
   private getEvaluatorDisagreementAction(
-    severity: InterventionSeverity
+    severity: InterventionSeverity,
   ): string {
     const actions: Record<InterventionSeverity, string> = {
       critical:
@@ -495,7 +495,7 @@ export class InterventionRecommender {
    * Get action recommendation for escalation suppression
    */
   private getEscalationSuppressionAction(
-    severity: InterventionSeverity
+    severity: InterventionSeverity,
   ): string {
     const actions: Record<InterventionSeverity, string> = {
       critical:
@@ -527,7 +527,7 @@ export class InterventionRecommender {
    * Determine overall urgency from recommendations
    */
   private determineOverallUrgency(
-    recommendations: InterventionRecommendation[]
+    recommendations: InterventionRecommendation[],
   ): InterventionSeverity {
     if (recommendations.length === 0) {
       return 'low';
@@ -555,7 +555,7 @@ export class InterventionRecommender {
    * Group recommendations into actionable items
    */
   private groupIntoActionItems(
-    recommendations: InterventionRecommendation[]
+    recommendations: InterventionRecommendation[],
   ): ActionItem[] {
     const groups = new Map<string, InterventionRecommendation[]>();
 
@@ -639,7 +639,7 @@ export class InterventionRecommender {
    */
   private generatePlanSummary(
     recommendations: InterventionRecommendation[],
-    overallUrgency: InterventionSeverity
+    overallUrgency: InterventionSeverity,
   ): string {
     const count = recommendations.length;
 
@@ -648,7 +648,7 @@ export class InterventionRecommender {
     }
 
     const criticalCount = recommendations.filter(
-      r => r.severity === 'critical'
+      r => r.severity === 'critical',
     ).length;
     const highCount = recommendations.filter(r => r.severity === 'high').length;
 

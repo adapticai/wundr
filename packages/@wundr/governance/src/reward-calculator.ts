@@ -124,7 +124,7 @@ export class RewardCalculator {
     >) {
       const weightedScore = this.getWeightedScore(
         dimension,
-        metrics[dimension]
+        metrics[dimension],
       );
       byDimension[dimension] = weightedScore;
       overall += weightedScore;
@@ -171,7 +171,7 @@ export class RewardCalculator {
           acc[key] = Math.round(equalShare * 100) / 100;
           return acc;
         },
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
     }
 
@@ -212,7 +212,7 @@ export class RewardCalculator {
    */
   compareToBaseline(
     current: RewardScore,
-    baseline: RewardScore
+    baseline: RewardScore,
   ): ScoreComparison {
     const overallDelta =
       Math.round((current.overall - baseline.overall) * 100) / 100;
@@ -224,7 +224,7 @@ export class RewardCalculator {
         : Math.round(
             ((current.overall - baseline.overall) / baseline.overall) *
               100 *
-              100
+              100,
           ) / 100;
 
     const dimensionDeltas: Record<string, number> = {};
@@ -243,7 +243,7 @@ export class RewardCalculator {
       ) {
         const direction = delta > 0 ? 'improved' : 'declined';
         significantChanges.push(
-          `${dimension} ${direction} by ${Math.abs(delta).toFixed(2)}`
+          `${dimension} ${direction} by ${Math.abs(delta).toFixed(2)}`,
         );
       }
     }
@@ -271,7 +271,7 @@ export class RewardCalculator {
     }> = [];
 
     for (const [dimension, weightedScore] of Object.entries(
-      score.byDimension
+      score.byDimension,
     )) {
       const weight = this.getWeightForDimension(dimension);
       if (weight === 0) {
@@ -316,7 +316,7 @@ export class RewardCalculator {
     if (Math.abs(sum - 1.0) > tolerance) {
       throw new Error(
         `Weights must sum to 1.0, but sum to ${sum.toFixed(4)}. ` +
-          `Current weights: ${JSON.stringify(this.weights)}`
+          `Current weights: ${JSON.stringify(this.weights)}`,
       );
     }
   }
@@ -331,12 +331,12 @@ export class RewardCalculator {
     for (const [dimension, value] of Object.entries(metrics)) {
       if (typeof value !== 'number' || isNaN(value)) {
         throw new Error(
-          `Invalid metric value for ${dimension}: must be a number`
+          `Invalid metric value for ${dimension}: must be a number`,
         );
       }
       if (value < 0 || value > 100) {
         throw new Error(
-          `Metric value for ${dimension} must be between 0 and 100, got ${value}`
+          `Metric value for ${dimension} must be between 0 and 100, got ${value}`,
         );
       }
     }
@@ -365,7 +365,7 @@ export class RewardCalculator {
  * ```
  */
 export function createRewardCalculator(
-  weights?: Partial<RewardWeights>
+  weights?: Partial<RewardWeights>,
 ): RewardCalculator {
   return new RewardCalculator(weights);
 }

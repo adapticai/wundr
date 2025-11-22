@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { GitCommit, GitMerge, GitBranch, Package, AlertCircle } from 'lucide-react'
-import { realtimeStore } from '@/lib/websocket'
+import { realtimeStore, WebSocketMessage } from '@/lib/websocket'
 import { RealtimeData } from '@/types'
 
 interface ActivityItem {
@@ -111,21 +111,22 @@ export function RecentActivity() {
 
   React.useEffect(() => {
     // Create message handler that transforms WebSocketMessage to RealtimeData
-    const messageHandler = (message: { type: string; data: any; timestamp: number }) => {
+    const messageHandler = (message: WebSocketMessage) => {
       try {
+        const msgData = message.data ?? message.payload
         if (message.type === 'realtime-data') {
           setRealtimeData({
             connected: true,
-            lastUpdate: new Date(message.timestamp),
-            events: message.data.events || [],
-            metrics: message.data.metrics || []
+            lastUpdate: new Date(message.timestamp ?? Date.now()),
+            events: (msgData as Record<string, unknown>).events as RealtimeData['events'] || [],
+            metrics: (msgData as Record<string, unknown>).metrics as RealtimeData['metrics'] || []
           })
         } else if (message.type === 'events-update') {
           setRealtimeData(prev => ({
             ...prev,
             connected: true,
-            lastUpdate: new Date(message.timestamp),
-            events: message.data || []
+            lastUpdate: new Date(message.timestamp ?? Date.now()),
+            events: Array.isArray(msgData) ? msgData as RealtimeData['events'] : []
           }))
         }
       } catch (error) {

@@ -219,23 +219,28 @@ export class ClaudeInstaller implements BaseInstaller {
 
   async check(): Promise<boolean> {
     try {
-      let _claudeCliInstalled = false;
+      let claudeCliInstalled = false;
       let claudeFlowInstalled = false;
 
       // Check if Claude CLI is installed (it might not exist yet as a global CLI)
       try {
         execSync('claude --version', { encoding: 'utf8', stdio: 'pipe' });
-        _claudeCliInstalled = true;
+        claudeCliInstalled = true;
       } catch {
         // Claude CLI might not be globally installed, which is OK
         // Check if we can at least use Claude through npx
         try {
           execSync('which claude', { encoding: 'utf8', stdio: 'pipe' });
-          _claudeCliInstalled = true;
+          claudeCliInstalled = true;
         } catch {
           // Claude CLI not found, but that's acceptable
-          _claudeCliInstalled = false;
+          claudeCliInstalled = false;
         }
+      }
+
+      // Log Claude CLI status for debugging purposes
+      if (!claudeCliInstalled) {
+        console.log('Claude CLI not found - will use npx fallback');
       }
 
       // Check if Claude Flow is available
@@ -257,9 +262,14 @@ export class ClaudeInstaller implements BaseInstaller {
       }
 
       // Check if Chrome is installed (optional for Browser MCP)
-      const _chromeExists =
+      const chromeExists =
         fsSync.existsSync('/Applications/Google Chrome.app') ||
         fsSync.existsSync(`${process.env.HOME}/Applications/Google Chrome.app`);
+
+      // Log Chrome status for debugging (optional dependency)
+      if (!chromeExists) {
+        console.log('Chrome not found - Browser MCP features will be limited');
+      }
 
       // Check if .claude directory exists with proper structure
       const claudeDirExists = fsSync.existsSync(this.claudeDir);
@@ -327,18 +337,24 @@ exec npx @anthropic-ai/claude-code "$@"
         console.log(
           '✅ Created global claude wrapper at /usr/local/bin/claude'
         );
-      } catch (_mvError) {
+      } catch (mvError: unknown) {
         // If regular mv fails, try with sudo
+        const mvErrorMessage =
+          mvError instanceof Error ? mvError.message : String(mvError);
         console.log(
-          'ℹ️  Installing global wrapper requires administrator privileges...'
+          `ℹ️  Regular move failed (${mvErrorMessage}), trying with sudo...`
         );
         try {
           execSync(`sudo mv ${tempFile} ${wrapperPath}`, { stdio: 'inherit' });
           console.log(
             '✅ Created global claude wrapper at /usr/local/bin/claude'
           );
-        } catch (_sudoError) {
-          console.warn('⚠️  Could not create /usr/local/bin/claude wrapper');
+        } catch (sudoError: unknown) {
+          const sudoErrorMessage =
+            sudoError instanceof Error ? sudoError.message : String(sudoError);
+          console.warn(
+            `⚠️  Could not create /usr/local/bin/claude wrapper: ${sudoErrorMessage}`
+          );
           console.warn(
             '   Claude will use shell alias instead (requires terminal restart)'
           );
@@ -416,8 +432,8 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
             );
           }
         }
-      } catch (_error) {
-        // Ignore errors for shell configs that don't exist
+      } catch {
+        // Ignore errors for shell configs that don't exist - expected behavior
       }
     }
   }
@@ -546,7 +562,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         'sequentialthinking',
         'claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js'
       );
-    } catch (_error) {
+    } catch {
       console.warn(
         '⚠️  Sequential Thinking MCP not available in registry, skipping'
       );
@@ -740,7 +756,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
           { encoding: 'utf8' }
         ).trim();
         console.log(`✅ Installed ${agentCount} agent definition files`);
-      } catch (_error) {
+      } catch {
         console.warn(
           '⚠️  Could not copy bundled agent files, will generate configs instead'
         );
@@ -861,7 +877,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       try {
         execSync(`cp -R "${bundledDeploymentAgentsDir}"/* "${devopsDir}"/`, { stdio: 'pipe' });
         console.log('✅ Installed deployment agents: deployment-monitor, log-analyzer, debug-refactor');
-      } catch (error) {
+      } catch {
         console.warn('⚠️ Could not copy deployment agent files');
       }
     }
@@ -890,7 +906,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         ).trim();
         console.log(`✅ Installed ${commandCount} slash command files`);
         console.log('   Available commands: /hive-swarm, /hive-strategic');
-      } catch (_error) {
+      } catch {
         console.warn('⚠️  Could not copy bundled command files');
       }
     } else {
@@ -1141,7 +1157,7 @@ echo "✅ All quality checks passed!"`;
         const claudeMdContent = await fs.readFile(bundledTemplate, 'utf8');
         await fs.writeFile(templatePath, claudeMdContent);
         console.log('✅ Installed CLAUDE.md template');
-      } catch (_error) {
+      } catch {
         console.warn('⚠️  Could not install CLAUDE.md template');
       }
     } else {
@@ -1252,7 +1268,7 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
         `ln -sf ${path.join(this.helpersDir, 'generate-claude-md.js')} /usr/local/bin/claude-init`
       );
       console.log('✅ Created global claude-init command');
-    } catch (_error) {
+    } catch {
       console.warn(
         '⚠️  Could not create /usr/local/bin/claude-init - may need sudo'
       );
@@ -1291,7 +1307,7 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
         console.log('   • claude-optimized - Optimized Claude wrapper');
         console.log('   • orchestrator.js - Fault-tolerant orchestration');
         console.log('   • cleanup-zombies.sh - Process cleanup utility');
-      } catch (_error) {
+      } catch {
         console.warn('⚠️  Could not copy optimization scripts');
         console.warn(
           '   Scripts can be manually installed from adapticai/engine/scripts'

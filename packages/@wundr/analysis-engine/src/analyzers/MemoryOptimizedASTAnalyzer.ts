@@ -82,7 +82,6 @@ class MemoryPressureMonitor {
   start(intervalMs = 1000): void {
     this.intervalId = setInterval(() => {
       const usage = memoryUsage();
-      const _totalMem = process.memoryUsage.rss();
       const usageRatio = usage.heapUsed / usage.heapTotal;
 
       let level: 'normal' | 'warning' | 'critical' = 'normal';
@@ -215,7 +214,7 @@ class StreamingASTProcessor extends Transform {
 
   override _transform(
     sourceFile: ts.SourceFile,
-    encoding: string,
+    _encoding: BufferEncoding,
     callback: (error?: Error | null) => void,
   ): void {
     try {
@@ -443,10 +442,10 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   /**
    * Batch analysis with optimized concurrency
    */
-  private async performBatchAnalysis(_entities: EntityInfo[]): Promise<AnalysisResults> {
+  private async performBatchAnalysis(entities: EntityInfo[]): Promise<AnalysisResults> {
     this.emitProgress({
       type: 'phase',
-      message: 'Using optimized batch analysis...',
+      message: `Using optimized batch analysis for ${entities.length} entities...`,
     });
 
     // Dynamic concurrency adjustment based on memory pressure
@@ -489,7 +488,6 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
    */
   extractEntitiesFromSourceFile(sourceFile: ts.SourceFile): EntityInfo[] {
     const entities: EntityInfo[] = [];
-    const _filePath = normalizeFilePath(sourceFile.fileName);
 
     const visitNode = (node: ts.Node) => {
       const entity = this.extractEntityFromNode(node, sourceFile);
@@ -686,7 +684,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
 
     return new Transform({
       objectMode: true,
-      transform(entities: EntityInfo[], encoding, callback) {
+      transform(entities: EntityInfo[], _encoding: BufferEncoding, callback) {
         // Process entities for duplicates
         entities.forEach(entity => {
           if (entity.normalizedHash) {
@@ -707,7 +705,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   private createCircularDependencyStream(): Transform {
     return new Transform({
       objectMode: true,
-      transform(chunk, encoding, callback) {
+      transform(chunk, _encoding: BufferEncoding, callback) {
         // Process circular dependencies
         callback(null, { ...chunk, circularDependencies: [] });
       },
@@ -717,7 +715,7 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
   private createCodeSmellsStream(): Transform {
     return new Transform({
       objectMode: true,
-      transform(chunk, encoding, callback) {
+      transform(chunk, _encoding: BufferEncoding, callback) {
         // Process code smells
         callback(null, { ...chunk, codeSmells: [] });
       },
@@ -774,27 +772,159 @@ export class MemoryOptimizedASTAnalyzer extends BaseAnalysisService {
     };
   }
 
-  private generateRecommendations(_results: {
+  private generateRecommendations(results: {
     duplicates: DuplicateCluster[];
     circularDependencies: CircularDependency[];
     unusedExports: EntityInfo[];
     codeSmells: CodeSmell[];
     wrapperPatterns: EntityInfo[];
   }): Recommendation[] {
-    return [];
+    const recommendations: Recommendation[] = [];
+
+    // Generate recommendations for critical duplicates
+    if (results.duplicates.length > 0) {
+      recommendations.push({
+        id: createId(),
+        type: 'MERGE_DUPLICATES',
+        priority: 'high',
+        title: `Consolidate ${results.duplicates.length} duplicate clusters`,
+        description: 'Duplicate code detected that should be consolidated',
+        impact: 'High - Reduces maintenance burden',
+        effort: 'medium',
+        estimatedTimeHours: results.duplicates.length * 2,
+      });
+    }
+
+    // Generate recommendations for circular dependencies
+    if (results.circularDependencies.length > 0) {
+      recommendations.push({
+        id: createId(),
+        type: 'BREAK_CIRCULAR_DEPS',
+        priority: 'critical',
+        title: `Break ${results.circularDependencies.length} circular dependencies`,
+        description: 'Circular dependencies can cause build issues and increase complexity',
+        impact: 'Critical - Improves build reliability',
+        effort: 'high',
+        estimatedTimeHours: results.circularDependencies.length * 4,
+      });
+    }
+
+    // Generate recommendations for unused exports
+    if (results.unusedExports.length > 0) {
+      recommendations.push({
+        id: createId(),
+        type: 'REMOVE_DEAD_CODE',
+        priority: 'medium',
+        title: `Remove ${results.unusedExports.length} unused exports`,
+        description: 'Dead code increases bundle size',
+        impact: 'Medium - Reduces bundle size',
+        effort: 'low',
+        estimatedTimeHours: results.unusedExports.length * 0.25,
+      });
+    }
+
+    // Generate recommendations for code smells
+    const criticalSmells = results.codeSmells.filter(s => s.severity === 'critical');
+    if (criticalSmells.length > 0) {
+      recommendations.push({
+        id: createId(),
+        type: 'REDUCE_COMPLEXITY',
+        priority: 'high',
+        title: `Fix ${criticalSmells.length} critical code smells`,
+        description: 'Complex code is harder to maintain',
+        impact: 'High - Improves maintainability',
+        effort: 'medium',
+        estimatedTimeHours: criticalSmells.length * 1.5,
+      });
+    }
+
+    return recommendations;
   }
 
-  private generateVisualizationData(_entities: EntityInfo[], _results: {
+  private generateVisualizationData(entities: EntityInfo[], results: {
     duplicates: DuplicateCluster[];
     circularDependencies: CircularDependency[];
     unusedExports: EntityInfo[];
     codeSmells: CodeSmell[];
     wrapperPatterns: EntityInfo[];
   }): VisualizationData {
+    // Generate dependency graph nodes from entities
+    const nodes = entities.map(entity => ({
+      id: entity.id,
+      label: entity.name,
+      type: entity.type,
+      file: entity.file,
+      complexity: entity.complexity?.cyclomatic,
+    }));
+
+    // Generate edges based on entity dependencies
+    const edges: Array<{ source: string; target: string; type: 'import' | 'extends' | 'implements' | 'uses' }> = [];
+    const entityByFile = new Map<string, EntityInfo[]>();
+
+    // Group entities by file for efficient lookup
+    entities.forEach(entity => {
+      if (!entityByFile.has(entity.file)) {
+        entityByFile.set(entity.file, []);
+      }
+      entityByFile.get(entity.file)!.push(entity);
+    });
+
+    entities.forEach(entity => {
+      entity.dependencies.forEach(depFile => {
+        const depEntities = entityByFile.get(depFile) || [];
+        depEntities.forEach(depEntity => {
+          edges.push({
+            source: entity.id,
+            target: depEntity.id,
+            type: 'import',
+          });
+        });
+      });
+    });
+
+    // Generate duplicate networks from analysis results
+    const duplicateNetworks = results.duplicates.map(cluster => ({
+      clusterId: cluster.id,
+      nodes: cluster.entities.map(e => ({
+        id: e.id,
+        label: e.name,
+        file: e.file,
+        similarity: cluster.similarity,
+      })),
+      edges: cluster.entities.flatMap((e1, i) =>
+        cluster.entities.slice(i + 1).map(e2 => ({
+          source: e1.id,
+          target: e2.id,
+          similarity: cluster.similarity,
+        })),
+      ),
+    }));
+
+    // Generate complexity heatmap
+    const fileComplexityMap = new Map<string, { file: string; complexity: number; entities: Array<{ name: string; complexity: number; line: number }> }>();
+
+    entities.forEach(entity => {
+      if (!fileComplexityMap.has(entity.file)) {
+        fileComplexityMap.set(entity.file, {
+          file: entity.file,
+          complexity: 0,
+          entities: [],
+        });
+      }
+      const fileData = fileComplexityMap.get(entity.file)!;
+      const complexity = entity.complexity?.cyclomatic || 0;
+      fileData.complexity += complexity;
+      fileData.entities.push({
+        name: entity.name,
+        complexity,
+        line: entity.line,
+      });
+    });
+
     return {
-      dependencyGraph: { nodes: [], edges: [] },
-      duplicateNetworks: [],
-      complexityHeatmap: [],
+      dependencyGraph: { nodes, edges },
+      duplicateNetworks,
+      complexityHeatmap: Array.from(fileComplexityMap.values()),
     };
   }
 

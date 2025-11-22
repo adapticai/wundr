@@ -31,6 +31,20 @@ export interface TrainingSchedule {
   enabled: boolean;
 }
 
+interface ExecutionResult {
+  success: boolean;
+  executionTime?: number;
+  resourceUsage?: Record<string, number>;
+  insights?: string[];
+}
+
+interface TrainingProgress {
+  modelId: string;
+  epoch: number;
+  totalEpochs: number;
+  progress: number;
+}
+
 export class TrainingPipeline extends EventEmitter {
   private neuralModels: NeuralModels;
   private trainingQueue: TrainingJob[] = [];
@@ -184,12 +198,14 @@ export class TrainingPipeline extends EventEmitter {
       progress: 0,
     };
 
-    // Insert job based on priority
-    const insertIndex = this.trainingQueue.findIndex(_j => priority > 1);
-    if (insertIndex === -1) {
-      this.trainingQueue.push(job);
+    // Insert job based on priority - higher priority jobs go first
+    // Priority 2+ jobs (like auto-training) should be inserted before priority 1 jobs
+    if (priority > 1 && this.trainingQueue.length > 0) {
+      // Insert at beginning for high priority jobs
+      this.trainingQueue.unshift(job);
     } else {
-      this.trainingQueue.splice(insertIndex, 0, job);
+      // Append to end for normal priority
+      this.trainingQueue.push(job);
     }
 
     this.emit('job-scheduled', job);
@@ -385,12 +401,19 @@ export class TrainingPipeline extends EventEmitter {
     };
   }
 
-  private calculateEfficiency(_task: Task, result: any): number {
+  private calculateEfficiency(task: Task, result: ExecutionResult): number {
+    // Factor in task complexity for efficiency calculation
+    const taskComplexity = this.estimateComplexity(task);
+
     const timeEfficiency = result.executionTime
       ? Math.max(0, 1 - result.executionTime / 3600)
       : 0.5;
     const successEfficiency = result.success ? 1 : 0;
-    return (timeEfficiency + successEfficiency) / 2;
+
+    // Adjust efficiency based on task complexity - more complex tasks that succeed are more efficient
+    const complexityBonus = result.success ? taskComplexity * 0.2 : 0;
+
+    return Math.min(1, (timeEfficiency + successEfficiency) / 2 + complexityBonus);
   }
 
   private getLastTrainingTime(modelId: string): Date | null {
@@ -458,7 +481,7 @@ export class TrainingPipeline extends EventEmitter {
 
   private handleTrainingStarted(model: NeuralModel): void {
     // Find corresponding job and update status
-    for (const [_jobId, job] of this.activeJobs) {
+    for (const job of this.activeJobs.values()) {
       if (job.modelId === model.id && job.status === 'running') {
         this.emit('job-progress', job);
         break;
@@ -470,9 +493,9 @@ export class TrainingPipeline extends EventEmitter {
     this.emit('model-training-completed', model);
   }
 
-  private handleTrainingProgress(progress: any): void {
+  private handleTrainingProgress(progress: TrainingProgress): void {
     // Update job progress
-    for (const [_jobId, job] of this.activeJobs) {
+    for (const job of this.activeJobs.values()) {
       if (job.modelId === progress.modelId) {
         job.progress = progress.progress;
         this.emit('job-progress', job);

@@ -268,9 +268,11 @@ export class QuickstartInstaller {
       );
 
       return analysis;
-    } catch (_error) {
-      spinner.fail('System analysis failed');
-      throw _error;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      spinner.fail(`System analysis failed: ${errorMessage}`);
+      throw error;
     }
   }
 
@@ -320,10 +322,12 @@ export class QuickstartInstaller {
 
           const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1);
           spinner.text = `Completed ${task.name} (${elapsed}s elapsed)`;
-        } catch (_error) {
+        } catch (error) {
           inProgress.delete(taskId);
-          logger.error(`Task ${taskId} failed:`, _error);
-          throw _error;
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          logger.error(`Task ${taskId} failed: ${errorMessage}`);
+          throw error;
         }
       };
 
@@ -367,10 +371,12 @@ export class QuickstartInstaller {
 
       const totalTime = ((Date.now() - this.startTime) / 1000).toFixed(1);
       spinner.succeed(`All tools installed successfully in ${totalTime}s`);
-    } catch (_error) {
+    } catch (error) {
       const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(1);
-      spinner.fail(`Installation failed after ${elapsed}s`);
-      throw _error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      spinner.fail(`Installation failed after ${elapsed}s: ${errorMessage}`);
+      throw error;
     }
   }
 
@@ -394,9 +400,11 @@ export class QuickstartInstaller {
       await this.setupDevelopmentPaths();
 
       spinner.succeed('Environment configured successfully');
-    } catch (_error) {
-      spinner.fail('Environment configuration failed');
-      throw _error;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      spinner.fail(`Environment configuration failed: ${errorMessage}`);
+      throw error;
     }
   }
 
@@ -422,9 +430,11 @@ export class QuickstartInstaller {
       await this.createProjectTemplate();
 
       spinner.succeed('AI agents configured (basic setup)');
-    } catch (_error) {
-      spinner.fail('AI agents setup failed');
-      throw _error;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      spinner.fail(`AI agents setup failed: ${errorMessage}`);
+      throw error;
     }
   }
 
@@ -602,8 +612,10 @@ export class QuickstartInstaller {
     for (const ext of extensions) {
       try {
         await this.executeCommand(`code --install-extension ${ext}`);
-      } catch (_error) {
-        logger.warn(`Failed to install VS Code extension ${ext}:`, _error);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to install VS Code extension ${ext}: ${errorMessage}`);
       }
     }
   }
@@ -611,9 +623,11 @@ export class QuickstartInstaller {
   private async installClaudeCore(): Promise<void> {
     try {
       await this.executeCommand('npm install -g @anthropic-ai/claude-code');
-    } catch (_error) {
+    } catch (error) {
       // Fallback to curl installation
-      logger.warn('NPM install failed, trying curl method');
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.warn(`NPM install failed (${errorMessage}), trying curl method`);
       await this.executeCommand('curl -fsSL claude.ai/install.sh | bash');
     }
   }
@@ -623,8 +637,10 @@ export class QuickstartInstaller {
 
     try {
       await this.executeCommand('npm install -g claude-flow@alpha');
-    } catch (_error) {
-      logger.warn('Claude Flow installation failed:', _error);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.warn(`Claude Flow installation failed: ${errorMessage}`);
     }
   }
 
@@ -691,8 +707,10 @@ export class QuickstartInstaller {
           content += '\n' + aliases;
           await fs.writeFile(filePath, content);
         }
-      } catch (_error) {
-        logger.warn(`Failed to update ${file}:`, _error);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to update ${file}: ${errorMessage}`);
       }
     }
   }
@@ -705,9 +723,11 @@ export class QuickstartInstaller {
       await this.executeCommand(
         'git config --global user.email "developer@local"'
       );
-    } catch (_error) {
+    } catch (error) {
       // Git config might already be set
-      logger.debug('Git configuration warning:', _error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.debug(`Git configuration warning: ${errorMessage}`);
     }
   }
 

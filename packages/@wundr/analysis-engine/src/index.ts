@@ -78,10 +78,10 @@ export class AnalysisEngine {
   }
 
   /**
-   * Set progress callback (placeholder)
+   * Set progress callback
    */
-  setProgressCallback(_callback: AnalysisProgressCallback): void {
-    console.log('Progress callback set (placeholder implementation)');
+  setProgressCallback(callback: AnalysisProgressCallback): void {
+    this.analyzer.setProgressCallback(callback);
   }
 
   /**

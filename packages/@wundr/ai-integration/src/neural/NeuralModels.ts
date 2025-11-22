@@ -25,11 +25,40 @@ export interface TrainingConfig {
 
 export interface ModelInference {
   modelId: string;
-  input: any;
-  output: any;
+  input: InferenceInput;
+  output: InferenceOutput;
   confidence: number;
   timestamp: Date;
 }
+
+// Inference input/output types for type safety
+type InferenceInput = TaskClassificationInput | AgentSelectionInput | PerformancePredictionInput | PatternRecognitionInput | Record<string, unknown>;
+
+interface TaskClassificationInput {
+  description?: string;
+  context?: Record<string, unknown>;
+  priority?: string;
+}
+
+interface AgentSelectionInput {
+  requiredCapabilities?: string[];
+  complexity?: number;
+  taskType?: string;
+}
+
+interface PerformancePredictionInput {
+  complexity?: number;
+  agentCount?: number;
+  taskSize?: number;
+}
+
+interface PatternRecognitionInput {
+  pattern?: string;
+  data?: unknown[];
+  context?: Record<string, unknown>;
+}
+
+type InferenceOutput = Record<string, unknown>;
 
 export class NeuralModels extends EventEmitter {
   private models: Map<string, NeuralModel> = new Map();
@@ -336,7 +365,7 @@ export class NeuralModels extends EventEmitter {
     };
   }
 
-  async predict(modelId: string, input: any): Promise<ModelInference> {
+  async predict(modelId: string, input: InferenceInput): Promise<ModelInference> {
     const model = this.models.get(modelId);
     if (!model) {
       throw new Error(`Model ${modelId} not found`);
@@ -347,6 +376,9 @@ export class NeuralModels extends EventEmitter {
         `Model ${modelId} is not ready for inference (status: ${model.status})`
       );
     }
+
+    // Track inference count
+    this.incrementInferenceCount(modelId);
 
     // Simulate model inference
     const output = await this.simulateInference(model, input);
@@ -366,50 +398,156 @@ export class NeuralModels extends EventEmitter {
 
   private async simulateInference(
     model: NeuralModel,
-    _input: any
-  ): Promise<any> {
-    // Simulate inference delay
-    await new Promise(resolve => setTimeout(resolve, 50));
+    input: InferenceInput
+  ): Promise<InferenceOutput> {
+    // Simulate inference delay based on input complexity
+    const inputComplexity = this.calculateInputComplexity(input);
+    const baseDelay = 50;
+    const complexityDelay = Math.min(inputComplexity * 10, 100);
+    await new Promise(resolve => setTimeout(resolve, baseDelay + complexityDelay));
 
-    // Generate output based on model type
+    // Generate output based on model type and input characteristics
     switch (model.type) {
       case 'task-classification':
-        return {
-          taskType: 'coding',
-          confidence: 0.89,
-          alternatives: [
-            { type: 'testing', confidence: 0.15 },
-            { type: 'review', confidence: 0.12 },
-          ],
-        };
+        return this.classifyTask(input);
 
       case 'agent-selection':
-        return {
-          recommendedAgents: ['coder', 'reviewer', 'tester'],
-          scores: { coder: 0.92, reviewer: 0.78, tester: 0.85 },
-          reasoning:
-            'High complexity coding task requires primary coder with review and testing support',
-        };
+        return this.selectAgents(input);
 
       case 'performance-prediction':
-        return {
-          estimatedTime: 1200, // seconds
-          successProbability: 0.87,
-          resourceRequirements: { cpu: 0.6, memory: 0.4 },
-          riskFactors: ['complexity', 'dependencies'],
-        };
+        return this.predictPerformance(input);
 
       case 'pattern-recognition':
-        return {
-          patternType: 'coordination-pattern',
-          confidence: 0.84,
-          similar: ['mesh-coordination', 'adaptive-coordination'],
-          insights: ['High success rate with reviewer-coder pairing'],
-        };
+        return this.recognizePatterns(input);
 
       default:
-        return { result: 'success', confidence: 0.8 };
+        return { result: 'success', confidence: 0.8, inputProcessed: true };
     }
+  }
+
+  private calculateInputComplexity(input: InferenceInput): number {
+    if (!input) return 1;
+    const inputStr = typeof input === 'string' ? input : JSON.stringify(input);
+    const size = inputStr.length;
+    const depth = this.getObjectDepth(input);
+    return Math.min((size / 100) + (depth * 2), 10);
+  }
+
+  private getObjectDepth(obj: unknown, currentDepth = 0): number {
+    if (typeof obj !== 'object' || obj === null) return currentDepth;
+    const values = Object.values(obj as Record<string, unknown>);
+    if (values.length === 0) return currentDepth;
+    return Math.max(...values.map(v => this.getObjectDepth(v, currentDepth + 1)));
+  }
+
+  private classifyTask(input: InferenceInput): InferenceOutput {
+    const inputData = input as TaskClassificationInput;
+    const description = inputData?.description || '';
+    const descLower = description.toLowerCase();
+
+    let taskType = 'coding';
+    let confidence = 0.75;
+
+    if (descLower.includes('test') || descLower.includes('spec')) {
+      taskType = 'testing';
+      confidence = 0.89;
+    } else if (descLower.includes('review') || descLower.includes('check')) {
+      taskType = 'review';
+      confidence = 0.85;
+    } else if (descLower.includes('implement') || descLower.includes('create')) {
+      taskType = 'coding';
+      confidence = 0.92;
+    }
+
+    return {
+      taskType,
+      confidence,
+      alternatives: [
+        { type: 'testing', confidence: taskType === 'testing' ? 0.15 : 0.25 },
+        { type: 'review', confidence: taskType === 'review' ? 0.12 : 0.20 },
+      ],
+    };
+  }
+
+  private selectAgents(input: InferenceInput): InferenceOutput {
+    const inputData = input as AgentSelectionInput;
+    const capabilities = inputData?.requiredCapabilities || [];
+    const taskComplexity = inputData?.complexity || 0.5;
+
+    const agents: string[] = [];
+    const scores: Record<string, number> = {};
+
+    if (capabilities.includes('coding') || taskComplexity > 0.5) {
+      agents.push('coder');
+      scores['coder'] = 0.85 + (taskComplexity * 0.1);
+    }
+    if (capabilities.includes('review') || capabilities.includes('quality')) {
+      agents.push('reviewer');
+      scores['reviewer'] = 0.78 + (taskComplexity * 0.05);
+    }
+    if (capabilities.includes('testing')) {
+      agents.push('tester');
+      scores['tester'] = 0.80;
+    }
+
+    if (agents.length === 0) {
+      agents.push('coder', 'reviewer');
+      scores['coder'] = 0.92;
+      scores['reviewer'] = 0.78;
+    }
+
+    return {
+      recommendedAgents: agents,
+      scores,
+      reasoning: `Selected ${agents.length} agents based on capabilities: ${capabilities.join(', ')}`,
+    };
+  }
+
+  private predictPerformance(input: InferenceInput): InferenceOutput {
+    const inputData = input as PerformancePredictionInput;
+    const complexity = inputData?.complexity || 0.5;
+    const agentCount = inputData?.agentCount || 1;
+
+    const baseTime = 600;
+    const estimatedTime = baseTime * (1 + complexity) / Math.sqrt(agentCount);
+    const successProbability = Math.min(0.95, 0.7 + (agentCount * 0.05) - (complexity * 0.1));
+
+    return {
+      estimatedTime: Math.round(estimatedTime),
+      successProbability: Math.round(successProbability * 100) / 100,
+      resourceRequirements: {
+        cpu: Math.min(0.9, 0.3 + (complexity * 0.4)),
+        memory: Math.min(0.8, 0.2 + (complexity * 0.3))
+      },
+      riskFactors: complexity > 0.7 ? ['complexity', 'dependencies'] : ['dependencies'],
+    };
+  }
+
+  private recognizePatterns(input: InferenceInput): InferenceOutput {
+    const inputData = input as PatternRecognitionInput;
+    const pattern = inputData?.pattern || '';
+    const patternLower = typeof pattern === 'string' ? pattern.toLowerCase() : '';
+
+    let patternType = 'coordination-pattern';
+    let confidence = 0.75;
+    const similar: string[] = [];
+
+    if (patternLower.includes('mesh') || patternLower.includes('distributed')) {
+      patternType = 'mesh-coordination';
+      confidence = 0.88;
+      similar.push('adaptive-coordination', 'peer-to-peer');
+    } else if (patternLower.includes('hierarch')) {
+      patternType = 'hierarchical-coordination';
+      confidence = 0.85;
+      similar.push('tree-structure', 'command-chain');
+    }
+
+    return {
+      patternType,
+      confidence,
+      similar,
+      insights: [`Pattern analysis based on input characteristics`],
+    };
   }
 
   async updateModel(
@@ -497,9 +635,17 @@ export class NeuralModels extends EventEmitter {
     return baseSize + parameterSize + dataSize;
   }
 
-  private getInferenceCount(_modelId: string): number {
-    // This would be tracked in a real implementation
-    return Math.floor(Math.random() * 1000);
+  private inferenceCounters: Map<string, number> = new Map();
+
+  private getInferenceCount(modelId: string): number {
+    // Track and return inference count per model
+    const count = this.inferenceCounters.get(modelId) || 0;
+    return count;
+  }
+
+  private incrementInferenceCount(modelId: string): void {
+    const count = this.inferenceCounters.get(modelId) || 0;
+    this.inferenceCounters.set(modelId, count + 1);
   }
 
   async exportModel(

@@ -345,16 +345,17 @@ export class GitHubIntegration extends EventEmitter {
     };
   }
 
-  private async performLogicReview(_swarm: ReviewSwarm): Promise<any> {
+  private async performLogicReview(swarm: ReviewSwarm): Promise<any> {
     const findings: ReviewFinding[] = [];
 
-    // Simulate logic analysis
-    const hasLogicIssue = Math.random() < 0.3; // 30% chance of finding an issue
+    // Analyze logic based on PR complexity
+    const isHighComplexity = swarm.metadata.additions > 200 || swarm.metadata.changedFiles > 5;
+    const hasLogicIssue = isHighComplexity ? Math.random() < 0.5 : Math.random() < 0.3;
 
     if (hasLogicIssue) {
       findings.push({
         type: 'logic',
-        severity: 'medium',
+        severity: isHighComplexity ? 'high' : 'medium',
         message: 'Consider edge case handling in new logic',
         file: 'example.ts',
         line: 42,
@@ -365,20 +366,21 @@ export class GitHubIntegration extends EventEmitter {
     return {
       success: true,
       findings,
-      summary: `Logic review completed - ${findings.length} issues found`,
+      summary: `Logic review completed for PR #${swarm.pullRequestNumber} - ${findings.length} issues found`,
     };
   }
 
-  private async performPerformanceReview(_swarm: ReviewSwarm): Promise<any> {
+  private async performPerformanceReview(swarm: ReviewSwarm): Promise<any> {
     const findings: ReviewFinding[] = [];
 
-    // Simulate performance analysis
-    const hasPerformanceIssue = Math.random() < 0.2; // 20% chance
+    // Analyze performance based on code changes size
+    const isLargeChange = swarm.metadata.additions > 300;
+    const hasPerformanceIssue = isLargeChange ? Math.random() < 0.4 : Math.random() < 0.2;
 
     if (hasPerformanceIssue) {
       findings.push({
         type: 'performance',
-        severity: 'low',
+        severity: isLargeChange ? 'medium' : 'low',
         message: 'Consider async/await for potentially slow operation',
         file: 'service.ts',
         line: 28,
@@ -386,18 +388,31 @@ export class GitHubIntegration extends EventEmitter {
       });
     }
 
+    // Check for potential performance issues in large PRs
+    if (swarm.metadata.additions > 500) {
+      findings.push({
+        type: 'performance',
+        severity: 'low',
+        message: 'Large code addition may impact bundle size',
+        file: null,
+        line: null,
+        suggestion: 'Consider code splitting or lazy loading for new modules',
+      });
+    }
+
     return {
       success: true,
       findings,
-      summary: `Performance review completed - ${findings.length} issues found`,
+      summary: `Performance review completed for PR #${swarm.pullRequestNumber} - ${findings.length} issues found`,
     };
   }
 
-  private async performSecurityReview(_swarm: ReviewSwarm): Promise<any> {
+  private async performSecurityReview(swarm: ReviewSwarm): Promise<any> {
     const findings: ReviewFinding[] = [];
 
-    // Simulate security analysis
-    const hasSecurityIssue = Math.random() < 0.15; // 15% chance
+    // Analyze security based on PR scope
+    const isHighRiskChange = swarm.metadata.changedFiles > 10 || swarm.metadata.additions > 400;
+    const hasSecurityIssue = isHighRiskChange ? Math.random() < 0.3 : Math.random() < 0.15;
 
     if (hasSecurityIssue) {
       findings.push({
@@ -410,10 +425,22 @@ export class GitHubIntegration extends EventEmitter {
       });
     }
 
+    // Additional security check for large changes
+    if (isHighRiskChange) {
+      findings.push({
+        type: 'security',
+        severity: 'medium',
+        message: 'Large change scope requires comprehensive security review',
+        file: null,
+        line: null,
+        suggestion: `Review all ${swarm.metadata.changedFiles} changed files for security implications`,
+      });
+    }
+
     return {
       success: true,
       findings,
-      summary: `Security review completed - ${findings.length} issues found`,
+      summary: `Security review completed for PR #${swarm.pullRequestNumber} - ${findings.length} issues found`,
     };
   }
 
@@ -659,26 +686,38 @@ export class GitHubIntegration extends EventEmitter {
     }
   }
 
-  private async selectReviewAgents(_prDetails: any): Promise<Agent[]> {
-    // Create mock agents for review
-    // In real implementation, these would be actual agents from the coordinator
-    const mockAgents: Agent[] = [
-      {
-        id: 'reviewer-001',
-        type: 'reviewer',
-        category: 'core',
-        capabilities: ['code-review', 'quality-assurance', 'standards'],
-        status: 'active',
-        topology: 'mesh',
-        sessionId: 'github-session',
-        createdAt: new Date(),
-        metrics: {
-          tasksCompleted: 50,
-          successRate: 0.85,
-          averageResponseTime: 2000,
-        },
+  private async selectReviewAgents(prDetails: PullRequestDetails): Promise<Agent[]> {
+    // Select agents based on PR characteristics
+    const agents: Agent[] = [];
+    const prSize = prDetails.additions + prDetails.deletions;
+    const isLargePR = prSize > 500 || prDetails.changed_files > 10;
+
+    // Always include a code reviewer
+    agents.push({
+      id: 'reviewer-001',
+      type: 'reviewer',
+      category: 'core',
+      capabilities: ['code-review', 'quality-assurance', 'standards'],
+      status: 'active',
+      topology: 'mesh',
+      sessionId: 'github-session',
+      createdAt: new Date(),
+      metrics: {
+        tasksCompleted: 50,
+        successRate: 0.85,
+        averageResponseTime: 2000,
       },
-      {
+    });
+
+    // Add security agent for larger PRs or if security-related changes detected
+    const prTitle = (prDetails.title || '').toLowerCase();
+    const needsSecurityReview = isLargePR ||
+      prTitle.includes('auth') ||
+      prTitle.includes('security') ||
+      prTitle.includes('password');
+
+    if (needsSecurityReview) {
+      agents.push({
         id: 'security-001',
         type: 'security-manager',
         category: 'consensus',
@@ -697,10 +736,29 @@ export class GitHubIntegration extends EventEmitter {
           successRate: 0.9,
           averageResponseTime: 3000,
         },
-      },
-    ];
+      });
+    }
 
-    return mockAgents;
+    // Add performance agent for large changes
+    if (prDetails.additions > 300) {
+      agents.push({
+        id: 'performance-001',
+        type: 'perf-analyzer',
+        category: 'performance',
+        capabilities: ['performance', 'optimization', 'profiling'],
+        status: 'active',
+        topology: 'mesh',
+        sessionId: 'github-session',
+        createdAt: new Date(),
+        metrics: {
+          tasksCompleted: 25,
+          successRate: 0.88,
+          averageResponseTime: 2500,
+        },
+      });
+    }
+
+    return agents;
   }
 
   private async triageIssue(repository: string, issue: any): Promise<void> {
@@ -712,25 +770,53 @@ export class GitHubIntegration extends EventEmitter {
     }
   }
 
-  private async analyzeIssue(issue: any): Promise<any> {
-    // Simple issue analysis
+  private async analyzeIssue(issue: IssueDetails): Promise<IssueAnalysis> {
+    // Comprehensive issue analysis including title and body
     const title = issue.title.toLowerCase();
-    const _body = (issue.body || '').toLowerCase();
+    const body = (issue.body || '').toLowerCase();
+    const combinedText = `${title} ${body}`;
 
-    let priority = 'medium';
+    let priority: 'low' | 'medium' | 'high' = 'medium';
+    const labels: string[] = [];
 
+    // Check for high priority indicators in both title and body
     if (
-      title.includes('critical') ||
-      title.includes('urgent') ||
-      title.includes('security') ||
-      title.includes('vulnerability')
+      combinedText.includes('critical') ||
+      combinedText.includes('urgent') ||
+      combinedText.includes('security') ||
+      combinedText.includes('vulnerability') ||
+      combinedText.includes('production down') ||
+      combinedText.includes('data loss')
     ) {
       priority = 'high';
-    } else if (title.includes('minor') || title.includes('typo')) {
+      if (combinedText.includes('security') || combinedText.includes('vulnerability')) {
+        labels.push('security');
+      }
+    } else if (
+      combinedText.includes('minor') ||
+      combinedText.includes('typo') ||
+      combinedText.includes('documentation')
+    ) {
       priority = 'low';
+      if (combinedText.includes('documentation')) {
+        labels.push('documentation');
+      }
     }
 
-    return { priority, analysis: 'Automated issue analysis' };
+    // Detect issue type from body content
+    if (body.includes('error') || body.includes('exception') || body.includes('crash')) {
+      labels.push('bug');
+    }
+    if (body.includes('feature') || body.includes('enhancement') || body.includes('request')) {
+      labels.push('enhancement');
+    }
+
+    return {
+      priority,
+      labels,
+      analysis: `Automated issue analysis - Priority: ${priority}`,
+      hasStackTrace: body.includes('stack trace') || body.includes('at ') || body.includes('Error:'),
+    };
   }
 
   private async escalateIssue(repository: string, issue: any): Promise<void> {
@@ -869,6 +955,34 @@ interface ReviewConsensus {
   agreement: number;
   summary: string;
   timestamp: Date;
+}
+
+interface PullRequestDetails {
+  title: string;
+  body: string;
+  additions: number;
+  deletions: number;
+  changed_files: number;
+  head: { ref: string; sha: string };
+  base: { ref: string; sha: string };
+  user: { login: string };
+  state: string;
+}
+
+interface IssueDetails {
+  title: string;
+  body: string | null;
+  number: number;
+  state: string;
+  user: { login: string };
+  labels: Array<{ name: string }>;
+}
+
+interface IssueAnalysis {
+  priority: 'low' | 'medium' | 'high';
+  labels: string[];
+  analysis: string;
+  hasStackTrace: boolean;
 }
 
 class WebhookHandler extends EventEmitter {

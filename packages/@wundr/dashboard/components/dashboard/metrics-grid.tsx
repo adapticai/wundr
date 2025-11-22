@@ -13,7 +13,7 @@ import {
   Code,
   Users
 } from 'lucide-react'
-import { realtimeStore } from '@/lib/websocket'
+import { realtimeStore, WebSocketMessage } from '@/lib/websocket'
 import { RealtimeData } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -148,21 +148,22 @@ export function MetricsGrid() {
 
   React.useEffect(() => {
     // Create message handler that transforms WebSocketMessage to RealtimeData
-    const messageHandler = (message: { type: string; data: any; timestamp: number }) => {
+    const messageHandler = (message: WebSocketMessage) => {
       try {
+        const data = message.data ?? message.payload
         if (message.type === 'realtime-data') {
           setRealtimeData({
             connected: true,
-            lastUpdate: new Date(message.timestamp),
-            events: message.data.events || [],
-            metrics: message.data.metrics || []
+            lastUpdate: new Date(message.timestamp ?? Date.now()),
+            events: (data as Record<string, unknown>).events as RealtimeData['events'] || [],
+            metrics: (data as Record<string, unknown>).metrics as RealtimeData['metrics'] || []
           })
         } else if (message.type === 'metrics-update') {
           setRealtimeData(prev => ({
             ...prev,
             connected: true,
-            lastUpdate: new Date(message.timestamp),
-            metrics: message.data || []
+            lastUpdate: new Date(message.timestamp ?? Date.now()),
+            metrics: Array.isArray(data) ? data as RealtimeData['metrics'] : []
           }))
         }
       } catch (error) {

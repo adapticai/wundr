@@ -409,14 +409,14 @@ export class PolicyEngine {
   loadPolicies(config: PolicyConfig): void {
     if (config.security) {
       const securityPolicies = config.security.map((def, index) =>
-        this.createPolicyFromDefinition(def, 'security', index)
+        this.createPolicyFromDefinition(def, 'security', index),
       );
       this.policies.security = [...this.policies.security, ...securityPolicies];
     }
 
     if (config.compliance) {
       const compliancePolicies = config.compliance.map((def, index) =>
-        this.createPolicyFromDefinition(def, 'compliance', index)
+        this.createPolicyFromDefinition(def, 'compliance', index),
       );
       this.policies.compliance = [
         ...this.policies.compliance,
@@ -426,7 +426,7 @@ export class PolicyEngine {
 
     if (config.operational) {
       const operationalPolicies = config.operational.map((def, index) =>
-        this.createPolicyFromDefinition(def, 'operational', index)
+        this.createPolicyFromDefinition(def, 'operational', index),
       );
       this.policies.operational = [
         ...this.policies.operational,
@@ -438,7 +438,7 @@ export class PolicyEngine {
       this.log(
         `Loaded policies: security=${this.policies.security.length}, ` +
           `compliance=${this.policies.compliance.length}, ` +
-          `operational=${this.policies.operational.length}`
+          `operational=${this.policies.operational.length}`,
       );
     }
   }
@@ -473,7 +473,7 @@ export class PolicyEngine {
 
         if (!policy.blocking) {
           warnings.push(
-            `[${policy.category.toUpperCase()}] ${policy.name}: ${policy.description}`
+            `[${policy.category.toUpperCase()}] ${policy.name}: ${policy.description}`,
           );
         }
       }
@@ -490,7 +490,7 @@ export class PolicyEngine {
 
     if (this.config.debug) {
       this.log(
-        `Action ${action.id} check: allowed=${allowed}, violations=${violations.length}`
+        `Action ${action.id} check: allowed=${allowed}, violations=${violations.length}`,
       );
     }
 
@@ -558,7 +558,7 @@ export class PolicyEngine {
 
     if (this.config.debug) {
       this.log(
-        `Recorded violation: ${violation.policy.name} for action ${violation.action.id}`
+        `Recorded violation: ${violation.policy.name} for action ${violation.action.id}`,
       );
     }
   }
@@ -572,7 +572,7 @@ export class PolicyEngine {
   getViolationHistory(sessionId?: string): PolicyViolation[] {
     if (sessionId) {
       return this.violationHistory.filter(
-        v => v.action.sessionId === sessionId
+        v => v.action.sessionId === sessionId,
       );
     }
     return [...this.violationHistory];
@@ -589,7 +589,7 @@ export class PolicyEngine {
     const cutoff = new Date(Date.now() - windowMs);
 
     const recentViolations = this.violationHistory.filter(
-      v => v.timestamp >= cutoff
+      v => v.timestamp >= cutoff,
     );
 
     const hoursInWindow = windowMs / (60 * 60 * 1000);
@@ -624,7 +624,7 @@ export class PolicyEngine {
       'operational',
     ] as PolicyCategory[]) {
       const policyIndex = this.policies[category].findIndex(
-        p => p.id === policyId
+        p => p.id === policyId,
       );
       if (policyIndex !== -1) {
         const policy = this.policies[category][policyIndex];
@@ -669,7 +669,7 @@ export class PolicyEngine {
   clearViolationHistory(sessionId?: string): void {
     if (sessionId) {
       this.violationHistory = this.violationHistory.filter(
-        v => v.action.sessionId !== sessionId
+        v => v.action.sessionId !== sessionId,
       );
     } else {
       this.violationHistory = [];
@@ -677,7 +677,7 @@ export class PolicyEngine {
 
     if (this.config.debug) {
       this.log(
-        `Violation history cleared${sessionId ? ` for session ${sessionId}` : ''}`
+        `Violation history cleared${sessionId ? ` for session ${sessionId}` : ''}`,
       );
     }
   }
@@ -765,7 +765,7 @@ export class PolicyEngine {
    */
   private createViolation(
     policy: Policy,
-    action: AgentAction
+    action: AgentAction,
   ): PolicyViolation {
     return {
       id: this.generateViolationId(),
@@ -784,7 +784,7 @@ export class PolicyEngine {
   private createPolicyFromDefinition(
     def: PolicyDefinition,
     category: PolicyCategory,
-    index: number
+    index: number,
   ): Policy {
     const id = def.id || `${category.substring(0, 4)}-custom-${index + 1}`;
 

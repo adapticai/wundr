@@ -203,7 +203,14 @@ export class MemoryOptimization extends EventEmitter {
             this.metrics.fragmentationRatio - initialMetrics.fragmentationRatio,
         },
       };
-    } catch (_error) {
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.warn(
+        `Strategy "${strategy.name}" execution failed: ${errorMessage}`
+      );
+      this.emit('strategy-failed', { strategy: strategy.name, error });
+
       return {
         strategy: strategy.name,
         entriesProcessed: 0,

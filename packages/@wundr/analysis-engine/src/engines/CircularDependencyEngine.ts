@@ -149,7 +149,7 @@ export class CircularDependencyEngine
       const madgeOutput = JSON.parse(result.toString());
       const cycles = madgeOutput.circular || [];
 
-      return cycles.map((cycle: string[], _index: number) => ({
+      return cycles.map((cycle: string[]) => ({
         id: createId(),
         cycle: cycle.map(file =>
           normalizeFilePath(path.resolve(targetDir, file)),
@@ -165,9 +165,10 @@ export class CircularDependencyEngine
           cycle.map(file => normalizeFilePath(path.resolve(targetDir, file))),
         ),
       }));
-    } catch (_error) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       console.warn(
-        '⚠️ Madge analysis failed, falling back to internal analysis',
+        `⚠️ Madge analysis failed, falling back to internal analysis: ${errorMessage}`,
       );
       return [];
     }

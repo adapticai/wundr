@@ -215,10 +215,10 @@ export class ReportGenerator {
         this: unknown,
         a: number,
         b: number,
-        options: Handlebars.HelperOptions
+        options: Handlebars.HelperOptions,
       ) {
         return a > b ? options.fn(this) : options.inverse(this);
-      }
+      },
     );
   }
 
@@ -226,7 +226,7 @@ export class ReportGenerator {
    * Load a template by name from the templates directory
    */
   private async loadTemplate(
-    name: string
+    name: string,
   ): Promise<HandlebarsTemplateDelegate> {
     // Check cache first
     const cached = this.templateCache.get(name);
@@ -273,7 +273,7 @@ export class ReportGenerator {
     const getStatus = (
       value: number,
       warningThreshold: number,
-      criticalThreshold: number
+      criticalThreshold: number,
     ): DimensionStatus => {
       if (value >= criticalThreshold) {
         return 'CRITICAL';
@@ -327,7 +327,7 @@ export class ReportGenerator {
    * Format intervention recommendations for template rendering
    */
   private formatInterventions(
-    recommendations: InterventionRecommendation[]
+    recommendations: InterventionRecommendation[],
   ): Array<{
     severity: string;
     action: string;
@@ -349,7 +349,7 @@ export class ReportGenerator {
    */
   private formatReviewQueue(sessions: string[]): string[] {
     return sessions.map(
-      sessionId => `Session ${sessionId} - Requires manual review`
+      sessionId => `Session ${sessionId} - Requires manual review`,
     );
   }
 
@@ -435,7 +435,7 @@ export class ReportGenerator {
           ([type, count]) => ({
             type,
             count,
-          })
+          }),
         ),
         successful: data.interventionsSummary.successful,
         successRate:

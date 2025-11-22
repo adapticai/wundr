@@ -83,7 +83,8 @@ export class AutoFixPatterns {
         name: 'fix-double-equals',
         description: 'Replace == with === and != with !==',
         pattern: /([^=!])([=!])=([^=])/g,
-        replacement: (_match: string, before: string, operator: string, after: string) => {
+        replacement: (...args: string[]) => {
+          const [, before, operator, after] = args;
           return `${before}${operator}==${after}`;
         },
         examples: [
@@ -126,7 +127,8 @@ export class AutoFixPatterns {
         name: 'fix-string-concatenation',
         description: 'Replace string concatenation with template literals',
         pattern: /(['"`])((?:[^'"`\\]|\\.)*)(['"`])\s*\+\s*([^+\s][^+]*?)(?=\s*[;,\)])/g,
-        replacement: (match: string, _quote1: string, str1: string, _quote2: string, rest: string) => {
+        replacement: (...args: string[]) => {
+          const [match, , str1, , rest] = args;
           // Simple case - convert basic concatenation
           if (rest.includes("'") || rest.includes('"')) {
             return `\`${str1.replace(/\$\{/g, '\\${')}\${${rest.trim()}}\``;
@@ -486,7 +488,7 @@ if (require.main === module) {
   switch (command) {
     case 'apply':
       autoFix.applyAutoFixes()
-        .then(_report => {
+        .then(() => {
           autoFix.generateReport();
           
           // Validate fixes

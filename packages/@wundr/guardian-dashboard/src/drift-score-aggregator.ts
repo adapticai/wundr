@@ -84,7 +84,7 @@ export class DriftScoreAggregator {
 
     // Sort sessions by timestamp for accurate trend calculation
     const sortedSessions = [...sessions].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
     );
 
     const scores = sortedSessions.map(s => s.driftScore);
@@ -97,12 +97,12 @@ export class DriftScoreAggregator {
 
     // Categorize sessions by health status
     const criticalSessions = sortedSessions.filter(
-      s => s.driftScore < this.thresholds.critical
+      s => s.driftScore < this.thresholds.critical,
     );
     const concerningSessions = sortedSessions.filter(
       s =>
         s.driftScore >= this.thresholds.critical &&
-        s.driftScore < this.thresholds.concerning
+        s.driftScore < this.thresholds.concerning,
     );
 
     const timestamps = sortedSessions.map(s => s.timestamp);
@@ -138,7 +138,7 @@ export class DriftScoreAggregator {
 
     // Sort by drift score ascending (worst scores first)
     const sorted = [...this.sessions].sort(
-      (a, b) => a.driftScore - b.driftScore
+      (a, b) => a.driftScore - b.driftScore,
     );
 
     return sorted.slice(0, Math.min(count, sorted.length));
@@ -180,7 +180,7 @@ export class DriftScoreAggregator {
    */
   getSessionsInRange(start: Date, end: Date): SessionDriftData[] {
     return this.sessions.filter(
-      s => s.timestamp >= start && s.timestamp <= end
+      s => s.timestamp >= start && s.timestamp <= end,
     );
   }
 
@@ -192,7 +192,7 @@ export class DriftScoreAggregator {
    */
   getSessionsByStatus(status: HealthStatus): SessionDriftData[] {
     return this.sessions.filter(
-      s => this.calculator.getStatus(s.driftScore) === status
+      s => this.calculator.getStatus(s.driftScore) === status,
     );
   }
 

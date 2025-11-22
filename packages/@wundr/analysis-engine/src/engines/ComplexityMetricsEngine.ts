@@ -221,13 +221,14 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
 
   /**
    * Calculate complexity from source code signature
+   * Entity type is used to apply type-specific complexity adjustments
    */
   private calculateComplexityFromSignature(
     signature: string,
-    _entityType: string,
+    entityType: string,
   ): Partial<ComplexityMetrics> {
     const lines = signature.split('\n');
-    const _codeLines = lines.filter(
+    const codeLines = lines.filter(
       line =>
         line.trim() &&
         !line.trim().startsWith('//') &&
@@ -243,11 +244,57 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
         true,
       );
 
-      return this.analyzeNodeComplexity(sourceFile);
-    } catch (_error) {
+      const baseComplexity = this.analyzeNodeComplexity(sourceFile);
+
+      // Apply entity-type-specific complexity adjustments
+      return this.applyEntityTypeAdjustments(baseComplexity, entityType, codeLines.length);
+    } catch {
       // Fallback to text-based analysis
       return this.calculateTextBasedComplexity(signature);
     }
+  }
+
+  /**
+   * Apply complexity adjustments based on entity type
+   * Different entity types have different baseline complexity expectations
+   */
+  private applyEntityTypeAdjustments(
+    metrics: ComplexityMetrics,
+    entityType: string,
+    codeLineCount: number,
+  ): ComplexityMetrics {
+    const adjustedMetrics = { ...metrics };
+
+    // Classes inherently have higher complexity expectations
+    if (entityType === 'class') {
+      // Classes managing state have higher cognitive overhead
+      adjustedMetrics.cognitive = Math.max(
+        adjustedMetrics.cognitive,
+        Math.floor(codeLineCount / 20),
+      );
+    }
+
+    // Constructors often have initialization complexity
+    if (entityType === 'constructor') {
+      // Reduce cognitive penalty for initialization code
+      adjustedMetrics.cognitive = Math.max(1, adjustedMetrics.cognitive - 1);
+    }
+
+    // Getters/setters should have minimal complexity
+    if (entityType === 'getter' || entityType === 'setter') {
+      // Flag if complexity exceeds expected minimal threshold
+      if (adjustedMetrics.cyclomatic > 2) {
+        adjustedMetrics.cognitive += 2; // Penalty for complex accessors
+      }
+    }
+
+    // Factory functions may have higher acceptable complexity
+    if (entityType === 'function' && codeLineCount > 50) {
+      // Large standalone functions need extra scrutiny
+      adjustedMetrics.cognitive += Math.floor(codeLineCount / 50);
+    }
+
+    return adjustedMetrics;
   }
 
   /**
@@ -257,7 +304,6 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     let cyclomatic = 1;
     let cognitive = 0;
     let maxDepth = 0;
-    let _currentDepth = 0;
     let parameters = 0;
 
     const sourceFile = node.getSourceFile();
@@ -275,7 +321,6 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
     }
 
     const visit = (child: ts.Node, depth: number) => {
-      _currentDepth = depth;
       maxDepth = Math.max(maxDepth, depth);
 
       // Cyclomatic complexity contributors
@@ -617,7 +662,7 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
   ): ComplexityHotspot[] {
     const hotspots: ComplexityHotspot[] = [];
 
-    entities.forEach((entity, _index) => {
+    entities.forEach(entity => {
       const complexity = complexities.get(entity.id)!;
 
       // Calculate hotspot score
@@ -748,16 +793,19 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
 
   /**
    * Generate hotspot-specific recommendations
+   * Uses entity info to provide context-aware suggestions
    */
   private generateHotspotRecommendations(
     entity: EntityInfo,
     complexity: ComplexityMetrics,
   ): string[] {
     const recommendations: string[] = [];
+    const entityName = entity.name || 'this code';
+    const entityType = entity.type || 'function';
 
     if (complexity.cyclomatic > this.thresholds.cyclomatic.high) {
       recommendations.push(
-        'Break down complex conditional logic into smaller functions',
+        `Break down complex conditional logic in ${entityName} into smaller functions`,
       );
       recommendations.push('Use early returns to reduce nesting');
       recommendations.push(
@@ -790,11 +838,11 @@ export class ComplexityMetricsEngine implements BaseAnalyzer<ComplexityReport> {
 
     if (complexity.lines && complexity.lines > this.thresholds.size.maxLines) {
       recommendations.push(
-        'Break large function into smaller, focused functions',
+        `Break large ${entityType} into smaller, focused functions`,
       );
       recommendations.push('Extract reusable logic into utility functions');
       recommendations.push(
-        'Consider if the function has multiple responsibilities',
+        `Consider if ${entityName} has multiple responsibilities`,
       );
     }
 

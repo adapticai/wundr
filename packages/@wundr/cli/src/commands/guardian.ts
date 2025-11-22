@@ -41,7 +41,7 @@ const SESSIONS_STATE_FILE = path.join(
   os.homedir(),
   '.wundr',
   'sessions',
-  'state.json'
+  'state.json',
 );
 const REPORTS_DIR = path.join(GUARDIAN_BASE_DIR, 'reports');
 
@@ -126,7 +126,7 @@ async function ensureGuardianDir(): Promise<void> {
  * Get color function based on severity
  */
 function getSeverityColor(
-  severity: InterventionSeverity
+  severity: InterventionSeverity,
 ): (str: string) => string {
   switch (severity) {
     case 'critical':
@@ -184,7 +184,7 @@ async function loadGuardianState(): Promise<GuardianState> {
     try {
       const interventionsContent = await fs.readFile(
         INTERVENTIONS_FILE,
-        'utf-8'
+        'utf-8',
       );
       interventions = JSON.parse(interventionsContent) as StoredIntervention[];
     } catch {
@@ -211,11 +211,11 @@ async function saveGuardianState(state: GuardianState): Promise<void> {
   await ensureGuardianDir();
   await fs.writeFile(
     INTERVENTIONS_FILE,
-    JSON.stringify(state.interventions, null, 2)
+    JSON.stringify(state.interventions, null, 2),
   );
   await fs.writeFile(
     REVIEW_QUEUE_FILE,
-    JSON.stringify(state.reviewQueue, null, 2)
+    JSON.stringify(state.reviewQueue, null, 2),
   );
 }
 
@@ -338,7 +338,7 @@ async function generateReport(options: ReportOptions): Promise<void> {
       dateStr,
       report,
       recommendations,
-      guardianState
+      guardianState,
     );
 
     if (options.output) {
@@ -351,7 +351,7 @@ async function generateReport(options: ReportOptions): Promise<void> {
   } catch (error) {
     spinner.fail('Failed to generate report');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -363,7 +363,7 @@ function generateMarkdownReport(
   dateStr: string,
   report: AggregatedDriftReport,
   recommendations: InterventionRecommendation[],
-  guardianState: GuardianState
+  guardianState: GuardianState,
 ): string {
   let md = '# Guardian Daily Alignment Report\n\n';
   md += `**Date:** ${dateStr}\n`;
@@ -411,7 +411,7 @@ function displayTerminalReport(
   dateStr: string,
   report: AggregatedDriftReport,
   recommendations: InterventionRecommendation[],
-  guardianState: GuardianState
+  guardianState: GuardianState,
 ): void {
   console.log(chalk.cyan('\n' + '='.repeat(70)));
   console.log(chalk.cyan.bold('       GUARDIAN DAILY ALIGNMENT REPORT'));
@@ -427,15 +427,15 @@ function displayTerminalReport(
   const statusColor = getStatusColor(report.overallStatus);
   console.log(`Total Sessions:     ${chalk.white(report.totalSessions)}`);
   console.log(
-    `Average Drift Score: ${chalk.white(report.averageScore.toFixed(1))}`
+    `Average Drift Score: ${chalk.white(report.averageScore.toFixed(1))}`,
   );
   console.log(`Overall Status:     ${statusColor(report.overallStatus)}`);
   console.log(`Trend:              ${chalk.white(report.trend)}`);
   console.log(
-    `Critical Sessions:  ${report.criticalSessions.length > 0 ? chalk.red(report.criticalSessions.length) : chalk.green('0')}`
+    `Critical Sessions:  ${report.criticalSessions.length > 0 ? chalk.red(report.criticalSessions.length) : chalk.green('0')}`,
   );
   console.log(
-    `Concerning Sessions: ${report.concerningSessions.length > 0 ? chalk.yellow(report.concerningSessions.length) : chalk.green('0')}`
+    `Concerning Sessions: ${report.concerningSessions.length > 0 ? chalk.yellow(report.concerningSessions.length) : chalk.green('0')}`,
   );
   console.log('');
 
@@ -447,7 +447,7 @@ function displayTerminalReport(
     for (const rec of recommendations) {
       const severityColor = getSeverityColor(rec.severity);
       console.log(
-        `${severityColor(getSeverityBadge(rec.severity))} ${chalk.white(rec.dimension)}`
+        `${severityColor(getSeverityBadge(rec.severity))} ${chalk.white(rec.dimension)}`,
       );
       console.log(`  Action: ${rec.action}`);
       console.log(`  Urgency: ${rec.urgency}h`);
@@ -465,8 +465,8 @@ function displayTerminalReport(
     console.log(chalk.gray('-'.repeat(40)));
     console.log(
       chalk.yellow(
-        `${pendingReviews.length} session(s) flagged for Guardian attention.`
-      )
+        `${pendingReviews.length} session(s) flagged for Guardian attention.`,
+      ),
     );
     console.log(chalk.gray('Run "wundr guardian review" for details.\n'));
   }
@@ -492,7 +492,7 @@ async function showReviewQueue(): Promise<void> {
     if (pendingReviews.length === 0) {
       console.log(chalk.green('\nNo sessions require Guardian review.'));
       console.log(
-        chalk.gray('All systems operating within acceptable parameters.\n')
+        chalk.gray('All systems operating within acceptable parameters.\n'),
       );
       return;
     }
@@ -504,8 +504,8 @@ async function showReviewQueue(): Promise<void> {
           padRight('Severity', 12) +
           padRight('Drift Score', 14) +
           padRight('Flagged At', 22) +
-          padRight('Reason', 22)
-      )
+          padRight('Reason', 22),
+      ),
     );
     console.log(chalk.gray('-'.repeat(90)));
 
@@ -519,22 +519,22 @@ async function showReviewQueue(): Promise<void> {
           severityColor(padRight(getSeverityBadge(item.severity), 12)) +
           padRight(item.driftScore.toFixed(1), 14) +
           padRight(flaggedAt, 22) +
-          chalk.gray(truncate(item.reason, 22))
+          chalk.gray(truncate(item.reason, 22)),
       );
     }
 
     console.log(chalk.gray('-'.repeat(90)));
     console.log(
-      chalk.gray(`Total: ${pendingReviews.length} session(s) pending review\n`)
+      chalk.gray(`Total: ${pendingReviews.length} session(s) pending review\n`),
     );
 
     // Show summary by severity
     const criticalCount = pendingReviews.filter(
-      r => r.severity === 'critical'
+      r => r.severity === 'critical',
     ).length;
     const highCount = pendingReviews.filter(r => r.severity === 'high').length;
     const mediumCount = pendingReviews.filter(
-      r => r.severity === 'medium'
+      r => r.severity === 'medium',
     ).length;
 
     if (criticalCount > 0) {
@@ -550,7 +550,7 @@ async function showReviewQueue(): Promise<void> {
   } catch (error) {
     spinner.fail('Failed to load review queue');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -571,20 +571,20 @@ async function listInterventions(options: InterventionsOptions): Promise<void> {
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     interventions = interventions.filter(
-      i => new Date(i.timestamp) >= cutoffDate
+      i => new Date(i.timestamp) >= cutoffDate,
     );
 
     // Filter by session
     if (options.session) {
       interventions = interventions.filter(
-        i => i.sessionId === options.session
+        i => i.sessionId === options.session,
       );
     }
 
     // Sort by timestamp descending (most recent first)
     interventions.sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 
     spinner.stop();
@@ -592,14 +592,14 @@ async function listInterventions(options: InterventionsOptions): Promise<void> {
     console.log(chalk.cyan('\nGuardian Interventions'));
     console.log(
       chalk.gray(
-        `Last ${days} days${options.session ? ` - Session: ${options.session}` : ''}`
-      )
+        `Last ${days} days${options.session ? ` - Session: ${options.session}` : ''}`,
+      ),
     );
     console.log(chalk.gray('='.repeat(100)));
 
     if (interventions.length === 0) {
       console.log(
-        chalk.green('\nNo interventions recorded in the specified time period.')
+        chalk.green('\nNo interventions recorded in the specified time period.'),
       );
       console.log('');
       return;
@@ -613,8 +613,8 @@ async function listInterventions(options: InterventionsOptions): Promise<void> {
           padRight('Severity', 12) +
           padRight('Dimension', 20) +
           padRight('Status', 12) +
-          padRight('Time', 18)
-      )
+          padRight('Time', 18),
+      ),
     );
     console.log(chalk.gray('-'.repeat(100)));
 
@@ -635,7 +635,7 @@ async function listInterventions(options: InterventionsOptions): Promise<void> {
           severityColor(padRight(getSeverityBadge(intervention.severity), 12)) +
           padRight(truncate(intervention.dimension, 18), 20) +
           statusColor(padRight(`[${intervention.status.toUpperCase()}]`, 12)) +
-          chalk.gray(padRight(timestamp, 18))
+          chalk.gray(padRight(timestamp, 18)),
       );
     }
 
@@ -646,18 +646,18 @@ async function listInterventions(options: InterventionsOptions): Promise<void> {
     const applied = interventions.filter(i => i.status === 'applied').length;
     const pending = interventions.filter(i => i.status === 'pending').length;
     const dismissed = interventions.filter(
-      i => i.status === 'dismissed'
+      i => i.status === 'dismissed',
     ).length;
 
     console.log(chalk.gray('Summary:'));
     console.log(
-      `  Applied: ${chalk.green(applied)}  Pending: ${chalk.yellow(pending)}  Dismissed: ${chalk.gray(dismissed)}`
+      `  Applied: ${chalk.green(applied)}  Pending: ${chalk.yellow(pending)}  Dismissed: ${chalk.gray(dismissed)}`,
     );
     console.log('');
   } catch (error) {
     spinner.fail('Failed to load interventions');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -692,13 +692,13 @@ async function displayDashboard(): Promise<void> {
 
     console.log(chalk.cyan.bold('\n' + '='.repeat(80)));
     console.log(
-      chalk.cyan.bold('                    GUARDIAN ALIGNMENT DASHBOARD')
+      chalk.cyan.bold('                    GUARDIAN ALIGNMENT DASHBOARD'),
     );
     console.log(chalk.cyan.bold('='.repeat(80)));
     console.log(
       chalk.gray(
-        `                    Last Updated: ${new Date().toLocaleString()}`
-      )
+        `                    Last Updated: ${new Date().toLocaleString()}`,
+      ),
     );
     console.log('');
 
@@ -708,7 +708,7 @@ async function displayDashboard(): Promise<void> {
 
     const statusColor = getStatusColor(report.overallStatus);
     console.log(
-      `   Overall Status: ${statusColor(report.overallStatus.padEnd(12))}  Avg Drift Score: ${chalk.white(report.averageScore.toFixed(1).padEnd(8))}  Trend: ${chalk.white(report.trend)}`
+      `   Overall Status: ${statusColor(report.overallStatus.padEnd(12))}  Avg Drift Score: ${chalk.white(report.averageScore.toFixed(1).padEnd(8))}  Trend: ${chalk.white(report.trend)}`,
     );
     console.log('');
 
@@ -716,7 +716,7 @@ async function displayDashboard(): Promise<void> {
     console.log(chalk.cyan.bold(' SESSIONS'));
     console.log(chalk.gray(' ' + '-'.repeat(78)));
     console.log(
-      `   Total: ${chalk.white(report.totalSessions.toString().padEnd(6))}  Critical: ${report.criticalSessions.length > 0 ? chalk.red(report.criticalSessions.length.toString().padEnd(4)) : chalk.green('0'.padEnd(4))}  Concerning: ${report.concerningSessions.length > 0 ? chalk.yellow(report.concerningSessions.length.toString().padEnd(4)) : chalk.green('0'.padEnd(4))}  Healthy: ${chalk.green((report.totalSessions - report.criticalSessions.length - report.concerningSessions.length).toString())}`
+      `   Total: ${chalk.white(report.totalSessions.toString().padEnd(6))}  Critical: ${report.criticalSessions.length > 0 ? chalk.red(report.criticalSessions.length.toString().padEnd(4)) : chalk.green('0'.padEnd(4))}  Concerning: ${report.concerningSessions.length > 0 ? chalk.yellow(report.concerningSessions.length.toString().padEnd(4)) : chalk.green('0'.padEnd(4))}  Healthy: ${chalk.green((report.totalSessions - report.criticalSessions.length - report.concerningSessions.length).toString())}`,
     );
     console.log('');
 
@@ -725,16 +725,16 @@ async function displayDashboard(): Promise<void> {
     console.log(chalk.gray(' ' + '-'.repeat(78)));
 
     const pendingInterventions = guardianState.interventions.filter(
-      i => i.status === 'pending'
+      i => i.status === 'pending',
     );
     const recentApplied = guardianState.interventions.filter(
       i =>
         i.status === 'applied' &&
-        new Date(i.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+        new Date(i.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000),
     );
 
     console.log(
-      `   Pending: ${pendingInterventions.length > 0 ? chalk.yellow(pendingInterventions.length.toString().padEnd(6)) : chalk.green('0'.padEnd(6))}  Applied (24h): ${chalk.white(recentApplied.length.toString().padEnd(6))}  Recommended: ${recommendations.length > 0 ? chalk.yellow(recommendations.length.toString()) : chalk.green('0')}`
+      `   Pending: ${pendingInterventions.length > 0 ? chalk.yellow(pendingInterventions.length.toString().padEnd(6)) : chalk.green('0'.padEnd(6))}  Applied (24h): ${chalk.white(recentApplied.length.toString().padEnd(6))}  Recommended: ${recommendations.length > 0 ? chalk.yellow(recommendations.length.toString()) : chalk.green('0')}`,
     );
     console.log('');
 
@@ -748,14 +748,14 @@ async function displayDashboard(): Promise<void> {
       console.log(chalk.green('   No sessions require Guardian review.'));
     } else {
       const criticalReviews = pendingReviews.filter(
-        r => r.severity === 'critical'
+        r => r.severity === 'critical',
       ).length;
       const highReviews = pendingReviews.filter(
-        r => r.severity === 'high'
+        r => r.severity === 'high',
       ).length;
 
       console.log(
-        `   Pending: ${chalk.yellow(pendingReviews.length.toString().padEnd(6))}  Critical: ${criticalReviews > 0 ? chalk.red(criticalReviews.toString().padEnd(6)) : chalk.green('0'.padEnd(6))}  High: ${highReviews > 0 ? chalk.yellow(highReviews.toString()) : chalk.green('0')}`
+        `   Pending: ${chalk.yellow(pendingReviews.length.toString().padEnd(6))}  Critical: ${criticalReviews > 0 ? chalk.red(criticalReviews.toString().padEnd(6)) : chalk.green('0'.padEnd(6))}  High: ${highReviews > 0 ? chalk.yellow(highReviews.toString()) : chalk.green('0')}`,
       );
     }
     console.log('');
@@ -768,13 +768,13 @@ async function displayDashboard(): Promise<void> {
       for (const rec of recommendations.slice(0, 3)) {
         const severityColor = getSeverityColor(rec.severity);
         console.log(
-          `   ${severityColor(getSeverityBadge(rec.severity))} ${rec.dimension}: ${truncate(rec.action, 50)}`
+          `   ${severityColor(getSeverityBadge(rec.severity))} ${rec.dimension}: ${truncate(rec.action, 50)}`,
         );
       }
 
       if (recommendations.length > 3) {
         console.log(
-          chalk.gray(`   ... and ${recommendations.length - 3} more`)
+          chalk.gray(`   ... and ${recommendations.length - 3} more`),
         );
       }
       console.log('');
@@ -785,16 +785,16 @@ async function displayDashboard(): Promise<void> {
     console.log(chalk.gray(' ' + '-'.repeat(78)));
     console.log(
       chalk.gray(
-        '   wundr guardian report     - Generate full alignment report'
-      )
+        '   wundr guardian report     - Generate full alignment report',
+      ),
     );
     console.log(
       chalk.gray(
-        '   wundr guardian review     - View sessions requiring attention'
-      )
+        '   wundr guardian review     - View sessions requiring attention',
+      ),
     );
     console.log(
-      chalk.gray('   wundr guardian interventions - List recent interventions')
+      chalk.gray('   wundr guardian interventions - List recent interventions'),
     );
     console.log('');
 
@@ -803,7 +803,7 @@ async function displayDashboard(): Promise<void> {
   } catch (error) {
     spinner.fail('Failed to load dashboard');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -818,7 +818,7 @@ async function displayDashboard(): Promise<void> {
 export function createGuardianCommand(): Command {
   const guardian = new Command('guardian')
     .description(
-      'Guardian Dashboard - AI alignment monitoring and intervention management'
+      'Guardian Dashboard - AI alignment monitoring and intervention management',
     )
     .addHelpText(
       'after',
@@ -831,7 +831,7 @@ Examples:
   ${chalk.green('wundr guardian review')}             Show sessions requiring Guardian review
   ${chalk.green('wundr guardian interventions')}      List recent interventions
   ${chalk.green('wundr guardian interventions --days 14')} Show interventions from last 14 days
-      `)
+      `),
     );
 
   // Default action - show dashboard

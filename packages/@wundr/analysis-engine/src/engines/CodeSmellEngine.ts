@@ -3,9 +3,6 @@
  * Advanced heuristic-based analysis with configurable rules
  */
 
-import {
-  ComplexityMetrics as _ComplexityMetrics,
-} from '../types';
 import { createId } from '../utils';
 
 import type {
@@ -86,10 +83,20 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
    */
   async analyze(
     entities: EntityInfo[],
-    _analysisConfig: AnalysisConfig,
+    analysisConfig: AnalysisConfig,
   ): Promise<CodeSmell[]> {
     const codeSmells: CodeSmell[] = [];
-    const _entityMap = new Map(entities.map(e => [e.id, e]));
+
+    // Apply analysis config settings - use thresholds from analysisConfig if available
+    const includeMinorSmells = this.config.includeMinorSmells;
+
+    // Apply complexity thresholds from analysisConfig to relevant rules
+    if (analysisConfig.thresholds?.complexity?.cyclomatic) {
+      const godObjectRule = this.rules.get('god-object');
+      if (godObjectRule?.thresholds) {
+        godObjectRule.thresholds.maxComplexity = analysisConfig.thresholds.complexity.cyclomatic;
+      }
+    }
 
     // Apply each enabled rule to all applicable entities
     for (const entity of entities) {
@@ -99,7 +106,7 @@ export class CodeSmellEngine implements BaseAnalyzer<CodeSmell[]> {
           const result = rule.check(entity, entities);
           if (
             result &&
-            (this.config.includeMinorSmells || result.confidence >= 0.7)
+            (includeMinorSmells || result.confidence >= 0.7)
           ) {
             codeSmells.push({
               id: createId(),
@@ -615,23 +622,23 @@ return false;
     const maxIntimacy = rule.thresholds?.maxIntimacy || 3;
 
     // Find classes that this class is too intimate with
-    const _intimateClasses = this.findIntimateClasses(entity, allEntities);
+    const intimateClasses = this.findIntimateClasses(entity, allEntities);
 
-    if (_intimateClasses.length > maxIntimacy) {
+    if (intimateClasses.length > maxIntimacy) {
       const confidence = Math.min(
         1,
-        (_intimateClasses.length - maxIntimacy) / maxIntimacy,
+        (intimateClasses.length - maxIntimacy) / maxIntimacy,
       );
 
       return {
         severity: 'medium',
         confidence,
-        message: `Class is inappropriately intimate with ${_intimateClasses.length} other classes`,
+        message: `Class is inappropriately intimate with ${intimateClasses.length} other classes`,
         suggestion:
           'Reduce coupling by using interfaces, dependency injection, or extracting shared functionality',
         evidence: [
-          `Intimate relationships: ${_intimateClasses.length}`,
-          `Affected classes: ${_intimateClasses.join(', ')}`,
+          `Intimate relationships: ${intimateClasses.length}`,
+          `Affected classes: ${intimateClasses.join(', ')}`,
         ],
       };
     }
@@ -866,7 +873,6 @@ return 0;
 return [];
 }
 
-    const _intimateClasses: string[] = [];
     const classReferences = new Map<string, number>();
 
     // Find references to other classes

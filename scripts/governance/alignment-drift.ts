@@ -892,11 +892,18 @@ ${this.getNextSteps(report.status)}
     return [];
   }
 
-  private async getTotalActions(_sessionId?: string): Promise<number> {
+  private async getTotalActions(sessionId?: string): Promise<number> {
     const dataPath = path.join(this.telemetryPath, 'action-counts.json');
     try {
       if (await fs.pathExists(dataPath)) {
         const data = await fs.readJson(dataPath);
+
+        // If sessionId provided, return session-specific count
+        if (sessionId && data.sessionCounts) {
+          const sessionData = data.sessionCounts[sessionId] as { totalActions?: number } | undefined;
+          return sessionData?.totalActions ?? data.totalActions ?? 0;
+        }
+
         return data.totalActions || 0;
       }
     } catch (error) {
@@ -905,11 +912,18 @@ ${this.getNextSteps(report.status)}
     return 0;
   }
 
-  private async getDailyActionCount(_sessionId?: string): Promise<number> {
+  private async getDailyActionCount(sessionId?: string): Promise<number> {
     const dataPath = path.join(this.telemetryPath, 'action-counts.json');
     try {
       if (await fs.pathExists(dataPath)) {
         const data = await fs.readJson(dataPath);
+
+        // If sessionId provided, return session-specific daily count
+        if (sessionId && data.sessionCounts) {
+          const sessionData = data.sessionCounts[sessionId] as { dailyActions?: number } | undefined;
+          return sessionData?.dailyActions ?? data.dailyActions ?? 0;
+        }
+
         return data.dailyActions || 0;
       }
     } catch (error) {
@@ -918,11 +932,18 @@ ${this.getNextSteps(report.status)}
     return 0;
   }
 
-  private async getEscalationBaseline(_sessionId?: string): Promise<number> {
+  private async getEscalationBaseline(sessionId?: string): Promise<number> {
     const dataPath = path.join(this.governancePath, 'escalation-baseline.json');
     try {
       if (await fs.pathExists(dataPath)) {
         const data = await fs.readJson(dataPath);
+
+        // If sessionId provided, return session-specific baseline if available
+        if (sessionId && data.sessionBaselines) {
+          const sessionBaseline = data.sessionBaselines[sessionId] as number | undefined;
+          return sessionBaseline ?? data.baseline ?? 0.3;
+        }
+
         return data.baseline || 0.3; // Default 30% escalation rate
       }
     } catch (error) {

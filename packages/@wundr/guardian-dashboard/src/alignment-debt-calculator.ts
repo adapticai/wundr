@@ -51,7 +51,7 @@ export class AlignmentDebtCalculator {
    */
   constructor(
     customThresholds?: Partial<DriftThresholds>,
-    customWeights?: Partial<typeof DEFAULT_WEIGHTS>
+    customWeights?: Partial<typeof DEFAULT_WEIGHTS>,
   ) {
     this.thresholds = { ...DEFAULT_THRESHOLDS, ...customThresholds };
     this.weights = { ...DEFAULT_WEIGHTS, ...customWeights };
@@ -141,7 +141,7 @@ export class AlignmentDebtCalculator {
    * @returns Array of metric names sorted by their contribution to debt
    */
   identifyDebtSources(
-    metrics: AlignmentDriftMetrics
+    metrics: AlignmentDriftMetrics,
   ): Array<{ metric: string; contribution: number; value: number }> {
     const sources = [
       {
@@ -187,7 +187,7 @@ export class AlignmentDebtCalculator {
   private validateMetricRange(name: string, value: number): void {
     if (value < 0 || value > 100) {
       throw new Error(
-        `Invalid metric value for ${name}: ${value}. Expected value between 0 and 100.`
+        `Invalid metric value for ${name}: ${value}. Expected value between 0 and 100.`,
       );
     }
   }
@@ -198,7 +198,7 @@ export class AlignmentDebtCalculator {
   private calculateCustomMetricsScore(customMetrics: CustomMetric[]): number {
     const totalWeight = customMetrics.reduce(
       (sum, m) => sum + (m.weight ?? 1),
-      0
+      0,
     );
 
     if (totalWeight === 0) {

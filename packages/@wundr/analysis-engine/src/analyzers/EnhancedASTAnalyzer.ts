@@ -29,7 +29,6 @@ import type {
   CodeSmell,
   Recommendation,
   VisualizationData,
-  SeverityLevel as _SeverityLevel,
   ConsolidationSuggestion,
 } from '../types';
 
@@ -61,10 +60,10 @@ interface WrapperPattern {
   wrapperEntity: EntityInfo;
 }
 
-interface _DependencyGraphNode {
+interface DependencyGraphNode {
   id: string;
   label: string;
-  type: string;
+  type: EntityInfo['type'];
   file: string;
   complexity?: number;
 }
@@ -551,10 +550,11 @@ return null;
         files: cycle,
         suggestions: this.generateCircularDependencySuggestions(cycle),
       }));
-    } catch (_error) {
+    } catch (error) {
       if (this.config.verbose) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         console.warn(
-          chalk.yellow('⚠️ Could not run madge for circular dependencies'),
+          chalk.yellow(`⚠️ Could not run madge for circular dependencies: ${errorMessage}`),
         );
       }
 
@@ -1014,7 +1014,6 @@ return '';
   private calculateNodeComplexity(node: ts.Node): ComplexityMetrics {
     let cyclomatic = 1;
     let cognitive = 0;
-    let _depth = 0;
     let maxDepth = 0;
     let parameters = 0;
     let lines = 0;
@@ -1032,7 +1031,6 @@ return '';
 
     // Calculate complexity
     const visit = (child: ts.Node, currentDepth: number) => {
-      _depth = currentDepth;
       maxDepth = Math.max(maxDepth, currentDepth);
 
       switch (child.kind) {
@@ -1257,14 +1255,60 @@ return null;
     };
   }
 
-  private generateCircularDependencySuggestions(_cycle: string[]): string[] {
-    return [
-      'Extract common interfaces to break circular dependencies',
-      'Use dependency injection to invert dependencies',
-      'Consider merging related modules',
-      'Introduce intermediate abstraction layer',
-      'Move shared types to separate module',
-    ];
+  private generateCircularDependencySuggestions(cycle: string[]): string[] {
+    const suggestions: string[] = [];
+
+    // Guard against empty cycles
+    if (cycle.length === 0) {
+      return ['No cycle information available'];
+    }
+
+    // Extract file names for clearer suggestions
+    const getFileName = (filePath: string): string => {
+      const parts = filePath.split('/');
+      return parts[parts.length - 1] || filePath;
+    };
+
+    const cycleFileNames = cycle.map(getFileName);
+    const firstFile = cycleFileNames[0];
+    const lastFile = cycleFileNames[cycleFileNames.length - 1];
+
+    // Analyze cycle depth to provide targeted suggestions
+    if (cycle.length === 2) {
+      suggestions.push(
+        `Consider merging '${firstFile}' and '${lastFile}' into a single module`,
+        `Extract shared types/interfaces to break the bidirectional dependency between: ${cycleFileNames.join(' <-> ')}`,
+      );
+    } else if (cycle.length <= 4) {
+      const cycleDescription = cycleFileNames.join(' -> ');
+      suggestions.push(
+        `Use dependency injection to break the cycle between: ${firstFile} and ${lastFile}`,
+        `Identify the most central file in the cycle (${firstFile}) and refactor its imports`,
+        `Break cycle by extracting shared functionality from: ${cycleFileNames.join(', ')}`,
+        `Consider using dependency injection between: ${firstFile} and ${lastFile}`,
+      );
+      suggestions.push(
+        `Current cycle path: ${cycleDescription}`,
+      );
+    } else {
+      const cycleDescription = cycleFileNames.slice(0, 3).join(' -> ') + ' -> ...';
+      suggestions.push(
+        `Deep circular dependency detected (${cycle.length} files) - consider major refactoring`,
+        'Introduce an intermediate abstraction layer',
+        `Review module boundaries for: ${cycleFileNames.slice(0, 5).join(', ')}${cycle.length > 5 ? ` and ${cycle.length - 5} more files` : ''}`,
+        `Break cycle by extracting shared functionality to a new module from: ${cycleFileNames.join(', ')}`,
+      );
+      suggestions.push(
+        `Cycle starts at: ${cycleDescription}`,
+      );
+    }
+
+    // Include specific actionable suggestions based on cycle participants
+    suggestions.push(
+      `Move shared types to a separate module that can be imported by: ${cycleFileNames.join(', ')}`,
+    );
+
+    return suggestions;
   }
 
   private generateRecommendations(
@@ -1365,7 +1409,7 @@ return null;
   private generateDependencyGraphData(
     entities: EntityInfo[],
   ): VisualizationData['dependencyGraph'] {
-    const nodes = entities.map(entity => ({
+    const nodes: DependencyGraphNode[] = entities.map(entity => ({
       id: entity.id,
       label: entity.name,
       type: entity.type,

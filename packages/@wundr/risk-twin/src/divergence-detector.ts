@@ -170,7 +170,7 @@ function calculateStandardDeviation(values: number[], mean?: number): number {
 export function calculateZScore(
   value: number,
   mean: number,
-  stdDev: number
+  stdDev: number,
 ): number {
   if (stdDev === 0) {
     return 0;
@@ -185,7 +185,7 @@ function calculateStandardError(
   stdDev1: number,
   n1: number,
   stdDev2: number,
-  n2: number
+  n2: number,
 ): number {
   if (n1 === 0 || n2 === 0) {
     return 0;
@@ -263,7 +263,7 @@ function extractValues(series: MetricSeries): number[] {
  */
 export function getDataInWindow(
   series: MetricSeries,
-  windowHours: number
+  windowHours: number,
 ): number[] {
   const now = new Date();
   const windowStart = new Date(now.getTime() - windowHours * 60 * 60 * 1000);
@@ -305,7 +305,7 @@ export class DivergenceDetector {
    */
   detect(
     twinMetrics: MetricSeries,
-    baselineMetrics: MetricSeries
+    baselineMetrics: MetricSeries,
   ): DivergenceResult {
     const twinValues = extractValues(twinMetrics);
     const baselineValues = extractValues(baselineMetrics);
@@ -313,20 +313,20 @@ export class DivergenceDetector {
     // Check confidence interval
     const confidenceCheck = this.checkConfidenceInterval(
       twinValues,
-      baselineValues
+      baselineValues,
     );
 
     // Check early deviation
     const deviationCheck = this.checkEarlyDeviation(
       twinValues,
       baselineValues,
-      this.earlyDeviationWindowHours
+      this.earlyDeviationWindowHours,
     );
 
     // Calculate statistical drift
     const driftMetrics = this.calculateStatisticalDrift(
       twinMetrics,
-      baselineMetrics
+      baselineMetrics,
     );
 
     // Build metrics comparison array
@@ -363,7 +363,7 @@ export class DivergenceDetector {
       twinStdDev,
       twin.length,
       baselineStdDev,
-      baseline.length
+      baseline.length,
     );
 
     const zValue = getZValueForConfidence(this.confidenceThreshold);
@@ -395,13 +395,13 @@ export class DivergenceDetector {
   checkEarlyDeviation(
     twin: number[],
     baseline: number[],
-    windowHours: number
+    windowHours: number,
   ): DeviationCheck {
     // For array inputs, use the most recent data points based on window
     // Assuming data is sorted by time, take the last N points proportional to window
     const windowSize = Math.max(
       1,
-      Math.floor(twin.length * (windowHours / 24))
+      Math.floor(twin.length * (windowHours / 24)),
     );
 
     const twinWindow = twin.slice(-windowSize);
@@ -436,7 +436,7 @@ export class DivergenceDetector {
    */
   calculateStatisticalDrift(
     twin: MetricSeries,
-    baseline: MetricSeries
+    baseline: MetricSeries,
   ): DriftMetrics {
     const twinValues = extractValues(twin);
     const baselineValues = extractValues(baseline);
@@ -473,7 +473,7 @@ export class DivergenceDetector {
     // Correlation Coefficient
     const correlationCoefficient = calculateCorrelation(
       twinValues.slice(0, n),
-      baselineValues.slice(0, n)
+      baselineValues.slice(0, n),
     );
 
     // Determine trend direction
@@ -484,7 +484,7 @@ export class DivergenceDetector {
       meanAbsoluteDeviation,
       rootMeanSquareDeviation,
       correlationCoefficient,
-      baselineValues
+      baselineValues,
     );
 
     return {
@@ -526,7 +526,7 @@ export class DivergenceDetector {
    */
   private buildMetricsComparison(
     twin: MetricSeries,
-    baseline: MetricSeries
+    baseline: MetricSeries,
   ): MetricComparison[] {
     const twinValues = extractValues(twin);
     const baselineValues = extractValues(baseline);
@@ -543,7 +543,7 @@ export class DivergenceDetector {
     const twinStdDev = calculateStandardDeviation(twinValues, twinMean);
     const baselineStdDev = calculateStandardDeviation(
       baselineValues,
-      baselineMean
+      baselineMean,
     );
 
     const comparisons: MetricComparison[] = [
@@ -592,7 +592,7 @@ export class DivergenceDetector {
    * Determine trend direction from deviations
    */
   private determineTrendDirection(
-    deviations: number[]
+    deviations: number[],
   ): 'increasing' | 'decreasing' | 'stable' {
     if (deviations.length < 2) {
       return 'stable';
@@ -633,7 +633,7 @@ export class DivergenceDetector {
     mad: number,
     rmsd: number,
     correlation: number,
-    baselineValues: number[]
+    baselineValues: number[],
   ): number {
     if (baselineValues.length === 0) {
       return 0;

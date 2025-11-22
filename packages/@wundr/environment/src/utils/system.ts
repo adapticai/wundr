@@ -52,7 +52,8 @@ function getVersion(command: string): string {
       .toString()
       .trim()
       .replace(/^v/, ''); // Remove 'v' prefix if present
-  } catch (_error) {
+  } catch {
+    // Command not found or execution failed - tool is not installed
     return 'not installed';
   }
 }
@@ -93,7 +94,8 @@ export function isRunningInDocker(): boolean {
     return execSync('cat /proc/1/cgroup', { encoding: 'utf8' }).includes(
       'docker'
     );
-  } catch (_error) {
+  } catch {
+    // File doesn't exist or isn't accessible - not running in Docker
     return false;
   }
 }

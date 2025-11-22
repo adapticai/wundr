@@ -21,17 +21,17 @@ export function createComputerSetupCommand(): Command {
     .alias('setup-machine')
     .alias('provision')
     .description(
-      'Set up a new developer machine with all required tools and configurations'
+      'Set up a new developer machine with all required tools and configurations',
     )
     .option(
       '-p, --profile <profile>',
-      'Use a specific profile (frontend, backend, fullstack, devops, ml)'
+      'Use a specific profile (frontend, backend, fullstack, devops, ml)',
     )
     .option('-t, --team <team>', 'Apply team-specific configurations')
     .option(
       '-m, --mode <mode>',
       'Setup mode (interactive, automated, minimal)',
-      'interactive'
+      'interactive',
     )
     .option('--dry-run', 'Show what would be installed without making changes')
     .option('--skip-existing', 'Skip tools that are already installed')
@@ -91,7 +91,7 @@ async function runComputerSetup(options: any): Promise<void> {
       profile = await manager.getProfile(options.profile);
       if (!profile) {
         console.log(
-          chalk.yellow(`Profile '${options.profile}' not found. Using default.`)
+          chalk.yellow(`Profile '${options.profile}' not found. Using default.`),
         );
         profile = await manager.getDefaultProfile();
       }
@@ -114,14 +114,14 @@ async function runComputerSetup(options: any): Promise<void> {
     console.log(chalk.white('Role:'), chalk.green(profile.role));
     console.log(
       chalk.white('Platform:'),
-      chalk.green(`${platform.os} ${platform.arch}`)
+      chalk.green(`${platform.os} ${platform.arch}`),
     );
     console.log(chalk.white('Mode:'), chalk.green(options.mode));
     console.log(chalk.gray('━'.repeat(50)));
 
     if (options.dryRun) {
       console.log(
-        chalk.yellow('\n⚠️  DRY RUN MODE - No changes will be made\n')
+        chalk.yellow('\n⚠️  DRY RUN MODE - No changes will be made\n'),
       );
     }
 
@@ -148,7 +148,7 @@ async function runComputerSetup(options: any): Promise<void> {
       console.log(chalk.cyan(`\n[${bar}] ${progress.percentage}%`));
       console.log(chalk.gray(`Current: ${progress.currentStep}`));
       console.log(
-        chalk.gray(`Steps: ${progress.completedSteps}/${progress.totalSteps}`)
+        chalk.gray(`Steps: ${progress.completedSteps}/${progress.totalSteps}`),
       );
     });
 
@@ -178,11 +178,11 @@ async function runComputerSetup(options: any): Promise<void> {
 
     console.log(chalk.white('Summary:'));
     console.log(
-      chalk.green(`  ✓ Completed: ${result.completedSteps?.length || 0} steps`)
+      chalk.green(`  ✓ Completed: ${result.completedSteps?.length || 0} steps`),
     );
     if (result.skippedSteps && result.skippedSteps.length > 0) {
       console.log(
-        chalk.yellow(`  ⊘ Skipped: ${result.skippedSteps.length} steps`)
+        chalk.yellow(`  ⊘ Skipped: ${result.skippedSteps.length} steps`),
       );
     }
     if (result.failedSteps && result.failedSteps.length > 0) {
@@ -197,7 +197,7 @@ async function runComputerSetup(options: any): Promise<void> {
     if (result.errors && result.errors.length > 0) {
       console.log(chalk.red('\n❌ Errors:'));
       result.errors.forEach(e =>
-        console.log(chalk.red(`  - ${(e as any)?.message || e}`))
+        console.log(chalk.red(`  - ${(e as any)?.message || e}`)),
       );
     }
 
@@ -212,12 +212,12 @@ async function runComputerSetup(options: any): Promise<void> {
       } catch (fleetError) {
         console.error(
           chalk.red('\n⚠️ Fleet Mode setup encountered issues:'),
-          fleetError
+          fleetError,
         );
         console.log(
           chalk.yellow(
-            'You can retry with: wundr computer-setup --profile <your-profile>'
-          )
+            'You can retry with: wundr computer-setup --profile <your-profile>',
+          ),
         );
       }
     }
@@ -495,7 +495,7 @@ async function setupFleetMode(profile: DeveloperProfile): Promise<void> {
   const templatesDir = path.join(wundrDir, 'templates');
 
   console.log(
-    chalk.cyan('\n🚀 Setting up Fleet-Scale Autonomous Engineering mode...\n')
+    chalk.cyan('\n🚀 Setting up Fleet-Scale Autonomous Engineering mode...\n'),
   );
 
   // Create directory structure
@@ -539,7 +539,7 @@ async function setupFleetMode(profile: DeveloperProfile): Promise<void> {
   await fs.writeFile(
     path.join(vpDaemonDir, 'config.yaml'),
     generateYamlContent(vpConfig),
-    'utf-8'
+    'utf-8',
   );
   console.log(chalk.green('  ✓ VP Daemon configuration installed'));
 
@@ -580,7 +580,7 @@ hardConstraints:
   await fs.writeFile(
     path.join(vpDaemonDir, 'vp-charter.md'),
     vpCharter,
-    'utf-8'
+    'utf-8',
   );
   console.log(chalk.green('  ✓ VP Charter template deployed'));
 
@@ -624,7 +624,7 @@ hardConstraints:
   await fs.writeFile(
     path.join(vpDaemonDir, 'token-budget.yaml'),
     generateYamlContent(tokenBudgetConfig),
-    'utf-8'
+    'utf-8',
   );
   console.log(chalk.green('  ✓ Token budgeting configuration set up'));
 
@@ -699,22 +699,22 @@ technical_debt: 0.15
   await fs.writeFile(
     path.join(templatesDir, 'memory-bank', 'activeContext.md'),
     sessionTemplate,
-    'utf-8'
+    'utf-8',
   );
   await fs.writeFile(
     path.join(templatesDir, 'memory-bank', 'progress.md'),
     progressTemplate,
-    'utf-8'
+    'utf-8',
   );
   await fs.writeFile(
     path.join(templatesDir, 'memory-bank', 'subAgentDelegation.md'),
     subAgentDelegationTemplate,
-    'utf-8'
+    'utf-8',
   );
   await fs.writeFile(
     path.join(templatesDir, 'memory-bank', 'ipre-alignment.md'),
     ipreAlignmentTemplate,
-    'utf-8'
+    'utf-8',
   );
   console.log(chalk.green('  ✓ Memory Bank templates deployed'));
 
@@ -776,7 +776,7 @@ technical_debt: 0.15
   await fs.writeFile(
     path.join(governanceDir, 'ipre-defaults.yaml'),
     generateYamlContent(ipreDefaults),
-    'utf-8'
+    'utf-8',
   );
   console.log(chalk.green('  ✓ IPRE governance defaults initialized'));
 
@@ -837,12 +837,12 @@ git worktree list
   await fs.writeFile(
     path.join(wundrDir, 'RESOURCE_LIMITS.md'),
     resourceGuidance,
-    'utf-8'
+    'utf-8',
   );
   console.log(chalk.green('  ✓ System resource limits guidance configured'));
 
   console.log(
-    chalk.cyan('\n✅ Fleet-Scale Autonomous Engineering mode setup complete!\n')
+    chalk.cyan('\n✅ Fleet-Scale Autonomous Engineering mode setup complete!\n'),
   );
   console.log(chalk.white('Files created:'));
   console.log(chalk.gray('  ~/.wundr/vp-daemon/config.yaml'));
@@ -853,8 +853,8 @@ git worktree list
   console.log(chalk.gray('  ~/.wundr/RESOURCE_LIMITS.md'));
   console.log(
     chalk.yellow(
-      '\n⚠️  Review ~/.wundr/RESOURCE_LIMITS.md for system configuration recommendations.'
-    )
+      '\n⚠️  Review ~/.wundr/RESOURCE_LIMITS.md for system configuration recommendations.',
+    ),
   );
 }
 
@@ -878,7 +878,7 @@ function generateYamlContent(obj: Record<string, unknown>, indent = 0): string {
           yaml += `${spaces}  -\n`;
           const itemYaml = generateYamlContent(
             item as Record<string, unknown>,
-            indent + 2
+            indent + 2,
           );
           yaml += itemYaml;
         } else {
@@ -905,7 +905,7 @@ async function manageProfiles(): Promise<void> {
 
   if (profiles.length === 0) {
     console.log(
-      chalk.yellow('No profiles found. Create one with "wundr computer-setup"')
+      chalk.yellow('No profiles found. Create one with "wundr computer-setup"'),
     );
     return;
   }
@@ -932,7 +932,7 @@ async function validateSetup(): Promise<void> {
     if (profiles.length === 0) {
       spinner.stop();
       console.log(
-        chalk.yellow('No profile found. Run "wundr computer-setup" first.')
+        chalk.yellow('No profile found. Run "wundr computer-setup" first.'),
       );
       return;
     }
@@ -940,7 +940,7 @@ async function validateSetup(): Promise<void> {
     const profile = profiles[0]; // Use most recent
     if (!profile) {
       console.log(
-        chalk.yellow('No profile found. Run "wundr computer-setup" first.')
+        chalk.yellow('No profile found. Run "wundr computer-setup" first.'),
       );
       return;
     }
@@ -954,8 +954,8 @@ async function validateSetup(): Promise<void> {
       console.log(chalk.red('❌ Machine setup has issues'));
       console.log(
         chalk.yellow(
-          '\nRun "wundr computer-setup doctor" to diagnose and fix issues'
-        )
+          '\nRun "wundr computer-setup doctor" to diagnose and fix issues',
+        ),
       );
     }
   } catch (error) {
@@ -985,7 +985,7 @@ async function runDoctor(): Promise<void> {
       const { execa } = (await import('execa')) as any;
       const { stdout } = await execa(
         check.command.split(' ')[0],
-        check.command.split(' ').slice(1)
+        check.command.split(' ').slice(1),
       );
       spinner.succeed(`${check.name}: ${stdout.trim()}`);
     } catch (error) {

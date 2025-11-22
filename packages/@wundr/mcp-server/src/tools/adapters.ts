@@ -732,15 +732,38 @@ export class ClaudeConfigInstallerAdapter {
     }
   }
 
-  getSteps(_profile: DeveloperProfile, _platform: SetupPlatform): AdapterResult<{ id: string; name: string; description: string }[]> {
+  getSteps(profile: DeveloperProfile, platform: SetupPlatform): AdapterResult<{ id: string; name: string; description: string }[]> {
     try {
-      // Return synchronous stub steps since getInstaller is async
-      const steps = [
+      // Build steps dynamically based on profile and platform
+      const steps: { id: string; name: string; description: string }[] = [
         { id: 'claude-cli', name: 'Install Claude CLI', description: 'Install Claude command-line interface' },
         { id: 'claude-config', name: 'Configure Claude', description: 'Setup Claude directory and configurations' },
-        { id: 'mcp-servers', name: 'Install MCP Servers', description: 'Install and configure MCP servers' },
-        { id: 'claude-agents', name: 'Setup Agents', description: 'Configure specialized agents' },
       ];
+
+      // Add MCP servers step - customize description based on profile preferences
+      const mcpToolsList = profile.preferences?.aiTools?.mcpTools;
+      const mcpDescription = mcpToolsList && mcpToolsList.length > 0
+        ? `Install and configure MCP servers: ${mcpToolsList.slice(0, 3).join(', ')}${mcpToolsList.length > 3 ? '...' : ''}`
+        : 'Install and configure MCP servers';
+      steps.push({ id: 'mcp-servers', name: 'Install MCP Servers', description: mcpDescription });
+
+      // Add agents step - customize based on profile's swarm agents
+      const swarmAgentsList = profile.preferences?.aiTools?.swarmAgents;
+      const agentsDescription = swarmAgentsList && swarmAgentsList.length > 0
+        ? `Configure specialized agents: ${swarmAgentsList.slice(0, 3).join(', ')}${swarmAgentsList.length > 3 ? '...' : ''}`
+        : 'Configure specialized agents';
+      steps.push({ id: 'claude-agents', name: 'Setup Agents', description: agentsDescription });
+
+      // Add platform-specific notes to CLI step description
+      const cliStep = steps[0];
+      if (cliStep) {
+        if (platform.os === 'darwin') {
+          cliStep.description = 'Install Claude CLI via Homebrew or npm';
+        } else if (platform.os === 'linux') {
+          cliStep.description = 'Install Claude CLI via npm or package manager';
+        }
+      }
+
       return success(steps);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

@@ -205,7 +205,7 @@ function formatUptime(ms: number): string {
 export function createVPCommand(): Command {
   const command = new Command('vp')
     .description(
-      'Manage the VP (Virtual Principal) Daemon for agent orchestration'
+      'Manage the VP (Virtual Principal) Daemon for agent orchestration',
     )
     .addHelpText(
       'after',
@@ -217,7 +217,7 @@ Examples:
   ${chalk.green('wundr vp stop')}               Stop the daemon gracefully
   ${chalk.green('wundr vp config show')}        View current configuration
   ${chalk.green('wundr vp config set daemon.port=9000')}  Update configuration
-      `)
+      `),
     );
 
   // Start command
@@ -308,7 +308,7 @@ async function startDaemon(options: {
     const currentStatus = await getDaemonStatus();
     if (currentStatus.running) {
       spinner.fail(
-        `VP Daemon is already running (PID: ${currentStatus.pid}, port: ${currentStatus.port})`
+        `VP Daemon is already running (PID: ${currentStatus.pid}, port: ${currentStatus.port})`,
       );
       return;
     }
@@ -366,13 +366,13 @@ async function startDaemon(options: {
       console.error(chalk.white('  1. Install: npm install @wundr/vp-daemon'));
       console.error(
         chalk.white(
-          '  2. Or build from source: cd scripts/vp-daemon && npm run build'
-        )
+          '  2. Or build from source: cd scripts/vp-daemon && npm run build',
+        ),
       );
       console.error(
         chalk.gray(
-          `\nError: ${importError instanceof Error ? importError.message : String(importError)}`
-        )
+          `\nError: ${importError instanceof Error ? importError.message : String(importError)}`,
+        ),
       );
       return;
     }
@@ -393,13 +393,13 @@ async function startDaemon(options: {
             ([k, v]: [string, unknown]) => [
               k,
               (v as { status?: string })?.status ?? 'unknown',
-            ]
-          )
+            ],
+          ),
         ),
       };
       fs.writeFile(
         path.join(VP_CONFIG_DIR, 'status.json'),
-        JSON.stringify(statusData, null, 2)
+        JSON.stringify(statusData, null, 2),
       ).catch(() => {});
     };
 
@@ -417,7 +417,7 @@ async function startDaemon(options: {
     await daemon.start();
 
     spinner.succeed(
-      `VP Daemon started successfully on ${config.daemon.host}:${config.daemon.port}`
+      `VP Daemon started successfully on ${config.daemon.host}:${config.daemon.port}`,
     );
 
     console.log(chalk.gray('\nDaemon Information:'));
@@ -442,7 +442,7 @@ async function startDaemon(options: {
   } catch (error) {
     spinner.fail('Failed to start VP Daemon');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -468,8 +468,8 @@ async function showStatus(options: { json?: boolean }): Promise<void> {
             },
           },
           null,
-          2
-        )
+          2,
+        ),
       );
       return;
     }
@@ -502,7 +502,7 @@ async function showStatus(options: { json?: boolean }): Promise<void> {
               ? chalk.yellow
               : chalk.red;
         console.log(
-          healthColor(`Health:       ${status.health.toUpperCase()}`)
+          healthColor(`Health:       ${status.health.toUpperCase()}`),
         );
       }
 
@@ -530,7 +530,7 @@ async function showStatus(options: { json?: boolean }): Promise<void> {
   } catch (error) {
     spinner.fail('Failed to get daemon status');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -591,7 +591,7 @@ async function stopDaemon(options: {
   } catch (error) {
     spinner.fail('Failed to stop VP Daemon');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -611,7 +611,7 @@ async function showConfig(options: { json?: boolean }): Promise<void> {
     }
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -623,10 +623,10 @@ async function setConfig(keyValue: string): Promise<void> {
 
     if (!keyPath || valueStr === undefined) {
       console.error(
-        chalk.red('Invalid format. Use: wundr vp config set <key>=<value>')
+        chalk.red('Invalid format. Use: wundr vp config set <key>=<value>'),
       );
       console.error(
-        chalk.gray('Example: wundr vp config set daemon.port=9000')
+        chalk.gray('Example: wundr vp config set daemon.port=9000'),
       );
       return;
     }
@@ -671,13 +671,13 @@ async function setConfig(keyValue: string): Promise<void> {
     console.log(chalk.green('Configuration updated:'));
     console.log(
       chalk.white(
-        `  ${keyPath}: ${JSON.stringify(oldValue)} -> ${JSON.stringify(value)}`
-      )
+        `  ${keyPath}: ${JSON.stringify(oldValue)} -> ${JSON.stringify(value)}`,
+      ),
     );
     console.log(chalk.gray('\nRestart the daemon for changes to take effect.'));
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -709,7 +709,7 @@ async function resetConfig(options: { force?: boolean }): Promise<void> {
     console.log(chalk.gray(`Saved to: ${VP_CONFIG_FILE}`));
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -724,7 +724,7 @@ async function viewLogs(options: {
     console.log(chalk.yellow('No log file found.'));
     console.log(chalk.gray(`Expected location: ${VP_LOG_FILE}`));
     console.log(
-      chalk.gray('Start the daemon with --verbose to enable logging.')
+      chalk.gray('Start the daemon with --verbose to enable logging.'),
     );
     return;
   }
@@ -756,7 +756,7 @@ async function viewLogs(options: {
     }
   } catch (error) {
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }

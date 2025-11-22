@@ -176,7 +176,7 @@ async function getGitRepoRoot(): Promise<string> {
 async function executeGitCommand(
   command: string,
   args: string[],
-  cwd: string
+  cwd: string,
 ): Promise<string> {
   const fullCommand = `git ${command} ${args.join(' ')}`;
   try {
@@ -195,7 +195,7 @@ async function listGitWorktrees(repoPath: string): Promise<GitWorktreeInfo[]> {
     const output = await executeGitCommand(
       'worktree',
       ['list', '--porcelain'],
-      repoPath
+      repoPath,
     );
     const entries = output.split('\n\n').filter(Boolean);
 
@@ -323,7 +323,7 @@ Examples:
   ${chalk.green('wundr worktree cleanup --dry-run')}   Preview what would be cleaned up
   ${chalk.green('wundr worktree sync')}                Sync all worktrees from remote
   ${chalk.green('wundr worktree sync <taskId>')}       Sync specific worktree
-      `)
+      `),
     );
 
   // List command (default)
@@ -333,7 +333,7 @@ Examples:
     .option('-s, --session <id>', 'Filter by session ID')
     .option(
       '--status <status>',
-      'Filter by status (active, paused, syncing, error, etc.)'
+      'Filter by status (active, paused, syncing, error, etc.)',
     )
     .option('-f, --format <format>', 'Output format (table, json)', 'table')
     .action(async options => {
@@ -363,7 +363,7 @@ Examples:
     .description('Clean up stale worktrees')
     .option(
       '--dry-run',
-      'Preview what would be cleaned up without making changes'
+      'Preview what would be cleaned up without making changes',
     )
     .option('--force', 'Force cleanup even with uncommitted changes')
     .option('--age <days>', 'Clean up worktrees older than specified days', '7')
@@ -417,8 +417,8 @@ async function listWorktrees(options: {
             worktrees: worktrees,
           },
           null,
-          2
-        )
+          2,
+        ),
       );
       return;
     }
@@ -442,8 +442,8 @@ async function listWorktrees(options: {
           padRight('Branch', 25) +
           padRight('Status', 12) +
           padRight('Created', 12) +
-          padRight('Path', 40)
-      )
+          padRight('Path', 40),
+      ),
     );
     console.log(chalk.gray('-'.repeat(110)));
 
@@ -459,7 +459,7 @@ async function listWorktrees(options: {
           chalk.blue(padRight(branchName, 25)) +
           statusColor(padRight(getStatusIcon(wt.status), 12)) +
           padRight(createdAge, 12) +
-          chalk.gray(padRight(worktreePath, 40))
+          chalk.gray(padRight(worktreePath, 40)),
       );
     }
 
@@ -469,14 +469,14 @@ async function listWorktrees(options: {
   } catch (error) {
     spinner.fail('Failed to load worktrees');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
 
 async function createWorktree(
   taskId: string,
-  options: { base?: string }
+  options: { base?: string },
 ): Promise<void> {
   const spinner = ora(`Creating worktree for task: ${taskId}...`).start();
 
@@ -490,7 +490,7 @@ async function createWorktree(
     if (existing) {
       spinner.fail(`Worktree already exists for task: ${taskId}`);
       console.log(
-        chalk.yellow(`Use "wundr worktree switch ${taskId}" to switch to it.`)
+        chalk.yellow(`Use "wundr worktree switch ${taskId}" to switch to it.`),
       );
       return;
     }
@@ -515,7 +515,7 @@ async function createWorktree(
     await executeGitCommand(
       'worktree',
       ['add', '-b', branchName, worktreePath, `origin/${baseBranch}`],
-      repoPath
+      repoPath,
     );
 
     // Save to state
@@ -539,13 +539,13 @@ async function createWorktree(
     console.log(chalk.white('  Path:       ') + chalk.gray(worktreePath));
     console.log('');
     console.log(
-      chalk.gray(`Use "wundr worktree switch ${taskId}" to start working.`)
+      chalk.gray(`Use "wundr worktree switch ${taskId}" to start working.`),
     );
     console.log('');
   } catch (error) {
     spinner.fail('Failed to create worktree');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -561,7 +561,7 @@ async function switchWorktree(taskId: string): Promise<void> {
     if (!worktree) {
       spinner.fail(`Worktree not found: ${taskId}`);
       console.log(
-        chalk.yellow(`Use "wundr worktree create ${taskId}" to create it.`)
+        chalk.yellow(`Use "wundr worktree create ${taskId}" to create it.`),
       );
       return;
     }
@@ -573,8 +573,8 @@ async function switchWorktree(taskId: string): Promise<void> {
       spinner.fail(`Worktree directory not found: ${worktree.worktreePath}`);
       console.log(
         chalk.yellow(
-          'The worktree may have been deleted. Consider running cleanup.'
-        )
+          'The worktree may have been deleted. Consider running cleanup.',
+        ),
       );
       return;
     }
@@ -588,10 +588,10 @@ async function switchWorktree(taskId: string): Promise<void> {
     console.log('');
     console.log(chalk.white('  Task ID:    ') + chalk.green(taskId));
     console.log(
-      chalk.white('  Branch:     ') + chalk.blue(worktree.branchName)
+      chalk.white('  Branch:     ') + chalk.blue(worktree.branchName),
     );
     console.log(
-      chalk.white('  Path:       ') + chalk.gray(worktree.worktreePath)
+      chalk.white('  Path:       ') + chalk.gray(worktree.worktreePath),
     );
     console.log('');
     console.log(chalk.cyan('To navigate to this worktree, run:'));
@@ -600,7 +600,7 @@ async function switchWorktree(taskId: string): Promise<void> {
   } catch (error) {
     spinner.fail('Failed to switch worktree');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
@@ -613,7 +613,7 @@ async function cleanupWorktrees(options: {
   const maxAgeDays = parseInt(options.age || '7', 10);
   const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
   const spinner = ora(
-    options.dryRun ? 'Analyzing worktrees...' : 'Cleaning up worktrees...'
+    options.dryRun ? 'Analyzing worktrees...' : 'Cleaning up worktrees...',
   ).start();
 
   try {
@@ -687,7 +687,7 @@ async function cleanupWorktrees(options: {
       }
 
       console.log(
-        chalk.yellow(`\nWorktrees to be removed: ${toRemove.length}`)
+        chalk.yellow(`\nWorktrees to be removed: ${toRemove.length}`),
       );
       console.log(chalk.gray('-'.repeat(80)));
 
@@ -695,10 +695,10 @@ async function cleanupWorktrees(options: {
         if (entry) {
           console.log(chalk.white('  Task ID: ') + chalk.green(entry.taskId));
           console.log(
-            chalk.white('  Path:    ') + chalk.gray(entry.worktreePath)
+            chalk.white('  Path:    ') + chalk.gray(entry.worktreePath),
           );
           console.log(
-            chalk.white('  Branch:  ') + chalk.blue(entry.branchName)
+            chalk.white('  Branch:  ') + chalk.blue(entry.branchName),
           );
           console.log(chalk.white('  Reason:  ') + chalk.yellow(reason));
           console.log('');
@@ -707,7 +707,7 @@ async function cleanupWorktrees(options: {
 
       if (toSkip.length > 0) {
         console.log(
-          chalk.yellow(`\nWorktrees to be skipped: ${toSkip.length}`)
+          chalk.yellow(`\nWorktrees to be skipped: ${toSkip.length}`),
         );
         console.log(chalk.gray('-'.repeat(80)));
 
@@ -715,7 +715,7 @@ async function cleanupWorktrees(options: {
           if (entry) {
             console.log(chalk.white('  Task ID: ') + chalk.green(entry.taskId));
             console.log(
-              chalk.white('  Path:    ') + chalk.gray(entry.worktreePath)
+              chalk.white('  Path:    ') + chalk.gray(entry.worktreePath),
             );
             console.log(chalk.white('  Reason:  ') + chalk.gray(reason));
             console.log('');
@@ -725,7 +725,7 @@ async function cleanupWorktrees(options: {
 
       console.log(chalk.gray('-'.repeat(80)));
       console.log(
-        chalk.gray('Run without --dry-run to perform actual cleanup.')
+        chalk.gray('Run without --dry-run to perform actual cleanup.'),
       );
       console.log('');
     } else {
@@ -750,7 +750,7 @@ async function cleanupWorktrees(options: {
           await executeGitCommand(
             'worktree',
             ['remove', forceFlag, entry.worktreePath].filter(Boolean),
-            repoPath
+            repoPath,
           );
 
           result.removedCount++;
@@ -789,7 +789,7 @@ async function cleanupWorktrees(options: {
       // Update state file to remove cleaned worktrees
       const removedPaths = new Set(result.removedPaths);
       state.worktrees = state.worktrees.filter(
-        wt => !removedPaths.has(wt.worktreePath)
+        wt => !removedPaths.has(wt.worktreePath),
       );
       await saveWorktreeState(state);
 
@@ -805,7 +805,7 @@ async function cleanupWorktrees(options: {
 
       if (result.removedCount > 0) {
         console.log(
-          chalk.green(`\nRemoved ${result.removedCount} worktree(s):`)
+          chalk.green(`\nRemoved ${result.removedCount} worktree(s):`),
         );
         for (const removedPath of result.removedPaths) {
           console.log(chalk.gray(`  - ${removedPath}`));
@@ -814,7 +814,7 @@ async function cleanupWorktrees(options: {
 
       if (result.skippedPaths.length > 0) {
         console.log(
-          chalk.yellow(`\nSkipped ${result.skippedPaths.length} worktree(s):`)
+          chalk.yellow(`\nSkipped ${result.skippedPaths.length} worktree(s):`),
         );
         for (const skippedPath of result.skippedPaths) {
           const reason = result.skipReasons.get(skippedPath) || 'unknown';
@@ -834,17 +834,17 @@ async function cleanupWorktrees(options: {
   } catch (error) {
     spinner.fail('Failed to cleanup worktrees');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }
 
 async function syncWorktrees(
   taskId: string | undefined,
-  options: { all?: boolean }
+  options: { all?: boolean },
 ): Promise<void> {
   const spinner = ora(
-    taskId ? `Syncing worktree: ${taskId}...` : 'Syncing worktrees...'
+    taskId ? `Syncing worktree: ${taskId}...` : 'Syncing worktrees...',
   ).start();
 
   try {
@@ -852,7 +852,7 @@ async function syncWorktrees(
     const repoPath = state.repoPath || (await getGitRepoRoot());
 
     const syncSingleWorktree = async (
-      worktree: WorktreeEntry
+      worktree: WorktreeEntry,
     ): Promise<SyncResult> => {
       const timestamp = new Date();
       let stashedChanges = false;
@@ -866,7 +866,7 @@ async function syncWorktrees(
           await executeGitCommand(
             'stash',
             ['push', '-m', 'auto-stash before sync'],
-            worktree.worktreePath
+            worktree.worktreePath,
           );
           stashedChanges = true;
         }
@@ -878,7 +878,7 @@ async function syncWorktrees(
         const branchName = await executeGitCommand(
           'rev-parse',
           ['--abbrev-ref', 'HEAD'],
-          worktree.worktreePath
+          worktree.worktreePath,
         );
 
         // Try fast-forward pull
@@ -886,14 +886,14 @@ async function syncWorktrees(
           await executeGitCommand(
             'pull',
             ['--ff-only', 'origin', branchName],
-            worktree.worktreePath
+            worktree.worktreePath,
           );
         } catch {
           // Fast-forward not possible, try rebase
           await executeGitCommand(
             'rebase',
             [`origin/${branchName}`],
-            worktree.worktreePath
+            worktree.worktreePath,
           );
         }
 
@@ -902,7 +902,7 @@ async function syncWorktrees(
         try {
           const { stdout } = await execAsync(
             `git rev-list --count origin/${branchName}..HEAD`,
-            { cwd: worktree.worktreePath, timeout: 10000 }
+            { cwd: worktree.worktreePath, timeout: 10000 },
           );
           commitsUpdated = parseInt(stdout.trim(), 10) || 0;
         } catch {
@@ -973,15 +973,15 @@ async function syncWorktrees(
         console.log(chalk.green(`\nSuccessfully synced worktree: ${taskId}`));
         console.log(
           chalk.white('  Branch:  ') +
-            chalk.blue(result.branchName || 'unknown')
+            chalk.blue(result.branchName || 'unknown'),
         );
         console.log(
           chalk.white('  Commits: ') +
-            chalk.cyan(`${result.commitsUpdated || 0} updated`)
+            chalk.cyan(`${result.commitsUpdated || 0} updated`),
         );
         if (result.stashedChanges) {
           console.log(
-            chalk.yellow('  Note: Local changes were stashed and restored.')
+            chalk.yellow('  Note: Local changes were stashed and restored.'),
           );
         }
       } else {
@@ -992,7 +992,7 @@ async function syncWorktrees(
     } else if (options.all || !taskId) {
       // Sync all active worktrees
       const activeWorktrees = state.worktrees.filter(
-        wt => wt.status === 'active' || wt.status === 'paused'
+        wt => wt.status === 'active' || wt.status === 'paused',
       );
 
       if (activeWorktrees.length === 0) {
@@ -1030,8 +1030,8 @@ async function syncWorktrees(
         for (const { taskId: tid, result } of successful) {
           console.log(
             chalk.gray(
-              `  - ${tid}: ${result.commitsUpdated || 0} commit(s) updated`
-            )
+              `  - ${tid}: ${result.commitsUpdated || 0} commit(s) updated`,
+            ),
           );
         }
       }
@@ -1048,7 +1048,7 @@ async function syncWorktrees(
   } catch (error) {
     spinner.fail('Failed to sync worktrees');
     console.error(
-      chalk.red(error instanceof Error ? error.message : String(error))
+      chalk.red(error instanceof Error ? error.message : String(error)),
     );
   }
 }

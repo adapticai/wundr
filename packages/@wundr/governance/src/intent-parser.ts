@@ -161,7 +161,7 @@ export class IntentParser {
     if (!yamlContent || typeof yamlContent !== 'string') {
       throw new IntentParseError(
         'YAML content must be a non-empty string',
-        'INVALID_INPUT'
+        'INVALID_INPUT',
       );
     }
 
@@ -179,7 +179,7 @@ export class IntentParser {
       }
       throw new IntentParseError(
         `Failed to parse YAML content: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        'YAML_PARSE_ERROR'
+        'YAML_PARSE_ERROR',
       );
     }
   }
@@ -194,7 +194,7 @@ export class IntentParser {
     if (!jsonContent || typeof jsonContent !== 'string') {
       throw new IntentParseError(
         'JSON content must be a non-empty string',
-        'INVALID_INPUT'
+        'INVALID_INPUT',
       );
     }
 
@@ -212,7 +212,7 @@ export class IntentParser {
       }
       throw new IntentParseError(
         `Failed to parse JSON content: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        'JSON_PARSE_ERROR'
+        'JSON_PARSE_ERROR',
       );
     }
   }
@@ -227,7 +227,7 @@ export class IntentParser {
     if (!filePath || typeof filePath !== 'string') {
       throw new IntentParseError(
         'File path must be a non-empty string',
-        'INVALID_INPUT'
+        'INVALID_INPUT',
       );
     }
 
@@ -237,7 +237,7 @@ export class IntentParser {
     if (!supportedExtensions.includes(ext)) {
       throw new IntentParseError(
         `Unsupported file extension: ${ext}. Supported: ${supportedExtensions.join(', ')}`,
-        'UNSUPPORTED_FORMAT'
+        'UNSUPPORTED_FORMAT',
       );
     }
 
@@ -257,7 +257,7 @@ export class IntentParser {
         error instanceof Error ? error.message : 'Unknown error';
       throw new IntentParseError(
         `Failed to read file: ${errorMessage}`,
-        'FILE_READ_ERROR'
+        'FILE_READ_ERROR',
       );
     }
   }
@@ -340,7 +340,7 @@ export class IntentParser {
 
       // Check for duplicate values
       const uniqueValues = new Set(
-        intent.values.map(v => v.toLowerCase().trim())
+        intent.values.map(v => v.toLowerCase().trim()),
       );
       if (uniqueValues.size !== intent.values.length) {
         warnings.push({
@@ -591,7 +591,7 @@ export class IntentParser {
     if (!parsed || typeof parsed !== 'object') {
       throw new IntentParseError(
         'Parsed content must be an object',
-        'INVALID_STRUCTURE'
+        'INVALID_STRUCTURE',
       );
     }
 
@@ -604,7 +604,7 @@ export class IntentParser {
     if (typeof obj.mission !== 'string') {
       throw new IntentParseError(
         'Mission must be a string',
-        'MISSION_INVALID_TYPE'
+        'MISSION_INVALID_TYPE',
       );
     }
 
@@ -615,13 +615,13 @@ export class IntentParser {
     if (!Array.isArray(obj.values)) {
       throw new IntentParseError(
         'Values must be an array',
-        'VALUES_INVALID_TYPE'
+        'VALUES_INVALID_TYPE',
       );
     }
     if (obj.values.length === 0) {
       throw new IntentParseError(
         'Values array must contain at least one entry',
-        'VALUES_EMPTY'
+        'VALUES_EMPTY',
       );
     }
 
@@ -636,7 +636,7 @@ export class IntentParser {
         ? {
             ...baseIntent,
             constraints: (obj.constraints as unknown[]).map(c =>
-              String(c).trim()
+              String(c).trim(),
             ),
             goals: (obj.goals as unknown[]).map(g => String(g).trim()),
           }
@@ -644,7 +644,7 @@ export class IntentParser {
           ? {
               ...baseIntent,
               constraints: (obj.constraints as unknown[]).map(c =>
-                String(c).trim()
+                String(c).trim(),
               ),
             }
           : obj.goals
@@ -661,7 +661,7 @@ export class IntentParser {
         const errorMessages = validation.errors.map(e => e.message).join('; ');
         throw new IntentParseError(
           `Validation failed: ${errorMessages}`,
-          'VALIDATION_FAILED'
+          'VALIDATION_FAILED',
         );
       }
     }
@@ -679,10 +679,10 @@ export class IntentParser {
     for (const rule of this.config.conflictRules) {
       const [pattern1, pattern2] = rule.patterns;
       const hasPattern1 = lowercaseConstraints.some(c =>
-        c.includes(pattern1.toLowerCase())
+        c.includes(pattern1.toLowerCase()),
       );
       const hasPattern2 = lowercaseConstraints.some(c =>
-        c.includes(pattern2.toLowerCase())
+        c.includes(pattern2.toLowerCase()),
       );
 
       if (hasPattern1 && hasPattern2) {

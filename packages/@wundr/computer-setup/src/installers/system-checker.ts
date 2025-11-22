@@ -27,24 +27,25 @@ export class SystemChecker implements BaseInstaller {
     return 'System Check v1.0';
   }
 
-  async install(_profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
-    console.log('Running system health check and repairs...');
-    
+  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    console.log(`Running system health check for ${profile.name || 'user'} on ${platform.os}...`);
+
     // Clean problematic configurations
     await this.cleanProblematicConfigs();
-    
+
     // Check and fix Node/npm installation
     const nodeNpmFixed = await this.checkAndFixNodeNpm();
-    
+
     if (nodeNpmFixed) {
-      console.log('✅ System check passed - Node.js and npm are working');
+      console.log('System check passed - Node.js and npm are working');
     } else {
-      console.warn('⚠️ System check found issues - will be addressed during setup');
+      console.warn('System check found issues - will be addressed during setup');
     }
   }
 
-  async configure(_profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
-    // No configuration needed for system checker
+  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    // Log configuration context for debugging
+    console.log(`System check completed for ${profile.name || 'user'} on ${platform.os}`);
   }
 
   async validate(): Promise<boolean> {
@@ -61,7 +62,7 @@ export class SystemChecker implements BaseInstaller {
     }
   }
 
-  getSteps(_profile: DeveloperProfile, _platform: SetupPlatform): SetupStep[] {
+  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
     return [{
       id: 'system-check',
       name: 'System Health Check',
@@ -71,7 +72,7 @@ export class SystemChecker implements BaseInstaller {
       dependencies: [],
       estimatedTime: 60,
       validator: () => this.validate(),
-      installer: () => this.install(_profile, _platform)
+      installer: () => this.install(profile, platform)
     }];
   }
 

@@ -291,7 +291,13 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       if (!hasClaudeFlow) {
         throw new Error('Claude Flow MCP server not configured');
       }
-    } catch (_error) {
+    } catch (error) {
+      // Log the error for debugging - could be file not found or JSON parse error
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.debug(
+        `MCP config check failed (${errorMessage}), attempting auto-install`
+      );
       // Auto-install Claude Flow MCP server
       await this.installClaudeFlowMCP();
     }
@@ -528,7 +534,7 @@ export class ClaudeFlowOrchestrator extends EventEmitter {
       operations.map(op => this.executeClaudeFlowCommand(op.command, op.params))
     );
 
-    return results.map((result, _index) => ({
+    return results.map(result => ({
       success: result.status === 'fulfilled',
       message:
         result.status === 'fulfilled'

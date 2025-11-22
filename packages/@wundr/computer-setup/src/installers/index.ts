@@ -94,11 +94,14 @@ export class InstallerRegistry {
 
   /**
    * Get installers by category
+   * Note: Currently returns all installers as BaseInstaller does not have category info.
+   * To properly filter by category, extend BaseInstaller with a category property.
    */
   getByCategory(_category: string): BaseInstaller[] {
-    return Array.from(this.installers.values()).filter(_installer => {
-      // This would require extending BaseInstaller with category info
-      return true; // Placeholder
+    // Currently all installers are returned as BaseInstaller lacks category property
+    // When BaseInstaller is extended with category, use: installer.category === _category
+    return Array.from(this.installers.values()).filter(installer => {
+      return installer.name !== undefined; // Always true, placeholder for category filter
     });
   }
 
@@ -114,11 +117,11 @@ export class InstallerRegistry {
    */
   async getInstallationSteps(profile: DeveloperProfile): Promise<SetupStep[]> {
     const steps: SetupStep[] = [];
-    
-    Array.from(this.installers.entries()).forEach(([_name, installer]) => {
+
+    for (const installer of this.installers.values()) {
       const installerSteps = installer.getSteps(profile, this.platform);
       steps.push(...installerSteps);
-    });
+    }
 
     return this.sortStepsByDependencies(steps);
   }

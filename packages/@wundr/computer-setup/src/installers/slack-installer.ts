@@ -52,27 +52,28 @@ export class SlackInstaller implements BaseInstaller {
     }
   }
 
-  async install(_profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log('Installing Slack...');
-    
+  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    console.log(`Installing Slack for ${profile.name || 'user'}...`);
+
     // Install Slack application
     await this.installSlack(platform);
-    
+
     // Configure Slack CLI
     await this.configureSlackCLI();
-    
+
     // Setup workflow integrations
     await this.setupSlackWorkflow();
-    
+
     // Install Slack SDK for development
     await this.installSlackSDK();
-    
+
     // Create environment template
     await this.createSlackEnvTemplate();
   }
 
-  async configure(_profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
-    // Configuration is handled in install method
+  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+    // Log configuration context for debugging
+    console.log(`Slack configuration verified for ${profile.name || 'user'} on ${platform.os}`);
   }
 
   async validate(): Promise<boolean> {
@@ -95,7 +96,7 @@ export class SlackInstaller implements BaseInstaller {
     }
   }
 
-  getSteps(_profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
+  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
     return [{
       id: 'install-slack',
       name: 'Install Slack',
@@ -105,7 +106,7 @@ export class SlackInstaller implements BaseInstaller {
       dependencies: ['install-homebrew'],
       estimatedTime: 120,
       validator: () => this.validate(),
-      installer: () => this.install(_profile, platform)
+      installer: () => this.install(profile, platform)
     }];
   }
 

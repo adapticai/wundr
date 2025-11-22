@@ -10,17 +10,46 @@ import type { ChatSession } from '../types';
 import type { ConfigManager } from '../utils/config-manager';
 import type { Command } from 'commander';
 
+/** Review result for a single file */
+interface FileReviewResult {
+  file: string;
+  issues: Array<{ severity: string; description: string }>;
+  suggestions: string[];
+  score: number;
+}
+
+/** Refactoring plan from AI analysis */
+interface RefactoringPlan {
+  description: string;
+  changes: Array<{ description: string; code?: string }>;
+}
+
+/** Optimization plan from AI analysis */
+interface OptimizationPlan {
+  description: string;
+  changes: Array<{ description: string; code?: string }>;
+  optimizedCode: string;
+}
+
+/** Benchmark result metrics */
+interface BenchmarkResult {
+  time: number;
+  memory: number;
+}
+
 /**
  * AI commands for AI-powered development features
  */
 export class AICommands {
   private aiService: AIService;
+  private pluginManager: PluginManager;
 
   constructor(
     private program: Command,
     private configManager: ConfigManager,
-    private _pluginManager: PluginManager,
+    pluginManager: PluginManager,
   ) {
+    this.pluginManager = pluginManager;
     this.aiService = new AIService(configManager);
     this.registerCommands();
   }
@@ -263,12 +292,7 @@ export class AICommands {
 
       const filesToReview =
         files.length > 0 ? files : await this.getChangedFiles();
-      const reviewResults: Array<{
-        file: string;
-        issues: any;
-        suggestions: any;
-        score: any;
-      }> = [];
+      const reviewResults: FileReviewResult[] = [];
 
       for (const file of filesToReview) {
         logger.debug(`Reviewing ${file}...`);
@@ -380,7 +404,7 @@ export class AICommands {
       );
 
       const code = await this.readFile(target);
-      const _docs = await this.callAI('docs', {
+      const docs = await this.callAI('docs', {
         code,
         target,
         type: options.type,
@@ -393,7 +417,7 @@ export class AICommands {
         options.type,
         options.format,
       );
-      await this.saveGeneratedDocs(_docs, outputPath);
+      await this.saveGeneratedDocs(docs, outputPath);
 
       logger.success(`Documentation generated: ${outputPath}`);
     } catch (error) {
@@ -528,13 +552,13 @@ export class AICommands {
       logger.info(`Optimizing ${chalk.cyan(target)}...`);
 
       const code = await this.readFile(target);
-      let beforeBenchmark = null;
+      let beforeBenchmark: BenchmarkResult | undefined;
 
       if (options.benchmarks) {
         beforeBenchmark = await this.runBenchmark(target);
       }
 
-      const _optimization = await this.callAI('optimize', {
+      const optimization: OptimizationPlan = await this.callAI('optimize', {
         code,
         target,
         focus: options.focus,
@@ -550,9 +574,9 @@ export class AICommands {
       ]);
 
       if (apply) {
-        await this.applyOptimization(target, _optimization);
+        await this.applyOptimization(target, optimization);
 
-        if (options.benchmarks) {
+        if (options.benchmarks && beforeBenchmark) {
           const afterBenchmark = await this.runBenchmark(target);
           this.displayBenchmarkComparison(beforeBenchmark, afterBenchmark);
         }
@@ -831,11 +855,19 @@ export class AICommands {
   }
 
   private async saveGeneratedCode(
-    _code: string,
+    code: string,
     outputPath: string,
   ): Promise<void> {
-    // Save generated code to file
-    logger.debug(`Saving generated code to ${outputPath}`);
+    const fs = await import('fs/promises');
+    const path = await import('path');
+
+    // Ensure directory exists
+    const dir = path.dirname(outputPath);
+    await fs.mkdir(dir, { recursive: true });
+
+    // Write the generated code to file
+    await fs.writeFile(outputPath, code, 'utf-8');
+    logger.debug(`Saved generated code to ${outputPath}`);
   }
 
   private async readFile(filePath: string): Promise<string> {
@@ -848,26 +880,49 @@ export class AICommands {
     return ['src/example.ts'];
   }
 
-  private displayReviewResults(results: any[]): void {
+  private displayReviewResults(results: FileReviewResult[]): void {
     console.log(chalk.blue('\nCode Review Results:'));
     results.forEach(result => {
       console.log(`\n${chalk.cyan(result.file)} (Score: ${result.score}/100)`);
       if (result.issues.length > 0) {
-        result.issues.forEach((issue: any) => {
+        result.issues.forEach((issue) => {
           console.log(`  ${issue.severity}: ${issue.description}`);
         });
       }
     });
   }
 
-  private async suggestFixes(_results: any[]): Promise<void> {
-    // Implementation for suggesting fixes
+  private async suggestFixes(results: FileReviewResult[]): Promise<void> {
     logger.info('Generating fix suggestions...');
+
+    for (const result of results) {
+      if (result.issues.length > 0) {
+        console.log(chalk.yellow(`\nSuggested fixes for ${result.file}:`));
+        for (const issue of result.issues) {
+          const fix = await this.callAI('suggest-fix', {
+            file: result.file,
+            issue: issue.description,
+            severity: issue.severity,
+          });
+          console.log(`  - ${issue.description}: ${fix.suggestion || 'No automatic fix available'}`);
+        }
+      }
+    }
   }
 
-  private async applyRefactoring(target: string, _plan: any): Promise<void> {
-    // Apply refactoring changes
+  private async applyRefactoring(target: string, plan: RefactoringPlan): Promise<void> {
+    const fs = await import('fs/promises');
+
     logger.debug(`Applying refactoring to ${target}`);
+    logger.info(`Refactoring: ${plan.description}`);
+
+    // Apply each change from the refactoring plan
+    for (const change of plan.changes) {
+      logger.debug(`  Applying: ${change.description}`);
+      if (change.code) {
+        await fs.writeFile(target, change.code, 'utf-8');
+      }
+    }
   }
 
   private getDocsOutputPath(
@@ -880,15 +935,29 @@ export class AICommands {
   }
 
   private async saveGeneratedDocs(
-    _docs: string,
+    docs: string,
     outputPath: string,
   ): Promise<void> {
-    // Save generated documentation
-    logger.debug(`Saving documentation to ${outputPath}`);
+    const fs = await import('fs/promises');
+    const path = await import('path');
+
+    // Ensure docs directory exists
+    const dir = path.dirname(outputPath);
+    await fs.mkdir(dir, { recursive: true });
+
+    // Write the generated documentation to file
+    await fs.writeFile(outputPath, docs, 'utf-8');
+    logger.debug(`Saved documentation to ${outputPath}`);
   }
 
-  private getTestOutputPath(target: string, _framework: string): string {
-    return `${target}.test.js`;
+  private getTestOutputPath(target: string, framework: string): string {
+    const path = require('path');
+    const baseName = path.basename(target, path.extname(target));
+    const dirName = path.dirname(target);
+
+    // Use framework-specific test file extensions
+    const extension = framework === 'vitest' ? '.test.ts' : '.test.js';
+    return path.join(dirName, '__tests__', `${baseName}${extension}`);
   }
 
   private async loadChatSession(sessionId: string): Promise<ChatSession> {
@@ -972,26 +1041,63 @@ export class AICommands {
     }
   }
 
-  private async runBenchmark(_target: string): Promise<any> {
-    // Run performance benchmark
-    return { time: 100, memory: 50 };
+  private async runBenchmark(target: string): Promise<BenchmarkResult> {
+    const { performance } = await import('perf_hooks');
+
+    logger.debug(`Running benchmark for ${target}`);
+
+    const startTime = performance.now();
+    const startMemory = process.memoryUsage().heapUsed / 1024 / 1024;
+
+    // Simulate loading and analyzing the file for benchmarking
+    const code = await this.readFile(target);
+    // Simple analysis to measure time
+    const lines = code.split('\n').length;
+    logger.debug(`Analyzed ${lines} lines`);
+
+    const endTime = performance.now();
+    const endMemory = process.memoryUsage().heapUsed / 1024 / 1024;
+
+    return {
+      time: Math.round(endTime - startTime),
+      memory: Math.round(endMemory - startMemory),
+    };
   }
 
   private async applyOptimization(
     target: string,
-    _optimization: any,
+    optimization: OptimizationPlan,
   ): Promise<void> {
-    // Apply optimization changes
+    const fs = await import('fs/promises');
+
     logger.debug(`Applying optimization to ${target}`);
+    logger.info(`Optimization: ${optimization.description}`);
+
+    // Log each change being applied
+    for (const change of optimization.changes) {
+      logger.debug(`  Applying: ${change.description}`);
+    }
+
+    // Write the optimized code to the file
+    if (optimization.optimizedCode) {
+      await fs.writeFile(target, optimization.optimizedCode, 'utf-8');
+      logger.success(`Optimization applied to ${target}`);
+    }
   }
 
-  private displayBenchmarkComparison(before: any, after: any): void {
+  private displayBenchmarkComparison(before: BenchmarkResult, after: BenchmarkResult): void {
     console.log(chalk.blue('\nBenchmark Comparison:'));
+    const timeDiff = after.time - before.time;
+    const memDiff = after.memory - before.memory;
+
+    const timeColor = timeDiff < 0 ? chalk.green : chalk.yellow;
+    const memColor = memDiff < 0 ? chalk.green : chalk.yellow;
+
     console.log(
-      `Time: ${before.time}ms → ${after.time}ms (${after.time - before.time}ms)`,
+      `Time: ${before.time}ms → ${after.time}ms (${timeColor(timeDiff > 0 ? '+' : '')}${timeColor(timeDiff + 'ms')})`,
     );
     console.log(
-      `Memory: ${before.memory}MB → ${after.memory}MB (${after.memory - before.memory}MB)`,
+      `Memory: ${before.memory}MB → ${after.memory}MB (${memColor(memDiff > 0 ? '+' : '')}${memColor(memDiff + 'MB')})`,
     );
   }
 }

@@ -408,7 +408,7 @@ export class EvaluatorAgent {
           score = complianceResult.score;
           issues = complianceResult.violations.map(
             v =>
-              `[${v.severity.toUpperCase()}] ${v.policyName}: ${v.description}`
+              `[${v.severity.toUpperCase()}] ${v.policyName}: ${v.description}`,
           );
           recommendations =
             this.generateComplianceRecommendations(complianceResult);
@@ -425,12 +425,12 @@ export class EvaluatorAgent {
           };
           const alignmentResult = await this.checkRewardAlignment(
             context,
-            defaultRewardScore
+            defaultRewardScore,
           );
           score = alignmentResult.score;
           issues = alignmentResult.gaps.map(
             g =>
-              `Alignment gap in ${g.dimension}: expected ${g.expected}, got ${g.actual}`
+              `Alignment gap in ${g.dimension}: expected ${g.expected}, got ${g.actual}`,
           );
           recommendations = alignmentResult.recommendations.slice();
           break;
@@ -446,7 +446,7 @@ export class EvaluatorAgent {
             .filter(d => d.severity === 'high' || d.severity === 'critical')
             .map(
               d =>
-                `Drift detected in ${d.pattern}: ${d.changePercent.toFixed(1)}% ${d.direction}`
+                `Drift detected in ${d.pattern}: ${d.changePercent.toFixed(1)}% ${d.direction}`,
             );
           recommendations = driftResult.recommendations.slice();
           break;
@@ -495,7 +495,7 @@ export class EvaluatorAgent {
    * @returns Promise resolving to the compliance result
    */
   async checkPolicyCompliance(
-    context: EvaluationContext
+    context: EvaluationContext,
   ): Promise<ComplianceResult> {
     const policies =
       this.options.customPolicies ?? EvaluatorAgent.DEFAULT_POLICIES;
@@ -542,7 +542,7 @@ export class EvaluatorAgent {
    */
   async checkRewardAlignment(
     context: EvaluationContext,
-    rewardScore: RewardScore
+    rewardScore: RewardScore,
   ): Promise<AlignmentResult> {
     // Context is available for future extensions (e.g., context-aware alignment checks)
     void context;
@@ -571,7 +571,7 @@ export class EvaluatorAgent {
         });
         recommendations.push(
           `Improve ${dimension.replace('Score', '')}: currently at ${(actual * 100).toFixed(1)}%, ` +
-            `target is ${(expected * 100).toFixed(1)}%`
+            `target is ${(expected * 100).toFixed(1)}%`,
         );
       }
     }
@@ -579,7 +579,7 @@ export class EvaluatorAgent {
     // Check additional dimensions if provided
     if (rewardScore.dimensionScores) {
       for (const [dimension, actual] of Object.entries(
-        rewardScore.dimensionScores
+        rewardScore.dimensionScores,
       )) {
         const expected = 0.8; // Default threshold for custom dimensions
         if (actual < expected) {
@@ -600,7 +600,7 @@ export class EvaluatorAgent {
     const alignmentBonus = gaps.length === 0 ? 0.05 : 0;
     const finalReward = Math.max(
       0,
-      Math.min(1, baseReward - violationPenalty + alignmentBonus)
+      Math.min(1, baseReward - violationPenalty + alignmentBonus),
     );
 
     return {
@@ -627,7 +627,7 @@ export class EvaluatorAgent {
    */
   async detectDrift(
     context: EvaluationContext,
-    patterns: string[]
+    patterns: string[],
   ): Promise<DriftResult> {
     const driftIndicators: DriftIndicator[] = [];
     const recommendations: string[] = [];
@@ -645,7 +645,7 @@ export class EvaluatorAgent {
         ) {
           recommendations.push(
             `Investigate ${indicator.pattern}: ${indicator.changePercent.toFixed(1)}% ` +
-              `${indicator.direction} from baseline`
+              `${indicator.direction} from baseline`,
           );
         }
       }
@@ -657,10 +657,10 @@ export class EvaluatorAgent {
 
     if (driftDetected && recommendations.length === 0) {
       recommendations.push(
-        'Review recent changes for potential causes of drift'
+        'Review recent changes for potential causes of drift',
       );
       recommendations.push(
-        'Consider retraining or recalibrating affected components'
+        'Consider retraining or recalibrating affected components',
       );
     }
 
@@ -716,7 +716,7 @@ export class EvaluatorAgent {
    */
   private async evaluatePolicy(
     policy: PolicyRule,
-    context: EvaluationContext
+    context: EvaluationContext,
   ): Promise<PolicyViolation | null> {
     // Simulate policy evaluation with a random chance of violation
     // In a real implementation, this would perform actual policy checks
@@ -746,7 +746,7 @@ export class EvaluatorAgent {
    */
   private simulatePolicyCheck(
     policy: PolicyRule,
-    context: EvaluationContext
+    context: EvaluationContext,
   ): boolean {
     // Use deterministic "simulation" based on context for testability
     // In production, this would perform real checks
@@ -760,7 +760,7 @@ export class EvaluatorAgent {
    */
   private async evaluateDriftPattern(
     pattern: string,
-    context: EvaluationContext
+    context: EvaluationContext,
   ): Promise<DriftIndicator | null> {
     // Context is available for future extensions (e.g., context-aware drift baselines)
     void context;
@@ -793,7 +793,7 @@ export class EvaluatorAgent {
    * Calculates drift severity based on percentage change
    */
   private calculateDriftSeverity(
-    changePercent: number
+    changePercent: number,
   ): 'low' | 'medium' | 'high' | 'critical' {
     if (changePercent >= 30) {
       return 'critical';
@@ -832,7 +832,7 @@ export class EvaluatorAgent {
    * Generates recommendations from compliance result
    */
   private generateComplianceRecommendations(
-    result: ComplianceResult
+    result: ComplianceResult,
   ): string[] {
     const recommendations: string[] = [];
 
@@ -841,14 +841,14 @@ export class EvaluatorAgent {
         recommendations.push(violation.suggestedFix);
       } else {
         recommendations.push(
-          `Address ${violation.severity} violation: ${violation.policyName}`
+          `Address ${violation.severity} violation: ${violation.policyName}`,
         );
       }
     }
 
     if (result.skippedPolicies.length > 0) {
       recommendations.push(
-        `Consider enabling ${result.skippedPolicies.length} skipped policies for comprehensive coverage`
+        `Consider enabling ${result.skippedPolicies.length} skipped policies for comprehensive coverage`,
       );
     }
 
@@ -871,7 +871,7 @@ export class EvaluatorAgent {
    * Calculates severity level from evaluation result
    */
   private calculateSeverity(
-    result: EvaluationResult
+    result: EvaluationResult,
   ): 'low' | 'medium' | 'high' | 'critical' {
     if (result.score >= 0.8) {
       return 'low';
@@ -955,7 +955,7 @@ export class EvaluatorAgent {
  */
 export function createEvaluator(
   type: EvaluatorType,
-  options?: Partial<Omit<EvaluatorConfig, 'evaluatorType'>>
+  options?: Partial<Omit<EvaluatorConfig, 'evaluatorType'>>,
 ): EvaluatorAgent {
   const defaults: Record<
     EvaluatorType,
@@ -1017,7 +1017,7 @@ export function createEvaluatorSuite(): {
  */
 export async function runEvaluatorSuite(
   evaluators: readonly EvaluatorAgent[],
-  context: EvaluationContext
+  context: EvaluationContext,
 ): Promise<{
   passed: boolean;
   overallScore: number;
