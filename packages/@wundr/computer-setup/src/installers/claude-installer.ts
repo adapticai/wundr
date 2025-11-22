@@ -1,12 +1,15 @@
-/* eslint-disable no-console */
 import { execSync } from 'child_process';
 import { promises as fs } from 'fs';
 import * as fsSync from 'fs';
 import { homedir } from 'os';
 import * as path from 'path';
 
+import { Logger } from '../utils/logger';
+
 import type { DeveloperProfile, SetupPlatform, SetupStep } from '../types';
 import type { BaseInstaller } from './index';
+
+const logger = new Logger({ name: 'ClaudeInstaller' });
 
 /**
  * Comprehensive Claude and Claude-Flow installer for complete AI integration
@@ -28,11 +31,11 @@ export class ClaudeInstaller implements BaseInstaller {
   private readonly bundledAgentsDir = path.join(this.resourcesDir, 'agents');
   private readonly bundledTemplatesDir = path.join(
     this.resourcesDir,
-    'templates'
+    'templates',
   );
   private readonly bundledCommandsDir = path.join(
     this.resourcesDir,
-    'commands'
+    'commands',
   );
   private readonly bundledScriptsDir = path.join(this.resourcesDir, 'scripts');
   private readonly mcpServers = [
@@ -172,7 +175,7 @@ export class ClaudeInstaller implements BaseInstaller {
 
   async install(
     profile: DeveloperProfile,
-    platform: SetupPlatform
+    platform: SetupPlatform,
   ): Promise<void> {
     // Store profile and platform for use in execute
     this.currentProfile = profile;
@@ -186,7 +189,7 @@ export class ClaudeInstaller implements BaseInstaller {
 
   async configure(
     profile: DeveloperProfile,
-    platform: SetupPlatform
+    platform: SetupPlatform,
   ): Promise<void> {
     // Ensure directories exist before configuring
     await this.ensureDirectoriesExist();
@@ -196,12 +199,12 @@ export class ClaudeInstaller implements BaseInstaller {
     // Apply profile-specific configurations
     if (profile.preferences?.aiTools?.mcpTools) {
       // User has specific MCP tool preferences
-      console.log(`Configuring MCP tools for ${profile.name} on ${platform.os}`);
+      logger.info(`Configuring MCP tools for ${profile.name} on ${platform.os}`);
     }
   }
 
   private async execute(): Promise<void> {
-    console.log('🤖 Installing Claude Code & Claude Flow ecosystem...');
+    logger.info('Installing Claude Code & Claude Flow ecosystem...');
 
     // Step 1: Install Claude CLI if not present
     await this.installClaudeCLI();
@@ -236,9 +239,7 @@ export class ClaudeInstaller implements BaseInstaller {
     // Step 10: Setup hardware-adaptive optimization scripts
     await this.setupOptimizationScripts();
 
-    console.log(
-      '✅ Claude Code & Claude Flow ecosystem installed successfully!'
-    );
+    logger.info('Claude Code & Claude Flow ecosystem installed successfully!');
   }
 
   async check(): Promise<boolean> {
@@ -264,7 +265,7 @@ export class ClaudeInstaller implements BaseInstaller {
 
       // Log Claude CLI status for debugging purposes
       if (!claudeCliInstalled) {
-        console.log('Claude CLI not found - will use npx fallback');
+        logger.debug('Claude CLI not found - will use npx fallback');
       }
 
       // Check if Claude Flow is available
@@ -281,7 +282,7 @@ export class ClaudeInstaller implements BaseInstaller {
         // Log the error for debugging
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        console.log('Claude Flow check failed:', errorMessage);
+        logger.debug('Claude Flow check failed:', errorMessage);
         claudeFlowInstalled = false;
       }
 
@@ -292,7 +293,7 @@ export class ClaudeInstaller implements BaseInstaller {
 
       // Log Chrome status for debugging (optional dependency)
       if (!chromeExists) {
-        console.log('Chrome not found - Browser MCP features will be limited');
+        logger.debug('Chrome not found - Browser MCP features will be limited');
       }
 
       // Check if .claude directory exists with proper structure
@@ -301,24 +302,28 @@ export class ClaudeInstaller implements BaseInstaller {
       // More lenient validation - Claude Flow is the main requirement
       // Chrome is optional, Claude CLI might not exist as a global command
       return claudeFlowInstalled && claudeDirExists;
-    } catch (error) {
-      console.log('Claude validation error:', error);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.debug('Claude validation error:', errorMessage);
       return false;
     }
   }
 
   private async installClaudeCLI(): Promise<void> {
-    console.log('📦 Installing Claude Code CLI...');
+    logger.info('Installing Claude Code CLI...');
 
     // Install @anthropic-ai/claude-code globally via npm
-    console.log('Installing @anthropic-ai/claude-code globally...');
+    logger.info('Installing @anthropic-ai/claude-code globally...');
     try {
       execSync('npm install -g @anthropic-ai/claude-code', {
         stdio: 'inherit',
       });
-      console.log('✅ Claude Code CLI installed successfully');
-    } catch (error) {
-      console.error('❌ Failed to install Claude Code CLI:', error);
+      logger.info('Claude Code CLI installed successfully');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logger.error('Failed to install Claude Code CLI:', errorMessage);
       throw error;
     }
 
@@ -358,40 +363,36 @@ exec npx @anthropic-ai/claude-code "$@"
       // Try to move to /usr/local/bin (may require sudo)
       try {
         execSync(`mv ${tempFile} ${wrapperPath}`, { stdio: 'pipe' });
-        console.log(
-          '✅ Created global claude wrapper at /usr/local/bin/claude'
-        );
+        logger.info('Created global claude wrapper at /usr/local/bin/claude');
       } catch (mvError: unknown) {
         // If regular mv fails, try with sudo
         const mvErrorMessage =
           mvError instanceof Error ? mvError.message : String(mvError);
-        console.log(
-          `ℹ️  Regular move failed (${mvErrorMessage}), trying with sudo...`
+        logger.info(
+          `Regular move failed (${mvErrorMessage}), trying with sudo...`,
         );
         try {
           execSync(`sudo mv ${tempFile} ${wrapperPath}`, { stdio: 'inherit' });
-          console.log(
-            '✅ Created global claude wrapper at /usr/local/bin/claude'
-          );
+          logger.info('Created global claude wrapper at /usr/local/bin/claude');
         } catch (sudoError: unknown) {
           const sudoErrorMessage =
             sudoError instanceof Error ? sudoError.message : String(sudoError);
-          console.warn(
-            `⚠️  Could not create /usr/local/bin/claude wrapper: ${sudoErrorMessage}`
+          logger.warn(
+            `Could not create /usr/local/bin/claude wrapper: ${sudoErrorMessage}`,
           );
-          console.warn(
-            '   Claude will use shell alias instead (requires terminal restart)'
+          logger.warn(
+            'Claude will use shell alias instead (requires terminal restart)',
           );
-          console.warn('   To install wrapper manually, run:');
-          console.warn(`   sudo mv ${tempFile} ${wrapperPath}`);
+          logger.warn('To install wrapper manually, run:');
+          logger.warn(`sudo mv ${tempFile} ${wrapperPath}`);
         }
       }
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      console.error('❌ Failed to create wrapper script:', errorMessage);
-      console.warn(
-        '   Claude will use shell alias instead (requires terminal restart)'
+      logger.error('Failed to create wrapper script:', errorMessage);
+      logger.warn(
+        'Claude will use shell alias instead (requires terminal restart)',
       );
     }
 
@@ -447,17 +448,18 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
             !content.includes('Claude Code - Hardware-Adaptive Configuration')
           ) {
             await fs.appendFile(configFile, configBlock);
-            console.log(
-              `✅ Added Claude hardware-adaptive config to ${path.basename(configFile)}`
+            logger.info(
+              `Added Claude hardware-adaptive config to ${path.basename(configFile)}`,
             );
           } else {
-            console.log(
-              `⚠️  Claude config already exists in ${path.basename(configFile)}, skipping`
+            logger.debug(
+              `Claude config already exists in ${path.basename(configFile)}, skipping`,
             );
           }
         }
       } catch {
-        // Ignore errors for shell configs that don't exist - expected behavior
+        // Shell config file doesn't exist - this is expected behavior
+        // Many systems only have one shell config (e.g., .zshrc but not .bashrc)
       }
     }
   }
@@ -465,17 +467,17 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   private async installChrome(): Promise<void> {
     const chromeExists = fsSync.existsSync('/Applications/Google Chrome.app');
     if (!chromeExists) {
-      console.log('🌐 Installing Google Chrome...');
+      logger.info('Installing Google Chrome...');
 
       // Download Chrome DMG
       execSync(
-        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"'
+        'curl -L -o ~/Downloads/googlechrome.dmg "https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg"',
       );
 
       // Mount and install Chrome
       execSync('hdiutil attach ~/Downloads/googlechrome.dmg');
       execSync(
-        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/'
+        'cp -R "/Volumes/Google Chrome/Google Chrome.app" /Applications/',
       );
       execSync('hdiutil detach "/Volumes/Google Chrome"');
 
@@ -503,23 +505,23 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   }
 
   private async setupClaudeDirectory(): Promise<void> {
-    console.log('📁 Setting up Claude directory structure...');
+    logger.info('Setting up Claude directory structure...');
     // Ensure directories exist
     await this.ensureDirectoriesExist();
   }
 
   private async installMCPServers(): Promise<void> {
-    console.log('🔧 Installing MCP servers...');
+    logger.info('Installing MCP servers...');
 
     // Check if claude CLI is available
     try {
       execSync('which claude', { stdio: 'pipe' });
     } catch {
-      console.log(
-        'ℹ️  Claude CLI not found - MCP servers require Claude Code CLI to be installed first'
+      logger.info(
+        'Claude CLI not found - MCP servers require Claude Code CLI to be installed first',
       );
-      console.log(
-        '   You can install MCP servers later using: claude mcp add <name> <command>'
+      logger.info(
+        'You can install MCP servers later using: claude mcp add <name> <command>',
       );
       return;
     }
@@ -527,7 +529,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     const installMCP = (name: string, command: string) => {
       try {
         execSync(command, { stdio: 'pipe', timeout: 30000 });
-        console.log(`✓ Installed ${name}`);
+        logger.info(`Installed ${name}`);
       } catch (error: unknown) {
         const errorObj = error as {
           stderr?: Buffer;
@@ -541,13 +543,11 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
           stderr.includes('already exists') ||
           stdout.includes('already exists')
         ) {
-          console.log(`⚠️  ${name} already installed, skipping`);
+          logger.debug(`${name} already installed, skipping`);
         } else if (stderr.includes('could not determine executable')) {
-          console.warn(
-            `⚠️  ${name} package not found in npm registry, skipping`
-          );
+          logger.warn(`${name} package not found in npm registry, skipping`);
         } else {
-          console.warn(`⚠️  Failed to install ${name}: ${message}`);
+          logger.warn(`Failed to install ${name}: ${message}`);
         }
       }
     };
@@ -555,13 +555,13 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     // Install Claude Flow
     installMCP(
       'claude-flow',
-      'claude mcp add claude-flow npx claude-flow@alpha mcp start'
+      'claude mcp add claude-flow npx claude-flow@alpha mcp start',
     );
 
     // Install Firecrawl MCP
     installMCP(
       'firecrawl',
-      'claude mcp add firecrawl npx @firecrawl/mcp-server'
+      'claude mcp add firecrawl npx @firecrawl/mcp-server',
     );
 
     // Install Context7 MCP
@@ -570,7 +570,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     // Install Playwright MCP
     installMCP(
       'playwright',
-      'claude mcp add playwright npx @playwright/mcp-server'
+      'claude mcp add playwright npx @playwright/mcp-server',
     );
 
     // Install Browser MCP
@@ -580,15 +580,15 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     try {
       execSync(
         'npm install -g @modelcontextprotocol/server-sequentialthinking',
-        { stdio: 'pipe' }
+        { stdio: 'pipe' },
       );
       installMCP(
         'sequentialthinking',
-        'claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js'
+        'claude mcp add sequentialthinking node ~/.npm-global/lib/node_modules/@modelcontextprotocol/server-sequentialthinking/dist/index.js',
       );
     } catch {
-      console.warn(
-        '⚠️  Sequential Thinking MCP not available in registry, skipping'
+      logger.warn(
+        'Sequential Thinking MCP not available in registry, skipping',
       );
     }
 
@@ -600,7 +600,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   }
 
   private async configureClaudeSettings(): Promise<void> {
-    console.log('⚙️ Configuring Claude settings with advanced hooks...');
+    logger.info('Configuring Claude settings with advanced hooks...');
 
     const settings = {
       claudeCodeOptions: {
@@ -755,12 +755,12 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
     };
     await fs.writeFile(
       path.join(this.claudeDir, 'settings.json'),
-      JSON.stringify(settings, null, 2)
+      JSON.stringify(settings, null, 2),
     );
   }
 
   private async setupAgents(): Promise<void> {
-    console.log('🤖 Setting up 80+ specialized agents...');
+    logger.info('Setting up 80+ specialized agents...');
 
     // Copy bundled agent .md files from package resources
     const bundledAgentsExist = await fs
@@ -769,7 +769,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       .catch(() => false);
 
     if (bundledAgentsExist) {
-      console.log('📋 Copying bundled agent .md files...');
+      logger.info('Copying bundled agent .md files...');
       try {
         // Copy all agent .md files from bundled resources to global .claude/agents
         execSync(`cp -R "${this.bundledAgentsDir}"/* "${this.agentsDir}"/`, {
@@ -777,18 +777,16 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
         });
         const agentCount = execSync(
           `find "${this.agentsDir}" -name "*.md" | wc -l`,
-          { encoding: 'utf8' }
+          { encoding: 'utf8' },
         ).trim();
-        console.log(`✅ Installed ${agentCount} agent definition files`);
+        logger.info(`Installed ${agentCount} agent definition files`);
       } catch {
-        console.warn(
-          '⚠️  Could not copy bundled agent files, will generate configs instead'
+        logger.warn(
+          'Could not copy bundled agent files, will generate configs instead',
         );
       }
     } else {
-      console.warn(
-        '⚠️  No bundled agent files found, generating basic configs...'
-      );
+      logger.warn('No bundled agent files found, generating basic configs...');
     }
 
     // Agent categories and configurations
@@ -879,36 +877,44 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       }
     }
 
-    console.log('✅ Agent setup complete');
+    logger.info('Agent setup complete');
 
     // Setup deployment agents
     await this.setupDeploymentAgents();
   }
 
   private async setupDeploymentAgents(): Promise<void> {
-    console.log('🚀 Setting up deployment monitoring agents...');
+    logger.info('Setting up deployment monitoring agents...');
 
     const devopsDir = path.join(this.agentsDir, 'devops');
     await fs.mkdir(devopsDir, { recursive: true });
 
     // Copy bundled deployment agent .md files
-    const bundledDeploymentAgentsDir = path.join(this.bundledAgentsDir, 'devops');
-    const bundledExists = await fs.access(bundledDeploymentAgentsDir)
+    const bundledDeploymentAgentsDir = path.join(
+      this.bundledAgentsDir,
+      'devops',
+    );
+    const bundledExists = await fs
+      .access(bundledDeploymentAgentsDir)
       .then(() => true)
       .catch(() => false);
 
     if (bundledExists) {
       try {
-        execSync(`cp -R "${bundledDeploymentAgentsDir}"/* "${devopsDir}"/`, { stdio: 'pipe' });
-        console.log('✅ Installed deployment agents: deployment-monitor, log-analyzer, debug-refactor');
+        execSync(`cp -R "${bundledDeploymentAgentsDir}"/* "${devopsDir}"/`, {
+          stdio: 'pipe',
+        });
+        logger.info(
+          'Installed deployment agents: deployment-monitor, log-analyzer, debug-refactor',
+        );
       } catch {
-        console.warn('⚠️ Could not copy deployment agent files');
+        logger.warn('Could not copy deployment agent files');
       }
     }
   }
 
   private async setupCommands(): Promise<void> {
-    console.log('📋 Setting up slash commands with corrected MCP tools...');
+    logger.info('Setting up slash commands with corrected MCP tools...');
 
     // Copy bundled command .md files from package resources
     const bundledCommandsExist = await fs
@@ -917,36 +923,35 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
       .catch(() => false);
 
     if (bundledCommandsExist) {
-      console.log('📝 Copying bundled command .md files...');
+      logger.info('Copying bundled command .md files...');
       try {
         // Copy all command .md files from bundled resources to global .claude/commands
         execSync(
           `cp -R "${this.bundledCommandsDir}"/* "${this.commandsDir}"/`,
-          { stdio: 'pipe' }
+          { stdio: 'pipe' },
         );
         const commandCount = execSync(
           `find "${this.commandsDir}" -name "*.md" | wc -l`,
-          { encoding: 'utf8' }
+          { encoding: 'utf8' },
         ).trim();
-        console.log(`✅ Installed ${commandCount} slash command files`);
-        console.log('   Available commands: /hive-swarm, /hive-strategic');
+        logger.info(`Installed ${commandCount} slash command files`);
+        logger.info('Available commands: /hive-swarm, /hive-strategic');
       } catch {
-        console.warn('⚠️  Could not copy bundled command files');
+        logger.warn('Could not copy bundled command files');
       }
     } else {
-      console.warn(
-        '⚠️  No bundled command files found at:',
-        this.bundledCommandsDir
+      logger.warn(
+        `No bundled command files found at: ${this.bundledCommandsDir}`,
       );
     }
 
-    console.log('✅ Command setup complete');
+    logger.info('Command setup complete');
   }
 
   private async createAgentConfig(
     dir: string,
     agentName: string,
-    category: string
+    category: string,
   ): Promise<void> {
     const agentConfig = {
       name: agentName,
@@ -970,7 +975,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
 
     await fs.writeFile(
       path.join(dir, `${agentName}.json`),
-      JSON.stringify(agentConfig, null, 2)
+      JSON.stringify(agentConfig, null, 2),
     );
   }
 
@@ -1027,11 +1032,11 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
   }
 
   private async installBrowserExtension(): Promise<void> {
-    console.log('🔌 Installing Browser MCP Chrome extension...');
+    logger.info('Installing Browser MCP Chrome extension...');
     const extensionDir = path.join(
       this.homeDir,
       '.claude',
-      'browser-extension'
+      'browser-extension',
     );
     await fs.mkdir(extensionDir, { recursive: true });
 
@@ -1058,7 +1063,7 @@ alias claude-orchestrate='node $HOME/.claude/scripts/orchestrator.js'
 
     await fs.writeFile(
       path.join(extensionDir, 'manifest.json'),
-      JSON.stringify(manifest, null, 2)
+      JSON.stringify(manifest, null, 2),
     );
 
     // Create background script
@@ -1081,7 +1086,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     await fs.writeFile(
       path.join(extensionDir, 'background.js'),
-      backgroundScript
+      backgroundScript,
     );
 
     // Create content script
@@ -1116,13 +1121,13 @@ window.addEventListener('message', (event) => {
 
     await fs.writeFile(path.join(extensionDir, 'popup.html'), popupHtml);
 
-    console.log(
-      '📌 Chrome extension created. Load it manually from chrome://extensions'
+    logger.info(
+      'Chrome extension created. Load it manually from chrome://extensions',
     );
   }
 
   private async setupQualityEnforcement(): Promise<void> {
-    console.log('📊 Setting up quality enforcement...');
+    logger.info('Setting up quality enforcement...');
 
     // Create pre-commit hook template
     const preCommitHook = `#!/bin/bash
@@ -1156,18 +1161,18 @@ echo "✅ All quality checks passed!"`;
 
     await fs.writeFile(
       path.join(this.helpersDir, 'pre-commit-hook.sh'),
-      preCommitHook
+      preCommitHook,
     );
     execSync(`chmod +x ${path.join(this.helpersDir, 'pre-commit-hook.sh')}`);
   }
 
   private async setupClaudeMdGenerator(): Promise<void> {
-    console.log('📝 Setting up global CLAUDE.md generator...');
+    logger.info('Setting up global CLAUDE.md generator...');
 
     // Copy bundled CLAUDE.md template from package resources
     const bundledTemplate = path.join(
       this.bundledTemplatesDir,
-      'CLAUDE.md.template'
+      'CLAUDE.md.template',
     );
     const bundledTemplateExists = await fs
       .access(bundledTemplate)
@@ -1175,17 +1180,17 @@ echo "✅ All quality checks passed!"`;
       .catch(() => false);
 
     if (bundledTemplateExists) {
-      console.log('📋 Installing bundled CLAUDE.md template');
+      logger.info('Installing bundled CLAUDE.md template');
       const templatePath = path.join(this.templatesDir, 'CLAUDE.md.template');
       try {
         const claudeMdContent = await fs.readFile(bundledTemplate, 'utf8');
         await fs.writeFile(templatePath, claudeMdContent);
-        console.log('✅ Installed CLAUDE.md template');
+        logger.info('Installed CLAUDE.md template');
       } catch {
-        console.warn('⚠️  Could not install CLAUDE.md template');
+        logger.warn('Could not install CLAUDE.md template');
       }
     } else {
-      console.warn('⚠️  No bundled CLAUDE.md template found');
+      logger.warn('No bundled CLAUDE.md template found');
     }
 
     // Create the generator script
@@ -1282,27 +1287,23 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
 
     await fs.writeFile(
       path.join(this.helpersDir, 'generate-claude-md.js'),
-      generatorScript
+      generatorScript,
     );
     execSync(`chmod +x ${path.join(this.helpersDir, 'generate-claude-md.js')}`);
 
     // Create global command
     try {
       execSync(
-        `ln -sf ${path.join(this.helpersDir, 'generate-claude-md.js')} /usr/local/bin/claude-init`
+        `ln -sf ${path.join(this.helpersDir, 'generate-claude-md.js')} /usr/local/bin/claude-init`,
       );
-      console.log('✅ Created global claude-init command');
+      logger.info('Created global claude-init command');
     } catch {
-      console.warn(
-        '⚠️  Could not create /usr/local/bin/claude-init - may need sudo'
-      );
+      logger.warn('Could not create /usr/local/bin/claude-init - may need sudo');
     }
   }
 
   private async setupOptimizationScripts(): Promise<void> {
-    console.log(
-      '⚡ Setting up hardware-adaptive Claude optimization scripts...'
-    );
+    logger.info('Setting up hardware-adaptive Claude optimization scripts...');
 
     // Copy bundled optimization scripts to global ~/.claude/scripts
     const bundledScriptsExist = await fs
@@ -1311,7 +1312,7 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
       .catch(() => false);
 
     if (bundledScriptsExist) {
-      console.log('📋 Installing optimization scripts...');
+      logger.info('Installing optimization scripts...');
       try {
         // Copy all scripts from bundled resources to global .claude/scripts
         execSync(`cp -R "${this.bundledScriptsDir}"/* "${this.scriptsDir}"/`, {
@@ -1326,20 +1327,20 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
           stdio: 'pipe',
         });
 
-        console.log('✅ Optimization scripts installed to ~/.claude/scripts');
-        console.log('   • detect-hardware-limits.js - Hardware detection');
-        console.log('   • claude-optimized - Optimized Claude wrapper');
-        console.log('   • orchestrator.js - Fault-tolerant orchestration');
-        console.log('   • cleanup-zombies.sh - Process cleanup utility');
+        logger.info('Optimization scripts installed to ~/.claude/scripts');
+        logger.info('  - detect-hardware-limits.js - Hardware detection');
+        logger.info('  - claude-optimized - Optimized Claude wrapper');
+        logger.info('  - orchestrator.js - Fault-tolerant orchestration');
+        logger.info('  - cleanup-zombies.sh - Process cleanup utility');
       } catch {
-        console.warn('⚠️  Could not copy optimization scripts');
-        console.warn(
-          '   Scripts can be manually installed from adapticai/engine/scripts'
+        logger.warn('Could not copy optimization scripts');
+        logger.warn(
+          'Scripts can be manually installed from adapticai/engine/scripts',
         );
       }
     } else {
-      console.warn('⚠️  No bundled optimization scripts found');
-      console.warn(`   Expected at: ${this.bundledScriptsDir}`);
+      logger.warn('No bundled optimization scripts found');
+      logger.warn(`Expected at: ${this.bundledScriptsDir}`);
     }
   }
 
@@ -1348,7 +1349,7 @@ execSync('npx claude-flow@alpha init', { stdio: 'inherit' });
   }): Promise<void> {
     // Additional configuration based on profile
     if (options?.profile) {
-      console.log(`🎯 Configuring for ${options.profile} profile...`);
+      logger.info(`Configuring for ${options.profile} profile...`);
 
       const profileConfigs: Record<string, string[]> = {
         fullstack: ['backend-dev', 'mobile-dev', 'system-architect'],

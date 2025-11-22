@@ -1,16 +1,25 @@
 /**
  * macOS Platform Installer - macOS-specific tools and configurations
  */
+import * as os from 'os';
+import * as path from 'path';
+
 import { execa } from 'execa';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
+
+interface ExecaError extends Error {
+  stderr?: string;
+}
 
 export class MacInstaller implements BaseInstaller {
   name = 'mac-platform';
+  private readonly logger = new Logger({ name: 'MacInstaller' });
 
   isSupported(platform: SetupPlatform): boolean {
     return platform.os === 'darwin';
@@ -35,7 +44,7 @@ export class MacInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
     // Install Xcode Command Line Tools
     await this.installXcodeCommandLineTools();
     
@@ -52,7 +61,7 @@ export class MacInstaller implements BaseInstaller {
     await this.configureMacOS(profile);
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
     await this.configureMacOS(profile);
     await this.configureShell(profile);
     await this.setupDotfiles(profile);
@@ -68,7 +77,7 @@ export class MacInstaller implements BaseInstaller {
     }
   }
 
-  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
+  getSteps(profile: DeveloperProfile, _platform: SetupPlatform): SetupStep[] {
     const steps: SetupStep[] = [
       {
         id: 'install-xcode-cli-tools',
@@ -79,7 +88,7 @@ export class MacInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 300,
         validator: () => this.validateXcodeCommandLineTools(),
-        installer: () => this.installXcodeCommandLineTools()
+        installer: () => this.installXcodeCommandLineTools(),
       },
       {
         id: 'install-homebrew',
@@ -90,7 +99,7 @@ export class MacInstaller implements BaseInstaller {
         dependencies: ['install-xcode-cli-tools'],
         estimatedTime: 120,
         validator: () => this.validateHomebrew(),
-        installer: () => this.installHomebrew()
+        installer: () => this.installHomebrew(),
       },
       {
         id: 'install-essential-packages',
@@ -101,7 +110,7 @@ export class MacInstaller implements BaseInstaller {
         dependencies: ['install-homebrew'],
         estimatedTime: 180,
         validator: () => this.validateEssentialPackages(),
-        installer: () => this.installEssentialPackages(profile)
+        installer: () => this.installEssentialPackages(profile),
       },
       {
         id: 'install-applications',
@@ -112,7 +121,7 @@ export class MacInstaller implements BaseInstaller {
         dependencies: ['install-homebrew'],
         estimatedTime: 300,
         validator: () => this.validateApplications(profile),
-        installer: () => this.installApplications(profile)
+        installer: () => this.installApplications(profile),
       },
       {
         id: 'configure-macos',
@@ -123,7 +132,7 @@ export class MacInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 60,
         validator: () => this.validateMacOSConfig(),
-        installer: () => this.configureMacOS(profile)
+        installer: () => this.configureMacOS(profile),
       },
       {
         id: 'configure-shell',
@@ -134,8 +143,8 @@ export class MacInstaller implements BaseInstaller {
         dependencies: ['install-essential-packages'],
         estimatedTime: 30,
         validator: () => this.validateShellConfig(profile),
-        installer: () => this.configureShell(profile)
-      }
+        installer: () => this.configureShell(profile),
+      },
     ];
 
     return steps;
@@ -145,16 +154,16 @@ export class MacInstaller implements BaseInstaller {
     try {
       // Check if already installed
       await execa('xcode-select', ['-p']);
-      console.log('Xcode Command Line Tools already installed');
+      this.logger.info('Xcode Command Line Tools already installed');
     } catch {
       // Install Command Line Tools
-      console.log('Installing Xcode Command Line Tools...');
+      this.logger.info('Installing Xcode Command Line Tools...');
       await execa('xcode-select', ['--install']);
-      
+
       // Wait for installation to complete
-      console.log('Please complete the Xcode Command Line Tools installation in the popup dialog.');
-      console.log('The setup will continue once installation is complete...');
-      
+      this.logger.info('Please complete the Xcode Command Line Tools installation in the popup dialog.');
+      this.logger.info('The setup will continue once installation is complete...');
+
       // Poll until installation is complete
       let installed = false;
       while (!installed) {
@@ -171,9 +180,9 @@ export class MacInstaller implements BaseInstaller {
   private async installHomebrew(): Promise<void> {
     try {
       await which('brew');
-      console.log('Homebrew already installed');
+      this.logger.info('Homebrew already installed');
     } catch {
-      console.log('Installing Homebrew...');
+      this.logger.info('Installing Homebrew...');
       const installScript = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
       await execa('bash', ['-c', installScript]);
       
@@ -201,7 +210,7 @@ export class MacInstaller implements BaseInstaller {
       'fzf',
       'gh', // GitHub CLI
       'git-delta',
-      'mas' // Mac App Store CLI
+      'mas', // Mac App Store CLI
     ];
 
     // Add shell-specific packages
@@ -215,8 +224,9 @@ export class MacInstaller implements BaseInstaller {
     for (const pkg of essentialPackages) {
       try {
         await execa('brew', ['install', pkg]);
-      } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`Failed to install ${pkg}: ${errorMessage}`);
       }
     }
   }
@@ -228,22 +238,25 @@ export class MacInstaller implements BaseInstaller {
     for (const app of applications.casks) {
       try {
         await execa('brew', ['install', '--cask', app]);
-        console.log(`✓ Installed ${app}`);
-      } catch (error: any) {
-        if (error.stderr?.includes('already an App at')) {
-          console.log(`⚠️  ${app} already installed, skipping`);
+        this.logger.info(`Installed ${app}`);
+      } catch (error: unknown) {
+        const execaErr = error as ExecaError;
+        if (execaErr.stderr?.includes('already an App at')) {
+          this.logger.info(`${app} already installed, skipping`);
         } else {
-          console.warn(`⚠️  Failed to install ${app}:`, error.message);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          this.logger.warn(`Failed to install ${app}: ${errorMessage}`);
         }
       }
     }
-    
+
     // Install Mac App Store applications
     for (const app of applications.masApps) {
       try {
         await execa('mas', ['install', app.id]);
-      } catch (error) {
-        console.warn(`Failed to install ${app.name}:`, error);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`Failed to install ${app.name}: ${errorMessage}`);
       }
     }
   }
@@ -308,13 +321,13 @@ export class MacInstaller implements BaseInstaller {
       'rectangle', // Window manager
       'raycast', // Spotlight replacement
       'obsidian', // Note-taking
-      'the-unarchiver'
+      'the-unarchiver',
     );
     
     return { casks, masApps };
   }
 
-  private async configureMacOS(profile: DeveloperProfile): Promise<void> {
+  private async configureMacOS(_profile: DeveloperProfile): Promise<void> {
     const commands = [
       // Show hidden files in Finder
       'defaults write com.apple.finder AppleShowAllFiles -bool true',
@@ -368,14 +381,15 @@ export class MacInstaller implements BaseInstaller {
       
       // Menu bar
       'defaults write com.apple.menuextra.clock DateFormat -string "EEE MMM d  h:mm:ss a"',
-      'defaults write com.apple.menuextra.battery ShowPercent -string "YES"'
+      'defaults write com.apple.menuextra.battery ShowPercent -string "YES"',
     ];
     
     for (const cmd of commands) {
       try {
         await execa('bash', ['-c', cmd]);
-      } catch (error) {
-        console.warn(`Failed to execute: ${cmd}`, error);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`Failed to execute: ${cmd} - ${errorMessage}`);
       }
     }
     
@@ -400,7 +414,7 @@ export class MacInstaller implements BaseInstaller {
     }
   }
 
-  private async configureZsh(profile: DeveloperProfile): Promise<void> {
+  private async configureZsh(_profile: DeveloperProfile): Promise<void> {
     const homeDir = os.homedir();
     const zshrcPath = path.join(homeDir, '.zshrc');
     
@@ -453,7 +467,7 @@ function cleanup() {
     await execa('chsh', ['-s', '/bin/zsh']);
   }
 
-  private async configureFish(profile: DeveloperProfile): Promise<void> {
+  private async configureFish(_profile: DeveloperProfile): Promise<void> {
     const configDir = path.join(os.homedir(), '.config', 'fish');
     await fs.ensureDir(configDir);
     
@@ -484,7 +498,7 @@ end
     await execa('chsh', ['-s', '/opt/homebrew/bin/fish']);
   }
 
-  private async configureBash(profile: DeveloperProfile): Promise<void> {
+  private async configureBash(_profile: DeveloperProfile): Promise<void> {
     const bashrcPath = path.join(os.homedir(), '.bashrc');
     const bashrcContent = `
 # Bash configuration
@@ -524,7 +538,7 @@ fi
     await fs.writeFile(bashProfilePath, bashProfileContent.trim());
   }
 
-  private async setupDotfiles(profile: DeveloperProfile): Promise<void> {
+  private async setupDotfiles(_profile: DeveloperProfile): Promise<void> {
     // This could set up a dotfiles repository
     // For now, just ensure basic dotfiles exist
     const homeDir = os.homedir();

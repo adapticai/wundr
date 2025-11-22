@@ -1,7 +1,16 @@
-import { TemplateManager, TemplateContext } from './template-manager.js';
-import { DeveloperProfile } from '../types/index.js';
 import * as path from 'path';
+
 import chalk from 'chalk';
+
+import { TemplateManager } from './template-manager.js';
+import { Logger } from '../utils/logger.js';
+
+import type { TemplateContext } from './template-manager.js';
+import type { DeveloperProfile } from '../types/index.js';
+
+const logger = new Logger({ name: 'project-templates' });
+
+
 
 export interface ProjectTemplateOptions {
   projectPath: string;
@@ -21,7 +30,7 @@ export interface ProjectTemplateOptions {
 export async function createProjectTemplates(options: ProjectTemplateOptions): Promise<void> {
   const templateManager = new TemplateManager();
   
-  console.log(chalk.blue(`\n🏗️  Setting up templates for ${options.projectType} project`));
+  logger.info(chalk.blue(`\n🏗️  Setting up templates for ${options.projectType} project`));
   
   const context = createTemplateContext(options);
   
@@ -47,11 +56,11 @@ export async function createProjectTemplates(options: ProjectTemplateOptions): P
       await generateClaudeFlowTemplates(templateManager, options.projectPath, context);
     }
     
-    console.log(chalk.green('✅ Project templates created successfully!'));
+    logger.info(chalk.green('✅ Project templates created successfully!'));
     printNextSteps(options);
     
   } catch (error) {
-    console.error(chalk.red('❌ Failed to create project templates:'), error);
+    logger.error(chalk.red('❌ Failed to create project templates:'), error);
     throw error;
   }
 }
@@ -72,22 +81,22 @@ function createTemplateContext(options: ProjectTemplateOptions): TemplateContext
       packageManager: getPreferredPackageManager(options.profile),
       license: 'MIT',
       author: options.profile.name,
-      organization: options.profile.team
+      organization: options.profile.team,
     },
     platform: {
       os: process.platform as 'darwin' | 'linux' | 'win32',
       arch: process.arch as 'x64' | 'arm64',
       nodeVersion: process.version.replace('v', ''),
-      shell: options.profile.preferences?.shell || 'zsh'
+      shell: options.profile.preferences?.shell || 'zsh',
     },
-    customVariables: getCustomVariables(options)
+    customVariables: getCustomVariables(options),
   };
 }
 
 /**
  * Get configuration files for project type
  */
-function getConfigsForProjectType(projectType: string, options: ProjectTemplateOptions): string[] {
+function getConfigsForProjectType(projectType: string, _options: ProjectTemplateOptions): string[] {
   const configs = ['prettier'];
   
   switch (projectType) {
@@ -121,22 +130,22 @@ function getConfigsForProjectType(projectType: string, options: ProjectTemplateO
 async function generateDockerTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext
+  context: TemplateContext,
 ): Promise<void> {
-  console.log(chalk.blue('🐳 Generating Docker templates...'));
+  logger.info(chalk.blue('🐳 Generating Docker templates...'));
   
   await templateManager.copyTemplate(
     'docker/Dockerfile.node',
     path.join(projectPath, 'Dockerfile'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
   
   await templateManager.copyTemplate(
     'docker/docker-compose.yml',
     path.join(projectPath, 'docker-compose.yml'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
 }
 
@@ -146,9 +155,9 @@ async function generateDockerTemplates(
 async function generateGitHubTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext
+  context: TemplateContext,
 ): Promise<void> {
-  console.log(chalk.blue('📁 Generating GitHub templates...'));
+  logger.info(chalk.blue('📁 Generating GitHub templates...'));
   
   const githubDir = path.join(projectPath, '.github');
   const issueTemplateDir = path.join(githubDir, 'ISSUE_TEMPLATE');
@@ -158,28 +167,28 @@ async function generateGitHubTemplates(
     'github/ISSUE_TEMPLATE/bug_report.md',
     path.join(issueTemplateDir, 'bug_report.md'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
   
   await templateManager.copyTemplate(
     'github/ISSUE_TEMPLATE/feature_request.md',
     path.join(issueTemplateDir, 'feature_request.md'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
   
   await templateManager.copyTemplate(
     'github/ISSUE_TEMPLATE/config.yml',
     path.join(issueTemplateDir, 'config.yml'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
   
   await templateManager.copyTemplate(
     'github/pull_request_template.md',
     path.join(githubDir, 'pull_request_template.md'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
 }
 
@@ -189,9 +198,9 @@ async function generateGitHubTemplates(
 async function generateSlackTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext
+  context: TemplateContext,
 ): Promise<void> {
-  console.log(chalk.blue('💬 Generating Slack integration templates...'));
+  logger.info(chalk.blue('💬 Generating Slack integration templates...'));
   
   const slackDir = path.join(projectPath, 'slack');
   
@@ -199,21 +208,21 @@ async function generateSlackTemplates(
     'slack/manifest.json',
     path.join(slackDir, 'manifest.json'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
   
   await templateManager.copyTemplate(
     'slack/github-integration.js',
     path.join(slackDir, 'github-integration.js'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
   
   await templateManager.copyTemplate(
     'slack/webhook-handler.js',
     path.join(slackDir, 'webhook-handler.js'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
 }
 
@@ -223,15 +232,15 @@ async function generateSlackTemplates(
 async function generateClaudeFlowTemplates(
   templateManager: TemplateManager,
   projectPath: string,
-  context: TemplateContext
+  context: TemplateContext,
 ): Promise<void> {
-  console.log(chalk.blue('🤖 Generating Claude Flow configuration...'));
+  logger.info(chalk.blue('🤖 Generating Claude Flow configuration...'));
   
   await templateManager.copyTemplate(
     'claude-flow/swarm.config.js',
     path.join(projectPath, 'claude-flow.config.js'),
     context,
-    { overwrite: true, verbose: true }
+    { overwrite: true, verbose: true },
   );
 }
 
@@ -239,15 +248,19 @@ async function generateClaudeFlowTemplates(
  * Get preferred package manager from profile
  */
 function getPreferredPackageManager(profile: DeveloperProfile): 'npm' | 'pnpm' | 'yarn' {
-  if (profile.tools.packageManagers?.pnpm) return 'pnpm';
-  if (profile.tools.packageManagers?.yarn) return 'yarn';
+  if (profile.tools.packageManagers?.pnpm) {
+return 'pnpm';
+}
+  if (profile.tools.packageManagers?.yarn) {
+return 'yarn';
+}
   return 'npm';
 }
 
 /**
  * Get custom variables for template context
  */
-function getCustomVariables(options: ProjectTemplateOptions): Record<string, any> {
+function getCustomVariables(options: ProjectTemplateOptions): TemplateContext['customVariables'] {
   return {
     // ESLint configuration
     ECMA_VERSION: 2022,
@@ -321,7 +334,7 @@ function getCustomVariables(options: ProjectTemplateOptions): Record<string, any
     COMMUNICATION_PROTOCOL: 'event-driven',
     CONSENSUS_ALGORITHM: 'weighted-voting',
     CONFLICT_RESOLUTION: 'queen-arbitration',
-    MODEL_ENFORCEMENT: 'strict'
+    MODEL_ENFORCEMENT: 'strict',
   };
 }
 
@@ -329,35 +342,35 @@ function getCustomVariables(options: ProjectTemplateOptions): Record<string, any
  * Print next steps after template creation
  */
 function printNextSteps(options: ProjectTemplateOptions): void {
-  console.log(chalk.cyan('\n📋 Next steps:'));
-  console.log(chalk.white('1. Install dependencies:'));
+  logger.info(chalk.cyan('\n📋 Next steps:'));
+  logger.info(chalk.white('1. Install dependencies:'));
   
   const packageManager = getPreferredPackageManager(options.profile);
-  console.log(chalk.gray(`   cd ${path.basename(options.projectPath)}`));
-  console.log(chalk.gray(`   ${packageManager} install`));
-  
+  logger.info(chalk.gray(`   cd ${path.basename(options.projectPath)}`));
+  logger.info(chalk.gray(`   ${packageManager} install`));
+
   if (options.includeDocker) {
-    console.log(chalk.white('2. Build and run with Docker:'));
-    console.log(chalk.gray('   docker-compose up --build'));
+    logger.info(chalk.white('2. Build and run with Docker:'));
+    logger.info(chalk.gray('   docker-compose up --build'));
   }
-  
+
   if (options.includeGitHub) {
-    console.log(chalk.white('3. Initialize Git repository:'));
-    console.log(chalk.gray('   git init && git add . && git commit -m "Initial commit"'));
+    logger.info(chalk.white('3. Initialize Git repository:'));
+    logger.info(chalk.gray('   git init && git add . && git commit -m "Initial commit"'));
   }
-  
+
   if (options.includeSlack) {
-    console.log(chalk.white('4. Configure Slack integration:'));
-    console.log(chalk.gray('   - Update slack/manifest.json with your app details'));
-    console.log(chalk.gray('   - Set up environment variables for Slack bot'));
+    logger.info(chalk.white('4. Configure Slack integration:'));
+    logger.info(chalk.gray('   - Update slack/manifest.json with your app details'));
+    logger.info(chalk.gray('   - Set up environment variables for Slack bot'));
   }
-  
+
   if (options.includeClaudeFlow) {
-    console.log(chalk.white('5. Initialize Claude Flow:'));
-    console.log(chalk.gray('   npx claude-flow@alpha mcp start'));
+    logger.info(chalk.white('5. Initialize Claude Flow:'));
+    logger.info(chalk.gray('   npx claude-flow@alpha mcp start'));
   }
-  
-  console.log(chalk.white('6. Start development:'));
-  console.log(chalk.gray(`   ${packageManager} run dev`));
-  console.log();
+
+  logger.info(chalk.white('6. Start development:'));
+  logger.info(chalk.gray(`   ${packageManager} run dev`));
+  logger.info('');
 }

@@ -1,17 +1,52 @@
 import { promises as fs } from 'fs';
 import { join } from 'path';
-let createCanvas: any, registerFont: any;
 
-try {
-  const canvasModule = require('canvas');
-  createCanvas = canvasModule.createCanvas;
-  registerFont = canvasModule.registerFont;
-} catch (e) {
-  console.warn('Canvas not available - wallpaper generation disabled');
-  createCanvas = (): any => ({ getContext: (): any => null, toBuffer: (): Buffer => Buffer.alloc(0) });
-  registerFont = (): void => {};
+import type { ProfileConfig } from './profile-personalizer';
+
+// Canvas types - using node-canvas interface
+interface CanvasContext {
+  createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient;
+  fillRect(x: number, y: number, w: number, h: number): void;
+  beginPath(): void;
+  arc(x: number, y: number, radius: number, startAngle: number, endAngle: number): void;
+  fill(): void;
+  fillText(text: string, x: number, y: number): void;
+  measureText(text: string): TextMetrics;
+  fillStyle: string | CanvasGradient;
+  globalAlpha: number;
+  textAlign: CanvasTextAlign;
+  font: string;
 }
-import { ProfileConfig } from './profile-personalizer';
+
+interface Canvas {
+  getContext(contextId: '2d'): CanvasContext | null;
+  toBuffer(mimeType: string): Buffer;
+}
+
+type CreateCanvasFn = (width: number, height: number) => Canvas;
+type RegisterFontFn = (path: string, options: { family: string }) => void;
+
+let createCanvas: CreateCanvasFn;
+let _registerFont: RegisterFontFn;
+
+const initCanvas = async (): Promise<void> => {
+  try {
+    const canvasModule = await import('canvas');
+    // Cast to unknown first then to CreateCanvasFn to handle canvas module type differences
+    createCanvas = canvasModule.createCanvas as unknown as CreateCanvasFn;
+    _registerFont = canvasModule.registerFont as RegisterFontFn;
+  } catch (_e) {
+    console.warn('Canvas not available - wallpaper generation disabled');
+    createCanvas = (): Canvas => ({
+      getContext: (): CanvasContext | null => null,
+      toBuffer: (): Buffer => Buffer.alloc(0),
+    });
+    _registerFont = (): void => {};
+  }
+};
+
+// Initialize canvas on module load
+const canvasReady = initCanvas();
 
 export interface WallpaperConfig {
   width: number;
@@ -40,6 +75,7 @@ export class WallpaperGenerator {
    * Create personalized wallpaper based on user profile
    */
   async createWallpaper(outputDir: string): Promise<string> {
+    await canvasReady;
     const wallpaperConfig = this.generatePersonalizedConfig();
     const canvas = createCanvas(wallpaperConfig.width, wallpaperConfig.height);
     const ctx = canvas.getContext('2d');
@@ -85,7 +121,10 @@ export class WallpaperGenerator {
   /**
    * Create gradient background
    */
-  private createGradientBackground(ctx: CanvasRenderingContext2D, config: WallpaperConfig): void {
+  private createGradientBackground(ctx: CanvasContext | null, config: WallpaperConfig): void {
+    if (!ctx) {
+      return;
+    }
     const gradient = ctx.createLinearGradient(0, 0, 0, config.height);
     gradient.addColorStop(0, config.primaryColor);
     gradient.addColorStop(1, config.secondaryColor);
@@ -97,7 +136,10 @@ export class WallpaperGenerator {
   /**
    * Add subtle circular pattern overlay
    */
-  private addSubtlePattern(ctx: CanvasRenderingContext2D, config: WallpaperConfig): void {
+  private addSubtlePattern(ctx: CanvasContext | null, config: WallpaperConfig): void {
+    if (!ctx) {
+      return;
+    }
     ctx.globalAlpha = 0.05;
     
     for (let i = 0; i < 50; i++) {
@@ -117,7 +159,10 @@ export class WallpaperGenerator {
   /**
    * Add personalized welcome text
    */
-  private async addPersonalizedText(ctx: CanvasRenderingContext2D, config: WallpaperConfig): Promise<void> {
+  private async addPersonalizedText(ctx: CanvasContext | null, config: WallpaperConfig): Promise<void> {
+    if (!ctx) {
+      return;
+    }
     ctx.fillStyle = config.textColor;
     ctx.textAlign = 'center';
     
@@ -126,7 +171,7 @@ export class WallpaperGenerator {
     const welcomeText = `Welcome, ${firstName}!`;
     
     ctx.font = 'bold 120px Arial, sans-serif';
-    const welcomeWidth = ctx.measureText(welcomeText).width;
+    const _welcomeWidth = ctx.measureText(welcomeText).width;
     ctx.fillText(welcomeText, config.width / 2, config.height / 2 - 50);
     
     // Role subtitle
@@ -179,9 +224,13 @@ export class WallpaperGenerator {
    * Create a minimalist coding-themed wallpaper
    */
   async createCodingWallpaper(outputDir: string): Promise<string> {
+    await canvasReady;
     const config = this.generatePersonalizedConfig();
     const canvas = createCanvas(config.width, config.height);
     const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to create canvas context');
+    }
 
     // Dark background
     ctx.fillStyle = '#0f1419';
@@ -203,7 +252,7 @@ export class WallpaperGenerator {
   /**
    * Add code-like visual pattern
    */
-  private addCodePattern(ctx: CanvasRenderingContext2D, config: WallpaperConfig): void {
+  private addCodePattern(ctx: CanvasContext, config: WallpaperConfig): void {
     const codeSnippets = [
       'const welcome = () => {',
       '  return `Hello, ${name}!`;',
@@ -233,12 +282,12 @@ export class WallpaperGenerator {
   /**
    * Add terminal-style welcome text
    */
-  private async addTerminalText(ctx: CanvasRenderingContext2D, config: WallpaperConfig): Promise<void> {
+  private async addTerminalText(ctx: CanvasContext, config: WallpaperConfig): Promise<void> {
     ctx.fillStyle = '#00ff00';
     ctx.font = 'bold 48px Monaco, monospace';
     ctx.textAlign = 'center';
     
-    const terminalText = `$ whoami`;
+    const terminalText = '$ whoami';
     ctx.fillText(terminalText, config.width / 2, config.height / 2 - 100);
     
     ctx.fillStyle = '#ffffff';

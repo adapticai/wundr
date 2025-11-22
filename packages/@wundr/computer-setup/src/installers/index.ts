@@ -1,16 +1,28 @@
 /**
  * Installer Registry - Central hub for managing all platform installers
  */
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
-import { NodeInstaller } from './node-installer';
+import claudeInstallerInstance from './claude-installer';
 import { DockerInstaller } from './docker-installer';
 import { GitInstaller } from './git-installer';
 import { HomebrewInstaller } from './homebrew-installer';
-import { PythonInstaller } from './python-installer';
-import { MacInstaller } from './mac-installer';
 import { LinuxInstaller } from './linux-installer';
+import { MacInstaller } from './mac-installer';
+import { NodeInstaller } from './node-installer';
+import { PythonInstaller } from './python-installer';
 import { WindowsInstaller } from './windows-installer';
-import ClaudeInstaller from './claude-installer';
+
+import type {
+  SetupPlatform,
+  SetupStep,
+  DeveloperProfile,
+  ProgrammingLanguages,
+} from '../types';
+
+/** Node.js configuration type extracted from ProgrammingLanguages */
+type NodeConfig = NonNullable<ProgrammingLanguages['node']>;
+
+/** Python configuration type extracted from ProgrammingLanguages */
+type PythonConfig = NonNullable<ProgrammingLanguages['python']>;
 
 export interface BaseInstaller {
   name: string;
@@ -48,7 +60,7 @@ export class InstallerRegistry {
     this.register('node', new NodeInstaller());
     this.register('python', new PythonInstaller());
     this.register('docker', new DockerInstaller());
-    this.register('claude', ClaudeInstaller);
+    this.register('claude', claudeInstallerInstance);
   }
 
   /**
@@ -185,24 +197,30 @@ export class InstallerRegistry {
    */
   async getSystemSteps(platform: SetupPlatform): Promise<SetupStep[]> {
     const installer = this.installers.get('platform');
-    if (!installer) return [];
+    if (!installer) {
+return [];
+}
     return installer.getSteps({} as DeveloperProfile, platform);
   }
 
   /**
    * Get Node.js setup steps
    */
-  async getNodeSteps(nodeConfig: any): Promise<SetupStep[]> {
+  async getNodeSteps(nodeConfig: NodeConfig): Promise<SetupStep[]> {
     const installer = this.installers.get('node');
-    if (!installer) return [];
-    const profile = { tools: { languages: { node: nodeConfig } } } as any;
-    return installer.getSteps(profile, this.platform);
+    if (!installer) {
+      return [];
+    }
+    const profile: Partial<DeveloperProfile> = {
+      tools: { languages: { node: nodeConfig } },
+    };
+    return installer.getSteps(profile as DeveloperProfile, this.platform);
   }
 
   /**
    * Get Python setup steps
    */
-  async getPythonSteps(pythonConfig: any): Promise<SetupStep[]> {
+  async getPythonSteps(_pythonConfig: PythonConfig): Promise<SetupStep[]> {
     // Python installer not yet implemented
     return [];
   }
@@ -220,7 +238,9 @@ export class InstallerRegistry {
    */
   async getDockerSteps(): Promise<SetupStep[]> {
     const installer = this.installers.get('docker');
-    if (!installer) return [];
+    if (!installer) {
+return [];
+}
     return installer.getSteps({} as DeveloperProfile, this.platform);
   }
 
@@ -229,7 +249,9 @@ export class InstallerRegistry {
    */
   async getClaudeCodeSteps(): Promise<SetupStep[]> {
     const installer = this.installers.get('claude');
-    if (!installer) return [];
+    if (!installer) {
+return [];
+}
     return installer.getSteps({} as DeveloperProfile, this.platform);
   }
 
@@ -238,9 +260,31 @@ export class InstallerRegistry {
    */
   async getClaudeFlowSteps(swarmAgents?: string[]): Promise<SetupStep[]> {
     const installer = this.installers.get('claude');
-    if (!installer) return [];
-    const profile = { aiTools: { claudeFlow: { agents: swarmAgents } } } as any;
-    return installer.getSteps(profile, this.platform);
+    if (!installer) {
+      return [];
+    }
+    const profile: Partial<DeveloperProfile> = {
+      preferences: {
+        aiTools: {
+          claudeCode: true,
+          claudeFlow: true,
+          mcpTools: [],
+          swarmAgents: swarmAgents || [],
+          memoryAllocation: '4GB',
+        },
+        shell: 'zsh',
+        editor: 'vscode',
+        theme: 'dark',
+        gitConfig: {
+          userName: '',
+          userEmail: '',
+          signCommits: false,
+          defaultBranch: 'main',
+          aliases: {},
+        },
+      },
+    };
+    return installer.getSteps(profile as DeveloperProfile, this.platform);
   }
 
   /**
@@ -260,7 +304,7 @@ export class InstallerRegistry {
     const promises = Array.from(this.installers.entries()).map(async ([name, installer]) => {
       try {
         results[name] = await installer.validate();
-      } catch (error) {
+      } catch {
         results[name] = false;
       }
     });
@@ -295,7 +339,7 @@ export class InstallerRegistry {
     return {
       platform: this.platform,
       installedTools,
-      missingTools
+      missingTools,
     };
   }
 
@@ -333,7 +377,7 @@ export class InstallerRegistry {
       success: failed.length === 0,
       installed,
       failed,
-      errors
+      errors,
     };
   }
 }

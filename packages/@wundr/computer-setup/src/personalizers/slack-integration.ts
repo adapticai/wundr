@@ -1,36 +1,115 @@
 import { promises as fs } from 'fs';
 
-// Handle optional Slack dependency
-let WebClient: any;
-try {
-  const slack = require('@slack/web-api');
-  WebClient = slack.WebClient;
-} catch (e) {
-  // Mock WebClient for when Slack SDK is not available
-  WebClient = class MockWebClient {
-    constructor(token: string) {}
-    
-    users = {
-      profile: {
-        set: async () => ({ ok: false, error: 'slack_api_unavailable' }),
-        get: async () => ({ ok: false, error: 'slack_api_unavailable' })
-      },
-      setPhoto: async () => ({ ok: false, error: 'slack_api_unavailable' })
-    };
-    
-    auth = {
-      test: async () => ({ ok: false, error: 'slack_api_unavailable' })
-    };
-    
-    team = {
-      info: async () => ({ ok: false, error: 'slack_api_unavailable' })
-    };
-    
-    dnd = {
-      setSnooze: async () => ({ ok: false, error: 'slack_api_unavailable' }),
-      endSnooze: async () => ({ ok: false, error: 'slack_api_unavailable' })
-    };
+// Type definitions for Slack API responses and client
+interface SlackProfileResponse {
+  ok: boolean;
+  error?: string;
+  profile?: SlackProfile;
+}
+
+interface SlackProfile {
+  real_name?: string;
+  title?: string;
+  status_text?: string;
+  status_emoji?: string;
+  fields?: Record<string, { value: string; alt: string }>;
+  pronouns?: string;
+  phone?: string;
+}
+
+interface SlackAuthResponse {
+  ok: boolean;
+  error?: string;
+  user?: string;
+  team?: string;
+}
+
+interface SlackTeamResponse {
+  ok: boolean;
+  error?: string;
+  team?: {
+    id: string;
+    name: string;
+    domain: string;
   };
+}
+
+interface SlackDndResponse {
+  ok: boolean;
+  error?: string;
+}
+
+interface SlackPhotoResponse {
+  ok: boolean;
+  error?: string;
+}
+
+interface SlackClientInterface {
+  users: {
+    profile: {
+      set: (params: { profile: SlackProfilePayload }) => Promise<SlackProfileResponse>;
+      get: () => Promise<SlackProfileResponse>;
+    };
+    setPhoto: (params: { image: Buffer }) => Promise<SlackPhotoResponse>;
+  };
+  auth: {
+    test: () => Promise<SlackAuthResponse>;
+  };
+  team: {
+    info: () => Promise<SlackTeamResponse>;
+  };
+  dnd: {
+    setSnooze: (params: { num_minutes: number }) => Promise<SlackDndResponse>;
+    endSnooze: () => Promise<SlackDndResponse>;
+  };
+}
+
+interface SlackProfilePayload {
+  real_name?: string;
+  title?: string;
+  status_text?: string;
+  status_emoji?: string;
+  status_expiration?: number;
+  fields?: Record<string, { value: string; alt: string }>;
+  pronouns?: string;
+  phone?: string;
+}
+
+// Mock WebClient for when Slack SDK is not available
+class MockWebClient implements SlackClientInterface {
+  constructor(_token: string) {}
+
+  users = {
+    profile: {
+      set: async (_params: { profile: SlackProfilePayload }) => ({ ok: false, error: 'slack_api_unavailable' }),
+      get: async () => ({ ok: false, error: 'slack_api_unavailable' }),
+    },
+    setPhoto: async (_params: { image: Buffer }) => ({ ok: false, error: 'slack_api_unavailable' }),
+  };
+
+  auth = {
+    test: async () => ({ ok: false, error: 'slack_api_unavailable' }),
+  };
+
+  team = {
+    info: async () => ({ ok: false, error: 'slack_api_unavailable' }),
+  };
+
+  dnd = {
+    setSnooze: async (_params: { num_minutes: number }) => ({ ok: false, error: 'slack_api_unavailable' }),
+    endSnooze: async () => ({ ok: false, error: 'slack_api_unavailable' }),
+  };
+}
+
+// Factory function to create Slack client
+async function createSlackClient(token: string): Promise<SlackClientInterface> {
+  try {
+    const slack = await import('@slack/web-api');
+    return new slack.WebClient(token) as unknown as SlackClientInterface;
+  } catch (_e) {
+    // Slack SDK not available, use mock
+    return new MockWebClient(token);
+  }
 }
 
 export interface SlackProfileData {
@@ -43,10 +122,23 @@ export interface SlackProfileData {
 }
 
 export class SlackIntegration {
-  private client: any;
+  private client: SlackClientInterface | null = null;
+  private initPromise: Promise<void>;
 
   constructor(token: string) {
-    this.client = new WebClient(token);
+    this.initPromise = this.initialize(token);
+  }
+
+  private async initialize(token: string): Promise<void> {
+    this.client = await createSlackClient(token);
+  }
+
+  private async getClient(): Promise<SlackClientInterface> {
+    await this.initPromise;
+    if (!this.client) {
+      throw new Error('Slack client not initialized');
+    }
+    return this.client;
   }
 
   /**
@@ -54,8 +146,10 @@ export class SlackIntegration {
    */
   async updateProfile(profileData: SlackProfileData): Promise<void> {
     try {
+      const client = await this.getClient();
+
       // Prepare profile object
-      const profile: any = {
+      const profile: SlackProfilePayload = {
         real_name: profileData.realName,
         title: profileData.title,
         status_text: profileData.statusText || '',
@@ -73,7 +167,7 @@ export class SlackIntegration {
       }
 
       // Update profile fields
-      await this.client.users.profile.set({ profile });
+      await client.users.profile.set({ profile });
 
       // Upload profile photo if provided
       if (profileData.photoPath) {
@@ -93,26 +187,28 @@ export class SlackIntegration {
    */
   private async uploadProfilePhoto(photoPath: string): Promise<void> {
     try {
+      const client = await this.getClient();
       const photoData = await fs.readFile(photoPath);
-      
-      await this.client.users.setPhoto({
+
+      await client.users.setPhoto({
         image: photoData,
       });
-      
-    } catch (error) {
-      throw new Error(`Failed to upload Slack profile photo: ${error}`);
+
+    } catch (_error) {
+      throw new Error(`Failed to upload Slack profile photo: ${_error}`);
     }
   }
 
   /**
    * Get current user profile information
    */
-  async getCurrentProfile(): Promise<any> {
+  async getCurrentProfile(): Promise<SlackProfile | undefined> {
     try {
-      const response = await this.client.users.profile.get();
+      const client = await this.getClient();
+      const response = await client.users.profile.get();
       return response.profile;
-    } catch (error) {
-      throw new Error(`Failed to get Slack profile: ${error}`);
+    } catch (_error) {
+      throw new Error(`Failed to get Slack profile: ${_error}`);
     }
   }
 
@@ -121,7 +217,8 @@ export class SlackIntegration {
    */
   async setStatus(statusText: string, statusEmoji: string = ':computer:', expiration?: number): Promise<void> {
     try {
-      const profile: any = {
+      const client = await this.getClient();
+      const profile: SlackProfilePayload = {
         status_text: statusText,
         status_emoji: statusEmoji,
       };
@@ -130,10 +227,10 @@ export class SlackIntegration {
         profile.status_expiration = expiration;
       }
 
-      await this.client.users.profile.set({ profile });
-      
-    } catch (error) {
-      throw new Error(`Failed to set Slack status: ${error}`);
+      await client.users.profile.set({ profile });
+
+    } catch (_error) {
+      throw new Error(`Failed to set Slack status: ${_error}`);
     }
   }
 
@@ -142,14 +239,15 @@ export class SlackIntegration {
    */
   async updateProfileFields(fields: Record<string, { value: string; alt: string }>): Promise<void> {
     try {
-      const profile = {
+      const client = await this.getClient();
+      const profile: SlackProfilePayload = {
         fields,
       };
 
-      await this.client.users.profile.set({ profile });
-      
-    } catch (error) {
-      throw new Error(`Failed to update Slack profile fields: ${error}`);
+      await client.users.profile.set({ profile });
+
+    } catch (_error) {
+      throw new Error(`Failed to update Slack profile fields: ${_error}`);
     }
   }
 
@@ -158,12 +256,13 @@ export class SlackIntegration {
    */
   async setDoNotDisturb(minutes: number): Promise<void> {
     try {
-      await this.client.dnd.setSnooze({
+      const client = await this.getClient();
+      await client.dnd.setSnooze({
         num_minutes: minutes,
       });
-      
-    } catch (error) {
-      throw new Error(`Failed to set Do Not Disturb: ${error}`);
+
+    } catch (_error) {
+      throw new Error(`Failed to set Do Not Disturb: ${_error}`);
     }
   }
 
@@ -172,21 +271,23 @@ export class SlackIntegration {
    */
   async clearDoNotDisturb(): Promise<void> {
     try {
-      await this.client.dnd.endSnooze();
-    } catch (error) {
-      throw new Error(`Failed to clear Do Not Disturb: ${error}`);
+      const client = await this.getClient();
+      await client.dnd.endSnooze();
+    } catch (_error) {
+      throw new Error(`Failed to clear Do Not Disturb: ${_error}`);
     }
   }
 
   /**
    * Get workspace information
    */
-  async getWorkspaceInfo(): Promise<any> {
+  async getWorkspaceInfo(): Promise<SlackTeamResponse['team']> {
     try {
-      const response = await this.client.team.info();
+      const client = await this.getClient();
+      const response = await client.team.info();
       return response.team;
-    } catch (error) {
-      throw new Error(`Failed to get workspace info: ${error}`);
+    } catch (_error) {
+      throw new Error(`Failed to get workspace info: ${_error}`);
     }
   }
 
@@ -195,8 +296,9 @@ export class SlackIntegration {
    */
   async validateToken(): Promise<{ valid: boolean; user?: string; team?: string }> {
     try {
-      const authResponse = await this.client.auth.test();
-      
+      const client = await this.getClient();
+      const authResponse = await client.auth.test();
+
       if (authResponse.ok) {
         return {
           valid: true,
@@ -206,8 +308,8 @@ export class SlackIntegration {
       } else {
         return { valid: false };
       }
-      
-    } catch (error) {
+
+    } catch (_error) {
       return { valid: false };
     }
   }
@@ -219,7 +321,7 @@ export class SlackIntegration {
     try {
       // First get the current profile to understand available fields
       const currentProfile = await this.getCurrentProfile();
-      const fields = currentProfile.fields || {};
+      const fields: Record<string, { value: string; alt: string }> = currentProfile?.fields || {};
 
       // Update with new custom fields
       Object.entries(customFields).forEach(([key, value]) => {
@@ -235,23 +337,24 @@ export class SlackIntegration {
       });
 
       await this.updateProfileFields(fields);
-      
-    } catch (error) {
-      throw new Error(`Failed to set custom fields: ${error}`);
+
+    } catch (_error) {
+      throw new Error(`Failed to set custom fields: ${_error}`);
     }
   }
 
   /**
    * Bulk update profile with all information at once
    */
-  async bulkUpdateProfile(profileData: SlackProfileData & { 
+  async bulkUpdateProfile(profileData: SlackProfileData & {
     customFields?: Record<string, string>;
     pronouns?: string;
     phone?: string;
     timezone?: string;
   }): Promise<void> {
     try {
-      const profile: any = {
+      const client = await this.getClient();
+      const profile: SlackProfilePayload = {
         real_name: profileData.realName,
         title: profileData.title,
         status_text: profileData.statusText || '',
@@ -259,24 +362,30 @@ export class SlackIntegration {
       };
 
       // Add optional fields
-      if (profileData.pronouns) profile.pronouns = profileData.pronouns;
-      if (profileData.phone) profile.phone = profileData.phone;
+      if (profileData.pronouns) {
+        profile.pronouns = profileData.pronouns;
+      }
+      if (profileData.phone) {
+        profile.phone = profileData.phone;
+      }
 
       // Handle custom fields
       if (profileData.customFields) {
         const currentProfile = await this.getCurrentProfile();
-        const existingFields = currentProfile.fields || {};
-        
+        const existingFields: Record<string, { value: string; alt: string }> = currentProfile?.fields || {};
+
         Object.entries(profileData.customFields).forEach(([key, value]) => {
           existingFields[key] = { value, alt: '' };
         });
-        
+
         profile.fields = existingFields;
       }
 
       // Company field (standard field ID may vary by workspace)
       if (profileData.company) {
-        if (!profile.fields) profile.fields = {};
+        if (!profile.fields) {
+          profile.fields = {};
+        }
         profile.fields.Xf0COMPANY = {
           value: profileData.company,
           alt: '',
@@ -284,15 +393,15 @@ export class SlackIntegration {
       }
 
       // Update all profile information
-      await this.client.users.profile.set({ profile });
+      await client.users.profile.set({ profile });
 
       // Upload photo separately if provided
       if (profileData.photoPath) {
         await this.uploadProfilePhoto(profileData.photoPath);
       }
-      
-    } catch (error) {
-      throw new Error(`Failed to bulk update profile: ${error}`);
+
+    } catch (_error) {
+      throw new Error(`Failed to bulk update profile: ${_error}`);
     }
   }
 }

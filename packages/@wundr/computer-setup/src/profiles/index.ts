@@ -3,12 +3,15 @@
  * Handles different developer profiles and their configurations
  */
 
-import * as fs from 'fs-extra';
-import * as path from 'path';
 import * as os from 'os';
-import { ConfigManager } from '@wundr.io/config';
+import * as path from 'path';
+
+import * as fs from 'fs-extra';
+
 import { getLogger } from '../utils/logger';
-import { DeveloperProfile, ProfilePreferences, RequiredTools } from '../types';
+
+import type { DeveloperProfile, ProfilePreferences, RequiredTools } from '../types';
+import type { ConfigManager } from '@wundr.io/config';
 
 const logger = getLogger('computer-setup:profiles');
 
@@ -16,7 +19,7 @@ export class ProfileManager {
   private profilesDir: string;
   private profiles: Map<string, DeveloperProfile> = new Map();
 
-  constructor(configManager?: ConfigManager) {
+  constructor(_configManager?: ConfigManager) {
     this.profilesDir = path.join(os.homedir(), '.wundr', 'profiles');
     this.ensureProfilesDirectory();
   }
@@ -105,7 +108,7 @@ export class ProfileManager {
     // If no profiles found, return predefined ones
     if (this.profiles.size === 0) {
       const predefinedProfiles = [
-        'frontend', 'backend', 'fullstack', 'devops', 'ml', 'mobile'
+        'frontend', 'backend', 'fullstack', 'devops', 'ml', 'mobile',
       ].map(role => this.getPredefinedProfile(role)).filter(Boolean) as DeveloperProfile[];
       
       predefinedProfiles.forEach(profile => {
@@ -134,7 +137,7 @@ export class ProfileManager {
       email: 'developer@example.com',
       role: 'fullstack',
       preferences: this.getDefaultPreferences(),
-      tools: this.getDefaultTools()
+      tools: this.getDefaultTools(),
     };
   }
 
@@ -151,50 +154,50 @@ export class ProfileManager {
         email: '',
         role: 'frontend',
         preferences: this.getFrontendPreferences(),
-        tools: this.getFrontendTools()
+        tools: this.getFrontendTools(),
       },
       backend: {
         name: 'Backend Developer',
         email: '',
         role: 'backend',
         preferences: this.getBackendPreferences(),
-        tools: this.getBackendTools()
+        tools: this.getBackendTools(),
       },
       fullstack: {
         name: 'Full Stack Developer',
         email: '',
         role: 'fullstack',
         preferences: this.getFullstackPreferences(),
-        tools: this.getFullstackTools()
+        tools: this.getFullstackTools(),
       },
       fullstackdeveloper: {
         name: 'Full Stack Developer',
         email: '',
         role: 'fullstack',
         preferences: this.getFullstackPreferences(),
-        tools: this.getFullstackTools()
+        tools: this.getFullstackTools(),
       },
       devops: {
         name: 'DevOps Engineer',
         email: '',
         role: 'devops',
         preferences: this.getDevOpsPreferences(),
-        tools: this.getDevOpsTools()
+        tools: this.getDevOpsTools(),
       },
       ml: {
         name: 'Machine Learning Engineer',
         email: '',
         role: 'ml',
         preferences: this.getMLPreferences(),
-        tools: this.getMLTools()
+        tools: this.getMLTools(),
       },
       mobile: {
         name: 'Mobile Developer',
         email: '',
         role: 'mobile',
         preferences: this.getMobilePreferences(),
-        tools: this.getMobileTools()
-      }
+        tools: this.getMobileTools(),
+      },
     };
 
     return profiles[normalizedRole] || null;
@@ -217,16 +220,16 @@ export class ProfileManager {
           st: 'status',
           unstage: 'reset HEAD --',
           last: 'log -1 HEAD',
-          visual: 'log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"'
-        }
+          visual: 'log --graph --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset"',
+        },
       },
       aiTools: {
         claudeCode: true,
         claudeFlow: true,
         mcpTools: ['all'],
         swarmAgents: ['default'],
-        memoryAllocation: '2GB'
-      }
+        memoryAllocation: '2GB',
+      },
     };
   }
 
@@ -236,18 +239,18 @@ export class ProfileManager {
         node: {
           versions: ['20', '18'],
           defaultVersion: '20',
-          globalPackages: ['pnpm', 'typescript', 'tsx', 'nodemon']
-        }
+          globalPackages: ['pnpm', 'typescript', 'tsx', 'nodemon'],
+        },
       },
       packageManagers: {
         npm: true,
         pnpm: true,
         yarn: false,
-        brew: process.platform === 'darwin'
+        brew: process.platform === 'darwin',
       },
       containers: {
         docker: true,
-        dockerCompose: true
+        dockerCompose: true,
       },
       cloudCLIs: {},
       databases: {},
@@ -258,10 +261,10 @@ export class ProfileManager {
           profile: {
             displayName: '',
             statusText: 'Working',
-            statusEmoji: ':computer:'
-          }
-        }
-      }
+            statusEmoji: ':computer:',
+          },
+        },
+      },
     };
   }
 
@@ -287,7 +290,7 @@ export class ProfileManager {
     tools.databases = {
       postgresql: true,
       redis: true,
-      mongodb: false
+      mongodb: false,
     };
     return tools;
   }
@@ -299,13 +302,13 @@ export class ProfileManager {
   private getFullstackTools(): RequiredTools {
     const tools = this.getDefaultTools();
     tools.languages.node!.globalPackages.push(
-      'vite', 'next', 'express', 'fastify', 'prisma', 'pm2'
+      'vite', 'next', 'express', 'fastify', 'prisma', 'pm2',
     );
     tools.databases = {
       postgresql: true,
       redis: true,
       mongodb: false,
-      mysql: false
+      mysql: false,
     };
     return tools;
   }
@@ -321,18 +324,18 @@ export class ProfileManager {
     tools.containers = {
       docker: true,
       dockerCompose: true,
-      kubernetes: true
+      kubernetes: true,
     };
     tools.cloudCLIs = {
       aws: true,
       gcloud: true,
-      azure: false
+      azure: false,
     };
     tools.monitoring = {
       datadog: false,
       newRelic: false,
       sentry: true,
-      grafana: false
+      grafana: false,
     };
     return tools;
   }
@@ -346,11 +349,11 @@ export class ProfileManager {
     tools.languages.python = {
       versions: ['3.11', '3.10'],
       defaultVersion: '3.11',
-      virtualEnv: 'venv'
+      virtualEnv: 'venv',
     };
     tools.containers = {
       docker: true,
-      dockerCompose: true
+      dockerCompose: true,
     };
     return tools;
   }
@@ -379,46 +382,46 @@ export class ProfileManager {
           ...update.preferences.gitConfig,
           aliases: {
             ...existing.preferences.gitConfig.aliases,
-            ...update.preferences.gitConfig.aliases
-          }
+            ...update.preferences.gitConfig.aliases,
+          },
         },
         aiTools: {
           ...existing.preferences.aiTools,
-          ...update.preferences.aiTools
-        }
+          ...update.preferences.aiTools,
+        },
       },
       tools: {
         ...existing.tools,
         ...update.tools,
         languages: {
           ...existing.tools.languages,
-          ...update.tools.languages
+          ...update.tools.languages,
         },
         packageManagers: {
           ...existing.tools.packageManagers,
-          ...update.tools.packageManagers
+          ...update.tools.packageManagers,
         },
         containers: {
           ...existing.tools.containers,
-          ...update.tools.containers
+          ...update.tools.containers,
         },
         cloudCLIs: {
           ...existing.tools.cloudCLIs,
-          ...update.tools.cloudCLIs
+          ...update.tools.cloudCLIs,
         },
         databases: {
           ...existing.tools.databases,
-          ...update.tools.databases
+          ...update.tools.databases,
         },
         monitoring: {
           ...existing.tools.monitoring,
-          ...update.tools.monitoring
+          ...update.tools.monitoring,
         },
         communication: {
           ...existing.tools.communication,
-          ...update.tools.communication
-        }
-      }
+          ...update.tools.communication,
+        },
+      },
     };
   }
 

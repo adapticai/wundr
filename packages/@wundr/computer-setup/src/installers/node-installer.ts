@@ -1,13 +1,19 @@
 /**
  * Node.js Installer - Cross-platform Node.js and package manager setup
  */
+import * as os from 'os';
+import * as path from 'path';
+
 import { execa } from 'execa';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
+
+const logger = new Logger({ name: 'NodeInstaller' });
 
 export class NodeInstaller implements BaseInstaller {
   name = 'node';
@@ -65,7 +71,7 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log(`Configuring Node.js environment on ${platform.os} (${platform.arch})`);
+    logger.info(`Configuring Node.js environment on ${platform.os} (${platform.arch})`);
 
     // Configure npm
     await this.configureNPM(profile);
@@ -82,7 +88,9 @@ export class NodeInstaller implements BaseInstaller {
   async validate(): Promise<boolean> {
     try {
       const nodeVersion = await this.getVersion();
-      if (!nodeVersion) return false;
+      if (!nodeVersion) {
+return false;
+}
 
       const { stdout: npmVersion } = await execa('npm', ['--version']);
       return !!npmVersion;
@@ -93,7 +101,9 @@ export class NodeInstaller implements BaseInstaller {
 
   getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
     const nodeConfig = profile.tools?.languages?.node;
-    if (!nodeConfig) return [];
+    if (!nodeConfig) {
+return [];
+}
 
     const steps: SetupStep[] = [
       {
@@ -105,7 +115,7 @@ export class NodeInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 30,
         validator: () => this.isNVMInstalled(),
-        installer: () => this.installNVM(platform)
+        installer: () => this.installNVM(platform),
       },
       {
         id: 'install-node-versions',
@@ -116,7 +126,7 @@ export class NodeInstaller implements BaseInstaller {
         dependencies: ['install-nvm'],
         estimatedTime: 60 * nodeConfig.versions.length,
         validator: () => this.validateNodeVersions(nodeConfig.versions),
-        installer: () => this.installAllNodeVersions(nodeConfig.versions)
+        installer: () => this.installAllNodeVersions(nodeConfig.versions),
       },
       {
         id: 'set-default-node',
@@ -127,8 +137,8 @@ export class NodeInstaller implements BaseInstaller {
         dependencies: ['install-node-versions'],
         estimatedTime: 5,
         validator: () => this.validateDefaultVersion(nodeConfig.defaultVersion),
-        installer: () => this.setDefaultNodeVersion(nodeConfig.defaultVersion)
-      }
+        installer: () => this.setDefaultNodeVersion(nodeConfig.defaultVersion),
+      },
     ];
 
     if (nodeConfig.globalPackages.length > 0) {
@@ -141,7 +151,7 @@ export class NodeInstaller implements BaseInstaller {
         dependencies: ['set-default-node'],
         estimatedTime: 30 * nodeConfig.globalPackages.length,
         validator: () => this.validateGlobalPackages(nodeConfig.globalPackages),
-        installer: () => this.installGlobalPackages(nodeConfig.globalPackages)
+        installer: () => this.installGlobalPackages(nodeConfig.globalPackages),
       });
     }
 
@@ -158,13 +168,13 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   private async installNVM(platform: SetupPlatform): Promise<void> {
-    console.log('Installing NVM (Node Version Manager)...');
+    logger.info('Installing NVM (Node Version Manager)...');
     
     const homeDir = os.homedir();
     const nvmDir = path.join(homeDir, '.nvm');
     
     if (await fs.pathExists(nvmDir)) {
-      console.log('NVM already installed');
+      logger.info('NVM already installed');
       return;
     }
 
@@ -182,15 +192,15 @@ export class NodeInstaller implements BaseInstaller {
       
       // Update shell profiles
       await this.setupNVMShellIntegration();
-      
-      console.log('NVM installed successfully');
+
+      logger.info('NVM installed successfully');
     } catch (error) {
       throw new Error(`NVM installation failed: ${error}`);
     }
   }
 
   private async installNodeVersion(version: string): Promise<void> {
-    console.log(`Installing Node.js v${version}...`);
+    logger.info(`Installing Node.js v${version}...`);
     
     try {
       if (process.platform === 'win32') {
@@ -205,9 +215,9 @@ export class NodeInstaller implements BaseInstaller {
         `;
         await execa('bash', ['-c', nvmScript]);
       }
-      console.log(`Node.js v${version} installed successfully`);
+      logger.info(`Node.js v${version} installed successfully`);
     } catch (error) {
-      console.warn(`Warning: Failed to install Node.js v${version}: ${error}`);
+      logger.warn(`Warning: Failed to install Node.js v${version}: ${String(error)}`);
     }
   }
 
@@ -231,7 +241,7 @@ export class NodeInstaller implements BaseInstaller {
         await execa('bash', ['-c', nvmScript]);
       }
     } catch (error) {
-      console.warn(`Warning: Failed to set default Node.js version to ${version}: ${error}`);
+      logger.warn(`Warning: Failed to set default Node.js version to ${version}: ${String(error)}`);
       // Continue instead of throwing - non-critical failure
     }
   }
@@ -242,14 +252,16 @@ export class NodeInstaller implements BaseInstaller {
         // Use --force flag to handle existing packages
         await execa('npm', ['install', '-g', pkg, '--force']);
       } catch (error) {
-        console.warn(`Failed to install global package ${pkg}: ${error}`);
+        logger.warn(`Failed to install global package ${pkg}: ${String(error)}`);
       }
     }
   }
 
   private async installPackageManagers(profile: DeveloperProfile): Promise<void> {
     const packageManagers = profile.tools?.packageManagers;
-    if (!packageManagers) return;
+    if (!packageManagers) {
+return;
+}
 
     // Install pnpm
     if (packageManagers.pnpm) {
@@ -263,12 +275,12 @@ export class NodeInstaller implements BaseInstaller {
   }
 
   private async installPnpm(): Promise<void> {
-    console.log('Installing pnpm...');
+    logger.info('Installing pnpm...');
     
     try {
       // Check if already installed
       await which('pnpm');
-      console.log('pnpm already installed');
+      logger.info('pnpm already installed');
       await execa('npm', ['update', '-g', 'pnpm']);
       return;
     } catch {
@@ -291,20 +303,20 @@ export class NodeInstaller implements BaseInstaller {
       await execa('pnpm', ['config', 'set', 'store-dir', path.join(os.homedir(), '.pnpm-store')]);
       await execa('pnpm', ['config', 'set', 'auto-install-peers', 'true']);
       await execa('pnpm', ['config', 'set', 'strict-peer-dependencies', 'false']);
-      
-      console.log('pnpm installed and configured');
+
+      logger.info('pnpm installed and configured');
     } catch (error) {
-      console.warn(`Failed to install pnpm: ${error}`);
+      logger.warn(`Failed to install pnpm: ${String(error)}`);
     }
   }
 
   private async installYarn(profile: DeveloperProfile): Promise<void> {
-    console.log('Installing Yarn...');
+    logger.info('Installing Yarn...');
     
     try {
       // Check if already installed
       await which('yarn');
-      console.log('Yarn already installed');
+      logger.info('Yarn already installed');
       return;
     } catch {
       // Not installed, proceed with installation
@@ -321,15 +333,15 @@ export class NodeInstaller implements BaseInstaller {
         await execa('yarn', ['config', 'set', 'init-author-email', profile.email]);
       }
       await execa('yarn', ['config', 'set', 'init-license', 'MIT']);
-      
-      console.log('Yarn installed and configured');
+
+      logger.info('Yarn installed and configured');
     } catch (error) {
-      console.warn(`Failed to install Yarn: ${error}`);
+      logger.warn(`Failed to install Yarn: ${String(error)}`);
     }
   }
 
   private async configureNPM(profile: DeveloperProfile): Promise<void> {
-    console.log('Configuring npm...');
+    logger.info('Configuring npm...');
     
     const homeDir = os.homedir();
     const npmGlobalDir = path.join(homeDir, '.npm-global');
@@ -357,15 +369,17 @@ export class NodeInstaller implements BaseInstaller {
       // Update shell profiles to include npm global bin
       await this.updateShellWithNpmGlobal(npmGlobalDir);
       
-      console.log('npm configured successfully');
+      logger.info('npm configured successfully');
     } catch (error) {
-      console.warn('npm configuration failed:', error);
+      logger.warn('npm configuration failed:', String(error));
     }
   }
 
   private async setupNVMRC(profile: DeveloperProfile): Promise<void> {
     const nodeConfig = profile.tools?.languages?.node;
-    if (!nodeConfig) return;
+    if (!nodeConfig) {
+return;
+}
 
     // This could be used to create .nvmrc files in common project directories
     // For now, just ensure the user knows about .nvmrc
@@ -373,14 +387,16 @@ export class NodeInstaller implements BaseInstaller {
 
   private async configurePackageManagers(profile: DeveloperProfile): Promise<void> {
     const packageManagers = profile.tools?.packageManagers;
-    if (!packageManagers) return;
+    if (!packageManagers) {
+return;
+}
 
     // Configure pnpm if installed
     if (packageManagers.pnpm) {
       try {
         await execa('pnpm', ['config', 'set', 'auto-install-peers', 'true']);
       } catch (error) {
-        console.warn('Failed to configure pnpm:', error);
+        logger.warn('Failed to configure pnpm:', String(error));
       }
     }
 
@@ -390,7 +406,7 @@ export class NodeInstaller implements BaseInstaller {
         // Set yarn version to berry if specified
         await execa('yarn', ['set', 'version', 'stable']);
       } catch (error) {
-        console.warn('Failed to configure yarn:', error);
+        logger.warn('Failed to configure yarn:', String(error));
       }
     }
   }
@@ -408,7 +424,7 @@ export class NodeInstaller implements BaseInstaller {
       // Check if all requested versions are present in NVM list
       for (const version of versions) {
         if (!stdout.includes(version)) {
-          console.log(`Node.js v${version} not found in NVM`);
+          logger.info(`Node.js v${version} not found in NVM`);
           return false;
         }
       }
@@ -492,9 +508,9 @@ load-nvmrc
         }
 
         await fs.writeFile(shellPath, shellContent + nvmConfig, 'utf-8');
-        console.log(`Updated ${shellFile} with NVM configuration`);
+        logger.info(`Updated ${shellFile} with NVM configuration`);
       } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.warn(`Failed to update ${shellFile}:`, String(error));
       }
     }
   }
@@ -526,9 +542,9 @@ export PATH="${npmPath}:$PATH"
         }
 
         await fs.writeFile(shellPath, shellContent + npmConfig, 'utf-8');
-        console.log(`Updated ${shellFile} with npm global path`);
+        logger.info(`Updated ${shellFile} with npm global path`);
       } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.warn(`Failed to update ${shellFile}:`, String(error));
       }
     }
   }
@@ -563,9 +579,9 @@ esac
         }
 
         await fs.writeFile(shellPath, shellContent + pnpmConfig, 'utf-8');
-        console.log(`Updated ${shellFile} with pnpm configuration`);
+        logger.info(`Updated ${shellFile} with pnpm configuration`);
       } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.warn(`Failed to update ${shellFile}:`, String(error));
       }
     }
   }

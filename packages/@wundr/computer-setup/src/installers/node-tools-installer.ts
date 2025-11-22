@@ -2,13 +2,19 @@
  * Node.js Tools Installer - Complete Node.js ecosystem setup
  * Ports functionality from 03-node-tools.sh
  */
-import { execa } from 'execa';
-import * as os from 'os';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import * as path from 'path';
+
+import { execa } from 'execa';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
+
+const logger = new Logger({ name: 'node-tools-installer' });
 
 export class NodeToolsInstaller implements BaseInstaller {
   name = 'node-tools';
@@ -46,7 +52,7 @@ export class NodeToolsInstaller implements BaseInstaller {
   }
 
   async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log(`Installing Node.js tools on ${platform.os}...`);
+    logger.info(`Installing Node.js tools on ${platform.os}...`);
 
     // Clear any npm conflicts before starting
     await this.clearNpmConflicts();
@@ -75,7 +81,7 @@ export class NodeToolsInstaller implements BaseInstaller {
 
   async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     // Log configuration context for debugging
-    console.log(`Node.js tools configured for ${profile.name || 'user'} on ${platform.os}`);
+    logger.info(`Node.js tools configured for ${profile.name || 'user'} on ${platform.os}`);
   }
 
   async validate(): Promise<boolean> {
@@ -95,12 +101,12 @@ export class NodeToolsInstaller implements BaseInstaller {
         await which('pnpm');
         await which('yarn');
       } catch {
-        console.warn('Some package managers not found, but basic Node.js setup is working');
+        logger.warn('Some package managers not found, but basic Node.js setup is working');
       }
-      
+
       return true;
     } catch (error) {
-      console.error('Node.js tools validation failed:', error);
+      logger.error('Node.js tools validation failed:', error);
       return false;
     }
   }
@@ -115,18 +121,18 @@ export class NodeToolsInstaller implements BaseInstaller {
       dependencies: [],
       estimatedTime: 300,
       validator: () => this.validate(),
-      installer: () => this.install(profile, platform)
+      installer: () => this.install(profile, platform),
     }];
   }
 
   private async installNVM(): Promise<void> {
-    console.log('Installing NVM (Node Version Manager)...');
-    
+    logger.info('Installing NVM (Node Version Manager)...');
+
     const nvmDir = path.join(this.homeDir, '.nvm');
-    
+
     try {
       await fs.access(nvmDir);
-      console.log('NVM already installed');
+      logger.info('NVM already installed');
       
       // Ensure NVM is properly loaded
       process.env.NVM_DIR = nvmDir;
@@ -140,8 +146,8 @@ export class NodeToolsInstaller implements BaseInstaller {
       
       // Add NVM configuration to shell files
       await this.setupNVMInShells();
-      
-      console.log('NVM installed successfully');
+
+      logger.info('NVM installed successfully');
     }
   }
 
@@ -194,15 +200,15 @@ load-nvmrc
         }
         
         await fs.writeFile(shellPath, shellContent + nvmConfig, 'utf-8');
-        console.log(`Updated ${shellFile} with NVM configuration`);
+        logger.info(`Updated ${shellFile} with NVM configuration`);
       } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.warn(`Failed to update ${shellFile}:`, error);
       }
     }
   }
 
   private async installNodeVersions(): Promise<void> {
-    console.log('Installing Node.js versions...');
+    logger.info('Installing Node.js versions...');
     
     // Clear npm conflicts before using nvm
     await this.clearNpmConflicts();
@@ -212,89 +218,89 @@ load-nvmrc
     try {
       await fs.access(nvmScript);
     } catch {
-      console.warn('NVM script not found, skipping Node.js installation');
+      logger.warn('NVM script not found, skipping Node.js installation');
       return;
     }
-    
+
     // Check if npm is completely broken first
     try {
       await execa('npm', ['--version']);
     } catch {
-      console.log('Detected broken npm, forcing Node.js reinstallation...');
-      
+      logger.info('Detected broken npm, forcing Node.js reinstallation...');
+
       try {
         // Try to get current version and reinstall
         const { stdout } = await execa('bash', ['-c', `source ${nvmScript} && nvm current`]);
         const currentVersion = stdout.trim();
-        
+
         if (currentVersion !== 'none' && currentVersion !== 'system') {
-          console.log(`Reinstalling Node.js ${currentVersion} to fix npm...`);
+          logger.info(`Reinstalling Node.js ${currentVersion} to fix npm...`);
           await execa('bash', ['-c', `source ${nvmScript} && nvm uninstall ${currentVersion} || true`]);
           await execa('bash', ['-c', `source ${nvmScript} && nvm install ${currentVersion}`]);
         }
       } catch (error) {
-        console.warn('Failed to reinstall current Node.js version:', error);
+        logger.warn('Failed to reinstall current Node.js version:', error);
       }
     }
-    
+
     // Install LTS and current versions
     const nodeVersions = ['lts/*', 'node'];
-    
+
     for (const version of nodeVersions) {
       try {
-        console.log(`Installing Node.js ${version}...`);
+        logger.info(`Installing Node.js ${version}...`);
         await execa('bash', ['-c', `source ${nvmScript} && nvm install ${version}`]);
       } catch (error) {
-        console.warn(`Failed to install Node.js ${version}:`, error);
+        logger.warn(`Failed to install Node.js ${version}:`, error);
       }
     }
-    
+
     // Set default to LTS
     try {
       await execa('bash', ['-c', `source ${nvmScript} && nvm alias default lts/* && nvm use default`]);
     } catch (error) {
-      console.warn('Failed to set default Node.js version:', error);
+      logger.warn('Failed to set default Node.js version:', error);
     }
-    
-    console.log('Node.js versions installation completed');
+
+    logger.info('Node.js versions installation completed');
   }
 
   private async configureNpm(profile: DeveloperProfile): Promise<void> {
-    console.log('Configuring npm...');
-    
+    logger.info('Configuring npm...');
+
     // Clear conflicts one more time
     await this.clearNpmConflicts();
-    
+
     // Create npm-global directory for global packages
     const npmGlobalDir = path.join(this.homeDir, '.npm-global');
     try {
       await fs.mkdir(npmGlobalDir, { recursive: true });
-      console.log(`Created npm global directory at ${npmGlobalDir}`);
+      logger.info(`Created npm global directory at ${npmGlobalDir}`);
     } catch {
-      // Directory already exists
+      // Directory already exists, no action needed
     }
-    
+
     // Configure npm to use custom global directory
     try {
       await execa('npm', ['config', 'set', 'prefix', npmGlobalDir]);
     } catch (error) {
-      console.warn('Failed to set npm prefix:', error);
+      logger.warn('Failed to set npm prefix:', error);
     }
-    
+
     // Add npm-global/bin to PATH in shell files
     await this.addNpmGlobalToPath();
-    
+
     // Update npm to latest version
-    console.log('Updating npm to latest version...');
+    logger.info('Updating npm to latest version...');
     try {
       await execa('npm', ['install', '-g', 'npm@latest']);
     } catch (error) {
-      console.warn('npm update failed, trying alternative approach:', error);
-      
+      logger.warn('npm update failed, trying alternative approach:', error);
+
       try {
         await execa('npx', ['npm@latest', 'install', '-g', 'npm@latest']);
       } catch (altError) {
-        console.warn('Alternative npm update also failed:', altError);
+        logger.warn('Alternative npm update also failed:', altError);
       }
     }
     
@@ -302,7 +308,7 @@ load-nvmrc
     const configs = [
       ['init-author-name', profile.name || ''],
       ['init-author-email', profile.email || ''],
-      ['init-license', 'MIT']
+      ['init-license', 'MIT'],
     ];
     
     // Set init-author-url if company is provided and looks like URL
@@ -316,12 +322,12 @@ load-nvmrc
         try {
           await execa('npm', ['config', 'set', key, value]);
         } catch (error) {
-          console.warn(`Failed to set npm config ${key}:`, error);
+          logger.warn(`Failed to set npm config ${key}:`, error);
         }
       }
     }
-    
-    console.log('npm configured');
+
+    logger.info('npm configured');
   }
 
   private async addNpmGlobalToPath(): Promise<void> {
@@ -345,35 +351,35 @@ load-nvmrc
           await fs.writeFile(shellPath, shellContent + '\n' + pathExport + '\n', 'utf-8');
         }
       } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.warn(`Failed to update ${shellFile}:`, error);
       }
     }
-    
+
     // Add to current process PATH
     process.env.PATH = `${npmGlobalBin}:${process.env.PATH}`;
   }
 
   private async installPnpm(): Promise<void> {
-    console.log('Installing pnpm...');
-    
+    logger.info('Installing pnpm...');
+
     try {
       await which('pnpm');
-      console.log('pnpm already installed, updating...');
+      logger.info('pnpm already installed, updating...');
       await execa('npm', ['update', '-g', 'pnpm']);
     } catch {
       try {
         // Install via official installer
         await execa('curl', ['-fsSL', 'https://get.pnpm.io/install.sh', '|', 'sh', '-'], { shell: true });
       } catch {
-        // Fallback to npm
-        console.log('pnpm installer failed, trying npm...');
+        // Fallback to npm when official installer fails
+        logger.info('pnpm installer failed, trying npm...');
         await execa('npm', ['install', '-g', 'pnpm', '--force']);
       }
-      
+
       // Setup pnpm PATH
       await this.setupPnpmPath();
     }
-    
+
     // Configure pnpm if available
     try {
       await which('pnpm');
@@ -381,17 +387,17 @@ load-nvmrc
       await execa('pnpm', ['config', 'set', 'auto-install-peers', 'true']);
       await execa('pnpm', ['config', 'set', 'strict-peer-dependencies', 'false']);
     } catch (error) {
-      console.warn('Failed to configure pnpm:', error);
+      logger.warn('Failed to configure pnpm:', error);
     }
-    
-    console.log('pnpm installed and configured');
+
+    logger.info('pnpm installed and configured');
   }
 
   private async setupPnpmPath(): Promise<void> {
     const possiblePnpmDirs = [
       path.join(this.homeDir, 'Library/pnpm'),
       path.join(this.homeDir, '.local/share/pnpm'),
-      path.join(this.homeDir, '.pnpm')
+      path.join(this.homeDir, '.pnpm'),
     ];
     
     let pnpmHome = '';
@@ -435,45 +441,46 @@ esac
           await fs.writeFile(shellPath, shellContent + pnpmConfig, 'utf-8');
         }
       } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.warn(`Failed to update ${shellFile}:`, error);
       }
     }
-    
+
     // Add to current process PATH
     process.env.PNPM_HOME = pnpmHome;
     process.env.PATH = `${pnpmHome}:${process.env.PATH}`;
   }
 
   private async installYarn(profile: DeveloperProfile): Promise<void> {
-    console.log('Installing Yarn...');
-    
+    logger.info('Installing Yarn...');
+
     try {
       await which('yarn');
-      console.log('Yarn already installed');
+      logger.info('Yarn already installed');
     } catch {
+      // Yarn not found, install it
       await execa('npm', ['install', '-g', 'yarn', '--force']);
     }
-    
+
     // Configure Yarn
     try {
       await execa('yarn', ['config', 'set', 'init-author-name', profile.name || '']);
       await execa('yarn', ['config', 'set', 'init-author-email', profile.email || '']);
       await execa('yarn', ['config', 'set', 'init-license', 'MIT']);
     } catch (error) {
-      console.warn('Failed to configure Yarn:', error);
+      logger.warn('Failed to configure Yarn:', error);
     }
-    
-    console.log('Yarn installed and configured');
+
+    logger.info('Yarn installed and configured');
   }
 
   private async installGlobalPackages(): Promise<void> {
-    console.log('Installing essential global npm packages...');
-    
+    logger.info('Installing essential global npm packages...');
+
     // Ensure npm is working before installing packages
     try {
       await execa('npm', ['--version']);
     } catch {
-      console.warn('npm not working properly, skipping global packages');
+      logger.warn('npm not working properly, skipping global packages');
       return;
     }
     
@@ -507,48 +514,48 @@ esac
       'lint-staged',
       'standard-version',
       'release-it',
-      'better-sqlite3'
+      'better-sqlite3',
     ];
     
     const failedPackages: string[] = [];
     
     for (const pkg of packages) {
       if (pkg === 'npx') {
-        console.log('Skipping npx (comes bundled with npm)');
+        logger.info('Skipping npx (comes bundled with npm)');
         continue;
       }
-      
-      console.log(`Installing ${pkg} globally...`);
-      
+
+      logger.info(`Installing ${pkg} globally...`);
+
       try {
         await execa('npm', ['install', '-g', pkg]);
-        console.log(`✅ Successfully installed ${pkg}`);
+        logger.info(`Successfully installed ${pkg}`);
       } catch {
         try {
           await execa('npm', ['install', '-g', pkg, '--no-audit', '--no-fund']);
-          console.log(`✅ Successfully installed ${pkg} (with flags)`);
+          logger.info(`Successfully installed ${pkg} (with flags)`);
         } catch {
           try {
             await execa('npx', ['npm@latest', 'install', '-g', pkg]);
-            console.log(`✅ Successfully installed ${pkg} (via npx)`);
+            logger.info(`Successfully installed ${pkg} (via npx)`);
           } catch {
-            console.warn(`Warning: Failed to install ${pkg}`);
+            logger.warn(`Warning: Failed to install ${pkg}`);
             failedPackages.push(pkg);
           }
         }
       }
     }
-    
+
     if (failedPackages.length > 0) {
-      console.log(`Failed to install packages: ${failedPackages.join(', ')}`);
-      console.log('These packages can be installed manually later if needed');
+      logger.warn(`Failed to install packages: ${failedPackages.join(', ')}`);
+      logger.info('These packages can be installed manually later if needed');
     }
-    
-    console.log('Global packages installation completed');
+
+    logger.info('Global packages installation completed');
   }
 
   private async setupNodeAliases(): Promise<void> {
-    console.log('Setting up Node.js aliases...');
+    logger.info('Setting up Node.js aliases...');
     
     const aliases = `
 # Node.js aliases
@@ -607,10 +614,10 @@ alias clean-modules='find . -name "node_modules" -type d -prune -exec rm -rf {} 
         
         if (!shellContent.includes("alias ni='npm install'")) {
           await fs.writeFile(shellPath, shellContent + aliases, 'utf-8');
-          console.log(`Added Node.js aliases to ${shellFile}`);
+          logger.info(`Added Node.js aliases to ${shellFile}`);
         }
       } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.warn(`Failed to update ${shellFile}:`, error);
       }
     }
   }
@@ -619,11 +626,15 @@ alias clean-modules='find . -name "node_modules" -type d -prune -exec rm -rf {} 
     // Remove npm prefix and globalconfig that conflict with nvm
     try {
       await execa('npm', ['config', 'delete', 'prefix']);
-    } catch {}
-    
+    } catch {
+      // Config key may not exist, safe to ignore
+    }
+
     try {
       await execa('npm', ['config', 'delete', 'globalconfig']);
-    } catch {}
+    } catch {
+      // Config key may not exist, safe to ignore
+    }
     
     // Remove problematic lines from .npmrc if it exists
     const npmrcPath = path.join(this.homeDir, '.npmrc');
@@ -642,71 +653,81 @@ alias clean-modules='find . -name "node_modules" -type d -prune -exec rm -rf {} 
       
       await fs.writeFile(npmrcPath, cleanedContent);
     } catch {
-      // File doesn't exist or can't be modified
+      // File doesn't exist or can't be modified, safe to ignore
     }
-    
+
     // Clear npm caches that can cause cb.apply errors
     const cachePaths = [
       path.join(this.homeDir, '.npm/_logs'),
       path.join(this.homeDir, '.npm/_npx'),
-      path.join(this.homeDir, '.npm/_cacache')
+      path.join(this.homeDir, '.npm/_cacache'),
     ];
-    
+
     for (const cachePath of cachePaths) {
       try {
         await fs.rm(cachePath, { recursive: true, force: true });
-      } catch {}
+      } catch {
+        // Cache path may not exist, safe to ignore
+      }
     }
-    
+
     // Remove problematic global npx if it exists
     const npmGlobalDir = path.join(this.homeDir, '.npm-global');
     try {
       await fs.rm(path.join(npmGlobalDir, 'lib/node_modules/npx'), { recursive: true, force: true });
       await fs.rm(path.join(npmGlobalDir, 'bin/npx'), { force: true });
-    } catch {}
-    
+    } catch {
+      // npx paths may not exist, safe to ignore
+    }
+
     // Clear npm cache
     try {
       await execa('npm', ['cache', 'clean', '--force']);
-    } catch {}
-    
+    } catch {
+      // Cache clean may fail if npm is broken, continue anyway
+    }
+
     // If npm is completely broken, try to reinstall it
     try {
       await execa('npm', ['--version']);
     } catch {
       try {
         await execa('npx', ['npm@latest', 'install', '-g', 'npm@latest']);
-      } catch {}
+      } catch {
+        // Unable to fix npm via npx, will be handled by NVM installation
+      }
     }
   }
 
   async uninstall(): Promise<void> {
-    console.log('Uninstalling Node.js tools...');
-    
+    logger.info('Uninstalling Node.js tools...');
+
     try {
       // Remove NVM and all Node versions
       const nvmDir = path.join(this.homeDir, '.nvm');
       await fs.rm(nvmDir, { recursive: true, force: true });
-      
+
       // Remove npm global directory
       const npmGlobalDir = path.join(this.homeDir, '.npm-global');
       await fs.rm(npmGlobalDir, { recursive: true, force: true });
-      
+
       // Remove pnpm directories
       const pnpmDirs = [
         path.join(this.homeDir, 'Library/pnpm'),
         path.join(this.homeDir, '.local/share/pnpm'),
         path.join(this.homeDir, '.pnpm'),
-        path.join(this.homeDir, '.pnpm-store')
+        path.join(this.homeDir, '.pnpm-store'),
       ];
-      
+
       for (const dir of pnpmDirs) {
         try {
           await fs.rm(dir, { recursive: true, force: true });
-        } catch {}
+        } catch {
+          // Directory may not exist, safe to ignore
+        }
       }
-      
-      console.log('Node.js tools uninstalled');
+
+      logger.info('Node.js tools uninstalled');
     } catch (error) {
       throw new Error(`Node.js tools uninstallation failed: ${error}`);
     }

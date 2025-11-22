@@ -1,13 +1,19 @@
 /**
  * Homebrew Installer - macOS/Linux package manager setup
  */
-import { execa } from 'execa';
-import * as os from 'os';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import * as path from 'path';
+
+import { execa } from 'execa';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
+
+const logger = new Logger({ name: 'homebrew-installer' });
 
 export class HomebrewInstaller implements BaseInstaller {
   name = 'homebrew';
@@ -35,28 +41,28 @@ export class HomebrewInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(_profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     if (await this.isInstalled()) {
-      console.log('Homebrew already installed, updating...');
+      logger.info('Homebrew already installed, updating...');
       await this.updateHomebrew();
       return;
     }
 
-    console.log('Installing Homebrew...');
+    logger.info('Installing Homebrew...');
     await this.installHomebrew(platform);
-    
+
     // Install core development tools
     await this.installCoreTools();
     await this.installDevTools();
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(_profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     // Configure Homebrew settings
     await this.configureHomebrew();
-    
+
     // Setup shell integration
     await this.setupShellIntegration(platform);
-    
+
     // Setup aliases
     await this.setupAliases();
   }
@@ -65,21 +71,22 @@ export class HomebrewInstaller implements BaseInstaller {
     try {
       // Check if brew command works
       await execa('brew', ['--version']);
-      
+
       // Check if core tools are available
       const coreTools = ['git', 'curl', 'jq'];
       for (const tool of coreTools) {
         try {
           await which(tool);
         } catch {
-          console.warn(`Core tool ${tool} not found`);
+          logger.warn(`Core tool ${tool} not found`);
           return false;
         }
       }
-      
+
       return true;
-    } catch (error) {
-      console.error('Homebrew validation failed:', error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error('Homebrew validation failed:', errorMessage);
       return false;
     }
   }
@@ -95,7 +102,7 @@ export class HomebrewInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 180,
         validator: () => this.isInstalled(),
-        installer: () => this.install(profile, platform)
+        installer: () => this.install(profile, platform),
       },
       {
         id: 'configure-homebrew',
@@ -106,8 +113,8 @@ export class HomebrewInstaller implements BaseInstaller {
         dependencies: ['install-homebrew'],
         estimatedTime: 30,
         validator: () => this.validate(),
-        installer: () => this.configure(profile, platform)
-      }
+        installer: () => this.configure(profile, platform),
+      },
     ];
 
     return steps;
@@ -119,7 +126,7 @@ export class HomebrewInstaller implements BaseInstaller {
     try {
       // Download and run the Homebrew installation script
       await execa('/bin/bash', ['-c', `curl -fsSL ${installScript} | bash`], {
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
       
       // Setup PATH for current session
@@ -165,13 +172,14 @@ export class HomebrewInstaller implements BaseInstaller {
 
   private async updateHomebrew(): Promise<void> {
     try {
-      console.log('Updating Homebrew...');
+      logger.info('Updating Homebrew...');
       await execa('brew', ['update'], { stdio: 'inherit' });
-      
-      console.log('Upgrading installed packages...');
+
+      logger.info('Upgrading installed packages...');
       await execa('brew', ['upgrade'], { stdio: 'inherit' });
-    } catch (error) {
-      console.warn('Homebrew update failed:', error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.warn('Homebrew update failed:', errorMessage);
     }
   }
 
@@ -179,7 +187,7 @@ export class HomebrewInstaller implements BaseInstaller {
     const coreFormulas = [
       'git',
       'gh',
-      'curl', 
+      'curl',
       'wget',
       'jq',
       'tree',
@@ -194,22 +202,23 @@ export class HomebrewInstaller implements BaseInstaller {
       'watchman',
       'gnupg',
       'openssh',
-      'coreutils'
+      'coreutils',
     ];
 
-    console.log('Installing core development tools...');
-    
+    logger.info('Installing core development tools...');
+
     for (const formula of coreFormulas) {
       try {
         // Check if already installed
         await execa('brew', ['list', formula]);
-        console.log(`${formula} already installed`);
+        logger.info(`${formula} already installed`);
       } catch {
         try {
-          console.log(`Installing ${formula}...`);
+          logger.info(`Installing ${formula}...`);
           await execa('brew', ['install', formula]);
-        } catch (error) {
-          console.warn(`Failed to install ${formula}:`, error);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          logger.warn(`Failed to install ${formula}:`, errorMessage);
         }
       }
     }
@@ -218,7 +227,7 @@ export class HomebrewInstaller implements BaseInstaller {
   private async installDevTools(): Promise<void> {
     const devFormulas = [
       'make',
-      'cmake', 
+      'cmake',
       'gcc',
       'python@3.12',
       'python-setuptools',
@@ -227,37 +236,39 @@ export class HomebrewInstaller implements BaseInstaller {
       'sqlite',
       'postgresql@15',
       'redis',
-      'nginx'
+      'nginx',
     ];
 
-    console.log('Installing development tools...');
-    
+    logger.info('Installing development tools...');
+
     for (const formula of devFormulas) {
       try {
         // Check if already installed
         await execa('brew', ['list', formula]);
-        console.log(`${formula} already installed`);
+        logger.info(`${formula} already installed`);
       } catch {
         try {
-          console.log(`Installing ${formula}...`);
+          logger.info(`Installing ${formula}...`);
           await execa('brew', ['install', formula]);
-        } catch (error) {
-          console.warn(`Warning: Failed to install ${formula}:`, error);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          logger.warn(`Warning: Failed to install ${formula}:`, errorMessage);
         }
       }
     }
   }
 
   private async configureHomebrew(): Promise<void> {
-    console.log('Configuring Homebrew settings...');
-    
+    logger.info('Configuring Homebrew settings...');
+
     // Disable analytics
     process.env.HOMEBREW_NO_ANALYTICS = '1';
-    
+
     try {
       await execa('brew', ['analytics', 'off']);
     } catch {
       // Ignore error if analytics command is not available
+      logger.debug('Analytics command not available or already disabled');
     }
   }
 
@@ -292,9 +303,10 @@ export HOMEBREW_NO_ANALYTICS=1
 `;
 
         await fs.writeFile(shellPath, shellContent + homebrewConfig, 'utf-8');
-        console.log(`Updated ${shellFile} with Homebrew configuration`);
-      } catch (error) {
-        console.warn(`Failed to update ${shellFile}:`, error);
+        logger.info(`Updated ${shellFile} with Homebrew configuration`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to update ${shellFile}:`, errorMessage);
       }
     }
   }
@@ -328,20 +340,21 @@ alias brewclean='brew cleanup && brew doctor'
         }
 
         await fs.writeFile(shellPath, shellContent + aliases, 'utf-8');
-        console.log(`Added Homebrew aliases to ${shellFile}`);
-      } catch (error) {
-        console.warn(`Failed to update ${shellFile} with aliases:`, error);
+        logger.info(`Added Homebrew aliases to ${shellFile}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to update ${shellFile} with aliases:`, errorMessage);
       }
     }
   }
 
   async uninstall(): Promise<void> {
-    console.log('Uninstalling Homebrew...');
+    logger.info('Uninstalling Homebrew...');
     
     try {
       const uninstallScript = 'https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh';
       await execa('/bin/bash', ['-c', `curl -fsSL ${uninstallScript} | bash`], {
-        stdio: 'inherit'
+        stdio: 'inherit',
       });
     } catch (error) {
       throw new Error(`Homebrew uninstallation failed: ${error}`);

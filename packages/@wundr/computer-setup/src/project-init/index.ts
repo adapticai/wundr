@@ -7,6 +7,15 @@
  * @module project-init
  */
 
+import CustomizationEngineInstance from './customization-engine.js';
+import ProjectInitializerInstance from './project-initializer.js';
+import TemplateSelectorInstance from './template-selector.js';
+import ValidationCheckerInstance from './validation-checker.js';
+
+import type { ProjectInitOptions } from './project-initializer.js';
+import type { TemplateMetadata } from './template-selector.js';
+import type { TemplateContext } from '../templates/template-manager.js';
+
 export { ProjectInitializer } from './project-initializer.js';
 export type { ProjectInitOptions } from './project-initializer.js';
 export { TemplateSelector } from './template-selector.js';
@@ -16,26 +25,21 @@ export type { CustomizationRule, CustomizationProcedure } from './customization-
 export { ValidationChecker } from './validation-checker.js';
 export type { ValidationResult, ValidationReport } from './validation-checker.js';
 
-import ProjectInitializer from './project-initializer.js';
-import TemplateSelector from './template-selector.js';
-import CustomizationEngine from './customization-engine.js';
-import ValidationChecker from './validation-checker.js';
-
 /**
  * Main initialization orchestrator
  * Combines all initialization components into a single, easy-to-use interface
  */
 export class ProjectInitOrchestrator {
-  private initializer: ProjectInitializer;
-  private templateSelector: TemplateSelector;
-  private customizationEngine: CustomizationEngine;
-  private validationChecker: ValidationChecker;
+  private initializer: ProjectInitializerInstance;
+  private templateSelector: TemplateSelectorInstance;
+  private customizationEngine: CustomizationEngineInstance;
+  private validationChecker: ValidationCheckerInstance;
 
   constructor() {
-    this.initializer = new ProjectInitializer();
-    this.templateSelector = new TemplateSelector();
-    this.customizationEngine = new CustomizationEngine();
-    this.validationChecker = new ValidationChecker();
+    this.initializer = new ProjectInitializerInstance();
+    this.templateSelector = new TemplateSelectorInstance();
+    this.customizationEngine = new CustomizationEngineInstance();
+    this.validationChecker = new ValidationCheckerInstance();
   }
 
   /**
@@ -58,7 +62,7 @@ export class ProjectInitOrchestrator {
         projectType: 'node',
         scale: 'medium',
         useTypeScript: true,
-        useTesting: true
+        useTesting: true,
       });
       template = templates[0] || this.templateSelector.getTemplate('node-basic')!;
     }
@@ -70,19 +74,19 @@ export class ProjectInitOrchestrator {
     await this.initializer.initialize({
       projectPath: options.projectPath,
       projectName: options.projectName,
-      projectType: template.projectTypes[0] as any,
+      projectType: template.projectTypes[0] as ProjectInitOptions['projectType'],
       includeClaudeSetup: true,
       includeAgents: true,
       includeHooks: true,
       includeGitWorktree: true,
       includeTemplates: true,
-      customAgents: template.agents
+      customAgents: template.agents,
     });
 
     // Apply customizations
     await this.customizationEngine.customizeProject(
       options.projectPath,
-      this.createContext(options.projectName, template)
+      this.createContext(options.projectName, template),
     );
 
     // Validate setup
@@ -106,17 +110,18 @@ export class ProjectInitOrchestrator {
     const template = templates[0] || this.templateSelector.getTemplate('default')!;
 
     // Initialize only .claude directory and configurations
+    const pathModule = await import('path');
     await this.initializer.initialize({
       projectPath,
-      projectName: require('path').basename(projectPath),
-      projectType: projectType as any,
+      projectName: pathModule.basename(projectPath),
+      projectType: projectType as ProjectInitOptions['projectType'],
       includeClaudeSetup: true,
       includeAgents: true,
       includeHooks: true,
       includeGitWorktree: false,
       includeTemplates: true,
       customAgents: template.agents,
-      force: true
+      force: true,
     });
   }
 
@@ -140,9 +145,10 @@ export class ProjectInitOrchestrator {
     const template = templates[0];
 
     if (template) {
+      const pathModule = await import('path');
       await this.customizationEngine.customizeProject(
         projectPath,
-        this.createContext(require('path').basename(projectPath), template)
+        this.createContext(pathModule.basename(projectPath), template),
       );
     }
   }
@@ -151,8 +157,8 @@ export class ProjectInitOrchestrator {
    * Helper: Detect project type
    */
   private async detectProjectType(projectPath: string): Promise<string> {
-    const fs = require('fs-extra');
-    const path = require('path');
+    const fs = await import('fs-extra');
+    const path = await import('path');
 
     // Check for package.json
     const packageJsonPath = path.join(projectPath, 'package.json');
@@ -162,21 +168,39 @@ export class ProjectInitOrchestrator {
       // Check dependencies
       const deps = {
         ...pkg.dependencies,
-        ...pkg.devDependencies
+        ...pkg.devDependencies,
       };
 
-      if (deps.next) return 'nextjs';
-      if (deps.react) return 'react';
-      if (deps.vue) return 'vue';
-      if (deps.express || deps.fastify) return 'node';
+      if (deps.next) {
+return 'nextjs';
+}
+      if (deps.react) {
+return 'react';
+}
+      if (deps.vue) {
+return 'vue';
+}
+      if (deps.express || deps.fastify) {
+return 'node';
+}
     }
 
     // Check for other indicators
-    if (await fs.pathExists(path.join(projectPath, 'go.mod'))) return 'go';
-    if (await fs.pathExists(path.join(projectPath, 'Cargo.toml'))) return 'rust';
-    if (await fs.pathExists(path.join(projectPath, 'requirements.txt'))) return 'python';
-    if (await fs.pathExists(path.join(projectPath, 'pom.xml'))) return 'java';
-    if (await fs.pathExists(path.join(projectPath, 'packages'))) return 'monorepo';
+    if (await fs.pathExists(path.join(projectPath, 'go.mod'))) {
+return 'go';
+}
+    if (await fs.pathExists(path.join(projectPath, 'Cargo.toml'))) {
+return 'rust';
+}
+    if (await fs.pathExists(path.join(projectPath, 'requirements.txt'))) {
+return 'python';
+}
+    if (await fs.pathExists(path.join(projectPath, 'pom.xml'))) {
+return 'java';
+}
+    if (await fs.pathExists(path.join(projectPath, 'packages'))) {
+return 'monorepo';
+}
 
     return 'node'; // Default
   }
@@ -184,34 +208,52 @@ export class ProjectInitOrchestrator {
   /**
    * Helper: Create template context
    */
-  private createContext(projectName: string, template: any): any {
+  private createContext(projectName: string, template: TemplateMetadata): TemplateContext {
     return {
       profile: {
         name: 'Developer',
         email: 'dev@example.com',
         role: 'developer',
         team: 'Engineering',
-        preferences: { shell: 'zsh' },
-        tools: { packageManagers: { pnpm: true } }
+        preferences: {
+          shell: 'zsh',
+          editor: 'vscode',
+          theme: 'dark',
+          gitConfig: {
+            userName: 'Developer',
+            userEmail: 'dev@example.com',
+            signCommits: false,
+            defaultBranch: 'main',
+            aliases: {},
+          },
+          aiTools: {
+            claudeCode: true,
+            claudeFlow: true,
+            mcpTools: [],
+            swarmAgents: [],
+            memoryAllocation: '2GB',
+          },
+        },
+        tools: { packageManagers: { pnpm: true } },
       },
       project: {
         name: projectName,
         description: template.description,
         version: '1.0.0',
-        type: template.projectTypes[0],
+        type: template.projectTypes[0] as TemplateContext['project']['type'],
         packageManager: 'pnpm',
         license: 'MIT',
-        author: 'Developer'
+        author: 'Developer',
       },
       platform: {
-        os: process.platform as any,
-        arch: process.arch as any,
+        os: process.platform as TemplateContext['platform']['os'],
+        arch: process.arch as TemplateContext['platform']['arch'],
         nodeVersion: process.version.replace('v', ''),
-        shell: 'zsh'
+        shell: 'zsh',
       },
       customVariables: {
-        PROJECT_TYPE: template.projectTypes[0]
-      }
+        PROJECT_TYPE: template.projectTypes[0],
+      },
     };
   }
 }

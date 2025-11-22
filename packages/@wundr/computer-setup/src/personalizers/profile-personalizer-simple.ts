@@ -2,7 +2,9 @@
  * Simple Profile Personalizer - Basic implementation without optional dependencies
  */
 
-import { DeveloperProfile } from '../types';
+import { Logger } from '../utils/logger';
+
+const logger = new Logger({ name: 'profile-personalizer-simple' });
 
 export interface ProfileConfig {
   fullName: string;
@@ -21,13 +23,13 @@ export class ProfilePersonalizerSimple {
   constructor(private config: ProfileConfig) {}
 
   async personalize(): Promise<void> {
-    console.log(`🎨 Personalizing profile for ${this.config.fullName}...`);
-    
+    logger.info(`Personalizing profile for ${this.config.fullName}...`);
+
     // Basic personalization without complex dependencies
     await this.setupGitConfig();
     await this.createDirectories();
-    
-    console.log('✅ Basic profile personalization completed');
+
+    logger.info('Basic profile personalization completed');
   }
 
   private async setupGitConfig(): Promise<void> {
@@ -37,9 +39,9 @@ export class ProfilePersonalizerSimple {
       if (this.config.email) {
         await execa('git', ['config', '--global', 'user.email', this.config.email]);
       }
-      console.log('✅ Git configuration updated');
+      logger.info('Git configuration updated');
     } catch (error) {
-      console.warn('⚠️  Could not configure Git:', (error as Error).message);
+      logger.warn('Could not configure Git:', (error as Error).message);
     }
   }
 
@@ -56,16 +58,16 @@ export class ProfilePersonalizerSimple {
         devDir,
         path.join(devDir, 'projects'),
         path.join(devDir, 'tools'),
-        path.join(devDir, 'sandbox')
+        path.join(devDir, 'sandbox'),
       ];
 
       for (const dir of directories) {
         await fs.mkdir(dir, { recursive: true });
       }
       
-      console.log('✅ Development directories created');
+      logger.info('Development directories created');
     } catch (error) {
-      console.warn('⚠️  Could not create directories:', (error as Error).message);
+      logger.warn('Could not create directories:', (error as Error).message);
     }
   }
 }

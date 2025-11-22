@@ -1,8 +1,14 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import chalk from 'chalk';
-import ora from 'ora';
 import { execSync } from 'child_process';
+import * as path from 'path';
+
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
+import ora from 'ora';
+
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ name: 'validation-checker' });
+
 
 export interface ValidationResult {
   passed: boolean;
@@ -89,7 +95,7 @@ export class ValidationChecker {
       { path: 'src', description: 'Source code directory', optional: true },
       { path: 'tests', description: 'Tests directory', optional: true },
       { path: 'docs', description: 'Documentation directory' },
-      { path: 'scripts', description: 'Scripts directory' }
+      { path: 'scripts', description: 'Scripts directory' },
     ];
 
     for (const dir of requiredDirs) {
@@ -107,7 +113,7 @@ export class ValidationChecker {
         fixable: true,
         fix: async () => {
           await fs.ensureDir(dirPath);
-        }
+        },
       });
     }
 
@@ -126,7 +132,7 @@ export class ValidationChecker {
       { path: '.gitignore', description: 'Git ignore file' },
       { path: 'README.md', description: 'Project README' },
       { path: '.claude/agents/README.md', description: 'Agent index' },
-      { path: 'docs/PROJECT_SETUP.md', description: 'Setup documentation' }
+      { path: 'docs/PROJECT_SETUP.md', description: 'Setup documentation' },
     ];
 
     for (const file of requiredFiles) {
@@ -141,7 +147,7 @@ export class ValidationChecker {
           ? `File ${file.path} found`
           : `Missing ${file.description}: ${file.path}`,
         severity: file.optional ? 'warning' : 'error',
-        fixable: false
+        fixable: false,
       });
     }
 
@@ -164,7 +170,7 @@ export class ValidationChecker {
         'Project Overview',
         'VERIFICATION PROTOCOL',
         'Available Agents',
-        'Code Style'
+        'Code Style',
       ];
 
       for (const section of requiredSections) {
@@ -177,7 +183,7 @@ export class ValidationChecker {
             ? `Section '${section}' found in CLAUDE.md`
             : `Missing section '${section}' in CLAUDE.md`,
           severity: 'warning',
-          fixable: false
+          fixable: false,
         });
       }
 
@@ -191,7 +197,7 @@ export class ValidationChecker {
           ? 'CLAUDE.md appears to be customized'
           : 'CLAUDE.md contains uncustomized placeholders',
         severity: 'warning',
-        fixable: false
+        fixable: false,
       });
     }
 
@@ -207,7 +213,7 @@ export class ValidationChecker {
           check: 'package.json has name',
           message: pkg.name ? `Package name: ${pkg.name}` : 'Missing package name',
           severity: 'error',
-          fixable: false
+          fixable: false,
         });
 
         results.push({
@@ -216,7 +222,7 @@ export class ValidationChecker {
           check: 'package.json has version',
           message: pkg.version ? `Version: ${pkg.version}` : 'Missing version',
           severity: 'error',
-          fixable: false
+          fixable: false,
         });
 
         // Check for essential scripts
@@ -230,17 +236,17 @@ export class ValidationChecker {
               ? `Script '${script}' defined`
               : `Missing '${script}' script`,
             severity: 'warning',
-            fixable: false
+            fixable: false,
           });
         }
-      } catch (error) {
+      } catch (_error) {
         results.push({
           passed: false,
           category: 'File Content',
           check: 'package.json is valid JSON',
           message: 'Invalid package.json format',
           severity: 'error',
-          fixable: false
+          fixable: false,
         });
       }
     }
@@ -256,7 +262,7 @@ export class ValidationChecker {
 
     const configFiles = [
       { path: '.claude/hooks/hooks.config.json', description: 'Hooks configuration' },
-      { path: '.claude/worktree.config.json', description: 'Worktree configuration', optional: true }
+      { path: '.claude/worktree.config.json', description: 'Worktree configuration', optional: true },
     ];
 
     for (const config of configFiles) {
@@ -272,7 +278,7 @@ export class ValidationChecker {
             ? `Configuration file found: ${config.path}`
             : `Missing ${config.description}`,
           severity: config.optional ? 'info' : 'warning',
-          fixable: true
+          fixable: true,
         });
 
         // Validate JSON structure
@@ -285,16 +291,16 @@ export class ValidationChecker {
               check: `${config.path} is valid`,
               message: `Valid JSON configuration: ${config.path}`,
               severity: 'info',
-              fixable: false
+              fixable: false,
             });
-          } catch (error) {
+          } catch (_error) {
             results.push({
               passed: false,
               category: 'Configuration',
               check: `${config.path} is valid`,
               message: `Invalid JSON in ${config.path}`,
               severity: 'error',
-              fixable: false
+              fixable: false,
             });
           }
         }
@@ -331,7 +337,7 @@ export class ValidationChecker {
           fixable: true,
           fix: async () => {
             await fs.ensureDir(categoryPath);
-          }
+          },
         });
 
         // Check for agent files in category
@@ -347,7 +353,7 @@ export class ValidationChecker {
               ? `Found ${agentFiles.length} agent templates in ${category}`
               : `No agent templates in ${category}`,
             severity: 'info',
-            fixable: false
+            fixable: false,
           });
         }
       }
@@ -362,7 +368,7 @@ export class ValidationChecker {
           ? 'Agent documentation found'
           : 'Missing agent documentation',
         severity: 'warning',
-        fixable: false
+        fixable: false,
       });
     }
 
@@ -382,7 +388,7 @@ export class ValidationChecker {
         'pre-task.sh',
         'post-task.sh',
         'pre-edit.sh',
-        'post-edit.sh'
+        'post-edit.sh',
       ];
 
       for (const hook of requiredHooks) {
@@ -397,7 +403,7 @@ export class ValidationChecker {
             ? `Hook found: ${hook}`
             : `Missing hook: ${hook}`,
           severity: 'warning',
-          fixable: false
+          fixable: false,
         });
 
         // Check if hook is executable
@@ -417,9 +423,9 @@ export class ValidationChecker {
               fixable: true,
               fix: async () => {
                 await fs.chmod(hookPath, '755');
-              }
+              },
             });
-          } catch (error) {
+          } catch (_error) {
             // Ignore permission errors
           }
         }
@@ -451,10 +457,10 @@ export class ValidationChecker {
       fix: async () => {
         try {
           execSync('git init', { cwd: projectPath, stdio: 'ignore' });
-        } catch (error) {
+        } catch (_error) {
           // Ignore error
         }
-      }
+      },
     });
 
     if (isGitRepo) {
@@ -468,7 +474,7 @@ export class ValidationChecker {
           ? '.gitignore found'
           : 'Missing .gitignore',
         severity: 'warning',
-        fixable: false
+        fixable: false,
       });
     }
 
@@ -495,13 +501,13 @@ export class ValidationChecker {
           ? 'node_modules directory found'
           : 'Dependencies not installed',
         severity: 'info',
-        fixable: false
+        fixable: false,
       });
 
       // Check for lock file
       const lockFiles = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'];
       const hasLockFile = await Promise.all(
-        lockFiles.map(f => fs.pathExists(path.join(projectPath, f)))
+        lockFiles.map(f => fs.pathExists(path.join(projectPath, f))),
       ).then(results => results.some(r => r));
 
       results.push({
@@ -512,7 +518,7 @@ export class ValidationChecker {
           ? 'Dependency lock file found'
           : 'No lock file found',
         severity: 'info',
-        fixable: false
+        fixable: false,
       });
     }
 
@@ -524,7 +530,7 @@ export class ValidationChecker {
    */
   private generateReport(
     projectPath: string,
-    results: ValidationResult[]
+    results: ValidationResult[],
   ): ValidationReport {
     const passed = results.filter(r => r.passed).length;
     const failed = results.filter(r => !r.passed && r.severity === 'error').length;
@@ -540,7 +546,7 @@ export class ValidationChecker {
       failed,
       warnings,
       results,
-      score
+      score,
     };
   }
 
@@ -548,18 +554,18 @@ export class ValidationChecker {
    * Display validation report
    */
   private displayReport(report: ValidationReport): void {
-    console.log(chalk.blue.bold('\n📊 Validation Report\n'));
+    logger.info(chalk.blue.bold('\n Validation Report\n'));
 
-    console.log(chalk.white(`Project: ${path.basename(report.projectPath)}`));
-    console.log(chalk.white(`Total Checks: ${report.totalChecks}`));
-    console.log(chalk.green(`Passed: ${report.passed}`));
-    console.log(chalk.red(`Failed: ${report.failed}`));
-    console.log(chalk.yellow(`Warnings: ${report.warnings}`));
+    logger.info(chalk.white(`Project: ${path.basename(report.projectPath)}`));
+    logger.info(chalk.white(`Total Checks: ${report.totalChecks}`));
+    logger.info(chalk.green(`Passed: ${report.passed}`));
+    logger.info(chalk.red(`Failed: ${report.failed}`));
+    logger.info(chalk.yellow(`Warnings: ${report.warnings}`));
 
     const scoreColor = report.score >= 90 ? chalk.green :
                        report.score >= 70 ? chalk.yellow :
                        chalk.red;
-    console.log(scoreColor(`Score: ${report.score.toFixed(1)}%\n`));
+    logger.info(scoreColor(`Score: ${report.score.toFixed(1)}%\n`));
 
     // Group results by category
     const categories = new Set(report.results.map(r => r.category));
@@ -568,25 +574,25 @@ export class ValidationChecker {
       const categoryResults = report.results.filter(r => r.category === category);
       const categoryPassed = categoryResults.filter(r => r.passed).length;
 
-      console.log(chalk.cyan(`\n${category} (${categoryPassed}/${categoryResults.length})`));
+      logger.info(chalk.cyan(`\n${category} (${categoryPassed}/${categoryResults.length})`));
 
       for (const result of categoryResults) {
-        const icon = result.passed ? chalk.green('✓') :
-                     result.severity === 'error' ? chalk.red('✗') :
-                     result.severity === 'warning' ? chalk.yellow('⚠') :
-                     chalk.blue('ℹ');
+        const icon = result.passed ? chalk.green('v') :
+                     result.severity === 'error' ? chalk.red('x') :
+                     result.severity === 'warning' ? chalk.yellow('!') :
+                     chalk.blue('i');
 
-        console.log(`  ${icon} ${result.check}: ${result.message}`);
+        logger.info(`  ${icon} ${result.check}: ${result.message}`);
       }
     }
 
     // Show fixable issues
     const fixable = report.results.filter(r => !r.passed && r.fixable);
     if (fixable.length > 0) {
-      console.log(chalk.yellow(`\n💡 ${fixable.length} issues can be automatically fixed`));
+      logger.warn(chalk.yellow(`\n ${fixable.length} issues can be automatically fixed`));
     }
 
-    console.log();
+    logger.info('');
   }
 
   /**
@@ -597,23 +603,23 @@ export class ValidationChecker {
     const fixable = report.results.filter(r => !r.passed && r.fixable && r.fix);
 
     if (fixable.length === 0) {
-      console.log(chalk.green('No fixable issues found'));
+      logger.info(chalk.green('No fixable issues found'));
       return;
     }
 
-    console.log(chalk.blue(`\nAttempting to fix ${fixable.length} issues...\n`));
+    logger.info(chalk.blue(`\nAttempting to fix ${fixable.length} issues...\n`));
 
     for (const issue of fixable) {
       try {
         this.spinner.start(`Fixing: ${issue.check}`);
         await issue.fix!();
         this.spinner.succeed(`Fixed: ${issue.check}`);
-      } catch (error) {
+      } catch (_error) {
         this.spinner.fail(`Failed to fix: ${issue.check}`);
       }
     }
 
-    console.log(chalk.green('\nAuto-fix complete. Re-running validation...\n'));
+    logger.info(chalk.green('\nAuto-fix complete. Re-running validation...\n'));
     await this.validate(projectPath);
   }
 }

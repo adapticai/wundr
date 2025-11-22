@@ -2,13 +2,19 @@
  * VS Code Installer - Complete Visual Studio Code setup with extensions and configuration
  * Ports functionality from 06-vscode.sh
  */
-import { execa } from 'execa';
-import * as os from 'os';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import * as path from 'path';
+
+import { execa } from 'execa';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
+
+const logger = new Logger({ name: 'vscode-installer' });
 
 export class VSCodeInstaller implements BaseInstaller {
   name = 'vscode';
@@ -29,7 +35,9 @@ export class VSCodeInstaller implements BaseInstaller {
         try {
           await fs.access('/Applications/Visual Studio Code.app');
           return true;
-        } catch {}
+        } catch {
+          // App not found at this location, continue to return false
+        }
       }
       return false;
     }
@@ -45,7 +53,7 @@ export class VSCodeInstaller implements BaseInstaller {
   }
 
   async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log(`Installing Visual Studio Code for ${profile.name || 'user'}...`);
+    logger.info(`Installing Visual Studio Code for ${profile.name || 'user'}...`);
 
     // Install VS Code
     await this.installVSCode(platform);
@@ -62,7 +70,7 @@ export class VSCodeInstaller implements BaseInstaller {
 
   async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     // Log configuration context for debugging
-    console.log(`VS Code configuration verified for ${profile.name || 'user'} on ${platform.os}`);
+    logger.info(`VS Code configuration verified for ${profile.name || 'user'} on ${platform.os}`);
   }
 
   async validate(): Promise<boolean> {
@@ -78,8 +86,8 @@ export class VSCodeInstaller implements BaseInstaller {
       const hasCore = coreExtensions.some(ext => extensions.includes(ext.toLowerCase()));
       
       return hasCore;
-    } catch (error) {
-      console.error('VS Code validation failed:', error);
+    } catch (error: unknown) {
+      logger.error('VS Code validation failed:', error);
       return false;
     }
   }
@@ -94,7 +102,7 @@ export class VSCodeInstaller implements BaseInstaller {
       dependencies: ['install-homebrew'],
       estimatedTime: 240,
       validator: () => this.validate(),
-      installer: () => this.install(profile, platform)
+      installer: () => this.install(profile, platform),
     }];
   }
 
@@ -103,11 +111,11 @@ export class VSCodeInstaller implements BaseInstaller {
       // macOS installation
       try {
         await fs.access('/Applications/Visual Studio Code.app');
-        console.log('VS Code already installed');
+        logger.info('VS Code already installed');
       } catch {
         try {
           await which('brew');
-          console.log('Installing VS Code via Homebrew...');
+          logger.info('Installing VS Code via Homebrew...');
           await execa('brew', ['install', '--cask', 'visual-studio-code']);
         } catch {
           throw new Error('Homebrew not found. Please install Homebrew first.');
@@ -121,13 +129,13 @@ export class VSCodeInstaller implements BaseInstaller {
       // Linux installation
       try {
         await which('code');
-        console.log('VS Code already installed');
+        logger.info('VS Code already installed');
       } catch {
         await this.installVSCodeLinux();
       }
     }
-    
-    console.log('VS Code installed');
+
+    logger.info('VS Code installed');
   }
 
   private async setupCodeCommand(): Promise<void> {
@@ -155,8 +163,8 @@ export class VSCodeInstaller implements BaseInstaller {
           if (!shellContent.includes('Visual Studio Code.app')) {
             await fs.writeFile(shellPath, shellContent + '\n' + pathExport + '\n', 'utf-8');
           }
-        } catch (error) {
-          console.warn(`Failed to update ${shellFile}:`, error);
+        } catch (error: unknown) {
+          logger.warn(`Failed to update ${shellFile}:`, error);
         }
       }
       
@@ -171,7 +179,7 @@ export class VSCodeInstaller implements BaseInstaller {
       'sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/',
       'sudo sh -c \'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list\'',
       'sudo apt update',
-      'sudo apt install code -y'
+      'sudo apt install code -y',
     ];
     
     for (const cmd of commands) {
@@ -180,13 +188,13 @@ export class VSCodeInstaller implements BaseInstaller {
   }
 
   private async installExtensions(): Promise<void> {
-    console.log('Installing VS Code extensions...');
-    
+    logger.info('Installing VS Code extensions...');
+
     // Ensure code command is available
     try {
       await which('code');
     } catch {
-      console.warn('VS Code command line tools not found. Skipping extension installation.');
+      logger.warn('VS Code command line tools not found. Skipping extension installation.');
       return;
     }
     
@@ -287,36 +295,36 @@ export class VSCodeInstaller implements BaseInstaller {
       'janisdd.vscode-edit-csv',
       'qcz.text-power-tools',
       'sleistner.vscode-fileutils',
-      'vscode-icons-team.vscode-icons'
+      'vscode-icons-team.vscode-icons',
     ];
     
     for (const extension of extensions) {
-      console.log(`Installing ${extension}...`);
-      
+      logger.info(`Installing ${extension}...`);
+
       try {
         // Check if extension is already installed
         const { stdout } = await execa('code', ['--list-extensions']);
         if (stdout.toLowerCase().includes(extension.toLowerCase())) {
-          console.log(`${extension} is already installed`);
+          logger.info(`${extension} is already installed`);
           continue;
         }
-        
+
         // Install the extension with timeout
         await execa('code', ['--install-extension', extension, '--force'], {
-          timeout: 60000 // 60 seconds timeout
+          timeout: 60000, // 60 seconds timeout
         });
-        
-        console.log(`✅ Successfully installed ${extension}`);
-      } catch (error) {
-        console.warn(`Warning: Could not install ${extension} (might be deprecated, renamed, or require different ID)`);
+
+        logger.info(`Successfully installed ${extension}`);
+      } catch {
+        logger.warn(`Warning: Could not install ${extension} (might be deprecated, renamed, or require different ID)`);
       }
     }
-    
-    console.log('VS Code extensions installation completed');
+
+    logger.info('VS Code extensions installation completed');
   }
 
   private async configureVSCode(): Promise<void> {
-    console.log('Configuring VS Code settings...');
+    logger.info('Configuring VS Code settings...');
     
     const platform = os.platform();
     let settingsPath = '';
@@ -331,208 +339,208 @@ export class VSCodeInstaller implements BaseInstaller {
     await fs.mkdir(path.dirname(settingsPath), { recursive: true });
     
     const settings = {
-      "editor.fontSize": 14,
-      "editor.fontFamily": "'JetBrains Mono', 'Fira Code', Menlo, Monaco, 'Courier New', monospace",
-      "editor.fontLigatures": true,
-      "editor.tabSize": 2,
-      "editor.insertSpaces": true,
-      "editor.detectIndentation": true,
-      "editor.renderWhitespace": "trailing",
-      "editor.rulers": [80, 120],
-      "editor.wordWrap": "on",
-      "editor.minimap.enabled": true,
-      "editor.minimap.renderCharacters": false,
-      "editor.formatOnSave": true,
-      "editor.formatOnPaste": true,
-      "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit",
-        "source.organizeImports": "explicit"
+      'editor.fontSize': 14,
+      'editor.fontFamily': "'JetBrains Mono', 'Fira Code', Menlo, Monaco, 'Courier New', monospace",
+      'editor.fontLigatures': true,
+      'editor.tabSize': 2,
+      'editor.insertSpaces': true,
+      'editor.detectIndentation': true,
+      'editor.renderWhitespace': 'trailing',
+      'editor.rulers': [80, 120],
+      'editor.wordWrap': 'on',
+      'editor.minimap.enabled': true,
+      'editor.minimap.renderCharacters': false,
+      'editor.formatOnSave': true,
+      'editor.formatOnPaste': true,
+      'editor.codeActionsOnSave': {
+        'source.fixAll.eslint': 'explicit',
+        'source.organizeImports': 'explicit',
       },
-      "editor.quickSuggestions": {
-        "strings": true
+      'editor.quickSuggestions': {
+        'strings': true,
       },
-      "editor.suggestSelection": "first",
-      "editor.snippetSuggestions": "top",
-      "editor.cursorBlinking": "smooth",
-      "editor.cursorSmoothCaretAnimation": "on",
-      "editor.smoothScrolling": true,
-      "editor.linkedEditing": true,
-      "editor.bracketPairColorization.enabled": true,
-      "editor.guides.bracketPairs": true,
-      "editor.stickyScroll.enabled": true,
-      "editor.inlineSuggest.enabled": true,
+      'editor.suggestSelection': 'first',
+      'editor.snippetSuggestions': 'top',
+      'editor.cursorBlinking': 'smooth',
+      'editor.cursorSmoothCaretAnimation': 'on',
+      'editor.smoothScrolling': true,
+      'editor.linkedEditing': true,
+      'editor.bracketPairColorization.enabled': true,
+      'editor.guides.bracketPairs': true,
+      'editor.stickyScroll.enabled': true,
+      'editor.inlineSuggest.enabled': true,
       
-      "files.autoSave": "onFocusChange",
-      "files.trimTrailingWhitespace": true,
-      "files.trimFinalNewlines": true,
-      "files.insertFinalNewline": true,
-      "files.exclude": {
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "**/node_modules": true,
-        "**/dist": true,
-        "**/build": true,
-        "**/.next": true,
-        "**/.turbo": true
+      'files.autoSave': 'onFocusChange',
+      'files.trimTrailingWhitespace': true,
+      'files.trimFinalNewlines': true,
+      'files.insertFinalNewline': true,
+      'files.exclude': {
+        '**/.git': true,
+        '**/.DS_Store': true,
+        '**/node_modules': true,
+        '**/dist': true,
+        '**/build': true,
+        '**/.next': true,
+        '**/.turbo': true,
       },
-      "files.watcherExclude": {
-        "**/.git/objects/**": true,
-        "**/.git/subtree-cache/**": true,
-        "**/node_modules/**": true,
-        "**/dist/**": true,
-        "**/build/**": true,
-        "**/.next/**": true
-      },
-      
-      "terminal.integrated.fontSize": 14,
-      "terminal.integrated.fontFamily": "'JetBrains Mono', 'Fira Code', monospace",
-      "terminal.integrated.defaultProfile.osx": "zsh",
-      "terminal.integrated.defaultProfile.linux": "bash",
-      "terminal.integrated.env.osx": {
-        "PATH": "${env:PATH}:${env:HOME}/.local/bin:${env:HOME}/.npm-global/bin"
+      'files.watcherExclude': {
+        '**/.git/objects/**': true,
+        '**/.git/subtree-cache/**': true,
+        '**/node_modules/**': true,
+        '**/dist/**': true,
+        '**/build/**': true,
+        '**/.next/**': true,
       },
       
-      "workbench.colorTheme": "GitHub Dark Default",
-      "workbench.iconTheme": "material-icon-theme",
-      "workbench.startupEditor": "none",
-      "workbench.editor.enablePreview": false,
-      "workbench.editor.highlightModifiedTabs": true,
-      "workbench.tree.indent": 20,
-      
-      "typescript.updateImportsOnFileMove.enabled": "always",
-      "typescript.preferences.includePackageJsonAutoImports": "auto",
-      "typescript.preferences.quoteStyle": "single",
-      "typescript.format.semicolons": "insert",
-      "typescript.suggest.autoImports": true,
-      "typescript.tsdk": "node_modules/typescript/lib",
-      
-      "javascript.updateImportsOnFileMove.enabled": "always",
-      "javascript.preferences.quoteStyle": "single",
-      "javascript.format.semicolons": "insert",
-      "javascript.suggest.autoImports": true,
-      
-      "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[typescriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[javascriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[json]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[jsonc]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[html]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[css]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[scss]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[markdown]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-      },
-      "[yaml]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      'terminal.integrated.fontSize': 14,
+      'terminal.integrated.fontFamily': "'JetBrains Mono', 'Fira Code', monospace",
+      'terminal.integrated.defaultProfile.osx': 'zsh',
+      'terminal.integrated.defaultProfile.linux': 'bash',
+      'terminal.integrated.env.osx': {
+        'PATH': '${env:PATH}:${env:HOME}/.local/bin:${env:HOME}/.npm-global/bin',
       },
       
-      "eslint.validate": [
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact"
+      'workbench.colorTheme': 'GitHub Dark Default',
+      'workbench.iconTheme': 'material-icon-theme',
+      'workbench.startupEditor': 'none',
+      'workbench.editor.enablePreview': false,
+      'workbench.editor.highlightModifiedTabs': true,
+      'workbench.tree.indent': 20,
+      
+      'typescript.updateImportsOnFileMove.enabled': 'always',
+      'typescript.preferences.includePackageJsonAutoImports': 'auto',
+      'typescript.preferences.quoteStyle': 'single',
+      'typescript.format.semicolons': 'insert',
+      'typescript.suggest.autoImports': true,
+      'typescript.tsdk': 'node_modules/typescript/lib',
+      
+      'javascript.updateImportsOnFileMove.enabled': 'always',
+      'javascript.preferences.quoteStyle': 'single',
+      'javascript.format.semicolons': 'insert',
+      'javascript.suggest.autoImports': true,
+      
+      '[typescript]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[typescriptreact]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[javascript]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[javascriptreact]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[json]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[jsonc]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[html]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[css]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[scss]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[markdown]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      '[yaml]': {
+        'editor.defaultFormatter': 'esbenp.prettier-vscode',
+      },
+      
+      'eslint.validate': [
+        'javascript',
+        'javascriptreact',
+        'typescript',
+        'typescriptreact',
       ],
-      "eslint.run": "onType",
-      "eslint.probe": [
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact"
-      ],
-      
-      "prettier.requireConfig": true,
-      "prettier.useEditorConfig": true,
-      
-      "git.autofetch": true,
-      "git.confirmSync": false,
-      "git.enableSmartCommit": true,
-      "git.decorations.enabled": true,
-      "git.suggestSmartCommit": true,
-      
-      "gitlens.hovers.currentLine.over": "line",
-      "gitlens.codeLens.enabled": false,
-      
-      "emmet.includeLanguages": {
-        "javascript": "javascriptreact",
-        "typescript": "typescriptreact"
-      },
-      "emmet.triggerExpansionOnTab": true,
-      
-      "npm.packageManager": "auto",
-      "npm.scriptExplorerAction": "run",
-      
-      "tailwindCSS.emmetCompletions": true,
-      "tailwindCSS.includeLanguages": {
-        "typescript": "javascript",
-        "typescriptreact": "javascript"
-      },
-      
-      "github.copilot.enable": {
-        "*": true,
-        "yaml": true,
-        "plaintext": true,
-        "markdown": true
-      },
-      
-      "todo-tree.highlights.enabled": true,
-      "todo-tree.general.tags": [
-        "TODO",
-        "FIXME",
-        "BUG",
-        "HACK",
-        "NOTE",
-        "WARNING"
+      'eslint.run': 'onType',
+      'eslint.probe': [
+        'javascript',
+        'javascriptreact',
+        'typescript',
+        'typescriptreact',
       ],
       
-      "extensions.autoUpdate": true,
-      "extensions.autoCheckUpdates": true,
+      'prettier.requireConfig': true,
+      'prettier.useEditorConfig': true,
       
-      "search.exclude": {
-        "**/node_modules": true,
-        "**/dist": true,
-        "**/build": true,
-        "**/.next": true,
-        "**/coverage": true,
-        "**/.turbo": true
+      'git.autofetch': true,
+      'git.confirmSync': false,
+      'git.enableSmartCommit': true,
+      'git.decorations.enabled': true,
+      'git.suggestSmartCommit': true,
+      
+      'gitlens.hovers.currentLine.over': 'line',
+      'gitlens.codeLens.enabled': false,
+      
+      'emmet.includeLanguages': {
+        'javascript': 'javascriptreact',
+        'typescript': 'typescriptreact',
+      },
+      'emmet.triggerExpansionOnTab': true,
+      
+      'npm.packageManager': 'auto',
+      'npm.scriptExplorerAction': 'run',
+      
+      'tailwindCSS.emmetCompletions': true,
+      'tailwindCSS.includeLanguages': {
+        'typescript': 'javascript',
+        'typescriptreact': 'javascript',
       },
       
-      "explorer.confirmDelete": false,
-      "explorer.confirmDragAndDrop": false,
+      'github.copilot.enable': {
+        '*': true,
+        'yaml': true,
+        'plaintext': true,
+        'markdown': true,
+      },
       
-      "errorLens.enabled": true,
-      "errorLens.fontStyle": "italic",
+      'todo-tree.highlights.enabled': true,
+      'todo-tree.general.tags': [
+        'TODO',
+        'FIXME',
+        'BUG',
+        'HACK',
+        'NOTE',
+        'WARNING',
+      ],
       
-      "security.workspace.trust.untrustedFiles": "open",
+      'extensions.autoUpdate': true,
+      'extensions.autoCheckUpdates': true,
       
-      "redhat.telemetry.enabled": false,
-      "telemetry.telemetryLevel": "off"
+      'search.exclude': {
+        '**/node_modules': true,
+        '**/dist': true,
+        '**/build': true,
+        '**/.next': true,
+        '**/coverage': true,
+        '**/.turbo': true,
+      },
+      
+      'explorer.confirmDelete': false,
+      'explorer.confirmDragAndDrop': false,
+      
+      'errorLens.enabled': true,
+      'errorLens.fontStyle': 'italic',
+      
+      'security.workspace.trust.untrustedFiles': 'open',
+      
+      'redhat.telemetry.enabled': false,
+      'telemetry.telemetryLevel': 'off',
     };
     
     await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2));
-    console.log('VS Code settings configured');
+    logger.info('VS Code settings configured');
   }
 
   private async setupKeybindings(): Promise<void> {
-    console.log('Setting up VS Code keybindings...');
+    logger.info('Setting up VS Code keybindings...');
     
     const platform = os.platform();
     let keybindingsPath = '';
@@ -545,58 +553,58 @@ export class VSCodeInstaller implements BaseInstaller {
     
     const keybindings = [
       {
-        "key": "cmd+shift+d",
-        "command": "editor.action.duplicateSelection"
+        'key': 'cmd+shift+d',
+        'command': 'editor.action.duplicateSelection',
       },
       {
-        "key": "cmd+d",
-        "command": "editor.action.deleteLines",
-        "when": "editorTextFocus && !editorReadonly"
+        'key': 'cmd+d',
+        'command': 'editor.action.deleteLines',
+        'when': 'editorTextFocus && !editorReadonly',
       },
       {
-        "key": "alt+up",
-        "command": "editor.action.moveLinesUpAction",
-        "when": "editorTextFocus && !editorReadonly"
+        'key': 'alt+up',
+        'command': 'editor.action.moveLinesUpAction',
+        'when': 'editorTextFocus && !editorReadonly',
       },
       {
-        "key": "alt+down",
-        "command": "editor.action.moveLinesDownAction",
-        "when": "editorTextFocus && !editorReadonly"
+        'key': 'alt+down',
+        'command': 'editor.action.moveLinesDownAction',
+        'when': 'editorTextFocus && !editorReadonly',
       },
       {
-        "key": "cmd+shift+/",
-        "command": "editor.action.blockComment",
-        "when": "editorTextFocus && !editorReadonly"
+        'key': 'cmd+shift+/',
+        'command': 'editor.action.blockComment',
+        'when': 'editorTextFocus && !editorReadonly',
       },
       {
-        "key": "cmd+k cmd+u",
-        "command": "editor.action.transformToUppercase"
+        'key': 'cmd+k cmd+u',
+        'command': 'editor.action.transformToUppercase',
       },
       {
-        "key": "cmd+k cmd+l",
-        "command": "editor.action.transformToLowercase"
+        'key': 'cmd+k cmd+l',
+        'command': 'editor.action.transformToLowercase',
       },
       {
-        "key": "cmd+shift+v",
-        "command": "markdown.showPreview",
-        "when": "!notebookEditorFocused && editorLangId == 'markdown'"
+        'key': 'cmd+shift+v',
+        'command': 'markdown.showPreview',
+        'when': "!notebookEditorFocused && editorLangId == 'markdown'",
       },
       {
-        "key": "cmd+shift+t",
-        "command": "workbench.action.terminal.new"
+        'key': 'cmd+shift+t',
+        'command': 'workbench.action.terminal.new',
       },
       {
-        "key": "cmd+shift+g",
-        "command": "workbench.view.scm"
-      }
+        'key': 'cmd+shift+g',
+        'command': 'workbench.view.scm',
+      },
     ];
     
     await fs.writeFile(keybindingsPath, JSON.stringify(keybindings, null, 2));
-    console.log('VS Code keybindings configured');
+    logger.info('VS Code keybindings configured');
   }
 
   async uninstall(): Promise<void> {
-    console.log('Uninstalling Visual Studio Code...');
+    logger.info('Uninstalling Visual Studio Code...');
     
     try {
       if (os.platform() === 'darwin') {
@@ -614,10 +622,11 @@ export class VSCodeInstaller implements BaseInstaller {
         const userDataPath = path.join(this.homeDir, '.config/Code');
         await fs.rm(userDataPath, { recursive: true, force: true });
       }
-      
-      console.log('Visual Studio Code uninstalled');
-    } catch (error) {
-      throw new Error(`VS Code uninstallation failed: ${error}`);
+
+      logger.info('Visual Studio Code uninstalled');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`VS Code uninstallation failed: ${errorMessage}`);
     }
   }
 }

@@ -1,13 +1,24 @@
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
 import { homedir } from 'os';
-import { execa } from 'execa';
+import { join } from 'path';
+
 import chalk from 'chalk';
-import ora, { Ora } from 'ora';
-import { WallpaperGenerator } from './wallpaper-generator';
-import { SlackIntegration } from './slack-integration';
-import { GmailIntegrationService } from './gmail-integration';
+import ora from 'ora';
+
 import { MacPersonalizer } from './mac-personalizer';
+import { SlackIntegration } from './slack-integration';
+import { WallpaperGenerator } from './wallpaper-generator';
+import { Logger } from '../utils/logger';
+
+import type { Ora } from 'ora';
+import type { Sharp } from 'sharp';
+
+const logger = new Logger({ name: 'profile-personalizer' });
+
+// Type for node-fetch response
+interface FetchResponse {
+  buffer(): Promise<Buffer>;
+}
 
 export interface ProfileConfig {
   fullName: string;
@@ -46,8 +57,9 @@ export class ProfilePersonalizer {
    * Main orchestration method to personalize the entire profile
    */
   async personalize(): Promise<void> {
+    logger.debug('Starting profile personalization', { config: this.config.fullName });
     this.spinner.start(chalk.blue('🎨 Starting profile personalization...'));
-    
+
     try {
       // Generate random profile data if not provided
       this.generateRandomProfileData();
@@ -116,7 +128,7 @@ export class ProfilePersonalizer {
     this.spinner.start(chalk.blue('🎨 Generating AI profile photo...'));
     
     try {
-      const OpenAI = require('openai');
+      const { default: OpenAI } = await import('openai');
       const client = new OpenAI({
         apiKey: this.config.openaiApiKey,
       });
@@ -136,22 +148,22 @@ export class ProfilePersonalizer {
       const imageUrl = response.data[0].url;
       
       // Download and process image
-      let fetch: any;
-      let sharp: any;
-      
+      let fetchFn: (url: string) => Promise<FetchResponse>;
+      let sharpFn: (input: Buffer) => Sharp;
+
       try {
-        fetch = (await import('node-fetch')).default;
+        fetchFn = (await import('node-fetch')).default as unknown as (url: string) => Promise<FetchResponse>;
       } catch {
         throw new Error('node-fetch not available - required for profile photo generation');
       }
-      
+
       try {
-        sharp = (await import('sharp')).default;
+        sharpFn = (await import('sharp')).default;
       } catch {
         throw new Error('sharp not available - required for image processing');
       }
-      
-      const imageResponse = await fetch(imageUrl);
+
+      const imageResponse = await fetchFn(imageUrl);
       const imageBuffer = await imageResponse.buffer();
       
       // Save in multiple sizes
@@ -164,9 +176,9 @@ export class ProfilePersonalizer {
       await fs.writeFile(originalPath, imageBuffer);
       
       // Resize for different platforms
-      await sharp(imageBuffer).resize(512, 512).png().toFile(slackPath);
-      await sharp(imageBuffer).resize(250, 250).png().toFile(gmailPath);
-      await sharp(imageBuffer).resize(128, 128).png().toFile(avatarPath);
+      await sharpFn(imageBuffer).resize(512, 512).png().toFile(slackPath);
+      await sharpFn(imageBuffer).resize(250, 250).png().toFile(gmailPath);
+      await sharpFn(imageBuffer).resize(128, 128).png().toFile(avatarPath);
       
       this.spinner.succeed(chalk.green('📸 Profile photos generated successfully'));
       
@@ -313,9 +325,9 @@ echo ""
           await fs.access(profile);
           const content = await fs.readFile(profile, 'utf-8');
           if (!content.includes('~/.welcome')) {
-            await fs.appendFile(profile, `\n# Welcome script\n~/.welcome\n`);
+            await fs.appendFile(profile, '\n# Welcome script\n~/.welcome\n');
           }
-        } catch (error) {
+        } catch (_error) {
           // Profile doesn't exist, skip
         }
       }

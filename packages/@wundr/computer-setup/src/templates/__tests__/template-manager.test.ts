@@ -1,8 +1,11 @@
-import { TemplateManager, TemplateContext } from '../template-manager.js';
-import { DeveloperProfile } from '../../types/index.js';
-import * as fs from 'fs-extra';
 import * as path from 'path';
-import { jest } from '@jest/globals';
+
+import * as fs from 'fs-extra';
+
+import { TemplateManager } from '../template-manager.js';
+
+import type { DeveloperProfile } from '../../types/index.js';
+import type { TemplateContext } from '../template-manager.js';
 
 describe('TemplateManager', () => {
   let templateManager: TemplateManager;
@@ -27,21 +30,21 @@ describe('TemplateManager', () => {
           userEmail: 'test@example.com',
           signCommits: false,
           defaultBranch: 'main',
-          aliases: {}
+          aliases: {},
         },
         aiTools: {
           claudeCode: true,
           claudeFlow: true,
           mcpTools: [],
           swarmAgents: [],
-          memoryAllocation: '4GB'
-        }
+          memoryAllocation: '4GB',
+        },
       },
       tools: {
         packageManagers: { npm: true, pnpm: true },
         containers: { docker: true, dockerCompose: true },
-        databases: { postgresql: true, redis: true }
-      }
+        databases: { postgresql: true, redis: true },
+      },
     };
 
     testContext = {
@@ -53,19 +56,19 @@ describe('TemplateManager', () => {
         type: 'node',
         packageManager: 'pnpm',
         license: 'MIT',
-        author: 'Test Developer'
+        author: 'Test Developer',
       },
       platform: {
         os: 'darwin',
         arch: 'x64',
         nodeVersion: '20.0.0',
-        shell: 'zsh'
+        shell: 'zsh',
       },
       customVariables: {
         TEST_VAR: 'test-value',
         ENABLE_FEATURE: true,
-        ITEMS: ['item1', 'item2', 'item3']
-      }
+        ITEMS: ['item1', 'item2', 'item3'],
+      },
     };
   });
 

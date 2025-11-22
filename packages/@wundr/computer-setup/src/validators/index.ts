@@ -4,15 +4,19 @@
  */
 
 import { execSync } from 'child_process';
-import * as fs from 'fs-extra';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
+
+import * as fs from 'fs-extra';
+
+
 import { getLogger } from '../utils/logger';
-import { 
+
+import type { 
   DeveloperProfile, 
   SetupPlatform,
   InstalledTool,
-  CredentialSetup 
+  CredentialSetup, 
 } from '../types';
 
 const logger = getLogger('computer-setup:validator');
@@ -98,7 +102,7 @@ export class SetupValidator {
         execSync('ping -c 1 8.8.8.8', { stdio: 'ignore' });
       }
       return true;
-    } catch (error) {
+    } catch (_error) {
       logger.error('No network connectivity');
       return false;
     }
@@ -121,7 +125,7 @@ export class SetupValidator {
         // Unix-like admin check
         return process.getuid && process.getuid() === 0;
       }
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -372,7 +376,7 @@ export class SetupValidator {
             service: 'ssh',
             type: 'ssh',
             stored: true,
-            location: keyPath
+            location: keyPath,
           });
           
           return true;
@@ -408,13 +412,13 @@ export class SetupValidator {
     name: string, 
     version: string, 
     location: string, 
-    category: string
+    category: string,
   ): void {
     this.installedTools.set(name, {
       name,
       version,
       location,
-      category
+      category,
     });
   }
 
@@ -441,7 +445,7 @@ export class SetupValidator {
   /**
    * Validate network ports
    */
-  async validateNetworkPorts(ports: number[]): Promise<boolean> {
+  async validateNetworkPorts(_ports: number[]): Promise<boolean> {
     // This would check if required ports are available
     // For now, return true
     return true;

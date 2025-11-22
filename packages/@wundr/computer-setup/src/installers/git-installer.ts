@@ -1,16 +1,21 @@
 /**
  * Git Installer - Git installation and configuration
  */
+import * as os from 'os';
+import * as path from 'path';
+
 import { execa } from 'execa';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
 
 export class GitInstaller implements BaseInstaller {
   name = 'git';
+  private readonly logger = new Logger({ name: 'GitInstaller' });
 
   isSupported(platform: SetupPlatform): boolean {
     return ['darwin', 'linux', 'win32'].includes(platform.os);
@@ -55,7 +60,9 @@ export class GitInstaller implements BaseInstaller {
   async validate(): Promise<boolean> {
     try {
       const version = await this.getVersion();
-      if (!version) return false;
+      if (!version) {
+return false;
+}
 
       // Check if basic config is set
       const { stdout: userName } = await execa('git', ['config', '--global', 'user.name']);
@@ -78,7 +85,7 @@ export class GitInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 60,
         validator: () => this.isInstalled(),
-        installer: () => this.installGit(platform)
+        installer: () => this.installGit(platform),
       },
       {
         id: 'configure-git-basic',
@@ -89,7 +96,7 @@ export class GitInstaller implements BaseInstaller {
         dependencies: ['install-git'],
         estimatedTime: 15,
         validator: () => this.validateBasicConfig(profile),
-        installer: () => this.configureBasicGit(profile)
+        installer: () => this.configureBasicGit(profile),
       },
       {
         id: 'configure-git-advanced',
@@ -100,8 +107,8 @@ export class GitInstaller implements BaseInstaller {
         dependencies: ['configure-git-basic'],
         estimatedTime: 30,
         validator: () => this.validateAdvancedConfig(profile),
-        installer: () => this.configureAdvancedGit(profile, platform)
-      }
+        installer: () => this.configureAdvancedGit(profile, platform),
+      },
     ];
 
     if (profile.preferences.gitConfig.signCommits) {
@@ -114,7 +121,7 @@ export class GitInstaller implements BaseInstaller {
         dependencies: ['configure-git-basic'],
         estimatedTime: 120,
         validator: () => this.validateGPGSigning(profile),
-        installer: () => this.setupCommitSigning(profile, platform)
+        installer: () => this.setupCommitSigning(profile, platform),
       });
     }
 
@@ -128,7 +135,7 @@ export class GitInstaller implements BaseInstaller {
       dependencies: ['configure-git-basic'],
       estimatedTime: 60,
       validator: () => this.validateSSHKeys(),
-      installer: () => this.setupSSHKeys(profile, platform)
+      installer: () => this.setupSSHKeys(profile, platform),
     });
 
     return steps;
@@ -159,8 +166,9 @@ export class GitInstaller implements BaseInstaller {
       // Xcode command line tools should provide git
       try {
         await execa('xcode-select', ['--install']);
-        console.log('Xcode Command Line Tools installation initiated. Please complete the installation and run setup again.');
-      } catch {
+        this.logger.info('Xcode Command Line Tools installation initiated. Please complete the installation and run setup again.');
+      } catch (xcodeError: unknown) {
+        this.logger.error('Failed to install Xcode Command Line Tools', xcodeError);
         throw new Error('Git installation failed. Please install Xcode Command Line Tools or Homebrew.');
       }
     }
@@ -200,7 +208,9 @@ export class GitInstaller implements BaseInstaller {
 
   private async configureBasicGit(profile: DeveloperProfile): Promise<void> {
     const gitConfig = profile.preferences?.gitConfig;
-    if (!gitConfig) return;
+    if (!gitConfig) {
+return;
+}
 
     // Set user identity
     await execa('git', ['config', '--global', 'user.name', gitConfig.userName]);
@@ -210,11 +220,13 @@ export class GitInstaller implements BaseInstaller {
     await execa('git', ['config', '--global', 'init.defaultBranch', gitConfig.defaultBranch]);
   }
 
-  private async configureAdvancedGit(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log('Configuring Git advanced settings...');
+  private async configureAdvancedGit(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
+    this.logger.info('Configuring Git advanced settings...');
 
     const gitConfig = profile.preferences?.gitConfig;
-    if (!gitConfig) return;
+    if (!gitConfig) {
+return;
+}
 
     // Basic Git settings from the script
     await execa('git', ['config', '--global', 'init.defaultBranch', gitConfig.defaultBranch || 'main']);
@@ -231,7 +243,7 @@ export class GitInstaller implements BaseInstaller {
       'vscode': 'code --wait',
       'vim': 'vim',
       'neovim': 'nvim', 
-      'sublime': 'subl -w'
+      'sublime': 'subl -w',
     };
     
     const editor = editorMap[profile.preferences?.editor] || 'code --wait';
@@ -258,7 +270,7 @@ export class GitInstaller implements BaseInstaller {
       'sync': '!git fetch --all && git pull',
       'undo': 'reset --soft HEAD~1',
       'prune': 'fetch --prune',
-      'stash-all': 'stash save --include-untracked'
+      'stash-all': 'stash save --include-untracked',
     };
     
     // Set up aliases
@@ -273,12 +285,14 @@ export class GitInstaller implements BaseInstaller {
     // Setup global gitignore
     await this.setupGlobalGitignore();
     
-    console.log('Git advanced configuration completed');
+    this.logger.info('Git advanced configuration completed');
   }
 
   private async setupCommitSigning(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     const gitConfig = profile.preferences?.gitConfig;
-    if (!gitConfig) return;
+    if (!gitConfig) {
+return;
+}
 
     try {
       if (!gitConfig.gpgKey) {
@@ -300,14 +314,14 @@ export class GitInstaller implements BaseInstaller {
       if (platform.os === 'darwin') {
         await execa('git', ['config', '--global', 'gpg.program', 'gpg']);
       }
-    } catch (error) {
-      console.warn(`Warning: Failed to setup commit signing: ${error}`);
-      console.warn('You can manually configure GPG signing later');
+    } catch (error: unknown) {
+      this.logger.warn(`Warning: Failed to setup commit signing: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.warn('You can manually configure GPG signing later');
     }
   }
 
   private async generateGPGKey(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log('Setting up commit signing...');
+    this.logger.info('Setting up commit signing...');
     
     // Check if GPG is installed
     try {
@@ -320,11 +334,12 @@ export class GitInstaller implements BaseInstaller {
     try {
       const { stdout } = await execa('gpg', ['--list-secret-keys', '--keyid-format', 'LONG']);
       if (stdout.includes(profile.email || '')) {
-        console.log('GPG key already exists');
+        this.logger.info('GPG key already exists');
         return;
       }
     } catch {
       // No existing keys, proceed with generation
+      this.logger.debug('No existing GPG keys found, proceeding with generation');
     }
     
     // Generate GPG key batch file
@@ -354,25 +369,28 @@ Expire-Date: 2y
         await execa('git', ['config', '--global', 'user.signingkey', keyId]);
         await execa('git', ['config', '--global', 'commit.gpgsign', 'true']);
         await execa('git', ['config', '--global', 'tag.gpgsign', 'true']);
-        
-        console.log('GPG key generated and configured for commit signing');
-        
+
+        this.logger.info('GPG key generated and configured for commit signing');
+
         // Export public key for GitHub/GitLab
         const { stdout: publicKey } = await execa('gpg', ['--armor', '--export', keyId]);
-        console.log('\nGPG Public Key (add this to your GitHub/GitLab account):');
-        console.log(publicKey);
-        console.log('\nYou can add this key at:');
-        console.log('- GitHub: https://github.com/settings/gpg/new');
-        console.log('- GitLab: https://gitlab.com/-/profile/gpg_keys');
+        this.logger.info('\nGPG Public Key (add this to your GitHub/GitLab account):');
+        this.logger.info(publicKey);
+        this.logger.info('\nYou can add this key at:');
+        this.logger.info('- GitHub: https://github.com/settings/gpg/new');
+        this.logger.info('- GitLab: https://gitlab.com/-/profile/gpg_keys');
       }
     } finally {
-      await fs.remove(batchFile).catch(() => {});
+      await fs.remove(batchFile).catch((removeError: unknown) => {
+        this.logger.debug('Failed to remove batch file', removeError);
+      });
     }
   }
 
-  private async importGPGKey(gpgKey: string): Promise<void> {
+  private async importGPGKey(_gpgKey: string): Promise<void> {
     // This would import an existing GPG key
     // Implementation depends on key format (file path, key content, etc.)
+    this.logger.debug('GPG key import not yet implemented');
   }
 
   private async getGPGKeyId(profile: DeveloperProfile): Promise<string> {
@@ -381,6 +399,7 @@ Expire-Date: 2y
       const match = stdout.match(/sec\s+\w+\/(\w+)/);
       return match ? match[1] : '';
     } catch {
+      this.logger.debug('No GPG key found for profile email');
       return '';
     }
   }
@@ -391,11 +410,12 @@ Expire-Date: 2y
         try {
           await which('brew');
           await execa('brew', ['install', 'gnupg']);
-        } catch {
+        } catch (brewError: unknown) {
+          this.logger.error('Homebrew not found or install failed', brewError);
           throw new Error('GPG installation requires Homebrew on macOS');
         }
         break;
-      case 'linux':
+      case 'linux': {
         const distro = platform.distro || await this.detectLinuxDistro();
         if (['ubuntu', 'debian'].includes(distro)) {
           await execa('sudo', ['apt-get', 'install', '-y', 'gnupg']);
@@ -403,12 +423,13 @@ Expire-Date: 2y
           await execa('sudo', ['yum', 'install', '-y', 'gnupg']);
         }
         break;
+      }
       case 'win32':
         throw new Error('GPG installation on Windows requires manual setup');
     }
   }
 
-  private async setupGitIncludes(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  private async setupGitIncludes(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
     const gitDir = path.join(os.homedir(), '.config', 'git');
     await fs.ensureDir(gitDir);
     
@@ -434,11 +455,13 @@ Expire-Date: 2y
       const { stdout } = await execa('lsb_release', ['-si']);
       return stdout.toLowerCase().trim();
     } catch {
+      this.logger.debug('lsb_release not available, trying /etc/os-release');
       try {
         const { stdout } = await execa('cat', ['/etc/os-release']);
         const idMatch = stdout.match(/^ID=(.+)$/m);
         return idMatch ? idMatch[1].replace(/"/g, '') : 'unknown';
       } catch {
+        this.logger.debug('Could not detect Linux distro');
         return 'unknown';
       }
     }
@@ -448,9 +471,10 @@ Expire-Date: 2y
     try {
       const { stdout: userName } = await execa('git', ['config', '--global', 'user.name']);
       const { stdout: userEmail } = await execa('git', ['config', '--global', 'user.email']);
-      
+
       return userName === profile.name && userEmail === profile.email;
     } catch {
+      this.logger.debug('Basic Git config validation failed');
       return false;
     }
   }
@@ -459,13 +483,18 @@ Expire-Date: 2y
     try {
       // Check if aliases are configured
       const gitConfig = profile.preferences?.gitConfig;
-      if (!gitConfig) return true;
+      if (!gitConfig) {
+        return true;
+      }
       for (const alias of Object.keys(gitConfig.aliases)) {
         const { stdout } = await execa('git', ['config', '--global', `alias.${alias}`]);
-        if (!stdout) return false;
+        if (!stdout) {
+          return false;
+        }
       }
       return true;
     } catch {
+      this.logger.debug('Advanced Git config validation failed');
       return false;
     }
   }
@@ -486,11 +515,11 @@ Expire-Date: 2y
           '-t', 'ed25519',
           '-C', profile.email,
           '-f', sshKeyPath,
-          '-N', '' // No passphrase for automation
+          '-N', '', // No passphrase for automation
         ]);
-        console.log('SSH key generated successfully');
-      } catch (error) {
-        console.warn(`Warning: Failed to generate SSH key: ${error}`);
+        this.logger.info('SSH key generated successfully');
+      } catch (error: unknown) {
+        this.logger.warn(`Warning: Failed to generate SSH key: ${error instanceof Error ? error.message : String(error)}`);
         return;
       }
     }
@@ -500,7 +529,7 @@ Expire-Date: 2y
       try {
         // Use -K flag for older macOS versions, fallback to regular add
         await execa('ssh-add', ['-K', sshKeyPath]).catch(() => 
-          execa('ssh-add', [sshKeyPath])
+          execa('ssh-add', [sshKeyPath]),
         );
         
         // Update SSH config for macOS
@@ -511,25 +540,25 @@ Expire-Date: 2y
           const githubConfig = `\n\nHost github.com\n  AddKeysToAgent yes\n  UseKeychain yes\n  IdentityFile ${sshKeyPath}\n`;
           await fs.appendFile(sshConfigPath, githubConfig);
         }
-      } catch (error) {
-        console.warn(`Warning: Failed to add SSH key to agent: ${error}`);
+      } catch (error: unknown) {
+        this.logger.warn(`Warning: Failed to add SSH key to agent: ${error instanceof Error ? error.message : String(error)}`);
       }
     } else {
       // For Linux, just add to agent
       try {
         await execa('ssh-add', [sshKeyPath]);
-      } catch (error) {
-        console.warn(`Warning: Failed to add SSH key to agent: ${error}`);
+      } catch (error: unknown) {
+        this.logger.warn(`Warning: Failed to add SSH key to agent: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
     
     // Display public key for manual addition to GitHub/GitLab
     const publicKey = await fs.readFile(`${sshKeyPath}.pub`, 'utf-8');
-    console.log('\nSSH Public Key (add this to your GitHub/GitLab account):');
-    console.log(publicKey);
-    console.log('\nYou can add this key at:');
-    console.log('- GitHub: https://github.com/settings/keys');
-    console.log('- GitLab: https://gitlab.com/-/profile/keys\n');
+    this.logger.info('\nSSH Public Key (add this to your GitHub/GitLab account):');
+    this.logger.info(publicKey);
+    this.logger.info('\nYou can add this key at:');
+    this.logger.info('- GitHub: https://github.com/settings/keys');
+    this.logger.info('- GitLab: https://gitlab.com/-/profile/keys\n');
   }
   
   private async validateSSHKeys(): Promise<boolean> {
@@ -537,23 +566,25 @@ Expire-Date: 2y
       const sshKeyPath = path.join(os.homedir(), '.ssh', 'id_ed25519');
       return await fs.pathExists(sshKeyPath);
     } catch {
+      this.logger.debug('SSH key validation failed');
       return false;
     }
   }
   
-  private async validateGPGSigning(profile: DeveloperProfile): Promise<boolean> {
+  private async validateGPGSigning(_profile: DeveloperProfile): Promise<boolean> {
     try {
       const { stdout: signing } = await execa('git', ['config', '--global', 'commit.gpgsign']);
       const { stdout: signingKey } = await execa('git', ['config', '--global', 'user.signingkey']);
-      
+
       return signing === 'true' && !!signingKey;
     } catch {
+      this.logger.debug('GPG signing validation failed');
       return false;
     }
   }
 
   private async setupGlobalGitignore(): Promise<void> {
-    console.log('Creating global .gitignore...');
+    this.logger.info('Creating global .gitignore...');
     
     const globalGitignorePath = path.join(os.homedir(), '.gitignore_global');
     
@@ -636,9 +667,9 @@ coverage/
     try {
       await fs.writeFile(globalGitignorePath, globalGitignoreContent.trim(), 'utf-8');
       await execa('git', ['config', '--global', 'core.excludesfile', globalGitignorePath]);
-      console.log('Global .gitignore created and configured');
-    } catch (error) {
-      console.warn('Failed to create global .gitignore:', error);
+      this.logger.info('Global .gitignore created and configured');
+    } catch (error: unknown) {
+      this.logger.warn('Failed to create global .gitignore:', error instanceof Error ? error.message : String(error));
     }
   }
 }

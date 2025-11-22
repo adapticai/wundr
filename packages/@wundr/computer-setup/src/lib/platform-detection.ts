@@ -8,6 +8,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { Logger } from '../utils/logger';
+
+const logger = new Logger({ name: 'platform-detection' });
+
 export type DetectedPlatform = 'railway' | 'netlify';
 
 export interface PlatformDetectionResult {
@@ -147,15 +151,21 @@ export function detectPlatforms(projectPath: string = process.cwd()): DetectionS
   const railwayConfig = detectRailwayFromConfig(projectPath);
   const railwayEnv = detectRailwayFromEnv();
 
-  if (railwayConfig) platforms.push(railwayConfig);
-  else if (railwayEnv) platforms.push(railwayEnv);
+  if (railwayConfig) {
+platforms.push(railwayConfig);
+} else if (railwayEnv) {
+platforms.push(railwayEnv);
+}
 
   // Check Netlify
   const netlifyConfig = detectNetlifyFromConfig(projectPath);
   const netlifyEnv = detectNetlifyFromEnv();
 
-  if (netlifyConfig) platforms.push(netlifyConfig);
-  else if (netlifyEnv) platforms.push(netlifyEnv);
+  if (netlifyConfig) {
+platforms.push(netlifyConfig);
+} else if (netlifyEnv) {
+platforms.push(netlifyEnv);
+}
 
   // Determine primary platform (prefer config file over env)
   const configPlatform = platforms.find(p => p.source === 'config_file');
@@ -247,37 +257,36 @@ export function validatePlatformConfig(platform: DetectedPlatform): {
 }
 
 /**
- * Print detection summary to console
+ * Print detection summary to logger
  */
 export function printDetectionSummary(projectPath: string = process.cwd()): void {
   const summary = detectPlatforms(projectPath);
 
-  console.log('\n[Platform Detection] Deployment Platform Detection\n');
-  console.log('================================\n');
+  logger.info('[Platform Detection] Deployment Platform Detection');
+  logger.info('================================');
 
   if (summary.platforms.length === 0) {
-    console.log('[X] No deployment platforms detected\n');
-    console.log('To enable deployment monitoring, configure one of:');
-    console.log('  - Railway: Add railway.json or set RAILWAY_PROJECT_ID');
-    console.log('  - Netlify: Add netlify.toml or set NETLIFY_SITE_ID');
+    logger.info('[X] No deployment platforms detected');
+    logger.info('To enable deployment monitoring, configure one of:');
+    logger.info('  - Railway: Add railway.json or set RAILWAY_PROJECT_ID');
+    logger.info('  - Netlify: Add netlify.toml or set NETLIFY_SITE_ID');
     return;
   }
 
   for (const platform of summary.platforms) {
     const label = platform.platform === 'railway' ? '[Railway]' : '[Netlify]';
-    console.log(`${label} ${platform.platform.toUpperCase()}`);
-    console.log(`   Source: ${platform.source}`);
-    console.log(`   Confidence: ${platform.confidence}`);
+    logger.info(`${label} ${platform.platform.toUpperCase()}`);
+    logger.info(`   Source: ${platform.source}`);
+    logger.info(`   Confidence: ${platform.confidence}`);
     if (platform.configPath) {
-      console.log(`   Config: ${platform.configPath}`);
+      logger.info(`   Config: ${platform.configPath}`);
     }
     if (platform.envVars) {
-      console.log(`   Env vars: ${platform.envVars.join(', ')}`);
+      logger.info(`   Env vars: ${platform.envVars.join(', ')}`);
     }
-    console.log();
   }
 
   if (summary.primary) {
-    console.log(`Primary platform: ${summary.primary}\n`);
+    logger.info(`Primary platform: ${summary.primary}`);
   }
 }

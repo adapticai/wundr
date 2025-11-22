@@ -2,17 +2,23 @@
  * GitHub Installer - Complete GitHub setup with Git, GitHub CLI, SSH keys, and GPG signing
  * Ports functionality from 05-github.sh
  */
-import { execa } from 'execa';
-import * as os from 'os';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import * as path from 'path';
+
+import { execa } from 'execa';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
+
 
 export class GitHubInstaller implements BaseInstaller {
   name = 'github';
   private readonly homeDir = os.homedir();
+  private readonly logger = new Logger({ name: 'GitHubInstaller' });
   
   isSupported(platform: SetupPlatform): boolean {
     return ['darwin', 'linux'].includes(platform.os);
@@ -43,7 +49,7 @@ export class GitHubInstaller implements BaseInstaller {
   }
 
   async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
-    console.log('Installing GitHub tools...');
+    this.logger.info('Installing GitHub tools...');
     
     // Configure Git
     await this.configureGit(profile);
@@ -66,7 +72,7 @@ export class GitHubInstaller implements BaseInstaller {
 
   async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
     // Apply additional configuration based on profile and platform
-    console.log(`Configuring GitHub for ${profile.name} on ${platform.os}`);
+    this.logger.info(`Configuring GitHub for ${profile.name} on ${platform.os}`);
 
     // Set up commit signing preferences if specified in gitConfig
     if (profile.preferences?.gitConfig?.signCommits !== false) {
@@ -76,8 +82,9 @@ export class GitHubInstaller implements BaseInstaller {
         if (profile.preferences?.gitConfig?.gpgKey) {
           await execa('git', ['config', '--global', 'user.signingkey', profile.preferences.gitConfig.gpgKey]);
         }
-      } catch {
-        // GPG signing setup may fail if no key is configured - that's ok
+      } catch (error) {
+        // Silently ignore if GPG signing setup fails - key may not be configured
+        this.logger.debug('GPG signing setup skipped - key may not be configured:', error);
       }
     }
 
@@ -101,7 +108,7 @@ export class GitHubInstaller implements BaseInstaller {
       
       return true;
     } catch (error) {
-      console.error('GitHub validation failed:', error);
+      this.logger.error('GitHub validation failed:', error);
       return false;
     }
   }
@@ -116,12 +123,12 @@ export class GitHubInstaller implements BaseInstaller {
       dependencies: ['install-homebrew'],
       estimatedTime: 180,
       validator: () => this.validate(),
-      installer: () => this.install(profile, platform)
+      installer: () => this.install(profile, platform),
     }];
   }
 
   private async configureGit(profile: DeveloperProfile): Promise<void> {
-    console.log('Configuring Git...');
+    this.logger.info('Configuring Git...');
     
     const configs = [
       ['user.name', profile.name || ''],
@@ -156,7 +163,7 @@ export class GitHubInstaller implements BaseInstaller {
       ['alias.sync', '!git fetch --all && git pull'],
       ['alias.undo', 'reset --soft HEAD~1'],
       ['alias.prune', 'fetch --prune'],
-      ['alias.stash-all', 'stash save --include-untracked']
+      ['alias.stash-all', 'stash save --include-untracked'],
     ];
     
     const allConfigs = [...configs, ...aliases];
@@ -166,27 +173,31 @@ export class GitHubInstaller implements BaseInstaller {
         try {
           await execa('git', ['config', '--global', key, value]);
         } catch (error) {
-          console.warn(`Failed to set git config ${key}:`, error);
+          this.logger.warn(`Failed to set git config ${key}:`, error);
         }
       }
     }
-    
-    console.log('Git configured');
+
+    this.logger.info('Git configured');
   }
 
   private async setupGitHubCLI(platform: SetupPlatform): Promise<void> {
-    console.log('Setting up GitHub CLI...');
+    this.logger.info('Setting up GitHub CLI...');
     
     // Install GitHub CLI if not already installed
     try {
       await which('gh');
-      console.log('GitHub CLI already installed');
-    } catch {
+      this.logger.info('GitHub CLI already installed');
+    } catch (error) {
+      // gh not found - need to install it
+      this.logger.debug('GitHub CLI not found, installing...', error);
       // Install via Homebrew
       try {
         await which('brew');
         await execa('brew', ['install', 'gh']);
-      } catch {
+      } catch (brewError) {
+        // Homebrew not available, try platform-specific install
+        this.logger.debug('Homebrew not available, trying alternative install', brewError);
         if (platform.os === 'linux') {
           // Install on Linux
           await this.installGitHubCLILinux();
@@ -202,11 +213,11 @@ export class GitHubInstaller implements BaseInstaller {
       await execa('gh', ['config', 'set', 'prompt', 'enabled']);
       await execa('gh', ['config', 'set', 'editor', 'code --wait']);
     } catch (error) {
-      console.warn('Failed to configure GitHub CLI:', error);
+      this.logger.warn('Failed to configure GitHub CLI:', error);
     }
-    
-    console.log('GitHub CLI configured');
-    console.log('Note: Run "gh auth login" to authenticate with GitHub');
+
+    this.logger.info('GitHub CLI configured');
+    this.logger.info('Note: Run "gh auth login" to authenticate with GitHub');
   }
 
   private async installGitHubCLILinux(): Promise<void> {
@@ -215,7 +226,7 @@ export class GitHubInstaller implements BaseInstaller {
       'sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg',
       'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null',
       'sudo apt update',
-      'sudo apt install gh -y'
+      'sudo apt install gh -y',
     ];
     
     for (const cmd of commands) {
@@ -224,7 +235,7 @@ export class GitHubInstaller implements BaseInstaller {
   }
 
   private async generateSSHKey(profile: DeveloperProfile): Promise<void> {
-    console.log('Setting up SSH key for GitHub...');
+    this.logger.info('Setting up SSH key for GitHub...');
     
     const sshDir = path.join(this.homeDir, '.ssh');
     const sshKeyPath = path.join(sshDir, 'id_ed25519');
@@ -232,22 +243,26 @@ export class GitHubInstaller implements BaseInstaller {
     // Ensure .ssh directory exists
     try {
       await fs.mkdir(sshDir, { mode: 0o700, recursive: true });
-    } catch {}
+    } catch (error) {
+      // Directory may already exist, which is fine
+      this.logger.debug('SSH directory creation skipped (may already exist):', error);
+    }
     
     // Check if SSH key already exists
     try {
       await fs.access(sshKeyPath);
-      console.log('SSH key already exists');
-    } catch {
-      // Generate new SSH key
-      console.log('Generating SSH key...');
+      this.logger.info('SSH key already exists');
+    } catch (error) {
+      // SSH key doesn't exist, generate a new one
+      this.logger.debug('SSH key not found, generating new key...', error);
+      this.logger.info('Generating SSH key...');
       await execa('ssh-keygen', [
         '-t', 'ed25519',
         '-C', profile.email || '',
         '-f', sshKeyPath,
-        '-N', ''
+        '-N', '',
       ]);
-      console.log('SSH key generated');
+      this.logger.info('SSH key generated');
     }
     
     // Setup SSH config for GitHub
@@ -255,10 +270,10 @@ export class GitHubInstaller implements BaseInstaller {
     
     // Add SSH key to ssh-agent
     await this.addSSHKeyToAgent(sshKeyPath);
-    
-    console.log('SSH key configured');
-    console.log(`Public key location: ${sshKeyPath}.pub`);
-    console.log('Add this key to your GitHub account or run: gh ssh-key add ~/.ssh/id_ed25519.pub');
+
+    this.logger.info('SSH key configured');
+    this.logger.info(`Public key location: ${sshKeyPath}.pub`);
+    this.logger.info('Add this key to your GitHub account or run: gh ssh-key add ~/.ssh/id_ed25519.pub');
   }
 
   private async setupSSHConfig(): Promise<void> {
@@ -275,8 +290,9 @@ Host github.com
       let configContent = '';
       try {
         configContent = await fs.readFile(sshConfigPath, 'utf-8');
-      } catch {
-        // File doesn't exist
+      } catch (readError) {
+        // File doesn't exist - will create it
+        this.logger.debug('SSH config file not found, will create new one:', readError);
       }
       
       if (!configContent.includes('Host github.com')) {
@@ -284,7 +300,7 @@ Host github.com
         await fs.chmod(sshConfigPath, 0o600);
       }
     } catch (error) {
-      console.warn('Failed to setup SSH config:', error);
+      this.logger.warn('Failed to setup SSH config:', error);
     }
   }
 
@@ -294,7 +310,9 @@ Host github.com
         // macOS with keychain
         try {
           await execa('ssh-add', ['-K', keyPath]);
-        } catch {
+        } catch (keychainError) {
+          // Keychain flag may not be supported on older macOS versions
+          this.logger.debug('Keychain add failed, trying without keychain flag:', keychainError);
           await execa('ssh-add', [keyPath]);
         }
       } else {
@@ -302,31 +320,36 @@ Host github.com
         await execa('ssh-add', [keyPath]);
       }
     } catch (error) {
-      console.warn('Failed to add SSH key to agent:', error);
+      this.logger.warn('Failed to add SSH key to agent:', error);
     }
   }
 
   private async setupCommitSigning(profile: DeveloperProfile): Promise<void> {
-    console.log('Setting up commit signing...');
-    
+    this.logger.info('Setting up commit signing...');
+
     try {
       await which('gpg');
-    } catch {
-      console.log('GPG not installed, skipping commit signing setup');
+    } catch (error) {
+      // GPG not installed - commit signing will not be available
+      this.logger.debug('GPG not found:', error);
+      this.logger.info('GPG not installed, skipping commit signing setup');
       return;
     }
-    
+
     // Check if GPG key already exists
     try {
       const { stdout } = await execa('gpg', ['--list-secret-keys', '--keyid-format', 'LONG']);
       if (stdout.includes(profile.email || '')) {
-        console.log('GPG key already exists');
+        this.logger.info('GPG key already exists');
         return;
       }
-    } catch {}
+    } catch (error) {
+      // No existing GPG keys found - will create one
+      this.logger.debug('No existing GPG keys found:', error);
+    }
     
     // Generate GPG key
-    console.log('Generating GPG key...');
+    this.logger.info('Generating GPG key...');
     
     const gpgConfig = `%echo Generating GPG key
 Key-Type: RSA
@@ -372,19 +395,19 @@ Expire-Date: 2y
         await execa('git', ['config', '--global', 'user.signingkey', keyId]);
         await execa('git', ['config', '--global', 'commit.gpgsign', 'true']);
         await execa('git', ['config', '--global', 'tag.gpgsign', 'true']);
-        
-        console.log('GPG key configuration completed');
-        console.log(`GPG Key ID: ${keyId}`);
-        console.log('Export your public key with: gpg --armor --export ' + keyId);
-        console.log('Add this key to your GitHub account for verified commits');
+
+        this.logger.info('GPG key configuration completed');
+        this.logger.info(`GPG Key ID: ${keyId}`);
+        this.logger.info('Export your public key with: gpg --armor --export ' + keyId);
+        this.logger.info('Add this key to your GitHub account for verified commits');
       }
     } catch (error) {
-      console.warn('GPG key generation failed:', error);
+      this.logger.warn('GPG key generation failed:', error);
     }
   }
 
   private async createGitignoreGlobal(): Promise<void> {
-    console.log('Creating global .gitignore...');
+    this.logger.info('Creating global .gitignore...');
     
     const gitignoreContent = `# OS generated files
 .DS_Store
@@ -467,14 +490,14 @@ coverage/
     try {
       await fs.writeFile(gitignorePath, gitignoreContent);
       await execa('git', ['config', '--global', 'core.excludesfile', gitignorePath]);
-      console.log('Global .gitignore created');
+      this.logger.info('Global .gitignore created');
     } catch (error) {
-      console.warn('Failed to create global .gitignore:', error);
+      this.logger.warn('Failed to create global .gitignore:', error);
     }
   }
 
   private async setupGitHubTemplates(): Promise<void> {
-    console.log('Creating GitHub templates...');
+    this.logger.info('Creating GitHub templates...');
     
     const templatesDir = path.join(this.homeDir, '.github-templates');
     
@@ -567,36 +590,45 @@ Add any other context or screenshots about the feature request here.
 `;
 
       await fs.writeFile(path.join(templatesDir, 'feature_request.md'), featureTemplate);
-      
-      console.log(`GitHub templates created in ${templatesDir}`);
+
+      this.logger.info(`GitHub templates created in ${templatesDir}`);
     } catch (error) {
-      console.warn('Failed to create GitHub templates:', error);
+      this.logger.warn('Failed to create GitHub templates:', error);
     }
   }
 
   async uninstall(): Promise<void> {
-    console.log('Uninstalling GitHub tools...');
+    this.logger.info('Uninstalling GitHub tools...');
     
     try {
       // Remove GitHub CLI
       try {
         await which('brew');
         await execa('brew', ['uninstall', 'gh']);
-      } catch {}
-      
+      } catch (error) {
+        // Homebrew may not be available or gh may not be installed via brew
+        this.logger.debug('Could not uninstall gh via Homebrew:', error);
+      }
+
       // Remove SSH keys (with user confirmation in real scenario)
       const sshDir = path.join(this.homeDir, '.ssh');
       try {
         await fs.rm(path.join(sshDir, 'id_ed25519'));
         await fs.rm(path.join(sshDir, 'id_ed25519.pub'));
-      } catch {}
-      
+      } catch (error) {
+        // SSH keys may not exist
+        this.logger.debug('Could not remove SSH keys (may not exist):', error);
+      }
+
       // Remove templates
       try {
         await fs.rm(path.join(this.homeDir, '.github-templates'), { recursive: true });
-      } catch {}
-      
-      console.log('GitHub tools uninstalled');
+      } catch (error) {
+        // Templates directory may not exist
+        this.logger.debug('Could not remove GitHub templates (may not exist):', error);
+      }
+
+      this.logger.info('GitHub tools uninstalled');
     } catch (error) {
       throw new Error(`GitHub tools uninstallation failed: ${error}`);
     }

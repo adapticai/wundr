@@ -1,17 +1,22 @@
 /**
  * Linux Platform Installer - Linux-specific tools and configurations
  */
+import * as os from 'os';
+import * as path from 'path';
+
 import { execa } from 'execa';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
 
 export class LinuxInstaller implements BaseInstaller {
   name = 'linux-platform';
   private distro: string = 'unknown';
+  private readonly logger = new Logger({ name: 'LinuxInstaller' });
 
   isSupported(platform: SetupPlatform): boolean {
     return platform.os === 'linux';
@@ -65,7 +70,7 @@ export class LinuxInstaller implements BaseInstaller {
     await this.configureSystem(profile);
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
     await this.configureSystem(profile);
     await this.configureShell(profile);
     await this.setupDotfiles(profile);
@@ -83,7 +88,7 @@ export class LinuxInstaller implements BaseInstaller {
     }
   }
 
-  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
+  getSteps(profile: DeveloperProfile, _platform: SetupPlatform): SetupStep[] {
     const steps: SetupStep[] = [
       {
         id: 'update-package-manager',
@@ -94,7 +99,7 @@ export class LinuxInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 120,
         validator: () => Promise.resolve(true), // Always run update
-        installer: () => this.updatePackageManager()
+        installer: () => this.updatePackageManager(),
       },
       {
         id: 'install-essential-packages',
@@ -105,7 +110,7 @@ export class LinuxInstaller implements BaseInstaller {
         dependencies: ['update-package-manager'],
         estimatedTime: 180,
         validator: () => this.validateEssentialPackages(),
-        installer: () => this.installEssentialPackages()
+        installer: () => this.installEssentialPackages(),
       },
       {
         id: 'install-development-tools',
@@ -116,7 +121,7 @@ export class LinuxInstaller implements BaseInstaller {
         dependencies: ['install-essential-packages'],
         estimatedTime: 240,
         validator: () => this.validateDevelopmentTools(profile),
-        installer: () => this.installDevelopmentTools(profile)
+        installer: () => this.installDevelopmentTools(profile),
       },
       {
         id: 'configure-system',
@@ -127,7 +132,7 @@ export class LinuxInstaller implements BaseInstaller {
         dependencies: ['install-essential-packages'],
         estimatedTime: 60,
         validator: () => this.validateSystemConfig(),
-        installer: () => this.configureSystem(profile)
+        installer: () => this.configureSystem(profile),
       },
       {
         id: 'configure-shell',
@@ -138,8 +143,8 @@ export class LinuxInstaller implements BaseInstaller {
         dependencies: ['install-essential-packages'],
         estimatedTime: 45,
         validator: () => this.validateShellConfig(profile),
-        installer: () => this.configureShell(profile)
-      }
+        installer: () => this.configureShell(profile),
+      },
     ];
 
     // Add Snap packages step if supported
@@ -153,7 +158,7 @@ export class LinuxInstaller implements BaseInstaller {
         dependencies: ['install-essential-packages'],
         estimatedTime: 180,
         validator: () => this.validateSnapPackages(profile),
-        installer: () => this.installSnapPackages(profile)
+        installer: () => this.installSnapPackages(profile),
       });
     }
 
@@ -228,28 +233,28 @@ export class LinuxInstaller implements BaseInstaller {
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
         'build-essential', 'software-properties-common', 'apt-transport-https',
         'ca-certificates', 'gnupg', 'lsb-release', 'jq', 'ripgrep', 'fd-find',
-        'bat', 'eza', 'fzf', 'zsh', 'fish', 'tmux', 'screen'
+        'bat', 'eza', 'fzf', 'zsh', 'fish', 'tmux', 'screen',
       ],
       yum: [
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
         'gcc', 'gcc-c++', 'make', 'kernel-devel', 'epel-release', 'jq',
-        'zsh', 'fish', 'tmux', 'screen'
+        'zsh', 'fish', 'tmux', 'screen',
       ],
       dnf: [
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
         'gcc', 'gcc-c++', 'make', 'kernel-devel', 'jq', 'ripgrep', 'fd-find',
-        'bat', 'eza', 'fzf', 'zsh', 'fish', 'tmux', 'screen'
+        'bat', 'eza', 'fzf', 'zsh', 'fish', 'tmux', 'screen',
       ],
       pacman: [
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
         'base-devel', 'jq', 'ripgrep', 'fd', 'bat', 'exa', 'fzf',
-        'zsh', 'fish', 'tmux', 'screen'
+        'zsh', 'fish', 'tmux', 'screen',
       ],
       zypper: [
         'curl', 'wget', 'git', 'vim', 'nano', 'htop', 'tree', 'unzip', 'zip',
         'gcc', 'gcc-c++', 'make', 'kernel-devel', 'jq', 'ripgrep',
-        'zsh', 'fish', 'tmux', 'screen'
-      ]
+        'zsh', 'fish', 'tmux', 'screen',
+      ],
     };
   }
 
@@ -299,7 +304,7 @@ export class LinuxInstaller implements BaseInstaller {
         }
       }
     } catch (error) {
-      console.warn('Failed to install some frontend tools:', error);
+      this.logger.warn('Failed to install some frontend tools:', error);
     }
   }
 
@@ -319,7 +324,7 @@ export class LinuxInstaller implements BaseInstaller {
         }
       }
     } catch (error) {
-      console.warn('Failed to install some backend tools:', error);
+      this.logger.warn('Failed to install some backend tools:', error);
     }
   }
 
@@ -330,7 +335,7 @@ export class LinuxInstaller implements BaseInstaller {
       try {
         await this.installDevOpsTool(tool);
       } catch (error) {
-        console.warn(`Failed to install ${tool}:`, error);
+        this.logger.warn(`Failed to install ${tool}:`, error);
       }
     }
   }
@@ -356,7 +361,7 @@ export class LinuxInstaller implements BaseInstaller {
       'curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg',
       'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list',
       'sudo apt-get update',
-      'sudo apt-get install -y terraform'
+      'sudo apt-get install -y terraform',
     ];
 
     for (const cmd of commands) {
@@ -368,7 +373,7 @@ export class LinuxInstaller implements BaseInstaller {
     const commands = [
       'curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"',
       'sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl',
-      'rm kubectl'
+      'rm kubectl',
     ];
 
     for (const cmd of commands) {
@@ -378,7 +383,7 @@ export class LinuxInstaller implements BaseInstaller {
 
   private async installMobileTools(): Promise<void> {
     // Android Studio and tools would typically be installed via snap or flatpak
-    console.log('Mobile development tools installation requires manual setup of Android Studio');
+    this.logger.info('Mobile development tools installation requires manual setup of Android Studio');
   }
 
   private async installMLTools(): Promise<void> {
@@ -395,7 +400,7 @@ export class LinuxInstaller implements BaseInstaller {
           break;
       }
     } catch (error) {
-      console.warn('Failed to install ML tools:', error);
+      this.logger.warn('Failed to install ML tools:', error);
     }
   }
 
@@ -411,22 +416,23 @@ export class LinuxInstaller implements BaseInstaller {
     try {
       switch (this.distro) {
         case 'ubuntu':
-        case 'debian':
+        case 'debian': {
           const commands = [
             'wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg',
             'sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/',
             'sudo sh -c \'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list\'',
             'sudo apt-get update',
-            'sudo apt-get install -y code'
+            'sudo apt-get install -y code',
           ];
-          
+
           for (const cmd of commands) {
             await execa('bash', ['-c', cmd]);
           }
           break;
+        }
       }
     } catch (error) {
-      console.warn('Failed to install VS Code:', error);
+      this.logger.warn('Failed to install VS Code:', error);
     }
   }
 
@@ -434,26 +440,29 @@ export class LinuxInstaller implements BaseInstaller {
     try {
       switch (this.distro) {
         case 'ubuntu':
-        case 'debian':
+        case 'debian': {
           const commands = [
             'curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg',
             'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null',
             'sudo apt-get update',
-            'sudo apt-get install -y gh'
+            'sudo apt-get install -y gh',
           ];
-          
+
           for (const cmd of commands) {
             await execa('bash', ['-c', cmd]);
           }
           break;
+        }
       }
     } catch (error) {
-      console.warn('Failed to install GitHub CLI:', error);
+      this.logger.warn('Failed to install GitHub CLI:', error);
     }
   }
 
   private async installSnapPackages(profile: DeveloperProfile): Promise<void> {
-    if (!this.isSnapSupported()) return;
+    if (!this.isSnapSupported()) {
+      return;
+    }
 
     const snapPackages = this.getSnapPackages(profile);
     
@@ -461,13 +470,15 @@ export class LinuxInstaller implements BaseInstaller {
       try {
         await execa('sudo', ['snap', 'install', pkg.name, ...(pkg.options || [])]);
       } catch (error) {
-        console.warn(`Failed to install ${pkg.name}:`, error);
+        this.logger.warn(`Failed to install ${pkg.name}:`, error);
       }
     }
   }
 
   private async installFlatpakPackages(profile: DeveloperProfile): Promise<void> {
-    if (!this.isFlatpakSupported()) return;
+    if (!this.isFlatpakSupported()) {
+      return;
+    }
 
     // Install Flatpak if not present
     try {
@@ -482,7 +493,7 @@ export class LinuxInstaller implements BaseInstaller {
       try {
         await execa('flatpak', ['install', 'flathub', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+        this.logger.warn(`Failed to install ${pkg}:`, error);
       }
     }
   }
@@ -568,7 +579,7 @@ export class LinuxInstaller implements BaseInstaller {
     }
   }
 
-  private async configureZsh(profile: DeveloperProfile): Promise<void> {
+  private async configureZsh(_profile: DeveloperProfile): Promise<void> {
     // Install Oh My Zsh
     const homeDir = os.homedir();
     const ohmyzshDir = path.join(homeDir, '.oh-my-zsh');
@@ -608,7 +619,7 @@ export NVM_DIR="$HOME/.nvm"
     await execa('chsh', ['-s', '/usr/bin/zsh']);
   }
 
-  private async configureFish(profile: DeveloperProfile): Promise<void> {
+  private async configureFish(_profile: DeveloperProfile): Promise<void> {
     const configDir = path.join(os.homedir(), '.config', 'fish');
     await fs.ensureDir(configDir);
     
@@ -636,7 +647,7 @@ end
     await execa('chsh', ['-s', fishPath]);
   }
 
-  private async configureBash(profile: DeveloperProfile): Promise<void> {
+  private async configureBash(_profile: DeveloperProfile): Promise<void> {
     const bashrcPath = path.join(os.homedir(), '.bashrc');
     const bashrcAddition = `
 # Development configuration
@@ -663,7 +674,7 @@ export NVM_DIR="$HOME/.nvm"
     await fs.appendFile(bashrcPath, bashrcAddition);
   }
 
-  private async setupDotfiles(profile: DeveloperProfile): Promise<void> {
+  private async setupDotfiles(_profile: DeveloperProfile): Promise<void> {
     // Create basic dotfiles
     const homeDir = os.homedir();
     
@@ -698,7 +709,7 @@ Thumbs.db
         await execa('sudo', ['ufw', 'allow', port]);
       }
     } catch (error) {
-      console.warn('Failed to configure firewall:', error);
+      this.logger.warn('Failed to configure firewall:', error);
     }
   }
 
@@ -726,7 +737,7 @@ Thumbs.db
     return true;
   }
 
-  private async validateDevelopmentTools(profile: DeveloperProfile): Promise<boolean> {
+  private async validateDevelopmentTools(_profile: DeveloperProfile): Promise<boolean> {
     // Basic validation
     try {
       await which('code');
@@ -759,9 +770,11 @@ Thumbs.db
     }
   }
 
-  private async validateSnapPackages(profile: DeveloperProfile): Promise<boolean> {
-    if (!this.isSnapSupported()) return true;
-    
+  private async validateSnapPackages(_profile: DeveloperProfile): Promise<boolean> {
+    if (!this.isSnapSupported()) {
+      return true;
+    }
+
     try {
       await execa('snap', ['list']);
       return true;

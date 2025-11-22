@@ -23,7 +23,7 @@ export class Logger {
     debug: 0,
     info: 1,
     warn: 2,
-    error: 3
+    error: 3,
   };
 
   constructor(options: LoggerOptions = {}) {
@@ -35,7 +35,7 @@ export class Logger {
 
   private getLogLevelFromEnv(): LogLevel {
     const envLevel = process.env.LOG_LEVEL?.toLowerCase() as LogLevel;
-    if (envLevel && Logger.levels.hasOwnProperty(envLevel)) {
+    if (envLevel && Object.prototype.hasOwnProperty.call(Logger.levels, envLevel)) {
       return envLevel;
     }
     
@@ -51,7 +51,7 @@ export class Logger {
     return Logger.levels[level] >= Logger.levels[this.level];
   }
 
-  private formatMessage(level: LogLevel, message: string, ...args: any[]): string {
+  private formatMessage(level: LogLevel, message: string, ...args: unknown[]): string {
     const timestamp = this.enableTimestamps ? new Date().toISOString() : '';
     const levelStr = level.toUpperCase().padEnd(5);
     const nameStr = this.name.padEnd(20);
@@ -80,32 +80,36 @@ export class Logger {
     }
 
     const fullMessage = args.length > 0 ? `${message} ${args.map(arg => 
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg),
     ).join(' ')}` : message;
 
     return `${prefix} ${fullMessage}`;
   }
 
-  debug(message: string, ...args: any[]): void {
+  debug(message: string, ...args: unknown[]): void {
     if (this.shouldLog('debug')) {
+      // eslint-disable-next-line no-console
       console.debug(this.formatMessage('debug', message, ...args));
     }
   }
 
-  info(message: string, ...args: any[]): void {
+  info(message: string, ...args: unknown[]): void {
     if (this.shouldLog('info')) {
+      // eslint-disable-next-line no-console
       console.info(this.formatMessage('info', message, ...args));
     }
   }
 
-  warn(message: string, ...args: any[]): void {
+  warn(message: string, ...args: unknown[]): void {
     if (this.shouldLog('warn')) {
+      // eslint-disable-next-line no-console
       console.warn(this.formatMessage('warn', message, ...args));
     }
   }
 
-  error(message: string, ...args: any[]): void {
+  error(message: string, ...args: unknown[]): void {
     if (this.shouldLog('error')) {
+      // eslint-disable-next-line no-console
       console.error(this.formatMessage('error', message, ...args));
     }
   }
@@ -116,7 +120,7 @@ export class Logger {
       name: `${this.name}:${name}`,
       level: this.level,
       enableColors: this.enableColors,
-      enableTimestamps: this.enableTimestamps
+      enableTimestamps: this.enableTimestamps,
     });
   }
 }

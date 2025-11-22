@@ -14,7 +14,6 @@ export * from './profiles';
 
 // All installers and orchestrator
 export * from './installers';
-export { default as RealSetupOrchestrator } from './installers/real-setup-orchestrator';
 
 // Configuration management
 export * from './configurators';

@@ -1,13 +1,64 @@
-import { DeveloperProfile } from '../types/index.js';
-import { TemplateContext, ProjectInfo, PlatformInfo } from './template-manager.js';
+import type { TemplateContext, ProjectInfo, PlatformInfo } from './template-manager.js';
+import type { DeveloperProfile } from '../types/index.js';
+
+/**
+ * Valid project types for template generation
+ */
+export type ProjectType = ProjectInfo['type'];
+
+/**
+ * Template variable value types
+ */
+export type TemplateValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | { [key: string]: string }[]
+  | undefined;
+
+/**
+ * Type-safe record for template variables
+ */
+export type TemplateVariables = Record<string, TemplateValue>;
+
+/**
+ * Helper to validate project type
+ */
+function isValidProjectType(type: string): type is ProjectType {
+  return ['node', 'react', 'vue', 'python', 'go', 'rust', 'java'].includes(type);
+}
+
+/**
+ * Helper to map process.platform to PlatformInfo.os
+ */
+function mapPlatformOs(platform: NodeJS.Platform): PlatformInfo['os'] {
+  const osMap: Record<string, PlatformInfo['os']> = {
+    darwin: 'darwin',
+    linux: 'linux',
+    win32: 'win32',
+  };
+  return osMap[platform] ?? 'linux';
+}
+
+/**
+ * Helper to map process.arch to PlatformInfo.arch
+ */
+function mapPlatformArch(arch: NodeJS.Architecture): PlatformInfo['arch'] {
+  const archMap: Record<string, PlatformInfo['arch']> = {
+    x64: 'x64',
+    arm64: 'arm64',
+  };
+  return archMap[arch] ?? 'x64';
+}
 
 /**
  * Get default template variables for common configurations
  */
 export function getDefaultTemplateVariables(
   profile: DeveloperProfile,
-  projectType: string = 'node'
-): Record<string, any> {
+  projectType: string = 'node',
+): TemplateVariables {
   return {
     // Common project defaults
     PROJECT_VERSION: '1.0.0',
@@ -197,7 +248,7 @@ export function getDefaultTemplateVariables(
       { ALIAS: '@hooks', PATH: 'src/hooks' },
       { ALIAS: '@services', PATH: 'src/services' },
       { ALIAS: '@types', PATH: 'src/types' },
-      { ALIAS: '@config', PATH: 'src/config' }
+      { ALIAS: '@config', PATH: 'src/config' },
     ],
     
     // Include patterns
@@ -208,7 +259,7 @@ export function getDefaultTemplateVariables(
       'build',
       'coverage',
       '*.config.js',
-      '*.config.ts'
+      '*.config.ts',
     ],
     
     // Node-specific TypeScript config
@@ -227,7 +278,7 @@ export function getDefaultTemplateVariables(
     REACT_JSX: 'react-jsx',
     REACT_TYPES: ['react', 'react-dom', 'node', 'jest'],
     REACT_INCLUDE: ['src/**/*', 'next-env.d.ts'],
-    REACT_EXCLUDE: ['node_modules', 'dist', 'build']
+    REACT_EXCLUDE: ['node_modules', 'dist', 'build'],
   };
 }
 
@@ -237,33 +288,35 @@ export function getDefaultTemplateVariables(
 export function createDefaultTemplateContext(
   profile: DeveloperProfile,
   projectName: string,
-  projectType: string = 'node'
+  projectType: string = 'node',
 ): TemplateContext {
   const defaultVars = getDefaultTemplateVariables(profile, projectType);
   
+  const validatedProjectType: ProjectType = isValidProjectType(projectType) ? projectType : 'node';
+
   const projectInfo: ProjectInfo = {
     name: projectName,
     description: `A new ${projectType} project`,
-    version: defaultVars.PROJECT_VERSION,
-    type: projectType as any,
+    version: String(defaultVars.PROJECT_VERSION ?? '1.0.0'),
+    type: validatedProjectType,
     packageManager: getPreferredPackageManager(profile),
-    license: defaultVars.LICENSE,
+    license: String(defaultVars.LICENSE ?? 'MIT'),
     author: profile.name,
-    organization: profile.team
+    organization: profile.team,
   };
-  
+
   const platformInfo: PlatformInfo = {
-    os: process.platform as any,
-    arch: process.arch as any,
+    os: mapPlatformOs(process.platform),
+    arch: mapPlatformArch(process.arch),
     nodeVersion: process.version.replace('v', ''),
-    shell: profile.preferences?.shell || 'zsh'
+    shell: profile.preferences?.shell || 'zsh',
   };
   
   return {
     profile,
     project: projectInfo,
     platform: platformInfo,
-    customVariables: defaultVars
+    customVariables: defaultVars,
   };
 }
 
@@ -271,8 +324,12 @@ export function createDefaultTemplateContext(
  * Get preferred package manager from profile
  */
 function getPreferredPackageManager(profile: DeveloperProfile): 'npm' | 'pnpm' | 'yarn' {
-  if (profile.tools.packageManagers?.pnpm) return 'pnpm';
-  if (profile.tools.packageManagers?.yarn) return 'yarn';
+  if (profile.tools.packageManagers?.pnpm) {
+return 'pnpm';
+}
+  if (profile.tools.packageManagers?.yarn) {
+return 'yarn';
+}
   return 'npm';
 }
 
@@ -282,8 +339,8 @@ function getPreferredPackageManager(profile: DeveloperProfile): 'npm' | 'pnpm' |
 export function getConfigTemplateVariables(
   configType: string,
   profile: DeveloperProfile,
-  projectType: string = 'node'
-): Record<string, any> {
+  projectType: string = 'node',
+): TemplateVariables {
   const baseVars = getDefaultTemplateVariables(profile, projectType);
   
   switch (configType) {
@@ -294,7 +351,7 @@ export function getConfigTemplateVariables(
         EXPLICIT_BOUNDARY_TYPES: 'error',
         NO_EXPLICIT_ANY: 'error',
         NO_NON_NULL_ASSERTION: 'error',
-        STRICT_TYPE_CHECKING: true
+        STRICT_TYPE_CHECKING: true,
       };
       
     case 'relaxed-typescript':
@@ -304,7 +361,7 @@ export function getConfigTemplateVariables(
         EXPLICIT_BOUNDARY_TYPES: 'off',
         NO_EXPLICIT_ANY: 'warn',
         NO_NON_NULL_ASSERTION: 'warn',
-        STRICT_TYPE_CHECKING: false
+        STRICT_TYPE_CHECKING: false,
       };
       
     case 'production-ready':
@@ -316,7 +373,7 @@ export function getConfigTemplateVariables(
         BRANCHES_THRESHOLD: 90,
         FUNCTIONS_THRESHOLD: 90,
         LINES_THRESHOLD: 90,
-        STATEMENTS_THRESHOLD: 90
+        STATEMENTS_THRESHOLD: 90,
       };
       
     case 'development':
@@ -327,7 +384,7 @@ export function getConfigTemplateVariables(
         BRANCHES_THRESHOLD: 70,
         FUNCTIONS_THRESHOLD: 70,
         LINES_THRESHOLD: 70,
-        STATEMENTS_THRESHOLD: 70
+        STATEMENTS_THRESHOLD: 70,
       };
       
     default:

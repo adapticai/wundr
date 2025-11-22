@@ -13,23 +13,27 @@
 
 import { EventEmitter } from 'events';
 import * as fs from 'fs/promises';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
+
 import { execa } from 'execa';
-import {
+
+import claudeInstallerInstance from './claude-installer';
+import { DockerInstaller } from './docker-installer';
+import { HomebrewInstaller } from './homebrew-installer';
+import { PermissionsInstaller } from './permissions-installer';
+import { PythonInstaller } from './python-installer';
+import { VSCodeInstaller } from './vscode-installer';
+import { Logger } from '../utils/logger';
+
+import type {
   DeveloperProfile,
   SetupPlatform,
   SetupStep,
   SetupOptions,
   SetupResult,
-  SetupProgress
+  SetupProgress,
 } from '../types';
-import { HomebrewInstaller } from './homebrew-installer';
-import { PermissionsInstaller } from './permissions-installer';
-import { DockerInstaller } from './docker-installer';
-import { PythonInstaller } from './python-installer';
-import ClaudeInstaller from './claude-installer';
-import { VSCodeInstaller } from './vscode-installer';
 
 // Enhanced interfaces for the real orchestrator
 interface InstallationState {
@@ -66,15 +70,32 @@ interface ProgressCallback {
   (progress: SetupProgress): void;
 }
 
+// Interface for installer objects
+interface Installer {
+  name?: string;
+  isSupported?: (platform: SetupPlatform) => boolean;
+  isInstalled?: () => Promise<boolean>;
+  getVersion?: () => Promise<string | null>;
+  install: (profile?: DeveloperProfile, platform?: SetupPlatform) => Promise<void>;
+  validate?: () => Promise<boolean>;
+  configure?: (profile: DeveloperProfile, platform: SetupPlatform) => Promise<void>;
+  getSteps?: (profile: DeveloperProfile, platform: SetupPlatform) => SetupStep[];
+}
+
+// Type for language/framework/database configs
+type ToolConfigRecord = Record<string, boolean>;
+
 export class RealSetupOrchestrator extends EventEmitter {
   private state: InstallationState | null = null;
   private stateFile: string;
-  private installers: Map<string, any> = new Map();
+  private installers: Map<string, Installer> = new Map();
   private profiles: Map<string, ProfileConfig> = new Map();
   private progressCallbacks: Set<ProgressCallback> = new Set();
-  
+  private logger: Logger;
+
   constructor(private platform: SetupPlatform) {
     super();
+    this.logger = new Logger({ name: 'RealSetupOrchestrator' });
     this.stateFile = path.join(os.homedir(), '.wundr-setup-state.json');
     this.initializeInstallers();
     this.initializeProfiles();
@@ -84,16 +105,16 @@ export class RealSetupOrchestrator extends EventEmitter {
    * Initialize all available installers
    */
   private initializeInstallers(): void {
-    this.installers.set('permissions', new PermissionsInstaller());
-    this.installers.set('homebrew', new HomebrewInstaller());
-    this.installers.set('docker', new DockerInstaller());
-    this.installers.set('python', new PythonInstaller());
-    this.installers.set('claude', ClaudeInstaller);
-    
+    this.installers.set('permissions', new PermissionsInstaller() as Installer);
+    this.installers.set('homebrew', new HomebrewInstaller() as Installer);
+    this.installers.set('docker', new DockerInstaller() as Installer);
+    this.installers.set('python', new PythonInstaller() as Installer);
+    this.installers.set('claude', claudeInstallerInstance as Installer);
+
     // Core tools installers (to be implemented)
     this.installers.set('git', this.createCoreToolInstaller('git', 'Git version control'));
     this.installers.set('node', this.createCoreToolInstaller('node', 'Node.js runtime'));
-    this.installers.set('vscode', new VSCodeInstaller());
+    this.installers.set('vscode', new VSCodeInstaller() as Installer);
   }
 
   /**
@@ -107,7 +128,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       categories: ['system', 'development', 'frontend', 'ai'],
       requiredTools: ['permissions', 'homebrew', 'git', 'node', 'vscode', 'claude'],
       optionalTools: ['docker'],
-      estimatedTimeMinutes: 20
+      estimatedTimeMinutes: 20,
     });
 
     this.profiles.set('backend', {
@@ -117,7 +138,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       categories: ['system', 'development', 'backend', 'database', 'ai'],
       requiredTools: ['permissions', 'homebrew', 'git', 'node', 'python', 'docker', 'vscode', 'claude'],
       optionalTools: [],
-      estimatedTimeMinutes: 30
+      estimatedTimeMinutes: 30,
     });
 
     this.profiles.set('fullstack', {
@@ -127,7 +148,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       categories: ['system', 'development', 'frontend', 'backend', 'database', 'ai'],
       requiredTools: ['permissions', 'homebrew', 'git', 'node', 'python', 'docker', 'vscode', 'claude'],
       optionalTools: [],
-      estimatedTimeMinutes: 35
+      estimatedTimeMinutes: 35,
     });
 
     this.profiles.set('devops', {
@@ -137,26 +158,34 @@ export class RealSetupOrchestrator extends EventEmitter {
       categories: ['system', 'development', 'devops', 'cloud', 'ai'],
       requiredTools: ['permissions', 'homebrew', 'git', 'docker', 'python', 'vscode', 'claude'],
       optionalTools: ['node'],
-      estimatedTimeMinutes: 40
+      estimatedTimeMinutes: 40,
     });
   }
 
   /**
    * Create a generic core tool installer
    */
-  private createCoreToolInstaller(toolName: string, description: string) {
+  private createCoreToolInstaller(toolName: string, description: string): Installer {
+    const isInstalled = async (): Promise<boolean> => {
+      try {
+        await execa('which', [toolName]);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    const install = async (): Promise<void> => {
+      if (this.platform.os === 'darwin') {
+        await execa('brew', ['install', toolName]);
+      }
+    };
+
     return {
       name: toolName,
       isSupported: () => true,
-      isInstalled: async () => {
-        try {
-          await execa('which', [toolName]);
-          return true;
-        } catch {
-          return false;
-        }
-      },
-      getVersion: async () => {
+      isInstalled,
+      getVersion: async (): Promise<string | null> => {
         try {
           const { stdout } = await execa(toolName, ['--version']);
           return stdout.split('\n')[0];
@@ -164,13 +193,9 @@ export class RealSetupOrchestrator extends EventEmitter {
           return null;
         }
       },
-      install: async () => {
-        if (this.platform.os === 'darwin') {
-          await execa('brew', ['install', toolName]);
-        }
-      },
-      validate: async () => {
-        return await this.createCoreToolInstaller(toolName, description).isInstalled();
+      install,
+      validate: async (): Promise<boolean> => {
+        return await isInstalled();
       },
       getSteps: (): SetupStep[] => [{
         id: `install-${toolName}`,
@@ -180,9 +205,9 @@ export class RealSetupOrchestrator extends EventEmitter {
         required: true,
         dependencies: toolName === 'git' ? ['install-homebrew'] : ['install-homebrew', 'install-git'],
         estimatedTime: 60,
-        validator: () => this.createCoreToolInstaller(toolName, description).isInstalled(),
-        installer: () => this.createCoreToolInstaller(toolName, description).install()
-      }]
+        validator: () => isInstalled(),
+        installer: () => install(),
+      }],
     };
   }
 
@@ -192,7 +217,7 @@ export class RealSetupOrchestrator extends EventEmitter {
   async orchestrate(
     profileName: string,
     options: Partial<SetupOptions> = {},
-    progressCallback?: ProgressCallback
+    progressCallback?: ProgressCallback,
   ): Promise<SetupResult> {
     const sessionId = this.generateSessionId();
     const startTime = Date.now();
@@ -244,8 +269,8 @@ export class RealSetupOrchestrator extends EventEmitter {
       return result;
 
     } catch (error) {
-      console.error('Setup failed:', error);
-      
+      this.logger.error('Setup failed:', error);
+
       // Save state for resumption
       if (this.state) {
         this.state.resumable = true;
@@ -274,7 +299,7 @@ export class RealSetupOrchestrator extends EventEmitter {
         throw new Error('No resumable setup found');
       }
 
-      console.log(`Resuming setup from step: ${this.state.currentStep}`);
+      this.logger.info(`Resuming setup from step: ${this.state.currentStep}`);
       this.emitProgress('Resuming setup...', this.getCurrentProgress(), 0);
 
       // Continue from where we left off
@@ -284,7 +309,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       // Skip completed steps and continue
       const remainingSteps = plan.steps.filter(step => 
         !this.state!.completedSteps.has(step.id) && 
-        !this.state!.failedSteps.has(step.id)
+        !this.state!.failedSteps.has(step.id),
       );
 
       await this.executeSteps(remainingSteps);
@@ -295,7 +320,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       return result;
 
     } catch (error) {
-      console.error('Resume failed:', error);
+      this.logger.error('Resume failed:', error);
       const result = await this.generateResult(Date.now(), false, error as Error);
       return result;
     }
@@ -314,7 +339,9 @@ export class RealSetupOrchestrator extends EventEmitter {
   async canResume(): Promise<boolean> {
     try {
       const stateExists = await fs.access(this.stateFile).then(() => true).catch(() => false);
-      if (!stateExists) return false;
+      if (!stateExists) {
+return false;
+}
 
       const stateData = await fs.readFile(this.stateFile, 'utf-8');
       const state = JSON.parse(stateData);
@@ -330,7 +357,7 @@ export class RealSetupOrchestrator extends EventEmitter {
   private async initializeState(
     sessionId: string,
     profileName: string,
-    options: Partial<SetupOptions>
+    _options: Partial<SetupOptions>,
   ): Promise<void> {
     const profile = this.createDeveloperProfile(profileName);
     
@@ -343,7 +370,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       skippedSteps: new Set(),
       profile,
       platform: this.platform,
-      resumable: false
+      resumable: false,
     };
 
     await this.saveState();
@@ -385,7 +412,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       steps: sortedSteps,
       dependencies,
       estimatedDuration,
-      criticalPath
+      criticalPath,
     };
   }
 
@@ -396,7 +423,7 @@ export class RealSetupOrchestrator extends EventEmitter {
     phaseName: string,
     phaseFunction: () => Promise<void>,
     startPercent: number,
-    endPercent: number
+    endPercent: number,
   ): Promise<void> {
     this.emitProgress(`Starting ${phaseName}`, startPercent, 0);
     
@@ -413,7 +440,7 @@ export class RealSetupOrchestrator extends EventEmitter {
    * Validate system requirements
    */
   private async validateSystemRequirements(): Promise<void> {
-    console.log('🔍 Validating system requirements...');
+    this.logger.info('Validating system requirements...');
     
     // Check OS compatibility
     const supportedOS = ['darwin', 'linux'];
@@ -432,31 +459,31 @@ export class RealSetupOrchestrator extends EventEmitter {
     // Check network connectivity
     await this.verifyNetworkConnectivity();
 
-    console.log('✅ System requirements validated');
+    this.logger.info('System requirements validated');
   }
 
   /**
    * Setup system permissions
    */
   private async setupSystemPermissions(): Promise<void> {
-    console.log('🔐 Setting up system permissions...');
-    
+    this.logger.info('Setting up system permissions...');
+
     const permissionsInstaller = this.installers.get('permissions');
     if (permissionsInstaller) {
       await this.executeInstaller('permissions', permissionsInstaller);
     }
-    
-    console.log('✅ System permissions configured');
+
+    this.logger.info('System permissions configured');
   }
 
   /**
    * Install core system tools
    */
   private async installCoreSystemTools(plan: InstallationPlan): Promise<void> {
-    console.log('🛠️ Installing core system tools...');
-    
+    this.logger.info('Installing core system tools...');
+
     const coreTools = ['homebrew'];
-    
+
     for (const toolName of coreTools) {
       if (plan.profile.requiredTools.includes(toolName)) {
         const installer = this.installers.get(toolName);
@@ -465,18 +492,18 @@ export class RealSetupOrchestrator extends EventEmitter {
         }
       }
     }
-    
-    console.log('✅ Core system tools installed');
+
+    this.logger.info('Core system tools installed');
   }
 
   /**
    * Install development tools
    */
   private async installDevelopmentTools(plan: InstallationPlan): Promise<void> {
-    console.log('🔧 Installing development tools...');
-    
+    this.logger.info('Installing development tools...');
+
     const devTools = ['git', 'node', 'python', 'docker', 'vscode'];
-    
+
     for (const toolName of devTools) {
       if (plan.profile.requiredTools.includes(toolName)) {
         const installer = this.installers.get(toolName);
@@ -485,101 +512,103 @@ export class RealSetupOrchestrator extends EventEmitter {
         }
       }
     }
-    
-    console.log('✅ Development tools installed');
+
+    this.logger.info('Development tools installed');
   }
 
   /**
    * Configure installed tools
    */
   private async configureInstalledTools(plan: InstallationPlan): Promise<void> {
-    console.log('⚙️ Configuring installed tools...');
-    
+    this.logger.info('Configuring installed tools...');
+
     // Configure each installed tool
     for (const toolName of plan.profile.requiredTools) {
       const installer = this.installers.get(toolName);
       if (installer && installer.configure) {
         try {
           await installer.configure(this.state!.profile, this.platform);
-          console.log(`✅ ${toolName} configured`);
+          this.logger.info(`${toolName} configured`);
         } catch (error) {
-          console.warn(`⚠️ Failed to configure ${toolName}:`, error);
+          this.logger.warn(`Failed to configure ${toolName}:`, error);
         }
       }
     }
-    
-    console.log('✅ Tool configuration completed');
+
+    this.logger.info('Tool configuration completed');
   }
 
   /**
    * Validate installation
    */
   private async validateInstallation(plan: InstallationPlan): Promise<void> {
-    console.log('✅ Validating installation...');
-    
+    this.logger.info('Validating installation...');
+
     const validationResults: Record<string, boolean> = {};
-    
+
     for (const toolName of plan.profile.requiredTools) {
       const installer = this.installers.get(toolName);
       if (installer && installer.validate) {
         try {
           const isValid = await installer.validate();
           validationResults[toolName] = isValid;
-          
+
           if (isValid) {
-            console.log(`✅ ${toolName} validation passed`);
+            this.logger.info(`${toolName} validation passed`);
           } else {
-            console.warn(`⚠️ ${toolName} validation failed`);
+            this.logger.warn(`${toolName} validation failed`);
           }
         } catch (error) {
-          console.error(`❌ ${toolName} validation error:`, error);
+          this.logger.error(`${toolName} validation error:`, error);
           validationResults[toolName] = false;
         }
       }
     }
-    
+
     const failedValidations = Object.entries(validationResults)
-      .filter(([_, isValid]) => !isValid)
+      .filter(([_toolName, isValid]) => !isValid)
       .map(([toolName]) => toolName);
-    
+
     if (failedValidations.length > 0) {
-      console.warn(`⚠️ Some tools failed validation: ${failedValidations.join(', ')}`);
+      this.logger.warn(`Some tools failed validation: ${failedValidations.join(', ')}`);
       // Don't throw here - log warnings but continue
     }
-    
-    console.log('✅ Installation validation completed');
+
+    this.logger.info('Installation validation completed');
   }
 
   /**
    * Finalize setup
    */
   private async finalizeSetup(): Promise<void> {
-    console.log('🎯 Finalizing setup...');
-    
+    this.logger.info('Finalizing setup...');
+
     // Create useful shell aliases
     await this.createShellAliases();
-    
+
     // Set up development directory structure
     await this.createDevelopmentStructure();
-    
+
     // Show next steps
     this.showNextSteps();
-    
-    console.log('✅ Setup finalization completed');
+
+    this.logger.info('Setup finalization completed');
   }
 
   /**
    * Execute a single installer
    */
-  private async executeInstaller(name: string, installer: any): Promise<void> {
-    if (!this.state) return;
+  private async executeInstaller(name: string, installer: Installer): Promise<void> {
+    if (!this.state) {
+      return;
+    }
 
     const installerId = `install-${name}`;
-    
+
     try {
       // Skip if already completed
       if (this.state.completedSteps.has(installerId)) {
-        console.log(`⏭️ Skipping ${name} (already installed)`);
+        this.logger.info(`Skipping ${name} (already installed)`);
         return;
       }
 
@@ -588,7 +617,7 @@ export class RealSetupOrchestrator extends EventEmitter {
 
       // Check if already installed
       if (installer.isInstalled && await installer.isInstalled()) {
-        console.log(`✅ ${name} already installed`);
+        this.logger.info(`${name} already installed`);
         this.state.completedSteps.add(installerId);
         this.state.skippedSteps.add(installerId);
         return;
@@ -596,21 +625,21 @@ export class RealSetupOrchestrator extends EventEmitter {
 
       // Perform installation
       await installer.install(this.state.profile, this.platform);
-      
+
       // Validate installation
       if (installer.validate && !await installer.validate()) {
         throw new Error(`${name} installation failed validation`);
       }
 
       this.state.completedSteps.add(installerId);
-      console.log(`✅ ${name} installed successfully`);
+      this.logger.info(`${name} installed successfully`);
 
       // Save state after each successful installation
       await this.saveState();
 
     } catch (error) {
       this.state.failedSteps.set(installerId, error as Error);
-      console.error(`❌ Failed to install ${name}:`, error);
+      this.logger.error(`Failed to install ${name}:`, error);
       throw error;
     }
   }
@@ -628,7 +657,9 @@ export class RealSetupOrchestrator extends EventEmitter {
    * Execute a single step
    */
   private async executeStep(step: SetupStep): Promise<void> {
-    if (!this.state) return;
+    if (!this.state) {
+      return;
+    }
 
     try {
       // Skip if already completed
@@ -673,7 +704,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       currentStep: message,
       percentage,
       estimatedTimeRemaining: timeRemaining,
-      logs: [`[${new Date().toISOString()}] ${message}`]
+      logs: [`[${new Date().toISOString()}] ${message}`],
     };
 
     // Emit to internal listeners
@@ -684,12 +715,12 @@ export class RealSetupOrchestrator extends EventEmitter {
       try {
         callback(progress);
       } catch (error) {
-        console.warn('Progress callback error:', error);
+        this.logger.warn('Progress callback error:', error);
       }
     });
 
     // Console output for CLI usage
-    console.log(`[${percentage.toFixed(1)}%] ${message}`);
+    this.logger.info(`[${percentage.toFixed(1)}%] ${message}`);
   }
 
   /**
@@ -720,15 +751,15 @@ export class RealSetupOrchestrator extends EventEmitter {
           userEmail: '',
           signCommits: false,
           defaultBranch: 'main',
-          aliases: {}
+          aliases: {},
         },
         aiTools: {
           claudeCode: true,
           claudeFlow: true,
           mcpTools: [],
           swarmAgents: [],
-          memoryAllocation: '2GB'
-        }
+          memoryAllocation: '2GB',
+        },
       },
       languages: this.getLanguagesForProfile(profileName),
       frameworks: this.getFrameworksForProfile(profileName),
@@ -738,13 +769,13 @@ export class RealSetupOrchestrator extends EventEmitter {
         editors: { vscode: true, claude: true },
         databases: this.getDatabasesForProfile(profileName),
         cloud: {},
-        ci: { githubActions: true }
-      }
+        ci: { githubActions: true },
+      },
     };
   }
 
-  private getLanguagesForProfile(profileName: string) {
-    const languages: any = {};
+  private getLanguagesForProfile(profileName: string): ToolConfigRecord {
+    const languages: ToolConfigRecord = {};
     switch (profileName) {
       case 'frontend':
         languages.javascript = true;
@@ -764,8 +795,8 @@ export class RealSetupOrchestrator extends EventEmitter {
     return languages;
   }
 
-  private getFrameworksForProfile(profileName: string) {
-    const frameworks: any = {};
+  private getFrameworksForProfile(profileName: string): ToolConfigRecord {
+    const frameworks: ToolConfigRecord = {};
     switch (profileName) {
       case 'frontend':
       case 'fullstack':
@@ -781,8 +812,8 @@ export class RealSetupOrchestrator extends EventEmitter {
     return frameworks;
   }
 
-  private getDatabasesForProfile(profileName: string) {
-    const databases: any = {};
+  private getDatabasesForProfile(profileName: string): ToolConfigRecord {
+    const databases: ToolConfigRecord = {};
     if (['backend', 'fullstack', 'devops'].includes(profileName)) {
       databases.postgresql = true;
       databases.redis = true;
@@ -795,8 +826,10 @@ export class RealSetupOrchestrator extends EventEmitter {
     const visited = new Set<string>();
     const visiting = new Set<string>();
 
-    const visit = (step: SetupStep) => {
-      if (visited.has(step.id)) return;
+    const visit = (step: SetupStep): void => {
+      if (visited.has(step.id)) {
+        return;
+      }
       if (visiting.has(step.id)) {
         throw new Error(`Circular dependency detected: ${step.id}`);
       }
@@ -805,7 +838,9 @@ export class RealSetupOrchestrator extends EventEmitter {
 
       for (const depId of step.dependencies) {
         const dep = steps.find(s => s.id === depId);
-        if (dep) visit(dep);
+        if (dep) {
+          visit(dep);
+        }
       }
 
       visiting.delete(step.id);
@@ -820,36 +855,45 @@ export class RealSetupOrchestrator extends EventEmitter {
     return sorted;
   }
 
-  private findCriticalPath(steps: SetupStep[], dependencies: Map<string, string[]>): string[] {
+  private findCriticalPath(_steps: SetupStep[], dependencies: Map<string, string[]>): string[] {
     // Simple critical path - longest dependency chain
     const depths = new Map<string, number>();
-    
+
     const calculateDepth = (stepId: string): number => {
-      if (depths.has(stepId)) return depths.get(stepId)!;
-      
+      if (depths.has(stepId)) {
+        return depths.get(stepId)!;
+      }
+
       const deps = dependencies.get(stepId) || [];
       const maxDepth = deps.length === 0 ? 0 : Math.max(...deps.map(calculateDepth));
       depths.set(stepId, maxDepth + 1);
       return maxDepth + 1;
     };
 
-    steps.forEach(step => calculateDepth(step.id));
-    
+    // Calculate depths for all step IDs from dependencies
+    for (const stepId of dependencies.keys()) {
+      calculateDepth(stepId);
+    }
+
     const maxDepth = Math.max(...Array.from(depths.values()));
     return Array.from(depths.entries())
-      .filter(([_, depth]) => depth === maxDepth)
+      .filter(([_stepId, depth]) => depth === maxDepth)
       .map(([stepId]) => stepId);
   }
 
   private getCurrentProgress(): number {
-    if (!this.state) return 0;
+    if (!this.state) {
+      return 0;
+    }
     const total = this.getTotalSteps();
     const completed = this.state.completedSteps.size;
     return total > 0 ? (completed / total) * 100 : 0;
   }
 
   private getTotalSteps(): number {
-    if (!this.state) return 0;
+    if (!this.state) {
+      return 0;
+    }
     const profileConfig = this.profiles.get(this.state.profile.role);
     return profileConfig ? profileConfig.requiredTools.length * 2 : 10; // Estimate
   }
@@ -915,10 +959,10 @@ alias ports='netstat -tulanp'
       const existing = await fs.readFile(rcFile, 'utf-8').catch(() => '');
       if (!existing.includes('# Wundr Development Aliases')) {
         await fs.appendFile(rcFile, aliases);
-        console.log('✅ Shell aliases created');
+        this.logger.info('Shell aliases created');
       }
     } catch (error) {
-      console.warn('⚠️ Could not create shell aliases:', error);
+      this.logger.warn('Could not create shell aliases:', error);
     }
   }
 
@@ -933,32 +977,34 @@ alias ports='netstat -tulanp'
       path.join(devDir, 'sandbox'),
       path.join(devDir, 'scripts'),
       path.join(homeDir, '.config'),
-      path.join(homeDir, '.local', 'bin')
+      path.join(homeDir, '.local', 'bin'),
     ];
 
     for (const dir of directories) {
       try {
         await fs.mkdir(dir, { recursive: true });
       } catch (error) {
-        console.warn(`⚠️ Could not create directory ${dir}:`, error);
+        this.logger.warn(`Could not create directory ${dir}:`, error);
       }
     }
 
-    console.log(`✅ Development structure created at ${devDir}`);
+    this.logger.info(`Development structure created at ${devDir}`);
   }
 
   private showNextSteps(): void {
-    console.log('\n🎉 Setup completed! Next steps:');
-    console.log('1. Restart your terminal or run: source ~/.zshrc');
-    console.log('2. Configure Git with: git config --global user.name "Your Name"');
-    console.log('3. Configure Git with: git config --global user.email "your.email@example.com"');
-    console.log('4. Check installed versions with: brew --version && git --version && node --version');
-    console.log('5. Start coding in ~/Development/projects/');
-    console.log('\nHappy coding! 🚀\n');
+    this.logger.info('Setup completed! Next steps:');
+    this.logger.info('1. Restart your terminal or run: source ~/.zshrc');
+    this.logger.info('2. Configure Git with: git config --global user.name "Your Name"');
+    this.logger.info('3. Configure Git with: git config --global user.email "your.email@example.com"');
+    this.logger.info('4. Check installed versions with: brew --version && git --version && node --version');
+    this.logger.info('5. Start coding in ~/Development/projects/');
+    this.logger.info('Happy coding!');
   }
 
   private async saveState(): Promise<void> {
-    if (!this.state) return;
+    if (!this.state) {
+      return;
+    }
 
     const stateData = {
       sessionId: this.state.sessionId,
@@ -969,13 +1015,13 @@ alias ports='netstat -tulanp'
       skippedSteps: Array.from(this.state.skippedSteps),
       profile: this.state.profile,
       platform: this.state.platform,
-      resumable: this.state.resumable
+      resumable: this.state.resumable,
     };
 
     try {
       await fs.writeFile(this.stateFile, JSON.stringify(stateData, null, 2));
     } catch (error) {
-      console.warn('Could not save state:', error);
+      this.logger.warn('Could not save state:', error);
     }
   }
 
@@ -993,9 +1039,9 @@ alias ports='netstat -tulanp'
         skippedSteps: new Set(parsedState.skippedSteps),
         profile: parsedState.profile,
         platform: parsedState.platform,
-        resumable: parsedState.resumable
+        resumable: parsedState.resumable,
       };
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Could not load saved state');
     }
   }
@@ -1018,7 +1064,7 @@ alias ports='netstat -tulanp'
       skippedSteps: this.state ? Array.from(this.state.skippedSteps) : [],
       warnings: [],
       errors: error ? [error] : [],
-      duration
+      duration,
     };
   }
 }

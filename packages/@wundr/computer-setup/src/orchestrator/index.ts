@@ -5,57 +5,45 @@
 
 import { EventEmitter } from 'events';
 
-// Real logger implementation - production ready
-class Logger {
-  private name: string;
-  private logLevel: string;
+import { getLogger } from '../utils/logger';
 
-  constructor(name: string) {
-    this.name = name;
-    this.logLevel = process.env.LOG_LEVEL || 'info';
-  }
+import type { ConfiguratorService } from '../configurators';
+import type { InstallerRegistry } from '../installers';
+import type { ProfileManager } from '../profiles';
+import type {
+  DeveloperProfile,
+  SetupOptions,
+  SetupResult,
+  SetupStep,
+  SetupProgress} from '../types';
+import type { SetupValidator } from '../validators';
 
-  private shouldLog(level: string): boolean {
-    const levels = ['debug', 'info', 'warn', 'error'];
-    const currentLevel = levels.indexOf(this.logLevel);
-    const targetLevel = levels.indexOf(level);
-    return targetLevel >= currentLevel;
-  }
-
-  private formatMessage(level: string, message: string, ...args: any[]): string {
-    const timestamp = new Date().toISOString();
-    const formattedArgs = args.length > 0 ? ' ' + JSON.stringify(args) : '';
-    return `[${timestamp}] [${level.toUpperCase()}] [${this.name}] ${message}${formattedArgs}`;
-  }
-
-  info(message: string, ...args: any[]) {
-    if (this.shouldLog('info')) {
-      console.log(this.formatMessage('info', message, ...args));
-    }
-  }
-
-  error(message: string, ...args: any[]) {
-    if (this.shouldLog('error')) {
-      console.error(this.formatMessage('error', message, ...args));
-    }
-  }
-
-  warn(message: string, ...args: any[]) {
-    if (this.shouldLog('warn')) {
-      console.warn(this.formatMessage('warn', message, ...args));
-    }
-  }
-
-  debug(message: string, ...args: any[]) {
-    if (this.shouldLog('debug')) {
-      console.debug(this.formatMessage('debug', message, ...args));
-    }
-  }
+/**
+ * Setup report structure returned by generateSetupReport
+ */
+interface SetupReport {
+  timestamp: Date;
+  profile: DeveloperProfile;
+  platform: SetupOptions['platform'];
+  result: {
+    success: boolean;
+    completed: number;
+    failed: number;
+    skipped: number;
+    duration: number;
+  };
+  installedTools: Awaited<ReturnType<SetupValidator['getInstalledTools']>>;
+  configurations: ReturnType<ConfiguratorService['getConfigurationChanges']>;
+  credentials: Awaited<ReturnType<SetupValidator['getCredentialSetups']>>;
+  warnings: string[];
+  errors: string[];
+  nextSteps: string[];
 }
 
 // Real event bus implementation - production ready
 class EventBus extends EventEmitter {
   private static instance: EventBus;
+  private busLogger = getLogger('computer-setup:eventbus');
 
   private constructor() {
     super();
@@ -69,47 +57,28 @@ class EventBus extends EventEmitter {
     return EventBus.instance;
   }
 
-  override emit(event: string, data?: any): boolean {
-    const timestamp = new Date().toISOString();
+  override emit(event: string, data?: unknown): boolean {
     if (process.env.LOG_LEVEL === 'debug') {
-      console.debug(`[${timestamp}] [EVENT] ${event}`, data ? JSON.stringify(data) : '');
+      this.busLogger.debug(`[EVENT] ${event}`, data ? JSON.stringify(data) : '');
     }
     return super.emit(event, data);
   }
 
-  override on(event: string, handler: (...args: any[]) => void): this {
+  override on(event: string, handler: (...args: unknown[]) => void): this {
     return super.on(event, handler);
   }
 
-  override once(event: string, handler: (...args: any[]) => void): this {
+  override once(event: string, handler: (...args: unknown[]) => void): this {
     return super.once(event, handler);
   }
 
-  override off(event: string, handler: (...args: any[]) => void): this {
+  override off(event: string, handler: (...args: unknown[]) => void): this {
     return super.off(event, handler);
   }
 }
 
-// Factory functions for compatibility
-const getLogger = (name: string) => new Logger(name);
-const getEventBus = () => EventBus.getInstance();
-import { 
-  DeveloperProfile,
-  SetupOptions,
-  SetupResult,
-  SetupStep,
-  SetupProgress,
-  SetupPlatform,
-  TeamConfiguration
-} from '../types';
-import { ProfileManager } from '../profiles';
-import { InstallerRegistry } from '../installers';
-import { ConfiguratorService } from '../configurators';
-import { SetupValidator } from '../validators';
-import { ComputerSetupManager } from '../manager';
-
 const logger = getLogger('computer-setup:orchestrator');
-const eventBus = getEventBus();
+const eventBus = EventBus.getInstance();
 
 export class SetupOrchestrator extends EventEmitter {
   private profileManager: ProfileManager;
@@ -125,7 +94,7 @@ export class SetupOrchestrator extends EventEmitter {
     profileManager: ProfileManager,
     installerRegistry: InstallerRegistry,
     configuratorService: ConfiguratorService,
-    validator: SetupValidator
+    validator: SetupValidator,
   ) {
     super();
     this.profileManager = profileManager;
@@ -145,7 +114,7 @@ export class SetupOrchestrator extends EventEmitter {
       currentStep: '',
       percentage: 0,
       estimatedTimeRemaining: 0,
-      logs: []
+      logs: [],
     };
   }
 
@@ -158,7 +127,7 @@ export class SetupOrchestrator extends EventEmitter {
     logger.info('Starting setup orchestration', {
       profile: options.profile.name,
       platform: options.platform.os,
-      mode: options.mode
+      mode: options.mode,
     });
 
     // Emit setup started event
@@ -171,7 +140,7 @@ export class SetupOrchestrator extends EventEmitter {
       skippedSteps: [],
       warnings: [],
       errors: [],
-      duration: 0
+      duration: 0,
     };
 
     try {
@@ -239,7 +208,7 @@ export class SetupOrchestrator extends EventEmitter {
   /**
    * Phase 2: Preparation
    */
-  private async preparationPhase(options: SetupOptions, result: SetupResult): Promise<void> {
+  private async preparationPhase(options: SetupOptions, _result: SetupResult): Promise<void> {
     logger.info('Phase 2: Preparation');
     this.updateProgress('Preparing installation', 15);
 
@@ -339,7 +308,7 @@ export class SetupOrchestrator extends EventEmitter {
    */
   private async generateInstallationPlan(
     profile: DeveloperProfile,
-    options: SetupOptions
+    options: SetupOptions,
   ): Promise<SetupStep[]> {
     const steps: SetupStep[] = [];
 
@@ -373,7 +342,7 @@ export class SetupOrchestrator extends EventEmitter {
   private async executeParallel(
     steps: SetupStep[],
     options: SetupOptions,
-    result: SetupResult
+    result: SetupResult,
   ): Promise<void> {
     // Group steps by dependencies
     const groups = this.groupByDependencies(steps);
@@ -390,7 +359,7 @@ export class SetupOrchestrator extends EventEmitter {
   private async executeSequential(
     steps: SetupStep[],
     options: SetupOptions,
-    result: SetupResult
+    result: SetupResult,
   ): Promise<void> {
     for (const step of steps) {
       await this.executeStep(step, options, result);
@@ -403,7 +372,7 @@ export class SetupOrchestrator extends EventEmitter {
   private async executeStep(
     step: SetupStep,
     options: SetupOptions,
-    result: SetupResult
+    result: SetupResult,
   ): Promise<void> {
     try {
       this.updateProgress(`Executing: ${step.name}`, null);
@@ -474,7 +443,9 @@ export class SetupOrchestrator extends EventEmitter {
     const visiting = new Set<string>();
 
     const visit = (step: SetupStep) => {
-      if (visited.has(step.id)) return;
+      if (visited.has(step.id)) {
+return;
+}
       if (visiting.has(step.id)) {
         logger.warn(`Circular dependency detected: ${step.id}`);
         return;
@@ -484,7 +455,9 @@ export class SetupOrchestrator extends EventEmitter {
 
       for (const depId of step.dependencies) {
         const dep = steps.find(s => s.id === depId);
-        if (dep) visit(dep);
+        if (dep) {
+visit(dep);
+}
       }
 
       visiting.delete(step.id);
@@ -551,8 +524,8 @@ export class SetupOrchestrator extends EventEmitter {
    */
   private async generateSetupReport(
     options: SetupOptions,
-    result: SetupResult
-  ): Promise<any> {
+    result: SetupResult,
+  ): Promise<SetupReport> {
     const report = {
       timestamp: new Date(),
       profile: options.profile,
@@ -562,13 +535,14 @@ export class SetupOrchestrator extends EventEmitter {
         completed: result.completedSteps.length,
         failed: result.failedSteps.length,
         skipped: result.skippedSteps.length,
-        duration: result.duration
+        duration: result.duration,
       },
       installedTools: await this.validator.getInstalledTools(),
       configurations: this.configuratorService.getConfigurationChanges(),
       credentials: await this.validator.getCredentialSetups(),
       warnings: result.warnings,
-      errors: result.errors.map(e => e.message)
+      errors: result.errors.map(e => e.message),
+      nextSteps: this.generateNextSteps(options.profile, result),
     };
 
     eventBus.emit('report:generated', { report });
@@ -612,7 +586,7 @@ export class SetupOrchestrator extends EventEmitter {
   async cancel(): Promise<void> {
     logger.info('Cancelling setup');
     eventBus.emit('setup:cancelled');
-    
+
     // Rollback any in-progress steps
     for (const [id, step] of this.activeSteps) {
       if (!this.completedSteps.has(id) && !this.failedSteps.has(id)) {
@@ -625,5 +599,32 @@ export class SetupOrchestrator extends EventEmitter {
         }
       }
     }
+  }
+
+  /**
+   * Generate next steps for the user
+   */
+  private generateNextSteps(profile: DeveloperProfile, result: SetupResult): string[] {
+    const steps: string[] = [];
+
+    steps.push('1. Restart your terminal to apply shell configurations');
+    steps.push('2. Run "wundr doctor" to verify installation');
+
+    if (profile.preferences?.gitConfig?.sshKey) {
+      steps.push('3. Add your SSH key to GitHub/GitLab');
+    }
+
+    if (profile.tools?.communication?.slack) {
+      steps.push('4. Sign in to Slack workspaces');
+    }
+
+    if (result.failedSteps.length > 0) {
+      steps.push('5. Review failed steps and run "wundr setup --retry" to complete');
+    }
+
+    steps.push('6. Review team onboarding documentation');
+    steps.push('7. Clone and set up your first project');
+
+    return steps;
   }
 }

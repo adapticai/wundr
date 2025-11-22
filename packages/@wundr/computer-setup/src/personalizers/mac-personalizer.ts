@@ -1,8 +1,14 @@
 import { promises as fs } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
+
 import { execa } from 'execa';
-import { ProfileConfig } from './profile-personalizer';
+
+import { Logger } from '../utils/logger';
+
+import type { ProfileConfig } from './profile-personalizer';
+
+const logger = new Logger({ name: 'mac-personalizer' });
 
 export interface DockApp {
   name: string;
@@ -14,6 +20,11 @@ export interface HotCorner {
   corner: 'tl' | 'tr' | 'bl' | 'br';
   action: number;
   modifier: number;
+}
+
+export interface SystemInfo {
+  software: Record<string, unknown>;
+  hardware: Record<string, unknown>;
 }
 
 export class MacPersonalizer {
@@ -46,7 +57,7 @@ export class MacPersonalizer {
       await execa('sudo', [
         'defaults', 'write',
         '/Library/Preferences/SystemConfiguration/com.apple.smb.server',
-        'NetBIOSName', '-string', netbiosName
+        'NetBIOSName', '-string', netbiosName,
       ]);
 
     } catch (error) {
@@ -149,9 +160,9 @@ export class MacPersonalizer {
         try {
           await fs.access(app.path);
           await this.addAppToDock(app.path);
-        } catch (error) {
+        } catch (_error) {
           if (app.required) {
-            console.warn(`Warning: Required app ${app.name} not found at ${app.path}`);
+            logger.warn(`Required app ${app.name} not found at ${app.path}`);
           }
         }
       }
@@ -172,7 +183,7 @@ export class MacPersonalizer {
     
     await execa('defaults', [
       'write', 'com.apple.dock', 'persistent-apps',
-      '-array-add', dockItem
+      '-array-add', dockItem,
     ]);
   }
 
@@ -195,12 +206,12 @@ export class MacPersonalizer {
       for (const hotCorner of hotCorners) {
         await execa('defaults', [
           'write', 'com.apple.dock',
-          `wvous-${hotCorner.corner}-corner`, '-int', hotCorner.action.toString()
+          `wvous-${hotCorner.corner}-corner`, '-int', hotCorner.action.toString(),
         ]);
         
         await execa('defaults', [
           'write', 'com.apple.dock',
-          `wvous-${hotCorner.corner}-modifier`, '-int', hotCorner.modifier.toString()
+          `wvous-${hotCorner.corner}-modifier`, '-int', hotCorner.modifier.toString(),
         ]);
       }
 
@@ -386,7 +397,7 @@ touch-code() {
 
 # Git clone and cd into directory
 gclcd() {
-    git clone "$1" && cd "\$(basename "$1" .git)"
+    git clone "$1" && cd "$(basename "$1" .git)"
 }
 
 # Quick server for current directory
@@ -494,7 +505,7 @@ Happy coding! 🚀
   /**
    * Get current system information
    */
-  async getSystemInfo(): Promise<any> {
+  async getSystemInfo(): Promise<SystemInfo> {
     if (process.platform !== 'darwin') {
       throw new Error('This method is only available on macOS');
     }
@@ -502,10 +513,10 @@ Happy coding! 🚀
     try {
       const systemInfo = await execa('system_profiler', ['SPSoftwareDataType', '-json']);
       const hardwareInfo = await execa('system_profiler', ['SPHardwareDataType', '-json']);
-      
+
       return {
-        software: JSON.parse(systemInfo.stdout),
-        hardware: JSON.parse(hardwareInfo.stdout),
+        software: JSON.parse(systemInfo.stdout) as Record<string, unknown>,
+        hardware: JSON.parse(hardwareInfo.stdout) as Record<string, unknown>,
       };
     } catch (error) {
       throw new Error(`Failed to get system info: ${error}`);

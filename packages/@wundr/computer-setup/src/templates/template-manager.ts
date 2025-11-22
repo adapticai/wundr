@@ -1,12 +1,21 @@
-import * as fs from 'fs-extra';
 import * as path from 'path';
-import { DeveloperProfile } from '../types/index.js';
+
 import chalk from 'chalk';
+import * as fs from 'fs-extra';
 import ora from 'ora';
+
+import { Logger } from '../utils/logger.js';
+
+import type { DeveloperProfile } from '../types/index.js';
+
+const logger = new Logger({ name: 'template-manager' });
+
+/** Supported template variable value types */
+export type TemplateVariableValue = string | boolean | number | unknown[] | Record<string, unknown>;
 
 export interface TemplateVariable {
   name: string;
-  value: any;
+  value: TemplateVariableValue;
   type: 'string' | 'boolean' | 'number' | 'array' | 'object';
 }
 
@@ -14,7 +23,7 @@ export interface TemplateContext {
   profile: DeveloperProfile;
   project: ProjectInfo;
   platform: PlatformInfo;
-  customVariables?: Record<string, any>;
+  customVariables?: Record<string, TemplateVariableValue>;
 }
 
 export interface ProjectInfo {
@@ -86,7 +95,7 @@ export class TemplateManager {
     templateName: string,
     outputPath: string,
     context: TemplateContext,
-    options?: { overwrite?: boolean; verbose?: boolean }
+    options?: { overwrite?: boolean; verbose?: boolean },
   ): Promise<void> {
     const templatePath = this.getTemplatePath(templateName);
     
@@ -95,7 +104,7 @@ export class TemplateManager {
     }
 
     if (!options?.overwrite && await fs.pathExists(outputPath)) {
-      console.log(chalk.yellow(`Skipping existing file: ${outputPath}`));
+      logger.info(chalk.yellow(`Skipping existing file: ${outputPath}`));
       return;
     }
 
@@ -106,7 +115,7 @@ export class TemplateManager {
     await fs.writeFile(outputPath, customizedContent);
 
     if (options?.verbose) {
-      console.log(chalk.blue(`Created: ${outputPath}`));
+      logger.info(chalk.blue(`Created: ${outputPath}`));
     }
   }
 
@@ -116,7 +125,7 @@ export class TemplateManager {
   async generateConfigs(
     projectPath: string,
     context: TemplateContext,
-    configs: string[]
+    configs: string[],
   ): Promise<void> {
     const spinner = ora('Generating configuration files').start();
 
@@ -138,53 +147,53 @@ export class TemplateManager {
   private async generateConfig(
     configType: string,
     projectPath: string,
-    context: TemplateContext
+    context: TemplateContext,
   ): Promise<void> {
     const configMap = {
       'eslint': {
         template: 'config/eslint/eslint.config.js',
-        output: '.eslintrc.js'
+        output: '.eslintrc.js',
       },
       'prettier': {
         template: 'config/prettier/.prettierrc.js',
-        output: '.prettierrc.js'
+        output: '.prettierrc.js',
       },
       'jest': {
         template: 'config/jest/jest.config.js',
-        output: 'jest.config.js'
+        output: 'jest.config.js',
       },
       'tsconfig-base': {
         template: 'config/typescript/tsconfig.base.json',
-        output: 'tsconfig.json'
+        output: 'tsconfig.json',
       },
       'tsconfig-node': {
         template: 'config/typescript/tsconfig.node.json',
-        output: 'tsconfig.json'
+        output: 'tsconfig.json',
       },
       'tsconfig-react': {
         template: 'config/typescript/tsconfig.react.json',
-        output: 'tsconfig.json'
+        output: 'tsconfig.json',
       },
       'docker': {
         template: 'docker/Dockerfile.node',
-        output: 'Dockerfile'
+        output: 'Dockerfile',
       },
       'docker-compose': {
         template: 'docker/docker-compose.yml',
-        output: 'docker-compose.yml'
+        output: 'docker-compose.yml',
       },
       'github-issues': {
         template: 'github',
-        output: '.github'
+        output: '.github',
       },
       'slack-manifest': {
         template: 'slack/manifest.json',
-        output: 'slack-manifest.json'
+        output: 'slack-manifest.json',
       },
       'claude-flow': {
         template: 'claude-flow/swarm.config.js',
-        output: 'claude-flow.config.js'
-      }
+        output: 'claude-flow.config.js',
+      },
     };
 
     const config = configMap[configType as keyof typeof configMap];
@@ -219,7 +228,7 @@ export class TemplateManager {
         `github/ISSUE_TEMPLATE/${template}`,
         path.join(issueTemplatesDir, template),
         context,
-        { overwrite: true }
+        { overwrite: true },
       );
     }
 
@@ -228,7 +237,7 @@ export class TemplateManager {
       'github/pull_request_template.md',
       path.join(githubDir, 'pull_request_template.md'),
       context,
-      { overwrite: true }
+      { overwrite: true },
     );
   }
 
@@ -238,7 +247,7 @@ export class TemplateManager {
   private async processDirectory(
     templateDir: string,
     outputDir: string,
-    options: TemplateOptions
+    options: TemplateOptions,
   ): Promise<void> {
     const entries = await fs.readdir(templateDir, { withFileTypes: true });
 
@@ -261,17 +270,17 @@ export class TemplateManager {
   private async processFile(
     templatePath: string,
     outputPath: string,
-    options: TemplateOptions
+    options: TemplateOptions,
   ): Promise<void> {
     if (!options.overwrite && await fs.pathExists(outputPath)) {
       if (options.verbose) {
-        console.log(chalk.yellow(`Skipping existing file: ${outputPath}`));
+        logger.info(chalk.yellow(`Skipping existing file: ${outputPath}`));
       }
       return;
     }
 
     if (options.dryRun) {
-      console.log(chalk.blue(`Would create: ${outputPath}`));
+      logger.info(chalk.blue(`Would create: ${outputPath}`));
       return;
     }
 
@@ -282,7 +291,7 @@ export class TemplateManager {
     await fs.writeFile(outputPath, customizedContent);
 
     if (options.verbose) {
-      console.log(chalk.green(`Created: ${outputPath}`));
+      logger.info(chalk.green(`Created: ${outputPath}`));
     }
   }
 
@@ -310,7 +319,7 @@ export class TemplateManager {
   /**
    * Process conditional template blocks
    */
-  private processConditionals(content: string, variables: Record<string, any>): string {
+  private processConditionals(content: string, variables: Record<string, TemplateVariableValue>): string {
     return content.replace(/\{\{#([^}]+)\}\}(.*?)\{\{\/\1\}\}/gs, (match, condition, innerContent) => {
       const value = variables[condition.trim()];
       return this.isTruthy(value) ? innerContent : '';
@@ -320,7 +329,7 @@ export class TemplateManager {
   /**
    * Process array template blocks
    */
-  private processArrays(content: string, variables: Record<string, any>): string {
+  private processArrays(content: string, variables: Record<string, TemplateVariableValue>): string {
     return content.replace(/\{\{#([^}]+)\}\}(.*?)\{\{\/\1\}\}/gs, (match, arrayName, template) => {
       const array = variables[arrayName.trim()];
       
@@ -353,10 +362,10 @@ export class TemplateManager {
   /**
    * Build variable map from context
    */
-  private buildVariableMap(context: TemplateContext): Record<string, any> {
+  private buildVariableMap(context: TemplateContext): Record<string, TemplateVariableValue> {
     const { profile, project, platform } = context;
-    
-    const variables: Record<string, any> = {
+
+    const variables: Record<string, TemplateVariableValue> = {
       // Project variables
       PROJECT_NAME: project.name,
       PROJECT_DESCRIPTION: project.description,
@@ -402,7 +411,7 @@ export class TemplateManager {
       REDIS_VERSION: '7',
       
       // Custom variables
-      ...context.customVariables
+      ...context.customVariables,
     };
 
     return variables;
@@ -411,13 +420,25 @@ export class TemplateManager {
   /**
    * Check if value is truthy for template conditions
    */
-  private isTruthy(value: any): boolean {
-    if (value === null || value === undefined) return false;
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'number') return value !== 0;
-    if (typeof value === 'string') return value.length > 0;
-    if (Array.isArray(value)) return value.length > 0;
-    if (typeof value === 'object') return Object.keys(value).length > 0;
+  private isTruthy(value: TemplateVariableValue): boolean {
+    if (value === null || value === undefined) {
+return false;
+}
+    if (typeof value === 'boolean') {
+return value;
+}
+    if (typeof value === 'number') {
+return value !== 0;
+}
+    if (typeof value === 'string') {
+return value.length > 0;
+}
+    if (Array.isArray(value)) {
+return value.length > 0;
+}
+    if (typeof value === 'object') {
+return Object.keys(value).length > 0;
+}
     return Boolean(value);
   }
 

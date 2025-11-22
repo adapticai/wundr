@@ -3,18 +3,21 @@
  * Handles configuration of various tools and environments
  */
 
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 import { execSync } from 'child_process';
+import * as os from 'os';
+import * as path from 'path';
+
 import { execa } from 'execa';
+import * as fs from 'fs-extra';
+
 import { getLogger } from '../utils/logger';
-import { 
+
+import type { 
   DeveloperProfile, 
   GitConfiguration, 
   AIToolsConfiguration,
   SetupStep,
-  ConfigurationChange 
+  ConfigurationChange, 
 } from '../types';
 
 const logger = getLogger('computer-setup:configurator');
@@ -52,7 +55,7 @@ export class ConfiguratorService {
       estimatedTime: 5,
       installer: async () => {
         await this.configureGitUser(config);
-      }
+      },
     });
 
     if (config.signCommits) {
@@ -66,7 +69,7 @@ export class ConfiguratorService {
         estimatedTime: 30,
         installer: async () => {
           await this.configureGPGSigning(config);
-        }
+        },
       });
     }
 
@@ -81,7 +84,7 @@ export class ConfiguratorService {
         estimatedTime: 20,
         installer: async () => {
           await this.configureSSHKey(config);
-        }
+        },
       });
     }
 
@@ -95,7 +98,7 @@ export class ConfiguratorService {
       estimatedTime: 5,
       installer: async () => {
         await this.configureGitAliases(config.aliases);
-      }
+      },
     });
 
     return steps;
@@ -119,7 +122,7 @@ export class ConfiguratorService {
           estimatedTime: 60,
           installer: async () => {
             await this.configureVSCode();
-          }
+          },
         });
         break;
 
@@ -135,7 +138,7 @@ export class ConfiguratorService {
           estimatedTime: 30,
           installer: async () => {
             await this.configureVim(editor);
-          }
+          },
         });
         break;
 
@@ -150,7 +153,7 @@ export class ConfiguratorService {
           estimatedTime: 20,
           installer: async () => {
             await this.configureSublime();
-          }
+          },
         });
         break;
     }
@@ -167,7 +170,7 @@ export class ConfiguratorService {
     const commands = [
       `git config --global user.name "${config.userName}"`,
       `git config --global user.email "${config.userEmail}"`,
-      `git config --global init.defaultBranch "${config.defaultBranch || 'main'}"`
+      `git config --global init.defaultBranch "${config.defaultBranch || 'main'}"`,
     ];
 
     for (const cmd of commands) {
@@ -269,8 +272,8 @@ export class ConfiguratorService {
       'typescript.updateImportsOnFileMove.enabled': 'always',
       'editor.codeActionsOnSave': {
         'source.organizeImports': true,
-        'source.fixAll.eslint': true
-      }
+        'source.fixAll.eslint': true,
+      },
     };
 
     await fs.ensureDir(path.dirname(settingsPath));
@@ -302,22 +305,23 @@ export class ConfiguratorService {
       'prisma.prisma',
       'graphql.vscode-graphql',
       'mikestead.dotenv',
-      'usernamehw.errorlens'
+      'usernamehw.errorlens',
     ];
 
     for (const ext of extensions) {
       try {
         execSync(`code --install-extension ${ext}`, { stdio: 'pipe', timeout: 30000 });
         logger.info(`Installed extension: ${ext}`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Check if already installed or actual error
-        if (error.stdout?.toString().includes('already installed')) {
+        const execError = error as { stdout?: Buffer; status?: number; message?: string };
+        if (execError.stdout?.toString().includes('already installed')) {
           logger.info(`Extension ${ext} already installed, skipping`);
-        } else if (error.status === 134) {
+        } else if (execError.status === 134) {
           // VS Code crash - this is a known VS Code bug, not fatal
           logger.warn(`VS Code crashed installing ${ext}, but may have succeeded`);
         } else {
-          logger.warn(`Failed to install extension: ${ext}`, error.message);
+          logger.warn(`Failed to install extension: ${ext}`, execError.message);
         }
       }
     }
@@ -399,7 +403,7 @@ colorscheme gruvbox
       'ensure_newline_at_eof_on_save': true,
       'save_on_focus_lost': true,
       'rulers': [80, 120],
-      'word_wrap': true
+      'word_wrap': true,
     };
 
     const settingsPath = this.getSublimeSettingsPath();
@@ -494,7 +498,7 @@ function serve() {
       mcpTools: aiTools.mcpTools,
       swarmAgents: aiTools.swarmAgents,
       claudeCode: aiTools.claudeCode,
-      claudeFlow: aiTools.claudeFlow
+      claudeFlow: aiTools.claudeFlow,
     };
 
     const configPath = path.join(os.homedir(), '.claude-flow', 'config.json');
@@ -518,7 +522,7 @@ function serve() {
     this.configChanges.push({
       file,
       changes,
-      backup: backup || undefined
+      backup: backup || undefined,
     });
   }
 

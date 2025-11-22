@@ -1,7 +1,9 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import inquirer from 'inquirer';
 import chalk from 'chalk';
+import inquirer from 'inquirer';
+
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ name: 'template-selector' });
 
 export interface TemplateSelectionCriteria {
   projectType: string;
@@ -68,7 +70,7 @@ export class TemplateSelector {
    * Interactive template selection
    */
   async interactiveSelection(): Promise<TemplateMetadata> {
-    console.log(chalk.blue.bold('\n🎯 Template Selection Wizard\n'));
+    logger.info(chalk.blue.bold('\n Template Selection Wizard\n'));
 
     // Gather project information
     const answers = await inquirer.prompt([
@@ -84,8 +86,8 @@ export class TemplateSelector {
           { name: 'Python Application', value: 'python' },
           { name: 'Go Service', value: 'go' },
           { name: 'Rust Application', value: 'rust' },
-          { name: 'Monorepo/Workspace', value: 'monorepo' }
-        ]
+          { name: 'Monorepo/Workspace', value: 'monorepo' },
+        ],
       },
       {
         type: 'list',
@@ -95,8 +97,8 @@ export class TemplateSelector {
           { name: 'Small (Prototype/POC)', value: 'small' },
           { name: 'Medium (Production-ready)', value: 'medium' },
           { name: 'Large (Scalable system)', value: 'large' },
-          { name: 'Enterprise (Multi-team)', value: 'enterprise' }
-        ]
+          { name: 'Enterprise (Multi-team)', value: 'enterprise' },
+        ],
       },
       {
         type: 'checkbox',
@@ -110,15 +112,15 @@ export class TemplateSelector {
           { name: 'API Documentation', value: 'api-docs' },
           { name: 'Monitoring & Logging', value: 'monitoring' },
           { name: 'Authentication', value: 'auth' },
-          { name: 'Database Integration', value: 'database' }
-        ]
+          { name: 'Database Integration', value: 'database' },
+        ],
       },
       {
         type: 'number',
         name: 'teamSize',
         message: 'Expected team size:',
-        default: 1
-      }
+        default: 1,
+      },
     ]);
 
     const criteria: TemplateSelectionCriteria = {
@@ -128,19 +130,19 @@ export class TemplateSelector {
       teamSize: answers.teamSize,
       useTypeScript: answers.features.includes('typescript'),
       useTesting: answers.features.includes('testing'),
-      useCI: answers.features.includes('cicd')
+      useCI: answers.features.includes('cicd'),
     };
 
     // Select best matching template
     const templates = await this.selectTemplates(criteria);
 
     if (templates.length === 0) {
-      console.log(chalk.yellow('No exact match found, using default template'));
+      logger.warn(chalk.yellow('No exact match found, using default template'));
       return this.getDefaultTemplate();
     }
 
     if (templates.length === 1) {
-      console.log(chalk.green(`\nSelected template: ${templates[0].name}`));
+      logger.info(chalk.green(`\nSelected template: ${templates[0].name}`));
       return templates[0];
     }
 
@@ -152,9 +154,9 @@ export class TemplateSelector {
         message: 'Multiple templates match your criteria. Select one:',
         choices: templates.map(t => ({
           name: `${t.name} - ${t.description}`,
-          value: t.id
-        }))
-      }
+          value: t.id,
+        })),
+      },
     ]);
 
     return this.templates.get(selectedTemplate)!;
@@ -179,7 +181,7 @@ export class TemplateSelector {
    */
   getTemplatesForType(projectType: string): TemplateMetadata[] {
     return Array.from(this.templates.values()).filter(
-      t => t.projectTypes.includes(projectType)
+      t => t.projectTypes.includes(projectType),
     );
   }
 
@@ -188,7 +190,7 @@ export class TemplateSelector {
    */
   private calculateMatchScore(
     template: TemplateMetadata,
-    criteria: TemplateSelectionCriteria
+    criteria: TemplateSelectionCriteria,
   ): number {
     let score = 0;
     let maxScore = 0;
@@ -205,7 +207,7 @@ export class TemplateSelector {
       small: 'basic',
       medium: 'intermediate',
       large: 'advanced',
-      enterprise: 'enterprise'
+      enterprise: 'enterprise',
     };
     if (criteria.scale && template.complexity === complexityMap[criteria.scale]) {
       score += 2;
@@ -215,7 +217,7 @@ export class TemplateSelector {
     maxScore += 3;
     if (criteria.features) {
       const matchingFeatures = criteria.features.filter(f =>
-        template.features.includes(f)
+        template.features.includes(f),
       );
       score += (matchingFeatures.length / criteria.features.length) * 3;
     }
@@ -223,10 +225,15 @@ export class TemplateSelector {
     // Team size appropriateness (10% weight)
     maxScore += 1;
     if (criteria.teamSize) {
-      if (criteria.teamSize === 1 && template.complexity === 'basic') score += 1;
-      else if (criteria.teamSize <= 5 && template.complexity === 'intermediate') score += 1;
-      else if (criteria.teamSize <= 20 && template.complexity === 'advanced') score += 1;
-      else if (criteria.teamSize > 20 && template.complexity === 'enterprise') score += 1;
+      if (criteria.teamSize === 1 && template.complexity === 'basic') {
+score += 1;
+} else if (criteria.teamSize <= 5 && template.complexity === 'intermediate') {
+score += 1;
+} else if (criteria.teamSize <= 20 && template.complexity === 'advanced') {
+score += 1;
+} else if (criteria.teamSize > 20 && template.complexity === 'enterprise') {
+score += 1;
+}
     }
 
     return score / maxScore;
@@ -250,8 +257,8 @@ export class TemplateSelector {
       complexity: 'basic',
       requirements: {
         nodeVersion: '>=18.0.0',
-        packageManager: ['npm', 'pnpm', 'yarn']
-      }
+        packageManager: ['npm', 'pnpm', 'yarn'],
+      },
     });
 
     // React frontend template
@@ -268,8 +275,8 @@ export class TemplateSelector {
       complexity: 'intermediate',
       requirements: {
         nodeVersion: '>=18.0.0',
-        packageManager: ['pnpm', 'yarn']
-      }
+        packageManager: ['pnpm', 'yarn'],
+      },
     });
 
     // Next.js full-stack template
@@ -282,18 +289,18 @@ export class TemplateSelector {
       features: ['typescript', 'testing', 'cicd', 'docker', 'api-docs', 'auth', 'database'],
       agents: [
         'coder', 'reviewer', 'tester', 'planner',
-        'backend-dev', 'mobile-dev', 'system-architect'
+        'backend-dev', 'mobile-dev', 'system-architect',
       ],
       workflows: ['sparc', 'tdd', 'review', 'deployment'],
       conventions: [
         'code-style', 'api-design', 'component-structure',
-        'git-workflow', 'testing-standards', 'documentation'
+        'git-workflow', 'testing-standards', 'documentation',
       ],
       complexity: 'advanced',
       requirements: {
         nodeVersion: '>=18.0.0',
-        packageManager: ['pnpm']
-      }
+        packageManager: ['pnpm'],
+      },
     });
 
     // Monorepo template
@@ -305,24 +312,24 @@ export class TemplateSelector {
       frameworks: ['turborepo', 'nx'],
       features: [
         'typescript', 'testing', 'cicd', 'docker',
-        'monitoring', 'api-docs'
+        'monitoring', 'api-docs',
       ],
       agents: [
         'coder', 'reviewer', 'tester', 'planner', 'researcher',
         'repo-architect', 'sync-coordinator', 'multi-repo-swarm',
-        'system-architect', 'cicd-engineer'
+        'system-architect', 'cicd-engineer',
       ],
       workflows: ['sparc', 'tdd', 'review', 'deployment', 'release'],
       conventions: [
         'code-style', 'monorepo-structure', 'package-naming',
-        'git-workflow', 'testing-standards', 'versioning', 'documentation'
+        'git-workflow', 'testing-standards', 'versioning', 'documentation',
       ],
       complexity: 'enterprise',
       requirements: {
         nodeVersion: '>=18.0.0',
         packageManager: ['pnpm'],
-        tools: ['turborepo', 'changesets']
-      }
+        tools: ['turborepo', 'changesets'],
+      },
     });
 
     // Python application template
@@ -338,8 +345,8 @@ export class TemplateSelector {
       conventions: ['code-style', 'git-workflow', 'testing-standards'],
       complexity: 'intermediate',
       requirements: {
-        tools: ['poetry', 'pytest']
-      }
+        tools: ['poetry', 'pytest'],
+      },
     });
 
     // Go microservice template
@@ -354,12 +361,12 @@ export class TemplateSelector {
       workflows: ['tdd', 'review', 'deployment'],
       conventions: [
         'code-style', 'package-structure', 'git-workflow',
-        'testing-standards', 'api-design'
+        'testing-standards', 'api-design',
       ],
       complexity: 'advanced',
       requirements: {
-        tools: ['go', 'docker', 'kubernetes']
-      }
+        tools: ['go', 'docker', 'kubernetes'],
+      },
     });
 
     // Rust application template
@@ -375,8 +382,8 @@ export class TemplateSelector {
       conventions: ['code-style', 'cargo-structure', 'git-workflow', 'testing-standards'],
       complexity: 'advanced',
       requirements: {
-        tools: ['cargo', 'rustc']
-      }
+        tools: ['cargo', 'rustc'],
+      },
     });
 
     // Enterprise backend template
@@ -388,25 +395,25 @@ export class TemplateSelector {
       frameworks: ['nestjs', 'spring-boot'],
       features: [
         'typescript', 'testing', 'cicd', 'docker',
-        'monitoring', 'api-docs', 'auth', 'database'
+        'monitoring', 'api-docs', 'auth', 'database',
       ],
       agents: [
         'coder', 'reviewer', 'tester', 'planner',
         'backend-dev', 'api-docs', 'system-architect',
-        'cicd-engineer', 'security-manager', 'performance-benchmarker'
+        'cicd-engineer', 'security-manager', 'performance-benchmarker',
       ],
       workflows: ['sparc', 'tdd', 'review', 'deployment', 'release'],
       conventions: [
         'code-style', 'api-design', 'service-architecture',
         'git-workflow', 'testing-standards', 'security',
-        'documentation', 'deployment'
+        'documentation', 'deployment',
       ],
       complexity: 'enterprise',
       requirements: {
         nodeVersion: '>=18.0.0',
         packageManager: ['pnpm'],
-        tools: ['docker', 'kubernetes', 'terraform']
-      }
+        tools: ['docker', 'kubernetes', 'terraform'],
+      },
     });
   }
 
@@ -425,7 +432,7 @@ export class TemplateSelector {
       workflows: ['tdd', 'review'],
       conventions: ['code-style', 'git-workflow', 'testing-standards'],
       complexity: 'basic',
-      requirements: {}
+      requirements: {},
     };
   }
 
@@ -441,7 +448,7 @@ export class TemplateSelector {
       // Simple version check (could be enhanced)
       if (!this.satisfiesVersion(currentVersion, template.requirements.nodeVersion)) {
         issues.push(
-          `Node.js version ${template.requirements.nodeVersion} required, found ${currentVersion}`
+          `Node.js version ${template.requirements.nodeVersion} required, found ${currentVersion}`,
         );
       }
     }
@@ -457,16 +464,16 @@ export class TemplateSelector {
 
     // Display issues
     if (issues.length > 0) {
-      console.log(chalk.yellow('\n⚠️  Template requirement issues:'));
-      issues.forEach(issue => console.log(chalk.yellow(`  - ${issue}`)));
+      logger.warn(chalk.yellow('\n Template requirement issues:'));
+      issues.forEach(issue => logger.warn(chalk.yellow(`  - ${issue}`)));
 
       const { proceed } = await inquirer.prompt([
         {
           type: 'confirm',
           name: 'proceed',
           message: 'Continue anyway?',
-          default: false
-        }
+          default: false,
+        },
       ]);
 
       return proceed;
@@ -490,8 +497,8 @@ export class TemplateSelector {
    */
   private async isToolAvailable(tool: string): Promise<boolean> {
     try {
-      const { execSync } = require('child_process');
-      execSync(`which ${tool}`, { stdio: 'ignore' });
+      const childProcess = await import('child_process');
+      childProcess.execSync(`which ${tool}`, { stdio: 'ignore' });
       return true;
     } catch {
       return false;

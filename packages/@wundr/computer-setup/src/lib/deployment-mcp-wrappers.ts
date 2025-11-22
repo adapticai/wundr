@@ -5,6 +5,13 @@
  * @module deployment-mcp-wrappers
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+
+import { Logger } from '../utils/logger';
+
+const logger = new Logger({ name: 'deployment-mcp-wrappers' });
+
 // Railway Types
 export interface RailwayDeploymentStatus {
   id: string;
@@ -65,7 +72,7 @@ export const railway = {
   async deployStatus(projectId: string): Promise<RailwayDeploymentStatus> {
     // This is a wrapper that would call mcp__railway__deploy_status
     // In actual usage, Claude Code calls the MCP tool directly
-    console.log(`mcp__railway__deploy_status { projectId: "${projectId}" }`);
+    logger.debug(`mcp__railway__deploy_status { projectId: "${projectId}" }`);
     return {} as RailwayDeploymentStatus;
   },
 
@@ -79,11 +86,7 @@ export const railway = {
     filter?: string;
   }): Promise<RailwayLogEntry[]> {
     const { serviceId, lines = 500, since = '10m', filter } = options;
-    console.log(`mcp__railway__get_logs {
-      serviceId: "${serviceId}",
-      lines: ${lines},
-      since: "${since}"${filter ? `, filter: "${filter}"` : ''}
-    }`);
+    logger.debug(`mcp__railway__get_logs { serviceId: "${serviceId}", lines: ${lines}, since: "${since}"${filter ? `, filter: "${filter}"` : ''} }`);
     return [];
   },
 
@@ -91,7 +94,7 @@ export const railway = {
    * Get recent deployments for a project
    */
   async getDeployments(projectId: string, limit = 5): Promise<RailwayDeploymentStatus[]> {
-    console.log(`mcp__railway__get_deployments { projectId: "${projectId}", limit: ${limit} }`);
+    logger.debug(`mcp__railway__get_deployments { projectId: "${projectId}", limit: ${limit} }`);
     return [];
   },
 
@@ -99,7 +102,7 @@ export const railway = {
    * List all services in a project
    */
   async listServices(projectId: string): Promise<RailwayService[]> {
-    console.log(`mcp__railway__list_services { projectId: "${projectId}" }`);
+    logger.debug(`mcp__railway__list_services { projectId: "${projectId}" }`);
     return [];
   },
 
@@ -107,7 +110,7 @@ export const railway = {
    * Restart a service
    */
   async restartService(serviceId: string): Promise<boolean> {
-    console.log(`mcp__railway__restart_service { serviceId: "${serviceId}" }`);
+    logger.debug(`mcp__railway__restart_service { serviceId: "${serviceId}" }`);
     return true;
   },
 
@@ -115,7 +118,7 @@ export const railway = {
    * Get environment variables
    */
   async getVariables(projectId: string): Promise<Record<string, string>> {
-    console.log(`mcp__railway__get_variables { projectId: "${projectId}" }`);
+    logger.debug(`mcp__railway__get_variables { projectId: "${projectId}" }`);
     return {};
   },
 };
@@ -127,7 +130,7 @@ export const netlify = {
    */
   async deployStatus(siteId?: string, deployId?: string): Promise<NetlifyDeployStatus> {
     const params = siteId ? `siteId: "${siteId}"` : `deployId: "${deployId}"`;
-    console.log(`mcp__netlify__deploy_status { ${params} }`);
+    logger.debug(`mcp__netlify__deploy_status { ${params} }`);
     return {} as NetlifyDeployStatus;
   },
 
@@ -135,7 +138,7 @@ export const netlify = {
    * Fetch build logs for a deploy
    */
   async getBuildLogs(deployId: string): Promise<NetlifyBuildLog> {
-    console.log(`mcp__netlify__get_build_logs { deployId: "${deployId}", includeOutput: true }`);
+    logger.debug(`mcp__netlify__get_build_logs { deployId: "${deployId}", includeOutput: true }`);
     return {} as NetlifyBuildLog;
   },
 
@@ -143,7 +146,7 @@ export const netlify = {
    * Get recent deployments for a site
    */
   async getDeploys(siteId: string, limit = 5): Promise<NetlifyDeployStatus[]> {
-    console.log(`mcp__netlify__get_deploys { siteId: "${siteId}", limit: ${limit} }`);
+    logger.debug(`mcp__netlify__get_deploys { siteId: "${siteId}", limit: ${limit} }`);
     return [];
   },
 
@@ -151,7 +154,7 @@ export const netlify = {
    * List all sites
    */
   async listSites(): Promise<NetlifySite[]> {
-    console.log('mcp__netlify__list_sites {}');
+    logger.debug('mcp__netlify__list_sites {}');
     return [];
   },
 
@@ -159,7 +162,7 @@ export const netlify = {
    * Trigger a new deploy
    */
   async triggerDeploy(siteId: string): Promise<{ deployId: string; state: string }> {
-    console.log(`mcp__netlify__trigger_deploy { siteId: "${siteId}" }`);
+    logger.debug(`mcp__netlify__trigger_deploy { siteId: "${siteId}" }`);
     return { deployId: '', state: 'building' };
   },
 
@@ -167,16 +170,13 @@ export const netlify = {
    * Get serverless function logs
    */
   async getFunctionLogs(siteId: string, functionName: string, limit = 500): Promise<string[]> {
-    console.log(`mcp__netlify__get_function_logs { siteId: "${siteId}", functionName: "${functionName}", limit: ${limit} }`);
+    logger.debug(`mcp__netlify__get_function_logs { siteId: "${siteId}", functionName: "${functionName}", limit: ${limit} }`);
     return [];
   },
 };
 
 // Utility functions
 export function detectPlatform(projectPath: string): 'railway' | 'netlify' | null {
-  const fs = require('fs');
-  const path = require('path');
-
   if (fs.existsSync(path.join(projectPath, 'railway.json')) || process.env.RAILWAY_PROJECT_ID) {
     return 'railway';
   }

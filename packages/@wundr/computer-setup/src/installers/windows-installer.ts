@@ -1,16 +1,21 @@
 /**
  * Windows Platform Installer - Windows-specific tools and configurations
  */
+import * as os from 'os';
+import * as path from 'path';
+
 import { execa } from 'execa';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 import which from 'which';
-import { BaseInstaller } from './index';
-import { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+
+import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
+import type { BaseInstaller } from './index';
 
 export class WindowsInstaller implements BaseInstaller {
   name = 'windows-platform';
+  private readonly logger = new Logger({ name: 'WindowsInstaller' });
 
   isSupported(platform: SetupPlatform): boolean {
     return platform.os === 'win32';
@@ -36,7 +41,7 @@ export class WindowsInstaller implements BaseInstaller {
     }
   }
 
-  async install(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async install(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
     // Install Windows Subsystem for Linux (WSL2)
     await this.installWSL2();
     
@@ -56,7 +61,7 @@ export class WindowsInstaller implements BaseInstaller {
     await this.configureWindows(profile);
   }
 
-  async configure(profile: DeveloperProfile, platform: SetupPlatform): Promise<void> {
+  async configure(profile: DeveloperProfile, _platform: SetupPlatform): Promise<void> {
     await this.configureWindows(profile);
     await this.configurePowerShell(profile);
     await this.configureWSL(profile);
@@ -73,7 +78,7 @@ export class WindowsInstaller implements BaseInstaller {
     }
   }
 
-  getSteps(profile: DeveloperProfile, platform: SetupPlatform): SetupStep[] {
+  getSteps(profile: DeveloperProfile, _platform: SetupPlatform): SetupStep[] {
     const steps: SetupStep[] = [
       {
         id: 'enable-developer-mode',
@@ -84,7 +89,7 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 30,
         validator: () => this.validateDeveloperMode(),
-        installer: () => this.setupDeveloperMode()
+        installer: () => this.setupDeveloperMode(),
       },
       {
         id: 'install-wsl2',
@@ -95,7 +100,7 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: ['enable-developer-mode'],
         estimatedTime: 600,
         validator: () => this.validateWSL2(),
-        installer: () => this.installWSL2()
+        installer: () => this.installWSL2(),
       },
       {
         id: 'install-chocolatey',
@@ -106,7 +111,7 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 60,
         validator: () => this.validateChocolatey(),
-        installer: () => this.installChocolatey()
+        installer: () => this.installChocolatey(),
       },
       {
         id: 'install-scoop',
@@ -117,7 +122,7 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: [],
         estimatedTime: 60,
         validator: () => this.validateScoop(),
-        installer: () => this.installScoop()
+        installer: () => this.installScoop(),
       },
       {
         id: 'install-essential-packages',
@@ -128,7 +133,7 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: ['install-chocolatey', 'install-scoop'],
         estimatedTime: 300,
         validator: () => this.validateEssentialPackages(),
-        installer: () => this.installEssentialPackages()
+        installer: () => this.installEssentialPackages(),
       },
       {
         id: 'install-development-tools',
@@ -139,7 +144,7 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: ['install-essential-packages'],
         estimatedTime: 600,
         validator: () => this.validateDevelopmentTools(profile),
-        installer: () => this.installDevelopmentTools(profile)
+        installer: () => this.installDevelopmentTools(profile),
       },
       {
         id: 'configure-powershell',
@@ -150,7 +155,7 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: ['install-essential-packages'],
         estimatedTime: 45,
         validator: () => this.validatePowerShellConfig(),
-        installer: () => this.configurePowerShell(profile)
+        installer: () => this.configurePowerShell(profile),
       },
       {
         id: 'configure-wsl',
@@ -161,8 +166,8 @@ export class WindowsInstaller implements BaseInstaller {
         dependencies: ['install-wsl2'],
         estimatedTime: 120,
         validator: () => this.validateWSLConfig(),
-        installer: () => this.configureWSL(profile)
-      }
+        installer: () => this.configureWSL(profile),
+      },
     ];
 
     return steps;
@@ -177,10 +182,10 @@ export class WindowsInstaller implements BaseInstaller {
       // Enable Developer Mode via registry
       const regCommand = 'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"';
       await execa('powershell', ['-Command', `Start-Process powershell -ArgumentList '-Command "${regCommand}"' -Verb RunAs`]);
-      
-      console.log('Developer Mode enabled. You may need to restart your computer for changes to take effect.');
-    } catch (error) {
-      console.warn('Failed to enable Developer Mode automatically. Please enable it manually in Windows Settings.');
+
+      this.logger.info('Developer Mode enabled. You may need to restart your computer for changes to take effect.');
+    } catch (_error) {
+      this.logger.warn('Failed to enable Developer Mode automatically. Please enable it manually in Windows Settings.');
     }
   }
 
@@ -188,34 +193,34 @@ export class WindowsInstaller implements BaseInstaller {
     try {
       // Check if WSL is already installed
       await execa('wsl', ['--version']);
-      console.log('WSL2 is already installed');
+      this.logger.info('WSL2 is already installed');
     } catch {
-      console.log('Installing WSL2...');
-      
+      this.logger.info('Installing WSL2...');
+
       // Enable Windows Subsystem for Linux
       await execa('powershell', ['-Command', 'Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart']);
-      
+
       // Enable Virtual Machine Platform
       await execa('powershell', ['-Command', 'Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart']);
-      
+
       // Set WSL 2 as default version
       await execa('wsl', ['--set-default-version', '2']);
-      
+
       // Install Ubuntu (most common distribution)
       await execa('powershell', ['-Command', 'Invoke-WebRequest -Uri https://aka.ms/wslubuntu2204 -OutFile Ubuntu.appx -UseBasicParsing']);
       await execa('powershell', ['-Command', 'Add-AppxPackage .\\Ubuntu.appx']);
       await execa('powershell', ['-Command', 'Remove-Item .\\Ubuntu.appx']);
-      
-      console.log('WSL2 installation complete. Please restart your computer and run Ubuntu from the Start menu to complete setup.');
+
+      this.logger.info('WSL2 installation complete. Please restart your computer and run Ubuntu from the Start menu to complete setup.');
     }
   }
 
   private async installChocolatey(): Promise<void> {
     try {
       await which('choco');
-      console.log('Chocolatey is already installed');
+      this.logger.info('Chocolatey is already installed');
     } catch {
-      console.log('Installing Chocolatey...');
+      this.logger.info('Installing Chocolatey...');
       const installScript = 'Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString(\'https://community.chocolatey.org/install.ps1\'))';
       await execa('powershell', ['-Command', installScript]);
     }
@@ -224,17 +229,17 @@ export class WindowsInstaller implements BaseInstaller {
   private async installScoop(): Promise<void> {
     try {
       await which('scoop');
-      console.log('Scoop is already installed');
+      this.logger.info('Scoop is already installed');
     } catch {
-      console.log('Installing Scoop...');
-      
+      this.logger.info('Installing Scoop...');
+
       // Set execution policy for current user
       await execa('powershell', ['-Command', 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser']);
-      
+
       // Install Scoop
       const installScript = 'irm get.scoop.sh | iex';
       await execa('powershell', ['-Command', installScript]);
-      
+
       // Add useful buckets
       await execa('scoop', ['bucket', 'add', 'extras']);
       await execa('scoop', ['bucket', 'add', 'versions']);
@@ -253,7 +258,7 @@ export class WindowsInstaller implements BaseInstaller {
       'fzf',
       'gh', // GitHub CLI
       'sysinternals',
-      'powertoys'
+      'powertoys',
     ];
 
     const scoopPackages = [
@@ -262,7 +267,7 @@ export class WindowsInstaller implements BaseInstaller {
       'which',
       'vim',
       'nano',
-      'htop'
+      'htop',
     ];
 
     // Install Chocolatey packages
@@ -270,7 +275,7 @@ export class WindowsInstaller implements BaseInstaller {
       try {
         await execa('choco', ['install', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg} via Chocolatey:`, error);
+        this.logger.warn(`Failed to install ${pkg} via Chocolatey:`, error);
       }
     }
 
@@ -279,7 +284,7 @@ export class WindowsInstaller implements BaseInstaller {
       try {
         await execa('scoop', ['install', pkg]);
       } catch (error) {
-        console.warn(`Failed to install ${pkg} via Scoop:`, error);
+        this.logger.warn(`Failed to install ${pkg} via Scoop:`, error);
       }
     }
   }
@@ -309,84 +314,84 @@ export class WindowsInstaller implements BaseInstaller {
     await this.installCommonDevTools(profile);
   }
 
-  private async installFrontendTools(profile: DeveloperProfile): Promise<void> {
+  private async installFrontendTools(_profile: DeveloperProfile): Promise<void> {
     const packages = [
       'googlechrome',
       'firefox',
-      'microsoft-edge'
+      'microsoft-edge',
     ];
 
     for (const pkg of packages) {
       try {
         await execa('choco', ['install', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+        this.logger.warn(`Failed to install ${pkg}:`, error);
       }
     }
   }
 
-  private async installBackendTools(profile: DeveloperProfile): Promise<void> {
+  private async installBackendTools(_profile: DeveloperProfile): Promise<void> {
     const packages = [
       'postman',
       'dbeaver',
-      'redis-desktop-manager'
+      'redis-desktop-manager',
     ];
 
     for (const pkg of packages) {
       try {
         await execa('choco', ['install', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+        this.logger.warn(`Failed to install ${pkg}:`, error);
       }
     }
   }
 
-  private async installDevOpsTools(profile: DeveloperProfile): Promise<void> {
+  private async installDevOpsTools(_profile: DeveloperProfile): Promise<void> {
     const packages = [
       'kubernetes-cli',
       'terraform',
       'ansible',
       'azure-cli',
       'awscli',
-      'gcloudsdk'
+      'gcloudsdk',
     ];
 
     for (const pkg of packages) {
       try {
         await execa('choco', ['install', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+        this.logger.warn(`Failed to install ${pkg}:`, error);
       }
     }
   }
 
-  private async installMobileTools(profile: DeveloperProfile): Promise<void> {
+  private async installMobileTools(_profile: DeveloperProfile): Promise<void> {
     const packages = [
       'androidstudio',
-      'adb'
+      'adb',
     ];
 
     for (const pkg of packages) {
       try {
         await execa('choco', ['install', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+        this.logger.warn(`Failed to install ${pkg}:`, error);
       }
     }
   }
 
-  private async installMLTools(profile: DeveloperProfile): Promise<void> {
+  private async installMLTools(_profile: DeveloperProfile): Promise<void> {
     const packages = [
       'python',
       'anaconda3',
-      'jupyter'
+      'jupyter',
     ];
 
     for (const pkg of packages) {
       try {
         await execa('choco', ['install', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+        this.logger.warn(`Failed to install ${pkg}:`, error);
       }
     }
   }
@@ -430,12 +435,12 @@ export class WindowsInstaller implements BaseInstaller {
       try {
         await execa('choco', ['install', pkg, '-y']);
       } catch (error) {
-        console.warn(`Failed to install ${pkg}:`, error);
+        this.logger.warn(`Failed to install ${pkg}:`, error);
       }
     }
   }
 
-  private async configureWindows(profile: DeveloperProfile): Promise<void> {
+  private async configureWindows(_profile: DeveloperProfile): Promise<void> {
     // Configure Windows for development
     const registryCommands = [
       // Show file extensions
@@ -452,24 +457,24 @@ export class WindowsInstaller implements BaseInstaller {
       try {
         await execa('powershell', ['-Command', cmd]);
       } catch (error) {
-        console.warn(`Failed to execute registry command: ${cmd}`, error);
+        this.logger.warn(`Failed to execute registry command: ${cmd}`, error);
       }
     }
   }
 
-  private async configurePowerShell(profile: DeveloperProfile): Promise<void> {
+  private async configurePowerShell(_profile: DeveloperProfile): Promise<void> {
     // Install PowerShell modules
     const modules = [
       'posh-git',
       'oh-my-posh',
-      'PSReadLine'
+      'PSReadLine',
     ];
 
     for (const module of modules) {
       try {
         await execa('powershell', ['-Command', `Install-Module -Name ${module} -Force -SkipPublisherCheck`]);
       } catch (error) {
-        console.warn(`Failed to install PowerShell module ${module}:`, error);
+        this.logger.warn(`Failed to install PowerShell module ${module}:`, error);
       }
     }
 
@@ -517,7 +522,7 @@ function gpl { git pull }
     try {
       // Check if WSL is running
       await execa('wsl', ['--list', '--running']);
-      
+
       // Configure .wslconfig
       const wslConfigPath = path.join(os.homedir(), '.wslconfig');
       const wslConfig = `
@@ -529,12 +534,12 @@ localhostForwarding=true
 [user]
 default=${profile.name.toLowerCase().replace(/\s+/g, '')}
 `;
-      
+
       await fs.writeFile(wslConfigPath, wslConfig.trim());
-      
-      console.log('WSL configuration complete. Consider setting up your preferred Linux distribution.');
+
+      this.logger.info('WSL configuration complete. Consider setting up your preferred Linux distribution.');
     } catch (error) {
-      console.warn('WSL configuration failed:', error);
+      this.logger.warn('WSL configuration failed:', error);
     }
   }
 

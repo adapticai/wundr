@@ -4,22 +4,42 @@
  */
 
 import { EventEmitter } from 'events';
-import { getLogger } from '../utils/logger';
+import * as path from 'path';
+
 import { WundrConfigManager } from '@wundr.io/config';
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import { 
-  DeveloperProfile, 
-  SetupOptions, 
-  SetupResult, 
+
+import { ConfiguratorService } from '../configurators';
+import { InstallerRegistry } from '../installers';
+import { ProfileManager } from '../profiles';
+import { getLogger } from '../utils/logger';
+import { SetupValidator } from '../validators';
+
+import type {
+  DeveloperProfile,
+  SetupOptions,
+  SetupReport,
+  SetupResult,
   SetupStep,
   SetupProgress,
-  SetupPlatform 
+  SetupPlatform,
 } from '../types';
-import { ProfileManager } from '../profiles';
-import { InstallerRegistry } from '../installers';
-import { ConfiguratorService } from '../configurators';
-import { SetupValidator } from '../validators';
+
+/**
+ * Configuration structure for profile-specific tools
+ * Note: This extends DeveloperProfile.tools with simplified boolean flags
+ */
+interface ProfileToolsConfig {
+  languages: Record<string, boolean>;
+  packageManagers: Record<string, boolean>;
+  git: { enabled: boolean };
+  containers: { docker: boolean; dockerCompose: boolean; kubernetes?: boolean; podman?: boolean };
+  cloudCLIs: Record<string, boolean>;
+  databases: Record<string, boolean>;
+  monitoring: Record<string, boolean>;
+  communication: { slack?: boolean; teams?: boolean; discord?: boolean; zoom?: boolean };
+  frameworks?: Record<string, boolean>;
+}
 
 const logger = getLogger('computer-setup');
 
@@ -36,10 +56,10 @@ export class ComputerSetupManager extends EventEmitter {
     currentStep: '',
     percentage: 0,
     estimatedTimeRemaining: 0,
-    logs: []
+    logs: [],
   };
 
-  constructor(configPath?: string) {
+  constructor(_configPath?: string) {
     super();
     this.configManager = new WundrConfigManager({});
     this.profileManager = new ProfileManager(this.configManager);
@@ -47,7 +67,7 @@ export class ComputerSetupManager extends EventEmitter {
       os: process.platform === 'win32' ? 'win32' : process.platform === 'darwin' ? 'darwin' : 'linux',
       arch: process.arch as 'x64' | 'arm64',
       node: process.version,
-      shell: process.env.SHELL || 'bash'
+      shell: process.env.SHELL || 'bash',
     };
     this.installerRegistry = new InstallerRegistry(platform);
     this.configuratorService = new ConfiguratorService();
@@ -89,12 +109,13 @@ export class ComputerSetupManager extends EventEmitter {
       'fullstackdeveloper': 'Full Stack Developer',
       'devops': 'DevOps Engineer',
       'ml': 'Machine Learning Engineer',
-      'mobile': 'Mobile Developer'
+      'mobile': 'Mobile Developer',
     };
 
     const fullProfileName = profileMap[normalizedName] || profileName;
     
     // Return a default profile based on the name
+    // Use unknown cast to handle simplified ProfileToolsConfig -> DeveloperProfile.tools type conversion
     return {
       id: normalizedName,
       name: fullProfileName,
@@ -109,18 +130,18 @@ export class ComputerSetupManager extends EventEmitter {
           userEmail: '',
           signCommits: true,
           defaultBranch: 'main',
-          aliases: {}
+          aliases: {},
         },
         aiTools: {
           claudeCode: true,
           claudeFlow: true,
           mcpTools: ['all'],
           swarmAgents: ['default'],
-          memoryAllocation: '2GB'
-        }
+          memoryAllocation: '2GB',
+        },
       },
-      tools: this.getToolsForProfile(normalizedName),
-      createdAt: new Date()
+      tools: this.getToolsForProfile(normalizedName) as unknown as DeveloperProfile['tools'],
+      createdAt: new Date(),
     } as DeveloperProfile;
   }
 
@@ -140,7 +161,7 @@ export class ComputerSetupManager extends EventEmitter {
   /**
    * Get tools configuration for a profile
    */
-  private getToolsForProfile(profile: string): any {
+  private getToolsForProfile(profile: string): ProfileToolsConfig {
     const baseTools = {
       languages: { node: true, typescript: true, python: false },
       packageManagers: { npm: true, pnpm: true, yarn: false, brew: process.platform === 'darwin' },
@@ -149,7 +170,7 @@ export class ComputerSetupManager extends EventEmitter {
       cloudCLIs: { aws: false, gcloud: false, azure: false },
       databases: { postgresql: false, redis: false, mongodb: false },
       monitoring: { datadog: false, newRelic: false, sentry: false },
-      communication: { slack: false }
+      communication: { slack: false },
     };
 
     switch (profile) {
@@ -157,13 +178,13 @@ export class ComputerSetupManager extends EventEmitter {
         return {
           ...baseTools,
           languages: { ...baseTools.languages, javascript: true },
-          frameworks: { react: true, vue: true, nextjs: true }
+          frameworks: { react: true, vue: true, nextjs: true },
         };
       case 'backend':
         return {
           ...baseTools,
           languages: { ...baseTools.languages, python: true },
-          databases: { ...baseTools.databases, postgresql: true, redis: true }
+          databases: { ...baseTools.databases, postgresql: true, redis: true },
         };
       case 'fullstack':
       case 'fullstackdeveloper':
@@ -172,13 +193,13 @@ export class ComputerSetupManager extends EventEmitter {
           languages: { ...baseTools.languages, javascript: true, python: true },
           containers: { ...baseTools.containers, docker: true, dockerCompose: true },
           frameworks: { react: true, nextjs: true },
-          databases: { ...baseTools.databases, postgresql: true, redis: true }
+          databases: { ...baseTools.databases, postgresql: true, redis: true },
         };
       case 'devops':
         return {
           ...baseTools,
           containers: { ...baseTools.containers, kubernetes: true },
-          cloudCLIs: { ...baseTools.cloudCLIs, aws: true, gcloud: true }
+          cloudCLIs: { ...baseTools.cloudCLIs, aws: true, gcloud: true },
         };
       default:
         return baseTools;
@@ -197,14 +218,14 @@ export class ComputerSetupManager extends EventEmitter {
       skippedSteps: [],
       warnings: [],
       errors: [],
-      duration: 0
+      duration: 0,
     };
 
     try {
       logger.info('Starting computer setup', { 
         profile: options.profile.name,
         platform: options.platform.os,
-        mode: options.mode 
+        mode: options.mode, 
       });
 
       // Validate platform compatibility
@@ -238,7 +259,7 @@ export class ComputerSetupManager extends EventEmitter {
           
           this.progress.completedSteps++;
           this.progress.percentage = Math.round(
-            (this.progress.completedSteps / this.progress.totalSteps) * 100
+            (this.progress.completedSteps / this.progress.totalSteps) * 100,
           );
         } catch (error) {
           logger.error(`Failed to execute step: ${step.name}`, error);
@@ -263,7 +284,7 @@ export class ComputerSetupManager extends EventEmitter {
       logger.info('Computer setup completed', { 
         success: result.success,
         completed: result.completedSteps.length,
-        failed: result.failedSteps.length 
+        failed: result.failedSteps.length, 
       });
 
     } catch (error) {
@@ -291,7 +312,7 @@ export class ComputerSetupManager extends EventEmitter {
    */
   private async generateSetupSteps(
     profile: DeveloperProfile, 
-    options: SetupOptions
+    options: SetupOptions,
   ): Promise<SetupStep[]> {
     const steps: SetupStep[] = [];
 
@@ -322,7 +343,7 @@ export class ComputerSetupManager extends EventEmitter {
     }
     if (profile.preferences?.aiTools?.claudeFlow) {
       steps.push(...await this.installerRegistry.getClaudeFlowSteps(
-        profile.preferences.aiTools.swarmAgents || []
+        profile.preferences.aiTools.swarmAgents || [],
       ));
     }
 
@@ -334,14 +355,14 @@ export class ComputerSetupManager extends EventEmitter {
     // Git configuration
     if (profile.preferences?.gitConfig) {
       steps.push(...await this.configuratorService.getGitConfigSteps(
-        profile.preferences.gitConfig
+        profile.preferences.gitConfig,
       ));
     }
 
     // Editor setup
     if (profile.preferences?.editor) {
       steps.push(...await this.configuratorService.getEditorSteps(
-        profile.preferences?.editor
+        profile.preferences?.editor,
       ));
     }
 
@@ -358,7 +379,9 @@ export class ComputerSetupManager extends EventEmitter {
     const visiting = new Set<string>();
 
     const visit = (step: SetupStep) => {
-      if (visited.has(step.id)) return;
+      if (visited.has(step.id)) {
+return;
+}
       if (visiting.has(step.id)) {
         throw new Error(`Circular dependency detected: ${step.id}`);
       }
@@ -367,7 +390,9 @@ export class ComputerSetupManager extends EventEmitter {
 
       for (const depId of step.dependencies) {
         const dep = steps.find(s => s.id === depId);
-        if (dep) visit(dep);
+        if (dep) {
+visit(dep);
+}
       }
 
       visiting.delete(step.id);
@@ -451,7 +476,7 @@ export class ComputerSetupManager extends EventEmitter {
   /**
    * Run post-setup tasks
    */
-  private async runPostSetup(profile: DeveloperProfile, options: SetupOptions): Promise<void> {
+  private async runPostSetup(profile: DeveloperProfile, _options: SetupOptions): Promise<void> {
     logger.info('Running post-setup tasks');
 
     // Save profile for future use
@@ -473,7 +498,7 @@ export class ComputerSetupManager extends EventEmitter {
     // Configure AI agents
     if (profile.preferences.aiTools.claudeFlow) {
       await this.configuratorService.configureClaudeFlow(
-        profile.preferences.aiTools
+        profile.preferences.aiTools,
       );
     }
 
@@ -486,8 +511,8 @@ export class ComputerSetupManager extends EventEmitter {
   private async generateReport(
     profile: DeveloperProfile,
     options: SetupOptions,
-    result: SetupResult
-  ): Promise<any> {
+    result: SetupResult,
+  ): Promise<SetupReport> {
     const report = {
       timestamp: new Date(),
       profile: profile,
@@ -495,7 +520,7 @@ export class ComputerSetupManager extends EventEmitter {
       installedTools: await this.validator.getInstalledTools(),
       configurations: await this.configuratorService.getConfigurationChanges(),
       credentials: await this.validator.getCredentialSetups(),
-      nextSteps: this.generateNextSteps(profile, result)
+      nextSteps: this.generateNextSteps(profile, result),
     };
 
     // Save report to file
@@ -503,7 +528,7 @@ export class ComputerSetupManager extends EventEmitter {
       process.env.HOME || '',
       '.wundr',
       'setup-reports',
-      `setup-${Date.now()}.json`
+      `setup-${Date.now()}.json`,
     );
     await fs.ensureDir(path.dirname(reportPath));
     await fs.writeJson(reportPath, report, { spaces: 2 });
@@ -530,7 +555,7 @@ export class ComputerSetupManager extends EventEmitter {
     }
     
     if (result.failedSteps.length > 0) {
-      steps.push(`5. Review failed steps and run "wundr setup --retry" to complete`);
+      steps.push('5. Review failed steps and run "wundr setup --retry" to complete');
     }
 
     steps.push('6. Review team onboarding documentation');
