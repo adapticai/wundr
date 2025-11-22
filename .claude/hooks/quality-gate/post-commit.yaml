@@ -1,0 +1,99 @@
+# =============================================================================
+# Quality Gate: Post-Commit Hook
+# =============================================================================
+# Triggered after a commit is successfully created. Runs verification checks
+# that don't need to block the commit but provide feedback on code quality.
+#
+# These checks run asynchronously and report results to the session manager.
+# =============================================================================
+---
+name: quality-gate-post-commit
+trigger: post_commit
+scope: sub_agents
+
+checks:
+  - name: unit_tests
+    command: "npm run test"
+    blocking: false
+    description: "Execute unit test suite to verify functionality"
+    timeout: 300000
+    retry:
+      attempts: 2
+      delay: 2000
+    coverage:
+      enabled: true
+      minThreshold: 80
+
+  - name: coverage_check
+    command: "npm run test:coverage"
+    blocking: false
+    description: "Generate and verify test coverage metrics"
+    timeout: 300000
+    thresholds:
+      statements: 80
+      branches: 75
+      functions: 80
+      lines: 80
+    reportFormat:
+      - lcov
+      - text-summary
+      - json
+
+  - name: documentation_check
+    command: "npm run docs:validate"
+    blocking: false
+    description: "Validate inline documentation and JSDoc comments"
+    timeout: 60000
+    continueOnError: true
+
+  - name: dependency_audit
+    command: "npm audit --audit-level=moderate"
+    blocking: false
+    description: "Check for known vulnerabilities in dependencies"
+    timeout: 120000
+    continueOnError: true
+    severity:
+      warn: moderate
+      fail: high
+
+  - name: metrics_collector
+    type: agent
+    agent: metrics-collector
+    blocking: false
+    description: "Collect and store commit quality metrics"
+    config:
+      metrics:
+        - linesChanged
+        - filesModified
+        - testsPassing
+        - coveragePercentage
+        - complexityDelta
+      storage: memory
+      memoryKey: "swarm/metrics/commit"
+
+failurePolicy:
+  onTestFail: "report_and_continue"
+  onCoverageFail: "warn_and_continue"
+  onAuditFail: "escalate_if_critical"
+
+notifications:
+  onSuccess: true
+  onFailure: true
+  channels:
+    - type: console
+    - type: agent_notification
+      target: session_manager
+    - type: memory_store
+      key: "swarm/commits/latest"
+
+reporting:
+  generateSummary: true
+  includeMetrics: true
+  storeTrends: true
+
+metadata:
+  version: "1.0.0"
+  author: "wundr-team"
+  lastUpdated: "2025-11-22"
+---
+

@@ -1,0 +1,76 @@
+# =============================================================================
+# Quality Gate: Pre-Commit Hook
+# =============================================================================
+# Triggered before any commit is finalized. Ensures code quality standards
+# are met before changes are persisted to the repository.
+#
+# Blocking checks will prevent the commit if they fail.
+# Non-blocking checks report warnings but allow the commit to proceed.
+# =============================================================================
+---
+name: quality-gate-pre-commit
+trigger: pre_commit
+scope: sub_agents
+
+checks:
+  - name: lint
+    command: "npm run lint"
+    blocking: true
+    description: "Enforce code style and formatting standards"
+    timeout: 60000
+    retry:
+      attempts: 1
+      delay: 1000
+
+  - name: type_check
+    command: "npm run typecheck"
+    blocking: true
+    description: "Verify TypeScript type safety"
+    timeout: 120000
+    retry:
+      attempts: 0
+
+  - name: static_analysis
+    command: "npm run analyze"
+    blocking: false
+    description: "Run static code analysis for potential issues"
+    timeout: 180000
+    continueOnError: true
+
+  - name: reviewer_agent
+    type: agent
+    agent: code-reviewer
+    blocking: true
+    description: "AI-powered code review for quality and best practices"
+    config:
+      autoApproveIf:
+        - linesChanged < 50
+        - confidence > 0.95
+      escalateIf:
+        - securityConcern: true
+        - architecturalChange: true
+      reviewScope:
+        - codeStyle: true
+        - security: true
+        - performance: true
+        - maintainability: true
+
+failurePolicy:
+  onLintFail: "auto_fix_and_retry"
+  onTypeCheckFail: "block_and_report"
+  onReviewerReject: "escalate_to_session_manager"
+
+notifications:
+  onSuccess: false
+  onFailure: true
+  channels:
+    - type: console
+    - type: agent_notification
+      target: session_manager
+
+metadata:
+  version: "1.0.0"
+  author: "wundr-team"
+  lastUpdated: "2025-11-22"
+---
+

@@ -1,0 +1,162 @@
+# =============================================================================
+# Quality Gate: Pre-Push Hook
+# =============================================================================
+# Triggered before pushing commits to a remote repository. Performs thorough
+# validation including integration tests and security scanning to ensure
+# only production-ready code reaches the remote.
+#
+# All blocking checks must pass before the push can proceed.
+# =============================================================================
+---
+name: quality-gate-pre-push
+trigger: pre_push
+scope: sub_agents
+
+checks:
+  - name: build_verification
+    command: "npm run build"
+    blocking: true
+    description: "Verify the project builds successfully"
+    timeout: 300000
+    retry:
+      attempts: 1
+      delay: 2000
+
+  - name: integration_tests
+    command: "npm run test:integration"
+    blocking: true
+    description: "Execute integration test suite"
+    timeout: 600000
+    retry:
+      attempts: 1
+      delay: 5000
+    parallelism:
+      enabled: true
+      maxWorkers: 4
+
+  - name: e2e_tests
+    command: "npm run test:e2e"
+    blocking: false
+    description: "Run end-to-end test scenarios"
+    timeout: 900000
+    continueOnError: true
+    environments:
+      - staging
+
+  - name: security_scan
+    command: "npm run security:scan"
+    blocking: true
+    description: "Scan codebase for security vulnerabilities"
+    timeout: 300000
+    scanners:
+      - type: sast
+        tool: "semgrep"
+        ruleset: "auto"
+      - type: secrets
+        tool: "gitleaks"
+        config: ".gitleaks.toml"
+      - type: dependencies
+        tool: "npm-audit"
+        level: "high"
+    severity:
+      block: critical
+      warn: high
+      ignore: low
+
+  - name: license_compliance
+    command: "npm run license:check"
+    blocking: false
+    description: "Verify license compliance for all dependencies"
+    timeout: 60000
+    continueOnError: true
+    allowedLicenses:
+      - MIT
+      - Apache-2.0
+      - BSD-2-Clause
+      - BSD-3-Clause
+      - ISC
+    deniedLicenses:
+      - GPL-3.0
+      - AGPL-3.0
+
+  - name: performance_regression
+    command: "npm run perf:test"
+    blocking: false
+    description: "Check for performance regressions"
+    timeout: 300000
+    continueOnError: true
+    thresholds:
+      maxResponseTime: 500
+      maxMemoryUsage: 256
+      maxCpuUsage: 80
+
+  - name: security_reviewer
+    type: agent
+    agent: security-reviewer
+    blocking: true
+    description: "AI-powered security review of changes"
+    config:
+      scanPatterns:
+        - authentication
+        - authorization
+        - dataValidation
+        - secretsExposure
+        - injectionVulnerabilities
+      autoApproveIf:
+        - noSecurityConcerns: true
+        - confidence > 0.98
+      escalateIf:
+        - criticalVulnerability: true
+        - authenticationChange: true
+        - apiExposure: true
+
+  - name: architecture_validator
+    type: agent
+    agent: architecture-validator
+    blocking: false
+    description: "Validate architectural consistency"
+    config:
+      checks:
+        - dependencyDirection
+        - layerBoundaries
+        - circularDependencies
+        - moduleComplexity
+      baselineRef: "main"
+
+failurePolicy:
+  onBuildFail: "block_and_report"
+  onIntegrationFail: "block_and_report"
+  onSecurityFail: "block_and_escalate"
+  onPerformanceFail: "warn_and_continue"
+  onArchitectureFail: "warn_and_report"
+
+notifications:
+  onSuccess: true
+  onFailure: true
+  channels:
+    - type: console
+    - type: agent_notification
+      target: session_manager
+    - type: memory_store
+      key: "swarm/pushes/latest"
+
+reporting:
+  generateReport: true
+  format: "markdown"
+  includeMetrics: true
+  includeScanResults: true
+  archiveResults: true
+
+rollback:
+  enabled: true
+  strategy: "automatic"
+  conditions:
+    - criticalSecurityIssue: true
+    - buildFailure: true
+
+metadata:
+  version: "1.0.0"
+  author: "wundr-team"
+  lastUpdated: "2025-11-22"
+---
+

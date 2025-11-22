@@ -1,0 +1,55 @@
+version: "1.0.0"
+
+environment:
+  name: "risk-twin"
+  description: "Parallel simulated system for governance validation"
+
+simulation:
+  accelerationFactor: 10 # 10x speed (30 days = 3 hours)
+  simulatedDays: 30 # Days to simulate per validation
+  productionDelay: 48 # Hours behind production
+
+divergence:
+  thresholds:
+    confidence: 0.95 # Confidence interval threshold
+    earlyDeviation: 0.15 # 15% deviation triggers alert
+    statisticalDrift: 0.20 # 20% drift is significant
+
+  earlyWarning:
+    windowHours: 48 # Check first 48 simulated hours
+    deviationLimit: 0.15 # 15% deviation in early window
+
+novelty:
+  enabled: true
+  sensitivityThreshold: 0.80 # Novelty score threshold
+
+  # Limitations (documented for transparency)
+  knownLimitations:
+    - "Cannot detect black swan events"
+    - "Non-stationary environments may fool detector"
+    - "Emergent multi-agent interactions at scale not captured"
+
+approval:
+  green:
+    maxDivergence: 0.10
+    maxNoveltyScore: 0.30
+    autoApprove: true
+
+  yellow:
+    maxDivergence: 0.20
+    maxNoveltyScore: 0.60
+    requireGuardianReview: true
+
+  red:
+    # Above yellow thresholds
+    autoReject: true
+    requireArchitectInvestigation: true
+
+mitigation:
+  highUncertainty:
+    deploymentScope: "canary_5_percent"
+    humanOversight: "guardian_every_decision"
+    rollbackCapability: "single_click"
+
+  # Canary release percentages
+  canaryStages: [5, 10, 25, 50, 100]

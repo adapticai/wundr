@@ -45,6 +45,8 @@
     "@wundr.io/computer-setup": "^1.0.0",
     "@wundr.io/config": "^1.0.0",
     "@wundr.io/core": "^1.0.0",
+    "@wundr.io/governance": "^1.0.0",
+    "@wundr/guardian-dashboard": "^1.0.0",
     "axios": "^1.11.0",
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.11.0",

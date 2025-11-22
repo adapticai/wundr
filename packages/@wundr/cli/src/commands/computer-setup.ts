@@ -6,8 +6,11 @@
 import { ComputerSetupManager } from '@wundr.io/computer-setup';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import * as fs from 'fs/promises';
 import inquirer from 'inquirer';
+import * as os from 'os';
 import ora from 'ora';
+import * as path from 'path';
 // import { getLogger } from '@wundr/core';
 const logger = { info: console.log, error: console.error, warn: console.warn };
 
@@ -18,17 +21,17 @@ export function createComputerSetupCommand(): Command {
     .alias('setup-machine')
     .alias('provision')
     .description(
-      'Set up a new developer machine with all required tools and configurations',
+      'Set up a new developer machine with all required tools and configurations'
     )
     .option(
       '-p, --profile <profile>',
-      'Use a specific profile (frontend, backend, fullstack, devops, ml)',
+      'Use a specific profile (frontend, backend, fullstack, devops, ml)'
     )
     .option('-t, --team <team>', 'Apply team-specific configurations')
     .option(
       '-m, --mode <mode>',
       'Setup mode (interactive, automated, minimal)',
-      'interactive',
+      'interactive'
     )
     .option('--dry-run', 'Show what would be installed without making changes')
     .option('--skip-existing', 'Skip tools that are already installed')
@@ -88,7 +91,7 @@ async function runComputerSetup(options: any): Promise<void> {
       profile = await manager.getProfile(options.profile);
       if (!profile) {
         console.log(
-          chalk.yellow(`Profile '${options.profile}' not found. Using default.`),
+          chalk.yellow(`Profile '${options.profile}' not found. Using default.`)
         );
         profile = await manager.getDefaultProfile();
       }
@@ -111,14 +114,14 @@ async function runComputerSetup(options: any): Promise<void> {
     console.log(chalk.white('Role:'), chalk.green(profile.role));
     console.log(
       chalk.white('Platform:'),
-      chalk.green(`${platform.os} ${platform.arch}`),
+      chalk.green(`${platform.os} ${platform.arch}`)
     );
     console.log(chalk.white('Mode:'), chalk.green(options.mode));
     console.log(chalk.gray('━'.repeat(50)));
 
     if (options.dryRun) {
       console.log(
-        chalk.yellow('\n⚠️  DRY RUN MODE - No changes will be made\n'),
+        chalk.yellow('\n⚠️  DRY RUN MODE - No changes will be made\n')
       );
     }
 
@@ -145,7 +148,7 @@ async function runComputerSetup(options: any): Promise<void> {
       console.log(chalk.cyan(`\n[${bar}] ${progress.percentage}%`));
       console.log(chalk.gray(`Current: ${progress.currentStep}`));
       console.log(
-        chalk.gray(`Steps: ${progress.completedSteps}/${progress.totalSteps}`),
+        chalk.gray(`Steps: ${progress.completedSteps}/${progress.totalSteps}`)
       );
     });
 
@@ -175,11 +178,11 @@ async function runComputerSetup(options: any): Promise<void> {
 
     console.log(chalk.white('Summary:'));
     console.log(
-      chalk.green(`  ✓ Completed: ${result.completedSteps?.length || 0} steps`),
+      chalk.green(`  ✓ Completed: ${result.completedSteps?.length || 0} steps`)
     );
     if (result.skippedSteps && result.skippedSteps.length > 0) {
       console.log(
-        chalk.yellow(`  ⊘ Skipped: ${result.skippedSteps.length} steps`),
+        chalk.yellow(`  ⊘ Skipped: ${result.skippedSteps.length} steps`)
       );
     }
     if (result.failedSteps && result.failedSteps.length > 0) {
@@ -194,12 +197,29 @@ async function runComputerSetup(options: any): Promise<void> {
     if (result.errors && result.errors.length > 0) {
       console.log(chalk.red('\n❌ Errors:'));
       result.errors.forEach(e =>
-        console.log(chalk.red(`  - ${(e as any)?.message || e}`)),
+        console.log(chalk.red(`  - ${(e as any)?.message || e}`))
       );
     }
 
     if (result.report) {
       console.log(chalk.cyan('\n📄 Setup report generated successfully'));
+    }
+
+    // Set up Fleet Mode if enabled
+    if (profile.preferences?.aiTools?.fleetMode) {
+      try {
+        await setupFleetMode(profile as DeveloperProfile);
+      } catch (fleetError) {
+        console.error(
+          chalk.red('\n⚠️ Fleet Mode setup encountered issues:'),
+          fleetError
+        );
+        console.log(
+          chalk.yellow(
+            'You can retry with: wundr computer-setup --profile <your-profile>'
+          )
+        );
+      }
     }
 
     // Display next steps
@@ -313,6 +333,13 @@ async function createInteractiveProfile(): Promise<any> {
     },
     {
       type: 'confirm',
+      name: 'fleetMode',
+      message: 'Enable Fleet-Scale Autonomous Engineering mode?',
+      default: false,
+      when: (answers: any) => answers.aiTools,
+    },
+    {
+      type: 'confirm',
       name: 'slack',
       message: 'Do you need Slack configuration?',
       default: true,
@@ -342,6 +369,7 @@ async function createInteractiveProfile(): Promise<any> {
         mcpTools: answers.aiTools ? ['all'] : [],
         swarmAgents: answers.aiTools ? ['default'] : [],
         memoryAllocation: '2GB',
+        fleetMode: answers.fleetMode || false,
       },
     },
     tools: {
@@ -425,6 +453,448 @@ function buildLanguageConfig(languages: string[]): any {
   return config;
 }
 
+/**
+ * Developer profile interface with fleet mode support
+ */
+interface DeveloperProfile {
+  name: string;
+  email: string;
+  role: string;
+  team?: string;
+  preferences: {
+    shell: string;
+    editor: string;
+    theme: string;
+    gitConfig: {
+      userName: string;
+      userEmail: string;
+      signCommits: boolean;
+      defaultBranch: string;
+      aliases: Record<string, string>;
+    };
+    aiTools: {
+      claudeCode: boolean;
+      claudeFlow: boolean;
+      mcpTools: string[];
+      swarmAgents: string[];
+      memoryAllocation: string;
+      fleetMode: boolean;
+    };
+  };
+  tools: Record<string, unknown>;
+}
+
+/**
+ * Sets up Fleet-Scale Autonomous Engineering mode
+ * Installs VP Daemon scripts, Memory Bank templates, and IPRE governance defaults
+ */
+async function setupFleetMode(profile: DeveloperProfile): Promise<void> {
+  const wundrDir = path.join(os.homedir(), '.wundr');
+  const vpDaemonDir = path.join(wundrDir, 'vp-daemon');
+  const governanceDir = path.join(wundrDir, 'governance');
+  const templatesDir = path.join(wundrDir, 'templates');
+
+  console.log(
+    chalk.cyan('\n🚀 Setting up Fleet-Scale Autonomous Engineering mode...\n')
+  );
+
+  // Create directory structure
+  await fs.mkdir(vpDaemonDir, { recursive: true });
+  await fs.mkdir(governanceDir, { recursive: true });
+  await fs.mkdir(path.join(templatesDir, 'memory-bank'), { recursive: true });
+  await fs.mkdir(path.join(templatesDir, 'sub-agents'), { recursive: true });
+
+  // 1. Install VP Daemon configuration
+  const vpConfig = {
+    version: '1.0.0',
+    identity: {
+      name: profile.name,
+      email: profile.email,
+      role: 'VP-Supervisor',
+    },
+    resourceLimits: {
+      maxSessions: 10,
+      tokenBudget: {
+        subscription: 0.8, // 80% for VP & Session Managers
+        api: 0.2, // 20% for sub-agent swarms
+      },
+    },
+    systemLimits: {
+      fileDescriptors: 65000,
+      diskSpaceBufferGB: 10,
+      maxWorktreesPerMachine: 200,
+    },
+    measurableObjectives: {
+      responseTime: '<30s to Slack mentions',
+      rateLimit: "Zero 'Rate Limit Exceeded' per week",
+      routingAccuracy: '100% correct task routing',
+    },
+    hardConstraints: [
+      'Never exhaust API quota',
+      'Always maintain audit trail',
+      'Escalate blocked requests within 5 minutes',
+    ],
+  };
+
+  await fs.writeFile(
+    path.join(vpDaemonDir, 'config.yaml'),
+    generateYamlContent(vpConfig),
+    'utf-8'
+  );
+  console.log(chalk.green('  ✓ VP Daemon configuration installed'));
+
+  // 2. Copy VP Charter template
+  const vpCharter = `---
+name: vp-supervisor
+role: Tier1-VP
+identity:
+  name: '${profile.name}'
+  email: '${profile.email}'
+  slackHandle: '@vp-supervisor'
+
+responsibilities:
+  - triage_requests
+  - manage_session_lifecycle
+  - allocate_token_budget
+  - human_communication
+  - fleet_status_reporting
+
+resourceLimits:
+  maxSessions: 10
+  tokenBudget:
+    subscription: 80%
+    api: 20%
+
+measurableObjectives:
+  responseTime: '<30s to Slack mentions'
+  rateLimit: "Zero 'Rate Limit Exceeded' per week"
+  routingAccuracy: '100% correct task routing'
+
+hardConstraints:
+  - 'Never exhaust API quota'
+  - 'Always maintain audit trail'
+  - 'Escalate blocked requests within 5 minutes'
+---
+`;
+
+  await fs.writeFile(
+    path.join(vpDaemonDir, 'vp-charter.md'),
+    vpCharter,
+    'utf-8'
+  );
+  console.log(chalk.green('  ✓ VP Charter template deployed'));
+
+  // 3. Set up token budgeting configuration
+  const tokenBudgetConfig = {
+    version: '1.0.0',
+    subscription: {
+      type: 'claude-code-max-20x',
+      promptsPerFiveHours: 800,
+      warningThreshold: 0.8,
+      criticalThreshold: 0.95,
+    },
+    api: {
+      monthlyBudget: 500,
+      haikuRatePerMillion: 0.25,
+      sonnetRatePerMillion: 3.0,
+    },
+    modelAllocation: {
+      tier1: {
+        model: 'claude-3-5-sonnet',
+        source: 'subscription',
+        priority: 'critical',
+      },
+      tier2: {
+        model: 'claude-3-5-sonnet',
+        source: 'subscription',
+        priority: 'high',
+      },
+      tier3: {
+        model: 'claude-3-5-haiku',
+        source: 'api',
+        priority: 'normal',
+      },
+    },
+    throttlingPolicy: {
+      onWarning: ['pause_non_critical_sessions', 'queue_new_requests'],
+      onCritical: ['pause_all_except_critical', 'notify_vp_human'],
+    },
+  };
+
+  await fs.writeFile(
+    path.join(vpDaemonDir, 'token-budget.yaml'),
+    generateYamlContent(tokenBudgetConfig),
+    'utf-8'
+  );
+  console.log(chalk.green('  ✓ Token budgeting configuration set up'));
+
+  // 4. Deploy Memory Bank templates
+  const sessionTemplate = `# Active Context - Session {{SESSION_ID}}
+
+## Current Focus
+<!-- Updated by session manager -->
+
+## Working Memory
+- Last action:
+- Next planned step:
+- Blockers:
+
+## Context Window State
+- Tokens used: X / 200,000
+- Compression needed: Yes/No
+
+## Handoff Notes
+<!-- For session resumption -->
+`;
+
+  const progressTemplate = `# Progress Tracker - Session {{SESSION_ID}}
+
+## Milestones
+| Status | Milestone | Target Date | Notes |
+|--------|-----------|-------------|-------|
+
+## Completed Tasks
+<!-- Archive of completed work -->
+
+## Blockers
+<!-- Current impediments -->
+`;
+
+  const subAgentDelegationTemplate = `# Sub-Agent Delegation Tracker
+
+## Active Sub-Agents
+| ID | Type | Task | Status | Worktree | Started |
+|----|------|------|--------|----------|---------|
+
+## Completed Tasks
+<!-- Archive of completed sub-agent work -->
+
+## Resource Usage
+- Active worktrees: X / 20
+- API calls (session): X
+`;
+
+  const ipreAlignmentTemplate = `# IPRE Alignment State
+
+## Active Policies
+<!-- Hard constraints for this session -->
+
+## Reward Weights
+\`\`\`yaml
+customer_value: 0.35
+code_quality: 0.30
+timeline: 0.20
+technical_debt: 0.15
+\`\`\`
+
+## Alignment Score
+- Current: 85/100
+- Last evaluation: {{TIMESTAMP}}
+- Trend: Improving
+
+## Escalation History
+<!-- Guardian review log -->
+`;
+
+  await fs.writeFile(
+    path.join(templatesDir, 'memory-bank', 'activeContext.md'),
+    sessionTemplate,
+    'utf-8'
+  );
+  await fs.writeFile(
+    path.join(templatesDir, 'memory-bank', 'progress.md'),
+    progressTemplate,
+    'utf-8'
+  );
+  await fs.writeFile(
+    path.join(templatesDir, 'memory-bank', 'subAgentDelegation.md'),
+    subAgentDelegationTemplate,
+    'utf-8'
+  );
+  await fs.writeFile(
+    path.join(templatesDir, 'memory-bank', 'ipre-alignment.md'),
+    ipreAlignmentTemplate,
+    'utf-8'
+  );
+  console.log(chalk.green('  ✓ Memory Bank templates deployed'));
+
+  // 5. Initialize IPRE governance defaults
+  const ipreDefaults = {
+    version: '1.0.0',
+    intent: {
+      mission: 'Deliver high-quality software that solves customer problems',
+      values: [
+        'customer_first',
+        'technical_excellence',
+        'sustainable_velocity',
+      ],
+    },
+    policies: {
+      security: [
+        'No secrets in code',
+        'No SQL injection vulnerabilities',
+        'No XSS attack vectors',
+      ],
+      compliance: [
+        'All changes require PR review',
+        'No force pushes to main/master',
+        'Test coverage minimum 80%',
+      ],
+      operational: [
+        'No deployments on Fridays after 2pm',
+        'Rollback plan required for production changes',
+      ],
+    },
+    rewards: {
+      customer_value: 0.35,
+      code_quality: 0.25,
+      delivery_speed: 0.2,
+      technical_debt_reduction: 0.15,
+      documentation: 0.05,
+    },
+    evaluators: [
+      {
+        type: 'policy_compliance',
+        frequency: 'per_commit',
+        action: 'block_on_violation',
+      },
+      {
+        type: 'reward_alignment',
+        frequency: 'hourly',
+        threshold: 0.7,
+        action: 'escalate_to_guardian',
+      },
+      {
+        type: 'drift_detection',
+        frequency: 'daily',
+        patterns: ['reward_hacking', 'escalation_suppression'],
+        action: 'alert_architect',
+      },
+    ],
+  };
+
+  await fs.writeFile(
+    path.join(governanceDir, 'ipre-defaults.yaml'),
+    generateYamlContent(ipreDefaults),
+    'utf-8'
+  );
+  console.log(chalk.green('  ✓ IPRE governance defaults initialized'));
+
+  // 6. Configure system resource limits guidance
+  const resourceGuidance = `# System Resource Configuration for Fleet Mode
+
+## File Descriptor Limits
+For optimal fleet operation with up to 200 worktrees, configure:
+
+### macOS / Linux
+\`\`\`bash
+# Add to ~/.zshrc or ~/.bashrc
+ulimit -n 65000
+\`\`\`
+
+### Persistent Configuration (macOS)
+\`\`\`bash
+# Create /Library/LaunchDaemons/limit.maxfiles.plist with:
+# soft limit: 65000
+# hard limit: 200000
+\`\`\`
+
+### Persistent Configuration (Linux)
+\`\`\`bash
+# Add to /etc/security/limits.conf
+* soft nofile 65000
+* hard nofile 200000
+\`\`\`
+
+## Disk Space Requirements
+- Minimum: 500GB SSD
+- Recommended: 4TB+ SSD (for 200 worktrees at ~2GB each)
+- Buffer: Keep 10GB free at all times
+
+## Git Worktree Best Practices
+- Session Managers sync with remote (fetch/pull)
+- Sub-Agents rarely git fetch (reduces index lock contention)
+- Use fractional worktree pattern:
+  - Read-only agents: Share Session Manager's worktree
+  - Write-access agents: Get dedicated worktrees
+
+## Monitoring Commands
+\`\`\`bash
+# Check current file descriptor limit
+ulimit -n
+
+# Check open files
+lsof | wc -l
+
+# Check disk space
+df -h
+
+# List active worktrees
+git worktree list
+\`\`\`
+`;
+
+  await fs.writeFile(
+    path.join(wundrDir, 'RESOURCE_LIMITS.md'),
+    resourceGuidance,
+    'utf-8'
+  );
+  console.log(chalk.green('  ✓ System resource limits guidance configured'));
+
+  console.log(
+    chalk.cyan('\n✅ Fleet-Scale Autonomous Engineering mode setup complete!\n')
+  );
+  console.log(chalk.white('Files created:'));
+  console.log(chalk.gray('  ~/.wundr/vp-daemon/config.yaml'));
+  console.log(chalk.gray('  ~/.wundr/vp-daemon/vp-charter.md'));
+  console.log(chalk.gray('  ~/.wundr/vp-daemon/token-budget.yaml'));
+  console.log(chalk.gray('  ~/.wundr/templates/memory-bank/'));
+  console.log(chalk.gray('  ~/.wundr/governance/ipre-defaults.yaml'));
+  console.log(chalk.gray('  ~/.wundr/RESOURCE_LIMITS.md'));
+  console.log(
+    chalk.yellow(
+      '\n⚠️  Review ~/.wundr/RESOURCE_LIMITS.md for system configuration recommendations.'
+    )
+  );
+}
+
+/**
+ * Simple YAML generator for configuration objects
+ */
+function generateYamlContent(obj: Record<string, unknown>, indent = 0): string {
+  let yaml = '';
+  const spaces = '  '.repeat(indent);
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null || value === undefined) {
+      yaml += `${spaces}${key}: null\n`;
+    } else if (typeof value === 'object' && !Array.isArray(value)) {
+      yaml += `${spaces}${key}:\n`;
+      yaml += generateYamlContent(value as Record<string, unknown>, indent + 1);
+    } else if (Array.isArray(value)) {
+      yaml += `${spaces}${key}:\n`;
+      for (const item of value) {
+        if (typeof item === 'object') {
+          yaml += `${spaces}  -\n`;
+          const itemYaml = generateYamlContent(
+            item as Record<string, unknown>,
+            indent + 2
+          );
+          yaml += itemYaml;
+        } else {
+          yaml += `${spaces}  - '${item}'\n`;
+        }
+      }
+    } else if (typeof value === 'string') {
+      yaml += `${spaces}${key}: '${value}'\n`;
+    } else {
+      yaml += `${spaces}${key}: ${value}\n`;
+    }
+  }
+
+  return yaml;
+}
+
 async function manageProfiles(): Promise<void> {
   const manager = new ComputerSetupManager();
   await manager.initialize();
@@ -435,7 +905,7 @@ async function manageProfiles(): Promise<void> {
 
   if (profiles.length === 0) {
     console.log(
-      chalk.yellow('No profiles found. Create one with "wundr computer-setup"'),
+      chalk.yellow('No profiles found. Create one with "wundr computer-setup"')
     );
     return;
   }
@@ -462,7 +932,7 @@ async function validateSetup(): Promise<void> {
     if (profiles.length === 0) {
       spinner.stop();
       console.log(
-        chalk.yellow('No profile found. Run "wundr computer-setup" first.'),
+        chalk.yellow('No profile found. Run "wundr computer-setup" first.')
       );
       return;
     }
@@ -470,7 +940,7 @@ async function validateSetup(): Promise<void> {
     const profile = profiles[0]; // Use most recent
     if (!profile) {
       console.log(
-        chalk.yellow('No profile found. Run "wundr computer-setup" first.'),
+        chalk.yellow('No profile found. Run "wundr computer-setup" first.')
       );
       return;
     }
@@ -484,8 +954,8 @@ async function validateSetup(): Promise<void> {
       console.log(chalk.red('❌ Machine setup has issues'));
       console.log(
         chalk.yellow(
-          '\nRun "wundr computer-setup doctor" to diagnose and fix issues',
-        ),
+          '\nRun "wundr computer-setup doctor" to diagnose and fix issues'
+        )
       );
     }
   } catch (error) {
@@ -515,7 +985,7 @@ async function runDoctor(): Promise<void> {
       const { execa } = (await import('execa')) as any;
       const { stdout } = await execa(
         check.command.split(' ')[0],
-        check.command.split(' ').slice(1),
+        check.command.split(' ').slice(1)
       );
       spinner.succeed(`${check.name}: ${stdout.trim()}`);
     } catch (error) {

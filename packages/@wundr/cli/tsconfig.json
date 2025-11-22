@@ -10,7 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "strict": false,
     "skipLibCheck": true,
-    "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": true,
@@ -21,17 +20,24 @@
     "noImplicitAny": false,
     "noImplicitReturns": false,
     "noImplicitThis": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+    "baseUrl": ".",
+    "paths": {
+      "@wundr.io/governance": ["../governance/dist/index"],
+      "@wundr.io/governance/*": ["../governance/dist/*"],
+      "@wundr/guardian-dashboard": ["../guardian-dashboard/dist/index"],
+      "@wundr/guardian-dashboard/*": ["../guardian-dashboard/dist/*"]
+    }
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts",
     "src/commands/project-update.ts",
+    "src/commands/worktree.ts",
+    "src/commands/alignment.ts",
     "src/lib/**/*"
   ]
 }

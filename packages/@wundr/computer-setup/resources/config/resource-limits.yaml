@@ -1,0 +1,49 @@
+version: "1.0.0"
+
+tokenBudget:
+  subscription:
+    type: "claude-code-max-20x"
+    promptsPerFiveHours: 800
+    warningThreshold: 0.80
+    criticalThreshold: 0.95
+
+  api:
+    monthlyBudget: 500 # USD
+    haikuRatePerMillion: 0.25
+    sonnetRatePerMillion: 3.00
+
+modelAllocation:
+  tier1:
+    model: "claude-3-5-sonnet"
+    source: "subscription"
+    priority: critical
+    maxTokensPerRequest: 8192
+
+  tier2:
+    model: "claude-3-5-sonnet"
+    source: "subscription"
+    priority: high
+    maxTokensPerRequest: 4096
+
+  tier3:
+    model: "claude-3-5-haiku"
+    source: "api"
+    priority: normal
+    maxTokensPerRequest: 2048
+
+throttlingPolicy:
+  onWarning:
+    - pause_non_critical_sessions
+    - queue_new_requests
+    - notify_vp
+
+  onCritical:
+    - pause_all_except_critical
+    - notify_vp_human
+    - enable_strict_queuing
+
+systemResources:
+  fileDescriptors: 65000 # ulimit -n
+  diskSpaceBufferGB: 10
+  maxWorktreesPerMachine: 200
+  memoryLimitMB: 4096

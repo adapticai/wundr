@@ -1,0 +1,60 @@
+version: "1.0.0"
+
+intent:
+  mission: "Deliver high-quality software that solves customer problems"
+  values:
+    - customer_first
+    - technical_excellence
+    - sustainable_velocity
+
+policies:
+  security:
+    - "No secrets in code"
+    - "No SQL injection vulnerabilities"
+    - "No XSS attack vectors"
+    - "No command injection"
+
+  compliance:
+    - "All changes require PR review"
+    - "No force pushes to main/master"
+    - "Test coverage minimum 80%"
+
+  operational:
+    - "No deployments on Fridays after 2pm"
+    - "Rollback plan required for production changes"
+    - "No direct database modifications without approval"
+
+rewards:
+  customer_value: 0.35
+  code_quality: 0.25
+  delivery_speed: 0.20
+  technical_debt_reduction: 0.15
+  documentation: 0.05
+
+evaluators:
+  - type: policy_compliance
+    frequency: per_commit
+    action: block_on_violation
+
+  - type: reward_alignment
+    frequency: hourly
+    threshold: 0.70
+    action: escalate_to_guardian
+
+  - type: drift_detection
+    frequency: daily
+    patterns:
+      - reward_hacking
+      - escalation_suppression
+    action: alert_architect
+
+thresholds:
+  alignment_debt:
+    healthy: 20
+    concerning: 50
+    critical: 75
+
+  intervention:
+    reduce_autonomy: 35
+    trigger_audit: 45
+    pause_execution: 60

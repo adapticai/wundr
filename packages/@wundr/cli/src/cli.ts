@@ -11,9 +11,17 @@ import claudeInitCommand from './commands/claude-init';
 import claudeSetupCommand from './commands/claude-setup';
 import { createComputerSetupCommand } from './commands/computer-setup';
 import { CreateCommands } from './commands/create';
+import { createGuardianCommand } from './commands/guardian';
 import { createRAGCommand } from './commands/rag';
+import { createSessionCommand } from './commands/session';
+import { createVPCommand } from './commands/vp';
+import { createWorktreeCommand } from './commands/worktree';
 import { DashboardCommands } from './commands/dashboard';
 import { GovernCommands } from './commands/govern';
+import {
+  createGovernanceCommand,
+  createAlignmentCommand,
+} from './commands/governance';
 import { InitCommands } from './commands/init';
 import { PluginCommands } from './commands/plugins';
 import { SetupCommands } from './commands/setup';
@@ -39,7 +47,7 @@ export class WundrCLI {
     this.pluginManager = new PluginManager(this.configManager);
     this.interactiveMode = new InteractiveMode(
       this.configManager,
-      this.pluginManager,
+      this.pluginManager
     );
 
     this.setupProgram();
@@ -55,7 +63,7 @@ export class WundrCLI {
     this.program
       .name('wundr')
       .description(
-        'Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams',
+        'Unified Developer Platform - Code Analysis, Governance & Computer Setup for Engineering Teams'
       )
       .version(version, '-v, --version', 'display version number')
       .helpOption('-h, --help', 'display help for command')
@@ -66,7 +74,7 @@ export class WundrCLI {
 ║║║║ ║║║║ ║║╠╦╝
 ╚╩╝╚═╝╝╚╝═╩╝╩╚═
 The Unified Developer Platform
-      `,
+      `
       )
       .configureOutput({
         writeOut: str => process.stdout.write(str),
@@ -87,6 +95,10 @@ The Unified Developer Platform
     new AnalyzeCommands(this.program, this.configManager, this.pluginManager);
     new GovernCommands(this.program, this.configManager, this.pluginManager);
 
+    // IPRE Governance Commands (governance/gov, alignment)
+    this.program.addCommand(createGovernanceCommand());
+    this.program.addCommand(createAlignmentCommand());
+
     // Project Management
     new InitCommands(this.program, this.configManager, this.pluginManager);
     new CreateCommands(this.program, this.configManager, this.pluginManager);
@@ -104,6 +116,18 @@ The Unified Developer Platform
 
     // RAG (Retrieval-Augmented Generation)
     this.program.addCommand(createRAGCommand());
+
+    // Session Management
+    this.program.addCommand(createSessionCommand());
+
+    // VP Daemon Management
+    this.program.addCommand(createVPCommand());
+
+    // Guardian Dashboard
+    this.program.addCommand(createGuardianCommand());
+
+    // Worktree Management
+    this.program.addCommand(createWorktreeCommand());
 
     // Interactive Modes
     new ChatCommands(this.program, this.configManager, this.pluginManager);
@@ -184,7 +208,7 @@ The Unified Developer Platform
       .option(
         '--layout <type>',
         'TUI layout (dashboard, monitor, debug)',
-        'dashboard',
+        'dashboard'
       )
       .action(async options => {
         await this.interactiveMode.launchTUI(options.layout);
