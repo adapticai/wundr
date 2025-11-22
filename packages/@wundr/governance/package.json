@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/governance",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "AI governance and alignment monitoring for the Wundr platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

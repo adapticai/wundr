@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/cli",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Unified CLI framework for the Wundr platform",
   "keywords": ["wundr", "cli", "commander", "interactive", "tui", "automation"],
   "homepage": "https://wundr.io",

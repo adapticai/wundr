@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "MCP Server - Model Context Protocol server for Claude Code integration with stdio transport",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -88,11 +88,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "files": [
-    "dist",
-    "bin",
-    "README.md"
-  ],
+  "files": ["dist", "bin", "README.md"],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

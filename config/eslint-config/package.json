@@ -1,12 +1,9 @@
 {
-  "name": "@wundr/eslint-config",
-  "version": "1.0.0",
+  "name": "@wundr.io/eslint-config",
+  "version": "1.0.3",
   "description": "Shared ESLint configuration for Wundr monorepo",
   "main": "index.js",
-  "files": [
-    "index.js",
-    "rules"
-  ],
+  "files": ["index.js", "rules"],
   "dependencies": {
     "@next/eslint-plugin-next": "^15.5.3",
     "@typescript-eslint/eslint-plugin": "^8.44.0",

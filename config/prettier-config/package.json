@@ -1,11 +1,9 @@
 {
-  "name": "@wundr/prettier-config",
-  "version": "1.0.0",
+  "name": "@wundr.io/prettier-config",
+  "version": "1.0.3",
   "description": "Shared Prettier configuration for Wundr monorepo",
   "main": "index.js",
-  "files": [
-    "index.js"
-  ],
+  "files": ["index.js"],
   "peerDependencies": {
     "prettier": ">=3.0.0"
   }

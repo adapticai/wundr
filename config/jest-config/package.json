@@ -1,12 +1,9 @@
 {
-  "name": "@wundr/jest-config",
-  "version": "1.0.0",
+  "name": "@wundr.io/jest-config",
+  "version": "1.0.3",
   "description": "Shared Jest configuration for Wundr monorepo",
   "main": "index.js",
-  "files": [
-    "index.js",
-    "setup.js"
-  ],
+  "files": ["index.js", "setup.js"],
   "dependencies": {
     "@types/jest": "^29.5.8",
     "jest": "^29.7.0",
