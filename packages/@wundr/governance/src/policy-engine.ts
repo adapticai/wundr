@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Policy Engine for Hard Constraint Enforcement
  *
@@ -156,6 +155,15 @@ export interface PolicyDefinition {
 }
 
 /**
+ * Logger interface for policy engine
+ */
+export interface PolicyEngineLogger {
+  log: (message: string) => void;
+  warn?: (message: string) => void;
+  error?: (message: string) => void;
+}
+
+/**
  * Configuration for the PolicyEngine
  */
 export interface PolicyEngineConfig {
@@ -169,6 +177,8 @@ export interface PolicyEngineConfig {
   readonly defaultBlocking?: boolean;
   /** Custom validators registry */
   readonly customValidators?: Record<string, (action: AgentAction) => boolean>;
+  /** Custom logger for debug output */
+  readonly logger?: PolicyEngineLogger;
 }
 
 // ============================================================================
@@ -824,8 +834,8 @@ export class PolicyEngine {
    * Log debug message
    */
   private log(message: string): void {
-    if (this.config.debug) {
-      console.log(`[PolicyEngine] ${message}`);
+    if (this.config.debug && this.config.logger) {
+      this.config.logger.log(`[PolicyEngine] ${message}`);
     }
   }
 }

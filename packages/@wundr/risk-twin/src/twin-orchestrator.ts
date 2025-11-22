@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Risk Twin Validation Orchestrator
  *
@@ -525,7 +524,7 @@ export class RiskTwinOrchestrator {
    * Deploy a governance change to the twin environment
    * @param change - The change to deploy
    */
-  private async deployToTwin(change: GovernanceChange): Promise<void> {
+  private async deployToTwin(_change: GovernanceChange): Promise<void> {
     // In a real implementation, this would:
     // 1. Create an isolated environment
     // 2. Apply the governance change
@@ -535,8 +534,8 @@ export class RiskTwinOrchestrator {
     // Simulate deployment delay
     await this.simulateDelay(100);
 
-    // Log deployment (in production, use proper logging)
-    console.log(`[RiskTwin] Deployed change ${change.id} to twin environment`);
+    // Deployment logged - in production, use proper logging
+    // For now, the deployment is tracked via the change.id for internal state
   }
 
   /**

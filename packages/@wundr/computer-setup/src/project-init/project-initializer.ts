@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-useless-escape */
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as path from 'path';
 
 import chalk from 'chalk';
@@ -90,7 +86,7 @@ export class ProjectInitializer {
    * Main initialization method - orchestrates entire setup
    */
   async initialize(options: ProjectInitOptions): Promise<void> {
-    console.log(chalk.blue.bold('\n🚀 Wundr Project Initialization\n'));
+    this.spinner.info(chalk.blue.bold('Wundr Project Initialization'));
 
     try {
       // Step 1: Validate and prepare project
@@ -140,10 +136,12 @@ export class ProjectInitializer {
       // Step 8: Run validation checks
       await this.validateSetup(options);
 
-      console.log(chalk.green.bold('\n✅ Project initialization complete!\n'));
+      this.spinner.succeed(
+        chalk.green.bold('Project initialization complete!')
+      );
       this.printNextSteps(options);
     } catch (error) {
-      console.error(chalk.red(`\n❌ Initialization failed: ${error}`));
+      this.spinner.fail(chalk.red(`Initialization failed: ${error}`));
       throw error;
     }
   }
@@ -255,8 +253,8 @@ export class ProjectInitializer {
       { spaces: 2 }
     );
 
-    console.log(
-      chalk.green(`✅ Deployment config created for: ${platforms.join(', ')}`)
+    this.spinner.info(
+      chalk.green(`Deployment config created for: ${platforms.join(', ')}`)
     );
   }
 
@@ -337,7 +335,7 @@ export class ProjectInitializer {
     await fs.ensureDir(path.join(claudeDir, 'memory'));
 
     // Create agent subdirectories
-    for (const [category, agents] of Object.entries(structure.agents)) {
+    for (const [category, _agents] of Object.entries(structure.agents)) {
       const categoryDir = path.join(claudeDir, 'agents', category);
       await fs.ensureDir(categoryDir);
     }
@@ -467,7 +465,7 @@ export class ProjectInitializer {
    */
   private async copyCommandTemplates(
     claudeDir: string,
-    context: TemplateContext
+    _context: TemplateContext
   ): Promise<void> {
     const commandsSourceDir = path.join(this.resourcesDir, 'commands');
     const commandsTargetDir = path.join(claudeDir, 'commands');
@@ -859,9 +857,10 @@ export class ProjectInitializer {
     const failures = validations.filter(v => !v.check);
 
     if (failures.length > 0) {
-      this.spinner.fail('Validation failed');
-      console.log(chalk.yellow('\nMissing components:'));
-      failures.forEach(f => console.log(chalk.red(`  ✗ ${f.name}`)));
+      const failureList = failures.map(f => `  - ${f.name}`).join('\n');
+      this.spinner.fail(
+        `Validation failed - Missing components:\n${chalk.yellow(failureList)}`
+      );
       throw new Error('Setup validation failed');
     }
 
@@ -934,7 +933,7 @@ export class ProjectInitializer {
 
   private generateDefaultClaudeMarkdown(
     options: ProjectInitOptions,
-    context: TemplateContext
+    _context: TemplateContext
   ): string {
     return `# Claude Code Configuration - ${options.projectName}
 
@@ -947,7 +946,7 @@ See .claude/README.md for complete agent and workflow documentation.
   private customizeAgentTemplate(
     content: string,
     options: ProjectInitOptions,
-    context: TemplateContext
+    _context: TemplateContext
   ): string {
     return content
       .replace(/\{\{PROJECT_NAME\}\}/g, options.projectName)
@@ -1031,14 +1030,14 @@ echo "Task completed"
 `;
   }
 
-  private generatePreEditHook(context: TemplateContext): string {
+  private generatePreEditHook(_context: TemplateContext): string {
     return `#!/bin/bash
 # Pre-edit hook
 echo "Preparing to edit files..."
 `;
   }
 
-  private generatePostEditHook(context: TemplateContext): string {
+  private generatePostEditHook(_context: TemplateContext): string {
     return `#!/bin/bash
 # Post-edit hook
 echo "Files edited, running checks..."
@@ -1052,7 +1051,7 @@ echo "Session started for ${context.project.name}"
 `;
   }
 
-  private generateSessionEndHook(context: TemplateContext): string {
+  private generateSessionEndHook(_context: TemplateContext): string {
     return `#!/bin/bash
 # Session end hook
 echo "Session ending, cleaning up..."
@@ -1061,7 +1060,7 @@ echo "Session ending, cleaning up..."
 
   private generateCodeStyleConvention(
     options: ProjectInitOptions,
-    context: TemplateContext
+    _context: TemplateContext
   ): string {
     return `# Code Style Convention
 
@@ -1076,8 +1075,8 @@ Type: ${options.projectType}
   }
 
   private generateGitWorkflowConvention(
-    options: ProjectInitOptions,
-    context: TemplateContext
+    _options: ProjectInitOptions,
+    _context: TemplateContext
   ): string {
     return `# Git Workflow Convention
 
@@ -1089,8 +1088,8 @@ Type: ${options.projectType}
   }
 
   private generateTestingStandardsConvention(
-    options: ProjectInitOptions,
-    context: TemplateContext
+    _options: ProjectInitOptions,
+    _context: TemplateContext
   ): string {
     return `# Testing Standards
 
@@ -1101,8 +1100,8 @@ Type: ${options.projectType}
   }
 
   private generateDocumentationConvention(
-    options: ProjectInitOptions,
-    context: TemplateContext
+    _options: ProjectInitOptions,
+    _context: TemplateContext
   ): string {
     return `# Documentation Convention
 
@@ -1113,8 +1112,8 @@ Type: ${options.projectType}
   }
 
   private generateSparcWorkflow(
-    options: ProjectInitOptions,
-    context: TemplateContext
+    _options: ProjectInitOptions,
+    _context: TemplateContext
   ): string {
     return `# SPARC Workflow
 
@@ -1123,8 +1122,8 @@ Systematic development using Specification, Pseudocode, Architecture, Refinement
   }
 
   private generateTddWorkflow(
-    options: ProjectInitOptions,
-    context: TemplateContext
+    _options: ProjectInitOptions,
+    _context: TemplateContext
   ): string {
     return `# TDD Workflow
 
@@ -1133,8 +1132,8 @@ Test-Driven Development workflow.
   }
 
   private generateReviewWorkflow(
-    options: ProjectInitOptions,
-    context: TemplateContext
+    _options: ProjectInitOptions,
+    _context: TemplateContext
   ): string {
     return `# Review Workflow
 
@@ -1163,7 +1162,7 @@ MAX_SUB_AGENTS=${maxSubAgents}
 
 # Create worktree for new session
 create_session() {
-  local session_id=\$1
+  local session_id=$1
   local base_branch=\${2:-main}
   local worktree_path="\${SESSIONS_DIR}/session-\${session_id}"
 
@@ -1174,8 +1173,8 @@ create_session() {
 
 # Create worktree for sub-agent (write-access agents only)
 create_sub_agent() {
-  local session_id=\$1
-  local agent_id=\$2
+  local session_id=$1
+  local agent_id=$2
   local session_branch="session/\${session_id}"
   local worktree_path="\${AGENTS_DIR}/session-\${session_id}-sub-\${agent_id}"
 
@@ -1193,8 +1192,8 @@ create_sub_agent() {
 
 # Cleanup worktree after merge
 cleanup_worktree() {
-  local worktree_path=\$1
-  local branch_name=\$2
+  local worktree_path=$1
+  local branch_name=$2
 
   echo "Cleaning up worktree: \${worktree_path}"
   git worktree remove "\${worktree_path}" --force 2>/dev/null || true
@@ -1225,15 +1224,15 @@ check_resources() {
 }
 
 # Main command dispatcher
-case "\$1" in
+case "$1" in
   create-session)
-    create_session "\$2" "\$3"
+    create_session "$2" "$3"
     ;;
   create-agent)
-    create_sub_agent "\$2" "\$3"
+    create_sub_agent "$2" "$3"
     ;;
   cleanup)
-    cleanup_worktree "\$2" "\$3"
+    cleanup_worktree "$2" "$3"
     ;;
   list)
     list_worktrees
@@ -1242,7 +1241,7 @@ case "\$1" in
     check_resources
     ;;
   *)
-    echo "Usage: \$0 {create-session|create-agent|cleanup|list|check} [args]"
+    echo "Usage: $0 {create-session|create-agent|cleanup|list|check} [args]"
     echo ""
     echo "Commands:"
     echo "  create-session <session_id> [base_branch]  Create session worktree"
@@ -1487,7 +1486,7 @@ escalation:
    */
   private async copyPolicyTemplates(
     governanceDir: string,
-    options: ProjectInitOptions
+    _options: ProjectInitOptions
   ): Promise<void> {
     const policiesDir = path.join(governanceDir, 'policies');
 
@@ -1542,7 +1541,7 @@ These constraints must NEVER be violated:
    */
   private async setupPolicyHooks(
     options: ProjectInitOptions,
-    governanceDir: string
+    _governanceDir: string
   ): Promise<void> {
     const hooksDir = path.join(
       options.projectPath,
@@ -1598,7 +1597,7 @@ failurePolicy:
    */
   private async initializeEvaluatorAgents(
     governanceDir: string,
-    options: ProjectInitOptions
+    _options: ProjectInitOptions
   ): Promise<void> {
     const evaluatorsDir = path.join(governanceDir, 'evaluators');
 
@@ -2042,8 +2041,8 @@ wundr init --session-manager-archetype engineering
   }
 
   private getProjectWorkflows(
-    options: ProjectInitOptions
-  ): Record<string, any> {
+    _options: ProjectInitOptions
+  ): Record<string, unknown> {
     return {
       sparc: {
         name: 'SPARC Workflow',
@@ -2065,18 +2064,18 @@ echo "Running workflow..."
 `;
   }
 
-  private async setupGitHooks(options: ProjectInitOptions): Promise<void> {
+  private async setupGitHooks(_options: ProjectInitOptions): Promise<void> {
     // Git hooks setup logic
   }
 
   private async setupClaudeFlowHooks(
-    options: ProjectInitOptions
+    _options: ProjectInitOptions
   ): Promise<void> {
     // Claude Flow hooks setup logic
   }
 
   private async setupVerificationHooks(
-    options: ProjectInitOptions
+    _options: ProjectInitOptions
   ): Promise<void> {
     // Verification hooks setup logic
   }
@@ -2094,7 +2093,7 @@ Type: ${options.projectType}
 `;
   }
 
-  private generateAgentGuideDoc(options: ProjectInitOptions): string {
+  private generateAgentGuideDoc(_options: ProjectInitOptions): string {
     return `# Agent Guide
 
 ## Available Agents
@@ -2102,7 +2101,7 @@ See .claude/agents/ for full list.
 `;
   }
 
-  private generateWorkflowGuideDoc(options: ProjectInitOptions): string {
+  private generateWorkflowGuideDoc(_options: ProjectInitOptions): string {
     return `# Workflow Guide
 
 ## Workflows
@@ -2110,7 +2109,7 @@ See .claude/workflows/ for configurations.
 `;
   }
 
-  private generateDevelopmentDoc(options: ProjectInitOptions): string {
+  private generateDevelopmentDoc(_options: ProjectInitOptions): string {
     return `# Development Guide
 
 Project-specific development guidelines.
@@ -2152,15 +2151,16 @@ Project-specific development guidelines.
     };
   }
 
-  private printNextSteps(options: ProjectInitOptions): void {
-    console.log(chalk.cyan('\n📋 Next Steps:\n'));
-    console.log(chalk.white('1. Review CLAUDE.md configuration'));
-    console.log(chalk.white('2. Customize agent templates in .claude/agents/'));
-    console.log(chalk.white('3. Review conventions in .claude/conventions/'));
-    console.log(chalk.white('4. Run: npx claude-flow@alpha mcp start'));
-    console.log(
-      chalk.white('5. Start development with your chosen workflow\n')
-    );
+  private printNextSteps(_options: ProjectInitOptions): void {
+    const nextSteps = [
+      chalk.cyan('Next Steps:'),
+      chalk.white('1. Review CLAUDE.md configuration'),
+      chalk.white('2. Customize agent templates in .claude/agents/'),
+      chalk.white('3. Review conventions in .claude/conventions/'),
+      chalk.white('4. Run: npx claude-flow@alpha mcp start'),
+      chalk.white('5. Start development with your chosen workflow'),
+    ].join('\n');
+    this.spinner.info(nextSteps);
   }
 }
 
