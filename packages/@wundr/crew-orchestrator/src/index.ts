@@ -108,6 +108,8 @@ export {
   CrewMemberSchema,
   TaskSchema,
   TaskResultSchema,
+  StepCallbackDataSchema,
+  TaskCallbackDataSchema,
   CrewConfigSchema,
   CrewResultSchema,
   // Error Handling (class is a runtime value)
@@ -135,6 +137,8 @@ export type {
   CrewConfig,
   CrewConfigInput,
   CrewResult,
+  StepCallbackData,
+  TaskCallbackData,
   // Additional Interfaces
   DelegationRequest,
   DelegationResponse,

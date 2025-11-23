@@ -7,7 +7,12 @@
 
 import { z } from 'zod';
 
-import type { ConfigDefaults, ConfigGroup, HydraConfig } from './types';
+import type {
+  ConfigDefaults,
+  ConfigGroup,
+  ConfigValue,
+  HydraConfig,
+} from './types';
 
 /**
  * Options for default configuration handling.
@@ -332,7 +337,7 @@ export class DefaultsManager {
   createGroup(
     name: string,
     path: string,
-    values: Record<string, unknown> = {},
+    values: Record<string, ConfigValue> = {},
     description?: string
   ): ConfigGroup {
     const result: ConfigGroup = {

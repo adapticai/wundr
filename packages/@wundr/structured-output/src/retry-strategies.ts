@@ -5,6 +5,8 @@
  * Implements simple, exponential backoff, adaptive, error-targeted, and schema-guided strategies.
  */
 
+import { z } from 'zod';
+
 import type {
   RetryStrategy,
   RetryStrategyType,
@@ -13,6 +15,15 @@ import type {
   RetryStrategyResult,
   ValidationError,
 } from './types';
+import type { ZodSchema } from 'zod';
+
+/**
+ * Creates a placeholder Zod schema for contexts where schema isn't available
+ * This is used in executeWithRetry where the function doesn't have access to the actual schema
+ */
+function createPlaceholderSchema(): ZodSchema {
+  return z.unknown();
+}
 
 // ============================================================================
 // Base Retry Strategy
@@ -527,12 +538,14 @@ export async function executeWithRetry<T>(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
+      // Create a minimal retry context for generic retry execution
+      // The schema field uses a placeholder since executeWithRetry doesn't have access to the actual schema
       const context: RetryContext = {
         attemptNumber: attempt,
         previousErrors: [],
         rawResponse: '',
         originalPrompt: '',
-        schema: {} as never, // Will be filled by caller
+        schema: createPlaceholderSchema(),
         elapsedTime: Date.now() - startTime,
       };
 

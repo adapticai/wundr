@@ -583,7 +583,7 @@ export class EpisodicStore {
 
     this.emit('tier:compacted', {
       tier: 'episodic',
-      details: result as unknown as Record<string, unknown>,
+      details: result,
     });
 
     return result;

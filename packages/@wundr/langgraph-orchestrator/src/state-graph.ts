@@ -311,12 +311,22 @@ export class StateGraph<
       );
     }
 
+    // The nodes Map uses TState-specific NodeDefinition, but GraphConfig uses the base type.
+    // This cast is safe because GraphConfig is used for inspection/serialization,
+    // while actual execution uses the strongly-typed internal this.nodes Map.
+    const typedNodes: Map<string, NodeDefinition> = new Map();
+    for (const [key, value] of this.nodes) {
+      // Cast through unknown is necessary here because NodeDefinition<TState>
+      // has contravariant parameter in execute function signature
+      typedNodes.set(key, value as unknown as NodeDefinition);
+    }
+
     return {
       id: this.id,
       name: this.name,
       description: this.description,
       entryPoint: this.entryPoint,
-      nodes: new Map(this.nodes as unknown as Map<string, NodeDefinition>),
+      nodes: typedNodes,
       edges: new Map(this.edges),
       config: this.config,
     };

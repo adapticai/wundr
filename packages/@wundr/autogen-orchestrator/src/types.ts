@@ -286,13 +286,46 @@ export type TerminationConditionType =
   | 'custom';
 
 /**
+ * Configuration for consensus-based termination
+ */
+export interface ConsensusConfigType {
+  /** Minimum agreement threshold (0-1) */
+  threshold: number;
+  /** Keywords indicating agreement */
+  agreementKeywords: string[];
+  /** Keywords indicating disagreement */
+  disagreementKeywords: string[];
+  /** Minimum participants required for consensus */
+  minParticipants?: number;
+  /** Number of recent messages to consider */
+  windowSize?: number;
+}
+
+/**
+ * Union type for termination condition values based on type
+ * - max_rounds: number
+ * - max_messages: number
+ * - keyword: string | string[]
+ * - timeout: number (milliseconds)
+ * - function: TerminationEvaluator
+ * - consensus: ConsensusConfigType
+ * - custom: TerminationEvaluator | unknown
+ */
+export type TerminationConditionValue =
+  | number
+  | string
+  | string[]
+  | ConsensusConfigType
+  | TerminationEvaluator;
+
+/**
  * Configuration for termination conditions
  */
 export interface TerminationCondition {
   /** Type of termination condition */
   type: TerminationConditionType;
-  /** Value for the condition */
-  value: unknown;
+  /** Value for the condition - type depends on condition type */
+  value: TerminationConditionValue;
   /** Description of the condition */
   description?: string;
   /** Custom function for evaluation (for 'function' type) */
@@ -349,13 +382,30 @@ export interface NestedChatConfig {
 }
 
 /**
+ * Condition function type for nested chat triggers
+ */
+export type NestedChatConditionFn = (
+  message: Message,
+  context: ChatContext
+) => boolean;
+
+/**
+ * Union type for nested chat trigger values based on trigger type
+ * - keyword: string | string[] (keywords to match)
+ * - participant: string | string[] (participant names)
+ * - condition: string | NestedChatConditionFn (condition expression or function)
+ * - manual: string (state key to check)
+ */
+export type NestedChatTriggerValue = string | string[] | NestedChatConditionFn;
+
+/**
  * Trigger for starting a nested chat
  */
 export interface NestedChatTrigger {
   /** Type of trigger */
   type: 'keyword' | 'participant' | 'condition' | 'manual';
-  /** Value for the trigger */
-  value: unknown;
+  /** Value for the trigger - type depends on trigger type */
+  value: NestedChatTriggerValue;
   /** Description of the trigger */
   description?: string;
 }
@@ -544,17 +594,36 @@ export type ChatEventType =
   | 'error';
 
 /**
+ * Data payloads for different chat event types
+ */
+export interface ChatEventDataMap {
+  chat_started: { config: GroupChatConfig };
+  chat_ended: { result: ChatResult };
+  message_sent: { message: Message };
+  message_received: { message: Message };
+  speaker_selected: { speaker: string; reason?: string };
+  round_started: { round: number };
+  round_ended: { round: number };
+  nested_chat_started: { nestedChatId: string; configId: string };
+  nested_chat_ended: { nestedChatId: string; result: NestedChatResult };
+  termination_triggered: { reason: string };
+  error: { error: ChatError };
+}
+
+/**
  * Event emitted during chat execution
  */
-export interface ChatEvent {
+export interface ChatEvent<T extends ChatEventType = ChatEventType> {
   /** Event type */
-  type: ChatEventType;
+  type: T;
   /** Event timestamp */
   timestamp: Date;
   /** Chat ID */
   chatId: string;
-  /** Event data */
-  data: unknown;
+  /** Event data - typed based on event type */
+  data: T extends keyof ChatEventDataMap
+    ? ChatEventDataMap[T]
+    : Record<string, unknown>;
 }
 
 // ============================================================================
@@ -678,7 +747,19 @@ export const GroupChatConfigSchema = z.object({
           'consensus',
           'custom',
         ]),
-        value: z.unknown(),
+        value: z.union([
+          z.number(),
+          z.string(),
+          z.array(z.string()),
+          z.object({
+            threshold: z.number(),
+            agreementKeywords: z.array(z.string()),
+            disagreementKeywords: z.array(z.string()),
+            minParticipants: z.number().optional(),
+            windowSize: z.number().optional(),
+          }),
+          z.function(),
+        ]),
         description: z.string().optional(),
       })
     )
@@ -691,7 +772,7 @@ export const GroupChatConfigSchema = z.object({
         name: z.string(),
         trigger: z.object({
           type: z.enum(['keyword', 'participant', 'condition', 'manual']),
-          value: z.unknown(),
+          value: z.union([z.string(), z.array(z.string()), z.function()]),
           description: z.string().optional(),
         }),
         participants: z.array(z.string()),
@@ -712,6 +793,28 @@ export const GroupChatConfigSchema = z.object({
 });
 
 /**
+ * Zod schema for ConsensusConfig validation
+ */
+export const ConsensusConfigSchema = z.object({
+  threshold: z.number().min(0).max(1),
+  agreementKeywords: z.array(z.string()),
+  disagreementKeywords: z.array(z.string()),
+  minParticipants: z.number().positive().optional(),
+  windowSize: z.number().positive().optional(),
+});
+
+/**
+ * Zod schema for TerminationConditionValue validation
+ */
+export const TerminationConditionValueSchema = z.union([
+  z.number(),
+  z.string(),
+  z.array(z.string()),
+  ConsensusConfigSchema,
+  z.function(),
+]);
+
+/**
  * Zod schema for TerminationCondition validation
  */
 export const TerminationConditionSchema = z.object({
@@ -724,7 +827,7 @@ export const TerminationConditionSchema = z.object({
     'consensus',
     'custom',
   ]),
-  value: z.unknown(),
+  value: TerminationConditionValueSchema,
   description: z.string().optional(),
 });
 

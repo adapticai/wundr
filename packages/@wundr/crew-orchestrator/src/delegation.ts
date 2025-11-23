@@ -11,13 +11,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { CrewError, CrewErrorCode } from './types';
 
 import type {
-  Task,
   CrewMember,
   DelegationRequest,
   DelegationResponse,
   DelegationStrategy,
   ExecutionContext,
   CrewEvent,
+  Task,
 } from './types';
 
 /**
@@ -187,9 +187,8 @@ export class DelegationManager extends EventEmitter {
     availableMembers: CrewMember[],
     context: ExecutionContext
   ): Promise<DelegationResponse> {
-    const _task = context.previousResults.get(request.taskId)
-      ? undefined
-      : ({ id: request.taskId } as Task);
+    // Note: context.previousResults is available for future use in delegation decisions
+    void context.previousResults;
 
     // Filter out the requesting member if self-delegation is not allowed
     let candidates = availableMembers;

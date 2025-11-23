@@ -18,6 +18,8 @@ import {
   type ParsedOverrides,
   type GroupSelection,
   type SweepConfig,
+  type SweepValue,
+  type CliOverrideValue,
   type ConfigGroup,
   ComposerOptionsSchema,
 } from './types';
@@ -177,7 +179,7 @@ export class ConfigComposer {
    * @returns Parsed overrides structure
    */
   parseCliOverrides(args: string[]): ParsedOverrides {
-    const overrides: Record<string, unknown> = {};
+    const overrides: Record<string, CliOverrideValue> = {};
     const sweeps: SweepConfig[] = [];
     const groupSelections: GroupSelection[] = [];
 
@@ -276,8 +278,8 @@ export class ConfigComposer {
    */
   private resolveEnvOverrides(
     prefix = this.options.envPrefix
-  ): Record<string, unknown> {
-    const overrides: Record<string, unknown> = {};
+  ): Record<string, CliOverrideValue> {
+    const overrides: Record<string, CliOverrideValue> = {};
 
     for (const [key, value] of Object.entries(process.env)) {
       if (key.startsWith(prefix) && value !== undefined) {
@@ -296,9 +298,9 @@ export class ConfigComposer {
   /**
    * Parses a string value into its appropriate type.
    * @param value - String value to parse
-   * @returns Parsed value
+   * @returns Parsed value as a SweepValue (string, number, boolean, or null)
    */
-  private parseValue(value: string): unknown {
+  private parseValue(value: string): SweepValue {
     const trimmed = value.trim();
 
     // Boolean
@@ -339,19 +341,27 @@ export class ConfigComposer {
    * @param value - Value to set
    */
   private setNestedValue(
-    obj: Record<string, unknown>,
+    obj: Record<string, CliOverrideValue>,
     path: string,
-    value: unknown
+    value: SweepValue
   ): void {
     const parts = path.split('.');
-    let current = obj;
+    let current: Record<string, CliOverrideValue> = obj;
 
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i] as string;
-      if (current[part] === undefined || typeof current[part] !== 'object') {
-        current[part] = {};
+      const existing = current[part];
+      if (
+        existing === undefined ||
+        typeof existing !== 'object' ||
+        existing === null
+      ) {
+        const newObj: Record<string, CliOverrideValue> = {};
+        current[part] = newObj;
+        current = newObj;
+      } else {
+        current = existing as Record<string, CliOverrideValue>;
       }
-      current = current[part] as Record<string, unknown>;
     }
 
     const lastPart = parts[parts.length - 1] as string;

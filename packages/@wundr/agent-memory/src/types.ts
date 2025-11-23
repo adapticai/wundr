@@ -373,7 +373,7 @@ export interface MemoryEvent {
     memoryId?: string;
     sessionId?: string;
     tier?: MemoryTier;
-    details?: Record<string, unknown>;
+    details?: Record<string, unknown> | CompactionResult | ConsolidationResult;
   };
 }
 
@@ -400,6 +400,8 @@ export interface CompactionResult {
   forgotten: number;
   /** Compaction duration in milliseconds */
   durationMs: number;
+  /** Allow indexing for Record<string, unknown> compatibility */
+  [key: string]: MemoryTier | number;
 }
 
 /**
@@ -414,6 +416,8 @@ export interface ConsolidationResult {
   clustersFormed: number;
   /** Consolidation duration in milliseconds */
   durationMs: number;
+  /** Allow indexing for Record<string, unknown> compatibility */
+  [key: string]: number;
 }
 
 /**

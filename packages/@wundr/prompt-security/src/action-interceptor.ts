@@ -1,8 +1,10 @@
 import type {
   Action,
   ActionDecision,
+  ActionParameters,
   ActionRule,
   ActionType,
+  AuditDetails,
   AuditEntry,
   SecureActionResult,
   SecurityConfig,
@@ -351,19 +353,19 @@ export class ActionInterceptor {
    *
    * @param type - Action type
    * @param target - Target resource
-   * @param parameters - Action parameters
+   * @param parameters - Action parameters (type-safe based on action type)
    * @param source - Action source
    * @returns A properly structured Action object
    */
-  createAction(
-    type: ActionType,
+  createAction<T extends ActionType>(
+    type: T,
     target: string,
-    parameters: Record<string, unknown>,
+    parameters: ActionParameters,
     source: {
       origin: 'user' | 'llm' | 'system' | 'plugin';
       trustLevel: TrustLevel;
     }
-  ): Action {
+  ): Action<T> {
     return {
       id: this.generateActionId(),
       type,
@@ -371,7 +373,7 @@ export class ActionInterceptor {
       parameters,
       source,
       timestamp: new Date(),
-    };
+    } as Action<T>;
   }
 
   private mergeWithDefaults(config: Partial<SecurityConfig>): SecurityConfig {
@@ -632,7 +634,7 @@ export class ActionInterceptor {
     auditTrail: AuditEntry[],
     event: string,
     description: string,
-    details?: Record<string, unknown>
+    details?: AuditDetails
   ): void {
     auditTrail.push({
       timestamp: new Date(),

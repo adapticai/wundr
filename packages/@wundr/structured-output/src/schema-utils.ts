@@ -196,18 +196,39 @@ export function getSchemaDescription(schema: ZodSchema): string | undefined {
 // ============================================================================
 
 /**
+ * Internal type-safe wrapper that calls zodToJsonSchema
+ * This wrapper breaks the deep type recursion by using an explicit unknown intermediate
+ */
+function callZodToJsonSchema(
+  schema: ZodSchema,
+  options: {
+    name?: string;
+    $refStrategy?: 'none' | 'root' | 'relative' | 'seen';
+    target?: 'jsonSchema7' | 'jsonSchema2019-09' | 'openApi3';
+  }
+): Record<string, unknown> {
+  // Break the type recursion by going through unknown
+  // The zodToJsonSchema library returns a valid JSON Schema object
+  const fn: unknown = zodToJsonSchema;
+  const typedFn = fn as (
+    s: ZodSchema,
+    o: typeof options
+  ) => Record<string, unknown>;
+  return typedFn(schema, options);
+}
+
+/**
  * Convert a Zod schema to JSON Schema
  */
 export function toJsonSchema(
   schema: ZodSchema,
   options: JsonSchemaOptions = {}
 ): Record<string, unknown> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const jsonSchema = (zodToJsonSchema as any)(schema, {
+  const jsonSchema = callZodToJsonSchema(schema, {
     name: options.name,
     $refStrategy: 'none',
     target: options.target ?? 'jsonSchema7',
-  }) as Record<string, unknown>;
+  });
 
   if (options.description) {
     jsonSchema['description'] = options.description;

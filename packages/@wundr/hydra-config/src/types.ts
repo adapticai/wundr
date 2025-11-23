@@ -7,6 +7,32 @@
 
 import { z } from 'zod';
 
+// ============================================================================
+// Core Value Types (defined first for use in interfaces)
+// ============================================================================
+
+/**
+ * Represents valid configuration primitive values.
+ */
+export type ConfigPrimitive = string | number | boolean | null;
+
+/**
+ * Represents valid configuration values including nested structures.
+ */
+export type ConfigValue =
+  | ConfigPrimitive
+  | ConfigValue[]
+  | { [key: string]: ConfigValue };
+
+/**
+ * Valid sweep value types (primitives only for parameter sweeps).
+ */
+export type SweepValue = string | number | boolean | null;
+
+// ============================================================================
+// Configuration Interfaces
+// ============================================================================
+
 /**
  * Represents a group of related configuration options.
  * Groups allow organizing configuration into logical sections.
@@ -21,7 +47,7 @@ export interface ConfigGroup {
   /** Whether this group is required or optional */
   optional?: boolean;
   /** Configuration values loaded from the YAML file */
-  values: Record<string, unknown>;
+  values: Record<string, ConfigValue>;
 }
 
 /**
@@ -36,7 +62,7 @@ export interface HydraConfig {
   /** Configuration groups available for composition */
   groups: Record<string, ConfigGroup>;
   /** CLI argument overrides (e.g., key=value pairs) */
-  overrides?: Record<string, unknown>;
+  overrides?: Record<string, ConfigValue>;
   /** Environment variable prefix for config resolution */
   envPrefix?: string;
   /** Whether to allow undefined interpolation variables */
@@ -109,11 +135,16 @@ export type InterpolationResolver = (
 ) => unknown;
 
 /**
+ * Nested override values from CLI (can be arbitrarily nested via dot notation).
+ */
+export type CliOverrideValue = SweepValue | { [key: string]: CliOverrideValue };
+
+/**
  * Result of parsing CLI overrides.
  */
 export interface ParsedOverrides {
-  /** Key-value pairs parsed from CLI arguments */
-  overrides: Record<string, unknown>;
+  /** Key-value pairs parsed from CLI arguments (can be nested) */
+  overrides: Record<string, CliOverrideValue>;
   /** Multi-run sweep configurations */
   sweeps: SweepConfig[];
   /** Group selections from CLI */
@@ -127,7 +158,7 @@ export interface SweepConfig {
   /** Parameter key to sweep */
   key: string;
   /** Values to sweep over */
-  values: unknown[];
+  values: SweepValue[];
   /** Sweep type: grid or random */
   type: 'grid' | 'random';
 }
@@ -184,6 +215,21 @@ export const ConfigDefaultsSchema = z.object({
 });
 
 /**
+ * Recursive schema for configuration values.
+ * Supports primitives, arrays, and nested objects.
+ */
+export const ConfigValueSchema: z.ZodType<ConfigValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(ConfigValueSchema),
+    z.record(z.string(), ConfigValueSchema),
+  ])
+);
+
+/**
  * Zod schema for ConfigGroup validation.
  */
 export const ConfigGroupSchema = z.object({
@@ -191,7 +237,7 @@ export const ConfigGroupSchema = z.object({
   description: z.string().optional(),
   path: z.string().min(1),
   optional: z.boolean().optional(),
-  values: z.record(z.unknown()),
+  values: z.record(z.string(), ConfigValueSchema),
 });
 
 /**
@@ -200,11 +246,20 @@ export const ConfigGroupSchema = z.object({
 export const HydraConfigSchema = z.object({
   configPath: z.string().min(1),
   defaults: z.array(ConfigDefaultsSchema),
-  groups: z.record(ConfigGroupSchema),
-  overrides: z.record(z.unknown()).optional(),
+  groups: z.record(z.string(), ConfigGroupSchema),
+  overrides: z.record(z.string(), ConfigValueSchema).optional(),
   envPrefix: z.string().optional(),
   strictMode: z.boolean().optional(),
 });
+
+/**
+ * Schema for InterpolationResolver function validation.
+ * Validates functions that take a key and context and return a resolved value.
+ */
+const InterpolationResolverSchema = z
+  .function()
+  .args(z.string(), z.record(z.string(), z.unknown()))
+  .returns(z.unknown());
 
 /**
  * Zod schema for ComposerOptions validation.
@@ -214,7 +269,7 @@ export const ComposerOptionsSchema = z.object({
   throwOnMissing: z.boolean().optional(),
   envPrefix: z.string().optional(),
   strictInterpolation: z.boolean().optional(),
-  customResolvers: z.record(z.function()).optional(),
+  customResolvers: z.record(z.string(), InterpolationResolverSchema).optional(),
 });
 
 // ============================================================================

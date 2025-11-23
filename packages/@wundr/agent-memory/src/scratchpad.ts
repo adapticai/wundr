@@ -398,7 +398,7 @@ export class Scratchpad {
 
     this.emit('tier:compacted', {
       tier: 'scratchpad',
-      details: result as unknown as Record<string, unknown>,
+      details: result,
     });
 
     return result;

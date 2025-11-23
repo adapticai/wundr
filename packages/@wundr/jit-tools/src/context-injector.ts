@@ -18,6 +18,7 @@ import type {
   ExcludedTool,
   AgentContext,
   JITToolConfig,
+  JsonValue,
 } from './types';
 
 // =============================================================================
@@ -429,7 +430,7 @@ export class ContextInjector extends EventEmitter {
    * Format tool in JSON style
    */
   private formatJson(tool: ToolSpec, options: InjectionOptions): string {
-    const obj: Record<string, unknown> = {
+    const obj: Record<string, JsonValue> = {
       id: tool.id,
       name: tool.name,
       category: tool.category,
@@ -447,7 +448,13 @@ export class ContextInjector extends EventEmitter {
     }
 
     if (options.includeExamples && tool.examples.length > 0) {
-      obj['examples'] = tool.examples.slice(0, options.maxExamplesPerTool);
+      obj['examples'] = tool.examples
+        .slice(0, options.maxExamplesPerTool)
+        .map(e => ({
+          description: e.description,
+          input: e.input,
+          ...(e.output ? { output: e.output } : {}),
+        }));
     }
 
     return JSON.stringify(obj, null, 2);

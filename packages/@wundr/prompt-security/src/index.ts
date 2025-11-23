@@ -30,6 +30,7 @@ import type {
   RiskAssessment,
   FilteredOutput,
   Action,
+  ActionParameters,
   SeparatedContext,
   ActionDecision,
   ActionType,
@@ -56,6 +57,25 @@ export {
   ActionSource,
   SecureActionResult,
   AuditEntry,
+
+  // Action parameter types (type-safe)
+  ActionParameters,
+  ActionParameterMap,
+  FileReadParameters,
+  FileWriteParameters,
+  FileDeleteParameters,
+  NetworkRequestParameters,
+  CodeExecutionParameters,
+  DatabaseQueryParameters,
+  SystemCommandParameters,
+  ApiCallParameters,
+  CustomActionParameters,
+
+  // Audit types (type-safe)
+  AuditDetails,
+  AuditDetailValue,
+  ActionMetadata,
+  MetadataValue,
 
   // Context types
   SeparatedContext,
@@ -406,23 +426,23 @@ export class PromptSecurityManager {
   }
 
   /**
-   * Creates an action object
+   * Creates an action object with type-safe parameters
    *
    * @param type - Action type
    * @param target - Target resource
-   * @param parameters - Action parameters
+   * @param parameters - Action parameters (type-safe based on action type)
    * @param source - Action source
    * @returns Action object
    */
-  createAction(
-    type: ActionType,
+  createAction<T extends ActionType>(
+    type: T,
     target: string,
-    parameters: Record<string, unknown>,
+    parameters: ActionParameters,
     source: {
       origin: 'user' | 'llm' | 'system' | 'plugin';
       trustLevel: TrustLevel;
     }
-  ): Action {
+  ): Action<T> {
     return this.interceptor.createAction(type, target, parameters, source);
   }
 

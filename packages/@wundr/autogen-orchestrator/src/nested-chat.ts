@@ -16,6 +16,8 @@ import type {
   ChatStatus,
   NestedChatConfig,
   NestedChatTrigger,
+  NestedChatTriggerValue,
+  NestedChatConditionFn,
   NestedChatResult,
   SummaryMethod,
   CreateMessageOptions,
@@ -163,12 +165,19 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
    * @param message - Message to check
    * @returns Whether keyword is found
    */
-  private evaluateKeywordTrigger(value: unknown, message: Message): boolean {
-    const keywords = Array.isArray(value) ? value : [value];
+  private evaluateKeywordTrigger(
+    value: NestedChatTriggerValue,
+    message: Message
+  ): boolean {
+    const keywords: string[] = Array.isArray(value)
+      ? value
+      : typeof value === 'string'
+        ? [value]
+        : [];
     const contentLower = message.content.toLowerCase();
 
     return keywords.some(keyword =>
-      contentLower.includes(String(keyword).toLowerCase())
+      contentLower.includes(keyword.toLowerCase())
     );
   }
 
@@ -180,11 +189,15 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
    * @returns Whether participant condition is met
    */
   private evaluateParticipantTrigger(
-    value: unknown,
+    value: NestedChatTriggerValue,
     message: Message,
     participants: ChatParticipant[]
   ): boolean {
-    const targetParticipants = Array.isArray(value) ? value : [value];
+    const targetParticipants: string[] = Array.isArray(value)
+      ? value
+      : typeof value === 'string'
+        ? [value]
+        : [];
 
     // Check if message is from one of the target participants
     if (targetParticipants.includes(message.name)) {
@@ -204,18 +217,19 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
 
   /**
    * Evaluate condition-based trigger
-   * @param value - Condition expression
+   * @param value - Condition expression or function
    * @param message - Current message
    * @param context - Chat context
    * @returns Whether condition is met
    */
   private evaluateConditionTrigger(
-    value: unknown,
+    value: NestedChatTriggerValue,
     message: Message,
     context: ChatContext
   ): boolean {
+    // Check if value is a function (NestedChatConditionFn)
     if (typeof value === 'function') {
-      return value(message, context);
+      return (value as NestedChatConditionFn)(message, context);
     }
 
     if (typeof value === 'string') {
@@ -223,12 +237,14 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
       const condition = value.toLowerCase();
 
       if (condition.includes('round >')) {
-        const threshold = parseInt(condition.split('>')[1]?.trim() || '0');
+        const parts = condition.split('>');
+        const threshold = parseInt(parts[1]?.trim() || '0', 10);
         return context.currentRound > threshold;
       }
 
       if (condition.includes('messages >')) {
-        const threshold = parseInt(condition.split('>')[1]?.trim() || '0');
+        const parts = condition.split('>');
+        const threshold = parseInt(parts[1]?.trim() || '0', 10);
         return context.messageCount > threshold;
       }
     }
@@ -238,12 +254,16 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
 
   /**
    * Evaluate manual trigger
-   * @param value - Manual trigger value
+   * @param value - Manual trigger value (state key to check)
    * @param context - Chat context
    * @returns Whether manual trigger is set
    */
-  private evaluateManualTrigger(value: unknown, context: ChatContext): boolean {
-    const triggerKey = String(value);
+  private evaluateManualTrigger(
+    value: NestedChatTriggerValue,
+    context: ChatContext
+  ): boolean {
+    // For manual triggers, value should be a string representing the state key
+    const triggerKey = typeof value === 'string' ? value : String(value);
     return context.state[triggerKey] === true;
   }
 

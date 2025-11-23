@@ -59,6 +59,11 @@ export type {
   ToolPermission,
   ToolCategory,
 
+  // JSON Type Safety Types
+  JsonPrimitive,
+  JsonValue,
+  JsonRecord,
+
   // Retrieval Types
   ToolRetrievalResult,
   RetrievedTool,
@@ -93,6 +98,11 @@ export type {
 // =============================================================================
 
 export {
+  // JSON Type Safety Schemas
+  JsonPrimitiveSchema,
+  JsonValueSchema,
+  JsonRecordSchema,
+
   // Zod Schemas
   ToolPermissionSchema,
   ToolCategorySchema,

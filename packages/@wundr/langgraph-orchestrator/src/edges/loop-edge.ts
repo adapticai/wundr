@@ -252,9 +252,7 @@ export function loopEdge<TState extends AgentState = AgentState>(
  * @param options - For loop configuration
  * @returns EdgeDefinition for the loop
  */
-export function createForLoop<
-  _TState extends AgentState = AgentState,
->(options: {
+export function createForLoop(options: {
   from: string;
   to?: string;
   iterations: number;

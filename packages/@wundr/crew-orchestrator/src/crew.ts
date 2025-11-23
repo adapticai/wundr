@@ -34,6 +34,8 @@ import type {
   ExecutionContext,
   CrewEvent,
   TaskExecutor,
+  StepCallbackData,
+  TaskCallbackData,
 } from './types';
 
 /**
@@ -650,11 +652,12 @@ export class AgentCrew extends EventEmitter {
 
       // Call task callback if configured
       if (this.config.taskCallback) {
-        this.config.taskCallback({
+        const callbackData: TaskCallbackData = {
           task,
           result,
           member,
-        });
+        };
+        this.config.taskCallback(callbackData);
       }
 
       return result;
@@ -887,7 +890,13 @@ export class AgentCrew extends EventEmitter {
 
     // Call step callback if configured
     if (this.config.stepCallback) {
-      this.config.stepCallback(event);
+      const stepData: StepCallbackData = {
+        type: event.type,
+        crewId: event.crewId,
+        timestamp: event.timestamp,
+        data: event.data,
+      };
+      this.config.stepCallback(stepData);
     }
   }
 }

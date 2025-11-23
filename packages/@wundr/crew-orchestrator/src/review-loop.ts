@@ -367,7 +367,7 @@ export class ReviewLoopManager extends EventEmitter {
     let totalIterations = 0;
     const qualityScores: number[] = [];
 
-    for (const [_taskId, history] of this.reviewHistory) {
+    for (const history of this.reviewHistory.values()) {
       totalReviews += history.length;
       totalIterations += history.length;
 

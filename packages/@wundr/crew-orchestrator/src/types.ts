@@ -157,6 +157,25 @@ export const TaskResultSchema = z.object({
 });
 
 /**
+ * Schema for step callback event data
+ */
+export const StepCallbackDataSchema = z.object({
+  type: z.string(),
+  crewId: z.string(),
+  timestamp: z.date(),
+  data: z.record(z.string(), z.unknown()),
+});
+
+/**
+ * Schema for task callback event data
+ */
+export const TaskCallbackDataSchema = z.object({
+  task: TaskSchema,
+  result: TaskResultSchema,
+  member: CrewMemberSchema,
+});
+
+/**
  * Schema for crew configuration
  */
 export const CrewConfigSchema = z.object({
@@ -171,8 +190,16 @@ export const CrewConfigSchema = z.object({
   maxRpm: z.number().int().positive().optional(),
   shareCrewContext: z.boolean().default(true),
   functionCallingLlm: z.string().optional(),
-  stepCallback: z.function().args(z.any()).returns(z.void()).optional(),
-  taskCallback: z.function().args(z.any()).returns(z.void()).optional(),
+  stepCallback: z
+    .function()
+    .args(StepCallbackDataSchema)
+    .returns(z.void())
+    .optional(),
+  taskCallback: z
+    .function()
+    .args(TaskCallbackDataSchema)
+    .returns(z.void())
+    .optional(),
   managerLlm: z.string().optional(),
   managerAgent: z.string().uuid().optional(),
   planningLlm: z.string().optional(),
@@ -315,6 +342,16 @@ export type CrewConfigInput = Omit<
  * Result of crew execution
  */
 export type CrewResult = z.infer<typeof CrewResultSchema>;
+
+/**
+ * Step callback event data type
+ */
+export type StepCallbackData = z.infer<typeof StepCallbackDataSchema>;
+
+/**
+ * Task callback event data type
+ */
+export type TaskCallbackData = z.infer<typeof TaskCallbackDataSchema>;
 
 // =============================================================================
 // Additional Interfaces

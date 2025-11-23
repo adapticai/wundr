@@ -94,12 +94,16 @@ export {
   // Termination Types
   TerminationCondition,
   TerminationConditionType,
+  TerminationConditionValue,
   TerminationResult,
   TerminationEvaluator,
+  ConsensusConfigType,
 
   // Nested Chat Types
   NestedChatConfig,
   NestedChatTrigger,
+  NestedChatTriggerValue,
+  NestedChatConditionFn,
   NestedChatResult,
   SummaryMethod,
 
@@ -117,6 +121,7 @@ export {
   // Event Types
   ChatEvent,
   ChatEventType,
+  ChatEventDataMap,
 
   // Option Types
   CreateMessageOptions,
@@ -128,6 +133,8 @@ export {
   ChatParticipantSchema,
   GroupChatConfigSchema,
   TerminationConditionSchema,
+  TerminationConditionValueSchema,
+  ConsensusConfigSchema,
 } from './types';
 
 // ============================================================================

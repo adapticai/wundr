@@ -231,8 +231,28 @@ async function evaluateCondition(
         return await condition.evaluate(state, {
           edge: { from: '', to: '', type: 'conditional', condition },
           sourceResult: { state },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          graph: {} as any,
+          graph: {
+            id: '',
+            name: '',
+            entryPoint: '',
+            nodes: new Map(),
+            edges: new Map(),
+            config: {
+              maxIterations: 100,
+              timeout: 300000,
+              checkpointEnabled: false,
+              checkpointInterval: 1,
+              parallelExecution: false,
+              retry: {
+                maxRetries: 0,
+                initialDelay: 0,
+                backoffMultiplier: 1,
+                maxDelay: 0,
+                retryableErrors: [],
+              },
+              logLevel: 'silent',
+            },
+          },
         });
       }
       return false;

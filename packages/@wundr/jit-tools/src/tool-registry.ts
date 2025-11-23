@@ -540,7 +540,7 @@ export class ToolRegistry extends EventEmitter {
    * @returns Registry statistics
    */
   getStats(): RegistryStats {
-    const toolsByCategory: Record<string, number> = {};
+    const toolsByCategory: Partial<Record<ToolCategory, number>> = {};
     let deprecatedCount = 0;
     let totalTokenCost = 0;
     const allCapabilities = new Set<string>();
@@ -564,9 +564,35 @@ export class ToolRegistry extends EventEmitter {
       }
     }
 
+    // Build complete record with all categories defaulting to 0
+    const allCategories: ToolCategory[] = [
+      'coordination',
+      'monitoring',
+      'memory',
+      'neural',
+      'github',
+      'system',
+      'governance',
+      'analysis',
+      'testing',
+      'documentation',
+      'deployment',
+      'security',
+      'custom',
+    ];
+
+    const completeToolsByCategory: Record<ToolCategory, number> =
+      allCategories.reduce(
+        (acc, category) => {
+          acc[category] = toolsByCategory[category] || 0;
+          return acc;
+        },
+        {} as Record<ToolCategory, number>
+      );
+
     return {
       totalTools: this.tools.size,
-      toolsByCategory: toolsByCategory as Record<ToolCategory, number>,
+      toolsByCategory: completeToolsByCategory,
       deprecatedTools: deprecatedCount,
       totalCapabilities: allCapabilities.size,
       averageTokenCost:

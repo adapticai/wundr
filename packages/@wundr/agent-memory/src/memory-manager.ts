@@ -633,7 +633,7 @@ export class AgentMemoryManager {
     };
 
     this.emit('memory:consolidated', {
-      details: result as unknown as Record<string, unknown>,
+      details: result,
     });
 
     return result;

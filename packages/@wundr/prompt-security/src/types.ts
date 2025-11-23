@@ -25,6 +25,93 @@ export type ActionType =
   | 'custom';
 
 /**
+ * Specific parameter types for each action type.
+ * These provide type-safe parameters for security-critical actions.
+ */
+export interface FileReadParameters {
+  path: string;
+  encoding?: BufferEncoding;
+}
+
+export interface FileWriteParameters {
+  path: string;
+  content: string | Buffer;
+  encoding?: BufferEncoding;
+  mode?: number;
+}
+
+export interface FileDeleteParameters {
+  path: string;
+  recursive?: boolean;
+}
+
+export interface NetworkRequestParameters {
+  url: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+  headers?: Record<string, string>;
+  body?: string | Record<string, string | number | boolean | null>;
+  timeout?: number;
+}
+
+export interface CodeExecutionParameters {
+  code: string;
+  language: string;
+  timeout?: number;
+  sandbox?: boolean;
+}
+
+export interface DatabaseQueryParameters {
+  query: string;
+  params?: Array<string | number | boolean | null>;
+  database?: string;
+}
+
+export interface SystemCommandParameters {
+  command: string;
+  args?: string[];
+  cwd?: string;
+  env?: Record<string, string>;
+  timeout?: number;
+}
+
+export interface ApiCallParameters {
+  endpoint: string;
+  method: string;
+  payload?: Record<string, string | number | boolean | null | undefined>;
+}
+
+export interface CustomActionParameters {
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | string[]
+    | number[];
+}
+
+/**
+ * Map of action types to their specific parameter types
+ */
+export interface ActionParameterMap {
+  file_read: FileReadParameters;
+  file_write: FileWriteParameters;
+  file_delete: FileDeleteParameters;
+  network_request: NetworkRequestParameters;
+  code_execution: CodeExecutionParameters;
+  database_query: DatabaseQueryParameters;
+  system_command: SystemCommandParameters;
+  api_call: ApiCallParameters;
+  custom: CustomActionParameters;
+}
+
+/**
+ * Generic action parameters type - union of all specific parameter types
+ */
+export type ActionParameters = ActionParameterMap[ActionType];
+
+/**
  * Decision made by the action interceptor
  */
 export type ActionDecision =
@@ -224,9 +311,51 @@ export interface AuditConfig {
 }
 
 /**
+ * Allowed metadata value types for security auditing
+ */
+export type MetadataValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Date
+  | string[]
+  | number[];
+
+/**
+ * Strongly-typed metadata for action auditing
+ */
+export interface ActionMetadata {
+  /**
+   * Request ID for tracing
+   */
+  requestId?: string;
+  /**
+   * User agent string if from HTTP request
+   */
+  userAgent?: string;
+  /**
+   * IP address of the requester
+   */
+  ipAddress?: string;
+  /**
+   * Correlation ID for distributed tracing
+   */
+  correlationId?: string;
+  /**
+   * Tags for categorization
+   */
+  tags?: string[];
+  /**
+   * Additional custom metadata (restricted types for security)
+   */
+  [key: string]: MetadataValue | undefined;
+}
+
+/**
  * An action to be executed (before interception)
  */
-export interface Action {
+export interface Action<T extends ActionType = ActionType> {
   /**
    * Unique identifier for this action instance
    */
@@ -235,7 +364,7 @@ export interface Action {
   /**
    * Type of action
    */
-  type: ActionType;
+  type: T;
 
   /**
    * Target resource (file path, URL, etc.)
@@ -243,9 +372,11 @@ export interface Action {
   target: string;
 
   /**
-   * Action parameters
+   * Action parameters - type-safe based on action type
    */
-  parameters: Record<string, unknown>;
+  parameters: T extends keyof ActionParameterMap
+    ? ActionParameterMap[T]
+    : ActionParameters;
 
   /**
    * Source of the action request
@@ -258,9 +389,9 @@ export interface Action {
   timestamp: Date;
 
   /**
-   * Additional metadata
+   * Additional metadata with restricted types for security
    */
-  metadata?: Record<string, unknown>;
+  metadata?: ActionMetadata;
 }
 
 /**
@@ -329,6 +460,64 @@ export interface SecureActionResult<T = unknown> {
 }
 
 /**
+ * Allowed audit detail value types for security logging
+ */
+export type AuditDetailValue =
+  | string
+  | number
+  | boolean
+  | null
+  | string[]
+  | number[]
+  | ActionDecision;
+
+/**
+ * Strongly-typed audit details
+ */
+export interface AuditDetails {
+  /**
+   * Action ID being audited
+   */
+  actionId?: string;
+  /**
+   * Action type
+   */
+  actionType?: ActionType;
+  /**
+   * Target resource
+   */
+  target?: string;
+  /**
+   * Rule ID that was matched
+   */
+  ruleId?: string;
+  /**
+   * Decision made
+   */
+  decision?: ActionDecision;
+  /**
+   * Reason for the decision
+   */
+  reason?: string;
+  /**
+   * Rules that matched
+   */
+  matchedRules?: string[];
+  /**
+   * Duration in milliseconds
+   */
+  duration?: number;
+  /**
+   * Whether action was allowed
+   */
+  allowed?: boolean;
+  /**
+   * Additional custom details (restricted types)
+   */
+  [key: string]: AuditDetailValue | undefined;
+}
+
+/**
  * Entry in the audit trail
  */
 export interface AuditEntry {
@@ -348,9 +537,9 @@ export interface AuditEntry {
   description: string;
 
   /**
-   * Additional details
+   * Additional details with restricted types for security
    */
-  details?: Record<string, unknown>;
+  details?: AuditDetails;
 }
 
 /**
@@ -704,6 +893,48 @@ export const SecurityConfigSchema = z.object({
 });
 
 /**
+ * Zod schema for allowed parameter value types
+ */
+const ParameterValueSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+  z.array(z.string()),
+  z.array(z.number()),
+  z.instanceof(Buffer),
+]);
+
+/**
+ * Zod schema for action parameters with restricted types
+ */
+const ActionParametersSchema = z.record(
+  z.string(),
+  ParameterValueSchema.optional()
+);
+
+/**
+ * Zod schema for metadata value types
+ */
+const MetadataValueSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+  z.date(),
+  z.array(z.string()),
+  z.array(z.number()),
+]);
+
+/**
+ * Zod schema for action metadata with restricted types
+ */
+const ActionMetadataSchema = z.record(
+  z.string(),
+  MetadataValueSchema.optional()
+);
+
+/**
  * Zod schema for Action validation
  */
 export const ActionSchema = z.object({
@@ -720,7 +951,7 @@ export const ActionSchema = z.object({
     'custom',
   ]),
   target: z.string(),
-  parameters: z.record(z.unknown()),
+  parameters: ActionParametersSchema,
   source: z.object({
     origin: z.enum(['user', 'llm', 'system', 'plugin']),
     trustLevel: z.enum(['untrusted', 'semi-trusted', 'trusted', 'system']),
@@ -728,7 +959,7 @@ export const ActionSchema = z.object({
     userId: z.string().optional(),
   }),
   timestamp: z.date(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: ActionMetadataSchema.optional(),
 });
 
 /**

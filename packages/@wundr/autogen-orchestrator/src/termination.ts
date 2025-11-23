@@ -11,8 +11,10 @@ import type {
   ChatContext,
   TerminationCondition,
   TerminationConditionType,
+  TerminationConditionValue,
   TerminationResult,
   TerminationEvaluator,
+  ConsensusConfigType,
 } from './types';
 
 /**
@@ -34,6 +36,36 @@ export interface TerminationHandler {
 }
 
 /**
+ * Type guard to check if value is a number
+ */
+function isNumber(value: TerminationConditionValue): value is number {
+  return typeof value === 'number';
+}
+
+/**
+ * Type guard to check if value is a string or string array
+ */
+function isStringOrStringArray(
+  value: TerminationConditionValue
+): value is string | string[] {
+  return typeof value === 'string' || Array.isArray(value);
+}
+
+/**
+ * Type guard to check if value is a ConsensusConfigType
+ */
+function isConsensusConfig(
+  value: TerminationConditionValue
+): value is ConsensusConfigType {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'threshold' in value &&
+    'agreementKeywords' in value
+  );
+}
+
+/**
  * Factory function to create termination handlers
  * @param condition - Termination condition configuration
  * @returns Appropriate termination handler
@@ -43,21 +75,45 @@ export function createTerminationHandler(
 ): TerminationHandler {
   switch (condition.type) {
     case 'max_rounds':
-      return new MaxRoundsHandler(condition.value as number);
+      if (!isNumber(condition.value)) {
+        throw new Error('max_rounds condition requires a number value');
+      }
+      return new MaxRoundsHandler(condition.value);
     case 'max_messages':
-      return new MaxMessagesHandler(condition.value as number);
+      if (!isNumber(condition.value)) {
+        throw new Error('max_messages condition requires a number value');
+      }
+      return new MaxMessagesHandler(condition.value);
     case 'keyword':
-      return new KeywordHandler(condition.value as string | string[]);
+      if (!isStringOrStringArray(condition.value)) {
+        throw new Error(
+          'keyword condition requires a string or string[] value'
+        );
+      }
+      return new KeywordHandler(condition.value);
     case 'timeout':
-      return new TimeoutHandler(condition.value as number);
+      if (!isNumber(condition.value)) {
+        throw new Error('timeout condition requires a number value');
+      }
+      return new TimeoutHandler(condition.value);
     case 'function':
-      return new FunctionHandler(condition.evaluator!);
+      if (!condition.evaluator) {
+        throw new Error('function condition requires an evaluator');
+      }
+      return new FunctionHandler(condition.evaluator);
     case 'consensus':
-      return new ConsensusHandler(condition.value as ConsensusConfig);
+      if (!isConsensusConfig(condition.value)) {
+        throw new Error(
+          'consensus condition requires a ConsensusConfigType value'
+        );
+      }
+      return new ConsensusHandler(condition.value);
     case 'custom':
       return new CustomHandler(condition);
-    default:
-      throw new Error(`Unknown termination condition type: ${condition.type}`);
+    default: {
+      const exhaustiveCheck: never = condition.type;
+      throw new Error(`Unknown termination condition type: ${exhaustiveCheck}`);
+    }
   }
 }
 
@@ -297,32 +353,22 @@ export class FunctionHandler implements TerminationHandler {
 }
 
 /**
- * Configuration for consensus-based termination
+ * ConsensusConfig is re-exported for backwards compatibility
+ * @deprecated Use ConsensusConfigType from ./types instead
  */
-export interface ConsensusConfig {
-  /** Minimum agreement threshold (0-1) */
-  threshold: number;
-  /** Keywords indicating agreement */
-  agreementKeywords: string[];
-  /** Keywords indicating disagreement */
-  disagreementKeywords: string[];
-  /** Minimum participants required for consensus */
-  minParticipants?: number;
-  /** Number of recent messages to consider */
-  windowSize?: number;
-}
+export type ConsensusConfig = ConsensusConfigType;
 
 /**
  * Handler for consensus-based termination
  */
 export class ConsensusHandler implements TerminationHandler {
-  private config: ConsensusConfig;
+  private config: ConsensusConfigType;
 
   /**
    * Create a consensus handler
    * @param config - Consensus configuration
    */
-  constructor(config: ConsensusConfig) {
+  constructor(config: ConsensusConfigType) {
     this.config = {
       threshold: config.threshold,
       agreementKeywords: config.agreementKeywords || [
@@ -600,14 +646,15 @@ export const TerminationPresets = {
    * Create a preset for approval workflows
    */
   approval(): TerminationCondition {
+    const consensusValue: ConsensusConfigType = {
+      threshold: 0.75,
+      agreementKeywords: ['approve', 'approved', 'lgtm', 'ship it'],
+      disagreementKeywords: ['reject', 'denied', 'needs work'],
+      minParticipants: 2,
+    };
     return {
       type: 'consensus',
-      value: {
-        threshold: 0.75,
-        agreementKeywords: ['approve', 'approved', 'lgtm', 'ship it'],
-        disagreementKeywords: ['reject', 'denied', 'needs work'],
-        minParticipants: 2,
-      } as ConsensusConfig,
+      value: consensusValue,
       description: 'Terminate when approval consensus is reached',
     };
   },

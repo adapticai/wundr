@@ -45,6 +45,24 @@ export interface ToolSpec {
 }
 
 /**
+ * Represents valid JSON primitive values
+ */
+export type JsonPrimitive = string | number | boolean | null;
+
+/**
+ * Represents valid JSON values (recursive type for nested structures)
+ */
+export type JsonValue =
+  | JsonPrimitive
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+/**
+ * Record type for JSON-compatible data structures
+ */
+export type JsonRecord = Record<string, JsonValue>;
+
+/**
  * Tool parameter definition
  */
 export interface ToolParameter {
@@ -57,7 +75,7 @@ export interface ToolParameter {
   /** Whether the parameter is required */
   required: boolean;
   /** Default value if not provided */
-  defaultValue?: unknown;
+  defaultValue?: JsonValue;
   /** Enum values if applicable */
   enumValues?: string[];
 }
@@ -69,9 +87,9 @@ export interface ToolExample {
   /** Example description */
   description: string;
   /** Example input */
-  input: Record<string, unknown>;
+  input: JsonRecord;
   /** Expected output */
-  output?: Record<string, unknown>;
+  output?: JsonRecord;
 }
 
 /**
@@ -91,7 +109,7 @@ export interface ToolMetadata {
   /** Documentation URL */
   documentationUrl?: string;
   /** Custom properties */
-  custom: Record<string, unknown>;
+  custom: JsonRecord;
 }
 
 /**
@@ -278,7 +296,7 @@ export interface AgentContext {
   /** Agent preferences */
   preferences: AgentPreferences;
   /** Custom context data */
-  customData: Record<string, unknown>;
+  customData: JsonRecord;
 }
 
 /**
@@ -296,7 +314,7 @@ export interface TaskContext {
   /** Task priority */
   priority: 'low' | 'medium' | 'high' | 'critical';
   /** Task metadata */
-  metadata: Record<string, unknown>;
+  metadata: JsonRecord;
 }
 
 /**
@@ -447,12 +465,41 @@ export interface JITToolEventPayload {
   /** Event timestamp */
   timestamp: Date;
   /** Event data */
-  data: Record<string, unknown>;
+  data: JsonRecord;
 }
 
 // =============================================================================
 // Zod Schemas for Validation
 // =============================================================================
+
+/**
+ * Schema for JSON primitive values
+ */
+export const JsonPrimitiveSchema: z.ZodType<JsonPrimitive> = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+]);
+
+/**
+ * Schema for JSON values (recursive)
+ */
+export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
+  z.union([
+    JsonPrimitiveSchema,
+    z.array(JsonValueSchema),
+    z.record(z.string(), JsonValueSchema),
+  ])
+);
+
+/**
+ * Schema for JSON record
+ */
+export const JsonRecordSchema: z.ZodType<JsonRecord> = z.record(
+  z.string(),
+  JsonValueSchema
+);
 
 /**
  * Schema for ToolPermission
@@ -494,7 +541,7 @@ export const ToolParameterSchema = z.object({
   type: z.enum(['string', 'number', 'boolean', 'object', 'array']),
   description: z.string(),
   required: z.boolean(),
-  defaultValue: z.unknown().optional(),
+  defaultValue: JsonValueSchema.optional(),
   enumValues: z.array(z.string()).optional(),
 });
 
@@ -503,8 +550,8 @@ export const ToolParameterSchema = z.object({
  */
 export const ToolExampleSchema = z.object({
   description: z.string(),
-  input: z.record(z.unknown()),
-  output: z.record(z.unknown()).optional(),
+  input: JsonRecordSchema,
+  output: JsonRecordSchema.optional(),
 });
 
 /**
@@ -517,7 +564,7 @@ export const ToolMetadataSchema = z.object({
   deprecated: z.boolean(),
   deprecationMessage: z.string().optional(),
   documentationUrl: z.string().url().optional(),
-  custom: z.record(z.unknown()),
+  custom: JsonRecordSchema,
 });
 
 /**
@@ -577,7 +624,7 @@ export const TaskContextSchema = z.object({
   description: z.string(),
   requiredCapabilities: z.array(z.string()),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
-  metadata: z.record(z.unknown()),
+  metadata: JsonRecordSchema,
 });
 
 /**
@@ -613,7 +660,7 @@ export const AgentContextSchema = z.object({
   taskContext: TaskContextSchema.optional(),
   toolHistory: z.array(ToolUsageRecordSchema),
   preferences: AgentPreferencesSchema,
-  customData: z.record(z.unknown()),
+  customData: JsonRecordSchema,
 });
 
 /**

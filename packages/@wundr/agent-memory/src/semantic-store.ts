@@ -735,7 +735,7 @@ export class SemanticStore {
 
     this.emit('tier:compacted', {
       tier: 'semantic',
-      details: result as unknown as Record<string, unknown>,
+      details: result,
     });
 
     return result;

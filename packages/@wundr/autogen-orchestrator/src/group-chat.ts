@@ -24,6 +24,7 @@ import type {
   ChatError,
   ChatEvent,
   ChatEventType,
+  ChatEventDataMap,
   GroupChatConfig,
   TerminationCondition,
   NestedChatConfig,
@@ -733,10 +734,15 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
   /**
    * Emit a chat event
    * @param type - Event type
-   * @param data - Event data
+   * @param data - Event data typed based on event type
    */
-  private emitEvent(type: ChatEventType, data: unknown): void {
-    const event: ChatEvent = {
+  private emitEvent<T extends ChatEventType>(
+    type: T,
+    data: T extends keyof ChatEventDataMap
+      ? ChatEventDataMap[T]
+      : Record<string, unknown>
+  ): void {
+    const event: ChatEvent<T> = {
       type,
       timestamp: new Date(),
       chatId: this.chatId,
@@ -798,9 +804,12 @@ export class GroupChatManager extends EventEmitter<GroupChatEvents> {
   /**
    * Update context state
    * @param key - State key
-   * @param value - State value
+   * @param value - State value (typed for common use cases)
    */
-  updateState(key: string, value: unknown): void {
+  updateState<T extends string | number | boolean | object | null>(
+    key: string,
+    value: T
+  ): void {
     this.context.state[key] = value;
   }
 
