@@ -13,16 +13,16 @@ import inquirer from 'inquirer';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
-import { ComputerSetupManager } from './src/manager';
 import { ProfileManager } from './src/profiles';
-import { InstallerRegistry } from './src/installers';
+import { InstallerRegistry, VPDaemonInstaller } from './src/installers';
 import { ConfiguratorService } from './src/configurators';
 import { SetupValidator } from './src/validators';
 import { SetupOrchestrator } from './src/orchestrator';
 import { DeveloperProfile, SetupOptions, SetupPlatform } from './src/types';
 
 // Version from package.json
-const packageInfo = require('./package.json');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const packageInfo = require('./package.json') as { version?: string };
 const version = packageInfo.version || '1.0.0';
 
 // Additional types for CLI
@@ -865,10 +865,10 @@ async function main() {
     .action(async () => {
       try {
         const validator = new SetupValidator();
-        
+
         logger.info(chalk.yellow('Checking installed tools...'));
         logger.info('');
-        
+
         // Check common tools
         const tools = [
           { name: 'Git', check: () => validator.validateGit() },
@@ -880,7 +880,7 @@ async function main() {
           { name: 'pnpm', check: () => validator.validatePackageManager('pnpm') },
           { name: 'yarn', check: () => validator.validatePackageManager('yarn') },
         ];
-        
+
         for (const tool of tools) {
           try {
             const isInstalled = await tool.check();
@@ -893,7 +893,7 @@ async function main() {
             logger.info(chalk.gray(`⭕ ${tool.name} (not installed)`));
           }
         }
-        
+
         logger.info('');
         const installedTools = await validator.getInstalledTools();
         if (installedTools.length > 0) {
@@ -904,6 +904,181 @@ async function main() {
         }
       } catch (error) {
         logger.error('Tool check failed:', error);
+        process.exit(1);
+      }
+    });
+
+  // Global setup command - installs VP daemon and global wundr resources
+  program
+    .command('global-setup')
+    .description('Install VP Daemon and global wundr resources at ~/vp-daemon and ~/.wundr')
+    .option('--vp-daemon-dir <dir>', 'VP daemon directory', path.join(os.homedir(), 'vp-daemon'))
+    .option('--wundr-config-dir <dir>', 'Wundr config directory', path.join(os.homedir(), '.wundr'))
+    .option('--enable-slack', 'Enable Slack integration')
+    .option('--enable-gmail', 'Enable Gmail integration')
+    .option('--enable-google-drive', 'Enable Google Drive integration')
+    .option('--enable-twilio', 'Enable Twilio integration')
+    .option('--dry-run', 'Show what would be installed without making changes')
+    .action(async (options) => {
+      try {
+        logger.info(chalk.cyan.bold('\n🌐 Installing VP Daemon and Global Wundr Resources\n'));
+
+        const vpDaemonDir = options.vpDaemonDir;
+        const wundrConfigDir = options.wundrConfigDir;
+
+        logger.info(chalk.gray(`VP Daemon directory: ${vpDaemonDir}`));
+        logger.info(chalk.gray(`Wundr config directory: ${wundrConfigDir}`));
+        logger.info('');
+
+        if (options.dryRun) {
+          logger.info(chalk.yellow('DRY RUN - No changes will be made\n'));
+          logger.info(chalk.cyan('Would create:'));
+          logger.info(`  • ${vpDaemonDir}/`);
+          logger.info(`    ├── vp-charter.yaml`);
+          logger.info(`    ├── sessions/`);
+          logger.info(`    ├── logs/`);
+          logger.info(`    └── integrations/`);
+          logger.info(`  • ${wundrConfigDir}/`);
+          logger.info(`    ├── agents/`);
+          logger.info(`    ├── commands/`);
+          logger.info(`    ├── conventions/`);
+          logger.info(`    ├── config/`);
+          logger.info(`    ├── governance/`);
+          logger.info(`    ├── hooks/`);
+          logger.info(`    ├── memory/`);
+          logger.info(`    ├── schemas/`);
+          logger.info(`    ├── scripts/`);
+          logger.info(`    ├── templates/`);
+          logger.info(`    ├── workflows/`);
+          logger.info(`    └── archetypes/`);
+          logger.info('');
+          logger.success('Dry run complete. Run without --dry-run to install.');
+          return;
+        }
+
+        const spinner = ora('Installing VP Daemon...').start();
+
+        const vpDaemonInstaller = new VPDaemonInstaller({
+          vpDaemonDir,
+          wundrConfigDir,
+          enableSlack: options.enableSlack,
+          enableGmail: options.enableGmail,
+          enableGoogleDrive: options.enableGoogleDrive,
+          enableTwilio: options.enableTwilio,
+        });
+
+        // Subscribe to progress events
+        vpDaemonInstaller.on('progress', (progress: { step: string; percentage: number }) => {
+          spinner.text = `[${progress.percentage}%] ${progress.step}`;
+        });
+
+        const result = await vpDaemonInstaller.installWithResult();
+
+        if (result.success) {
+          spinner.succeed('VP Daemon installed successfully!');
+          logger.info('');
+          logger.info(chalk.green.bold('✅ Global setup completed!'));
+          logger.info('');
+          logger.info(chalk.cyan('Installed locations:'));
+          logger.info(`  VP Daemon: ${result.vpDaemonPath}`);
+          logger.info(`  Wundr Config: ${result.wundrConfigPath}`);
+          logger.info('');
+          logger.info(chalk.cyan('Installed resources:'));
+          result.installedResources.forEach(resource => {
+            logger.info(`  ✓ ${resource}`);
+          });
+          logger.info('');
+
+          if (result.warnings.length > 0) {
+            logger.info(chalk.yellow('Warnings:'));
+            result.warnings.forEach(warning => {
+              logger.info(`  ⚠ ${warning}`);
+            });
+            logger.info('');
+          }
+
+          logger.info(chalk.cyan('Next steps:'));
+          logger.info('  1. Configure integrations in ~/vp-daemon/integrations/');
+          logger.info('  2. Review VP charter at ~/vp-daemon/vp-charter.yaml');
+          logger.info('  3. Customize session archetypes in ~/.wundr/archetypes/');
+          logger.info('  4. Run "npx tsx dev.ts vp-status" to check VP daemon status');
+          logger.info('');
+        } else {
+          spinner.fail('VP Daemon installation failed');
+          logger.info('');
+          logger.error('Errors:');
+          result.errors.forEach(error => {
+            logger.error(`  • ${error.message}`);
+          });
+          process.exit(1);
+        }
+      } catch (error) {
+        logger.error('Global setup failed:', error);
+        process.exit(1);
+      }
+    });
+
+  // VP Status command - check VP daemon installation status
+  program
+    .command('vp-status')
+    .description('Check VP Daemon installation status')
+    .action(async () => {
+      try {
+        logger.info(chalk.cyan.bold('\n🔍 VP Daemon Status\n'));
+
+        const vpDaemonDir = path.join(os.homedir(), 'vp-daemon');
+        const wundrConfigDir = path.join(os.homedir(), '.wundr');
+
+        const vpDaemonInstaller = new VPDaemonInstaller({
+          vpDaemonDir,
+          wundrConfigDir,
+        });
+
+        const isInstalled = await vpDaemonInstaller.isInstalled();
+        const version = await vpDaemonInstaller.getVersion();
+        const isValid = await vpDaemonInstaller.validate();
+
+        if (isInstalled) {
+          logger.info(chalk.green('✅ VP Daemon is installed'));
+          logger.info(`   Version: ${version || 'unknown'}`);
+          logger.info(`   Location: ${vpDaemonDir}`);
+          logger.info(`   Valid: ${isValid ? 'Yes' : 'No (missing components)'}`);
+        } else {
+          logger.info(chalk.yellow('⚠️ VP Daemon is not installed'));
+          logger.info('   Run "npx tsx dev.ts global-setup" to install');
+        }
+
+        logger.info('');
+
+        // Check wundr config
+        const wundrExists = await fs.pathExists(wundrConfigDir);
+        if (wundrExists) {
+          logger.info(chalk.green('✅ Wundr global config exists'));
+          logger.info(`   Location: ${wundrConfigDir}`);
+
+          // List subdirectories
+          const dirs = await fs.readdir(wundrConfigDir);
+          logger.info(`   Contents: ${dirs.join(', ')}`);
+        } else {
+          logger.info(chalk.yellow('⚠️ Wundr global config not found'));
+        }
+
+        logger.info('');
+
+        // Check for active sessions
+        const sessionsDir = path.join(vpDaemonDir, 'sessions');
+        const sessionsExist = await fs.pathExists(sessionsDir);
+        if (sessionsExist) {
+          const sessionIndex = path.join(sessionsDir, 'index.json');
+          if (await fs.pathExists(sessionIndex)) {
+            const indexData = await fs.readJson(sessionIndex);
+            logger.info(chalk.cyan('📊 Sessions:'));
+            logger.info(`   Total sessions: ${indexData.sessions?.length || 0}`);
+            logger.info(`   Last updated: ${indexData.lastUpdated || 'never'}`);
+          }
+        }
+      } catch (error) {
+        logger.error('Status check failed:', error);
         process.exit(1);
       }
     });
@@ -1045,7 +1220,7 @@ async function main() {
               generateReport: true
             };
             
-            const result = await orchestrator.orchestrate(setupOptions);
+            await orchestrator.orchestrate(setupOptions);
             logger.success('Dry-run completed!');
             break;
           }

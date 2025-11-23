@@ -53,6 +53,7 @@ transforms a fresh machine into a fully-configured development powerhouse in min
 - **Databases**: PostgreSQL, MySQL, MongoDB, Redis clients
 - **Cloud CLIs**: AWS, GCloud, Azure
 - **AI Tools**: Claude Code, Claude Flow, 80+ MCP agents
+- **VP Daemon**: Machine-level agent supervisor with tiered memory and external integrations
 
 ### Hardware-Adaptive Claude Optimization
 
@@ -143,6 +144,20 @@ npx @wundr.io/computer-setup
 # - Personal information (name, email)
 # - Optional integrations (Slack, Gmail, team configs)
 ```
+
+### Global Setup (VP Daemon)
+
+For machine-level agent orchestration with external integrations:
+
+```bash
+# Install VP Daemon and global wundr resources
+npx @wundr.io/computer-setup global-setup
+
+# Check VP Daemon installation status
+npx @wundr.io/computer-setup vp-status
+```
+
+See [VP Daemon Architecture](#-vp-daemon-architecture) for details.
 
 ### One-Command Setup
 
@@ -561,6 +576,25 @@ wundr computer-setup --mode minimal
 --generate-report
 ```
 
+### Global Setup Commands
+
+```bash
+# Install VP Daemon and global wundr resources
+npx @wundr.io/computer-setup global-setup
+
+# Options:
+# --skip-daemon     Skip VP Daemon installation
+# --daemon-only     Only install VP Daemon
+# --no-autostart    Don't configure daemon to start on boot
+
+# Check VP Daemon installation status
+npx @wundr.io/computer-setup vp-status
+
+# Options:
+# --json            Output status as JSON
+# --verbose         Include detailed diagnostics
+```
+
 ### Resume Failed Installations
 
 If installation fails, you can resume:
@@ -796,6 +830,11 @@ wundr computer-setup --remove-profile fullstack
   - sequentialthinking
 - ✅ 80+ Specialized Agents
 - ✅ Hardware optimization scripts
+- ✅ VP Daemon (via `global-setup` command):
+  - Machine-level agent supervisor
+  - Session archetype management
+  - MemGPT-inspired tiered memory
+  - External integrations (Slack, Gmail, Google Drive, Twilio)
 
 ### Monitoring & Debugging
 
@@ -867,6 +906,256 @@ Computer Setup maintains resumable state:
 ```
 
 If installation fails, run `--resume` to continue from where it left off.
+
+## 🤖 VP Daemon Architecture
+
+The **VP Daemon** (Virtual Persona Daemon) is a machine-level supervisor that provides persistent
+agent orchestration, external integrations, and intelligent memory management across all Claude
+Code/Claude Flow sessions.
+
+### Overview
+
+VP Daemon runs as a background service on your machine, acting as a central coordinator for:
+
+- **Session Management**: Spawning and managing Claude Code/Claude Flow sessions
+- **External Integrations**: Interfacing with Slack, Gmail, Google Drive, Twilio, and more
+- **Session Archetypes**: Pre-configured personas for different work contexts
+- **Tiered Memory**: MemGPT-inspired memory architecture for persistent context
+
+### Installation
+
+```bash
+# Install VP Daemon globally
+npx @wundr.io/computer-setup global-setup
+
+# This installs:
+# - VP Daemon at ~/vp-daemon
+# - Global wundr resources at ~/.wundr
+# - System service configuration
+# - Integration credentials storage
+```
+
+### Checking Status
+
+```bash
+# Check VP Daemon installation and running status
+npx @wundr.io/computer-setup vp-status
+
+# Example output:
+# VP Daemon Status
+# ================
+# Installation: ~/vp-daemon
+# Status: Running (PID 12345)
+# Uptime: 3d 14h 22m
+# Active Sessions: 2
+# Memory Usage: 128MB
+# Integrations: Slack (connected), Gmail (connected)
+```
+
+### Session Archetypes
+
+VP Daemon supports pre-configured session archetypes optimized for different work contexts:
+
+| Archetype       | Description                                        | Pre-loaded Agents                        |
+| --------------- | -------------------------------------------------- | ---------------------------------------- |
+| `engineering`   | Software development tasks                         | coder, reviewer, tester, architect       |
+| `legal`         | Legal document review and drafting                 | legal-analyst, compliance-checker        |
+| `hr`            | Human resources and recruitment                    | hr-assistant, policy-reviewer            |
+| `marketing`     | Marketing content and campaign management          | content-creator, analytics-agent         |
+| `custom`        | User-defined archetype with custom agent selection | User-specified                           |
+
+```bash
+# Start a session with a specific archetype
+vp-daemon session start --archetype engineering
+
+# Create a custom archetype
+vp-daemon archetype create my-archetype --agents "coder,researcher,planner"
+```
+
+### Tiered Memory System
+
+VP Daemon implements a **MemGPT-inspired tiered memory architecture** for intelligent context
+management across sessions:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     TIERED MEMORY SYSTEM                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              SCRATCHPAD (Working Memory)             │   │
+│  │  - Current task context                              │   │
+│  │  - Active conversation state                         │   │
+│  │  - Temporary computations                            │   │
+│  │  - TTL: Session lifetime                             │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           ▲                                 │
+│                           │ Promotes/Demotes                │
+│                           ▼                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              EPISODIC (Short-term Memory)            │   │
+│  │  - Recent interactions and outcomes                  │   │
+│  │  - Task completion history                           │   │
+│  │  - Error patterns and resolutions                    │   │
+│  │  - TTL: 7-30 days (configurable)                     │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           ▲                                 │
+│                           │ Consolidates                    │
+│                           ▼                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              SEMANTIC (Long-term Memory)             │   │
+│  │  - Project knowledge and patterns                    │   │
+│  │  - User preferences and workflows                    │   │
+│  │  - Learned optimizations                             │   │
+│  │  - TTL: Persistent (with periodic cleanup)           │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Memory Operations:**
+
+```bash
+# View current memory state
+vp-daemon memory status
+
+# Manually promote context to long-term memory
+vp-daemon memory promote --key "project-architecture"
+
+# Search semantic memory
+vp-daemon memory search "authentication flow"
+
+# Export memory for backup
+vp-daemon memory export --output ~/.wundr/memory-backup.json
+```
+
+### External Integrations
+
+VP Daemon provides seamless integration with external services:
+
+#### Slack Integration
+
+```bash
+# Configure Slack integration
+vp-daemon integrations add slack --token $SLACK_BOT_TOKEN
+
+# Features:
+# - Receive tasks via Slack messages
+# - Post session summaries to channels
+# - Interactive approvals for sensitive operations
+# - Real-time status updates
+```
+
+#### Gmail Integration
+
+```bash
+# Configure Gmail integration
+vp-daemon integrations add gmail --credentials ~/.wundr/gmail-credentials.json
+
+# Features:
+# - Process emails as tasks
+# - Draft and send responses
+# - Calendar integration for scheduling
+# - Attachment processing
+```
+
+#### Google Drive Integration
+
+```bash
+# Configure Google Drive integration
+vp-daemon integrations add google-drive --credentials ~/.wundr/gdrive-credentials.json
+
+# Features:
+# - Access and analyze documents
+# - Create and update files
+# - Folder organization
+# - Shared drive support
+```
+
+#### Twilio Integration
+
+```bash
+# Configure Twilio integration
+vp-daemon integrations add twilio --account-sid $TWILIO_SID --auth-token $TWILIO_TOKEN
+
+# Features:
+# - SMS notifications for critical events
+# - Voice call alerts (optional)
+# - WhatsApp messaging support
+```
+
+### VP Daemon Commands
+
+| Command                       | Description                                          |
+| ----------------------------- | ---------------------------------------------------- |
+| `vp-daemon start`             | Start the VP Daemon service                          |
+| `vp-daemon stop`              | Stop the VP Daemon service                           |
+| `vp-daemon restart`           | Restart the VP Daemon service                        |
+| `vp-daemon status`            | Show daemon status and statistics                    |
+| `vp-daemon session list`      | List active Claude Code/Flow sessions                |
+| `vp-daemon session start`     | Start a new session with optional archetype          |
+| `vp-daemon session stop`      | Stop a specific session                              |
+| `vp-daemon memory status`     | Show memory tier statistics                          |
+| `vp-daemon memory search`     | Search across memory tiers                           |
+| `vp-daemon integrations list` | List configured integrations                         |
+| `vp-daemon integrations add`  | Add a new integration                                |
+| `vp-daemon logs`              | View daemon logs                                     |
+| `vp-daemon config`            | View or modify daemon configuration                  |
+
+### Configuration
+
+VP Daemon configuration is stored at `~/.wundr/vp-daemon.config.json`:
+
+```json
+{
+  "version": "1.0.0",
+  "daemon": {
+    "port": 7890,
+    "maxSessions": 10,
+    "autoStart": true,
+    "logLevel": "info"
+  },
+  "memory": {
+    "scratchpadMaxSize": "50MB",
+    "episodicRetentionDays": 14,
+    "semanticCleanupInterval": "7d",
+    "vectorStoreEnabled": true
+  },
+  "archetypes": {
+    "default": "engineering",
+    "custom": []
+  },
+  "integrations": {
+    "slack": { "enabled": true },
+    "gmail": { "enabled": false },
+    "googleDrive": { "enabled": false },
+    "twilio": { "enabled": false }
+  }
+}
+```
+
+### Example Workflows
+
+#### Automated Code Review via Slack
+
+```
+1. Developer pushes PR and mentions @vp-daemon in Slack
+2. VP Daemon receives webhook, spawns engineering session
+3. Claude Code reviews PR using pre-loaded context
+4. Summary posted back to Slack thread
+5. Session context saved to episodic memory
+```
+
+#### Email-Triggered Documentation Update
+
+```
+1. Stakeholder emails request to update-docs@company.com
+2. Gmail integration receives and parses email
+3. VP Daemon spawns session with documentation archetype
+4. Claude Code updates relevant documentation
+5. Draft response sent for human approval
+6. Task outcome saved to semantic memory
+```
 
 ## 📚 API Reference
 

@@ -9,6 +9,7 @@ import { LinuxInstaller } from './linux-installer';
 import { MacInstaller } from './mac-installer';
 import { NodeInstaller } from './node-installer';
 import { PythonInstaller } from './python-installer';
+import { VPDaemonInstaller } from './vp-daemon-installer';
 import { WindowsInstaller } from './windows-installer';
 
 import type {
@@ -54,13 +55,18 @@ export class InstallerRegistry {
     if (['darwin', 'linux'].includes(this.platform.os)) {
       this.register('homebrew', new HomebrewInstaller());
     }
-    
+
     // Development tools
     this.register('git', new GitInstaller());
     this.register('node', new NodeInstaller());
     this.register('python', new PythonInstaller());
     this.register('docker', new DockerInstaller());
     this.register('claude', claudeInstallerInstance);
+
+    // VP Daemon (global supervisor)
+    if (['darwin', 'linux'].includes(this.platform.os)) {
+      this.register('vp-daemon', new VPDaemonInstaller());
+    }
   }
 
   /**
@@ -392,4 +398,5 @@ export * from './git-installer';
 export * from './mac-installer';
 export * from './linux-installer';
 export * from './windows-installer';
+export * from './vp-daemon-installer';
 export { default as RealSetupOrchestrator } from './real-setup-orchestrator';

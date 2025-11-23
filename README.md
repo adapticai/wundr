@@ -60,15 +60,73 @@
 
 ---
 
-## 🎯 What is Wundr?
+## What is Wundr?
 
 Wundr is a comprehensive unified developer platform that provides three distinct but complementary features to support the entire developer lifecycle:
 
-1. **🖥️ Computer Setup** - Automated developer machine provisioning with global tools and configurations
-2. **🏗️ Project Creation** - Scaffold new projects with Wundr-compliant best practices built-in
-3. **📊 Code Governance** - Analyze and improve existing codebases with AI-powered insights
+1. **Computer Setup** - Automated developer machine provisioning with global tools and configurations
+2. **Project Creation** - Scaffold new projects with Wundr-compliant best practices built-in
+3. **Code Governance** - Analyze and improve existing codebases with AI-powered insights
 
 Each feature serves a specific purpose in the development workflow, from initial machine setup through project creation to ongoing code quality management.
+
+---
+
+## Three-Tier Agent Hierarchy
+
+Wundr implements a production-grade **Three-Tier Agent Hierarchy** for fleet-scale autonomous engineering:
+
+```
+                    +---------------------------+
+                    |    HUMAN CORTEX (Tier 0)  |
+                    |  Architects | Guardians   |
+                    +-------------+-------------+
+                                  |
+                                  v
+            +---------------------+---------------------+
+            |        VP SUPERVISOR DAEMON (Tier 1)      |
+            |           Machine-Level Orchestration     |
+            |  - Strategy & triage across all projects  |
+            |  - Resource allocation & rate limiting    |
+            |  - Slack/notification integration         |
+            |  - PTY-based automated CLI approval       |
+            +---------------------+---------------------+
+                                  |
+            +---------+-----------+-----------+---------+
+            |         |           |           |         |
+            v         v           v           v         v
+    +-------+--+ +----+-----+ +---+------+ +-+--------+ +--------+
+    | Session  | | Session  | | Session  | | Session  | | ...    |
+    | Manager  | | Manager  | | Manager  | | Manager  | |        |
+    | (Tier 2) | | (Tier 2) | | (Tier 2) | | (Tier 2) | |        |
+    +----+-----+ +----+-----+ +----+-----+ +----+-----+ +--------+
+         |            |            |            |
+    +----+----+  +----+----+  +----+----+  +----+----+
+    |Sub-Agent|  |Sub-Agent|  |Sub-Agent|  |Sub-Agent|
+    | Workers |  | Workers |  | Workers |  | Workers |
+    | (Tier 3)|  | (Tier 3)|  | (Tier 3)|  | (Tier 3)|
+    +---------+  +---------+  +---------+  +---------+
+```
+
+### Tier 1: VP Supervisor Daemon (Machine-Level)
+
+- **Scope**: One per development machine (node)
+- **Responsibilities**: Strategic oversight, request triage, resource allocation, rate limiting
+- **Features**: Identity management, Slack integration, process lifecycle, PTY-based approval
+
+### Tier 2: Session Managers (Project-Level)
+
+- **Scope**: 5-10 per VP Supervisor (~160 total across fleet)
+- **Responsibilities**: Feature implementation, git management, memory bank coordination
+- **Features**: `activeContext.md` tracking, `progress.md` logging, sub-agent delegation
+
+### Tier 3: Sub-Agent Workers (Task-Level)
+
+- **Scope**: ~20 per Session Manager (~3,200 total across fleet)
+- **Responsibilities**: Specialized tasks (coding, testing, reviewing, documentation)
+- **Features**: Git worktree isolation, quality gate hooks, focused task execution
+
+**Maximum Scale**: 3,376 autonomous agents (16 VPs + 160 Sessions + 3,200 Workers) directed by a 12-person human cortex = **281:1 leverage ratio**
 
 ## 🌟 Three Core Features
 
@@ -190,16 +248,33 @@ wundr govern report
 - ✅ Security vulnerability scanning
 - ✅ Performance bottleneck identification
 
-## 🚀 Quick Start
+## Quick Start
 
-### Installation
+### Global Setup (Recommended)
+
+Set up your entire development environment with a single command:
+
+```bash
+# Complete machine setup with Three-Tier Hierarchy support
+npx tsx packages/@wundr/computer-setup/dev.ts global-setup
+
+# This installs:
+# - VP Supervisor Daemon infrastructure
+# - Session Manager templates and memory banks
+# - Sub-Agent worker templates with git worktree support
+# - All MCP tools and registries
+# - Claude Code with hardware-adaptive optimizations
+# - Token budgeting and governance systems
+```
+
+### Installation (CLI Only)
 
 ```bash
 # Install globally (recommended)
-npm install -g @wundr/cli
+npm install -g @wundr.io/cli
 
 # Or use with npx
-npx @wundr/cli --help
+npx @wundr.io/cli --help
 ```
 
 ### Development Setup (For Contributors)
@@ -239,27 +314,78 @@ npx tsx packages/@wundr/cli/src/index.ts create frontend my-app
 
 See [DEV_QUICKSTART.md](./DEV_QUICKSTART.md) for more development shortcuts.
 
-## 📦 Monorepo Structure
+## Monorepo Structure
 
 Wundr is built as a monorepo using Turborepo for optimized builds and caching:
 
+### Core Packages
+
 ```
-packages/
-├── @wundr/core              # Shared utilities and event bus
-├── @wundr/config            # Configuration management
-├── @wundr/plugin-system     # Plugin lifecycle management
-├── @wundr/computer-setup    # Machine provisioning system
-├── @wundr/project-templates # Project scaffolding templates
-├── @wundr/cli               # Unified command interface
-├── @wundr/analysis-engine   # Code analysis capabilities
-├── @wundr/dashboard         # Web dashboard interface
-├── @wundr/ai-integration    # AI and Claude Flow integration
-├── @wundr/security          # Security scanning and compliance
-├── @wundr/environment       # Environment management
-└── @wundr/docs              # Documentation site
+packages/@wundr/
+├── cli                      # Unified command interface
+├── core                     # Shared utilities and event bus
+├── config                   # Configuration management
+├── plugin-system            # Plugin lifecycle management
+├── computer-setup           # Machine provisioning system
+├── project-templates        # Project scaffolding templates
+├── analysis-engine          # Code analysis capabilities
+├── dashboard                # Web dashboard interface
+├── ai-integration           # AI and Claude Flow integration
+├── security                 # Security scanning and compliance
+├── environment              # Environment management
+├── mcp-server               # MCP server implementation
+└── docs                     # Documentation site
 ```
 
-## 💻 Command Reference
+### Agent Orchestration Packages (New)
+
+```
+packages/@wundr/
+├── crew-orchestrator        # CrewAI-style role-based multi-agent teams
+├── langgraph-orchestrator   # LangGraph cyclic state-driven workflows
+├── autogen-orchestrator     # AutoGen conversational agent orchestration
+├── agent-delegation         # Sub-agent task delegation framework
+├── agent-memory             # MemGPT-inspired tiered memory (scratchpad + persistent)
+├── agent-eval               # Agent performance evaluation and benchmarking
+└── agent-observability      # Telemetry, tracing, and monitoring for agents
+```
+
+### Context & Intelligence Packages (New)
+
+```
+packages/@wundr/
+├── jit-tools                # Just-In-Time tool loading via semantic search
+├── rag-utils                # RAG-based retrieval and context building
+├── token-budget             # Token budgeting and rate limiting
+├── mcp-registry             # Central MCP tool registry and discovery
+├── hydra-config             # Hydra-style hierarchical configuration composition
+├── prompt-security          # Action-Selector/Interceptor for prompt injection defense
+├── prompt-templates         # Jinja2-style dynamic prompt templating
+├── structured-output        # Pydantic/Instructor-style structured LLM outputs
+├── typechat-output          # TypeChat-based structured output validation
+└── governance               # IPRE governance pipeline and compliance
+```
+
+### New Packages Reference
+
+| Package | Description | Key Features |
+|---------|-------------|--------------|
+| `@wundr.io/prompt-security` | Prompt injection defense | Action-Selector pattern, input sanitization, threat detection |
+| `@wundr.io/crew-orchestrator` | CrewAI-style orchestration | Role-based teams, task delegation, collaborative workflows |
+| `@wundr.io/langgraph-orchestrator` | LangGraph integration | Cyclic state machines, conditional routing, checkpointing |
+| `@wundr.io/autogen-orchestrator` | AutoGen patterns | Conversational agents, group chat, function calling |
+| `@wundr.io/jit-tools` | Just-In-Time tool loading | Semantic search, dynamic injection, context optimization |
+| `@wundr.io/agent-memory` | Tiered memory system | MemGPT-inspired scratchpad, episodic/semantic stores, forgetting curve |
+| `@wundr.io/agent-delegation` | Sub-agent management | Task routing, worktree isolation, quality gates |
+| `@wundr.io/governance` | IPRE pipeline | Intent-Policy-Reward-Evaluator, compliance checking, alignment debt |
+| `@wundr.io/hydra-config` | Hierarchical config | Composition, overrides, environment-aware configuration |
+| `@wundr.io/mcp-registry` | MCP tool registry | Central catalog, semantic discovery, permission management |
+| `@wundr.io/rag-utils` | RAG utilities | Vector stores, agentic retrieval, context compaction |
+| `@wundr.io/token-budget` | Token management | Rate limiting, tiered allocation, budget tracking |
+| `@wundr.io/agent-eval` | Agent evaluation | Benchmarking, performance metrics, regression testing |
+| `@wundr.io/agent-observability` | Agent monitoring | Telemetry, tracing, decision logging, dashboards |
+
+## Command Reference
 
 ### Computer Setup Commands
 
@@ -351,25 +477,68 @@ Wundr uses a flexible configuration system in `wundr.config.json`:
 }
 ```
 
-## 🏗️ Architecture
+## Architecture
 
-Wundr is built with a modular, event-driven architecture:
+Wundr is built with a modular, event-driven architecture organized around the Three-Tier Agent Hierarchy:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Presentation Layer                        │
-│  CLI Interface    Web Dashboard    IDE Extensions            │
-├─────────────────────────────────────────────────────────────┤
-│                    Orchestration Layer                        │
-│  Event Bus       Plugin System      Configuration            │
-├─────────────────────────────────────────────────────────────┤
-│                     Service Layer                            │
-│  Computer Setup   Project Templates   Analysis Engine        │
-│  AI Integration   Governance          Security              │
-├─────────────────────────────────────────────────────────────┤
-│                    Infrastructure Layer                      │
-│  File System      Process Management   Network              │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           HUMAN CORTEX (Tier 0)                              │
+│    Guardian Dashboard    Architect Tools    Intent-Setter Interface          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                         PRESENTATION LAYER                                    │
+│    CLI Interface    Web Dashboard    IDE Extensions    Slack Integration      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                       ORCHESTRATION LAYER (Tier 1: VP)                        │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                  │
+│  │ Token Budget   │  │ MCP Registry   │  │ Governance     │                  │
+│  │ Management     │  │ & Discovery    │  │ (IPRE Pipeline)│                  │
+│  └────────────────┘  └────────────────┘  └────────────────┘                  │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                  │
+│  │ Agent          │  │ Prompt         │  │ Hydra Config   │                  │
+│  │ Observability  │  │ Security       │  │ Composition    │                  │
+│  └────────────────┘  └────────────────┘  └────────────────┘                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                  AGENT ORCHESTRATION LAYER (Tier 2: Session Managers)         │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                  │
+│  │ CrewAI         │  │ LangGraph      │  │ AutoGen        │                  │
+│  │ Orchestrator   │  │ Orchestrator   │  │ Orchestrator   │                  │
+│  └────────────────┘  └────────────────┘  └────────────────┘                  │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                  │
+│  │ Agent Memory   │  │ Agent          │  │ JIT Tools      │                  │
+│  │ (MemGPT-style) │  │ Delegation     │  │ Retrieval      │                  │
+│  └────────────────┘  └────────────────┘  └────────────────┘                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                     SERVICE LAYER (Tier 3: Sub-Agent Workers)                 │
+│    Computer Setup   Project Templates   Analysis Engine   RAG Utils           │
+│    AI Integration   Security           Environment       Agent Eval           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                           INFRASTRUCTURE LAYER                                │
+│    File System   Git Worktrees   Process Management   MCP Servers   Network   │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Component Interaction Flow
+
+```
+User Request → CLI/Dashboard
+                    ↓
+            VP Supervisor (Tier 1)
+            ├── Token Budget Check
+            ├── Governance Validation
+            └── Route to Session Manager
+                    ↓
+            Session Manager (Tier 2)
+            ├── Context Loading (Agent Memory)
+            ├── Tool Selection (JIT Tools + MCP Registry)
+            └── Delegate to Sub-Agents
+                    ↓
+            Sub-Agent Workers (Tier 3)
+            ├── Execute in Git Worktree
+            ├── Use RAG for Context
+            └── Report via Observability
+                    ↓
+            Results → Quality Gates → Session Manager → VP → User
 ```
 
 ### Technology Stack
@@ -421,14 +590,22 @@ wundr dashboard
 wundr analyze --ci --fail-on-issues
 ```
 
-## 📚 Documentation
+## Documentation
 
+### Getting Started
 - [Getting Started Guide](docs/GETTING_STARTED.md)
-- [Architecture Overview](docs/architecture/UNIFIED_PLATFORM_ARCHITECTURE.md)
-- [Platform Completion Report](docs/PLATFORM_COMPLETION_REPORT.md)
 - [Development Guide](docs/DEVELOPMENT_GUIDE.md)
 - [CLI Reference](packages/@wundr/cli/README.md)
 - [Computer Setup Guide](packages/@wundr/computer-setup/README.md)
+
+### Architecture & Design
+- [Architecture Overview](docs/architecture/UNIFIED_PLATFORM_ARCHITECTURE.md)
+- [Three-Tier Architecture Implementation Plan](docs/THREE-TIER-ARCHITECTURE-IMPLEMENTATION-PLAN.md)
+- [Further Enhancements to Three-Tier Hierarchy](docs/FURTHER-ENHANCEMENTS-TO-THE-THREE-TIER-HIERARCHY-IMPLEMENTATION-PLAN.md)
+- [Dynamic Context Compilation](docs/Dynamic_Context_Compilation_and_Hierarchical_Organization_Generation_for_AI_Agents.md)
+
+### Package Documentation
+- [Platform Completion Report](docs/PLATFORM_COMPLETION_REPORT.md)
 - [Project Templates](packages/@wundr/project-templates/README.md)
 
 ## 📦 NPM Publishing
