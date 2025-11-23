@@ -1,0 +1,72 @@
+{
+  "name": "@wundr.io/jit-tools",
+  "version": "1.0.3",
+  "description": "Just-In-Time (JIT) tool loading for AI agents to prevent context pollution",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist coverage",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@wundr.io/rag-utils": "workspace:*",
+    "eventemitter3": "^5.0.1",
+    "uuid": "^11.0.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-jest": "^29.0.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2",
+    "prettier": "^3.3.3"
+  },
+  "keywords": [
+    "jit",
+    "just-in-time",
+    "tool-loading",
+    "ai-agents",
+    "context-management",
+    "semantic-search",
+    "tool-retrieval",
+    "wundr"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adapticai/wundr.git",
+    "directory": "packages/@wundr/jit-tools"
+  },
+  "bugs": {
+    "url": "https://github.com/adapticai/wundr/issues"
+  },
+  "homepage": "https://wundr.io",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

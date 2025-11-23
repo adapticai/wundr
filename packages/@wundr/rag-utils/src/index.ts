@@ -11,3 +11,9 @@ export * from './chunking';
 export * from './embeddings';
 export * from './vector-store';
 export * from './retrieval';
+
+// Agentic RAG exports
+export * from './query-reformulation';
+export * from './retrieval-critique';
+export * from './context-compaction';
+export * from './agentic-rag';

@@ -52,16 +52,18 @@ if (process.argv.includes('--list-tools')) {
   const jsonOutput = process.argv.includes('--json');
 
   if (jsonOutput) {
-    console.log(JSON.stringify(
-      tools.map(t => ({
-        name: t.name,
-        description: t.description,
-        category: t.category,
-        inputSchema: t.inputSchema,
-      })),
-      null,
-      2
-    ));
+    console.log(
+      JSON.stringify(
+        tools.map(t => ({
+          name: t.name,
+          description: t.description,
+          category: t.category,
+          inputSchema: t.inputSchema,
+        })),
+        null,
+        2
+      )
+    );
   } else {
     console.log('\\nAvailable MCP Tools:\\n');
 

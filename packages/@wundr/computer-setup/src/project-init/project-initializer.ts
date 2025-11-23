@@ -5,21 +5,32 @@ import * as fs from 'fs-extra';
 import inquirer from 'inquirer';
 import ora from 'ora';
 
+import { generateClaudeCodeStructure } from './claude-code-conventions.js';
+import {
+  createEnhancedOptions,
+  DEFAULT_MEMORY_CONFIGS,
+  DEFAULT_ORCHESTRATION_CONFIGS,
+  WORKFORCE_SIZE_MAP,
+} from './enhanced-options.js';
 import { TemplateManager } from '../templates/template-manager.js';
 
+import type {
+  EnhancedProjectOptions,
+  ProjectType,
+  SessionManagerArchetype,
+  SubAgentWorkforceSize,
+} from './enhanced-options.js';
 import type { TemplateContext } from '../templates/template-manager.js';
 import type { DeveloperProfile } from '../types/index.js';
 
-export type ProjectType =
-  | 'node'
-  | 'react'
-  | 'vue'
-  | 'python'
-  | 'go'
-  | 'rust'
-  | 'java'
-  | 'monorepo';
+// Re-export types and constants for backward compatibility
+export type { ProjectType, SubAgentWorkforceSize };
+export { WORKFORCE_SIZE_MAP };
 
+/**
+ * Project initialization options
+ * Supports both basic and enhanced configuration
+ */
 export interface ProjectInitOptions {
   projectPath: string;
   projectName: string;
@@ -35,24 +46,13 @@ export interface ProjectInitOptions {
   force?: boolean;
   // Three-tier architecture options
   enableFleetArchitecture?: boolean;
-  sessionManagerArchetype?:
-    | 'engineering'
-    | 'legal'
-    | 'hr'
-    | 'marketing'
-    | 'custom';
-  subAgentWorkforceSize?: 'small' | 'medium' | 'large'; // 5, 10, 20 sub-agents
+  sessionManagerArchetype?: SessionManagerArchetype;
+  subAgentWorkforceSize?: SubAgentWorkforceSize;
   enableIPREGovernance?: boolean;
   enableAlignmentMonitoring?: boolean;
+  // Enhanced options (optional)
+  enhanced?: Partial<EnhancedProjectOptions>;
 }
-
-export type SubAgentWorkforceSize = 'small' | 'medium' | 'large';
-
-export const WORKFORCE_SIZE_MAP: Record<SubAgentWorkforceSize, number> = {
-  small: 5,
-  medium: 10,
-  large: 20,
-};
 
 export interface ClaudeDirectoryStructure {
   agents: {
@@ -80,6 +80,173 @@ export class ProjectInitializer {
   constructor() {
     this.templateManager = new TemplateManager();
     this.resourcesDir = path.join(__dirname, '../../resources');
+  }
+
+  /**
+   * Initialize project with enhanced options
+   *
+   * This method provides full support for context engineering, memory
+   * architectures, orchestration frameworks, and advanced Claude Code features.
+   *
+   * @param enhancedOptions - Full enhanced project options
+   */
+  async initializeEnhanced(
+    enhancedOptions: EnhancedProjectOptions
+  ): Promise<void> {
+    this.spinner.info(chalk.blue.bold('Wundr Enhanced Project Initialization'));
+
+    try {
+      // Validate and prepare project
+      await this.validateProject({
+        ...enhancedOptions,
+        includeClaudeSetup: enhancedOptions.includeClaudeSetup,
+        includeAgents: enhancedOptions.includeAgents,
+        includeHooks: enhancedOptions.includeHooks,
+        includeGitWorktree: enhancedOptions.includeGitWorktree,
+        includeTemplates: enhancedOptions.includeTemplates,
+      });
+
+      // Generate Claude Code structure using enhanced generator
+      if (enhancedOptions.includeClaudeSetup) {
+        this.spinner.start(
+          'Generating enhanced .claude directory structure...'
+        );
+        await generateClaudeCodeStructure(enhancedOptions);
+        this.spinner.succeed('Enhanced Claude Code structure generated');
+      }
+
+      // Setup deployment configuration if platforms detected
+      await this.setupDeploymentConfig(enhancedOptions);
+
+      // Copy and customize templates
+      if (enhancedOptions.includeTemplates) {
+        await this.copyTemplates(enhancedOptions);
+      }
+
+      // Setup git-worktree configuration
+      if (enhancedOptions.includeGitWorktree) {
+        await this.setupGitWorktree(enhancedOptions);
+      }
+
+      // Initialize agent workflows
+      if (enhancedOptions.includeAgents) {
+        await this.initializeAgentWorkflows(enhancedOptions);
+      }
+
+      // Setup hooks
+      if (enhancedOptions.includeHooks) {
+        await this.setupHooks(enhancedOptions);
+      }
+
+      // Setup governance (IPRE) if enabled
+      if (
+        enhancedOptions.enableIPREGovernance ||
+        enhancedOptions.enableFleetArchitecture
+      ) {
+        await this.setupGovernance(enhancedOptions);
+      }
+
+      // Setup memory bank if fleet architecture or tiered memory enabled
+      if (
+        enhancedOptions.enableFleetArchitecture ||
+        enhancedOptions.memoryConfig?.architecture === 'tiered' ||
+        enhancedOptions.memoryConfig?.architecture === 'memgpt'
+      ) {
+        await this.setupMemoryBank(enhancedOptions);
+      }
+
+      // Create project-specific documentation
+      await this.createProjectDocumentation(enhancedOptions);
+
+      // Validate the setup
+      await this.validateSetup(enhancedOptions);
+
+      this.spinner.succeed(
+        chalk.green.bold('Enhanced project initialization complete!')
+      );
+      this.printEnhancedNextSteps(enhancedOptions);
+    } catch (error) {
+      this.spinner.fail(chalk.red(`Initialization failed: ${error}`));
+      throw error;
+    }
+  }
+
+  /**
+   * Create enhanced options from basic options with defaults
+   *
+   * @param options - Basic project init options
+   * @returns Enhanced options with defaults applied
+   */
+  createEnhancedFromBasic(options: ProjectInitOptions): EnhancedProjectOptions {
+    return createEnhancedOptions({
+      ...options,
+      contextEngineering: options.enhanced?.contextEngineering,
+      memoryConfig: options.enhanced?.memoryConfig ?? {
+        architecture: options.enableFleetArchitecture ? 'tiered' : 'basic',
+        ...DEFAULT_MEMORY_CONFIGS[
+          options.enableFleetArchitecture ? 'tiered' : 'basic'
+        ],
+      },
+      orchestration: options.enhanced?.orchestration ?? {
+        ...DEFAULT_ORCHESTRATION_CONFIGS['claude-flow'],
+      },
+      promptConfig: options.enhanced?.promptConfig,
+      security: options.enhanced?.security,
+      agents: options.enhanced?.agents,
+      skills: options.enhanced?.skills,
+      commands: options.enhanced?.commands,
+    });
+  }
+
+  /**
+   * Print next steps for enhanced initialization
+   */
+  private printEnhancedNextSteps(options: EnhancedProjectOptions): void {
+    const steps: string[] = [
+      chalk.cyan(`Next Steps for ${options.projectName} (Enhanced Setup):`),
+      chalk.white('1. Review CLAUDE.md configuration'),
+      chalk.white('2. Explore .claude/agents/ for available agents'),
+      chalk.white('3. Check .claude/skills/ for available skills'),
+      chalk.white('4. Review .claude/commands/ for slash commands'),
+      chalk.white('5. Check .claude/settings.json for configuration'),
+    ];
+
+    if (options.memoryConfig?.architecture !== 'basic') {
+      steps.push(
+        chalk.white('6. Review memory bank structure in .claude/memory/')
+      );
+    }
+
+    if (options.enableFleetArchitecture || options.enableIPREGovernance) {
+      steps.push(
+        chalk.white('7. Review governance policies in .claude/governance/')
+      );
+    }
+
+    if (options.orchestration?.framework === 'claude-flow') {
+      steps.push(chalk.white('8. Run: npx claude-flow@alpha mcp start'));
+    }
+
+    steps.push(
+      '',
+      chalk.gray(`Project type: ${options.projectType}`),
+      chalk.gray(
+        `Memory architecture: ${options.memoryConfig?.architecture || 'basic'}`
+      ),
+      chalk.gray(
+        `Orchestration: ${options.orchestration?.framework || 'standalone'}`
+      )
+    );
+
+    if (options.enableFleetArchitecture) {
+      steps.push(
+        chalk.gray(
+          `Fleet architecture: enabled (${options.sessionManagerArchetype || 'engineering'} archetype)`
+        )
+      );
+    }
+
+    this.spinner.info(steps.join('\n'));
   }
 
   /**
@@ -137,7 +304,7 @@ export class ProjectInitializer {
       await this.validateSetup(options);
 
       this.spinner.succeed(
-        chalk.green.bold('Project initialization complete!'),
+        chalk.green.bold('Project initialization complete!')
       );
       this.printNextSteps(options);
     } catch (error) {
@@ -179,7 +346,7 @@ export class ProjectInitializer {
    * Detect deployment platforms from config files and environment
    */
   private async detectDeploymentPlatform(
-    projectPath: string,
+    projectPath: string
   ): Promise<string[]> {
     const platforms: string[] = [];
 
@@ -210,7 +377,7 @@ export class ProjectInitializer {
    * Setup deployment platform configuration
    */
   private async setupDeploymentConfig(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     const platforms = await this.detectDeploymentPlatform(options.projectPath);
 
@@ -250,11 +417,11 @@ export class ProjectInitializer {
     await fs.writeJson(
       path.join(claudeDir, 'deployment.config.json'),
       deploymentConfig,
-      { spaces: 2 },
+      { spaces: 2 }
     );
 
     this.spinner.info(
-      chalk.green(`Deployment config created for: ${platforms.join(', ')}`),
+      chalk.green(`Deployment config created for: ${platforms.join(', ')}`)
     );
   }
 
@@ -287,7 +454,7 @@ export class ProjectInitializer {
    * Create complete .claude directory structure
    */
   private async createClaudeDirectory(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     this.spinner.start('Creating .claude directory structure...');
 
@@ -383,12 +550,12 @@ export class ProjectInitializer {
    */
   private async copyClaudeMarkdown(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
     const templatePath = path.join(
       this.resourcesDir,
       'templates',
-      'CLAUDE.md.template',
+      'CLAUDE.md.template'
     );
     const outputPath = path.join(options.projectPath, 'CLAUDE.md');
 
@@ -397,14 +564,14 @@ export class ProjectInitializer {
       const customized = this.customizeClaudeMarkdown(
         content,
         options,
-        context,
+        context
       );
       await fs.writeFile(outputPath, customized);
     } else {
       // Generate default CLAUDE.md
       const defaultContent = this.generateDefaultClaudeMarkdown(
         options,
-        context,
+        context
       );
       await fs.writeFile(outputPath, defaultContent);
     }
@@ -416,7 +583,7 @@ export class ProjectInitializer {
   private async copyAgentTemplates(
     claudeDir: string,
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
     const agentsSourceDir = path.join(this.resourcesDir, 'agents');
     const agentsTargetDir = path.join(claudeDir, 'agents');
@@ -436,7 +603,7 @@ export class ProjectInitializer {
         for (const agent of agents) {
           const agentFiles = await this.findAgentFiles(
             categorySourceDir,
-            agent,
+            agent
           );
 
           for (const file of agentFiles) {
@@ -448,7 +615,7 @@ export class ProjectInitializer {
             const customized = this.customizeAgentTemplate(
               content,
               options,
-              context,
+              context
             );
             await fs.writeFile(targetPath, customized);
           }
@@ -465,7 +632,7 @@ export class ProjectInitializer {
    */
   private async copyCommandTemplates(
     claudeDir: string,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
     const commandsSourceDir = path.join(this.resourcesDir, 'commands');
     const commandsTargetDir = path.join(claudeDir, 'commands');
@@ -493,7 +660,7 @@ export class ProjectInitializer {
                 .replace(/\{\{PROJECT_NAME\}\}/g, context.project.name)
                 .replace(
                   /\{\{PACKAGE_MANAGER\}\}/g,
-                  context.project.packageManager,
+                  context.project.packageManager
                 );
               await fs.writeFile(filePath, content);
             }
@@ -508,7 +675,7 @@ export class ProjectInitializer {
    */
   private async copyHookTemplates(
     claudeDir: string,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
     const hooksDir = path.join(claudeDir, 'hooks');
 
@@ -570,7 +737,7 @@ export class ProjectInitializer {
   private async copyConventionTemplates(
     claudeDir: string,
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
     const conventionsDir = path.join(claudeDir, 'conventions');
 
@@ -596,7 +763,7 @@ export class ProjectInitializer {
     for (const convention of conventions) {
       await fs.writeFile(
         path.join(conventionsDir, convention.name),
-        convention.content,
+        convention.content
       );
     }
   }
@@ -607,7 +774,7 @@ export class ProjectInitializer {
   private async copyWorkflowTemplates(
     claudeDir: string,
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): Promise<void> {
     const workflowsDir = path.join(claudeDir, 'workflows');
 
@@ -629,7 +796,7 @@ export class ProjectInitializer {
     for (const workflow of workflows) {
       await fs.writeFile(
         path.join(workflowsDir, workflow.name),
-        workflow.content,
+        workflow.content
       );
     }
   }
@@ -721,7 +888,7 @@ export class ProjectInitializer {
     await fs.writeJson(
       path.join(options.projectPath, '.claude', 'worktree.config.json'),
       worktreeConfig,
-      { spaces: 2 },
+      { spaces: 2 }
     );
 
     // Create scripts directory if needed
@@ -733,11 +900,11 @@ export class ProjectInitializer {
       : this.generateWorktreeScript();
     await fs.writeFile(
       path.join(options.projectPath, 'scripts', 'manage-worktrees.sh'),
-      worktreeScript,
+      worktreeScript
     );
     await fs.chmod(
       path.join(options.projectPath, 'scripts', 'manage-worktrees.sh'),
-      '755',
+      '755'
     );
 
     this.spinner.succeed('Git-worktree configuration complete');
@@ -747,7 +914,7 @@ export class ProjectInitializer {
    * Initialize agent workflows
    */
   private async initializeAgentWorkflows(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     this.spinner.start('Initializing agent workflows...');
 
@@ -760,7 +927,7 @@ export class ProjectInitializer {
       await fs.writeJson(
         path.join(workflowsDir, `${name}.config.json`),
         config,
-        { spaces: 2 },
+        { spaces: 2 }
       );
     }
 
@@ -768,11 +935,11 @@ export class ProjectInitializer {
     const runnerScript = this.generateWorkflowRunnerScript();
     await fs.writeFile(
       path.join(options.projectPath, 'scripts', 'run-workflow.sh'),
-      runnerScript,
+      runnerScript
     );
     await fs.chmod(
       path.join(options.projectPath, 'scripts', 'run-workflow.sh'),
-      '755',
+      '755'
     );
 
     this.spinner.succeed('Agent workflows initialized');
@@ -800,7 +967,7 @@ export class ProjectInitializer {
    * Create project-specific documentation
    */
   private async createProjectDocumentation(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     this.spinner.start('Creating project documentation...');
 
@@ -857,7 +1024,7 @@ export class ProjectInitializer {
     validations.push({
       name: 'Agent templates',
       check: await fs.pathExists(
-        path.join(options.projectPath, '.claude', 'agents'),
+        path.join(options.projectPath, '.claude', 'agents')
       ),
     });
 
@@ -865,7 +1032,7 @@ export class ProjectInitializer {
     validations.push({
       name: 'Hooks directory',
       check: await fs.pathExists(
-        path.join(options.projectPath, '.claude', 'hooks'),
+        path.join(options.projectPath, '.claude', 'hooks')
       ),
     });
 
@@ -875,7 +1042,7 @@ export class ProjectInitializer {
     if (failures.length > 0) {
       const failureList = failures.map(f => `  - ${f.name}`).join('\n');
       this.spinner.fail(
-        `Validation failed - Missing components:\n${chalk.yellow(failureList)}`,
+        `Validation failed - Missing components:\n${chalk.yellow(failureList)}`
       );
       throw new Error('Setup validation failed');
     }
@@ -938,7 +1105,7 @@ export class ProjectInitializer {
   private customizeClaudeMarkdown(
     content: string,
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     // Replace placeholders with project-specific values
     return content
@@ -949,7 +1116,7 @@ export class ProjectInitializer {
 
   private generateDefaultClaudeMarkdown(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const packageManager = context.project.packageManager;
     const author = context.project.author;
@@ -984,7 +1151,7 @@ See .claude/README.md for complete agent and workflow documentation.
   private customizeAgentTemplate(
     content: string,
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     return content
       .replace(/\{\{PROJECT_NAME\}\}/g, options.projectName)
@@ -997,7 +1164,7 @@ See .claude/README.md for complete agent and workflow documentation.
   }
 
   private selectAgentsToCopy(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Record<string, string[]> {
     const agents: Record<string, string[]> = {
       core: ['coder', 'reviewer', 'tester', 'planner', 'researcher'],
@@ -1014,7 +1181,7 @@ See .claude/README.md for complete agent and workflow documentation.
 
   private async findAgentFiles(
     dir: string,
-    agentName: string,
+    agentName: string
   ): Promise<string[]> {
     const files: string[] = [];
     const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -1033,7 +1200,7 @@ See .claude/README.md for complete agent and workflow documentation.
 
   private async createAgentIndex(
     agentsDir: string,
-    agents: Record<string, string[]>,
+    agents: Record<string, string[]>
   ): Promise<void> {
     const readme = `# Available Agents
 
@@ -1044,7 +1211,7 @@ ${Object.entries(agents)
     ([category, agentList]) => `
 ### ${category.charAt(0).toUpperCase() + category.slice(1)}
 ${agentList.map(a => `- ${a}`).join('\n')}
-`,
+`
   )
   .join('\n')}
 
@@ -1145,7 +1312,7 @@ echo "Session cleanup complete for ${projectName}"
 
   private generateCodeStyleConvention(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const packageManager = context.project.packageManager;
     return `# Code Style Convention
@@ -1182,7 +1349,7 @@ ${packageManager} run lint
 
   private generateGitWorkflowConvention(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const defaultBranch =
       context.profile?.preferences?.gitConfig?.defaultBranch || 'main';
@@ -1228,7 +1395,7 @@ Default Branch: ${defaultBranch}
 
   private generateTestingStandardsConvention(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const packageManager = context.project.packageManager;
     return `# Testing Standards
@@ -1276,7 +1443,7 @@ tests/
 
   private generateDocumentationConvention(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const author = context.project.author;
     const organization = context.project.organization || 'Development Team';
@@ -1326,7 +1493,7 @@ docs/
 
   private generateSparcWorkflow(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const packageManager = context.project.packageManager;
     return `# SPARC Workflow
@@ -1380,7 +1547,7 @@ ${packageManager} run workflow:status
 
   private generateTddWorkflow(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const packageManager = context.project.packageManager;
     return `# TDD Workflow
@@ -1430,7 +1597,7 @@ npx claude-flow sparc tdd "<feature>"
 
   private generateReviewWorkflow(
     options: ProjectInitOptions,
-    context: TemplateContext,
+    context: TemplateContext
   ): string {
     const organization = context.project.organization || 'the team';
     return `# Review Workflow
@@ -1603,7 +1770,7 @@ esac
     const governanceDir = path.join(
       options.projectPath,
       '.claude',
-      'governance',
+      'governance'
     );
     await fs.ensureDir(governanceDir);
 
@@ -1615,7 +1782,7 @@ esac
     if (options.enableFleetArchitecture) {
       await fs.ensureDir(path.join(governanceDir, 'human-cortex', 'roles'));
       await fs.ensureDir(
-        path.join(governanceDir, 'human-cortex', 'dashboards'),
+        path.join(governanceDir, 'human-cortex', 'dashboards')
       );
       await fs.ensureDir(path.join(governanceDir, 'human-cortex', 'playbooks'));
 
@@ -1627,7 +1794,7 @@ esac
     const ipreConfig = this.generateIPREConfig(options);
     await fs.writeFile(
       path.join(governanceDir, 'ipre.config.yaml'),
-      ipreConfig,
+      ipreConfig
     );
 
     // Copy policy templates based on project type
@@ -1719,7 +1886,7 @@ concentration_risk: >
     await fs.writeFile(path.join(rolesDir, 'architect.md'), architectRole);
     await fs.writeFile(
       path.join(rolesDir, 'intent-setter.md'),
-      intentSetterRole,
+      intentSetterRole
     );
     await fs.writeFile(path.join(rolesDir, 'guardian.md'), guardianRole);
 
@@ -1744,7 +1911,7 @@ With proper configuration: **281:1** (3,376 autonomous agents directed by 12-per
 `;
     await fs.writeFile(
       path.join(governanceDir, 'human-cortex', 'README.md'),
-      readmeContent,
+      readmeContent
     );
   }
 
@@ -1823,12 +1990,12 @@ escalation:
    */
   private async copyPolicyTemplates(
     governanceDir: string,
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     const policiesDir = path.join(governanceDir, 'policies');
 
     const typeSpecificSecurityRules = this.getTypeSpecificSecurityRules(
-      options.projectType,
+      options.projectType
     );
 
     const securityPolicy = `# Security Policy
@@ -1942,18 +2109,21 @@ Type: ${options.projectType}
    */
   private async setupPolicyHooks(
     options: ProjectInitOptions,
-    governanceDir: string,
+    governanceDir: string
   ): Promise<void> {
     const hooksDir = path.join(
       options.projectPath,
       '.claude',
       'hooks',
-      'quality-gate',
+      'quality-gate'
     );
     await fs.ensureDir(hooksDir);
 
     // Create reference to governance policies
-    const policiesPath = path.relative(hooksDir, path.join(governanceDir, 'policies'));
+    const policiesPath = path.relative(
+      hooksDir,
+      path.join(governanceDir, 'policies')
+    );
 
     const preCommitHook = `# Quality Gate Pre-Commit Hook
 ---
@@ -2004,7 +2174,7 @@ failurePolicy:
    */
   private async initializeEvaluatorAgents(
     governanceDir: string,
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     const workforceSize = options.subAgentWorkforceSize
       ? WORKFORCE_SIZE_MAP[options.subAgentWorkforceSize]
@@ -2080,11 +2250,11 @@ actions:
 
     await fs.writeFile(
       path.join(evaluatorsDir, 'alignment-evaluator.md'),
-      alignmentEvaluator,
+      alignmentEvaluator
     );
     await fs.writeFile(
       path.join(evaluatorsDir, 'drift-detector.md'),
-      driftDetector,
+      driftDetector
     );
   }
 
@@ -2217,23 +2387,23 @@ None
     // Write session template files
     await fs.writeFile(
       path.join(sessionTemplateDir, 'activeContext.md'),
-      activeContextTemplate,
+      activeContextTemplate
     );
     await fs.writeFile(
       path.join(sessionTemplateDir, 'progress.md'),
-      progressTemplate,
+      progressTemplate
     );
     await fs.writeFile(
       path.join(sessionTemplateDir, 'subAgentDelegation.md'),
-      subAgentDelegationTemplate,
+      subAgentDelegationTemplate
     );
     await fs.writeFile(
       path.join(sessionTemplateDir, 'ipre-alignment.md'),
-      ipreAlignmentTemplate,
+      ipreAlignmentTemplate
     );
     await fs.writeFile(
       path.join(sessionTemplateDir, 'alignmentDebt.md'),
-      alignmentDebtTemplate,
+      alignmentDebtTemplate
     );
 
     // Create shared memory files
@@ -2263,7 +2433,7 @@ None
 
     await fs.writeFile(
       path.join(sharedDir, 'architecture.md'),
-      architectureShared,
+      architectureShared
     );
     await fs.writeFile(path.join(sharedDir, 'patterns.md'), patternsShared);
 
@@ -2279,13 +2449,13 @@ None
    * Create session manager archetype templates
    */
   private async createSessionManagerArchetypes(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     const archetypesDir = path.join(
       options.projectPath,
       '.claude',
       'agents',
-      'session-managers',
+      'session-managers'
     );
     await fs.ensureDir(archetypesDir);
 
@@ -2457,7 +2627,7 @@ wundr init --session-manager-archetype engineering
   }
 
   private getProjectWorkflows(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Record<string, unknown> {
     const specializedAgents = this.getSpecializedAgents(options.projectType);
 
@@ -2558,13 +2728,13 @@ echo "Commit message format valid!"
   }
 
   private async setupClaudeFlowHooks(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     const claudeFlowDir = path.join(
       options.projectPath,
       '.claude',
       'hooks',
-      'claude-flow',
+      'claude-flow'
     );
     await fs.ensureDir(claudeFlowDir);
 
@@ -2602,13 +2772,13 @@ fi
   }
 
   private async setupVerificationHooks(
-    options: ProjectInitOptions,
+    options: ProjectInitOptions
   ): Promise<void> {
     const verificationDir = path.join(
       options.projectPath,
       '.claude',
       'hooks',
-      'verification',
+      'verification'
     );
     await fs.ensureDir(verificationDir);
 
@@ -2648,13 +2818,13 @@ fi
 
     await fs.writeFile(
       path.join(verificationDir, 'verify-build.sh'),
-      verifyBuildHook,
+      verifyBuildHook
     );
     await fs.chmod(path.join(verificationDir, 'verify-build.sh'), '755');
 
     await fs.writeFile(
       path.join(verificationDir, 'verify-tests.sh'),
-      verifyTestsHook,
+      verifyTestsHook
     );
     await fs.chmod(path.join(verificationDir, 'verify-tests.sh'), '755');
   }
@@ -2765,7 +2935,7 @@ See .claude/workflows/ for detailed configurations.
 
   private generateDevelopmentDoc(options: ProjectInitOptions): string {
     const typeSpecificGuide = this.getTypeSpecificDevelopmentGuide(
-      options.projectType,
+      options.projectType
     );
     return `# Development Guide
 
@@ -2884,7 +3054,9 @@ ${typeSpecificGuide}
 - Use consistent versioning`,
     };
 
-    return guides[projectType] || '## Development\n\nFollow project conventions.';
+    return (
+      guides[projectType] || '## Development\n\nFollow project conventions.'
+    );
   }
 
   private getDefaultProfile(): DeveloperProfile {
@@ -2925,15 +3097,17 @@ ${typeSpecificGuide}
   private printNextSteps(options: ProjectInitOptions): void {
     const fleetSteps = options.enableFleetArchitecture
       ? [
-          chalk.white(
-            '4. Review governance in .claude/governance/',
-          ),
+          chalk.white('4. Review governance in .claude/governance/'),
           chalk.white('5. Configure session manager archetype'),
         ]
       : [];
 
     const gitWorktreeSteps = options.includeGitWorktree
-      ? [chalk.white(`${fleetSteps.length + 4}. Setup git worktrees: ./scripts/manage-worktrees.sh`)]
+      ? [
+          chalk.white(
+            `${fleetSteps.length + 4}. Setup git worktrees: ./scripts/manage-worktrees.sh`
+          ),
+        ]
       : [];
 
     const nextSteps = [
@@ -2944,16 +3118,16 @@ ${typeSpecificGuide}
       ...fleetSteps,
       ...gitWorktreeSteps,
       chalk.white(
-        `${4 + fleetSteps.length + gitWorktreeSteps.length}. Run: npx claude-flow@alpha mcp start`,
+        `${4 + fleetSteps.length + gitWorktreeSteps.length}. Run: npx claude-flow@alpha mcp start`
       ),
       chalk.white(
-        `${5 + fleetSteps.length + gitWorktreeSteps.length}. Start development with your chosen workflow`,
+        `${5 + fleetSteps.length + gitWorktreeSteps.length}. Start development with your chosen workflow`
       ),
       '',
       chalk.gray(`Project type: ${options.projectType}`),
       options.enableFleetArchitecture
         ? chalk.gray(
-            `Fleet architecture: enabled (${options.sessionManagerArchetype || 'engineering'} archetype)`,
+            `Fleet architecture: enabled (${options.sessionManagerArchetype || 'engineering'} archetype)`
           )
         : '',
     ]

@@ -284,3 +284,128 @@ export interface SetupProgress {
   estimatedTimeRemaining: number;
   logs: string[];
 }
+
+/**
+ * Context Engineering configuration for JIT tools and agentic RAG
+ */
+export interface ContextEngineeringOptions {
+  /** Enable Just-In-Time tools for dynamic context loading */
+  jitTools?: {
+    enabled: boolean;
+    /** Maximum context window size in tokens */
+    maxContextSize?: number;
+    /** Enable dynamic tool discovery */
+    dynamicDiscovery?: boolean;
+  };
+  /** Agentic RAG configuration for intelligent retrieval */
+  agenticRag?: {
+    enabled: boolean;
+    /** Vector store provider (e.g., 'pinecone', 'chromadb', 'weaviate') */
+    vectorStore?: 'pinecone' | 'chromadb' | 'weaviate' | 'local';
+    /** Embedding model to use */
+    embeddingModel?: string;
+    /** Chunk size for document processing */
+    chunkSize?: number;
+    /** Overlap between chunks */
+    chunkOverlap?: number;
+  };
+  /** Memory architecture configuration */
+  memoryArchitecture?: {
+    enabled: boolean;
+    /** Short-term memory capacity */
+    shortTermCapacity?: number;
+    /** Long-term memory storage path */
+    longTermStoragePath?: string;
+    /** Enable episodic memory for conversation tracking */
+    episodicMemory?: boolean;
+    /** Enable semantic memory for concept storage */
+    semanticMemory?: boolean;
+  };
+}
+
+/**
+ * Orchestration framework configuration
+ */
+export interface OrchestrationOptions {
+  /** LangGraph configuration for graph-based workflows */
+  langGraph?: {
+    enabled: boolean;
+    /** Default graph execution mode */
+    executionMode?: 'sequential' | 'parallel' | 'conditional';
+    /** Enable checkpointing for state persistence */
+    checkpointing?: boolean;
+    /** Maximum recursion depth */
+    maxRecursionDepth?: number;
+  };
+  /** CrewAI configuration for multi-agent collaboration */
+  crewAI?: {
+    enabled: boolean;
+    /** Maximum number of concurrent agents */
+    maxAgents?: number;
+    /** Default agent collaboration mode */
+    collaborationMode?: 'sequential' | 'hierarchical' | 'consensual';
+    /** Enable agent memory sharing */
+    memorySharing?: boolean;
+  };
+  /** AutoGen configuration for automated agent generation */
+  autoGen?: {
+    enabled: boolean;
+    /** Enable human-in-the-loop interactions */
+    humanInLoop?: boolean;
+    /** Maximum conversation turns */
+    maxTurns?: number;
+    /** Enable code execution sandbox */
+    codeExecutionSandbox?: boolean;
+  };
+}
+
+/**
+ * Security configuration for prompt injection prevention and access control
+ */
+export interface SecurityOptions {
+  /** Prompt security level */
+  promptSecurity?: {
+    level: 'low' | 'medium' | 'high' | 'paranoid';
+    /** Enable prompt injection detection */
+    injectionDetection?: boolean;
+    /** Enable input sanitization */
+    inputSanitization?: boolean;
+    /** Enable output filtering */
+    outputFiltering?: boolean;
+    /** Blocked keywords list */
+    blockedKeywords?: string[];
+  };
+  /** MCP (Model Context Protocol) access control */
+  mcpAccessControl?: {
+    enabled: boolean;
+    /** Allowed MCP tool patterns (glob patterns) */
+    allowedTools?: string[];
+    /** Denied MCP tool patterns (glob patterns) */
+    deniedTools?: string[];
+    /** Require explicit approval for new tools */
+    requireApproval?: boolean;
+    /** Audit logging for tool usage */
+    auditLogging?: boolean;
+  };
+  /** API key management */
+  apiKeyManagement?: {
+    /** Use secure keychain for API key storage */
+    useKeychain?: boolean;
+    /** Environment variable prefix for API keys */
+    envPrefix?: string;
+    /** Enable key rotation reminders */
+    keyRotationReminders?: boolean;
+  };
+}
+
+/**
+ * Enhanced setup options extending the base SetupOptions with new capabilities
+ */
+export interface EnhancedSetupOptions extends SetupOptions {
+  /** Context engineering configuration */
+  contextEngineering?: ContextEngineeringOptions;
+  /** Orchestration framework configuration */
+  orchestration?: OrchestrationOptions;
+  /** Security configuration */
+  security?: SecurityOptions;
+}

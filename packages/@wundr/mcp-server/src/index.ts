@@ -184,6 +184,101 @@ export {
 } from './types';
 
 // =============================================================================
+// Security Module Exports
+// =============================================================================
+
+export {
+  // Security Types
+  PermissionLevel,
+  ResourceType,
+  ActionType,
+  ConditionOperator,
+  PolicyCondition,
+  PolicyRule,
+  AccessPolicy,
+  RateLimitConfig,
+  IpConfig,
+  Principal,
+  AuthorizationRequest,
+  AuthorizationContext,
+  AuthorizationResult,
+  AuthorizationErrorCode,
+  TokenClaims,
+  TokenValidationResult,
+  AudienceVerificationOptions,
+  SecurityEvent,
+  SecurityEventType,
+  SecurityEventSeverity,
+  AccessControllerConfig,
+  DEFAULT_PERMISSIVE_POLICY,
+  DEFAULT_RESTRICTIVE_POLICY,
+
+  // Access Controller
+  MCPAccessController,
+  createPermissiveAccessController,
+  createRestrictiveAccessController,
+} from './security';
+
+// =============================================================================
+// Lifecycle Module Exports
+// =============================================================================
+
+export {
+  // Health Check Types
+  HealthStatus,
+  HealthCheckResult,
+  HealthReport,
+  HealthCheckFunction,
+  HealthCheckRegistration,
+  HealthCheckConfig,
+
+  // Health Check Functions
+  createMemoryHealthCheck,
+  createEventLoopHealthCheck,
+  createProcessHealthCheck,
+  HealthCheckManager,
+  createHealthCheckManager,
+
+  // Graceful Shutdown Types
+  ShutdownState,
+  ShutdownReason,
+  CleanupTask,
+  CleanupTaskRegistration,
+  GracefulShutdownConfig,
+  ShutdownResult,
+  TaskResult,
+
+  // Graceful Shutdown Classes
+  InFlightRequestTracker,
+  GracefulShutdownHandler,
+  createGracefulShutdownHandler,
+} from './lifecycle';
+
+// =============================================================================
+// Audit Module Exports
+// =============================================================================
+
+export {
+  // Audit Types
+  AuditSeverity,
+  AuditCategory,
+  AuditOutcome,
+  AuditEvent,
+  AuditPrincipal,
+  AuditResource,
+  AuditError,
+  ToolInvocationAudit,
+  ToolResultSummary,
+  SanitizationConfig,
+  AuditLoggerConfig,
+
+  // Audit Classes
+  AuditLogger,
+  ToolInvocationTracker,
+  createAuditLogger,
+} from './audit';
+
+// =============================================================================
 // Existing Wundr CLI Tools Integration
 // =============================================================================
 
@@ -259,7 +354,7 @@ export function getToolCountByCategory(): Record<string, number> {
  * ```
  */
 export async function startServer(
-  options: import('./server/MCPServer').MCPServerOptions,
+  options: import('./server/MCPServer').MCPServerOptions
 ): Promise<import('./server/MCPServer').MCPServer> {
   const { createMCPServer: create } = await import('./server/MCPServer');
   const server = create(options);

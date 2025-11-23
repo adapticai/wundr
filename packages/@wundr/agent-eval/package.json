@@ -1,0 +1,54 @@
+{
+  "name": "@wundr.io/agent-eval",
+  "version": "1.0.3",
+  "description": "Agent evaluation framework with LLM-based grading for AI agent quality assessment",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts"
+  },
+  "dependencies": {
+    "uuid": "^11.0.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^8.57.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "keywords": [
+    "agent-eval",
+    "llm-grading",
+    "ai-evaluation",
+    "agent-testing",
+    "quality-assessment",
+    "feedback-loop",
+    "continuous-improvement",
+    "benchmarking"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adapticai/wundr.git",
+    "directory": "packages/@wundr/agent-eval"
+  },
+  "bugs": {
+    "url": "https://github.com/adapticai/wundr/issues"
+  },
+  "homepage": "https://wundr.io"
+}

@@ -4,6 +4,13 @@
  * Comprehensive project initialization system for setting up .claude directory,
  * templates, agents, workflows, and git-worktree configuration.
  *
+ * Features:
+ * - Enhanced options with context engineering, memory architectures, and orchestration
+ * - Claude Code conventions generator for .claude/ directory structure
+ * - Support for different memory architectures (basic, tiered, memgpt)
+ * - Orchestration framework integration (claude-flow, sparc, custom)
+ * - Agent, skill, and command generation
+ *
  * @module project-init
  */
 
@@ -16,14 +23,62 @@ import type { ProjectInitOptions } from './project-initializer.js';
 import type { TemplateMetadata } from './template-selector.js';
 import type { TemplateContext } from '../templates/template-manager.js';
 
+// Core exports
 export { ProjectInitializer } from './project-initializer.js';
-export type { ProjectInitOptions } from './project-initializer.js';
+export type {
+  ProjectInitOptions,
+  ProjectType,
+  SubAgentWorkforceSize,
+} from './project-initializer.js';
+export { WORKFORCE_SIZE_MAP } from './project-initializer.js';
 export { TemplateSelector } from './template-selector.js';
-export type { TemplateSelectionCriteria, TemplateMetadata } from './template-selector.js';
+export type {
+  TemplateSelectionCriteria,
+  TemplateMetadata,
+} from './template-selector.js';
 export { CustomizationEngine } from './customization-engine.js';
-export type { CustomizationRule, CustomizationProcedure } from './customization-engine.js';
+export type {
+  CustomizationRule,
+  CustomizationProcedure,
+} from './customization-engine.js';
 export { ValidationChecker } from './validation-checker.js';
-export type { ValidationResult, ValidationReport } from './validation-checker.js';
+export type {
+  ValidationResult,
+  ValidationReport,
+} from './validation-checker.js';
+
+// Enhanced options exports
+export {
+  createEnhancedOptions,
+  DEFAULT_CONTEXT_ENGINEERING,
+  DEFAULT_MEMORY_CONFIGS,
+  DEFAULT_ORCHESTRATION_CONFIGS,
+  DEFAULT_PROMPT_CONFIG,
+  DEFAULT_SECURITY_CONFIGS,
+} from './enhanced-options.js';
+
+export type {
+  EnhancedProjectOptions,
+  ContextEngineeringConfig,
+  MemoryConfig,
+  MemoryArchitecture,
+  OrchestrationConfig,
+  OrchestrationFramework,
+  PromptConfig,
+  SecurityConfig,
+  AgentConfig,
+  SkillConfig,
+  CommandConfig,
+  SessionManagerArchetype,
+} from './enhanced-options.js';
+
+// Claude Code conventions exports
+export { generateClaudeCodeStructure } from './claude-code-conventions.js';
+
+export type {
+  ClaudeCodeStructure,
+  ClaudeSettings,
+} from './claude-code-conventions.js';
 
 /**
  * Main initialization orchestrator
@@ -64,7 +119,8 @@ export class ProjectInitOrchestrator {
         useTypeScript: true,
         useTesting: true,
       });
-      template = templates[0] || this.templateSelector.getTemplate('node-basic')!;
+      template =
+        templates[0] || this.templateSelector.getTemplate('node-basic')!;
     }
 
     // Validate template requirements
@@ -74,7 +130,8 @@ export class ProjectInitOrchestrator {
     await this.initializer.initialize({
       projectPath: options.projectPath,
       projectName: options.projectName,
-      projectType: template.projectTypes[0] as ProjectInitOptions['projectType'],
+      projectType: template
+        .projectTypes[0] as ProjectInitOptions['projectType'],
       includeClaudeSetup: true,
       includeAgents: true,
       includeHooks: true,
@@ -86,7 +143,7 @@ export class ProjectInitOrchestrator {
     // Apply customizations
     await this.customizationEngine.customizeProject(
       options.projectPath,
-      this.createContext(options.projectName, template),
+      this.createContext(options.projectName, template)
     );
 
     // Validate setup
@@ -107,7 +164,8 @@ export class ProjectInitOrchestrator {
 
     // Get appropriate template
     const templates = this.templateSelector.getTemplatesForType(projectType);
-    const template = templates[0] || this.templateSelector.getTemplate('default')!;
+    const template =
+      templates[0] || this.templateSelector.getTemplate('default')!;
 
     // Initialize only .claude directory and configurations
     const pathModule = await import('path');
@@ -148,7 +206,7 @@ export class ProjectInitOrchestrator {
       const pathModule = await import('path');
       await this.customizationEngine.customizeProject(
         projectPath,
-        this.createContext(pathModule.basename(projectPath), template),
+        this.createContext(pathModule.basename(projectPath), template)
       );
     }
   }
@@ -172,35 +230,35 @@ export class ProjectInitOrchestrator {
       };
 
       if (deps.next) {
-return 'nextjs';
-}
+        return 'nextjs';
+      }
       if (deps.react) {
-return 'react';
-}
+        return 'react';
+      }
       if (deps.vue) {
-return 'vue';
-}
+        return 'vue';
+      }
       if (deps.express || deps.fastify) {
-return 'node';
-}
+        return 'node';
+      }
     }
 
     // Check for other indicators
     if (await fs.pathExists(path.join(projectPath, 'go.mod'))) {
-return 'go';
-}
+      return 'go';
+    }
     if (await fs.pathExists(path.join(projectPath, 'Cargo.toml'))) {
-return 'rust';
-}
+      return 'rust';
+    }
     if (await fs.pathExists(path.join(projectPath, 'requirements.txt'))) {
-return 'python';
-}
+      return 'python';
+    }
     if (await fs.pathExists(path.join(projectPath, 'pom.xml'))) {
-return 'java';
-}
+      return 'java';
+    }
     if (await fs.pathExists(path.join(projectPath, 'packages'))) {
-return 'monorepo';
-}
+      return 'monorepo';
+    }
 
     return 'node'; // Default
   }
@@ -208,7 +266,10 @@ return 'monorepo';
   /**
    * Helper: Create template context
    */
-  private createContext(projectName: string, template: TemplateMetadata): TemplateContext {
+  private createContext(
+    projectName: string,
+    template: TemplateMetadata
+  ): TemplateContext {
     return {
       profile: {
         name: 'Developer',
