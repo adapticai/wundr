@@ -6,11 +6,12 @@
  * that type changes maintain efficiency.
  */
 
-import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
-import { createTimer, measureTime, getMemoryUsage, PerformanceAggregator } from '../packages/@wundr/core/src/utils/performance.js';
+import { performance } from 'perf_hooks';
+
 import { getLogger } from '../packages/@wundr/core/src/logger/index.js';
+import { createTimer, measureTime, getMemoryUsage, PerformanceAggregator } from '../packages/@wundr/core/src/utils/performance.js';
 
 const logger = getLogger().child({ module: 'performance-impact-analyzer' });
 
@@ -100,12 +101,12 @@ export class PerformanceImpactAnalyzer {
         memoryUsage,
         consoleUsageCount,
         failedBuilds: buildMetrics.failures,
-        failedLints: lintMetrics.failures
+        failedLints: lintMetrics.failures,
       };
 
       logger.info('Performance baseline established', {
         baseline: this.baseline,
-        duration: timer.stop()
+        duration: timer.stop(),
       });
 
       return this.baseline;
@@ -147,13 +148,13 @@ export class PerformanceImpactAnalyzer {
         postChanges,
         impact,
         recommendations,
-        criticalIssues
+        criticalIssues,
       };
 
       logger.info('Performance analysis completed', {
         impact: impact.overallImpact,
         severity: impact.severity,
-        duration: timer.stop()
+        duration: timer.stop(),
       });
 
       return report;
@@ -200,7 +201,7 @@ export class PerformanceImpactAnalyzer {
       });
     }, {
       label: 'console-usage-count',
-      enableLogging: true
+      enableLogging: true,
     });
 
     return count;
@@ -214,7 +215,7 @@ export class PerformanceImpactAnalyzer {
       return new Promise<{ success: boolean; failures: string[] }>((resolve) => {
         const process = spawn('npm', ['run', 'build'], {
           cwd: '/Users/layla/wundr',
-          stdio: 'pipe'
+          stdio: 'pipe',
         });
 
         let output = '';
@@ -232,18 +233,18 @@ export class PerformanceImpactAnalyzer {
           const failures = this.parseFailuresFromOutput(output + errorOutput);
           resolve({
             success: code === 0,
-            failures
+            failures,
           });
         });
       });
     }, {
       label: 'build-performance',
-      enableLogging: true
+      enableLogging: true,
     });
 
     return {
       duration,
-      failures: result.failures
+      failures: result.failures,
     };
   }
 
@@ -255,7 +256,7 @@ export class PerformanceImpactAnalyzer {
       return new Promise<{ success: boolean; failures: string[] }>((resolve) => {
         const process = spawn('npm', ['run', 'lint'], {
           cwd: '/Users/layla/wundr',
-          stdio: 'pipe'
+          stdio: 'pipe',
         });
 
         let output = '';
@@ -273,18 +274,18 @@ export class PerformanceImpactAnalyzer {
           const failures = this.parseLintFailuresFromOutput(output + errorOutput);
           resolve({
             success: code === 0,
-            failures
+            failures,
           });
         });
       });
     }, {
       label: 'lint-performance',
-      enableLogging: true
+      enableLogging: true,
     });
 
     return {
       duration,
-      failures: result.failures
+      failures: result.failures,
     };
   }
 
@@ -296,7 +297,7 @@ export class PerformanceImpactAnalyzer {
       return new Promise<{ success: boolean; failures: string[] }>((resolve) => {
         const process = spawn('npm', ['run', 'typecheck'], {
           cwd: '/Users/layla/wundr',
-          stdio: 'pipe'
+          stdio: 'pipe',
         });
 
         let output = '';
@@ -314,18 +315,18 @@ export class PerformanceImpactAnalyzer {
           const failures = this.parseTypecheckFailuresFromOutput(output + errorOutput);
           resolve({
             success: code === 0,
-            failures
+            failures,
           });
         });
       });
     }, {
       label: 'typecheck-performance',
-      enableLogging: true
+      enableLogging: true,
     });
 
     return {
       duration,
-      failures: result.failures
+      failures: result.failures,
     };
   }
 
@@ -349,7 +350,7 @@ export class PerformanceImpactAnalyzer {
       memoryUsage,
       consoleUsageCount,
       errorCount,
-      warningCount
+      warningCount,
     };
   }
 
@@ -389,7 +390,7 @@ export class PerformanceImpactAnalyzer {
       memoryUsageChange,
       consoleUsageReduction,
       overallImpact,
-      severity
+      severity,
     };
   }
 
@@ -409,8 +410,8 @@ export class PerformanceImpactAnalyzer {
         recommendedActions: [
           'Fix TypeScript compilation errors',
           'Review type compatibility issues',
-          'Update type definitions'
-        ]
+          'Update type definitions',
+        ],
       });
     }
 
@@ -424,8 +425,8 @@ export class PerformanceImpactAnalyzer {
         recommendedActions: [
           'Optimize TypeScript compilation',
           'Review lint rule complexity',
-          'Consider incremental builds'
-        ]
+          'Consider incremental builds',
+        ],
       });
     }
 
@@ -439,8 +440,8 @@ export class PerformanceImpactAnalyzer {
         recommendedActions: [
           'Profile memory usage',
           'Check for memory leaks',
-          'Optimize data structures'
-        ]
+          'Optimize data structures',
+        ],
       });
     }
 
@@ -454,8 +455,8 @@ export class PerformanceImpactAnalyzer {
         recommendedActions: [
           'Fix unused variable errors',
           'Replace console.log with proper logging',
-          'Add proper TypeScript types'
-        ]
+          'Add proper TypeScript types',
+        ],
       });
     }
 
@@ -589,12 +590,12 @@ export class PerformanceImpactAnalyzer {
   generateSummary(report: PerformanceImpactReport): string {
     const { impact, criticalIssues } = report;
 
-    let summary = `Performance Impact Analysis Summary\n`;
-    summary += `=====================================\n\n`;
+    let summary = 'Performance Impact Analysis Summary\n';
+    summary += '=====================================\n\n';
     summary += `Overall Impact: ${impact.overallImpact.toUpperCase()}\n`;
     summary += `Severity: ${impact.severity.toUpperCase()}\n\n`;
 
-    summary += `Performance Changes:\n`;
+    summary += 'Performance Changes:\n';
     summary += `- Build Time: ${impact.buildTimeChange > 0 ? '+' : ''}${impact.buildTimeChange.toFixed(2)}%\n`;
     summary += `- Lint Time: ${impact.lintTimeChange > 0 ? '+' : ''}${impact.lintTimeChange.toFixed(2)}%\n`;
     summary += `- TypeCheck Time: ${impact.typecheckTimeChange > 0 ? '+' : ''}${impact.typecheckTimeChange.toFixed(2)}%\n`;
@@ -606,10 +607,10 @@ export class PerformanceImpactAnalyzer {
       for (const issue of criticalIssues) {
         summary += `- ${issue.type}: ${issue.description}\n`;
       }
-      summary += `\n`;
+      summary += '\n';
     }
 
-    summary += `Top Recommendations:\n`;
+    summary += 'Top Recommendations:\n';
     for (const [index, rec] of report.recommendations.slice(0, 5).entries()) {
       summary += `${index + 1}. ${rec}\n`;
     }

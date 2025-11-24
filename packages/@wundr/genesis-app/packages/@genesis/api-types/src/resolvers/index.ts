@@ -424,3 +424,39 @@ export {
 } from './workflow-resolvers.js';
 
 export { default as workflowResolversDefault } from './workflow-resolvers.js';
+
+// =============================================================================
+// ADMIN RESOLVERS
+// =============================================================================
+
+export {
+  adminResolvers,
+  adminQueries,
+  adminMutations,
+  adminSubscriptions,
+  RoleFieldResolvers,
+  MemberInfoFieldResolvers,
+  InviteFieldResolvers,
+  AdminActionFieldResolvers,
+  adminTypeDefs,
+  createAdminResolvers,
+  MemberStatus,
+  InviteStatus,
+  PlanType,
+  BillingStatus,
+  PermissionResource,
+  PermissionAction,
+  AdminActionType,
+  MEMBER_STATUS_CHANGED,
+  SETTINGS_UPDATED,
+  type MemberStatusType,
+  type InviteStatusType,
+  type PlanTypeValue,
+  type BillingStatusValue,
+  type PermissionResourceType,
+  type PermissionActionType,
+  type AdminActionTypeValue,
+  type AdminGraphQLContext,
+} from './admin-resolvers.js';
+
+export { default as adminResolversDefault } from './admin-resolvers.js';

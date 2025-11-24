@@ -1090,3 +1090,63 @@ export {
   ACTION_TYPES,
   TEMPLATE_CATEGORIES,
 } from './workflow';
+
+// =============================================================================
+// Admin Types
+// =============================================================================
+
+export type {
+  // Settings types
+  WorkspaceSettings,
+  GeneralSettings,
+  SecuritySettings,
+  PasswordPolicy,
+  MessagingSettings,
+  NotificationSettings as AdminNotificationSettings,
+  IntegrationSettings as AdminIntegrationSettings,
+  ComplianceSettings,
+  DLPRule,
+  BrandingSettings,
+
+  // Role and permission types
+  PermissionAction,
+  PermissionResource,
+  Permission,
+  Role,
+  SystemRoleName,
+
+  // Member types
+  MemberInfo,
+  Invite,
+
+  // Billing types
+  PlanType,
+  BillingInfo,
+  PlanFeatures,
+
+  // Admin action types
+  AdminAction,
+  AdminActionType,
+
+  // Input types
+  UpdateSettingsInput,
+  CreateRoleInput,
+  InviteMemberInput,
+} from './admin';
+
+export {
+  // Default settings
+  DEFAULT_GENERAL_SETTINGS,
+  DEFAULT_SECURITY_SETTINGS,
+  DEFAULT_MESSAGING_SETTINGS,
+  DEFAULT_NOTIFICATION_SETTINGS as ADMIN_DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_INTEGRATION_SETTINGS as ADMIN_DEFAULT_INTEGRATION_SETTINGS,
+  DEFAULT_COMPLIANCE_SETTINGS,
+  DEFAULT_BRANDING_SETTINGS,
+
+  // Plan features
+  PLAN_FEATURES,
+
+  // System roles
+  SYSTEM_ROLES,
+} from './admin';

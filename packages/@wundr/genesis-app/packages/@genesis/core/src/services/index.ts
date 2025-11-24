@@ -628,3 +628,31 @@ export {
   ActionExecutionError,
   TemplateNotFoundError,
 } from './workflow-service';
+
+// =============================================================================
+// Admin Service
+// =============================================================================
+
+export {
+  // Service implementation
+  AdminService,
+  createAdminService,
+
+  // Storage implementations
+  InMemoryAdminStorage,
+
+  // Interfaces
+  type AdminStorage,
+  type MemberFilters,
+  type MemberUpdates,
+  type AdminActionFilters,
+
+  // Errors
+  AdminError,
+  SettingsNotFoundError,
+  RoleNotFoundError,
+  SystemRoleError,
+  MemberNotFoundError,
+  InviteNotFoundError,
+  InviteExpiredError,
+} from './admin-service';
