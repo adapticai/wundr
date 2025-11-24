@@ -275,6 +275,121 @@ export {
 } from './presence';
 
 // =============================================================================
+// Image Types
+// =============================================================================
+
+export type {
+  // Core image types
+  ImageFormat,
+  ThumbnailSize,
+  ResizeFit,
+  ImagePosition,
+
+  // Option types
+  ResizeOptions,
+  OptimizeOptions,
+  CropOptions,
+  VariantConfig,
+
+  // Input/Output types
+  ImageInput,
+  ImageVariant,
+  ProcessedImage,
+
+  // Metadata types
+  ImageMetadata,
+  ExifData,
+
+  // Upload pipeline types
+  ImageUploadInput,
+  ImageUploadResult,
+
+  // Validation types
+  ImageValidationResult,
+  ImageValidationOptions,
+} from './image';
+
+export {
+  // Type guards
+  isImageFormat,
+  isThumbnailSize,
+  isResizeOptions,
+  isOptimizeOptions,
+  isCropOptions,
+  isImageMetadata,
+  isVariantConfig,
+
+  // Constants
+  THUMBNAIL_SIZES,
+  DEFAULT_QUALITY,
+  IMAGE_MIME_TYPES,
+  MIME_TO_FORMAT,
+  DEFAULT_VALIDATION_OPTIONS,
+  DEFAULT_OPTIMIZE_OPTIONS,
+  DEFAULT_VARIANTS,
+} from './image';
+
+// =============================================================================
+// Storage Types
+// =============================================================================
+
+export type {
+  // Provider types
+  StorageProvider,
+  StorageACL,
+
+  // Configuration types
+  StorageConfig,
+  StorageCredentials,
+
+  // Upload types
+  UploadInput,
+  UploadOptions,
+  BufferUploadOptions,
+  UploadResult,
+
+  // Download types
+  FileStream,
+  UrlOptions,
+  SignedUrlOptions,
+  SignedUploadUrl,
+
+  // Metadata types
+  FileMetadata,
+  ListOptions,
+  FileListResult,
+
+  // File record types
+  CreateFileRecordInput,
+  UpdateFileRecordInput,
+  FileRecordWithRelations,
+  FileRecordListOptions,
+  PaginatedFileRecordResult,
+
+  // Key generation types
+  KeyGenerationOptions,
+} from './storage';
+
+export {
+  // Type guards
+  isStorageProvider,
+  isStorageACL,
+  isStorageConfig,
+  isUploadInput,
+
+  // Constants
+  DEFAULT_STORAGE_CONFIG,
+  FILE_SIZE_LIMITS,
+  MIME_TYPE_CATEGORIES,
+
+  // Utility functions
+  getFileCategory,
+  getMaxFileSizeForType,
+  getExtensionFromMimeType,
+  getMimeTypeFromExtension,
+} from './storage';
+
+// =============================================================================
 // Re-export Database Types
 // =============================================================================
 
@@ -288,6 +403,8 @@ export type {
   Message,
   Reaction,
   Session,
+  File,
+  FileStatus,
   OrganizationMember,
   WorkspaceMember,
   ChannelMember,

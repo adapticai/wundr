@@ -29,3 +29,5 @@ export * from './vp-factories';
 export * from './message-factories';
 export * from './mock-redis';
 export * from './presence-factories';
+export * from './file-factories';
+export * from './mock-s3';

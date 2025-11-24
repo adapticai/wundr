@@ -16,8 +16,12 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.679.0",
+    "@aws-sdk/s3-request-presigner": "^3.679.0",
     "@genesis/database": "workspace:*",
-    "ioredis": "^5.4.1"
+    "@paralleldrive/cuid2": "^2.2.2",
+    "ioredis": "^5.4.1",
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@genesis/eslint-config": "workspace:*",

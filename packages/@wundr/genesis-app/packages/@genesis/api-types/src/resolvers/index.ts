@@ -141,3 +141,26 @@ export { default as workspaceResolversDefault } from './workspace-resolvers.js';
 export { default as channelResolversDefault } from './channel-resolvers.js';
 export { default as disciplineResolversDefault } from './discipline-resolvers.js';
 export { default as presenceResolversDefault } from './presence-resolvers.js';
+
+// =============================================================================
+// FILE RESOLVERS
+// =============================================================================
+
+export {
+  fileResolvers,
+  fileQueries,
+  fileMutations,
+  fileSubscriptions,
+  FileFieldResolvers,
+  FILE_UPLOADED,
+  UPLOAD_PROGRESS,
+  FileType,
+  UploadStatus,
+  type FileTypeValue,
+  type UploadStatusValue,
+  type StorageService,
+  type ImageService,
+  type GraphQLContext as FileGraphQLContext,
+} from './file-resolvers.js';
+
+export { default as fileResolversDefault } from './file-resolvers.js';

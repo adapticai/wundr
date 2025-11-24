@@ -180,3 +180,89 @@ export {
   type HeartbeatMonitorService,
   type MonitorStats,
 } from './heartbeat-monitor';
+
+// =============================================================================
+// Image Service
+// =============================================================================
+
+export {
+  // Service implementation
+  ImageServiceImpl,
+  createImageService,
+  imageService,
+
+  // Interfaces
+  type ImageService,
+
+  // Errors
+  ImageProcessingError,
+  UnsupportedFormatError,
+  ImageValidationError,
+  ImageOperationError,
+} from './image-service';
+
+// =============================================================================
+// Image Upload Pipeline
+// =============================================================================
+
+export {
+  // Pipeline implementation
+  ImageUploadPipeline,
+  createImageUploadPipeline,
+
+  // Interfaces
+  type S3Client,
+  type ImageUploadPipelineConfig,
+
+  // Errors
+  ImageUploadError,
+  S3UploadError,
+  DatabaseRecordError,
+} from './image-upload-pipeline';
+
+// =============================================================================
+// Storage Service
+// =============================================================================
+
+export {
+  // Service implementation
+  StorageServiceImpl,
+  createStorageService,
+  createStorageServiceFromEnv,
+  getStorageService,
+  storageService,
+
+  // Interfaces
+  type StorageService,
+
+  // Errors
+  StorageError,
+  FileNotFoundError,
+  FileValidationError,
+  FileSizeError,
+  MimeTypeError,
+  StorageConfigError,
+} from './storage-service';
+
+// =============================================================================
+// File Record Service
+// =============================================================================
+
+export {
+  // Service implementation
+  FileRecordServiceImpl,
+  createFileRecordService,
+  fileRecordService,
+
+  // Interfaces
+  type FileRecordService,
+
+  // Errors
+  FileRecordNotFoundError,
+  FileRecordValidationError,
+  WorkspaceNotFoundError as FileWorkspaceNotFoundError,
+  UserNotFoundError as FileUserNotFoundError,
+
+  // Constants
+  DEFAULT_FILE_RECORD_LIST_OPTIONS,
+} from './file-record-service';

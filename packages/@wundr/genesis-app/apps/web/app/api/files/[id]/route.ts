@@ -1,0 +1,262 @@
+/**
+ * File Detail API Routes
+ *
+ * Handles retrieving and deleting individual files.
+ *
+ * Routes:
+ * - GET /api/files/:id - Get file details
+ * - DELETE /api/files/:id - Delete file
+ *
+ * @module app/api/files/[id]/route
+ */
+
+import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
+
+import { auth } from '@/lib/auth';
+import {
+  fileIdParamSchema,
+  createErrorResponse,
+  UPLOAD_ERROR_CODES,
+  generateFileUrl,
+} from '@/lib/validations/upload';
+
+import type { NextRequest } from 'next/server';
+
+/**
+ * Route context with file ID parameter
+ */
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+/**
+ * Delete file from S3
+ *
+ * @param s3Key - S3 object key
+ * @param s3Bucket - S3 bucket name
+ */
+async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<void> {
+  // In production, this would use AWS SDK DeleteObject command
+  console.log(`[File Storage] Deleted file ${s3Key} from ${s3Bucket}`);
+}
+
+/**
+ * GET /api/files/:id
+ *
+ * Get details of a specific file.
+ * Requires authentication and access to the file's workspace.
+ *
+ * @param _request - Next.js request object
+ * @param context - Route context with file ID
+ * @returns File details
+ *
+ * @example
+ * ```
+ * GET /api/files/file_123
+ * ```
+ */
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext,
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
+        { status: 401 },
+      );
+    }
+
+    // Validate file ID parameter
+    const params = await context.params;
+    const paramResult = fileIdParamSchema.safeParse(params);
+    if (!paramResult.success) {
+      return NextResponse.json(
+        createErrorResponse('Invalid file ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
+        { status: 400 },
+      );
+    }
+
+    // Fetch file with related data
+    const file = await prisma.file.findUnique({
+      where: { id: params.id },
+      include: {
+        uploader: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            organizationId: true,
+          },
+        },
+      },
+    });
+
+    if (!file) {
+      return NextResponse.json(
+        createErrorResponse('File not found', UPLOAD_ERROR_CODES.NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    // Check workspace membership
+    const membership = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: file.workspaceId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Not a member of this workspace',
+          UPLOAD_ERROR_CODES.NOT_WORKSPACE_MEMBER,
+        ),
+        { status: 403 },
+      );
+    }
+
+    // Add computed URL to response
+    const responseData = {
+      ...file,
+      size: Number(file.size),
+      url: generateFileUrl(file.s3Key, file.s3Bucket),
+    };
+
+    return NextResponse.json({
+      data: responseData,
+    });
+  } catch (error) {
+    console.error('[GET /api/files/:id] Error:', error);
+    return NextResponse.json(
+      createErrorResponse(
+        'An internal error occurred',
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+      ),
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * DELETE /api/files/:id
+ *
+ * Delete a file. Only the uploader or workspace admins can delete files.
+ * Requires authentication and appropriate permissions.
+ *
+ * @param _request - Next.js request object
+ * @param context - Route context with file ID
+ * @returns Success confirmation
+ *
+ * @example
+ * ```
+ * DELETE /api/files/file_123
+ * ```
+ */
+export async function DELETE(
+  _request: NextRequest,
+  context: RouteContext,
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse('Authentication required', UPLOAD_ERROR_CODES.UNAUTHORIZED),
+        { status: 401 },
+      );
+    }
+
+    // Validate file ID parameter
+    const params = await context.params;
+    const paramResult = fileIdParamSchema.safeParse(params);
+    if (!paramResult.success) {
+      return NextResponse.json(
+        createErrorResponse('Invalid file ID format', UPLOAD_ERROR_CODES.VALIDATION_ERROR),
+        { status: 400 },
+      );
+    }
+
+    // Fetch file
+    const file = await prisma.file.findUnique({
+      where: { id: params.id },
+      include: {
+        workspace: {
+          select: {
+            id: true,
+            organizationId: true,
+          },
+        },
+      },
+    });
+
+    if (!file) {
+      return NextResponse.json(
+        createErrorResponse('File not found', UPLOAD_ERROR_CODES.NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    // Check permissions: user must be uploader or have admin role
+    const isUploader = file.uploadedById === session.user.id;
+
+    if (!isUploader) {
+      // Check if user is workspace admin
+      const membership = await prisma.workspaceMember.findUnique({
+        where: {
+          workspaceId_userId: {
+            workspaceId: file.workspaceId,
+            userId: session.user.id,
+          },
+        },
+        select: { role: true },
+      });
+
+      const isAdmin = membership?.role === 'ADMIN' || membership?.role === 'OWNER';
+
+      if (!isAdmin) {
+        return NextResponse.json(
+          createErrorResponse(
+            'Permission denied. Only the uploader or workspace admins can delete files.',
+            UPLOAD_ERROR_CODES.FORBIDDEN,
+          ),
+          { status: 403 },
+        );
+      }
+    }
+
+    // Delete file from S3
+    await deleteFileFromStorage(file.s3Key, file.s3Bucket);
+
+    // Delete file record from database
+    await prisma.file.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({
+      message: 'File deleted successfully',
+    });
+  } catch (error) {
+    console.error('[DELETE /api/files/:id] Error:', error);
+    return NextResponse.json(
+      createErrorResponse(
+        'An internal error occurred',
+        UPLOAD_ERROR_CODES.INTERNAL_ERROR,
+      ),
+      { status: 500 },
+    );
+  }
+}

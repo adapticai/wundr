@@ -151,6 +151,60 @@ export {
   DaemonNotRegisteredError,
   DaemonAlreadyRegisteredError,
   HeartbeatValidationError,
+
+  // Image Service
+  ImageServiceImpl,
+  createImageService,
+  imageService,
+  type ImageService,
+
+  // Image Service Errors
+  ImageProcessingError,
+  UnsupportedFormatError,
+  ImageValidationError,
+  ImageOperationError,
+
+  // Image Upload Pipeline
+  ImageUploadPipeline,
+  createImageUploadPipeline,
+  type S3Client,
+  type ImageUploadPipelineConfig,
+
+  // Image Upload Pipeline Errors
+  ImageUploadError,
+  S3UploadError,
+  DatabaseRecordError,
+
+  // Storage Service
+  StorageServiceImpl,
+  createStorageService,
+  createStorageServiceFromEnv,
+  getStorageService,
+  storageService,
+  type StorageService,
+
+  // Storage Errors
+  StorageError,
+  FileNotFoundError,
+  FileValidationError,
+  FileSizeError,
+  MimeTypeError,
+  StorageConfigError,
+
+  // File Record Service
+  FileRecordServiceImpl,
+  createFileRecordService,
+  fileRecordService,
+  type FileRecordService,
+
+  // File Record Errors
+  FileRecordNotFoundError,
+  FileRecordValidationError,
+  FileWorkspaceNotFoundError,
+  FileUserNotFoundError,
+
+  // File Record Constants
+  DEFAULT_FILE_RECORD_LIST_OPTIONS,
 } from './services';
 
 // =============================================================================
@@ -296,6 +350,48 @@ export type {
   OnDaemonRegisteredCallback,
   OnDaemonUnregisteredCallback,
 
+  // Image types
+  ImageFormat,
+  ThumbnailSize,
+  ResizeFit,
+  ImagePosition,
+  ResizeOptions,
+  OptimizeOptions,
+  CropOptions,
+  VariantConfig,
+  ImageInput,
+  ImageVariant,
+  ProcessedImage,
+  ImageMetadata,
+  ExifData,
+  ImageUploadInput,
+  ImageUploadResult,
+  ImageValidationResult,
+  ImageValidationOptions,
+
+  // Storage types
+  StorageProvider,
+  StorageACL,
+  StorageConfig,
+  StorageCredentials,
+  UploadInput,
+  UploadOptions,
+  BufferUploadOptions,
+  UploadResult,
+  FileStream,
+  UrlOptions,
+  SignedUrlOptions,
+  SignedUploadUrl,
+  FileMetadata,
+  ListOptions,
+  FileListResult,
+  CreateFileRecordInput,
+  UpdateFileRecordInput,
+  FileRecordWithRelations,
+  FileRecordListOptions,
+  PaginatedFileRecordResult,
+  KeyGenerationOptions,
+
   // Re-exported database types
   VP,
   User,
@@ -305,6 +401,8 @@ export type {
   Message,
   Reaction,
   Session,
+  File,
+  FileStatus,
   OrganizationMember,
   WorkspaceMember,
   ChannelMember,
@@ -382,6 +480,41 @@ export {
   DEFAULT_HEARTBEAT_METRICS,
   DEFAULT_HEALTH_STATUS,
   HEARTBEAT_REDIS_KEYS,
+
+  // Image Type guards
+  isImageFormat,
+  isThumbnailSize,
+  isResizeOptions,
+  isOptimizeOptions,
+  isCropOptions,
+  isImageMetadata,
+  isVariantConfig,
+
+  // Image Constants
+  THUMBNAIL_SIZES,
+  DEFAULT_QUALITY,
+  IMAGE_MIME_TYPES,
+  MIME_TO_FORMAT,
+  DEFAULT_VALIDATION_OPTIONS,
+  DEFAULT_OPTIMIZE_OPTIONS,
+  DEFAULT_VARIANTS,
+
+  // Storage Type guards
+  isStorageProvider,
+  isStorageACL,
+  isStorageConfig,
+  isUploadInput,
+
+  // Storage Constants
+  DEFAULT_STORAGE_CONFIG,
+  FILE_SIZE_LIMITS,
+  MIME_TYPE_CATEGORIES,
+
+  // Storage Utility functions
+  getFileCategory,
+  getMaxFileSizeForType,
+  getExtensionFromMimeType,
+  getMimeTypeFromExtension,
 } from './types';
 
 // =============================================================================
