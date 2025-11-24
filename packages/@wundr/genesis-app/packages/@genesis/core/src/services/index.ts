@@ -541,3 +541,26 @@ export {
   // Errors
   DaemonApiError,
 } from './daemon-api-service';
+
+// =============================================================================
+// Analytics Service
+// =============================================================================
+
+export {
+  // Service implementation
+  AnalyticsServiceImpl,
+  createAnalyticsService,
+  getAnalyticsService,
+  resetAnalyticsService,
+
+  // Interfaces
+  type AnalyticsService,
+  type AnalyticsServiceConfig,
+  type AnalyticsDatabaseClient,
+  type AnalyticsRedisClient,
+  type AnalyticsEventDelegate,
+
+  // Errors
+  AnalyticsError,
+  AnalyticsFlushError,
+} from './analytics-service';

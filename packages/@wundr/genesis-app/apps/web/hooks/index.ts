@@ -29,5 +29,8 @@ export {
   useNotificationSettings,
 } from "./use-notifications";
 
+// Analytics hooks
+export { useAnalytics, useMetrics, useRealTimeStats } from "./use-analytics";
+
 // Re-export from next-auth/react for convenience
 export { signIn, signOut, useSession } from "next-auth/react";

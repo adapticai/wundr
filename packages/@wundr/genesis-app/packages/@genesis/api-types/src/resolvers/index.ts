@@ -323,3 +323,34 @@ export {
 } from './daemon-resolvers.js';
 
 export { default as daemonResolversDefault } from './daemon-resolvers.js';
+
+// =============================================================================
+// ANALYTICS RESOLVERS
+// =============================================================================
+
+export {
+  analyticsResolvers,
+  analyticsQueries,
+  analyticsMutations,
+  analyticsSubscriptions,
+  UsageMetricsFieldResolvers,
+  InsightReportFieldResolvers,
+  TrendDataFieldResolvers,
+  InsightHighlightFieldResolvers,
+  InsightRecommendationFieldResolvers,
+  analyticsTypeDefs,
+  createAnalyticsResolvers,
+  AnalyticsPeriod,
+  TrendDirection,
+  HighlightType,
+  RecommendationPriority,
+  type AnalyticsPeriodValue,
+  type TrendDirectionValue,
+  type HighlightTypeValue,
+  type RecommendationPriorityValue,
+  type AnalyticsResolverContext,
+  type AnalyticsGraphQLContext,
+  type AnalyticsServiceInterface,
+} from './analytics-resolvers.js';
+
+export { default as analyticsResolversDefault } from './analytics-resolvers.js';

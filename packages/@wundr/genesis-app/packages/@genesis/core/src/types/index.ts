@@ -877,3 +877,54 @@ export {
   DAEMON_TOKEN_EXPIRY,
   DAEMON_REDIS_KEYS,
 } from './daemon';
+
+// =============================================================================
+// Analytics Types
+// =============================================================================
+
+export type {
+  // Core analytics types
+  AnalyticsEvent,
+  AnalyticsEventType,
+  UsageMetrics,
+  MessageMetrics,
+  UserMetrics,
+  ChannelMetrics,
+  FileMetrics,
+  CallMetrics,
+  VPMetrics,
+
+  // Query types
+  AnalyticsPeriod,
+  AnalyticsQuery,
+
+  // Dashboard types
+  DashboardWidget,
+  WidgetType,
+  WidgetConfig,
+  AnalyticsDashboard,
+
+  // Trend types
+  TrendData,
+
+  // Insight types
+  InsightReport,
+  InsightHighlight,
+  InsightRecommendation,
+} from './analytics';
+
+export {
+  // Type guards
+  isAnalyticsEventType,
+  isAnalyticsPeriod,
+  isTrendData,
+  isAnalyticsQuery,
+
+  // Constants
+  DEFAULT_ANALYTICS_QUERY,
+  ANALYTICS_REDIS_KEYS,
+  DEFAULT_ANALYTICS_BATCH_SIZE,
+  DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS,
+  ANALYTICS_REDIS_TTL_SECONDS,
+  ANALYTICS_EVENT_CATEGORIES,
+} from './analytics';
