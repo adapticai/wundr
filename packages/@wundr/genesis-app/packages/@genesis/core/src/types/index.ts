@@ -587,7 +587,7 @@ export type {
   // Queue types
   QueuedAction,
   QueueStatus,
-  SyncResult,
+  SyncResult as OfflineSyncResult,
   SyncFailure,
 
   // Sync data types
@@ -928,3 +928,75 @@ export {
   ANALYTICS_REDIS_TTL_SECONDS,
   ANALYTICS_EVENT_CATEGORIES,
 } from './analytics';
+
+// =============================================================================
+// Integration Types
+// =============================================================================
+
+export type {
+  // Provider types
+  IntegrationProvider,
+  IntegrationStatus,
+  IntegrationPermission,
+
+  // OAuth types
+  OAuthToken,
+
+  // Configuration types
+  IntegrationConfig,
+
+  // Webhook types
+  WebhookConfig,
+  WebhookEvent,
+  WebhookRetryPolicy,
+  WebhookDelivery,
+  WebhookAttempt,
+
+  // Event types
+  IntegrationEvent,
+  SyncResult as IntegrationSyncResult,
+
+  // Provider-specific configs
+  SlackIntegrationConfig,
+  GitHubIntegrationConfig,
+  JiraIntegrationConfig,
+
+  // Input types
+  CreateIntegrationInput,
+  UpdateIntegrationInput,
+  CreateWebhookInput,
+  UpdateWebhookInput,
+
+  // List options types
+  ListIntegrationsOptions,
+  ListWebhooksOptions,
+  ListDeliveriesOptions,
+
+  // Paginated result types
+  PaginatedIntegrationResult,
+  PaginatedWebhookResult,
+  PaginatedDeliveryResult,
+
+  // Connection test types
+  ConnectionTestResult,
+} from './integration';
+
+export {
+  // Type guards
+  isIntegrationProvider,
+  isIntegrationStatus,
+  isWebhookEvent,
+  isIntegrationPermission,
+  isIntegrationConfig,
+  isWebhookConfig,
+  isWebhookRetryPolicy,
+  isValidCreateIntegrationInput,
+  isValidCreateWebhookInput,
+
+  // Constants
+  INTEGRATION_PROVIDERS,
+  INTEGRATION_STATUSES,
+  WEBHOOK_EVENTS,
+  INTEGRATION_PERMISSIONS,
+  DEFAULT_WEBHOOK_RETRY_POLICY,
+} from './integration';

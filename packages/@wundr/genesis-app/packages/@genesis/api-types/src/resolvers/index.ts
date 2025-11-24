@@ -354,3 +354,37 @@ export {
 } from './analytics-resolvers.js';
 
 export { default as analyticsResolversDefault } from './analytics-resolvers.js';
+
+// =============================================================================
+// INTEGRATION RESOLVERS
+// =============================================================================
+
+export {
+  integrationResolvers,
+  integrationQueries,
+  integrationMutations,
+  integrationSubscriptions,
+  IntegrationConfigFieldResolvers,
+  WebhookConfigFieldResolvers,
+  WebhookDeliveryFieldResolvers,
+  integrationTypeDefs,
+  createIntegrationResolvers,
+  IntegrationProvider,
+  IntegrationStatus,
+  IntegrationPermission,
+  WebhookEvent,
+  WebhookStatus,
+  DeliveryStatus,
+  INTEGRATION_STATUS_CHANGED,
+  WEBHOOK_DELIVERED,
+  type IntegrationProviderValue,
+  type IntegrationStatusValue,
+  type IntegrationPermissionValue,
+  type WebhookEventValue,
+  type WebhookStatusValue,
+  type DeliveryStatusValue,
+  type IntegrationService,
+  type GraphQLContext as IntegrationGraphQLContext,
+} from './integration-resolvers.js';
+
+export { default as integrationResolversDefault } from './integration-resolvers.js';

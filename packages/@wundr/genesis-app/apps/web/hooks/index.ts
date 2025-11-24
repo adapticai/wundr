@@ -32,5 +32,15 @@ export {
 // Analytics hooks
 export { useAnalytics, useMetrics, useRealTimeStats } from "./use-analytics";
 
+// Integration hooks
+export {
+  useIntegrations,
+  useIntegration,
+  useIntegrationMutations,
+  useWebhooks,
+  useWebhook,
+  useWebhookDeliveries,
+} from "./use-integrations";
+
 // Re-export from next-auth/react for convenience
 export { signIn, signOut, useSession } from "next-auth/react";

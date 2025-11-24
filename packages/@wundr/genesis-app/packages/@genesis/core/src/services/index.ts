@@ -564,3 +564,35 @@ export {
   AnalyticsError,
   AnalyticsFlushError,
 } from './analytics-service';
+
+// =============================================================================
+// Integration Service
+// =============================================================================
+
+export {
+  // Service implementation
+  IntegrationServiceImpl,
+  createIntegrationService,
+  integrationService,
+
+  // Storage implementations
+  InMemoryIntegrationStorage,
+
+  // Interfaces
+  type IntegrationService,
+  type WebhookService,
+  type IntegrationStorage,
+  type HttpClient,
+  type IntegrationServiceConfig,
+
+  // Errors
+  IntegrationError,
+  IntegrationNotFoundError,
+  IntegrationAlreadyExistsError,
+  IntegrationValidationError,
+  OAuthRefreshError,
+  WebhookNotFoundError,
+  WebhookDeliveryError,
+  WebhookSignatureError,
+  ConnectionTestError,
+} from './integration-service';

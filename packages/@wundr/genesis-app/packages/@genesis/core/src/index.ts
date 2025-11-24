@@ -249,6 +249,28 @@ export {
   ActiveCallExistsError,
   HuddleNotFoundError,
   CallOperationError,
+
+  // Integration Service
+  IntegrationServiceImpl,
+  createIntegrationService,
+  integrationService,
+  InMemoryIntegrationStorage,
+  type IntegrationService,
+  type WebhookService,
+  type IntegrationStorage,
+  type HttpClient as IntegrationHttpClient,
+  type IntegrationServiceConfig,
+
+  // Integration Errors
+  IntegrationError,
+  IntegrationNotFoundError,
+  IntegrationAlreadyExistsError,
+  IntegrationValidationError,
+  OAuthRefreshError,
+  WebhookNotFoundError,
+  WebhookDeliveryError,
+  WebhookSignatureError,
+  ConnectionTestError,
 } from './services';
 
 // =============================================================================
@@ -492,6 +514,34 @@ export type {
   RecordingStartedEvent,
   RecordingStoppedEvent,
   LiveKitEvent,
+
+  // Integration types
+  IntegrationProvider,
+  IntegrationStatus,
+  IntegrationPermission,
+  OAuthToken,
+  IntegrationConfig,
+  WebhookConfig,
+  WebhookEvent,
+  WebhookRetryPolicy,
+  WebhookDelivery,
+  WebhookAttempt,
+  IntegrationEvent,
+  SyncResult as IntegrationSyncResult,
+  SlackIntegrationConfig,
+  GitHubIntegrationConfig,
+  JiraIntegrationConfig,
+  CreateIntegrationInput,
+  UpdateIntegrationInput,
+  CreateWebhookInput,
+  UpdateWebhookInput,
+  ListIntegrationsOptions,
+  ListWebhooksOptions,
+  ListDeliveriesOptions,
+  PaginatedIntegrationResult,
+  PaginatedWebhookResult,
+  PaginatedDeliveryResult,
+  ConnectionTestResult,
 } from './types';
 
 export {
@@ -607,6 +657,24 @@ export {
   GUEST_TOKEN_OPTIONS,
   VIEWER_TOKEN_OPTIONS,
   RECORDING_PRESETS,
+
+  // Integration Type guards
+  isIntegrationProvider,
+  isIntegrationStatus,
+  isWebhookEvent,
+  isIntegrationPermission,
+  isIntegrationConfig,
+  isWebhookConfig,
+  isWebhookRetryPolicy,
+  isValidCreateIntegrationInput,
+  isValidCreateWebhookInput,
+
+  // Integration Constants
+  INTEGRATION_PROVIDERS,
+  INTEGRATION_STATUSES,
+  WEBHOOK_EVENTS,
+  INTEGRATION_PERMISSIONS,
+  DEFAULT_WEBHOOK_RETRY_POLICY,
 } from './types';
 
 // =============================================================================
