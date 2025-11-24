@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google';
 
 import type { Metadata } from 'next';
+import { Providers } from '@/components/providers';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -40,16 +41,6 @@ export const metadata: Metadata = {
     follow: true,
   },
 };
-
-// Providers placeholder - will be expanded with actual providers
-function Providers({ children }: { children: React.ReactNode }) {
-  // TODO: Add providers in this order:
-  // 1. SessionProvider (next-auth)
-  // 2. ApolloProvider (GraphQL)
-  // 3. ThemeProvider (dark/light mode)
-  // 4. ToastProvider (notifications)
-  return <>{children}</>;
-}
 
 export default function RootLayout({
   children,

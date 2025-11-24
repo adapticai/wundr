@@ -55,7 +55,7 @@ export type { User } from '@prisma/client';
 
 // Export all enums
 // Currently active enums:
-export { UserRole } from '@prisma/client';
+export { UserStatus } from '@prisma/client';
 
 // Future enums (uncomment after adding to schema.prisma and running prisma generate):
 // export {

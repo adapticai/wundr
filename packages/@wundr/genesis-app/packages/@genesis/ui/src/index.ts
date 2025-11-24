@@ -23,3 +23,25 @@ export {
   getInitials,
   type AvatarProps,
 } from './components/ui/avatar';
+export {
+  Input,
+  inputVariants,
+  type InputProps,
+} from './components/ui/input';
+export {
+  Label,
+  labelVariants,
+  type LabelProps,
+} from './components/ui/label';
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from './components/ui/card';
+export {
+  Separator,
+  type SeparatorProps,
+} from './components/ui/separator';

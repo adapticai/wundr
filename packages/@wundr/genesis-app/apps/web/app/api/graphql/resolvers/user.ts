@@ -76,11 +76,12 @@ export const userResolvers = {
         return null;
       }
 
+      // Map to ContextUser type - role is from context, not database
       return {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: context.user.role,
       };
     },
 
