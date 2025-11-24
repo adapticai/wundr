@@ -302,3 +302,24 @@ export {
 } from './retention-resolvers.js';
 
 export { default as retentionResolversDefault } from './retention-resolvers.js';
+
+// =============================================================================
+// DAEMON RESOLVERS
+// =============================================================================
+
+export {
+  daemonResolvers,
+  daemonQueries,
+  daemonMutations,
+  daemonSubscriptions,
+  DaemonCredentialFieldResolvers,
+  daemonTypeDefs,
+  createDaemonResolvers,
+  DaemonStatus,
+  DAEMON_STATUS_CHANGED,
+  DAEMON_METRICS_UPDATED,
+  type DaemonStatusType,
+  type DaemonResolverContext,
+} from './daemon-resolvers.js';
+
+export { default as daemonResolversDefault } from './daemon-resolvers.js';

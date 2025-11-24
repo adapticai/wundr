@@ -1,188 +1,249 @@
 /**
  * Daemon Heartbeat API Route
  *
- * Handles heartbeat signals from VP daemons.
+ * Handles heartbeat signals and metrics reporting for VP daemon services.
  *
  * Routes:
- * - POST /api/daemon/heartbeat - Send a heartbeat
+ * - POST /api/daemon/heartbeat - Send heartbeat with optional metrics
  *
  * @module app/api/daemon/heartbeat/route
  */
 
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-
-import type { NextRequest } from 'next/server';
-
-// =============================================================================
-// Validation Schemas
-// =============================================================================
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@genesis/database';
+import { redis } from '@genesis/core';
+import * as jwt from 'jsonwebtoken';
 
 /**
- * Schema for heartbeat metrics.
+ * JWT configuration
  */
-const heartbeatMetricsSchema = z.object({
-  cpuUsage: z.number().min(0).max(100),
-  memoryUsage: z.number().min(0).max(100),
-  activeConnections: z.number().int().min(0),
-  messageQueueSize: z.number().int().min(0),
-  lastMessageAt: z.string().datetime().optional(),
-  avgResponseTimeMs: z.number().min(0).optional(),
-  totalMessagesProcessed: z.number().int().min(0).optional(),
-  errorCount: z.number().int().min(0).optional(),
-  custom: z.record(z.union([z.number(), z.string()])).optional(),
-});
+const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
- * Schema for heartbeat request body.
+ * Heartbeat interval (ms) - daemon should send heartbeats at this interval
  */
-const heartbeatRequestSchema = z.object({
-  vpId: z.string().min(1, 'VP ID is required'),
-  metrics: heartbeatMetricsSchema.optional(),
-  apiKey: z.string().min(1, 'API key is required'),
-});
+const HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds
 
-// =============================================================================
-// Error Codes
-// =============================================================================
+/**
+ * Heartbeat TTL (seconds) - how long until a daemon is considered offline
+ */
+const HEARTBEAT_TTL_SECONDS = 90; // 3 missed heartbeats
 
+/**
+ * Error codes for heartbeat operations
+ */
 const HEARTBEAT_ERROR_CODES = {
-  VALIDATION_ERROR: 'HEARTBEAT_VALIDATION_ERROR',
   UNAUTHORIZED: 'UNAUTHORIZED',
-  DAEMON_NOT_REGISTERED: 'DAEMON_NOT_REGISTERED',
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
 /**
- * Creates a standardized error response.
+ * Decoded access token payload
  */
-function createErrorResponse(
-  message: string,
-  code: string,
-  details?: Record<string, unknown>
-) {
-  return {
-    error: {
-      message,
-      code,
-      ...(details && { details }),
-    },
-  };
+interface AccessTokenPayload {
+  vpId: string;
+  daemonId: string;
+  scopes: string[];
+  type: 'access';
+  iat: number;
+  exp: number;
 }
 
-// =============================================================================
-// Route Handler
-// =============================================================================
+/**
+ * Daemon metrics structure
+ */
+interface DaemonMetrics {
+  memoryUsageMB?: number;
+  cpuUsagePercent?: number;
+  activeConnections?: number;
+  messagesProcessed?: number;
+  errorsCount?: number;
+  uptimeSeconds?: number;
+  lastTaskCompletedAt?: string;
+  queueDepth?: number;
+}
 
 /**
- * POST /api/daemon/heartbeat
+ * Verify daemon token from Authorization header
+ */
+async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPayload> {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid authorization header');
+  }
+
+  const token = authHeader.slice(7);
+  const decoded = jwt.verify(token, JWT_SECRET) as AccessTokenPayload;
+
+  if (decoded.type !== 'access') {
+    throw new Error('Invalid token type');
+  }
+
+  return decoded;
+}
+
+/**
+ * POST /api/daemon/heartbeat - Send heartbeat with metrics
  *
- * Receives a heartbeat from a VP daemon.
- * Requires daemon API key authentication.
+ * Sends a heartbeat signal to indicate the daemon is alive.
+ * Optionally includes performance metrics for monitoring.
  *
  * @param request - Next.js request with heartbeat data
- * @returns Success response or error
+ * @returns Server time and next expected heartbeat
  *
  * @example
  * ```
  * POST /api/daemon/heartbeat
+ * Authorization: Bearer <access_token>
  * Content-Type: application/json
  *
  * {
- *   "vpId": "vp_123",
- *   "apiKey": "gns_abc123...",
+ *   "sessionId": "daemon_session_vp123_1234567890",
+ *   "status": "active",
  *   "metrics": {
- *     "cpuUsage": 45,
- *     "memoryUsage": 60,
- *     "activeConnections": 10,
- *     "messageQueueSize": 5
+ *     "memoryUsageMB": 256,
+ *     "cpuUsagePercent": 15.5,
+ *     "messagesProcessed": 42,
+ *     "uptimeSeconds": 3600
  *   }
  * }
  * ```
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // Verify authentication
+    let token: AccessTokenPayload;
+    try {
+      token = await verifyDaemonToken(request);
+    } catch {
+      return NextResponse.json(
+        { error: 'Unauthorized', code: HEARTBEAT_ERROR_CODES.UNAUTHORIZED },
+        { status: 401 }
+      );
+    }
+
     // Parse request body
     let body: unknown;
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        createErrorResponse('Invalid JSON body', HEARTBEAT_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
-      );
+      // Heartbeat can be sent without body
+      body = {};
     }
 
-    // Validate input
-    const parseResult = heartbeatRequestSchema.safeParse(body);
-    if (!parseResult.success) {
-      return NextResponse.json(
-        createErrorResponse(
-          'Validation failed',
-          HEARTBEAT_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
-        ),
-        { status: 400 }
-      );
-    }
+    const { sessionId, status = 'active', metrics } = body as {
+      sessionId?: string;
+      status?: 'active' | 'idle' | 'busy';
+      metrics?: DaemonMetrics;
+    };
 
-    const { vpId, apiKey, metrics } = parseResult.data;
+    const now = new Date();
+    const serverTime = now.toISOString();
+    const nextHeartbeat = new Date(now.getTime() + HEARTBEAT_INTERVAL_MS).toISOString();
 
-    // TODO: Validate API key against VP's stored key hash
-    // This would use vpService.validateAPIKey(apiKey)
-    // For now, we'll just check if the key starts with the expected prefix
-    if (!apiKey.startsWith('gns_')) {
+    // Get VP info
+    const vp = await prisma.vP.findUnique({
+      where: { id: token.vpId },
+      select: {
+        id: true,
+        organizationId: true,
+        status: true,
+      },
+    });
+
+    if (!vp) {
       return NextResponse.json(
-        createErrorResponse('Invalid API key', HEARTBEAT_ERROR_CODES.UNAUTHORIZED),
+        { error: 'Unauthorized', code: HEARTBEAT_ERROR_CODES.UNAUTHORIZED },
         { status: 401 }
       );
     }
 
-    // TODO: Get Redis client and heartbeat service
-    // const redis = getRedisClient();
-    // const heartbeatService = createHeartbeatService(redis);
-    // await heartbeatService.sendHeartbeat(vpId, metrics);
+    // Update VP status
+    const vpStatus = status === 'idle' ? 'AWAY' : status === 'busy' ? 'BUSY' : 'ONLINE';
+    await prisma.vP.update({
+      where: { id: token.vpId },
+      data: {
+        status: vpStatus,
+      },
+    });
 
-    // For now, return success with timestamp
-    const timestamp = new Date().toISOString();
+    // Store heartbeat in Redis
+    const heartbeatKey = `daemon:heartbeat:${token.vpId}`;
+    const heartbeatData = {
+      vpId: token.vpId,
+      daemonId: token.daemonId,
+      sessionId: sessionId || token.daemonId,
+      status,
+      metrics: metrics || {},
+      receivedAt: serverTime,
+      organizationId: vp.organizationId,
+    };
+
+    try {
+      await redis.setex(
+        heartbeatKey,
+        HEARTBEAT_TTL_SECONDS,
+        JSON.stringify(heartbeatData)
+      );
+
+      // Store metrics history (last 100 heartbeats)
+      if (metrics) {
+        const metricsKey = `daemon:metrics:${token.vpId}`;
+        await redis.lpush(
+          metricsKey,
+          JSON.stringify({
+            ...metrics,
+            timestamp: serverTime,
+          })
+        );
+        await redis.ltrim(metricsKey, 0, 99);
+        await redis.expire(metricsKey, 24 * 60 * 60); // 24 hours
+      }
+
+      // Update session heartbeat
+      if (sessionId) {
+        const sessionKey = `daemon:session:${sessionId}`;
+        const sessionStr = await redis.get(sessionKey);
+        if (sessionStr) {
+          const session = JSON.parse(sessionStr);
+          await redis.setex(
+            sessionKey,
+            7 * 24 * 60 * 60, // 7 days
+            JSON.stringify({
+              ...session,
+              lastHeartbeat: serverTime,
+              lastStatus: status,
+            })
+          );
+        }
+      }
+
+      // Publish heartbeat for monitoring
+      await redis.publish(
+        `daemon:heartbeats:${vp.organizationId}`,
+        JSON.stringify({
+          type: 'heartbeat',
+          vpId: token.vpId,
+          status,
+          receivedAt: serverTime,
+        })
+      );
+    } catch (redisError) {
+      console.error('Redis heartbeat error:', redisError);
+      // Continue - database update succeeded
+    }
 
     return NextResponse.json({
       success: true,
-      data: {
-        vpId,
-        timestamp,
-        received: true,
-        nextExpectedAt: new Date(Date.now() + 30000).toISOString(), // 30 seconds
-      },
+      serverTime,
+      nextHeartbeat,
+      heartbeatIntervalMs: HEARTBEAT_INTERVAL_MS,
     });
   } catch (error) {
     console.error('[POST /api/daemon/heartbeat] Error:', error);
-
-    // Handle known errors
-    if (error instanceof Error) {
-      if (error.message.includes('not registered')) {
-        return NextResponse.json(
-          createErrorResponse(
-            'Daemon not registered',
-            HEARTBEAT_ERROR_CODES.DAEMON_NOT_REGISTERED
-          ),
-          { status: 404 }
-        );
-      }
-      if (error.message.includes('VP not found')) {
-        return NextResponse.json(
-          createErrorResponse('VP not found', HEARTBEAT_ERROR_CODES.VP_NOT_FOUND),
-          { status: 404 }
-        );
-      }
-    }
-
     return NextResponse.json(
-      createErrorResponse(
-        'An internal error occurred',
-        HEARTBEAT_ERROR_CODES.INTERNAL_ERROR
-      ),
+      { error: 'Heartbeat failed', code: HEARTBEAT_ERROR_CODES.INTERNAL_ERROR },
       { status: 500 }
     );
   }

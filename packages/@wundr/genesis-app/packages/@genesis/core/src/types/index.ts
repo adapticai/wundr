@@ -818,3 +818,62 @@ export {
   MAX_QUERY_LENGTH,
   MIN_QUERY_LENGTH,
 } from './search';
+
+// =============================================================================
+// Daemon Types
+// =============================================================================
+
+export type {
+  // Scope types
+  DaemonScope,
+
+  // Token types
+  DaemonTokenType,
+  DaemonToken,
+  DaemonTokenPair,
+  DaemonTokenPayload,
+
+  // Credential types
+  DaemonCredentials,
+  DaemonMetadata,
+  DaemonAuthResult,
+  DaemonRegistration,
+  DaemonRegistrationCredentials,
+  DaemonCredentialsWithoutSecret,
+
+  // Auth request/response types
+  DaemonAuthRequest,
+  DaemonAuthResponse,
+  DaemonRefreshRequest,
+
+  // Session types
+  DaemonSessionStatus,
+  DaemonSession,
+  DaemonConnectionStatus,
+  DaemonHeartbeat,
+
+  // Event types
+  DaemonEventType,
+  DaemonEvent,
+
+  // Config types
+  DaemonConfig,
+
+  // Metrics types (note: DaemonMetrics is exported from presence types above)
+
+  // Error types
+  DaemonAuthErrorCode,
+} from './daemon';
+
+export {
+  // Type guards
+  isDaemonScope,
+  isDaemonToken,
+  isDaemonSession,
+  isDaemonEvent,
+
+  // Constants
+  DAEMON_SCOPE_SETS,
+  DAEMON_TOKEN_EXPIRY,
+  DAEMON_REDIS_KEYS,
+} from './daemon';

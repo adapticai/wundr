@@ -501,3 +501,43 @@ export {
   RetentionJobError,
   DataExportNotFoundError,
 } from './retention-service';
+
+// =============================================================================
+// Daemon Auth Service
+// =============================================================================
+
+export {
+  // Service implementation
+  DaemonAuthService,
+  createDaemonAuthService,
+
+  // Interfaces
+  type DaemonAuthServiceConfig,
+
+  // Errors
+  DaemonAuthError,
+  InvalidCredentialsError,
+  TokenExpiredError,
+  TokenRevokedError,
+  SessionNotFoundError,
+  InsufficientScopeError,
+} from './daemon-auth-service';
+
+// =============================================================================
+// Daemon API Service
+// =============================================================================
+
+export {
+  // Service implementation
+  DaemonApiService,
+  createDaemonApiService,
+
+  // Interfaces
+  type DaemonApiServiceConfig,
+  type SendMessageParams,
+  type ChannelInfo,
+  type UserInfo,
+
+  // Errors
+  DaemonApiError,
+} from './daemon-api-service';
