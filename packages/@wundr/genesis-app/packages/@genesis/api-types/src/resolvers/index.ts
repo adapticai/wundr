@@ -164,3 +164,29 @@ export {
 } from './file-resolvers.js';
 
 export { default as fileResolversDefault } from './file-resolvers.js';
+
+// =============================================================================
+// PROCESSING RESOLVERS
+// =============================================================================
+
+export {
+  processingResolvers,
+  processingQueries,
+  processingMutations,
+  processingSubscriptions,
+  ProcessingJobFieldResolvers,
+  PROCESSING_JOB_UPDATED,
+  FILE_PROCESSING_COMPLETE,
+  ProcessingStatus,
+  ProcessingJobType,
+  type ProcessingStatusValue,
+  type ProcessingJobTypeValue,
+  type ProcessingJob,
+  type ProcessingResult,
+  type ProcessingError,
+  type QueueStats,
+  type ProcessingService,
+  type GraphQLContext as ProcessingGraphQLContext,
+} from './processing-resolvers.js';
+
+export { default as processingResolversDefault } from './processing-resolvers.js';

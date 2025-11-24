@@ -92,15 +92,248 @@ export {
   createImageProcessor,
 } from './processors/image';
 
-// Queue exports
+// Legacy Queue exports (backwards compatibility)
 export {
   FileProcessingQueue,
-  QueueEvent,
-  QueueStats,
+  QueueEvent as LegacyQueueEvent,
+  QueueStats as LegacyQueueStats,
   JobResult,
   QueueEventListener,
   createFileProcessingQueue,
 } from './queue';
+
+// New Queue Module exports
+export {
+  // Types
+  ProcessingType,
+  JobPriority,
+  JobStatus as QueueJobStatus,
+  QueueEvent,
+
+  // Job interfaces
+  ProcessingJob,
+  JobInfo,
+  ProcessingResult as QueueProcessingResult,
+  ProcessingMetrics,
+
+  // Event interfaces
+  EventHandler,
+  JobAddedEvent,
+  JobStartedEvent,
+  JobProgressEvent,
+  JobCompletedEvent,
+  JobFailedEvent,
+  JobRetryEvent,
+  QueueErrorEvent,
+
+  // Processor interfaces
+  JobProcessor,
+  ProcessorRegistry,
+
+  // Configuration interfaces
+  QueueOptions,
+  RedisConnectionOptions,
+  DeadLetterQueueOptions,
+  RedisQueueConfig,
+  MemoryQueueConfig,
+
+  // Statistics
+  QueueStats,
+
+  // Processing Queue Interface
+  ProcessingQueue,
+  BaseProcessingQueue,
+
+  // Redis Queue Implementation
+  RedisProcessingQueue,
+  createRedisProcessingQueue,
+
+  // Memory Queue Implementation
+  MemoryProcessingQueue,
+  createMemoryProcessingQueue,
+
+  // Job Worker
+  JobWorker,
+  JobWorkerConfig,
+  Logger,
+  SimpleProcessorRegistry,
+  createJobWorker,
+  createProcessorRegistry,
+
+  // Processing Coordinator
+  ProcessingCoordinator,
+  StorageService,
+  StoredFile,
+  FileRecordService,
+  FileRecord,
+  UploadedFile,
+  CoordinatorConfig,
+  BatchProcessOptions,
+  createProcessingCoordinator,
+
+  // Factory functions
+  QueueType,
+  QueueFactoryOptions,
+  createQueue,
+  createQueueFromEnv,
+} from './queue/index';
+
+// Extractors Module exports
+export {
+  // Text Extraction Service
+  TextExtractionService,
+  TextExtractor,
+  TextExtractorConfig,
+  createTextExtractor,
+
+  // PDF Extractor
+  PDFExtractor,
+  PDFExtractorImpl,
+  PDFExtractorConfig,
+  createPDFExtractor,
+
+  // Office Document Extractor
+  OfficeExtractor,
+  OfficeExtractorImpl,
+  OfficeExtractorConfig,
+  createOfficeExtractor,
+
+  // Table Extractor
+  TableExtractor,
+  TableExtractorImpl,
+  TableDetectionConfig,
+  CSVParseOptions,
+  CSVOptions,
+  createTableExtractor,
+
+  // Extraction Types
+  ExtractionInput,
+  ExtractionOptions,
+  ExtractionResult,
+  DocumentMetadata,
+  ExtractedTable,
+  ExtractedImage,
+  FileTypeResult,
+  FileCategory,
+
+  // PDF Extraction Types
+  PDFOptions,
+  PDFExtractionResult,
+  PDFPage,
+  PDFOutline,
+  PDFAnnotation,
+  PDFAnnotationType,
+  PDFFormField,
+  PDFFormFieldType,
+  PDFMetadata,
+
+  // DOCX Extraction Types
+  DocxOptions,
+  DocxExtractionResult,
+  DocxHeading,
+  DocxComment,
+  DocxTrackChange,
+  DocxStyle,
+
+  // XLSX Extraction Types
+  XlsxOptions,
+  XlsxExtractionResult,
+  XlsxSheet,
+  XlsxNamedRange,
+  XlsxWorkbookProperties,
+  XlsxCellValue,
+  XlsxRichText,
+
+  // Common Extraction Types
+  PageContent as ExtractorPageContent,
+  PageDimensions,
+  TextBlock as ExtractorTextBlock,
+  BoundingBox as ExtractorBoundingBox,
+  FontInfo,
+  TableStructure,
+  ColumnType,
+  MergedCellInfo,
+  PageRange,
+  ImageDimensions,
+
+  // Error Types
+  ExtractionError,
+  ExtractionErrorCode,
+  PDFExtractionError,
+  DocxExtractionError,
+  XlsxExtractionError,
+} from './extractors';
+
+// OCR Service exports
+export {
+  // Service Interface & Base
+  OCRService,
+  OCRServiceInfo,
+  OCRServiceFactory,
+  OCRServiceFactoryConfig,
+  BaseOCRService,
+
+  // Tesseract Implementation
+  TesseractOCRService,
+  createTesseractOCRService,
+
+  // Image Preprocessing
+  ImagePreprocessor,
+  createImagePreprocessor,
+  PreprocessOptions,
+  DEFAULT_PREPROCESS_OPTIONS,
+  ImageAnalysis,
+
+  // Layout Analysis
+  LayoutAnalyzer,
+  createLayoutAnalyzer,
+  LayoutAnalyzerOptions,
+  LayoutResult,
+  Region,
+  TextRegion,
+  TableRegion,
+  ImageRegion,
+  RegionType,
+
+  // OCR Types & Enums
+  OCREngine,
+  PageSegMode,
+  OCREngineMode,
+  BlockType,
+  DocumentType,
+  OCRProcessingStage,
+  OCRErrorType,
+  SUPPORTED_LANGUAGES,
+
+  // OCR Core Types
+  SupportedLanguage,
+  BoundingBox as OCRBoundingBox,
+  ExtendedBoundingBox,
+  OCROptions,
+  PDFOCROptions,
+  OCRWord,
+  OCRLine,
+  OCRParagraph,
+  OCRBlock,
+  OCRResult,
+  DocumentOCRResult,
+
+  // OCR Table Types
+  TableResult,
+  TableCell,
+  FormField,
+
+  // OCR Progress & Stats
+  OCRProgress,
+  OCRProgressCallback,
+  OCRServiceStats,
+  OCRServiceConfig,
+  OCRError,
+
+  // Pipeline Utilities
+  createOCRPipeline,
+  quickOCR,
+} from './ocr';
 
 /**
  * Main file processor service
