@@ -1,175 +1,22 @@
 # Genesis App GraphQL Schema
 # This is the root schema definition for the Genesis application
+# Wave 2 (Phase 0.5) - Extended Schema with Organization, Channel, Message, VP support
 
-# Custom Scalars
+# =============================================================================
+# CUSTOM SCALARS
+# =============================================================================
+
 scalar DateTime
 scalar JSON
-scalar UUID
 scalar BigInt
 
 # =============================================================================
-# ROOT TYPES
-# =============================================================================
-
-type Query {
-  """
-  Get the currently authenticated user
-  """
-  me: User
-
-  """
-  Get a user by their unique identifier
-  """
-  user(id: UUID!): User
-
-  """
-  List all users (admin only)
-  """
-  users(
-    first: Int
-    after: String
-    filter: UserFilterInput
-  ): UserConnection!
-
-  """
-  Get a workspace by ID
-  """
-  workspace(id: UUID!): Workspace
-
-  """
-  List workspaces accessible to the current user
-  """
-  workspaces(
-    first: Int
-    after: String
-    filter: WorkspaceFilterInput
-  ): WorkspaceConnection!
-
-  """
-  Health check endpoint
-  """
-  health: HealthStatus!
-}
-
-type Mutation {
-  """
-  Create a new user account
-  """
-  createUser(input: CreateUserInput!): CreateUserPayload!
-
-  """
-  Update user profile
-  """
-  updateUser(id: UUID!, input: UpdateUserInput!): UpdateUserPayload!
-
-  """
-  Delete a user account
-  """
-  deleteUser(id: UUID!): DeleteUserPayload!
-
-  """
-  Create a new workspace
-  """
-  createWorkspace(input: CreateWorkspaceInput!): CreateWorkspacePayload!
-
-  """
-  Update workspace settings
-  """
-  updateWorkspace(id: UUID!, input: UpdateWorkspaceInput!): UpdateWorkspacePayload!
-
-  """
-  Delete a workspace
-  """
-  deleteWorkspace(id: UUID!): DeleteWorkspacePayload!
-
-  """
-  Add a member to a workspace
-  """
-  addWorkspaceMember(workspaceId: UUID!, input: AddWorkspaceMemberInput!): AddWorkspaceMemberPayload!
-
-  """
-  Remove a member from a workspace
-  """
-  removeWorkspaceMember(workspaceId: UUID!, userId: UUID!): RemoveWorkspaceMemberPayload!
-}
-
-type Subscription {
-  """
-  Subscribe to user updates
-  """
-  userUpdated(userId: UUID!): User!
-
-  """
-  Subscribe to workspace updates
-  """
-  workspaceUpdated(workspaceId: UUID!): Workspace!
-
-  """
-  Subscribe to workspace member changes
-  """
-  workspaceMembershipChanged(workspaceId: UUID!): WorkspaceMembershipEvent!
-}
-
-# =============================================================================
-# USER TYPES
+# ENUMS
 # =============================================================================
 
 """
-Represents a user in the Genesis system
+User status in the system
 """
-type User implements Node {
-  """
-  Unique identifier for the user
-  """
-  id: UUID!
-
-  """
-  User's email address (unique)
-  """
-  email: String!
-
-  """
-  User's display name
-  """
-  displayName: String
-
-  """
-  URL to user's avatar image
-  """
-  avatarUrl: String
-
-  """
-  User's role in the system
-  """
-  role: UserRole!
-
-  """
-  User's current status
-  """
-  status: UserStatus!
-
-  """
-  Workspaces the user is a member of
-  """
-  workspaces(first: Int, after: String): WorkspaceConnection!
-
-  """
-  When the user account was created
-  """
-  createdAt: DateTime!
-
-  """
-  When the user account was last updated
-  """
-  updatedAt: DateTime!
-}
-
-enum UserRole {
-  ADMIN
-  MEMBER
-  GUEST
-}
-
 enum UserStatus {
   ACTIVE
   INACTIVE
@@ -177,233 +24,107 @@ enum UserStatus {
   PENDING_VERIFICATION
 }
 
-input UserFilterInput {
-  email: String
-  role: UserRole
-  status: UserStatus
-  search: String
-}
-
-input CreateUserInput {
-  email: String!
-  displayName: String
-  role: UserRole
-}
-
-input UpdateUserInput {
-  displayName: String
-  avatarUrl: String
-  role: UserRole
-  status: UserStatus
-}
-
-type CreateUserPayload {
-  user: User
-  errors: [Error!]!
-}
-
-type UpdateUserPayload {
-  user: User
-  errors: [Error!]!
-}
-
-type DeleteUserPayload {
-  success: Boolean!
-  errors: [Error!]!
-}
-
-type UserConnection implements Connection {
-  edges: [UserEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type UserEdge implements Edge {
-  cursor: String!
-  node: User!
-}
-
-# =============================================================================
-# WORKSPACE TYPES
-# =============================================================================
-
 """
-Represents a workspace for organizing projects and teams
+Workspace visibility setting
 """
-type Workspace implements Node {
-  """
-  Unique identifier for the workspace
-  """
-  id: UUID!
-
-  """
-  Workspace name
-  """
-  name: String!
-
-  """
-  Workspace description
-  """
-  description: String
-
-  """
-  URL-friendly slug for the workspace
-  """
-  slug: String!
-
-  """
-  Workspace visibility setting
-  """
-  visibility: WorkspaceVisibility!
-
-  """
-  The user who owns/created the workspace
-  """
-  owner: User!
-
-  """
-  Members of the workspace
-  """
-  members(first: Int, after: String): WorkspaceMemberConnection!
-
-  """
-  Workspace settings
-  """
-  settings: WorkspaceSettings!
-
-  """
-  When the workspace was created
-  """
-  createdAt: DateTime!
-
-  """
-  When the workspace was last updated
-  """
-  updatedAt: DateTime!
-}
-
 enum WorkspaceVisibility {
   PUBLIC
   PRIVATE
   INTERNAL
 }
 
-type WorkspaceSettings {
-  """
-  Allow members to invite others
-  """
-  allowMemberInvites: Boolean!
-
-  """
-  Default role for new members
-  """
-  defaultMemberRole: WorkspaceMemberRole!
-
-  """
-  Workspace-specific feature flags
-  """
-  features: JSON
+"""
+Channel type for messaging
+"""
+enum ChannelType {
+  PUBLIC
+  PRIVATE
+  DIRECT
+  GROUP
 }
 
-type WorkspaceMember {
-  user: User!
-  role: WorkspaceMemberRole!
-  joinedAt: DateTime!
+"""
+Message type enumeration
+"""
+enum MessageType {
+  TEXT
+  SYSTEM
+  FILE
+  THREAD_REPLY
 }
 
+"""
+File upload status
+"""
+enum FileStatus {
+  PENDING
+  UPLOADING
+  COMPLETED
+  FAILED
+  DELETED
+}
+
+"""
+Workspace member role
+"""
 enum WorkspaceMemberRole {
   OWNER
   ADMIN
-  EDITOR
+  MEMBER
+  GUEST
+}
+
+"""
+Organization member role
+"""
+enum OrganizationMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
   VIEWER
 }
 
-input WorkspaceFilterInput {
-  name: String
-  visibility: WorkspaceVisibility
-  ownerId: UUID
-  search: String
+"""
+Channel member role
+"""
+enum ChannelMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
 
-input CreateWorkspaceInput {
-  name: String!
-  description: String
-  slug: String
-  visibility: WorkspaceVisibility
+"""
+Virtual Person (VP) status
+"""
+enum VPStatus {
+  ACTIVE
+  INACTIVE
+  PROVISIONING
+  ERROR
 }
 
-input UpdateWorkspaceInput {
-  name: String
-  description: String
-  slug: String
-  visibility: WorkspaceVisibility
-  settings: WorkspaceSettingsInput
+"""
+Service health status
+"""
+enum ServiceStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
 }
 
-input WorkspaceSettingsInput {
-  allowMemberInvites: Boolean
-  defaultMemberRole: WorkspaceMemberRole
-  features: JSON
+"""
+User presence status for real-time features
+"""
+enum PresenceStatus {
+  ONLINE
+  AWAY
+  BUSY
+  OFFLINE
 }
 
-input AddWorkspaceMemberInput {
-  userId: UUID!
-  role: WorkspaceMemberRole!
-}
-
-type CreateWorkspacePayload {
-  workspace: Workspace
-  errors: [Error!]!
-}
-
-type UpdateWorkspacePayload {
-  workspace: Workspace
-  errors: [Error!]!
-}
-
-type DeleteWorkspacePayload {
-  success: Boolean!
-  errors: [Error!]!
-}
-
-type AddWorkspaceMemberPayload {
-  member: WorkspaceMember
-  errors: [Error!]!
-}
-
-type RemoveWorkspaceMemberPayload {
-  success: Boolean!
-  errors: [Error!]!
-}
-
-type WorkspaceConnection implements Connection {
-  edges: [WorkspaceEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type WorkspaceEdge implements Edge {
-  cursor: String!
-  node: Workspace!
-}
-
-type WorkspaceMemberConnection implements Connection {
-  edges: [WorkspaceMemberEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type WorkspaceMemberEdge implements Edge {
-  cursor: String!
-  node: WorkspaceMember!
-}
-
-type WorkspaceMembershipEvent {
-  type: WorkspaceMembershipEventType!
-  member: WorkspaceMember!
-  workspace: Workspace!
-}
-
+"""
+Workspace membership event types for subscriptions
+"""
 enum WorkspaceMembershipEventType {
   MEMBER_ADDED
   MEMBER_REMOVED
@@ -411,14 +132,14 @@ enum WorkspaceMembershipEventType {
 }
 
 # =============================================================================
-# COMMON TYPES
+# INTERFACES
 # =============================================================================
 
 """
 Relay Node interface for global object identification
 """
 interface Node {
-  id: UUID!
+  id: ID!
 }
 
 """
@@ -439,7 +160,19 @@ interface Edge {
 }
 
 """
-Pagination information
+Timestamped interface for entities with audit fields
+"""
+interface Timestamped {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# =============================================================================
+# COMMON TYPES
+# =============================================================================
+
+"""
+Pagination information for cursor-based pagination
 """
 type PageInfo {
   hasNextPage: Boolean!
@@ -478,6 +211,9 @@ type HealthStatus {
   services: [ServiceHealth!]!
 }
 
+"""
+Individual service health status
+"""
 type ServiceHealth {
   name: String!
   status: ServiceStatus!
@@ -485,8 +221,1458 @@ type ServiceHealth {
   message: String
 }
 
-enum ServiceStatus {
-  HEALTHY
-  DEGRADED
-  UNHEALTHY
+# =============================================================================
+# ORGANIZATION TYPES
+# =============================================================================
+
+"""
+Organization - top-level container for workspaces and teams
+"""
+type Organization implements Node & Timestamped {
+  id: ID!
+
+  """
+  Organization name
+  """
+  name: String!
+
+  """
+  URL-friendly slug (unique)
+  """
+  slug: String!
+
+  """
+  Organization description
+  """
+  description: String
+
+  """
+  Logo URL
+  """
+  logoUrl: String
+
+  """
+  Organization settings as JSON
+  """
+  settings: JSON
+
+  """
+  Workspaces within this organization
+  """
+  workspaces(first: Int, after: String, filter: WorkspaceFilterInput): WorkspaceConnection!
+
+  """
+  Members of this organization
+  """
+  members(first: Int, after: String, filter: OrganizationMemberFilterInput): OrganizationMemberConnection!
+
+  """
+  Count of workspaces
+  """
+  workspaceCount: Int!
+
+  """
+  Count of members
+  """
+  memberCount: Int!
+
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+Organization membership record
+"""
+type OrganizationMember implements Node {
+  id: ID!
+  user: User!
+  organization: Organization!
+  role: OrganizationMemberRole!
+  joinedAt: DateTime!
+}
+
+type OrganizationConnection implements Connection {
+  edges: [OrganizationEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type OrganizationEdge implements Edge {
+  cursor: String!
+  node: Organization!
+}
+
+type OrganizationMemberConnection implements Connection {
+  edges: [OrganizationMemberEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type OrganizationMemberEdge implements Edge {
+  cursor: String!
+  node: OrganizationMember!
+}
+
+# =============================================================================
+# USER TYPES
+# =============================================================================
+
+"""
+User - represents authenticated users and virtual persons in the system
+"""
+type User implements Node & Timestamped {
+  id: ID!
+
+  """
+  User's email address (unique)
+  """
+  email: String!
+
+  """
+  User's display name
+  """
+  displayName: String
+
+  """
+  URL to user's avatar image
+  """
+  avatarUrl: String
+
+  """
+  User's current status
+  """
+  status: UserStatus!
+
+  """
+  User's timezone (IANA format)
+  """
+  timezone: String
+
+  """
+  User's locale/language preference
+  """
+  locale: String
+
+  """
+  Whether this user is a Virtual Person (VP)
+  """
+  isVP: Boolean!
+
+  """
+  VP metadata if this user is a virtual person
+  """
+  vp: VP
+
+  """
+  User's current presence status
+  """
+  presence: PresenceStatus
+
+  """
+  Last time user was active
+  """
+  lastActiveAt: DateTime
+
+  """
+  Organizations the user belongs to
+  """
+  organizations(first: Int, after: String): OrganizationMemberConnection!
+
+  """
+  Workspaces the user is a member of
+  """
+  workspaces(first: Int, after: String): WorkspaceMemberConnection!
+
+  """
+  Channels the user is a member of
+  """
+  channels(first: Int, after: String): ChannelMemberConnection!
+
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type UserConnection implements Connection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserEdge implements Edge {
+  cursor: String!
+  node: User!
+}
+
+# =============================================================================
+# VIRTUAL PERSON (VP) TYPES
+# =============================================================================
+
+"""
+VP - Virtual Person metadata for AI agents
+"""
+type VP implements Node & Timestamped {
+  id: ID!
+
+  """
+  Associated user record
+  """
+  user: User!
+
+  """
+  VP's title/role
+  """
+  title: String!
+
+  """
+  Description of the VP's purpose
+  """
+  description: String
+
+  """
+  VP's discipline/specialization
+  """
+  discipline: String
+
+  """
+  Current operational status
+  """
+  status: VPStatus!
+
+  """
+  VP charter/configuration as JSON
+  """
+  charter: JSON
+
+  """
+  Capabilities and permissions
+  """
+  capabilities: [String!]!
+
+  """
+  Model configuration (e.g., Claude model ID)
+  """
+  modelConfig: JSON
+
+  """
+  System prompt for the VP
+  """
+  systemPrompt: String
+
+  """
+  Parent organization
+  """
+  organization: Organization
+
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type VPConnection implements Connection {
+  edges: [VPEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type VPEdge implements Edge {
+  cursor: String!
+  node: VP!
+}
+
+# =============================================================================
+# WORKSPACE TYPES
+# =============================================================================
+
+"""
+Workspace - container for channels, files, and team collaboration
+"""
+type Workspace implements Node & Timestamped {
+  id: ID!
+
+  """
+  Workspace name
+  """
+  name: String!
+
+  """
+  URL-friendly slug
+  """
+  slug: String!
+
+  """
+  Workspace description
+  """
+  description: String
+
+  """
+  Workspace visibility setting
+  """
+  visibility: WorkspaceVisibility!
+
+  """
+  Icon URL or emoji
+  """
+  iconUrl: String
+
+  """
+  Workspace settings
+  """
+  settings: WorkspaceSettings
+
+  """
+  Whether the workspace is archived
+  """
+  isArchived: Boolean!
+
+  """
+  Parent organization
+  """
+  organization: Organization!
+
+  """
+  The user who created the workspace
+  """
+  createdBy: User!
+
+  """
+  Channels within this workspace
+  """
+  channels(first: Int, after: String, filter: ChannelFilterInput): ChannelConnection!
+
+  """
+  Members of this workspace
+  """
+  members(first: Int, after: String, filter: WorkspaceMemberFilterInput): WorkspaceMemberConnection!
+
+  """
+  Files in this workspace
+  """
+  files(first: Int, after: String, filter: FileFilterInput): FileConnection!
+
+  """
+  Count of channels
+  """
+  channelCount: Int!
+
+  """
+  Count of members
+  """
+  memberCount: Int!
+
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+Workspace settings configuration
+"""
+type WorkspaceSettings {
+  """
+  Allow members to invite others
+  """
+  allowMemberInvites: Boolean!
+
+  """
+  Default role for new members
+  """
+  defaultMemberRole: WorkspaceMemberRole!
+
+  """
+  Allow guests in the workspace
+  """
+  allowGuests: Boolean!
+
+  """
+  Message retention period in days (0 = forever)
+  """
+  messageRetentionDays: Int!
+
+  """
+  Workspace-specific feature flags
+  """
+  features: JSON
+}
+
+"""
+Workspace membership record
+"""
+type WorkspaceMember implements Node {
+  id: ID!
+  user: User!
+  workspace: Workspace!
+  role: WorkspaceMemberRole!
+  joinedAt: DateTime!
+
+  """
+  Custom notification preferences
+  """
+  notificationPreferences: JSON
+}
+
+type WorkspaceConnection implements Connection {
+  edges: [WorkspaceEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type WorkspaceEdge implements Edge {
+  cursor: String!
+  node: Workspace!
+}
+
+type WorkspaceMemberConnection implements Connection {
+  edges: [WorkspaceMemberEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type WorkspaceMemberEdge implements Edge {
+  cursor: String!
+  node: WorkspaceMember!
+}
+
+"""
+Workspace membership change event for subscriptions
+"""
+type WorkspaceMembershipEvent {
+  type: WorkspaceMembershipEventType!
+  member: WorkspaceMember!
+  workspace: Workspace!
+}
+
+# =============================================================================
+# CHANNEL TYPES
+# =============================================================================
+
+"""
+Channel - container for messages and conversations
+"""
+type Channel implements Node & Timestamped {
+  id: ID!
+
+  """
+  Channel name
+  """
+  name: String!
+
+  """
+  URL-friendly slug
+  """
+  slug: String!
+
+  """
+  Channel description/topic
+  """
+  description: String
+
+  """
+  Channel type (public, private, direct, group)
+  """
+  type: ChannelType!
+
+  """
+  Whether the channel is archived
+  """
+  isArchived: Boolean!
+
+  """
+  Parent workspace
+  """
+  workspace: Workspace!
+
+  """
+  User who created the channel
+  """
+  createdBy: User!
+
+  """
+  Channel members
+  """
+  members(first: Int, after: String): ChannelMemberConnection!
+
+  """
+  Messages in this channel (cursor-based for infinite scroll)
+  """
+  messages(first: Int, after: String, before: String, last: Int): MessageConnection!
+
+  """
+  Pinned messages
+  """
+  pinnedMessages: [Message!]!
+
+  """
+  Count of members
+  """
+  memberCount: Int!
+
+  """
+  Count of unread messages for current user
+  """
+  unreadCount: Int!
+
+  """
+  Last message in the channel
+  """
+  lastMessage: Message
+
+  """
+  Last activity timestamp
+  """
+  lastActivityAt: DateTime
+
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+Channel membership record
+"""
+type ChannelMember implements Node {
+  id: ID!
+  user: User!
+  channel: Channel!
+  role: ChannelMemberRole!
+  joinedAt: DateTime!
+
+  """
+  Last time the user read messages in this channel
+  """
+  lastReadAt: DateTime
+
+  """
+  Mute status
+  """
+  isMuted: Boolean!
+
+  """
+  Notification preferences
+  """
+  notificationPreferences: JSON
+}
+
+type ChannelConnection implements Connection {
+  edges: [ChannelEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ChannelEdge implements Edge {
+  cursor: String!
+  node: Channel!
+}
+
+type ChannelMemberConnection implements Connection {
+  edges: [ChannelMemberEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ChannelMemberEdge implements Edge {
+  cursor: String!
+  node: ChannelMember!
+}
+
+# =============================================================================
+# MESSAGE TYPES
+# =============================================================================
+
+"""
+Message - individual message in a channel
+"""
+type Message implements Node & Timestamped {
+  id: ID!
+
+  """
+  Message content (markdown supported)
+  """
+  content: String!
+
+  """
+  Message type
+  """
+  type: MessageType!
+
+  """
+  User who sent the message
+  """
+  author: User!
+
+  """
+  Channel this message belongs to
+  """
+  channel: Channel!
+
+  """
+  Parent message if this is a thread reply
+  """
+  parentMessage: Message
+
+  """
+  Thread replies to this message
+  """
+  replies(first: Int, after: String): MessageConnection!
+
+  """
+  Count of thread replies
+  """
+  replyCount: Int!
+
+  """
+  Reactions on this message
+  """
+  reactions: [Reaction!]!
+
+  """
+  File attachments
+  """
+  attachments: [File!]!
+
+  """
+  Mentioned users
+  """
+  mentions: [User!]!
+
+  """
+  Whether the message is pinned
+  """
+  isPinned: Boolean!
+
+  """
+  Whether the message has been edited
+  """
+  isEdited: Boolean!
+
+  """
+  When the message was last edited
+  """
+  editedAt: DateTime
+
+  """
+  Rich metadata (links, embeds, etc.)
+  """
+  metadata: JSON
+
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+Reaction on a message
+"""
+type Reaction {
+  """
+  Emoji or reaction identifier
+  """
+  emoji: String!
+
+  """
+  Users who added this reaction
+  """
+  users: [User!]!
+
+  """
+  Count of this reaction
+  """
+  count: Int!
+}
+
+type MessageConnection implements Connection {
+  edges: [MessageEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type MessageEdge implements Edge {
+  cursor: String!
+  node: Message!
+}
+
+# =============================================================================
+# FILE TYPES
+# =============================================================================
+
+"""
+File - uploaded file metadata
+"""
+type File implements Node & Timestamped {
+  id: ID!
+
+  """
+  Original filename
+  """
+  filename: String!
+
+  """
+  MIME type
+  """
+  mimeType: String!
+
+  """
+  File size in bytes
+  """
+  size: BigInt!
+
+  """
+  Storage URL
+  """
+  url: String!
+
+  """
+  Thumbnail URL (for images/videos)
+  """
+  thumbnailUrl: String
+
+  """
+  Upload status
+  """
+  status: FileStatus!
+
+  """
+  User who uploaded the file
+  """
+  uploadedBy: User!
+
+  """
+  Workspace this file belongs to
+  """
+  workspace: Workspace!
+
+  """
+  Message this file is attached to (if any)
+  """
+  message: Message
+
+  """
+  File metadata (dimensions, duration, etc.)
+  """
+  metadata: JSON
+
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FileConnection implements Connection {
+  edges: [FileEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type FileEdge implements Edge {
+  cursor: String!
+  node: File!
+}
+
+# =============================================================================
+# INPUT TYPES - FILTERS
+# =============================================================================
+
+input OrganizationFilterInput {
+  name: String
+  slug: String
+  search: String
+}
+
+input OrganizationMemberFilterInput {
+  role: OrganizationMemberRole
+  search: String
+}
+
+input UserFilterInput {
+  email: String
+  status: UserStatus
+  isVP: Boolean
+  search: String
+}
+
+input WorkspaceFilterInput {
+  name: String
+  slug: String
+  visibility: WorkspaceVisibility
+  organizationId: ID
+  isArchived: Boolean
+  search: String
+}
+
+input WorkspaceMemberFilterInput {
+  role: WorkspaceMemberRole
+  search: String
+}
+
+input ChannelFilterInput {
+  name: String
+  type: ChannelType
+  isArchived: Boolean
+  search: String
+}
+
+input FileFilterInput {
+  mimeType: String
+  status: FileStatus
+  search: String
+}
+
+# =============================================================================
+# INPUT TYPES - ORGANIZATION
+# =============================================================================
+
+input CreateOrganizationInput {
+  name: String!
+  slug: String!
+  description: String
+  logoUrl: String
+  settings: JSON
+}
+
+input UpdateOrganizationInput {
+  name: String
+  slug: String
+  description: String
+  logoUrl: String
+  settings: JSON
+}
+
+# =============================================================================
+# INPUT TYPES - USER
+# =============================================================================
+
+input CreateUserInput {
+  email: String!
+  displayName: String
+  avatarUrl: String
+  timezone: String
+  locale: String
+}
+
+input UpdateUserInput {
+  displayName: String
+  avatarUrl: String
+  status: UserStatus
+  timezone: String
+  locale: String
+}
+
+input UpdateProfileInput {
+  displayName: String
+  avatarUrl: String
+  timezone: String
+  locale: String
+}
+
+# =============================================================================
+# INPUT TYPES - VP
+# =============================================================================
+
+input CreateVPInput {
+  title: String!
+  description: String
+  discipline: String
+  charter: JSON
+  capabilities: [String!]
+  modelConfig: JSON
+  systemPrompt: String
+  organizationId: ID
+}
+
+input UpdateVPInput {
+  title: String
+  description: String
+  discipline: String
+  status: VPStatus
+  charter: JSON
+  capabilities: [String!]
+  modelConfig: JSON
+  systemPrompt: String
+}
+
+# =============================================================================
+# INPUT TYPES - WORKSPACE
+# =============================================================================
+
+input CreateWorkspaceInput {
+  name: String!
+  slug: String!
+  description: String
+  visibility: WorkspaceVisibility
+  organizationId: ID!
+  iconUrl: String
+  settings: WorkspaceSettingsInput
+}
+
+input UpdateWorkspaceInput {
+  name: String
+  slug: String
+  description: String
+  visibility: WorkspaceVisibility
+  iconUrl: String
+  settings: WorkspaceSettingsInput
+}
+
+input WorkspaceSettingsInput {
+  allowMemberInvites: Boolean
+  defaultMemberRole: WorkspaceMemberRole
+  allowGuests: Boolean
+  messageRetentionDays: Int
+  features: JSON
+}
+
+input InviteToWorkspaceInput {
+  userId: ID
+  email: String
+  role: WorkspaceMemberRole!
+}
+
+# =============================================================================
+# INPUT TYPES - CHANNEL
+# =============================================================================
+
+input CreateChannelInput {
+  name: String!
+  slug: String!
+  description: String
+  type: ChannelType!
+  workspaceId: ID!
+  memberIds: [ID!]
+}
+
+input UpdateChannelInput {
+  name: String
+  slug: String
+  description: String
+}
+
+# =============================================================================
+# INPUT TYPES - MESSAGE
+# =============================================================================
+
+input CreateMessageInput {
+  content: String!
+  type: MessageType
+  channelId: ID!
+  parentMessageId: ID
+  attachmentIds: [ID!]
+  metadata: JSON
+}
+
+input UpdateMessageInput {
+  content: String!
+}
+
+"""
+Simplified input for sending chat messages
+"""
+input SendMessageInput {
+  """
+  Message content (markdown supported)
+  """
+  content: String!
+
+  """
+  Channel to send the message to
+  """
+  channelId: ID!
+
+  """
+  Parent message ID for thread replies
+  """
+  threadId: ID
+
+  """
+  File attachment IDs
+  """
+  attachmentIds: [ID!]
+}
+
+input AddReactionInput {
+  messageId: ID!
+  emoji: String!
+}
+
+input RemoveReactionInput {
+  messageId: ID!
+  emoji: String!
+}
+
+# =============================================================================
+# PAYLOAD TYPES
+# =============================================================================
+
+type OrganizationPayload {
+  organization: Organization
+  errors: [Error!]!
+}
+
+type UserPayload {
+  user: User
+  errors: [Error!]!
+}
+
+type VPPayload {
+  vp: VP
+  errors: [Error!]!
+}
+
+type WorkspacePayload {
+  workspace: Workspace
+  errors: [Error!]!
+}
+
+type ChannelPayload {
+  channel: Channel
+  errors: [Error!]!
+}
+
+type MessagePayload {
+  message: Message
+  errors: [Error!]!
+}
+
+type FilePayload {
+  file: File
+  errors: [Error!]!
+}
+
+type DeletePayload {
+  success: Boolean!
+  deletedId: ID
+  errors: [Error!]!
+}
+
+type MemberPayload {
+  member: WorkspaceMember
+  errors: [Error!]!
+}
+
+type ReactionPayload {
+  message: Message
+  errors: [Error!]!
+}
+
+# =============================================================================
+# ROOT QUERY TYPE
+# =============================================================================
+
+type Query {
+  """
+  Get the currently authenticated user
+  """
+  me: User
+
+  """
+  Get a user by ID
+  """
+  user(id: ID!): User
+
+  """
+  List users with filtering and pagination
+  """
+  users(first: Int, after: String, filter: UserFilterInput): UserConnection!
+
+  """
+  Get an organization by ID
+  """
+  organization(id: ID!): Organization
+
+  """
+  Get an organization by slug
+  """
+  organizationBySlug(slug: String!): Organization
+
+  """
+  List organizations accessible to the current user
+  """
+  organizations(first: Int, after: String, filter: OrganizationFilterInput): OrganizationConnection!
+
+  """
+  Get a workspace by ID
+  """
+  workspace(id: ID!): Workspace
+
+  """
+  Get a workspace by slug within an organization
+  """
+  workspaceBySlug(organizationSlug: String!, workspaceSlug: String!): Workspace
+
+  """
+  List workspaces accessible to the current user
+  """
+  workspaces(first: Int, after: String, filter: WorkspaceFilterInput): WorkspaceConnection!
+
+  """
+  Get a channel by ID
+  """
+  channel(id: ID!): Channel
+
+  """
+  Get messages in a channel (cursor-based for infinite scroll)
+  """
+  messages(
+    channelId: ID!
+    """
+    Cursor for forward pagination
+    """
+    cursor: String
+    """
+    Number of messages to fetch (default: 50, max: 100)
+    """
+    limit: Int
+    """
+    Fetch messages before this cursor (for reverse pagination)
+    """
+    before: String
+  ): MessageConnection!
+
+  """
+  Get a specific message by ID
+  """
+  message(id: ID!): Message
+
+  """
+  Get thread replies for a message
+  """
+  threadMessages(
+    parentMessageId: ID!
+    cursor: String
+    limit: Int
+  ): MessageConnection!
+
+  """
+  Get a VP by ID
+  """
+  vp(id: ID!): VP
+
+  """
+  List VPs in an organization
+  """
+  vps(organizationId: ID!, first: Int, after: String): VPConnection!
+
+  """
+  Search across messages, channels, and users
+  """
+  search(
+    query: String!
+    workspaceId: ID!
+    types: [String!]
+    limit: Int
+  ): SearchResults!
+
+  """
+  Health check endpoint
+  """
+  health: HealthStatus!
+}
+
+"""
+Search results container
+"""
+type SearchResults {
+  messages: [Message!]!
+  channels: [Channel!]!
+  users: [User!]!
+  files: [File!]!
+}
+
+# =============================================================================
+# ROOT MUTATION TYPE
+# =============================================================================
+
+type Mutation {
+  # Organization mutations
+  """
+  Create a new organization
+  """
+  createOrganization(input: CreateOrganizationInput!): OrganizationPayload!
+
+  """
+  Update an organization
+  """
+  updateOrganization(id: ID!, input: UpdateOrganizationInput!): OrganizationPayload!
+
+  """
+  Delete an organization
+  """
+  deleteOrganization(id: ID!): DeletePayload!
+
+  """
+  Add a member to an organization
+  """
+  addOrganizationMember(organizationId: ID!, userId: ID!, role: OrganizationMemberRole!): OrganizationPayload!
+
+  """
+  Remove a member from an organization
+  """
+  removeOrganizationMember(organizationId: ID!, userId: ID!): DeletePayload!
+
+  # User mutations
+  """
+  Create a new user
+  """
+  createUser(input: CreateUserInput!): UserPayload!
+
+  """
+  Update a user
+  """
+  updateUser(id: ID!, input: UpdateUserInput!): UserPayload!
+
+  """
+  Update the current user's profile
+  """
+  updateProfile(input: UpdateProfileInput!): UserPayload!
+
+  """
+  Delete a user
+  """
+  deleteUser(id: ID!): DeletePayload!
+
+  """
+  Update user presence status
+  """
+  updatePresence(status: PresenceStatus!): UserPayload!
+
+  # VP mutations
+  """
+  Create a new Virtual Person
+  """
+  createVP(input: CreateVPInput!): VPPayload!
+
+  """
+  Update a Virtual Person
+  """
+  updateVP(id: ID!, input: UpdateVPInput!): VPPayload!
+
+  """
+  Delete a Virtual Person
+  """
+  deleteVP(id: ID!): DeletePayload!
+
+  # Workspace mutations
+  """
+  Create a new workspace
+  """
+  createWorkspace(input: CreateWorkspaceInput!): WorkspacePayload!
+
+  """
+  Update a workspace
+  """
+  updateWorkspace(id: ID!, input: UpdateWorkspaceInput!): WorkspacePayload!
+
+  """
+  Archive a workspace
+  """
+  archiveWorkspace(id: ID!): WorkspacePayload!
+
+  """
+  Unarchive a workspace
+  """
+  unarchiveWorkspace(id: ID!): WorkspacePayload!
+
+  """
+  Delete a workspace
+  """
+  deleteWorkspace(id: ID!): DeletePayload!
+
+  """
+  Invite a user to a workspace
+  """
+  inviteToWorkspace(workspaceId: ID!, input: InviteToWorkspaceInput!): MemberPayload!
+
+  """
+  Remove a user from a workspace
+  """
+  removeFromWorkspace(workspaceId: ID!, userId: ID!): DeletePayload!
+
+  """
+  Update a workspace member's role
+  """
+  updateWorkspaceMemberRole(workspaceId: ID!, userId: ID!, role: WorkspaceMemberRole!): MemberPayload!
+
+  # Channel mutations
+  """
+  Create a new channel
+  """
+  createChannel(input: CreateChannelInput!): ChannelPayload!
+
+  """
+  Update a channel
+  """
+  updateChannel(id: ID!, input: UpdateChannelInput!): ChannelPayload!
+
+  """
+  Archive a channel
+  """
+  archiveChannel(id: ID!): ChannelPayload!
+
+  """
+  Unarchive a channel
+  """
+  unarchiveChannel(id: ID!): ChannelPayload!
+
+  """
+  Delete a channel
+  """
+  deleteChannel(id: ID!): DeletePayload!
+
+  """
+  Join a channel
+  """
+  joinChannel(channelId: ID!): ChannelPayload!
+
+  """
+  Leave a channel
+  """
+  leaveChannel(channelId: ID!): DeletePayload!
+
+  """
+  Add a user to a channel
+  """
+  addChannelMember(channelId: ID!, userId: ID!, role: ChannelMemberRole): ChannelPayload!
+
+  """
+  Remove a user from a channel
+  """
+  removeChannelMember(channelId: ID!, userId: ID!): DeletePayload!
+
+  # Message mutations
+  """
+  Send a new message (simplified for chat)
+  """
+  sendMessage(input: SendMessageInput!): MessagePayload!
+
+  """
+  Create a new message (full options)
+  """
+  createMessage(input: CreateMessageInput!): MessagePayload!
+
+  """
+  Edit an existing message
+  """
+  editMessage(id: ID!, input: UpdateMessageInput!): MessagePayload!
+
+  """
+  Delete a message
+  """
+  deleteMessage(id: ID!): DeletePayload!
+
+  """
+  Pin a message
+  """
+  pinMessage(id: ID!): MessagePayload!
+
+  """
+  Unpin a message
+  """
+  unpinMessage(id: ID!): MessagePayload!
+
+  """
+  Add a reaction to a message
+  """
+  addReaction(input: AddReactionInput!): ReactionPayload!
+
+  """
+  Remove a reaction from a message
+  """
+  removeReaction(input: RemoveReactionInput!): ReactionPayload!
+
+  """
+  Mark messages as read up to a specific message
+  """
+  markAsRead(channelId: ID!, messageId: ID!): ChannelPayload!
+
+  # File mutations
+  """
+  Request a presigned URL for file upload
+  """
+  createFileUpload(
+    filename: String!
+    mimeType: String!
+    size: BigInt!
+    workspaceId: ID!
+  ): FileUploadPayload!
+
+  """
+  Complete a file upload
+  """
+  completeFileUpload(id: ID!): FilePayload!
+
+  """
+  Delete a file
+  """
+  deleteFile(id: ID!): DeletePayload!
+}
+
+"""
+File upload response with presigned URL
+"""
+type FileUploadPayload {
+  file: File
+  uploadUrl: String
+  errors: [Error!]!
+}
+
+# =============================================================================
+# ROOT SUBSCRIPTION TYPE
+# =============================================================================
+
+type Subscription {
+  """
+  Subscribe to new messages in a channel
+  """
+  messageCreated(channelId: ID!): Message!
+
+  """
+  Subscribe to message updates in a channel
+  """
+  messageUpdated(channelId: ID!): Message!
+
+  """
+  Subscribe to message deletions in a channel
+  """
+  messageDeleted(channelId: ID!): ID!
+
+  """
+  Subscribe to channel updates in a workspace
+  """
+  channelUpdated(workspaceId: ID!): Channel!
+
+  """
+  Subscribe to new channels in a workspace
+  """
+  channelCreated(workspaceId: ID!): Channel!
+
+  """
+  Subscribe to channel deletions in a workspace
+  """
+  channelDeleted(workspaceId: ID!): ID!
+
+  """
+  Subscribe to user presence changes in a workspace
+  """
+  userPresenceChanged(workspaceId: ID!): User!
+
+  """
+  Subscribe to typing indicators in a channel
+  """
+  userTyping(channelId: ID!): TypingIndicator!
+
+  """
+  Subscribe to workspace membership changes
+  """
+  workspaceMembershipChanged(workspaceId: ID!): WorkspaceMembershipEvent!
+
+  """
+  Subscribe to reaction changes on messages in a channel
+  """
+  reactionChanged(channelId: ID!): Message!
+
+  """
+  Subscribe to thread updates for a specific message
+  """
+  threadUpdated(parentMessageId: ID!): Message!
+}
+
+"""
+Typing indicator event
+"""
+type TypingIndicator {
+  user: User!
+  channel: Channel!
+  isTyping: Boolean!
 }

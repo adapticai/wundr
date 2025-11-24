@@ -1,4 +1,5 @@
 // Genesis App Database Schema
+// Wave 2 (Phase 0.5) - Complete Schema Extensions
 // This is the source of truth for the database structure
 
 generator client {
@@ -11,134 +12,432 @@ datasource db {
 }
 
 // =============================================================================
+// Enums
+// =============================================================================
+
+/// User account status
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  SUSPENDED
+}
+
+/// VP (Virtual Person) online status
+enum VPStatus {
+  ONLINE
+  OFFLINE
+  BUSY
+  AWAY
+}
+
+/// Workspace visibility level
+enum WorkspaceVisibility {
+  PUBLIC
+  PRIVATE
+  INTERNAL
+}
+
+/// Channel type enumeration
+enum ChannelType {
+  PUBLIC
+  PRIVATE
+  DM
+  HUDDLE
+}
+
+/// Message type enumeration
+enum MessageType {
+  TEXT
+  FILE
+  SYSTEM
+  COMMAND
+}
+
+/// File processing status
+enum FileStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+/// Organization member role
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+/// Workspace member role
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+/// Channel member role
+enum ChannelRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// =============================================================================
 // Core Models
 // =============================================================================
 
-/// User model - represents authenticated users in the system
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  avatarUrl String?  @map("avatar_url")
-  role      UserRole @default(MEMBER)
+/// Organization - Top-level entity containing workspaces
+model Organization {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  avatarUrl   String? @map("avatar_url")
+  description String?
+  settings    Json    @default("{}")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // Relations (to be expanded)
-  // organisations OrganisationMember[]
-  // createdOrgs   Organisation[]       @relation("CreatedBy")
+  // Relations
+  workspaces Workspace[]
+  members    OrganizationMember[]
+  vps        VP[]
 
+  @@index([slug])
+  @@map("organizations")
+}
+
+/// Workspace - Main collaboration space within an organization
+model Workspace {
+  id          String              @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  avatarUrl   String?             @map("avatar_url")
+  visibility  WorkspaceVisibility @default(PRIVATE)
+  settings    Json                @default("{}")
+
+  // Foreign keys
+  organizationId String @map("organization_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  channels     Channel[]
+  members      WorkspaceMember[]
+  files        File[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([slug])
+  @@map("workspaces")
+}
+
+/// User - Human or VP account
+model User {
+  id          String     @id @default(cuid())
+  email       String     @unique
+  name        String?
+  displayName String?    @map("display_name")
+  avatarUrl   String?    @map("avatar_url")
+  bio         String?
+  status      UserStatus @default(PENDING)
+  isVP        Boolean    @default(false) @map("is_vp")
+  vpConfig    Json?      @map("vp_config")
+  preferences Json       @default("{}")
+
+  // Timestamps
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastActiveAt DateTime? @map("last_active_at")
+
+  // Relations
+  organizationMemberships OrganizationMember[]
+  workspaceMemberships    WorkspaceMember[]
+  channelMemberships      ChannelMember[]
+  messages                Message[]
+  files                   File[]
+  sessions                Session[]
+  reactions               Reaction[]
+  createdChannels         Channel[]            @relation("ChannelCreator")
+  vp                      VP?
+
+  @@index([email])
+  @@index([status])
   @@map("users")
 }
 
-/// User role enumeration
-enum UserRole {
-  ADMIN
-  MEMBER
-  VIEWER
+/// VP (Virtual Person) - AI agent metadata
+model VP {
+  id             String   @id @default(cuid())
+  discipline     String
+  role           String
+  capabilities   Json     @default("[]")
+  daemonEndpoint String?  @map("daemon_endpoint")
+  status         VPStatus @default(OFFLINE)
+
+  // Foreign keys
+  userId         String @unique @map("user_id")
+  organizationId String @map("organization_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([discipline])
+  @@index([status])
+  @@map("vps")
+}
+
+/// Channel - Communication channel within a workspace
+model Channel {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  type        ChannelType @default(PUBLIC)
+  isArchived  Boolean     @default(false) @map("is_archived")
+  settings    Json        @default("{}")
+
+  // Foreign keys
+  workspaceId String  @map("workspace_id")
+  createdById String? @map("created_by_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User?           @relation("ChannelCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  messages  Message[]
+  members   ChannelMember[]
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId])
+  @@index([type])
+  @@index([isArchived])
+  @@map("channels")
+}
+
+/// Message - Chat message within a channel
+model Message {
+  id       String      @id @default(cuid())
+  content  String
+  type     MessageType @default(TEXT)
+  metadata Json        @default("{}")
+
+  // Edit/delete tracking
+  isEdited  Boolean   @default(false) @map("is_edited")
+  isDeleted Boolean   @default(false) @map("is_deleted")
+  editedAt  DateTime? @map("edited_at")
+
+  // Foreign keys
+  channelId String  @map("channel_id")
+  userId    String  @map("user_id")
+  parentId  String? @map("parent_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  channel     Channel             @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent      Message?            @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     Message[]           @relation("MessageThread")
+  reactions   Reaction[]
+  attachments MessageAttachment[]
+
+  @@index([channelId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([type])
+  @@map("messages")
+}
+
+/// File - Uploaded file metadata
+model File {
+  id           String     @id @default(cuid())
+  filename     String
+  originalName String     @map("original_name")
+  mimeType     String     @map("mime_type")
+  size         BigInt
+  s3Key        String     @map("s3_key")
+  s3Bucket     String     @map("s3_bucket")
+  thumbnailUrl String?    @map("thumbnail_url")
+  status       FileStatus @default(PENDING)
+  metadata     Json       @default("{}")
+
+  // Foreign keys
+  workspaceId  String @map("workspace_id")
+  uploadedById String @map("uploaded_by_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploader    User                @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  attachments MessageAttachment[]
+
+  @@index([workspaceId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([mimeType])
+  @@map("files")
 }
 
 // =============================================================================
-// Organisation Models (Placeholder - to be expanded in Phase 1)
+// Membership/Junction Models
 // =============================================================================
 
-// model Organisation {
-//   id          String   @id @default(cuid())
-//   name        String
-//   slug        String   @unique
-//   description String?
-//
-//   createdAt   DateTime @default(now()) @map("created_at")
-//   updatedAt   DateTime @updatedAt @map("updated_at")
-//   createdById String   @map("created_by_id")
-//
-//   createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
-//   members     OrganisationMember[]
-//   disciplines Discipline[]
-//
-//   @@map("organisations")
-// }
+/// OrganizationMember - User membership in an organization
+model OrganizationMember {
+  id   String           @id @default(cuid())
+  role OrganizationRole @default(MEMBER)
 
-// model OrganisationMember {
-//   id             String           @id @default(cuid())
-//   organisationId String           @map("organisation_id")
-//   userId         String           @map("user_id")
-//   role           OrganisationRole @default(MEMBER)
-//
-//   createdAt      DateTime         @default(now()) @map("created_at")
-//   updatedAt      DateTime         @updatedAt @map("updated_at")
-//
-//   organisation   Organisation     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-//   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-//
-//   @@unique([organisationId, userId])
-//   @@map("organisation_members")
-// }
+  // Foreign keys
+  organizationId String @map("organization_id")
+  userId         String @map("user_id")
 
-// enum OrganisationRole {
-//   OWNER
-//   ADMIN
-//   MEMBER
-//   VIEWER
-// }
+  // Timestamps
+  joinedAt DateTime @default(now()) @map("joined_at")
 
-// =============================================================================
-// Discipline Models (Placeholder - to be expanded in Phase 1)
-// =============================================================================
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// model Discipline {
-//   id             String       @id @default(cuid())
-//   name           String
-//   description    String?
-//   organisationId String       @map("organisation_id")
-//
-//   createdAt      DateTime     @default(now()) @map("created_at")
-//   updatedAt      DateTime     @updatedAt @map("updated_at")
-//
-//   organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-//   vps            VP[]
-//
-//   @@unique([organisationId, name])
-//   @@map("disciplines")
-// }
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("organization_members")
+}
 
-// =============================================================================
-// VP Models (Placeholder - to be expanded in Phase 1)
-// =============================================================================
+/// WorkspaceMember - User membership in a workspace
+model WorkspaceMember {
+  id   String        @id @default(cuid())
+  role WorkspaceRole @default(MEMBER)
 
-// model VP {
-//   id           String     @id @default(cuid())
-//   title        String
-//   description  String?
-//   disciplineId String     @map("discipline_id")
-//
-//   createdAt    DateTime   @default(now()) @map("created_at")
-//   updatedAt    DateTime   @updatedAt @map("updated_at")
-//
-//   discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
-//   agents       Agent[]
-//
-//   @@map("vps")
-// }
+  // Foreign keys
+  workspaceId String @map("workspace_id")
+  userId      String @map("user_id")
+
+  // Timestamps
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+/// ChannelMember - User membership in a channel
+model ChannelMember {
+  id   String      @id @default(cuid())
+  role ChannelRole @default(MEMBER)
+
+  // Foreign keys
+  channelId String @map("channel_id")
+  userId    String @map("user_id")
+
+  // Timestamps
+  joinedAt   DateTime  @default(now()) @map("joined_at")
+  lastReadAt DateTime? @map("last_read_at")
+
+  // Relations
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@index([channelId])
+  @@index([userId])
+  @@map("channel_members")
+}
 
 // =============================================================================
-// Agent Models (Placeholder - to be expanded in Phase 1)
+// Supporting Models
 // =============================================================================
 
-// model Agent {
-//   id          String   @id @default(cuid())
-//   name        String
-//   role        String
-//   description String?
-//   charter     Json?
-//   vpId        String   @map("vp_id")
-//
-//   createdAt   DateTime @default(now()) @map("created_at")
-//   updatedAt   DateTime @updatedAt @map("updated_at")
-//
-//   vp          VP       @relation(fields: [vpId], references: [id], onDelete: Cascade)
-//
-//   @@map("agents")
-// }
+/// Reaction - Message reaction (emoji)
+model Reaction {
+  id    String @id @default(cuid())
+  emoji String
+
+  // Foreign keys
+  messageId String @map("message_id")
+  userId    String @map("user_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+  @@map("reactions")
+}
+
+/// MessageAttachment - Junction table for messages and files
+model MessageAttachment {
+  id String @id @default(cuid())
+
+  // Foreign keys
+  messageId String @map("message_id")
+  fileId    String @map("file_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    File    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, fileId])
+  @@index([messageId])
+  @@index([fileId])
+  @@map("message_attachments")
+}
+
+/// Session - User session for authentication
+model Session {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  deviceInfo Json?    @map("device_info")
+  ipAddress  String?  @map("ip_address")
+  expiresAt  DateTime @map("expires_at")
+
+  // Foreign keys
+  userId String @map("user_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
