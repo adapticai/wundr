@@ -1,0 +1,7 @@
+# Place GraphQL operation documents here (.graphql files)
+# These will be processed by GraphQL Code Generator
+#
+# Example structure:
+# - users.graphql - User queries and mutations
+# - workspaces.graphql - Workspace queries and mutations
+# - subscriptions.graphql - Real-time subscription operations

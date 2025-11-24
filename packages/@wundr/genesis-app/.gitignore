@@ -1,0 +1,232 @@
+# ============================================
+# Genesis App - .gitignore
+# ============================================
+
+# ==========================================
+# Dependencies
+# ==========================================
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================
+# Build Outputs
+# ==========================================
+dist/
+build/
+.next/
+out/
+.turbo/
+.nuxt/
+.output/
+.cache/
+.parcel-cache/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ==========================================
+# Environment Files
+# ==========================================
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# ==========================================
+# IDE & Editor
+# ==========================================
+.idea/
+*.swp
+*.swo
+*~
+
+# VS Code - ignore all except shared settings
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# JetBrains
+*.iml
+*.ipr
+*.iws
+
+# ==========================================
+# Operating System
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Testing & Coverage
+# ==========================================
+coverage/
+.nyc_output/
+test-results/
+junit.xml
+*.lcov
+.vitest/
+
+# Playwright
+playwright-report/
+playwright/.cache/
+test-results/
+
+# Cypress
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# ==========================================
+# Generated Files
+# ==========================================
+generated/
+prisma/migrations/dev/
+.prisma/
+
+# API generated types
+**/generated/*.ts
+**/generated/*.js
+
+# GraphQL codegen
+src/gql/
+**/__generated__/
+
+# ==========================================
+# Native Builds - Desktop (Tauri/Electron)
+# ==========================================
+apps/desktop/dist/
+apps/desktop/src-tauri/target/
+apps/desktop/out/
+apps/desktop/release/
+apps/desktop/.tauri/
+
+# Electron specific
+apps/desktop/*.dmg
+apps/desktop/*.exe
+apps/desktop/*.AppImage
+apps/desktop/*.deb
+apps/desktop/*.rpm
+apps/desktop/*.snap
+
+# ==========================================
+# Native Builds - Mobile (React Native/Expo)
+# ==========================================
+# iOS
+apps/mobile/ios/
+!apps/mobile/ios/.gitkeep
+*.xcworkspace
+*.xcuserdata
+*.xcodeproj
+Pods/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Android
+apps/mobile/android/
+!apps/mobile/android/.gitkeep
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+.gradle/
+local.properties
+android/app/build/
+android/.gradle/
+
+# Expo
+.expo/
+.expo-shared/
+expo-env.d.ts
+
+# React Native
+*.bundle
+*.jsbundle
+*.hbc
+
+# ==========================================
+# Storybook
+# ==========================================
+storybook-static/
+.storybook-out/
+*-storybook.log
+
+# ==========================================
+# Logs & Debug
+# ==========================================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ==========================================
+# Temporary Files
+# ==========================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+
+# ==========================================
+# Secrets & Credentials
+# ==========================================
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+credentials.json
+service-account.json
+secrets/
+.secrets/
+
+# ==========================================
+# Database
+# ==========================================
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+prisma/*.db
+
+# ==========================================
+# Docker
+# ==========================================
+docker-compose.override.yml
+.docker/
+
+# ==========================================
+# Misc
+# ==========================================
+.vercel
+.netlify
+.serverless/
+.fusebox/
+.dynamodb/
+.terraform/
+*.tfstate
+*.tfstate.*

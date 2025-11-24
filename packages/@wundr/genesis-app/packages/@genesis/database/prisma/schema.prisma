@@ -1,0 +1,144 @@
+// Genesis App Database Schema
+// This is the source of truth for the database structure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Core Models
+// =============================================================================
+
+/// User model - represents authenticated users in the system
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatarUrl String?  @map("avatar_url")
+  role      UserRole @default(MEMBER)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations (to be expanded)
+  // organisations OrganisationMember[]
+  // createdOrgs   Organisation[]       @relation("CreatedBy")
+
+  @@map("users")
+}
+
+/// User role enumeration
+enum UserRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+// =============================================================================
+// Organisation Models (Placeholder - to be expanded in Phase 1)
+// =============================================================================
+
+// model Organisation {
+//   id          String   @id @default(cuid())
+//   name        String
+//   slug        String   @unique
+//   description String?
+//
+//   createdAt   DateTime @default(now()) @map("created_at")
+//   updatedAt   DateTime @updatedAt @map("updated_at")
+//   createdById String   @map("created_by_id")
+//
+//   createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
+//   members     OrganisationMember[]
+//   disciplines Discipline[]
+//
+//   @@map("organisations")
+// }
+
+// model OrganisationMember {
+//   id             String           @id @default(cuid())
+//   organisationId String           @map("organisation_id")
+//   userId         String           @map("user_id")
+//   role           OrganisationRole @default(MEMBER)
+//
+//   createdAt      DateTime         @default(now()) @map("created_at")
+//   updatedAt      DateTime         @updatedAt @map("updated_at")
+//
+//   organisation   Organisation     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+//   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+//
+//   @@unique([organisationId, userId])
+//   @@map("organisation_members")
+// }
+
+// enum OrganisationRole {
+//   OWNER
+//   ADMIN
+//   MEMBER
+//   VIEWER
+// }
+
+// =============================================================================
+// Discipline Models (Placeholder - to be expanded in Phase 1)
+// =============================================================================
+
+// model Discipline {
+//   id             String       @id @default(cuid())
+//   name           String
+//   description    String?
+//   organisationId String       @map("organisation_id")
+//
+//   createdAt      DateTime     @default(now()) @map("created_at")
+//   updatedAt      DateTime     @updatedAt @map("updated_at")
+//
+//   organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+//   vps            VP[]
+//
+//   @@unique([organisationId, name])
+//   @@map("disciplines")
+// }
+
+// =============================================================================
+// VP Models (Placeholder - to be expanded in Phase 1)
+// =============================================================================
+
+// model VP {
+//   id           String     @id @default(cuid())
+//   title        String
+//   description  String?
+//   disciplineId String     @map("discipline_id")
+//
+//   createdAt    DateTime   @default(now()) @map("created_at")
+//   updatedAt    DateTime   @updatedAt @map("updated_at")
+//
+//   discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+//   agents       Agent[]
+//
+//   @@map("vps")
+// }
+
+// =============================================================================
+// Agent Models (Placeholder - to be expanded in Phase 1)
+// =============================================================================
+
+// model Agent {
+//   id          String   @id @default(cuid())
+//   name        String
+//   role        String
+//   description String?
+//   charter     Json?
+//   vpId        String   @map("vp_id")
+//
+//   createdAt   DateTime @default(now()) @map("created_at")
+//   updatedAt   DateTime @updatedAt @map("updated_at")
+//
+//   vp          VP       @relation(fields: [vpId], references: [id], onDelete: Cascade)
+//
+//   @@map("agents")
+// }

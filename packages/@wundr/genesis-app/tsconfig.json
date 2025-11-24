@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    /* Emit */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+
+    /* Interop Constraints */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+
+    /* Type Checking - Strict Mode */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+
+    /* Completeness */
+    "skipLibCheck": true,
+
+    /* Path Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@genesis/ui": ["./packages/@genesis/ui/src"],
+      "@genesis/ui/*": ["./packages/@genesis/ui/src/*"],
+      "@genesis/database": ["./packages/@genesis/database/src"],
+      "@genesis/database/*": ["./packages/@genesis/database/src/*"],
+      "@genesis/api-types": ["./packages/@genesis/api-types/src"],
+      "@genesis/api-types/*": ["./packages/@genesis/api-types/src/*"],
+      "@genesis/daemon-sdk": ["./packages/@genesis/daemon-sdk/src"],
+      "@genesis/daemon-sdk/*": ["./packages/@genesis/daemon-sdk/src/*"],
+      "@genesis/org-integration": ["./packages/@genesis/org-integration/src"],
+      "@genesis/org-integration/*": [
+        "./packages/@genesis/org-integration/src/*"
+      ]
+    }
+  },
+  "references": [
+    { "path": "./packages/@genesis/ui" },
+    { "path": "./packages/@genesis/database" },
+    { "path": "./packages/@genesis/api-types" },
+    { "path": "./packages/@genesis/daemon-sdk" },
+    { "path": "./packages/@genesis/org-integration" },
+    { "path": "./apps/web" }
+  ],
+  "include": [],
+  "exclude": ["node_modules", "dist", "**/node_modules", "**/dist"]
+}

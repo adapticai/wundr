@@ -1,0 +1,245 @@
+"""
+Workspace Type Definitions
+
+Defines Workspace types, settings, and related queries/mutations.
+Workspaces represent organizational containers for Genesis resources.
+"""
+
+"""
+Theme preference for workspace UI
+"""
+enum ThemePreference {
+  """
+  Light color scheme
+  """
+  LIGHT
+
+  """
+  Dark color scheme
+  """
+  DARK
+
+  """
+  Follow system preference
+  """
+  SYSTEM
+}
+
+"""
+Settings configuration for a workspace
+"""
+type WorkspaceSettings {
+  """
+  Theme preference for the workspace
+  """
+  theme: ThemePreference!
+
+  """
+  Enable email notifications
+  """
+  emailNotifications: Boolean!
+
+  """
+  Enable in-app notifications
+  """
+  inAppNotifications: Boolean!
+
+  """
+  Default timezone for the workspace
+  """
+  timezone: String!
+
+  """
+  Default language/locale
+  """
+  locale: String!
+}
+
+"""
+Represents a workspace containing Genesis resources
+"""
+type Workspace {
+  """
+  Unique identifier for the workspace
+  """
+  id: ID!
+
+  """
+  Display name of the workspace
+  """
+  name: String!
+
+  """
+  URL-friendly slug for the workspace
+  """
+  slug: String!
+
+  """
+  Optional description of the workspace
+  """
+  description: String
+
+  """
+  URL to workspace logo/icon
+  """
+  logoUrl: String
+
+  """
+  User who created the workspace
+  """
+  owner: User!
+
+  """
+  Workspace configuration settings
+  """
+  settings: WorkspaceSettings!
+
+  """
+  Number of members in the workspace
+  """
+  memberCount: Int!
+
+  """
+  Timestamp when the workspace was created
+  """
+  createdAt: DateTime!
+
+  """
+  Timestamp when the workspace was last updated
+  """
+  updatedAt: DateTime!
+}
+
+"""
+Input for creating a new workspace
+"""
+input CreateWorkspaceInput {
+  """
+  Display name for the workspace
+  """
+  name: String!
+
+  """
+  URL-friendly slug (auto-generated if not provided)
+  """
+  slug: String
+
+  """
+  Optional description
+  """
+  description: String
+
+  """
+  Optional logo URL
+  """
+  logoUrl: String
+}
+
+"""
+Input for updating workspace details
+"""
+input UpdateWorkspaceInput {
+  """
+  New display name
+  """
+  name: String
+
+  """
+  New description
+  """
+  description: String
+
+  """
+  New logo URL
+  """
+  logoUrl: String
+}
+
+"""
+Input for updating workspace settings
+"""
+input UpdateWorkspaceSettingsInput {
+  """
+  Theme preference
+  """
+  theme: ThemePreference
+
+  """
+  Email notification preference
+  """
+  emailNotifications: Boolean
+
+  """
+  In-app notification preference
+  """
+  inAppNotifications: Boolean
+
+  """
+  Default timezone
+  """
+  timezone: String
+
+  """
+  Default locale
+  """
+  locale: String
+}
+
+extend type Query {
+  """
+  Get a workspace by ID
+  Requires membership in the workspace
+  """
+  workspace(id: ID!): Workspace
+
+  """
+  Get a workspace by its slug
+  Requires membership in the workspace
+  """
+  workspaceBySlug(slug: String!): Workspace
+
+  """
+  Get all workspaces the current user has access to
+  Requires authentication
+  """
+  myWorkspaces(
+    """
+    Number of workspaces to return (default: 20, max: 50)
+    """
+    limit: Int
+
+    """
+    Offset for pagination
+    """
+    offset: Int
+  ): [Workspace!]!
+}
+
+extend type Mutation {
+  """
+  Create a new workspace
+  Requires authentication
+  """
+  createWorkspace(input: CreateWorkspaceInput!): Workspace!
+
+  """
+  Update workspace details
+  Requires workspace admin permissions
+  """
+  updateWorkspace(id: ID!, input: UpdateWorkspaceInput!): Workspace!
+
+  """
+  Update workspace settings
+  Requires workspace admin permissions
+  """
+  updateWorkspaceSettings(
+    id: ID!
+    input: UpdateWorkspaceSettingsInput!
+  ): Workspace!
+
+  """
+  Delete a workspace
+  Requires workspace owner permissions
+  """
+  deleteWorkspace(id: ID!): Boolean!
+}

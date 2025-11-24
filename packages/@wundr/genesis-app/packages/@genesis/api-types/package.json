@@ -1,0 +1,53 @@
+{
+  "name": "@genesis/api-types",
+  "version": "0.1.0",
+  "description": "Shared GraphQL types and TypeScript definitions for Genesis App",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./graphql": {
+      "types": "./dist/graphql/index.d.ts",
+      "import": "./dist/graphql/index.js",
+      "require": "./dist/graphql/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "codegen": "graphql-codegen --config codegen.yml",
+    "codegen:watch": "graphql-codegen --config codegen.yml --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/typescript": "^4.0.6",
+    "@graphql-codegen/typescript-operations": "^4.2.0",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.0",
+    "@graphql-codegen/introspection": "^4.0.3",
+    "@graphql-codegen/schema-ast": "^4.0.2",
+    "graphql": "^16.8.1",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "@apollo/client": "^3.9.0",
+    "graphql": "^16.8.0",
+    "react": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@apollo/client": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "files": ["dist", "src/graphql/*.graphql"],
+  "keywords": ["genesis", "graphql", "types", "typescript", "codegen"],
+  "license": "UNLICENSED",
+  "private": true
+}

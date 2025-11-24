@@ -1,0 +1,184 @@
+# Genesis Desktop Application - Electron Builder Configuration
+# Documentation: https://www.electron.build/configuration/configuration
+
+appId: ai.adaptic.genesis
+productName: Genesis
+copyright: Copyright (c) 2024 Adaptic.ai
+
+# Directories
+directories:
+  output: out
+  buildResources: build
+
+# Files to include in the build
+files:
+  - dist/**/*
+  - package.json
+
+# Additional resources
+extraResources:
+  - from: assets/
+    to: assets/
+    filter:
+      - "**/*"
+
+# ============================================
+# macOS Configuration
+# ============================================
+mac:
+  category: public.app-category.developer-tools
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  icon: build/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.inherit.plist
+  darkModeSupport: true
+  # Code signing - configure via environment variables
+  # CSC_LINK: path to certificate
+  # CSC_KEY_PASSWORD: certificate password
+  # APPLE_ID: Apple ID for notarization
+  # APPLE_ID_PASSWORD: App-specific password
+  # APPLE_TEAM_ID: Apple Developer Team ID
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+  window:
+    width: 540
+    height: 380
+
+# ============================================
+# Windows Configuration
+# ============================================
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+        - arm64
+    - target: portable
+      arch:
+        - x64
+  icon: build/icon.ico
+  # Code signing - configure via environment variables
+  # CSC_LINK: path to certificate
+  # CSC_KEY_PASSWORD: certificate password
+  # WIN_CSC_LINK: Windows-specific cert path
+  # WIN_CSC_KEY_PASSWORD: Windows-specific cert password
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Genesis
+
+# ============================================
+# Linux Configuration
+# ============================================
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+    - target: rpm
+      arch:
+        - x64
+  category: Development
+  icon: build/icons
+  synopsis: AI-powered organizational design
+  description: Genesis is an AI-powered application for designing and generating organizational structures.
+  maintainer: Adaptic.ai <engineering@adaptic.ai>
+
+deb:
+  depends:
+    - gconf2
+    - gconf-service
+    - libnotify4
+    - libappindicator1
+    - libxtst6
+    - libnss3
+
+rpm:
+  depends:
+    - libXScrnSaver
+    - libappindicator
+    - libnotify
+
+# ============================================
+# Auto-Update Configuration
+# ============================================
+publish:
+  - provider: github
+    owner: adaptic-ai
+    repo: genesis
+    releaseType: release
+  # Alternative: S3 provider
+  # - provider: s3
+  #   bucket: genesis-releases
+  #   region: us-east-1
+
+# ============================================
+# Build Options
+# ============================================
+asar: true
+asarUnpack:
+  - "**/*.node"
+  - "**/node_modules/sharp/**"
+
+compression: maximum
+
+# Protocols for deep linking
+protocols:
+  - name: Genesis
+    schemes:
+      - genesis
+
+# File associations
+fileAssociations:
+  - ext: genesis
+    name: Genesis Organization File
+    description: Genesis organization configuration file
+    mimeType: application/x-genesis
+    role: Editor
+    icon: build/file-icon.icns
+
+# ============================================
+# Build Hooks
+# ============================================
+afterSign: scripts/notarize.js
+
+# ============================================
+# Snap Configuration (Linux)
+# ============================================
+snap:
+  confinement: strict
+  grade: stable
+  plugs:
+    - default
+    - network
+    - home

@@ -1,0 +1,178 @@
+# =============================================================================
+# Genesis-App Docker Compose Configuration
+# =============================================================================
+# This configuration provides the local development environment for Genesis-App
+# including PostgreSQL database, Redis cache, and MailHog for email testing.
+#
+# Usage:
+#   Start all services:     docker-compose up -d
+#   Stop all services:      docker-compose down
+#   View logs:              docker-compose logs -f [service_name]
+#   Reset data:             docker-compose down -v
+#
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  # Primary data store for Genesis-App. Stores organizational structures,
+  # agent configurations, user data, and audit logs.
+  #
+  # Connection string: postgresql://genesis:genesis_dev_password@localhost:5432/genesis_db
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: genesis-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-genesis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-genesis_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-genesis_db}
+      # Performance tuning for development
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=en_US.utf8 --lc-ctype=en_US.utf8"
+    volumes:
+      # Persistent data storage
+      - postgres-data:/var/lib/postgresql/data
+      # Optional: Mount init scripts for schema setup
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-genesis} -d ${POSTGRES_DB:-genesis_db}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - genesis-network
+    # Resource limits for development
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache & Message Broker
+  # ---------------------------------------------------------------------------
+  # Used for session management, caching, real-time updates, and job queues.
+  # AOF persistence is enabled for durability.
+  #
+  # Connection string: redis://localhost:6379
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: genesis-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 300
+      --timeout 0
+    volumes:
+      # Persistent data storage with AOF
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - genesis-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # MailHog - Email Testing Server
+  # ---------------------------------------------------------------------------
+  # Captures all outgoing emails for local testing and development.
+  # View captured emails in the web UI.
+  #
+  # SMTP Server: localhost:1025
+  # Web UI: http://localhost:8025
+  # ---------------------------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: genesis-mailhog
+    restart: unless-stopped
+    ports:
+      # SMTP server for sending emails
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      # Web UI for viewing captured emails
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+    environment:
+      # Storage configuration (in-memory by default, can use maildir)
+      MH_STORAGE: memory
+      # Maximum number of messages to store
+      MH_MAILDIR_PATH: /maildir
+    volumes:
+      # Optional: Persist emails to disk
+      - mailhog-data:/maildir
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8025/api/v2/messages?limit=1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - genesis-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+# =============================================================================
+# Named Volumes
+# =============================================================================
+# Persistent storage for services. Data survives container restarts.
+# Use 'docker-compose down -v' to remove volumes and reset data.
+# =============================================================================
+volumes:
+  # PostgreSQL data directory
+  postgres-data:
+    driver: local
+    name: genesis-postgres-data
+
+  # Redis AOF persistence
+  redis-data:
+    driver: local
+    name: genesis-redis-data
+
+  # MailHog email storage (optional)
+  mailhog-data:
+    driver: local
+    name: genesis-mailhog-data
+
+# =============================================================================
+# Networks
+# =============================================================================
+# Isolated network for Genesis-App services. Allows services to communicate
+# using container names as hostnames.
+# =============================================================================
+networks:
+  genesis-network:
+    driver: bridge
+    name: genesis-network
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

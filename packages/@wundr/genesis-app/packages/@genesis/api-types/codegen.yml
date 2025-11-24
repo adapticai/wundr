@@ -1,0 +1,99 @@
+# GraphQL Code Generator Configuration
+# Documentation: https://the-guild.dev/graphql/codegen/docs/getting-started
+
+schema:
+  - "./src/graphql/schema.graphql"
+
+documents:
+  - "./src/graphql/operations/**/*.graphql"
+
+generates:
+  # Core TypeScript types from schema
+  ./src/generated/types.ts:
+    plugins:
+      - typescript
+    config:
+      # Use strict scalars
+      strictScalars: true
+      # Custom scalar mappings
+      scalars:
+        DateTime: string
+        JSON: Record<string, unknown>
+        UUID: string
+        BigInt: string
+      # Naming conventions
+      enumsAsTypes: true
+      enumsAsConst: true
+      # Add 'Maybe' type wrapper for nullable fields
+      maybeValue: T | null | undefined
+      # Input type suffix
+      inputMaybeValue: T | null | undefined
+      # Avoid collision with reserved words
+      namingConvention:
+        typeNames: pascal-case#pascalCase
+        enumValues: keep
+      # Add comments from schema
+      addUnderscoreToArgsType: true
+
+  # Operation types (queries, mutations, subscriptions)
+  ./src/generated/operations.ts:
+    preset: import-types
+    presetConfig:
+      typesPath: ./types
+    plugins:
+      - typescript-operations
+    config:
+      # Skip typename for cleaner types
+      skipTypename: false
+      # Flatten union/interface types
+      flattenGeneratedTypes: false
+      # Prefix operation types
+      operationResultSuffix: Result
+      # Omit __typename from input types
+      omitOperationSuffix: false
+      # Export fragment types
+      exportFragmentSpreadSubTypes: true
+
+  # React Apollo hooks (optional - for frontend consumers)
+  ./src/generated/hooks.ts:
+    preset: import-types
+    presetConfig:
+      typesPath: ./types
+    plugins:
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      # Generate React hooks
+      withHooks: true
+      # Generate HOCs (disabled - prefer hooks)
+      withHOC: false
+      # Generate render props components (disabled)
+      withComponent: false
+      # Generate mutation result types
+      withMutationFn: true
+      # Apollo Client version
+      apolloReactHooksImportFrom: "@apollo/client"
+      # Add document nodes
+      documentMode: documentNode
+      # Error policy
+      defaultBaseOptions:
+        errorPolicy: all
+
+  # Schema introspection JSON (useful for tooling)
+  ./src/generated/schema.json:
+    plugins:
+      - introspection
+    config:
+      minify: false
+
+  # SDL file output (for schema sharing)
+  ./src/generated/schema.graphql:
+    plugins:
+      - schema-ast
+    config:
+      includeDirectives: true
+      includeIntrospectionTypes: false
+
+hooks:
+  afterAllFileWrite:
+    - prettier --write

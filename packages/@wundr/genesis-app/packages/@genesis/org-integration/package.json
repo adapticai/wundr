@@ -1,0 +1,25 @@
+{
+  "name": "@genesis/org-integration",
+  "version": "0.1.0",
+  "description": "Integration layer between Genesis App and @wundr/org-genesis package",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": ["genesis", "org-genesis", "integration", "wundr"],
+  "author": "Adaptic.ai",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "files": ["dist", "README.md"],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

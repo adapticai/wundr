@@ -1,0 +1,492 @@
+# Genesis App GraphQL Schema
+# This is the root schema definition for the Genesis application
+
+# Custom Scalars
+scalar DateTime
+scalar JSON
+scalar UUID
+scalar BigInt
+
+# =============================================================================
+# ROOT TYPES
+# =============================================================================
+
+type Query {
+  """
+  Get the currently authenticated user
+  """
+  me: User
+
+  """
+  Get a user by their unique identifier
+  """
+  user(id: UUID!): User
+
+  """
+  List all users (admin only)
+  """
+  users(
+    first: Int
+    after: String
+    filter: UserFilterInput
+  ): UserConnection!
+
+  """
+  Get a workspace by ID
+  """
+  workspace(id: UUID!): Workspace
+
+  """
+  List workspaces accessible to the current user
+  """
+  workspaces(
+    first: Int
+    after: String
+    filter: WorkspaceFilterInput
+  ): WorkspaceConnection!
+
+  """
+  Health check endpoint
+  """
+  health: HealthStatus!
+}
+
+type Mutation {
+  """
+  Create a new user account
+  """
+  createUser(input: CreateUserInput!): CreateUserPayload!
+
+  """
+  Update user profile
+  """
+  updateUser(id: UUID!, input: UpdateUserInput!): UpdateUserPayload!
+
+  """
+  Delete a user account
+  """
+  deleteUser(id: UUID!): DeleteUserPayload!
+
+  """
+  Create a new workspace
+  """
+  createWorkspace(input: CreateWorkspaceInput!): CreateWorkspacePayload!
+
+  """
+  Update workspace settings
+  """
+  updateWorkspace(id: UUID!, input: UpdateWorkspaceInput!): UpdateWorkspacePayload!
+
+  """
+  Delete a workspace
+  """
+  deleteWorkspace(id: UUID!): DeleteWorkspacePayload!
+
+  """
+  Add a member to a workspace
+  """
+  addWorkspaceMember(workspaceId: UUID!, input: AddWorkspaceMemberInput!): AddWorkspaceMemberPayload!
+
+  """
+  Remove a member from a workspace
+  """
+  removeWorkspaceMember(workspaceId: UUID!, userId: UUID!): RemoveWorkspaceMemberPayload!
+}
+
+type Subscription {
+  """
+  Subscribe to user updates
+  """
+  userUpdated(userId: UUID!): User!
+
+  """
+  Subscribe to workspace updates
+  """
+  workspaceUpdated(workspaceId: UUID!): Workspace!
+
+  """
+  Subscribe to workspace member changes
+  """
+  workspaceMembershipChanged(workspaceId: UUID!): WorkspaceMembershipEvent!
+}
+
+# =============================================================================
+# USER TYPES
+# =============================================================================
+
+"""
+Represents a user in the Genesis system
+"""
+type User implements Node {
+  """
+  Unique identifier for the user
+  """
+  id: UUID!
+
+  """
+  User's email address (unique)
+  """
+  email: String!
+
+  """
+  User's display name
+  """
+  displayName: String
+
+  """
+  URL to user's avatar image
+  """
+  avatarUrl: String
+
+  """
+  User's role in the system
+  """
+  role: UserRole!
+
+  """
+  User's current status
+  """
+  status: UserStatus!
+
+  """
+  Workspaces the user is a member of
+  """
+  workspaces(first: Int, after: String): WorkspaceConnection!
+
+  """
+  When the user account was created
+  """
+  createdAt: DateTime!
+
+  """
+  When the user account was last updated
+  """
+  updatedAt: DateTime!
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+input UserFilterInput {
+  email: String
+  role: UserRole
+  status: UserStatus
+  search: String
+}
+
+input CreateUserInput {
+  email: String!
+  displayName: String
+  role: UserRole
+}
+
+input UpdateUserInput {
+  displayName: String
+  avatarUrl: String
+  role: UserRole
+  status: UserStatus
+}
+
+type CreateUserPayload {
+  user: User
+  errors: [Error!]!
+}
+
+type UpdateUserPayload {
+  user: User
+  errors: [Error!]!
+}
+
+type DeleteUserPayload {
+  success: Boolean!
+  errors: [Error!]!
+}
+
+type UserConnection implements Connection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserEdge implements Edge {
+  cursor: String!
+  node: User!
+}
+
+# =============================================================================
+# WORKSPACE TYPES
+# =============================================================================
+
+"""
+Represents a workspace for organizing projects and teams
+"""
+type Workspace implements Node {
+  """
+  Unique identifier for the workspace
+  """
+  id: UUID!
+
+  """
+  Workspace name
+  """
+  name: String!
+
+  """
+  Workspace description
+  """
+  description: String
+
+  """
+  URL-friendly slug for the workspace
+  """
+  slug: String!
+
+  """
+  Workspace visibility setting
+  """
+  visibility: WorkspaceVisibility!
+
+  """
+  The user who owns/created the workspace
+  """
+  owner: User!
+
+  """
+  Members of the workspace
+  """
+  members(first: Int, after: String): WorkspaceMemberConnection!
+
+  """
+  Workspace settings
+  """
+  settings: WorkspaceSettings!
+
+  """
+  When the workspace was created
+  """
+  createdAt: DateTime!
+
+  """
+  When the workspace was last updated
+  """
+  updatedAt: DateTime!
+}
+
+enum WorkspaceVisibility {
+  PUBLIC
+  PRIVATE
+  INTERNAL
+}
+
+type WorkspaceSettings {
+  """
+  Allow members to invite others
+  """
+  allowMemberInvites: Boolean!
+
+  """
+  Default role for new members
+  """
+  defaultMemberRole: WorkspaceMemberRole!
+
+  """
+  Workspace-specific feature flags
+  """
+  features: JSON
+}
+
+type WorkspaceMember {
+  user: User!
+  role: WorkspaceMemberRole!
+  joinedAt: DateTime!
+}
+
+enum WorkspaceMemberRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+input WorkspaceFilterInput {
+  name: String
+  visibility: WorkspaceVisibility
+  ownerId: UUID
+  search: String
+}
+
+input CreateWorkspaceInput {
+  name: String!
+  description: String
+  slug: String
+  visibility: WorkspaceVisibility
+}
+
+input UpdateWorkspaceInput {
+  name: String
+  description: String
+  slug: String
+  visibility: WorkspaceVisibility
+  settings: WorkspaceSettingsInput
+}
+
+input WorkspaceSettingsInput {
+  allowMemberInvites: Boolean
+  defaultMemberRole: WorkspaceMemberRole
+  features: JSON
+}
+
+input AddWorkspaceMemberInput {
+  userId: UUID!
+  role: WorkspaceMemberRole!
+}
+
+type CreateWorkspacePayload {
+  workspace: Workspace
+  errors: [Error!]!
+}
+
+type UpdateWorkspacePayload {
+  workspace: Workspace
+  errors: [Error!]!
+}
+
+type DeleteWorkspacePayload {
+  success: Boolean!
+  errors: [Error!]!
+}
+
+type AddWorkspaceMemberPayload {
+  member: WorkspaceMember
+  errors: [Error!]!
+}
+
+type RemoveWorkspaceMemberPayload {
+  success: Boolean!
+  errors: [Error!]!
+}
+
+type WorkspaceConnection implements Connection {
+  edges: [WorkspaceEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type WorkspaceEdge implements Edge {
+  cursor: String!
+  node: Workspace!
+}
+
+type WorkspaceMemberConnection implements Connection {
+  edges: [WorkspaceMemberEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type WorkspaceMemberEdge implements Edge {
+  cursor: String!
+  node: WorkspaceMember!
+}
+
+type WorkspaceMembershipEvent {
+  type: WorkspaceMembershipEventType!
+  member: WorkspaceMember!
+  workspace: Workspace!
+}
+
+enum WorkspaceMembershipEventType {
+  MEMBER_ADDED
+  MEMBER_REMOVED
+  ROLE_CHANGED
+}
+
+# =============================================================================
+# COMMON TYPES
+# =============================================================================
+
+"""
+Relay Node interface for global object identification
+"""
+interface Node {
+  id: UUID!
+}
+
+"""
+Relay Connection interface for pagination
+"""
+interface Connection {
+  edges: [Edge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""
+Relay Edge interface for cursor-based pagination
+"""
+interface Edge {
+  cursor: String!
+  node: Node!
+}
+
+"""
+Pagination information
+"""
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+"""
+Generic error type for mutation payloads
+"""
+type Error {
+  """
+  Machine-readable error code
+  """
+  code: String!
+
+  """
+  Human-readable error message
+  """
+  message: String!
+
+  """
+  Field path that caused the error (if applicable)
+  """
+  path: [String!]
+}
+
+"""
+Health check status response
+"""
+type HealthStatus {
+  status: ServiceStatus!
+  version: String!
+  timestamp: DateTime!
+  services: [ServiceHealth!]!
+}
+
+type ServiceHealth {
+  name: String!
+  status: ServiceStatus!
+  latency: Int
+  message: String
+}
+
+enum ServiceStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+}
