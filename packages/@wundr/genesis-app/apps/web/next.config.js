@@ -27,6 +27,19 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
+  // External packages for server components (ESM compatibility)
+  serverExternalPackages: [
+    '@apollo/server',
+    '@apollo/utils.usagereporting',
+    '@apollo/utils.stripsensitiveliterals',
+    'graphql',
+    // LiveKit ESM packages
+    'livekit-server-sdk',
+    'camelcase-keys',
+    'map-obj',
+    'quick-lru',
+  ],
+
   // Experimental features
   experimental: {
     // Enable server actions
@@ -35,29 +48,13 @@ const nextConfig = {
     },
     // Optimize package imports
     optimizePackageImports: ['@apollo/client', 'lucide-react'],
-    // External packages for server components (ESM compatibility)
-    serverComponentsExternalPackages: [
-      '@apollo/server',
-      '@apollo/utils.usagereporting',
-      '@apollo/utils.stripsensitiveliterals',
-      'graphql',
-      // LiveKit ESM packages
-      'livekit-server-sdk',
-      'camelcase-keys',
-      'map-obj',
-      'quick-lru',
-    ],
-    // Enable ESM externals - allows importing ESM packages
-    esmExternals: true,
   },
+
+  // Turbopack configuration (empty to acknowledge webpack config exists)
+  turbopack: {},
 
   // Strict mode for React
   reactStrictMode: true,
-
-  // ESLint configuration - ignore during build (fixes done in lint step)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 
   // TypeScript - already checked in typecheck step
   typescript: {
