@@ -388,3 +388,39 @@ export {
 } from './integration-resolvers.js';
 
 export { default as integrationResolversDefault } from './integration-resolvers.js';
+
+// =============================================================================
+// WORKFLOW RESOLVERS
+// =============================================================================
+
+export {
+  workflowResolvers,
+  workflowQueries,
+  workflowMutations,
+  workflowSubscriptions,
+  WorkflowFieldResolvers,
+  WorkflowExecutionFieldResolvers,
+  WorkflowTemplateFieldResolvers,
+  workflowTypeDefs,
+  createWorkflowResolvers,
+  WorkflowStatus,
+  TriggerType,
+  ActionType,
+  ExecutionStatus,
+  ActionResultStatus,
+  ErrorBehavior,
+  TemplateCategory,
+  WORKFLOW_EXECUTION_UPDATED,
+  WORKFLOW_STATUS_CHANGED,
+  type WorkflowStatusValue,
+  type TriggerTypeValue,
+  type ActionTypeValue,
+  type ExecutionStatusValue,
+  type ActionResultStatusValue,
+  type ErrorBehaviorValue,
+  type TemplateCategoryValue,
+  type WorkflowService,
+  type GraphQLContext as WorkflowGraphQLContext,
+} from './workflow-resolvers.js';
+
+export { default as workflowResolversDefault } from './workflow-resolvers.js';

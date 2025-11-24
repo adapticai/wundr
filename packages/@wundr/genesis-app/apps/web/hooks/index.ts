@@ -42,5 +42,14 @@ export {
   useWebhookDeliveries,
 } from "./use-integrations";
 
+// Workflow hooks
+export {
+  useWorkflows,
+  useWorkflow,
+  useWorkflowExecutions,
+  useWorkflowTemplates,
+  useWorkflowBuilder,
+} from "./use-workflows";
+
 // Re-export from next-auth/react for convenience
 export { signIn, signOut, useSession } from "next-auth/react";

@@ -1000,3 +1000,93 @@ export {
   INTEGRATION_PERMISSIONS,
   DEFAULT_WEBHOOK_RETRY_POLICY,
 } from './integration';
+
+// =============================================================================
+// Workflow Types
+// =============================================================================
+
+export type {
+  // Core workflow types
+  WorkflowStatus,
+  TriggerType,
+  ActionType as WorkflowActionType,
+  ExecutionStatus,
+  ActionResultStatus,
+  TemplateCategory,
+
+  // Trigger types
+  TriggerFilter,
+  MessageTriggerConfig,
+  KeywordTriggerConfig,
+  ScheduledTriggerConfig,
+  WebhookTriggerConfig,
+  ChannelTriggerConfig,
+  MemberTriggerConfig,
+  FileUploadTriggerConfig,
+  ReactionTriggerConfig,
+  VPResponseTriggerConfig,
+  ManualTriggerConfig,
+  TriggerConfig,
+  WorkflowTrigger,
+
+  // Action types
+  WorkflowAttachment,
+  SendMessageConfig,
+  SendDMConfig,
+  CreateChannelConfig,
+  ChannelMemberConfig,
+  AssignRoleConfig,
+  SendEmailConfig,
+  WebhookActionConfig,
+  InvokeVPConfig,
+  DelayConfig,
+  ConditionConfig,
+  SetVariableConfig,
+  LoopConfig,
+  ActionConfig,
+  WorkflowAction,
+  WorkflowCondition,
+
+  // Variable types
+  WorkflowVariable,
+
+  // Main workflow types
+  Workflow,
+  WorkflowExecution,
+  ActionResult,
+  WorkflowTemplate,
+
+  // Input types
+  CreateWorkflowInput,
+  UpdateWorkflowInput,
+  ListWorkflowsOptions,
+  PaginatedWorkflowResult,
+  ListExecutionsOptions,
+  PaginatedExecutionResult,
+  ExecutionContext,
+} from './workflow';
+
+export {
+  // Type guards
+  isWorkflowStatus,
+  isTriggerType,
+  isActionType as isWorkflowActionType,
+  isExecutionStatus,
+  isTemplateCategory,
+  isWorkflow,
+  isWorkflowExecution,
+  isValidCreateWorkflowInput,
+
+  // Constants
+  DEFAULT_WORKFLOW_LIST_OPTIONS,
+  DEFAULT_EXECUTION_LIST_OPTIONS,
+  MAX_WORKFLOW_NAME_LENGTH,
+  MAX_WORKFLOW_DESCRIPTION_LENGTH,
+  MAX_ACTIONS_PER_WORKFLOW,
+  DEFAULT_MAX_LOOP_ITERATIONS,
+  DEFAULT_DELAY_DURATION_MS,
+  MAX_WEBHOOK_TIMEOUT_MS,
+  TRIGGER_TYPES,
+  ACTION_TYPES,
+  TEMPLATE_CATEGORIES,
+} from './workflow';

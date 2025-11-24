@@ -133,6 +133,7 @@ model Workspace {
   members           WorkspaceMember[]
   files             File[]
   daemonCredentials DaemonCredential[]
+  workflows         Workflow[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -585,4 +586,97 @@ model DaemonCredential {
   @@index([apiKey])
   @@index([isActive])
   @@map("daemon_credentials")
+}
+
+// =============================================================================
+// Workflow Automation Models (Wave 16 / Phase 11)
+// =============================================================================
+
+/// Workflow status enumeration
+enum WorkflowStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+/// Workflow execution status enumeration
+enum WorkflowExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  TIMEOUT
+}
+
+/// Workflow - Automation workflow definition
+model Workflow {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  trigger     Json // WorkflowTrigger object
+  actions     Json // Array of WorkflowAction objects
+  status      WorkflowStatus @default(DRAFT)
+  tags        String[]       @default([])
+  metadata    Json?
+
+  // Statistics
+  executionCount Int @default(0) @map("execution_count")
+  successCount   Int @default(0) @map("success_count")
+  failureCount   Int @default(0) @map("failure_count")
+
+  // Foreign keys
+  workspaceId String @map("workspace_id")
+  createdBy   String @map("created_by")
+
+  // Timestamps
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastExecutedAt DateTime? @map("last_executed_at")
+
+  // Relations
+  workspace  Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  executions WorkflowExecution[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("workflows")
+}
+
+/// WorkflowExecution - Record of a workflow execution
+model WorkflowExecution {
+  id          String                  @id @default(cuid())
+  status      WorkflowExecutionStatus @default(PENDING)
+  triggeredBy String                  @map("triggered_by")
+  triggerType String                  @map("trigger_type")
+  triggerData Json?                   @map("trigger_data")
+  steps       Json                    @default("[]") // Array of WorkflowStepResult
+  error       String?
+
+  // Timing
+  startedAt   DateTime  @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  durationMs  Int?      @map("duration_ms")
+
+  // Flags
+  isSimulation Boolean @default(false) @map("is_simulation")
+
+  // Foreign keys
+  workflowId  String @map("workflow_id")
+  workspaceId String @map("workspace_id")
+
+  // Relations
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([triggeredBy])
+  @@index([startedAt])
+  @@index([isSimulation])
+  @@map("workflow_executions")
 }

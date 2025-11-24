@@ -596,3 +596,35 @@ export {
   WebhookSignatureError,
   ConnectionTestError,
 } from './integration-service';
+
+// =============================================================================
+// Workflow Service
+// =============================================================================
+
+export {
+  // Service implementation
+  WorkflowServiceImpl,
+  createWorkflowService,
+  workflowService,
+
+  // Storage implementations
+  InMemoryWorkflowStorage,
+
+  // Built-in templates
+  BUILT_IN_TEMPLATES,
+
+  // Interfaces
+  type WorkflowService,
+  type WorkflowStorage,
+  type ActionHandler,
+  type WorkflowServiceConfig,
+
+  // Errors
+  WorkflowError,
+  WorkflowNotFoundError,
+  WorkflowValidationError,
+  WorkflowExecutionError,
+  ExecutionNotFoundError,
+  ActionExecutionError,
+  TemplateNotFoundError,
+} from './workflow-service';
