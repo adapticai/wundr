@@ -9,33 +9,33 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: {
-    default: 'Genesis - Organization Builder',
-    template: '%s | Genesis',
+    default: 'Neolith - AI-Powered Workspace',
+    template: '%s | Neolith',
   },
   description:
-    'Build and manage AI-powered organizations with Genesis. Create custom agent hierarchies, workflows, and governance structures.',
+    'Build and manage AI-powered organizations with Neolith. Create custom agent hierarchies, workflows, and governance structures.',
   keywords: [
     'AI',
     'organization',
     'agents',
     'automation',
     'workflow',
-    'genesis',
+    'neolith',
   ],
-  authors: [{ name: 'Wundr' }],
-  creator: 'Wundr',
+  authors: [{ name: 'Neolith' }],
+  creator: 'Neolith',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://genesis.wundr.ai',
-    siteName: 'Genesis',
-    title: 'Genesis - Organization Builder',
-    description: 'Build and manage AI-powered organizations with Genesis',
+    url: 'https://neolith.ai',
+    siteName: 'Neolith',
+    title: 'Neolith - AI-Powered Workspace',
+    description: 'Build and manage AI-powered organizations with Neolith',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Genesis - Organization Builder',
-    description: 'Build and manage AI-powered organizations with Genesis',
+    title: 'Neolith - AI-Powered Workspace',
+    description: 'Build and manage AI-powered organizations with Neolith',
   },
   robots: {
     index: true,

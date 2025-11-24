@@ -1,7 +1,7 @@
 # =============================================================================
-# Genesis-App Docker Compose Configuration
+# Neolith Docker Compose Configuration
 # =============================================================================
-# This configuration provides the local development environment for Genesis-App
+# This configuration provides the local development environment for Neolith
 # including PostgreSQL database, Redis cache, and MailHog for email testing.
 #
 # Usage:
@@ -16,21 +16,21 @@ services:
   # ---------------------------------------------------------------------------
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
-  # Primary data store for Genesis-App. Stores organizational structures,
+  # Primary data store for Neolith. Stores organizational structures,
   # agent configurations, user data, and audit logs.
   #
-  # Connection string: postgresql://genesis:genesis_dev_password@localhost:5432/genesis_db
+  # Connection string: postgresql://neolith:neolith@localhost:5432/neolith
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:15-alpine
-    container_name: genesis-postgres
+    container_name: neolith-postgres
     restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-genesis}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-genesis_dev_password}
-      POSTGRES_DB: ${POSTGRES_DB:-genesis_db}
+      POSTGRES_USER: ${POSTGRES_USER:-neolith}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-neolith}
+      POSTGRES_DB: ${POSTGRES_DB:-neolith}
       # Performance tuning for development
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=en_US.utf8 --lc-ctype=en_US.utf8"
     volumes:
@@ -42,14 +42,14 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-genesis} -d ${POSTGRES_DB:-genesis_db}",
+          "pg_isready -U ${POSTGRES_USER:-neolith} -d ${POSTGRES_DB:-neolith}",
         ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     networks:
-      - genesis-network
+      - neolith-network
     # Resource limits for development
     deploy:
       resources:
@@ -66,7 +66,7 @@ services:
   # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
-    container_name: genesis-redis
+    container_name: neolith-redis
     restart: unless-stopped
     ports:
       - "${REDIS_PORT:-6379}:6379"
@@ -88,7 +88,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - genesis-network
+      - neolith-network
     deploy:
       resources:
         limits:
@@ -105,7 +105,7 @@ services:
   # ---------------------------------------------------------------------------
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: genesis-mailhog
+    container_name: neolith-mailhog
     restart: unless-stopped
     ports:
       # SMTP server for sending emails
@@ -135,7 +135,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - genesis-network
+      - neolith-network
     deploy:
       resources:
         limits:
@@ -151,28 +151,28 @@ volumes:
   # PostgreSQL data directory
   postgres-data:
     driver: local
-    name: genesis-postgres-data
+    name: neolith-postgres-data
 
   # Redis AOF persistence
   redis-data:
     driver: local
-    name: genesis-redis-data
+    name: neolith-redis-data
 
   # MailHog email storage (optional)
   mailhog-data:
     driver: local
-    name: genesis-mailhog-data
+    name: neolith-mailhog-data
 
 # =============================================================================
 # Networks
 # =============================================================================
-# Isolated network for Genesis-App services. Allows services to communicate
+# Isolated network for Neolith services. Allows services to communicate
 # using container names as hostnames.
 # =============================================================================
 networks:
-  genesis-network:
+  neolith-network:
     driver: bridge
-    name: genesis-network
+    name: neolith-network
     ipam:
       config:
         - subnet: 172.28.0.0/16
