@@ -105,6 +105,32 @@ export {
 } from './discipline-resolvers.js';
 
 // =============================================================================
+// PRESENCE RESOLVERS
+// =============================================================================
+
+export {
+  presenceResolvers,
+  presenceQueries,
+  presenceMutations,
+  presenceSubscriptions,
+  PresenceFieldResolvers,
+  VPPresenceFieldResolvers,
+  USER_PRESENCE_CHANGED,
+  CHANNEL_PRESENCE_CHANGED,
+  VP_PRESENCE_CHANGED,
+  PRESENCE_JOIN,
+  PRESENCE_LEAVE,
+  PresenceStatus,
+  VPPresenceStatus,
+  type PresenceStatusType,
+  type VPPresenceStatusType,
+  type UserPresence,
+  type VPPresence,
+  type ChannelPresence,
+  type PresenceService,
+} from './presence-resolvers.js';
+
+// =============================================================================
 // RE-EXPORT DEFAULTS
 // =============================================================================
 
@@ -114,3 +140,4 @@ export { default as organizationResolversDefault } from './organization-resolver
 export { default as workspaceResolversDefault } from './workspace-resolvers.js';
 export { default as channelResolversDefault } from './channel-resolvers.js';
 export { default as disciplineResolversDefault } from './discipline-resolvers.js';
+export { default as presenceResolversDefault } from './presence-resolvers.js';

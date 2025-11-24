@@ -126,3 +126,57 @@ export {
   DisciplineValidationError,
   VPNotFoundError as DisciplineVPNotFoundError,
 } from './discipline-service';
+
+// =============================================================================
+// Presence Service
+// =============================================================================
+
+export {
+  // Service implementation
+  PresenceServiceImpl,
+  createPresenceService,
+  getPresenceService,
+  presenceService,
+
+  // Interfaces
+  type PresenceService,
+  type PresenceStats,
+
+  // Errors
+  PresenceError,
+  RedisUnavailableError,
+} from './presence-service';
+
+// =============================================================================
+// Heartbeat Service
+// =============================================================================
+
+export {
+  // Service implementation
+  HeartbeatServiceImpl,
+  createHeartbeatService,
+
+  // Interfaces
+  type HeartbeatService,
+  type RedisClient,
+
+  // Errors
+  HeartbeatError,
+  DaemonNotRegisteredError,
+  DaemonAlreadyRegisteredError,
+  HeartbeatValidationError,
+} from './heartbeat-service';
+
+// =============================================================================
+// Heartbeat Monitor
+// =============================================================================
+
+export {
+  // Monitor implementation
+  HeartbeatMonitor,
+  createHeartbeatMonitor,
+
+  // Interfaces
+  type HeartbeatMonitorService,
+  type MonitorStats,
+} from './heartbeat-monitor';

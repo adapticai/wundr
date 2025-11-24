@@ -77,6 +77,12 @@ export {
   createDisciplineService,
   disciplineService,
 
+  // Presence Service
+  PresenceServiceImpl,
+  createPresenceService,
+  getPresenceService,
+  presenceService,
+
   // Interfaces
   type VPService,
   type ServiceAccountService,
@@ -88,6 +94,8 @@ export {
   type OrganizationService,
   type WorkspaceService,
   type DisciplineService,
+  type PresenceService,
+  type PresenceStats,
 
   // Message Errors
   MessageNotFoundError,
@@ -121,6 +129,28 @@ export {
   DisciplineAlreadyExistsError,
   DisciplineValidationError,
   DisciplineVPNotFoundError,
+
+  // Presence Errors
+  PresenceError,
+  RedisUnavailableError,
+
+  // Heartbeat Service
+  HeartbeatServiceImpl,
+  createHeartbeatService,
+  type HeartbeatService,
+  type RedisClient,
+
+  // Heartbeat Monitor
+  HeartbeatMonitor,
+  createHeartbeatMonitor,
+  type HeartbeatMonitorService,
+  type MonitorStats,
+
+  // Heartbeat Errors
+  HeartbeatError,
+  DaemonNotRegisteredError,
+  DaemonAlreadyRegisteredError,
+  HeartbeatValidationError,
 } from './services';
 
 // =============================================================================
@@ -224,6 +254,48 @@ export type {
   ListDisciplinesOptions,
   PaginatedDisciplineResult,
 
+  // Presence types
+  PresenceStatus,
+  DeviceType,
+  UserPresence,
+  PresenceMetadata,
+  VPPresence,
+  DaemonInfo,
+  DaemonMetrics,
+  ChannelPresence,
+  PresenceEventType,
+  BasePresenceEvent,
+  UserPresenceEvent,
+  VPPresenceEvent,
+  ChannelPresenceEvent,
+  PresenceEvent,
+  PresenceCallback,
+  VPPresenceCallback,
+  ChannelPresenceCallback,
+  UnsubscribeFunction,
+  PresenceConfig,
+
+  // Heartbeat types
+  HeartbeatDaemonInfo,
+  HeartbeatMetrics,
+  HeartbeatRecord,
+  HealthStatus,
+  HealthStatusType,
+  RegisterDaemonInput,
+  SendHeartbeatInput,
+  UnregisterDaemonInput,
+  HeartbeatConfig,
+  HeartbeatEventType,
+  HeartbeatEvent,
+  DaemonRegisteredEvent,
+  DaemonUnregisteredEvent,
+  VPUnhealthyEvent,
+  VPRecoveredEvent,
+  OnVPUnhealthyCallback,
+  OnVPRecoveredCallback,
+  OnDaemonRegisteredCallback,
+  OnDaemonUnregisteredCallback,
+
   // Re-exported database types
   VP,
   User,
@@ -286,6 +358,30 @@ export {
   ORGANIZATION_ROLES,
   WORKSPACE_ROLES,
   CHANNEL_ROLES,
+
+  // Presence Type guards
+  isPresenceStatus,
+  isUserPresence,
+  isVPPresence,
+  isDeviceType,
+  isUserPresenceEvent,
+  isVPPresenceEvent,
+  isChannelPresenceEvent,
+
+  // Presence Constants
+  PRESENCE_KEY_PATTERNS,
+  DEFAULT_PRESENCE_CONFIG,
+
+  // Heartbeat Type guards
+  isHeartbeatDaemonInfo,
+  isHeartbeatMetrics,
+  isHealthStatus,
+
+  // Heartbeat Constants
+  DEFAULT_HEARTBEAT_CONFIG,
+  DEFAULT_HEARTBEAT_METRICS,
+  DEFAULT_HEALTH_STATUS,
+  HEARTBEAT_REDIS_KEYS,
 } from './types';
 
 // =============================================================================
@@ -447,6 +543,36 @@ export {
   compose,
   withPermissionErrorHandler,
 } from './permissions';
+
+// =============================================================================
+// Redis Exports
+// =============================================================================
+
+export {
+  // Factory functions
+  createRedisClient,
+  createSubscriberClient,
+  getRedisClient,
+  getSubscriberClient,
+
+  // Singleton
+  redis,
+
+  // Connection management
+  getConnectionState,
+  isRedisAvailable,
+  waitForConnection,
+  disconnectRedis,
+  healthCheck,
+
+  // Types
+  type RedisConfig,
+  type RedisConnectionState,
+  type RedisClientWrapper,
+
+  // Constants
+  DEFAULT_REDIS_CONFIG,
+} from './redis';
 
 // =============================================================================
 // Version

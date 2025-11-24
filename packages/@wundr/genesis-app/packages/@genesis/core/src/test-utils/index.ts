@@ -12,7 +12,13 @@
  *   VPFactories,
  *   createMockMessage,
  *   createMockReaction,
- *   MessageFactories
+ *   MessageFactories,
+ *   createMockRedis,
+ *   createMockUserPresence,
+ *   createMockVPPresence,
+ *   createMockHeartbeatRecord,
+ *   createMockHealthStatus,
+ *   PresenceFactories
  * } from '../test-utils';
  * ```
  *
@@ -21,3 +27,5 @@
 
 export * from './vp-factories';
 export * from './message-factories';
+export * from './mock-redis';
+export * from './presence-factories';

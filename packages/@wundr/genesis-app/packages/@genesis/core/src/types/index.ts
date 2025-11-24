@@ -179,6 +179,102 @@ export {
 } from './organization';
 
 // =============================================================================
+// Heartbeat Types
+// =============================================================================
+
+export type {
+  // Core heartbeat types
+  HeartbeatDaemonInfo,
+  HeartbeatMetrics,
+  HeartbeatRecord,
+  HealthStatus,
+  HealthStatusType,
+
+  // Input types
+  RegisterDaemonInput,
+  SendHeartbeatInput,
+  UnregisterDaemonInput,
+
+  // Configuration types
+  HeartbeatConfig,
+
+  // Event types
+  HeartbeatEventType,
+  HeartbeatEvent,
+  DaemonRegisteredEvent,
+  DaemonUnregisteredEvent,
+  VPUnhealthyEvent,
+  VPRecoveredEvent,
+
+  // Callback types
+  OnVPUnhealthyCallback,
+  OnVPRecoveredCallback,
+  OnDaemonRegisteredCallback,
+  OnDaemonUnregisteredCallback,
+} from './heartbeat';
+
+export {
+  // Type guards
+  isHeartbeatDaemonInfo,
+  isHeartbeatMetrics,
+  isHealthStatus,
+
+  // Constants
+  DEFAULT_HEARTBEAT_CONFIG,
+  DEFAULT_HEARTBEAT_METRICS,
+  DEFAULT_HEALTH_STATUS,
+  HEARTBEAT_REDIS_KEYS,
+} from './heartbeat';
+
+// =============================================================================
+// Presence Types
+// =============================================================================
+
+export type {
+  // Core presence types
+  PresenceStatus,
+  DeviceType,
+  UserPresence,
+  PresenceMetadata,
+  VPPresence,
+  DaemonInfo,
+  DaemonMetrics,
+  ChannelPresence,
+
+  // Event types
+  PresenceEventType,
+  BasePresenceEvent,
+  UserPresenceEvent,
+  VPPresenceEvent,
+  ChannelPresenceEvent,
+  PresenceEvent,
+
+  // Callback types
+  PresenceCallback,
+  VPPresenceCallback,
+  ChannelPresenceCallback,
+  UnsubscribeFunction,
+
+  // Configuration types
+  PresenceConfig,
+} from './presence';
+
+export {
+  // Type guards
+  isPresenceStatus,
+  isUserPresence,
+  isVPPresence,
+  isDeviceType,
+  isUserPresenceEvent,
+  isVPPresenceEvent,
+  isChannelPresenceEvent,
+
+  // Constants
+  PRESENCE_KEY_PATTERNS,
+  DEFAULT_PRESENCE_CONFIG,
+} from './presence';
+
+// =============================================================================
 // Re-export Database Types
 // =============================================================================
 
