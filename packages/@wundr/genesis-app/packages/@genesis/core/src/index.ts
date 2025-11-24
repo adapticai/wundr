@@ -205,6 +205,50 @@ export {
 
   // File Record Constants
   DEFAULT_FILE_RECORD_LIST_OPTIONS,
+
+  // LiveKit Service
+  LiveKitServiceImpl,
+  createLiveKitService,
+  createLiveKitServiceFromEnv,
+  getLiveKitService,
+  liveKitService,
+  type LiveKitService,
+
+  // LiveKit Errors
+  LiveKitError,
+  RoomNotFoundError,
+  RoomAlreadyExistsError,
+  ParticipantNotFoundError,
+  LiveKitConfigError,
+  TokenGenerationError,
+  RecordingError,
+
+  // Call Service
+  CallServiceImpl,
+  createCallService,
+  getCallService,
+  callService,
+  type CallService,
+
+  // Call Types
+  type CallType,
+  type CallStatus,
+  type HuddleStatus,
+  type Call,
+  type CallMetadata,
+  type CreateCallOptions,
+  type Huddle,
+  type HuddleMetadata,
+  type HuddleOptions,
+  type JoinToken,
+  type HistoryOptions,
+  type PaginatedCallResult,
+
+  // Call Errors
+  CallNotFoundError,
+  ActiveCallExistsError,
+  HuddleNotFoundError,
+  CallOperationError,
 } from './services';
 
 // =============================================================================
@@ -414,6 +458,40 @@ export type {
   MessageType,
   ChannelType,
   WorkspaceVisibility,
+
+  // LiveKit types
+  CreateRoomOptions,
+  Room as LiveKitRoom,
+  UpdateRoomOptions,
+  TrackSource,
+  TokenOptions,
+  TokenGenerationResult,
+  ParticipantState,
+  TrackType,
+  Track,
+  Participant,
+  ConnectionQuality,
+  ListParticipantsOptions,
+  RecordingDestination,
+  RecordingOptions,
+  RecordingPreset,
+  S3RecordingConfig,
+  GCPRecordingConfig,
+  AzureRecordingConfig,
+  RecordingStatus,
+  Recording,
+  LiveKitConfig,
+  LiveKitEventType,
+  BaseLiveKitEvent,
+  RoomCreatedEvent,
+  RoomDeletedEvent,
+  ParticipantJoinedEvent,
+  ParticipantLeftEvent,
+  TrackPublishedEvent,
+  TrackUnpublishedEvent,
+  RecordingStartedEvent,
+  RecordingStoppedEvent,
+  LiveKitEvent,
 } from './types';
 
 export {
@@ -515,6 +593,20 @@ export {
   getMaxFileSizeForType,
   getExtensionFromMimeType,
   getMimeTypeFromExtension,
+
+  // LiveKit Type guards and constants
+  isTrackType,
+  isParticipantState,
+  isRecordingStatus,
+  isTrackSource,
+  isCreateRoomOptions,
+  isLiveKitConfig,
+  DEFAULT_LIVEKIT_CONFIG,
+  DEFAULT_TOKEN_OPTIONS,
+  HOST_TOKEN_OPTIONS,
+  GUEST_TOKEN_OPTIONS,
+  VIEWER_TOKEN_OPTIONS,
+  RECORDING_PRESETS,
 } from './types';
 
 // =============================================================================

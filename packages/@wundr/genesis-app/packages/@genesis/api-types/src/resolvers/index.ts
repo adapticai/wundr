@@ -190,3 +190,27 @@ export {
 } from './processing-resolvers.js';
 
 export { default as processingResolversDefault } from './processing-resolvers.js';
+
+// =============================================================================
+// CALL RESOLVERS
+// =============================================================================
+
+export {
+  callResolvers,
+  callQueries,
+  callMutations,
+  callSubscriptions,
+  CallFieldResolvers,
+  HuddleFieldResolvers,
+  CALL_STARTED,
+  CALL_ENDED,
+  PARTICIPANT_JOINED,
+  PARTICIPANT_LEFT,
+  PARTICIPANT_UPDATED,
+  HUDDLE_UPDATED,
+  RECORDING_STATUS_CHANGED,
+  type CallService,
+  type GraphQLContext as CallGraphQLContext,
+} from './call-resolvers.js';
+
+export { default as callResolversDefault } from './call-resolvers.js';

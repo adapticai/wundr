@@ -18,7 +18,17 @@
  *   createMockVPPresence,
  *   createMockHeartbeatRecord,
  *   createMockHealthStatus,
- *   PresenceFactories
+ *   PresenceFactories,
+ *   createMockLiveKitService,
+ *   createMockRoom,
+ *   createMockParticipant,
+ *   createMockToken,
+ *   LiveKitFactories,
+ *   createMockCall,
+ *   createMockHuddle,
+ *   createMockCallParticipant,
+ *   createMockJoinToken,
+ *   CallFactories
  * } from '../test-utils';
  * ```
  *
@@ -31,3 +41,5 @@ export * from './mock-redis';
 export * from './presence-factories';
 export * from './file-factories';
 export * from './mock-s3';
+export * from './mock-livekit';
+export * from './call-factories';

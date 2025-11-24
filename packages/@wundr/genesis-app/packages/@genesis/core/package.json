@@ -21,6 +21,7 @@
     "@genesis/database": "workspace:*",
     "@paralleldrive/cuid2": "^2.2.2",
     "ioredis": "^5.4.1",
+    "livekit-server-sdk": "^2.9.1",
     "sharp": "^0.33.2"
   },
   "devDependencies": {

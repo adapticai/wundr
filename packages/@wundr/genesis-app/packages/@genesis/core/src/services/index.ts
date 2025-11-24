@@ -266,3 +266,63 @@ export {
   // Constants
   DEFAULT_FILE_RECORD_LIST_OPTIONS,
 } from './file-record-service';
+
+// =============================================================================
+// LiveKit Service
+// =============================================================================
+
+export {
+  // Service implementation
+  LiveKitServiceImpl,
+  createLiveKitService,
+  createLiveKitServiceFromEnv,
+  getLiveKitService,
+  liveKitService,
+
+  // Interfaces
+  type LiveKitService,
+
+  // Errors
+  LiveKitError,
+  RoomNotFoundError,
+  RoomAlreadyExistsError,
+  ParticipantNotFoundError,
+  LiveKitConfigError,
+  TokenGenerationError,
+  RecordingError,
+} from './livekit-service';
+
+// =============================================================================
+// Call Service
+// =============================================================================
+
+export {
+  // Service implementation
+  CallServiceImpl,
+  createCallService,
+  getCallService,
+  callService,
+
+  // Interfaces
+  type CallService,
+
+  // Types
+  type CallType,
+  type CallStatus,
+  type HuddleStatus,
+  type Call,
+  type CallMetadata,
+  type CreateCallOptions,
+  type Huddle,
+  type HuddleMetadata,
+  type HuddleOptions,
+  type JoinToken,
+  type HistoryOptions,
+  type PaginatedCallResult,
+
+  // Errors
+  CallNotFoundError,
+  ActiveCallExistsError,
+  HuddleNotFoundError,
+  CallOperationError,
+} from './call-service';

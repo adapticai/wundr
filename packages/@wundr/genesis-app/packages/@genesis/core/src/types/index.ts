@@ -390,6 +390,74 @@ export {
 } from './storage';
 
 // =============================================================================
+// LiveKit Types
+// =============================================================================
+
+export type {
+  // Room types
+  CreateRoomOptions,
+  Room,
+  UpdateRoomOptions,
+
+  // Token types
+  TrackSource,
+  TokenOptions,
+  TokenGenerationResult,
+
+  // Participant types
+  ParticipantState,
+  TrackType,
+  Track,
+  Participant,
+  ConnectionQuality,
+  ListParticipantsOptions,
+
+  // Recording types
+  RecordingDestination,
+  RecordingOptions,
+  RecordingPreset,
+  S3RecordingConfig,
+  GCPRecordingConfig,
+  AzureRecordingConfig,
+  RecordingStatus,
+  Recording,
+
+  // Configuration types
+  LiveKitConfig,
+
+  // Event types
+  LiveKitEventType,
+  BaseLiveKitEvent,
+  RoomCreatedEvent,
+  RoomDeletedEvent,
+  ParticipantJoinedEvent,
+  ParticipantLeftEvent,
+  TrackPublishedEvent,
+  TrackUnpublishedEvent,
+  RecordingStartedEvent,
+  RecordingStoppedEvent,
+  LiveKitEvent,
+} from './livekit';
+
+export {
+  // Type guards
+  isTrackType,
+  isParticipantState,
+  isRecordingStatus,
+  isTrackSource,
+  isCreateRoomOptions,
+  isLiveKitConfig,
+
+  // Constants
+  DEFAULT_LIVEKIT_CONFIG,
+  DEFAULT_TOKEN_OPTIONS,
+  HOST_TOKEN_OPTIONS,
+  GUEST_TOKEN_OPTIONS,
+  VIEWER_TOKEN_OPTIONS,
+  RECORDING_PRESETS,
+} from './livekit';
+
+// =============================================================================
 // Re-export Database Types
 // =============================================================================
 
