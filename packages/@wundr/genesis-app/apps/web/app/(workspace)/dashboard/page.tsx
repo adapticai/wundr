@@ -1,7 +1,8 @@
-import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { WorkspaceCardSkeleton } from '@/components/workspace/workspace-card';
+
 import { CreateWorkspaceCard } from '@/components/workspace/create-workspace-card';
+import { WorkspaceCardSkeleton } from '@/components/workspace/workspace-card';
+import { auth } from '@/lib/auth';
 
 export default async function DashboardPage() {
   const session = await auth();

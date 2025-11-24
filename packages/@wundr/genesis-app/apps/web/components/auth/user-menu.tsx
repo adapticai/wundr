@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/hooks/use-auth";
-import { useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { useState, useRef, useEffect } from 'react';
+
+import { useAuth } from '@/hooks/use-auth';
+import { cn } from '@/lib/utils';
 
 interface UserMenuProps {
   className?: string;
@@ -21,23 +22,23 @@ export function UserMenu({ className }: UserMenuProps) {
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   // Close menu on escape key
   useEffect(() => {
     function handleEscapeKey(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         setIsOpen(false);
       }
     }
 
-    document.addEventListener("keydown", handleEscapeKey);
+    document.addEventListener('keydown', handleEscapeKey);
     return () => {
-      document.removeEventListener("keydown", handleEscapeKey);
+      document.removeEventListener('keydown', handleEscapeKey);
     };
   }, []);
 
@@ -45,10 +46,10 @@ export function UserMenu({ className }: UserMenuProps) {
     return null;
   }
 
-  const initials = getInitials(user.name || user.email || "U");
+  const initials = getInitials(user.name || user.email || 'U');
 
   return (
-    <div className={cn("relative", className)} ref={menuRef}>
+    <div className={cn('relative', className)} ref={menuRef}>
       {/* Avatar Button */}
       <button
         type="button"
@@ -60,7 +61,7 @@ export function UserMenu({ className }: UserMenuProps) {
         {user.image ? (
           <img
             src={user.image}
-            alt={user.name || "User avatar"}
+            alt={user.name || 'User avatar'}
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
@@ -75,7 +76,7 @@ export function UserMenu({ className }: UserMenuProps) {
         <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md border bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           {/* User Info */}
           <div className="border-b px-4 py-3">
-            <p className="text-sm font-medium text-foreground">{user.name || "User"}</p>
+            <p className="text-sm font-medium text-foreground">{user.name || 'User'}</p>
             <p className="truncate text-sm text-muted-foreground">{user.email}</p>
           </div>
 
@@ -128,7 +129,7 @@ function MenuItem({ href, icon, children }: MenuItemProps) {
 }
 
 function getInitials(name: string): string {
-  const parts = name.split(" ").filter(Boolean);
+  const parts = name.split(' ').filter(Boolean);
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }

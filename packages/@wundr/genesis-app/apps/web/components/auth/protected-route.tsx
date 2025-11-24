@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/hooks/use-auth";
-import { FullPageSpinner } from "@/components/ui/loading-spinner";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { FullPageSpinner } from '@/components/ui/loading-spinner';
+import { useAuth } from '@/hooks/use-auth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,10 +16,10 @@ export function ProtectedRoute({ children, requireVP = false }: ProtectedRoutePr
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      redirect("/login");
+      redirect('/login');
     }
     if (!isLoading && requireVP && !isVP) {
-      redirect("/unauthorized");
+      redirect('/unauthorized');
     }
   }, [isLoading, isAuthenticated, requireVP, isVP]);
 

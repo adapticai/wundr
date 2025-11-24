@@ -1,7 +1,10 @@
-import type { Metadata } from 'next';
-import { auth } from '@/lib/auth';
-import { Sidebar } from './components/sidebar';
 import { AppHeader } from '@/components/layout/app-header';
+import { auth } from '@/lib/auth';
+
+import { Sidebar } from './components/sidebar';
+
+import type { Metadata } from 'next';
+
 
 export const metadata: Metadata = {
   title: 'Workspace',

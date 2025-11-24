@@ -1,0 +1,53 @@
+{
+  "name": "@genesis/core",
+  "version": "0.1.0",
+  "description": "Core service layer for Genesis App - VP management, authentication, and business logic",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@genesis/database": "workspace:*"
+  },
+  "devDependencies": {
+    "@genesis/eslint-config": "workspace:*",
+    "@genesis/typescript-config": "workspace:*",
+    "@types/node": "^20.14.0",
+    "@vitest/coverage-v8": "^2.1.6",
+    "typescript": "^5.4.5",
+    "vitest": "^2.1.6"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./services": {
+      "import": "./dist/services/index.js",
+      "require": "./dist/services/index.js",
+      "types": "./dist/services/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./errors": {
+      "import": "./dist/errors/index.js",
+      "require": "./dist/errors/index.js",
+      "types": "./dist/errors/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "license": "UNLICENSED"
+}

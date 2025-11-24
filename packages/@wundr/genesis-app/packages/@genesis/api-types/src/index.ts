@@ -40,3 +40,20 @@ export * from './generated/hooks.js';
 
 // Export all manual TypeScript types and utilities
 export * from './manual-types.js';
+
+// =============================================================================
+// VP TYPES
+// =============================================================================
+
+// Export VP-specific type definitions
+export * from './types/vp.js';
+
+// Export VP GraphQL input types
+export * from './types/vp-inputs.js';
+
+// =============================================================================
+// RESOLVERS
+// =============================================================================
+
+// Export GraphQL resolvers for server-side use
+export * from './resolvers/index.js';

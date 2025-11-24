@@ -29,47 +29,38 @@ export { PrismaClient, Prisma } from '@prisma/client';
 // =============================================================================
 
 // Export all Prisma generated model types
-// Currently active models:
-export type { User } from '@prisma/client';
-
-// Future models (uncomment after adding to schema.prisma and running prisma generate):
-// export type {
-//   Organization,
-//   Workspace,
-//   VP,
-//   Channel,
-//   Message,
-//   File,
-//   WorkspaceMember,
-//   OrganizationMember,
-//   ChannelMember,
-//   Reaction,
-//   Session,
-//   Discipline,
-//   Agent,
-// } from '@prisma/client';
+export type {
+  User,
+  Organization,
+  Workspace,
+  VP,
+  Channel,
+  Message,
+  File,
+  WorkspaceMember,
+  OrganizationMember,
+  ChannelMember,
+  Reaction,
+  Session,
+  MessageAttachment,
+} from '@prisma/client';
 
 // =============================================================================
 // Enum Exports
 // =============================================================================
 
 // Export all enums
-// Currently active enums:
-export { UserStatus } from '@prisma/client';
-
-// Future enums (uncomment after adding to schema.prisma and running prisma generate):
-// export {
-//   UserStatus,
-//   WorkspaceVisibility,
-//   ChannelType,
-//   MessageType,
-//   FileStatus,
-//   WorkspaceMemberRole,
-//   OrganizationMemberRole,
-//   ChannelMemberRole,
-//   VPStatus,
-//   OrganisationRole,
-// } from '@prisma/client';
+export {
+  UserStatus,
+  VPStatus,
+  WorkspaceVisibility,
+  ChannelType,
+  MessageType,
+  FileStatus,
+  OrganizationRole,
+  WorkspaceRole,
+  ChannelRole,
+} from '@prisma/client';
 
 // =============================================================================
 // Input Types for Creating Entities

@@ -1,1 +1,1 @@
-export { LoadingSpinner, FullPageSpinner } from "./loading-spinner";
+export { LoadingSpinner, FullPageSpinner } from './loading-spinner';

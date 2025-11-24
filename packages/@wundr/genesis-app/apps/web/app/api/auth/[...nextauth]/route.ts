@@ -17,6 +17,6 @@
  * @module app/api/auth/[...nextauth]/route
  */
 
-import { handlers } from "@/lib/auth";
+import { handlers } from '@/lib/auth';
 
 export const { GET, POST } = handlers;
