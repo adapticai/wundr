@@ -24,23 +24,134 @@
  * @module @wundr/org-genesis
  */
 
-// Core types
+// Core types - foundational types for all modules
+// These are the canonical definitions, exported first
 export * from './types/index.js';
 
-// Utilities
-export * from './utils/index.js';
+// Utilities - export only what doesn't conflict with types
+export {
+  generateOrgId,
+  generateVpId,
+  generateDisciplineId,
+  generateSlug,
+  isValidSlug,
+} from './utils/slug.js';
+export {
+  validateAgentDefinition,
+  validateDisciplinePack,
+} from './utils/validation.js';
 
-// Context Compiler
-export * from './context-compiler/index.js';
+// Context Compiler - use selective exports to avoid DisciplineValidationError conflict
+export {
+  TemplateRenderer,
+  createTemplateRenderer,
+} from './context-compiler/template-renderer.js';
+export {
+  DisciplineLoader,
+  createDisciplineLoader,
+} from './context-compiler/discipline-loader.js';
+export {
+  ConfigGenerator,
+  createConfigGenerator,
+} from './context-compiler/config-generator.js';
+export {
+  WorktreeWriter,
+  createWorktreeWriter,
+} from './context-compiler/worktree-writer.js';
+export {
+  ContextCompiler,
+  createContextCompiler,
+} from './context-compiler/compiler.js';
 
-// Global Registry
-export * from './registry/index.js';
+// Global Registry - use selective exports to avoid RegistryStats conflict
+export {
+  FileStorage,
+  MemoryStorage,
+  StorageError,
+  CharterRegistry,
+  createCharterRegistry,
+  DisciplineRegistry,
+  createDisciplineRegistry,
+  AgentRegistry,
+  createAgentRegistry,
+  ToolsRegistry,
+  createToolsRegistry,
+  HooksRegistry,
+  createHooksRegistry,
+  RegistryManager,
+  createRegistryManager,
+} from './registry/index.js';
 
-// Organizational Generator
-export * from './generator/index.js';
+// Organizational Generator - selective exports to avoid type conflicts
+export {
+  // Prompts
+  VP_GENERATION_SYSTEM_PROMPT,
+  VP_GENERATION_USER_PROMPT,
+  buildVPGenerationPrompt,
+  parseVPGenerationResponse,
+  DISCIPLINE_GENERATION_SYSTEM_PROMPT,
+  DISCIPLINE_GENERATION_USER_PROMPT,
+  buildDisciplineGenerationPrompt,
+  parseDisciplineGenerationResponse,
+  AGENT_GENERATION_SYSTEM_PROMPT,
+  AGENT_GENERATION_USER_PROMPT,
+  buildAgentGenerationPrompt,
+  parseAgentGenerationResponse,
+  // Generators
+  VPGenerator,
+  createVPGenerator,
+  DisciplineGenerator,
+  createDisciplineGenerator,
+  AgentGenerator,
+  createAgentGenerator,
+  ManifestGenerator,
+  createManifestGenerator,
+  // Genesis Engine
+  GenesisEngine,
+  createGenesisEngine,
+} from './generator/index.js';
 
-// Built-in Templates
-export * from './templates/index.js';
+export type {
+  VPGenerationContext,
+  DisciplineGenerationContext,
+  AgentGenerationContext,
+  GeneratedAgentPartial,
+  VPGeneratorConfig,
+  DisciplineGeneratorConfig,
+  AgentGeneratorConfig,
+  GenesisEngineConfig,
+  GenesisOptions,
+  GenesisResult,
+} from './generator/index.js';
 
-// CLI
-export * from './cli/index.js';
+// Built-in Templates - use selective exports to avoid UNIVERSAL_AGENTS conflict
+export {
+  ALL_DISCIPLINE_IDS,
+  ENGINEERING_DISCIPLINE_ID,
+  LEGAL_DISCIPLINE_ID,
+  FINANCE_DISCIPLINE_ID,
+  MARKETING_DISCIPLINE_ID,
+  HR_DISCIPLINE_ID,
+  OPERATIONS_DISCIPLINE_ID,
+} from './templates/disciplines/index.js';
+export {
+  VP_CHARTER_TEMPLATE_VERSION,
+  CHARTER_TEMPLATE_TYPES,
+} from './templates/charters/index.js';
+export {
+  UNIVERSAL_AGENTS_VERSION,
+  AGENT_TEMPLATE_CATEGORIES,
+} from './templates/agents/index.js';
+export { TEMPLATES_VERSION, TEMPLATE_MODULES } from './templates/index.js';
+
+// CLI - command-line interface tools
+// Note: CLI has some exports that conflict with generator (GenesisResult, GenesisStats)
+// but CLI is designed for standalone usage so conflicts are acceptable in that context.
+// Import CLI components directly from '@wundr/org-genesis/cli' for standalone CLI usage.
+export {
+  createOrgCommand,
+  listCommand,
+  displayProgress,
+  displayResult,
+  CLI_MODULE_VERSION,
+} from './cli/index.js';

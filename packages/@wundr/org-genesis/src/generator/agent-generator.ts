@@ -31,6 +31,28 @@
  * ```
  */
 
+import {
+  buildAgentGenerationPrompt,
+  buildAgentRefinementPrompt,
+  parseAgentGenerationResponse,
+  convertToAgentDefinition,
+  AGENT_GENERATION_SYSTEM_PROMPT,
+  AGENT_REFINEMENT_SYSTEM_PROMPT,
+} from './prompts/agent-prompts.js';
+import {
+  DEFAULT_AGENT_CAPABILITIES,
+  DEFAULT_AGENT_TOOLS,
+  DEFAULT_MODEL_ASSIGNMENT,
+  DEFAULT_AGENT_SCOPE,
+} from '../types/agent.js';
+import { generateAgentId, generateSlug } from '../utils/slug.js';
+import { validateAgentDefinition } from '../utils/validation.js';
+
+import type {
+  AgentGenerationContext,
+  GeneratedAgentPartial,
+  AgentRefinementFeedback,
+} from './prompts/agent-prompts.js';
 import type {
   AgentDefinition,
   AgentCapabilities,
@@ -39,28 +61,6 @@ import type {
   ModelAssignment,
   DisciplinePack,
 } from '../types/index.js';
-
-import {
-  AgentGenerationContext,
-  GeneratedAgentPartial,
-  AgentRefinementFeedback,
-  buildAgentGenerationPrompt,
-  buildAgentRefinementPrompt,
-  parseAgentGenerationResponse,
-  convertToAgentDefinition,
-  AGENT_GENERATION_SYSTEM_PROMPT,
-  AGENT_REFINEMENT_SYSTEM_PROMPT,
-} from './prompts/agent-prompts.js';
-
-import {
-  DEFAULT_AGENT_CAPABILITIES,
-  DEFAULT_AGENT_TOOLS,
-  DEFAULT_MODEL_ASSIGNMENT,
-  DEFAULT_AGENT_SCOPE,
-} from '../types/agent.js';
-
-import { generateAgentId, generateSlug } from '../utils/slug.js';
-import { validateAgentDefinition } from '../utils/validation.js';
 
 // ============================================================================
 // Configuration Types
@@ -242,7 +242,8 @@ const UNIVERSAL_AGENT_TEMPLATES: GeneratedAgentPartial[] = [
   {
     name: 'Researcher',
     slug: 'researcher',
-    description: 'Gathers information, analyzes data, and synthesizes findings to support decision-making',
+    description:
+      'Gathers information, analyzes data, and synthesizes findings to support decision-making',
     charter: `You are a meticulous Research Agent responsible for gathering and analyzing information.
 
 ## Core Responsibilities
@@ -289,7 +290,8 @@ const UNIVERSAL_AGENT_TEMPLATES: GeneratedAgentPartial[] = [
   {
     name: 'Scribe',
     slug: 'scribe',
-    description: 'Documents decisions, meetings, and processes with clear and organized records',
+    description:
+      'Documents decisions, meetings, and processes with clear and organized records',
     charter: `You are a dedicated Scribe Agent responsible for documentation and record-keeping.
 
 ## Core Responsibilities
@@ -336,7 +338,8 @@ const UNIVERSAL_AGENT_TEMPLATES: GeneratedAgentPartial[] = [
   {
     name: 'Project Manager',
     slug: 'project-manager',
-    description: 'Tracks tasks, timelines, and dependencies to ensure projects stay on track',
+    description:
+      'Tracks tasks, timelines, and dependencies to ensure projects stay on track',
     charter: `You are a Project Manager Agent responsible for project coordination and tracking.
 
 ## Core Responsibilities
@@ -383,7 +386,8 @@ const UNIVERSAL_AGENT_TEMPLATES: GeneratedAgentPartial[] = [
   {
     name: 'Reviewer',
     slug: 'reviewer',
-    description: 'Reviews work output for quality, correctness, and adherence to standards',
+    description:
+      'Reviews work output for quality, correctness, and adherence to standards',
     charter: `You are a Quality Reviewer Agent responsible for ensuring work meets standards.
 
 ## Core Responsibilities
@@ -430,7 +434,8 @@ const UNIVERSAL_AGENT_TEMPLATES: GeneratedAgentPartial[] = [
   {
     name: 'Tester',
     slug: 'tester',
-    description: 'Creates and executes tests to validate functionality and identify issues',
+    description:
+      'Creates and executes tests to validate functionality and identify issues',
     charter: `You are a Testing Agent responsible for quality assurance through testing.
 
 ## Core Responsibilities
@@ -512,9 +517,15 @@ const UNIVERSAL_AGENT_TEMPLATES: GeneratedAgentPartial[] = [
  */
 export class AgentGenerator {
   private readonly config: Required<
-    Pick<AgentGeneratorConfig, 'maxAgentsPerDiscipline' | 'includeUniversal' | 'useDefaults'>
+    Pick<
+      AgentGeneratorConfig,
+      'maxAgentsPerDiscipline' | 'includeUniversal' | 'useDefaults'
+    >
   > &
-    Omit<AgentGeneratorConfig, 'maxAgentsPerDiscipline' | 'includeUniversal' | 'useDefaults'>;
+    Omit<
+      AgentGeneratorConfig,
+      'maxAgentsPerDiscipline' | 'includeUniversal' | 'useDefaults'
+    >;
 
   /**
    * Creates a new AgentGenerator instance.
@@ -558,14 +569,16 @@ export class AgentGenerator {
    * result.warnings.forEach(w => console.warn(w));
    * ```
    */
-  async generate(context: AgentGenerationContext): Promise<GenerateAgentsResult> {
+  async generate(
+    context: AgentGenerationContext
+  ): Promise<GenerateAgentsResult> {
     const warnings: string[] = [];
     const agents: AgentDefinition[] = [];
     let tokensUsed = 0;
 
     const maxAgents = context.maxAgents ?? this.config.maxAgentsPerDiscipline;
     const existingSlugs = new Set(
-      (context.existingAgents ?? []).map((a) => a.slug),
+      (context.existingAgents ?? []).map(a => a.slug)
     );
 
     // Add universal agents if configured and room allows
@@ -573,11 +586,15 @@ export class AgentGenerator {
       const universalAgents = await this.generateUniversalAgents();
       for (const agent of universalAgents) {
         if (agents.length >= maxAgents) {
-          warnings.push(`Max agent limit (${maxAgents}) reached, stopping generation`);
+          warnings.push(
+            `Max agent limit (${maxAgents}) reached, stopping generation`
+          );
           break;
         }
         if (existingSlugs.has(agent.slug)) {
-          warnings.push(`Universal agent "${agent.slug}" already exists, skipped`);
+          warnings.push(
+            `Universal agent "${agent.slug}" already exists, skipped`
+          );
           continue;
         }
         // Add discipline to universal agent's usedByDisciplines
@@ -594,7 +611,7 @@ export class AgentGenerator {
       const disciplineResult = await this.generateDisciplineSpecificAgents(
         context,
         maxAgents - agents.length,
-        existingSlugs,
+        existingSlugs
       );
 
       agents.push(...disciplineResult.agents);
@@ -633,7 +650,7 @@ export class AgentGenerator {
   async refine(
     agent: AgentDefinition,
     feedback: string,
-    feedbackType: AgentRefinementFeedback['type'] = 'general',
+    feedbackType: AgentRefinementFeedback['type'] = 'general'
   ): Promise<AgentDefinition> {
     if (!this.config.llmProvider) {
       // Without LLM, return the agent unchanged
@@ -650,7 +667,10 @@ export class AgentGenerator {
 
     const messages: LLMMessage[] = [
       { role: 'system', content: AGENT_REFINEMENT_SYSTEM_PROMPT },
-      { role: 'user', content: buildAgentRefinementPrompt(agent, refinementFeedback) },
+      {
+        role: 'user',
+        content: buildAgentRefinementPrompt(agent, refinementFeedback),
+      },
     ];
 
     try {
@@ -677,7 +697,7 @@ export class AgentGenerator {
         tags: refined.tags.length > 0 ? refined.tags : agent.tags,
         updatedAt: new Date(),
       };
-    } catch (error) {
+    } catch {
       // On error, return the original agent
       return agent;
     }
@@ -729,20 +749,18 @@ export class AgentGenerator {
 
     if (
       agent.capabilities.canWriteFiles &&
-      !agent.tools.some((t) => t.name === 'write' || t.name === 'edit')
+      !agent.tools.some(t => t.name === 'write' || t.name === 'edit')
     ) {
       warnings.push(
-        'Agent has write capability but no write/edit tools; may need additional tools',
+        'Agent has write capability but no write/edit tools; may need additional tools'
       );
     }
 
     if (
       agent.capabilities.canExecuteCommands &&
-      !agent.tools.some((t) => t.name === 'bash')
+      !agent.tools.some(t => t.name === 'bash')
     ) {
-      warnings.push(
-        'Agent has command execution capability but no bash tool',
-      );
+      warnings.push('Agent has command execution capability but no bash tool');
     }
 
     return {
@@ -782,7 +800,7 @@ export class AgentGenerator {
 
     const tools: AgentTool[] = partial.tools?.length
       ? partial.tools
-      : this.config.defaultTools ?? DEFAULT_AGENT_TOOLS;
+      : (this.config.defaultTools ?? DEFAULT_AGENT_TOOLS);
 
     return {
       id: partial.id ?? generateAgentId(),
@@ -792,7 +810,8 @@ export class AgentGenerator {
       scope: partial.scope ?? this.config.defaultScope ?? DEFAULT_AGENT_SCOPE,
       description: partial.description ?? `Agent: ${name}`,
       charter: partial.charter ?? `You are the ${name} agent.`,
-      model: partial.model ?? this.config.defaultModel ?? DEFAULT_MODEL_ASSIGNMENT,
+      model:
+        partial.model ?? this.config.defaultModel ?? DEFAULT_MODEL_ASSIGNMENT,
       tools,
       capabilities: partial.capabilities
         ? { ...defaultCaps, ...partial.capabilities }
@@ -824,7 +843,7 @@ export class AgentGenerator {
   async generateUniversalAgents(): Promise<AgentDefinition[]> {
     const now = new Date();
 
-    return UNIVERSAL_AGENT_TEMPLATES.map((template) => ({
+    return UNIVERSAL_AGENT_TEMPLATES.map(template => ({
       id: generateAgentId(),
       name: template.name,
       slug: template.slug,
@@ -858,13 +877,15 @@ export class AgentGenerator {
    * const result = await generator.generateForDiscipline(discipline);
    * ```
    */
-  async generateForDiscipline(discipline: DisciplinePack): Promise<GenerateAgentsResult> {
+  async generateForDiscipline(
+    discipline: DisciplinePack
+  ): Promise<GenerateAgentsResult> {
     const context: AgentGenerationContext = {
       disciplineName: discipline.name,
       disciplineSlug: discipline.slug,
       disciplineCategory: discipline.category,
       disciplineDescription: discipline.description,
-      availableMcpTools: discipline.mcpServers.map((s) => s.name),
+      availableMcpTools: discipline.mcpServers.map(s => s.name),
     };
 
     return this.generate(context);
@@ -880,7 +901,7 @@ export class AgentGenerator {
   private async generateDisciplineSpecificAgents(
     context: AgentGenerationContext,
     maxAgents: number,
-    existingSlugs: Set<string>,
+    existingSlugs: Set<string>
   ): Promise<GenerateAgentsResult> {
     const warnings: string[] = [];
     const agents: AgentDefinition[] = [];
@@ -890,13 +911,17 @@ export class AgentGenerator {
     if (!this.config.llmProvider) {
       const templateAgents = this.getTemplateAgentsForCategory(
         context.disciplineCategory,
-        context.disciplineSlug,
+        context.disciplineSlug
       );
 
       for (const agent of templateAgents) {
-        if (agents.length >= maxAgents) break;
+        if (agents.length >= maxAgents) {
+          break;
+        }
         if (existingSlugs.has(agent.slug)) {
-          warnings.push(`Template agent "${agent.slug}" already exists, skipped`);
+          warnings.push(
+            `Template agent "${agent.slug}" already exists, skipped`
+          );
           continue;
         }
         agents.push(agent);
@@ -936,7 +961,9 @@ export class AgentGenerator {
         }
 
         if (existingSlugs.has(partial.slug)) {
-          warnings.push(`Generated agent "${partial.slug}" already exists, skipped`);
+          warnings.push(
+            `Generated agent "${partial.slug}" already exists, skipped`
+          );
           continue;
         }
 
@@ -946,27 +973,31 @@ export class AgentGenerator {
         const validation = this.validateDefinition(agent);
         if (!validation.valid) {
           warnings.push(
-            `Generated agent "${partial.slug}" failed validation: ${validation.errors.join(', ')}`,
+            `Generated agent "${partial.slug}" failed validation: ${validation.errors.join(', ')}`
           );
           continue;
         }
-        warnings.push(...validation.warnings.map((w) => `${partial.slug}: ${w}`));
+        warnings.push(...validation.warnings.map(w => `${partial.slug}: ${w}`));
 
         agents.push(agent);
         existingSlugs.add(agent.slug);
       }
     } catch (error) {
       warnings.push(
-        `LLM generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `LLM generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
       // Fall back to template agents
       const templateAgents = this.getTemplateAgentsForCategory(
         context.disciplineCategory,
-        context.disciplineSlug,
+        context.disciplineSlug
       );
       for (const agent of templateAgents) {
-        if (agents.length >= maxAgents) break;
-        if (existingSlugs.has(agent.slug)) continue;
+        if (agents.length >= maxAgents) {
+          break;
+        }
+        if (existingSlugs.has(agent.slug)) {
+          continue;
+        }
         agents.push(agent);
         existingSlugs.add(agent.slug);
       }
@@ -980,12 +1011,12 @@ export class AgentGenerator {
    */
   private getTemplateAgentsForCategory(
     category: string,
-    disciplineSlug: string,
+    disciplineSlug: string
   ): AgentDefinition[] {
     const now = new Date();
     const templates = CATEGORY_AGENT_TEMPLATES[category] ?? [];
 
-    return templates.map((template) => ({
+    return templates.map(template => ({
       id: generateAgentId(),
       name: template.name,
       slug: template.slug,
@@ -1059,7 +1090,8 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
     {
       name: 'Code Reviewer',
       slug: 'code-reviewer',
-      description: 'Reviews code changes for quality, security, and best practices',
+      description:
+        'Reviews code changes for quality, security, and best practices',
       charter: `You are a meticulous Code Reviewer agent focused on code quality.
 
 ## Core Responsibilities
@@ -1098,7 +1130,8 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
     {
       name: 'DevOps Engineer',
       slug: 'devops-engineer',
-      description: 'Manages infrastructure, CI/CD pipelines, and deployment processes',
+      description:
+        'Manages infrastructure, CI/CD pipelines, and deployment processes',
       charter: `You are a DevOps Engineer agent responsible for infrastructure and deployments.
 
 ## Core Responsibilities
@@ -1140,7 +1173,8 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
     {
       name: 'Contract Analyst',
       slug: 'contract-analyst',
-      description: 'Analyzes contracts for risks, obligations, and compliance issues',
+      description:
+        'Analyzes contracts for risks, obligations, and compliance issues',
       charter: `You are a Contract Analyst agent specializing in contract review.
 
 ## Core Responsibilities
@@ -1179,7 +1213,8 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
     {
       name: 'Compliance Monitor',
       slug: 'compliance-monitor',
-      description: 'Monitors regulatory compliance and tracks compliance obligations',
+      description:
+        'Monitors regulatory compliance and tracks compliance obligations',
       charter: `You are a Compliance Monitor agent responsible for regulatory oversight.
 
 ## Core Responsibilities
@@ -1220,7 +1255,8 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
     {
       name: 'Financial Analyst',
       slug: 'financial-analyst',
-      description: 'Analyzes financial data and produces insights for decision-making',
+      description:
+        'Analyzes financial data and produces insights for decision-making',
       charter: `You are a Financial Analyst agent specializing in financial analysis.
 
 ## Core Responsibilities
@@ -1261,7 +1297,8 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
     {
       name: 'Content Creator',
       slug: 'content-creator',
-      description: 'Creates marketing content including copy, blogs, and social posts',
+      description:
+        'Creates marketing content including copy, blogs, and social posts',
       charter: `You are a Content Creator agent specializing in marketing content.
 
 ## Core Responsibilities
@@ -1302,7 +1339,8 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
     {
       name: 'HR Coordinator',
       slug: 'hr-coordinator',
-      description: 'Supports HR operations including onboarding and documentation',
+      description:
+        'Supports HR operations including onboarding and documentation',
       charter: `You are an HR Coordinator agent supporting human resources operations.
 
 ## Core Responsibilities
@@ -1573,16 +1611,11 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
  * });
  * ```
  */
-export function createAgentGenerator(config?: AgentGeneratorConfig): AgentGenerator {
+export function createAgentGenerator(
+  config?: AgentGeneratorConfig
+): AgentGenerator {
   return new AgentGenerator(config);
 }
 
-// ============================================================================
-// Re-exports
-// ============================================================================
-
-export type {
-  AgentGenerationContext,
-  GeneratedAgentPartial,
-  AgentRefinementFeedback,
-} from './prompts/agent-prompts.js';
+// Note: AgentGenerationContext, GeneratedAgentPartial, AgentRefinementFeedback
+// are exported via prompts/index.js to avoid duplicate exports

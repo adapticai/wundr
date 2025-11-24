@@ -24,7 +24,12 @@
  * ```
  */
 
-import type { DisciplinePack, MCPServerConfig, HookConfig, ClaudeMdConfig } from '../../types/index.js';
+import type {
+  DisciplinePack,
+  MCPServerConfig,
+  HookConfig,
+  ClaudeMdConfig,
+} from '../../types/index.js';
 
 /**
  * Unique identifier for the engineering discipline.
@@ -34,12 +39,14 @@ export const ENGINEERING_DISCIPLINE_ID = 'discipline-engineering';
 /**
  * Unique identifier for the frontend engineering subdiscipline.
  */
-export const FRONTEND_ENGINEERING_DISCIPLINE_ID = 'discipline-engineering-frontend';
+export const FRONTEND_ENGINEERING_DISCIPLINE_ID =
+  'discipline-engineering-frontend';
 
 /**
  * Unique identifier for the backend engineering subdiscipline.
  */
-export const BACKEND_ENGINEERING_DISCIPLINE_ID = 'discipline-engineering-backend';
+export const BACKEND_ENGINEERING_DISCIPLINE_ID =
+  'discipline-engineering-backend';
 
 /**
  * Unique identifier for the DevOps engineering subdiscipline.
@@ -64,7 +71,8 @@ const GIT_MCP_SERVER: MCPServerConfig = {
   command: 'npx',
   args: ['@anthropic/git-mcp'],
   env: {},
-  description: 'Git version control operations including commits, branches, merges, and history analysis',
+  description:
+    'Git version control operations including commits, branches, merges, and history analysis',
 };
 
 /**
@@ -76,7 +84,8 @@ const FILESYSTEM_MCP_SERVER: MCPServerConfig = {
   command: 'npx',
   args: ['@anthropic/filesystem-mcp'],
   env: {},
-  description: 'Filesystem operations for reading, writing, and managing project files',
+  description:
+    'Filesystem operations for reading, writing, and managing project files',
 };
 
 /**
@@ -90,7 +99,8 @@ const GITHUB_MCP_SERVER: MCPServerConfig = {
   env: {
     GITHUB_TOKEN: '${GITHUB_TOKEN}',
   },
-  description: 'GitHub integration for issues, pull requests, and repository management',
+  description:
+    'GitHub integration for issues, pull requests, and repository management',
 };
 
 /**
@@ -114,7 +124,8 @@ const SEQUENTIAL_THINKING_MCP_SERVER: MCPServerConfig = {
   command: 'npx',
   args: ['@modelcontextprotocol/server-sequential-thinking'],
   env: {},
-  description: 'Sequential thinking for breaking down complex problems into steps',
+  description:
+    'Sequential thinking for breaking down complex problems into steps',
 };
 
 // =============================================================================
@@ -144,7 +155,8 @@ const POSTGRES_MCP_SERVER: MCPServerConfig = {
   env: {
     POSTGRES_CONNECTION_STRING: '${DATABASE_URL}',
   },
-  description: 'PostgreSQL database operations for querying and schema management',
+  description:
+    'PostgreSQL database operations for querying and schema management',
 };
 
 /**
@@ -348,7 +360,8 @@ export const ENGINEERING_DISCIPLINE: DisciplinePack = {
   name: 'Software Engineering',
   slug: 'engineering',
   category: 'engineering',
-  description: 'Full-stack software engineering discipline for building production-grade applications with modern best practices including TDD, CI/CD, and comprehensive documentation.',
+  description:
+    'Full-stack software engineering discipline for building production-grade applications with modern best practices including TDD, CI/CD, and comprehensive documentation.',
   claudeMd: ENGINEERING_CLAUDE_MD,
   mcpServers: [
     GIT_MCP_SERVER,
@@ -448,7 +461,8 @@ export const FRONTEND_ENGINEERING_DISCIPLINE: DisciplinePack = {
   name: 'Frontend Engineering',
   slug: 'engineering-frontend',
   category: 'engineering',
-  description: 'Frontend engineering discipline focused on building accessible, responsive, and performant user interfaces with React and TypeScript.',
+  description:
+    'Frontend engineering discipline focused on building accessible, responsive, and performant user interfaces with React and TypeScript.',
   claudeMd: FRONTEND_CLAUDE_MD,
   mcpServers: [
     GIT_MCP_SERVER,
@@ -565,7 +579,8 @@ export const BACKEND_ENGINEERING_DISCIPLINE: DisciplinePack = {
   name: 'Backend Engineering',
   slug: 'engineering-backend',
   category: 'engineering',
-  description: 'Backend engineering discipline focused on building secure, scalable, and reliable APIs and server-side applications.',
+  description:
+    'Backend engineering discipline focused on building secure, scalable, and reliable APIs and server-side applications.',
   claudeMd: BACKEND_CLAUDE_MD,
   mcpServers: [
     GIT_MCP_SERVER,
@@ -681,7 +696,8 @@ export const DEVOPS_ENGINEERING_DISCIPLINE: DisciplinePack = {
   name: 'DevOps Engineering',
   slug: 'engineering-devops',
   category: 'engineering',
-  description: 'DevOps engineering discipline focused on infrastructure automation, CI/CD pipelines, and operational excellence.',
+  description:
+    'DevOps engineering discipline focused on infrastructure automation, CI/CD pipelines, and operational excellence.',
   claudeMd: DEVOPS_CLAUDE_MD,
   mcpServers: [
     GIT_MCP_SERVER,
@@ -808,7 +824,8 @@ export const QA_ENGINEERING_DISCIPLINE: DisciplinePack = {
   name: 'QA Engineering',
   slug: 'engineering-qa',
   category: 'engineering',
-  description: 'QA engineering discipline focused on comprehensive testing strategies, test automation, and quality metrics.',
+  description:
+    'QA engineering discipline focused on comprehensive testing strategies, test automation, and quality metrics.',
   claudeMd: QA_CLAUDE_MD,
   mcpServers: [
     GIT_MCP_SERVER,
@@ -930,9 +947,10 @@ export const ENGINEERING_SUBDISCIPLINES: readonly DisciplinePack[] = [
  * const devops = ENGINEERING_DISCIPLINES_BY_ID.get('discipline-engineering-devops');
  * ```
  */
-export const ENGINEERING_DISCIPLINES_BY_ID: ReadonlyMap<string, DisciplinePack> = new Map(
-  ALL_ENGINEERING_DISCIPLINES.map(d => [d.id, d])
-);
+export const ENGINEERING_DISCIPLINES_BY_ID: ReadonlyMap<
+  string,
+  DisciplinePack
+> = new Map(ALL_ENGINEERING_DISCIPLINES.map(d => [d.id, d]));
 
 /**
  * Map of engineering discipline slugs to their configurations.
@@ -948,6 +966,7 @@ export const ENGINEERING_DISCIPLINES_BY_ID: ReadonlyMap<string, DisciplinePack> 
  * const backend = ENGINEERING_DISCIPLINES_BY_SLUG.get('engineering-backend');
  * ```
  */
-export const ENGINEERING_DISCIPLINES_BY_SLUG: ReadonlyMap<string, DisciplinePack> = new Map(
-  ALL_ENGINEERING_DISCIPLINES.map(d => [d.slug, d])
-);
+export const ENGINEERING_DISCIPLINES_BY_SLUG: ReadonlyMap<
+  string,
+  DisciplinePack
+> = new Map(ALL_ENGINEERING_DISCIPLINES.map(d => [d.slug, d]));

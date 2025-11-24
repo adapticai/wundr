@@ -10,6 +10,8 @@
  * @version 1.0.0
  */
 
+import { generateOrgId, generateSlug, isValidSlug } from '../utils/slug.js';
+
 import type {
   CreateOrgConfig,
   OrganizationManifest,
@@ -24,7 +26,6 @@ import type {
   ManifestValidationWarning,
   SerializedOrganizationManifest,
 } from '../types/index.js';
-import { generateOrgId, generateSlug, isValidSlug } from '../utils/slug.js';
 
 // =============================================================================
 // CONFIGURATION INTERFACES
@@ -150,7 +151,10 @@ const DEFAULT_COMMUNICATION: OrgCommunicationConfig = {
 /**
  * VP count recommendations by organization size.
  */
-const VP_COUNT_BY_SIZE: Record<OrgSize, { min: number; max: number; recommended: number }> = {
+const VP_COUNT_BY_SIZE: Record<
+  OrgSize,
+  { min: number; max: number; recommended: number }
+> = {
   small: { min: 1, max: 5, recommended: 2 },
   medium: { min: 3, max: 15, recommended: 5 },
   large: { min: 10, max: 50, recommended: 15 },
@@ -228,7 +232,8 @@ export class ManifestGenerator {
       defaultSize: config?.defaultSize ?? 'medium',
       defaultGovernance: config?.defaultGovernance ?? DEFAULT_GOVERNANCE,
       defaultSecurity: config?.defaultSecurity ?? DEFAULT_SECURITY,
-      defaultCommunication: config?.defaultCommunication ?? DEFAULT_COMMUNICATION,
+      defaultCommunication:
+        config?.defaultCommunication ?? DEFAULT_COMMUNICATION,
       schemaVersion: config?.schemaVersion ?? '1.0.0',
     };
   }
@@ -269,7 +274,7 @@ export class ManifestGenerator {
     // Validate slug format
     if (!isValidSlug(slug)) {
       warnings.push(
-        `Generated slug "${slug}" may contain invalid characters. Consider providing a custom slug.`,
+        `Generated slug "${slug}" may contain invalid characters. Consider providing a custom slug.`
       );
     }
 
@@ -283,11 +288,11 @@ export class ManifestGenerator {
     // Validate VP count against size recommendations
     if (vpCount < sizeConfig.min) {
       warnings.push(
-        `VP count ${vpCount} is below recommended minimum ${sizeConfig.min} for ${config.size} organizations.`,
+        `VP count ${vpCount} is below recommended minimum ${sizeConfig.min} for ${config.size} organizations.`
       );
     } else if (vpCount > sizeConfig.max) {
       warnings.push(
-        `VP count ${vpCount} exceeds recommended maximum ${sizeConfig.max} for ${config.size} organizations.`,
+        `VP count ${vpCount} exceeds recommended maximum ${sizeConfig.max} for ${config.size} organizations.`
       );
       vpCount = sizeConfig.max;
     }
@@ -311,13 +316,30 @@ export class ManifestGenerator {
     };
 
     // Add industry-specific compliance frameworks if applicable
-    if (config.industry === 'healthcare' && !security.complianceFrameworks.includes('HIPAA')) {
-      security.complianceFrameworks = [...security.complianceFrameworks, 'HIPAA'];
-      warnings.push('Added HIPAA compliance framework for healthcare organization.');
+    if (
+      config.industry === 'healthcare' &&
+      !security.complianceFrameworks.includes('HIPAA')
+    ) {
+      security.complianceFrameworks = [
+        ...security.complianceFrameworks,
+        'HIPAA',
+      ];
+      warnings.push(
+        'Added HIPAA compliance framework for healthcare organization.'
+      );
     }
-    if (config.industry === 'finance' && !security.complianceFrameworks.includes('SOC2')) {
-      security.complianceFrameworks = [...security.complianceFrameworks, 'SOC2', 'PCI-DSS'];
-      warnings.push('Added SOC2 and PCI-DSS compliance frameworks for finance organization.');
+    if (
+      config.industry === 'finance' &&
+      !security.complianceFrameworks.includes('SOC2')
+    ) {
+      security.complianceFrameworks = [
+        ...security.complianceFrameworks,
+        'SOC2',
+        'PCI-DSS',
+      ];
+      warnings.push(
+        'Added SOC2 and PCI-DSS compliance frameworks for finance organization.'
+      );
     }
 
     // Create the manifest
@@ -365,7 +387,7 @@ export class ManifestGenerator {
    */
   update(
     manifest: OrganizationManifest,
-    updates: Partial<OrganizationManifest>,
+    updates: Partial<OrganizationManifest>
   ): OrganizationManifest {
     const now = new Date();
 
@@ -764,9 +786,12 @@ export class ManifestGenerator {
    * console.log(`VPs: ${updated.vpRegistry.length}`);
    * ```
    */
-  addVP(manifest: OrganizationManifest, vp: VPNodeMapping): OrganizationManifest {
+  addVP(
+    manifest: OrganizationManifest,
+    vp: VPNodeMapping
+  ): OrganizationManifest {
     // Check for duplicate VP ID
-    const existingVp = manifest.vpRegistry.find((v) => v.vpId === vp.vpId);
+    const existingVp = manifest.vpRegistry.find(v => v.vpId === vp.vpId);
     if (existingVp) {
       throw new Error(`VP with ID "${vp.vpId}" already exists in the registry`);
     }
@@ -791,19 +816,19 @@ export class ManifestGenerator {
    * ```
    */
   removeVP(manifest: OrganizationManifest, vpId: string): OrganizationManifest {
-    const vpIndex = manifest.vpRegistry.findIndex((v) => v.vpId === vpId);
+    const vpIndex = manifest.vpRegistry.findIndex(v => v.vpId === vpId);
     if (vpIndex === -1) {
       throw new Error(`VP with ID "${vpId}" not found in the registry`);
     }
 
-    const vpRegistry = manifest.vpRegistry.filter((v) => v.vpId !== vpId);
+    const vpRegistry = manifest.vpRegistry.filter(v => v.vpId !== vpId);
 
     // Also remove from executive VP IDs in governance if present
     let governance = manifest.governance;
     if (governance?.executiveVpIds.includes(vpId)) {
       governance = {
         ...governance,
-        executiveVpIds: governance.executiveVpIds.filter((id) => id !== vpId),
+        executiveVpIds: governance.executiveVpIds.filter(id => id !== vpId),
       };
     }
 
@@ -837,14 +862,15 @@ export class ManifestGenerator {
       ...manifest,
       createdAt: manifest.createdAt.toISOString(),
       updatedAt: manifest.updatedAt.toISOString(),
-      vpRegistry: manifest.vpRegistry.map((vp) => ({
+      vpRegistry: manifest.vpRegistry.map(vp => ({
         ...vp,
         provisionedAt: vp.provisionedAt?.toISOString() as unknown as Date,
         lastStatusChange: vp.lastStatusChange?.toISOString() as unknown as Date,
         healthMetrics: vp.healthMetrics
           ? {
               ...vp.healthMetrics,
-              lastHealthCheck: vp.healthMetrics.lastHealthCheck.toISOString() as unknown as Date,
+              lastHealthCheck:
+                vp.healthMetrics.lastHealthCheck.toISOString() as unknown as Date,
             }
           : undefined,
       })),
@@ -879,7 +905,7 @@ export class ManifestGenerator {
       parsed = JSON.parse(json);
     } catch (error) {
       throw new Error(
-        `Invalid JSON: ${error instanceof Error ? error.message : 'Parse error'}`,
+        `Invalid JSON: ${error instanceof Error ? error.message : 'Parse error'}`
       );
     }
 
@@ -908,16 +934,20 @@ export class ManifestGenerator {
       ...parsed,
       createdAt: new Date(parsed.createdAt),
       updatedAt: new Date(parsed.updatedAt),
-      vpRegistry: (parsed.vpRegistry ?? []).map((vp) => ({
+      vpRegistry: (parsed.vpRegistry ?? []).map(vp => ({
         ...vp,
-        provisionedAt: vp.provisionedAt ? new Date(vp.provisionedAt as unknown as string) : undefined,
+        provisionedAt: vp.provisionedAt
+          ? new Date(vp.provisionedAt as unknown as string)
+          : undefined,
         lastStatusChange: vp.lastStatusChange
           ? new Date(vp.lastStatusChange as unknown as string)
           : undefined,
         healthMetrics: vp.healthMetrics
           ? {
               ...vp.healthMetrics,
-              lastHealthCheck: new Date(vp.healthMetrics.lastHealthCheck as unknown as string),
+              lastHealthCheck: new Date(
+                vp.healthMetrics.lastHealthCheck as unknown as string
+              ),
             }
           : undefined,
       })),
@@ -929,7 +959,7 @@ export class ManifestGenerator {
     const validation = this.validate(manifest);
     if (!validation.valid) {
       const errorMessages = validation.errors
-        .map((e) => `${e.path}: ${e.message}`)
+        .map(e => `${e.path}: ${e.message}`)
         .join('; ');
       throw new Error(`Invalid manifest: ${errorMessages}`);
     }
@@ -967,7 +997,10 @@ export class ManifestGenerator {
    * console.log(`Clone ID: ${clone.id}`);
    * ```
    */
-  clone(manifest: OrganizationManifest, newName?: string): OrganizationManifest {
+  clone(
+    manifest: OrganizationManifest,
+    newName?: string
+  ): OrganizationManifest {
     const now = new Date();
     const name = newName ?? `${manifest.name} (Copy)`;
     const slug = generateSlug(name);
@@ -1009,9 +1042,12 @@ export class ManifestGenerator {
     const blockers: string[] = [];
 
     // Must be in draft or suspended state
-    if (manifest.lifecycleState !== 'draft' && manifest.lifecycleState !== 'suspended') {
+    if (
+      manifest.lifecycleState !== 'draft' &&
+      manifest.lifecycleState !== 'suspended'
+    ) {
       blockers.push(
-        `Cannot activate from "${manifest.lifecycleState}" state. Must be in "draft" or "suspended".`,
+        `Cannot activate from "${manifest.lifecycleState}" state. Must be in "draft" or "suspended".`
       );
     }
 
@@ -1021,10 +1057,10 @@ export class ManifestGenerator {
     }
 
     // All VPs must be in valid state (not error)
-    const errorVps = manifest.vpRegistry.filter((vp) => vp.status === 'error');
+    const errorVps = manifest.vpRegistry.filter(vp => vp.status === 'error');
     if (errorVps.length > 0) {
       blockers.push(
-        `${errorVps.length} VP(s) are in error state: ${errorVps.map((v) => v.vpId).join(', ')}`,
+        `${errorVps.length} VP(s) are in error state: ${errorVps.map(v => v.vpId).join(', ')}`
       );
     }
 
@@ -1032,7 +1068,9 @@ export class ManifestGenerator {
     const validation = this.validate(manifest);
     if (!validation.valid) {
       blockers.push(
-        ...validation.errors.map((e) => `Validation error: ${e.message} (${e.path})`),
+        ...validation.errors.map(
+          e => `Validation error: ${e.message} (${e.path})`
+        )
       );
     }
 
@@ -1075,7 +1113,7 @@ export class ManifestGenerator {
  * ```
  */
 export function createManifestGenerator(
-  config?: ManifestGeneratorConfig,
+  config?: ManifestGeneratorConfig
 ): ManifestGenerator {
   return new ManifestGenerator(config);
 }

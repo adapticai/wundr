@@ -21,14 +21,14 @@
  */
 
 // Re-export universal agent templates
+// Import versions for aggregation
+import { SPECIALIZED_AGENTS_VERSION } from './specialized-agents.js';
+import { UNIVERSAL_AGENTS_VERSION } from './universal-agents.js';
+
 export * from './universal-agents.js';
 
 // Re-export specialized agent templates
 export * from './specialized-agents.js';
-
-// Import versions for aggregation
-import { UNIVERSAL_AGENTS_VERSION } from './universal-agents.js';
-import { SPECIALIZED_AGENTS_VERSION } from './specialized-agents.js';
 
 /**
  * Version identifier for all agent templates.

@@ -24,20 +24,20 @@
  */
 
 // Re-export all discipline templates
+// Import discipline IDs for aggregation
+import { ENGINEERING_DISCIPLINE_ID } from './engineering.js';
+import { FINANCE_DISCIPLINE_ID } from './finance.js';
+import { HR_DISCIPLINE_ID } from './hr.js';
+import { LEGAL_DISCIPLINE_ID } from './legal.js';
+import { MARKETING_DISCIPLINE_ID } from './marketing.js';
+import { OPERATIONS_DISCIPLINE_ID } from './operations.js';
+
 export * from './engineering.js';
 export * from './legal.js';
 export * from './hr.js';
 export * from './marketing.js';
 export * from './finance.js';
 export * from './operations.js';
-
-// Import discipline IDs for aggregation
-import { ENGINEERING_DISCIPLINE_ID } from './engineering.js';
-import { LEGAL_DISCIPLINE_ID } from './legal.js';
-import { HR_DISCIPLINE_ID } from './hr.js';
-import { MARKETING_DISCIPLINE_ID } from './marketing.js';
-import { FINANCE_DISCIPLINE_ID } from './finance.js';
-import { OPERATIONS_DISCIPLINE_ID } from './operations.js';
 
 /**
  * Array of all built-in discipline IDs.

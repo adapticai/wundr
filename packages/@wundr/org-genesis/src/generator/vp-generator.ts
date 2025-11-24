@@ -10,16 +10,6 @@
  * @version 1.0.0
  */
 
-import type {
-  VPCharter,
-  VPCapability,
-  ResourceLimits,
-  MeasurableObjectives,
-  HardConstraints,
-  CharterValidationError,
-  CharterValidationWarning,
-} from '../types/index.js';
-
 import {
   type VPGenerationContext,
   type ParsedVPData,
@@ -32,11 +22,19 @@ import {
   DEFAULT_VP_CAPABILITIES,
   getIndustryMCPTools,
 } from './prompts/vp-prompts.js';
-
 import { generateVpId, generateSlug, ensureUniqueSlug } from '../utils/slug.js';
 
-// Re-export VPGenerationContext for external use
-export type { VPGenerationContext };
+import type {
+  VPCharter,
+  VPCapability,
+  ResourceLimits,
+  MeasurableObjectives,
+  HardConstraints,
+  CharterValidationError,
+  CharterValidationWarning,
+} from '../types/index.js';
+
+// Note: VPGenerationContext is exported via prompts/index.js
 
 // ============================================================================
 // Configuration Types
@@ -113,7 +111,7 @@ export interface VPGeneratorConfig {
  * Allows custom LLM integration for VP generation.
  */
 export type LLMCallbackFn = (
-  messages: Array<{ role: 'system' | 'user'; content: string }>,
+  messages: Array<{ role: 'system' | 'user'; content: string }>
 ) => Promise<string>;
 
 /**
@@ -377,14 +375,16 @@ export class VPGenerator {
     // Validate context
     const validation = validateVPGenerationContext(context);
     if (!validation.valid) {
-      throw new Error(`Invalid generation context: ${validation.errors.join(', ')}`);
+      throw new Error(
+        `Invalid generation context: ${validation.errors.join(', ')}`
+      );
     }
 
     // Enforce max VP limit
     const requestedCount = Math.min(context.vpCount, this.config.maxVPs);
     if (context.vpCount > this.config.maxVPs) {
       warnings.push(
-        `Requested ${context.vpCount} VPs, but max is ${this.config.maxVPs}. Generating ${requestedCount}.`,
+        `Requested ${context.vpCount} VPs, but max is ${this.config.maxVPs}. Generating ${requestedCount}.`
       );
     }
 
@@ -431,14 +431,14 @@ export class VPGenerator {
       const charterValidation = this.validateCharter(vp);
       if (!charterValidation.valid) {
         warnings.push(
-          `VP '${vp.identity.name}' has validation issues: ${charterValidation.errors.map((e) => e.message).join(', ')}`,
+          `VP '${vp.identity.name}' has validation issues: ${charterValidation.errors.map(e => e.message).join(', ')}`
         );
       }
       if (charterValidation.warnings.length > 0) {
         warnings.push(
           ...charterValidation.warnings.map(
-            (w) => `VP '${vp.identity.name}': ${w.message}`,
-          ),
+            w => `VP '${vp.identity.name}': ${w.message}`
+          )
         );
       }
     }
@@ -503,7 +503,10 @@ export class VPGenerator {
       // Return original with warnings if parsing failed
       return {
         vp,
-        warnings: ['Refinement parsing failed, returning original VP', ...parseResult.errors],
+        warnings: [
+          'Refinement parsing failed, returning original VP',
+          ...parseResult.errors,
+        ],
         durationMs: Date.now() - startTime,
       };
     }
@@ -517,10 +520,10 @@ export class VPGenerator {
     // Validate the refined charter
     const validation = this.validateCharter(refinedVP);
     if (!validation.valid) {
-      warnings.push(...validation.errors.map((e) => e.message));
+      warnings.push(...validation.errors.map(e => e.message));
     }
     if (validation.warnings.length > 0) {
-      warnings.push(...validation.warnings.map((w) => w.message));
+      warnings.push(...validation.warnings.map(w => w.message));
     }
 
     // Update registry if available
@@ -662,7 +665,10 @@ export class VPGenerator {
       }
 
       // Check for essential capabilities
-      const essentialCaps: VPCapability[] = ['context_compilation', 'session_spawning'];
+      const essentialCaps: VPCapability[] = [
+        'context_compilation',
+        'session_spawning',
+      ];
       for (const cap of essentialCaps) {
         if (!charter.capabilities.includes(cap)) {
           warnings.push({
@@ -681,7 +687,8 @@ export class VPGenerator {
         code: 'NO_MCP_TOOLS',
         message: 'No MCP tools configured',
         field: 'mcpTools',
-        suggestion: 'Add tools like agent_spawn, task_orchestrate for coordination',
+        suggestion:
+          'Add tools like agent_spawn, task_orchestrate for coordination',
       });
     }
 
@@ -726,7 +733,8 @@ export class VPGenerator {
           code: 'NO_FORBIDDEN_COMMANDS',
           message: 'No forbidden commands defined',
           field: 'constraints.forbiddenCommands',
-          suggestion: 'Add destructive commands to prevent accidental execution',
+          suggestion:
+            'Add destructive commands to prevent accidental execution',
         });
       }
 
@@ -738,7 +746,8 @@ export class VPGenerator {
           code: 'NO_APPROVAL_REQUIREMENTS',
           message: 'No actions require approval',
           field: 'constraints.requireApprovalFor',
-          suggestion: 'Add high-impact actions that should require human approval',
+          suggestion:
+            'Add high-impact actions that should require human approval',
         });
       }
     }
@@ -806,16 +815,21 @@ export class VPGenerator {
       identity: {
         name,
         slug: uniqueSlug,
-        persona: charter.identity?.persona || 'A professional supervisory agent',
+        persona:
+          charter.identity?.persona || 'A professional supervisory agent',
         slackHandle: charter.identity?.slackHandle,
         email: charter.identity?.email,
         avatarUrl: charter.identity?.avatarUrl,
       },
-      coreDirective: charter.coreDirective || 'Coordinate and oversee organizational operations',
+      coreDirective:
+        charter.coreDirective ||
+        'Coordinate and oversee organizational operations',
       capabilities: charter.capabilities?.length
         ? charter.capabilities
         : DEFAULT_VP_CAPABILITIES,
-      mcpTools: charter.mcpTools?.length ? charter.mcpTools : DEFAULT_VP_MCP_TOOLS,
+      mcpTools: charter.mcpTools?.length
+        ? charter.mcpTools
+        : DEFAULT_VP_MCP_TOOLS,
       resourceLimits: {
         ...VP_RESOURCE_DEFAULTS,
         ...charter.resourceLimits,
@@ -888,7 +902,7 @@ export class VPGenerator {
    * @returns The LLM response text
    */
   private async callLLM(
-    messages: Array<{ role: 'system' | 'user'; content: string }>,
+    messages: Array<{ role: 'system' | 'user'; content: string }>
   ): Promise<string> {
     let lastError: Error | null = null;
 
@@ -938,7 +952,8 @@ export class VPGenerator {
         coreDirective: `Oversee ${this.getMockFocus(index)} operations and ensure alignment with ${context.mission}.`,
         capabilities: DEFAULT_VP_CAPABILITIES,
         mcpTools: getIndustryMCPTools(context.industry),
-        disciplineIds: context.disciplineNames?.slice(0, Math.min(3, i + 1)) || [],
+        disciplineIds:
+          context.disciplineNames?.slice(0, Math.min(3, i + 1)) || [],
       });
     }
 
@@ -952,7 +967,10 @@ export class VPGenerator {
    * @param feedback - The feedback to incorporate
    * @returns Mock JSON response
    */
-  private generateMockRefinementResponse(vp: VPCharter, feedback: string): string {
+  private generateMockRefinementResponse(
+    vp: VPCharter,
+    feedback: string
+  ): string {
     // Simple mock: append feedback summary to persona
     const refinedVP: ParsedVPData = {
       name: vp.identity.name,
@@ -977,9 +995,9 @@ export class VPGenerator {
    */
   private buildVPCharters(
     parsedVPs: ParsedVPData[],
-    _context: VPGenerationContext,
+    _context: VPGenerationContext
   ): VPCharter[] {
-    return parsedVPs.map((parsed) => {
+    return parsedVPs.map(parsed => {
       const partialCharter = this.parsedVPToPartialCharter(parsed);
       return this.enrichWithDefaults(partialCharter);
     });
@@ -1046,12 +1064,27 @@ export class VPGenerator {
    */
   private getMockVPName(industry: string, index: number): string {
     const industryNames: Record<string, string[]> = {
-      technology: ['Engineering VP', 'Product VP', 'Infrastructure VP', 'Security VP'],
+      technology: [
+        'Engineering VP',
+        'Product VP',
+        'Infrastructure VP',
+        'Security VP',
+      ],
       finance: ['Risk VP', 'Compliance VP', 'Trading VP', 'Operations VP'],
-      healthcare: ['Clinical VP', 'Operations VP', 'Compliance VP', 'Research VP'],
+      healthcare: [
+        'Clinical VP',
+        'Operations VP',
+        'Compliance VP',
+        'Research VP',
+      ],
       legal: ['Litigation VP', 'Contracts VP', 'Compliance VP', 'Research VP'],
       marketing: ['Brand VP', 'Growth VP', 'Content VP', 'Analytics VP'],
-      default: ['Operations VP', 'Strategy VP', 'Coordination VP', 'Integration VP'],
+      default: [
+        'Operations VP',
+        'Strategy VP',
+        'Coordination VP',
+        'Integration VP',
+      ],
     };
 
     const names = industryNames[industry] || industryNames.default;
@@ -1081,7 +1114,7 @@ export class VPGenerator {
    * @param ms - Milliseconds to sleep
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

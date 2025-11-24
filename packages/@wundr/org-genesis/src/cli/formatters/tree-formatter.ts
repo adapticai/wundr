@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @fileoverview Tree Formatter for Organization Hierarchy
  *
@@ -188,7 +189,9 @@ function getChildPrefix(
 function formatVPNode(vp: VPCharter, options: TreeFormatOptions): string {
   const name = truncate(vp.identity.name, 40);
   const id = options.showIds ? ` (${vp.id})` : '';
-  const count = options.showCounts ? ` [${vp.disciplineIds.length} disciplines]` : '';
+  const count = options.showCounts
+    ? ` [${vp.disciplineIds.length} disciplines]`
+    : '';
   return `${ICONS.VP} ${name}${id}${count}`;
 }
 
@@ -201,10 +204,15 @@ function formatVPNode(vp: VPCharter, options: TreeFormatOptions): string {
  *
  * @internal
  */
-function formatDisciplineNode(discipline: DisciplinePack, options: TreeFormatOptions): string {
+function formatDisciplineNode(
+  discipline: DisciplinePack,
+  options: TreeFormatOptions
+): string {
   const name = truncate(discipline.name, 40);
   const id = options.showIds ? ` (${discipline.id})` : '';
-  const count = options.showCounts ? ` [${discipline.agentIds.length} agents]` : '';
+  const count = options.showCounts
+    ? ` [${discipline.agentIds.length} agents]`
+    : '';
   return `${ICONS.DISCIPLINE} ${name}${id}${count}`;
 }
 
@@ -217,7 +225,10 @@ function formatDisciplineNode(discipline: DisciplinePack, options: TreeFormatOpt
  *
  * @internal
  */
-function formatAgentNode(agent: AgentDefinition, options: TreeFormatOptions): string {
+function formatAgentNode(
+  agent: AgentDefinition,
+  options: TreeFormatOptions
+): string {
   const name = truncate(agent.name, 40);
   const id = options.showIds ? ` (${agent.id})` : '';
   const model = `[${agent.model}]`;
@@ -259,7 +270,10 @@ function formatAgentNode(agent: AgentDefinition, options: TreeFormatOptions): st
  * //         `-- [AGENT] CSS Specialist [haiku]
  * ```
  */
-export function formatAsTree(org: OrgTree, options: TreeFormatOptions = {}): string {
+export function formatAsTree(
+  org: OrgTree,
+  options: TreeFormatOptions = {}
+): string {
   const lines: string[] = [];
   const { manifest, vps, disciplines, agents } = org;
 
@@ -354,8 +368,11 @@ export function formatAsTree(org: OrgTree, options: TreeFormatOptions = {}): str
   }
 
   // Handle orphan disciplines (no parent VP)
-  const orphanDisciplines = disciplines.filter((d) => !d.parentVpId);
-  if (orphanDisciplines.length > 0 && (options.maxDepth === undefined || options.maxDepth >= 1)) {
+  const orphanDisciplines = disciplines.filter(d => !d.parentVpId);
+  if (
+    orphanDisciplines.length > 0 &&
+    (options.maxDepth === undefined || options.maxDepth >= 1)
+  ) {
     const orphanHeader = buildTreeLine('', true, '(Unassigned Disciplines)');
     lines.push(orphanHeader);
 
@@ -433,10 +450,12 @@ export function formatVPTree(
   }
 
   // Filter disciplines to those belonging to this VP
-  const vpDisciplines = disciplines.filter((d) => d.parentVpId === vp.id);
+  const vpDisciplines = disciplines.filter(d => d.parentVpId === vp.id);
 
   // Root node - VP
-  const vpCount = options.showCounts ? ` [${vpDisciplines.length} disciplines]` : '';
+  const vpCount = options.showCounts
+    ? ` [${vpDisciplines.length} disciplines]`
+    : '';
   lines.push(`${ICONS.VP} ${vp.identity.name}${vpCount}`);
 
   if (options.maxDepth !== undefined && options.maxDepth < 1) {
@@ -446,7 +465,11 @@ export function formatVPTree(
   for (let discIdx = 0; discIdx < vpDisciplines.length; discIdx++) {
     const discipline = vpDisciplines[discIdx];
     const isLastDiscipline = discIdx === vpDisciplines.length - 1;
-    const discLine = buildTreeLine('', isLastDiscipline, formatDisciplineNode(discipline, options));
+    const discLine = buildTreeLine(
+      '',
+      isLastDiscipline,
+      formatDisciplineNode(discipline, options)
+    );
     lines.push(discLine);
 
     if (options.maxDepth !== undefined && options.maxDepth < 2) {
@@ -533,7 +556,11 @@ export function formatDisciplineTree(
   for (let agentIdx = 0; agentIdx < discAgents.length; agentIdx++) {
     const agent = discAgents[agentIdx];
     const isLastAgent = agentIdx === discAgents.length - 1;
-    const agentLine = buildTreeLine('', isLastAgent, formatAgentNode(agent, options));
+    const agentLine = buildTreeLine(
+      '',
+      isLastAgent,
+      formatAgentNode(agent, options)
+    );
     lines.push(agentLine);
   }
 
@@ -574,7 +601,11 @@ export function formatAgentListTree(
   for (let agentIdx = 0; agentIdx < agents.length; agentIdx++) {
     const agent = agents[agentIdx];
     const isLastAgent = agentIdx === agents.length - 1;
-    const agentLine = buildTreeLine('', isLastAgent, formatAgentNode(agent, options));
+    const agentLine = buildTreeLine(
+      '',
+      isLastAgent,
+      formatAgentNode(agent, options)
+    );
     lines.push(agentLine);
   }
 

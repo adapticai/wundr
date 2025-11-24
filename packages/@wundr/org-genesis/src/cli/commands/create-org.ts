@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @packageDocumentation
  * Create Organization Command
@@ -224,9 +225,21 @@ const INDUSTRY_OPTIONS: { value: OrgIndustry; label: string }[] = [
  */
 const SIZE_OPTIONS: { value: OrgSize; label: string; description: string }[] = [
   { value: 'small', label: 'Small', description: '1-5 VPs, 2-4 disciplines' },
-  { value: 'medium', label: 'Medium', description: '5-15 VPs, 4-8 disciplines' },
-  { value: 'large', label: 'Large', description: '15-50 VPs, 8-15 disciplines' },
-  { value: 'enterprise', label: 'Enterprise', description: '50+ VPs, 15+ disciplines' },
+  {
+    value: 'medium',
+    label: 'Medium',
+    description: '5-15 VPs, 4-8 disciplines',
+  },
+  {
+    value: 'large',
+    label: 'Large',
+    description: '15-50 VPs, 8-15 disciplines',
+  },
+  {
+    value: 'enterprise',
+    label: 'Enterprise',
+    description: '50+ VPs, 15+ disciplines',
+  },
 ];
 
 // =============================================================================
@@ -258,7 +271,8 @@ export async function promptForOrgConfig(
   const name = existingOptions.name ?? 'New Organization';
   const industry = existingOptions.industry ?? 'technology';
   const size = existingOptions.size ?? 'medium';
-  const mission = existingOptions.mission ?? `${name} - An AI-powered organization`;
+  const mission =
+    existingOptions.mission ?? `${name} - An AI-powered organization`;
 
   // Log prompt activity for development
   console.log('\n[Interactive Mode]');
@@ -269,11 +283,14 @@ export async function promptForOrgConfig(
   }
   if (!existingOptions.industry) {
     console.log('  ? Industry: (using default: "technology")');
-    console.log('    Available options:', INDUSTRY_OPTIONS.map((o) => o.label).join(', '));
+    console.log(
+      '    Available options:',
+      INDUSTRY_OPTIONS.map(o => o.label).join(', ')
+    );
   }
   if (!existingOptions.size) {
     console.log('  ? Organization size: (using default: "medium")');
-    SIZE_OPTIONS.forEach((opt) => {
+    SIZE_OPTIONS.forEach(opt => {
       console.log(`    - ${opt.label}: ${opt.description}`);
     });
   }
@@ -309,7 +326,10 @@ export async function promptForOrgConfig(
  * // Output: [====      ] 25% - Generating VPs...
  * ```
  */
-export function displayProgress(phase: GenerationPhase, progress: number): void {
+export function displayProgress(
+  phase: GenerationPhase,
+  progress: number
+): void {
   const phaseLabels: Record<GenerationPhase, string> = {
     initializing: 'Initializing',
     'generating-vps': 'Generating VPs',
@@ -329,7 +349,9 @@ export function displayProgress(phase: GenerationPhase, progress: number): void 
   const bar = '='.repeat(filled) + ' '.repeat(empty);
 
   // Use carriage return to update in place
-  process.stdout.write(`\r  [${bar}] ${clampedProgress.toString().padStart(3)}% - ${label}...`);
+  process.stdout.write(
+    `\r  [${bar}] ${clampedProgress.toString().padStart(3)}% - ${label}...`
+  );
 
   if (phase === 'complete') {
     console.log(''); // New line after completion
@@ -415,7 +437,10 @@ export function displayResult(result: GenesisResult): void {
  * console.log(`Saved to: ${savedPath}`);
  * ```
  */
-export async function saveResult(result: GenesisResult, outputPath: string): Promise<string> {
+export async function saveResult(
+  result: GenesisResult,
+  outputPath: string
+): Promise<string> {
   const { manifest } = result;
   const fs = await import('node:fs/promises');
   const path = await import('node:path');
@@ -499,7 +524,9 @@ function generateId(prefix: string): string {
  * await createOrgCommand({ interactive: true });
  * ```
  */
-export async function createOrgCommand(options: CreateOrgOptions): Promise<void> {
+export async function createOrgCommand(
+  options: CreateOrgOptions
+): Promise<void> {
   const startTime = Date.now();
 
   console.log('\n  Wundr Org Genesis - Create Organization\n');
@@ -514,15 +541,19 @@ export async function createOrgCommand(options: CreateOrgOptions): Promise<void>
     } else {
       // Non-interactive mode: use provided options with defaults
       if (!options.name) {
-        throw new Error('Organization name is required in non-interactive mode');
+        throw new Error(
+          'Organization name is required in non-interactive mode'
+        );
       }
 
       config = {
         name: options.name,
         industry: options.industry ?? 'technology',
         size: options.size ?? 'medium',
-        mission: options.mission ?? `${options.name} - An AI-powered organization`,
-        vpCount: options.nodeCount ?? DEFAULT_VP_COUNTS[options.size ?? 'medium'],
+        mission:
+          options.mission ?? `${options.name} - An AI-powered organization`,
+        vpCount:
+          options.nodeCount ?? DEFAULT_VP_COUNTS[options.size ?? 'medium'],
         generateDisciplines: options.generateDisciplines ?? true,
         generateAgents: options.generateAgents ?? true,
         dryRun: options.dryRun ?? false,
@@ -540,9 +571,12 @@ export async function createOrgCommand(options: CreateOrgOptions): Promise<void>
     // const result = await engine.generate(config);
 
     // Placeholder: Generate mock organization structure
-    const manifest = await generateMockOrganization(config, (phase, progress) => {
-      displayProgress(phase, progress);
-    });
+    const manifest = await generateMockOrganization(
+      config,
+      (phase, progress) => {
+        displayProgress(phase, progress);
+      }
+    );
 
     // Calculate statistics
     const stats: GenesisStats = {
@@ -560,7 +594,10 @@ export async function createOrgCommand(options: CreateOrgOptions): Promise<void>
     // Save to disk if not dry-run
     if (!config.dryRun) {
       displayProgress('saving', 90);
-      outputPath = await saveResult({ manifest, stats, savedToRegistry: false, durationMs: 0 }, outputDir);
+      outputPath = await saveResult(
+        { manifest, stats, savedToRegistry: false, durationMs: 0 },
+        outputDir
+      );
     }
 
     // Save to registry if requested
@@ -671,7 +708,8 @@ async function generateMockOrganization(
       ? {
           requireHumanApproval: config.governance.requireHumanApproval ?? true,
           approvalThresholdUsd: config.governance.approvalThresholdUsd ?? 10000,
-          escalationTimeoutMinutes: config.governance.escalationTimeoutMinutes ?? 60,
+          escalationTimeoutMinutes:
+            config.governance.escalationTimeoutMinutes ?? 60,
           executiveVpIds: config.governance.executiveVpIds ?? [],
           auditLoggingEnabled: config.governance.auditLoggingEnabled ?? true,
         }
@@ -714,7 +752,10 @@ async function generateMockOrganization(
  * @param orgId - Organization ID
  * @returns Array of VP node mappings
  */
-function generateMockVPs(count: number, orgId: string): OrganizationManifest['vpRegistry'] {
+function generateMockVPs(
+  count: number,
+  orgId: string
+): OrganizationManifest['vpRegistry'] {
   const vpRoles = [
     'engineering',
     'product',
@@ -750,7 +791,10 @@ function generateMockVPs(count: number, orgId: string): OrganizationManifest['vp
  * @param size - Organization size
  * @returns Array of discipline IDs
  */
-function generateMockDisciplineIds(industry: OrgIndustry, size: OrgSize): string[] {
+function generateMockDisciplineIds(
+  industry: OrgIndustry,
+  size: OrgSize
+): string[] {
   const baseDisciplines = ['engineering', 'product', 'operations'];
 
   const industryDisciplines: Record<OrgIndustry, string[]> = {
@@ -779,7 +823,7 @@ function generateMockDisciplineIds(industry: OrgIndustry, size: OrgSize): string
     Math.floor(baseDisciplines.length * sizeMultiplier[size])
   );
 
-  return allDisciplines.slice(0, Math.max(count, 2)).map((d) => `disc-${d}`);
+  return allDisciplines.slice(0, Math.max(count, 2)).map(d => `disc-${d}`);
 }
 
 /**
@@ -789,7 +833,7 @@ function generateMockDisciplineIds(industry: OrgIndustry, size: OrgSize): string
  * @returns Promise that resolves after the delay
  */
 function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // =============================================================================

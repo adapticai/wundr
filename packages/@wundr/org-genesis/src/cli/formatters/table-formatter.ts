@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @fileoverview Table Formatter for Organization Data
  *
@@ -109,7 +110,11 @@ function truncate(str: string, maxLen: number): string {
  *
  * @internal
  */
-function padString(str: string, width: number, align: 'left' | 'right' | 'center'): string {
+function padString(
+  str: string,
+  width: number,
+  align: 'left' | 'right' | 'center'
+): string {
   const truncated = truncate(str, width);
   const padding = width - truncated.length;
 
@@ -164,7 +169,7 @@ function buildBorderLine(
         ? TABLE_CHARS.T_UP
         : TABLE_CHARS.CROSS;
 
-  const segments = columns.map((col) =>
+  const segments = columns.map(col =>
     TABLE_CHARS.HORIZONTAL.repeat(col.width + cellPadding * 2)
   );
 
@@ -195,7 +200,11 @@ function buildDataRow(
   });
 
   if (showBorders) {
-    return TABLE_CHARS.VERTICAL + paddedCells.join(TABLE_CHARS.VERTICAL) + TABLE_CHARS.VERTICAL;
+    return (
+      TABLE_CHARS.VERTICAL +
+      paddedCells.join(TABLE_CHARS.VERTICAL) +
+      TABLE_CHARS.VERTICAL
+    );
   }
   return paddedCells.join('  ');
 }
@@ -219,7 +228,7 @@ function calculateColumnWidths(
   truncateAt: number,
   cellPadding: number
 ): number[] {
-  const widths: number[] = headers.map((h) => h.length);
+  const widths: number[] = headers.map(h => h.length);
 
   // Find maximum content width for each column
   for (const row of rows) {
@@ -229,7 +238,7 @@ function calculateColumnWidths(
   }
 
   // Apply truncation limit
-  const truncatedWidths = widths.map((w) => Math.min(w, truncateAt));
+  const truncatedWidths = widths.map(w => Math.min(w, truncateAt));
 
   // Calculate overhead (borders and padding)
   const colCount = headers.length;
@@ -246,7 +255,7 @@ function calculateColumnWidths(
   const totalContentWidth = truncatedWidths.reduce((a, b) => a + b, 0);
   const ratio = availableWidth / totalContentWidth;
 
-  return truncatedWidths.map((w) => Math.max(Math.floor(w * ratio), 5));
+  return truncatedWidths.map(w => Math.max(Math.floor(w * ratio), 5));
 }
 
 /**
@@ -271,7 +280,13 @@ function renderTable(
   const showBorders = options.showBorders ?? true;
   const cellPadding = options.cellPadding ?? 1;
 
-  const widths = calculateColumnWidths(headers, rows, maxWidth, truncateAt, cellPadding);
+  const widths = calculateColumnWidths(
+    headers,
+    rows,
+    maxWidth,
+    truncateAt,
+    cellPadding
+  );
 
   const columns: ColumnDef[] = headers.map((header, idx) => ({
     header,
@@ -294,7 +309,7 @@ function renderTable(
     lines.push(buildBorderLine(columns, 'middle', cellPadding));
   } else {
     // Simple dashes under headers when no borders
-    const dashes = widths.map((w) => '-'.repeat(w + cellPadding * 2));
+    const dashes = widths.map(w => '-'.repeat(w + cellPadding * 2));
     lines.push(dashes.join('  '));
   }
 
@@ -346,7 +361,10 @@ function renderTable(
  * // +---------------------------+----------------+-------------+--------+
  * ```
  */
-export function formatVPsAsTable(vps: VPCharter[], options: TableFormatOptions = {}): string {
+export function formatVPsAsTable(
+  vps: VPCharter[],
+  options: TableFormatOptions = {}
+): string {
   if (vps.length === 0) {
     return 'No VPs found.';
   }
@@ -360,7 +378,7 @@ export function formatVPsAsTable(vps: VPCharter[], options: TableFormatOptions =
     'left',
   ];
 
-  const rows = vps.map((vp) => [
+  const rows = vps.map(vp => [
     vp.identity.name,
     vp.id,
     String(vp.disciplineIds.length),
@@ -387,7 +405,10 @@ export function formatVPsAsTable(vps: VPCharter[], options: TableFormatOptions =
  * console.log(details);
  * ```
  */
-export function formatVPDetailsAsTable(vp: VPCharter, options: TableFormatOptions = {}): string {
+export function formatVPDetailsAsTable(
+  vp: VPCharter,
+  options: TableFormatOptions = {}
+): string {
   const headers = ['Property', 'Value'];
   const alignments: Array<'left' | 'right' | 'center'> = ['left', 'left'];
 
@@ -462,7 +483,7 @@ export function formatDisciplinesAsTable(
     'left',
   ];
 
-  const rows = disciplines.map((disc) => [
+  const rows = disciplines.map(disc => [
     disc.name,
     disc.id,
     disc.category,
@@ -569,7 +590,7 @@ export function formatAgentsAsTable(
     'right',
   ];
 
-  const rows = agents.map((agent) => [
+  const rows = agents.map(agent => [
     agent.name,
     agent.id,
     agent.model,
@@ -605,14 +626,24 @@ export function formatAgentDetailsAsTable(
 
   // Format capabilities as readable string
   const caps: string[] = [];
-  if (agent.capabilities.canReadFiles) caps.push('read');
-  if (agent.capabilities.canWriteFiles) caps.push('write');
-  if (agent.capabilities.canExecuteCommands) caps.push('execute');
-  if (agent.capabilities.canAccessNetwork) caps.push('network');
-  if (agent.capabilities.canSpawnSubAgents) caps.push('spawn');
+  if (agent.capabilities.canReadFiles) {
+    caps.push('read');
+  }
+  if (agent.capabilities.canWriteFiles) {
+    caps.push('write');
+  }
+  if (agent.capabilities.canExecuteCommands) {
+    caps.push('execute');
+  }
+  if (agent.capabilities.canAccessNetwork) {
+    caps.push('network');
+  }
+  if (agent.capabilities.canSpawnSubAgents) {
+    caps.push('spawn');
+  }
 
   // Format tools list
-  const toolNames = agent.tools.map((t) => `${t.name}(${t.type})`);
+  const toolNames = agent.tools.map(t => `${t.name}(${t.type})`);
 
   const rows: string[][] = [
     ['ID', agent.id],
@@ -625,7 +656,10 @@ export function formatAgentDetailsAsTable(
     ['Charter (preview)', truncate(agent.charter, 50)],
     ['Tools', toolNames.join(', ') || '-'],
     ['Capabilities', caps.join(', ') || 'none'],
-    ['Custom Capabilities', agent.capabilities.customCapabilities?.join(', ') || '-'],
+    [
+      'Custom Capabilities',
+      agent.capabilities.customCapabilities?.join(', ') || '-',
+    ],
     ['Used by Disciplines', agent.usedByDisciplines.join(', ') || '-'],
     ['Used by VPs', agent.usedByVps?.join(', ') || '-'],
     ['Tags', agent.tags.join(', ') || '-'],
@@ -699,7 +733,12 @@ export function formatOrgSummaryTable(
  * ```
  */
 export function formatOrgComparisonTable(
-  orgs: Array<{ name: string; vps: number; disciplines: number; agents: number }>,
+  orgs: Array<{
+    name: string;
+    vps: number;
+    disciplines: number;
+    agents: number;
+  }>,
   options: TableFormatOptions = {}
 ): string {
   if (orgs.length === 0) {
@@ -715,7 +754,7 @@ export function formatOrgComparisonTable(
     'right',
   ];
 
-  const rows = orgs.map((org) => [
+  const rows = orgs.map(org => [
     org.name,
     String(org.vps),
     String(org.disciplines),

@@ -40,6 +40,19 @@
  * ```
  */
 
+import {
+  buildDisciplineGenerationPrompt,
+  buildDisciplineRefinementPrompt,
+  parseDisciplineGenerationResponse,
+  parseDisciplineRefinementResponse,
+  convertToDisciplinePack,
+  generateDisciplineSlug,
+  DISCIPLINE_GENERATION_SYSTEM_PROMPT,
+  DISCIPLINE_REFINEMENT_SYSTEM_PROMPT,
+} from './prompts/discipline-prompts.js';
+import { generateDisciplineId, generateSlug } from '../utils/slug.js';
+
+import type { DisciplineGenerationContext } from './prompts/discipline-prompts.js';
 import type {
   DisciplinePack,
   DisciplineCategory,
@@ -50,21 +63,6 @@ import type {
   HookConfig,
   VPCharter,
 } from '../types/index.js';
-
-import {
-  DisciplineGenerationContext,
-  ParsedDisciplineData,
-  buildDisciplineGenerationPrompt,
-  buildDisciplineRefinementPrompt,
-  parseDisciplineGenerationResponse,
-  parseDisciplineRefinementResponse,
-  convertToDisciplinePack,
-  generateDisciplineSlug,
-  DISCIPLINE_GENERATION_SYSTEM_PROMPT,
-  DISCIPLINE_REFINEMENT_SYSTEM_PROMPT,
-} from './prompts/discipline-prompts.js';
-
-import { generateDisciplineId, generateSlug } from '../utils/slug.js';
 
 // ============================================================================
 // Configuration Types
@@ -181,7 +179,10 @@ export interface RefineDisciplineResult {
  * Provides sensible default MCP server configurations for each discipline
  * category. These can be used when the LLM doesn't provide specific servers.
  */
-const DEFAULT_MCP_SERVERS_BY_CATEGORY: Record<DisciplineCategory, MCPServerConfig[]> = {
+const DEFAULT_MCP_SERVERS_BY_CATEGORY: Record<
+  DisciplineCategory,
+  MCPServerConfig[]
+> = {
   engineering: [
     {
       name: 'filesystem',
@@ -312,10 +313,14 @@ const DEFAULT_HOOKS_BY_CATEGORY: Record<DisciplineCategory, HookConfig[]> = {
 /**
  * Default CLAUDE.md configuration by category.
  */
-const DEFAULT_CLAUDE_MD_BY_CATEGORY: Record<DisciplineCategory, ClaudeMdConfig> = {
+const DEFAULT_CLAUDE_MD_BY_CATEGORY: Record<
+  DisciplineCategory,
+  ClaudeMdConfig
+> = {
   engineering: {
     role: 'Software Engineer',
-    context: 'Building and maintaining software systems with focus on quality and best practices',
+    context:
+      'Building and maintaining software systems with focus on quality and best practices',
     rules: [
       'Follow established coding standards and conventions',
       'Write comprehensive tests for all changes',
@@ -335,7 +340,8 @@ const DEFAULT_CLAUDE_MD_BY_CATEGORY: Record<DisciplineCategory, ClaudeMdConfig> 
   },
   legal: {
     role: 'Legal Analyst',
-    context: 'Supporting legal operations with document review, compliance, and research',
+    context:
+      'Supporting legal operations with document review, compliance, and research',
     rules: [
       'Always cite relevant regulations and precedents',
       'Maintain confidentiality of sensitive information',
@@ -582,7 +588,9 @@ export interface DisciplinePackValidationResult {
  * ```
  */
 export class DisciplineGenerator {
-  private readonly config: Required<Omit<DisciplineGeneratorConfig, 'llmCallback'>> & {
+  private readonly config: Required<
+    Omit<DisciplineGeneratorConfig, 'llmCallback'>
+  > & {
     llmCallback?: (systemPrompt: string, userPrompt: string) => Promise<string>;
   };
 
@@ -636,7 +644,9 @@ export class DisciplineGenerator {
    * }
    * ```
    */
-  async generate(context: DisciplineGenerationContext): Promise<GenerateDisciplinesResult> {
+  async generate(
+    context: DisciplineGenerationContext
+  ): Promise<GenerateDisciplinesResult> {
     const warnings: string[] = [];
 
     if (this.config.llmCallback) {
@@ -645,19 +655,25 @@ export class DisciplineGenerator {
       const userPrompt = buildDisciplineGenerationPrompt(context);
 
       try {
-        const response = await this.config.llmCallback(systemPrompt, userPrompt);
+        const response = await this.config.llmCallback(
+          systemPrompt,
+          userPrompt
+        );
         const parsedData = parseDisciplineGenerationResponse(response);
 
         // Limit to max disciplines
-        const limitedData = parsedData.slice(0, this.config.maxDisciplinesPerVP);
+        const limitedData = parsedData.slice(
+          0,
+          this.config.maxDisciplinesPerVP
+        );
         if (parsedData.length > this.config.maxDisciplinesPerVP) {
           warnings.push(
-            `Generated ${parsedData.length} disciplines, limited to ${this.config.maxDisciplinesPerVP}`,
+            `Generated ${parsedData.length} disciplines, limited to ${this.config.maxDisciplinesPerVP}`
           );
         }
 
         // Convert to full discipline packs
-        const disciplines = limitedData.map((parsed) => {
+        const disciplines = limitedData.map(parsed => {
           const partialPack = convertToDisciplinePack(parsed, context.vpSlug);
           return this.enrichWithDefaults({
             ...partialPack,
@@ -673,7 +689,8 @@ export class DisciplineGenerator {
           warnings,
         };
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         throw new Error(`Failed to generate disciplines: ${errorMessage}`);
       }
     }
@@ -708,7 +725,10 @@ export class DisciplineGenerator {
    * console.log('Refinement notes:', refined.refinementNotes);
    * ```
    */
-  async refine(discipline: DisciplinePack, feedback: string): Promise<RefineDisciplineResult> {
+  async refine(
+    discipline: DisciplinePack,
+    feedback: string
+  ): Promise<RefineDisciplineResult> {
     if (!this.config.llmCallback) {
       throw new Error('LLM callback is required for discipline refinement');
     }
@@ -737,7 +757,8 @@ export class DisciplineGenerator {
         warnings: [],
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Failed to refine discipline: ${errorMessage}`);
     }
   }
@@ -793,7 +814,8 @@ export class DisciplineGenerator {
     } else if (!/^[a-z0-9-]+$/.test(pack.slug)) {
       errors.push({
         field: 'slug',
-        message: 'Slug must contain only lowercase letters, numbers, and hyphens',
+        message:
+          'Slug must contain only lowercase letters, numbers, and hyphens',
         code: 'INVALID_SLUG',
       });
     }
@@ -888,7 +910,12 @@ export class DisciplineGenerator {
 
     // Validate hooks
     if (pack.hooks) {
-      const validEvents = ['PreToolUse', 'PostToolUse', 'PreCommit', 'PostCommit'];
+      const validEvents = [
+        'PreToolUse',
+        'PostToolUse',
+        'PreCommit',
+        'PostCommit',
+      ];
       pack.hooks.forEach((hook, index) => {
         if (!validEvents.includes(hook.event)) {
           errors.push({
@@ -960,13 +987,17 @@ export class DisciplineGenerator {
     const defaultMcpServers = this.config.useDefaults
       ? DEFAULT_MCP_SERVERS_BY_CATEGORY[category]
       : [];
-    const defaultHooks = this.config.useDefaults ? DEFAULT_HOOKS_BY_CATEGORY[category] : [];
+    const defaultHooks = this.config.useDefaults
+      ? DEFAULT_HOOKS_BY_CATEGORY[category]
+      : [];
 
     // Merge CLAUDE.md config with defaults
     const claudeMd: ClaudeMdConfig = {
       role: pack.claudeMd?.role ?? defaultClaudeMd.role,
       context: pack.claudeMd?.context ?? defaultClaudeMd.context,
-      rules: pack.claudeMd?.rules?.length ? pack.claudeMd.rules : defaultClaudeMd.rules,
+      rules: pack.claudeMd?.rules?.length
+        ? pack.claudeMd.rules
+        : defaultClaudeMd.rules,
       objectives: pack.claudeMd?.objectives?.length
         ? pack.claudeMd.objectives
         : defaultClaudeMd.objectives,
@@ -1008,7 +1039,10 @@ export class DisciplineGenerator {
    * console.log(`Generated ${disciplines.length} disciplines for ${vpCharter.identity.name}`);
    * ```
    */
-  async generateForVP(vpCharter: VPCharter, industry: string): Promise<DisciplinePack[]> {
+  async generateForVP(
+    vpCharter: VPCharter,
+    industry: string
+  ): Promise<DisciplinePack[]> {
     const context: DisciplineGenerationContext = {
       orgName: 'Organization', // Could be passed in or extracted from vpCharter
       vpName: vpCharter.identity.name,
@@ -1040,7 +1074,10 @@ export class DisciplineGenerator {
    * const disciplines = generator.parseResponse(response);
    * ```
    */
-  buildPrompt(context: DisciplineGenerationContext): { system: string; user: string } {
+  buildPrompt(context: DisciplineGenerationContext): {
+    system: string;
+    user: string;
+  } {
     return {
       system: DISCIPLINE_GENERATION_SYSTEM_PROMPT,
       user: buildDisciplineGenerationPrompt(context),
@@ -1069,7 +1106,7 @@ export class DisciplineGenerator {
   parseResponse(response: string, parentVpId?: string): DisciplinePack[] {
     const parsedData = parseDisciplineGenerationResponse(response);
 
-    return parsedData.map((parsed) => {
+    return parsedData.map(parsed => {
       const partialPack = convertToDisciplinePack(parsed, parentVpId);
       return this.enrichWithDefaults({
         ...partialPack,
@@ -1091,7 +1128,9 @@ export class DisciplineGenerator {
    * @param context - The generation context
    * @returns Array of default discipline packs
    */
-  private generateDefaultDisciplines(context: DisciplineGenerationContext): DisciplinePack[] {
+  private generateDefaultDisciplines(
+    context: DisciplineGenerationContext
+  ): DisciplinePack[] {
     const disciplines: DisciplinePack[] = [];
     const now = new Date();
 
@@ -1101,23 +1140,41 @@ export class DisciplineGenerator {
 
     if (vpNameLower.includes('engineer') || vpNameLower.includes('tech')) {
       primaryCategory = 'engineering';
-    } else if (vpNameLower.includes('legal') || vpNameLower.includes('compliance')) {
+    } else if (
+      vpNameLower.includes('legal') ||
+      vpNameLower.includes('compliance')
+    ) {
       primaryCategory = 'legal';
     } else if (vpNameLower.includes('hr') || vpNameLower.includes('human')) {
       primaryCategory = 'hr';
-    } else if (vpNameLower.includes('marketing') || vpNameLower.includes('brand')) {
+    } else if (
+      vpNameLower.includes('marketing') ||
+      vpNameLower.includes('brand')
+    ) {
       primaryCategory = 'marketing';
-    } else if (vpNameLower.includes('finance') || vpNameLower.includes('accounting')) {
+    } else if (
+      vpNameLower.includes('finance') ||
+      vpNameLower.includes('accounting')
+    ) {
       primaryCategory = 'finance';
-    } else if (vpNameLower.includes('operation') || vpNameLower.includes('ops')) {
+    } else if (
+      vpNameLower.includes('operation') ||
+      vpNameLower.includes('ops')
+    ) {
       primaryCategory = 'operations';
     } else if (vpNameLower.includes('design') || vpNameLower.includes('ux')) {
       primaryCategory = 'design';
-    } else if (vpNameLower.includes('research') || vpNameLower.includes('r&d')) {
+    } else if (
+      vpNameLower.includes('research') ||
+      vpNameLower.includes('r&d')
+    ) {
       primaryCategory = 'research';
     } else if (vpNameLower.includes('sales')) {
       primaryCategory = 'sales';
-    } else if (vpNameLower.includes('support') || vpNameLower.includes('customer')) {
+    } else if (
+      vpNameLower.includes('support') ||
+      vpNameLower.includes('customer')
+    ) {
       primaryCategory = 'support';
     }
 
@@ -1134,7 +1191,7 @@ export class DisciplineGenerator {
         agentIds: [],
         createdAt: now,
         updatedAt: now,
-      }),
+      })
     );
 
     // Add additional disciplines based on responsibilities
@@ -1144,7 +1201,7 @@ export class DisciplineGenerator {
         const slug = generateSlug(disciplineName);
 
         // Skip if already generated
-        if (disciplines.some((d) => d.slug === slug)) {
+        if (disciplines.some(d => d.slug === slug)) {
           continue;
         }
 
@@ -1159,7 +1216,7 @@ export class DisciplineGenerator {
             agentIds: [],
             createdAt: now,
             updatedAt: now,
-          }),
+          })
         );
       }
     }
@@ -1220,14 +1277,10 @@ export class DisciplineGenerator {
  * ```
  */
 export function createDisciplineGenerator(
-  config?: DisciplineGeneratorConfig,
+  config?: DisciplineGeneratorConfig
 ): DisciplineGenerator {
   return new DisciplineGenerator(config);
 }
 
 // ============================================================================
-// Re-exports
-// ============================================================================
-
-// Re-export types from prompts for convenience
-export type { DisciplineGenerationContext, ParsedDisciplineData };
+// Note: DisciplineGenerationContext and ParsedDisciplineData are exported via prompts/index.js
