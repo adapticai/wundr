@@ -1150,3 +1150,32 @@ export {
   // System roles
   SYSTEM_ROLES,
 } from './admin';
+
+// =============================================================================
+// i18n Types
+// =============================================================================
+
+export type {
+  // Locale types
+  SupportedLocale,
+  LocaleConfig,
+  NumberFormatConfig,
+  TranslationNamespace,
+  TranslationKey,
+  InterpolationValues,
+  TranslateFunction,
+  I18nContext,
+  LocaleSource,
+  UserLocalePreferences,
+
+  // Accessibility types
+  AccessibilityPreferences,
+  KeyboardNavigationConfig,
+  LiveRegionConfig,
+} from './i18n';
+
+export {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  DEFAULT_ACCESSIBILITY_PREFERENCES,
+} from './i18n';
