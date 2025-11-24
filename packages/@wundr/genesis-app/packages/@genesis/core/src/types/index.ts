@@ -111,6 +111,74 @@ export {
 } from './message';
 
 // =============================================================================
+// Organization Types
+// =============================================================================
+
+export type {
+  // Organization types
+  OrganizationWithMembers,
+  OrganizationWithRelations,
+  OrganizationMemberWithUser,
+  CreateOrgInput,
+  UpdateOrgInput,
+  ListOrgsOptions,
+  PaginatedOrgResult,
+  OrganizationMemberRole,
+
+  // Workspace types
+  WorkspaceWithMembers,
+  WorkspaceWithRelations,
+  WorkspaceMemberWithUser,
+  CreateWorkspaceInput,
+  UpdateWorkspaceInput,
+  ListWorkspacesOptions,
+  PaginatedWorkspaceResult,
+  WorkspaceMemberRole,
+
+  // Channel types
+  ChannelWithMembers,
+  ChannelWithRelations,
+  ChannelMemberWithUser,
+  CreateChannelInput,
+  UpdateChannelInput,
+  ChannelListOptions,
+  PaginatedChannelResult,
+  ChannelMemberRole,
+
+  // Discipline types
+  Discipline,
+  DisciplineWithVPs,
+  VPBasic,
+  CreateDisciplineInput,
+  UpdateDisciplineInput,
+  ListDisciplinesOptions,
+  PaginatedDisciplineResult,
+} from './organization';
+
+export {
+  // Type guards
+  isOrganization,
+  isWorkspace,
+  isChannel,
+  isValidCreateChannelInput,
+  isValidCreateWorkspaceInput,
+  isValidCreateOrgInput,
+
+  // Constants
+  DEFAULT_ORG_LIST_OPTIONS,
+  DEFAULT_WORKSPACE_LIST_OPTIONS,
+  DEFAULT_CHANNEL_LIST_OPTIONS,
+  MAX_NAME_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_SLUG_LENGTH,
+  CHANNEL_TYPES,
+  WORKSPACE_VISIBILITY_LEVELS,
+  ORGANIZATION_ROLES,
+  WORKSPACE_ROLES,
+  CHANNEL_ROLES,
+} from './organization';
+
+// =============================================================================
 // Re-export Database Types
 // =============================================================================
 
@@ -124,10 +192,15 @@ export type {
   Message,
   Reaction,
   Session,
+  OrganizationMember,
+  WorkspaceMember,
+  ChannelMember,
   VPStatus,
   UserStatus,
   OrganizationRole,
   WorkspaceRole,
   ChannelRole,
   MessageType,
+  ChannelType,
+  WorkspaceVisibility,
 } from '@genesis/database';

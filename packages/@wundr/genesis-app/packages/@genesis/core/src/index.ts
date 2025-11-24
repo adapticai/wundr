@@ -2,6 +2,7 @@
  * @genesis/core
  *
  * Core service layer for Genesis App providing VP management,
+ * organization, workspace, channel, discipline services,
  * service account operations, and business logic.
  *
  * @packageDocumentation
@@ -56,6 +57,26 @@ export {
   createMessageService,
   messageService,
 
+  // Channel Service
+  ChannelServiceImpl,
+  createChannelService,
+  channelService,
+
+  // Organization Service
+  OrganizationServiceImpl,
+  createOrganizationService,
+  organizationService,
+
+  // Workspace Service
+  WorkspaceServiceImpl,
+  createWorkspaceService,
+  workspaceService,
+
+  // Discipline Service
+  DisciplineServiceImpl,
+  createDisciplineService,
+  disciplineService,
+
   // Interfaces
   type VPService,
   type ServiceAccountService,
@@ -63,12 +84,43 @@ export {
   type ThreadService,
   type ReactionService,
   type MessageEvents,
+  type ChannelService,
+  type OrganizationService,
+  type WorkspaceService,
+  type DisciplineService,
 
   // Message Errors
   MessageNotFoundError,
-  ChannelNotFoundError,
+  MessageChannelNotFoundError,
   MessageValidationError,
   ReactionError,
+
+  // Channel Errors
+  ChannelNotFoundError,
+  ChannelAlreadyExistsError,
+  ChannelValidationError,
+  ChannelMemberNotFoundError,
+  ChannelWorkspaceNotFoundError,
+  ChannelUserNotFoundError,
+
+  // Organization Errors
+  OrganizationAlreadyExistsError,
+  OrganizationValidationError,
+  OrganizationMemberNotFoundError,
+  OrgUserNotFoundError,
+
+  // Workspace Errors
+  WorkspaceNotFoundError,
+  WorkspaceAlreadyExistsError,
+  WorkspaceValidationError,
+  WorkspaceMemberNotFoundError,
+  WorkspaceUserNotFoundError,
+
+  // Discipline Errors
+  DisciplineNotFoundError,
+  DisciplineAlreadyExistsError,
+  DisciplineValidationError,
+  DisciplineVPNotFoundError,
 } from './services';
 
 // =============================================================================
@@ -133,6 +185,45 @@ export type {
   OnReactionAddedCallback,
   OnReactionRemovedCallback,
 
+  // Organization types
+  OrganizationWithMembers,
+  OrganizationWithRelations,
+  OrganizationMemberWithUser,
+  CreateOrgInput,
+  UpdateOrgInput,
+  ListOrgsOptions,
+  PaginatedOrgResult,
+  OrganizationMemberRole,
+
+  // Workspace types
+  WorkspaceWithMembers,
+  WorkspaceWithRelations,
+  WorkspaceMemberWithUser,
+  CreateWorkspaceInput,
+  UpdateWorkspaceInput,
+  ListWorkspacesOptions,
+  PaginatedWorkspaceResult,
+  WorkspaceMemberRole,
+
+  // Channel types
+  ChannelWithMembers,
+  ChannelWithRelations,
+  ChannelMemberWithUser,
+  CreateChannelInput,
+  UpdateChannelInput,
+  ChannelListOptions,
+  PaginatedChannelResult,
+  ChannelMemberRole,
+
+  // Discipline types
+  Discipline,
+  DisciplineWithVPs,
+  VPBasic,
+  CreateDisciplineInput,
+  UpdateDisciplineInput,
+  ListDisciplinesOptions,
+  PaginatedDisciplineResult,
+
   // Re-exported database types
   VP,
   User,
@@ -142,12 +233,17 @@ export type {
   Message,
   Reaction,
   Session,
+  OrganizationMember,
+  WorkspaceMember,
+  ChannelMember,
   VPStatus,
   UserStatus,
   OrganizationRole,
   WorkspaceRole,
   ChannelRole,
   MessageType,
+  ChannelType,
+  WorkspaceVisibility,
 } from './types';
 
 export {
@@ -169,6 +265,27 @@ export {
   MAX_MESSAGE_CONTENT_LENGTH,
   MAX_REACTIONS_PER_MESSAGE,
   MESSAGE_TYPES,
+
+  // Organization Type guards
+  isOrganization,
+  isWorkspace,
+  isChannel,
+  isValidCreateChannelInput,
+  isValidCreateWorkspaceInput,
+  isValidCreateOrgInput,
+
+  // Organization Constants
+  DEFAULT_ORG_LIST_OPTIONS,
+  DEFAULT_WORKSPACE_LIST_OPTIONS,
+  DEFAULT_CHANNEL_LIST_OPTIONS,
+  MAX_NAME_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_SLUG_LENGTH,
+  CHANNEL_TYPES,
+  WORKSPACE_VISIBILITY_LEVELS,
+  ORGANIZATION_ROLES,
+  WORKSPACE_ROLES,
+  CHANNEL_ROLES,
 } from './types';
 
 // =============================================================================
@@ -239,6 +356,97 @@ export {
   deepMerge,
   safeGet,
 } from './utils';
+
+// =============================================================================
+// Permission Exports
+// =============================================================================
+
+export {
+  // Permission enum and utilities
+  Permission,
+  PERMISSION_CATEGORIES,
+  type PermissionCategory,
+  isValidPermission,
+  getPermissionResource,
+  getPermissionAction,
+  getPermissionsForResource,
+  ALL_PERMISSIONS,
+
+  // Role definitions
+  type RoleDefinition,
+  type ResolvedRole,
+  ORGANIZATION_ROLES as PERM_ORGANIZATION_ROLES,
+  WORKSPACE_ROLES as PERM_WORKSPACE_ROLES,
+  CHANNEL_ROLES as PERM_CHANNEL_ROLES,
+  resolveRolePermissions,
+  getOrganizationRolePermissions,
+  getWorkspaceRolePermissions,
+  getChannelRolePermissions,
+  roleHasPermission,
+  ORGANIZATION_ROLE_HIERARCHY,
+  WORKSPACE_ROLE_HIERARCHY,
+  CHANNEL_ROLE_HIERARCHY,
+  compareRoles,
+  isAtLeastRole,
+
+  // Permission checker
+  PermissionChecker,
+  permissionChecker,
+  createPermissionChecker,
+  type PermissionContext,
+  type MembershipInfo,
+  type PermissionCheckerConfig,
+  validatePermissionContext,
+
+  // Permission errors
+  PermissionErrorCodes,
+  type PermissionErrorCode,
+  PermissionDeniedError,
+  NotAuthenticatedError,
+  NotOrganizationMemberError,
+  NotWorkspaceMemberError,
+  NotChannelMemberError,
+  InsufficientRoleError,
+  InvalidPermissionContextError,
+  isPermissionDeniedError,
+  isNotAuthenticatedError,
+  isPermissionError,
+
+  // Guards (decorators and functions)
+  type AuthenticatedSession,
+  type GuardResult,
+  PERMISSION_METADATA_KEY,
+  requireAuth,
+  requirePermission,
+  requireChannelMember,
+  requireWorkspaceMember,
+  requireOrganizationMember,
+  assertAuthenticated,
+  assertPermission,
+  assertOrganizationMember,
+  assertWorkspaceMember,
+  assertChannelMember,
+  checkPermission,
+  checkOwnershipOrPermission,
+  composeGuards,
+
+  // Middleware
+  type RequestContext,
+  type AuthenticatedRequestContext,
+  type ContextExtractor,
+  type ApiHandler,
+  type MiddlewareResult,
+  withAuth,
+  withPermission,
+  withPermissions,
+  withAnyPermission,
+  withChannelAccess,
+  withWorkspaceAccess,
+  withOrganizationAccess,
+  withOwnershipOrPermission,
+  compose,
+  withPermissionErrorHandler,
+} from './permissions';
 
 // =============================================================================
 // Version

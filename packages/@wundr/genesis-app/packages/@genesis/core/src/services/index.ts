@@ -37,9 +37,92 @@ export {
   type ReactionService,
   type MessageEvents,
 
-  // Errors
+  // Errors (legacy export from message-service)
   MessageNotFoundError,
-  ChannelNotFoundError,
+  ChannelNotFoundError as MessageChannelNotFoundError,
   MessageValidationError,
   ReactionError,
 } from './message-service';
+
+// =============================================================================
+// Channel Service
+// =============================================================================
+
+export {
+  // Service implementation
+  ChannelServiceImpl,
+  createChannelService,
+  channelService,
+
+  // Interfaces
+  type ChannelService,
+
+  // Errors
+  ChannelNotFoundError,
+  ChannelAlreadyExistsError,
+  ChannelValidationError,
+  ChannelMemberNotFoundError,
+  WorkspaceNotFoundError as ChannelWorkspaceNotFoundError,
+  UserNotFoundError as ChannelUserNotFoundError,
+} from './channel-service';
+
+// =============================================================================
+// Organization Service
+// =============================================================================
+
+export {
+  // Service implementation
+  OrganizationServiceImpl,
+  createOrganizationService,
+  organizationService,
+
+  // Interfaces
+  type OrganizationService,
+
+  // Errors
+  OrganizationAlreadyExistsError,
+  OrganizationValidationError,
+  OrganizationMemberNotFoundError,
+  UserNotFoundError as OrgUserNotFoundError,
+} from './organization-service';
+
+// =============================================================================
+// Workspace Service
+// =============================================================================
+
+export {
+  // Service implementation
+  WorkspaceServiceImpl,
+  createWorkspaceService,
+  workspaceService,
+
+  // Interfaces
+  type WorkspaceService,
+
+  // Errors
+  WorkspaceNotFoundError,
+  WorkspaceAlreadyExistsError,
+  WorkspaceValidationError,
+  WorkspaceMemberNotFoundError,
+  UserNotFoundError as WorkspaceUserNotFoundError,
+} from './workspace-service';
+
+// =============================================================================
+// Discipline Service
+// =============================================================================
+
+export {
+  // Service implementation
+  DisciplineServiceImpl,
+  createDisciplineService,
+  disciplineService,
+
+  // Interfaces
+  type DisciplineService,
+
+  // Errors
+  DisciplineNotFoundError,
+  DisciplineAlreadyExistsError,
+  DisciplineValidationError,
+  VPNotFoundError as DisciplineVPNotFoundError,
+} from './discipline-service';

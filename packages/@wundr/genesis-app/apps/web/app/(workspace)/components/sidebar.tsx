@@ -1,7 +1,17 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { ChannelList } from '@/components/channel';
+import { useChannels, useDirectMessages, useChannelMutations } from '@/hooks/use-channel';
+
+interface Workspace {
+  id: string;
+  name: string;
+  icon?: string;
+}
 
 interface SidebarProps {
   user?: {
@@ -9,34 +19,120 @@ interface SidebarProps {
     email?: string | null;
     image?: string | null;
   } | null;
+  workspaces?: Workspace[];
+  currentWorkspace?: Workspace | null;
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProps) {
   const pathname = usePathname();
+  const params = useParams();
+  const workspaceId = (params.workspaceId as string) || currentWorkspace?.id || '';
+
+  const [showWorkspaceSwitcher, setShowWorkspaceSwitcher] = useState(false);
+
+  // Fetch channels and DMs for current workspace
+  const {
+    publicChannels,
+    privateChannels,
+    starredChannels,
+    isLoading: isChannelsLoading,
+  } = useChannels(workspaceId);
+
+  const { directMessages, isLoading: isDMsLoading } = useDirectMessages(workspaceId);
+  const { createChannel } = useChannelMutations();
+
+  const handleCreateChannel = useCallback(
+    async (input: {
+      name: string;
+      type: 'public' | 'private';
+      description?: string;
+      memberIds?: string[];
+    }) => {
+      await createChannel(workspaceId, input);
+    },
+    [workspaceId, createChannel]
+  );
 
   const navItems = [
-    { href: '/dashboard', icon: <DashboardIcon />, label: 'Dashboard' },
-    { href: '/organizations', icon: <OrganizationsIcon />, label: 'Organizations' },
-    { href: '/vps', icon: <VPsIcon />, label: 'Virtual Persons' },
-    { href: '/agents', icon: <AgentsIcon />, label: 'Agents' },
-    { href: '/workflows', icon: <WorkflowsIcon />, label: 'Workflows' },
-    { href: '/deployments', icon: <DeploymentsIcon />, label: 'Deployments' },
-    { href: '/settings', icon: <SettingsIcon />, label: 'Settings' },
+    { href: `/${workspaceId}/dashboard`, icon: <DashboardIcon />, label: 'Dashboard' },
+    { href: `/${workspaceId}/vps`, icon: <VPsIcon />, label: 'Virtual Persons' },
+    { href: `/${workspaceId}/agents`, icon: <AgentsIcon />, label: 'Agents' },
+    { href: `/${workspaceId}/workflows`, icon: <WorkflowsIcon />, label: 'Workflows' },
+    { href: `/${workspaceId}/deployments`, icon: <DeploymentsIcon />, label: 'Deployments' },
+    { href: `/${workspaceId}/settings`, icon: <SettingsIcon />, label: 'Settings' },
   ];
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r bg-card lg:block">
+    <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r bg-card lg:block dark:bg-card">
       <div className="flex h-full flex-col">
-        {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-            G
-          </div>
-          <span className="font-semibold">Genesis</span>
+        {/* Workspace Switcher */}
+        <div className="relative border-b">
+          <button
+            type="button"
+            onClick={() => setShowWorkspaceSwitcher(!showWorkspaceSwitcher)}
+            className="flex h-14 w-full items-center gap-3 px-4 hover:bg-accent"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+              {currentWorkspace?.icon || currentWorkspace?.name?.charAt(0).toUpperCase() || 'G'}
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-semibold text-foreground">
+                {currentWorkspace?.name || 'Genesis'}
+              </p>
+            </div>
+            <ChevronDownIcon
+              className={cn(
+                'h-4 w-4 text-muted-foreground transition-transform',
+                showWorkspaceSwitcher && 'rotate-180'
+              )}
+            />
+          </button>
+
+          {/* Workspace dropdown */}
+          {showWorkspaceSwitcher && workspaces.length > 0 && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowWorkspaceSwitcher(false)}
+              />
+              <div className="absolute left-2 right-2 top-full z-20 mt-1 rounded-md border bg-card py-1 shadow-lg">
+                {workspaces.map((workspace) => (
+                  <Link
+                    key={workspace.id}
+                    href={`/${workspace.id}/dashboard`}
+                    onClick={() => setShowWorkspaceSwitcher(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 hover:bg-accent',
+                      workspace.id === currentWorkspace?.id && 'bg-accent/50'
+                    )}
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-bold">
+                      {workspace.icon || workspace.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium">{workspace.name}</span>
+                    {workspace.id === currentWorkspace?.id && (
+                      <CheckIcon className="ml-auto h-4 w-4 text-primary" />
+                    )}
+                  </Link>
+                ))}
+                <div className="my-1 h-px bg-border" />
+                <Link
+                  href="/workspaces/new"
+                  onClick={() => setShowWorkspaceSwitcher(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed">
+                    <PlusIcon className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm">Create workspace</span>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
+        {/* Main Navigation */}
+        <nav className="space-y-1 p-3">
           {navItems.map((item) => (
             <NavItem
               key={item.href}
@@ -48,17 +144,45 @@ export function Sidebar({ user }: SidebarProps) {
           ))}
         </nav>
 
+        <div className="h-px bg-border" />
+
+        {/* Channel List */}
+        <div className="flex-1 overflow-hidden">
+          <ChannelList
+            workspaceId={workspaceId}
+            channels={[...publicChannels, ...privateChannels]}
+            directMessages={directMessages}
+            starredChannels={starredChannels}
+            isLoading={isChannelsLoading || isDMsLoading}
+            onCreateChannel={handleCreateChannel}
+            className="h-full"
+          />
+        </div>
+
         {/* User Section */}
-        <div className="border-t p-4">
+        <div className="border-t p-3">
           <Link
-            href="/settings/profile"
+            href={`/${workspaceId}/settings/profile`}
             className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            <div className="relative">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+                {user?.image ? (
+                  <img
+                    src={user.image}
+                    alt={user.name || 'User'}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  user?.name?.charAt(0).toUpperCase() || 'U'
+                )}
+              </div>
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card bg-green-500" />
             </div>
-            <div className="flex-1 truncate">
-              <p className="text-sm font-medium">{user?.name || 'User'}</p>
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium text-foreground">
+                {user?.name || 'User'}
+              </p>
               <p className="truncate text-xs text-muted-foreground">
                 {user?.email || 'user@example.com'}
               </p>
@@ -81,13 +205,14 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      className={cn(
+        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
         isActive
           ? 'bg-accent text-foreground'
           : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-      }`}
+      )}
     >
-      <span className="flex h-6 w-6 items-center justify-center">{icon}</span>
+      <span className="flex h-5 w-5 items-center justify-center">{icon}</span>
       {label}
     </Link>
   );
@@ -111,26 +236,6 @@ function DashboardIcon() {
       <rect width="7" height="5" x="14" y="3" rx="1" />
       <rect width="7" height="9" x="14" y="12" rx="1" />
       <rect width="7" height="5" x="3" y="16" rx="1" />
-    </svg>
-  );
-}
-
-function OrganizationsIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-      <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9" />
-      <path d="M12 3v6" />
     </svg>
   );
 }
@@ -236,6 +341,55 @@ function VPsIcon() {
       <circle cx="9" cy="7" r="4" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
     </svg>
   );
 }

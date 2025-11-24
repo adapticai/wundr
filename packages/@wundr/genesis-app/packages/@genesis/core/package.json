@@ -46,6 +46,11 @@
       "import": "./dist/errors/index.js",
       "require": "./dist/errors/index.js",
       "types": "./dist/errors/index.d.ts"
+    },
+    "./permissions": {
+      "import": "./dist/permissions/index.js",
+      "require": "./dist/permissions/index.js",
+      "types": "./dist/permissions/index.d.ts"
     }
   },
   "files": ["dist"],
