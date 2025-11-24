@@ -433,3 +433,71 @@ export {
   mergeObjects,
   areValuesEqual,
 } from './sync-service';
+
+// =============================================================================
+// Audit Service
+// =============================================================================
+
+export {
+  // Service implementation
+  AuditServiceImpl,
+  createAuditService,
+  getAuditService,
+  initAuditService,
+  auditService,
+
+  // Interfaces
+  type AuditService,
+  type AuditServiceConfig,
+  type AuditDatabaseClient,
+  type AuditRedisClient,
+  type AuditLogDelegate,
+  type AuditLogExportDelegate,
+  type LogParams,
+
+  // Errors
+  AuditError,
+  AuditExportNotFoundError,
+  AuditValidationError,
+} from './audit-service';
+
+// =============================================================================
+// Search Service
+// =============================================================================
+
+export {
+  // Service implementation
+  SearchServiceImpl,
+  createSearchService,
+  getSearchService,
+  resetSearchService,
+
+  // Interfaces
+  type SearchService,
+  type SearchServiceConfig,
+
+  // Errors
+  SearchError,
+  SearchValidationError,
+  SearchTimeoutError,
+} from './search-service';
+
+// =============================================================================
+// Retention Service
+// =============================================================================
+
+export {
+  // Service implementation
+  RetentionService,
+  createRetentionService,
+
+  // Interfaces
+  type RetentionServiceConfig,
+  type RedisClient as RetentionRedisClient,
+
+  // Errors
+  RetentionPolicyNotFoundError,
+  LegalHoldNotFoundError,
+  RetentionJobError,
+  DataExportNotFoundError,
+} from './retention-service';

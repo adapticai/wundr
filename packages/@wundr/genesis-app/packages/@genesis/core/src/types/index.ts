@@ -672,3 +672,149 @@ export {
   DEFAULT_SYNC_CONFIG,
   DEFAULT_LOCAL_STORAGE_CONFIG,
 } from './offline';
+
+// =============================================================================
+// Audit Types
+// =============================================================================
+
+export type {
+  // Core audit types
+  AuditAction,
+  AuditSeverity,
+  AuditCategory,
+  AuditLogEntry,
+  AuditChange,
+
+  // Query types
+  AuditLogFilter,
+  AuditLogPagination,
+  AuditLogSort,
+  AuditLogResponse,
+
+  // Export types
+  AuditLogExport,
+
+  // Stats types
+  AuditLogStats,
+
+  // Context types
+  AuditContext,
+} from './audit';
+
+export {
+  // Type guards
+  isAuditAction,
+  isAuditSeverity,
+  isAuditCategory,
+  isAuditLogEntry,
+
+  // Constants
+  CRITICAL_ACTIONS,
+  WARNING_ACTIONS,
+  DEFAULT_AUDIT_RETENTION_DAYS,
+  DEFAULT_AUDIT_BATCH_SIZE,
+  DEFAULT_AUDIT_PAGE_SIZE,
+  MAX_AUDIT_PAGE_SIZE,
+} from './audit';
+
+// =============================================================================
+// Retention Types
+// =============================================================================
+
+export type {
+  // Core retention types
+  RetentionPolicy,
+  RetentionRule,
+  RetentionResourceType,
+  RetentionAction,
+  RetentionCondition,
+
+  // Job types
+  RetentionJob,
+  RetentionJobStatus,
+  RetentionError,
+
+  // Statistics types
+  RetentionStats,
+  RetentionSchedule,
+
+  // Legal hold types
+  LegalHold,
+  LegalHoldScope,
+
+  // Data export types
+  DataExport,
+  DataExportScope,
+
+  // Input types
+  CreateRetentionPolicyInput,
+  UpdateRetentionPolicyInput,
+  CreateLegalHoldInput,
+  RequestDataExportInput,
+} from './retention';
+
+export {
+  // Type guards
+  isRetentionResourceType,
+  isRetentionAction,
+  isRetentionJobStatus,
+  isRetentionPolicy,
+  isLegalHold,
+
+  // Constants
+  DEFAULT_RETENTION_CONFIG,
+  RETENTION_RESOURCE_NAMES,
+  RETENTION_ACTION_NAMES,
+} from './retention';
+
+// =============================================================================
+// Search Types
+// =============================================================================
+
+export type {
+  // Query types
+  SearchQuery,
+  SearchFilters,
+  SearchPagination,
+  SearchSort,
+
+  // Result types
+  SearchResultType,
+  SearchResult,
+  SearchHighlight,
+  SearchResultData,
+  MessageSearchResult,
+  FileSearchResult,
+  ChannelSearchResult,
+  UserSearchResult,
+  VPSearchResult,
+
+  // Response types
+  SearchResponse,
+  SearchFacets,
+  FacetBucket,
+
+  // Index types
+  SearchIndexDocument,
+  SearchSuggestion,
+} from './search';
+
+export {
+  // Type guards
+  isMessageSearchResult,
+  isFileSearchResult,
+  isChannelSearchResult,
+  isUserSearchResult,
+  isVPSearchResult,
+  isSearchResultType,
+  isValidSearchQuery,
+
+  // Constants
+  DEFAULT_SEARCH_PAGINATION,
+  MAX_SEARCH_LIMIT,
+  DEFAULT_SEARCH_SORT,
+  SEARCH_RESULT_TYPES,
+  SEARCH_CACHE_TTL,
+  MAX_QUERY_LENGTH,
+  MIN_QUERY_LENGTH,
+} from './search';

@@ -243,3 +243,62 @@ export {
 } from './notification-resolvers.js';
 
 export { default as notificationResolversDefault } from './notification-resolvers.js';
+
+// =============================================================================
+// SEARCH RESOLVERS
+// =============================================================================
+
+export {
+  searchResolvers,
+  searchQueries,
+  SearchResultFieldResolvers,
+  searchTypeDefs,
+  SearchResultType,
+  type SearchResultTypeValue,
+  type SearchGraphQLContext,
+} from './search-resolvers.js';
+
+export { default as searchResolversDefault } from './search-resolvers.js';
+
+// =============================================================================
+// AUDIT RESOLVERS
+// =============================================================================
+
+export {
+  auditResolvers,
+  auditQueries,
+  auditMutations,
+  AuditLogEntryFieldResolvers,
+  auditTypeDefs,
+  AuditCategory,
+  AuditSeverity,
+  ExportStatus,
+  type AuditCategoryValue,
+  type AuditSeverityValue,
+  type ExportStatusValue,
+  type AuditGraphQLContext,
+} from './audit-resolvers.js';
+
+export { default as auditResolversDefault } from './audit-resolvers.js';
+
+// =============================================================================
+// RETENTION RESOLVERS
+// =============================================================================
+
+export {
+  retentionResolvers,
+  retentionQueries,
+  retentionMutations,
+  RetentionPolicyFieldResolvers,
+  LegalHoldFieldResolvers,
+  retentionTypeDefs,
+  RetentionResourceType,
+  RetentionAction,
+  RetentionJobStatus,
+  type RetentionResourceTypeValue,
+  type RetentionActionValue,
+  type RetentionJobStatusValue,
+  type RetentionGraphQLContext,
+} from './retention-resolvers.js';
+
+export { default as retentionResolversDefault } from './retention-resolvers.js';
