@@ -29,15 +29,7 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": [
-    "dist",
-    "bin",
-    "src",
-    "templates",
-    "docs",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "bin", "src", "templates", "docs", "README.md", "LICENSE"],
   "scripts": {
     "build": "turbo build",
     "build:parallel": "turbo build --parallel",
@@ -124,21 +116,19 @@
     "winston": "^3.17.0"
   },
   "packageManager": "pnpm@10.23.0",
+  "pnpm": {
+    "onlyBuiltDependencies": ["sharp", "esbuild"],
+    "overrides": {
+      "sharp": "0.33.5"
+    }
+  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{js,jsx}": [
-      "eslint --fix --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{json,yaml,yml,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{js,jsx}": ["eslint --fix --max-warnings=0", "prettier --write"],
+    "*.{json,yaml,yml,md}": ["prettier --write"]
   }
 }

@@ -38,6 +38,11 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./edge": {
+      "import": "./dist/edge.js",
+      "require": "./dist/edge.js",
+      "types": "./dist/edge.d.ts"
+    },
     "./client": {
       "import": "./dist/client.js",
       "require": "./dist/client.js",
