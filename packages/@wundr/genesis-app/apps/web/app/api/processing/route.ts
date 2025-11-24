@@ -16,6 +16,7 @@ import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { processingJobs } from '@/lib/services/processing-stores';
 import {
   createJobSchema,
   jobListSchema,
@@ -28,33 +29,6 @@ import {
 
 import type { CreateJobInput, JobListInput } from '@/lib/validations/processing';
 import type { NextRequest } from 'next/server';
-
-/**
- * In-memory job store for development
- * In production, this would be replaced with a proper queue system (Redis, SQS, etc.)
- */
-const processingJobs = new Map<
-  string,
-  {
-    id: string;
-    fileId: string;
-    type: string;
-    status: string;
-    priority: string;
-    progress: number;
-    options: Record<string, unknown> | null;
-    result: Record<string, unknown> | null;
-    error: string | null;
-    workspaceId: string;
-    createdById: string;
-    callbackUrl: string | null;
-    metadata: Record<string, unknown> | null;
-    startedAt: Date | null;
-    completedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }
->();
 
 /**
  * Check if processing type is supported for the given file
@@ -249,8 +223,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       { status: 201 },
     );
-  } catch (error) {
-    console.error('[POST /api/processing] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
@@ -377,8 +351,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         nextCursor,
       },
     });
-  } catch (error) {
-    console.error('[GET /api/processing] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',
@@ -389,5 +363,3 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// Export the jobs store for use by other route handlers
-export { processingJobs };

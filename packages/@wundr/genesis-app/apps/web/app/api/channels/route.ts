@@ -299,16 +299,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Generate slug from name
+    const slug = input.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
     // Create channel with creator as admin and initial members
     const channel = await prisma.$transaction(async (tx) => {
       // Create the channel
       const newChannel = await tx.channel.create({
         data: {
           name: input.name,
+          slug,
           type: input.type,
           description: input.description,
           topic: input.topic,
           workspaceId: input.workspaceId,
+          createdById: session.user.id,
         },
       });
 

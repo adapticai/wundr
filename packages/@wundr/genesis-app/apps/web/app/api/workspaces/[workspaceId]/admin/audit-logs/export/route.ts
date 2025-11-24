@@ -11,14 +11,16 @@
  * @module app/api/workspaces/[workspaceId]/admin/audit-logs/export/route
  */
 
-import { AuditServiceImpl, type AuditDatabaseClient, type AuditRedisClient } from '@genesis/core';
+import {
+  AuditServiceImpl,
+  type AuditDatabaseClient,
+  type AuditRedisClient,
+} from '@genesis/core';
 import { redis } from '@genesis/core/redis';
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -44,7 +46,7 @@ interface RouteContext {
  * ```
  */
 export async function POST(
-  request: NextRequest,
+  request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -103,7 +105,7 @@ export async function POST(
  * ```
  */
 export async function GET(
-  request: NextRequest,
+  request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

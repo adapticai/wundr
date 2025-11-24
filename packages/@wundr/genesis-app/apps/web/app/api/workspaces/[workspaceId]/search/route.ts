@@ -18,7 +18,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 import type { SearchResultType } from '@genesis/core';
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter

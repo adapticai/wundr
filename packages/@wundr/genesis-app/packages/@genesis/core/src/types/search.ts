@@ -250,6 +250,46 @@ export interface FacetBucket {
 // =============================================================================
 
 /**
+ * Typed metadata for search index documents.
+ */
+export interface SearchIndexMetadata {
+  /** Channel ID for messages/files */
+  channelId?: string;
+  /** Channel name for display */
+  channelName?: string;
+  /** Sender/author ID */
+  authorId?: string;
+  /** Sender/author name */
+  authorName?: string;
+  /** File name for file documents */
+  fileName?: string;
+  /** File size in bytes */
+  fileSize?: number;
+  /** MIME type for files */
+  mimeType?: string;
+  /** Thread ID if in a thread */
+  threadId?: string;
+  /** Whether the document has attachments */
+  hasAttachments?: boolean;
+  /** Member count for channels */
+  memberCount?: number;
+  /** Privacy flag for channels */
+  isPrivate?: boolean;
+  /** User role for user documents */
+  role?: string;
+  /** User discipline for users/VPs */
+  discipline?: string;
+  /** Avatar URL */
+  avatarUrl?: string;
+  /** VP capabilities list */
+  capabilities?: string[];
+  /** VP status */
+  status?: string;
+  /** Additional string metadata */
+  [key: string]: string | number | boolean | string[] | undefined;
+}
+
+/**
  * Document to be indexed for search
  */
 export interface SearchIndexDocument {
@@ -263,12 +303,30 @@ export interface SearchIndexDocument {
   content: string;
   /** Optional title field */
   title?: string;
-  /** Additional metadata */
-  metadata: Record<string, unknown>;
+  /** Additional typed metadata */
+  metadata: SearchIndexMetadata;
   /** When the document was created */
   createdAt: Date;
   /** When the document was last updated */
   updatedAt: Date;
+}
+
+/**
+ * Metadata for search suggestions.
+ */
+export interface SearchSuggestionMetadata {
+  /** Associated channel ID */
+  channelId?: string;
+  /** Associated user ID */
+  userId?: string;
+  /** Number of times this suggestion was used */
+  usageCount?: number;
+  /** Last time this suggestion was used */
+  lastUsed?: Date;
+  /** Filter type for filter suggestions */
+  filterType?: 'channel' | 'user' | 'date' | 'type';
+  /** Filter value */
+  filterValue?: string;
 }
 
 /**
@@ -280,7 +338,7 @@ export interface SearchSuggestion {
   /** Type of suggestion */
   type: 'query' | 'filter' | 'recent';
   /** Additional metadata for the suggestion */
-  metadata?: Record<string, unknown>;
+  metadata?: SearchSuggestionMetadata;
 }
 
 // =============================================================================

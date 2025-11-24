@@ -159,25 +159,79 @@ export interface ImageInfo {
 }
 
 /**
+ * Sharp module interface for image processing
+ */
+interface SharpInstance {
+  metadata: () => Promise<SharpMetadata>;
+  grayscale: () => SharpInstance;
+  sharpen: () => SharpInstance;
+  normalise: () => SharpInstance;
+  resize: (options: { width?: number; height?: number; fit?: string }) => SharpInstance;
+  toBuffer: () => Promise<Buffer>;
+  toFile: (path: string) => Promise<void>;
+}
+
+/**
+ * Sharp metadata structure
+ */
+interface SharpMetadata {
+  width?: number;
+  height?: number;
+  format?: string;
+  space?: string;
+  hasAlpha?: boolean;
+  density?: number;
+}
+
+/**
+ * Sharp module interface
+ */
+interface SharpModule {
+  (input: string | Buffer): SharpInstance;
+}
+
+/**
  * Image processor class
  */
 export class ImageProcessor {
   private _config: FileProcessorConfig;
   private workerPool: TesseractWorkerPool | null = null;
+  private tesseract: TesseractModule | null = null;
+  private sharp: SharpModule | null = null;
 
   constructor(config: FileProcessorConfig) {
     this._config = config;
   }
 
   /**
+   * Lazily load tesseract module
+   */
+  private async getTesseract(): Promise<TesseractModule> {
+    if (!this.tesseract) {
+      const tesseractModule = await import('tesseract.js');
+      this.tesseract = tesseractModule as unknown as TesseractModule;
+    }
+    return this.tesseract;
+  }
+
+  /**
+   * Lazily load sharp module
+   */
+  private async getSharp(): Promise<SharpModule> {
+    if (!this.sharp) {
+      const sharpModule = await import('sharp');
+      this.sharp = sharpModule.default as unknown as SharpModule;
+    }
+    return this.sharp;
+  }
+
+  /**
    * Initialize Tesseract worker pool
    */
   async initialize(): Promise<void> {
-    // TODO: Initialize tesseract.js worker pool
-    // const Tesseract = require('tesseract.js');
-    // this.workerPool = await Tesseract.createWorkerPool({
-    //   numWorkers: this.config.ocr.workerPoolSize,
-    // });
+    const tesseract = await this.getTesseract();
+    const defaultLangs = this._config.ocr?.defaultLanguages ?? ['eng'];
+    this.workerPool = await tesseract.createWorker(defaultLangs);
   }
 
   /**
@@ -185,7 +239,7 @@ export class ImageProcessor {
    */
   async cleanup(): Promise<void> {
     if (this.workerPool) {
-      // await this.workerPool.terminate();
+      await this.workerPool.terminate();
       this.workerPool = null;
     }
   }
@@ -278,24 +332,30 @@ export class ImageProcessor {
 
   /**
    * Get image information using sharp
+   *
+   * @param filePath - Path to image file
+   * @returns Image information
    */
-  private async getImageInfo(_filePath: string): Promise<ImageInfo> {
-    // TODO: Implement with sharp library
-    // const sharp = require('sharp');
-    // const metadata = await sharp(filePath).metadata();
+  private async getImageInfo(filePath: string): Promise<ImageInfo> {
+    const sharp = await this.getSharp();
+    const metadata = await sharp(filePath).metadata();
 
-    // Skeleton return
     return {
-      width: 0,
-      height: 0,
-      format: 'unknown',
-      colorSpace: 'unknown',
-      hasAlpha: false,
+      width: metadata.width ?? 0,
+      height: metadata.height ?? 0,
+      format: metadata.format ?? 'unknown',
+      colorSpace: metadata.space ?? 'unknown',
+      hasAlpha: metadata.hasAlpha ?? false,
+      dpi: metadata.density,
     };
   }
 
   /**
    * Pre-process image for better OCR results
+   *
+   * @param filePath - Path to image file
+   * @param options - Processing options
+   * @returns Path to processed image (temp file if preprocessing applied)
    */
   private async preprocessImage(
     filePath: string,
@@ -305,96 +365,141 @@ export class ImageProcessor {
       return filePath;
     }
 
-    // TODO: Implement image preprocessing with sharp
-    // const sharp = require('sharp');
-    // let image = sharp(filePath);
-    //
-    // if (options.preprocessing.grayscale) {
-    //   image = image.grayscale();
-    // }
-    //
-    // if (options.preprocessing.contrast) {
-    //   image = image.modulate({ saturation: 0 }).linear(options.preprocessing.contrast, 0);
-    // }
-    //
-    // if (options.preprocessing.sharpen) {
-    //   image = image.sharpen();
-    // }
-    //
-    // const tempPath = path.join(this.config.storage.tempDir, `processed_${Date.now()}.png`);
-    // await image.toFile(tempPath);
-    // return tempPath;
+    const sharp = await this.getSharp();
+    let image = sharp(filePath);
 
-    // Skeleton return
-    return filePath;
+    // Convert to grayscale if requested
+    if (options.preprocessing.grayscale) {
+      image = image.grayscale();
+    }
+
+    // Sharpen image if requested
+    if (options.preprocessing.sharpen) {
+      image = image.sharpen();
+    }
+
+    // Normalize contrast
+    if (options.preprocessing.contrast) {
+      image = image.normalise();
+    }
+
+    // Resize for target DPI if specified
+    if (options.preprocessing.targetDpi) {
+      const metadata = await sharp(filePath).metadata();
+      const currentDpi = metadata.density ?? 72;
+      if (currentDpi < options.preprocessing.targetDpi) {
+        const scale = options.preprocessing.targetDpi / currentDpi;
+        image = image.resize({
+          width: Math.round((metadata.width ?? 0) * scale),
+          height: Math.round((metadata.height ?? 0) * scale),
+          fit: 'inside',
+        });
+      }
+    }
+
+    // Save to temp file
+    const tempDir = this._config.storage?.tempDir ?? '/tmp';
+    const tempPath = path.join(tempDir, `processed_${Date.now()}.png`);
+    await image.toFile(tempPath);
+
+    return tempPath;
   }
 
   /**
    * Perform OCR on image
+   *
+   * @param filePath - Path to image file
+   * @param options - Processing options
+   * @returns OCR result with extracted text and metadata
    */
   private async performOcr(
-    _filePath: string,
-    _options: ImageProcessingOptions,
+    filePath: string,
+    options: ImageProcessingOptions,
   ): Promise<OcrResult> {
-    // TODO: Implement with tesseract.js
-    // const Tesseract = require('tesseract.js');
-    //
-    // const languages = options.ocrLanguages?.join('+') ||
-    //   this.config.ocr.defaultLanguages.join('+');
-    //
-    // const result = await Tesseract.recognize(filePath, languages, {
-    //   tessedit_pageseg_mode: options.pageSegMode ?? PageSegmentationMode.AUTO,
-    // });
-    //
-    // return {
-    //   text: result.data.text,
-    //   confidence: result.data.confidence,
-    //   blocks: this.extractBlocks(result.data),
-    //   lines: this.extractLines(result.data),
-    //   words: this.extractWords(result.data),
-    //   detectedLanguage: result.data.language,
-    //   imageInfo: await this.getImageInfo(filePath),
-    // };
+    // Ensure worker is initialized
+    if (!this.workerPool) {
+      await this.initialize();
+    }
 
-    // Skeleton return
+    if (!this.workerPool) {
+      throw new Error('Failed to initialize Tesseract worker');
+    }
+
+    const ocrOptions: TesseractOptions = {};
+
+    // Set page segmentation mode if specified
+    if (options.pageSegMode !== undefined) {
+      ocrOptions.tessedit_pageseg_mode = options.pageSegMode;
+    }
+
+    const result = await this.workerPool.recognize(filePath, ocrOptions);
+    const imageInfo = await this.getImageInfo(filePath);
+
     return {
-      text: '',
-      confidence: 0,
-      imageInfo: {
-        width: 0,
-        height: 0,
-        format: 'unknown',
-        colorSpace: 'unknown',
-        hasAlpha: false,
-      },
+      text: result.data.text,
+      confidence: result.data.confidence,
+      blocks: this.extractBlocks(result.data),
+      lines: this.extractLines(result.data),
+      words: this.extractWords(result.data),
+      imageInfo,
     };
   }
 
   /**
    * Extract text blocks from Tesseract result
+   *
+   * @param data - Tesseract recognition data
+   * @returns Extracted text blocks
    */
-  private extractBlocks(_data: unknown): TextBlock[] {
-    // TODO: Extract blocks from Tesseract result
-
-    return [];
+  private extractBlocks(data: TesseractData): TextBlock[] {
+    return (data.blocks ?? []).map(block => ({
+      text: block.text,
+      confidence: block.confidence,
+      bbox: block.bbox,
+      lines: (block.lines ?? []).map(line => ({
+        text: line.text,
+        confidence: line.confidence,
+        bbox: line.bbox,
+        words: (line.words ?? []).map(word => ({
+          text: word.text,
+          confidence: word.confidence,
+          bbox: word.bbox,
+        })),
+      })),
+    }));
   }
 
   /**
    * Extract text lines from Tesseract result
+   *
+   * @param data - Tesseract recognition data
+   * @returns Extracted text lines
    */
-  private extractLines(_data: unknown): TextLine[] {
-    // TODO: Extract lines from Tesseract result
-
-    return [];
+  private extractLines(data: TesseractData): TextLine[] {
+    return (data.lines ?? []).map(line => ({
+      text: line.text,
+      confidence: line.confidence,
+      bbox: line.bbox,
+      words: (line.words ?? []).map(word => ({
+        text: word.text,
+        confidence: word.confidence,
+        bbox: word.bbox,
+      })),
+    }));
   }
 
   /**
    * Extract words from Tesseract result
+   *
+   * @param data - Tesseract recognition data
+   * @returns Extracted words
    */
-  private extractWords(_data: unknown): TextWord[] {
-    // TODO: Extract words from Tesseract result
-
-    return [];
+  private extractWords(data: TesseractData): TextWord[] {
+    return (data.words ?? []).map(word => ({
+      text: word.text,
+      confidence: word.confidence,
+      bbox: word.bbox,
+    }));
   }
 
   /**
@@ -473,9 +578,80 @@ export class ImageProcessor {
 }
 
 /**
- * Placeholder type for Tesseract worker pool
+ * Tesseract worker interface
  */
-type TesseractWorkerPool = unknown;
+interface TesseractWorker {
+  recognize: (image: string | Buffer, options?: TesseractOptions) => Promise<TesseractRecognizeResult>;
+  terminate: () => Promise<void>;
+}
+
+/**
+ * Tesseract recognition options
+ */
+interface TesseractOptions {
+  lang?: string;
+  tessedit_pageseg_mode?: number;
+}
+
+/**
+ * Tesseract recognize result
+ */
+interface TesseractRecognizeResult {
+  data: TesseractData;
+}
+
+/**
+ * Tesseract data structure
+ */
+interface TesseractData {
+  text: string;
+  confidence: number;
+  blocks: TesseractBlock[];
+  lines: TesseractLine[];
+  words: TesseractWord[];
+  hocr?: string;
+}
+
+/**
+ * Tesseract block structure
+ */
+interface TesseractBlock {
+  text: string;
+  confidence: number;
+  bbox: { x0: number; y0: number; x1: number; y1: number };
+  lines: TesseractLine[];
+}
+
+/**
+ * Tesseract line structure
+ */
+interface TesseractLine {
+  text: string;
+  confidence: number;
+  bbox: { x0: number; y0: number; x1: number; y1: number };
+  words: TesseractWord[];
+}
+
+/**
+ * Tesseract word structure
+ */
+interface TesseractWord {
+  text: string;
+  confidence: number;
+  bbox: { x0: number; y0: number; x1: number; y1: number };
+}
+
+/**
+ * Tesseract module interface
+ */
+interface TesseractModule {
+  createWorker: (langs?: string | string[]) => Promise<TesseractWorker>;
+}
+
+/**
+ * Worker pool type for Tesseract
+ */
+type TesseractWorkerPool = TesseractWorker;
 
 /**
  * Create image processor instance

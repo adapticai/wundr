@@ -7,12 +7,21 @@ import { INTEGRATION_PROVIDERS, INTEGRATION_STATUS_CONFIG } from '@/types/integr
 
 import type { IntegrationConfig } from '@/types/integration';
 
+/**
+ * Props for the IntegrationSettings component
+ */
 export interface IntegrationSettingsProps {
+  /** The integration configuration to edit */
   integration: IntegrationConfig;
+  /** Whether the dialog is open */
   isOpen: boolean;
+  /** Callback to close the dialog */
   onClose: () => void;
+  /** Callback fired when saving changes */
   onSave: (updates: Partial<IntegrationConfig>) => Promise<void>;
+  /** Callback to disconnect the integration */
   onDisconnect: () => Promise<void>;
+  /** Additional CSS class names */
   className?: string;
 }
 

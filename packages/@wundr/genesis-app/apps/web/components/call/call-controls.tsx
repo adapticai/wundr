@@ -5,23 +5,43 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 
 import type { MediaDevice } from '@/types/call';
 
+/**
+ * Props for the CallControls component.
+ */
 export interface CallControlsProps {
+  /** Whether the microphone is currently enabled */
   isAudioEnabled: boolean;
+  /** Whether the camera is currently enabled */
   isVideoEnabled: boolean;
+  /** Whether screen sharing is active */
   isScreenSharing: boolean;
+  /** Whether the call is being recorded */
   isRecording?: boolean;
+  /** Callback to toggle microphone on/off */
   onToggleAudio: () => void;
+  /** Callback to toggle camera on/off */
   onToggleVideo: () => void;
+  /** Callback to toggle screen sharing */
   onToggleScreenShare: () => void;
+  /** Callback to end the call */
   onEndCall: () => void;
+  /** Callback to open settings dialog */
   onOpenSettings?: () => void;
+  /** Available audio input devices */
   audioDevices?: MediaDevice[];
+  /** Available video input devices */
   videoDevices?: MediaDevice[];
+  /** Currently selected audio device ID */
   selectedAudioDevice?: string;
+  /** Currently selected video device ID */
   selectedVideoDevice?: string;
+  /** Callback when audio device is changed */
   onSelectAudioDevice?: (deviceId: string) => void;
+  /** Callback when video device is changed */
   onSelectVideoDevice?: (deviceId: string) => void;
+  /** Additional CSS classes to apply */
   className?: string;
+  /** Control bar variant: full (all options) or minimal */
   variant?: 'full' | 'minimal';
 }
 

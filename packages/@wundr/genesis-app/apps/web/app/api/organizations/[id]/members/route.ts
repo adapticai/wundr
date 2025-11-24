@@ -107,7 +107,7 @@ export async function GET(
       },
       orderBy: [
         { role: 'asc' },
-        { createdAt: 'asc' },
+        { joinedAt: 'asc' },
       ],
     });
 

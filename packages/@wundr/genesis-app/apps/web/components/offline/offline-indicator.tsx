@@ -4,11 +4,19 @@ import { useState, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Props for the OfflineIndicator component
+ */
 interface OfflineIndicatorProps {
+  /** Whether the user is currently online */
   isOnline: boolean;
+  /** Number of queued actions waiting to sync */
   queuedActions?: number;
+  /** Current sync progress percentage (0-100) */
   syncProgress?: number;
+  /** Callback to retry connection */
   onRetry?: () => void;
+  /** Optional CSS class name */
   className?: string;
 }
 

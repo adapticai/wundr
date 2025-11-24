@@ -9,12 +9,21 @@ import type {
   IntegrationStatus,
 } from '@/types/integration';
 
+/**
+ * Props for the IntegrationCard component
+ */
 export interface IntegrationCardProps {
+  /** The integration configuration data */
   integration: IntegrationConfig;
+  /** Callback fired when testing the integration */
   onTest: () => void;
+  /** Callback fired when syncing the integration */
   onSync: () => void;
+  /** Callback to open integration settings */
   onSettings: () => void;
+  /** Callback to disconnect the integration */
   onDisconnect: () => void;
+  /** Whether the card is in a loading state */
   isLoading?: boolean;
 }
 

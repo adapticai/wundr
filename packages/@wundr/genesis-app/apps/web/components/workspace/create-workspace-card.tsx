@@ -1,6 +1,22 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+/**
+ * API response type for workspace creation
+ */
+interface CreateWorkspaceResponse {
+  data?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  error?: {
+    message: string;
+    code: string;
+  };
+}
 
 export function CreateWorkspaceCard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,27 +49,59 @@ interface CreateWorkspaceModalProps {
 }
 
 function CreateWorkspaceModal({ onClose }: CreateWorkspaceModalProps) {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Generates a URL-friendly slug from a workspace name
+   */
+  const generateSlug = (workspaceName: string): string => {
+    return workspaceName
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .substring(0, 50);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      // TODO: Implement actual workspace creation via GraphQL mutation
-      // eslint-disable-next-line no-console
-      console.log('Creating workspace:', { name, description });
+      // Create workspace via REST API
+      const response = await fetch('/api/workspaces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || undefined,
+          slug: generateSlug(name),
+        }),
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result: CreateWorkspaceResponse = await response.json();
 
-      // Close modal on success
+      if (!response.ok || result.error) {
+        throw new Error(result.error?.message ?? 'Failed to create workspace');
+      }
+
+      // Close modal and navigate to new workspace
       onClose();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to create workspace:', error);
+      if (result.data?.id) {
+        router.push(`/${result.data.id}`);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create workspace';
+      setError(errorMessage);
+      console.error('Failed to create workspace:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -88,6 +136,13 @@ function CreateWorkspaceModal({ onClose }: CreateWorkspaceModalProps) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Error Display */}
+          {error && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="workspace-name"

@@ -8,12 +8,22 @@ import { cn } from '@/lib/utils';
 import type { DirectMessageChannel } from '@/types/channel';
 import type { User } from '@/types/chat';
 
+
+/**
+ * Props for the DMSelector component
+ */
 interface DMSelectorProps {
+  /** Whether the dialog is open */
   isOpen: boolean;
+  /** Callback to close the dialog */
   onClose: () => void;
+  /** Callback fired when creating a new DM conversation */
   onCreate: (userIds: string[]) => Promise<void>;
+  /** The workspace ID for user search */
   workspaceId: string;
+  /** List of recent DM conversations for quick selection */
   recentConversations: DirectMessageChannel[];
+  /** External loading state */
   isLoading?: boolean;
 }
 

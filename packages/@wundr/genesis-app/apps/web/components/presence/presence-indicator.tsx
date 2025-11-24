@@ -4,13 +4,23 @@ import { cn } from '@/lib/utils';
 
 export type PresenceStatus = 'online' | 'away' | 'busy' | 'offline';
 
+/**
+ * Props for the PresenceIndicator component
+ */
 export interface PresenceIndicatorProps {
+  /** Current presence status */
   status: PresenceStatus;
+  /** Size of the indicator */
   size?: 'sm' | 'md' | 'lg';
+  /** Whether to show a pulsing animation when online */
   showPulse?: boolean;
+  /** Whether to show tooltip on hover */
   showTooltip?: boolean;
+  /** Last seen timestamp for offline users */
   lastSeen?: Date | null;
+  /** Custom status text to display */
   statusText?: string;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -113,10 +123,17 @@ function formatLastSeen(date: Date): string {
   return date.toLocaleDateString();
 }
 
+/**
+ * Props for the PresenceBadge component
+ */
 export interface PresenceBadgeProps {
+  /** Current presence status */
   status: PresenceStatus;
+  /** Size of the badge */
   size?: 'sm' | 'md' | 'lg';
+  /** Whether to show a pulsing animation when online */
   showPulse?: boolean;
+  /** Optional CSS class name */
   className?: string;
 }
 

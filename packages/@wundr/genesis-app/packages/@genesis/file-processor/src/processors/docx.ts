@@ -40,13 +40,64 @@ export interface DocxProcessingOptions extends ProcessingOptions {
 }
 
 /**
+ * Mammoth module interface for document conversion
+ */
+interface MammothModule {
+  convertToHtml: (input: { path?: string; buffer?: Buffer }, options?: MammothOptions) => Promise<MammothResult>;
+  extractRawText: (input: { path?: string; buffer?: Buffer }) => Promise<MammothResult>;
+}
+
+/**
+ * Mammoth conversion options
+ */
+interface MammothOptions {
+  styleMap?: string[];
+  convertImage?: MammothImageConverter;
+}
+
+/**
+ * Mammoth image converter interface
+ */
+interface MammothImageConverter {
+  (element: MammothImageElement): Promise<{ src: string } | undefined>;
+}
+
+/**
+ * Mammoth image element
+ */
+interface MammothImageElement {
+  contentType: string;
+  read: () => Promise<Buffer>;
+}
+
+/**
+ * Mammoth conversion result
+ */
+interface MammothResult {
+  value: string;
+  messages: Array<{ type: string; message: string }>;
+}
+
+/**
  * DOCX processor class
  */
 export class DocxProcessor {
   private _config: FileProcessorConfig;
+  private mammoth: MammothModule | null = null;
 
   constructor(config: FileProcessorConfig) {
     this._config = config;
+  }
+
+  /**
+   * Lazily load mammoth module
+   */
+  private async getMammoth(): Promise<MammothModule> {
+    if (!this.mammoth) {
+      const mammothModule = await import('mammoth');
+      this.mammoth = mammothModule as unknown as MammothModule;
+    }
+    return this.mammoth;
   }
 
   /**
@@ -119,10 +170,14 @@ export class DocxProcessor {
 
   /**
    * Parse DOCX file and extract content
+   *
+   * @param filePath - Path to DOCX file
+   * @param options - Processing options
+   * @returns Parsed document content and structure
    */
   private async parseDocx(
-    _filePath: string,
-    _options: DocxProcessingOptions,
+    filePath: string,
+    options: DocxProcessingOptions,
   ): Promise<{
     text: string;
     html: string;
@@ -133,66 +188,174 @@ export class DocxProcessor {
     warnings: string[];
     metadata?: { title?: string; author?: string };
   }> {
-    // TODO: Implement with mammoth library
-    // This is a skeleton implementation
+    const mammoth = await this.getMammoth();
+    const images: ImageData[] = [];
 
-    // Placeholder - will be replaced with actual mammoth integration
-    // const mammoth = require('mammoth');
-    //
-    // const options = {
-    //   styleMap: options.styleMap,
-    //   convertImage: options.extractEmbeddedImages
-    //     ? mammoth.images.imgElement(this.handleImage.bind(this))
-    //     : undefined,
-    // };
-    //
-    // const result = await mammoth.convertToHtml({ path: filePath }, options);
-    // const textResult = await mammoth.extractRawText({ path: filePath });
+    // Configure mammoth options
+    const mammothOptions: MammothOptions = {
+      styleMap: options.styleMap,
+    };
 
-    // Skeleton return
+    // Handle image extraction if enabled
+    if (options.extractEmbeddedImages) {
+      let imageIndex = 0;
+      mammothOptions.convertImage = async (element: MammothImageElement) => {
+        const imageResult = await this.handleImage(element);
+        if (imageResult.src) {
+          images.push({
+            id: `img-${imageIndex++}`,
+            format: element.contentType.split('/')[1] ?? 'unknown',
+            data: imageResult.src,
+            // Dimensions are not available from mammoth; would require image parsing
+            dimensions: { width: 0, height: 0 },
+          });
+        }
+        return options.inlineImages ? imageResult : undefined;
+      };
+    }
+
+    // Convert to HTML and extract text
+    const [htmlResult, textResult] = await Promise.all([
+      mammoth.convertToHtml({ path: filePath }, mammothOptions),
+      mammoth.extractRawText({ path: filePath }),
+    ]);
+
+    // Extract headings and tables from HTML
+    const headings = this.extractHeadings(htmlResult.value);
+    const tables = options.extractTables
+      ? await this.extractTables(htmlResult.value)
+      : [];
+
+    // Count paragraphs
+    const paragraphCount = (textResult.value.match(/\n\n+/g) ?? []).length + 1;
+
+    // Collect warnings
+    const warnings = [
+      ...htmlResult.messages.map(m => `${m.type}: ${m.message}`),
+      ...textResult.messages.map(m => `${m.type}: ${m.message}`),
+    ];
+
     return {
-      text: '',
-      html: '',
-      tables: [],
-      images: [],
-      headings: [],
-      paragraphCount: 0,
-      warnings: [],
-      metadata: undefined,
+      text: textResult.value,
+      html: htmlResult.value,
+      tables,
+      images,
+      headings,
+      paragraphCount,
+      warnings,
+      metadata: undefined, // DOCX metadata extraction requires additional library
     };
   }
 
   /**
-   * Extract tables from DOCX
+   * Extract tables from DOCX HTML content
+   *
+   * @param html - HTML content from mammoth conversion
+   * @returns Extracted table data
    */
-  private async extractTables(_html: string): Promise<TableData[]> {
-    // TODO: Parse HTML to extract table structures
+  private async extractTables(html: string): Promise<TableData[]> {
+    const tables: TableData[] = [];
 
-    // Skeleton return
-    return [];
+    // Simple regex-based table extraction from HTML
+    const tableRegex = /<table[^>]*>([\s\S]*?)<\/table>/gi;
+    const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+    const cellRegex = /<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi;
+
+    let tableMatch: RegExpExecArray | null;
+    while ((tableMatch = tableRegex.exec(html)) !== null) {
+      const tableContent = tableMatch[1];
+      if (!tableContent) {
+        continue;
+      }
+
+      const rows: string[][] = [];
+      let headers: string[] = [];
+      let isFirstRow = true;
+
+      let rowMatch: RegExpExecArray | null;
+      while ((rowMatch = rowRegex.exec(tableContent)) !== null) {
+        const rowContent = rowMatch[1];
+        if (!rowContent) {
+          continue;
+        }
+
+        const cells: string[] = [];
+        let cellMatch: RegExpExecArray | null;
+        while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
+          // Strip HTML tags and decode entities
+          const cellText = (cellMatch[1] ?? '')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .trim();
+          cells.push(cellText);
+        }
+
+        if (isFirstRow && rowContent.includes('<th')) {
+          headers = cells;
+        } else if (cells.length > 0) {
+          rows.push(cells);
+        }
+        isFirstRow = false;
+      }
+
+      if (rows.length > 0 || headers.length > 0) {
+        tables.push({ headers, rows });
+      }
+    }
+
+    return tables;
   }
 
   /**
    * Handle embedded image conversion
+   *
+   * @param image - Image element from mammoth
+   * @returns Image source (base64 data URL)
    */
-  private async handleImage(_image: {
-    contentType: string;
-    read: () => Promise<Buffer>;
-  }): Promise<{ src: string }> {
-    // TODO: Convert image to base64 or save to temp file
-
-    // Skeleton return
-    return { src: '' };
+  private async handleImage(image: MammothImageElement): Promise<{ src: string }> {
+    try {
+      const buffer = await image.read();
+      const base64 = buffer.toString('base64');
+      return { src: `data:${image.contentType};base64,${base64}` };
+    } catch {
+      return { src: '' };
+    }
   }
 
   /**
    * Extract headings from HTML content
+   *
+   * @param html - HTML content from mammoth conversion
+   * @returns Extracted heading structure
    */
-  private extractHeadings(_html: string): HeadingData[] {
-    // TODO: Parse HTML to extract heading structure
+  private extractHeadings(html: string): HeadingData[] {
+    const headings: HeadingData[] = [];
 
-    // Skeleton return
-    return [];
+    // Match h1-h6 tags
+    const headingRegex = /<h([1-6])[^>]*(?:\s+id="([^"]*)")?[^>]*>([\s\S]*?)<\/h\1>/gi;
+
+    let match: RegExpExecArray | null;
+    while ((match = headingRegex.exec(html)) !== null) {
+      const level = parseInt(match[1] ?? '1', 10);
+      const id = match[2];
+      const text = (match[3] ?? '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .trim();
+
+      if (text) {
+        headings.push({
+          level,
+          text,
+          id: id ?? undefined,
+        });
+      }
+    }
+
+    return headings;
   }
 
   /**

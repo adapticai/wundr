@@ -25,10 +25,17 @@ export interface VPStatusData {
   connectionStatus: 'connected' | 'disconnected' | 'connecting';
 }
 
+/**
+ * Props for the VPStatusCard component
+ */
 interface VPStatusCardProps {
+  /** VP status data to display */
   vp: VPStatusData;
+  /** Callback when view details is clicked */
   onViewDetails?: (vpId: string) => void;
+  /** Callback when restart daemon is clicked */
   onRestartDaemon?: (vpId: string) => void;
+  /** Optional CSS class name */
   className?: string;
 }
 

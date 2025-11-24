@@ -1,5 +1,30 @@
 'use client';
 
+/**
+ * @genesis/hooks/use-notifications - Notification Management Hooks
+ *
+ * Provides hooks for managing in-app notifications, push notifications,
+ * offline status, and notification preferences.
+ *
+ * @packageDocumentation
+ * @module @genesis/hooks/use-notifications
+ *
+ * @example
+ * ```typescript
+ * // Basic notification usage
+ * const { notifications, unreadCount, markAsRead } = useNotifications();
+ *
+ * // Push notification management
+ * const { isSupported, requestPermission, subscribeToPush } = usePushNotifications();
+ *
+ * // Offline status and sync
+ * const { isOnline, queuedActions, forceSync } = useOfflineStatus();
+ *
+ * // Notification settings
+ * const { settings, updateSettings, muteChannel } = useNotificationSettings();
+ * ```
+ */
+
 import {
   useState,
   useEffect,
@@ -20,24 +45,71 @@ import type {
 // useNotifications Hook
 // ============================================================================
 
-interface UseNotificationsOptions {
+/**
+ * Options for the useNotifications hook
+ */
+export interface UseNotificationsOptions {
+  /** Whether to enable notification fetching */
   enabled?: boolean;
+  /** Polling interval in milliseconds */
   pollInterval?: number;
 }
 
-interface UseNotificationsReturn {
+/**
+ * Return type for the useNotifications hook.
+ * Provides notification data and methods for managing notifications.
+ */
+export interface UseNotificationsReturn {
+  /** List of notifications sorted by creation time (newest first) */
   notifications: Notification[];
+  /** Count of unread notifications */
   unreadCount: number;
+  /** Whether notifications are currently being fetched */
   isLoading: boolean;
+  /** Error that occurred during fetch, or null if none */
   error: Error | null;
+  /** Whether there are more notifications to load */
   hasMore: boolean;
+  /** Mark a single notification as read by ID */
   markAsRead: (id: string) => Promise<void>;
+  /** Mark all notifications as read */
   markAllAsRead: () => Promise<void>;
+  /** Dismiss (delete) a notification by ID */
   dismiss: (id: string) => Promise<void>;
+  /** Load more notifications (pagination) */
   loadMore: () => Promise<void>;
+  /** Refresh notifications from the beginning */
   refresh: () => Promise<void>;
 }
 
+/**
+ * Hook for fetching and managing user notifications.
+ *
+ * Provides paginated notification data with real-time polling,
+ * along with methods for marking notifications as read or dismissing them.
+ *
+ * @param options - Configuration options for the hook
+ * @returns Notification data and management methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   notifications,
+ *   unreadCount,
+ *   markAsRead,
+ *   markAllAsRead,
+ *   dismiss,
+ *   loadMore,
+ *   refresh
+ * } = useNotifications({ pollInterval: 30000 });
+ *
+ * // Mark a notification as read
+ * await markAsRead(notification.id);
+ *
+ * // Load more notifications
+ * if (hasMore) await loadMore();
+ * ```
+ */
 export function useNotifications(
   options: UseNotificationsOptions = {},
 ): UseNotificationsReturn {
@@ -207,15 +279,53 @@ return;
 // usePushNotifications Hook
 // ============================================================================
 
-interface UsePushNotificationsReturn {
+/**
+ * Return type for the usePushNotifications hook.
+ * Manages browser push notification permissions and subscriptions.
+ */
+export interface UsePushNotificationsReturn {
+  /** Whether push notifications are supported in the current browser */
   isSupported: boolean;
+  /** Whether push notifications are currently enabled for this user */
   isEnabled: boolean;
+  /** Current notification permission state ('granted', 'denied', or 'default') */
   permission: NotificationPermission | null;
+  /** Request notification permission from the user, returns true if granted */
   requestPermission: () => Promise<boolean>;
+  /** Subscribe to push notifications after permission is granted */
   subscribeToPush: () => Promise<void>;
+  /** Unsubscribe from push notifications */
   unsubscribeFromPush: () => Promise<void>;
 }
 
+/**
+ * Hook for managing browser push notifications.
+ *
+ * Handles permission requests, push subscription management,
+ * and browser compatibility detection.
+ *
+ * @returns Push notification state and management methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   isSupported,
+ *   isEnabled,
+ *   permission,
+ *   requestPermission,
+ *   subscribeToPush,
+ *   unsubscribeFromPush
+ * } = usePushNotifications();
+ *
+ * // Request permission and subscribe
+ * if (isSupported && !isEnabled) {
+ *   const granted = await requestPermission();
+ *   if (granted) {
+ *     await subscribeToPush();
+ *   }
+ * }
+ * ```
+ */
 export function usePushNotifications(): UsePushNotificationsReturn {
   const [isSupported, setIsSupported] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -328,18 +438,63 @@ return;
 // useOfflineStatus Hook
 // ============================================================================
 
-interface UseOfflineStatusReturn {
+/**
+ * Return type for the useOfflineStatus hook.
+ * Manages offline state, action queuing, and sync conflict resolution.
+ */
+export interface UseOfflineStatusReturn {
+  /** Whether the browser currently has network connectivity */
   isOnline: boolean;
+  /** Number of actions queued for sync when back online */
   queuedActions: number;
+  /** Current sync status: 'idle', 'syncing', 'synced', 'error', or 'conflict' */
   syncStatus: SyncStatus;
+  /** List of conflicts that need manual resolution */
   conflicts: ConflictResolution[];
+  /** Force sync all queued actions immediately */
   forceSync: () => Promise<void>;
+  /** Resolve a sync conflict by choosing local, server, or merged data */
   resolveConflict: (id: string, resolution: 'local' | 'server' | 'merge') => Promise<void>;
+  /** Queue an action to be synced when online */
   queueAction: (action: Omit<QueuedAction, 'id' | 'createdAt' | 'retryCount'>) => void;
 }
 
 const QUEUED_ACTIONS_KEY = 'genesis-queued-actions';
 
+/**
+ * Hook for managing offline status and action queuing.
+ *
+ * Detects network connectivity changes, queues actions while offline,
+ * and handles sync conflict resolution when back online.
+ *
+ * @returns Offline status and sync management methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   isOnline,
+ *   queuedActions,
+ *   syncStatus,
+ *   conflicts,
+ *   forceSync,
+ *   resolveConflict,
+ *   queueAction
+ * } = useOfflineStatus();
+ *
+ * // Queue an action while offline
+ * if (!isOnline) {
+ *   queueAction({
+ *     type: 'message.create',
+ *     payload: { content: 'Hello!' }
+ *   });
+ * }
+ *
+ * // Resolve a sync conflict
+ * if (conflicts.length > 0) {
+ *   await resolveConflict(conflicts[0].id, 'local');
+ * }
+ * ```
+ */
 export function useOfflineStatus(): UseOfflineStatusReturn {
   const [isOnline, setIsOnline] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -543,16 +698,60 @@ return;
 // useNotificationSettings Hook
 // ============================================================================
 
-interface UseNotificationSettingsReturn {
+/**
+ * Return type for the useNotificationSettings hook.
+ * Manages user notification preferences and channel muting.
+ */
+export interface UseNotificationSettingsReturn {
+  /** Current notification settings, or null if not loaded */
   settings: NotificationSettings | null;
+  /** Whether settings are currently being fetched */
   isLoading: boolean;
+  /** Error that occurred during fetch or update, or null if none */
   error: Error | null;
+  /** Update notification settings with a partial settings object */
   updateSettings: (updates: Partial<NotificationSettings>) => Promise<void>;
+  /** Mute notifications from a specific channel */
   muteChannel: (channelId: string) => Promise<void>;
+  /** Unmute notifications from a specific channel */
   unmuteChannel: (channelId: string) => Promise<void>;
+  /** Send a test notification to verify settings */
   sendTestNotification: () => Promise<void>;
 }
 
+/**
+ * Hook for managing user notification preferences.
+ *
+ * Provides access to notification settings with optimistic updates
+ * and convenient methods for muting/unmuting channels.
+ *
+ * @returns Notification settings and management methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   settings,
+ *   isLoading,
+ *   updateSettings,
+ *   muteChannel,
+ *   unmuteChannel,
+ *   sendTestNotification
+ * } = useNotificationSettings();
+ *
+ * // Update settings
+ * await updateSettings({
+ *   messages: true,
+ *   mentions: true,
+ *   digest: 'daily'
+ * });
+ *
+ * // Mute a channel
+ * await muteChannel(channelId);
+ *
+ * // Test notification delivery
+ * await sendTestNotification();
+ * ```
+ */
 export function useNotificationSettings(): UseNotificationSettingsReturn {
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -665,6 +864,14 @@ return;
 // Helper Functions
 // ============================================================================
 
+/**
+ * Converts a URL-safe Base64 string to a Uint8Array.
+ * Used for converting VAPID public keys for push subscription.
+ *
+ * @param base64String - URL-safe Base64 encoded string
+ * @returns Decoded Uint8Array
+ * @internal
+ */
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');

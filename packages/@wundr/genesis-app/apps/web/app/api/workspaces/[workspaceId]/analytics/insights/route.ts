@@ -1,20 +1,22 @@
-import { AnalyticsService } from '@genesis/core';
+import {
+  AnalyticsServiceImpl,
+  redis,
+  type AnalyticsDatabaseClient,
+  type AnalyticsRedisClient,
+} from '@genesis/core';
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth';
 
-import type { NextRequest} from 'next/server';
-
-
+import type { NextRequest } from 'next/server';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -32,7 +34,10 @@ export async function GET(
 
     const period = (searchParams.get('period') || 'month') as 'day' | 'week' | 'month' | 'quarter' | 'year';
 
-    const analyticsService = new AnalyticsService({ prisma, redis });
+    const analyticsService = new AnalyticsServiceImpl({
+      prisma: prisma as unknown as AnalyticsDatabaseClient,
+      redis: redis as unknown as AnalyticsRedisClient,
+    });
     const report = await analyticsService.generateInsightReport(workspaceId, period);
 
     return NextResponse.json(report);

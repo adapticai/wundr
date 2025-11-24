@@ -28,32 +28,47 @@ import type { Session } from '@genesis/database';
 
 /**
  * Extended session type with user ID.
+ * Represents a session that has been verified to have an authenticated user.
  */
 export interface AuthenticatedSession extends Session {
+  /** The unique identifier of the authenticated user */
   userId: string;
 }
 
 /**
  * Metadata key for storing permission requirements on decorated methods.
+ * Used by decorators to attach permission metadata for runtime checking.
  */
 export const PERMISSION_METADATA_KEY = Symbol('permissions');
 
 /**
  * Guard result indicating whether access is granted.
+ * Contains the authorization decision and optional reason for denial.
  */
 export interface GuardResult {
+  /** Whether access is granted */
   granted: boolean;
+  /** Optional reason for denial (only present when granted is false) */
   reason?: string;
 }
 
 /**
- * Method decorator type.
+ * Generic method decorator type for permission decorators.
+ * Used to define decorators that wrap methods with permission checks.
+ *
+ * @typeParam T - The type of the method being decorated
  */
 type MethodDecorator = <T>(
   target: object,
   propertyKey: string | symbol,
   descriptor: TypedPropertyDescriptor<T>
 ) => TypedPropertyDescriptor<T> | void;
+
+/**
+ * Type for decorator method arguments.
+ * Represents the arguments passed to a decorated method.
+ */
+type DecoratorMethodArgs = unknown[];
 
 // =============================================================================
 // Decorator Guards
@@ -63,7 +78,7 @@ type MethodDecorator = <T>(
  * Decorator that requires authentication.
  * Throws NotAuthenticatedError if no valid session exists.
  *
- * @returns Method decorator
+ * @returns Method decorator that enforces authentication
  *
  * @example
  * ```typescript
@@ -86,8 +101,7 @@ export function requireAuth(): MethodDecorator {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = async function (this: unknown, ...args: any[]) {
+    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
       const context = extractContext(args);
       const session = context?.session;
 
@@ -95,7 +109,7 @@ export function requireAuth(): MethodDecorator {
         throw new NotAuthenticatedError();
       }
 
-      return (originalMethod as (...args: unknown[]) => unknown).apply(this, args);
+      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
     } as T;
 
     return descriptor;
@@ -106,8 +120,8 @@ export function requireAuth(): MethodDecorator {
  * Decorator that requires a specific permission.
  * Must be used with requireAuth() and a valid permission context.
  *
- * @param permission - The permission to require
- * @returns Method decorator
+ * @param permission - The permission to require for method access
+ * @returns Method decorator that enforces the specified permission
  *
  * @example
  * ```typescript
@@ -131,8 +145,7 @@ export function requirePermission(permission: Permission): MethodDecorator {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = async function (this: unknown, ...args: any[]) {
+    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
       const context = extractContext(args);
       const session = context?.session;
       const permContext = context?.permissionContext;
@@ -150,7 +163,7 @@ export function requirePermission(permission: Permission): MethodDecorator {
         );
       }
 
-      return (originalMethod as (...args: unknown[]) => unknown).apply(this, args);
+      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
     } as T;
 
     return descriptor;
@@ -159,8 +172,9 @@ export function requirePermission(permission: Permission): MethodDecorator {
 
 /**
  * Decorator that requires channel membership.
+ * Validates that the authenticated user is a member of the specified channel.
  *
- * @returns Method decorator
+ * @returns Method decorator that enforces channel membership
  *
  * @example
  * ```typescript
@@ -184,8 +198,7 @@ export function requireChannelMember(): MethodDecorator {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = async function (this: unknown, ...args: any[]) {
+    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
       const context = extractContext(args);
       const session = context?.session;
       const channelId = context?.permissionContext?.channelId;
@@ -198,7 +211,7 @@ export function requireChannelMember(): MethodDecorator {
         await permissionChecker.requireChannelMember(session.userId, channelId);
       }
 
-      return (originalMethod as (...args: unknown[]) => unknown).apply(this, args);
+      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
     } as T;
 
     return descriptor;
@@ -207,8 +220,9 @@ export function requireChannelMember(): MethodDecorator {
 
 /**
  * Decorator that requires workspace membership.
+ * Validates that the authenticated user is a member of the specified workspace.
  *
- * @returns Method decorator
+ * @returns Method decorator that enforces workspace membership
  */
 export function requireWorkspaceMember(): MethodDecorator {
   return function <T>(
@@ -221,8 +235,7 @@ export function requireWorkspaceMember(): MethodDecorator {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = async function (this: unknown, ...args: any[]) {
+    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
       const context = extractContext(args);
       const session = context?.session;
       const workspaceId = context?.permissionContext?.workspaceId;
@@ -238,7 +251,7 @@ export function requireWorkspaceMember(): MethodDecorator {
         );
       }
 
-      return (originalMethod as (...args: unknown[]) => unknown).apply(this, args);
+      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
     } as T;
 
     return descriptor;
@@ -247,8 +260,9 @@ export function requireWorkspaceMember(): MethodDecorator {
 
 /**
  * Decorator that requires organization membership.
+ * Validates that the authenticated user is a member of the specified organization.
  *
- * @returns Method decorator
+ * @returns Method decorator that enforces organization membership
  */
 export function requireOrganizationMember(): MethodDecorator {
   return function <T>(
@@ -261,8 +275,7 @@ export function requireOrganizationMember(): MethodDecorator {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = async function (this: unknown, ...args: any[]) {
+    descriptor.value = async function (this: unknown, ...args: DecoratorMethodArgs) {
       const context = extractContext(args);
       const session = context?.session;
       const organizationId = context?.permissionContext?.organizationId;
@@ -278,7 +291,7 @@ export function requireOrganizationMember(): MethodDecorator {
         );
       }
 
-      return (originalMethod as (...args: unknown[]) => unknown).apply(this, args);
+      return (originalMethod as (...args: DecoratorMethodArgs) => unknown).apply(this, args);
     } as T;
 
     return descriptor;

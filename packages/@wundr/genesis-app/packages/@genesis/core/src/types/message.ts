@@ -18,7 +18,7 @@ import type { Message, Reaction, User, MessageType } from '@genesis/database';
  */
 export interface MessageWithAuthor extends Message {
   /** The message author */
-  user: User;
+  author: User;
 }
 
 /**
@@ -26,7 +26,7 @@ export interface MessageWithAuthor extends Message {
  */
 export interface MessageWithRelations extends Message {
   /** The message author */
-  user: User;
+  author: User;
   /** Message reactions */
   reactions: Reaction[];
   /** Thread replies (if this is a parent message) */
@@ -307,8 +307,8 @@ export function isMessageWithAuthor(message: unknown): message is MessageWithAut
     message !== null &&
     'id' in message &&
     'content' in message &&
-    'user' in message &&
-    typeof (message as MessageWithAuthor).user === 'object'
+    'author' in message &&
+    typeof (message as MessageWithAuthor).author === 'object'
   );
 }
 

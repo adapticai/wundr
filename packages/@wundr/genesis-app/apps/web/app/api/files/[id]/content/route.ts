@@ -12,8 +12,8 @@
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
-import { processingJobs } from '@/app/api/processing/route';
 import { auth } from '@/lib/auth';
+import { processingJobs, extractedContentStore } from '@/lib/services/processing-stores';
 import {
   fileIdParamSchema,
   createProcessingErrorResponse,
@@ -28,29 +28,6 @@ import type { NextRequest } from 'next/server';
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
-
-/**
- * In-memory content store for development
- * In production, this would be stored in database or blob storage
- */
-const extractedContentStore = new Map<
-  string,
-  {
-    fileId: string;
-    text: string | null;
-    tables: Array<{
-      rows: string[][];
-      headers?: string[];
-      caption?: string;
-    }> | null;
-    metadata: Record<string, unknown> | null;
-    pages: number | null;
-    wordCount: number | null;
-    language: string | null;
-    extractedAt: Date;
-    jobId: string;
-  }
->();
 
 /**
  * GET /api/files/:id/content
@@ -278,5 +255,3 @@ export async function GET(
   }
 }
 
-// Export the content store for use by processing workers
-export { extractedContentStore };

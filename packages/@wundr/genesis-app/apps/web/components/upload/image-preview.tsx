@@ -5,11 +5,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/types/upload';
 
+/**
+ * Props for the ImagePreview component
+ */
 interface ImagePreviewProps {
+  /** The File object to preview */
   file: File;
+  /** Callback when remove button is clicked */
   onRemove?: () => void;
+  /** Callback when the preview is clicked */
   onClick?: () => void;
+  /** Whether to show file info (name, size) */
   showInfo?: boolean;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -183,11 +191,19 @@ export function ImagePreview({
   );
 }
 
+/**
+ * Props for the ImagePreviewGrid component
+ */
 interface ImagePreviewGridProps {
+  /** Array of File objects to preview */
   files: File[];
+  /** Callback when a file is removed (receives index) */
   onRemove?: (index: number) => void;
+  /** Callback when an image is clicked (receives index) */
   onImageClick?: (index: number) => void;
+  /** Number of columns in the grid */
   columns?: 2 | 3 | 4;
+  /** Optional CSS class name */
   className?: string;
 }
 

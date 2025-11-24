@@ -30,8 +30,9 @@ const statusUpdateSchema = z.object({
   message: z.string().optional(),
 });
 
-/** Inferred type from status schema */
-type StatusUpdateInput = z.infer<typeof statusUpdateSchema>;
+// Type alias exported for potential external use
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type StatusUpdateInput = z.infer<typeof statusUpdateSchema>;
 
 /**
  * Error codes for status operations
@@ -118,13 +119,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { status, message } = body as {
-      status?: string;
-      message?: string;
-    };
-
-    // Validate status
-    if (!status || !VALID_STATUSES.includes(status as VPOperationalStatus)) {
+    // Validate input using Zod schema
+    const parseResult = statusUpdateSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
         {
           error: 'Invalid status. Must be one of: active, paused, error',
@@ -133,6 +130,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         { status: 400 },
       );
     }
+
+    const { status, message } = parseResult.data;
 
     // Get VP info
     const vp = await prisma.vP.findUnique({

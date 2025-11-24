@@ -24,7 +24,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock NextAuth
 vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+  authMock: vi.fn(),
 }));
 
 // Mock the message services
@@ -93,6 +93,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
+// @ts-expect-error Reserved for future integration tests
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
@@ -152,6 +153,7 @@ function createMockReactionResponse(overrides?: Record<string, unknown>) {
   };
 }
 
+// @ts-expect-error Reserved for future integration tests
 function _createMockChannelMember(overrides?: Record<string, unknown>) {
   return {
     id: 'member-123',
@@ -168,12 +170,12 @@ function _createMockChannelMember(overrides?: Record<string, unknown>) {
 // =============================================================================
 
 describe('Message API Routes', () => {
-  let getServerSession: ReturnType<typeof vi.fn>;
+  let authMock: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
+    const authModule = await import('@/lib/auth');
+    authMock = authModule.auth as unknown as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {
@@ -187,7 +189,7 @@ describe('Message API Routes', () => {
   describe('POST /api/channels/:id/messages', () => {
     it('sends message with valid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockMessage = createMockMessageResponse();
       mockMessageService.sendMessage.mockResolvedValue(mockMessage);
@@ -218,9 +220,9 @@ describe('Message API Routes', () => {
     });
 
     it('returns 401 without auth', async () => {
-      getServerSession.mockResolvedValue(null);
+      authMock.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await authMock();
       expect(session).toBeNull();
 
       // Route handler would return 401
@@ -230,7 +232,7 @@ describe('Message API Routes', () => {
 
     it('returns 403 if not channel member', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       // User is not a member of the channel
       mockMessageService.sendMessage.mockRejectedValue({
@@ -253,7 +255,7 @@ describe('Message API Routes', () => {
 
     it('returns 400 for empty content', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const emptyContent = '';
       const isValid = emptyContent.length > 0;
@@ -280,7 +282,7 @@ describe('Message API Routes', () => {
 
     it('returns 400 for content exceeding max length', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const MAX_LENGTH = 10000;
       const longContent = 'a'.repeat(MAX_LENGTH + 1);
@@ -307,7 +309,7 @@ describe('Message API Routes', () => {
 
     it('supports thread replies', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const parentId = 'msg-parent';
       const mockReply = createMockMessageResponse({ parentId });
@@ -325,7 +327,7 @@ describe('Message API Routes', () => {
 
     it('rejects nested thread replies', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.sendMessage.mockRejectedValue({
         code: 'MESSAGE_NESTED_THREAD_NOT_ALLOWED',
@@ -354,7 +356,7 @@ describe('Message API Routes', () => {
   describe('GET /api/channels/:id/messages', () => {
     it('returns paginated messages', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockMessages = Array.from({ length: 20 }, (_, i) =>
         createMockMessageResponse({ id: `msg-${i}` }),
@@ -386,7 +388,7 @@ describe('Message API Routes', () => {
 
     it('supports cursor pagination', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const cursorMessageId = 'msg-cursor';
       const mockMessages = Array.from({ length: 10 }, (_, i) =>
@@ -423,7 +425,7 @@ describe('Message API Routes', () => {
 
     it('excludes deleted messages by default', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const activeMessages = Array.from({ length: 10 }, (_, i) =>
         createMockMessageResponse({ id: `msg-${i}`, deletedAt: null }),
@@ -447,21 +449,21 @@ describe('Message API Routes', () => {
       });
 
       // All returned messages should not be deleted
-      result.edges.forEach((edge: { node: { deletedAt: unknown } }) => {
+      result.edges.forEach((edge: { node: { deletedAt: Date | null } }) => {
         expect(edge.node.deletedAt).toBeNull();
       });
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      authMock.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await authMock();
       expect(session).toBeNull();
     });
 
     it('returns 403 for non-member', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.listMessages.mockRejectedValue({
         code: 'MESSAGE_NOT_CHANNEL_MEMBER',
@@ -481,7 +483,7 @@ describe('Message API Routes', () => {
 
     it('returns 404 for non-existent channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.listMessages.mockRejectedValue({
         code: 'MESSAGE_CHANNEL_NOT_FOUND',
@@ -507,7 +509,7 @@ describe('Message API Routes', () => {
   describe('PATCH /api/messages/:id', () => {
     it('updates own message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const messageId = 'msg-123';
       const newContent = 'Updated content';
@@ -530,7 +532,7 @@ describe('Message API Routes', () => {
 
     it('returns 403 for other user message', async () => {
       const session = createMockSession({ user: { ...createMockSession().user, id: 'user-other' } });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const messageId = 'msg-123'; // Authored by user-123
 
@@ -553,7 +555,7 @@ describe('Message API Routes', () => {
 
     it('returns 404 for non-existent message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.updateMessage.mockRejectedValue({
         code: 'MESSAGE_NOT_FOUND',
@@ -574,7 +576,7 @@ describe('Message API Routes', () => {
 
     it('returns 400 for deleted message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.updateMessage.mockRejectedValue({
         code: 'MESSAGE_DELETED',
@@ -595,7 +597,7 @@ describe('Message API Routes', () => {
 
     it('validates updated content', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       // Empty content
       mockMessageService.updateMessage.mockRejectedValueOnce({
@@ -623,7 +625,7 @@ describe('Message API Routes', () => {
   describe('DELETE /api/messages/:id', () => {
     it('soft deletes own message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const messageId = 'msg-123';
       const deletedMessage = createMockMessageResponse({
@@ -644,7 +646,7 @@ describe('Message API Routes', () => {
       const session = createMockSession({
         user: { ...createMockSession().user, role: 'ADMIN' },
       });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const messageId = 'msg-other-user';
       const deletedMessage = createMockMessageResponse({
@@ -667,7 +669,7 @@ describe('Message API Routes', () => {
       const session = createMockSession({
         user: { ...createMockSession().user, id: 'user-other', role: 'MEMBER' },
       });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.deleteMessage.mockRejectedValue({
         code: 'MESSAGE_FORBIDDEN',
@@ -687,7 +689,7 @@ describe('Message API Routes', () => {
 
     it('returns 404 for non-existent message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.deleteMessage.mockRejectedValue({
         code: 'MESSAGE_NOT_FOUND',
@@ -713,7 +715,7 @@ describe('Message API Routes', () => {
   describe('POST /api/messages/:id/reactions', () => {
     it('adds reaction to message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const messageId = 'msg-123';
       const emoji = '\u{1F44D}';
@@ -737,7 +739,7 @@ describe('Message API Routes', () => {
 
     it('returns 409 for duplicate reaction', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockReactionService.addReaction.mockRejectedValue({
         code: 'MESSAGE_DUPLICATE_REACTION',
@@ -759,7 +761,7 @@ describe('Message API Routes', () => {
 
     it('returns 404 for non-existent message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockReactionService.addReaction.mockRejectedValue({
         code: 'MESSAGE_NOT_FOUND',
@@ -780,9 +782,9 @@ describe('Message API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      authMock.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await authMock();
       expect(session).toBeNull();
     });
   });
@@ -794,7 +796,7 @@ describe('Message API Routes', () => {
   describe('DELETE /api/messages/:id/reactions/:emoji', () => {
     it('removes own reaction', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const messageId = 'msg-123';
       const emoji = '\u{1F44D}';
@@ -818,7 +820,7 @@ describe('Message API Routes', () => {
 
     it('returns 404 if reaction not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockReactionService.removeReaction.mockRejectedValue({
         code: 'MESSAGE_REACTION_NOT_FOUND',
@@ -846,7 +848,7 @@ describe('Message API Routes', () => {
   describe('GET /api/messages/:id/thread', () => {
     it('returns thread with replies', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const parentId = 'msg-parent';
       const replies = Array.from({ length: 5 }, (_, i) =>
@@ -872,7 +874,7 @@ describe('Message API Routes', () => {
 
     it('returns empty thread for message without replies', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const messageId = 'msg-no-replies';
 
@@ -891,7 +893,7 @@ describe('Message API Routes', () => {
 
     it('returns 404 for non-existent message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockThreadService.getThread.mockRejectedValue({
         code: 'MESSAGE_NOT_FOUND',
@@ -909,7 +911,7 @@ describe('Message API Routes', () => {
 
     it('returns 400 for thread reply as parent', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       // Trying to get thread of a message that is itself a reply
       mockThreadService.getThread.mockRejectedValue({
@@ -934,7 +936,7 @@ describe('Message API Routes', () => {
   describe('GET /api/messages/search', () => {
     it('searches messages by query', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const searchResults = Array.from({ length: 5 }, (_, i) =>
         createMockMessageResponse({
@@ -963,7 +965,7 @@ describe('Message API Routes', () => {
 
     it('filters by channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.searchMessages.mockResolvedValue({
         results: [],
@@ -984,7 +986,7 @@ describe('Message API Routes', () => {
 
     it('filters by date range', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-12-31');
@@ -1016,7 +1018,7 @@ describe('Message API Routes', () => {
   describe('Rate Limiting', () => {
     it('returns 429 when rate limit exceeded for sending messages', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockMessageService.sendMessage.mockRejectedValue({
         code: 'MESSAGE_RATE_LIMITED',
@@ -1038,7 +1040,7 @@ describe('Message API Routes', () => {
 
     it('returns 429 when rate limit exceeded for reactions', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockReactionService.addReaction.mockRejectedValue({
         code: 'MESSAGE_RATE_LIMITED',

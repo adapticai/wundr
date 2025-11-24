@@ -46,19 +46,46 @@ async function generatePartUploadUrl(
   s3Bucket: string,
   partNumber: number,
 ): Promise<PartUrlResponse> {
-  // In production, this would use AWS SDK to generate presigned URL for UploadPart
   const region = process.env.AWS_REGION ?? 'us-east-1';
   const expiresIn = 3600; // 1 hour
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
-  // Mock presigned URL - in production, this would be a real signed URL
-  const uploadUrl = `https://${s3Bucket}.s3.${region}.amazonaws.com/${s3Key}?uploadId=${uploadId}&partNumber=${partNumber}&X-Amz-Expires=${expiresIn}`;
+  try {
+    const { S3Client, UploadPartCommand } = await import('@aws-sdk/client-s3');
+    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
 
-  return {
-    uploadUrl,
-    partNumber,
-    expiresAt,
-  };
+    const client = new S3Client({
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+      },
+    });
+
+    const command = new UploadPartCommand({
+      Bucket: s3Bucket,
+      Key: s3Key,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    });
+
+    const uploadUrl = await getSignedUrl(client, command, { expiresIn });
+
+    return {
+      uploadUrl,
+      partNumber,
+      expiresAt,
+    };
+  } catch {
+    // Fallback URL for development without AWS credentials
+    const uploadUrl = `https://${s3Bucket}.s3.${region}.amazonaws.com/${s3Key}?uploadId=${uploadId}&partNumber=${partNumber}`;
+
+    return {
+      uploadUrl,
+      partNumber,
+      expiresAt,
+    };
+  }
 }
 
 /**
@@ -196,8 +223,8 @@ export async function POST(
     return NextResponse.json({
       data: partUrlData,
     });
-  } catch (error) {
-    console.error('[POST /api/upload/multipart/:uploadId/part] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

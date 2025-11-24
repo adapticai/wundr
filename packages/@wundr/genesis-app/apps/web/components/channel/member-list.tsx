@@ -6,17 +6,32 @@ import { cn } from '@/lib/utils';
 
 import type { ChannelMember, ChannelPermissions } from '@/types/channel';
 
+
+/**
+ * Props for the MemberList component
+ */
 interface MemberListProps {
+  /** All members in the channel */
   members: ChannelMember[];
+  /** Filtered list of online members */
   onlineMembers: ChannelMember[];
+  /** Filtered list of offline members */
   offlineMembers: ChannelMember[];
+  /** The current user's ID */
   currentUserId: string;
+  /** Permissions for the current user in this channel */
   permissions: ChannelPermissions;
+  /** Whether the member list panel is open */
   isOpen: boolean;
+  /** Callback to close the member list */
   onClose: () => void;
+  /** Callback to view a user's profile */
   onViewProfile?: (userId: string) => void;
+  /** Callback to change a member's role */
   onChangeRole?: (userId: string, role: 'admin' | 'member') => Promise<void>;
+  /** Callback to remove a member from the channel */
   onRemoveMember?: (userId: string) => Promise<void>;
+  /** Additional CSS class names */
   className?: string;
 }
 

@@ -17,8 +17,13 @@ export interface AuditLogEntry {
   ipAddress?: string;
 }
 
+/**
+ * Props for the AuditLogViewer component.
+ */
 export interface AuditLogViewerProps {
+  /** The workspace ID to fetch audit logs for */
   workspaceId: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

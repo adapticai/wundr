@@ -14,8 +14,16 @@ import { redis } from '@genesis/core';
 import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import type { NextRequest} from 'next/server';
+
+/**
+ * Schema for event acknowledgment request body
+ */
+const eventAckSchema = z.object({
+  eventIds: z.array(z.string()).min(1, 'At least one event ID is required'),
+});
 
 /**
  * JWT configuration
@@ -302,15 +310,16 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { eventIds } = body as { eventIds?: string[] };
-
-    // Validate event IDs
-    if (!eventIds?.length) {
+    // Validate input using Zod schema
+    const parseResult = eventAckSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
         { error: 'Event IDs required', code: EVENT_ERROR_CODES.VALIDATION_ERROR },
         { status: 400 },
       );
     }
+
+    const { eventIds } = parseResult.data;
 
     // Store acknowledgment in Redis
     try {

@@ -3,15 +3,27 @@
 import { clsx } from 'clsx';
 import { useCallback } from 'react';
 
+/**
+ * Props for the CallHeader component.
+ */
 export interface CallHeaderProps {
+  /** Name of the call room */
   roomName: string;
+  /** Optional channel name if call is associated with a channel */
   channelName?: string;
+  /** Number of participants in the call */
   participantCount: number;
+  /** Formatted call duration string */
   duration: string;
+  /** Whether the call is being recorded */
   isRecording?: boolean;
+  /** Callback to minimize the call view */
   onMinimize?: () => void;
+  /** Callback to open settings */
   onOpenSettings?: () => void;
+  /** Callback to toggle participant list visibility */
   onToggleParticipantList?: () => void;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

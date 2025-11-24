@@ -7,7 +7,67 @@
  * @module @genesis/api-types/resolvers/audit-resolvers
  */
 
-import type { AuditServiceImpl as AuditService } from '@genesis/core';
+/**
+ * AuditService interface for audit resolver operations
+ * Defined locally to avoid coupling to internal @genesis/core exports
+ */
+export interface AuditService {
+  query(
+    filters: {
+      workspaceId: string;
+      actions?: unknown[] | undefined;
+      categories?: string[] | undefined;
+      severities?: string[] | undefined;
+      actorIds?: string[] | undefined;
+      actorTypes?: ('user' | 'vp' | 'system' | 'api')[] | undefined;
+      resourceTypes?: string[] | undefined;
+      resourceIds?: string[] | undefined;
+      dateRange?: { start: Date; end: Date } | undefined;
+      success?: boolean | undefined;
+      search?: string | undefined;
+    },
+    pagination: { limit: number; offset: number },
+    sort?: { field: string; direction: 'asc' | 'desc' } | undefined
+  ): Promise<{
+    entries: unknown[];
+    total: number;
+    pagination: { hasMore: boolean; nextCursor?: string | undefined };
+  }>;
+  getStats(
+    workspaceId: string,
+    dateRange?: { start: Date; end: Date } | undefined
+  ): Promise<{
+    totalEntries: number;
+    byCategory: Record<string, number>;
+    bySeverity: Record<string, number>;
+    byAction: Record<string, number>;
+    byActor: { actorId: string; actorName: string; count: number }[];
+    timeline: { date: string; count: number }[];
+  }>;
+  getExport(id: string): Promise<{
+    id: string;
+    status: string;
+    format: string;
+    fileUrl?: string | undefined;
+    fileSize?: number | undefined;
+    entryCount?: number | undefined;
+    createdAt: Date;
+    completedAt?: Date | undefined;
+    expiresAt?: Date | undefined;
+    error?: string | undefined;
+  } | null>;
+  requestExport(
+    workspaceId: string,
+    userId: string,
+    filter: { workspaceId: string },
+    format: 'json' | 'csv' | 'pdf'
+  ): Promise<{
+    id: string;
+    status: string;
+    format: string;
+    createdAt: Date;
+  }>;
+}
 
 // =============================================================================
 // TYPES

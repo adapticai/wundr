@@ -7,12 +7,21 @@ import { WEBHOOK_EVENTS } from '@/types/integration';
 
 import type { WebhookDelivery, WebhookDeliveryStatus } from '@/types/integration';
 
+/**
+ * Props for the WebhookDeliveryLog component
+ */
 export interface WebhookDeliveryLogProps {
+  /** Array of webhook delivery records */
   deliveries: WebhookDelivery[];
+  /** Loading state for the log */
   isLoading?: boolean;
+  /** Callback fired when retrying a failed delivery */
   onRetry: (delivery: WebhookDelivery) => Promise<void>;
+  /** Callback to load more deliveries (pagination) */
   onLoadMore?: () => void;
+  /** Whether there are more deliveries to load */
   hasMore?: boolean;
+  /** Additional CSS class names */
   className?: string;
 }
 

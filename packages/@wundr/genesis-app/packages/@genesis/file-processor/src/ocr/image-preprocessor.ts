@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import sharp, { Sharp as _Sharp } from 'sharp';
+import sharp from 'sharp';
 
 import type { Metadata } from 'sharp';
 

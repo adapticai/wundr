@@ -269,16 +269,17 @@ export function wait(ms: number): Promise<void> {
 export function createMockServer(baseUrl: string = 'http://localhost:3000'): MockServer {
   const routes: Map<string, MockResponse> = new Map();
   const requests: Array<{ method: string; path: string }> = [];
-  let _isRunning = false;
+  let isRunning = false;
 
   return {
     baseUrl,
     start: async () => {
-      _isRunning = true;
+      isRunning = true;
     },
     stop: async () => {
-      _isRunning = false;
+      isRunning = false;
     },
+    isRunning: () => isRunning,
     reset: () => {
       routes.clear();
       requests.length = 0;

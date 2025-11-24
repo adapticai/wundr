@@ -3,12 +3,21 @@
 import { clsx } from 'clsx';
 import { useMemo } from 'react';
 
+/**
+ * Props for the LineChart component.
+ */
 export interface LineChartProps {
+  /** Array of data points with date and value */
   data: Array<{ date: string; value: number }>;
+  /** Optional title displayed above the chart */
   title?: string;
+  /** Line color in CSS format (default: #3b82f6) */
   color?: string;
+  /** Chart height in pixels (default: 200) */
   height?: number;
+  /** Whether to show grid lines (default: true) */
   showGrid?: boolean;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

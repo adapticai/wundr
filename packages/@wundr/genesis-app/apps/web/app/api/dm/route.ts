@@ -162,7 +162,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const existingDM = await prisma.channel.findFirst({
       where: {
         workspaceId: input.workspaceId,
-        type: 'DIRECT',
+        type: 'DM',
         name: dmIdentifier,
       },
       include: {
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (existingDM) {
       // Filter out the current user to get the "other" participant
       const otherParticipant = existingDM.members.find(
-        (m) => m.userId !== session.user.id,
+        (m: { userId: string }) => m.userId !== session.user.id,
       );
 
       return NextResponse.json({
@@ -204,7 +204,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const newChannel = await tx.channel.create({
         data: {
           name: dmIdentifier,
-          type: 'DIRECT',
+          slug: dmIdentifier.replace(/:/g, '-'), // Convert dm:id1:id2 to dm-id1-id2
+          type: 'DM',
           workspaceId: input.workspaceId,
         },
       });
@@ -248,7 +249,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Get the other participant
     const otherParticipant = dmChannel?.members.find(
-      (m) => m.userId !== session.user.id,
+      (m: { userId: string }) => m.userId !== session.user.id,
     );
 
     return NextResponse.json(

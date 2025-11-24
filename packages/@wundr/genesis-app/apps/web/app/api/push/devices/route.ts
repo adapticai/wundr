@@ -18,6 +18,7 @@ import {
   NOTIFICATION_ERROR_CODES,
 } from '@/lib/validations/notification';
 
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -91,12 +92,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const activeFilter = searchParams.get('active');
     const platformFilter = searchParams.get('platform');
 
-    // Build where clause
-    const where = {
+    // Build where clause with proper typing
+    const where: Prisma.PushSubscriptionWhereInput = {
       userId: session.user.id,
-      ...(activeFilter !== null && { active: activeFilter === 'true' }),
-      ...(platformFilter && { platform: platformFilter }),
     };
+
+    // Add filters if provided
+    if (activeFilter !== null) {
+      where.active = activeFilter === 'true';
+    }
+    if (platformFilter) {
+      // Cast to enum type as it comes from query string
+      where.platform = platformFilter as 'web' | 'ios' | 'android';
+    }
 
     // Fetch devices and counts in parallel
     const [devices, totalCount, activeCount] = await Promise.all([
@@ -132,8 +140,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         active: activeCount,
       },
     });
-  } catch (error) {
-    console.error('[GET /api/push/devices] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',

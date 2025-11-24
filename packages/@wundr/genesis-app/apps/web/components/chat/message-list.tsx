@@ -9,21 +9,41 @@ import { MessageItem } from './message-item';
 
 import type { Message, User } from '@/types/chat';
 
+
+
+/**
+ * Props for the MessageList component
+ */
 interface MessageListProps {
+  /** Array of messages to display */
   messages: Message[];
+  /** The current authenticated user */
   currentUser: User;
+  /** Whether the initial load is in progress */
   isLoading?: boolean;
+  /** Whether more messages are being loaded */
   isLoadingMore?: boolean;
+  /** Whether there are more messages to load */
   hasMore?: boolean;
+  /** Number of unread messages for the scroll button */
   unreadCount?: number;
+  /** ID of the last read message for separator display */
   lastReadMessageId?: string;
+  /** Callback to load more messages (infinite scroll) */
   onLoadMore?: () => void;
+  /** Callback fired when replying to a message */
   onReply?: (message: Message) => void;
+  /** Callback fired when editing a message */
   onEdit?: (message: Message) => void;
+  /** Callback fired when deleting a message */
   onDelete?: (messageId: string) => void;
+  /** Callback fired when adding/removing a reaction */
   onReaction?: (messageId: string, emoji: string) => void;
+  /** Callback fired when opening a message thread */
   onOpenThread?: (message: Message) => void;
+  /** Whether this is a thread view (affects UI rendering) */
   isThreadView?: boolean;
+  /** Additional CSS class names */
   className?: string;
 }
 

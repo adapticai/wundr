@@ -5,10 +5,17 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { EMOJI_CATEGORIES, QUICK_REACTIONS } from '@/types/chat';
 
+/**
+ * Props for the ReactionPicker component
+ */
 interface ReactionPickerProps {
+  /** Callback fired when an emoji is selected */
   onSelect: (emoji: string) => void;
+  /** Callback to close the picker */
   onClose: () => void;
+  /** Array of frequently used emojis */
   frequentEmojis?: string[];
+  /** Additional CSS class names */
   className?: string;
 }
 
@@ -182,10 +189,17 @@ return categories;
   );
 }
 
+/**
+ * Props for the ReactionPickerTrigger component
+ */
 interface ReactionPickerTriggerProps {
+  /** Child elements that act as the trigger button */
   children: React.ReactNode;
+  /** Callback fired when an emoji is selected */
   onSelect: (emoji: string) => void;
+  /** Array of frequently used emojis */
   frequentEmojis?: string[];
+  /** Additional CSS class names */
   className?: string;
 }
 

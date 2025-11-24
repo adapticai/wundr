@@ -59,18 +59,46 @@ function generateUploadId(): string {
 async function initiateMultipartUpload(
   s3Key: string,
   s3Bucket: string,
+  contentType: string,
 ): Promise<MultipartInitResponse> {
-  // In production, this would use AWS SDK to create multipart upload
-  const uploadId = generateUploadId();
+  const region = process.env.AWS_REGION ?? 'us-east-1';
   const expiresIn = 24 * 3600; // 24 hours for multipart uploads
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
 
-  return {
-    uploadId,
-    s3Key,
-    s3Bucket,
-    expiresAt,
-  };
+  try {
+    const { S3Client, CreateMultipartUploadCommand } = await import('@aws-sdk/client-s3');
+
+    const client = new S3Client({
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+      },
+    });
+
+    const response = await client.send(
+      new CreateMultipartUploadCommand({
+        Bucket: s3Bucket,
+        Key: s3Key,
+        ContentType: contentType,
+      }),
+    );
+
+    return {
+      uploadId: response.UploadId ?? generateUploadId(),
+      s3Key,
+      s3Bucket,
+      expiresAt,
+    };
+  } catch {
+    // Fallback to generated ID if S3 call fails (for development)
+    return {
+      uploadId: generateUploadId(),
+      s3Key,
+      s3Bucket,
+      expiresAt,
+    };
+  }
 }
 
 /**
@@ -178,7 +206,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const s3Key = generateS3Key(input.workspaceId, input.filename);
 
     // Initiate multipart upload
-    const multipartData = await initiateMultipartUpload(s3Key, s3Bucket);
+    const multipartData = await initiateMultipartUpload(s3Key, s3Bucket, input.contentType);
 
     // Create pending file record with multipart upload metadata
     await prisma.file.create({
@@ -207,8 +235,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       data: multipartData,
       message: 'Multipart upload initiated successfully',
     });
-  } catch (error) {
-    console.error('[POST /api/upload/multipart] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

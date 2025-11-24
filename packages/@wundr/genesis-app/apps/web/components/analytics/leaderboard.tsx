@@ -2,17 +2,30 @@
 
 import { clsx } from 'clsx';
 
+/**
+ * Props for the Leaderboard component.
+ */
 export interface LeaderboardProps {
+  /** Array of leaderboard entries to display */
   data: Array<{
+    /** Unique identifier for the entry */
     id: string;
+    /** Display name of the entry */
     name: string;
+    /** Numeric value used for ranking */
     value: number;
+    /** Optional avatar image URL */
     avatarUrl?: string;
+    /** Optional subtitle text */
     subtitle?: string;
   }>;
+  /** Optional title displayed above the leaderboard */
   title?: string;
+  /** Label for the value column */
   valueLabel?: string;
+  /** Whether to show rank numbers */
   showRank?: boolean;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

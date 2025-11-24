@@ -116,8 +116,14 @@ export interface AdminStorage {
   getAdminActions(workspaceId: string): Promise<AdminAction[]>;
 }
 
-function generateId(prefix: string): string { 
-  return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 9); 
+/**
+ * Generate a unique ID with a prefix using cryptographic randomness.
+ *
+ * @param prefix - The prefix for the ID
+ * @returns A unique ID string
+ */
+function generateId(prefix: string): string {
+  return prefix + '_' + Date.now().toString(36) + crypto.randomUUID().split('-')[0];
 }
 
 export class InMemoryAdminStorage implements AdminStorage {

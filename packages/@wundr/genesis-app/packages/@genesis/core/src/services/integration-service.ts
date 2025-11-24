@@ -294,7 +294,7 @@ export interface WebhookService {
   deleteWebhook(id: string): Promise<void>;
 
   // Delivery operations
-  triggerWebhook(webhookId: string, event: WebhookEvent, payload: Record<string, unknown>): Promise<WebhookDelivery>;
+  triggerWebhook(webhookId: string, event: WebhookEvent, payload: WebhookPayload): Promise<WebhookDelivery>;
   deliverWithRetry(delivery: WebhookDelivery): Promise<WebhookDelivery>;
   getDeliveryHistory(webhookId: string, options?: ListDeliveriesOptions): Promise<PaginatedDeliveryResult>;
 
@@ -965,7 +965,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   async triggerWebhook(
     webhookId: string,
     event: WebhookEvent,
-    payload: Record<string, unknown>,
+    payload: WebhookPayload,
   ): Promise<WebhookDelivery> {
     const webhook = await this.storage.getWebhook(webhookId);
     if (!webhook) {

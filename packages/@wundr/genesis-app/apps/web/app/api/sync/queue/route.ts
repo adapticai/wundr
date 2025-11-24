@@ -97,10 +97,16 @@ async function processMessageOperation(
         return { success: false, error: 'Not a member of this channel' };
       }
 
+      const messageType = (payload.type as string) ?? 'TEXT';
+      const validTypes = ['TEXT', 'FILE', 'SYSTEM', 'COMMAND'] as const;
+      const safeType = validTypes.includes(messageType as typeof validTypes[number])
+        ? (messageType as typeof validTypes[number])
+        : 'TEXT';
+
       const message = await prisma.message.create({
         data: {
           content: payload.content as string,
-          type: (payload.type as string) ?? 'TEXT',
+          type: safeType,
           channelId,
           authorId: userId,
           parentId: payload.parentId as string | undefined,
@@ -217,9 +223,17 @@ async function processChannelOperation(
         return { success: false, error: 'Not a member of this workspace' };
       }
 
+      const name = payload.name as string;
+      // Generate slug from name
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') || 'channel';
+
       const channel = await prisma.channel.create({
         data: {
-          name: payload.name as string,
+          name,
+          slug,
           description: payload.description as string | undefined,
           type: (payload.type as 'PUBLIC' | 'PRIVATE') ?? 'PUBLIC',
           workspaceId,
@@ -504,10 +518,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       await prisma.user.update({
         where: { id: session.user.id },
         data: {
-          preferences: {
+          preferences: JSON.parse(JSON.stringify({
             ...currentPrefs,
             syncConflicts: [...existingConflicts, ...conflicts],
-          },
+          })) as Prisma.InputJsonValue,
         },
       });
     }

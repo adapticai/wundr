@@ -9,7 +9,7 @@
  * @module app/api/workspaces/[workspaceId]/admin/members/route
  */
 
-import { prisma, Prisma } from '@genesis/database';
+import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -17,10 +17,10 @@ import {
   memberFiltersSchema,
   createAdminErrorResponse,
   ADMIN_ERROR_CODES,
-  type MemberStatus,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
+import type { MemberStatus } from '@/lib/validations/admin';
+import type { Prisma } from '@genesis/database';
 
 /**
  * Route context with workspace ID parameter
@@ -39,7 +39,7 @@ interface RouteContext {
  * @returns Paginated list of members
  */
 export async function GET(
-  request: NextRequest,
+  request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

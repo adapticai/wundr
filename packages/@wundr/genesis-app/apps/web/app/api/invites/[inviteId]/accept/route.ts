@@ -21,6 +21,7 @@ import {
   type InviteStatus,
 } from '@/lib/validations/admin';
 
+import type { Prisma } from '@prisma/client';
 import type { NextRequest} from 'next/server';
 
 /**
@@ -85,7 +86,7 @@ export async function POST(
       select: { id: true, settings: true, organizationId: true },
     });
 
-    let foundWorkspace: { id: string; settings: unknown; organizationId: string } | null = null;
+    let foundWorkspace: { id: string; settings: Prisma.JsonValue; organizationId: string } | null = null;
     let foundInvite: Invite | null = null;
 
     for (const workspace of workspaces) {

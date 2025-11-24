@@ -214,7 +214,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

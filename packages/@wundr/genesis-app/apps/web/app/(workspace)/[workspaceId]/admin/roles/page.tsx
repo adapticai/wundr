@@ -31,7 +31,7 @@ export default function AdminRolesPage() {
   );
 
   const handleUpdate = useCallback(
-    async (roleId: string, data: UpdateRoleData) => {
+    async (roleId: string, data: CreateRoleData) => {
       await updateRole(roleId, data);
       setEditingRole(null);
     },
@@ -166,16 +166,16 @@ export default function AdminRolesPage() {
   );
 }
 
-// Types
+// Types - aligned with useRoles hook
 interface Role {
   id: string;
   name: string;
   description?: string;
-  color?: string;
   permissions: string[];
-  memberCount: number;
-  isDefault: boolean;
-  createdAt: string;
+  isDefault?: boolean;
+  memberCount?: number;
+  // Local extension for UI
+  color?: string;
 }
 
 interface Permission {
@@ -184,19 +184,8 @@ interface Permission {
   description: string;
 }
 
-interface CreateRoleData {
-  name: string;
-  description?: string;
-  color?: string;
-  permissions: string[];
-}
-
-interface UpdateRoleData {
-  name?: string;
-  description?: string;
-  color?: string;
-  permissions?: string[];
-}
+// CreateRoleData matches Omit<Role, 'id'> from the hook
+type CreateRoleData = Omit<Role, 'id'>;
 
 // Role Card Component
 interface RoleCardProps {
@@ -321,11 +310,11 @@ function DefaultRoleCard({
   );
 }
 
-// Role Editor Modal
+// Role Editor Modal - uses CreateRoleData for both create and update since the form always provides all fields
 interface RoleEditorModalProps {
   role?: Role;
   availablePermissions: Permission[];
-  onSave: (data: CreateRoleData | UpdateRoleData) => Promise<void>;
+  onSave: (data: CreateRoleData) => Promise<void>;
   onClose: () => void;
 }
 
@@ -428,10 +417,10 @@ function RoleEditorModal({
                     type="button"
                     onClick={() => setColor(c)}
                     className={cn(
-                      'h-8 w-8 rounded-full',
-                      color === c && 'ring-2 ring-offset-2 ring-offset-background',
+                      'h-8 w-8 rounded-full border-2',
+                      color === c ? 'border-foreground ring-2 ring-offset-2 ring-offset-background' : 'border-transparent',
                     )}
-                    style={{ backgroundColor: c, ringColor: c }}
+                    style={{ backgroundColor: c }}
                   />
                 ))}
               </div>

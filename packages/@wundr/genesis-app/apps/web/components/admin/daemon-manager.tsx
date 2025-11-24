@@ -35,10 +35,17 @@ interface DaemonMetrics {
   errorCount?: number;
 }
 
+/**
+ * Props for the DaemonManager component.
+ */
 export interface DaemonManagerProps {
+  /** The workspace ID for daemon management */
   workspaceId: string;
+  /** The Virtual Persona ID to manage daemons for */
   vpId: string;
+  /** Display name of the Virtual Persona */
   vpName: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

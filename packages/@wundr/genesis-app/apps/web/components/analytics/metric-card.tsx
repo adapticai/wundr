@@ -2,16 +2,28 @@
 
 import { clsx } from 'clsx';
 
+/**
+ * Props for the MetricCard component.
+ */
 export interface MetricCardProps {
+  /** Title label for the metric */
   title: string;
+  /** The metric value to display */
   value: number | string;
+  /** Optional change indicator showing trend vs previous period */
   change?: {
+    /** Absolute change value */
     value: number;
+    /** Percentage change */
     percent: number;
+    /** Direction of change */
     trend: 'up' | 'down' | 'stable';
   };
+  /** Optional icon displayed in the card */
   icon?: React.ReactNode;
+  /** Format for displaying the value */
   format?: 'number' | 'percent' | 'duration' | 'bytes';
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

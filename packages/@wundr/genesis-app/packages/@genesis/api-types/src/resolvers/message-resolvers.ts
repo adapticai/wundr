@@ -444,23 +444,161 @@ function canDeleteMessage(
 }
 
 /**
+ * Rate limit configuration: max messages per time window
+ */
+const RATE_LIMIT_MAX_MESSAGES = 10;
+
+/**
+ * Rate limit time window in seconds
+ */
+const RATE_LIMIT_WINDOW_SECONDS = 60;
+
+/**
+ * In-memory rate limit store (in production, use Redis)
+ * Key format: "ratelimit:message:{userId}:{channelId}"
+ */
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+/**
+ * Rate limit check result
+ */
+interface RateLimitResult {
+  /** Whether the request is allowed */
+  allowed: boolean;
+  /** Seconds until rate limit resets (if not allowed) */
+  retryAfterSeconds?: number;
+  /** Current count of messages in window */
+  currentCount: number;
+  /** Maximum allowed messages in window */
+  maxCount: number;
+}
+
+/**
+ * Checks if a user has exceeded the message rate limit.
+ * Uses a sliding window approach with in-memory storage.
+ * In production, this should use Redis for distributed rate limiting.
+ *
+ * @param context - The GraphQL context
+ * @param channelId - The channel ID
+ * @returns Rate limit check result
+ */
+async function checkMessageRateLimit(
+  context: GraphQLContext,
+  channelId: string
+): Promise<RateLimitResult> {
+  if (!isAuthenticated(context)) {
+    return { allowed: false, retryAfterSeconds: 0, currentCount: 0, maxCount: RATE_LIMIT_MAX_MESSAGES };
+  }
+
+  const userId = context.user.id;
+  const key = `ratelimit:message:${userId}:${channelId}`;
+  const now = Date.now();
+  const windowMs = RATE_LIMIT_WINDOW_SECONDS * 1000;
+
+  // Get or create rate limit entry
+  let entry = rateLimitStore.get(key);
+
+  // Check if window has expired
+  if (!entry || now > entry.resetAt) {
+    // Start new window
+    entry = {
+      count: 1,
+      resetAt: now + windowMs,
+    };
+    rateLimitStore.set(key, entry);
+    return { allowed: true, currentCount: 1, maxCount: RATE_LIMIT_MAX_MESSAGES };
+  }
+
+  // Check if under limit
+  if (entry.count < RATE_LIMIT_MAX_MESSAGES) {
+    entry.count++;
+    rateLimitStore.set(key, entry);
+    return { allowed: true, currentCount: entry.count, maxCount: RATE_LIMIT_MAX_MESSAGES };
+  }
+
+  // Rate limited
+  const retryAfterSeconds = Math.ceil((entry.resetAt - now) / 1000);
+  return {
+    allowed: false,
+    retryAfterSeconds,
+    currentCount: entry.count,
+    maxCount: RATE_LIMIT_MAX_MESSAGES,
+  };
+}
+
+/**
+ * Default maximum message length (characters)
+ */
+const DEFAULT_MAX_MESSAGE_LENGTH = 10000;
+
+/**
+ * Maximum message length upper bound (characters) - cannot be exceeded even with config
+ */
+const MAX_MESSAGE_LENGTH_UPPER_BOUND = 50000;
+
+/**
+ * Gets the maximum message length for a workspace.
+ * Falls back to default if workspace config is not available.
+ *
+ * @param context - The GraphQL context
+ * @param channelId - The channel ID to get workspace config from
+ * @returns Maximum message length in characters
+ */
+async function getMaxMessageLength(
+  context: GraphQLContext,
+  channelId?: string
+): Promise<number> {
+  if (!channelId) {
+    return DEFAULT_MAX_MESSAGE_LENGTH;
+  }
+
+  try {
+    // Get channel to find workspace
+    const channel = await context.prisma.channel.findUnique({
+      where: { id: channelId },
+      select: {
+        workspace: {
+          select: {
+            settings: true,
+          },
+        },
+      },
+    });
+
+    if (!channel?.workspace?.settings) {
+      return DEFAULT_MAX_MESSAGE_LENGTH;
+    }
+
+    const settings = channel.workspace.settings as Record<string, unknown>;
+    const configuredLength = settings.maxMessageLength;
+
+    if (typeof configuredLength === 'number' && configuredLength > 0) {
+      // Ensure configured length doesn't exceed upper bound
+      return Math.min(configuredLength, MAX_MESSAGE_LENGTH_UPPER_BOUND);
+    }
+  } catch {
+    // Fall back to default on error
+  }
+
+  return DEFAULT_MAX_MESSAGE_LENGTH;
+}
+
+/**
  * Validate message content
  *
  * @param content - The content to validate
+ * @param maxLength - Maximum allowed message length
  * @throws GraphQLError if content is invalid
  */
-function validateMessageContent(content: string): void {
+function validateMessageContent(content: string, maxLength: number = DEFAULT_MAX_MESSAGE_LENGTH): void {
   if (!content || content.trim().length === 0) {
     throw new GraphQLError('Message content is required', {
       extensions: { code: 'BAD_USER_INPUT', field: 'content' },
     });
   }
-  // Rate limiting consideration: Max message length to prevent abuse
-  // TODO: Make this configurable per workspace
-  const MAX_MESSAGE_LENGTH = 10000;
-  if (content.length > MAX_MESSAGE_LENGTH) {
+  if (content.length > maxLength) {
     throw new GraphQLError(
-      `Message content must be ${MAX_MESSAGE_LENGTH} characters or less`,
+      `Message content must be ${maxLength} characters or less`,
       {
         extensions: { code: 'BAD_USER_INPUT', field: 'content' },
       }
@@ -562,7 +700,7 @@ function toMessage(prismaMessage: PrismaMessage): Message {
     content: prismaMessage.content,
     type: prismaMessage.type,
     channelId: prismaMessage.channelId,
-    userId: prismaMessage.userId,
+    userId: prismaMessage.authorId,
     parentId: prismaMessage.parentId,
     isEdited: prismaMessage.isEdited,
     isDeleted: prismaMessage.isDeleted,
@@ -936,7 +1074,7 @@ export const messageQueries = {
     }
 
     if (filters?.authorIds && filters.authorIds.length > 0) {
-      where.userId = { in: filters.authorIds };
+      where.authorId = { in: filters.authorIds };
     }
 
     if (filters?.dateFrom) {
@@ -1010,9 +1148,10 @@ export const messageMutations = {
 
     const { input } = args;
 
-    // Validate content
+    // Validate content with configurable max length
+    const maxMessageLength = await getMaxMessageLength(context, input.channelId);
     try {
-      validateMessageContent(input.content);
+      validateMessageContent(input.content, maxMessageLength);
     } catch (error) {
       if (error instanceof GraphQLError) {
         return createErrorPayload(
@@ -1065,8 +1204,14 @@ export const messageMutations = {
       metadata = extractedMetadata as Prisma.InputJsonValue;
     }
 
-    // Rate limiting consideration: This is where you would check rate limits
-    // TODO: Implement rate limiting (e.g., max 10 messages per minute per user)
+    // Rate limiting: Check if user has exceeded message rate limit
+    const rateLimitResult = await checkMessageRateLimit(context, input.channelId);
+    if (!rateLimitResult.allowed) {
+      return createErrorPayload(
+        'RATE_LIMITED',
+        `You're sending messages too quickly. Please wait ${rateLimitResult.retryAfterSeconds} seconds.`
+      );
+    }
 
     // Create the message - use parentId as per Prisma schema
     const message = await context.prisma.message.create({
@@ -1074,7 +1219,7 @@ export const messageMutations = {
         content: processedContent,
         type: 'TEXT',
         channelId: input.channelId,
-        userId: context.user.id,
+        authorId: context.user.id,
         parentId,
         isEdited: false,
         isDeleted: false,
@@ -1139,9 +1284,10 @@ export const messageMutations = {
 
     const { input } = args;
 
-    // Validate content
+    // Validate content with configurable max length
+    const maxMessageLength = await getMaxMessageLength(context, input.channelId);
     try {
-      validateMessageContent(input.content);
+      validateMessageContent(input.content, maxMessageLength);
     } catch (error) {
       if (error instanceof GraphQLError) {
         return createErrorPayload(
@@ -1188,7 +1334,7 @@ export const messageMutations = {
         content: input.content,
         type: messageType,
         channelId: input.channelId,
-        userId: context.user.id,
+        authorId: context.user.id,
         parentId: input.parentMessageId ?? null,
         isEdited: false,
         isDeleted: false,

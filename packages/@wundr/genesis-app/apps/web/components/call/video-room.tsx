@@ -18,14 +18,25 @@ import { ParticipantTile } from './participant-tile';
 
 export type LayoutMode = 'grid' | 'spotlight' | 'sidebar';
 
+/**
+ * Props for the VideoRoom component.
+ */
 export interface VideoRoomProps {
+  /** LiveKit room token for authentication */
   token: string;
+  /** LiveKit server URL */
   serverUrl: string;
+  /** Name of the room to join */
   roomName: string;
+  /** Optional channel name associated with this call */
   channelName?: string;
+  /** Callback when disconnected from the room */
   onDisconnect?: () => void;
+  /** Callback when an error occurs */
   onError?: (error: Error) => void;
+  /** Additional CSS classes to apply */
   className?: string;
+  /** Initial layout mode for the video grid */
   initialLayout?: LayoutMode;
 }
 

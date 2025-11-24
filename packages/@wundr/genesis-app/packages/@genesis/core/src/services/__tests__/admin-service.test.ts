@@ -18,21 +18,18 @@ import {
   DEFAULT_GENERAL_SETTINGS,
   DEFAULT_SECURITY_SETTINGS,
   DEFAULT_MESSAGING_SETTINGS,
-  _SYSTEM_ROLES,
+  SYSTEM_ROLES,
   PLAN_FEATURES,
 } from '../../types/admin';
 import {
-  AdminServiceImpl,
   createAdminService,
   InMemoryAdminStorage,
-  _SettingsNotFoundError,
+  SettingsNotFoundError,
   RoleNotFoundError,
-  RoleAlreadyExistsError,
-  RoleValidationError,
   SystemRoleError,
   MemberNotFoundError,
   InviteNotFoundError,
-  InviteInvalidError,
+  InviteExpiredError,
 } from '../admin-service';
 
 import type {
@@ -44,6 +41,7 @@ import type {
   Permission,
   CreateRoleInput,
 } from '../../types/admin';
+import type { AdminService } from '../admin-service';
 
 // =============================================================================
 // TEST UTILITIES
@@ -143,21 +141,20 @@ function createTestBillingInfo(workspaceId: string, overrides: Partial<BillingIn
 
 describe('AdminService', () => {
   let storage: InMemoryAdminStorage;
-  let adminService: AdminServiceImpl;
+  let adminService: AdminService;
   const workspaceId = 'workspace_123';
   const userId = 'user_123';
 
   beforeEach(() => {
     idCounter = 0;
     storage = new InMemoryAdminStorage();
-    adminService = new AdminServiceImpl(storage);
+    adminService = createAdminService(storage);
     storage.addWorkspace(workspaceId);
     storage.addUser(userId);
   });
 
   afterEach(() => {
     vi.clearAllMocks();
-    storage.clear();
   });
 
   // ===========================================================================
@@ -165,6 +162,42 @@ describe('AdminService', () => {
   // ===========================================================================
 
   describe('Settings', () => {
+    describe('SettingsNotFoundError', () => {
+      it('is properly instantiated with id', () => {
+        const error = new SettingsNotFoundError('settings_123');
+
+        expect(error).toBeInstanceOf(SettingsNotFoundError);
+        expect(error.message).toBe('Settings not found: settings_123');
+        expect(error.code).toBe('SETTINGS_NOT_FOUND');
+        expect(error.name).toBe('AdminError');
+      });
+
+      it('can be used for strict settings retrieval', async () => {
+        // This test demonstrates how SettingsNotFoundError can be used
+        // when strict settings retrieval is needed (e.g., in APIs that
+        // require settings to already exist)
+        const strictGetSettings = async (workspaceId: string): Promise<WorkspaceSettings> => {
+          const settings = await storage.getSettings(workspaceId);
+          if (!settings) {
+            throw new SettingsNotFoundError(workspaceId);
+          }
+          return settings;
+        };
+
+        // Throws when settings don't exist
+        await expect(
+          strictGetSettings('nonexistent_workspace'),
+        ).rejects.toThrow(SettingsNotFoundError);
+
+        // Returns settings when they exist
+        const existingSettings = createTestWorkspaceSettings(workspaceId);
+        await storage.saveSettings(existingSettings);
+
+        const result = await strictGetSettings(workspaceId);
+        expect(result.workspaceId).toBe(workspaceId);
+      });
+    });
+
     describe('getSettings', () => {
       it('returns existing settings', async () => {
         const existingSettings = createTestWorkspaceSettings(workspaceId);
@@ -633,37 +666,89 @@ describe('AdminService', () => {
     });
 
     describe('getDefaultRoles', () => {
-      it('returns all system role templates', () => {
+      it('returns all system role templates matching SYSTEM_ROLES', () => {
         const defaults = adminService.getDefaultRoles();
 
-        expect(defaults.owner).toBeDefined();
-        expect(defaults.admin).toBeDefined();
-        expect(defaults.member).toBeDefined();
-        expect(defaults.guest).toBeDefined();
+        // Verify the service returns the exact SYSTEM_ROLES definitions
+        expect(defaults).toBe(SYSTEM_ROLES);
+        expect(defaults).toHaveLength(SYSTEM_ROLES.length);
       });
 
-      it('owner role has highest priority', () => {
+      it('contains owner, admin, member, and guest roles', () => {
         const defaults = adminService.getDefaultRoles();
+        const roleNames = defaults.map(r => r.name);
 
-        expect(defaults.owner.priority).toBeGreaterThan(defaults.admin.priority);
-        expect(defaults.admin.priority).toBeGreaterThan(defaults.member.priority);
-        expect(defaults.member.priority).toBeGreaterThan(defaults.guest.priority);
+        expect(roleNames).toContain('owner');
+        expect(roleNames).toContain('admin');
+        expect(roleNames).toContain('member');
+        expect(roleNames).toContain('guest');
       });
 
-      it('all system roles are marked as system roles', () => {
+      it('owner role has highest priority based on SYSTEM_ROLES', () => {
         const defaults = adminService.getDefaultRoles();
+        const owner = defaults.find(r => r.name === 'owner');
+        const admin = defaults.find(r => r.name === 'admin');
+        const member = defaults.find(r => r.name === 'member');
+        const guest = defaults.find(r => r.name === 'guest');
 
-        expect(defaults.owner.isSystemRole).toBe(true);
-        expect(defaults.admin.isSystemRole).toBe(true);
-        expect(defaults.member.isSystemRole).toBe(true);
-        expect(defaults.guest.isSystemRole).toBe(true);
+        expect(owner).toBeDefined();
+        expect(admin).toBeDefined();
+        expect(member).toBeDefined();
+        expect(guest).toBeDefined();
+
+        // Verify priority hierarchy matches SYSTEM_ROLES definitions
+        expect(owner!.priority).toBeGreaterThan(admin!.priority);
+        expect(admin!.priority).toBeGreaterThan(member!.priority);
+        expect(member!.priority).toBeGreaterThan(guest!.priority);
+
+        // Verify against the actual SYSTEM_ROLES constant values
+        const systemOwner = SYSTEM_ROLES.find(r => r.name === 'owner');
+        const systemAdmin = SYSTEM_ROLES.find(r => r.name === 'admin');
+        expect(owner!.priority).toBe(systemOwner!.priority);
+        expect(admin!.priority).toBe(systemAdmin!.priority);
       });
 
-      it('member role is marked as default', () => {
+      it('all system roles are marked as system roles per SYSTEM_ROLES', () => {
         const defaults = adminService.getDefaultRoles();
 
-        expect(defaults.member.isDefault).toBe(true);
-        expect(defaults.owner.isDefault).toBe(false);
+        // Verify every role from SYSTEM_ROLES is marked as a system role
+        for (const role of defaults) {
+          expect(role.isSystemRole).toBe(true);
+        }
+
+        // Cross-reference with SYSTEM_ROLES constant
+        for (const systemRole of SYSTEM_ROLES) {
+          expect(systemRole.isSystemRole).toBe(true);
+        }
+      });
+
+      it('member role is marked as default per SYSTEM_ROLES', () => {
+        const defaults = adminService.getDefaultRoles();
+        const member = defaults.find(r => r.name === 'member');
+        const owner = defaults.find(r => r.name === 'owner');
+
+        expect(member!.isDefault).toBe(true);
+        expect(owner!.isDefault).toBe(false);
+
+        // Verify consistency with SYSTEM_ROLES constant
+        const systemMember = SYSTEM_ROLES.find(r => r.name === 'member');
+        expect(systemMember!.isDefault).toBe(true);
+      });
+
+      it('owner role has full permissions as defined in SYSTEM_ROLES', () => {
+        const defaults = adminService.getDefaultRoles();
+        const owner = defaults.find(r => r.name === 'owner');
+        const systemOwner = SYSTEM_ROLES.find(r => r.name === 'owner');
+
+        expect(owner).toBeDefined();
+        expect(systemOwner).toBeDefined();
+        expect(owner!.permissions).toEqual(systemOwner!.permissions);
+
+        // Owner should have permissions on all resources including billing
+        const resources = owner!.permissions.map(p => p.resource);
+        expect(resources).toContain('workspace');
+        expect(resources).toContain('billing');
+        expect(resources).toContain('settings');
       });
     });
   });
@@ -1149,7 +1234,21 @@ describe('AdminService', () => {
 
         await expect(
           adminService.acceptInvite(invite.id, 'new_user'),
-        ).rejects.toThrow(InviteInvalidError);
+        ).rejects.toThrow(InviteExpiredError);
+      });
+
+      it('marks invite as expired when accepting an expired invite', async () => {
+        const expiredDate = new Date();
+        expiredDate.setDate(expiredDate.getDate() - 1);
+        const invite = createTestInvite(workspaceId, { expiresAt: expiredDate });
+        await storage.saveInvite(invite);
+
+        await expect(
+          adminService.acceptInvite(invite.id, 'new_user'),
+        ).rejects.toThrow(InviteExpiredError);
+
+        const updated = await storage.getInvite(invite.id);
+        expect(updated?.status).toBe('expired');
       });
     });
   });

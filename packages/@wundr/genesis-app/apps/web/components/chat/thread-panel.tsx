@@ -11,17 +11,31 @@ import { MessageList } from './message-list';
 
 import type { Message, User, Thread } from '@/types/chat';
 
+/**
+ * Props for the ThreadPanel component
+ */
 interface ThreadPanelProps {
+  /** The thread data to display (null when no thread selected) */
   thread: Thread | null;
+  /** The current authenticated user */
   currentUser: User;
+  /** The channel ID for the message input */
   channelId: string;
+  /** Whether the thread is loading */
   isLoading?: boolean;
+  /** Whether the thread panel is open */
   isOpen: boolean;
+  /** Callback to close the thread panel */
   onClose: () => void;
+  /** Callback fired when sending a reply */
   onSendReply: (content: string, mentions: string[], attachments: File[]) => void;
+  /** Callback fired when editing a message */
   onEditMessage?: (message: Message) => void;
+  /** Callback fired when deleting a message */
   onDeleteMessage?: (messageId: string) => void;
+  /** Callback fired when adding/removing a reaction */
   onReaction?: (messageId: string, emoji: string) => void;
+  /** Additional CSS class names */
   className?: string;
 }
 

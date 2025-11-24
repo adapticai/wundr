@@ -1,20 +1,23 @@
-import { AnalyticsService } from '@genesis/core';
+import {
+  AnalyticsServiceImpl,
+  redis,
+  type AnalyticsDatabaseClient,
+  type AnalyticsRedisClient,
+  type UsageMetrics,
+} from '@genesis/core';
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth';
 
-import type { NextRequest} from 'next/server';
-
-
+import type { NextRequest } from 'next/server';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -26,14 +29,17 @@ export async function POST(
       where: { workspaceId, userId: session.user.id },
     });
 
-    if (!membership || !['admin', 'owner'].includes(membership.role)) {
+    if (!membership || !['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await request.json();
     const { period, format, metrics } = body;
 
-    const analyticsService = new AnalyticsService({ prisma, redis });
+    const analyticsService = new AnalyticsServiceImpl({
+      prisma: prisma as unknown as AnalyticsDatabaseClient,
+      redis: redis as unknown as AnalyticsRedisClient,
+    });
 
     // Get metrics data
     const metricsData = await analyticsService.getMetrics({
@@ -61,51 +67,46 @@ export async function POST(
   }
 }
 
-function convertMetricsToCSV(metrics: Record<string, unknown>): string {
+function convertMetricsToCSV(metrics: UsageMetrics): string {
   const lines: string[] = [];
 
   // Header
   lines.push('Category,Metric,Value');
 
   // Messages
-  const messages = metrics.messages as Record<string, unknown>;
-  if (messages) {
-    lines.push(`Messages,Total,${messages.total}`);
-    lines.push(`Messages,Average Per Day,${messages.averagePerDay}`);
-    lines.push(`Messages,Threads Created,${messages.threadsCreated}`);
-    lines.push(`Messages,Reactions Added,${messages.reactionsAdded}`);
+  if (metrics.messages) {
+    lines.push(`Messages,Total,${metrics.messages.total}`);
+    lines.push(`Messages,Average Per Day,${metrics.messages.averagePerDay}`);
+    lines.push(`Messages,Threads Created,${metrics.messages.threadsCreated}`);
+    lines.push(`Messages,Reactions Added,${metrics.messages.reactionsAdded}`);
   }
 
   // Users
-  const users = metrics.users as Record<string, unknown>;
-  if (users) {
-    lines.push(`Users,Total Members,${users.totalMembers}`);
-    lines.push(`Users,Active Users,${users.activeUsers}`);
-    lines.push(`Users,New Users,${users.newUsers}`);
+  if (metrics.users) {
+    lines.push(`Users,Total Members,${metrics.users.totalMembers}`);
+    lines.push(`Users,Active Users,${metrics.users.activeUsers}`);
+    lines.push(`Users,New Users,${metrics.users.newUsers}`);
   }
 
   // Channels
-  const channels = metrics.channels as Record<string, unknown>;
-  if (channels) {
-    lines.push(`Channels,Total,${channels.total}`);
-    lines.push(`Channels,Public,${channels.public}`);
-    lines.push(`Channels,Private,${channels.private}`);
-    lines.push(`Channels,New Channels,${channels.newChannels}`);
+  if (metrics.channels) {
+    lines.push(`Channels,Total,${metrics.channels.total}`);
+    lines.push(`Channels,Public,${metrics.channels.public}`);
+    lines.push(`Channels,Private,${metrics.channels.private}`);
+    lines.push(`Channels,New Channels,${metrics.channels.newChannels}`);
   }
 
   // Files
-  const files = metrics.files as Record<string, unknown>;
-  if (files) {
-    lines.push(`Files,Total Uploaded,${files.totalUploaded}`);
-    lines.push(`Files,Total Size (bytes),${files.totalSize}`);
+  if (metrics.files) {
+    lines.push(`Files,Total Uploaded,${metrics.files.totalUploaded}`);
+    lines.push(`Files,Total Size (bytes),${metrics.files.totalSize}`);
   }
 
   // VPs
-  const vp = metrics.vp as Record<string, unknown>;
-  if (vp) {
-    lines.push(`VPs,Total,${vp.totalVPs}`);
-    lines.push(`VPs,Active,${vp.activeVPs}`);
-    lines.push(`VPs,Messages Sent,${vp.messagesSent}`);
+  if (metrics.vp) {
+    lines.push(`VPs,Total,${metrics.vp.totalVPs}`);
+    lines.push(`VPs,Active,${metrics.vp.activeVPs}`);
+    lines.push(`VPs,Messages Sent,${metrics.vp.messagesSent}`);
   }
 
   return lines.join('\n');

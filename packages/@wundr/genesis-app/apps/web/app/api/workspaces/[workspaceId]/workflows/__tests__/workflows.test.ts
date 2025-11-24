@@ -36,9 +36,11 @@ import type {
 // MOCKS
 // =============================================================================
 
-// Mock NextAuth
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+// Mock auth
+const mockGetServerSession = vi.fn();
+vi.mock('@/lib/auth', () => ({
+  auth: mockGetServerSession,
+  getServerSession: () => mockGetServerSession(),
 }));
 
 // Mock the Workflow service
@@ -97,8 +99,8 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Utility function kept for future route handler tests
-function createMockRequest(
+// @ts-expect-error Utility function kept for future route handler tests
+function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
   searchParams?: Record<string, string>,
@@ -212,12 +214,8 @@ function createMockTemplate(overrides: Partial<WorkflowTemplate> = {}): Workflow
 // =============================================================================
 
 describe('Workflow API Routes', () => {
-  let getServerSession: ReturnType<typeof vi.fn>;
-
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {
@@ -231,7 +229,7 @@ describe('Workflow API Routes', () => {
   describe('POST /api/workspaces/:workspaceId/workflows', () => {
     it('creates workflow with valid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflow = createMockWorkflow();
       mockWorkflowService.createWorkflow.mockResolvedValue(mockWorkflow);
@@ -256,7 +254,7 @@ describe('Workflow API Routes', () => {
 
     it('creates workflow with multiple actions', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflow = createMockWorkflow({
         actions: [
@@ -282,7 +280,7 @@ describe('Workflow API Routes', () => {
 
     it('creates workflow with variables', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflow = createMockWorkflow({
         variables: [
@@ -306,9 +304,9 @@ describe('Workflow API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockGetServerSession.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await mockGetServerSession();
       expect(session).toBeNull();
 
       const expectedStatus = 401;
@@ -324,7 +322,7 @@ describe('Workflow API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const hasPermission = ['ADMIN', 'OWNER', 'MEMBER'].includes(session.user.role);
       expect(hasPermission).toBe(false);
@@ -332,7 +330,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 for missing name', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
         new Error('Workflow name is required'),
@@ -348,7 +346,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 for invalid trigger type', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
         new Error('Invalid trigger type: invalid_type'),
@@ -365,7 +363,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 for empty actions array', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
         new Error('At least one action is required'),
@@ -382,7 +380,7 @@ describe('Workflow API Routes', () => {
 
     it('validates name length', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const longName = 'a'.repeat(256);
 
@@ -401,7 +399,7 @@ describe('Workflow API Routes', () => {
 
     it('validates action configuration', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
         new Error('send_message action requires message field'),
@@ -424,7 +422,7 @@ describe('Workflow API Routes', () => {
   describe('GET /api/workspaces/:workspaceId/workflows', () => {
     it('lists all workflows in workspace', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflows = [
         createMockWorkflow({ id: 'wf_1', name: 'Workflow 1' }),
@@ -445,7 +443,7 @@ describe('Workflow API Routes', () => {
 
     it('filters by status', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const activeWorkflows = [
         createMockWorkflow({ id: 'wf_1', status: 'active' }),
@@ -467,7 +465,7 @@ describe('Workflow API Routes', () => {
 
     it('filters by trigger type', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const scheduledWorkflows = [
         createMockWorkflow({ id: 'wf_1', trigger: { type: 'schedule' } }),
@@ -488,7 +486,7 @@ describe('Workflow API Routes', () => {
 
     it('paginates results', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflows = Array.from({ length: 10 }, (_, i) =>
         createMockWorkflow({ id: `wf_${i}`, name: `Workflow ${i}` }),
@@ -512,7 +510,7 @@ describe('Workflow API Routes', () => {
 
     it('searches by name', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const searchResults = [
         createMockWorkflow({ id: 'wf_1', name: 'Welcome workflow' }),
@@ -530,15 +528,15 @@ describe('Workflow API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockGetServerSession.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await mockGetServerSession();
       expect(session).toBeNull();
     });
 
     it('returns empty array for workspace with no workflows', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.listWorkflows.mockResolvedValue({
         workflows: [],
@@ -560,7 +558,7 @@ describe('Workflow API Routes', () => {
   describe('GET /api/workflows/:id', () => {
     it('returns workflow when found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const mockWorkflow = createMockWorkflow();
       mockWorkflowService.getWorkflow.mockResolvedValue(mockWorkflow);
@@ -573,7 +571,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when workflow not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.getWorkflow.mockResolvedValue(null);
 
@@ -591,7 +589,7 @@ describe('Workflow API Routes', () => {
           organizationId: 'other-org',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.getWorkflow.mockRejectedValue(
         new Error('Access denied'),
@@ -610,7 +608,7 @@ describe('Workflow API Routes', () => {
   describe('PATCH /api/workflows/:id', () => {
     it('updates workflow name', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const updatedWorkflow = createMockWorkflow({ name: 'Updated Name' });
       mockWorkflowService.updateWorkflow.mockResolvedValue(updatedWorkflow);
@@ -624,7 +622,7 @@ describe('Workflow API Routes', () => {
 
     it('updates workflow description', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const updatedWorkflow = createMockWorkflow({ description: 'New description' });
       mockWorkflowService.updateWorkflow.mockResolvedValue(updatedWorkflow);
@@ -638,7 +636,7 @@ describe('Workflow API Routes', () => {
 
     it('updates workflow trigger', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const newTrigger: TriggerConfig = {
         type: 'schedule',
@@ -656,7 +654,7 @@ describe('Workflow API Routes', () => {
 
     it('updates workflow actions', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const newActions: ActionConfig[] = [
         { id: 'a1', type: 'send_message', order: 0, config: { message: 'Updated message' } },
@@ -673,7 +671,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when workflow not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.updateWorkflow.mockRejectedValue(
         new Error('Workflow not found'),
@@ -686,7 +684,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 for invalid update data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.updateWorkflow.mockRejectedValue(
         new Error('Invalid trigger configuration'),
@@ -707,7 +705,7 @@ describe('Workflow API Routes', () => {
   describe('DELETE /api/workflows/:id', () => {
     it('deletes workflow when authorized', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.deleteWorkflow.mockResolvedValue({ success: true });
 
@@ -719,7 +717,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when workflow not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.deleteWorkflow.mockRejectedValue(
         new Error('Workflow not found'),
@@ -739,7 +737,7 @@ describe('Workflow API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const canDelete = ['ADMIN', 'OWNER'].includes(session.user.role);
       expect(canDelete).toBe(false);
@@ -747,7 +745,7 @@ describe('Workflow API Routes', () => {
 
     it('prevents deletion of active workflows with running executions', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.deleteWorkflow.mockRejectedValue(
         new Error('Cannot delete workflow with running executions'),
@@ -766,7 +764,7 @@ describe('Workflow API Routes', () => {
   describe('POST /api/workflows/:id/activate', () => {
     it('activates inactive workflow', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const activatedWorkflow = createMockWorkflow({ status: 'active' });
       mockWorkflowService.activateWorkflow.mockResolvedValue(activatedWorkflow);
@@ -778,7 +776,7 @@ describe('Workflow API Routes', () => {
 
     it('activates draft workflow', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const activatedWorkflow = createMockWorkflow({ status: 'active' });
       mockWorkflowService.activateWorkflow.mockResolvedValue(activatedWorkflow);
@@ -790,7 +788,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when workflow not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.activateWorkflow.mockRejectedValue(
         new Error('Workflow not found'),
@@ -803,7 +801,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 when workflow has validation errors', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.activateWorkflow.mockRejectedValue(
         new Error('Cannot activate workflow with validation errors'),
@@ -816,7 +814,7 @@ describe('Workflow API Routes', () => {
 
     it('returns current state if already active', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const activeWorkflow = createMockWorkflow({ status: 'active' });
       mockWorkflowService.activateWorkflow.mockResolvedValue(activeWorkflow);
@@ -834,7 +832,7 @@ describe('Workflow API Routes', () => {
   describe('POST /api/workflows/:id/deactivate', () => {
     it('deactivates active workflow', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const deactivatedWorkflow = createMockWorkflow({ status: 'inactive' });
       mockWorkflowService.deactivateWorkflow.mockResolvedValue(deactivatedWorkflow);
@@ -846,7 +844,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when workflow not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.deactivateWorkflow.mockRejectedValue(
         new Error('Workflow not found'),
@@ -859,7 +857,7 @@ describe('Workflow API Routes', () => {
 
     it('cancels running executions when deactivating', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const deactivatedWorkflow = createMockWorkflow({ status: 'inactive' });
       mockWorkflowService.deactivateWorkflow.mockResolvedValue(deactivatedWorkflow);
@@ -879,7 +877,7 @@ describe('Workflow API Routes', () => {
   describe('POST /api/workflows/:id/execute', () => {
     it('executes workflow manually', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const execution = createMockExecution();
       mockWorkflowService.executeWorkflow.mockResolvedValue(execution);
@@ -892,7 +890,7 @@ describe('Workflow API Routes', () => {
 
     it('executes workflow in test mode', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const testExecution = createMockExecution({
         id: 'exec_test',
@@ -909,7 +907,7 @@ describe('Workflow API Routes', () => {
 
     it('executes workflow with trigger data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const execution = createMockExecution({
         triggerData: { keyword: 'help', channelId: 'ch_123' },
@@ -925,7 +923,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when workflow not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.executeWorkflow.mockRejectedValue(
         new Error('Workflow not found'),
@@ -938,7 +936,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 when executing inactive workflow', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.executeWorkflow.mockRejectedValue(
         new Error('Cannot execute inactive workflow'),
@@ -951,7 +949,7 @@ describe('Workflow API Routes', () => {
 
     it('returns execution with failed status on action error', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const failedExecution = createMockExecution({
         status: 'failed',
@@ -981,7 +979,7 @@ describe('Workflow API Routes', () => {
   describe('GET /api/workflows/:id/executions', () => {
     it('returns execution history', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const executions = [
         createMockExecution({ id: 'exec_1' }),
@@ -1001,7 +999,7 @@ describe('Workflow API Routes', () => {
 
     it('filters by status', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const failedExecutions = [
         createMockExecution({ id: 'exec_1', status: 'failed' }),
@@ -1022,7 +1020,7 @@ describe('Workflow API Routes', () => {
 
     it('paginates results', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const executions = Array.from({ length: 20 }, (_, i) =>
         createMockExecution({ id: `exec_${i}` }),
@@ -1044,7 +1042,7 @@ describe('Workflow API Routes', () => {
 
     it('returns empty array for workflow with no executions', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.getExecutions.mockResolvedValue({
         executions: [],
@@ -1065,7 +1063,7 @@ describe('Workflow API Routes', () => {
   describe('POST /api/workflows/:id/executions/:execId/cancel', () => {
     it('cancels running execution', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const cancelledExecution = createMockExecution({ status: 'cancelled' });
       mockWorkflowService.cancelExecution.mockResolvedValue(cancelledExecution);
@@ -1080,7 +1078,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when execution not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.cancelExecution.mockRejectedValue(
         new Error('Execution not found'),
@@ -1093,7 +1091,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 when execution already completed', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.cancelExecution.mockRejectedValue(
         new Error('Cannot cancel completed execution'),
@@ -1106,7 +1104,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 400 when execution already failed', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.cancelExecution.mockRejectedValue(
         new Error('Cannot cancel failed execution'),
@@ -1125,7 +1123,7 @@ describe('Workflow API Routes', () => {
   describe('GET /api/workflow-templates', () => {
     it('returns all templates', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const templates = [
         createMockTemplate({ id: 'tmpl_1' }),
@@ -1140,7 +1138,7 @@ describe('Workflow API Routes', () => {
 
     it('filters by category', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const onboardingTemplates = [
         createMockTemplate({ id: 'tmpl_1', category: 'onboarding' }),
@@ -1157,7 +1155,7 @@ describe('Workflow API Routes', () => {
 
     it('returns templates sorted by popularity', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const templates = [
         createMockTemplate({ id: 'tmpl_1', usageCount: 100 }),
@@ -1181,7 +1179,7 @@ describe('Workflow API Routes', () => {
   describe('POST /api/workspaces/:workspaceId/workflows/from-template', () => {
     it('creates workflow from template', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const newWorkflow = createMockWorkflow({
         name: 'Welcome Message',
@@ -1199,7 +1197,7 @@ describe('Workflow API Routes', () => {
 
     it('creates workflow from template with custom name', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       const newWorkflow = createMockWorkflow({ name: 'Custom Welcome' });
       mockWorkflowService.createFromTemplate.mockResolvedValue(newWorkflow);
@@ -1215,7 +1213,7 @@ describe('Workflow API Routes', () => {
 
     it('returns 404 when template not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createFromTemplate.mockRejectedValue(
         new Error('Template not found'),
@@ -1234,7 +1232,7 @@ describe('Workflow API Routes', () => {
   describe('Error Handling', () => {
     it('handles database connection errors', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.listWorkflows.mockRejectedValue(
         new Error('Database connection failed'),
@@ -1247,7 +1245,7 @@ describe('Workflow API Routes', () => {
 
     it('handles rate limiting', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.executeWorkflow.mockRejectedValue(
         new Error('Rate limit exceeded'),
@@ -1260,7 +1258,7 @@ describe('Workflow API Routes', () => {
 
     it('handles concurrent modification conflicts', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.updateWorkflow.mockRejectedValue(
         new Error('Workflow was modified by another user'),
@@ -1273,7 +1271,7 @@ describe('Workflow API Routes', () => {
 
     it('handles invalid JSON in request body', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockGetServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
         new Error('Invalid JSON in request body'),

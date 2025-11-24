@@ -264,7 +264,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       message,
     });
-  } catch (error) {
+  } catch (_error) {
     // Error handling - error details in response
     return NextResponse.json(
       createNotificationErrorResponse(

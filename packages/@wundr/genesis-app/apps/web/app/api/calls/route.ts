@@ -10,6 +10,9 @@
  * @module app/api/calls/route
  */
 
+import { randomBytes } from 'crypto';
+
+import { getNotificationService } from '@genesis/core';
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
@@ -25,11 +28,107 @@ import { createErrorResponse, ORG_ERROR_CODES } from '@/lib/validations/organiza
 import type { NextRequest } from 'next/server';
 
 /**
- * Generate a unique room name for LiveKit
+ * Parameters for sending call invite notifications
+ */
+interface SendCallInviteParams {
+  callId: string;
+  channelId: string;
+  roomName: string;
+  callType: 'audio' | 'video';
+  invitedUserIds: string[];
+  inviterUserId: string;
+  inviterName: string;
+}
+
+/**
+ * Sends call invite notifications to specified users.
+ * Creates in-app notifications and optionally sends push notifications.
+ *
+ * @param params - Call invite parameters
+ */
+async function sendCallInviteNotifications(params: SendCallInviteParams): Promise<void> {
+  const {
+    callId,
+    channelId,
+    callType,
+    invitedUserIds,
+    inviterUserId,
+    inviterName,
+  } = params;
+
+  // Get channel name for notification body
+  const channel = await prisma.channel.findUnique({
+    where: { id: channelId },
+    select: { name: true },
+  });
+
+  const channelName = channel?.name ?? 'a channel';
+  const callTypeLabel = callType === 'video' ? 'video call' : 'voice call';
+
+  // Get notification service
+  const notificationService = getNotificationService();
+
+  // Send notifications to each invited user (exclude the inviter)
+  const notificationPromises = invitedUserIds
+    .filter((userId) => userId !== inviterUserId)
+    .map(async (userId) => {
+      try {
+        await notificationService.createNotification({
+          userId,
+          type: 'call_incoming',
+          title: `${inviterName} is calling`,
+          body: `You're invited to a ${callTypeLabel} in ${channelName}`,
+          resourceId: callId,
+          resourceType: 'call',
+          actorId: inviterUserId,
+          sendPush: true,
+          metadata: {
+            callId,
+            channelId,
+            callType,
+            action: 'join_call',
+            actionUrl: `/call/${callId}`,
+          },
+        });
+      } catch (error) {
+        // Log error but don't fail the entire operation
+        console.error(`[sendCallInviteNotifications] Failed to notify user ${userId}:`, error);
+      }
+    });
+
+  await Promise.all(notificationPromises);
+}
+
+/**
+ * Generate a cryptographically secure short ID.
+ *
+ * @param length - The length of the ID (default: 8)
+ * @returns A random alphanumeric string
+ */
+function generateSecureId(length: number = 8): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = randomBytes(length);
+  let result = '';
+
+  for (let i = 0; i < length; i++) {
+    const byte = bytes[i];
+    if (byte !== undefined) {
+      result += chars[byte % chars.length];
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Generate a unique room name for LiveKit.
+ *
+ * @param channelId - The channel ID for the call
+ * @returns A unique room name using cryptographic randomness
  */
 function generateRoomName(channelId: string): string {
   const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
+  const random = generateSecureId(8);
   return `call-${channelId.slice(-6)}-${timestamp}-${random}`;
 }
 
@@ -161,7 +260,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Create call record (using raw query since Call model may not exist yet)
-    const callId = `call_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 8)}`;
+    const callId = `call_${Date.now().toString(36)}${generateSecureId(8)}`;
     const now = new Date();
 
     // Note: In production, you would have a Call model in Prisma schema
@@ -212,10 +311,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       participantCount: 1,
     };
 
-    // TODO: Send notifications to invitees if provided
+    // Send notifications to invitees if provided
     if (invitees && invitees.length > 0) {
-      // Notification logic would go here
-      console.log(`[POST /api/calls] Inviting users to call: ${invitees.join(', ')}`);
+      await sendCallInviteNotifications({
+        callId,
+        channelId,
+        roomName,
+        callType: type,
+        invitedUserIds: invitees,
+        inviterUserId: session.user.id,
+        inviterName: user?.displayName ?? user?.name ?? 'Someone',
+      });
     }
 
     return NextResponse.json({

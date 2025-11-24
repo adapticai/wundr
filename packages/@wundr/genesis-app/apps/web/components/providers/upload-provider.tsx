@@ -41,12 +41,21 @@ interface UploadContextValue {
 
 const UploadContext = createContext<UploadContextValue | null>(null);
 
+/**
+ * Props for the UploadProvider component
+ */
 interface UploadProviderProps {
+  /** Child components */
   children: ReactNode;
+  /** Maximum file size in bytes */
   maxSize?: number;
+  /** Maximum number of files that can be uploaded */
   maxFiles?: number;
+  /** Accepted file types configuration */
   accept?: AcceptedFileTypes;
+  /** Callback when an upload completes successfully */
   onUploadComplete?: (fileId: string, url: string) => void;
+  /** Callback when an upload fails */
   onUploadError?: (fileId: string, error: string) => void;
 }
 

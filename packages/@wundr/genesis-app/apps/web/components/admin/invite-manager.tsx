@@ -15,9 +15,15 @@ export interface Invite {
   message?: string;
 }
 
+/**
+ * Props for the InviteManager component.
+ */
 export interface InviteManagerProps {
+  /** The workspace ID to manage invites for */
   workspaceId: string;
+  /** List of available roles for invitations */
   availableRoles: { id: string; name: string }[];
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

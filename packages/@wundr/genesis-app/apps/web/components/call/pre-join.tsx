@@ -7,16 +7,28 @@ import { useLocalMedia } from '@/hooks/use-call';
 
 import type { MediaDevice } from '@/types/call';
 
+/**
+ * Props for the PreJoin component.
+ */
 export interface PreJoinProps {
+  /** Name of the room to join */
   roomName: string;
+  /** Initial user name value */
   userName?: string;
+  /** Callback when user clicks join with their settings */
   onJoin: (settings: {
+    /** Whether video should be enabled when joining */
     videoEnabled: boolean;
+    /** Whether audio should be enabled when joining */
     audioEnabled: boolean;
+    /** The user's display name */
     userName: string;
   }) => void;
+  /** Callback when user cancels joining */
   onCancel?: () => void;
+  /** Additional CSS classes to apply */
   className?: string;
+  /** Whether a name is required before joining */
   requireName?: boolean;
 }
 
@@ -185,7 +197,6 @@ export function PreJoin({
       disableVideo();
       disableAudio();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Attach video track to preview element

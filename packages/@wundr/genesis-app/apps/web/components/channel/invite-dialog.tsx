@@ -7,13 +7,24 @@ import { cn } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
 
+
+/**
+ * Props for the InviteDialog component
+ */
 interface InviteDialogProps {
+  /** Whether the dialog is open */
   isOpen: boolean;
+  /** Callback to close the dialog */
   onClose: () => void;
+  /** Callback fired when inviting users with a specific role */
   onInvite: (userIds: string[], role: 'admin' | 'member') => Promise<void>;
+  /** The workspace ID for user search */
   workspaceId: string;
+  /** The channel name for display */
   channelName: string;
+  /** IDs of existing members to exclude from search results */
   existingMemberIds: string[];
+  /** External loading state */
   isLoading?: boolean;
 }
 

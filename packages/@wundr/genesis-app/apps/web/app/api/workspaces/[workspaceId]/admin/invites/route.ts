@@ -234,7 +234,7 @@ export async function POST(
       expiresAt.setDate(expiresAt.getDate() + (inviteInput.expiresInDays || 7));
 
       return {
-        id: `invite-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: `invite-${Date.now()}-${crypto.randomUUID().split('-')[0]}`,
         email: inviteInput.email,
         role: inviteInput.role || 'MEMBER',
         roleId: inviteInput.roleId || null,

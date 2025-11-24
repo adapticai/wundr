@@ -9,12 +9,21 @@ import { Lightbox } from './lightbox';
 import type { FileRecord } from '@/types/upload';
 
 
+/**
+ * Props for the ImageGallery component
+ */
 interface ImageGalleryProps {
+  /** Array of image file records to display */
   images: FileRecord[];
+  /** Number of columns in the grid */
   columns?: 2 | 3 | 4 | 5;
+  /** Gap size between images */
   gap?: 'sm' | 'md' | 'lg';
+  /** Aspect ratio for image thumbnails */
   aspectRatio?: 'square' | 'video' | 'auto';
+  /** Callback when image download is requested */
   onImageDownload?: (image: FileRecord) => void;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -149,10 +158,17 @@ export function ImageGallery({
   );
 }
 
+/**
+ * Props for the ImageGalleryPreview component
+ */
 interface ImageGalleryPreviewProps {
+  /** Array of image file records */
   images: FileRecord[];
+  /** Maximum number of images to show in preview */
   maxVisible?: number;
+  /** Callback to view all images */
   onViewAll?: () => void;
+  /** Optional CSS class name */
   className?: string;
 }
 

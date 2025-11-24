@@ -28,7 +28,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock NextAuth
 vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+  authMock: vi.fn(),
 }));
 
 // Mock the notification services
@@ -96,6 +96,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
+// @ts-expect-error Reserved for future integration tests
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
@@ -194,12 +195,12 @@ function createMockSyncResponse(overrides?: Record<string, unknown>) {
 // =============================================================================
 
 describe('Notification API Routes', () => {
-  let getServerSession: ReturnType<typeof vi.fn>;
+  let authMock: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
+    const authModule = await import('@/lib/auth');
+    authMock = authModule.auth as unknown as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {
@@ -213,7 +214,7 @@ describe('Notification API Routes', () => {
   describe('GET /api/notifications', () => {
     it('returns paginated notifications', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockNotifications = [
         createMockNotificationResponse({ id: 'notif-1' }),
@@ -242,7 +243,7 @@ describe('Notification API Routes', () => {
 
     it('filters by read status', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const unreadNotifications = [
         createMockNotificationResponse({ id: 'notif-1', isRead: false }),
@@ -265,7 +266,7 @@ describe('Notification API Routes', () => {
 
     it('filters by notification type', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mentionNotifications = [
         createMockNotificationResponse({ id: 'notif-1', type: 'MENTION' }),
@@ -286,9 +287,9 @@ describe('Notification API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      authMock.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await authMock();
       expect(session).toBeNull();
 
       // Route handler would return 401
@@ -298,7 +299,7 @@ describe('Notification API Routes', () => {
 
     it('supports cursor pagination', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.listNotifications.mockResolvedValue({
         data: [createMockNotificationResponse()],
@@ -330,7 +331,7 @@ describe('Notification API Routes', () => {
   describe('GET /api/notifications/unread', () => {
     it('returns unread count', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.getUnreadCount.mockResolvedValue(15);
 
@@ -341,7 +342,7 @@ describe('Notification API Routes', () => {
 
     it('returns zero for no unread', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.getUnreadCount.mockResolvedValue(0);
 
@@ -358,7 +359,7 @@ describe('Notification API Routes', () => {
   describe('POST /api/notifications/:id/read', () => {
     it('marks notification as read', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const notification = createMockNotificationResponse({
         isRead: true,
@@ -378,7 +379,7 @@ describe('Notification API Routes', () => {
 
     it('returns error for non-existent notification', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.markAsRead.mockRejectedValue({
         code: 'NOT_FOUND',
@@ -396,7 +397,7 @@ describe('Notification API Routes', () => {
 
     it('prevents marking other users notifications', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.markAsRead.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -420,7 +421,7 @@ describe('Notification API Routes', () => {
   describe('POST /api/notifications/read-all', () => {
     it('marks all notifications as read', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.markAllAsRead.mockResolvedValue({ count: 10 });
 
@@ -431,7 +432,7 @@ describe('Notification API Routes', () => {
 
     it('returns zero count when no unread notifications', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.markAllAsRead.mockResolvedValue({ count: 0 });
 
@@ -448,7 +449,7 @@ describe('Notification API Routes', () => {
   describe('DELETE /api/notifications/:id', () => {
     it('deletes notification', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.deleteNotification.mockResolvedValue({
         success: true,
@@ -464,7 +465,7 @@ describe('Notification API Routes', () => {
 
     it('returns error for non-existent notification', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.deleteNotification.mockRejectedValue({
         code: 'NOT_FOUND',
@@ -488,7 +489,7 @@ describe('Notification API Routes', () => {
   describe('GET /api/notifications/preferences', () => {
     it('returns user preferences', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const preferences = createMockPreferencesResponse();
       mockNotificationService.getPreferences.mockResolvedValue(preferences);
@@ -501,7 +502,7 @@ describe('Notification API Routes', () => {
 
     it('returns default preferences for new user', async () => {
       const session = createMockSession({ user: { id: 'new-user' } as MockUser });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const defaultPreferences = createMockPreferencesResponse({
         userId: 'new-user',
@@ -522,7 +523,7 @@ describe('Notification API Routes', () => {
   describe('PUT /api/notifications/preferences', () => {
     it('updates preferences', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const updatedPreferences = createMockPreferencesResponse({
         pushEnabled: false,
@@ -551,7 +552,7 @@ describe('Notification API Routes', () => {
 
     it('validates quiet hours configuration', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.updatePreferences.mockRejectedValue({
         code: 'VALIDATION_ERROR',
@@ -579,7 +580,7 @@ describe('Notification API Routes', () => {
   describe('POST /api/notifications/devices', () => {
     it('registers web push device', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const device = createMockDeviceResponse();
       mockNotificationService.registerDevice.mockResolvedValue(device);
@@ -598,7 +599,7 @@ describe('Notification API Routes', () => {
 
     it('registers FCM device', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const device = createMockDeviceResponse({
         platform: 'IOS',
@@ -618,7 +619,7 @@ describe('Notification API Routes', () => {
 
     it('validates web push requires endpoint', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.registerDevice.mockRejectedValue({
         code: 'VALIDATION_ERROR',
@@ -640,7 +641,7 @@ describe('Notification API Routes', () => {
 
     it('updates existing device on re-registration', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const updatedDevice = createMockDeviceResponse({
         lastUsedAt: new Date().toISOString(),
@@ -666,7 +667,7 @@ describe('Notification API Routes', () => {
   describe('DELETE /api/notifications/devices/:id', () => {
     it('unregisters device', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.unregisterDevice.mockResolvedValue({ success: true });
 
@@ -680,7 +681,7 @@ describe('Notification API Routes', () => {
 
     it('returns error for non-existent device', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.unregisterDevice.mockRejectedValue({
         code: 'NOT_FOUND',
@@ -698,7 +699,7 @@ describe('Notification API Routes', () => {
 
     it('prevents unregistering other users devices', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockNotificationService.unregisterDevice.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -722,7 +723,7 @@ describe('Notification API Routes', () => {
   describe('POST /api/notifications/sync', () => {
     it('performs full sync', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const syncResult = createMockSyncResponse({
         changes: {
@@ -745,7 +746,7 @@ describe('Notification API Routes', () => {
 
     it('performs incremental sync', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const syncResult = createMockSyncResponse();
       mockSyncService.performSync.mockResolvedValue(syncResult);
@@ -766,7 +767,7 @@ describe('Notification API Routes', () => {
 
     it('returns conflicts when detected', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const syncResult = createMockSyncResponse({
         conflicts: [
@@ -798,7 +799,7 @@ describe('Notification API Routes', () => {
   describe('POST /api/notifications/offline-queue', () => {
     it('processes offline actions', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockSyncService.processOfflineQueue.mockResolvedValue({
         processed: 5,
@@ -830,7 +831,7 @@ describe('Notification API Routes', () => {
 
     it('handles partial failures', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockSyncService.processOfflineQueue.mockResolvedValue({
         processed: 3,
@@ -856,7 +857,7 @@ describe('Notification API Routes', () => {
 
     it('processes in order', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const actions = [
         { id: 'action-1', action: 'SEND_MESSAGE', payload: {}, timestamp: new Date() },
@@ -890,7 +891,7 @@ describe('Notification API Routes', () => {
   describe('POST /api/notifications/conflicts/:id/resolve', () => {
     it('resolves conflict with SERVER_WINS', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockSyncService.resolveConflict.mockResolvedValue({
         id: 'conflict-1',
@@ -910,7 +911,7 @@ describe('Notification API Routes', () => {
 
     it('resolves conflict with CLIENT_WINS', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockSyncService.resolveConflict.mockResolvedValue({
         id: 'conflict-1',
@@ -929,7 +930,7 @@ describe('Notification API Routes', () => {
 
     it('returns error for non-existent conflict', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockSyncService.resolveConflict.mockRejectedValue({
         code: 'NOT_FOUND',
@@ -951,7 +952,7 @@ describe('Notification API Routes', () => {
 
     it('returns error for already resolved conflict', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockSyncService.resolveConflict.mockRejectedValue({
         code: 'ALREADY_RESOLVED',

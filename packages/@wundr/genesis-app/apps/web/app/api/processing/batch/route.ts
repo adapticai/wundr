@@ -15,6 +15,7 @@ import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { processingJobs } from '@/lib/services/processing-stores';
 import {
   batchProcessingSchema,
   createProcessingErrorResponse,
@@ -23,8 +24,6 @@ import {
   supportsOCR,
   supportsConversion,
 } from '@/lib/validations/processing';
-
-import { processingJobs } from '../route';
 
 import type { BatchProcessingInput } from '@/lib/validations/processing';
 import type { NextRequest } from 'next/server';
@@ -265,8 +264,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       { status: 201 },
     );
-  } catch (error) {
-    console.error('[POST /api/processing/batch] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',

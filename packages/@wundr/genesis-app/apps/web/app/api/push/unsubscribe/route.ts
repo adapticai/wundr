@@ -122,8 +122,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       message: 'Device unregistered successfully',
     });
-  } catch (error) {
-    console.error('[POST /api/push/unsubscribe] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',

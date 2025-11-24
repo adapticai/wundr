@@ -26,26 +26,43 @@ import type { Session } from '@genesis/database';
 // =============================================================================
 
 /**
+ * Generic request body type for API requests.
+ * Can be any JSON-serializable data structure.
+ */
+export type RequestBody = Record<string, unknown> | unknown[] | string | number | boolean | null;
+
+/**
  * Request context containing session information.
  * Typically extended by Next.js API request types.
+ * Provides the base structure for all API request contexts.
  */
 export interface RequestContext {
+  /** The user session, if authenticated */
   session?: Session | null;
+  /** URL path parameters (e.g., from dynamic routes) */
   params?: Record<string, string>;
+  /** URL query string parameters */
   query?: Record<string, string | string[]>;
-  body?: unknown;
+  /** Request body content */
+  body?: RequestBody;
 }
 
 /**
  * Extended request context with verified session.
+ * Used after authentication middleware has validated the session.
  */
 export interface AuthenticatedRequestContext extends RequestContext {
+  /** Verified session with guaranteed userId */
   session: Session & { userId: string };
+  /** Optional membership information attached by access middleware */
   membership?: MembershipInfo;
 }
 
 /**
  * Context extractor function type.
+ * Extracts permission context from the incoming request.
+ *
+ * @typeParam T - The request context type
  */
 export type ContextExtractor<T extends RequestContext> = (
   req: T
@@ -53,15 +70,25 @@ export type ContextExtractor<T extends RequestContext> = (
 
 /**
  * API handler function type.
+ * Represents an async function that processes API requests.
+ *
+ * @typeParam T - The request context type
+ * @typeParam R - The response type
  */
 export type ApiHandler<T extends RequestContext, R> = (req: T) => Promise<R>;
 
 /**
  * Middleware result wrapper.
+ * Encapsulates the result of middleware execution.
+ *
+ * @typeParam T - The data type on success
  */
 export interface MiddlewareResult<T> {
+  /** Whether the middleware execution was successful */
   success: boolean;
+  /** The result data on success */
   data?: T;
+  /** The error on failure */
   error?: Error;
 }
 

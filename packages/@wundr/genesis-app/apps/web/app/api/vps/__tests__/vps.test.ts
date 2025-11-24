@@ -162,6 +162,7 @@ describe('VP API Routes', () => {
         organizationId: 'org-123',
       };
 
+      // @ts-expect-error Reserved for future integration tests
       const _request = createMockRequest('POST', requestBody);
 
       // Simulating route handler behavior (TODO: use request with actual route handler)

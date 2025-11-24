@@ -47,6 +47,36 @@ import {
 import type { Readable } from 'stream';
 
 // =============================================================================
+// S3 Error Types (for type-safe error handling)
+// =============================================================================
+
+/**
+ * Type-safe interface for S3 SDK error metadata.
+ * Used for inspecting HTTP status codes and request details.
+ */
+interface S3ErrorMetadata {
+  /** HTTP status code returned by S3 */
+  httpStatusCode?: number;
+  /** Request ID for debugging */
+  requestId?: string;
+  /** Extended request ID */
+  extendedRequestId?: string;
+}
+
+/**
+ * Type-safe interface for S3 SDK errors.
+ * AWS SDK errors contain these properties when operations fail.
+ */
+interface S3ErrorLike {
+  /** Error name (e.g., 'NotFound', 'NoSuchKey', 'AccessDenied') */
+  name?: string;
+  /** Error message */
+  message?: string;
+  /** S3 SDK metadata with HTTP status */
+  $metadata?: S3ErrorMetadata;
+}
+
+// =============================================================================
 // Custom Errors
 // =============================================================================
 
@@ -981,16 +1011,21 @@ export class StorageServiceImpl implements StorageService {
   }
 
   /**
-   * Checks if an error is a "not found" error.
+   * Checks if an error is a "not found" error from S3.
+   *
+   * S3 returns NotFound or NoSuchKey errors when a file doesn't exist.
+   * Also checks the HTTP status code in the metadata.
+   *
+   * @param error - The error to check
+   * @returns True if this is a "not found" error
    */
   private isNotFoundError(error: unknown): boolean {
     if (error && typeof error === 'object') {
-      const err = error as Record<string, unknown>;
-      const metadata = err.$metadata as Record<string, unknown> | undefined;
+      const err = error as S3ErrorLike;
       return (
         err.name === 'NotFound' ||
         err.name === 'NoSuchKey' ||
-        metadata?.httpStatusCode === 404
+        err.$metadata?.httpStatusCode === 404
       );
     }
     return false;
@@ -1148,9 +1183,20 @@ export function getStorageService(): StorageServiceImpl {
 /**
  * Default storage service instance (lazy-loaded from environment).
  * Use `getStorageService()` for explicit initialization.
+ *
+ * This proxy delays initialization until first method call, allowing
+ * environment variables to be set after module import.
  */
 export const storageService: StorageService = new Proxy({} as StorageService, {
-  get(_target, prop) {
-    return (getStorageService() as unknown as Record<string, unknown>)[prop as string];
+  get(_target, prop: string | symbol) {
+    const service = getStorageService();
+    const key = prop as keyof StorageServiceImpl;
+    const member = service[key];
+    if (typeof member === 'function') {
+      // Bind the method to the service instance
+      // Using Function.prototype.bind which returns a bound function
+      return (member as (...args: unknown[]) => unknown).bind(service);
+    }
+    return member;
   },
 });

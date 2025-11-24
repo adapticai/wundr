@@ -8,8 +8,13 @@ import { Leaderboard } from './leaderboard';
 import { LineChart } from './line-chart';
 import { MetricCard } from './metric-card';
 
+/**
+ * Props for the AnalyticsDashboard component.
+ */
 export interface AnalyticsDashboardProps {
+  /** The workspace ID to fetch analytics data for */
   workspaceId: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

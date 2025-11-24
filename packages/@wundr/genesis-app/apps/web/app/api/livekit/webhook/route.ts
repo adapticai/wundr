@@ -272,7 +272,7 @@ return;
         await prisma.$executeRaw`
           INSERT INTO call_participants (id, call_id, user_id, display_name, joined_at, is_audio_enabled, is_video_enabled)
           VALUES (
-            ${`part_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 6)}`},
+            ${`part_${Date.now().toString(36)}${crypto.randomUUID().split('-')[0]}`},
             ${callId},
             ${userId},
             ${displayName},
@@ -301,7 +301,7 @@ return;
         await prisma.$executeRaw`
           INSERT INTO huddle_participants (id, huddle_id, user_id, display_name, joined_at, is_audio_enabled, is_video_enabled)
           VALUES (
-            ${`hpart_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 6)}`},
+            ${`hpart_${Date.now().toString(36)}${crypto.randomUUID().split('-')[0]}`},
             ${huddleId},
             ${userId},
             ${displayName},

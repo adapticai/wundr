@@ -705,7 +705,7 @@ export class DaemonApiService {
     payload: DaemonEventPayload,
   ): Promise<void> {
     const event: DaemonEvent = {
-      id: `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      id: `evt_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       daemonId,
       vpId,
       type,

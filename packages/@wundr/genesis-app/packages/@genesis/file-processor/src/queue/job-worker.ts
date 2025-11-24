@@ -44,12 +44,14 @@ export interface Logger {
 /**
  * Default console logger
  */
+/* eslint-disable no-console -- Intentional fallback logger implementation */
 const defaultLogger: Logger = {
   debug: (msg, ...args) => console.debug(`[JobWorker] ${msg}`, ...args),
   info: (msg, ...args) => console.info(`[JobWorker] ${msg}`, ...args),
   warn: (msg, ...args) => console.warn(`[JobWorker] ${msg}`, ...args),
   error: (msg, ...args) => console.error(`[JobWorker] ${msg}`, ...args),
 };
+/* eslint-enable no-console */
 
 /**
  * Simple processor registry implementation

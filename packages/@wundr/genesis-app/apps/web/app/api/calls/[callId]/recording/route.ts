@@ -295,7 +295,7 @@ export async function POST(
     // );
 
     // Simulate egress start for development
-    const egressId = `egress_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 8)}`;
+    const egressId = `egress_${Date.now().toString(36)}${crypto.randomUUID().split('-')[0]}`;
     const now = new Date();
 
     // Record the recording state
@@ -374,7 +374,7 @@ export async function POST(
  * @returns Updated recording status
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -491,7 +491,7 @@ export async function DELETE(
  * @returns Current recording status
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

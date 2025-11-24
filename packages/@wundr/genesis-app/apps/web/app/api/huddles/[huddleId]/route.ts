@@ -53,6 +53,11 @@ interface WorkspaceSettingsWithHuddles {
   [key: string]: unknown;
 }
 
+// Type assertion helper for JSON values
+function toJsonValue<T>(data: T): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(data)) as Prisma.InputJsonValue;
+}
+
 /**
  * Route context with huddle ID parameter
  */
@@ -428,10 +433,10 @@ export async function DELETE(
           : h,
       ) ?? [];
 
-      const updatedSettings: Prisma.InputJsonValue = {
+      const updatedSettings: Prisma.InputJsonValue = toJsonValue({
         ...settings,
         huddles: updatedHuddles,
-      };
+      });
 
       await prisma.workspace.update({
         where: { id: result.workspace.id },

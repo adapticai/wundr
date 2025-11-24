@@ -14,10 +14,160 @@ import {
   createLazyObserver,
 } from '@/lib/performance';
 
-import type { CoreWebVitals } from '@genesis/core';
+// =============================================================================
+// Types
+// =============================================================================
 
-/** Hook for measuring component render performance */
-export function useRenderMetrics(_componentName: string) {
+import type {
+  CoreWebVitals as LibCoreWebVitals,
+  PerformanceRating as LibPerformanceRating,
+} from '@/lib/performance';
+
+// Re-export the CoreWebVitals type for backwards compatibility
+export type { LibCoreWebVitals as CoreWebVitals };
+
+/**
+ * Performance rating classification (extended to include null for loading state)
+ */
+export type PerformanceRating = LibPerformanceRating | null;
+
+/**
+ * Render metrics return type
+ */
+export interface RenderMetrics {
+  /** Total number of renders */
+  renderCount: number;
+  /** Average render time in milliseconds */
+  avgRenderTime: number;
+  /** Most recent render time in milliseconds */
+  lastRenderTime: number;
+}
+
+/**
+ * Web Vitals hook return type
+ */
+export interface UseWebVitalsReturn {
+  /** Current web vitals measurements */
+  vitals: Partial<LibCoreWebVitals>;
+  /** Whether vitals are still loading */
+  loading: boolean;
+  /** Get performance rating for a specific metric */
+  getRating: (metric: keyof LibCoreWebVitals) => PerformanceRating;
+}
+
+/**
+ * Connection type for network information
+ */
+export type EffectiveConnectionType = 'slow-2g' | '2g' | '3g' | '4g' | string | undefined;
+
+/**
+ * Connection information
+ */
+export interface ConnectionInfo {
+  /** Effective connection type */
+  effectiveType?: EffectiveConnectionType;
+  /** Estimated downlink speed in Mbps */
+  downlink?: number;
+  /** Round-trip time in milliseconds */
+  rtt?: number;
+  /** Whether data saver is enabled */
+  saveData?: boolean;
+}
+
+/**
+ * Connection-aware hook return type
+ */
+export interface UseConnectionAwareReturn extends ConnectionInfo {
+  /** Whether user prefers reduced motion */
+  reducedMotion: boolean;
+  /** Whether user prefers reduced data */
+  reducedData: boolean;
+  /** Whether connection is slow (2g or slower) */
+  isSlowConnection: boolean;
+  /** Whether connection is fast (4g) */
+  isFastConnection: boolean;
+}
+
+/**
+ * Lazy load hook return type
+ */
+export interface UseLazyLoadReturn<T extends HTMLElement> {
+  /** Ref to attach to the target element */
+  ref: React.RefObject<T>;
+  /** Whether the element is currently visible */
+  isVisible: boolean;
+}
+
+/**
+ * Deferred load hook return type
+ */
+export interface UseDeferredLoadReturn<T> {
+  /** Loaded data or null */
+  data: T | null;
+  /** Whether data is loading */
+  loading: boolean;
+  /** Error if loading failed */
+  error: Error | null;
+}
+
+/**
+ * Virtualized item with positioning
+ */
+export interface VirtualizedItem<T> {
+  /** The item data */
+  item: T;
+  /** Index in the original array */
+  index: number;
+  /** CSS positioning style */
+  style: {
+    position: 'absolute';
+    top: number;
+    height: number;
+    left: number;
+    right: number;
+  };
+}
+
+/**
+ * Virtualized data hook return type
+ */
+export interface UseVirtualizedDataReturn<T> {
+  /** Currently visible items with positioning */
+  visibleItems: VirtualizedItem<T>[];
+  /** Total height of all items */
+  totalHeight: number;
+  /** Scroll event handler */
+  handleScroll: (e: React.UIEvent<HTMLElement>) => void;
+  /** First visible item index */
+  startIndex: number;
+  /** Last visible item index */
+  endIndex: number;
+}
+
+// =============================================================================
+// useRenderMetrics Hook
+// =============================================================================
+
+/**
+ * Hook for measuring component render performance
+ *
+ * Tracks render count and timing to help identify performance issues.
+ *
+ * @param _componentName - Name of the component (for logging/debugging)
+ * @returns Render metrics including count and timing
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const { renderCount, avgRenderTime } = useRenderMetrics('MyComponent');
+ *
+ *   console.log(`Rendered ${renderCount} times, avg ${avgRenderTime}ms`);
+ *
+ *   return <div>Content</div>;
+ * }
+ * ```
+ */
+export function useRenderMetrics(_componentName: string): RenderMetrics {
   const renderCount = useRef(0);
   const renderTimes = useRef<number[]>([]);
   const lastRenderStart = useRef(performance.now());
@@ -45,9 +195,37 @@ export function useRenderMetrics(_componentName: string) {
   };
 }
 
-/** Hook for Core Web Vitals */
-export function useWebVitals() {
-  const [vitals, setVitals] = useState<Partial<CoreWebVitals>>({});
+// =============================================================================
+// useWebVitals Hook
+// =============================================================================
+
+/**
+ * Hook for Core Web Vitals measurement
+ *
+ * Measures and provides access to Core Web Vitals metrics (LCP, FID, CLS, etc.)
+ * with performance rating classifications.
+ *
+ * @returns Web vitals data and rating function
+ *
+ * @example
+ * ```tsx
+ * function PerformanceMonitor() {
+ *   const { vitals, loading, getRating } = useWebVitals();
+ *
+ *   if (loading) return <div>Measuring...</div>;
+ *
+ *   return (
+ *     <div>
+ *       <p>LCP: {vitals.LCP}ms ({getRating('LCP')})</p>
+ *       <p>FID: {vitals.FID}ms ({getRating('FID')})</p>
+ *       <p>CLS: {vitals.CLS} ({getRating('CLS')})</p>
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
+export function useWebVitals(): UseWebVitalsReturn {
+  const [vitals, setVitals] = useState<Partial<LibCoreWebVitals>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,20 +243,44 @@ export function useWebVitals() {
     };
   }, []);
 
-  const getRating = useCallback((metric: keyof CoreWebVitals) => {
+  const getRating = useCallback((metric: keyof LibCoreWebVitals): PerformanceRating => {
     const value = vitals[metric];
     if (value === undefined || value === null) {
-return null;
-}
-    return getPerformanceRating(metric, value);
+      return null;
+    }
+    return getPerformanceRating(metric, value) as PerformanceRating;
   }, [vitals]);
 
   return { vitals, loading, getRating };
 }
 
-/** Hook for connection-aware rendering */
-export function useConnectionAware() {
-  const [connection, setConnection] = useState(getConnectionInfo);
+// =============================================================================
+// useConnectionAware Hook
+// =============================================================================
+
+/**
+ * Hook for connection-aware rendering
+ *
+ * Provides information about network conditions and user preferences
+ * to enable adaptive rendering strategies.
+ *
+ * @returns Connection information and user preferences
+ *
+ * @example
+ * ```tsx
+ * function AdaptiveImage({ src }: { src: string }) {
+ *   const { isSlowConnection, reducedData } = useConnectionAware();
+ *
+ *   if (isSlowConnection || reducedData) {
+ *     return <img src={`${src}?quality=low`} />;
+ *   }
+ *
+ *   return <img src={src} />;
+ * }
+ * ```
+ */
+export function useConnectionAware(): UseConnectionAwareReturn {
+  const [connection, setConnection] = useState<ConnectionInfo>(() => getConnectionInfo() as ConnectionInfo);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [reducedData, setReducedData] = useState(false);
 
@@ -100,7 +302,7 @@ export function useConnectionAware() {
     };
 
     const handleConnectionChange = () => {
-      setConnection(getConnectionInfo());
+      setConnection(getConnectionInfo() as ConnectionInfo);
       setReducedData(prefersReducedData());
     };
 
@@ -113,7 +315,10 @@ export function useConnectionAware() {
   }, []);
 
   return {
-    ...connection,
+    effectiveType: connection.effectiveType,
+    downlink: connection.downlink,
+    rtt: connection.rtt,
+    saveData: connection.saveData ?? false,
     reducedMotion,
     reducedData,
     isSlowConnection: connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g',
@@ -121,11 +326,39 @@ export function useConnectionAware() {
   };
 }
 
-/** Hook for lazy loading with Intersection Observer */
+// =============================================================================
+// useLazyLoad Hook
+// =============================================================================
+
+/**
+ * Hook for lazy loading with Intersection Observer
+ *
+ * Triggers a callback when an element becomes visible in the viewport.
+ *
+ * @param onVisible - Callback to execute when element is visible
+ * @param options - IntersectionObserver options
+ * @returns Ref and visibility state
+ *
+ * @example
+ * ```tsx
+ * function LazyImage({ src }: { src: string }) {
+ *   const [loaded, setLoaded] = useState(false);
+ *   const { ref, isVisible } = useLazyLoad<HTMLDivElement>(
+ *     () => setLoaded(true)
+ *   );
+ *
+ *   return (
+ *     <div ref={ref}>
+ *       {isVisible && <img src={src} />}
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function useLazyLoad<T extends HTMLElement>(
   onVisible: () => void,
   options: IntersectionObserverInit = {},
-) {
+): UseLazyLoadReturn<T> {
   const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -156,11 +389,47 @@ return;
   return { ref, isVisible };
 }
 
-/** Hook for deferred loading */
+// =============================================================================
+// useDeferredLoad Hook
+// =============================================================================
+
+/**
+ * Options for deferred loading
+ */
+export interface UseDeferredLoadOptions {
+  /** Delay in milliseconds before loading */
+  delay?: number;
+  /** Whether to load during browser idle time */
+  onIdle?: boolean;
+}
+
+/**
+ * Hook for deferred loading
+ *
+ * Loads data after a delay or during browser idle time to prioritize
+ * critical rendering.
+ *
+ * @param loader - Async function that returns data
+ * @param options - Loading options
+ * @returns Loaded data and loading state
+ *
+ * @example
+ * ```tsx
+ * function DeferredComponent() {
+ *   const { data, loading } = useDeferredLoad(
+ *     () => fetch('/api/data').then(r => r.json()),
+ *     { onIdle: true }
+ *   );
+ *
+ *   if (loading) return <Skeleton />;
+ *   return <Content data={data} />;
+ * }
+ * ```
+ */
 export function useDeferredLoad<T>(
   loader: () => Promise<T>,
-  options: { delay?: number; onIdle?: boolean } = {},
-) {
+  options: UseDeferredLoadOptions = {},
+): UseDeferredLoadReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -209,8 +478,32 @@ export function useDeferredLoad<T>(
   return { data, loading, error };
 }
 
-/** Hook for memory-aware rendering */
-export function useMemoryAware(threshold = 0.9) {
+// =============================================================================
+// useMemoryAware Hook
+// =============================================================================
+
+/**
+ * Hook for memory-aware rendering
+ *
+ * Monitors memory usage and provides a flag when the system is under
+ * memory pressure, allowing components to reduce memory consumption.
+ *
+ * @param threshold - Memory usage threshold (0-1) to trigger pressure state
+ * @returns Whether the system is under memory pressure
+ *
+ * @example
+ * ```tsx
+ * function ImageGallery({ images }: { images: string[] }) {
+ *   const underPressure = useMemoryAware(0.8);
+ *
+ *   // Load fewer images when under memory pressure
+ *   const displayImages = underPressure ? images.slice(0, 10) : images;
+ *
+ *   return <Gallery images={displayImages} />;
+ * }
+ * ```
+ */
+export function useMemoryAware(threshold = 0.9): boolean {
   const [underPressure, setUnderPressure] = useState(false);
 
   useEffect(() => {
@@ -228,8 +521,32 @@ export function useMemoryAware(threshold = 0.9) {
   return underPressure;
 }
 
-/** Hook for performance marks */
-export function usePerformanceMark(name: string) {
+// =============================================================================
+// usePerformanceMark Hook
+// =============================================================================
+
+/**
+ * Hook for performance marks
+ *
+ * Creates performance marks and measures for a component's lifecycle,
+ * useful for profiling and debugging performance.
+ *
+ * @param name - Name for the performance mark
+ *
+ * @example
+ * ```tsx
+ * function ExpensiveComponent() {
+ *   usePerformanceMark('ExpensiveComponent');
+ *
+ *   // Component renders...
+ *   return <div>...</div>;
+ * }
+ *
+ * // Check marks in DevTools Performance panel or:
+ * // performance.getEntriesByName('ExpensiveComponent')
+ * ```
+ */
+export function usePerformanceMark(name: string): void {
   const startMark = `${name}-start`;
   const endMark = `${name}-end`;
 
@@ -247,7 +564,36 @@ export function usePerformanceMark(name: string) {
   }, [name, startMark, endMark]);
 }
 
-/** Hook for debounced value */
+// =============================================================================
+// useDebouncedValue Hook
+// =============================================================================
+
+/**
+ * Hook for debounced value
+ *
+ * Returns a debounced version of the input value that only updates
+ * after the specified delay has passed without changes.
+ *
+ * @param value - The value to debounce
+ * @param delay - Delay in milliseconds
+ * @returns The debounced value
+ *
+ * @example
+ * ```tsx
+ * function SearchInput() {
+ *   const [search, setSearch] = useState('');
+ *   const debouncedSearch = useDebouncedValue(search, 300);
+ *
+ *   useEffect(() => {
+ *     if (debouncedSearch) {
+ *       performSearch(debouncedSearch);
+ *     }
+ *   }, [debouncedSearch]);
+ *
+ *   return <input value={search} onChange={e => setSearch(e.target.value)} />;
+ * }
+ * ```
+ */
 export function useDebouncedValue<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -262,8 +608,45 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-/** Hook for throttled callback */
-export function useThrottledCallback<T extends (...args: unknown[]) => unknown>(
+// =============================================================================
+// useThrottledCallback Hook
+// =============================================================================
+
+/**
+ * Generic callback function type for throttling
+ * Uses explicit type parameters to avoid 'unknown' in the signature
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ThrottledFunction = (...args: never[]) => void;
+
+/**
+ * Hook for throttled callback
+ *
+ * Returns a throttled version of the callback that only executes
+ * at most once per specified delay period.
+ *
+ * @param callback - The function to throttle
+ * @param delay - Minimum time between calls in milliseconds
+ * @returns The throttled callback
+ *
+ * @example
+ * ```tsx
+ * function ScrollTracker() {
+ *   const handleScroll = useThrottledCallback(
+ *     () => console.log('Scrolled at', Date.now()),
+ *     100
+ *   );
+ *
+ *   useEffect(() => {
+ *     window.addEventListener('scroll', handleScroll);
+ *     return () => window.removeEventListener('scroll', handleScroll);
+ *   }, [handleScroll]);
+ *
+ *   return <div>Scroll me</div>;
+ * }
+ * ```
+ */
+export function useThrottledCallback<T extends ThrottledFunction>(
   callback: T,
   delay: number,
 ): T {
@@ -294,15 +677,61 @@ export function useThrottledCallback<T extends (...args: unknown[]) => unknown>(
   );
 }
 
-/** Hook for virtualized list data */
+// =============================================================================
+// useVirtualizedData Hook
+// =============================================================================
+
+/**
+ * Options for virtualized list
+ */
+export interface UseVirtualizedDataOptions {
+  /** Height of each item in pixels */
+  itemHeight: number;
+  /** Height of the container in pixels */
+  containerHeight: number;
+  /** Number of extra items to render outside visible area */
+  overscan?: number;
+}
+
+/**
+ * Hook for virtualized list data
+ *
+ * Provides windowing/virtualization for large lists by only rendering
+ * items that are currently visible (plus overscan buffer).
+ *
+ * @param items - Full list of items
+ * @param options - Virtualization options
+ * @returns Visible items with positioning and scroll handler
+ *
+ * @example
+ * ```tsx
+ * function VirtualList({ items }: { items: string[] }) {
+ *   const {
+ *     visibleItems,
+ *     totalHeight,
+ *     handleScroll
+ *   } = useVirtualizedData(items, {
+ *     itemHeight: 50,
+ *     containerHeight: 400,
+ *     overscan: 5
+ *   });
+ *
+ *   return (
+ *     <div style={{ height: 400, overflow: 'auto' }} onScroll={handleScroll}>
+ *       <div style={{ height: totalHeight, position: 'relative' }}>
+ *         {visibleItems.map(({ item, index, style }) => (
+ *           <div key={index} style={style}>{item}</div>
+ *         ))}
+ *       </div>
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export function useVirtualizedData<T>(
   items: T[],
-  options: {
-    itemHeight: number;
-    containerHeight: number;
-    overscan?: number;
-  },
-) {
+  options: UseVirtualizedDataOptions,
+): UseVirtualizedDataReturn<T> {
   const [scrollTop, setScrollTop] = useState(0);
   const { itemHeight, containerHeight, overscan = 3 } = options;
 

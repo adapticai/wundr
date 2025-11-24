@@ -638,9 +638,35 @@ export function createMockSyncDataWithConflicts(
 // =============================================================================
 
 /**
- * Create a mock notification service
+ * Mock notification service interface for type safety
  */
-export function createMockNotificationService() {
+export interface MockNotificationService {
+  sendPush: ReturnType<typeof vi.fn>;
+  registerDevice: ReturnType<typeof vi.fn>;
+  unregisterDevice: ReturnType<typeof vi.fn>;
+  isInQuietHours: ReturnType<typeof vi.fn>;
+  getPreferences: ReturnType<typeof vi.fn>;
+  createNotification: ReturnType<typeof vi.fn>;
+  markAsRead: ReturnType<typeof vi.fn>;
+  markAllAsRead: ReturnType<typeof vi.fn>;
+  deleteNotification: ReturnType<typeof vi.fn>;
+  getUnreadCount: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock notification service for testing notification functionality
+ *
+ * @returns A mock notification service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const notificationService = createMockNotificationService();
+ * notificationService.createNotification.mockResolvedValue(createMockNotification());
+ * const notification = await notificationService.createNotification({ userId: 'user_123', type: 'MESSAGE' });
+ * expect(notification.type).toBe('MESSAGE');
+ * ```
+ */
+export function createMockNotificationService(): MockNotificationService {
   return {
     sendPush: vi.fn().mockResolvedValue(undefined),
     registerDevice: vi.fn(),
@@ -656,9 +682,30 @@ export function createMockNotificationService() {
 }
 
 /**
- * Create a mock push provider
+ * Mock push provider interface for type safety
  */
-export function createMockPushProvider() {
+export interface MockPushProvider {
+  sendWebPush: ReturnType<typeof vi.fn>;
+  sendFCM: ReturnType<typeof vi.fn>;
+  sendAPNS: ReturnType<typeof vi.fn>;
+  validateToken: ReturnType<typeof vi.fn>;
+  refreshToken: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock push provider for testing push notification delivery
+ *
+ * @returns A mock push provider with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const pushProvider = createMockPushProvider();
+ * pushProvider.sendFCM.mockResolvedValue({ success: true, messageId: 'fcm_123' });
+ * const result = await pushProvider.sendFCM('token_abc', { title: 'New Message' });
+ * expect(result.success).toBe(true);
+ * ```
+ */
+export function createMockPushProvider(): MockPushProvider {
   return {
     sendWebPush: vi.fn().mockResolvedValue({ success: true }),
     sendFCM: vi.fn().mockResolvedValue({ success: true, messageId: 'msg_123' }),
@@ -669,9 +716,30 @@ export function createMockPushProvider() {
 }
 
 /**
- * Create a mock offline queue service
+ * Mock offline queue service interface for type safety
  */
-export function createMockOfflineQueueService() {
+export interface MockOfflineQueueService {
+  enqueue: ReturnType<typeof vi.fn>;
+  processQueue: ReturnType<typeof vi.fn>;
+  retryFailed: ReturnType<typeof vi.fn>;
+  getQueueStatus: ReturnType<typeof vi.fn>;
+  clearQueue: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock offline queue service for testing offline-first functionality
+ *
+ * @returns A mock offline queue service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const queueService = createMockOfflineQueueService();
+ * queueService.enqueue.mockResolvedValue(createMockQueuedAction());
+ * const action = await queueService.enqueue({ action: 'SEND_MESSAGE', payload: { content: 'Hello' } });
+ * expect(action.status).toBe('PENDING');
+ * ```
+ */
+export function createMockOfflineQueueService(): MockOfflineQueueService {
   return {
     enqueue: vi.fn(),
     processQueue: vi.fn(),
@@ -682,9 +750,31 @@ export function createMockOfflineQueueService() {
 }
 
 /**
- * Create a mock sync service
+ * Mock sync service interface for type safety
  */
-export function createMockSyncService() {
+export interface MockSyncService {
+  performSync: ReturnType<typeof vi.fn>;
+  getChanges: ReturnType<typeof vi.fn>;
+  detectConflicts: ReturnType<typeof vi.fn>;
+  resolveConflict: ReturnType<typeof vi.fn>;
+  getSyncState: ReturnType<typeof vi.fn>;
+  updateSyncState: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock sync service for testing data synchronization
+ *
+ * @returns A mock sync service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const syncService = createMockSyncService();
+ * syncService.performSync.mockResolvedValue(createMockSyncData());
+ * const syncData = await syncService.performSync('user_123');
+ * expect(syncData.changes).toBeDefined();
+ * ```
+ */
+export function createMockSyncService(): MockSyncService {
   return {
     performSync: vi.fn(),
     getChanges: vi.fn(),
@@ -700,9 +790,27 @@ export function createMockSyncService() {
 // =============================================================================
 
 /**
- * Create mock Prisma notification model
+ * Mock Prisma notification model interface for type safety
  */
-export function createMockPrismaNotificationModel() {
+export interface MockPrismaNotificationModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  updateMany: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  deleteMany: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+  aggregate: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma notification model for testing notification database operations
+ *
+ * @returns A mock Prisma notification model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaNotificationModel(): MockPrismaNotificationModel {
   return {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
@@ -718,9 +826,27 @@ export function createMockPrismaNotificationModel() {
 }
 
 /**
- * Create mock Prisma push device model
+ * Mock Prisma push device model interface for type safety
  */
-export function createMockPrismaPushDeviceModel() {
+export interface MockPrismaPushDeviceModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  updateMany: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  deleteMany: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma push device model for testing device registration
+ *
+ * @returns A mock Prisma push device model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaPushDeviceModel(): MockPrismaPushDeviceModel {
   return {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
@@ -736,9 +862,22 @@ export function createMockPrismaPushDeviceModel() {
 }
 
 /**
- * Create mock Prisma notification preference model
+ * Mock Prisma notification preference model interface for type safety
  */
-export function createMockPrismaNotificationPreferenceModel() {
+export interface MockPrismaNotificationPreferenceModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma notification preference model for testing user preferences
+ *
+ * @returns A mock Prisma notification preference model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaNotificationPreferenceModel(): MockPrismaNotificationPreferenceModel {
   return {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
@@ -749,9 +888,26 @@ export function createMockPrismaNotificationPreferenceModel() {
 }
 
 /**
- * Create mock Prisma offline queue action model
+ * Mock Prisma offline queue action model interface for type safety
  */
-export function createMockPrismaOfflineQueueActionModel() {
+export interface MockPrismaOfflineQueueActionModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  updateMany: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  deleteMany: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma offline queue action model for testing offline queue operations
+ *
+ * @returns A mock Prisma offline queue action model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaOfflineQueueActionModel(): MockPrismaOfflineQueueActionModel {
   return {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
@@ -766,9 +922,21 @@ export function createMockPrismaOfflineQueueActionModel() {
 }
 
 /**
- * Create mock Prisma sync state model
+ * Mock Prisma sync state model interface for type safety
  */
-export function createMockPrismaSyncStateModel() {
+export interface MockPrismaSyncStateModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma sync state model for testing sync state tracking
+ *
+ * @returns A mock Prisma sync state model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaSyncStateModel(): MockPrismaSyncStateModel {
   return {
     findUnique: vi.fn(),
     create: vi.fn(),
@@ -778,9 +946,24 @@ export function createMockPrismaSyncStateModel() {
 }
 
 /**
- * Create mock Prisma sync conflict model
+ * Mock Prisma sync conflict model interface for type safety
  */
-export function createMockPrismaSyncConflictModel() {
+export interface MockPrismaSyncConflictModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma sync conflict model for testing conflict detection
+ *
+ * @returns A mock Prisma sync conflict model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaSyncConflictModel(): MockPrismaSyncConflictModel {
   return {
     findUnique: vi.fn(),
     findFirst: vi.fn(),

@@ -6,13 +6,24 @@ import { cn } from '@/lib/utils';
 
 import type { Channel, ChannelPermissions } from '@/types/channel';
 
+
+/**
+ * Props for the ChannelHeader component
+ */
 interface ChannelHeaderProps {
+  /** The channel data to display */
   channel: Channel;
+  /** Permissions for the current user in this channel */
   permissions: ChannelPermissions;
+  /** Callback fired when the star toggle is clicked */
   onToggleStar?: (isStarred: boolean) => Promise<void>;
+  /** Callback fired when user leaves the channel */
   onLeave?: () => Promise<void>;
+  /** Callback to open channel settings */
   onOpenSettings?: () => void;
+  /** Callback to open member list */
   onOpenMembers?: () => void;
+  /** Additional CSS class names */
   className?: string;
 }
 

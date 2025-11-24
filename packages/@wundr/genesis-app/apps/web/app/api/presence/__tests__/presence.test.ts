@@ -20,9 +20,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // MOCKS
 // =============================================================================
 
-// Mock NextAuth
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+// Mock the auth function from lib/auth
+const mockAuth = vi.fn();
+vi.mock('@/lib/auth', () => ({
+  auth: mockAuth,
 }));
 
 // Mock the presence service
@@ -103,6 +104,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
+// @ts-expect-error Reserved for future integration tests
 function _createMockRequest(
   method: string,
   path: string,
@@ -160,12 +162,8 @@ function createMockChannelPresence(channelId: string, onlineMembers: string[] = 
 // =============================================================================
 
 describe('Presence API', () => {
-  let getServerSession: ReturnType<typeof vi.fn>;
-
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {
@@ -179,7 +177,7 @@ describe('Presence API', () => {
   describe('PUT /api/presence', () => {
     it('sets user status', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const requestBody = {
         status: 'away' as UserPresenceStatus,
@@ -199,7 +197,7 @@ describe('Presence API', () => {
 
     it('validates status enum', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const validStatuses: UserPresenceStatus[] = ['online', 'away', 'busy', 'offline', 'dnd'];
 
@@ -217,10 +215,10 @@ describe('Presence API', () => {
     });
 
     it('requires authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       // Without session, request should be rejected
-      const session = await getServerSession();
+      const session = await mockAuth();
       expect(session).toBeNull();
 
       // In actual route handler, this would return 401
@@ -230,7 +228,7 @@ describe('Presence API', () => {
 
     it('sets custom status message', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const requestBody = {
         status: 'busy' as UserPresenceStatus,
@@ -257,7 +255,7 @@ describe('Presence API', () => {
 
     it('clears custom status when not provided', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const requestBody = {
         status: 'online' as UserPresenceStatus,
@@ -277,7 +275,7 @@ describe('Presence API', () => {
   describe('GET /api/presence/users/:userId', () => {
     it('returns user presence', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const mockPresence = createMockUserPresence('user-456');
       mockPresenceService.getUserPresence.mockResolvedValue(mockPresence);
@@ -291,7 +289,7 @@ describe('Presence API', () => {
 
     it('returns 404 for unknown user', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockPresenceService.getUserPresence.mockResolvedValue(null);
 
@@ -306,7 +304,7 @@ describe('Presence API', () => {
 
     it('returns presence with custom status', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const mockPresence = {
         ...createMockUserPresence('user-456', 'busy'),
@@ -322,15 +320,15 @@ describe('Presence API', () => {
     });
 
     it('requires authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await mockAuth();
       expect(session).toBeNull();
     });
 
     it('returns correct lastSeen timestamp', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const mockPresence = createMockUserPresence('user-456');
       mockPresenceService.getUserPresence.mockResolvedValue(mockPresence);
@@ -349,7 +347,7 @@ describe('Presence API', () => {
   describe('POST /api/presence/channels/:id/join', () => {
     it('adds user to channel presence', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const channelId = 'channel-123';
 
@@ -365,9 +363,10 @@ describe('Presence API', () => {
 
     it('requires channel membership', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       // In actual implementation, would check channel membership
+      // @ts-expect-error Used to demonstrate route context
       const _channelId = 'restricted-channel';
       const isMember = false; // Simulating non-member
 
@@ -379,7 +378,7 @@ describe('Presence API', () => {
 
     it('returns updated channel presence', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const channelId = 'channel-123';
       const mockChannelPresence = createMockChannelPresence(channelId, [
@@ -398,9 +397,9 @@ describe('Presence API', () => {
     });
 
     it('requires authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await mockAuth();
       expect(session).toBeNull();
     });
   });
@@ -412,7 +411,7 @@ describe('Presence API', () => {
   describe('POST /api/presence/channels/:id/leave', () => {
     it('removes user from channel presence', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const channelId = 'channel-123';
 
@@ -428,7 +427,7 @@ describe('Presence API', () => {
 
     it('handles user not in channel gracefully', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const channelId = 'channel-123';
 
@@ -448,7 +447,7 @@ describe('Presence API', () => {
   describe('GET /api/presence/channels/:id/members', () => {
     it('returns online members in channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const channelId = 'channel-123';
       const onlineMembers = ['user-123', 'user-456', 'user-789'];
@@ -463,7 +462,7 @@ describe('Presence API', () => {
 
     it('returns empty array for empty channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const channelId = 'empty-channel';
 
@@ -535,6 +534,7 @@ describe('Presence API', () => {
     });
 
     it('stores metrics', async () => {
+      // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
       const vpId = 'vp-123';
       const daemonId = 'daemon-456';
@@ -601,6 +601,7 @@ describe('Presence API', () => {
     });
 
     it('returns health status in response', async () => {
+      // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
       const vpId = 'vp-123';
       const daemonId = 'daemon-456';
@@ -635,6 +636,7 @@ describe('Presence API', () => {
 
   describe('GET /api/daemon/health', () => {
     it('returns VP health status', async () => {
+      // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
       const vpId = 'vp-123';
 
@@ -705,7 +707,7 @@ describe('Presence API', () => {
   describe('GET /api/presence/vps/:vpId', () => {
     it('returns VP presence when online', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const vpId = 'vp-123';
       const mockPresence = createMockVPPresence(vpId);
@@ -721,7 +723,7 @@ describe('Presence API', () => {
 
     it('returns null for offline VP', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const vpId = 'offline-vp';
 
@@ -734,7 +736,7 @@ describe('Presence API', () => {
 
     it('includes daemon info for online VP', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const vpId = 'vp-123';
       const mockPresence = createMockVPPresence(vpId);
@@ -764,7 +766,7 @@ describe('Presence API', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const unhealthyVPs = [
         {
@@ -798,7 +800,7 @@ describe('Presence API', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       // Check permission
       const isAdmin = session.user.role === 'ADMIN';
@@ -818,7 +820,7 @@ describe('Presence API', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const orgId = 'org-123';
 
@@ -840,7 +842,7 @@ describe('Presence API', () => {
   describe('Error Handling', () => {
     it('handles Redis connection errors gracefully', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockPresenceService.setUserStatus.mockRejectedValue(
         new Error('Redis connection refused'),
@@ -853,7 +855,7 @@ describe('Presence API', () => {
 
     it('handles malformed request body', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       // In actual implementation, would validate request body
       const malformedBody = { status: 123 }; // Should be string
@@ -864,7 +866,7 @@ describe('Presence API', () => {
 
     it('handles timeout errors', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockPresenceService.getUserPresence.mockRejectedValue(
         new Error('Request timeout'),

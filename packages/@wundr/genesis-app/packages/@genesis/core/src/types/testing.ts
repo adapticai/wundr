@@ -176,6 +176,7 @@ export interface MockServer {
   baseUrl: string;
   start: () => Promise<void>;
   stop: () => Promise<void>;
+  isRunning: () => boolean;
   reset: () => void;
   mock: (method: string, path: string, response: MockResponse) => void;
   verify: () => MockServerVerification;

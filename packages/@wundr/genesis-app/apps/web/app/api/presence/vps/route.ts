@@ -135,13 +135,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Get message counts for all VPs
     const vpUserIds = vps.map((vp) => vp.userId);
     const messageCounts = await prisma.message.groupBy({
-      by: ['userId'],
-      where: { userId: { in: vpUserIds } },
+      by: ['authorId'],
+      where: { authorId: { in: vpUserIds } },
       _count: { id: true },
     });
 
     const messageCountMap = new Map(
-      messageCounts.map((mc) => [mc.userId, mc._count.id]),
+      messageCounts.map((mc) => [mc.authorId, mc._count?.id ?? 0]),
     );
 
     // Build VP presence responses

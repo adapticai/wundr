@@ -7,17 +7,31 @@ import { INTEGRATION_PROVIDERS } from '@/types/integration';
 
 import type { IntegrationProvider } from '@/types/integration';
 
+/**
+ * Props for the IntegrationConnect component
+ */
 export interface IntegrationConnectProps {
+  /** Whether the dialog is open */
   isOpen: boolean;
+  /** Callback to close the dialog */
   onClose: () => void;
+  /** Callback fired when connecting an integration */
   onConnect: (provider: IntegrationProvider, config: ConnectConfig) => Promise<void>;
+  /** Array of popular provider IDs to highlight */
   popularProviders?: IntegrationProvider[];
+  /** Additional CSS class names */
   className?: string;
 }
 
+/**
+ * Configuration data for connecting an integration
+ */
 export interface ConnectConfig {
+  /** Custom name for the integration */
   name?: string;
+  /** API key for direct authentication */
   apiKey?: string;
+  /** Whether to use OAuth flow */
   useOAuth?: boolean;
 }
 

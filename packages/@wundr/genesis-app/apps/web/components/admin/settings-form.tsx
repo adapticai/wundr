@@ -31,10 +31,17 @@ export interface WorkspaceSettings {
   };
 }
 
+/**
+ * Props for the SettingsForm component.
+ */
 export interface SettingsFormProps {
+  /** The workspace ID (used for context, prefixed with underscore as currently unused) */
   workspaceId: string;
+  /** Initial settings values to populate the form */
   initialSettings?: Partial<WorkspaceSettings>;
+  /** Callback when settings are saved, receives the complete settings object */
   onSave: (settings: WorkspaceSettings) => Promise<void>;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 
@@ -271,16 +278,22 @@ return;
   );
 }
 
-// General settings section
-function GeneralSettings({
-  settings,
-  errors,
-  onChange,
-}: {
+/**
+ * Props for the GeneralSettings component
+ */
+interface GeneralSettingsProps {
+  /** Current general settings values */
   settings: WorkspaceSettings['general'];
+  /** Validation errors keyed by field path */
   errors: Record<string, string>;
+  /** Callback when settings change */
   onChange: (updates: Partial<WorkspaceSettings['general']>) => void;
-}) {
+}
+
+/**
+ * General settings section component
+ */
+function GeneralSettings({ settings, errors, onChange }: GeneralSettingsProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -353,16 +366,22 @@ function GeneralSettings({
   );
 }
 
-// Security settings section
-function SecurityTabSettings({
-  settings,
-  errors,
-  onChange,
-}: {
+/**
+ * Props for the SecurityTabSettings component
+ */
+interface SecurityTabSettingsProps {
+  /** Current security settings values */
   settings: WorkspaceSettings['security'];
+  /** Validation errors keyed by field path */
   errors: Record<string, string>;
+  /** Callback when settings change */
   onChange: (updates: Partial<WorkspaceSettings['security']>) => void;
-}) {
+}
+
+/**
+ * Security settings tab component
+ */
+function SecurityTabSettings({ settings, errors, onChange }: SecurityTabSettingsProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between max-w-md">
@@ -432,16 +451,22 @@ function SecurityTabSettings({
   );
 }
 
-// Messaging settings section
-function MessagingSettings({
-  settings,
-  errors,
-  onChange,
-}: {
+/**
+ * Props for the MessagingSettings component
+ */
+interface MessagingSettingsProps {
+  /** Current messaging settings values */
   settings: WorkspaceSettings['messaging'];
+  /** Validation errors keyed by field path */
   errors: Record<string, string>;
+  /** Callback when settings change */
   onChange: (updates: Partial<WorkspaceSettings['messaging']>) => void;
-}) {
+}
+
+/**
+ * Messaging settings section component
+ */
+function MessagingSettings({ settings, errors, onChange }: MessagingSettingsProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between max-w-md">
@@ -538,16 +563,22 @@ function MessagingSettings({
   );
 }
 
-// Notification settings section
-function NotificationSettings({
-  settings,
-  errors: _errors,
-  onChange,
-}: {
+/**
+ * Props for the NotificationSettings component
+ */
+interface NotificationSettingsProps {
+  /** Current notification settings values */
   settings: WorkspaceSettings['notifications'];
+  /** Validation errors keyed by field path (unused but kept for consistency) */
   errors: Record<string, string>;
+  /** Callback when settings change */
   onChange: (updates: Partial<WorkspaceSettings['notifications']>) => void;
-}) {
+}
+
+/**
+ * Notification settings section component
+ */
+function NotificationSettings({ settings, errors: _errors, onChange }: NotificationSettingsProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between max-w-md">

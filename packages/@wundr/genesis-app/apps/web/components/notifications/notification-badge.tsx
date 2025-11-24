@@ -2,11 +2,19 @@
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Props for the NotificationBadge component
+ */
 interface NotificationBadgeProps {
+  /** Number of notifications to display */
   count: number;
+  /** Maximum count to display before showing '+' */
   maxDisplay?: number;
+  /** Whether to show a pulsing animation */
   showPulse?: boolean;
+  /** Size of the badge */
   size?: 'sm' | 'md' | 'lg';
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -52,10 +60,17 @@ export function NotificationBadge({
   );
 }
 
+/**
+ * Props for the NotificationDot component
+ */
 interface NotificationDotProps {
+  /** Whether to show the dot */
   show?: boolean;
+  /** Whether to show a pulsing animation */
   showPulse?: boolean;
+  /** Size of the dot */
   size?: 'sm' | 'md' | 'lg';
+  /** Optional CSS class name */
   className?: string;
 }
 

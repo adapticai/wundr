@@ -20,8 +20,6 @@ import {
   type PlanType,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
-
 /**
  * Route context with workspace ID parameter
  */
@@ -79,7 +77,7 @@ const PLAN_LIMITS: Record<PlanType, {
  * @returns Billing information
  */
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

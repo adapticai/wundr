@@ -10,18 +10,28 @@ import { CreateChannelDialog } from './create-channel-dialog';
 
 import type { Channel, DirectMessageChannel } from '@/types/channel';
 
+/**
+ * Props for the ChannelList component
+ */
 interface ChannelListProps {
+  /** The workspace ID for routing */
   workspaceId: string;
+  /** List of channels to display */
   channels: Channel[];
+  /** List of direct message conversations */
   directMessages: DirectMessageChannel[];
+  /** List of starred/favorite channels */
   starredChannels: Channel[];
+  /** Loading state for the channel list */
   isLoading?: boolean;
+  /** Callback fired when creating a new channel */
   onCreateChannel?: (input: {
     name: string;
     type: 'public' | 'private';
     description?: string;
     memberIds?: string[];
   }) => Promise<void>;
+  /** Additional CSS class names */
   className?: string;
 }
 

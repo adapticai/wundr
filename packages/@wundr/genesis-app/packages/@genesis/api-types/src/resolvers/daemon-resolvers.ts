@@ -571,7 +571,7 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
           hostname: input.hostname,
           version: input.version,
           capabilities: input.capabilities || [],
-          metadata: input.metadata,
+          metadata: input.metadata ?? {},
         });
 
         return {

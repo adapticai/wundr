@@ -165,7 +165,7 @@ export async function GET(
         createdAt: filters.direction === 'before' ? 'desc' : 'asc',
       },
       include: {
-        user: {
+        author: {
           select: {
             id: true,
             name: true,
@@ -387,11 +387,11 @@ export async function POST(
         type: input.type,
         metadata: input.metadata as Prisma.InputJsonValue,
         channelId: params.channelId,
-        userId: session.user.id,
+        authorId: session.user.id,
         parentId: input.parentId,
       },
       include: {
-        user: {
+        author: {
           select: {
             id: true,
             name: true,

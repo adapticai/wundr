@@ -6,16 +6,33 @@ import { PresenceIndicator } from './presence-indicator';
 
 import type { PresenceStatus } from './presence-indicator';
 
+/**
+ * User data for avatar display
+ */
+interface AvatarUser {
+  /** User ID */
+  id: string;
+  /** User display name */
+  name: string;
+  /** Optional avatar image URL */
+  image?: string | null;
+}
+
+/**
+ * Props for the UserAvatarWithPresence component
+ */
 interface UserAvatarWithPresenceProps {
-  user: {
-    id: string;
-    name: string;
-    image?: string | null;
-  };
+  /** User data for the avatar */
+  user: AvatarUser;
+  /** Current presence status */
   status?: PresenceStatus;
+  /** Size of the avatar */
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Whether to show the presence indicator */
   showPresence?: boolean;
+  /** Whether to show pulsing animation when online */
   showPulse?: boolean;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -85,16 +102,16 @@ export function UserAvatarWithPresence({
 }
 
 /**
- * Avatar with presence that fetches presence from context
+ * Props for ConnectedUserAvatar - an avatar that fetches presence from context
  */
 interface ConnectedUserAvatarProps {
-  user: {
-    id: string;
-    name: string;
-    image?: string | null;
-  };
+  /** User data for the avatar */
+  user: AvatarUser;
+  /** Size of the avatar */
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Whether to show the presence indicator */
   showPresence?: boolean;
+  /** Optional CSS class name */
   className?: string;
 }
 

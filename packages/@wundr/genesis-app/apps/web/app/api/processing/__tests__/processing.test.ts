@@ -41,10 +41,32 @@ interface MockProcessingJob {
   type: string;
   status: string;
   progress: number;
-  result: unknown;
+  progressPercentage?: number;
+  result: Record<string, unknown> | null;
   error: string | null;
   createdAt: Date;
   userId: string;
+}
+
+/**
+ * API response structure for processing endpoints
+ */
+interface ProcessingApiResponse {
+  job?: MockProcessingJob;
+  data?: MockProcessingJob | MockProcessingJob[];
+  error?: string;
+  code?: string;
+  pagination?: {
+    hasMore: boolean;
+    nextCursor?: string;
+  };
+  summary?: {
+    total: number;
+    created: number;
+    skipped: number;
+    errors: number;
+  };
+  message?: string;
 }
 
 // =============================================================================
@@ -371,11 +393,11 @@ describe('Processing API', () => {
       });
 
       const response = await handleExtractText(request, { id: 'file_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(201);
       expect(data.job).toBeDefined();
-      expect(data.job.type).toBe('TEXT_EXTRACTION');
+      expect(data.job?.type).toBe('TEXT_EXTRACTION');
       expect(mockProcessingService.extractText).toHaveBeenCalledWith(
         'file_123',
         expect.objectContaining({ extractTables: true }),
@@ -392,7 +414,7 @@ describe('Processing API', () => {
       });
 
       const response = await handleExtractText(request, { id: 'file_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(403);
       expect(data.error).toBe('Access denied');
@@ -407,7 +429,7 @@ describe('Processing API', () => {
       });
 
       const response = await handleExtractText(request, { id: 'nonexistent' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(404);
       expect(data.error).toBe('File not found');
@@ -422,7 +444,7 @@ describe('Processing API', () => {
       });
 
       const response = await handleExtractText(request, { id: 'file_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(401);
       expect(data.error).toBe('Unauthorized');
@@ -475,7 +497,7 @@ describe('Processing API', () => {
       });
 
       const response = await handleExtractText(request, { id: 'file_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(500);
       expect(data.error).toBe('Queue unavailable');
@@ -494,11 +516,11 @@ describe('Processing API', () => {
       });
 
       const response = await handleOCR(request, { id: 'file_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(201);
       expect(data.job).toBeDefined();
-      expect(data.job.type).toBe('OCR');
+      expect(data.job!.type).toBe('OCR');
     });
 
     it('validates language option', async () => {
@@ -508,7 +530,7 @@ describe('Processing API', () => {
       });
 
       const response = await handleOCR(request, { id: 'file_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(400);
       expect(data.error).toContain('Invalid language');
@@ -552,7 +574,7 @@ describe('Processing API', () => {
       });
 
       const response = await handleOCR(request, { id: 'file_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(403);
       expect(data.error).toBe('Access denied');
@@ -588,11 +610,11 @@ describe('Processing API', () => {
       const request = createMockRequest();
 
       const response = await handleGetJobStatus(request, { jobId: 'job_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(200);
       expect(data.job).toBeDefined();
-      expect(data.job.status).toBe('PROCESSING');
+      expect(data.job!.status).toBe('PROCESSING');
     });
 
     it('returns progress percentage', async () => {
@@ -605,9 +627,9 @@ describe('Processing API', () => {
       const request = createMockRequest();
 
       const response = await handleGetJobStatus(request, { jobId: 'job_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
-      expect(data.job.progressPercentage).toBe(75);
+      expect(data.job!.progressPercentage).toBe(75);
     });
 
     it('returns 404 for non-existent job', async () => {
@@ -616,7 +638,7 @@ describe('Processing API', () => {
       const request = createMockRequest();
 
       const response = await handleGetJobStatus(request, { jobId: 'nonexistent' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(404);
       expect(data.error).toBe('Job not found');
@@ -628,7 +650,7 @@ describe('Processing API', () => {
       const request = createMockRequest();
 
       const response = await handleGetJobStatus(request, { jobId: 'job_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(401);
       expect(data.error).toBe('Unauthorized');
@@ -643,7 +665,7 @@ describe('Processing API', () => {
       const request = createMockRequest();
 
       const response = await handleGetJobStatus(request, { jobId: 'job_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(403);
       expect(data.error).toBe('Access denied');
@@ -677,12 +699,12 @@ describe('Processing API', () => {
       const request = createMockRequest();
 
       const response = await handleGetJobStatus(request, { jobId: 'job_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(200);
-      expect(data.job.status).toBe('COMPLETED');
-      expect(data.job.result).toBeDefined();
-      expect(data.job.result.content).toBe('Extracted text content');
+      expect(data.job!.status).toBe('COMPLETED');
+      expect(data.job!.result).toBeDefined();
+      expect(data.job!.result!.content).toBe('Extracted text content');
     });
 
     it('returns failed job with error', async () => {
@@ -696,11 +718,11 @@ describe('Processing API', () => {
       const request = createMockRequest();
 
       const response = await handleGetJobStatus(request, { jobId: 'job_123' });
-      const data = await response.json();
+      const data = (await response.json()) as ProcessingApiResponse;
 
       expect(response.status).toBe(200);
-      expect(data.job.status).toBe('FAILED');
-      expect(data.job.error).toBe('Processing failed: Invalid PDF structure');
+      expect(data.job!.status).toBe('FAILED');
+      expect(data.job!.error).toBe('Processing failed: Invalid PDF structure');
     });
   });
 });
@@ -738,10 +760,10 @@ describe('Processing API Integration', () => {
     });
 
     const createResponse = await handleExtractText(createRequest, { id: 'file_123' });
-    const createData = await createResponse.json();
+    const createData = (await createResponse.json()) as ProcessingApiResponse;
 
     expect(createResponse.status).toBe(201);
-    const jobId = createData.job.id;
+    const jobId = createData.job!.id;
 
     // 2. Check status - processing
     mockProcessingService.getJob.mockResolvedValue({
@@ -755,10 +777,10 @@ describe('Processing API Integration', () => {
 
     const statusRequest = createMockRequest();
     const statusResponse = await handleGetJobStatus(statusRequest, { jobId });
-    const statusData = await statusResponse.json();
+    const statusData = (await statusResponse.json()) as ProcessingApiResponse;
 
-    expect(statusData.job.status).toBe('PROCESSING');
-    expect(statusData.job.progressPercentage).toBe(50);
+    expect(statusData.job!.status).toBe('PROCESSING');
+    expect(statusData.job!.progressPercentage).toBe(50);
 
     // 3. Check status - completed
     mockProcessingService.getJob.mockResolvedValue({
@@ -776,10 +798,10 @@ describe('Processing API Integration', () => {
 
     const finalStatusRequest = createMockRequest();
     const finalStatusResponse = await handleGetJobStatus(finalStatusRequest, { jobId });
-    const finalStatusData = await finalStatusResponse.json();
+    const finalStatusData = (await finalStatusResponse.json()) as ProcessingApiResponse;
 
-    expect(finalStatusData.job.status).toBe('COMPLETED');
-    expect(finalStatusData.job.result.content).toBe('Extracted document text');
+    expect(finalStatusData.job!.status).toBe('COMPLETED');
+    expect(finalStatusData.job!.result!.content).toBe('Extracted document text');
   });
 
   it('complete OCR flow', async () => {
@@ -799,10 +821,10 @@ describe('Processing API Integration', () => {
     });
 
     const createResponse = await handleOCR(createRequest, { id: 'file_123' });
-    const createData = await createResponse.json();
+    const createData = (await createResponse.json()) as ProcessingApiResponse;
 
     expect(createResponse.status).toBe(201);
-    expect(createData.job.type).toBe('OCR');
+    expect(createData.job!.type).toBe('OCR');
 
     // 2. Check completed status
     mockProcessingService.getJob.mockResolvedValue({
@@ -820,9 +842,9 @@ describe('Processing API Integration', () => {
 
     const statusRequest = createMockRequest();
     const statusResponse = await handleGetJobStatus(statusRequest, { jobId: 'ocr_job' });
-    const statusData = await statusResponse.json();
+    const statusData = (await statusResponse.json()) as ProcessingApiResponse;
 
-    expect(statusData.job.status).toBe('COMPLETED');
-    expect(statusData.job.result.confidence).toBe(92.5);
+    expect(statusData.job!.status).toBe('COMPLETED');
+    expect(statusData.job!.result!.confidence).toBe(92.5);
   });
 });

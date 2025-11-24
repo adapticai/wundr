@@ -297,14 +297,19 @@ interface RuleProcessingResult {
 export class RetentionService {
   private prisma: RetentionDatabaseClient;
   private redis: RedisClient;
-  private defaultRetentionDays: number;
+  private readonly _defaultRetentionDays: number;
   private batchSize: number;
 
   constructor(config: RetentionServiceConfig) {
     this.prisma = config.prisma;
     this.redis = config.redis;
-    this.defaultRetentionDays = config.defaultRetentionDays ?? 365;
+    this._defaultRetentionDays = config.defaultRetentionDays ?? 365;
     this.batchSize = config.batchSize ?? 1000;
+  }
+
+  /** Get the default retention period in days */
+  get defaultRetentionDays(): number {
+    return this._defaultRetentionDays;
   }
 
   // ===========================================================================
@@ -920,7 +925,7 @@ continue;
     const fileStats = await this.prisma.attachment.aggregate({
       where: { message: { channel: { workspaceId } } },
       _sum: { fileSize: true },
-    });
+    }) as { _sum: { fileSize: number | null } };
 
     const fileSize = Number(fileStats._sum?.fileSize ?? 0);
 

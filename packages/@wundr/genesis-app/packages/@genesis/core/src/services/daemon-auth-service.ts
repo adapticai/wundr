@@ -563,7 +563,7 @@ return null;
 
       // Return intersection of requested, allowed, and restricted
       return requested.filter(
-        scope => allowedScopes.has(scope) && restrictedScopes.has(scope)
+        scope => allowedScopes.has(scope) && restrictedScopes.has(scope),
       );
     }
 
@@ -621,8 +621,13 @@ throw error;
     return keyHash === storedHash || apiKey === storedHash;
   }
 
+  /**
+   * Generate a unique JWT ID (jti) using crypto.randomUUID().
+   *
+   * @returns A unique identifier for the token
+   */
   private generateJti(): string {
-    return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    return `${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
   }
 }
 

@@ -653,9 +653,39 @@ export function createMockVPOfflineEvent(
 // =============================================================================
 
 /**
- * Create a mock presence service
+ * Mock presence service interface for type safety
  */
-export function createMockPresenceService() {
+export interface MockPresenceService {
+  setUserOnline: ReturnType<typeof vi.fn>;
+  setUserOffline: ReturnType<typeof vi.fn>;
+  getUserPresence: ReturnType<typeof vi.fn>;
+  setUserStatus: ReturnType<typeof vi.fn>;
+  setUserCustomStatus: ReturnType<typeof vi.fn>;
+  getOnlineChannelMembers: ReturnType<typeof vi.fn>;
+  getChannelPresence: ReturnType<typeof vi.fn>;
+  setVPOnline: ReturnType<typeof vi.fn>;
+  setVPOffline: ReturnType<typeof vi.fn>;
+  getVPPresence: ReturnType<typeof vi.fn>;
+  updateVPStatus: ReturnType<typeof vi.fn>;
+  subscribeToPresenceChanges: ReturnType<typeof vi.fn>;
+  unsubscribeFromPresenceChanges: ReturnType<typeof vi.fn>;
+  cleanup: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock presence service for testing user and VP presence functionality
+ *
+ * @returns A mock presence service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const presenceService = createMockPresenceService();
+ * presenceService.getUserPresence.mockResolvedValue(createMockUserPresence());
+ * const presence = await presenceService.getUserPresence('user_123');
+ * expect(presence.status).toBe('online');
+ * ```
+ */
+export function createMockPresenceService(): MockPresenceService {
   return {
     setUserOnline: vi.fn(),
     setUserOffline: vi.fn(),
@@ -675,9 +705,33 @@ export function createMockPresenceService() {
 }
 
 /**
- * Create a mock heartbeat service
+ * Mock heartbeat service interface for type safety
  */
-export function createMockHeartbeatService() {
+export interface MockHeartbeatService {
+  sendHeartbeat: ReturnType<typeof vi.fn>;
+  checkHealth: ReturnType<typeof vi.fn>;
+  getUnhealthyVPs: ReturnType<typeof vi.fn>;
+  getVPHealthStatus: ReturnType<typeof vi.fn>;
+  getAllVPHealthStatuses: ReturnType<typeof vi.fn>;
+  registerVP: ReturnType<typeof vi.fn>;
+  unregisterVP: ReturnType<typeof vi.fn>;
+  cleanup: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock heartbeat service for testing VP health monitoring
+ *
+ * @returns A mock heartbeat service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const heartbeatService = createMockHeartbeatService();
+ * heartbeatService.getVPHealthStatus.mockResolvedValue(createMockHealthStatus());
+ * const health = await heartbeatService.getVPHealthStatus('vp_123');
+ * expect(health.status).toBe('healthy');
+ * ```
+ */
+export function createMockHeartbeatService(): MockHeartbeatService {
   return {
     sendHeartbeat: vi.fn(),
     checkHealth: vi.fn(),
@@ -691,9 +745,31 @@ export function createMockHeartbeatService() {
 }
 
 /**
- * Create a mock heartbeat monitor
+ * Mock heartbeat monitor interface for type safety
  */
-export function createMockHeartbeatMonitor() {
+export interface MockHeartbeatMonitor {
+  start: ReturnType<typeof vi.fn>;
+  stop: ReturnType<typeof vi.fn>;
+  isRunning: ReturnType<typeof vi.fn>;
+  setOnUnhealthy: ReturnType<typeof vi.fn>;
+  setOnRecovered: ReturnType<typeof vi.fn>;
+  checkNow: ReturnType<typeof vi.fn>;
+  getMonitoringStats: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock heartbeat monitor for testing VP health check scheduling
+ *
+ * @returns A mock heartbeat monitor with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const monitor = createMockHeartbeatMonitor();
+ * monitor.isRunning.mockReturnValue(true);
+ * expect(monitor.isRunning()).toBe(true);
+ * ```
+ */
+export function createMockHeartbeatMonitor(): MockHeartbeatMonitor {
   return {
     start: vi.fn(),
     stop: vi.fn(),

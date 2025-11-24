@@ -7,7 +7,11 @@ import { PresenceProvider } from './presence-provider';
 
 import type { ReactNode } from 'react';
 
+/**
+ * Props for the root Providers component
+ */
 interface ProvidersProps {
+  /** Application children to wrap with providers */
   children: ReactNode;
 }
 

@@ -4,10 +4,10 @@
  * Handles single member operations within a workspace.
  *
  * Routes:
- * - PATCH /api/workspaces/:id/members/:userId - Update member role
- * - DELETE /api/workspaces/:id/members/:userId - Remove member
+ * - PATCH /api/workspaces/:workspaceId/members/:userId - Update member role
+ * - DELETE /api/workspaces/:workspaceId/members/:userId - Remove member
  *
- * @module app/api/workspaces/[id]/members/[userId]/route
+ * @module app/api/workspaces/[workspaceId]/members/[userId]/route
  */
 
 import { prisma } from '@genesis/database';
@@ -29,7 +29,7 @@ import type { NextRequest } from 'next/server';
  * Route context with workspace and user ID parameters
  */
 interface RouteContext {
-  params: Promise<{ id: string; userId: string }>;
+  params: Promise<{ workspaceId: string; userId: string }>;
 }
 
 /**
@@ -41,8 +41,8 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -54,8 +54,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
@@ -74,7 +74,7 @@ return null;
 }
 
 /**
- * PATCH /api/workspaces/:id/members/:userId
+ * PATCH /api/workspaces/:workspaceId/members/:userId
  *
  * Update a member's role. Requires workspace ADMIN or org ADMIN/OWNER.
  *
@@ -98,7 +98,7 @@ export async function PATCH(
 
     // Validate parameters
     const params = await context.params;
-    const wsParamResult = workspaceIdParamSchema.safeParse({ id: params.id });
+    const wsParamResult = workspaceIdParamSchema.safeParse({ id: params.workspaceId });
     const userParamResult = userIdParamSchema.safeParse({ userId: params.userId });
 
     if (!wsParamResult.success || !userParamResult.success) {
@@ -109,7 +109,7 @@ export async function PATCH(
     }
 
     // Check requester's access and permission
-    const access = await checkWorkspaceAccess(params.id, session.user.id);
+    const access = await checkWorkspaceAccess(params.workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -137,7 +137,7 @@ export async function PATCH(
     const targetMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
-          workspaceId: params.id,
+          workspaceId: params.workspaceId,
           userId: params.userId,
         },
       },
@@ -183,7 +183,7 @@ export async function PATCH(
     const updatedMembership = await prisma.workspaceMember.update({
       where: {
         workspaceId_userId: {
-          workspaceId: params.id,
+          workspaceId: params.workspaceId,
           userId: params.userId,
         },
       },
@@ -207,7 +207,7 @@ export async function PATCH(
       message: 'Member role updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:id/members/:userId] Error:', error);
+    console.error('[PATCH /api/workspaces/:workspaceId/members/:userId] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -219,7 +219,7 @@ export async function PATCH(
 }
 
 /**
- * DELETE /api/workspaces/:id/members/:userId
+ * DELETE /api/workspaces/:workspaceId/members/:userId
  *
  * Remove a member from the workspace. Requires workspace ADMIN or org ADMIN/OWNER.
  * Users can remove themselves.
@@ -229,7 +229,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -244,7 +244,7 @@ export async function DELETE(
 
     // Validate parameters
     const params = await context.params;
-    const wsParamResult = workspaceIdParamSchema.safeParse({ id: params.id });
+    const wsParamResult = workspaceIdParamSchema.safeParse({ id: params.workspaceId });
     const userParamResult = userIdParamSchema.safeParse({ userId: params.userId });
 
     if (!wsParamResult.success || !userParamResult.success) {
@@ -255,7 +255,7 @@ export async function DELETE(
     }
 
     // Check requester's access
-    const access = await checkWorkspaceAccess(params.id, session.user.id);
+    const access = await checkWorkspaceAccess(params.workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -285,7 +285,7 @@ export async function DELETE(
     const targetMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
-          workspaceId: params.id,
+          workspaceId: params.workspaceId,
           userId: params.userId,
         },
       },
@@ -305,7 +305,7 @@ export async function DELETE(
     if (targetMembership.role === 'ADMIN') {
       const adminCount = await prisma.workspaceMember.count({
         where: {
-          workspaceId: params.id,
+          workspaceId: params.workspaceId,
           role: 'ADMIN',
         },
       });
@@ -325,7 +325,7 @@ export async function DELETE(
     await prisma.$transaction(async (tx) => {
       // Get all channels in this workspace
       const workspaceChannels = await tx.channel.findMany({
-        where: { workspaceId: params.id },
+        where: { workspaceId: params.workspaceId },
         select: { id: true },
       });
 
@@ -343,7 +343,7 @@ export async function DELETE(
       await tx.workspaceMember.delete({
         where: {
           workspaceId_userId: {
-            workspaceId: params.id,
+            workspaceId: params.workspaceId,
             userId: params.userId,
           },
         },
@@ -354,7 +354,7 @@ export async function DELETE(
       message: 'Member removed from workspace successfully',
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:id/members/:userId] Error:', error);
+    console.error('[DELETE /api/workspaces/:workspaceId/members/:userId] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

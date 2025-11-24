@@ -56,33 +56,98 @@ export type AuditCategory =
   | 'security'
   | 'compliance';
 
+/**
+ * Typed value that can be stored in audit change records.
+ * Supports primitive types and simple structured data.
+ */
+export type AuditChangeValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Date
+  | string[]
+  | number[]
+  | { [key: string]: string | number | boolean | null };
+
+/**
+ * Audit log entry metadata with typed properties.
+ */
+export interface AuditEntryMetadata {
+  /** HTTP request ID for tracing */
+  requestId?: string;
+  /** API version used */
+  apiVersion?: string;
+  /** OAuth client ID if applicable */
+  clientId?: string;
+  /** Geographic location derived from IP */
+  location?: {
+    country?: string;
+    region?: string;
+    city?: string;
+  };
+  /** Integration provider name */
+  integrationProvider?: string;
+  /** Additional context as key-value pairs */
+  context?: { [key: string]: string | number | boolean };
+}
+
+/**
+ * A single audit log entry representing an auditable action.
+ */
 export interface AuditLogEntry {
+  /** Unique identifier for this audit entry */
   id: string;
+  /** When the action occurred */
   timestamp: Date;
+  /** The action that was performed */
   action: AuditAction;
+  /** Category of the action */
   category: AuditCategory;
+  /** Severity level of the action */
   severity: AuditSeverity;
+  /** ID of the actor who performed the action */
   actorId: string;
+  /** Type of actor */
   actorType: 'user' | 'vp' | 'system' | 'api';
+  /** Display name of the actor */
   actorName: string;
+  /** Email of the actor (if user) */
   actorEmail?: string;
+  /** Type of resource affected */
   resourceType: string;
+  /** ID of the resource affected */
   resourceId: string;
+  /** Display name of the resource */
   resourceName?: string;
+  /** Workspace where the action occurred */
   workspaceId: string;
+  /** IP address of the request origin */
   ipAddress?: string;
+  /** User agent string from the request */
   userAgent?: string;
+  /** Session ID if applicable */
   sessionId?: string;
+  /** List of field changes */
   changes?: AuditChange[];
-  metadata?: Record<string, unknown>;
+  /** Additional typed metadata */
+  metadata?: AuditEntryMetadata;
+  /** Whether the action succeeded */
   success: boolean;
+  /** Error message if the action failed */
   errorMessage?: string;
 }
 
+/**
+ * Represents a single field change in an audit log entry.
+ */
 export interface AuditChange {
+  /** Name of the field that changed */
   field: string;
-  oldValue?: unknown;
-  newValue?: unknown;
+  /** Previous value (before the change) */
+  oldValue?: AuditChangeValue;
+  /** New value (after the change) */
+  newValue?: AuditChangeValue;
 }
 
 export interface AuditLogFilter {

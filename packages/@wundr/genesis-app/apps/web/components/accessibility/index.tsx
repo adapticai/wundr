@@ -2,13 +2,21 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-/** Accessibility preferences - matches @genesis/core/types AccessibilityPreferences */
+/**
+ * Accessibility preferences - matches @genesis/core/types AccessibilityPreferences
+ */
 export interface A11yPreferences {
+  /** Whether to reduce motion for animations */
   reduceMotion: boolean;
+  /** Whether to use high contrast mode */
   highContrast: boolean;
+  /** Whether to use larger text */
   largeText: boolean;
+  /** Whether screen reader mode is enabled */
   screenReaderMode: boolean;
+  /** Focus indicator style preference */
   focusIndicators: 'default' | 'enhanced';
+  /** Color blind mode type */
   colorBlindMode?: 'protanopia' | 'deuteranopia' | 'tritanopia';
 }
 
@@ -20,14 +28,30 @@ const defaultPreferences: A11yPreferences = {
   focusIndicators: 'default',
 };
 
+/**
+ * Context value for accessibility settings
+ */
 interface A11yContextValue {
+  /** Current accessibility preferences */
   preferences: A11yPreferences;
+  /** Function to update a specific preference */
   setPreference: <K extends keyof A11yPreferences>(key: K, value: A11yPreferences[K]) => void;
 }
 
 const A11yContext = createContext<A11yContextValue | null>(null);
 
-export function A11yProvider({ children }: { children: ReactNode }) {
+/**
+ * Props for the A11yProvider component
+ */
+export interface A11yProviderProps {
+  /** Children to wrap with accessibility context */
+  children: ReactNode;
+}
+
+/**
+ * Accessibility provider that manages user preferences
+ */
+export function A11yProvider({ children }: A11yProviderProps) {
   const [preferences, setPreferences] = useState<A11yPreferences>(defaultPreferences);
 
   useEffect(() => {
@@ -73,16 +97,33 @@ export function A11yProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useA11y() {
+/**
+ * Hook to access accessibility context
+ * @returns Accessibility context with preferences and setter
+ * @throws Error if used outside A11yProvider
+ */
+export function useA11y(): A11yContextValue {
   const context = useContext(A11yContext);
   if (!context) {
-throw new Error('useA11y must be used within A11yProvider');
-}
+    throw new Error('useA11y must be used within A11yProvider');
+  }
   return context;
 }
 
-/** Skip to main content link */
-export function SkipLink({ href = '#main-content', children = 'Skip to main content' }: { href?: string; children?: ReactNode }) {
+/**
+ * Props for the SkipLink component
+ */
+export interface SkipLinkProps {
+  /** Target anchor ID */
+  href?: string;
+  /** Link text content */
+  children?: ReactNode;
+}
+
+/**
+ * Skip to main content link for keyboard navigation
+ */
+export function SkipLink({ href = '#main-content', children = 'Skip to main content' }: SkipLinkProps) {
   return (
     <a
       href={href}
@@ -93,21 +134,41 @@ export function SkipLink({ href = '#main-content', children = 'Skip to main cont
   );
 }
 
-/** Screen reader only text */
-export function VisuallyHidden({ children }: { children: ReactNode }) {
+/**
+ * Props for the VisuallyHidden component
+ */
+export interface VisuallyHiddenProps {
+  /** Content only visible to screen readers */
+  children: ReactNode;
+}
+
+/**
+ * Screen reader only text - visually hidden but accessible
+ */
+export function VisuallyHidden({ children }: VisuallyHiddenProps) {
   return <span className="sr-only">{children}</span>;
 }
 
-/** Live region for screen reader announcements */
-export function LiveRegion({ 
-  children, 
-  politeness = 'polite',
-  atomic = true, 
-}: { 
-  children: ReactNode; 
+/**
+ * Props for the LiveRegion component
+ */
+export interface LiveRegionProps {
+  /** Content to announce */
+  children: ReactNode;
+  /** ARIA live politeness level */
   politeness?: 'off' | 'polite' | 'assertive';
+  /** Whether the entire region should be announced */
   atomic?: boolean;
-}) {
+}
+
+/**
+ * Live region for screen reader announcements
+ */
+export function LiveRegion({
+  children,
+  politeness = 'polite',
+  atomic = true,
+}: LiveRegionProps) {
   return (
     <div aria-live={politeness} aria-atomic={atomic} className="sr-only">
       {children}
@@ -115,8 +176,12 @@ export function LiveRegion({
   );
 }
 
-/** Focus trap for modals */
-export function useFocusTrap(containerRef: React.RefObject<HTMLElement>, active: boolean) {
+/**
+ * Focus trap hook for modal dialogs
+ * @param containerRef - Reference to the container element
+ * @param active - Whether the focus trap is active
+ */
+export function useFocusTrap(containerRef: React.RefObject<HTMLElement>, active: boolean): void {
   useEffect(() => {
     if (!active || !containerRef.current) {
 return;
@@ -149,9 +214,17 @@ return;
   }, [containerRef, active]);
 }
 
-/** Announce to screen readers */
-export function useAnnounce() {
-  const announce = (message: string, politeness: 'polite' | 'assertive' = 'polite') => {
+/**
+ * Announce function type for screen reader announcements
+ */
+export type AnnounceFn = (message: string, politeness?: 'polite' | 'assertive') => void;
+
+/**
+ * Hook to announce messages to screen readers
+ * @returns Function to announce messages
+ */
+export function useAnnounce(): AnnounceFn {
+  const announce: AnnounceFn = (message: string, politeness: 'polite' | 'assertive' = 'polite') => {
     const el = document.createElement('div');
     el.setAttribute('aria-live', politeness);
     el.setAttribute('aria-atomic', 'true');

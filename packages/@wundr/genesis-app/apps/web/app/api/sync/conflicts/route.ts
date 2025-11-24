@@ -402,10 +402,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        preferences: {
+        preferences: JSON.parse(JSON.stringify({
           ...currentPrefs,
           syncConflicts: remainingConflicts,
-        },
+        })) as Prisma.InputJsonValue,
       },
     });
 

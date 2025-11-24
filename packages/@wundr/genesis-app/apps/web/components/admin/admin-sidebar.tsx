@@ -4,10 +4,17 @@ import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Props for the AdminSidebar component.
+ */
 export interface AdminSidebarProps {
+  /** The current navigation path for highlighting active items */
   currentPath: string;
+  /** The workspace ID for building navigation URLs */
   workspaceId: string;
+  /** Callback when a navigation item is clicked */
   onNavigate: (path: string) => void;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

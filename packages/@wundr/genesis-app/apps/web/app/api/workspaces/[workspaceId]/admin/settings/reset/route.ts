@@ -9,7 +9,7 @@
  * @module app/api/workspaces/[workspaceId]/admin/settings/reset/route
  */
 
-import { prisma } from '@genesis/database';
+import { prisma, type Prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -19,8 +19,6 @@ import {
   ADMIN_ERROR_CODES,
   type WorkspaceSettings,
 } from '@/lib/validations/admin';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -68,7 +66,7 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
  * @returns Reset workspace settings
  */
 export async function POST(
-  request: NextRequest,
+  request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -135,10 +133,10 @@ export async function POST(
       newSettings = DEFAULT_SETTINGS;
     }
 
-    // Update workspace
+    // Update workspace - serialize settings to ensure Prisma compatibility
     const updatedWorkspace = await prisma.workspace.update({
       where: { id: workspaceId },
-      data: { settings: newSettings },
+      data: { settings: JSON.parse(JSON.stringify(newSettings)) as Prisma.InputJsonValue },
     });
 
     // Log admin action

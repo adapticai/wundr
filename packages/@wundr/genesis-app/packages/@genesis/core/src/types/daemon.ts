@@ -197,6 +197,14 @@ export interface DaemonCredentials {
 }
 
 /**
+ * Custom metadata key-value pairs with typed values.
+ */
+export interface DaemonCustomMetadata {
+  /** String metadata values */
+  [key: string]: string | number | boolean | string[] | undefined;
+}
+
+/**
  * Metadata about the daemon instance.
  */
 export interface DaemonMetadata {
@@ -215,8 +223,8 @@ export interface DaemonMetadata {
   /** Capabilities this daemon instance supports */
   capabilities?: string[];
 
-  /** Custom metadata */
-  custom?: Record<string, unknown>;
+  /** Custom metadata with typed values */
+  custom?: DaemonCustomMetadata;
 }
 
 /**
@@ -633,6 +641,24 @@ export const DAEMON_REDIS_KEYS = {
 // =============================================================================
 
 /**
+ * Registration metadata with typed properties.
+ */
+export interface DaemonRegistrationMetadata {
+  /** Container ID if running in container */
+  containerId?: string;
+  /** Kubernetes pod name if applicable */
+  podName?: string;
+  /** AWS region or cloud region */
+  region?: string;
+  /** Environment (development, staging, production) */
+  environment?: string;
+  /** Tags for grouping/filtering */
+  tags?: string[];
+  /** Additional key-value metadata */
+  [key: string]: string | string[] | undefined;
+}
+
+/**
  * Input for registering a new daemon.
  * Used when a VP daemon first connects to the Genesis platform.
  */
@@ -652,8 +678,8 @@ export interface DaemonRegistration {
   /** List of capabilities (e.g., 'messaging', 'calls') */
   capabilities: string[];
 
-  /** Additional metadata */
-  metadata?: Record<string, unknown>;
+  /** Additional typed metadata */
+  metadata?: DaemonRegistrationMetadata;
 }
 
 /**

@@ -21,12 +21,20 @@ import type {
 // Integration Hooks
 // =============================================================================
 
-interface UseIntegrationsOptions {
+/**
+ * Options for the useIntegrations hook
+ */
+export interface UseIntegrationsOptions {
+  /** Filter by integration provider */
   provider?: IntegrationProvider;
+  /** Filter by integration status */
   status?: IntegrationStatus;
 }
 
-interface UseIntegrationsReturn {
+/**
+ * Return type for the useIntegrations hook
+ */
+export interface UseIntegrationsReturn {
   integrations: IntegrationConfig[];
   isLoading: boolean;
   error: Error | null;
@@ -100,14 +108,25 @@ params.set('status', options.status);
   };
 }
 
-interface UseIntegrationReturn {
+/**
+ * Return type for the useIntegration hook
+ */
+export interface UseIntegrationReturn {
+  /** The integration configuration or null if not found */
   integration: IntegrationConfig | null;
+  /** Whether the integration is loading */
   isLoading: boolean;
+  /** Error that occurred during fetch */
   error: Error | null;
+  /** Test the integration connection */
   testConnection: () => Promise<{ success: boolean; message?: string }>;
+  /** Sync the integration data */
   syncIntegration: () => Promise<boolean>;
+  /** Update the integration configuration */
   updateIntegration: (input: UpdateIntegrationInput) => Promise<IntegrationConfig | null>;
+  /** Delete the integration */
   deleteIntegration: () => Promise<boolean>;
+  /** Refetch the integration data */
   refetch: () => void;
 }
 
@@ -248,16 +267,23 @@ return;
   };
 }
 
-interface UseIntegrationMutationsReturn {
+/**
+ * Return type for the useIntegrationMutations hook
+ */
+export interface UseIntegrationMutationsReturn {
+  /** Create a new integration */
   createIntegration: (
     workspaceId: string,
     input: CreateIntegrationInput
   ) => Promise<IntegrationConfig | null>;
+  /** Initiate OAuth flow for a provider */
   initiateOAuth: (
     workspaceId: string,
     provider: IntegrationProvider
   ) => Promise<IntegrationOAuthResponse | null>;
+  /** Whether a mutation is in progress */
   isLoading: boolean;
+  /** Error that occurred during mutation */
   error: Error | null;
 }
 
@@ -342,16 +368,29 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
 // Webhook Hooks
 // =============================================================================
 
-interface UseWebhooksOptions {
+/**
+ * Options for the useWebhooks hook
+ */
+export interface UseWebhooksOptions {
+  /** Filter by integration ID */
   integrationId?: string;
+  /** Filter by webhook status */
   status?: WebhookStatus;
 }
 
-interface UseWebhooksReturn {
+/**
+ * Return type for the useWebhooks hook
+ */
+export interface UseWebhooksReturn {
+  /** List of webhook configurations */
   webhooks: WebhookConfig[];
+  /** Whether webhooks are loading */
   isLoading: boolean;
+  /** Error that occurred during fetch */
   error: Error | null;
+  /** Create a new webhook */
   createWebhook: (input: CreateWebhookInput) => Promise<WebhookConfig | null>;
+  /** Refetch the webhooks list */
   refetch: () => void;
 }
 
@@ -438,15 +477,27 @@ params.set('status', options.status);
   };
 }
 
-interface UseWebhookReturn {
+/**
+ * Return type for the useWebhook hook
+ */
+export interface UseWebhookReturn {
+  /** The webhook configuration or null if not found */
   webhook: WebhookConfig | null;
+  /** Recent webhook deliveries */
   deliveries: WebhookDelivery[];
+  /** Whether the webhook is loading */
   isLoading: boolean;
+  /** Error that occurred during fetch */
   error: Error | null;
+  /** Send a test webhook delivery */
   testWebhook: () => Promise<{ success: boolean; delivery?: WebhookDelivery }>;
+  /** Update the webhook configuration */
   updateWebhook: (input: UpdateWebhookInput) => Promise<WebhookConfig | null>;
+  /** Delete the webhook */
   deleteWebhook: () => Promise<boolean>;
+  /** Rotate the webhook secret */
   rotateSecret: () => Promise<{ secret: string } | null>;
+  /** Refetch the webhook data */
   refetch: () => void;
 }
 
@@ -600,18 +651,33 @@ return;
   };
 }
 
-interface UseWebhookDeliveriesOptions {
+/**
+ * Options for the useWebhookDeliveries hook
+ */
+export interface UseWebhookDeliveriesOptions {
+  /** Filter by delivery status */
   status?: WebhookDeliveryStatus;
+  /** Number of deliveries to fetch per page */
   limit?: number;
 }
 
-interface UseWebhookDeliveriesReturn {
+/**
+ * Return type for the useWebhookDeliveries hook
+ */
+export interface UseWebhookDeliveriesReturn {
+  /** List of webhook deliveries */
   deliveries: WebhookDelivery[];
+  /** Total number of deliveries */
   total: number;
+  /** Whether deliveries are loading */
   isLoading: boolean;
+  /** Whether there are more deliveries to load */
   hasMore: boolean;
+  /** Load more deliveries */
   loadMore: () => Promise<void>;
+  /** Retry a failed delivery */
   retryDelivery: (deliveryId: string) => Promise<WebhookDelivery | null>;
+  /** Error that occurred during fetch */
   error: Error | null;
 }
 

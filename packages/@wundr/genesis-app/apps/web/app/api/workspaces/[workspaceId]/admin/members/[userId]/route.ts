@@ -22,8 +22,6 @@ import {
   type MemberStatus,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
-
 /**
  * Route context with workspace ID and user ID parameters
  */
@@ -41,7 +39,7 @@ interface RouteContext {
  * @returns Member details
  */
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -144,7 +142,7 @@ export async function GET(
  * @returns Updated member
  */
 export async function PATCH(
-  request: NextRequest,
+  request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -217,15 +215,16 @@ export async function PATCH(
     const { roleId } = parseResult.data;
 
     // Map role ID to role name
-    let newRole = member.role;
+    type WorkspaceRoleType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST';
+    let newRole: WorkspaceRoleType = member.role as WorkspaceRoleType;
     if (roleId) {
-      const roleMap: Record<string, string> = {
+      const roleMap: Record<string, WorkspaceRoleType> = {
         'system-role-0': 'OWNER',
         'system-role-1': 'ADMIN',
         'system-role-2': 'MEMBER',
         'system-role-3': 'GUEST',
       };
-      newRole = roleMap[roleId] || member.role;
+      newRole = roleMap[roleId] || (member.role as WorkspaceRoleType);
     }
 
     // Update member
@@ -297,7 +296,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

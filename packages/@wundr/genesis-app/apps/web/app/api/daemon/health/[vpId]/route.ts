@@ -2,6 +2,7 @@
  * Daemon Health API Route
  *
  * Handles health status queries for VP daemons.
+ * Integrates with the HeartbeatService to provide real health data.
  *
  * Routes:
  * - GET /api/daemon/health/[vpId] - Get VP health status
@@ -9,12 +10,75 @@
  * @module app/api/daemon/health/[vpId]/route
  */
 
+import { createHeartbeatService, getRedisClient, type HeartbeatMetrics, type RedisClient } from '@genesis/core';
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
 import type { NextRequest } from 'next/server';
+
+/**
+ * Creates a RedisClient adapter from the ioredis instance.
+ * This wraps the raw Redis client to match the RedisClient interface.
+ */
+function createRedisClientAdapter(rawRedis: ReturnType<typeof getRedisClient>): RedisClient {
+  return {
+    async get(key: string) {
+      return rawRedis.get(key);
+    },
+    async set(key: string, value: string, options?: { EX?: number }) {
+      if (options?.EX) {
+        await rawRedis.set(key, value, 'EX', options.EX);
+      } else {
+        await rawRedis.set(key, value);
+      }
+    },
+    async del(key: string) {
+      await rawRedis.del(key);
+    },
+    async hset(key: string, field: string, value: string) {
+      await rawRedis.hset(key, field, value);
+    },
+    async hget(key: string, field: string) {
+      return rawRedis.hget(key, field);
+    },
+    async hgetall(key: string) {
+      const result = await rawRedis.hgetall(key);
+      return Object.keys(result).length > 0 ? result : null;
+    },
+    async hdel(key: string, field: string) {
+      await rawRedis.hdel(key, field);
+    },
+    async sadd(key: string, member: string) {
+      await rawRedis.sadd(key, member);
+    },
+    async srem(key: string, member: string) {
+      await rawRedis.srem(key, member);
+    },
+    async smembers(key: string) {
+      return rawRedis.smembers(key);
+    },
+    async zadd(key: string, score: number, member: string) {
+      await rawRedis.zadd(key, score, member);
+    },
+    async zrange(key: string, start: number, stop: number) {
+      return rawRedis.zrange(key, start, stop);
+    },
+    async zrangebyscore(key: string, min: number | string, max: number | string) {
+      return rawRedis.zrangebyscore(key, min, max);
+    },
+    async zremrangebyrank(key: string, start: number, stop: number) {
+      await rawRedis.zremrangebyrank(key, start, stop);
+    },
+    async expire(key: string, seconds: number) {
+      await rawRedis.expire(key, seconds);
+    },
+    async exists(key: string) {
+      return rawRedis.exists(key);
+    },
+  };
+}
 
 // =============================================================================
 // Error Codes
@@ -26,6 +90,28 @@ const HEALTH_ERROR_CODES = {
   FORBIDDEN: 'FORBIDDEN',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
+
+/**
+ * Generate human-readable health status description.
+ *
+ * @param status - The health status type
+ * @returns Human-readable description of the health status
+ */
+function getHealthDetailsFromStatus(status: string): string {
+  switch (status) {
+    case 'healthy':
+      return 'VP daemon is operating normally';
+    case 'degraded':
+      return 'VP daemon is experiencing performance issues';
+    case 'unhealthy':
+      return 'VP daemon is not responding - consecutive missed heartbeats';
+    case 'recovering':
+      return 'VP daemon is recovering from unhealthy state';
+    case 'unknown':
+    default:
+      return 'VP daemon status is unknown';
+  }
+}
 
 /**
  * Creates a standardized error response.
@@ -82,7 +168,7 @@ function createErrorResponse(
  * ```
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ vpId: string }> },
 ): Promise<NextResponse> {
   try {
@@ -144,56 +230,99 @@ export async function GET(
       );
     }
 
-    // TODO: Get Redis client and heartbeat service
-    // const redis = getRedisClient();
-    // const heartbeatService = createHeartbeatService(redis);
-    // const health = await heartbeatService.checkHealth(vpId);
-    // const daemonInfo = await heartbeatService.getDaemonInfo(vpId);
-    // const lastHeartbeat = await heartbeatService.getLastHeartbeat(vpId);
-
-    // For now, return mock health status based on VP status
-    const isOnline = vp.status === 'ONLINE';
-    const mockHealth = {
-      vpId,
-      healthy: isOnline,
-      status: isOnline ? 'healthy' : (vp.status === 'AWAY' ? 'degraded' : 'unknown'),
-      lastHeartbeat: isOnline ? new Date().toISOString() : null,
-      missedHeartbeats: isOnline ? 0 : (vp.status === 'AWAY' ? 2 : -1),
-      details: isOnline
-        ? 'VP daemon is operating normally'
-        : vp.status === 'AWAY'
-          ? 'VP daemon is experiencing delays'
-          : 'VP daemon status is unknown - no heartbeat data',
-      metrics: isOnline
-        ? {
-            cpuUsage: Math.floor(Math.random() * 50) + 10,
-            memoryUsage: Math.floor(Math.random() * 40) + 20,
-            activeConnections: Math.floor(Math.random() * 20),
-            messageQueueSize: Math.floor(Math.random() * 10),
-          }
-        : null,
-      daemonInfo: isOnline
-        ? {
-            instanceId: `daemon_${vpId.slice(-6)}`,
-            version: '1.0.0',
-            host: 'localhost',
-            port: 8080,
-            protocol: 'http',
-            startedAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-          }
-        : null,
+    // Get Redis client and heartbeat service for real health data
+    let healthData: {
+      vpId: string;
+      healthy: boolean;
+      status: string;
+      lastHeartbeat: string | null;
+      missedHeartbeats: number;
+      details: string;
+      metrics: HeartbeatMetrics | null;
+      daemonInfo: {
+        instanceId: string;
+        version: string;
+        host: string;
+        port: number;
+        protocol: string;
+        startedAt: string;
+      } | null;
       vp: {
-        id: vp.id,
-        status: vp.status,
-        discipline: vp.discipline,
-        role: vp.role,
-        user: vp.user,
-        organization: vp.organization,
-      },
+        id: string;
+        status: string;
+        discipline: string;
+        role: string;
+        user: typeof vp.user;
+        organization: typeof vp.organization;
+      };
     };
 
+    try {
+      const redis = getRedisClient();
+      const redisClient = createRedisClientAdapter(redis);
+      const heartbeatService = createHeartbeatService(redisClient);
+
+      // Get health status from heartbeat service
+      const health = await heartbeatService.checkHealth(vpId);
+      const daemonInfo = await heartbeatService.getDaemonInfo(vpId);
+      // Note: health.lastHeartbeat already contains the timestamp, so we don't need a separate call
+
+      healthData = {
+        vpId,
+        healthy: health.healthy,
+        status: health.status,
+        lastHeartbeat: health.lastHeartbeat?.toISOString() ?? null,
+        missedHeartbeats: health.missedHeartbeats,
+        details: health.details ?? getHealthDetailsFromStatus(health.status),
+        metrics: health.latestMetrics ?? null,
+        daemonInfo: daemonInfo
+          ? {
+              instanceId: daemonInfo.instanceId,
+              version: daemonInfo.version,
+              host: daemonInfo.host,
+              port: daemonInfo.port,
+              protocol: daemonInfo.protocol,
+              startedAt: daemonInfo.startedAt.toISOString(),
+            }
+          : null,
+        vp: {
+          id: vp.id,
+          status: vp.status,
+          discipline: vp.discipline,
+          role: vp.role,
+          user: vp.user,
+          organization: vp.organization,
+        },
+      };
+    } catch {
+      // Fallback to VP status-based health when Redis is unavailable
+      const isOnline = vp.status === 'ONLINE';
+      healthData = {
+        vpId,
+        healthy: isOnline,
+        status: isOnline ? 'healthy' : (vp.status === 'AWAY' ? 'degraded' : 'unknown'),
+        lastHeartbeat: null,
+        missedHeartbeats: isOnline ? 0 : -1,
+        details: isOnline
+          ? 'VP status is ONLINE (heartbeat service unavailable)'
+          : vp.status === 'AWAY'
+            ? 'VP status is AWAY (heartbeat service unavailable)'
+            : 'VP status unknown - heartbeat service unavailable',
+        metrics: null,
+        daemonInfo: null,
+        vp: {
+          id: vp.id,
+          status: vp.status,
+          discipline: vp.discipline,
+          role: vp.role,
+          user: vp.user,
+          organization: vp.organization,
+        },
+      };
+    }
+
     return NextResponse.json({
-      data: mockHealth,
+      data: healthData,
     });
   } catch (error) {
     console.error('[GET /api/daemon/health/[vpId]] Error:', error);

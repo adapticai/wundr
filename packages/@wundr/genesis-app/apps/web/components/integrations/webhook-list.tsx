@@ -7,13 +7,23 @@ import { WEBHOOK_EVENTS, INTEGRATION_STATUS_CONFIG } from '@/types/integration';
 
 import type { Webhook } from '@/types/integration';
 
+/**
+ * Props for the WebhookList component
+ */
 export interface WebhookListProps {
+  /** Array of webhooks to display */
   webhooks: Webhook[];
+  /** Loading state for the list */
   isLoading?: boolean;
+  /** Callback fired when testing a webhook */
   onTest: (webhook: Webhook) => void;
+  /** Callback fired when editing a webhook */
   onEdit: (webhook: Webhook) => void;
+  /** Callback fired when deleting a webhook */
   onDelete: (webhook: Webhook) => void;
+  /** Callback to open the add webhook dialog */
   onAdd?: () => void;
+  /** Additional CSS class names */
   className?: string;
 }
 

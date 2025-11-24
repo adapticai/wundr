@@ -2,6 +2,8 @@
  * @genesis/core - Permission Errors
  *
  * Custom error classes for permission-related failures.
+ * Provides structured error types for authentication, authorization,
+ * and membership validation failures.
  *
  * @packageDocumentation
  */
@@ -17,20 +19,38 @@ import type { Permission } from './permissions';
 
 /**
  * Error codes for permission-related errors.
+ * Used to identify specific types of permission failures programmatically.
  */
 export const PermissionErrorCodes = {
+  /** User lacks the required permission for the operation */
   PERMISSION_DENIED: 'PERMISSION_DENIED',
+  /** User is not authenticated (no valid session) */
   NOT_AUTHENTICATED: 'NOT_AUTHENTICATED',
+  /** User is not a member of the specified organization */
   NOT_ORGANIZATION_MEMBER: 'NOT_ORGANIZATION_MEMBER',
+  /** User is not a member of the specified workspace */
   NOT_WORKSPACE_MEMBER: 'NOT_WORKSPACE_MEMBER',
+  /** User is not a member of the specified channel */
   NOT_CHANNEL_MEMBER: 'NOT_CHANNEL_MEMBER',
+  /** User's role is insufficient for the operation */
   INSUFFICIENT_ROLE: 'INSUFFICIENT_ROLE',
+  /** The requested resource does not exist */
   RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
+  /** The permission context is missing required fields */
   INVALID_CONTEXT: 'INVALID_CONTEXT',
 } as const;
 
+/**
+ * Union type of all permission error codes.
+ */
 export type PermissionErrorCode =
   (typeof PermissionErrorCodes)[keyof typeof PermissionErrorCodes];
+
+/**
+ * Scope types for role-based errors.
+ * Indicates the level at which the role check failed.
+ */
+export type RoleScope = 'organization' | 'workspace' | 'channel';
 
 // =============================================================================
 // Permission Denied Error
@@ -187,18 +207,32 @@ export class NotChannelMemberError extends GenesisError {
 
 /**
  * Error thrown when a user does not have a sufficient role level.
+ * Indicates that while the user may be a member, their role is too low
+ * for the requested operation.
  */
 export class InsufficientRoleError extends GenesisError {
+  /** The user ID that has insufficient role */
   public readonly userId: string;
+  /** The user's current role in the scope */
   public readonly currentRole: string;
+  /** The minimum role required for the operation */
   public readonly requiredRole: string;
-  public readonly scope: 'organization' | 'workspace' | 'channel';
+  /** The scope at which the role was checked */
+  public readonly scope: RoleScope;
 
+  /**
+   * Creates a new InsufficientRoleError.
+   *
+   * @param userId - The ID of the user with insufficient role
+   * @param currentRole - The user's current role
+   * @param requiredRole - The minimum required role
+   * @param scope - The scope of the role check (organization, workspace, or channel)
+   */
   constructor(
     userId: string,
     currentRole: string,
     requiredRole: string,
-    scope: 'organization' | 'workspace' | 'channel',
+    scope: RoleScope,
   ) {
     super(
       `User '${userId}' has ${scope} role '${currentRole}', but '${requiredRole}' or higher is required`,
@@ -242,6 +276,21 @@ export class InvalidPermissionContextError extends GenesisError {
 
 /**
  * Type guard to check if an error is a PermissionDeniedError.
+ * Use this to safely narrow an unknown error type for specific handling.
+ *
+ * @param error - The error to check (can be any type)
+ * @returns True if the error is a PermissionDeniedError instance
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await checkPermission(userId, permission, context);
+ * } catch (error) {
+ *   if (isPermissionDeniedError(error)) {
+ *     console.log(`Missing permission: ${error.permission}`);
+ *   }
+ * }
+ * ```
  */
 export function isPermissionDeniedError(
   error: unknown,
@@ -251,6 +300,21 @@ export function isPermissionDeniedError(
 
 /**
  * Type guard to check if an error is a NotAuthenticatedError.
+ * Use this to safely narrow an unknown error type for specific handling.
+ *
+ * @param error - The error to check (can be any type)
+ * @returns True if the error is a NotAuthenticatedError instance
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await requireAuth(session);
+ * } catch (error) {
+ *   if (isNotAuthenticatedError(error)) {
+ *     redirect('/login');
+ *   }
+ * }
+ * ```
  */
 export function isNotAuthenticatedError(
   error: unknown,
@@ -260,6 +324,22 @@ export function isNotAuthenticatedError(
 
 /**
  * Type guard to check if an error is any permission-related error.
+ * Checks if the error code matches any of the known permission error codes.
+ *
+ * @param error - The error to check (can be any type)
+ * @returns True if the error is a GenesisError with a permission-related code
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await performSecureOperation();
+ * } catch (error) {
+ *   if (isPermissionError(error)) {
+ *     return new Response('Access denied', { status: error.statusCode });
+ *   }
+ *   throw error; // Re-throw non-permission errors
+ * }
+ * ```
  */
 export function isPermissionError(error: unknown): error is GenesisError {
   if (!(error instanceof GenesisError)) {

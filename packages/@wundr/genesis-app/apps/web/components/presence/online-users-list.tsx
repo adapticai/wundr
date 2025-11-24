@@ -8,23 +8,43 @@ import { PresenceIndicator, statusLabels } from './presence-indicator';
 
 import type { PresenceStatus } from './presence-indicator';
 
+/**
+ * Represents a user with online presence information
+ */
 export interface OnlineUser {
+  /** User ID */
   id: string;
+  /** User display name */
   name: string;
+  /** User email address */
   email?: string;
+  /** Optional avatar image URL */
   image?: string | null;
+  /** Current presence status */
   status: PresenceStatus;
+  /** Custom status message */
   customStatus?: string;
+  /** Last seen timestamp for offline users */
   lastSeen?: Date | null;
 }
 
+/**
+ * Props for the OnlineUsersList component
+ */
 interface OnlineUsersListProps {
+  /** Array of users to display */
   users: OnlineUser[];
+  /** Current user's ID for highlighting */
   currentUserId?: string;
+  /** Callback when a user is clicked */
   onUserClick?: (userId: string) => void;
+  /** Callback to start a direct message */
   onDirectMessage?: (userId: string) => void;
+  /** Whether to show status-based sections */
   showSections?: boolean;
+  /** Whether sections can be collapsed */
   collapsibleSections?: boolean;
+  /** Optional CSS class name */
   className?: string;
 }
 

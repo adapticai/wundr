@@ -7,14 +7,25 @@ import { formatFileSize } from '@/types/upload';
 
 import type { FileRecord } from '@/types/upload';
 
+/**
+ * Props for the Lightbox component
+ */
 interface LightboxProps {
+  /** Array of images to display in the lightbox */
   images: FileRecord[];
+  /** Index of the currently displayed image */
   currentIndex: number;
+  /** Whether the lightbox is open */
   isOpen: boolean;
+  /** Callback to close the lightbox */
   onClose: () => void;
+  /** Callback to navigate to a specific image index */
   onNavigate: (index: number) => void;
+  /** Callback when download is requested */
   onDownload?: (image: FileRecord) => void;
+  /** Callback when share is requested */
   onShare?: (image: FileRecord) => void;
+  /** Whether to show the image info panel toggle */
   showInfo?: boolean;
 }
 

@@ -24,8 +24,13 @@ interface RetentionStats {
   lastJobRun?: string;
 }
 
+/**
+ * Props for the RetentionSettings component.
+ */
 export interface RetentionSettingsProps {
+  /** The workspace ID to manage retention policies for */
   workspaceId: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

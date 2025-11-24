@@ -14,13 +14,23 @@ import { useRef, useCallback, useMemo } from 'react';
 import type { TrackReferenceOrPlaceholder } from '@livekit/components-react';
 import type { Participant} from 'livekit-client';
 
+/**
+ * Props for the ParticipantTile component.
+ */
 export interface ParticipantTileProps {
+  /** The LiveKit participant object */
   participant: Participant;
+  /** Whether this is the local user's tile */
   isLocal?: boolean;
+  /** Whether this participant is pinned/featured */
   isPinned?: boolean;
+  /** Callback when pin button is clicked */
   onPin?: (participantId: string) => void;
+  /** Additional CSS classes to apply */
   className?: string;
+  /** Whether to show control buttons (pin, etc.) */
   showControls?: boolean;
+  /** Size variant of the tile */
   size?: 'small' | 'medium' | 'large';
 }
 

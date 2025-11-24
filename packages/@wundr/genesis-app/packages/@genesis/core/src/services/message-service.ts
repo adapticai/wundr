@@ -364,11 +364,11 @@ export class MessageServiceImpl
           type: (data.type ?? 'TEXT') as MessageType,
           metadata: (data.metadata ?? {}) as Prisma.InputJsonValue,
           channelId: data.channelId,
-          userId: data.authorId,
+          authorId: data.authorId,
           parentId: data.parentId,
         },
         include: {
-          user: true,
+          author: true,
           reactions: true,
           parent: true,
         },
@@ -397,7 +397,7 @@ export class MessageServiceImpl
     const message = await this.db.message.findUnique({
       where: { id },
       include: {
-        user: true,
+        author: true,
         reactions: true,
         parent: true,
         replies: {
@@ -461,7 +461,7 @@ export class MessageServiceImpl
 
     // Build include clause
     const include: Prisma.MessageInclude = {
-      ...(includeAuthor && { user: true }),
+      ...(includeAuthor && { author: true }),
       ...(includeReactions && { reactions: true }),
       parent: true,
     };
@@ -531,7 +531,7 @@ export class MessageServiceImpl
         editedAt: new Date(),
       },
       include: {
-        user: true,
+        author: true,
         reactions: true,
         parent: true,
       },
@@ -595,7 +595,7 @@ export class MessageServiceImpl
         content: '[Message deleted]',
       },
       include: {
-        user: true,
+        author: true,
         reactions: true,
         parent: true,
       },
@@ -681,7 +681,7 @@ export class MessageServiceImpl
 
     // Build include clause
     const include: Prisma.MessageInclude = {
-      ...(includeAuthor && { user: true }),
+      ...(includeAuthor && { author: true }),
       ...(includeReactions && { reactions: true }),
     };
 
@@ -743,7 +743,7 @@ export class MessageServiceImpl
       this.db.message.findMany({
         where: { parentId, isDeleted: false },
         select: {
-          userId: true,
+          authorId: true,
           createdAt: true,
         },
         orderBy: { createdAt: 'desc' },
@@ -751,12 +751,12 @@ export class MessageServiceImpl
     ]);
 
     // Get unique participant IDs
-    const participantIds = [...new Set(replies.map((r) => r.userId))];
+    const participantIds = [...new Set(replies.map((r) => r.authorId))];
 
     // Get last reply with author
     const lastReply = await this.db.message.findFirst({
       where: { parentId, isDeleted: false },
-      include: { user: true },
+      include: { author: true },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -768,7 +768,7 @@ export class MessageServiceImpl
       lastReply: lastReply
         ? {
             ...lastReply,
-            user: lastReply.user,
+            author: lastReply.author,
           }
         : undefined,
     };

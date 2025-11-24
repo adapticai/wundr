@@ -325,8 +325,22 @@ export interface VPWebhookPayload extends BaseWebhookPayload {
 }
 
 /**
+ * Generic webhook payload for custom or unknown events.
+ */
+export interface GenericWebhookPayload {
+  /** Event type identifier */
+  eventType?: string;
+  /** Timestamp of the event */
+  timestamp?: string;
+  /** Source identifier */
+  source?: string;
+  /** Additional payload data */
+  [key: string]: string | number | boolean | object | undefined;
+}
+
+/**
  * Union type for all webhook payloads.
- * Includes typed payloads for known events and a generic record for flexibility.
+ * Includes typed payloads for known events and a generic type for flexibility.
  */
 export type WebhookPayload =
   | MessageWebhookPayload
@@ -335,7 +349,7 @@ export type WebhookPayload =
   | FileWebhookPayload
   | CallWebhookPayload
   | VPWebhookPayload
-  | Record<string, unknown>;
+  | GenericWebhookPayload;
 
 // =============================================================================
 // Webhook Delivery Types
@@ -485,15 +499,14 @@ export interface EmptyIntegrationEventPayload {
 
 /**
  * Union type for all integration event payloads.
- * Includes typed payloads for known providers and a generic record for flexibility.
+ * Includes typed payloads for known providers and a generic type for flexibility.
  */
 export type IntegrationEventPayload =
   | SlackEventPayload
   | GitHubEventPayload
   | JiraEventPayload
   | GenericIntegrationEventPayload
-  | EmptyIntegrationEventPayload
-  | Record<string, unknown>;
+  | EmptyIntegrationEventPayload;
 
 /**
  * Integration event for tracking data sync operations.
@@ -654,13 +667,27 @@ export type KnownIntegrationSettings =
   | CustomIntegrationConfig;
 
 /**
+ * Base integration settings that all providers may have.
+ */
+export interface BaseIntegrationSettings {
+  /** Whether sync is enabled */
+  syncEnabled?: boolean;
+  /** Sync direction */
+  syncDirection?: 'bidirectional' | 'inbound' | 'outbound';
+  /** Sync interval in minutes */
+  syncIntervalMinutes?: number;
+  /** Additional provider-specific string settings */
+  [key: string]: string | number | boolean | string[] | object | undefined;
+}
+
+/**
  * Flexible integration settings type that supports both known configurations
  * and arbitrary key-value pairs for extensibility.
  *
  * For type-safe operations with known providers, use type guards or cast to
  * the specific config type (SlackIntegrationConfig, etc.).
  */
-export type IntegrationSettings = Record<string, unknown>;
+export type IntegrationSettings = BaseIntegrationSettings;
 
 // =============================================================================
 // Input Types

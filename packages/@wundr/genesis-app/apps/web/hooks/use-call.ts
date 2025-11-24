@@ -23,7 +23,130 @@ import type {
   LocalParticipant,
   RemoteParticipant,
   LocalVideoTrack,
-  LocalAudioTrack} from 'livekit-client';
+  LocalAudioTrack,
+} from 'livekit-client';
+
+// =============================================================================
+// Hook Return Types
+// =============================================================================
+
+/**
+ * Return type for the useCall hook
+ */
+export interface UseCallReturn {
+  /** The LiveKit room instance */
+  room: Room | null;
+  /** List of all participants in the call */
+  participants: CallParticipant[];
+  /** The local participant */
+  localParticipant: LocalParticipant | null;
+  /** Current connection state */
+  connectionState: ConnectionState;
+  /** Whether currently connecting */
+  isConnecting: boolean;
+  /** Error if connection failed */
+  error: Error | null;
+  /** Connect to the room */
+  connect: (token: string) => Promise<void>;
+  /** Disconnect from the room */
+  disconnect: () => Promise<void>;
+  /** Toggle pin for a participant */
+  togglePin: (participantId: string) => void;
+  /** Set of pinned participant IDs */
+  pinnedParticipants: Set<string>;
+  /** Currently active speaker */
+  activeSpeaker: CallParticipant | null;
+  /** List of participants sharing their screen */
+  screenSharers: CallParticipant[];
+}
+
+/**
+ * Return type for the useLocalMedia hook
+ */
+export interface UseLocalMediaReturn {
+  /** Local video track */
+  videoTrack: LocalVideoTrack | null;
+  /** Local audio track */
+  audioTrack: LocalAudioTrack | null;
+  /** Whether video is enabled */
+  isVideoEnabled: boolean;
+  /** Whether audio is enabled */
+  isAudioEnabled: boolean;
+  /** Whether screen sharing is active */
+  isScreenSharing: boolean;
+  /** Toggle video on/off */
+  toggleVideo: () => Promise<void>;
+  /** Toggle audio on/off */
+  toggleAudio: () => Promise<void>;
+  /** Enable video */
+  enableVideo: () => Promise<LocalVideoTrack | null>;
+  /** Disable video */
+  disableVideo: () => void;
+  /** Enable audio */
+  enableAudio: () => Promise<LocalAudioTrack | null>;
+  /** Disable audio */
+  disableAudio: () => void;
+  /** Start screen sharing */
+  shareScreen: () => Promise<void>;
+  /** Stop screen sharing */
+  stopScreenShare: () => void;
+  /** Available media devices */
+  devices: {
+    video: MediaDevice[];
+    audio: MediaDevice[];
+    audioOutput: MediaDevice[];
+  };
+  /** Selected video device ID */
+  selectedVideoDevice: string;
+  /** Selected audio device ID */
+  selectedAudioDevice: string;
+  /** Selected audio output device ID */
+  selectedAudioOutput: string;
+  /** Change video device */
+  setVideoDevice: (deviceId: string) => Promise<void>;
+  /** Change audio device */
+  setAudioDevice: (deviceId: string) => Promise<void>;
+  /** Change audio output device */
+  setAudioOutput: React.Dispatch<React.SetStateAction<string>>;
+  /** Error if any media operation failed */
+  error: Error | null;
+  /** Enumerate available devices */
+  enumerateDevices: () => Promise<void>;
+}
+
+/**
+ * Return type for the useHuddle hook
+ */
+export interface UseHuddleReturn {
+  /** List of available huddles */
+  huddles: Huddle[];
+  /** Currently active huddle */
+  activeHuddle: Huddle | null;
+  /** Whether loading huddles */
+  isLoading: boolean;
+  /** Whether joining a huddle */
+  isJoining: boolean;
+  /** Error if any operation failed */
+  error: Error | null;
+  /** Join a specific huddle */
+  joinHuddle: (huddleId: string) => Promise<void>;
+  /** Leave the active huddle */
+  leaveHuddle: () => Promise<void>;
+  /** Create a new huddle */
+  createHuddle: (name: string, channelId?: string) => Promise<Huddle | null>;
+  /** Refetch huddles */
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Return type for the useCallDuration hook
+ */
+export interface UseCallDurationReturn {
+  /** Duration in seconds */
+  duration: number;
+  /** Formatted duration string (e.g., "1:23" or "1:23:45") */
+  formattedDuration: string;
+}
 
 /**
  * Map LiveKit connection quality to our internal type
@@ -82,7 +205,7 @@ function toCallParticipant(
 /**
  * Main hook for managing a video call room
  */
-export function useCall(roomName: string) {
+export function useCall(roomName: string): UseCallReturn {
   const [room, setRoom] = useState<Room | null>(null);
   const [participants, setParticipants] = useState<CallParticipant[]>([]);
   const [localParticipant, setLocalParticipant] = useState<LocalParticipant | null>(null);
@@ -242,7 +365,7 @@ return;
 /**
  * Hook for managing local media (camera, microphone, screen share)
  */
-export function useLocalMedia() {
+export function useLocalMedia(): UseLocalMediaReturn {
   const [videoTrack, setVideoTrack] = useState<LocalVideoTrack | null>(null);
   const [audioTrack, setAudioTrack] = useState<LocalAudioTrack | null>(null);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
@@ -481,7 +604,7 @@ export function useLocalMedia() {
 /**
  * Hook for managing huddles (quick audio-only calls in a workspace)
  */
-export function useHuddle(workspaceId: string) {
+export function useHuddle(workspaceId: string): UseHuddleReturn {
   const [huddles, setHuddles] = useState<Huddle[]>([]);
   const [activeHuddle, setActiveHuddle] = useState<Huddle | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -692,7 +815,7 @@ return null;
 /**
  * Hook for call duration timer
  */
-export function useCallDuration(startTime: Date | null) {
+export function useCallDuration(startTime: Date | null): UseCallDurationReturn {
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {

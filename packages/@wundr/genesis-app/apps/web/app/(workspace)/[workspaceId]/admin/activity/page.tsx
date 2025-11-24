@@ -3,22 +3,24 @@
 import { useParams } from 'next/navigation';
 import { useState, useMemo, useCallback } from 'react';
 
-import { useAdminActivity } from '@/hooks/use-admin';
+import { useAdminActivity, type AdminAction } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
 
 
-type AdminActionType =
+type ActivityFilterType =
   | 'all'
-  | 'member.invite'
-  | 'member.remove'
-  | 'member.update'
-  | 'role.create'
-  | 'role.update'
-  | 'role.delete'
-  | 'settings.update'
-  | 'billing.update'
-  | 'channel.create'
-  | 'channel.delete';
+  | 'member.invited'
+  | 'member.removed'
+  | 'member.suspended'
+  | 'member.unsuspended'
+  | 'member.role_changed'
+  | 'role.created'
+  | 'role.updated'
+  | 'role.deleted'
+  | 'settings.updated'
+  | 'billing.plan_changed'
+  | 'channel.created'
+  | 'channel.deleted';
 
 /**
  * Activity Log Page
@@ -29,53 +31,53 @@ export default function AdminActivityPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
 
-  const [filterAction, setFilterAction] = useState<AdminActionType>('all');
+  const [filterAction, setFilterAction] = useState<ActivityFilterType>('all');
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { actions, isLoading, hasMore, loadMore } = useAdminActivity(workspaceId, {
-    action: filterAction === 'all' ? undefined : filterAction,
+  const { activities, isLoading, hasMore, loadMore } = useAdminActivity(workspaceId, {
+    type: filterAction === 'all' ? undefined : filterAction,
     limit: 50,
   });
 
-  // Filter actions based on search and date
-  const filteredActions = useMemo(() => {
-    let filtered = actions;
+  // Filter activities based on search and date
+  const filteredActivities = useMemo(() => {
+    let filtered = activities;
 
     // Filter by date range
     if (dateRange !== 'all') {
       const days = parseInt(dateRange);
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - days);
-      filtered = filtered.filter((action) => new Date(action.timestamp) >= cutoff);
+      filtered = filtered.filter((activity) => new Date(activity.createdAt) >= cutoff);
     }
 
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (action) =>
-          action.actorName?.toLowerCase().includes(query) ||
-          action.action.toLowerCase().includes(query) ||
-          action.resourceName?.toLowerCase().includes(query) ||
-          action.details?.toLowerCase().includes(query),
+        (activity) =>
+          activity.actorName?.toLowerCase().includes(query) ||
+          activity.type.toLowerCase().includes(query) ||
+          activity.targetName?.toLowerCase().includes(query) ||
+          activity.details?.reason?.toLowerCase().includes(query),
       );
     }
 
     return filtered;
-  }, [actions, dateRange, searchQuery]);
+  }, [activities, dateRange, searchQuery]);
 
   const handleExport = useCallback(() => {
     const csv = [
       ['Timestamp', 'Action', 'Actor', 'Resource', 'Details', 'IP Address'].join(','),
-      ...filteredActions.map((action) =>
+      ...filteredActivities.map((activity) =>
         [
-          action.timestamp,
-          action.action,
-          action.actorName || 'Unknown',
-          action.resourceName || action.resourceType,
-          action.details || '',
-          action.ipAddress || '',
+          activity.createdAt instanceof Date ? activity.createdAt.toISOString() : activity.createdAt,
+          activity.type,
+          activity.actorName || 'Unknown',
+          activity.targetName || activity.targetType || '',
+          activity.details?.reason || '',
+          activity.details?.ipAddress || '',
         ].join(','),
       ),
     ].join('\n');
@@ -87,20 +89,21 @@ export default function AdminActivityPage() {
     a.download = `activity-log-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [filteredActions]);
+  }, [filteredActivities]);
 
-  const actionFilterOptions: { value: AdminActionType; label: string }[] = [
+  const actionFilterOptions: { value: ActivityFilterType; label: string }[] = [
     { value: 'all', label: 'All Actions' },
-    { value: 'member.invite', label: 'Member Invites' },
-    { value: 'member.remove', label: 'Member Removals' },
-    { value: 'member.update', label: 'Member Updates' },
-    { value: 'role.create', label: 'Role Created' },
-    { value: 'role.update', label: 'Role Updated' },
-    { value: 'role.delete', label: 'Role Deleted' },
-    { value: 'settings.update', label: 'Settings Changed' },
-    { value: 'billing.update', label: 'Billing Updated' },
-    { value: 'channel.create', label: 'Channel Created' },
-    { value: 'channel.delete', label: 'Channel Deleted' },
+    { value: 'member.invited', label: 'Member Invites' },
+    { value: 'member.removed', label: 'Member Removals' },
+    { value: 'member.suspended', label: 'Member Suspended' },
+    { value: 'member.role_changed', label: 'Role Changed' },
+    { value: 'role.created', label: 'Role Created' },
+    { value: 'role.updated', label: 'Role Updated' },
+    { value: 'role.deleted', label: 'Role Deleted' },
+    { value: 'settings.updated', label: 'Settings Changed' },
+    { value: 'billing.plan_changed', label: 'Billing Updated' },
+    { value: 'channel.created', label: 'Channel Created' },
+    { value: 'channel.deleted', label: 'Channel Deleted' },
   ];
 
   const dateRangeOptions = [
@@ -139,7 +142,7 @@ export default function AdminActivityPage() {
           {/* Action Filter */}
           <select
             value={filterAction}
-            onChange={(e) => setFilterAction(e.target.value as AdminActionType)}
+            onChange={(e) => setFilterAction(e.target.value as ActivityFilterType)}
             className={cn(
               'rounded-md border border-input bg-background px-3 py-2 text-sm',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
@@ -191,26 +194,26 @@ export default function AdminActivityPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard
           label="Total Actions"
-          value={filteredActions.length}
+          value={filteredActivities.length}
           icon={ActivityIcon}
         />
         <StatCard
           label="Member Changes"
           value={
-            filteredActions.filter((a) => a.action.startsWith('member.')).length
+            filteredActivities.filter((a) => a.type.startsWith('member.')).length
           }
           icon={UsersIcon}
         />
         <StatCard
           label="Settings Updates"
           value={
-            filteredActions.filter((a) => a.action === 'settings.update').length
+            filteredActivities.filter((a) => a.type === 'settings.updated').length
           }
           icon={SettingsIcon}
         />
         <StatCard
           label="Unique Actors"
-          value={new Set(filteredActions.map((a) => a.actorId)).size}
+          value={new Set(filteredActivities.map((a) => a.actorId)).size}
           icon={UserIcon}
         />
       </div>
@@ -223,7 +226,7 @@ export default function AdminActivityPage() {
 
         {isLoading ? (
           <ActivitySkeleton count={10} />
-        ) : filteredActions.length === 0 ? (
+        ) : filteredActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <ActivityIcon className="h-12 w-12 text-muted-foreground/50" />
             <p className="mt-2 text-muted-foreground">No activity found</p>
@@ -233,15 +236,15 @@ export default function AdminActivityPage() {
           </div>
         ) : (
           <div className="divide-y">
-            {filteredActions.map((action, index) => (
+            {filteredActivities.map((activity, index) => (
               <ActivityRow
-                key={action.id}
-                action={action}
+                key={activity.id}
+                activity={activity}
                 showDate={
                   index === 0 ||
                   !isSameDay(
-                    new Date(action.timestamp),
-                    new Date(filteredActions[index - 1].timestamp),
+                    new Date(activity.createdAt),
+                    new Date(filteredActivities[index - 1].createdAt),
                   )
                 }
               />
@@ -267,19 +270,13 @@ export default function AdminActivityPage() {
   );
 }
 
-// Types
-interface AdminAction {
-  id: string;
-  action: string;
-  actorId: string;
-  actorName: string | null;
-  actorImage: string | null;
-  resourceType: string;
-  resourceId: string;
-  resourceName: string | null;
-  details: string | null;
-  ipAddress: string | null;
-  timestamp: string;
+// Helper function to get timestamp string from AdminAction
+function getTimestamp(activity: AdminAction): string {
+  const createdAt = activity.createdAt;
+  if (createdAt instanceof Date) {
+    return createdAt.toISOString();
+  }
+  return String(createdAt);
 }
 
 // Stat Card Component
@@ -305,33 +302,26 @@ function StatCard({
 
 // Activity Row Component
 function ActivityRow({
-  action,
+  activity,
   showDate,
 }: {
-  action: AdminAction;
+  activity: AdminAction;
   showDate: boolean;
 }) {
-  const actionConfig = getActionConfig(action.action);
+  const actionConfig = getActionConfig(activity.type);
+  const timestamp = getTimestamp(activity);
 
   return (
     <>
       {showDate && (
         <div className="border-t bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">
-          {formatDate(action.timestamp)}
+          {formatDate(timestamp)}
         </div>
       )}
       <div className="flex items-start gap-4 px-4 py-4">
         {/* Actor Avatar */}
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted">
-          {action.actorImage ? (
-            <img
-              src={action.actorImage}
-              alt={action.actorName || 'Actor'}
-              className="h-full w-full rounded-full object-cover"
-            />
-          ) : (
-            <UserIcon className="h-5 w-5 text-muted-foreground" />
-          )}
+          <UserIcon className="h-5 w-5 text-muted-foreground" />
         </div>
 
         {/* Content */}
@@ -339,22 +329,22 @@ function ActivityRow({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm text-foreground">
-                <span className="font-medium">{action.actorName || 'Unknown'}</span>
+                <span className="font-medium">{activity.actorName || 'Unknown'}</span>
                 {' '}
                 {actionConfig.description}
-                {action.resourceName && (
+                {activity.targetName && (
                   <>
                     {' '}
-                    <span className="font-medium">{action.resourceName}</span>
+                    <span className="font-medium">{activity.targetName}</span>
                   </>
                 )}
               </p>
-              {action.details && (
-                <p className="mt-1 text-sm text-muted-foreground">{action.details}</p>
+              {activity.details?.reason && (
+                <p className="mt-1 text-sm text-muted-foreground">{activity.details.reason}</p>
               )}
             </div>
             <span className="flex-shrink-0 text-xs text-muted-foreground">
-              {formatTime(action.timestamp)}
+              {formatTime(timestamp)}
             </span>
           </div>
 
@@ -368,9 +358,9 @@ function ActivityRow({
             >
               {actionConfig.label}
             </span>
-            {action.ipAddress && (
+            {activity.details?.ipAddress && (
               <span className="text-xs text-muted-foreground">
-                IP: {action.ipAddress}
+                IP: {activity.details.ipAddress}
               </span>
             )}
           </div>
@@ -397,68 +387,83 @@ function ActivitySkeleton({ count }: { count: number }) {
 }
 
 // Utility Functions
-function getActionConfig(action: string): {
+function getActionConfig(actionType: string): {
   label: string;
   description: string;
   className: string;
 } {
   const configs: Record<string, { label: string; description: string; className: string }> = {
-    'member.invite': {
+    'member.invited': {
       label: 'Invite',
       description: 'invited',
       className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
     },
-    'member.remove': {
+    'member.removed': {
       label: 'Remove',
       description: 'removed member',
       className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
     },
-    'member.update': {
-      label: 'Update',
-      description: 'updated member',
+    'member.suspended': {
+      label: 'Suspend',
+      description: 'suspended member',
       className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     },
-    'role.create': {
+    'member.unsuspended': {
+      label: 'Unsuspend',
+      description: 'unsuspended member',
+      className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    },
+    'member.role_changed': {
+      label: 'Role Change',
+      description: 'changed role for',
+      className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    },
+    'role.created': {
       label: 'Create',
       description: 'created role',
       className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     },
-    'role.update': {
+    'role.updated': {
       label: 'Update',
       description: 'updated role',
       className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     },
-    'role.delete': {
+    'role.deleted': {
       label: 'Delete',
       description: 'deleted role',
       className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
     },
-    'settings.update': {
+    'settings.updated': {
       label: 'Settings',
       description: 'updated workspace settings',
       className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
     },
-    'billing.update': {
+    'billing.plan_changed': {
       label: 'Billing',
       description: 'updated billing information',
       className: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
     },
-    'channel.create': {
+    'channel.created': {
       label: 'Channel',
       description: 'created channel',
       className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     },
-    'channel.delete': {
+    'channel.deleted': {
       label: 'Channel',
       description: 'deleted channel',
       className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
     },
+    'channel.archived': {
+      label: 'Channel',
+      description: 'archived channel',
+      className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+    },
   };
 
   return (
-    configs[action] || {
+    configs[actionType] || {
       label: 'Action',
-      description: `performed ${action}`,
+      description: `performed ${actionType}`,
       className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
     }
   );

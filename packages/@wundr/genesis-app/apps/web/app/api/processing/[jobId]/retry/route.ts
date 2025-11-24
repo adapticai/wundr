@@ -13,13 +13,12 @@ import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { processingJobs } from '@/lib/services/processing-stores';
 import {
   jobIdParamSchema,
   createProcessingErrorResponse,
   PROCESSING_ERROR_CODES,
 } from '@/lib/validations/processing';
-
-import { processingJobs } from '../../route';
 
 import type { NextRequest } from 'next/server';
 

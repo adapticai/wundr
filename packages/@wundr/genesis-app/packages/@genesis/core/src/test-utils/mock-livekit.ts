@@ -242,7 +242,6 @@ export interface MockLiveKitService {
 
 let roomSidCounter = 0;
 let participantSidCounter = 0;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let eventIdCounter = 0;
 
 /**
@@ -283,8 +282,7 @@ export function createMockLiveKitService(
     return `PA_${Date.now()}_${participantSidCounter}`;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _generateEventId = (): string => {
+  const generateEventId = (): string => {
     eventIdCounter++;
     return `EV_${Date.now()}_${eventIdCounter}`;
   };
@@ -538,11 +536,14 @@ participant.name = name;
     // =========================================================================
 
     verifyWebhook: vi.fn(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      async (_body: string, signature: string): Promise<boolean> => {
-        // In real implementation, this verifies HMAC-SHA256 signature
-        // For testing, we accept any signature that starts with 'valid-'
-        return signature.startsWith('valid-') || signature === `sha256=${apiSecret}`;
+      async (body: string, signature: string): Promise<boolean> => {
+        // In real implementation, this verifies HMAC-SHA256 signature using the body
+        // For testing, we accept any signature that starts with 'valid-' or matches the secret
+        // The body is included in the check to simulate real HMAC verification
+        const isValidPrefix = signature.startsWith('valid-');
+        const isSecretMatch = signature === `sha256=${apiSecret}`;
+        const hasBody = body.length > 0;
+        return (isValidPrefix || isSecretMatch) && hasBody;
       },
     ),
 
@@ -651,7 +652,13 @@ participant.name = name;
     },
 
     _simulateWebhook: (event: WebhookEvent) => {
-      store.webhookEvents.push(event);
+      // Ensure event has an ID if not provided
+      const eventWithId: WebhookEvent = {
+        ...event,
+        id: event.id || generateEventId(),
+        createdAt: event.createdAt || Date.now(),
+      };
+      store.webhookEvents.push(eventWithId);
     },
 
     _generateRoomSid: generateRoomSid,

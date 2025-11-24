@@ -213,6 +213,19 @@ export interface ImageMetadata {
 }
 
 /**
+ * Raw EXIF data value types that can be stored.
+ */
+export type ExifRawValue = string | number | boolean | Date | string[] | number[];
+
+/**
+ * Raw EXIF data with typed values.
+ */
+export interface ExifRawData {
+  /** EXIF tag values with string keys */
+  [key: string]: ExifRawValue | undefined;
+}
+
+/**
  * EXIF data extracted from image.
  */
 export interface ExifData {
@@ -246,8 +259,8 @@ export interface ExifData {
   copyright?: string;
   /** Artist/author */
   artist?: string;
-  /** Raw EXIF object for custom access */
-  raw?: Record<string, unknown>;
+  /** Raw EXIF object for custom access with typed values */
+  raw?: ExifRawData;
 }
 
 // =============================================================================
@@ -279,7 +292,31 @@ export interface ImageUploadInput {
   /** Custom variant configurations */
   variants?: VariantConfig[];
   /** Custom metadata to attach */
-  customMetadata?: Record<string, unknown>;
+  customMetadata?: ImageCustomMetadata;
+}
+
+/**
+ * Typed custom metadata for image uploads.
+ */
+export interface ImageCustomMetadata {
+  /** Alt text for accessibility */
+  altText?: string;
+  /** Image caption or title */
+  caption?: string;
+  /** Tags for categorization */
+  tags?: string[];
+  /** Source/credit information */
+  source?: string;
+  /** License information */
+  license?: string;
+  /** Whether this is a profile/avatar image */
+  isAvatar?: boolean;
+  /** Associated entity type */
+  entityType?: 'user' | 'channel' | 'workspace' | 'message';
+  /** Associated entity ID */
+  entityId?: string;
+  /** Additional string metadata */
+  [key: string]: string | string[] | boolean | undefined;
 }
 
 /**

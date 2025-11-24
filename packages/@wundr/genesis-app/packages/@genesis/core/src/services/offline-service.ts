@@ -33,6 +33,18 @@ import {
   type OnActionCompletedCallback,
   type OnActionFailedCallback,
   type OnOnlineStatusChangedCallback,
+  type SendMessageResult,
+  type EditMessageResult,
+  type DeleteMessageResult,
+  type AddReactionResult,
+  type RemoveReactionResult,
+  type UpdateStatusResult,
+  type JoinChannelResult,
+  type LeaveChannelResult,
+  type UploadFileResult,
+  type CreateThreadResult,
+  type UpdateProfileResult,
+  type MarkReadResult,
 } from '../types/offline';
 
 
@@ -229,18 +241,18 @@ export interface EnqueueActionInput {
  * This type maps action types to their expected result types.
  */
 export type ActionProcessorResult =
-  | import('../types/offline').SendMessageResult
-  | import('../types/offline').EditMessageResult
-  | import('../types/offline').DeleteMessageResult
-  | import('../types/offline').AddReactionResult
-  | import('../types/offline').RemoveReactionResult
-  | import('../types/offline').UpdateStatusResult
-  | import('../types/offline').JoinChannelResult
-  | import('../types/offline').LeaveChannelResult
-  | import('../types/offline').UploadFileResult
-  | import('../types/offline').CreateThreadResult
-  | import('../types/offline').UpdateProfileResult
-  | import('../types/offline').MarkReadResult
+  | SendMessageResult
+  | EditMessageResult
+  | DeleteMessageResult
+  | AddReactionResult
+  | RemoveReactionResult
+  | UpdateStatusResult
+  | JoinChannelResult
+  | LeaveChannelResult
+  | UploadFileResult
+  | CreateThreadResult
+  | UpdateProfileResult
+  | MarkReadResult
   | void;
 
 /**

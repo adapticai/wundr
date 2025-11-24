@@ -505,9 +505,31 @@ export function createMockFileMessage(
 // =============================================================================
 
 /**
- * Create a mock message service
+ * Mock message service interface for type safety
  */
-export function createMockMessageService() {
+export interface MockMessageService {
+  sendMessage: ReturnType<typeof vi.fn>;
+  getMessage: ReturnType<typeof vi.fn>;
+  updateMessage: ReturnType<typeof vi.fn>;
+  deleteMessage: ReturnType<typeof vi.fn>;
+  listMessages: ReturnType<typeof vi.fn>;
+  searchMessages: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock message service for testing message functionality
+ *
+ * @returns A mock message service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const messageService = createMockMessageService();
+ * messageService.sendMessage.mockResolvedValue(createMockMessage());
+ * const message = await messageService.sendMessage({ channelId: 'ch_123', content: 'Hello' });
+ * expect(messageService.sendMessage).toHaveBeenCalledOnce();
+ * ```
+ */
+export function createMockMessageService(): MockMessageService {
   return {
     sendMessage: vi.fn(),
     getMessage: vi.fn(),
@@ -519,9 +541,29 @@ export function createMockMessageService() {
 }
 
 /**
- * Create a mock reaction service
+ * Mock reaction service interface for type safety
  */
-export function createMockReactionService() {
+export interface MockReactionService {
+  addReaction: ReturnType<typeof vi.fn>;
+  removeReaction: ReturnType<typeof vi.fn>;
+  getReactions: ReturnType<typeof vi.fn>;
+  getReactionSummary: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock reaction service for testing reaction functionality
+ *
+ * @returns A mock reaction service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const reactionService = createMockReactionService();
+ * reactionService.addReaction.mockResolvedValue(createMockReaction());
+ * await reactionService.addReaction('msg_123', 'user_456', '\u{1F44D}');
+ * expect(reactionService.addReaction).toHaveBeenCalledOnce();
+ * ```
+ */
+export function createMockReactionService(): MockReactionService {
   return {
     addReaction: vi.fn(),
     removeReaction: vi.fn(),
@@ -531,9 +573,29 @@ export function createMockReactionService() {
 }
 
 /**
- * Create a mock thread service
+ * Mock thread service interface for type safety
  */
-export function createMockThreadService() {
+export interface MockThreadService {
+  createReply: ReturnType<typeof vi.fn>;
+  getThread: ReturnType<typeof vi.fn>;
+  getThreadSummary: ReturnType<typeof vi.fn>;
+  listReplies: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock thread service for testing thread functionality
+ *
+ * @returns A mock thread service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const threadService = createMockThreadService();
+ * threadService.getThread.mockResolvedValue(createMockThread());
+ * const thread = await threadService.getThread('msg_parent');
+ * expect(thread.parent).toBeDefined();
+ * ```
+ */
+export function createMockThreadService(): MockThreadService {
   return {
     createReply: vi.fn(),
     getThread: vi.fn(),
@@ -543,19 +605,47 @@ export function createMockThreadService() {
 }
 
 /**
- * Create a mock event emitter
+ * Event listener callback type
  */
-export function createMockEventEmitter() {
-  const listeners: Map<string, Array<(...args: unknown[]) => void>> = new Map();
+export type EventListenerCallback = (...args: unknown[]) => void;
+
+/**
+ * Mock event emitter interface for type safety
+ */
+export interface MockEventEmitter {
+  on: ReturnType<typeof vi.fn>;
+  off: ReturnType<typeof vi.fn>;
+  emit: ReturnType<typeof vi.fn>;
+  removeAllListeners: ReturnType<typeof vi.fn>;
+  /** Internal helper to access listeners for testing */
+  _getListeners: () => Map<string, EventListenerCallback[]>;
+}
+
+/**
+ * Create a mock event emitter for testing pub/sub functionality
+ *
+ * @returns A mock event emitter with on, off, emit, and removeAllListeners methods
+ *
+ * @example
+ * ```typescript
+ * const emitter = createMockEventEmitter();
+ * const callback = vi.fn();
+ * emitter.on('message', callback);
+ * emitter.emit('message', { id: 'msg_123' });
+ * expect(callback).toHaveBeenCalledWith({ id: 'msg_123' });
+ * ```
+ */
+export function createMockEventEmitter(): MockEventEmitter {
+  const listeners: Map<string, EventListenerCallback[]> = new Map();
 
   return {
-    on: vi.fn((event: string, callback: (...args: unknown[]) => void) => {
+    on: vi.fn((event: string, callback: EventListenerCallback) => {
       if (!listeners.has(event)) {
         listeners.set(event, []);
       }
       listeners.get(event)!.push(callback);
     }),
-    off: vi.fn((event: string, callback: (...args: unknown[]) => void) => {
+    off: vi.fn((event: string, callback: EventListenerCallback) => {
       const eventListeners = listeners.get(event);
       if (eventListeners) {
         const index = eventListeners.indexOf(callback);
@@ -586,9 +676,33 @@ export function createMockEventEmitter() {
 // =============================================================================
 
 /**
- * Create mock Prisma message model
+ * Mock Prisma message model interface for type safety
  */
-export function createMockPrismaMessageModel() {
+export interface MockPrismaMessageModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+  aggregate: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma message model for testing database operations
+ *
+ * @returns A mock Prisma message model with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const messageModel = createMockPrismaMessageModel();
+ * messageModel.findUnique.mockResolvedValue(createMockMessage());
+ * const message = await messageModel.findUnique({ where: { id: 'msg_123' } });
+ * expect(message).toBeDefined();
+ * ```
+ */
+export function createMockPrismaMessageModel(): MockPrismaMessageModel {
   return {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
@@ -602,9 +716,33 @@ export function createMockPrismaMessageModel() {
 }
 
 /**
- * Create mock Prisma reaction model
+ * Mock Prisma reaction model interface for type safety
  */
-export function createMockPrismaReactionModel() {
+export interface MockPrismaReactionModel {
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  deleteMany: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+  groupBy: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create mock Prisma reaction model for testing reaction database operations
+ *
+ * @returns A mock Prisma reaction model with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const reactionModel = createMockPrismaReactionModel();
+ * reactionModel.create.mockResolvedValue(createMockReaction());
+ * const reaction = await reactionModel.create({ data: { messageId: 'msg_123', userId: 'user_456', emoji: '\u{1F44D}' } });
+ * expect(reaction.emoji).toBe('\u{1F44D}');
+ * ```
+ */
+export function createMockPrismaReactionModel(): MockPrismaReactionModel {
   return {
     findUnique: vi.fn(),
     findFirst: vi.fn(),

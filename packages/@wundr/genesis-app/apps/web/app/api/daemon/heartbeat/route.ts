@@ -74,10 +74,9 @@ interface AccessTokenPayload {
   exp: number;
 }
 
-/**
- * Daemon metrics structure - derived from schema
- */
-type DaemonMetrics = NonNullable<HeartbeatInput['metrics']>;
+// Type alias exported for potential external use
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type DaemonMetrics = NonNullable<HeartbeatInput['metrics']>;
 
 /**
  * Verify daemon token from Authorization header

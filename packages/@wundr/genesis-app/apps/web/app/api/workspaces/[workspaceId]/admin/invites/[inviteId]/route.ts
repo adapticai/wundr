@@ -20,8 +20,6 @@ import {
   type InviteStatus,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
-
 /**
  * Route context with workspace ID and invite ID parameters
  */
@@ -39,7 +37,7 @@ interface RouteContext {
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

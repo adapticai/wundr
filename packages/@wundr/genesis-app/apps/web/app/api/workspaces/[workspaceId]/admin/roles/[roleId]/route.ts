@@ -22,8 +22,6 @@ import {
   type Role,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
-
 /**
  * Route context with workspace ID and role ID parameters
  */
@@ -44,15 +42,23 @@ const SYSTEM_ROLE_IDS = [
 /**
  * Find role by ID
  */
+type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
+
 async function findRole(workspaceId: string, roleId: string): Promise<Role | null> {
   // Check if it's a system role
   if (roleId.startsWith('system-role-')) {
     const index = parseInt(roleId.split('-')[2], 10);
-    const systemRoles = [
-      { name: 'Owner', description: 'Full access', permissions: [{ resource: '*', actions: ['create', 'read', 'update', 'delete', 'manage'] as const }], isSystem: true, color: '#DC2626' },
-      { name: 'Admin', description: 'Admin access', permissions: [{ resource: 'settings', actions: ['read', 'update'] as const }], isSystem: true, color: '#7C3AED' },
-      { name: 'Member', description: 'Standard access', permissions: [{ resource: 'messages', actions: ['create', 'read'] as const }], isSystem: true, color: '#2563EB' },
-      { name: 'Guest', description: 'Limited access', permissions: [{ resource: 'messages', actions: ['read'] as const }], isSystem: true, color: '#6B7280' },
+    const systemRoles: Array<{
+      name: string;
+      description: string;
+      permissions: Array<{ resource: string; actions: PermissionAction[] }>;
+      isSystem: boolean;
+      color: string;
+    }> = [
+      { name: 'Owner', description: 'Full access', permissions: [{ resource: '*', actions: ['create', 'read', 'update', 'delete', 'manage'] }], isSystem: true, color: '#DC2626' },
+      { name: 'Admin', description: 'Admin access', permissions: [{ resource: 'settings', actions: ['read', 'update'] }], isSystem: true, color: '#7C3AED' },
+      { name: 'Member', description: 'Standard access', permissions: [{ resource: 'messages', actions: ['create', 'read'] }], isSystem: true, color: '#2563EB' },
+      { name: 'Guest', description: 'Limited access', permissions: [{ resource: 'messages', actions: ['read'] }], isSystem: true, color: '#6B7280' },
     ];
 
     if (index >= 0 && index < systemRoles.length) {
@@ -89,7 +95,7 @@ async function findRole(workspaceId: string, roleId: string): Promise<Role | nul
  * @returns Role details
  */
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -143,7 +149,7 @@ export async function GET(
  * @returns Updated role
  */
 export async function PATCH(
-  request: NextRequest,
+  request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -270,7 +276,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

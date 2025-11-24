@@ -22,6 +22,64 @@ export interface VPHealthStatus extends VPStatusData {
   organizationId: string;
 }
 
+// =============================================================================
+// Hook Return Type Interfaces
+// =============================================================================
+
+/**
+ * Return type for useUserPresence hook
+ */
+export type UseUserPresenceReturn = UserPresence | null;
+
+/**
+ * Return type for useMultiplePresence hook
+ */
+export type UseMultiplePresenceReturn = Map<string, UserPresence>;
+
+/**
+ * Return type for useChannelPresence hook
+ */
+export type UseChannelPresenceReturn = UserPresence[];
+
+/**
+ * Return type for useSetStatus hook
+ */
+export interface UseSetStatusReturn {
+  /** Set the current user's presence status */
+  setStatus: (status: PresenceStatus, customText?: string) => Promise<boolean>;
+  /** Clear the current user's custom status */
+  clearStatus: () => Promise<boolean>;
+  /** Whether a status update is in progress */
+  isUpdating: boolean;
+}
+
+/**
+ * Return type for useVPHealth hook
+ */
+export type UseVPHealthReturn = VPHealthStatus | null;
+
+/**
+ * Return type for useVPHealthList hook
+ */
+export interface UseVPHealthListReturn {
+  /** List of VP health statuses */
+  vpList: VPHealthStatus[];
+  /** Whether the list is loading */
+  isLoading: boolean;
+  /** Refetch the VP health list */
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Return type for usePresenceSubscription hook
+ */
+export interface UsePresenceSubscriptionReturn {
+  /** Whether the subscription is connected */
+  isConnected: boolean;
+  /** Connection error if any */
+  connectionError: Error | null;
+}
+
 // Configuration
 const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 const PRESENCE_POLL_INTERVAL = 10000; // 10 seconds
@@ -29,8 +87,10 @@ const VP_HEALTH_POLL_INTERVAL = 15000; // 15 seconds
 
 /**
  * Hook for fetching a single user's presence
+ * @param userId - The ID of the user to fetch presence for
+ * @returns The user's presence data or null if not available
  */
-export function useUserPresence(userId: string): UserPresence | null {
+export function useUserPresence(userId: string): UseUserPresenceReturn {
   const [presence, setPresence] = useState<UserPresence | null>(null);
 
   useEffect(() => {
@@ -65,8 +125,10 @@ return;
 
 /**
  * Hook for fetching multiple users' presence
+ * @param userIds - Array of user IDs to fetch presence for
+ * @returns A map of user IDs to their presence data
  */
-export function useMultiplePresence(userIds: string[]): Map<string, UserPresence> {
+export function useMultiplePresence(userIds: string[]): UseMultiplePresenceReturn {
   const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(new Map());
   const userIdsKey = useMemo(() => userIds.sort().join(','), [userIds]);
 
@@ -113,8 +175,10 @@ return;
 
 /**
  * Hook for fetching presence of all users in a channel
+ * @param channelId - The ID of the channel to fetch presence for
+ * @returns Array of presence data for all users in the channel
  */
-export function useChannelPresence(channelId: string): UserPresence[] {
+export function useChannelPresence(channelId: string): UseChannelPresenceReturn {
   const [presenceList, setPresenceList] = useState<UserPresence[]>([]);
 
   useEffect(() => {
@@ -151,12 +215,9 @@ return;
 
 /**
  * Hook for setting the current user's status
+ * @returns Methods for updating and clearing user status
  */
-export function useSetStatus(): {
-  setStatus: (status: PresenceStatus, customText?: string) => Promise<boolean>;
-  clearStatus: () => Promise<boolean>;
-  isUpdating: boolean;
-} {
+export function useSetStatus(): UseSetStatusReturn {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const setStatus = useCallback(
@@ -197,8 +258,10 @@ export function useSetStatus(): {
 
 /**
  * Hook for VP health status
+ * @param vpId - The ID of the VP to fetch health for
+ * @returns The VP health status or null if not available
  */
-export function useVPHealth(vpId: string): VPHealthStatus | null {
+export function useVPHealth(vpId: string): UseVPHealthReturn {
   const [health, setHealth] = useState<VPHealthStatus | null>(null);
 
   useEffect(() => {
@@ -232,12 +295,10 @@ return;
 
 /**
  * Hook for listing all VP health statuses in an organization
+ * @param orgId - The ID of the organization to fetch VP health for
+ * @returns List of VP health statuses with loading state and refetch method
  */
-export function useVPHealthList(orgId: string): {
-  vpList: VPHealthStatus[];
-  isLoading: boolean;
-  refetch: () => Promise<void>;
-} {
+export function useVPHealthList(orgId: string): UseVPHealthListReturn {
   const [vpList, setVpList] = useState<VPHealthStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -326,14 +387,14 @@ return;
 
 /**
  * Hook for managing presence with WebSocket/SSE connection
+ * @param channelId - The ID of the channel to subscribe to
+ * @param onPresenceUpdate - Callback for presence updates
+ * @returns Connection status and any connection errors
  */
 export function usePresenceSubscription(
   channelId: string,
   onPresenceUpdate?: (presence: UserPresence) => void,
-): {
-  isConnected: boolean;
-  connectionError: Error | null;
-} {
+): UsePresenceSubscriptionReturn {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<Error | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);

@@ -5,10 +5,17 @@ import { formatFileSize } from '@/types/upload';
 
 import type { UploadState } from '@/types/upload';
 
+/**
+ * Props for the UploadProgress component
+ */
 interface UploadProgressProps {
+  /** The upload state to display */
   upload: UploadState;
+  /** Callback to cancel the upload */
   onCancel?: (id: string) => void;
+  /** Callback to retry a failed upload */
   onRetry?: (id: string) => void;
+  /** Optional CSS class name */
   className?: string;
 }
 

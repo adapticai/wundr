@@ -146,7 +146,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         status: 'SYNCED',
       },
     });
-  } catch (error) {
+  } catch (_error) {
     // Error handling - details in response
     return NextResponse.json(
       createNotificationErrorResponse(
@@ -468,7 +468,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     return NextResponse.json({ data: response });
-  } catch (error) {
+  } catch (_error) {
     // Error handling - details in response
     return NextResponse.json(
       createNotificationErrorResponse(

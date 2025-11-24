@@ -13,8 +13,24 @@
 import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import type { NextRequest} from 'next/server';
+
+/**
+ * Schema for sending a message
+ */
+const sendMessageSchema = z.object({
+  channelId: z.string().min(1, 'Channel ID is required'),
+  content: z.string().min(1, 'Message content is required'),
+  threadId: z.string().optional(),
+  attachments: z.array(z.object({
+    type: z.string(),
+    url: z.string(),
+    name: z.string().optional(),
+  })).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
 
 /**
  * JWT configuration
@@ -264,21 +280,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { channelId, content, threadId, attachments: _attachments, metadata } = body as {
-      channelId?: string;
-      content?: string;
-      threadId?: string;
-      attachments?: Array<{ type: string; url: string; name?: string }>;
-      metadata?: Record<string, unknown>;
-    };
-
-    // Validate required fields
-    if (!channelId || !content) {
+    // Validate input using Zod schema
+    const parseResult = sendMessageSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
         { error: 'Channel ID and content required', code: MESSAGE_ERROR_CODES.VALIDATION_ERROR },
         { status: 400 },
       );
     }
+
+    const { channelId, content, threadId, attachments, metadata } = parseResult.data;
 
     // Check channel access
     const hasAccess = await checkChannelAccess(token.vpId, channelId);
@@ -302,14 +313,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Create message (note: attachments need to be handled separately via File upload)
-    const messageData: {
+    // Build message data with proper typing
+    interface MessageCreateData {
       content: string;
       channelId: string;
       authorId: string;
       parentId?: string;
-      metadata?: unknown;
-    } = {
+      metadata?: Record<string, unknown>;
+    }
+
+    const messageData: MessageCreateData = {
       content,
       channelId,
       authorId: vp.userId,
@@ -319,11 +332,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       messageData.parentId = threadId;
     }
 
-    if (metadata) {
-      messageData.metadata = JSON.parse(JSON.stringify(metadata));
+    // Include attachment metadata in message metadata if provided
+    if (metadata || attachments) {
+      const messageMetadata: Record<string, unknown> = {};
+
+      if (metadata) {
+        Object.assign(messageMetadata, metadata);
+      }
+
+      // Store attachment references in message metadata
+      // Actual file content should be uploaded separately via file upload API
+      if (attachments && attachments.length > 0) {
+        messageMetadata.attachmentRefs = attachments.map((att, index) => ({
+          id: `att_${Date.now()}_${index}`,
+          type: att.type,
+          url: att.url,
+          name: att.name ?? `attachment_${index}`,
+        }));
+      }
+
+      messageData.metadata = messageMetadata;
     }
 
-    // Use type assertion for Prisma's mapped column names
+    // Create message using Prisma
     const message = await prisma.message.create({
       data: messageData as unknown as Parameters<typeof prisma.message.create>[0]['data'],
     });

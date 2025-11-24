@@ -16,9 +16,15 @@ export interface WorkspaceMember {
   joinedAt: string;
 }
 
+/**
+ * Props for the MemberList component.
+ */
 export interface MemberListProps {
+  /** The workspace ID to fetch members for */
   workspaceId: string;
+  /** Callback when a member is selected for editing */
   onEditMember?: (member: WorkspaceMember) => void;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

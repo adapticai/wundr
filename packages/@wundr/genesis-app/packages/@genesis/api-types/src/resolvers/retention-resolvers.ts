@@ -7,7 +7,67 @@
  * @module @genesis/api-types/resolvers/retention-resolvers
  */
 
-import type { RetentionService } from '@genesis/core';
+/**
+ * RetentionService interface for retention resolver operations
+ * Defined locally to avoid coupling to internal @genesis/core exports
+ */
+export interface RetentionService {
+  getPolicies(workspaceId: string): Promise<unknown[]>;
+  getPolicy(id: string): Promise<unknown | null>;
+  getStats(workspaceId: string): Promise<{
+    workspaceId: string;
+    totalStorageBytes: number;
+    storageByType: Record<string, number>;
+    itemCounts: Record<string, number>;
+    oldestItem?: Record<string, unknown> | undefined;
+    pendingDeletions: number;
+    lastJobRun?: Date | undefined;
+  }>;
+  getLegalHolds(workspaceId: string): Promise<unknown[]>;
+  createPolicy(
+    workspaceId: string,
+    name: string,
+    rules: Array<{
+      resourceType: string;
+      action: string;
+      retentionDays: number;
+      priority: number;
+      conditions?: Record<string, unknown> | undefined;
+    }>,
+    userId: string,
+    description?: string | undefined
+  ): Promise<unknown>;
+  updatePolicy(
+    id: string,
+    updates: {
+      name?: string | undefined;
+      description?: string | undefined;
+      isEnabled?: boolean | undefined;
+      rules?: Array<{
+        id: string;
+        resourceType: string;
+        action: string;
+        retentionDays: number;
+        priority: number;
+        conditions?: Record<string, unknown> | undefined;
+      }> | undefined;
+    }
+  ): Promise<unknown>;
+  deletePolicy(id: string): Promise<void>;
+  runRetentionJob(policyId: string): Promise<unknown>;
+  createLegalHold(
+    workspaceId: string,
+    name: string,
+    scope: {
+      userIds?: string[] | undefined;
+      channelIds?: string[] | undefined;
+      dateRange?: { start: Date; end: Date } | undefined;
+    },
+    userId: string,
+    description?: string | undefined
+  ): Promise<unknown>;
+  releaseLegalHold(id: string, userId: string): Promise<unknown>;
+}
 
 // =============================================================================
 // TYPES

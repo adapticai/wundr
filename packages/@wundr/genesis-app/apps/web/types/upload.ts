@@ -4,57 +4,136 @@
 
 export type FileType = 'image' | 'document' | 'video' | 'audio' | 'archive' | 'other';
 
-export interface FileRecord {
-  id: string;
-  name: string;
-  url: string;
-  thumbnailUrl?: string;
-  type: FileType;
-  mimeType: string;
-  size: number;
-  channelId: string;
-  uploaderId: string;
-  uploaderName: string;
-  createdAt: Date;
-  metadata?: Record<string, unknown>;
+/**
+ * Metadata associated with an uploaded file
+ */
+export interface FileMetadata {
+  /** Image width in pixels (for images) */
+  width?: number;
+  /** Image height in pixels (for images) */
+  height?: number;
+  /** Duration in seconds (for audio/video) */
+  duration?: number;
+  /** Original filename before processing */
+  originalName?: string;
+  /** Processing status */
+  processed?: boolean;
+  /** Extracted text content (for documents) */
+  extractedText?: string;
+  /** Custom tags */
+  tags?: string[];
 }
 
-export interface UploadState {
+/**
+ * Represents a file record stored in the system
+ */
+export interface FileRecord {
+  /** Unique identifier for the file */
   id: string;
-  file: File;
+  /** Display name of the file */
   name: string;
-  size: number;
-  type: FileType;
-  mimeType: string;
-  progress: number;
-  status: 'pending' | 'uploading' | 'completed' | 'error' | 'cancelled';
-  error?: string;
-  url?: string;
+  /** URL to access the file */
+  url: string;
+  /** URL for thumbnail preview (for images/videos) */
   thumbnailUrl?: string;
+  /** Categorized file type */
+  type: FileType;
+  /** MIME type of the file */
+  mimeType: string;
+  /** File size in bytes */
+  size: number;
+  /** Channel where the file was uploaded */
+  channelId: string;
+  /** User ID of the uploader */
+  uploaderId: string;
+  /** Display name of the uploader */
+  uploaderName: string;
+  /** Upload timestamp */
+  createdAt: Date;
+  /** Optional metadata about the file */
+  metadata?: FileMetadata;
+}
+
+/**
+ * Upload status types
+ */
+export type UploadStatus = 'pending' | 'uploading' | 'completed' | 'error' | 'cancelled';
+
+/**
+ * Represents the current state of a file upload in progress
+ */
+export interface UploadState {
+  /** Unique identifier for this upload */
+  id: string;
+  /** The File object being uploaded */
+  file: File;
+  /** Display name of the file */
+  name: string;
+  /** File size in bytes */
+  size: number;
+  /** Categorized file type */
+  type: FileType;
+  /** MIME type of the file */
+  mimeType: string;
+  /** Upload progress percentage (0-100) */
+  progress: number;
+  /** Current status of the upload */
+  status: UploadStatus;
+  /** Error message if upload failed */
+  error?: string;
+  /** URL of the uploaded file (when completed) */
+  url?: string;
+  /** Thumbnail URL (when completed, for images/videos) */
+  thumbnailUrl?: string;
+  /** Controller to abort the upload */
   abortController?: AbortController;
 }
 
+/**
+ * Configuration options for file uploads
+ */
 export interface UploadOptions {
+  /** Target channel for the upload */
   channelId?: string;
+  /** Maximum file size in bytes */
   maxSize?: number;
+  /** Maximum number of files to upload at once */
   maxFiles?: number;
+  /** Accepted file types configuration */
   accept?: AcceptedFileTypes;
+  /** Callback for upload progress updates */
   onProgress?: (fileId: string, progress: number) => void;
+  /** Callback when upload completes successfully */
   onComplete?: (fileId: string, url: string) => void;
+  /** Callback when upload fails */
   onError?: (fileId: string, error: string) => void;
 }
 
+/**
+ * Signed URL for secure file upload
+ */
 export interface SignedUrl {
+  /** Pre-signed URL for uploading the file */
   uploadUrl: string;
+  /** Final URL where the file will be accessible */
   fileUrl: string;
+  /** Expiration time for the signed URL */
   expiresAt: Date;
 }
 
+/**
+ * Configuration for accepted file types
+ */
 export interface AcceptedFileTypes {
+  /** Accept image files */
   images?: boolean;
+  /** Accept document files (PDF, Word, etc.) */
   documents?: boolean;
+  /** Accept video files */
   videos?: boolean;
+  /** Accept audio files */
   audio?: boolean;
+  /** Accept archive files (ZIP, RAR, etc.) */
   archives?: boolean;
 }
 

@@ -30,6 +30,7 @@ import {
   type OnSyncCompletedCallback,
   type OnConflictDetectedCallback,
   type SyncResult,
+  type SyncEntityDataType,
 } from '../types/offline';
 
 // =============================================================================
@@ -629,10 +630,13 @@ export class SyncServiceImpl implements SyncService {
 
   /**
    * Applies a single change, returning a conflict if detected.
+   *
+   * @param change - The sync change to apply
+   * @returns SyncConflict if local and server data conflict, null otherwise
    */
   private async applyChange(change: SyncChange): Promise<SyncConflict | null> {
     const key = generateStorageKey('genesis:sync', change.entityType, change.entityId);
-    const local = await this.storage.getWithMetadata(key);
+    const local = await this.storage.getWithMetadata<SyncEntityDataType>(key);
 
     if (!local) {
       // No local data, simply store
@@ -761,9 +765,15 @@ export class SyncServiceImpl implements SyncService {
   }
 
   /**
-   * Applies merged data.
+   * Applies merged data from manual conflict resolution.
+   *
+   * @param conflict - The sync conflict being resolved
+   * @param mergedData - The merged entity data (type matches conflict.entityType)
    */
-  private async applyMergedData(conflict: SyncConflict, mergedData: unknown): Promise<void> {
+  private async applyMergedData(
+    conflict: SyncConflict,
+    mergedData: SyncEntityDataType,
+  ): Promise<void> {
     const key = generateStorageKey('genesis:sync', conflict.entityType, conflict.entityId);
     await this.storage.set(key, mergedData);
 

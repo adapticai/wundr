@@ -14,10 +14,124 @@ import type {
   User,
 } from '@/types/chat';
 
+// =============================================================================
+// Hook Return Types
+// =============================================================================
+
+/**
+ * Return type for the useMessages hook
+ */
+export interface UseMessagesReturn {
+  /** List of messages */
+  messages: Message[];
+  /** Whether messages are loading */
+  isLoading: boolean;
+  /** Whether loading more messages */
+  isLoadingMore: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Whether there are more messages to load */
+  hasMore: boolean;
+  /** Load more messages */
+  loadMore: () => void;
+  /** Refetch messages */
+  refetch: () => void;
+  /** Optimistically add a message */
+  addOptimisticMessage: (message: Message) => void;
+  /** Update a message optimistically */
+  updateOptimisticMessage: (messageId: string, updates: Partial<Message>) => void;
+  /** Remove a message optimistically */
+  removeOptimisticMessage: (messageId: string) => void;
+}
+
+/**
+ * Return type for the useThread hook
+ */
+export interface UseThreadReturn {
+  /** Thread data */
+  thread: Thread | null;
+  /** Whether thread is loading */
+  isLoading: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Refetch thread */
+  refetch: () => Promise<void>;
+  /** Add an optimistic reply to the thread */
+  addOptimisticReply: (message: Message) => void;
+}
+
+/**
+ * Return type for the useSendMessage hook
+ */
+export interface UseSendMessageReturn {
+  /** Send a new message - returns optimistic ID and the created message */
+  sendMessage: (input: SendMessageInput, currentUser: User) => Promise<{ optimisticId: string; message: Message | null }>;
+  /** Edit an existing message */
+  editMessage: (messageId: string, input: UpdateMessageInput) => Promise<Message | null>;
+  /** Delete a message */
+  deleteMessage: (messageId: string) => Promise<boolean>;
+  /** Whether a mutation is in progress */
+  isSending: boolean;
+  /** Error if mutation failed */
+  error: Error | null;
+}
+
+/**
+ * Return type for the useReactions hook
+ */
+export interface UseReactionsReturn {
+  /** Toggle a reaction (add if not present, remove if present) */
+  toggleReaction: (emoji: string) => Promise<Reaction[] | null>;
+  /** Whether a reaction toggle is in progress */
+  isToggling: boolean;
+  /** Error if toggle failed */
+  error: Error | null;
+}
+
+/**
+ * Return type for the useTypingIndicator hook
+ */
+export interface UseTypingIndicatorReturn {
+  /** Users currently typing */
+  typingUsers: TypingUser[];
+  /** Start typing indicator */
+  startTyping: () => void;
+  /** Stop typing indicator */
+  stopTyping: () => void;
+  /** Formatted string of typing users (e.g., "User1 is typing..." or "User1, User2 are typing...") */
+  typingText: string;
+}
+
+/**
+ * Return type for the useChannel hook (chat version)
+ */
+export interface UseChatChannelReturn {
+  /** Channel data */
+  channel: Channel | null;
+  /** Whether channel is loading */
+  isLoading: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Refetch channel */
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Return type for the useMentionSuggestions hook
+ */
+export interface UseMentionSuggestionsReturn {
+  /** List of suggested users */
+  users: User[];
+  /** Whether suggestions are loading */
+  isLoading: boolean;
+  /** Search for users */
+  searchUsers: (query: string) => void;
+}
+
 /**
  * Hook for fetching and subscribing to channel messages
  */
-export function useMessages(channelId: string, filters?: MessageFilters) {
+export function useMessages(channelId: string, filters?: MessageFilters): UseMessagesReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -199,7 +313,7 @@ return;
 /**
  * Hook for fetching thread messages
  */
-export function useThread(parentId: string) {
+export function useThread(parentId: string): UseThreadReturn {
   const [thread, setThread] = useState<Thread | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -267,7 +381,7 @@ return null;
 /**
  * Hook for sending messages with optimistic updates
  */
-export function useSendMessage() {
+export function useSendMessage(): UseSendMessageReturn {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -395,7 +509,7 @@ formData.append('mentions', JSON.stringify(input.mentions));
 /**
  * Hook for managing reactions
  */
-export function useReactions(messageId: string) {
+export function useReactions(messageId: string): UseReactionsReturn {
   const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -441,7 +555,7 @@ return null;
 /**
  * Hook for typing indicator
  */
-export function useTypingIndicator(channelId: string, currentUserId: string) {
+export function useTypingIndicator(channelId: string, currentUserId: string): UseTypingIndicatorReturn {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -538,17 +652,32 @@ return;
     [typingUsers, currentUserId],
   );
 
+  // Generate typing text
+  const typingText = useMemo(() => {
+    if (otherTypingUsers.length === 0) {
+      return '';
+    }
+    if (otherTypingUsers.length === 1) {
+      return `${otherTypingUsers[0].user.name} is typing...`;
+    }
+    if (otherTypingUsers.length === 2) {
+      return `${otherTypingUsers[0].user.name} and ${otherTypingUsers[1].user.name} are typing...`;
+    }
+    return `${otherTypingUsers[0].user.name} and ${otherTypingUsers.length - 1} others are typing...`;
+  }, [otherTypingUsers]);
+
   return {
     typingUsers: otherTypingUsers,
     startTyping,
     stopTyping,
+    typingText,
   };
 }
 
 /**
  * Hook for fetching channel details
  */
-export function useChannel(channelId: string) {
+export function useChannel(channelId: string): UseChatChannelReturn {
   const [channel, setChannel] = useState<Channel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -594,7 +723,7 @@ return;
 /**
  * Hook for mention suggestions
  */
-export function useMentionSuggestions(channelId: string) {
+export function useMentionSuggestions(channelId: string): UseMentionSuggestionsReturn {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 

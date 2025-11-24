@@ -2,23 +2,15 @@
  * @fileoverview Tests for analytics API routes
  */
 
-import { prisma } from '@genesis/database';
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-
 // =============================================================================
-// MOCKS
+// MOCKS - Use vi.hoisted to ensure mocks are available during hoisting
 // =============================================================================
 
-// Mock NextAuth
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
-}));
-
-// Mock Prisma
-const mockPrisma = {
+const mockGetServerSession = vi.hoisted(() => vi.fn());
+const mockPrisma = vi.hoisted(() => ({
   workspaceMember: {
     findFirst: vi.fn(),
     count: vi.fn(),
@@ -40,8 +32,14 @@ const mockPrisma = {
     count: vi.fn(),
   },
   $queryRaw: vi.fn(),
-};
+}));
 
+// Mock auth
+vi.mock('@/lib/auth', () => ({
+  getServerSession: () => mockGetServerSession(),
+}));
+
+// Mock Prisma
 vi.mock('@genesis/database', () => ({
   prisma: mockPrisma,
 }));
@@ -63,7 +61,7 @@ vi.mock('@/lib/redis', () => ({
 }));
 
 vi.mock('@genesis/core', () => ({
-  AnalyticsService: vi.fn().mockImplementation(() => ({
+  AnalyticsServiceImpl: vi.fn().mockImplementation(() => ({
     getMetrics: vi.fn().mockResolvedValue({
       workspaceId: 'ws-1',
       period: 'month',
@@ -151,6 +149,7 @@ vi.mock('@genesis/core', () => ({
     }),
     track: vi.fn(),
   })),
+  redis: {},
 }));
 
 describe('Analytics API Routes', () => {
@@ -160,7 +159,7 @@ describe('Analytics API Routes', () => {
 
   describe('GET /api/workspaces/[workspaceId]/analytics/metrics', () => {
     it('should require authentication', async () => {
-      vi.mocked(getServerSession).mockResolvedValue(null);
+      mockGetServerSession.mockResolvedValue(null);
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics');
@@ -170,11 +169,11 @@ describe('Analytics API Routes', () => {
     });
 
     it('should require workspace membership', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue(null);
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue(null);
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics');
@@ -184,11 +183,11 @@ describe('Analytics API Routes', () => {
     });
 
     it('should return metrics for authorized user', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue({
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',
@@ -206,11 +205,11 @@ describe('Analytics API Routes', () => {
     });
 
     it('should support different periods', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue({
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',
@@ -228,11 +227,11 @@ describe('Analytics API Routes', () => {
 
   describe('GET /api/workspaces/[workspaceId]/analytics/realtime', () => {
     it('should return real-time stats', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue({
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',
@@ -253,11 +252,11 @@ describe('Analytics API Routes', () => {
 
   describe('GET /api/workspaces/[workspaceId]/analytics/trends', () => {
     it('should return trend data', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue({
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',
@@ -278,11 +277,11 @@ describe('Analytics API Routes', () => {
 
   describe('GET /api/workspaces/[workspaceId]/analytics/insights', () => {
     it('should generate insights report', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue({
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',
@@ -303,7 +302,7 @@ describe('Analytics API Routes', () => {
 
   describe('POST /api/workspaces/[workspaceId]/analytics/track', () => {
     it('should track analytics event', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
@@ -324,7 +323,7 @@ describe('Analytics API Routes', () => {
     });
 
     it('should require event type', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
@@ -342,11 +341,11 @@ describe('Analytics API Routes', () => {
 
   describe('POST /api/workspaces/[workspaceId]/analytics/export', () => {
     it('should require admin role', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue({
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',
@@ -365,11 +364,11 @@ describe('Analytics API Routes', () => {
     });
 
     it('should export analytics for admin', async () => {
-      vi.mocked(getServerSession).mockResolvedValue({
+      mockGetServerSession.mockResolvedValue({
         user: { id: 'user-1', name: 'Test' },
         expires: '',
       });
-      vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      mockPrisma.workspaceMember.findFirst.mockResolvedValue({
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',

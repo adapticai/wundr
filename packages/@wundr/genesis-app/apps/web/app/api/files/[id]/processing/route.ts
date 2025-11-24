@@ -12,8 +12,8 @@
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
-import { processingJobs } from '@/app/api/processing/route';
 import { auth } from '@/lib/auth';
+import { processingJobs } from '@/lib/services/processing-stores';
 import {
   fileIdParamSchema,
   createProcessingErrorResponse,

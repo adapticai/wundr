@@ -4,11 +4,11 @@
  * Handles single workspace operations.
  *
  * Routes:
- * - GET /api/workspaces/:id - Get workspace details
- * - PATCH /api/workspaces/:id - Update workspace
- * - DELETE /api/workspaces/:id - Delete workspace
+ * - GET /api/workspaces/:workspaceId - Get workspace details
+ * - PATCH /api/workspaces/:workspaceId - Update workspace
+ * - DELETE /api/workspaces/:workspaceId - Delete workspace
  *
- * @module app/api/workspaces/[id]/route
+ * @module app/api/workspaces/[workspaceId]/route
  */
 
 import { prisma } from '@genesis/database';
@@ -30,7 +30,7 @@ import type { NextRequest } from 'next/server';
  * Route context with workspace ID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ workspaceId: string }>;
 }
 
 /**
@@ -45,8 +45,8 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -58,8 +58,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
@@ -78,7 +78,7 @@ return null;
 }
 
 /**
- * GET /api/workspaces/:id
+ * GET /api/workspaces/:workspaceId
  *
  * Get workspace details. Requires organization membership.
  *
@@ -87,7 +87,7 @@ return null;
  * @returns Workspace details
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -102,7 +102,7 @@ export async function GET(
 
     // Validate workspace ID parameter
     const params = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse(params);
+    const paramResult = workspaceIdParamSchema.safeParse({ id: params.workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
@@ -111,7 +111,7 @@ export async function GET(
     }
 
     // Check access
-    const access = await checkWorkspaceAccess(params.id, session.user.id);
+    const access = await checkWorkspaceAccess(params.workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -124,7 +124,7 @@ export async function GET(
 
     // Fetch workspace with details
     const workspace = await prisma.workspace.findUnique({
-      where: { id: params.id },
+      where: { id: params.workspaceId },
       include: {
         organization: {
           select: {
@@ -147,12 +147,12 @@ export async function GET(
       membership: access.workspaceMembership
         ? {
             role: access.workspaceMembership.role,
-            joinedAt: access.workspaceMembership.createdAt,
+            joinedAt: access.workspaceMembership.joinedAt,
           }
         : null,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:id] Error:', error);
+    console.error('[GET /api/workspaces/:workspaceId] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -164,7 +164,7 @@ export async function GET(
 }
 
 /**
- * PATCH /api/workspaces/:id
+ * PATCH /api/workspaces/:workspaceId
  *
  * Update workspace. Requires workspace ADMIN role or org ADMIN/OWNER.
  *
@@ -188,7 +188,7 @@ export async function PATCH(
 
     // Validate workspace ID parameter
     const params = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse(params);
+    const paramResult = workspaceIdParamSchema.safeParse({ id: params.workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
@@ -197,7 +197,7 @@ export async function PATCH(
     }
 
     // Check access and permission
-    const access = await checkWorkspaceAccess(params.id, session.user.id);
+    const access = await checkWorkspaceAccess(params.workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -250,7 +250,7 @@ export async function PATCH(
 
     // Update workspace
     const workspace = await prisma.workspace.update({
-      where: { id: params.id },
+      where: { id: params.workspaceId },
       data: {
         ...(input.name && { name: input.name }),
         ...(input.description !== undefined && { description: input.description }),
@@ -279,7 +279,7 @@ export async function PATCH(
       message: 'Workspace updated successfully',
     });
   } catch (error) {
-    console.error('[PATCH /api/workspaces/:id] Error:', error);
+    console.error('[PATCH /api/workspaces/:workspaceId] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -291,7 +291,7 @@ export async function PATCH(
 }
 
 /**
- * DELETE /api/workspaces/:id
+ * DELETE /api/workspaces/:workspaceId
  *
  * Delete workspace. Requires org ADMIN/OWNER role.
  *
@@ -300,7 +300,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -315,7 +315,7 @@ export async function DELETE(
 
     // Validate workspace ID parameter
     const params = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse(params);
+    const paramResult = workspaceIdParamSchema.safeParse({ id: params.workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
@@ -324,7 +324,7 @@ export async function DELETE(
     }
 
     // Check access and permission
-    const access = await checkWorkspaceAccess(params.id, session.user.id);
+    const access = await checkWorkspaceAccess(params.workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -348,14 +348,14 @@ export async function DELETE(
 
     // Delete workspace (cascades to channels, members, etc.)
     await prisma.workspace.delete({
-      where: { id: params.id },
+      where: { id: params.workspaceId },
     });
 
     return NextResponse.json({
       message: 'Workspace deleted successfully',
     });
   } catch (error) {
-    console.error('[DELETE /api/workspaces/:id] Error:', error);
+    console.error('[DELETE /api/workspaces/:workspaceId] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

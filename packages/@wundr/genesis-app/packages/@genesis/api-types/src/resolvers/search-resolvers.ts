@@ -7,7 +7,50 @@
  * @module @genesis/api-types/resolvers/search-resolvers
  */
 
-import type { SearchServiceImpl as SearchService } from '@genesis/core';
+/**
+ * SearchService interface for search resolver operations
+ * Defined locally to avoid coupling to internal @genesis/core exports
+ */
+export interface SearchService {
+  search(params: {
+    query: string;
+    filters: {
+      workspaceId: string;
+      types?: string[] | undefined;
+      channelIds?: string[] | undefined;
+      userIds?: string[] | undefined;
+      dateRange?: { start: Date; end: Date } | undefined;
+    };
+    pagination: { limit: number; offset: number };
+    highlight?: boolean | undefined;
+    facets?: string[] | undefined;
+    sort?: { field: 'relevance' | 'date'; direction: 'asc' | 'desc' } | undefined;
+  }): Promise<{
+    results: Array<{
+      id: string;
+      type: string;
+      score: number;
+      highlight?: { content?: string[] | undefined; title?: string[] | undefined; fileName?: string[] | undefined } | undefined;
+      data: Record<string, unknown>;
+    }>;
+    total: number;
+    took: number;
+    facets?: {
+      types?: Array<{ key: string; label: string; count: number }> | undefined;
+      channels?: Array<{ key: string; label: string; count: number }> | undefined;
+      users?: Array<{ key: string; label: string; count: number }> | undefined;
+      dates?: Array<{ key: string; label: string; count: number }> | undefined;
+    } | undefined;
+    pagination: { hasMore: boolean; nextCursor?: string | undefined };
+  }>;
+  saveRecentSearch(userId: string, query: string): Promise<void>;
+  getSuggestions(
+    query: string,
+    workspaceId: string,
+    userId: string,
+    limit: number
+  ): Promise<Array<{ text: string; type: string; metadata?: Record<string, unknown> | undefined }>>;
+}
 
 // =============================================================================
 // TYPES

@@ -10,6 +10,7 @@
  * @module app/api/calls/[callId]/route
  */
 
+import { getLiveKitService } from '@genesis/core';
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
@@ -22,6 +23,34 @@ import {
 import { createErrorResponse } from '@/lib/validations/organization';
 
 import type { NextRequest } from 'next/server';
+
+/**
+ * Closes a LiveKit room, forcing all participants to disconnect.
+ * This is called when a call is ended to ensure all participants are removed.
+ *
+ * @param roomName - The LiveKit room name to close
+ */
+async function closeLiveKitRoom(roomName: string): Promise<void> {
+  try {
+    const liveKitService = getLiveKitService();
+
+    // Check if the room exists
+    const room = await liveKitService.getRoom(roomName);
+    if (!room) {
+      // Room doesn't exist or already deleted - nothing to do
+      return;
+    }
+
+    // Delete the room - this will disconnect all participants
+    await liveKitService.deleteRoom(roomName);
+
+    console.log(`[closeLiveKitRoom] Successfully closed room: ${roomName}`);
+  } catch (error) {
+    // Log error but don't fail the call end operation
+    // The call can still be marked as ended even if LiveKit room deletion fails
+    console.error(`[closeLiveKitRoom] Failed to close room ${roomName}:`, error);
+  }
+}
 
 /**
  * Route context with call ID parameter
@@ -182,7 +211,7 @@ return null;
  * @returns Call details including participants
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -318,7 +347,7 @@ export async function GET(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -415,8 +444,8 @@ export async function DELETE(
       `.catch(() => {});
     }
 
-    // TODO: Notify LiveKit to close the room
-    // This would use the LiveKit Server SDK
+    // Close the LiveKit room to end the call for all participants
+    await closeLiveKitRoom(result.call.roomName);
 
     return NextResponse.json({
       message: 'Call ended successfully',

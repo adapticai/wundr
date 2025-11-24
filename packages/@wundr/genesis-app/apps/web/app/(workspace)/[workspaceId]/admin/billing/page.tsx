@@ -18,7 +18,7 @@ export default function AdminBillingPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
 
-  const { billing, isLoading, upgradePlan } = useBilling(workspaceId);
+  const { billing, isLoading, updatePlan } = useBilling(workspaceId);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -27,13 +27,14 @@ export default function AdminBillingPage() {
     async (planId: string) => {
       setIsUpgrading(true);
       try {
-        await upgradePlan(planId, billingInterval);
+        // Cast planId to the expected BillingPlan type
+        await updatePlan(planId as 'free' | 'starter' | 'pro' | 'enterprise');
         setSelectedPlan(null);
       } finally {
         setIsUpgrading(false);
       }
     },
-    [upgradePlan, billingInterval],
+    [updatePlan],
   );
 
   const plans: Plan[] = [
@@ -104,7 +105,7 @@ export default function AdminBillingPage() {
     },
   ];
 
-  const currentPlan = plans.find((p) => p.id === billing?.planId) || plans[0];
+  const currentPlan = plans.find((p) => p.id === billing?.plan) || plans[0];
 
   return (
     <div className="space-y-8">
@@ -139,7 +140,7 @@ export default function AdminBillingPage() {
 
                 {billing?.currentPeriodEnd && (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    {billing.cancelAtPeriodEnd
+                    {billing.status === 'canceled'
                       ? `Subscription ends on ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`
                       : `Next billing date: ${new Date(billing.currentPeriodEnd).toLocaleDateString()}`}
                   </p>
@@ -166,7 +167,7 @@ export default function AdminBillingPage() {
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
               <UsageCard
                 label="Members"
-                current={billing?.memberCount ?? 0}
+                current={billing?.memberLimit ?? 0}
                 limit={currentPlan.limits.members}
               />
               <UsageCard
@@ -222,14 +223,14 @@ export default function AdminBillingPage() {
             key={plan.id}
             plan={plan}
             billingInterval={billingInterval}
-            isCurrentPlan={plan.id === billing?.planId}
+            isCurrentPlan={plan.id === billing?.plan}
             onSelect={() => setSelectedPlan(plan.id)}
           />
         ))}
       </div>
 
       {/* Payment Method */}
-      {billing?.paymentMethod && (
+      {billing?.status === 'active' && (
         <div className="rounded-lg border bg-card">
           <div className="border-b px-6 py-4">
             <h2 className="font-semibold text-foreground">Payment Method</h2>
@@ -241,10 +242,10 @@ export default function AdminBillingPage() {
               </div>
               <div>
                 <p className="font-medium text-foreground">
-                  {billing.paymentMethod.brand} ending in {billing.paymentMethod.last4}
+                  Payment method on file
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Expires {billing.paymentMethod.expMonth}/{billing.paymentMethod.expYear}
+                  Contact support to update
                 </p>
               </div>
             </div>
@@ -274,11 +275,11 @@ export default function AdminBillingPage() {
                       year: 'numeric',
                     })}
                   </p>
-                  <p className="text-sm text-muted-foreground">{invoice.description}</p>
+                  <p className="text-sm text-muted-foreground">Invoice #{invoice.id}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="font-medium text-foreground">
-                    ${(invoice.amount / 100).toFixed(2)}
+                    ${(invoice.amount / 100).toFixed(2)} {invoice.currency}
                   </span>
                   <span
                     className={cn(
@@ -290,14 +291,16 @@ export default function AdminBillingPage() {
                   >
                     {invoice.status}
                   </span>
-                  <a
-                    href={invoice.pdfUrl}
-                    className="text-sm text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Download
-                  </a>
+                  {invoice.pdfUrl && (
+                    <a
+                      href={invoice.pdfUrl}
+                      className="text-sm text-primary hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Download
+                    </a>
+                  )}
                 </div>
               </div>
             ))
@@ -310,7 +313,7 @@ export default function AdminBillingPage() {
       </div>
 
       {/* Upgrade Modal */}
-      {selectedPlan && selectedPlan !== billing?.planId && (
+      {selectedPlan && selectedPlan !== billing?.plan && (
         <UpgradeModal
           plan={plans.find((p) => p.id === selectedPlan)!}
           billingInterval={billingInterval}

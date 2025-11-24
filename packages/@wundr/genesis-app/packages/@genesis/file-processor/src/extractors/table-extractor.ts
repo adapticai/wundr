@@ -12,8 +12,11 @@ import type {
   TableStructure,
   ColumnType,
   MergedCellInfo,
-  BoundingBox,
+  BoundingBox as _BoundingBox,
 } from '../types/extraction';
+
+// Re-export aliased type for external use
+export type { _BoundingBox as BoundingBox };
 
 // ============================================================================
 // Table Extractor Interface

@@ -6,9 +6,16 @@ import { cn } from '@/lib/utils';
 
 import type { Reaction } from '@/types/chat';
 
+
+/**
+ * Props for the ReactionDisplay component
+ */
 interface ReactionDisplayProps {
+  /** Array of reactions to display */
   reactions: Reaction[];
+  /** Callback fired when toggling a reaction */
   onToggleReaction: (emoji: string) => void;
+  /** Additional CSS class names */
   className?: string;
 }
 

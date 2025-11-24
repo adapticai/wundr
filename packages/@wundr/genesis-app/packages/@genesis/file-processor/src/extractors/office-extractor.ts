@@ -103,39 +103,61 @@ interface MammothResult {
 }
 
 /**
- * XLSX library types - using loose typing to avoid import issues.
- * These types are compatible with the xlsx library but don't require
- * the library to be installed for type checking.
+ * XLSX library types - using strict typing for xlsx library compatibility.
+ * These types are compatible with the xlsx library and provide full type safety.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * XLSX merged cell range type
+ */
+interface XLSXMerge {
+  s: { r: number; c: number };
+  e: { r: number; c: number };
+}
 
+/**
+ * XLSX workbook structure
+ */
 interface XLSXWorkbook {
   SheetNames: string[];
-  Sheets: Record<string, any>;
+  Sheets: Record<string, XLSXSheet>;
   Props?: XLSXProperties;
   Workbook?: {
     Names?: Array<{ Name: string; Ref: string; Sheet?: number }>;
   };
 }
 
+/**
+ * XLSX worksheet structure
+ */
 interface XLSXSheet {
-  [cell: string]: any;
+  '!ref'?: string;
+  '!merges'?: XLSXMerge[];
+  [cell: string]: XLSXCell | string | XLSXMerge[] | undefined;
 }
 
+/**
+ * XLSX cell structure
+ */
 interface XLSXCell {
   t?: string; // type: s=string, n=number, b=boolean, d=date
   v?: string | number | boolean | Date; // value
   w?: string; // formatted text
   r?: XLSXRichText; // rich text
   f?: string; // formula
-  s?: unknown; // style
+  s?: Record<string, unknown>; // style object
 }
 
+/**
+ * XLSX rich text structure
+ */
 interface XLSXRichText {
   r: Array<{ t: string }>;
 }
 
+/**
+ * XLSX document properties
+ */
 interface XLSXProperties {
   Title?: string;
   Subject?: string;
@@ -151,8 +173,6 @@ interface XLSXProperties {
   Manager?: string;
 }
 
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
 /**
  * Type for xlsx module to avoid import errors.
  */
@@ -165,12 +185,19 @@ interface XLSXModule {
 }
 
 /**
+ * Mammoth module interface for document conversion.
+ */
+interface MammothModule {
+  convertToHtml: (input: { buffer: Buffer }, options?: Record<string, unknown>) => Promise<MammothResult>;
+  extractRawText: (input: { buffer: Buffer }) => Promise<MammothResult>;
+}
+
+/**
  * Implementation of the Office document extractor.
  */
 export class OfficeExtractorImpl implements OfficeExtractor {
   private config: OfficeExtractorConfig;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private mammoth: any = null;
+  private mammoth: MammothModule | null = null;
   private xlsx: XLSXModule | null = null;
 
   /**
@@ -187,12 +214,15 @@ export class OfficeExtractorImpl implements OfficeExtractor {
 
   /**
    * Lazily load mammoth module.
+   *
+   * @returns Mammoth module for document conversion
+   * @throws ExtractionError if mammoth is not installed
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async getMammoth(): Promise<any> {
+  private async getMammoth(): Promise<MammothModule> {
     if (!this.mammoth) {
       try {
-        this.mammoth = await import('mammoth');
+        const mammothModule = await import('mammoth');
+        this.mammoth = mammothModule as unknown as MammothModule;
       } catch (error) {
         throw new ExtractionError(
           'mammoth library not available. Please install: npm install mammoth',

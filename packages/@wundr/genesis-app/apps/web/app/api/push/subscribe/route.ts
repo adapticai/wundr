@@ -147,8 +147,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: isNew ? 201 : 200 },
     );
   } catch (error) {
-    console.error('[POST /api/push/subscribe] Error:', error);
-
     // Handle unique constraint violation
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

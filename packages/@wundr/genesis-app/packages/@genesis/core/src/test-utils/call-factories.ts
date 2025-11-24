@@ -543,9 +543,36 @@ export function createMockCreateHuddleInput(
 // =============================================================================
 
 /**
- * Create a mock call service
+ * Mock call service interface for type safety
  */
-export function createMockCallService() {
+export interface MockCallService {
+  createCall: ReturnType<typeof vi.fn>;
+  getCall: ReturnType<typeof vi.fn>;
+  listCalls: ReturnType<typeof vi.fn>;
+  endCall: ReturnType<typeof vi.fn>;
+  joinCall: ReturnType<typeof vi.fn>;
+  leaveCall: ReturnType<typeof vi.fn>;
+  updateCall: ReturnType<typeof vi.fn>;
+  getCallParticipants: ReturnType<typeof vi.fn>;
+  getCallSummary: ReturnType<typeof vi.fn>;
+  startRecording: ReturnType<typeof vi.fn>;
+  stopRecording: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock call service for testing call-related functionality
+ *
+ * @returns A mock call service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const callService = createMockCallService();
+ * callService.createCall.mockResolvedValue(createMockCall());
+ * await callService.createCall({ channelId: 'ch_123', type: 'video' });
+ * expect(callService.createCall).toHaveBeenCalledOnce();
+ * ```
+ */
+export function createMockCallService(): MockCallService {
   return {
     createCall: vi.fn(),
     getCall: vi.fn(),
@@ -562,9 +589,33 @@ export function createMockCallService() {
 }
 
 /**
- * Create a mock huddle service
+ * Mock huddle service interface for type safety
  */
-export function createMockHuddleService() {
+export interface MockHuddleService {
+  createHuddle: ReturnType<typeof vi.fn>;
+  getHuddle: ReturnType<typeof vi.fn>;
+  listHuddles: ReturnType<typeof vi.fn>;
+  updateHuddle: ReturnType<typeof vi.fn>;
+  deleteHuddle: ReturnType<typeof vi.fn>;
+  joinHuddle: ReturnType<typeof vi.fn>;
+  leaveHuddle: ReturnType<typeof vi.fn>;
+  getActiveParticipants: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock huddle service for testing huddle functionality
+ *
+ * @returns A mock huddle service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const huddleService = createMockHuddleService();
+ * huddleService.createHuddle.mockResolvedValue(createMockHuddle());
+ * await huddleService.createHuddle({ channelId: 'ch_123', name: 'Team Standup' });
+ * expect(huddleService.createHuddle).toHaveBeenCalledOnce();
+ * ```
+ */
+export function createMockHuddleService(): MockHuddleService {
   return {
     createHuddle: vi.fn(),
     getHuddle: vi.fn(),
@@ -578,9 +629,35 @@ export function createMockHuddleService() {
 }
 
 /**
- * Create a mock LiveKit service wrapper
+ * Mock LiveKit service wrapper interface for type safety
  */
-export function createMockLiveKitServiceWrapper() {
+export interface MockLiveKitServiceWrapper {
+  createRoom: ReturnType<typeof vi.fn>;
+  deleteRoom: ReturnType<typeof vi.fn>;
+  getRoom: ReturnType<typeof vi.fn>;
+  listRooms: ReturnType<typeof vi.fn>;
+  generateToken: ReturnType<typeof vi.fn>;
+  listParticipants: ReturnType<typeof vi.fn>;
+  removeParticipant: ReturnType<typeof vi.fn>;
+  muteParticipant: ReturnType<typeof vi.fn>;
+  handleWebhook: ReturnType<typeof vi.fn>;
+  verifyWebhook: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock LiveKit service wrapper for testing video/voice call integration
+ *
+ * @returns A mock LiveKit service with all methods as vi.fn() mocks
+ *
+ * @example
+ * ```typescript
+ * const liveKitService = createMockLiveKitServiceWrapper();
+ * liveKitService.generateToken.mockResolvedValue(createMockJoinToken());
+ * const token = await liveKitService.generateToken('user_123', 'room_456');
+ * expect(token).toBeDefined();
+ * ```
+ */
+export function createMockLiveKitServiceWrapper(): MockLiveKitServiceWrapper {
   return {
     createRoom: vi.fn(),
     deleteRoom: vi.fn(),

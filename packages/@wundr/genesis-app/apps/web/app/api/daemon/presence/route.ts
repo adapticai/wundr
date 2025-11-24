@@ -13,6 +13,7 @@ import { redis } from '@genesis/core';
 import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import type { NextRequest} from 'next/server';
 
@@ -22,10 +23,12 @@ import type { NextRequest} from 'next/server';
 const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
- * Valid presence statuses
+ * Schema for presence update request body
  */
-const VALID_STATUSES = ['online', 'away', 'busy', 'offline'] as const;
-type PresenceStatus = (typeof VALID_STATUSES)[number];
+const presenceUpdateSchema = z.object({
+  status: z.enum(['online', 'away', 'busy', 'offline']),
+  statusText: z.string().optional(),
+});
 
 /**
  * Error codes for presence operations
@@ -111,13 +114,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { status, statusText } = body as {
-      status?: string;
-      statusText?: string;
-    };
-
-    // Validate status
-    if (!status || !VALID_STATUSES.includes(status as PresenceStatus)) {
+    // Validate input using Zod schema
+    const parseResult = presenceUpdateSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
         {
           error: 'Invalid status. Must be one of: online, away, busy, offline',
@@ -126,6 +125,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         { status: 400 },
       );
     }
+
+    const { status, statusText } = parseResult.data;
 
     // Get VP info
     const vp = await prisma.vP.findUnique({

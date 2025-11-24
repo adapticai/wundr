@@ -44,13 +44,11 @@ import type {
 // MOCKS
 // =============================================================================
 
-// Mock NextAuth
+// Mock auth
 const mockGetServerSession = vi.fn();
-vi.mock('next-auth', () => ({
-  default: {},
-}));
-vi.mock('next-auth/next', () => ({
-  getServerSession: mockGetServerSession,
+vi.mock('@/lib/auth', () => ({
+  auth: mockGetServerSession,
+  getServerSession: () => mockGetServerSession(),
 }));
 
 // Mock the Integration service
@@ -130,8 +128,8 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Utility function kept for future route handler tests
-function createMockRequest(
+// @ts-expect-error Utility function kept for future route handler tests
+function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
   searchParams?: Record<string, string>,

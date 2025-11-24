@@ -15,10 +15,17 @@ export interface Role {
   createdAt: string;
 }
 
+/**
+ * Props for the RoleList component.
+ */
 export interface RoleListProps {
+  /** The workspace ID to fetch roles for */
   workspaceId: string;
+  /** Callback when the create role button is clicked */
   onCreateRole: () => void;
+  /** Callback when a role is selected for editing */
   onEditRole: (role: Role) => void;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

@@ -12,9 +12,6 @@ import type {
   RetentionPolicy,
   RetentionRule,
   RetentionJob,
-  RetentionJobStatus as _RetentionJobStatus,
-  RetentionResourceType as _RetentionResourceType,
-  RetentionAction as _RetentionAction,
   RetentionStats,
   RetentionError,
   LegalHold,
@@ -380,9 +377,24 @@ export function createMockRetentionStats(
 // =============================================================================
 
 /**
- * Create a mock Prisma retention policy model.
+ * Mock Prisma retention policy model interface for type safety
  */
-export function createMockPrismaRetentionPolicyModel() {
+export interface MockPrismaRetentionPolicyModel {
+  create: ReturnType<typeof vi.fn>;
+  findUnique: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock Prisma retention policy model for testing retention policies
+ *
+ * @returns A mock Prisma retention policy model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaRetentionPolicyModel(): MockPrismaRetentionPolicyModel {
   return {
     create: vi.fn(),
     findUnique: vi.fn(),
@@ -395,9 +407,24 @@ export function createMockPrismaRetentionPolicyModel() {
 }
 
 /**
- * Create a mock Prisma retention job model.
+ * Mock Prisma retention job model interface for type safety
  */
-export function createMockPrismaRetentionJobModel() {
+export interface MockPrismaRetentionJobModel {
+  create: ReturnType<typeof vi.fn>;
+  findUnique: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock Prisma retention job model for testing retention jobs
+ *
+ * @returns A mock Prisma retention job model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaRetentionJobModel(): MockPrismaRetentionJobModel {
   return {
     create: vi.fn(),
     findUnique: vi.fn(),
@@ -410,9 +437,24 @@ export function createMockPrismaRetentionJobModel() {
 }
 
 /**
- * Create a mock Prisma legal hold model.
+ * Mock Prisma legal hold model interface for type safety
  */
-export function createMockPrismaLegalHoldModel() {
+export interface MockPrismaLegalHoldModel {
+  create: ReturnType<typeof vi.fn>;
+  findUnique: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock Prisma legal hold model for testing legal holds
+ *
+ * @returns A mock Prisma legal hold model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaLegalHoldModel(): MockPrismaLegalHoldModel {
   return {
     create: vi.fn(),
     findUnique: vi.fn(),
@@ -425,9 +467,24 @@ export function createMockPrismaLegalHoldModel() {
 }
 
 /**
- * Create a mock Prisma data export model.
+ * Mock Prisma data export model interface for type safety
  */
-export function createMockPrismaDataExportModel() {
+export interface MockPrismaDataExportModel {
+  create: ReturnType<typeof vi.fn>;
+  findUnique: ReturnType<typeof vi.fn>;
+  findMany: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock Prisma data export model for testing data exports
+ *
+ * @returns A mock Prisma data export model with all methods as vi.fn() mocks
+ */
+export function createMockPrismaDataExportModel(): MockPrismaDataExportModel {
   return {
     create: vi.fn(),
     findUnique: vi.fn(),
@@ -440,9 +497,80 @@ export function createMockPrismaDataExportModel() {
 }
 
 /**
- * Create a complete mock Prisma client for retention testing.
+ * Mock Prisma message model subset for retention operations
  */
-export function createMockPrisma() {
+export interface MockPrismaMessageModelSubset {
+  findMany: ReturnType<typeof vi.fn>;
+  findUnique: ReturnType<typeof vi.fn>;
+  findFirst: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Mock Prisma attachment model subset for retention operations
+ */
+export interface MockPrismaAttachmentModelSubset {
+  findMany: ReturnType<typeof vi.fn>;
+  findUnique: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+  aggregate: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Mock Prisma channel model subset for retention operations
+ */
+export interface MockPrismaChannelModelSubset {
+  findMany: ReturnType<typeof vi.fn>;
+  findUnique: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  count: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Transaction callback type for Prisma $transaction
+ */
+export type TransactionCallback<T> = (tx: MockPrismaTransaction) => Promise<T>;
+
+/**
+ * Mock Prisma transaction interface
+ */
+export interface MockPrismaTransaction {
+  retentionPolicy: MockPrismaRetentionPolicyModel;
+  retentionJob: MockPrismaRetentionJobModel;
+  message: { update: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
+}
+
+/**
+ * Complete mock Prisma client interface for retention testing
+ */
+export interface MockRetentionPrismaClient {
+  retentionPolicy: MockPrismaRetentionPolicyModel;
+  retentionJob: MockPrismaRetentionJobModel;
+  legalHold: MockPrismaLegalHoldModel;
+  dataExport: MockPrismaDataExportModel;
+  message: MockPrismaMessageModelSubset;
+  attachment: MockPrismaAttachmentModelSubset;
+  channel: MockPrismaChannelModelSubset;
+  $transaction: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a complete mock Prisma client for retention testing
+ *
+ * @returns A mock Prisma client with all retention-related models
+ *
+ * @example
+ * ```typescript
+ * const prisma = createMockPrisma();
+ * prisma.retentionPolicy.findMany.mockResolvedValue([createMockRetentionPolicy()]);
+ * const policies = await prisma.retentionPolicy.findMany({ where: { workspaceId: 'ws_123' } });
+ * expect(policies).toHaveLength(1);
+ * ```
+ */
+export function createMockPrisma(): MockRetentionPrismaClient {
   return {
     retentionPolicy: createMockPrismaRetentionPolicyModel(),
     retentionJob: createMockPrismaRetentionJobModel(),
@@ -469,7 +597,7 @@ export function createMockPrisma() {
       update: vi.fn(),
       count: vi.fn(),
     },
-    $transaction: vi.fn().mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+    $transaction: vi.fn().mockImplementation(async <T>(callback: TransactionCallback<T>): Promise<T> => {
       return callback({
         retentionPolicy: createMockPrismaRetentionPolicyModel(),
         retentionJob: createMockPrismaRetentionJobModel(),
@@ -480,10 +608,28 @@ export function createMockPrisma() {
 }
 
 /**
- * Create a mock Redis client for retention testing.
- * Note: Named differently to avoid conflict with mock-redis.ts
+ * Mock Redis client interface for retention testing
  */
-export function createRetentionMockRedis() {
+export interface MockRetentionRedisClient {
+  lpush: ReturnType<typeof vi.fn>;
+  rpop: ReturnType<typeof vi.fn>;
+  llen: ReturnType<typeof vi.fn>;
+}
+
+/**
+ * Create a mock Redis client for retention testing
+ *
+ * @returns A mock Redis client with queue operations
+ *
+ * @example
+ * ```typescript
+ * const redis = createRetentionMockRedis();
+ * redis.lpush.mockResolvedValue(1);
+ * await redis.lpush('retention:queue', JSON.stringify({ jobId: 'job_123' }));
+ * expect(redis.lpush).toHaveBeenCalled();
+ * ```
+ */
+export function createRetentionMockRedis(): MockRetentionRedisClient {
   return {
     lpush: vi.fn().mockResolvedValue(1),
     rpop: vi.fn().mockResolvedValue(null),

@@ -6,11 +6,19 @@ import { cn } from '@/lib/utils';
 
 import type { Role } from './role-list';
 
+/**
+ * Props for the RoleEditor component.
+ */
 export interface RoleEditorProps {
+  /** The role to edit, or null/undefined to create a new role */
   role?: Role | null;
+  /** The workspace ID for the role */
   workspaceId: string;
+  /** Callback when the role is saved successfully */
   onSave: () => void;
+  /** Callback when the editor is cancelled */
   onCancel: () => void;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

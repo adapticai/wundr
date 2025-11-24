@@ -40,13 +40,90 @@ export interface PdfProcessingOptions extends ProcessingOptions {
 }
 
 /**
+ * PDF parse module interface
+ */
+interface PdfParseModule {
+  (buffer: Buffer, options?: PdfParseOptions): Promise<PdfParseResult>;
+}
+
+/**
+ * PDF parse options
+ */
+interface PdfParseOptions {
+  max?: number;
+  pagerender?: (pageData: PdfPageData) => string;
+}
+
+/**
+ * PDF parse result
+ */
+interface PdfParseResult {
+  numpages: number;
+  numrender: number;
+  info: PdfInfo;
+  metadata?: PdfMetadata;
+  text: string;
+  version: string;
+}
+
+/**
+ * PDF info structure
+ */
+interface PdfInfo {
+  Title?: string;
+  Author?: string;
+  Subject?: string;
+  Creator?: string;
+  Producer?: string;
+  CreationDate?: string;
+  ModDate?: string;
+  PDFFormatVersion?: string;
+}
+
+/**
+ * PDF metadata structure
+ */
+interface PdfMetadata {
+  [key: string]: string | undefined;
+}
+
+/**
+ * PDF page data for custom rendering
+ */
+interface PdfPageData {
+  pageIndex: number;
+  pageInfo: { num: number; scale: number; rotation: number; offsetX: number; offsetY: number; width: number; height: number };
+  getTextContent: () => Promise<PdfTextContent>;
+}
+
+/**
+ * PDF text content structure
+ */
+interface PdfTextContent {
+  items: Array<{ str: string; dir: string; transform: number[] }>;
+  styles: Record<string, { fontFamily: string; ascent: number; descent: number; vertical: boolean }>;
+}
+
+/**
  * PDF processor class
  */
 export class PdfProcessor {
   private _config: FileProcessorConfig;
+  private pdfParse: PdfParseModule | null = null;
 
   constructor(config: FileProcessorConfig) {
     this._config = config;
+  }
+
+  /**
+   * Lazily load pdf-parse module
+   */
+  private async getPdfParse(): Promise<PdfParseModule> {
+    if (!this.pdfParse) {
+      const pdfModule = await import('pdf-parse');
+      this.pdfParse = pdfModule.default as unknown as PdfParseModule;
+    }
+    return this.pdfParse;
   }
 
   /**
@@ -134,10 +211,14 @@ export class PdfProcessor {
 
   /**
    * Parse PDF buffer and extract content
+   *
+   * @param buffer - PDF file buffer
+   * @param options - Processing options
+   * @returns Parsed PDF content and metadata
    */
   private async parsePdf(
-    _buffer: Buffer,
-    _options: PdfProcessingOptions,
+    buffer: Buffer,
+    options: PdfProcessingOptions,
   ): Promise<{
     text: string;
     pageCount: number;
@@ -145,23 +226,41 @@ export class PdfProcessor {
     title?: string;
     author?: string;
   }> {
-    // TODO: Implement with pdf-parse library
-    // This is a skeleton implementation
+    const pdfParse = await this.getPdfParse();
 
-    // Placeholder - will be replaced with actual pdf-parse integration
-    // const pdfParse = require('pdf-parse');
-    // const data = await pdfParse(buffer, {
-    //   max: options.maxPages || 100,
-    //   pagerender: this.renderPage.bind(this),
-    // });
+    // Configure pdf-parse options
+    const parseOptions: PdfParseOptions = {};
 
-    // Skeleton return
+    // Limit pages if page range is specified
+    if (options.pageRange?.end) {
+      parseOptions.max = options.pageRange.end;
+    }
+
+    // Parse the PDF
+    const data = await pdfParse(buffer, parseOptions);
+
+    // Split text into pages (pdf-parse returns all text concatenated)
+    // This is a simplified approach - actual page separation would need custom pagerender
+    const textPerPage = data.text.split(/\f/); // Form feed character often separates pages
+    const pages: PageContent[] = textPerPage.map((text, index) => ({
+      pageNumber: index + 1,
+      content: text.trim(),
+    }));
+
+    // Apply page range filter if specified
+    const filteredPages = options.pageRange
+      ? pages.slice(
+          (options.pageRange.start ?? 1) - 1,
+          options.pageRange.end ?? pages.length,
+        )
+      : pages;
+
     return {
-      text: '',
-      pageCount: 0,
-      pages: [],
-      title: undefined,
-      author: undefined,
+      text: filteredPages.map(p => p.content).join('\n\n'),
+      pageCount: data.numpages,
+      pages: filteredPages,
+      title: data.info?.Title,
+      author: data.info?.Author,
     };
   }
 

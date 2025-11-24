@@ -673,12 +673,14 @@ export class TesseractOCRService extends BaseOCRService {
     const messageLevelIndex = levels.indexOf(level);
 
     if (messageLevelIndex >= configLevelIndex) {
+      /* eslint-disable no-console -- Intentional logging when enableLogging is true */
       const logFn = console[level] || console.log;
       if (data) {
         logFn(`[TesseractOCR] ${message}`, data);
       } else {
         logFn(`[TesseractOCR] ${message}`);
       }
+      /* eslint-enable no-console */
     }
   }
 }

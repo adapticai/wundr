@@ -25,7 +25,7 @@ import type {
   ExtractionInput,
   ExtractionResult,
   ExtractionOptions,
-  DocumentMetadata,
+  DocumentMetadata as _DocumentMetadata,
   FileTypeResult,
   FileCategory,
   PDFOptions,
@@ -34,11 +34,19 @@ import type {
   DocxExtractionResult,
   XlsxOptions,
   XlsxExtractionResult,
-  ExtractedTable,
-  ExtractedImage,
-  PageContent,
+  ExtractedTable as _ExtractedTable,
+  ExtractedImage as _ExtractedImage,
+  PageContent as _PageContent,
 } from '../types/extraction';
 import type { Readable } from 'stream';
+
+// Re-export aliased types for external use
+export type {
+  _DocumentMetadata as DocumentMetadata,
+  _ExtractedTable as ExtractedTable,
+  _ExtractedImage as ExtractedImage,
+  _PageContent as PageContent,
+};
 
 // ============================================================================
 // File Signatures for Type Detection

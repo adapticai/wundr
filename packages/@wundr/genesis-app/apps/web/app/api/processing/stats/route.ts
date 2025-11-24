@@ -13,12 +13,11 @@ import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { processingJobs } from '@/lib/services/processing-stores';
 import {
   createProcessingErrorResponse,
   PROCESSING_ERROR_CODES,
 } from '@/lib/validations/processing';
-
-import { processingJobs } from '../route';
 
 import type { NextRequest } from 'next/server';
 
@@ -184,8 +183,8 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
         generatedAt: new Date().toISOString(),
       },
     });
-  } catch (error) {
-    console.error('[GET /api/processing/stats] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createProcessingErrorResponse(
         'An internal error occurred',

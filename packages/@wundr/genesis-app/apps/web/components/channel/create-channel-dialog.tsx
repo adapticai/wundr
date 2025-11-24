@@ -7,16 +7,25 @@ import { cn } from '@/lib/utils';
 
 import type { User } from '@/types/chat';
 
+
+/**
+ * Props for the CreateChannelDialog component
+ */
 interface CreateChannelDialogProps {
+  /** Whether the dialog is open */
   isOpen: boolean;
+  /** Callback to close the dialog */
   onClose: () => void;
+  /** Callback fired when creating a channel */
   onCreate: (input: {
     name: string;
     type: 'public' | 'private';
     description?: string;
     memberIds?: string[];
   }) => Promise<void>;
+  /** The workspace ID for the new channel */
   workspaceId: string;
+  /** External loading state */
   isLoading?: boolean;
 }
 

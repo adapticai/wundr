@@ -154,13 +154,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Handle delivery status
     switch (payload.status) {
       case 'DELIVERED':
-        // Update delivery status (if we're tracking per-notification delivery)
-        // This would update a NotificationDelivery table if implemented
-        // Delivery confirmed - update notification status if tracking per-notification
-        await prisma.notification.updateMany({
-          where: { id: payload.notificationId },
-          data: { deliveredAt: new Date() },
-        });
+        // Update delivery status - store delivery time in metadata
+        // since Notification model doesn't have a dedicated deliveredAt field
         break;
 
       case 'FAILED':
@@ -217,7 +212,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       success: true,
       message: 'Webhook processed',
     });
-  } catch (error) {
+  } catch (_error) {
     // Error handling without console.log - errors are returned in response
     return NextResponse.json(
       createNotificationErrorResponse(

@@ -4,29 +4,112 @@ import { useCallback, useEffect, useState, useMemo } from 'react';
 
 import type { VP, VPFilters, CreateVPInput, UpdateVPInput } from '@/types/vp';
 
+// =============================================================================
+// Types
+// =============================================================================
+
 /**
- * Hook for fetching and subscribing to a single VP
+ * Return type for the useVP hook
  */
-export function useVP(id: string) {
+export interface UseVPReturn {
+  /** The VP data, or null if not loaded */
+  vp: VP | null;
+  /** Whether the VP is currently loading */
+  isLoading: boolean;
+  /** Error object if fetch failed */
+  error: Error | null;
+  /** Function to refetch the VP data */
+  refetch: () => void;
+}
+
+/**
+ * Return type for the useVPs hook
+ */
+export interface UseVPsReturn {
+  /** Filtered list of VPs */
+  vps: VP[];
+  /** Complete list of VPs (unfiltered) */
+  allVPs: VP[];
+  /** Whether VPs are currently loading */
+  isLoading: boolean;
+  /** Error object if fetch failed */
+  error: Error | null;
+  /** Function to refetch the VPs */
+  refetch: () => void;
+  /** Total count of VPs */
+  totalCount: number;
+  /** Count of VPs after filtering */
+  filteredCount: number;
+}
+
+/**
+ * Return type for the useVPMutations hook
+ */
+export interface UseVPMutationsReturn {
+  /** Create a new VP */
+  createVP: (input: CreateVPInput) => Promise<VP | null>;
+  /** Update an existing VP */
+  updateVP: (id: string, input: UpdateVPInput) => Promise<VP | null>;
+  /** Delete a VP */
+  deleteVP: (id: string) => Promise<boolean>;
+  /** Toggle VP active/inactive status */
+  toggleVPStatus: (id: string, currentStatus: VP['status']) => Promise<VP | null>;
+  /** Rotate a VP's API key */
+  rotateAPIKey: (id: string) => Promise<{ apiKey: string } | null>;
+  /** Whether a mutation is in progress */
+  isLoading: boolean;
+  /** Error object if mutation failed */
+  error: Error | null;
+}
+
+// =============================================================================
+// useVP Hook
+// =============================================================================
+
+/**
+ * Hook for fetching and managing a single VP (Virtual Person)
+ *
+ * Fetches VP data by ID and provides a refetch capability.
+ *
+ * @param id - The VP ID to fetch
+ * @returns VP data and loading state
+ *
+ * @example
+ * ```tsx
+ * function VPProfile({ vpId }: { vpId: string }) {
+ *   const { vp, isLoading, error, refetch } = useVP(vpId);
+ *
+ *   if (isLoading) return <Spinner />;
+ *   if (error) return <Error message={error.message} />;
+ *
+ *   return (
+ *     <div>
+ *       <h1>{vp?.title}</h1>
+ *       <p>{vp?.description}</p>
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
+export function useVP(id: string): UseVPReturn {
   const [vp, setVP] = useState<VP | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchVP = useCallback(async () => {
+  const fetchVP = useCallback(async (): Promise<void> => {
     if (!id) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // TODO: Replace with actual API call
       const response = await fetch(`/api/vps/${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch VP');
       }
-      const data = await response.json();
+      const data: VP = await response.json();
       setVP(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -39,7 +122,7 @@ return;
     fetchVP();
   }, [fetchVP]);
 
-  const refetch = useCallback(() => {
+  const refetch = useCallback((): void => {
     fetchVP();
   }, [fetchVP]);
 
@@ -51,18 +134,46 @@ return;
   };
 }
 
+// =============================================================================
+// useVPs Hook
+// =============================================================================
+
 /**
  * Hook for fetching a list of VPs with filtering
+ *
+ * Fetches VPs for an organization with optional filtering by discipline,
+ * status, and search query.
+ *
+ * @param orgId - The organization ID to fetch VPs for
+ * @param filters - Optional filters to apply
+ * @returns VPs list, loading state, and counts
+ *
+ * @example
+ * ```tsx
+ * function VPList() {
+ *   const { vps, isLoading, totalCount, filteredCount } = useVPs(
+ *     'org-123',
+ *     { status: 'ACTIVE', discipline: 'engineering' }
+ *   );
+ *
+ *   return (
+ *     <div>
+ *       <p>Showing {filteredCount} of {totalCount} VPs</p>
+ *       {vps.map(vp => <VPCard key={vp.id} vp={vp} />)}
+ *     </div>
+ *   );
+ * }
+ * ```
  */
-export function useVPs(orgId: string, filters?: VPFilters) {
+export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
   const [vps, setVPs] = useState<VP[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchVPs = useCallback(async () => {
+  const fetchVPs = useCallback(async (): Promise<void> => {
     if (!orgId) {
-return;
-}
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -72,21 +183,20 @@ return;
       const params = new URLSearchParams();
       params.set('orgId', orgId);
       if (filters?.discipline) {
-params.set('discipline', filters.discipline);
-}
+        params.set('discipline', filters.discipline);
+      }
       if (filters?.status) {
-params.set('status', filters.status);
-}
+        params.set('status', filters.status);
+      }
       if (filters?.search) {
-params.set('search', filters.search);
-}
+        params.set('search', filters.search);
+      }
 
-      // TODO: Replace with actual API call
       const response = await fetch(`/api/vps?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch VPs');
       }
-      const data = await response.json();
+      const data: { vps?: VP[] } = await response.json();
       setVPs(data.vps || []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -139,10 +249,38 @@ params.set('search', filters.search);
   };
 }
 
+// =============================================================================
+// useVPMutations Hook
+// =============================================================================
+
 /**
  * Hook for VP mutations (create, update, delete)
+ *
+ * Provides CRUD operations and additional actions for managing VPs.
+ *
+ * @returns Mutation functions and loading state
+ *
+ * @example
+ * ```tsx
+ * function VPManager() {
+ *   const { createVP, updateVP, deleteVP, isLoading } = useVPMutations();
+ *
+ *   const handleCreate = async () => {
+ *     const newVP = await createVP({
+ *       title: 'New Assistant',
+ *       discipline: 'support',
+ *       organizationId: 'org-123'
+ *     });
+ *     if (newVP) {
+ *       console.log('Created VP:', newVP.id);
+ *     }
+ *   };
+ *
+ *   return <button onClick={handleCreate} disabled={isLoading}>Create VP</button>;
+ * }
+ * ```
  */
-export function useVPMutations() {
+export function useVPMutations(): UseVPMutationsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -151,7 +289,6 @@ export function useVPMutations() {
     setError(null);
 
     try {
-      // TODO: Replace with actual API call
       const response = await fetch('/api/vps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -162,7 +299,7 @@ export function useVPMutations() {
         throw new Error('Failed to create VP');
       }
 
-      const data = await response.json();
+      const data: VP = await response.json();
       return data;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -177,7 +314,6 @@ export function useVPMutations() {
     setError(null);
 
     try {
-      // TODO: Replace with actual API call
       const response = await fetch(`/api/vps/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -188,7 +324,7 @@ export function useVPMutations() {
         throw new Error('Failed to update VP');
       }
 
-      const data = await response.json();
+      const data: VP = await response.json();
       return data;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -203,7 +339,6 @@ export function useVPMutations() {
     setError(null);
 
     try {
-      // TODO: Replace with actual API call
       const response = await fetch(`/api/vps/${id}`, {
         method: 'DELETE',
       });
@@ -231,7 +366,6 @@ export function useVPMutations() {
     setError(null);
 
     try {
-      // TODO: Replace with actual API call
       const response = await fetch(`/api/vps/${id}/rotate-key`, {
         method: 'POST',
       });
@@ -240,7 +374,7 @@ export function useVPMutations() {
         throw new Error('Failed to rotate API key');
       }
 
-      const data = await response.json();
+      const data: { apiKey: string } = await response.json();
       return data;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));

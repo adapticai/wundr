@@ -9,17 +9,31 @@ import { ReactionPickerTrigger } from './reaction-picker';
 
 import type { Message, User } from '@/types/chat';
 
+/**
+ * Props for the MessageItem component
+ */
 interface MessageItemProps {
+  /** The message to display */
   message: Message;
+  /** The current authenticated user */
   currentUser: User;
+  /** Callback fired when replying to the message */
   onReply?: (message: Message) => void;
+  /** Callback fired when editing the message */
   onEdit?: (message: Message) => void;
+  /** Callback fired when deleting the message */
   onDelete?: (messageId: string) => void;
+  /** Callback fired when adding/removing a reaction */
   onReaction?: (messageId: string, emoji: string) => void;
+  /** Callback fired when opening the message thread */
   onOpenThread?: (message: Message) => void;
+  /** Whether this is rendered in a thread view */
   isThreadView?: boolean;
+  /** Whether to show a date separator above this message */
   showDateSeparator?: boolean;
+  /** Whether to show an unread separator above this message */
   isUnreadSeparator?: boolean;
+  /** Additional CSS class names */
   className?: string;
 }
 

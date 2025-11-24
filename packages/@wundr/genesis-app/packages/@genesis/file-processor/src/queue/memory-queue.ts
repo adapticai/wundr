@@ -29,7 +29,6 @@ import {
   type QueueStats,
   type MemoryQueueConfig,
   type ProcessingResult,
-  type JobProcessor as _JobProcessor,
   type ProcessorRegistry,
   type JobAddedEvent,
   type JobStartedEvent,

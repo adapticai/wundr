@@ -1,5 +1,33 @@
 'use client';
 
+/**
+ * @genesis/hooks/use-workflows - Workflow Management Hooks
+ *
+ * Provides hooks for creating, managing, and executing automated workflows.
+ * Includes support for workflow templates and a visual workflow builder.
+ *
+ * @packageDocumentation
+ * @module @genesis/hooks/use-workflows
+ *
+ * @example
+ * ```typescript
+ * // List and create workflows
+ * const { workflows, createWorkflow } = useWorkflows(workspaceId);
+ *
+ * // Manage a single workflow
+ * const { workflow, activateWorkflow, executeWorkflow } = useWorkflow(workflowId);
+ *
+ * // View execution history
+ * const { executions, cancelExecution } = useWorkflowExecutions(workflowId);
+ *
+ * // Use workflow templates
+ * const { templates, createFromTemplate } = useWorkflowTemplates();
+ *
+ * // Build workflows visually
+ * const { trigger, actions, validate, getWorkflowData } = useWorkflowBuilder();
+ * ```
+ */
+
 import { useCallback, useEffect, useState, useMemo, useReducer } from 'react';
 
 import type {
@@ -20,21 +48,65 @@ import type {
 // useWorkflows - Fetch and manage list of workflows
 // =============================================================================
 
-interface UseWorkflowsOptions {
+/**
+ * Options for the useWorkflows hook
+ */
+export interface UseWorkflowsOptions {
+  /** Filter by workflow status */
   status?: WorkflowStatus | 'all';
+  /** Filter by trigger type */
   triggerType?: string;
 }
 
-interface UseWorkflowsReturn {
+/**
+ * Return type for the useWorkflows hook
+ */
+export interface UseWorkflowsReturn {
+  /** List of workflows */
   workflows: Workflow[];
+  /** Whether workflows are loading */
   isLoading: boolean;
+  /** Error that occurred during fetch */
   error: Error | null;
+  /** Total count of workflows */
   totalCount: number;
+  /** Count of filtered workflows */
   filteredCount: number;
+  /** Create a new workflow */
   createWorkflow: (input: CreateWorkflowInput) => Promise<Workflow | null>;
+  /** Refetch workflows */
   mutate: () => void;
 }
 
+/**
+ * Hook for fetching and managing workflows in a workspace.
+ *
+ * Provides a list of workflows with filtering capabilities and
+ * a method to create new workflows.
+ *
+ * @param workspaceId - The workspace ID to fetch workflows for
+ * @param options - Optional filtering options
+ * @returns Workflow list and management methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   workflows,
+ *   isLoading,
+ *   totalCount,
+ *   filteredCount,
+ *   createWorkflow,
+ *   mutate
+ * } = useWorkflows(workspaceId, { status: 'active' });
+ *
+ * // Create a new workflow
+ * const workflow = await createWorkflow({
+ *   name: 'Welcome Message',
+ *   trigger: { type: 'user.joined', config: {} },
+ *   actions: [{ type: 'message.send', config: { content: 'Welcome!' } }]
+ * });
+ * ```
+ */
 export function useWorkflows(
   workspaceId: string,
   options?: UseWorkflowsOptions,
@@ -132,19 +204,61 @@ return;
 // useWorkflow - Fetch and manage single workflow
 // =============================================================================
 
-interface UseWorkflowReturn {
+/**
+ * Return type for the useWorkflow hook
+ */
+export interface UseWorkflowReturn {
+  /** The workflow or null if not found */
   workflow: Workflow | null;
+  /** Whether the workflow is loading */
   isLoading: boolean;
+  /** Error that occurred during fetch */
   error: Error | null;
+  /** Update the workflow */
   updateWorkflow: (input: UpdateWorkflowInput) => Promise<Workflow | null>;
+  /** Delete the workflow */
   deleteWorkflow: () => Promise<boolean>;
+  /** Activate the workflow */
   activateWorkflow: () => Promise<boolean>;
+  /** Deactivate the workflow */
   deactivateWorkflow: () => Promise<boolean>;
+  /** Execute the workflow */
   executeWorkflow: (testMode?: boolean) => Promise<WorkflowExecution | null>;
+  /** Test the workflow */
   testWorkflow: () => Promise<WorkflowExecution | null>;
+  /** Refetch the workflow data */
   refetch: () => void;
 }
 
+/**
+ * Hook for managing a single workflow.
+ *
+ * Provides methods to update, delete, activate, deactivate,
+ * and execute a workflow.
+ *
+ * @param workflowId - The workflow ID to manage
+ * @returns Workflow data and management methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   workflow,
+ *   isLoading,
+ *   updateWorkflow,
+ *   deleteWorkflow,
+ *   activateWorkflow,
+ *   deactivateWorkflow,
+ *   executeWorkflow,
+ *   testWorkflow
+ * } = useWorkflow(workflowId);
+ *
+ * // Activate the workflow
+ * await activateWorkflow();
+ *
+ * // Execute with test mode
+ * const execution = await testWorkflow();
+ * ```
+ */
 export function useWorkflow(workflowId: string): UseWorkflowReturn {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -308,21 +422,64 @@ return;
 // useWorkflowExecutions - Fetch workflow execution history
 // =============================================================================
 
-interface UseWorkflowExecutionsOptions {
+/**
+ * Options for the useWorkflowExecutions hook
+ */
+export interface UseWorkflowExecutionsOptions {
+  /** Filter by execution status */
   status?: ExecutionStatus;
+  /** Maximum number of executions to fetch */
   limit?: number;
 }
 
-interface UseWorkflowExecutionsReturn {
+/**
+ * Return type for the useWorkflowExecutions hook
+ */
+export interface UseWorkflowExecutionsReturn {
+  /** List of workflow executions */
   executions: WorkflowExecution[];
+  /** Whether executions are loading */
   isLoading: boolean;
+  /** Error that occurred during fetch */
   error: Error | null;
+  /** Whether there are more executions to load */
   hasMore: boolean;
+  /** Load more executions */
   loadMore: () => void;
+  /** Cancel an execution */
   cancelExecution: (executionId: string) => Promise<boolean>;
+  /** Refetch the executions */
   refetch: () => void;
 }
 
+/**
+ * Hook for fetching workflow execution history.
+ *
+ * Provides paginated execution logs with filtering and
+ * the ability to cancel running executions.
+ *
+ * @param workflowId - The workflow ID to fetch executions for
+ * @param options - Optional filtering and pagination options
+ * @returns Execution list and management methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   executions,
+ *   isLoading,
+ *   hasMore,
+ *   loadMore,
+ *   cancelExecution,
+ *   refetch
+ * } = useWorkflowExecutions(workflowId, { status: 'running', limit: 20 });
+ *
+ * // Cancel a running execution
+ * await cancelExecution(executionId);
+ *
+ * // Load more executions
+ * if (hasMore) loadMore();
+ * ```
+ */
 export function useWorkflowExecutions(
   workflowId: string,
   options?: UseWorkflowExecutionsOptions,
@@ -435,10 +592,17 @@ params.set('cursor', cursor);
 // useWorkflowTemplates - Fetch workflow templates
 // =============================================================================
 
-interface UseWorkflowTemplatesReturn {
+/**
+ * Return type for the useWorkflowTemplates hook
+ */
+export interface UseWorkflowTemplatesReturn {
+  /** List of workflow templates */
   templates: WorkflowTemplate[];
+  /** Whether templates are loading */
   isLoading: boolean;
+  /** Error that occurred during fetch */
   error: Error | null;
+  /** Create a workflow from a template */
   createFromTemplate: (
     templateId: string,
     workspaceId: string,
@@ -446,6 +610,31 @@ interface UseWorkflowTemplatesReturn {
   ) => Promise<Workflow | null>;
 }
 
+/**
+ * Hook for fetching workflow templates.
+ *
+ * Provides pre-built workflow templates that can be used as
+ * starting points for new workflows.
+ *
+ * @param category - Optional category to filter templates
+ * @returns Template list and creation method
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   templates,
+ *   isLoading,
+ *   createFromTemplate
+ * } = useWorkflowTemplates('notifications');
+ *
+ * // Create a workflow from a template
+ * const workflow = await createFromTemplate(
+ *   templateId,
+ *   workspaceId,
+ *   { name: 'My Custom Workflow' }
+ * );
+ * ```
+ */
 export function useWorkflowTemplates(
   category?: WorkflowTemplateCategory,
 ): UseWorkflowTemplatesReturn {
@@ -523,13 +712,25 @@ params.set('category', category);
 // useWorkflowBuilder - Manage workflow builder state
 // =============================================================================
 
+/**
+ * Internal state for the workflow builder.
+ * @internal
+ */
 interface BuilderState {
+  /** Current trigger configuration */
   trigger: TriggerConfig | null;
+  /** List of action configurations in order */
   actions: ActionConfig[];
+  /** List of workflow variables */
   variables: WorkflowVariable[];
+  /** Validation errors by field name */
   errors: Record<string, string>;
 }
 
+/**
+ * Action types for the workflow builder reducer.
+ * @internal
+ */
 type BuilderAction =
   | { type: 'SET_TRIGGER'; payload: TriggerConfig }
   | { type: 'ADD_ACTION'; payload: Omit<ActionConfig, 'id' | 'order'> }
@@ -541,6 +742,10 @@ type BuilderAction =
   | { type: 'SET_ERRORS'; payload: Record<string, string> }
   | { type: 'RESET'; payload?: Partial<Workflow> };
 
+/**
+ * Reducer function for the workflow builder state.
+ * @internal
+ */
 function builderReducer(state: BuilderState, action: BuilderAction): BuilderState {
   switch (action.type) {
     case 'SET_TRIGGER':
@@ -590,23 +795,81 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
   }
 }
 
-interface UseWorkflowBuilderReturn {
+/**
+ * Return type for the useWorkflowBuilder hook
+ */
+export interface UseWorkflowBuilderReturn {
+  /** Current trigger configuration */
   trigger: TriggerConfig | null;
+  /** List of action configurations */
   actions: ActionConfig[];
+  /** List of workflow variables */
   variables: WorkflowVariable[];
+  /** Validation errors */
   errors: Record<string, string>;
+  /** Set the trigger configuration */
   setTrigger: (trigger: TriggerConfig) => void;
+  /** Add an action to the workflow */
   addAction: (action: Omit<ActionConfig, 'id' | 'order'>) => void;
+  /** Update an action configuration */
   updateAction: (id: string, config: Partial<ActionConfig>) => void;
+  /** Remove an action from the workflow */
   removeAction: (id: string) => void;
+  /** Reorder actions in the workflow */
   reorderActions: (actions: ActionConfig[]) => void;
+  /** Add a variable to the workflow */
   addVariable: (variable: WorkflowVariable) => void;
+  /** Remove a variable from the workflow */
   removeVariable: (name: string) => void;
+  /** Validate the workflow configuration */
   validate: () => boolean;
+  /** Get the workflow data for submission */
   getWorkflowData: () => CreateWorkflowInput | null;
+  /** Reset the builder state */
   reset: (initialWorkflow?: Partial<Workflow>) => void;
 }
 
+/**
+ * Hook for building workflows with a visual interface.
+ *
+ * Provides state management for workflow triggers, actions, and variables
+ * with validation and data extraction for submission.
+ *
+ * @param initialWorkflow - Optional initial workflow to populate the builder
+ * @returns Builder state and manipulation methods
+ *
+ * @example
+ * ```typescript
+ * const {
+ *   trigger,
+ *   actions,
+ *   variables,
+ *   errors,
+ *   setTrigger,
+ *   addAction,
+ *   updateAction,
+ *   removeAction,
+ *   reorderActions,
+ *   addVariable,
+ *   removeVariable,
+ *   validate,
+ *   getWorkflowData,
+ *   reset
+ * } = useWorkflowBuilder();
+ *
+ * // Set a trigger
+ * setTrigger({ type: 'message.created', config: { channelId: '123' } });
+ *
+ * // Add an action
+ * addAction({ type: 'message.send', config: { content: 'Auto-reply' } });
+ *
+ * // Validate and get workflow data
+ * if (validate()) {
+ *   const workflowData = getWorkflowData();
+ *   // Submit workflowData to API
+ * }
+ * ```
+ */
 export function useWorkflowBuilder(
   initialWorkflow?: Partial<Workflow>,
 ): UseWorkflowBuilderReturn {

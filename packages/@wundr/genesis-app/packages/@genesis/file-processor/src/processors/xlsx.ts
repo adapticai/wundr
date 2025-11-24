@@ -107,13 +107,97 @@ export interface NamedRange {
 }
 
 /**
+ * ExcelJS module interface
+ */
+interface ExcelJSModule {
+  Workbook: new () => ExcelWorkbook;
+}
+
+/**
+ * ExcelJS Workbook interface
+ */
+interface ExcelWorkbook {
+  xlsx: {
+    readFile: (path: string) => Promise<void>;
+  };
+  eachSheet: (callback: (worksheet: ExcelWorksheet, sheetId: number) => void) => void;
+  creator?: string;
+  lastModifiedBy?: string;
+  created?: Date;
+  modified?: Date;
+  title?: string;
+  subject?: string;
+  keywords?: string;
+  description?: string;
+}
+
+/**
+ * ExcelJS Worksheet interface
+ */
+interface ExcelWorksheet {
+  name: string;
+  state: 'visible' | 'hidden' | 'veryHidden';
+  rowCount: number;
+  columnCount: number;
+  actualRowCount: number;
+  actualColumnCount: number;
+  getRow: (rowNumber: number) => ExcelRow;
+  eachRow: (callback: (row: ExcelRow, rowNumber: number) => void) => void;
+  model: {
+    merges?: string[];
+  };
+}
+
+/**
+ * ExcelJS Row interface
+ */
+interface ExcelRow {
+  values: ExcelCellValue[];
+  eachCell: (callback: (cell: ExcelCell, colNumber: number) => void) => void;
+}
+
+/**
+ * ExcelJS Cell interface
+ */
+interface ExcelCell {
+  value: ExcelCellValue;
+  text: string;
+  type: number;
+  isMerged?: boolean;
+}
+
+/**
+ * ExcelJS cell value type
+ */
+type ExcelCellValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | null
+  | undefined
+  | { text?: string; result?: string | number };
+
+/**
  * XLSX processor class
  */
 export class XlsxProcessor {
   private _config: FileProcessorConfig;
+  private exceljs: ExcelJSModule | null = null;
 
   constructor(config: FileProcessorConfig) {
     this._config = config;
+  }
+
+  /**
+   * Lazily load exceljs module
+   */
+  private async getExcelJS(): Promise<ExcelJSModule> {
+    if (!this.exceljs) {
+      const excelModule = await import('exceljs');
+      this.exceljs = excelModule as unknown as ExcelJSModule;
+    }
+    return this.exceljs;
   }
 
   /**
@@ -189,61 +273,166 @@ export class XlsxProcessor {
 
   /**
    * Parse XLSX file and extract content
+   *
+   * @param filePath - Path to XLSX file
+   * @param options - Processing options
+   * @returns Parsed workbook content and metadata
    */
   private async parseXlsx(
-    _filePath: string,
-    _options: XlsxProcessingOptions,
+    filePath: string,
+    options: XlsxProcessingOptions,
   ): Promise<{
     sheets: SheetData[];
     properties?: WorkbookProperties;
     namedRanges: NamedRange[];
   }> {
-    // TODO: Implement with exceljs library
-    // This is a skeleton implementation
+    const ExcelJS = await this.getExcelJS();
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(filePath);
 
-    // Placeholder - will be replaced with actual exceljs integration
-    // const ExcelJS = require('exceljs');
-    // const workbook = new ExcelJS.Workbook();
-    // await workbook.xlsx.readFile(filePath);
-    //
-    // const sheets: SheetData[] = [];
-    // workbook.eachSheet((worksheet, sheetId) => {
-    //   if (!options.includeHidden && worksheet.state === 'hidden') {
-    //     return;
-    //   }
-    //   sheets.push(this.processSheet(worksheet, sheetId, options));
-    // });
+    const sheets: SheetData[] = [];
 
-    // Skeleton return
+    workbook.eachSheet((worksheet, sheetId) => {
+      // Skip hidden sheets unless explicitly included
+      if (!options.includeHidden && worksheet.state === 'hidden') {
+        return;
+      }
+
+      // Skip if specific sheets are requested and this one isn't in the list
+      if (options.sheets && options.sheets.length > 0) {
+        const matchesIndex = options.sheets.includes(sheetId);
+        const matchesName = options.sheets.includes(worksheet.name);
+        if (!matchesIndex && !matchesName) {
+          return;
+        }
+      }
+
+      sheets.push(this.processSheet(worksheet, sheetId, options));
+    });
+
+    // Extract workbook properties
+    const properties: WorkbookProperties = {
+      title: workbook.title,
+      subject: workbook.subject,
+      creator: workbook.creator,
+      lastModifiedBy: workbook.lastModifiedBy,
+      created: workbook.created,
+      modified: workbook.modified,
+      keywords: workbook.keywords,
+      description: workbook.description,
+    };
+
     return {
-      sheets: [],
-      properties: undefined,
-      namedRanges: [],
+      sheets,
+      properties,
+      namedRanges: [], // Named ranges extraction would need additional implementation
     };
   }
 
   /**
    * Process a single worksheet
+   *
+   * @param worksheet - ExcelJS worksheet
+   * @param sheetId - Sheet index
+   * @param options - Processing options
+   * @returns Processed sheet data
    */
   private processSheet(
-    _worksheet: unknown,
+    worksheet: ExcelWorksheet,
     sheetId: number,
-    _options: XlsxProcessingOptions,
+    options: XlsxProcessingOptions,
   ): SheetData {
-    // TODO: Extract data from worksheet
+    const rows: CellValue[][] = [];
+    let headers: string[] = [];
+    const maxRows = options.maxRowsPerSheet ?? Infinity;
+    let rowIndex = 0;
 
-    // Skeleton return
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowIndex >= maxRows) {
+        return;
+      }
+
+      // Extract cell values from row
+      const cellValues: CellValue[] = [];
+      row.eachCell((cell, _colNumber) => {
+        cellValues.push(this.extractCellValue(cell));
+      });
+
+      // Skip empty rows if configured
+      if (options.skipEmptyRows && cellValues.every(v => v === null || v === '')) {
+        return;
+      }
+
+      // First row as headers
+      if (rowNumber === 1 && options.firstRowAsHeaders !== false) {
+        headers = cellValues.map(v => String(v ?? ''));
+      } else {
+        rows.push(cellValues);
+      }
+
+      rowIndex++;
+    });
+
+    // Extract merged cells
+    const mergedCells: MergedCell[] = (worksheet.model.merges ?? []).map(merge => {
+      // Parse merge range like "A1:B2"
+      const match = merge.match(/([A-Z]+)(\d+):([A-Z]+)(\d+)/);
+      if (!match) {
+        return { startRow: 0, startColumn: 0, endRow: 0, endColumn: 0 };
+      }
+      return {
+        startRow: parseInt(match[2] ?? '0', 10),
+        startColumn: this.columnLetterToNumber(match[1] ?? 'A'),
+        endRow: parseInt(match[4] ?? '0', 10),
+        endColumn: this.columnLetterToNumber(match[3] ?? 'A'),
+      };
+    });
+
     return {
-      name: '',
+      name: worksheet.name,
       index: sheetId,
-      hidden: false,
-      rowCount: 0,
-      columnCount: 0,
-      headers: [],
-      rows: [],
-      mergedCells: [],
+      hidden: worksheet.state !== 'visible',
+      rowCount: worksheet.actualRowCount,
+      columnCount: worksheet.actualColumnCount,
+      headers,
+      rows,
+      mergedCells,
       namedRanges: [],
     };
+  }
+
+  /**
+   * Extract cell value from ExcelJS cell
+   */
+  private extractCellValue(cell: ExcelCell): CellValue {
+    const value = cell.value;
+
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    // Handle formula results
+    if (typeof value === 'object' && 'result' in value) {
+      return value.result ?? null;
+    }
+
+    // Handle rich text
+    if (typeof value === 'object' && 'text' in value) {
+      return value.text ?? null;
+    }
+
+    return value as CellValue;
+  }
+
+  /**
+   * Convert column letter to number (A=1, B=2, etc.)
+   */
+  private columnLetterToNumber(letters: string): number {
+    let result = 0;
+    for (let i = 0; i < letters.length; i++) {
+      result = result * 26 + (letters.charCodeAt(i) - 'A'.charCodeAt(0) + 1);
+    }
+    return result;
   }
 
   /**

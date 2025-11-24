@@ -127,12 +127,14 @@ function ErrorContent() {
 
       {/* Actions */}
       <div className='space-y-3'>
-        <Button asChild className='w-full'>
-          <Link href='/login'>Try signing in again</Link>
-        </Button>
-        <Button variant='outline' asChild className='w-full'>
-          <Link href='/'>Go to homepage</Link>
-        </Button>
+        <Link href='/login' className='block'>
+          <Button className='w-full'>Try signing in again</Button>
+        </Link>
+        <Link href='/' className='block'>
+          <Button variant='outline' className='w-full'>
+            Go to homepage
+          </Button>
+        </Link>
       </div>
 
       {/* Help Link */}

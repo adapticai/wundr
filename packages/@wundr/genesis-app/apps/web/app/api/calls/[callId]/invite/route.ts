@@ -289,7 +289,7 @@ export async function POST(
         await prisma.$executeRaw`
           INSERT INTO call_invitations (id, call_id, user_id, invited_by_id, message, created_at)
           VALUES (
-            ${`inv_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 6)}`},
+            ${`inv_${Date.now().toString(36)}${crypto.randomUUID().split('-')[0]}`},
             ${params.callId},
             ${userId},
             ${session.user.id},

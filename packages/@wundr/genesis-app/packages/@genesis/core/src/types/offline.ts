@@ -51,6 +51,24 @@ export interface BaseActionPayload {
 }
 
 /**
+ * Typed metadata for message payloads.
+ */
+export interface SendMessageMetadata {
+  /** Mentioned user IDs */
+  mentions?: string[];
+  /** Attachment file IDs */
+  attachmentIds?: string[];
+  /** Preview URL for link previews */
+  previewUrl?: string;
+  /** Bot command name if command message */
+  command?: string;
+  /** Command arguments */
+  commandArgs?: string[];
+  /** Additional string metadata */
+  [key: string]: string | string[] | boolean | number | undefined;
+}
+
+/**
  * Payload for send message action.
  */
 export interface SendMessagePayload extends BaseActionPayload {
@@ -58,7 +76,7 @@ export interface SendMessagePayload extends BaseActionPayload {
   content: string;
   type?: 'TEXT' | 'SYSTEM' | 'FILE' | 'COMMAND';
   parentId?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: SendMessageMetadata;
 }
 
 /**
@@ -475,6 +493,27 @@ export interface SyncUser {
 }
 
 /**
+ * Typed metadata for synced messages.
+ */
+export interface SyncMessageMetadata {
+  /** Mentioned user IDs */
+  mentions?: string[];
+  /** Attachment file IDs */
+  attachmentIds?: string[];
+  /** Link preview data */
+  linkPreview?: {
+    url: string;
+    title?: string;
+    description?: string;
+    imageUrl?: string;
+  };
+  /** Bot/VP that sent the message */
+  vpId?: string;
+  /** Additional string metadata */
+  [key: string]: string | string[] | boolean | number | { url: string; title?: string; description?: string; imageUrl?: string } | undefined;
+}
+
+/**
  * Message data for sync.
  */
 export interface SyncMessage {
@@ -484,7 +523,7 @@ export interface SyncMessage {
   content: string;
   type: string;
   parentId?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: SyncMessageMetadata;
   isEdited: boolean;
   isDeleted: boolean;
   createdAt: Date;

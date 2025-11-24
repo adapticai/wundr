@@ -121,7 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { apiKey, apiSecret, scopes } = parseResult.data;
+    const { apiKey, apiSecret: _apiSecret, scopes } = parseResult.data;
 
     // Extract VP ID from API key prefix (format: vp_<vpId>_<random>)
     const keyParts = apiKey.split('_');

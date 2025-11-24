@@ -8,14 +8,25 @@ import { UploadProgress } from './upload-progress';
 import type { UploadState } from '@/types/upload';
 
 
+/**
+ * Props for the UploadQueue component
+ */
 interface UploadQueueProps {
+  /** Array of upload states to display */
   uploads: UploadState[];
+  /** Callback to cancel a specific upload */
   onCancel?: (id: string) => void;
+  /** Callback to cancel all uploads */
   onCancelAll?: () => void;
+  /** Callback to retry a failed upload */
   onRetry?: (id: string) => void;
+  /** Callback to pause all uploads */
   onPauseAll?: () => void;
+  /** Callback to resume all uploads */
   onResumeAll?: () => void;
+  /** Whether uploads are currently paused */
   isPaused?: boolean;
+  /** Optional CSS class name */
   className?: string;
 }
 

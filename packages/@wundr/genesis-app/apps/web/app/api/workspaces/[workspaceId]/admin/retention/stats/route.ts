@@ -12,16 +12,14 @@
 
 import {
   RetentionService,
-  type RetentionDatabaseClient,
-  type RedisClient as RetentionRedisClient,
+  type RetentionServiceConfig,
+  type RetentionRedisClient,
 } from '@genesis/core';
 import { redis } from '@genesis/core/redis';
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -47,7 +45,7 @@ interface RouteContext {
  * ```
  */
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -68,7 +66,7 @@ export async function GET(
     }
 
     const retentionService = new RetentionService({
-      prisma: prisma as unknown as RetentionDatabaseClient,
+      prisma: prisma as unknown as RetentionServiceConfig['prisma'],
       redis: redis as unknown as RetentionRedisClient,
     });
 

@@ -18,8 +18,6 @@ import {
   ADMIN_ERROR_CODES,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
-
 /**
  * Route context with workspace ID and user ID parameters
  */
@@ -37,7 +35,7 @@ interface RouteContext {
  * @returns Success message
  */
 export async function POST(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

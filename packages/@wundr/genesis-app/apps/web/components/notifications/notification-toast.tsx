@@ -6,12 +6,21 @@ import { cn } from '@/lib/utils';
 
 import type { Notification, NotificationType } from '@/types/notification';
 
+/**
+ * Props for the NotificationToast component
+ */
 interface NotificationToastProps {
+  /** The notification to display */
   notification: Notification;
+  /** Duration in milliseconds before auto-dismiss (0 for no auto-dismiss) */
   duration?: number;
+  /** Whether to play a sound when the toast appears */
   soundEnabled?: boolean;
+  /** Callback when the toast is clicked */
   onClick?: (notification: Notification) => void;
+  /** Callback when the toast is closed */
   onClose?: (id: string) => void;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -191,9 +200,15 @@ export function NotificationToast({
   );
 }
 
+/**
+ * Props for the ToastContainer component
+ */
 interface ToastContainerProps {
+  /** Toast elements to render */
   children: React.ReactNode;
+  /** Position of the toast container on screen */
   position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  /** Optional CSS class name */
   className?: string;
 }
 

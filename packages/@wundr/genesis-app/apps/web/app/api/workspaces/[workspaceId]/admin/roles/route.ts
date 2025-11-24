@@ -21,8 +21,6 @@ import {
   type Role,
 } from '@/lib/validations/admin';
 
-import type { NextRequest} from 'next/server';
-
 /**
  * Route context with workspace ID parameter
  */
@@ -90,7 +88,7 @@ const SYSTEM_ROLES: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>[] = [
  * @returns List of roles
  */
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -155,7 +153,7 @@ export async function GET(
  * @returns Created role
  */
 export async function POST(
-  request: NextRequest,
+  request: Request,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

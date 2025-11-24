@@ -4,28 +4,79 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Represents metadata details for an admin activity entry.
+ * Contains key-value pairs describing changes or additional context.
+ */
+export interface AdminActivityDetails {
+  /** Previous value before the change */
+  previousValue?: string | number | boolean;
+  /** New value after the change */
+  newValue?: string | number | boolean;
+  /** Field name that was modified */
+  field?: string;
+  /** Reason for the action if applicable */
+  reason?: string;
+  /** Additional contextual information */
+  context?: string;
+  /** User agent string if available */
+  userAgent?: string;
+  /** Geographic location derived from IP */
+  location?: string;
+  /** Duration of the action in milliseconds */
+  durationMs?: number;
+  /** Error message if the action failed */
+  errorMessage?: string;
+  /** Count of affected items */
+  affectedCount?: number;
+}
+
+/**
+ * Represents an administrative activity log entry.
+ * Tracks actions performed by workspace administrators and system events.
+ */
 export interface AdminActivity {
+  /** Unique identifier for the activity entry */
   id: string;
+  /** Human-readable description of the action performed */
   action: string;
+  /** Category of the action for filtering and display */
   actionType: 'create' | 'update' | 'delete' | 'access' | 'security' | 'billing';
+  /** Information about who performed the action */
   actor: {
+    /** Unique identifier of the actor */
     id: string;
+    /** Display name of the actor */
     name: string;
+    /** Email address of the actor */
     email: string;
+    /** Avatar image URL if available */
     image?: string;
   };
+  /** The target resource of the action */
   resource: {
+    /** Type of resource (e.g., 'member', 'role', 'channel') */
     type: string;
+    /** Unique identifier of the resource */
     id: string;
+    /** Display name of the resource if available */
     name?: string;
   };
-  details?: Record<string, unknown>;
+  /** Additional details about the activity */
+  details?: AdminActivityDetails;
+  /** ISO 8601 timestamp when the activity occurred */
   timestamp: string;
+  /** IP address from which the action was performed */
   ipAddress?: string;
 }
 
+/**
+ * Props for the ActivityLog component.
+ */
 export interface ActivityLogProps {
+  /** The workspace ID to fetch activities for */
   workspaceId: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

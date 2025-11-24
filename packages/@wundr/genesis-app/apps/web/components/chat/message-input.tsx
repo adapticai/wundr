@@ -8,25 +8,36 @@ import { ReactionPickerTrigger } from './reaction-picker';
 
 import type { User } from '@/types/chat';
 
+/**
+ * Props for the MessageInput component
+ */
 interface MessageInputProps {
+  /** The channel ID where the message will be sent */
   channelId: string;
+  /** Optional parent message ID for thread replies */
   parentId?: string;
+  /** The current authenticated user */
   currentUser: User;
+  /** Placeholder text for the input */
   placeholder?: string;
+  /** Maximum character length for the message (default: 4000) */
   maxLength?: number;
+  /** Callback fired when a message is sent */
   onSend: (content: string, mentions: string[], attachments: File[]) => void;
+  /** Callback fired when user starts typing */
   onTyping?: () => void;
+  /** Callback fired when user stops typing */
   onStopTyping?: () => void;
+  /** Whether the input is disabled */
   disabled?: boolean;
+  /** Additional CSS class names */
   className?: string;
 }
 
 export function MessageInput({
   channelId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  parentId: _parentId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  currentUser: _currentUser,
+  parentId,
+  currentUser,
   placeholder = 'Type a message...',
   maxLength = 4000,
   onSend,
@@ -38,7 +49,7 @@ export function MessageInput({
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [showMentions, setShowMentions] = useState(false);
-  const [, setMentionQuery] = useState('');
+  const [mentionQuery, setMentionQuery] = useState('');
   const [mentionUsers, setMentionUsers] = useState<User[]>([]);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const [mentions, setMentions] = useState<string[]>([]);
@@ -71,7 +82,7 @@ export function MessageInput({
     }, 3000);
   }, [onTyping, onStopTyping]);
 
-  // Fetch mention suggestions
+  // Fetch mention suggestions (exclude current user from results)
   const fetchMentionSuggestions = useCallback(
     async (query: string) => {
       if (query.length < 1) {
@@ -85,13 +96,17 @@ export function MessageInput({
         );
         if (response.ok) {
           const data = await response.json();
-          setMentionUsers(data.members || []);
+          // Filter out the current user from mention suggestions
+          const filteredMembers = (data.members || []).filter(
+            (member: User) => member.id !== currentUser.id,
+          );
+          setMentionUsers(filteredMembers);
         }
       } catch {
         setMentionUsers([]);
       }
     },
-    [channelId],
+    [channelId, currentUser.id],
   );
 
   // Handle content change
@@ -250,6 +265,11 @@ return;
   const showCharCount = remainingChars < 500;
   const isNearLimit = remainingChars < 100;
 
+  // Dynamic placeholder based on context (thread reply vs channel message)
+  const inputPlaceholder = parentId
+    ? 'Reply to thread...'
+    : placeholder;
+
   return (
     <div className={cn('border-t bg-background', className)}>
       {/* Attachments preview */}
@@ -268,7 +288,9 @@ return;
       {/* Mention suggestions */}
       {showMentions && mentionUsers.length > 0 && (
         <div className="border-b bg-popover p-2">
-          <div className="text-xs font-medium text-muted-foreground">Members</div>
+          <div className="text-xs font-medium text-muted-foreground">
+            {mentionQuery ? `Members matching "@${mentionQuery}"` : 'Members'}
+          </div>
           <div className="mt-1 space-y-0.5">
             {mentionUsers.slice(0, 5).map((user, index) => (
               <button
@@ -333,7 +355,7 @@ return;
             value={content}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={inputPlaceholder}
             disabled={disabled}
             rows={1}
             className={cn(

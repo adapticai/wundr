@@ -15,6 +15,72 @@ import type {
   UploadState,
 } from '@/types/upload';
 
+// =============================================================================
+// Hook Return Types
+// =============================================================================
+
+/**
+ * Return type for the useFileUpload hook
+ */
+export interface UseFileUploadReturn {
+  /** List of current uploads */
+  uploads: UploadState[];
+  /** Whether any file is currently uploading */
+  isUploading: boolean;
+  /** Overall progress percentage (0-100) */
+  progress: number;
+  /** Whether uploads are paused */
+  isPaused: boolean;
+  /** Add files to the upload queue and start uploading */
+  upload: (files: File[]) => void;
+  /** Cancel a specific upload */
+  cancel: (fileId: string) => void;
+  /** Cancel all pending/uploading uploads */
+  cancelAll: () => void;
+  /** Retry a specific failed upload */
+  retry: (fileId: string) => void;
+  /** Retry all failed uploads */
+  retryFailed: () => void;
+  /** Remove an upload from the list */
+  remove: (fileId: string) => void;
+  /** Clear all completed/failed uploads */
+  clearCompleted: () => void;
+  /** Pause all uploads */
+  pauseAll: () => void;
+  /** Resume paused uploads */
+  resumeAll: () => void;
+}
+
+/**
+ * Return type for the useSignedUpload hook
+ */
+export interface UseSignedUploadReturn {
+  /** Get a signed URL for file upload */
+  getUploadUrl: (filename: string, contentType: string) => Promise<SignedUrl>;
+  /** Whether loading */
+  isLoading: boolean;
+  /** Error message if failed */
+  error: string | null;
+}
+
+/**
+ * Return type for the useChannelFiles hook
+ */
+export interface UseChannelFilesReturn {
+  /** List of files in the channel */
+  files: FileRecord[];
+  /** Whether files are loading */
+  isLoading: boolean;
+  /** Error message if fetch failed */
+  error: string | null;
+  /** Whether there are more files to load */
+  hasMore: boolean;
+  /** Load more files */
+  loadMore: () => void;
+  /** Refresh files from the beginning */
+  refresh: () => void;
+}
+
 /**
  * Generate a unique ID for tracking uploads
  */
@@ -25,7 +91,7 @@ function generateUploadId(): string {
 /**
  * Hook for managing file uploads with progress tracking, cancellation, and retry support
  */
-export function useFileUpload(options: UploadOptions = {}) {
+export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn {
   const {
     channelId,
     maxSize = DEFAULT_MAX_FILE_SIZE,
@@ -352,7 +418,7 @@ export function useFileUpload(options: UploadOptions = {}) {
 /**
  * Hook for getting signed upload URLs
  */
-export function useSignedUpload(channelId: string) {
+export function useSignedUpload(channelId: string): UseSignedUploadReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -405,7 +471,7 @@ export function useSignedUpload(channelId: string) {
 /**
  * Hook for fetching channel files with pagination
  */
-export function useChannelFiles(channelId: string) {
+export function useChannelFiles(channelId: string): UseChannelFilesReturn {
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

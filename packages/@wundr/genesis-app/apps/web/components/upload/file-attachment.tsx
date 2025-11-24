@@ -7,13 +7,23 @@ import { formatFileSize } from '@/types/upload';
 
 import type { FileRecord } from '@/types/upload';
 
+/**
+ * Props for the FileAttachment component
+ */
 interface FileAttachmentProps {
+  /** The file record to display */
   file: FileRecord;
+  /** Whether the current user owns this file (enables delete) */
   isOwner?: boolean;
+  /** Callback when download button is clicked */
   onDownload?: () => void;
+  /** Callback when delete button is clicked */
   onDelete?: () => void;
+  /** Callback when preview is requested */
   onPreview?: () => void;
+  /** Display in compact mode */
   compact?: boolean;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -332,13 +342,23 @@ return name;
   );
 }
 
+/**
+ * Props for the FileAttachmentList component
+ */
 interface FileAttachmentListProps {
+  /** Array of file records to display */
   files: FileRecord[];
+  /** Current user's ID for ownership checks */
   currentUserId?: string;
+  /** Callback when a file download is requested */
   onDownload?: (file: FileRecord) => void;
+  /** Callback when a file deletion is requested */
   onDelete?: (file: FileRecord) => void;
+  /** Callback when a file preview is requested */
   onPreview?: (file: FileRecord) => void;
+  /** Display layout mode */
   layout?: 'grid' | 'list';
+  /** Optional CSS class name */
   className?: string;
 }
 

@@ -8,12 +8,21 @@ import { PresenceIndicator, statusLabels } from './presence-indicator';
 
 import type { PresenceStatus } from './presence-indicator';
 
+/**
+ * Props for the StatusSelector component
+ */
 interface StatusSelectorProps {
+  /** Current presence status */
   currentStatus: PresenceStatus;
+  /** Current custom status text */
   customStatusText?: string;
+  /** Callback when status is changed */
   onStatusChange: (status: PresenceStatus) => void;
+  /** Callback when custom status text is changed */
   onCustomStatusChange?: (text: string) => void;
+  /** Callback when status is cleared */
   onClearStatus?: () => void;
+  /** Optional CSS class name */
   className?: string;
 }
 

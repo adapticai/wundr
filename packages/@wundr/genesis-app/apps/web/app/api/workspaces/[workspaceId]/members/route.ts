@@ -4,10 +4,10 @@
  * Handles listing and adding members to a workspace.
  *
  * Routes:
- * - GET /api/workspaces/:id/members - List workspace members
- * - POST /api/workspaces/:id/members - Add member to workspace
+ * - GET /api/workspaces/:workspaceId/members - List workspace members
+ * - POST /api/workspaces/:workspaceId/members - Add member to workspace
  *
- * @module app/api/workspaces/[id]/members/route
+ * @module app/api/workspaces/[workspaceId]/members/route
  */
 
 import { prisma } from '@genesis/database';
@@ -28,7 +28,7 @@ import type { NextRequest } from 'next/server';
  * Route context with workspace ID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ workspaceId: string }>;
 }
 
 /**
@@ -40,8 +40,8 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   });
 
   if (!workspace) {
-return null;
-}
+    return null;
+  }
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -53,8 +53,8 @@ return null;
   });
 
   if (!orgMembership) {
-return null;
-}
+    return null;
+  }
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
@@ -73,7 +73,7 @@ return null;
 }
 
 /**
- * GET /api/workspaces/:id/members
+ * GET /api/workspaces/:workspaceId/members
  *
  * List all members of a workspace. Requires workspace membership or org admin.
  *
@@ -82,7 +82,7 @@ return null;
  * @returns List of workspace members
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -97,7 +97,7 @@ export async function GET(
 
     // Validate workspace ID parameter
     const params = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse(params);
+    const paramResult = workspaceIdParamSchema.safeParse({ id: params.workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
@@ -106,7 +106,7 @@ export async function GET(
     }
 
     // Check access
-    const access = await checkWorkspaceAccess(params.id, session.user.id);
+    const access = await checkWorkspaceAccess(params.workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -119,7 +119,7 @@ export async function GET(
 
     // Fetch all members
     const members = await prisma.workspaceMember.findMany({
-      where: { workspaceId: params.id },
+      where: { workspaceId: params.workspaceId },
       include: {
         user: {
           select: {
@@ -134,7 +134,7 @@ export async function GET(
       },
       orderBy: [
         { role: 'asc' },
-        { createdAt: 'asc' },
+        { joinedAt: 'asc' },
       ],
     });
 
@@ -143,7 +143,7 @@ export async function GET(
       count: members.length,
     });
   } catch (error) {
-    console.error('[GET /api/workspaces/:id/members] Error:', error);
+    console.error('[GET /api/workspaces/:workspaceId/members] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -155,7 +155,7 @@ export async function GET(
 }
 
 /**
- * POST /api/workspaces/:id/members
+ * POST /api/workspaces/:workspaceId/members
  *
  * Add a member to the workspace. Requires workspace ADMIN or org ADMIN/OWNER.
  * User must be a member of the organization.
@@ -180,7 +180,7 @@ export async function POST(
 
     // Validate workspace ID parameter
     const params = await context.params;
-    const paramResult = workspaceIdParamSchema.safeParse(params);
+    const paramResult = workspaceIdParamSchema.safeParse({ id: params.workspaceId });
     if (!paramResult.success) {
       return NextResponse.json(
         createErrorResponse('Invalid workspace ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
@@ -189,7 +189,7 @@ export async function POST(
     }
 
     // Check access and permission
-    const access = await checkWorkspaceAccess(params.id, session.user.id);
+    const access = await checkWorkspaceAccess(params.workspaceId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createErrorResponse(
@@ -266,7 +266,7 @@ export async function POST(
     const existingMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
-          workspaceId: params.id,
+          workspaceId: params.workspaceId,
           userId: input.userId,
         },
       },
@@ -285,7 +285,7 @@ export async function POST(
     // Add member
     const newMembership = await prisma.workspaceMember.create({
       data: {
-        workspaceId: params.id,
+        workspaceId: params.workspaceId,
         userId: input.userId,
         role: input.role,
       },
@@ -308,7 +308,7 @@ export async function POST(
       { status: 201 },
     );
   } catch (error) {
-    console.error('[POST /api/workspaces/:id/members] Error:', error);
+    console.error('[POST /api/workspaces/:workspaceId/members] Error:', error);
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

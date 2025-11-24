@@ -5,12 +5,21 @@ import { useState, useCallback } from 'react';
 
 import type { Huddle, HuddleParticipant } from '@/types/call';
 
+/**
+ * Props for the HuddleBar component.
+ */
 export interface HuddleBarProps {
+  /** The active huddle data */
   huddle: Huddle;
+  /** Whether the local user is muted */
   isMuted: boolean;
+  /** Callback to toggle mute state */
   onToggleMute: () => void;
+  /** Callback to leave the huddle */
   onLeave: () => void;
+  /** Callback to expand huddle to full view */
   onExpand: () => void;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

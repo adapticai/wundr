@@ -4,34 +4,151 @@ import { clsx } from 'clsx';
 import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 
-export interface SearchResult {
-  id: string;
-  type: 'message' | 'file' | 'channel' | 'user' | 'vp';
-  score: number;
-  highlight?: { content?: string[]; title?: string[]; fileName?: string[] };
-  data: Record<string, unknown>;
+/**
+ * Typed data for message search results
+ */
+export interface MessageResultData {
+  messageId: string;
+  content: string;
+  channelId: string;
+  channelName: string;
+  senderName: string;
+  sentAt: string;
 }
 
-export interface SearchResultsProps {
-  workspaceId: string;
-  query: string;
-  filters?: {
-    types?: string[];
-    channelIds?: string[];
-    dateRange?: { start: string; end: string };
+/**
+ * Typed data for file search results
+ */
+export interface FileResultData {
+  fileId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  channelName: string;
+  uploaderName: string;
+  uploadedAt: string;
+}
+
+/**
+ * Typed data for channel search results
+ */
+export interface ChannelResultData {
+  channelId: string;
+  name: string;
+  description?: string;
+  memberCount: number;
+  isPrivate: boolean;
+}
+
+/**
+ * Typed data for user search results
+ */
+export interface UserResultData {
+  userId: string;
+  name: string;
+  email: string;
+  role: string;
+  discipline?: string;
+  avatarUrl?: string;
+}
+
+/**
+ * Typed data for VP (Virtual Person) search results
+ */
+export interface VPResultData {
+  vpId: string;
+  name: string;
+  discipline: string;
+  status: string;
+  capabilities: string[];
+}
+
+/**
+ * Union type for all search result data types
+ */
+export type SearchResultData =
+  | MessageResultData
+  | FileResultData
+  | ChannelResultData
+  | UserResultData
+  | VPResultData;
+
+/**
+ * Search result type identifiers
+ */
+export type SearchResultType = 'message' | 'file' | 'channel' | 'user' | 'vp';
+
+/**
+ * Highlighted text fragments for search results
+ */
+export interface SearchHighlight {
+  /** Highlighted content fragments */
+  content?: string[];
+  /** Highlighted title fragments */
+  title?: string[];
+  /** Highlighted file name fragments */
+  fileName?: string[];
+}
+
+/**
+ * Represents a single search result with typed data
+ */
+export interface SearchResult {
+  /** Unique identifier for the search result */
+  id: string;
+  /** Type of the search result */
+  type: SearchResultType;
+  /** Relevance score from the search engine */
+  score: number;
+  /** Highlighted text fragments matching the search query */
+  highlight?: SearchHighlight;
+  /** Type-specific data for the search result */
+  data: SearchResultData;
+}
+
+/**
+ * Filter options for search results
+ */
+export interface SearchFilters {
+  /** Filter by result types */
+  types?: SearchResultType[];
+  /** Filter by specific channel IDs */
+  channelIds?: string[];
+  /** Filter by date range */
+  dateRange?: {
+    /** Start date in ISO format */
+    start: string;
+    /** End date in ISO format */
+    end: string;
   };
+}
+
+/**
+ * Props for the SearchResults component
+ */
+export interface SearchResultsProps {
+  /** The workspace ID to search within */
+  workspaceId: string;
+  /** The search query string */
+  query: string;
+  /** Optional filters to narrow search results */
+  filters?: SearchFilters;
+  /** Optional CSS class name */
   className?: string;
 }
 
-function MessageResult({ result, workspaceId }: { result: SearchResult; workspaceId: string }) {
-  const data = result.data as {
-    messageId: string;
-    content: string;
-    channelId: string;
-    channelName: string;
-    senderName: string;
-    sentAt: string;
-  };
+/**
+ * Props for individual search result renderers
+ */
+interface ResultRendererProps {
+  /** The search result to render */
+  result: SearchResult;
+  /** The workspace ID for constructing URLs */
+  workspaceId: string;
+}
+
+function MessageResult({ result, workspaceId }: ResultRendererProps) {
+  const data = result.data as MessageResultData;
 
   return (
     <Link
@@ -65,16 +182,8 @@ function MessageResult({ result, workspaceId }: { result: SearchResult; workspac
   );
 }
 
-function FileResult({ result, workspaceId }: { result: SearchResult; workspaceId: string }) {
-  const data = result.data as {
-    fileId: string;
-    fileName: string;
-    fileType: string;
-    fileSize: number;
-    channelName: string;
-    uploaderName: string;
-    uploadedAt: string;
-  };
+function FileResult({ result, workspaceId }: ResultRendererProps) {
+  const data = result.data as FileResultData;
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) {
@@ -119,14 +228,8 @@ return `${(bytes / 1024).toFixed(1)} KB`;
   );
 }
 
-function ChannelResult({ result, workspaceId }: { result: SearchResult; workspaceId: string }) {
-  const data = result.data as {
-    channelId: string;
-    name: string;
-    description?: string;
-    memberCount: number;
-    isPrivate: boolean;
-  };
+function ChannelResult({ result, workspaceId }: ResultRendererProps) {
+  const data = result.data as ChannelResultData;
 
   return (
     <Link
@@ -165,15 +268,8 @@ function ChannelResult({ result, workspaceId }: { result: SearchResult; workspac
   );
 }
 
-function UserResult({ result, workspaceId }: { result: SearchResult; workspaceId: string }) {
-  const data = result.data as {
-    userId: string;
-    name: string;
-    email: string;
-    role: string;
-    discipline?: string;
-    avatarUrl?: string;
-  };
+function UserResult({ result, workspaceId }: ResultRendererProps) {
+  const data = result.data as UserResultData;
 
   return (
     <Link
@@ -201,14 +297,8 @@ function UserResult({ result, workspaceId }: { result: SearchResult; workspaceId
   );
 }
 
-function VPResult({ result, workspaceId }: { result: SearchResult; workspaceId: string }) {
-  const data = result.data as {
-    vpId: string;
-    name: string;
-    discipline: string;
-    status: string;
-    capabilities: string[];
-  };
+function VPResult({ result, workspaceId }: ResultRendererProps) {
+  const data = result.data as VPResultData;
 
   return (
     <Link

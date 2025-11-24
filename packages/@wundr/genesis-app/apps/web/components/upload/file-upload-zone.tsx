@@ -13,13 +13,23 @@ import {
 
 import type { AcceptedFileTypes } from '@/types/upload';
 
+/**
+ * Props for the FileUploadZone component
+ */
 interface FileUploadZoneProps {
+  /** Callback when files are selected via drop or click */
   onFilesSelected: (files: File[]) => void;
+  /** Accepted file types configuration */
   accept?: AcceptedFileTypes;
+  /** Maximum file size in bytes */
   maxSize?: number;
+  /** Maximum number of files that can be selected */
   maxFiles?: number;
+  /** Whether the upload zone is disabled */
   disabled?: boolean;
+  /** Optional CSS class name */
   className?: string;
+  /** Custom content to render inside the zone */
   children?: React.ReactNode;
 }
 

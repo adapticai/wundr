@@ -9,14 +9,25 @@ import { IntegrationCard, IntegrationCardSkeleton } from './integration-card';
 
 import type { IntegrationConfig, IntegrationProvider, IntegrationStatus } from '@/types/integration';
 
+/**
+ * Props for the IntegrationList component
+ */
 export interface IntegrationListProps {
+  /** Array of integration configurations to display */
   integrations: IntegrationConfig[];
+  /** Loading state for the list */
   isLoading?: boolean;
+  /** Callback fired when testing an integration */
   onTest: (integration: IntegrationConfig) => void;
+  /** Callback fired when syncing an integration */
   onSync: (integration: IntegrationConfig) => void;
+  /** Callback to open integration settings */
   onSettings: (integration: IntegrationConfig) => void;
+  /** Callback to disconnect an integration */
   onDisconnect: (integration: IntegrationConfig) => void;
+  /** Callback to open the add integration dialog */
   onAddNew?: () => void;
+  /** Additional CSS class names */
   className?: string;
 }
 

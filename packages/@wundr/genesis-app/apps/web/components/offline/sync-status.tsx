@@ -6,11 +6,19 @@ import { cn } from '@/lib/utils';
 
 import type { SyncStatus, ConflictResolution } from '@/types/notification';
 
+/**
+ * Props for the SyncStatusIndicator component
+ */
 interface SyncStatusProps {
+  /** Current sync status */
   status: SyncStatus;
+  /** Last successful sync timestamp */
   lastSynced?: Date | null;
+  /** Current sync progress percentage */
   progress?: number;
+  /** Callback to trigger manual sync */
   onManualSync?: () => Promise<void>;
+  /** Optional CSS class name */
   className?: string;
 }
 
@@ -96,10 +104,17 @@ return null;
   );
 }
 
+/**
+ * Props for the ConflictResolutionDialog component
+ */
 interface ConflictResolutionDialogProps {
+  /** The conflict to resolve */
   conflict: ConflictResolution;
+  /** Whether the dialog is open */
   isOpen: boolean;
+  /** Callback when user selects a resolution strategy */
   onResolve: (resolution: 'local' | 'server' | 'merge') => void;
+  /** Callback to close the dialog */
   onClose: () => void;
 }
 
@@ -223,9 +238,15 @@ return null;
   );
 }
 
+/**
+ * Props for the SyncStatusBadge component
+ */
 interface SyncStatusBadgeProps {
+  /** Current sync status to display */
   status: SyncStatus;
+  /** Size of the badge */
   size?: 'sm' | 'md';
+  /** Optional CSS class name */
   className?: string;
 }
 

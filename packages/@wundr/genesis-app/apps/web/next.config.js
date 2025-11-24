@@ -35,17 +35,21 @@ const nextConfig = {
     },
     // Optimize package imports
     optimizePackageImports: ['@apollo/client', 'lucide-react'],
-    // External packages for server components
-    serverComponentsExternalPackages: ['@apollo/server', 'graphql'],
+    // External packages for server components (ESM compatibility)
+    serverComponentsExternalPackages: [
+      '@apollo/server',
+      '@apollo/utils.usagereporting',
+      '@apollo/utils.stripsensitiveliterals',
+      'graphql',
+      // LiveKit ESM packages
+      'livekit-server-sdk',
+      'camelcase-keys',
+      'map-obj',
+      'quick-lru',
+    ],
+    // Enable ESM externals - allows importing ESM packages
+    esmExternals: true,
   },
-
-  // Server external packages (ESM compatibility)
-  serverExternalPackages: [
-    '@apollo/server',
-    '@apollo/utils.usagereporting',
-    '@apollo/utils.stripsensitiveliterals',
-    'graphql',
-  ],
 
   // Strict mode for React
   reactStrictMode: true,

@@ -86,7 +86,7 @@ return null;
  * @returns Channel details
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -157,7 +157,7 @@ export async function GET(
       membership: access.channelMembership
         ? {
             role: access.channelMembership.role,
-            joinedAt: access.channelMembership.createdAt,
+            joinedAt: access.channelMembership.joinedAt,
           }
         : null,
     });
@@ -310,7 +310,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

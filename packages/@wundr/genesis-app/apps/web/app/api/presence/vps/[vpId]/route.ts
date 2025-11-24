@@ -115,7 +115,7 @@ export async function GET(
 
     // Get message count for VP
     const messageCount = await prisma.message.count({
-      where: { userId: vp.userId },
+      where: { authorId: vp.userId },
     });
 
     // Determine if VP is healthy (online and recent activity)

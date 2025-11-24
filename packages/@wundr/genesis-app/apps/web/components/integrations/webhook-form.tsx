@@ -7,19 +7,35 @@ import { WEBHOOK_EVENTS } from '@/types/integration';
 
 import type { Webhook, WebhookEventType } from '@/types/integration';
 
+/**
+ * Props for the WebhookForm component
+ */
 export interface WebhookFormProps {
+  /** Existing webhook to edit (null for create mode) */
   webhook?: Webhook | null;
+  /** Whether the dialog is open */
   isOpen: boolean;
+  /** Callback to close the dialog */
   onClose: () => void;
+  /** Callback fired when submitting the form */
   onSubmit: (data: WebhookFormData) => Promise<void>;
+  /** Additional CSS class names */
   className?: string;
 }
 
+/**
+ * Form data for creating/editing a webhook
+ */
 export interface WebhookFormData {
+  /** Name of the webhook */
   name: string;
+  /** Endpoint URL to receive webhook payloads */
   url: string;
+  /** Array of event types to subscribe to */
   events: WebhookEventType[];
+  /** Custom headers to include in webhook requests */
   headers: Array<{ key: string; value: string }>;
+  /** Retry configuration for failed deliveries */
   retryPolicy: {
     maxRetries: number;
     retryDelay: number;

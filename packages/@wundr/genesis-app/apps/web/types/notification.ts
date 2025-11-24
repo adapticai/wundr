@@ -58,19 +58,98 @@ export interface NotificationSettings {
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'conflict';
 
+/**
+ * Typed payload for queued message actions
+ */
+export interface MessageActionPayload {
+  channelId: string;
+  content: string;
+  attachments?: string[];
+}
+
+/**
+ * Typed payload for queued reaction actions
+ */
+export interface ReactionActionPayload {
+  messageId: string;
+  emoji: string;
+}
+
+/**
+ * Typed payload for queued file actions
+ */
+export interface FileActionPayload {
+  channelId: string;
+  fileId: string;
+  fileName: string;
+}
+
+/**
+ * Generic action payload for extensibility
+ */
+export interface GenericActionPayload {
+  [key: string]: string | number | boolean | string[] | undefined;
+}
+
+/**
+ * Union type for all queued action payloads
+ */
+export type QueuedActionPayload =
+  | MessageActionPayload
+  | ReactionActionPayload
+  | FileActionPayload
+  | GenericActionPayload;
+
+/**
+ * Queued action types for offline operations
+ */
+export type QueuedActionType = 'send_message' | 'add_reaction' | 'remove_reaction' | 'upload_file' | 'delete_message' | 'edit_message';
+
+/**
+ * Represents a queued action waiting to be synced
+ */
 export interface QueuedAction {
+  /** Unique identifier for the queued action */
   id: string;
-  type: string;
-  payload: unknown;
+  /** Type of action to perform */
+  type: QueuedActionType;
+  /** Action-specific payload data */
+  payload: QueuedActionPayload;
+  /** When the action was created */
   createdAt: Date;
+  /** Number of sync retry attempts */
   retryCount: number;
 }
 
+/**
+ * Data structure for conflict resolution containing either JSON-serializable data
+ * Compatible with QueuedActionPayload types for seamless conflict detection
+ */
+export type ConflictData = QueuedActionPayload;
+
+/**
+ * Conflict types that can occur during sync
+ */
+export type ConflictType =
+  | 'message_edit'
+  | 'file_update'
+  | 'settings_change'
+  | 'profile_update'
+  | QueuedActionType;
+
+/**
+ * Represents a sync conflict requiring user resolution
+ */
 export interface ConflictResolution {
+  /** Unique identifier for the conflict */
   id: string;
-  localData: unknown;
-  serverData: unknown;
-  type: string;
+  /** Local version of the data */
+  localData: ConflictData;
+  /** Server version of the data */
+  serverData: ConflictData;
+  /** Type of entity that has a conflict */
+  type: ConflictType;
+  /** When the conflict was detected */
   createdAt: Date;
 }
 

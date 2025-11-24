@@ -17,16 +17,15 @@
  * @module apps/web/app/api/channels/__tests__/channels.test
  */
 
-import { NextRequest } from 'next/server';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
 // =============================================================================
 
-// Mock NextAuth
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+// Mock auth
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn(),
 }));
 
 // Mock the channel services
@@ -83,28 +82,6 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-function _createMockRequest(
-  method: string,
-  body?: Record<string, unknown>,
-  searchParams?: Record<string, string>,
-): NextRequest {
-  const url = new URL('http://localhost:3000/api/channels');
-
-  if (searchParams) {
-    Object.entries(searchParams).forEach(([key, value]) => {
-      url.searchParams.set(key, value);
-    });
-  }
-
-  return new NextRequest(url, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-}
-
 function createMockChannelResponse(overrides?: Record<string, unknown>) {
   return {
     id: 'ch-123',
@@ -149,12 +126,12 @@ function createMockMemberResponse(overrides?: Record<string, unknown>) {
 // =============================================================================
 
 describe('Channel API Routes', () => {
-  let getServerSession: ReturnType<typeof vi.fn>;
+  let auth: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
+    const authModule = await import('@/lib/auth');
+    auth = authModule.auth as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {
@@ -168,7 +145,7 @@ describe('Channel API Routes', () => {
   describe('POST /api/channels', () => {
     it('creates public channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const mockChannel = createMockChannelResponse({ type: 'PUBLIC' });
       mockChannelService.createChannel.mockResolvedValue(mockChannel);
@@ -197,7 +174,7 @@ describe('Channel API Routes', () => {
 
     it('creates private channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const mockChannel = createMockChannelResponse({ type: 'PRIVATE', name: 'secret-project' });
       mockChannelService.createChannel.mockResolvedValue(mockChannel);
@@ -220,7 +197,7 @@ describe('Channel API Routes', () => {
 
     it('adds initial members', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const mockChannel = createMockChannelResponse({
         _count: { members: 3, messages: 0 },
@@ -243,9 +220,9 @@ describe('Channel API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      auth.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await auth();
       expect(session).toBeNull();
 
       // Route handler would return 401
@@ -255,7 +232,7 @@ describe('Channel API Routes', () => {
 
     it('returns 400 for invalid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.createChannel.mockRejectedValue({
         code: 'VALIDATION_ERROR',
@@ -277,7 +254,7 @@ describe('Channel API Routes', () => {
 
     it('validates channel name length', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const longName = 'a'.repeat(100); // Over 80 char limit
 
@@ -301,7 +278,7 @@ describe('Channel API Routes', () => {
 
     it('requires workspace membership', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.createChannel.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -329,7 +306,7 @@ describe('Channel API Routes', () => {
   describe('GET /api/channels', () => {
     it('lists channels in workspace', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const mockChannels = [
         createMockChannelResponse({ id: 'ch-1', name: 'general' }),
@@ -359,7 +336,7 @@ describe('Channel API Routes', () => {
 
     it('filters by type', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const publicChannels = [
         createMockChannelResponse({ type: 'PUBLIC' }),
@@ -389,7 +366,7 @@ describe('Channel API Routes', () => {
 
     it('includes membership status', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const channelsWithMembership = [
         { ...createMockChannelResponse(), isMember: true },
@@ -419,7 +396,7 @@ describe('Channel API Routes', () => {
 
     it('requires workspaceId parameter', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.listChannels.mockRejectedValue({
         code: 'VALIDATION_ERROR',
@@ -445,7 +422,7 @@ describe('Channel API Routes', () => {
   describe('POST /api/channels/:id/join', () => {
     it('allows joining public channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const mockMembership = createMockMemberResponse({
         userId: session.user.id,
@@ -460,7 +437,7 @@ describe('Channel API Routes', () => {
 
     it('rejects joining private channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.joinChannel.mockRejectedValue({
         code: 'CANNOT_JOIN_PRIVATE_CHANNEL',
@@ -478,7 +455,7 @@ describe('Channel API Routes', () => {
 
     it('rejects joining archived channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.joinChannel.mockRejectedValue({
         code: 'CHANNEL_ARCHIVED',
@@ -496,7 +473,7 @@ describe('Channel API Routes', () => {
 
     it('returns 409 when already a member', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.joinChannel.mockRejectedValue({
         code: 'ALREADY_CHANNEL_MEMBER',
@@ -512,9 +489,9 @@ describe('Channel API Routes', () => {
       );
     });
 
-    it('requires workspace membership', async () => {
+    it('requires workspace membership for joining', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.joinChannel.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -538,7 +515,7 @@ describe('Channel API Routes', () => {
   describe('POST /api/channels/:id/leave', () => {
     it('allows leaving channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.leaveChannel.mockResolvedValue(undefined);
 
@@ -549,7 +526,7 @@ describe('Channel API Routes', () => {
 
     it('prevents last admin from leaving', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.leaveChannel.mockRejectedValue({
         code: 'CANNOT_LEAVE_AS_LAST_ADMIN',
@@ -567,7 +544,7 @@ describe('Channel API Routes', () => {
 
     it('returns 404 when not a member', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.leaveChannel.mockRejectedValue({
         code: 'NOT_CHANNEL_MEMBER',
@@ -591,7 +568,7 @@ describe('Channel API Routes', () => {
   describe('PATCH /api/channels/:id', () => {
     it('updates channel with valid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const updatedChannel = createMockChannelResponse({
         name: 'updated-name',
@@ -610,7 +587,7 @@ describe('Channel API Routes', () => {
 
     it('allows archiving channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const archivedChannel = createMockChannelResponse({ isArchived: true });
       mockChannelService.updateChannel.mockResolvedValue(archivedChannel);
@@ -624,7 +601,7 @@ describe('Channel API Routes', () => {
 
     it('returns 403 without admin permission', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.updateChannel.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -655,7 +632,7 @@ describe('Channel API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.deleteChannel.mockResolvedValue(undefined);
 
@@ -666,7 +643,7 @@ describe('Channel API Routes', () => {
 
     it('returns 403 for non-org-admin', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.deleteChannel.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -690,7 +667,7 @@ describe('Channel API Routes', () => {
   describe('POST /api/channels/:id/members', () => {
     it('adds member to channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const mockMember = createMockMemberResponse();
       mockChannelService.addMember.mockResolvedValue(mockMember);
@@ -706,7 +683,7 @@ describe('Channel API Routes', () => {
 
     it('requires channel admin permission', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.addMember.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -727,7 +704,7 @@ describe('Channel API Routes', () => {
 
     it('requires user to be workspace member', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.addMember.mockRejectedValue({
         code: 'USER_NOT_FOUND',
@@ -754,7 +731,7 @@ describe('Channel API Routes', () => {
   describe('DELETE /api/channels/:id/members/:userId', () => {
     it('removes member when authorized', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.removeMember.mockResolvedValue(undefined);
 
@@ -765,7 +742,7 @@ describe('Channel API Routes', () => {
 
     it('prevents removing last admin', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       mockChannelService.removeMember.mockRejectedValue({
         code: 'CANNOT_LEAVE_AS_LAST_ADMIN',
@@ -789,10 +766,10 @@ describe('Channel API Routes', () => {
   describe('POST /api/dm', () => {
     it('creates or returns existing DM channel', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const dmChannel = createMockChannelResponse({
-        type: 'DIRECT',
+        type: 'DM',
         name: `dm:${session.user.id}:user-456`,
       });
 
@@ -807,13 +784,13 @@ describe('Channel API Routes', () => {
         workspaceId: 'ws-123',
       });
 
-      expect(result.data.type).toBe('DIRECT');
+      expect(result.data.type).toBe('DM');
       expect(result.isNew).toBe(true);
     });
 
     it('prevents DM with self', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      auth.mockResolvedValue(session);
 
       const mockCreateDM = vi.fn().mockRejectedValue({
         code: 'DM_SELF_NOT_ALLOWED',

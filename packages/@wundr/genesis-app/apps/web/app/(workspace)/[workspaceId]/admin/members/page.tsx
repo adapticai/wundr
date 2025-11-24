@@ -174,6 +174,7 @@ export default function AdminMembersPage() {
               <InviteRow
                 key={invite.id}
                 invite={invite}
+                roles={roles}
                 onRevoke={() => revokeInvite(invite.id)}
               />
             ))}
@@ -266,30 +267,34 @@ export default function AdminMembersPage() {
   );
 }
 
-// Types
+// Types - aligned with useMembers, useInvites, useRoles hooks
 interface Member {
   id: string;
   name: string | null;
   email: string | null;
-  image: string | null;
-  role: string;
-  roleId: string;
+  image?: string | null;
+  role?: { id: string; name: string };
+  roleId: string | null;
   status: MemberStatus;
-  joinedAt: string;
+  joinedAt: Date;
 }
 
 interface Invite {
   id: string;
   email: string;
-  role: string;
-  expiresAt: string;
-  createdAt: string;
+  roleId?: string;
+  status: 'pending' | 'accepted' | 'expired' | 'revoked';
+  expiresAt: Date;
+  createdAt: Date;
 }
 
 interface Role {
   id: string;
   name: string;
   description?: string;
+  permissions: string[];
+  isDefault?: boolean;
+  memberCount?: number;
 }
 
 // Member Row Component
@@ -328,14 +333,14 @@ function MemberRow({ member, onEdit, onSuspend, onRemove }: MemberRowProps) {
       </td>
       <td className="px-4 py-3">
         <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-          {member.role}
+          {member.role?.name || 'No Role'}
         </span>
       </td>
       <td className="px-4 py-3">
         <StatusBadge status={member.status} />
       </td>
       <td className="px-4 py-3 text-sm text-muted-foreground">
-        {new Date(member.joinedAt).toLocaleDateString()}
+        {member.joinedAt instanceof Date ? member.joinedAt.toLocaleDateString() : new Date(member.joinedAt).toLocaleDateString()}
       </td>
       <td className="px-4 py-3">
         <div className="relative flex justify-end">
@@ -460,8 +465,9 @@ function StatusBadge({ status }: { status: MemberStatus }) {
 }
 
 // Invite Row Component
-function InviteRow({ invite, onRevoke }: { invite: Invite; onRevoke: () => void }) {
-  const isExpired = new Date(invite.expiresAt) < new Date();
+function InviteRow({ invite, onRevoke, roles }: { invite: Invite; onRevoke: () => void; roles: Role[] }) {
+  const isExpired = invite.status === 'expired' || new Date(invite.expiresAt) < new Date();
+  const roleName = roles.find(r => r.id === invite.roleId)?.name || 'Member';
 
   return (
     <div className="flex items-center justify-between px-4 py-3">
@@ -472,7 +478,7 @@ function InviteRow({ invite, onRevoke }: { invite: Invite; onRevoke: () => void 
         <div>
           <p className="font-medium text-foreground">{invite.email}</p>
           <p className="text-sm text-muted-foreground">
-            Invited as {invite.role} - {isExpired ? 'Expired' : `Expires ${new Date(invite.expiresAt).toLocaleDateString()}`}
+            Invited as {roleName} - {isExpired ? 'Expired' : `Expires ${invite.expiresAt instanceof Date ? invite.expiresAt.toLocaleDateString() : new Date(invite.expiresAt).toLocaleDateString()}`}
           </p>
         </div>
       </div>
@@ -595,7 +601,7 @@ interface EditMemberModalProps {
 }
 
 function EditMemberModal({ member, roles, onUpdateRole, onClose }: EditMemberModalProps) {
-  const [roleId, setRoleId] = useState(member.roleId);
+  const [roleId, setRoleId] = useState(member.roleId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {

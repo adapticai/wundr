@@ -24,7 +24,7 @@ export default function AdminSettingsPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSave = useCallback(
-    async (updates: Partial<typeof settings>) => {
+    async (updates: Partial<WorkspaceSettings>) => {
       setIsSaving(true);
       setSuccessMessage(null);
 
@@ -136,13 +136,27 @@ export default function AdminSettingsPage() {
   );
 }
 
-// Settings Types
+// Settings Types - Extended from hook's WorkspaceSettings to include local fields
 interface WorkspaceSettings {
-  name?: string;
+  // From hook
+  name: string;
+  slug: string;
   description?: string;
+  visibility: 'public' | 'private';
+  allowGuestAccess: boolean;
+  defaultRole?: string;
+  messageRetention?: number;
+  fileRetention?: number;
+  twoFactorRequired: boolean;
+  ssoEnabled: boolean;
+  notificationDefaults: {
+    email: boolean;
+    push: boolean;
+    desktop: boolean;
+  };
+  // Local extensions for UI
   icon?: string;
   defaultChannelId?: string;
-  allowGuestAccess?: boolean;
   requireTwoFactor?: boolean;
   sessionTimeout?: number;
   allowedDomains?: string[];
@@ -155,7 +169,7 @@ interface WorkspaceSettings {
 }
 
 interface SettingsSectionProps {
-  settings: WorkspaceSettings | null;
+  settings: Partial<WorkspaceSettings> | null;
   onSave: (updates: Partial<WorkspaceSettings>) => Promise<void>;
   isSaving: boolean;
 }

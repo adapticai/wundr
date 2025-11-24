@@ -763,11 +763,11 @@ export const vpQueries = {
 
     // Aggregate statistics from messages and activity logs
     const messageCount = await context.prisma.message.count({
-      where: { userId: vp.userId },
+      where: { authorId: vp.userId },
     });
 
     const lastMessage = await context.prisma.message.findFirst({
-      where: { userId: vp.userId },
+      where: { authorId: vp.userId },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -1481,7 +1481,7 @@ export const VPFieldResolvers = {
     context: GraphQLContext
   ) => {
     return context.prisma.message.count({
-      where: { userId: parent.userId },
+      where: { authorId: parent.userId },
     });
   },
 
@@ -1499,7 +1499,7 @@ export const VPFieldResolvers = {
     context: GraphQLContext
   ) => {
     const lastMessage = await context.prisma.message.findFirst({
-      where: { userId: parent.userId },
+      where: { authorId: parent.userId },
       orderBy: { createdAt: 'desc' },
       select: { createdAt: true },
     });

@@ -249,7 +249,14 @@ export class SearchServiceImpl implements SearchService {
   }
 
   /**
-   * Search messages using PostgreSQL full-text search
+   * Search messages using PostgreSQL full-text search.
+   *
+   * @param tsQuery - PostgreSQL tsquery string for full-text search
+   * @param filters - Optional filters to narrow search scope
+   * @param limit - Maximum results to return (default: 20)
+   * @param offset - Result offset for pagination (default: 0)
+   * @param highlight - Include highlighted snippets in results (default: false)
+   * @returns Array of message search results with scores
    */
   private async searchMessages(
     tsQuery: string,
@@ -262,7 +269,9 @@ export class SearchServiceImpl implements SearchService {
     const conditions: string[] = [
       'to_tsvector(\'english\', m.content) @@ to_tsquery(\'english\', $1)',
     ];
-    const params: unknown[] = [tsQuery];
+    // SQL parameter types: string, string[], Date, or number
+    type SqlParam = string | string[] | Date | number;
+    const params: SqlParam[] = [tsQuery];
     let paramIndex = 2;
 
     if (filters?.workspaceId) {
@@ -358,7 +367,14 @@ export class SearchServiceImpl implements SearchService {
   }
 
   /**
-   * Search files
+   * Search files in storage using PostgreSQL full-text search.
+   *
+   * @param tsQuery - PostgreSQL tsquery string for full-text search
+   * @param filters - Optional filters to narrow search scope
+   * @param limit - Maximum results to return (default: 20)
+   * @param offset - Result offset for pagination (default: 0)
+   * @param highlight - Include highlighted snippets in results (default: false)
+   * @returns Array of file search results with scores
    */
   private async searchFiles(
     tsQuery: string,
@@ -370,7 +386,9 @@ export class SearchServiceImpl implements SearchService {
     const conditions: string[] = [
       'to_tsvector(\'english\', COALESCE(a."fileName", \'\') || \' \' || COALESCE(a."extractedText", \'\')) @@ to_tsquery(\'english\', $1)',
     ];
-    const params: unknown[] = [tsQuery];
+    // SQL parameter types: string, string[], Date, or number
+    type SqlParam = string | string[] | Date | number;
+    const params: SqlParam[] = [tsQuery];
     let paramIndex = 2;
 
     if (filters?.workspaceId) {
@@ -460,7 +478,14 @@ export class SearchServiceImpl implements SearchService {
   }
 
   /**
-   * Search channels
+   * Search channels by name and description using PostgreSQL full-text search.
+   *
+   * @param tsQuery - PostgreSQL tsquery string for full-text search
+   * @param filters - Optional filters to narrow search scope
+   * @param limit - Maximum results to return (default: 20)
+   * @param offset - Result offset for pagination (default: 0)
+   * @param highlight - Include highlighted snippets in results (default: false)
+   * @returns Array of channel search results with scores
    */
   private async searchChannels(
     tsQuery: string,
@@ -472,7 +497,9 @@ export class SearchServiceImpl implements SearchService {
     const conditions: string[] = [
       'to_tsvector(\'english\', c.name || \' \' || COALESCE(c.description, \'\')) @@ to_tsquery(\'english\', $1)',
     ];
-    const params: unknown[] = [tsQuery];
+    // SQL parameter types: string, string[], Date, or number
+    type SqlParam = string | string[] | Date | number;
+    const params: SqlParam[] = [tsQuery];
     let paramIndex = 2;
 
     if (filters?.workspaceId) {
@@ -535,7 +562,14 @@ export class SearchServiceImpl implements SearchService {
   }
 
   /**
-   * Search users
+   * Search users by name, email, and discipline using PostgreSQL full-text search.
+   *
+   * @param tsQuery - PostgreSQL tsquery string for full-text search
+   * @param filters - Optional filters to narrow search scope
+   * @param limit - Maximum results to return (default: 20)
+   * @param offset - Result offset for pagination (default: 0)
+   * @param highlight - Include highlighted snippets in results (default: false)
+   * @returns Array of user search results with scores
    */
   private async searchUsers(
     tsQuery: string,
@@ -547,7 +581,9 @@ export class SearchServiceImpl implements SearchService {
     const conditions: string[] = [
       'to_tsvector(\'english\', u.name || \' \' || u.email || \' \' || COALESCE(u.discipline, \'\')) @@ to_tsquery(\'english\', $1)',
     ];
-    const params: unknown[] = [tsQuery];
+    // SQL parameter types: string, string[], Date, or number
+    type SqlParam = string | string[] | Date | number;
+    const params: SqlParam[] = [tsQuery];
     let paramIndex = 2;
 
     if (filters?.workspaceId) {
@@ -617,7 +653,14 @@ export class SearchServiceImpl implements SearchService {
   }
 
   /**
-   * Search VPs (Virtual Professionals)
+   * Search VPs (Virtual Professionals) by name, discipline, and capabilities.
+   *
+   * @param tsQuery - PostgreSQL tsquery string for full-text search
+   * @param filters - Optional filters to narrow search scope
+   * @param limit - Maximum results to return (default: 20)
+   * @param offset - Result offset for pagination (default: 0)
+   * @param highlight - Include highlighted snippets in results (default: false)
+   * @returns Array of VP search results with scores
    */
   private async searchVPs(
     tsQuery: string,
@@ -629,7 +672,9 @@ export class SearchServiceImpl implements SearchService {
     const conditions: string[] = [
       'to_tsvector(\'english\', vp.name || \' \' || vp.discipline || \' \' || array_to_string(vp.capabilities, \' \')) @@ to_tsquery(\'english\', $1)',
     ];
-    const params: unknown[] = [tsQuery];
+    // SQL parameter types: string, string[], Date, or number
+    type SqlParam = string | string[] | Date | number;
+    const params: SqlParam[] = [tsQuery];
     let paramIndex = 2;
 
     if (filters?.workspaceId) {
@@ -739,16 +784,35 @@ export class SearchServiceImpl implements SearchService {
   }
 
   /**
-   * Get date from search result
+   * Get date from search result based on the result type.
+   *
+   * Extracts the relevant timestamp field from different result types:
+   * - Messages: sentAt
+   * - Files: uploadedAt
+   * - Channels: createdAt
+   * - Users/VPs: current time (no primary timestamp)
+   *
+   * @param result - The search result to extract date from
+   * @returns Date object representing when the result was created/sent
    */
   private getResultDate(result: SearchResult): Date {
-    const data = result.data as unknown as Record<string, unknown>;
-    return new Date(
-      (data.sentAt as Date) ||
-        (data.uploadedAt as Date) ||
-        (data.createdAt as Date) ||
-        0,
-    );
+    const data = result.data;
+
+    // Type-safe date extraction using discriminated union
+    switch (data.type) {
+      case 'message':
+        return new Date(data.sentAt);
+      case 'file':
+        return new Date(data.uploadedAt);
+      case 'channel':
+        return new Date(data.createdAt);
+      case 'user':
+      case 'vp':
+        // Users and VPs don't have a primary date field
+        return new Date();
+      default:
+        return new Date();
+    }
   }
 
   /**

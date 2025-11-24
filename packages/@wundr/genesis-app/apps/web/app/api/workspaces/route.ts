@@ -275,7 +275,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           name: input.name,
           slug: input.slug,
           description: input.description,
-          iconUrl: input.iconUrl,
+          avatarUrl: input.iconUrl,
           settings: input.settings as Prisma.InputJsonValue,
           organizationId: input.organizationId,
         },
@@ -294,6 +294,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const generalChannel = await tx.channel.create({
         data: {
           name: 'general',
+          slug: 'general',
           type: 'PUBLIC',
           description: 'General discussion for the workspace',
           workspaceId: newWorkspace.id,

@@ -2,21 +2,87 @@
  * @fileoverview Analytics types for usage tracking and insights
  */
 
-export interface AnalyticsEvent {
-  id: string;
-  workspaceId: string;
+/**
+ * Analytics event data that can contain various typed properties.
+ * Use specific typed fields for known data structures.
+ */
+export interface AnalyticsEventData {
+  /** Message ID for message-related events */
+  messageId?: string;
+  /** Channel ID for channel-related events */
+  channelId?: string;
+  /** User ID for user-related events */
   userId?: string;
+  /** File ID for file-related events */
+  fileId?: string;
+  /** Call ID for call-related events */
+  callId?: string;
+  /** VP ID for VP-related events */
   vpId?: string;
+  /** Search query for search events */
+  query?: string;
+  /** Duration in milliseconds */
+  durationMs?: number;
+  /** File size in bytes */
+  fileSize?: number;
+  /** MIME type */
+  mimeType?: string;
+  /** Reaction emoji */
+  emoji?: string;
+  /** Thread ID for thread-related events */
+  threadId?: string;
+  /** Number of participants */
+  participantCount?: number;
+  /** Additional string properties */
+  [key: string]: string | number | boolean | undefined;
+}
+
+/**
+ * Analytics event metadata containing client information.
+ */
+export interface AnalyticsEventMetadata {
+  /** Browser/client user agent string */
+  userAgent?: string;
+  /** Client IP address (anonymized if applicable) */
+  ipAddress?: string;
+  /** Platform identifier (web, ios, android, desktop) */
+  platform?: 'web' | 'ios' | 'android' | 'desktop' | string;
+  /** Application version string */
+  version?: string;
+  /** Device type */
+  deviceType?: 'mobile' | 'tablet' | 'desktop';
+  /** Operating system */
+  os?: string;
+  /** Browser name */
+  browser?: string;
+  /** Screen resolution */
+  screenResolution?: string;
+  /** Timezone offset in minutes */
+  timezoneOffset?: number;
+}
+
+/**
+ * Analytics event representing a tracked user or system action.
+ */
+export interface AnalyticsEvent {
+  /** Unique event identifier */
+  id: string;
+  /** Workspace where the event occurred */
+  workspaceId: string;
+  /** User who triggered the event (if applicable) */
+  userId?: string;
+  /** VP that triggered the event (if applicable) */
+  vpId?: string;
+  /** Type of analytics event */
   eventType: AnalyticsEventType;
-  eventData: Record<string, unknown>;
+  /** Event-specific data with typed properties */
+  eventData: AnalyticsEventData;
+  /** Session identifier for grouping related events */
   sessionId?: string;
+  /** When the event occurred */
   timestamp: Date;
-  metadata?: {
-    userAgent?: string;
-    ipAddress?: string;
-    platform?: string;
-    version?: string;
-  };
+  /** Client metadata */
+  metadata?: AnalyticsEventMetadata;
 }
 
 export type AnalyticsEventType =
@@ -152,12 +218,43 @@ export type WidgetType =
   | 'leaderboard'
   | 'activity_feed';
 
+/**
+ * Widget filter configuration for dashboard widgets.
+ */
+export interface WidgetFilters {
+  /** Filter by channel IDs */
+  channelIds?: string[];
+  /** Filter by user IDs */
+  userIds?: string[];
+  /** Filter by VP IDs */
+  vpIds?: string[];
+  /** Filter by event types */
+  eventTypes?: AnalyticsEventType[];
+  /** Filter by date range */
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  /** Include only specific message types */
+  messageTypes?: string[];
+  /** Include only specific file types */
+  fileTypes?: string[];
+}
+
+/**
+ * Configuration for a dashboard widget.
+ */
 export interface WidgetConfig {
+  /** Primary metric to display */
   metric?: string;
+  /** Comparison period for trend analysis */
   comparison?: 'previous_period' | 'previous_year';
+  /** Field to group results by */
   groupBy?: string;
+  /** Maximum number of items to display */
   limit?: number;
-  filters?: Record<string, unknown>;
+  /** Widget-specific filters */
+  filters?: WidgetFilters;
 }
 
 export interface AnalyticsDashboard {

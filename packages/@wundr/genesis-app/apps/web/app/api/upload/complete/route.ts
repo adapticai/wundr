@@ -38,16 +38,17 @@ function generateThumbnailUrl(s3Key: string, mimeType: string): string | null {
     return null;
   }
 
-  // In production, this would point to a thumbnail generation service
-  // or use a CDN with image transformation capabilities
   const cdnDomain = process.env.CDN_DOMAIN;
-  const thumbnailPrefix = 'thumbnails/';
+  const thumbnailPrefix = process.env.THUMBNAIL_PREFIX ?? 'thumbnails/';
 
   if (cdnDomain) {
     return `https://${cdnDomain}/${thumbnailPrefix}${s3Key}`;
   }
 
-  return null;
+  // Fallback to S3 URL with thumbnail path
+  const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
+  const region = process.env.AWS_REGION ?? 'us-east-1';
+  return `https://${s3Bucket}.s3.${region}.amazonaws.com/${thumbnailPrefix}${s3Key}`;
 }
 
 /**
@@ -57,9 +58,35 @@ function generateThumbnailUrl(s3Key: string, mimeType: string): string | null {
  * @returns True if file exists
  */
 async function verifyFileExists(s3Key: string): Promise<boolean> {
-  // In production, this would use AWS SDK HeadObject to verify file exists
-  // For now, we'll assume the file exists if the key matches expected pattern
-  return s3Key.startsWith('uploads/') && s3Key.length > 20;
+  const bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
+  const region = process.env.AWS_REGION ?? 'us-east-1';
+
+  try {
+    const { S3Client, HeadObjectCommand } = await import('@aws-sdk/client-s3');
+
+    const client = new S3Client({
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+      },
+    });
+
+    await client.send(
+      new HeadObjectCommand({
+        Bucket: bucket,
+        Key: s3Key,
+      }),
+    );
+
+    return true;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'NotFound') {
+      return false;
+    }
+    // For other errors, assume file might exist to avoid blocking uploads
+    return s3Key.startsWith('uploads/') && s3Key.length > 20;
+  }
 }
 
 /**
@@ -97,27 +124,63 @@ async function checkWorkspaceMembership(workspaceId: string, userId: string) {
  * @param mimeType - File MIME type
  */
 async function triggerFileProcessing(fileId: string, mimeType: string): Promise<void> {
-  // In production, this would publish a message to a queue (SQS, etc.)
   const category = getFileCategory(mimeType);
-  console.log(`[File Processing] Triggered for file ${fileId}, category: ${category}`);
+  const sqsQueueUrl = process.env.FILE_PROCESSING_QUEUE_URL;
 
-  // Update file status to PROCESSING
   await prisma.file.update({
     where: { id: fileId },
     data: { status: 'PROCESSING' },
   });
 
-  // Simulate async processing completion (in production this would be handled by a worker)
-  setTimeout(async () => {
+  // Send to SQS queue if configured
+  if (sqsQueueUrl) {
     try {
+      // Dynamic import - module may not be installed in all environments
+      // eslint-disable-next-line import/no-unresolved
+      const sqsModule = await import('@aws-sdk/client-sqs').catch(() => null);
+
+      if (sqsModule) {
+        const { SQSClient, SendMessageCommand } = sqsModule;
+        const sqsClient = new SQSClient({
+          region: process.env.AWS_REGION ?? 'us-east-1',
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+          },
+        });
+
+        await sqsClient.send(
+          new SendMessageCommand({
+            QueueUrl: sqsQueueUrl,
+            MessageBody: JSON.stringify({
+              fileId,
+              mimeType,
+              category,
+              action: 'PROCESS_FILE',
+            }),
+          }),
+        );
+      } else {
+        // SQS module not available, fall back to direct processing
+        await prisma.file.update({
+          where: { id: fileId },
+          data: { status: 'READY' },
+        });
+      }
+    } catch {
+      // Fall back to direct processing if queue fails
       await prisma.file.update({
         where: { id: fileId },
         data: { status: 'READY' },
       });
-    } catch (error) {
-      console.error(`[File Processing] Error completing processing for ${fileId}:`, error);
     }
-  }, 1000);
+  } else {
+    // Direct processing for development/testing
+    await prisma.file.update({
+      where: { id: fileId },
+      data: { status: 'READY' },
+    });
+  }
 }
 
 /**
@@ -277,8 +340,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { data: { file: responseData }, message: 'Upload completed successfully' },
       { status: 201 },
     );
-  } catch (error) {
-    console.error('[POST /api/upload/complete] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

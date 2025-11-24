@@ -4,11 +4,19 @@ import { clsx } from 'clsx';
 import { useRouter } from 'next/navigation';
 import { useState, useCallback, useRef, useEffect } from 'react';
 
+/**
+ * Props for the SearchBar component
+ */
 export interface SearchBarProps {
+  /** The workspace ID to search within */
   workspaceId: string;
+  /** Placeholder text for the search input */
   placeholder?: string;
+  /** Optional CSS class name */
   className?: string;
+  /** Callback when search is submitted (if not provided, navigates to search page) */
   onSearch?: (query: string) => void;
+  /** Whether to auto-focus the search input */
   autoFocus?: boolean;
 }
 

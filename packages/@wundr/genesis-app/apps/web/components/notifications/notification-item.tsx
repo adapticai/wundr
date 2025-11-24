@@ -6,11 +6,19 @@ import { cn } from '@/lib/utils';
 
 import type { Notification, NotificationType } from '@/types/notification';
 
+/**
+ * Props for the NotificationItem component
+ */
 interface NotificationItemProps {
+  /** The notification to display */
   notification: Notification;
+  /** Callback when the notification is clicked */
   onClick?: (notification: Notification) => void;
+  /** Callback when the notification is dismissed */
   onDismiss?: (id: string) => void;
+  /** Callback when the notification is marked as read */
   onMarkAsRead?: (id: string) => void;
+  /** Optional CSS class name */
   className?: string;
 }
 

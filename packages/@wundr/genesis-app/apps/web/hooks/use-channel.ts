@@ -12,10 +12,136 @@ import type {
 } from '@/types/channel';
 import type { User } from '@/types/chat';
 
+// =============================================================================
+// Hook Return Types
+// =============================================================================
+
+/**
+ * Return type for the useChannels hook
+ */
+export interface UseChannelsReturn {
+  /** All channels */
+  channels: Channel[];
+  /** Public channels (excluding starred) */
+  publicChannels: Channel[];
+  /** Private channels (excluding starred) */
+  privateChannels: Channel[];
+  /** Starred channels */
+  starredChannels: Channel[];
+  /** Whether channels are loading */
+  isLoading: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Refetch channels */
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Return type for the useChannel hook
+ */
+export interface UseChannelReturn {
+  /** Channel data */
+  channel: Channel | null;
+  /** Whether channel is loading */
+  isLoading: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Refetch channel */
+  refetch: () => Promise<void>;
+  /** Set channel data (for optimistic updates) */
+  setChannel: React.Dispatch<React.SetStateAction<Channel | null>>;
+}
+
+/**
+ * Return type for the useChannelMembers hook
+ */
+export interface UseChannelMembersReturn {
+  /** All members */
+  members: ChannelMember[];
+  /** Online members */
+  onlineMembers: ChannelMember[];
+  /** Offline members */
+  offlineMembers: ChannelMember[];
+  /** Whether members are loading */
+  isLoading: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Refetch members */
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Return type for the useChannelMutations hook
+ */
+export interface UseChannelMutationsReturn {
+  /** Create a new channel */
+  createChannel: (workspaceId: string, input: CreateChannelInput) => Promise<Channel | null>;
+  /** Update a channel */
+  updateChannel: (channelId: string, input: UpdateChannelInput) => Promise<Channel | null>;
+  /** Delete a channel */
+  deleteChannel: (channelId: string) => Promise<boolean>;
+  /** Archive a channel */
+  archiveChannel: (channelId: string) => Promise<boolean>;
+  /** Toggle star on a channel */
+  toggleStar: (channelId: string, isStarred: boolean) => Promise<boolean>;
+  /** Leave a channel */
+  leaveChannel: (channelId: string) => Promise<boolean>;
+  /** Invite members to a channel */
+  inviteMembers: (channelId: string, userIds: string[], role?: 'admin' | 'member') => Promise<boolean>;
+  /** Remove a member from a channel */
+  removeMember: (channelId: string, userId: string) => Promise<boolean>;
+  /** Change a member's role */
+  changeMemberRole: (channelId: string, userId: string, role: 'admin' | 'member') => Promise<boolean>;
+  /** Whether a mutation is in progress */
+  isLoading: boolean;
+  /** Error if mutation failed */
+  error: Error | null;
+}
+
+/**
+ * Return type for the useChannelPermissions hook
+ */
+export interface UseChannelPermissionsReturn {
+  /** User permissions for the channel */
+  permissions: ChannelPermissions;
+  /** Whether permissions are loading */
+  isLoading: boolean;
+}
+
+/**
+ * Return type for the useDirectMessages hook
+ */
+export interface UseDirectMessagesReturn {
+  /** List of direct message channels */
+  directMessages: DirectMessageChannel[];
+  /** Whether loading */
+  isLoading: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Refetch direct messages */
+  refetch: () => Promise<void>;
+  /** Create a new direct message channel */
+  createDirectMessage: (userIds: string[]) => Promise<DirectMessageChannel | null>;
+}
+
+/**
+ * Return type for the useWorkspaceUsers hook
+ */
+export interface UseWorkspaceUsersReturn {
+  /** List of users */
+  users: User[];
+  /** Search for users */
+  searchUsers: (query: string) => Promise<void>;
+  /** Fetch all users */
+  fetchAllUsers: () => Promise<void>;
+  /** Whether loading */
+  isLoading: boolean;
+}
+
 /**
  * Hook for fetching workspace channels
  */
-export function useChannels(workspaceId: string) {
+export function useChannels(workspaceId: string): UseChannelsReturn {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -80,7 +206,7 @@ return;
 /**
  * Hook for fetching a single channel with members
  */
-export function useChannel(channelId: string) {
+export function useChannel(channelId: string): UseChannelReturn {
   const [channel, setChannel] = useState<Channel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -132,7 +258,7 @@ return;
 /**
  * Hook for fetching channel members
  */
-export function useChannelMembers(channelId: string) {
+export function useChannelMembers(channelId: string): UseChannelMembersReturn {
   const [members, setMembers] = useState<ChannelMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -192,7 +318,7 @@ return;
 /**
  * Hook for channel mutations (create, update, delete, archive)
  */
-export function useChannelMutations() {
+export function useChannelMutations(): UseChannelMutationsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -448,7 +574,7 @@ export function useChannelMutations() {
 /**
  * Hook for user permissions in a channel
  */
-export function useChannelPermissions(channelId: string, currentUserId: string) {
+export function useChannelPermissions(channelId: string, currentUserId: string): UseChannelPermissionsReturn {
   const [permissions, setPermissions] = useState<ChannelPermissions>({
     canEdit: false,
     canDelete: false,
@@ -503,7 +629,7 @@ export function useChannelPermissions(channelId: string, currentUserId: string) 
 /**
  * Hook for direct messages
  */
-export function useDirectMessages(workspaceId: string) {
+export function useDirectMessages(workspaceId: string): UseDirectMessagesReturn {
   const [directMessages, setDirectMessages] = useState<DirectMessageChannel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -571,7 +697,7 @@ return;
 /**
  * Hook for searching workspace users
  */
-export function useWorkspaceUsers(workspaceId: string) {
+export function useWorkspaceUsers(workspaceId: string): UseWorkspaceUsersReturn {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 

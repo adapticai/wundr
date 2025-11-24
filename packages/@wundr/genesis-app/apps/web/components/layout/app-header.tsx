@@ -1,5 +1,6 @@
 'use client';
 
+import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 
 interface AppHeaderProps {
@@ -87,10 +88,8 @@ export function AppHeader({ user }: AppHeaderProps) {
                 <div className="border-t py-1">
                   <button
                     type="button"
-                    onClick={() => {
-                      // TODO: Implement sign out
-                      // eslint-disable-next-line no-console
-                      console.log('Sign out');
+                    onClick={async () => {
+                      await signOut({ callbackUrl: '/login' });
                     }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive hover:bg-accent"
                   >

@@ -14,16 +14,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import {
   createMockQueuedAction,
-  _createMockFailedQueuedAction,
+  createMockFailedQueuedAction,
   createMockQueuedActionList,
   createMockSyncState,
   createMockSyncConflict,
-  _createMockSyncData,
-  _createMockSyncDataWithNotifications,
-  _createMockSyncDataWithConflicts,
-  _createMockNotificationList,
-  _createMockOfflineQueueService,
-  _createMockSyncService,
+  createMockSyncData,
+  createMockSyncDataWithNotifications,
+  createMockSyncDataWithConflicts,
+  createMockNotificationList,
+  createMockOfflineQueueService,
+  createMockSyncService,
   createMockPrismaOfflineQueueActionModel,
   createMockPrismaSyncStateModel,
   createMockPrismaSyncConflictModel,
@@ -394,6 +394,223 @@ describe('OfflineQueueService', () => {
       });
 
       expect(result.count).toBe(50);
+    });
+  });
+
+  // ===========================================================================
+  // Retry Logic Tests with Failed Actions
+  // ===========================================================================
+
+  describe('retry logic for failed actions', () => {
+    it('identifies failed actions for retry using createMockFailedQueuedAction', async () => {
+      const userId = generateUserId();
+      const failedAction = createMockFailedQueuedAction({
+        userId,
+        action: 'SEND_MESSAGE',
+        error: 'Network timeout: Connection refused',
+        retryCount: 2,
+        maxRetries: 5,
+      });
+
+      mockPrisma.offlineQueueAction.findMany.mockResolvedValue([failedAction]);
+
+      const failedActions = await mockPrisma.offlineQueueAction.findMany({
+        where: {
+          userId,
+          status: 'FAILED',
+          retryCount: { lt: failedAction.maxRetries },
+        },
+      });
+
+      expect(failedActions).toHaveLength(1);
+      expect(failedActions[0]!.status).toBe('FAILED');
+      expect(failedActions[0]!.error).toContain('Network timeout');
+      expect(failedActions[0]!.retryCount).toBeLessThan(failedActions[0]!.maxRetries);
+    });
+
+    it('retries failed action and resets status to pending', async () => {
+      const userId = generateUserId();
+      const failedAction = createMockFailedQueuedAction({
+        userId,
+        error: 'Server unavailable',
+        retryCount: 1,
+        maxRetries: 3,
+      });
+
+      mockPrisma.offlineQueueAction.update.mockResolvedValue({
+        ...failedAction,
+        status: 'PENDING',
+        error: null,
+        retryCount: 2,
+      });
+
+      const retriedAction = await mockPrisma.offlineQueueAction.update({
+        where: { id: failedAction.id },
+        data: {
+          status: 'PENDING',
+          error: null,
+          retryCount: { increment: 1 },
+        },
+      });
+
+      expect(retriedAction.status).toBe('PENDING');
+      expect(retriedAction.error).toBeNull();
+      expect(retriedAction.retryCount).toBe(2);
+    });
+
+    it('does not retry when max retries exhausted', async () => {
+      const userId = generateUserId();
+      const exhaustedAction = createMockFailedQueuedAction({
+        userId,
+        error: 'Permanent failure',
+        retryCount: 5,
+        maxRetries: 5,
+      });
+
+      // Action should not be retried
+      const canRetry = exhaustedAction.retryCount < exhaustedAction.maxRetries;
+      expect(canRetry).toBe(false);
+      expect(exhaustedAction.status).toBe('FAILED');
+    });
+
+    it('tracks multiple failed actions for batch retry', async () => {
+      const userId = generateUserId();
+      const failedActions = [
+        createMockFailedQueuedAction({
+          userId,
+          action: 'SEND_MESSAGE',
+          error: 'Network error',
+          retryCount: 1,
+        }),
+        createMockFailedQueuedAction({
+          userId,
+          action: 'UPDATE_PRESENCE',
+          error: 'Timeout',
+          retryCount: 2,
+        }),
+        createMockFailedQueuedAction({
+          userId,
+          action: 'UPLOAD_FILE',
+          error: 'Storage error',
+          retryCount: 0,
+        }),
+      ];
+
+      mockPrisma.offlineQueueAction.findMany.mockResolvedValue(failedActions);
+
+      const retryableActions = await mockPrisma.offlineQueueAction.findMany({
+        where: {
+          userId,
+          status: 'FAILED',
+        },
+        orderBy: { retryCount: 'asc' }, // Prioritize actions with fewer retries
+      });
+
+      expect(retryableActions).toHaveLength(3);
+      // Should be sorted by retry count (fewest first)
+      expect(retryableActions[0]!.retryCount).toBeLessThanOrEqual(retryableActions[1]!.retryCount);
+    });
+  });
+
+  // ===========================================================================
+  // Service Mock Tests
+  // ===========================================================================
+
+  describe('service mocking with createMockOfflineQueueService', () => {
+    it('uses mock offline queue service for enqueue operations', async () => {
+      const mockService = createMockOfflineQueueService();
+      const userId = generateUserId();
+
+      const action = createMockQueuedAction({
+        userId,
+        action: 'SEND_MESSAGE',
+        payload: { content: 'Test message' },
+      });
+
+      mockService.enqueue.mockResolvedValue(action);
+
+      const result = await mockService.enqueue({
+        userId,
+        action: 'SEND_MESSAGE',
+        payload: { content: 'Test message' },
+      });
+
+      expect(mockService.enqueue).toHaveBeenCalledWith({
+        userId,
+        action: 'SEND_MESSAGE',
+        payload: { content: 'Test message' },
+      });
+      expect(result.status).toBe('PENDING');
+    });
+
+    it('uses mock offline queue service for processQueue operations', async () => {
+      const mockService = createMockOfflineQueueService();
+      const userId = generateUserId();
+
+      const processedResults = {
+        processed: 5,
+        failed: 1,
+        remaining: 2,
+      };
+
+      mockService.processQueue.mockResolvedValue(processedResults);
+
+      const result = await mockService.processQueue(userId);
+
+      expect(mockService.processQueue).toHaveBeenCalledWith(userId);
+      expect(result.processed).toBe(5);
+      expect(result.failed).toBe(1);
+      expect(result.remaining).toBe(2);
+    });
+
+    it('uses mock offline queue service for getQueueStatus operations', async () => {
+      const mockService = createMockOfflineQueueService();
+      const userId = generateUserId();
+
+      const queueStatus = {
+        pending: 10,
+        processing: 2,
+        completed: 50,
+        failed: 3,
+      };
+
+      mockService.getQueueStatus.mockResolvedValue(queueStatus);
+
+      const status = await mockService.getQueueStatus(userId);
+
+      expect(mockService.getQueueStatus).toHaveBeenCalledWith(userId);
+      expect(status.pending).toBe(10);
+      expect(status.completed).toBe(50);
+    });
+
+    it('uses mock offline queue service for clearQueue operations', async () => {
+      const mockService = createMockOfflineQueueService();
+      const userId = generateUserId();
+
+      mockService.clearQueue.mockResolvedValue({ deletedCount: 25 });
+
+      const result = await mockService.clearQueue(userId);
+
+      expect(mockService.clearQueue).toHaveBeenCalledWith(userId);
+      expect(result.deletedCount).toBe(25);
+    });
+
+    it('uses mock offline queue service for retryFailed operations', async () => {
+      const mockService = createMockOfflineQueueService();
+      const userId = generateUserId();
+
+      const retryResults = {
+        retried: 3,
+        stillFailed: 1,
+      };
+
+      mockService.retryFailed.mockResolvedValue(retryResults);
+
+      const result = await mockService.retryFailed(userId);
+
+      expect(mockService.retryFailed).toHaveBeenCalledWith(userId);
+      expect(result.retried).toBe(3);
+      expect(result.stillFailed).toBe(1);
     });
   });
 });
@@ -855,6 +1072,280 @@ describe('SyncService', () => {
       await expect(
         mockPrisma.notification.findMany({ where: { userId } }),
       ).rejects.toThrow('Request timeout');
+    });
+  });
+
+  // ===========================================================================
+  // Sync Data Factory Tests
+  // ===========================================================================
+
+  describe('sync data with createMockSyncData', () => {
+    it('creates basic sync data structure', () => {
+      const syncData = createMockSyncData();
+
+      expect(syncData).toBeDefined();
+      expect(syncData.syncToken).toBeDefined();
+      expect(syncData.changes).toBeDefined();
+      expect(syncData.changes.messages).toBeDefined();
+      expect(syncData.changes.channels).toBeDefined();
+      expect(syncData.conflicts).toBeDefined();
+    });
+
+    it('uses sync data for incremental sync response', () => {
+      const syncData = createMockSyncData({
+        changes: {
+          messages: [
+            { id: 'msg_1', content: 'Hello', channelId: 'ch_1' },
+            { id: 'msg_2', content: 'World', channelId: 'ch_1' },
+          ],
+          channels: [{ id: 'ch_1', name: 'general' }],
+          notifications: [],
+          deletedIds: [],
+        },
+      });
+
+      // Verify sync data structure
+      expect(syncData.changes.messages).toHaveLength(2);
+      expect(syncData.changes.channels).toHaveLength(1);
+      expect(syncData.syncToken).toBeDefined();
+    });
+
+    it('handles empty sync data', () => {
+      const syncData = createMockSyncData({
+        changes: {
+          messages: [],
+          channels: [],
+          notifications: [],
+          deletedIds: [],
+        },
+      });
+
+      expect(syncData.changes.messages).toHaveLength(0);
+      expect(syncData.changes.channels).toHaveLength(0);
+    });
+
+    it('includes deleted IDs for sync deletions', () => {
+      const syncData = createMockSyncData({
+        changes: {
+          messages: [],
+          channels: [],
+          notifications: [],
+          deletedIds: ['msg_deleted_1', 'msg_deleted_2', 'ch_deleted_1'],
+        },
+      });
+
+      expect(syncData.changes.deletedIds).toHaveLength(3);
+      expect(syncData.changes.deletedIds).toContain('msg_deleted_1');
+    });
+  });
+
+  describe('sync data with notifications using createMockSyncDataWithNotifications', () => {
+    it('creates sync data with notifications included', () => {
+      const syncData = createMockSyncDataWithNotifications(5);
+
+      expect(syncData).toBeDefined();
+      expect(syncData.syncToken).toBeDefined();
+      expect(syncData.changes.notifications).toBeDefined();
+      expect(syncData.changes.notifications).toHaveLength(5);
+    });
+
+    it('syncs notifications with empty messages by default', () => {
+      const syncData = createMockSyncDataWithNotifications(3);
+
+      expect(syncData.changes.notifications).toHaveLength(3);
+      expect(syncData.changes.messages).toBeDefined();
+    });
+
+    it('handles notification sync with read/unread status', () => {
+      const syncData = createMockSyncDataWithNotifications(10);
+
+      // All notifications should have isRead property
+      syncData.changes.notifications.forEach((notification) => {
+        expect(notification).toHaveProperty('isRead');
+      });
+    });
+
+    it('supports incremental notification sync', () => {
+      const oldSyncData = createMockSyncDataWithNotifications(5);
+      const newSyncData = createMockSyncDataWithNotifications(3);
+
+      // Different sync data instances should have different notification counts
+      expect(oldSyncData.changes.notifications.length).toBe(5);
+      expect(newSyncData.changes.notifications.length).toBe(3);
+    });
+
+    it('combines notifications with custom overrides', () => {
+      const syncData = createMockSyncDataWithNotifications(2, {
+        conflicts: [createMockSyncConflict()],
+      });
+
+      expect(syncData.changes.notifications).toHaveLength(2);
+      expect(syncData.conflicts).toHaveLength(1);
+    });
+  });
+
+  describe('sync data with conflicts using createMockSyncDataWithConflicts', () => {
+    it('creates sync data with conflicts included', () => {
+      const syncData = createMockSyncDataWithConflicts(3);
+
+      expect(syncData).toBeDefined();
+      expect(syncData.syncToken).toBeDefined();
+      expect(syncData.conflicts).toBeDefined();
+      expect(syncData.conflicts).toHaveLength(3);
+    });
+
+    it('provides conflict data with server and client versions', () => {
+      const syncData = createMockSyncDataWithConflicts(2);
+
+      syncData.conflicts.forEach((conflict) => {
+        expect(conflict).toHaveProperty('serverVersion');
+        expect(conflict).toHaveProperty('clientVersion');
+        expect(conflict).toHaveProperty('entityType');
+        expect(conflict).toHaveProperty('entityId');
+      });
+    });
+
+    it('handles sync data with custom changes and conflicts', () => {
+      const syncData = createMockSyncDataWithConflicts(2, {
+        changes: {
+          messages: [{ id: 'msg_1', content: 'Test' }],
+          channels: [],
+          notifications: [],
+          deletedIds: [],
+        },
+      });
+
+      expect(syncData.changes.messages).toBeDefined();
+      expect(syncData.conflicts).toHaveLength(2);
+    });
+
+    it('identifies conflicts requiring manual resolution', () => {
+      const syncData = createMockSyncDataWithConflicts(4);
+
+      // All conflicts should be unresolved (resolvedAt is null)
+      const unresolvedConflicts = syncData.conflicts.filter(
+        (c) => c.resolvedAt === null,
+      );
+
+      expect(unresolvedConflicts.length).toBe(4);
+    });
+
+    it('creates conflicts with unique IDs', () => {
+      const syncData = createMockSyncDataWithConflicts(5);
+
+      const conflictIds = syncData.conflicts.map((c) => c.id);
+      const uniqueIds = new Set(conflictIds);
+
+      expect(uniqueIds.size).toBe(5);
+    });
+  });
+
+  // ===========================================================================
+  // Sync Service Mock Tests
+  // ===========================================================================
+
+  describe('service mocking with createMockSyncService', () => {
+    it('uses mock sync service for performSync operations', async () => {
+      const mockService = createMockSyncService();
+      const userId = generateUserId();
+
+      const syncResponse = createMockSyncData();
+      mockService.performSync.mockResolvedValue(syncResponse);
+
+      const result = await mockService.performSync(userId);
+
+      expect(mockService.performSync).toHaveBeenCalledWith(userId);
+      expect(result.syncToken).toBeDefined();
+      expect(result.changes).toBeDefined();
+    });
+
+    it('uses mock sync service for getChanges operations', async () => {
+      const mockService = createMockSyncService();
+      const userId = generateUserId();
+      const syncToken = 'abc123';
+
+      const changesData = createMockSyncDataWithNotifications(10);
+      mockService.getChanges.mockResolvedValue(changesData);
+
+      const result = await mockService.getChanges(userId, syncToken);
+
+      expect(mockService.getChanges).toHaveBeenCalledWith(userId, syncToken);
+      expect(result.changes.notifications).toHaveLength(10);
+    });
+
+    it('uses mock sync service for resolveConflict operations', async () => {
+      const mockService = createMockSyncService();
+      const conflictId = generateConflictId();
+
+      const resolvedConflict = createMockSyncConflict({
+        id: conflictId,
+        resolution: 'SERVER_WINS',
+        resolvedAt: new Date(),
+      });
+      mockService.resolveConflict.mockResolvedValue(resolvedConflict);
+
+      const result = await mockService.resolveConflict(conflictId, 'SERVER_WINS');
+
+      expect(mockService.resolveConflict).toHaveBeenCalledWith(conflictId, 'SERVER_WINS');
+      expect(result.resolution).toBe('SERVER_WINS');
+      expect(result.resolvedAt).toBeDefined();
+    });
+
+    it('uses mock sync service for detectConflicts operations', async () => {
+      const mockService = createMockSyncService();
+      const userId = generateUserId();
+
+      const syncDataWithConflicts = createMockSyncDataWithConflicts(5);
+      mockService.detectConflicts.mockResolvedValue(syncDataWithConflicts.conflicts);
+
+      const result = await mockService.detectConflicts(userId);
+
+      expect(mockService.detectConflicts).toHaveBeenCalledWith(userId);
+      expect(result).toHaveLength(5);
+    });
+
+    it('uses mock sync service for getSyncState operations', async () => {
+      const mockService = createMockSyncService();
+      const userId = generateUserId();
+
+      const syncState = createMockSyncState({
+        userId,
+        version: 10,
+        lastSyncAt: new Date(),
+      });
+      mockService.getSyncState.mockResolvedValue(syncState);
+
+      const result = await mockService.getSyncState(userId);
+
+      expect(mockService.getSyncState).toHaveBeenCalledWith(userId);
+      expect(result.version).toBe(10);
+      expect(result.lastSyncAt).toBeDefined();
+    });
+
+    it('uses mock sync service for updateSyncState operations', async () => {
+      const mockService = createMockSyncService();
+      const userId = generateUserId();
+
+      const updatedSyncState = createMockSyncState({
+        userId,
+        version: 11,
+        lastSyncAt: new Date(),
+      });
+      mockService.updateSyncState.mockResolvedValue(updatedSyncState);
+
+      const result = await mockService.updateSyncState(userId, { version: 11 });
+
+      expect(mockService.updateSyncState).toHaveBeenCalledWith(userId, { version: 11 });
+      expect(result.version).toBe(11);
+    });
+
+    it('handles sync service errors gracefully', async () => {
+      const mockService = createMockSyncService();
+      const userId = generateUserId();
+
+      mockService.performSync.mockRejectedValue(new Error('Sync failed'));
+
+      await expect(mockService.performSync(userId)).rejects.toThrow('Sync failed');
     });
   });
 });

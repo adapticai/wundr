@@ -130,6 +130,7 @@ export {
   // Error codes
   PermissionErrorCodes,
   type PermissionErrorCode,
+  type RoleScope,
 
   // Error classes
   PermissionDeniedError,
@@ -182,6 +183,7 @@ export {
 
 export {
   // Types
+  type RequestBody,
   type RequestContext,
   type AuthenticatedRequestContext,
   type ContextExtractor,

@@ -11,6 +11,8 @@
  * @module app/api/huddles/route
  */
 
+import { randomBytes } from 'crypto';
+
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
 
@@ -55,12 +57,41 @@ interface WorkspaceSettingsWithHuddles {
   [key: string]: unknown;
 }
 
+// Type assertion helper for JSON values
+function toJsonValue<T>(data: T): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(data)) as Prisma.InputJsonValue;
+}
+
 /**
- * Generate a unique room name for LiveKit huddle
+ * Generate a cryptographically secure short ID.
+ *
+ * @param length - The length of the ID (default: 8)
+ * @returns A random alphanumeric string
+ */
+function generateSecureId(length: number = 8): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = randomBytes(length);
+  let result = '';
+
+  for (let i = 0; i < length; i++) {
+    const byte = bytes[i];
+    if (byte !== undefined) {
+      result += chars[byte % chars.length];
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Generate a unique room name for LiveKit huddle.
+ *
+ * @param workspaceId - The workspace ID for the huddle
+ * @returns A unique room name using cryptographic randomness
  */
 function generateHuddleRoomName(workspaceId: string): string {
   const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 8);
+  const random = generateSecureId(8);
   return `huddle-${workspaceId.slice(-6)}-${timestamp}-${random}`;
 }
 
@@ -166,7 +197,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Create huddle record
-    const huddleId = `huddle_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 8)}`;
+    const huddleId = `huddle_${Date.now().toString(36)}${generateSecureId(8)}`;
     const now = new Date();
 
     // Try to create in huddles table
@@ -202,10 +233,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         participantCount: 1,
       };
 
-      const updatedSettings: Prisma.InputJsonValue = {
+      const updatedSettings: Prisma.InputJsonValue = toJsonValue({
         ...currentSettings,
         huddles: [...existingHuddles, newHuddle],
-      };
+      });
 
       await prisma.workspace.update({
         where: { id: workspaceId },

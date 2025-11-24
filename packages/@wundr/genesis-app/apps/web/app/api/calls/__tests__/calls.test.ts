@@ -21,8 +21,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // MOCKS
 // =============================================================================
 
-// Mock NextAuth
-vi.mock('next-auth', () => ({
+// Mock the auth module
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn(),
   getServerSession: vi.fn(),
 }));
 
@@ -91,7 +92,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-function _createMockRequest(
+function createMockRequest(
   method: string,
   body?: Record<string, unknown>,
   headers?: Record<string, string>,
@@ -188,13 +189,16 @@ function createMockWebhookEvent(
 // TESTS
 // =============================================================================
 
+// Use the mock request function - exported for potential future use in integration tests
+export { createMockRequest };
+
 describe('Call API Routes', () => {
   let getServerSession: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
+    const authModule = await import('@/lib/auth');
+    getServerSession = authModule.getServerSession as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {

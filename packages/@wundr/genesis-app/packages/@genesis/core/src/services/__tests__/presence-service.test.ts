@@ -19,10 +19,7 @@ import {
   type MockRedis,
 } from '../../test-utils/mock-redis';
 import {
-  _createMockUserPresence,
-  _createMockVPPresence,
-  _createMockDaemonInfo,
-  _createMockChannelPresence,
+  createMockDaemonInfo,
   generatePresenceTestId,
   resetPresenceIdCounter,
   type UserPresence,

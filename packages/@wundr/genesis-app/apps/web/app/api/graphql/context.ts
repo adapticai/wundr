@@ -52,12 +52,14 @@ export interface CreateContextOptions {
 }
 
 /**
- * Generates a unique request ID for tracing
+ * Generates a unique request ID for tracing.
+ * Uses crypto.randomUUID() for cryptographically secure ID generation.
  *
  * @returns A unique request identifier string
  */
 function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  // Use crypto.randomUUID() for secure, standards-compliant UUID generation
+  return `req_${Date.now()}_${crypto.randomUUID().split('-')[0]}`;
 }
 
 /**

@@ -11,17 +11,31 @@ import type { Notification, NotificationType } from '@/types/notification';
 
 type NotificationTab = 'all' | 'mentions' | 'messages' | 'calls';
 
+/**
+ * Props for the NotificationCenter component
+ */
 interface NotificationCenterProps {
+  /** Array of notifications to display */
   notifications: Notification[];
+  /** Total count of unread notifications */
   unreadCount: number;
+  /** Whether notifications are currently loading */
   isLoading?: boolean;
+  /** Whether there are more notifications to load */
   hasMore?: boolean;
+  /** Callback when a notification is marked as read */
   onMarkAsRead: (id: string) => void;
+  /** Callback when all notifications are marked as read */
   onMarkAllAsRead: () => void;
+  /** Callback when a notification is dismissed */
   onDismiss: (id: string) => void;
+  /** Callback when a notification is clicked */
   onNotificationClick: (notification: Notification) => void;
+  /** Callback to load more notifications (infinite scroll) */
   onLoadMore?: () => void;
+  /** Callback to open notification settings */
   onOpenSettings?: () => void;
+  /** Optional CSS class name */
   className?: string;
 }
 

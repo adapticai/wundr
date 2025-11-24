@@ -1,21 +1,25 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 
-import type { NextRequest} from 'next/server';
+/**
+ * Route context with workspace ID parameter
+ */
+interface RouteContext {
+  params: Promise<{ workspaceId: string }>;
+}
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { workspaceId: string } },
+  _request: Request,
+  context: RouteContext,
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
 
     // Return default settings
     return NextResponse.json({
@@ -52,16 +56,16 @@ export async function GET(
 }
 
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { workspaceId: string } },
+  request: Request,
+  context: RouteContext,
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { workspaceId } = params;
+    const { workspaceId } = await context.params;
     const updates = await request.json();
 
     // In production, validate admin role and update in database

@@ -22,10 +22,13 @@ import type {
   DocumentMetadata,
   ExtractedTable,
   ExtractedImage,
-  PageDimensions,
-  TextBlock,
-  BoundingBox,
+  PageDimensions as _PageDimensions,
+  TextBlock as _TextBlock,
+  BoundingBox as _BoundingBox,
 } from '../types/extraction';
+
+// Re-export aliased types for external use
+export type { _PageDimensions as PageDimensions, _TextBlock as TextBlock, _BoundingBox as BoundingBox };
 
 // ============================================================================
 // PDF Extractor Interface

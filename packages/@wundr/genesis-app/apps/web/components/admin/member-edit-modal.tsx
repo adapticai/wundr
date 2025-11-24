@@ -6,12 +6,21 @@ import { cn } from '@/lib/utils';
 
 import type { WorkspaceMember } from './member-list';
 
+/**
+ * Props for the MemberEditModal component.
+ */
 export interface MemberEditModalProps {
+  /** The member to edit, or null if no member is selected */
   member: WorkspaceMember | null;
+  /** The workspace ID for API calls */
   workspaceId: string;
+  /** List of available roles to assign to the member */
   availableRoles: { id: string; name: string }[];
+  /** Callback when the modal should close */
   onClose: () => void;
+  /** Callback after successful save operation */
   onSave: () => void;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 
@@ -36,13 +45,6 @@ export function MemberEditModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'danger'>('details');
-
-  useEffect(() => {
-    if (member) {
-      setSelectedRole(member.role);
-      fetchMemberDetails();
-    }
-  }, [member]);
 
   const fetchMemberDetails = useCallback(async () => {
     if (!member) {
@@ -70,6 +72,13 @@ return;
       setIsLoading(false);
     }
   }, [member, workspaceId]);
+
+  useEffect(() => {
+    if (member) {
+      setSelectedRole(member.role);
+      fetchMemberDetails();
+    }
+  }, [member, fetchMemberDetails]);
 
   const handleSaveRole = async () => {
     if (!member) {

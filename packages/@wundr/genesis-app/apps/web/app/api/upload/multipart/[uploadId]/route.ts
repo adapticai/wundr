@@ -31,19 +31,48 @@ interface RouteContext {
 }
 
 /**
- * List parts for a multipart upload from S3
+ * List parts for a multipart upload from S3 using ListParts command
  *
- * @param _uploadId - Multipart upload ID
- * @param _s3Key - S3 object key
+ * @param uploadId - Multipart upload ID
+ * @param s3Key - S3 object key
  * @returns Array of uploaded parts
  */
 async function listUploadedParts(
-  _uploadId: string,
-  _s3Key: string,
+  uploadId: string,
+  s3Key: string,
 ): Promise<{ partNumber: number; eTag: string; size: number; lastModified: Date }[]> {
-  // In production, this would use AWS SDK ListParts command
-  // Mock response - in production, return actual parts from S3
-  return [];
+  const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
+  const region = process.env.AWS_REGION ?? 'us-east-1';
+
+  try {
+    const { S3Client, ListPartsCommand } = await import('@aws-sdk/client-s3');
+
+    const client = new S3Client({
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+      },
+    });
+
+    const response = await client.send(
+      new ListPartsCommand({
+        Bucket: s3Bucket,
+        Key: s3Key,
+        UploadId: uploadId,
+      }),
+    );
+
+    return (response.Parts ?? []).map((part) => ({
+      partNumber: part.PartNumber ?? 0,
+      eTag: part.ETag ?? '',
+      size: part.Size ?? 0,
+      lastModified: part.LastModified ?? new Date(),
+    }));
+  } catch {
+    // Return empty array if listing fails
+    return [];
+  }
 }
 
 /**
@@ -53,8 +82,26 @@ async function listUploadedParts(
  * @param s3Key - S3 object key
  */
 async function abortMultipartUpload(uploadId: string, s3Key: string): Promise<void> {
-  // In production, this would use AWS SDK AbortMultipartUpload command
-  console.log(`[Multipart Upload] Aborted upload ${uploadId} for key ${s3Key}`);
+  const s3Bucket = process.env.AWS_S3_BUCKET ?? 'genesis-uploads';
+  const region = process.env.AWS_REGION ?? 'us-east-1';
+
+  const { S3Client, AbortMultipartUploadCommand } = await import('@aws-sdk/client-s3');
+
+  const client = new S3Client({
+    region,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+    },
+  });
+
+  await client.send(
+    new AbortMultipartUploadCommand({
+      Bucket: s3Bucket,
+      Key: s3Key,
+      UploadId: uploadId,
+    }),
+  );
 }
 
 /**
@@ -129,8 +176,8 @@ export async function GET(
         totalParts: metadata?.totalParts ?? 0,
       },
     });
-  } catch (error) {
-    console.error('[GET /api/upload/multipart/:uploadId] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
@@ -220,8 +267,8 @@ export async function DELETE(
     return NextResponse.json({
       message: 'Upload aborted successfully',
     });
-  } catch (error) {
-    console.error('[DELETE /api/upload/multipart/:uploadId] Error:', error);
+  } catch (_error) {
+    // Error handling - details in response
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',

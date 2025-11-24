@@ -322,7 +322,7 @@ export async function POST(
       await prisma.$executeRaw`
         INSERT INTO call_participants (id, call_id, user_id, display_name, joined_at, is_audio_enabled, is_video_enabled)
         VALUES (
-          ${`part_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 6)}`},
+          ${`part_${Date.now().toString(36)}${crypto.randomUUID().split('-')[0]}`},
           ${params.callId},
           ${session.user.id},
           ${participantName},

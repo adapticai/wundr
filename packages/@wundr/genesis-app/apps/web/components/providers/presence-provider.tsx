@@ -46,9 +46,15 @@ const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 const RECONNECT_DELAY = 5000; // 5 seconds
 const MAX_RECONNECT_ATTEMPTS = 5;
 
+/**
+ * Props for the PresenceProvider component
+ */
 interface PresenceProviderProps {
+  /** Child components */
   children: ReactNode;
+  /** Current user's ID for presence tracking */
   userId?: string;
+  /** Whether presence tracking is enabled */
   enabled?: boolean;
 }
 

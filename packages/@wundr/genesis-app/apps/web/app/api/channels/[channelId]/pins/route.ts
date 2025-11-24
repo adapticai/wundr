@@ -132,7 +132,7 @@ export async function GET(
         isDeleted: false,
       },
       include: {
-        user: {
+        author: {
           select: {
             id: true,
             name: true,
@@ -328,7 +328,7 @@ export async function POST(
     const pinnedMessage = await prisma.message.findUnique({
       where: { id: input.messageId },
       include: {
-        user: {
+        author: {
           select: {
             id: true,
             name: true,

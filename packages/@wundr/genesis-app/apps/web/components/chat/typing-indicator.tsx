@@ -4,8 +4,14 @@ import { cn } from '@/lib/utils';
 
 import type { TypingUser } from '@/types/chat';
 
+
+/**
+ * Props for the TypingIndicator component
+ */
 interface TypingIndicatorProps {
+  /** Array of users currently typing */
   typingUsers: TypingUser[];
+  /** Additional CSS class names */
   className?: string;
 }
 

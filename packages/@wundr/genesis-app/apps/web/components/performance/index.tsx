@@ -6,25 +6,190 @@ import { useLazyLoad, useConnectionAware, useVirtualizedData } from '@/hooks/use
 
 import type { ComponentType, ReactNode} from 'react';
 
-/** Lazy component wrapper with loading fallback */
-export function lazyWithPreload<T extends ComponentType<unknown>>(
+/**
+ * Props for the Skeleton component
+ */
+export interface SkeletonProps {
+  /** Optional CSS class name */
+  className?: string;
+  /** Width of the skeleton */
+  width?: string | number;
+  /** Height of the skeleton */
+  height?: string | number;
+}
+
+/**
+ * Props for the LoadingSpinner component
+ */
+export interface LoadingSpinnerProps {
+  /** Size of the spinner */
+  size?: 'sm' | 'md' | 'lg';
+}
+
+/**
+ * Props for the LazyComponent component
+ */
+export interface LazyComponentProps {
+  /** Children to render when visible */
+  children: ReactNode;
+  /** Fallback to show while not visible */
+  fallback?: ReactNode;
+  /** Root margin for intersection observer */
+  rootMargin?: string;
+  /** Visibility threshold (0-1) */
+  threshold?: number;
+}
+
+/**
+ * Props for the LazyImage component
+ */
+export interface LazyImageProps {
+  /** Image source URL */
+  src: string;
+  /** Alt text for accessibility */
+  alt: string;
+  /** Image width */
+  width?: number;
+  /** Image height */
+  height?: number;
+  /** Optional CSS class name */
+  className?: string;
+  /** Placeholder type */
+  placeholder?: 'blur' | 'empty';
+  /** Base64 blur data URL */
+  blurDataURL?: string;
+  /** Whether to prioritize loading */
+  priority?: boolean;
+  /** Callback when image loads */
+  onLoad?: () => void;
+}
+
+/**
+ * Props for the ConnectionAware component
+ */
+export interface ConnectionAwareProps {
+  /** Children to render on good connection */
+  children: ReactNode;
+  /** Fallback for data saver mode */
+  fallback?: ReactNode;
+  /** Content for slow connections */
+  renderOnSlowConnection?: ReactNode;
+}
+
+/**
+ * Props for the VirtualizedList component
+ */
+export interface VirtualizedListProps<T> {
+  /** Items to render */
+  items: T[];
+  /** Height of each item in pixels */
+  itemHeight: number;
+  /** Height of the container in pixels */
+  containerHeight: number;
+  /** Render function for each item */
+  renderItem: (item: T, index: number) => ReactNode;
+  /** Number of items to render outside visible area */
+  overscan?: number;
+  /** Optional CSS class name */
+  className?: string;
+}
+
+/**
+ * Props for the SuspenseBoundary component
+ */
+export interface SuspenseBoundaryProps {
+  /** Children to render */
+  children: ReactNode;
+  /** Fallback while loading */
+  fallback?: ReactNode;
+}
+
+/**
+ * Props for the ReducedMotion component
+ */
+export interface ReducedMotionProps {
+  /** Children for full motion */
+  children: ReactNode;
+  /** Children for reduced motion */
+  reducedChildren: ReactNode;
+}
+
+/**
+ * Props for the DeferredContent component
+ */
+export interface DeferredContentProps {
+  /** Children to render after delay */
+  children: ReactNode;
+  /** Delay in milliseconds */
+  delay?: number;
+  /** Fallback while waiting */
+  fallback?: ReactNode;
+}
+
+/**
+ * Props for the Progressive component
+ */
+export interface ProgressiveProps {
+  /** SSR content */
+  ssr: ReactNode;
+  /** Client-rendered content */
+  client: ReactNode;
+  /** Enhanced content with JS */
+  enhanced?: ReactNode;
+}
+
+/**
+ * Props for the ResponsiveImage component
+ */
+export interface ResponsiveImageProps {
+  /** Image source URL */
+  src: string;
+  /** Alt text for accessibility */
+  alt: string;
+  /** Sizes attribute for responsive images */
+  sizes?: string;
+  /** Array of widths for srcset */
+  widths?: number[];
+  /** Optional CSS class name */
+  className?: string;
+}
+
+/**
+ * Props for the CriticalCSS component
+ */
+export interface CriticalCSSProps {
+  /** Critical CSS content */
+  css: string;
+}
+
+/**
+ * Lazy component with preload capability
+ */
+type LazyWithPreload<T extends ComponentType<Record<string, unknown>>> = React.LazyExoticComponent<T> & {
+  preload: () => Promise<{ default: T }>;
+};
+
+/**
+ * Lazy component wrapper with loading fallback and preload capability
+ * @param importFn - Dynamic import function for the component
+ * @returns Lazy component with preload method
+ */
+export function lazyWithPreload<T extends ComponentType<Record<string, unknown>>>(
   importFn: () => Promise<{ default: T }>,
-): T & { preload: () => Promise<{ default: T }> } {
-  const LazyComponent = lazy(importFn) as T & { preload: () => Promise<{ default: T }> };
+): LazyWithPreload<T> {
+  const LazyComponent = lazy(importFn) as LazyWithPreload<T>;
   LazyComponent.preload = importFn;
   return LazyComponent;
 }
 
-/** Loading skeleton */
+/**
+ * Loading skeleton placeholder for content
+ */
 export function Skeleton({
   className = '',
   width,
   height,
-}: {
-  className?: string;
-  width?: string | number;
-  height?: string | number;
-}) {
+}: SkeletonProps) {
   return (
     <div
       className={`animate-pulse bg-muted rounded ${className}`}
@@ -34,8 +199,10 @@ export function Skeleton({
   );
 }
 
-/** Loading spinner */
-export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+/**
+ * Animated loading spinner indicator
+ */
+export function LoadingSpinner({ size = 'md' }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-8 h-8',
@@ -51,28 +218,27 @@ export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   );
 }
 
-/** Lazy loaded component */
-export function LazyComponent<T extends HTMLElement = HTMLDivElement>({
+/**
+ * Lazy loaded component that renders when visible in viewport
+ */
+export function LazyComponent({
   children,
   fallback = <Skeleton height={100} />,
   rootMargin = '50px',
   threshold = 0.1,
-}: {
-  children: ReactNode;
-  fallback?: ReactNode;
-  rootMargin?: string;
-  threshold?: number;
-}) {
-  const { ref, isVisible } = useLazyLoad<T>(() => {}, { rootMargin, threshold });
+}: LazyComponentProps) {
+  const { ref, isVisible } = useLazyLoad<HTMLDivElement>(() => {}, { rootMargin, threshold });
 
   return (
-    <div ref={ref as React.RefObject<HTMLDivElement>}>
+    <div ref={ref}>
       {isVisible ? children : fallback}
     </div>
   );
 }
 
-/** Lazy image with loading states */
+/**
+ * Lazy image with loading states and blur placeholder support
+ */
 export const LazyImage = memo(function LazyImage({
   src,
   alt,
@@ -83,17 +249,7 @@ export const LazyImage = memo(function LazyImage({
   blurDataURL,
   priority = false,
   onLoad,
-}: {
-  src: string;
-  alt: string;
-  width?: number;
-  height?: number;
-  className?: string;
-  placeholder?: 'blur' | 'empty';
-  blurDataURL?: string;
-  priority?: boolean;
-  onLoad?: () => void;
-}) {
+}: LazyImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -142,16 +298,14 @@ export const LazyImage = memo(function LazyImage({
   );
 });
 
-/** Connection-aware component */
+/**
+ * Connection-aware component that adapts to network conditions
+ */
 export function ConnectionAware({
   children,
   fallback,
   renderOnSlowConnection,
-}: {
-  children: ReactNode;
-  fallback?: ReactNode;
-  renderOnSlowConnection?: ReactNode;
-}) {
+}: ConnectionAwareProps) {
   const { isSlowConnection, reducedData } = useConnectionAware();
 
   if (reducedData && fallback) {
@@ -165,7 +319,9 @@ export function ConnectionAware({
   return <>{children}</>;
 }
 
-/** Virtualized list component */
+/**
+ * Virtualized list component for rendering large lists efficiently
+ */
 export function VirtualizedList<T>({
   items,
   itemHeight,
@@ -173,14 +329,7 @@ export function VirtualizedList<T>({
   renderItem,
   overscan = 3,
   className = '',
-}: {
-  items: T[];
-  itemHeight: number;
-  containerHeight: number;
-  renderItem: (item: T, index: number) => ReactNode;
-  overscan?: number;
-  className?: string;
-}) {
+}: VirtualizedListProps<T>) {
   const { visibleItems, totalHeight, handleScroll } = useVirtualizedData(items, {
     itemHeight,
     containerHeight,
@@ -204,14 +353,13 @@ export function VirtualizedList<T>({
   );
 }
 
-/** Suspense boundary with error handling */
+/**
+ * Suspense boundary with configurable fallback
+ */
 export function SuspenseBoundary({
   children,
   fallback = <LoadingSpinner />,
-}: {
-  children: ReactNode;
-  fallback?: ReactNode;
-}) {
+}: SuspenseBoundaryProps) {
   return (
     <Suspense fallback={fallback}>
       {children}
@@ -219,28 +367,25 @@ export function SuspenseBoundary({
   );
 }
 
-/** Reduced motion wrapper */
+/**
+ * Reduced motion wrapper that respects user preferences
+ */
 export function ReducedMotion({
   children,
   reducedChildren,
-}: {
-  children: ReactNode;
-  reducedChildren: ReactNode;
-}) {
+}: ReducedMotionProps) {
   const { reducedMotion } = useConnectionAware();
   return <>{reducedMotion ? reducedChildren : children}</>;
 }
 
-/** Deferred content - loads after main content */
+/**
+ * Deferred content - loads after main content with optional delay
+ */
 export function DeferredContent({
   children,
   delay = 0,
   fallback = null,
-}: {
-  children: ReactNode;
-  delay?: number;
-  fallback?: ReactNode;
-}) {
+}: DeferredContentProps) {
   const [show, setShow] = useState(delay === 0);
 
   useEffect(() => {
@@ -253,16 +398,14 @@ export function DeferredContent({
   return show ? <>{children}</> : <>{fallback}</>;
 }
 
-/** Progressive enhancement wrapper */
+/**
+ * Progressive enhancement wrapper for SSR, client, and enhanced content
+ */
 export function Progressive({
   ssr,
   client,
   enhanced,
-}: {
-  ssr: ReactNode;
-  client: ReactNode;
-  enhanced?: ReactNode;
-}) {
+}: ProgressiveProps) {
   const [mounted, setMounted] = useState(false);
   const [jsEnabled, setJsEnabled] = useState(false);
 
@@ -280,20 +423,16 @@ return <>{client}</>;
   return <>{enhanced || client}</>;
 }
 
-/** Image with responsive srcset */
+/**
+ * Image with responsive srcset for multiple screen sizes
+ */
 export const ResponsiveImage = memo(function ResponsiveImage({
   src,
   alt,
   sizes = '100vw',
   widths = [320, 640, 960, 1280, 1920],
   className = '',
-}: {
-  src: string;
-  alt: string;
-  sizes?: string;
-  widths?: number[];
-  className?: string;
-}) {
+}: ResponsiveImageProps) {
   const srcSet = widths.map(w => `${src}?w=${w} ${w}w`).join(', ');
 
   return (
@@ -309,8 +448,10 @@ export const ResponsiveImage = memo(function ResponsiveImage({
   );
 });
 
-/** Critical CSS inline */
-export function CriticalCSS({ css }: { css: string }) {
+/**
+ * Inline critical CSS for above-the-fold rendering
+ */
+export function CriticalCSS({ css }: CriticalCSSProps) {
   return (
     <style
       dangerouslySetInnerHTML={{ __html: css }}

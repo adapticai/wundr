@@ -5,13 +5,23 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 
 import type { User } from '@/types/chat';
 
+/**
+ * Props for the CallInviteDialog component.
+ */
 export interface CallInviteDialogProps {
+  /** Whether the dialog is currently open */
   isOpen: boolean;
+  /** Callback when the dialog should close */
   onClose: () => void;
+  /** Callback when users are invited with their IDs and notification preference */
   onInvite: (userIds: string[], sendNotification: boolean) => void;
+  /** The invite link to share for joining the call */
   inviteLink: string;
+  /** The workspace ID for fetching members */
   workspaceId: string;
+  /** The call ID for context (reserved for future use with call-specific invites) */
   callId: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 
@@ -130,6 +140,7 @@ export function CallInviteDialog({
   onInvite,
   inviteLink,
   workspaceId,
+  callId: _callId,
   className,
 }: CallInviteDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');

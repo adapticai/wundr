@@ -745,10 +745,17 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
   }
 
   /**
-   * Parses VP config from JSON.
+   * Parses VP config from JSON stored in the database.
+   *
+   * VP config is stored as a JSON blob in the User.vpConfig field and
+   * contains service account configuration including API key hashes
+   * and charter settings.
+   *
+   * @param vpConfig - Raw config from database (Prisma JSON field)
+   * @returns Typed VP service account config, or empty object if invalid
    */
-  private parseVPConfig(vpConfig: unknown): VPServiceAccountConfig {
-    if (isVPServiceAccountConfig(vpConfig)) {
+  private parseVPConfig(vpConfig: Prisma.JsonValue | null | undefined): VPServiceAccountConfig {
+    if (vpConfig !== null && vpConfig !== undefined && isVPServiceAccountConfig(vpConfig)) {
       return vpConfig;
     }
     return {};

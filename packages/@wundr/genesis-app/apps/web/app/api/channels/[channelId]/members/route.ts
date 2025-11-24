@@ -85,7 +85,7 @@ return null;
  * @returns List of channel members
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -149,7 +149,7 @@ export async function GET(
       },
       orderBy: [
         { role: 'asc' },
-        { createdAt: 'asc' },
+        { joinedAt: 'asc' },
       ],
     });
 

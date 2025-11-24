@@ -34,8 +34,13 @@ export interface BillingHistory {
   invoiceUrl?: string;
 }
 
+/**
+ * Props for the BillingOverview component.
+ */
 export interface BillingOverviewProps {
+  /** The workspace ID to fetch billing data for */
   workspaceId: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 

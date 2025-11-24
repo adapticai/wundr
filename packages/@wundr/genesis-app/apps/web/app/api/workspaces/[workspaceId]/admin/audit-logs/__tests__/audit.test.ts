@@ -129,7 +129,7 @@ describe('Audit Logs API Routes', () => {
     auth = authModule.auth as ReturnType<typeof vi.fn>;
 
     const prismaModule = await import('@genesis/database');
-    prisma = prismaModule.prisma as typeof prisma;
+    prisma = prismaModule.prisma as unknown as typeof prisma;
   });
 
   afterEach(() => {

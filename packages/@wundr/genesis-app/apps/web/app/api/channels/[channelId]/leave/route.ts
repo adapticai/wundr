@@ -43,7 +43,7 @@ interface RouteContext {
  * ```
  */
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

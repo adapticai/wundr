@@ -39,6 +39,28 @@ export type MetricType =
   | 'gauge'
   | 'histogram';
 
+/**
+ * Typed context for performance metrics.
+ */
+export interface PerformanceMetricContext {
+  /** Component name if component-related */
+  componentName?: string;
+  /** Route path if navigation-related */
+  routePath?: string;
+  /** API endpoint if request-related */
+  endpoint?: string;
+  /** User ID for user-specific metrics */
+  userId?: string;
+  /** Session ID for session tracking */
+  sessionId?: string;
+  /** Request ID for request tracing */
+  requestId?: string;
+  /** Error message if error-related */
+  errorMessage?: string;
+  /** Additional string context values */
+  [key: string]: string | number | boolean | undefined;
+}
+
 /** Performance metric */
 export interface PerformanceMetric {
   name: string;
@@ -47,7 +69,7 @@ export interface PerformanceMetric {
   unit: string;
   timestamp: number;
   tags: Record<string, string>;
-  context?: Record<string, unknown>;
+  context?: PerformanceMetricContext;
 }
 
 /** Core Web Vitals */
@@ -299,9 +321,22 @@ export interface VirtualizationConfig {
   estimatedItemSize?: number;
 }
 
+/**
+ * Typed arguments for memoization key generation.
+ * Supports common serializable types.
+ */
+export type MemoizationArg = string | number | boolean | null | undefined | MemoizationArg[];
+
+/**
+ * Generic arguments type for memoization - allows any function arguments
+ * since the memoize utility needs to work with arbitrary functions.
+ */
+export type MemoizationArgs = readonly unknown[];
+
 /** Memoization config */
 export interface MemoizationConfig {
   maxSize: number;
   ttl: number;
-  keyGenerator?: (...args: unknown[]) => string;
+  /** Key generator function that receives the original function arguments */
+  keyGenerator?: (...args: MemoizationArgs) => string;
 }

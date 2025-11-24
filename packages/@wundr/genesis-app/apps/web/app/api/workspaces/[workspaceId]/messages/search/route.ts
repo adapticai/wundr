@@ -197,7 +197,7 @@ export async function GET(
           createdAt: 'desc',
         },
         include: {
-          user: {
+          author: {
             select: {
               id: true,
               name: true,

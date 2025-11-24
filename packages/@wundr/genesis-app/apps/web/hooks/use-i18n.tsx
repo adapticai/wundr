@@ -4,16 +4,37 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 
 import { translate, formatDate, formatTime, formatNumber, formatCurrency, formatRelativeTime, detectBrowserLocale, type SupportedLocale } from '@/lib/i18n';
 
-interface I18nContextValue {
+/**
+ * Return type for the useI18n hook
+ */
+export interface UseI18nReturn {
+  /** Current locale */
   locale: SupportedLocale;
+  /** Set the locale */
   setLocale: (locale: SupportedLocale) => void;
+  /** Translate a key with optional interpolation values */
   t: (key: string, values?: Record<string, string | number>) => string;
+  /** Format a date according to the current locale */
   formatDate: (date: Date) => string;
+  /** Format a time according to the current locale */
   formatTime: (date: Date) => string;
+  /** Format a number according to the current locale */
   formatNumber: (num: number) => string;
+  /** Format a currency amount according to the current locale */
   formatCurrency: (amount: number, currency?: string) => string;
+  /** Format a date as relative time (e.g., "2 hours ago") */
   formatRelativeTime: (date: Date) => string;
 }
+
+/**
+ * Return type for the useTranslation hook
+ */
+export interface UseTranslationReturn {
+  /** Translate a key with optional interpolation values */
+  t: (key: string, values?: Record<string, string | number>) => string;
+}
+
+type I18nContextValue = UseI18nReturn;
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
@@ -46,15 +67,15 @@ export function I18nProvider({ children, initialLocale }: { children: ReactNode;
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
-export function useI18n() {
+export function useI18n(): UseI18nReturn {
   const context = useContext(I18nContext);
   if (!context) {
-throw new Error('useI18n must be used within I18nProvider');
-}
+    throw new Error('useI18n must be used within I18nProvider');
+  }
   return context;
 }
 
-export function useTranslation() {
+export function useTranslation(): UseTranslationReturn {
   const { t } = useI18n();
   return { t };
 }

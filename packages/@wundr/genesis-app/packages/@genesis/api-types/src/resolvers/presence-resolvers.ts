@@ -603,7 +603,7 @@ export const presenceQueries = {
 
     // Get message count for VP
     const messageCount = await context.prisma.message.count({
-      where: { userId: vp.userId },
+      where: { authorId: vp.userId },
     });
 
     // Determine if VP is healthy (online and recent activity)
@@ -687,13 +687,13 @@ export const presenceQueries = {
     // Get message counts for all VPs
     const vpUserIds = vps.map((vp) => vp.userId);
     const messageCounts = await context.prisma.message.groupBy({
-      by: ['userId'],
-      where: { userId: { in: vpUserIds } },
+      by: ['authorId'],
+      where: { authorId: { in: vpUserIds } },
       _count: { id: true },
     });
 
     const messageCountMap = new Map(
-      messageCounts.map((mc) => [mc.userId, mc._count.id])
+      messageCounts.map((mc) => [mc.authorId, mc._count?.id ?? 0])
     );
 
     return vps.map((vp) => ({

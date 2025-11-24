@@ -463,6 +463,16 @@ export interface WorkflowAction {
 // =============================================================================
 
 /**
+ * Valid workflow variable value types.
+ */
+export type WorkflowVariableValue =
+  | string
+  | number
+  | boolean
+  | WorkflowVariableValue[]
+  | { [key: string]: WorkflowVariableValue };
+
+/**
  * Workflow variable definition.
  */
 export interface WorkflowVariable {
@@ -471,7 +481,7 @@ export interface WorkflowVariable {
   /** Variable type */
   type: 'string' | 'number' | 'boolean' | 'array' | 'object';
   /** Default value */
-  defaultValue?: unknown;
+  defaultValue?: WorkflowVariableValue;
 }
 
 // =============================================================================
@@ -532,6 +542,17 @@ export type ExecutionStatus =
 export type ActionResultStatus = 'success' | 'failed' | 'skipped';
 
 /**
+ * Action output data with typed values.
+ * Different action types produce different output structures.
+ */
+export type ActionOutputData =
+  | string
+  | number
+  | boolean
+  | { [key: string]: string | number | boolean | string[] | null }
+  | BuiltInActionResult;
+
+/**
  * Single action execution result.
  */
 export interface ActionResult {
@@ -540,7 +561,7 @@ export interface ActionResult {
   /** Result status */
   status: ActionResultStatus;
   /** Output data from the action */
-  output?: unknown;
+  output?: ActionOutputData;
   /** Error message if failed */
   error?: string;
   /** When the action started */
@@ -994,3 +1015,117 @@ export const TEMPLATE_CATEGORIES: TemplateCategory[] = [
   'integration',
   'custom',
 ];
+
+// =============================================================================
+// Built-in Action Result Types
+// =============================================================================
+
+/**
+ * Result of a delay action.
+ */
+export interface DelayActionResult {
+  /** Duration delayed in milliseconds */
+  delayed: number;
+}
+
+/**
+ * Result of a condition action.
+ */
+export interface ConditionActionResult {
+  /** Whether the condition matched */
+  matched: boolean;
+  /** Which branch was executed */
+  branch: string;
+}
+
+/**
+ * Result of a set variable action.
+ */
+export interface SetVariableActionResult {
+  /** Variable name that was set */
+  name: string;
+  /** Value that was set - matches WorkflowVariableValue type */
+  value: WorkflowVariableValue;
+}
+
+/**
+ * Result of a loop action.
+ */
+export interface LoopActionResult {
+  /** Number of iterations completed */
+  iterations: number;
+  /** Results from each iteration */
+  results: ActionResult[][];
+}
+
+/**
+ * Result of a send message action.
+ */
+export interface SendMessageActionResult {
+  /** Channel ID message was sent to */
+  channelId: string;
+  /** Message content */
+  message: string;
+}
+
+/**
+ * Result of a send DM action.
+ */
+export interface SendDMActionResult {
+  /** User ID DM was sent to */
+  userId: string;
+  /** Message content */
+  message: string;
+}
+
+/**
+ * Result of a webhook action.
+ */
+export interface WebhookActionResult {
+  /** HTTP status code */
+  status: number;
+  /** Response body */
+  body: string;
+  /** Request URL */
+  url: string;
+  /** Request timeout */
+  timeout: number;
+  /** Request body if sent */
+  requestBody?: string;
+}
+
+/**
+ * Result of an invoke VP action.
+ */
+export interface InvokeVPActionResult {
+  /** VP ID that was invoked */
+  vpId: string;
+  /** Prompt sent to VP */
+  prompt: string;
+  /** Response from VP if waited for */
+  response?: string;
+}
+
+/**
+ * Result of a generic action without a specific handler.
+ */
+export interface GenericActionResult {
+  /** Whether action was executed */
+  executed: boolean;
+  /** Action type */
+  type: string;
+}
+
+/**
+ * Union type of all built-in action results.
+ */
+export type BuiltInActionResult =
+  | DelayActionResult
+  | ConditionActionResult
+  | SetVariableActionResult
+  | LoopActionResult
+  | SendMessageActionResult
+  | SendDMActionResult
+  | WebhookActionResult
+  | InvokeVPActionResult
+  | GenericActionResult;

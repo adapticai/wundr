@@ -25,7 +25,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock NextAuth
 vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+  authMock: vi.fn(),
 }));
 
 // Mock the organization services
@@ -80,6 +80,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
+// @ts-expect-error Reserved for future integration tests
 function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
@@ -145,12 +146,12 @@ function createMockMemberResponse(overrides?: Record<string, unknown>) {
 // =============================================================================
 
 describe('Organization API Routes', () => {
-  let getServerSession: ReturnType<typeof vi.fn>;
+  let authMock: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
+    const authModule = await import('@/lib/auth');
+    authMock = authModule.auth as unknown as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {
@@ -164,7 +165,7 @@ describe('Organization API Routes', () => {
   describe('POST /api/organizations', () => {
     it('creates organization with valid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockOrg = createMockOrganizationResponse();
       mockOrganizationService.createOrganization.mockResolvedValue(mockOrg);
@@ -196,7 +197,7 @@ describe('Organization API Routes', () => {
 
     it('sets creator as owner', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockOrg = createMockOrganizationResponse();
       mockOrganizationService.createOrganization.mockResolvedValue({
@@ -214,9 +215,9 @@ describe('Organization API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      authMock.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await authMock();
       expect(session).toBeNull();
 
       // Route handler would return 401
@@ -226,7 +227,7 @@ describe('Organization API Routes', () => {
 
     it('returns 400 for invalid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       // Missing required fields
       const invalidRequestBody = {
@@ -250,7 +251,7 @@ describe('Organization API Routes', () => {
 
     it('returns 409 for duplicate slug', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.createOrganization.mockRejectedValue({
         code: 'ORGANIZATION_SLUG_EXISTS',
@@ -271,7 +272,7 @@ describe('Organization API Routes', () => {
 
     it('validates slug format', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       // Invalid slug with special characters
       const invalidSlug = 'Invalid Slug!@#';
@@ -301,7 +302,7 @@ describe('Organization API Routes', () => {
   describe('GET /api/organizations', () => {
     it('lists organizations user belongs to', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockOrgs = [
         createMockOrganizationResponse({ id: 'org-1', name: 'Org 1' }),
@@ -330,7 +331,7 @@ describe('Organization API Routes', () => {
 
     it('supports pagination', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.listOrganizations.mockResolvedValue({
         data: [createMockOrganizationResponse()],
@@ -357,7 +358,7 @@ describe('Organization API Routes', () => {
 
     it('supports search filtering', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.listOrganizations.mockResolvedValue({
         data: [createMockOrganizationResponse({ name: 'Acme Corp' })],
@@ -385,9 +386,9 @@ describe('Organization API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      authMock.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await authMock();
       expect(session).toBeNull();
     });
   });
@@ -399,7 +400,7 @@ describe('Organization API Routes', () => {
   describe('GET /api/organizations/:id', () => {
     it('returns organization when found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockOrg = createMockOrganizationResponse();
       mockOrganizationService.getOrganization.mockResolvedValue(mockOrg);
@@ -412,7 +413,7 @@ describe('Organization API Routes', () => {
 
     it('returns 404 when organization not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.getOrganization.mockRejectedValue({
         code: 'ORGANIZATION_NOT_FOUND',
@@ -430,7 +431,7 @@ describe('Organization API Routes', () => {
 
     it('returns 403 for non-member', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.getOrganization.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -454,7 +455,7 @@ describe('Organization API Routes', () => {
   describe('PATCH /api/organizations/:id', () => {
     it('updates organization with valid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const updatedOrg = createMockOrganizationResponse({
         name: 'Updated Name',
@@ -480,7 +481,7 @@ describe('Organization API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       // Check permission
       const hasPermission = session.user.role === 'ADMIN' || session.user.role === 'OWNER';
@@ -489,7 +490,7 @@ describe('Organization API Routes', () => {
 
     it('returns 404 when organization not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.updateOrganization.mockRejectedValue({
         code: 'ORGANIZATION_NOT_FOUND',
@@ -522,7 +523,7 @@ describe('Organization API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.deleteOrganization.mockResolvedValue(undefined);
 
@@ -541,7 +542,7 @@ describe('Organization API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.deleteOrganization.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -565,7 +566,7 @@ describe('Organization API Routes', () => {
   describe('POST /api/organizations/:id/members', () => {
     it('adds member with role', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const mockMember = createMockMemberResponse();
       mockOrganizationService.addMember.mockResolvedValue(mockMember);
@@ -588,7 +589,7 @@ describe('Organization API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.addMember.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -609,7 +610,7 @@ describe('Organization API Routes', () => {
 
     it('returns 409 for duplicate member', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.addMember.mockRejectedValue({
         code: 'ALREADY_CHANNEL_MEMBER',
@@ -630,7 +631,7 @@ describe('Organization API Routes', () => {
 
     it('returns 404 for non-existent user', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.addMember.mockRejectedValue({
         code: 'USER_NOT_FOUND',
@@ -657,7 +658,7 @@ describe('Organization API Routes', () => {
   describe('PATCH /api/organizations/:id/members/:userId', () => {
     it('updates member role', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       const updatedMember = createMockMemberResponse({ role: 'ADMIN' });
       mockOrganizationService.updateMemberRole.mockResolvedValue(updatedMember);
@@ -671,7 +672,7 @@ describe('Organization API Routes', () => {
 
     it('cannot modify owner', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.updateMemberRole.mockRejectedValue({
         code: 'CANNOT_MODIFY_OWNER',
@@ -691,7 +692,7 @@ describe('Organization API Routes', () => {
 
     it('cannot assign owner role', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.updateMemberRole.mockRejectedValue({
         code: 'FORBIDDEN',
@@ -717,7 +718,7 @@ describe('Organization API Routes', () => {
   describe('DELETE /api/organizations/:id/members/:userId', () => {
     it('removes member when authorized', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.removeMember.mockResolvedValue(undefined);
 
@@ -735,7 +736,7 @@ describe('Organization API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.removeMember.mockResolvedValue(undefined);
 
@@ -747,7 +748,7 @@ describe('Organization API Routes', () => {
 
     it('cannot remove owner', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      authMock.mockResolvedValue(session);
 
       mockOrganizationService.removeMember.mockRejectedValue({
         code: 'CANNOT_REMOVE_SELF_AS_OWNER',

@@ -23,6 +23,7 @@ import type {
   WorkflowTrigger,
   WorkflowAction,
   WorkflowVariable,
+  WorkflowVariableValue,
   WorkflowExecution,
   ActionResult,
   WorkflowTemplate,
@@ -40,10 +41,13 @@ import type {
   ConditionConfig,
   LoopConfig,
   SetVariableConfig,
+  SetVariableActionResult,
   SendMessageConfig,
   SendDMConfig,
   WebhookActionConfig,
   InvokeVPConfig,
+  BuiltInActionResult,
+  LoopActionResult,
 } from '../types/workflow';
 
 // =============================================================================
@@ -1142,10 +1146,17 @@ export class WorkflowServiceImpl implements WorkflowService {
     return results;
   }
 
+  /**
+   * Executes a built-in workflow action.
+   *
+   * @param action - The workflow action to execute
+   * @param context - The execution context with workflow state
+   * @returns The typed action result based on the action type
+   */
   private async executeBuiltInAction(
     action: WorkflowAction,
     context: ExecutionContext,
-  ): Promise<unknown> {
+  ): Promise<BuiltInActionResult> {
     const config = action.config;
 
     switch (config.type) {
@@ -1233,23 +1244,33 @@ export class WorkflowServiceImpl implements WorkflowService {
   private executeSetVariableAction(
     config: SetVariableConfig,
     context: ExecutionContext,
-  ): { name: string; value: unknown } {
-    let value: unknown = config.value;
+  ): SetVariableActionResult {
+    let value: WorkflowVariableValue = config.value as WorkflowVariableValue;
 
     if (config.expression) {
       // Simple expression evaluation (in real impl, use a safe evaluator)
-      value = this.interpolateTemplate(config.expression, context);
+      const interpolated = this.interpolateTemplate(config.expression, context);
+      // Convert interpolated string to appropriate type
+      value = typeof interpolated === 'string' ? interpolated : String(interpolated);
     }
 
     context.variables[config.name] = value;
     return { name: config.name, value };
   }
 
+  /**
+   * Executes a loop action over a collection.
+   *
+   * @param config - Loop configuration with collection path and actions
+   * @param action - The workflow action being executed
+   * @param context - Execution context with workflow state
+   * @returns Loop result with iteration count and action results
+   */
   private async executeLoopAction(
     config: LoopConfig,
     action: WorkflowAction,
     context: ExecutionContext,
-  ): Promise<{ iterations: number; results: unknown[] }> {
+  ): Promise<LoopActionResult> {
     const collection = this.resolveVariable(config.collection, context);
 
     if (!Array.isArray(collection)) {
@@ -1260,7 +1281,7 @@ export class WorkflowServiceImpl implements WorkflowService {
     }
 
     const maxIterations = config.maxIterations ?? DEFAULT_MAX_LOOP_ITERATIONS;
-    const results: unknown[] = [];
+    const results: ActionResult[][] = [];
     let iterations = 0;
 
     for (const item of collection) {

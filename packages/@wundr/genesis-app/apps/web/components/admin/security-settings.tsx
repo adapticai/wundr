@@ -41,8 +41,13 @@ export interface SecurityConfig {
   };
 }
 
+/**
+ * Props for the SecuritySettings component.
+ */
 export interface SecuritySettingsProps {
+  /** The workspace ID to manage security settings for */
   workspaceId: string;
+  /** Additional CSS classes to apply */
   className?: string;
 }
 
@@ -691,20 +696,26 @@ export function SecuritySettings({ workspaceId, className }: SecuritySettingsPro
   );
 }
 
-// Collapsible section component
-function Section({
-  title,
-  description,
-  expanded,
-  onToggle,
-  children,
-}: {
+/**
+ * Props for the Section component
+ */
+interface SectionProps {
+  /** Section title */
   title: string;
+  /** Section description */
   description: string;
+  /** Whether the section is expanded */
   expanded: boolean;
+  /** Callback to toggle expanded state */
   onToggle: () => void;
+  /** Section content */
   children: React.ReactNode;
-}) {
+}
+
+/**
+ * Collapsible section component for organizing security settings
+ */
+function Section({ title, description, expanded, onToggle, children }: SectionProps) {
   return (
     <div className="border border-border rounded-lg">
       <button
@@ -728,18 +739,24 @@ function Section({
   );
 }
 
-// Toggle component
-function Toggle({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
+/**
+ * Props for the Toggle component
+ */
+interface ToggleProps {
+  /** Toggle label */
   label: string;
+  /** Optional description text */
   description?: string;
+  /** Current checked state */
   checked: boolean;
+  /** Callback when toggle state changes */
   onChange: (checked: boolean) => void;
-}) {
+}
+
+/**
+ * Toggle switch component for boolean settings
+ */
+function Toggle({ label, description, checked, onChange }: ToggleProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
