@@ -432,10 +432,10 @@ export function createVPCharter(options: CreateVPCharterOptions): VPCharter {
   };
 
   // Deduplicate constraint arrays
-  constraints.forbiddenCommands = [...new Set(constraints.forbiddenCommands)];
-  constraints.forbiddenPaths = [...new Set(constraints.forbiddenPaths)];
-  constraints.forbiddenActions = [...new Set(constraints.forbiddenActions)];
-  constraints.requireApprovalFor = [...new Set(constraints.requireApprovalFor)];
+  constraints.forbiddenCommands = Array.from(new Set(constraints.forbiddenCommands));
+  constraints.forbiddenPaths = Array.from(new Set(constraints.forbiddenPaths));
+  constraints.forbiddenActions = Array.from(new Set(constraints.forbiddenActions));
+  constraints.requireApprovalFor = Array.from(new Set(constraints.requireApprovalFor));
 
   // Merge MCP tools (append additional tools to defaults)
   const mcpTools = [
