@@ -868,6 +868,43 @@ export {
 } from './redis';
 
 // =============================================================================
+// Testing Utilities
+// =============================================================================
+
+export {
+  // Mock utilities
+  createMock,
+  createSpy,
+  createFixture,
+  createFactory,
+  generateMany,
+  createSeeder,
+
+  // Test factories
+  userFactory,
+  workspaceFactory,
+  channelFactory,
+  messageFactory,
+  vpFactory,
+
+  // Async utilities
+  waitFor,
+  wait,
+
+  // Mock servers and databases
+  createMockServer,
+  createTestDatabase,
+
+  // Assertion utilities
+  assert,
+
+  // Test context
+  createTestContext,
+  cleanupTestContext,
+  type TestContext,
+} from './testing';
+
+// =============================================================================
 // Version
 // =============================================================================
 

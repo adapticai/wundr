@@ -1235,3 +1235,81 @@ export {
   WEB_VITALS_THRESHOLDS,
   DEFAULT_PERFORMANCE_BUDGETS,
 } from './performance';
+
+// =============================================================================
+// Testing Types
+// =============================================================================
+
+export type {
+  // Environment types
+  TestEnvironment,
+  TestStatus,
+  TestPriority,
+
+  // Test metadata
+  TestMetadata,
+  TestResult,
+  TestError,
+  AssertionResult,
+  TestSuite,
+  TestRun,
+  TestSummary,
+
+  // Coverage types
+  CoverageReport,
+  CoverageMetric,
+
+  // Mock types
+  MockConfig,
+  MockCall,
+  MockInstance,
+  Fixture,
+  FactoryFunction,
+  Seeder,
+
+  // Database types
+  TestDatabase,
+  MockServer,
+  MockResponse,
+  MockServerVerification,
+
+  // E2E types
+  TestPage,
+  WaitOptions,
+  TestLocator,
+
+  // Performance test types
+  PerformanceTestConfig,
+  PerformanceThreshold,
+  LoadStage,
+  PerformanceTestMetrics,
+  MetricSummary,
+
+  // Documentation types
+  DocCategory,
+  DocPage,
+  ApiDoc,
+  ApiEndpoint,
+  ApiParameter,
+  ApiRequestBody,
+  ApiMediaType,
+  ApiResponse,
+  ApiSchema,
+  ApiSchemaRef,
+  ApiExample,
+  ApiAuthentication,
+  OAuthFlows,
+  OAuthFlow,
+  CodeExample,
+  ComponentDoc,
+  PropDoc,
+  AccessibilityDoc,
+  ChangelogEntry,
+} from './testing';
+
+export {
+  DEFAULT_TEST_TIMEOUT,
+  DEFAULT_TEST_RETRIES,
+  DEFAULT_COVERAGE_THRESHOLDS,
+  DEFAULT_PERFORMANCE_THRESHOLDS,
+} from './testing';
