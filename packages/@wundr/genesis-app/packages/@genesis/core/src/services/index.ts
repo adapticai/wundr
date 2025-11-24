@@ -656,3 +656,31 @@ export {
   InviteNotFoundError,
   InviteExpiredError,
 } from './admin-service';
+
+// =============================================================================
+// Performance Service
+// =============================================================================
+
+export {
+  // Cache implementation
+  LRUCache,
+
+  // Metrics collector
+  MetricsCollector,
+
+  // Utility functions
+  memoize,
+  debounce,
+  throttle,
+
+  // Request utilities
+  RequestDeduplicator,
+  BatchProcessor,
+
+  // Performance observer
+  observePerformance,
+
+  // Main service
+  PerformanceService,
+  performanceService,
+} from './performance-service';

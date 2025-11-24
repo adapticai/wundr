@@ -1179,3 +1179,59 @@ export {
   DEFAULT_LOCALE,
   DEFAULT_ACCESSIBILITY_PREFERENCES,
 } from './i18n';
+
+// =============================================================================
+// Performance Types
+// =============================================================================
+
+export type {
+  // Cache types
+  CacheConfig,
+  CacheEntry,
+  CacheStats,
+
+  // Metric types
+  MetricType,
+  PerformanceMetric,
+  CoreWebVitals,
+  PerformanceRating,
+
+  // Bundle types
+  BundleAnalysis,
+  ChunkInfo,
+  ModuleInfo,
+
+  // Timing types
+  ResourceTiming,
+  NavigationTiming,
+  MemoryUsage,
+
+  // Component metrics
+  RenderMetrics,
+  QueryMetrics,
+  ApiMetrics,
+
+  // Budget types
+  PerformanceBudget,
+  OptimizationSuggestion,
+
+  // Strategy types
+  PrefetchStrategy,
+  LazyLoadConfig,
+  ImageOptimizationConfig,
+  CodeSplittingConfig,
+  CacheStrategy,
+  ServiceWorkerConfig,
+  RuntimeCacheRule,
+
+  // Config types
+  DeduplicationConfig,
+  RateLimitConfig,
+  VirtualizationConfig,
+  MemoizationConfig,
+} from './performance';
+
+export {
+  WEB_VITALS_THRESHOLDS,
+  DEFAULT_PERFORMANCE_BUDGETS,
+} from './performance';
