@@ -11,9 +11,6 @@
  * @module app/api/workspaces/[workspaceId]/admin/retention/policies/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
-import { redis } from '@genesis/core/redis';
 import {
   RetentionService,
   AuditServiceImpl,
@@ -22,8 +19,13 @@ import {
   type AuditDatabaseClient,
   type AuditRedisClient,
 } from '@genesis/core';
+import { redis } from '@genesis/core/redis';
+import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -49,7 +51,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -80,7 +82,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/retention/policies] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch policies' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -106,7 +108,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -131,7 +133,7 @@ export async function POST(
     if (!body.name || !body.rules || !Array.isArray(body.rules)) {
       return NextResponse.json(
         { error: 'Name and rules are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -150,7 +152,7 @@ export async function POST(
       body.name,
       body.rules,
       session.user.id,
-      body.description
+      body.description,
     );
 
     // Log audit event
@@ -171,7 +173,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/admin/retention/policies] Error:', error);
     return NextResponse.json(
       { error: 'Failed to create policy' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

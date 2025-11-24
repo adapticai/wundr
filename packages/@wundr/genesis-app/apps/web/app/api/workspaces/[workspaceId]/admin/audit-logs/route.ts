@@ -10,14 +10,15 @@
  * @module app/api/workspaces/[workspaceId]/admin/audit-logs/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
 import { redis } from '@genesis/core/redis';
-import { AuditServiceImpl, type AuditDatabaseClient, type AuditRedisClient } from '@genesis/core';
+import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
-import type { AuditCategory, AuditSeverity, AuditAction } from '@genesis/core';
+import type { AuditCategory, AuditSeverity, AuditAction , AuditServiceImpl, type AuditDatabaseClient, type AuditRedisClient  } from '@genesis/core';
+import type { NextRequest} from 'next/server';
+
 
 /**
  * Route context with workspace ID parameter
@@ -43,7 +44,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -89,7 +90,7 @@ export async function GET(
       searchParams.get('sort') ? {
         field: searchParams.get('sort') as 'timestamp' | 'severity' | 'actor' | 'action',
         direction: (searchParams.get('order') || 'desc') as 'asc' | 'desc',
-      } : undefined
+      } : undefined,
     );
 
     return NextResponse.json(result);
@@ -97,7 +98,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/audit-logs] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch audit logs' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

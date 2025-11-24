@@ -18,6 +18,7 @@ import {
   NOTIFICATION_ERROR_CODES,
 } from '@/lib/validations/notification';
 
+import type { NotificationType } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const where = {
       userId: session.user.id,
       read: false,
-      ...(filters.type && { type: filters.type }),
+      ...(filters.type && { type: filters.type as NotificationType }),
       ...(filters.beforeDate && { createdAt: { lte: new Date(filters.beforeDate) } }),
     };
 

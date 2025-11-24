@@ -10,14 +10,15 @@
  * @module app/api/workspaces/[workspaceId]/search/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
-import { redis } from '@genesis/core/redis';
 import { SearchServiceImpl } from '@genesis/core';
+import { redis } from '@genesis/core/redis';
+import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
 import type { SearchResultType } from '@genesis/core';
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -43,7 +44,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -105,7 +106,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/search] Error:', error);
     return NextResponse.json(
       { error: 'Search failed' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

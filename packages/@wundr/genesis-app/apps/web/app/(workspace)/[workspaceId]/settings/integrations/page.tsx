@@ -1,25 +1,27 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { useState, useCallback } from 'react';
+
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import {
   useIntegrations,
   useIntegrationMutations,
   useWebhooks,
 } from '@/hooks/use-integrations';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { cn } from '@/lib/utils';
+import {
+  INTEGRATION_PROVIDERS,
+  INTEGRATION_STATUS_CONFIG,
+  WEBHOOK_EVENTS,
+} from '@/types/integration';
+
 import type {
   IntegrationConfig,
   IntegrationProvider,
   WebhookConfig,
   CreateWebhookInput,
   WebhookEventType,
-} from '@/types/integration';
-import {
-  INTEGRATION_PROVIDERS,
-  INTEGRATION_STATUS_CONFIG,
-  WEBHOOK_EVENTS,
 } from '@/types/integration';
 
 type Tab = 'integrations' | 'webhooks';
@@ -69,7 +71,7 @@ export default function IntegrationsPage() {
         window.location.href = result.authUrl;
       }
     },
-    [workspaceId, initiateOAuth]
+    [workspaceId, initiateOAuth],
   );
 
   const handleCreateWebhook = useCallback(
@@ -80,7 +82,7 @@ export default function IntegrationsPage() {
         refetchWebhooks();
       }
     },
-    [createWebhook, refetchWebhooks]
+    [createWebhook, refetchWebhooks],
   );
 
   const isLoading = activeTab === 'integrations' ? integrationsLoading : webhooksLoading;
@@ -117,7 +119,7 @@ export default function IntegrationsPage() {
                 'relative py-4 text-sm font-medium transition-colors',
                 activeTab === tab.id
                   ? 'text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {tab.label}
@@ -287,7 +289,7 @@ function IntegrationCard({ integration, onClick }: IntegrationCardProps) {
             className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
               statusConfig.bgColor,
-              statusConfig.color
+              statusConfig.color,
             )}
           >
             {statusConfig.label}
@@ -442,7 +444,9 @@ function IntegrationConnectModal({
 }: IntegrationConnectModalProps) {
   const providers = Object.entries(INTEGRATION_PROVIDERS) as [IntegrationProvider, { name: string; description: string; icon: string }][];
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -498,7 +502,9 @@ function WebhookFormModal({ isOpen, onClose, onSubmit }: WebhookFormModalProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !url || selectedEvents.length === 0) return;
+    if (!name || !url || selectedEvents.length === 0) {
+return;
+}
 
     setIsSubmitting(true);
     await onSubmit({
@@ -512,11 +518,13 @@ function WebhookFormModal({ isOpen, onClose, onSubmit }: WebhookFormModalProps) 
 
   const toggleEvent = (event: WebhookEventType) => {
     setSelectedEvents((prev) =>
-      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event]
+      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event],
     );
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -598,7 +606,7 @@ function WebhookFormModal({ isOpen, onClose, onSubmit }: WebhookFormModalProps) 
                       <p className="text-xs text-muted-foreground">{info.description}</p>
                     </div>
                   </label>
-                )
+                ),
               )}
             </div>
             {selectedEvents.length === 0 && (
@@ -653,7 +661,7 @@ function IntegrationDetailModal({ integration, onClose, onUpdate }: IntegrationD
                 className={cn(
                   'rounded-full px-2 py-0.5 text-xs font-medium',
                   statusConfig.bgColor,
-                  statusConfig.color
+                  statusConfig.color,
                 )}
               >
                 {statusConfig.label}

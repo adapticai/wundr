@@ -69,7 +69,7 @@ export default function WorkflowsPage() {
         mutate();
       }
     },
-    [createWorkflow, mutate]
+    [createWorkflow, mutate],
   );
 
   const handleEditWorkflow = useCallback((workflow: Workflow) => {
@@ -154,7 +154,7 @@ export default function WorkflowsPage() {
                 'whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors',
                 statusFilter === tab
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
               )}
             >
               {tab === 'all' ? 'All' : WORKFLOW_STATUS_CONFIG[tab].label}
@@ -163,7 +163,7 @@ export default function WorkflowsPage() {
                   'ml-2 rounded-full px-2 py-0.5 text-xs',
                   statusFilter === tab
                     ? 'bg-primary/10 text-primary'
-                    : 'bg-muted text-muted-foreground'
+                    : 'bg-muted text-muted-foreground',
                 )}
               >
                 {workflowStats[tab]}
@@ -288,7 +288,7 @@ function WorkflowCard({ workflow, onEdit, onViewHistory }: WorkflowCardProps) {
           className={cn(
             'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
             statusConfig.bgColor,
-            statusConfig.color
+            statusConfig.color,
           )}
         >
           {statusConfig.label}
@@ -433,9 +433,15 @@ function WorkflowBuilderModal({ workflow, onClose, onSave }: WorkflowBuilderModa
   } = useWorkflowBuilder(workflow ?? undefined);
 
   const handleSave = async () => {
-    if (!validate()) return;
-    if (!trigger) return;
-    if (!name.trim()) return;
+    if (!validate()) {
+return;
+}
+    if (!trigger) {
+return;
+}
+    if (!name.trim()) {
+return;
+}
 
     setIsSaving(true);
     try {
@@ -582,7 +588,7 @@ function TriggerSelector({ value, onChange }: TriggerSelectorProps) {
             'rounded-lg border p-3 text-left transition-colors hover:border-primary',
             value?.type === type
               ? 'border-primary bg-primary/5'
-              : 'border-border'
+              : 'border-border',
           )}
         >
           <p className="font-medium text-sm">{config.label}</p>
@@ -673,7 +679,9 @@ function TemplateSelectionModal({
   const [categoryFilter, setCategoryFilter] = useState<WorkflowTemplateCategory | 'all'>('all');
 
   const filteredTemplates = useMemo(() => {
-    if (categoryFilter === 'all') return templates;
+    if (categoryFilter === 'all') {
+return templates;
+}
     return templates.filter((t) => t.category === categoryFilter);
   }, [templates, categoryFilter]);
 
@@ -700,7 +708,7 @@ function TemplateSelectionModal({
               'rounded-full px-3 py-1 text-sm transition-colors',
               categoryFilter === 'all'
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-muted hover:bg-muted/80'
+                : 'bg-muted hover:bg-muted/80',
             )}
           >
             All
@@ -714,7 +722,7 @@ function TemplateSelectionModal({
                 'rounded-full px-3 py-1 text-sm transition-colors',
                 categoryFilter === key
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted hover:bg-muted/80'
+                  : 'bg-muted hover:bg-muted/80',
               )}
             >
               {config.label}
@@ -815,7 +823,7 @@ function ExecutionHistoryDrawer({ workflowId, onClose }: ExecutionHistoryDrawerP
                       className={cn(
                         'rounded-full px-2 py-0.5 text-xs font-medium',
                         statusConfig.bgColor,
-                        statusConfig.color
+                        statusConfig.color,
                       )}
                     >
                       {statusConfig.label}

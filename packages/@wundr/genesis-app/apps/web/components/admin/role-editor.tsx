@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { Role } from './role-list';
 
 export interface RoleEditorProps {
@@ -62,7 +64,7 @@ export function RoleEditor({
   const [description, setDescription] = useState(role?.description || '');
   const [priority, setPriority] = useState(role?.priority || 50);
   const [permissions, setPermissions] = useState<Set<string>>(
-    new Set(role?.permissions || [])
+    new Set(role?.permissions || []),
   );
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -114,7 +116,9 @@ export function RoleEditor({
   };
 
   const handleSave = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+return;
+}
 
     setIsSaving(true);
     try {
@@ -147,7 +151,9 @@ export function RoleEditor({
     const grouped: Record<string, string[]> = {};
     permissions.forEach((p) => {
       const [resource, action] = p.split(':');
-      if (!grouped[resource]) grouped[resource] = [];
+      if (!grouped[resource]) {
+grouped[resource] = [];
+}
       grouped[resource].push(action);
     });
     return grouped;
@@ -163,7 +169,7 @@ export function RoleEditor({
       <div
         className={cn(
           'w-full max-w-4xl bg-card border border-border rounded-xl shadow-lg',
-          className
+          className,
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -199,7 +205,7 @@ export function RoleEditor({
                   className={cn(
                     'w-full px-3 py-2 rounded-lg bg-muted border text-foreground',
                     errors.name ? 'border-destructive' : 'border-border',
-                    role?.isSystem && 'opacity-50 cursor-not-allowed'
+                    role?.isSystem && 'opacity-50 cursor-not-allowed',
                   )}
                   placeholder="e.g., Team Lead"
                 />
@@ -285,10 +291,10 @@ export function RoleEditor({
                   <tbody className="divide-y divide-border">
                     {PERMISSION_RESOURCES.map((resource) => {
                       const resourcePermissions = resource.actions.map(
-                        (a) => `${resource.id}:${a}`
+                        (a) => `${resource.id}:${a}`,
                       );
                       const allSelected = resourcePermissions.every((p) =>
-                        permissions.has(p)
+                        permissions.has(p),
                       );
                       const someSelected =
                         !allSelected &&
@@ -302,7 +308,9 @@ export function RoleEditor({
                                 type="checkbox"
                                 checked={allSelected}
                                 ref={(el) => {
-                                  if (el) el.indeterminate = someSelected;
+                                  if (el) {
+el.indeterminate = someSelected;
+}
                                 }}
                                 onChange={() =>
                                   toggleAllForResource(resource.id, resource.actions)
@@ -328,7 +336,7 @@ export function RoleEditor({
                                       'text-xs transition-colors',
                                       isChecked
                                         ? 'bg-primary/10 text-primary'
-                                        : 'bg-muted text-muted-foreground hover:text-foreground'
+                                        : 'bg-muted text-muted-foreground hover:text-foreground',
                                     )}
                                   >
                                     <input
@@ -370,7 +378,7 @@ export function RoleEditor({
             disabled={isSaving || role?.isSystem}
             className={cn(
               'px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             {isSaving ? 'Saving...' : role ? 'Save Changes' : 'Create Role'}

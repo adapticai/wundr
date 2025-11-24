@@ -305,7 +305,9 @@ export function isRetentionJobStatus(value: unknown): value is RetentionJobStatu
  * Type guard to check if a value is a valid RetentionPolicy.
  */
 export function isRetentionPolicy(value: unknown): value is RetentionPolicy {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const policy = value as Record<string, unknown>;
   return (
     typeof policy.id === 'string' &&
@@ -321,7 +323,9 @@ export function isRetentionPolicy(value: unknown): value is RetentionPolicy {
  * Type guard to check if a value is a valid LegalHold.
  */
 export function isLegalHold(value: unknown): value is LegalHold {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const hold = value as Record<string, unknown>;
   return (
     typeof hold.id === 'string' &&

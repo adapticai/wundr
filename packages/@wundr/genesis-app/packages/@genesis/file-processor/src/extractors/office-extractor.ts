@@ -7,27 +7,28 @@
  * @packageDocumentation
  */
 
+import { ExtractionError, DocxExtractionError, XlsxExtractionError } from '../types/extraction';
+
 import type { FileProcessorConfig } from '../config';
 import type {
   DocxOptions,
   DocxExtractionResult,
   DocxHeading,
-  DocxComment,
-  DocxTrackChange,
-  DocxStyle,
+  DocxComment as _DocxComment,
+  DocxTrackChange as _DocxTrackChange,
+  DocxStyle as _DocxStyle,
   XlsxOptions,
   XlsxExtractionResult,
   XlsxSheet,
   XlsxNamedRange,
   XlsxWorkbookProperties,
   XlsxCellValue,
-  XlsxRichText,
+  XlsxRichText as _XlsxRichText,
   MergedCellInfo,
   DocumentMetadata,
   ExtractedTable,
-  ExtractedImage,
+  ExtractedImage as _ExtractedImage,
 } from '../types/extraction';
-import { ExtractionError, DocxExtractionError, XlsxExtractionError } from '../types/extraction';
 
 // ============================================================================
 // Office Extractor Interface
@@ -196,7 +197,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new ExtractionError(
           'mammoth library not available. Please install: npm install mammoth',
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
     }
@@ -215,7 +216,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new ExtractionError(
           'xlsx library not available. Please install: npm install xlsx',
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
     }
@@ -234,7 +235,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       if (!this.isDocx(buffer)) {
         throw new DocxExtractionError(
           'Invalid DOCX: Buffer does not appear to be a valid DOCX file',
-          'INVALID_FILE'
+          'INVALID_FILE',
         );
       }
 
@@ -255,7 +256,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new DocxExtractionError(
           `Failed to convert DOCX to HTML: ${error instanceof Error ? error.message : 'Unknown error'}`,
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
 
@@ -267,7 +268,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         throw new DocxExtractionError(
           `Failed to extract DOCX text: ${error instanceof Error ? error.message : 'Unknown error'}`,
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
 
@@ -313,7 +314,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       throw new DocxExtractionError(
         `DOCX extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'EXTRACTION_FAILED',
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -330,7 +331,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
       if (!this.isXlsx(buffer)) {
         throw new XlsxExtractionError(
           'Invalid XLSX: Buffer does not appear to be a valid XLSX file',
-          'INVALID_FILE'
+          'INVALID_FILE',
         );
       }
 
@@ -350,7 +351,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
           `Failed to parse XLSX: ${error instanceof Error ? error.message : 'Unknown error'}`,
           'EXTRACTION_FAILED',
           undefined,
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
 
@@ -374,7 +375,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
           sheetName,
           i,
           options,
-          XLSX
+          XLSX,
         );
 
         // Skip hidden sheets if requested
@@ -425,7 +426,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
         `XLSX extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'EXTRACTION_FAILED',
         undefined,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -435,8 +436,12 @@ export class OfficeExtractorImpl implements OfficeExtractor {
    */
   isDocx(buffer: Buffer): boolean {
     // Check for ZIP signature (PK) and look for word/ content
-    if (buffer.length < 4) return false;
-    if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) return false;
+    if (buffer.length < 4) {
+return false;
+}
+    if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) {
+return false;
+}
 
     // Check for word processor content markers
     const content = buffer.toString('utf8', 0, Math.min(buffer.length, 2000));
@@ -448,8 +453,12 @@ export class OfficeExtractorImpl implements OfficeExtractor {
    */
   isXlsx(buffer: Buffer): boolean {
     // Check for ZIP signature (PK) and look for xl/ content
-    if (buffer.length < 4) return false;
-    if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) return false;
+    if (buffer.length < 4) {
+return false;
+}
+    if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) {
+return false;
+}
 
     // Check for spreadsheet content markers
     const content = buffer.toString('utf8', 0, Math.min(buffer.length, 2000));
@@ -623,7 +632,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
   private shouldProcessSheet(
     name: string,
     index: number,
-    filter: (string | number)[]
+    filter: (string | number)[],
   ): boolean {
     for (const item of filter) {
       if (typeof item === 'string' && item === name) {
@@ -644,7 +653,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
     name: string,
     index: number,
     options: XlsxOptions | undefined,
-    XLSX: XLSXModule
+    XLSX: XLSXModule,
   ): XlsxSheet {
     const range = worksheet['!ref'];
     if (!range) {
@@ -669,7 +678,7 @@ export class OfficeExtractorImpl implements OfficeExtractor {
     const rows: XlsxCellValue[][] = [];
     const maxRows = Math.min(
       rowCount,
-      options?.maxRowsPerSheet ?? this.config.maxRowsPerSheet ?? 10000
+      options?.maxRowsPerSheet ?? this.config.maxRowsPerSheet ?? 10000,
     );
 
     for (let r = decoded.s.r; r <= decoded.s.r + maxRows - 1; r++) {
@@ -861,12 +870,12 @@ export class OfficeExtractorImpl implements OfficeExtractor {
    */
   private buildXlsxMetadata(
     sheets: XlsxSheet[],
-    props?: XlsxWorkbookProperties
+    props?: XlsxWorkbookProperties,
   ): DocumentMetadata {
     const totalRows = sheets.reduce((sum, s) => sum + s.rowCount, 0);
     const totalCells = sheets.reduce(
       (sum, s) => sum + s.rowCount * s.columnCount,
-      0
+      0,
     );
 
     return {

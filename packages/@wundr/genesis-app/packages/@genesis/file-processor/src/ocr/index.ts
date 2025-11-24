@@ -11,6 +11,16 @@
 // OCR Service Interface & Base
 // ============================================
 
+// ============================================
+// Factory Functions
+// ============================================
+
+import { ImagePreprocessor } from './image-preprocessor';
+import { LayoutAnalyzer } from './layout-analyzer';
+import { TesseractOCRService } from './tesseract-ocr';
+
+import type { OCRServiceConfig } from '../types/ocr';
+
 export {
   OCRService,
   OCRServiceInfo,
@@ -101,15 +111,6 @@ export {
   OCRError,
 } from '../types/ocr';
 
-// ============================================
-// Factory Functions
-// ============================================
-
-import { TesseractOCRService } from './tesseract-ocr';
-import { ImagePreprocessor } from './image-preprocessor';
-import { LayoutAnalyzer } from './layout-analyzer';
-import type { OCRServiceConfig } from '../types/ocr';
-
 /**
  * Create and configure an OCR service with preprocessing and layout analysis
  *
@@ -170,7 +171,7 @@ export function createOCRPipeline(config?: Partial<OCRServiceConfig>): {
  */
 export async function quickOCR(
   image: Buffer,
-  language = 'eng'
+  language = 'eng',
 ): Promise<{
   text: string;
   confidence: number;

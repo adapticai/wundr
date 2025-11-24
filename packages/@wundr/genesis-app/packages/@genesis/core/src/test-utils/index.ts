@@ -43,5 +43,21 @@ export * from './file-factories';
 export * from './mock-s3';
 export * from './mock-livekit';
 export * from './call-factories';
-export * from './notification-factories';
+export {
+  createMockNotification,
+  createMockNotificationPreferences,
+  createMockDeviceRegistration,
+  createMockNotificationAction,
+  createMockNotificationBatch,
+  createMockNotificationWithActions,
+  createMockNotificationChannel,
+  createMockDeliveryStatus,
+  createMockNotificationService,
+  createMockNotificationPayload,
+  createMockPushSubscription,
+  createMockDigestNotification,
+  createMockScheduledNotification,
+  NotificationFactories,
+  resetNotificationIdCounters,
+} from './notification-factories';
 export * from './retention-factories';

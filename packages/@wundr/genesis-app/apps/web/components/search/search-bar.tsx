@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { clsx } from 'clsx';
+import { useRouter } from 'next/navigation';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface SearchBarProps {
   workspaceId: string;
@@ -37,7 +37,7 @@ export function SearchBar({
       setIsLoadingSuggestions(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/search/suggestions?q=${encodeURIComponent(query)}`
+          `/api/workspaces/${workspaceId}/search/suggestions?q=${encodeURIComponent(query)}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -64,7 +64,7 @@ export function SearchBar({
         }
       }
     },
-    [query, onSearch, router, workspaceId]
+    [query, onSearch, router, workspaceId],
   );
 
   const handleSuggestionClick = useCallback(
@@ -77,7 +77,7 @@ export function SearchBar({
       }
       setSuggestions([]);
     },
-    [onSearch, router, workspaceId]
+    [onSearch, router, workspaceId],
   );
 
   // Keyboard shortcut (Cmd/Ctrl + K)
@@ -101,7 +101,7 @@ export function SearchBar({
             'relative flex items-center',
             'bg-muted rounded-lg',
             'border-2 transition-colors',
-            isFocused ? 'border-primary' : 'border-transparent'
+            isFocused ? 'border-primary' : 'border-transparent',
           )}
         >
           {/* Search icon */}
@@ -132,7 +132,7 @@ export function SearchBar({
               'flex-1 px-3 py-2',
               'bg-transparent',
               'text-foreground placeholder:text-muted-foreground',
-              'focus:outline-none'
+              'focus:outline-none',
             )}
           />
 
@@ -140,7 +140,7 @@ export function SearchBar({
           <div
             className={clsx(
               'hidden md:flex items-center gap-1 mr-3',
-              'text-xs text-muted-foreground'
+              'text-xs text-muted-foreground',
             )}
           >
             <kbd className="px-1.5 py-0.5 bg-background rounded border border-border font-mono">
@@ -159,7 +159,7 @@ export function SearchBar({
           className={clsx(
             'absolute top-full left-0 right-0 mt-1 z-50',
             'bg-card border border-border rounded-lg shadow-lg',
-            'max-h-64 overflow-auto'
+            'max-h-64 overflow-auto',
           )}
         >
           {isLoadingSuggestions ? (
@@ -174,7 +174,7 @@ export function SearchBar({
                 className={clsx(
                   'w-full px-4 py-2 text-left',
                   'flex items-center gap-3',
-                  'hover:bg-muted transition-colors'
+                  'hover:bg-muted transition-colors',
                 )}
               >
                 <span className="text-xs text-muted-foreground uppercase">

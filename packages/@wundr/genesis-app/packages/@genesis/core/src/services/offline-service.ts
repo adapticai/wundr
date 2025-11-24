@@ -8,9 +8,15 @@
  */
 
 import { EventEmitter } from 'events';
+
 import { createId } from '@paralleldrive/cuid2';
 
 import { GenesisError } from '../errors';
+import {
+  type LocalStorageService,
+  createLocalStorageService,
+  generateStorageKey,
+} from './local-storage-service';
 import {
   DEFAULT_OFFLINE_QUEUE_CONFIG,
   type OfflineQueueConfig,
@@ -28,11 +34,6 @@ import {
   type OnActionFailedCallback,
   type OnOnlineStatusChangedCallback,
 } from '../types/offline';
-import {
-  type LocalStorageService,
-  createLocalStorageService,
-  generateStorageKey,
-} from './local-storage-service';
 
 
 // =============================================================================
@@ -224,9 +225,32 @@ export interface EnqueueActionInput {
 }
 
 /**
- * Action processor function type.
+ * Result returned by action processors.
+ * This type maps action types to their expected result types.
  */
-export type ActionProcessor = (action: QueuedAction) => Promise<unknown>;
+export type ActionProcessorResult =
+  | import('../types/offline').SendMessageResult
+  | import('../types/offline').EditMessageResult
+  | import('../types/offline').DeleteMessageResult
+  | import('../types/offline').AddReactionResult
+  | import('../types/offline').RemoveReactionResult
+  | import('../types/offline').UpdateStatusResult
+  | import('../types/offline').JoinChannelResult
+  | import('../types/offline').LeaveChannelResult
+  | import('../types/offline').UploadFileResult
+  | import('../types/offline').CreateThreadResult
+  | import('../types/offline').UpdateProfileResult
+  | import('../types/offline').MarkReadResult
+  | void;
+
+/**
+ * Action processor function type.
+ * Processes a queued action and returns the appropriate result type.
+ *
+ * @param action - The queued action to process
+ * @returns Promise resolving to the action result
+ */
+export type ActionProcessor = (action: QueuedAction) => Promise<ActionProcessorResult>;
 
 // =============================================================================
 // Service Implementation

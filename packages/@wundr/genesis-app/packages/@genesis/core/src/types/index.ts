@@ -590,6 +590,21 @@ export type {
   SyncResult as OfflineSyncResult,
   SyncFailure,
 
+  // Action result types
+  SendMessageResult,
+  EditMessageResult,
+  DeleteMessageResult,
+  AddReactionResult as OfflineAddReactionResult,
+  RemoveReactionResult,
+  UpdateStatusResult,
+  JoinChannelResult,
+  LeaveChannelResult,
+  UploadFileResult,
+  CreateThreadResult,
+  UpdateProfileResult,
+  MarkReadResult,
+  ActionResult as OfflineActionResult,
+
   // Sync data types
   InitialSyncData,
   IncrementalSyncData,
@@ -598,12 +613,16 @@ export type {
   SyncUser,
   SyncMessage,
   SyncReaction,
+  SyncMember,
+  SyncFile,
   SyncPreferences,
   NotificationPreferences as OfflineNotificationPreferences,
   PrivacyPreferences,
   SyncChange,
   SyncDeletion,
   SyncEntityType,
+  SyncEntityData,
+  SyncEntityDataType,
 
   // Conflict types
   SyncConflict,
@@ -944,6 +963,9 @@ export type {
 
   // Configuration types
   IntegrationConfig,
+  IntegrationSettings,
+  KnownIntegrationSettings,
+  CustomIntegrationConfig,
 
   // Webhook types
   WebhookConfig,
@@ -952,9 +974,25 @@ export type {
   WebhookDelivery,
   WebhookAttempt,
 
-  // Event types
+  // Webhook payload types
+  BaseWebhookPayload,
+  MessageWebhookPayload,
+  ChannelWebhookPayload,
+  MemberWebhookPayload,
+  FileWebhookPayload,
+  CallWebhookPayload,
+  VPWebhookPayload,
+  WebhookPayload,
+
+  // Integration event types
   IntegrationEvent,
   SyncResult as IntegrationSyncResult,
+  BaseIntegrationEventPayload,
+  SlackEventPayload,
+  GitHubEventPayload,
+  JiraEventPayload,
+  GenericIntegrationEventPayload,
+  IntegrationEventPayload,
 
   // Provider-specific configs
   SlackIntegrationConfig,
@@ -979,6 +1017,7 @@ export type {
 
   // Connection test types
   ConnectionTestResult,
+  ConnectionTestDetails,
 } from './integration';
 
 export {

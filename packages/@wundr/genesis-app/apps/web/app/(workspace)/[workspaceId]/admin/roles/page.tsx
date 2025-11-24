@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useState, useCallback } from 'react';
 
-import { cn } from '@/lib/utils';
 import { useRoles } from '@/hooks/use-admin';
+import { cn } from '@/lib/utils';
+
 
 /**
  * Role Management Page
@@ -26,7 +27,7 @@ export default function AdminRolesPage() {
       await createRole(data);
       setShowCreateModal(false);
     },
-    [createRole]
+    [createRole],
   );
 
   const handleUpdate = useCallback(
@@ -34,7 +35,7 @@ export default function AdminRolesPage() {
       await updateRole(roleId, data);
       setEditingRole(null);
     },
-    [updateRole]
+    [updateRole],
   );
 
   const handleDelete = useCallback(
@@ -43,7 +44,7 @@ export default function AdminRolesPage() {
         await deleteRole(roleId);
       }
     },
-    [deleteRole]
+    [deleteRole],
   );
 
   // Define available permissions
@@ -80,7 +81,7 @@ export default function AdminRolesPage() {
           onClick={() => setShowCreateModal(true)}
           className={cn(
             'inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2',
-            'text-sm font-medium text-primary-foreground hover:bg-primary/90'
+            'text-sm font-medium text-primary-foreground hover:bg-primary/90',
           )}
         >
           <PlusIcon className="h-4 w-4" />
@@ -351,7 +352,7 @@ function RoleEditorModal({
     setPermissions((prev) =>
       prev.includes(permissionId)
         ? prev.filter((p) => p !== permissionId)
-        : [...prev, permissionId]
+        : [...prev, permissionId],
     );
   };
 
@@ -391,7 +392,7 @@ function RoleEditorModal({
                 className={cn(
                   'mt-1 block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
                 )}
                 placeholder="e.g., Moderator"
                 required
@@ -411,7 +412,7 @@ function RoleEditorModal({
                 className={cn(
                   'mt-1 block w-full rounded-md border border-input bg-background',
                   'px-3 py-2 text-sm placeholder:text-muted-foreground',
-                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+                  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
                 )}
                 placeholder="Describe what this role is for..."
               />
@@ -428,7 +429,7 @@ function RoleEditorModal({
                     onClick={() => setColor(c)}
                     className={cn(
                       'h-8 w-8 rounded-full',
-                      color === c && 'ring-2 ring-offset-2 ring-offset-background'
+                      color === c && 'ring-2 ring-offset-2 ring-offset-background',
                     )}
                     style={{ backgroundColor: c, ringColor: c }}
                   />
@@ -477,7 +478,7 @@ function RoleEditorModal({
               disabled={isSubmitting || !name.trim()}
               className={cn(
                 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+                'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
               )}
             >
               {isSubmitting ? 'Saving...' : role ? 'Save Changes' : 'Create Role'}

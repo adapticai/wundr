@@ -10,16 +10,18 @@
  * @module app/api/workspaces/[workspaceId]/admin/retention/stats/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
-import { redis } from '@genesis/core/redis';
 import {
   RetentionService,
   type RetentionDatabaseClient,
   type RedisClient as RetentionRedisClient,
 } from '@genesis/core';
+import { redis } from '@genesis/core/redis';
+import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -46,7 +48,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -77,7 +79,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/retention/stats] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch stats' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

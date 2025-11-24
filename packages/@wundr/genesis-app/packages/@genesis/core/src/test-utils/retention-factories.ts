@@ -7,13 +7,14 @@
  */
 
 import { vi } from 'vitest';
+
 import type {
   RetentionPolicy,
   RetentionRule,
   RetentionJob,
-  RetentionJobStatus,
-  RetentionResourceType,
-  RetentionAction,
+  RetentionJobStatus as _RetentionJobStatus,
+  RetentionResourceType as _RetentionResourceType,
+  RetentionAction as _RetentionAction,
   RetentionStats,
   RetentionError,
   LegalHold,
@@ -101,7 +102,7 @@ export function generateRetentionUserId(): string {
  * Create a mock retention rule.
  */
 export function createMockRetentionRule(
-  overrides: Partial<RetentionRule> = {}
+  overrides: Partial<RetentionRule> = {},
 ): RetentionRule {
   return {
     id: generateRuleId(),
@@ -118,13 +119,13 @@ export function createMockRetentionRule(
  */
 export function createMockRetentionRules(
   count: number,
-  overrides: Partial<RetentionRule> = {}
+  overrides: Partial<RetentionRule> = {},
 ): RetentionRule[] {
   return Array.from({ length: count }, (_, i) =>
     createMockRetentionRule({
       priority: i + 1,
       ...overrides,
-    })
+    }),
   );
 }
 
@@ -136,7 +137,7 @@ export function createMockRetentionRules(
  * Create a mock retention policy.
  */
 export function createMockRetentionPolicy(
-  overrides: Partial<RetentionPolicy> = {}
+  overrides: Partial<RetentionPolicy> = {},
 ): RetentionPolicy {
   const workspaceId = overrides.workspaceId ?? generateWorkspaceId();
   return {
@@ -158,7 +159,7 @@ export function createMockRetentionPolicy(
  * Create a database-style policy record (with rules as JSON string).
  */
 export function createMockPolicyRecord(
-  overrides: Partial<RetentionPolicy> = {}
+  overrides: Partial<RetentionPolicy> = {},
 ): Record<string, unknown> {
   const policy = createMockRetentionPolicy(overrides);
   return {
@@ -175,7 +176,7 @@ export function createMockPolicyRecord(
  * Create a mock retention job.
  */
 export function createMockRetentionJob(
-  overrides: Partial<RetentionJob> = {}
+  overrides: Partial<RetentionJob> = {},
 ): RetentionJob {
   const workspaceId = overrides.workspaceId ?? generateWorkspaceId();
   return {
@@ -199,7 +200,7 @@ export function createMockRetentionJob(
  * Create a database-style job record (with errors as JSON string).
  */
 export function createMockJobRecord(
-  overrides: Partial<RetentionJob> = {}
+  overrides: Partial<RetentionJob> = {},
 ): Record<string, unknown> {
   const job = createMockRetentionJob(overrides);
   return {
@@ -212,7 +213,7 @@ export function createMockJobRecord(
  * Create a mock retention error.
  */
 export function createMockRetentionError(
-  overrides: Partial<RetentionError> = {}
+  overrides: Partial<RetentionError> = {},
 ): RetentionError {
   return {
     resourceId: `resource-${Date.now()}`,
@@ -231,7 +232,7 @@ export function createMockRetentionError(
  * Create a mock legal hold scope.
  */
 export function createMockLegalHoldScope(
-  overrides: Partial<LegalHoldScope> = {}
+  overrides: Partial<LegalHoldScope> = {},
 ): LegalHoldScope {
   return {
     userIds: [],
@@ -244,7 +245,7 @@ export function createMockLegalHoldScope(
  * Create a mock legal hold.
  */
 export function createMockLegalHold(
-  overrides: Partial<LegalHold> = {}
+  overrides: Partial<LegalHold> = {},
 ): LegalHold {
   const workspaceId = overrides.workspaceId ?? generateWorkspaceId();
   return {
@@ -264,7 +265,7 @@ export function createMockLegalHold(
  * Create a database-style legal hold record (with scope as JSON string).
  */
 export function createMockLegalHoldRecord(
-  overrides: Partial<LegalHold> = {}
+  overrides: Partial<LegalHold> = {},
 ): Record<string, unknown> {
   const hold = createMockLegalHold(overrides);
   return {
@@ -281,7 +282,7 @@ export function createMockLegalHoldRecord(
  * Create a mock data export scope.
  */
 export function createMockDataExportScope(
-  overrides: Partial<DataExportScope> = {}
+  overrides: Partial<DataExportScope> = {},
 ): DataExportScope {
   return {
     includeMessages: true,
@@ -295,7 +296,7 @@ export function createMockDataExportScope(
  * Create a mock data export.
  */
 export function createMockDataExport(
-  overrides: Partial<DataExport> = {}
+  overrides: Partial<DataExport> = {},
 ): DataExport {
   const workspaceId = overrides.workspaceId ?? generateWorkspaceId();
   return {
@@ -316,7 +317,7 @@ export function createMockDataExport(
  * Create a database-style data export record (with scope as JSON string).
  */
 export function createMockDataExportRecord(
-  overrides: Partial<DataExport> = {}
+  overrides: Partial<DataExport> = {},
 ): Record<string, unknown> {
   const exportData = createMockDataExport(overrides);
   return {
@@ -333,7 +334,7 @@ export function createMockDataExportRecord(
  * Create mock retention statistics.
  */
 export function createMockRetentionStats(
-  overrides: Partial<RetentionStats> = {}
+  overrides: Partial<RetentionStats> = {},
 ): RetentionStats {
   const workspaceId = overrides.workspaceId ?? generateWorkspaceId();
   return {

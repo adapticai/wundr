@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+
 import { cn } from '@/lib/utils';
 import { EMOJI_CATEGORIES, QUICK_REACTIONS } from '@/types/chat';
 
@@ -61,7 +62,9 @@ export function ReactionPicker({
 
   // Filter emojis by search
   const filteredCategories = useMemo(() => {
-    if (!search) return categories;
+    if (!search) {
+return categories;
+}
 
     const searchLower = search.toLowerCase();
     return categories
@@ -85,7 +88,7 @@ export function ReactionPicker({
       onSelect(emoji);
       onClose();
     },
-    [onSelect, onClose]
+    [onSelect, onClose],
   );
 
   return (
@@ -93,7 +96,7 @@ export function ReactionPicker({
       ref={pickerRef}
       className={cn(
         'w-80 rounded-lg border bg-popover shadow-lg dark:border-border',
-        className
+        className,
       )}
     >
       {/* Search */}
@@ -133,7 +136,7 @@ export function ReactionPicker({
               'shrink-0 rounded-md px-2 py-1 text-xs transition-colors',
               activeCategory === category.id
                 ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
             )}
           >
             {category.name}

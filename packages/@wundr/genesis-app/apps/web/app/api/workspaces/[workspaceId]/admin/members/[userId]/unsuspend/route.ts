@@ -9,14 +9,16 @@
  * @module app/api/workspaces/[workspaceId]/admin/members/[userId]/unsuspend/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
   createAdminErrorResponse,
   ADMIN_ERROR_CODES,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID and user ID parameters
@@ -36,14 +38,14 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -57,7 +59,7 @@ export async function POST(
     if (!adminMembership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(adminMembership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -70,7 +72,7 @@ export async function POST(
     if (!member) {
       return NextResponse.json(
         createAdminErrorResponse('Member not found', ADMIN_ERROR_CODES.MEMBER_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -78,7 +80,7 @@ export async function POST(
     if (member.user.status !== 'SUSPENDED') {
       return NextResponse.json(
         createAdminErrorResponse('Member is not suspended', ADMIN_ERROR_CODES.MEMBER_NOT_SUSPENDED),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -105,7 +107,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/admin/members/:userId/unsuspend] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to unsuspend member', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

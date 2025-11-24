@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { cn } from '@/lib/utils';
+
 import { useWorkspaceUsers } from '@/hooks/use-channel';
-import type { User } from '@/types/chat';
+import { cn } from '@/lib/utils';
+
 import type { DirectMessageChannel } from '@/types/channel';
+import type { User } from '@/types/chat';
 
 interface DMSelectorProps {
   isOpen: boolean;
@@ -39,7 +41,7 @@ export function DMSelector({
   // Filter out already selected users
   const availableUsers = useMemo(
     () => users.filter((u) => !selectedUsers.some((s) => s.id === u.id)),
-    [users, selectedUsers]
+    [users, selectedUsers],
   );
 
   const resetForm = useCallback(() => {
@@ -53,7 +55,9 @@ export function DMSelector({
   }, [resetForm, onClose]);
 
   const handleSubmit = useCallback(async () => {
-    if (selectedUsers.length === 0 || isSubmitting) return;
+    if (selectedUsers.length === 0 || isSubmitting) {
+return;
+}
 
     setIsSubmitting(true);
     try {
@@ -78,10 +82,12 @@ export function DMSelector({
       await onCreate(dm.participants.map((p) => p.user.id));
       handleClose();
     },
-    [onCreate, handleClose]
+    [onCreate, handleClose],
   );
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div
@@ -301,7 +307,7 @@ function UserItem({ user, isVP, onSelect }: UserItemProps) {
         <span
           className={cn(
             'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card',
-            statusColors[user.status || 'offline']
+            statusColors[user.status || 'offline'],
           )}
         />
         {isVP && (

@@ -19,8 +19,8 @@
  * @module apps/web/app/api/notifications/__tests__/notifications.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
@@ -96,11 +96,11 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-function createMockRequest(
+function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
   headers?: Record<string, string>,
-  searchParams?: Record<string, string>
+  searchParams?: Record<string, string>,
 ): NextRequest {
   let url = 'http://localhost:3000/api/notifications';
   if (searchParams) {
@@ -318,7 +318,7 @@ describe('Notification API Routes', () => {
       expect(mockNotificationService.listNotifications).toHaveBeenCalledWith(
         expect.objectContaining({
           cursor: 'prev-cursor',
-        })
+        }),
       );
     });
   });
@@ -369,7 +369,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.markAsRead(
         'notif-123',
-        session.user.id
+        session.user.id,
       );
 
       expect(result.isRead).toBe(true);
@@ -386,11 +386,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.markAsRead('non-existent', session.user.id)
+        mockNotificationService.markAsRead('non-existent', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -404,11 +404,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.markAsRead('other-user-notif', session.user.id)
+        mockNotificationService.markAsRead('other-user-notif', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        })
+        }),
       );
     });
   });
@@ -456,7 +456,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.deleteNotification(
         'notif-123',
-        session.user.id
+        session.user.id,
       );
 
       expect(result.success).toBe(true);
@@ -472,11 +472,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.deleteNotification('non-existent', session.user.id)
+        mockNotificationService.deleteNotification('non-existent', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
   });
@@ -542,7 +542,7 @@ describe('Notification API Routes', () => {
           quietHoursStart: '22:00',
           quietHoursEnd: '08:00',
           quietHoursTimezone: 'America/New_York',
-        }
+        },
       );
 
       expect(result.pushEnabled).toBe(false);
@@ -563,11 +563,11 @@ describe('Notification API Routes', () => {
         mockNotificationService.updatePreferences(session.user.id, {
           quietHoursEnabled: true,
           // Missing quietHoursStart, quietHoursEnd, quietHoursTimezone
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        })
+        }),
       );
     });
   });
@@ -630,11 +630,11 @@ describe('Notification API Routes', () => {
           platform: 'WEB',
           token: 'web_push_token',
           // Missing endpoint, p256dh, auth
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        })
+        }),
       );
     });
 
@@ -672,7 +672,7 @@ describe('Notification API Routes', () => {
 
       const result = await mockNotificationService.unregisterDevice(
         session.user.id,
-        'device-123'
+        'device-123',
       );
 
       expect(result.success).toBe(true);
@@ -688,11 +688,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.unregisterDevice(session.user.id, 'non-existent')
+        mockNotificationService.unregisterDevice(session.user.id, 'non-existent'),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -706,11 +706,11 @@ describe('Notification API Routes', () => {
       });
 
       await expect(
-        mockNotificationService.unregisterDevice(session.user.id, 'other-user-device')
+        mockNotificationService.unregisterDevice(session.user.id, 'other-user-device'),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        })
+        }),
       );
     });
   });
@@ -760,7 +760,7 @@ describe('Notification API Routes', () => {
       expect(mockSyncService.performSync).toHaveBeenCalledWith(
         expect.objectContaining({
           syncToken: 'previous-sync-token',
-        })
+        }),
       );
     });
 
@@ -941,11 +941,11 @@ describe('Notification API Routes', () => {
           userId: session.user.id,
           conflictId: 'non-existent',
           resolution: 'SERVER_WINS',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -963,11 +963,11 @@ describe('Notification API Routes', () => {
           userId: session.user.id,
           conflictId: 'already-resolved',
           resolution: 'SERVER_WINS',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'ALREADY_RESOLVED',
-        })
+        }),
       );
     });
   });

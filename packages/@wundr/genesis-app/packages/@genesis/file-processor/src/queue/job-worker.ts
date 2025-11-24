@@ -16,6 +16,7 @@ import {
   type ProcessingResult,
   type EventHandler,
 } from './types';
+
 import type { ProcessingQueue } from './processing-queue';
 
 /**
@@ -129,7 +130,7 @@ export class JobWorker {
   constructor(
     queue: ProcessingQueue,
     processors: ProcessorRegistry,
-    config: JobWorkerConfig = {}
+    config: JobWorkerConfig = {},
   ) {
     this.queue = queue;
     this.registry = processors;
@@ -316,7 +317,7 @@ export class JobWorker {
           message?: string;
         };
         this.config.logger.debug(
-          `Job progress: ${jobId} - ${progress}%${message ? ` (${message})` : ''}`
+          `Job progress: ${jobId} - ${progress}%${message ? ` (${message})` : ''}`,
         );
       };
       this.queue.on(QueueEvent.JOB_PROGRESS, onJobProgress);
@@ -353,7 +354,7 @@ export class JobWorker {
 export function createJobWorker(
   queue: ProcessingQueue,
   processors: ProcessorRegistry,
-  config?: JobWorkerConfig
+  config?: JobWorkerConfig,
 ): JobWorker {
   return new JobWorker(queue, processors, config);
 }

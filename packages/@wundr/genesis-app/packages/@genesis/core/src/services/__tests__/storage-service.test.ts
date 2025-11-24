@@ -14,8 +14,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import {
-  createMockFileRecord,
-  createMockUploadResult,
+  _createMockFileRecord,
+  _createMockUploadResult,
   createMockSignedUrl,
 } from '../../test-utils/file-factories';
 import {
@@ -204,7 +204,7 @@ describe('StorageService', () => {
       const contentType = 'application/pdf';
 
       mockS3Client.putObject.mockResolvedValue(
-        createMockS3Response({ ETag: '"abc123"' })
+        createMockS3Response({ ETag: '"abc123"' }),
       );
 
       const result = await storageService.uploadFile(key, body, { contentType });
@@ -216,7 +216,7 @@ describe('StorageService', () => {
           Key: key,
           Body: body,
           ContentType: contentType,
-        })
+        }),
       );
     });
 
@@ -225,7 +225,7 @@ describe('StorageService', () => {
       const body = Buffer.from('image data');
 
       mockS3Client.putObject.mockResolvedValue(
-        createMockS3Response({ ETag: '"xyz789"' })
+        createMockS3Response({ ETag: '"xyz789"' }),
       );
 
       const result = await storageService.uploadFile(key, body, {
@@ -241,7 +241,7 @@ describe('StorageService', () => {
       const contentType = 'application/json';
 
       mockS3Client.putObject.mockResolvedValue(
-        createMockS3Response({ ETag: '"etag"' })
+        createMockS3Response({ ETag: '"etag"' }),
       );
 
       await storageService.uploadFile(key, body, { contentType });
@@ -249,7 +249,7 @@ describe('StorageService', () => {
       expect(mockS3Client.putObject).toHaveBeenCalledWith(
         expect.objectContaining({
           ContentType: contentType,
-        })
+        }),
       );
     });
 
@@ -262,7 +262,7 @@ describe('StorageService', () => {
       };
 
       mockS3Client.putObject.mockResolvedValue(
-        createMockS3Response({ ETag: '"etag"' })
+        createMockS3Response({ ETag: '"etag"' }),
       );
 
       await storageService.uploadFile(key, body, {
@@ -273,7 +273,7 @@ describe('StorageService', () => {
       expect(mockS3Client.putObject).toHaveBeenCalledWith(
         expect.objectContaining({
           Metadata: metadata,
-        })
+        }),
       );
     });
 
@@ -284,7 +284,7 @@ describe('StorageService', () => {
       mockS3Client.putObject.mockRejectedValue(new Error('Upload failed'));
 
       await expect(
-        storageService.uploadFile(key, body, { contentType: 'text/plain' })
+        storageService.uploadFile(key, body, { contentType: 'text/plain' }),
       ).rejects.toThrow('Upload failed');
     });
   });
@@ -385,7 +385,7 @@ describe('StorageService', () => {
         expect.objectContaining({
           Bucket: 'test-bucket',
           Key: key,
-        })
+        }),
       );
     });
 
@@ -402,7 +402,7 @@ describe('StorageService', () => {
       const key = 'files/error.txt';
 
       mockS3Client.deleteObject.mockRejectedValue(
-        new Error('Access Denied')
+        new Error('Access Denied'),
       );
 
       await expect(storageService.deleteFile(key)).rejects.toThrow('Access Denied');
@@ -426,7 +426,7 @@ describe('StorageService', () => {
 
       expect(exists).toBe(true);
       expect(mockS3Client.headObject).toHaveBeenCalledWith(
-        expect.objectContaining({ Key: key })
+        expect.objectContaining({ Key: key }),
       );
     });
 
@@ -460,7 +460,7 @@ describe('StorageService', () => {
 
       expect(files).toHaveLength(2);
       expect(mockS3Client.listObjects).toHaveBeenCalledWith(
-        expect.objectContaining({ Prefix: prefix })
+        expect.objectContaining({ Prefix: prefix }),
       );
     });
 
@@ -497,7 +497,7 @@ describe('StorageService', () => {
         expect.objectContaining({
           Key: key,
           ContentType: contentType,
-        })
+        }),
       );
     });
   });
@@ -542,7 +542,7 @@ describe('StorageService', () => {
               expect.objectContaining({ PartNumber: 2, ETag: '"etag2"' }),
             ]),
           },
-        })
+        }),
       );
     });
   });
@@ -560,7 +560,7 @@ describe('StorageService', () => {
         expect.objectContaining({
           Key: key,
           UploadId: uploadId,
-        })
+        }),
       );
     });
   });
@@ -591,7 +591,7 @@ describe('StorageService Integration Scenarios', () => {
 
     // Step 2: Upload file (simulated)
     mockS3Client.putObject.mockResolvedValue(
-      createMockS3Response({ ETag: '"file-etag"' })
+      createMockS3Response({ ETag: '"file-etag"' }),
     );
 
     const uploadResult = await storageService.uploadFile(key, fileContent, { contentType });
@@ -638,7 +638,7 @@ describe('StorageService Integration Scenarios', () => {
       [
         { partNumber: 1, etag: '"part1-etag"' },
         { partNumber: 2, etag: '"part2-etag"' },
-      ]
+      ],
     );
 
     expect(completeResult.location).toContain(key);

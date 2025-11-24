@@ -16,19 +16,31 @@ export interface MetricCardProps {
 }
 
 function formatValue(value: number | string, format?: string): string {
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') {
+return value;
+}
 
   switch (format) {
     case 'percent':
       return `${value.toFixed(1)}%`;
     case 'duration':
-      if (value < 60) return `${value}s`;
-      if (value < 3600) return `${Math.floor(value / 60)}m`;
+      if (value < 60) {
+return `${value}s`;
+}
+      if (value < 3600) {
+return `${Math.floor(value / 60)}m`;
+}
       return `${Math.floor(value / 3600)}h`;
     case 'bytes':
-      if (value < 1024) return `${value} B`;
-      if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
-      if (value < 1024 * 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+      if (value < 1024) {
+return `${value} B`;
+}
+      if (value < 1024 * 1024) {
+return `${(value / 1024).toFixed(1)} KB`;
+}
+      if (value < 1024 * 1024 * 1024) {
+return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
       return `${(value / (1024 * 1024 * 1024)).toFixed(1)} GB`;
     case 'number':
     default:
@@ -48,7 +60,7 @@ export function MetricCard({
     <div
       className={clsx(
         'p-4 bg-card border border-border rounded-lg',
-        className
+        className,
       )}
     >
       <div className="flex items-start justify-between">
@@ -72,7 +84,7 @@ export function MetricCard({
               'text-sm font-medium',
               change.trend === 'up' && 'text-green-500',
               change.trend === 'down' && 'text-red-500',
-              change.trend === 'stable' && 'text-muted-foreground'
+              change.trend === 'stable' && 'text-muted-foreground',
             )}
           >
             {change.trend === 'up' && '↑'}

@@ -121,7 +121,7 @@ export class XlsxProcessor {
    */
   async process(
     filePath: string,
-    options: XlsxProcessingOptions = {}
+    options: XlsxProcessingOptions = {},
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -192,7 +192,7 @@ export class XlsxProcessor {
    */
   private async parseXlsx(
     _filePath: string,
-    _options: XlsxProcessingOptions
+    _options: XlsxProcessingOptions,
   ): Promise<{
     sheets: SheetData[];
     properties?: WorkbookProperties;
@@ -228,7 +228,7 @@ export class XlsxProcessor {
   private processSheet(
     _worksheet: unknown,
     sheetId: number,
-    _options: XlsxProcessingOptions
+    _options: XlsxProcessingOptions,
   ): SheetData {
     // TODO: Extract data from worksheet
 
@@ -251,7 +251,7 @@ export class XlsxProcessor {
    */
   private sheetsToText(
     sheets: SheetData[],
-    _options: XlsxProcessingOptions
+    _options: XlsxProcessingOptions,
   ): string {
     const lines: string[] = [];
 
@@ -355,7 +355,7 @@ interface WorkbookProperties {
  * Create XLSX processor instance
  */
 export function createXlsxProcessor(
-  config: FileProcessorConfig
+  config: FileProcessorConfig,
 ): XlsxProcessor {
   return new XlsxProcessor(config);
 }

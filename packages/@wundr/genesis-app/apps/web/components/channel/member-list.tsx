@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { ChannelMember, ChannelPermissions } from '@/types/channel';
 
 interface MemberListProps {
@@ -36,7 +38,9 @@ export function MemberList({
 
   const handleChangeRole = useCallback(
     async (userId: string, role: 'admin' | 'member') => {
-      if (isProcessing) return;
+      if (isProcessing) {
+return;
+}
       setIsProcessing(true);
       try {
         await onChangeRole?.(userId, role);
@@ -45,12 +49,14 @@ export function MemberList({
         setActionMenuUserId(null);
       }
     },
-    [isProcessing, onChangeRole]
+    [isProcessing, onChangeRole],
   );
 
   const handleRemoveMember = useCallback(
     async (userId: string) => {
-      if (isProcessing) return;
+      if (isProcessing) {
+return;
+}
       setIsProcessing(true);
       try {
         await onRemoveMember?.(userId);
@@ -59,17 +65,19 @@ export function MemberList({
         setActionMenuUserId(null);
       }
     },
-    [isProcessing, onRemoveMember]
+    [isProcessing, onRemoveMember],
   );
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div
       className={cn(
         'fixed inset-y-0 right-0 z-40 w-72 border-l bg-card shadow-lg transition-transform duration-200',
         isOpen ? 'translate-x-0' : 'translate-x-full',
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -102,7 +110,7 @@ export function MemberList({
                 showMenu={actionMenuUserId === member.userId}
                 onToggleMenu={() =>
                   setActionMenuUserId(
-                    actionMenuUserId === member.userId ? null : member.userId
+                    actionMenuUserId === member.userId ? null : member.userId,
                   )
                 }
                 onCloseMenu={() => setActionMenuUserId(null)}
@@ -130,7 +138,7 @@ export function MemberList({
                 showMenu={actionMenuUserId === member.userId}
                 onToggleMenu={() =>
                   setActionMenuUserId(
-                    actionMenuUserId === member.userId ? null : member.userId
+                    actionMenuUserId === member.userId ? null : member.userId,
                   )
                 }
                 onCloseMenu={() => setActionMenuUserId(null)}
@@ -206,7 +214,7 @@ function MemberItem({
           <span
             className={cn(
               'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card',
-              statusColors[member.user.status || 'offline']
+              statusColors[member.user.status || 'offline'],
             )}
           />
         </div>

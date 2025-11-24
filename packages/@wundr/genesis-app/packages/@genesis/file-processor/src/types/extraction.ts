@@ -6,7 +6,8 @@
  * @packageDocumentation
  */
 
-import type { FileMetadata, TableData, ImageData as BaseImageData } from '../types';
+// Note: These types from ../types are re-exported with more specific definitions in this file
+// import type { FileMetadata, TableData, ImageData } from '../types';
 
 // ============================================================================
 // Core Extraction Types
@@ -1044,7 +1045,7 @@ export class ExtractionError extends Error {
     message: string,
     code: ExtractionErrorCode,
     cause?: Error,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'ExtractionError';
@@ -1082,7 +1083,7 @@ export class PDFExtractionError extends ExtractionError {
     message: string,
     code: ExtractionErrorCode,
     pageNumber?: number,
-    cause?: Error
+    cause?: Error,
   ) {
     super(message, code, cause, { pageNumber });
     this.name = 'PDFExtractionError';
@@ -1111,7 +1112,7 @@ export class XlsxExtractionError extends ExtractionError {
     message: string,
     code: ExtractionErrorCode,
     sheetName?: string,
-    cause?: Error
+    cause?: Error,
   ) {
     super(message, code, cause, { sheetName });
     this.name = 'XlsxExtractionError';

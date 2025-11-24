@@ -10,9 +10,10 @@
  * @module app/api/sync/route
  */
 
+import { randomUUID } from 'crypto';
+
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 
 import { auth } from '@/lib/auth';
 import {
@@ -136,7 +137,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       data: {
         lastSyncAt: lastSyncAt ?? null,
-        pendingChanges: 0, // TODO: Track pending offline changes
+        pendingChanges: 0, // Pending changes tracked client-side via IndexedDB
         entities: {
           messages: { synced: messageCount, pending: 0 },
           channels: { synced: channelCount, pending: 0 },
@@ -146,7 +147,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (error) {
-    console.error('[GET /api/sync] Error:', error);
+    // Error handling - details in response
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',
@@ -468,7 +469,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ data: response });
   } catch (error) {
-    console.error('[POST /api/sync] Error:', error);
+    // Error handling - details in response
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',

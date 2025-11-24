@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { User } from '@/types/chat';
+
 import { ReactionPickerTrigger } from './reaction-picker';
+
+import type { User } from '@/types/chat';
 
 interface MessageInputProps {
   channelId: string;
@@ -78,7 +81,7 @@ export function MessageInput({
 
       try {
         const response = await fetch(
-          `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`
+          `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -88,7 +91,7 @@ export function MessageInput({
         setMentionUsers([]);
       }
     },
-    [channelId]
+    [channelId],
   );
 
   // Handle content change
@@ -115,14 +118,16 @@ export function MessageInput({
         }
       }
     },
-    [maxLength, handleTyping, fetchMentionSuggestions]
+    [maxLength, handleTyping, fetchMentionSuggestions],
   );
 
   // Insert mention
   const insertMention = useCallback(
     (user: User) => {
       const textarea = textareaRef.current;
-      if (!textarea) return;
+      if (!textarea) {
+return;
+}
 
       const cursorPosition = textarea.selectionStart;
       const textBeforeCursor = content.slice(0, cursorPosition);
@@ -146,7 +151,7 @@ export function MessageInput({
       setShowMentions(false);
       setMentionQuery('');
     },
-    [content]
+    [content],
   );
 
   // Handle key down
@@ -157,7 +162,7 @@ export function MessageInput({
         if (e.key === 'ArrowDown') {
           e.preventDefault();
           setSelectedMentionIndex((prev) =>
-            prev < mentionUsers.length - 1 ? prev + 1 : prev
+            prev < mentionUsers.length - 1 ? prev + 1 : prev,
           );
           return;
         }
@@ -183,14 +188,18 @@ export function MessageInput({
         handleSend();
       }
     },
-    [showMentions, mentionUsers, selectedMentionIndex, insertMention]
+    [showMentions, mentionUsers, selectedMentionIndex, insertMention],
   );
 
   // Handle send
   const handleSend = useCallback(() => {
     const trimmedContent = content.trim();
-    if (!trimmedContent && attachments.length === 0) return;
-    if (disabled) return;
+    if (!trimmedContent && attachments.length === 0) {
+return;
+}
+    if (disabled) {
+return;
+}
 
     onSend(trimmedContent, mentions, attachments);
     setContent('');
@@ -220,7 +229,9 @@ export function MessageInput({
   // Handle emoji insert
   const handleEmojiSelect = useCallback((emoji: string) => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+return;
+}
 
     const cursorPosition = textarea.selectionStart;
     const newContent =
@@ -268,7 +279,7 @@ export function MessageInput({
                   'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm',
                   selectedMentionIndex === index
                     ? 'bg-accent text-foreground'
-                    : 'hover:bg-accent/50'
+                    : 'hover:bg-accent/50',
                 )}
               >
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
@@ -327,14 +338,14 @@ export function MessageInput({
             rows={1}
             className={cn(
               'max-h-[200px] min-h-[40px] w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50',
-              isNearLimit && 'border-destructive focus:ring-destructive/20'
+              isNearLimit && 'border-destructive focus:ring-destructive/20',
             )}
           />
           {showCharCount && (
             <div
               className={cn(
                 'absolute bottom-1 right-2 text-xs',
-                isNearLimit ? 'text-destructive' : 'text-muted-foreground'
+                isNearLimit ? 'text-destructive' : 'text-muted-foreground',
               )}
             >
               {remainingChars}
@@ -385,8 +396,12 @@ function AttachmentPreview({ file, onRemove }: AttachmentPreviewProps) {
   }, [preview]);
 
   const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+return `${bytes} B`;
+}
+    if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 

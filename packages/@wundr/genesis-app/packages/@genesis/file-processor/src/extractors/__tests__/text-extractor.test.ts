@@ -92,7 +92,7 @@ function createTextExtractionService(): TextExtractionService {
     extractFromPDF: vi.fn(
       async (
         filePath: string,
-        options: TextExtractionOptions = {}
+        options: TextExtractionOptions = {},
       ): Promise<ProcessorResult> => {
         const pdfResult = await mockPdfParse(filePath, options);
 
@@ -114,13 +114,13 @@ function createTextExtractionService(): TextExtractionService {
           pages: pdfResult.pages,
           structuredData: options.extractTables ? { tables: pdfResult.tables } : undefined,
         };
-      }
+      },
     ),
 
     extractFromDocx: vi.fn(
       async (
         filePath: string,
-        options: TextExtractionOptions = {}
+        options: TextExtractionOptions = {},
       ): Promise<ProcessorResult> => {
         const [htmlResult, textResult] = await Promise.all([
           mockMammoth.convertToHtml({ path: filePath }),
@@ -145,13 +145,13 @@ function createTextExtractionService(): TextExtractionService {
             images: options.extractImages ? htmlResult.images : undefined,
           },
         };
-      }
+      },
     ),
 
     extractFromXlsx: vi.fn(
       async (
         filePath: string,
-        _options: TextExtractionOptions = {}
+        _options: TextExtractionOptions = {},
       ): Promise<ProcessorResult> => {
         const workbook = new mockExcelJS.Workbook();
         await workbook.xlsx.readFile(filePath);
@@ -168,7 +168,7 @@ function createTextExtractionService(): TextExtractionService {
         const content = sheets
           .map(
             (s) =>
-              `=== ${s.name} ===\n${s.headers.join('\t')}\n${s.data.map((r) => r.join('\t')).join('\n')}`
+              `=== ${s.name} ===\n${s.headers.join('\t')}\n${s.data.map((r) => r.join('\t')).join('\n')}`,
           )
           .join('\n\n');
 
@@ -190,7 +190,7 @@ function createTextExtractionService(): TextExtractionService {
           processingTime: 75,
           structuredData: { sheets },
         };
-      }
+      },
     ),
   };
 }
@@ -332,7 +332,7 @@ describe('TextExtractionService', () => {
       mockPdfParse.mockRejectedValue(new Error('Invalid PDF structure'));
 
       await expect(service.extractFromPDF('/path/to/corrupted.pdf')).rejects.toThrow(
-        'Invalid PDF structure'
+        'Invalid PDF structure',
       );
     });
 
@@ -374,7 +374,7 @@ describe('TextExtractionService', () => {
       expect(result.success).toBe(true);
       expect(result.content).toBe('This is a Word document.');
       expect(result.metadata.mimeType).toBe(
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       );
     });
 
@@ -432,7 +432,7 @@ describe('TextExtractionService', () => {
       mockMammoth.convertToHtml.mockRejectedValue(new Error('Invalid DOCX file'));
 
       await expect(service.extractFromDocx('/path/to/invalid.docx')).rejects.toThrow(
-        'Invalid DOCX file'
+        'Invalid DOCX file',
       );
     });
 
@@ -557,7 +557,7 @@ describe('TextExtractionService', () => {
       mockExcelJS.Workbook.mockImplementation(() => mockWorkbook);
 
       await expect(service.extractFromXlsx('/path/to/invalid.xlsx')).rejects.toThrow(
-        'Invalid spreadsheet'
+        'Invalid spreadsheet',
       );
     });
 
@@ -609,7 +609,7 @@ describe('TextExtractionService', () => {
       mockPdfParse.mockRejectedValue(new Error('PDF structure is corrupted'));
 
       await expect(service.extractFromPDF('/path/to/corrupted.pdf')).rejects.toThrow(
-        'PDF structure is corrupted'
+        'PDF structure is corrupted',
       );
     });
 
@@ -618,11 +618,11 @@ describe('TextExtractionService', () => {
         () =>
           new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Processing timeout')), 100);
-          })
+          }),
       );
 
       await expect(service.extractFromPDF('/path/to/large.pdf')).rejects.toThrow(
-        'Processing timeout'
+        'Processing timeout',
       );
     });
 
@@ -630,7 +630,7 @@ describe('TextExtractionService', () => {
       mockPdfParse.mockRejectedValue(new Error('JavaScript heap out of memory'));
 
       await expect(service.extractFromPDF('/path/to/huge.pdf')).rejects.toThrow(
-        'JavaScript heap out of memory'
+        'JavaScript heap out of memory',
       );
     });
   });

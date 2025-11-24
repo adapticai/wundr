@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
 import { clsx } from 'clsx';
+import { useMemo } from 'react';
 
 export interface LineChartProps {
   data: Array<{ date: string; value: number }>;
@@ -21,7 +21,9 @@ export function LineChart({
   className,
 }: LineChartProps) {
   const { points, maxValue, minValue } = useMemo(() => {
-    if (data.length === 0) return { points: '', maxValue: 0, minValue: 0 };
+    if (data.length === 0) {
+return { points: '', maxValue: 0, minValue: 0 };
+}
 
     const values = data.map(d => d.value);
     const max = Math.max(...values);

@@ -30,7 +30,7 @@ const labelVariants = cva(
     defaultVariants: {
       variant: 'default',
     },
-  }
+  },
 );
 
 /**
@@ -77,7 +77,7 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 Label.displayName = 'Label';

@@ -7,7 +7,6 @@
  * @packageDocumentation
  */
 
-import type { ProcessingQueue } from './processing-queue';
 import {
   QueueEvent,
   type ProcessingJob,
@@ -17,6 +16,8 @@ import {
   type QueueStats,
   type EventHandler,
 } from './types';
+
+import type { ProcessingQueue } from './processing-queue';
 
 /**
  * Storage service interface
@@ -259,7 +260,7 @@ export class ProcessingCoordinator {
     queue: ProcessingQueue,
     storage: StorageService,
     fileRecords: FileRecordService,
-    config: CoordinatorConfig = {}
+    config: CoordinatorConfig = {},
   ) {
     this.queue = queue;
     this.storage = storage;
@@ -291,7 +292,7 @@ export class ProcessingCoordinator {
       type?: ProcessingType;
       priority?: number;
       waitForCompletion?: boolean;
-    } = {}
+    } = {},
   ): Promise<ProcessingResult | string> {
     // Get file info from storage
     const file = await this.storage.getFile(fileId);
@@ -403,7 +404,7 @@ export class ProcessingCoordinator {
     options: {
       type?: ProcessingType;
       priority?: number;
-    } = {}
+    } = {},
   ): Promise<string> {
     // Get current record
     const record = await this.fileRecords.getRecord(fileId);
@@ -440,7 +441,7 @@ export class ProcessingCoordinator {
    */
   async processWorkspaceFiles(
     workspaceId: string,
-    options: BatchProcessOptions = {}
+    options: BatchProcessOptions = {},
   ): Promise<string[]> {
     // Get workspace files
     const files = await this.storage.getWorkspaceFiles(workspaceId);
@@ -450,7 +451,7 @@ export class ProcessingCoordinator {
       {
         ...options,
         metadata: { workspaceId },
-      }
+      },
     );
   }
 
@@ -465,7 +466,7 @@ export class ProcessingCoordinator {
    */
   async processChannelFiles(
     channelId: string,
-    options: BatchProcessOptions = {}
+    options: BatchProcessOptions = {},
   ): Promise<string[]> {
     // Get channel files
     const files = await this.storage.getChannelFiles(channelId);
@@ -475,7 +476,7 @@ export class ProcessingCoordinator {
       {
         ...options,
         metadata: { channelId },
-      }
+      },
     );
   }
 
@@ -492,7 +493,7 @@ export class ProcessingCoordinator {
 
     return this.processBatch(
       files.map((f) => f.fileId),
-      {}
+      {},
     );
   }
 
@@ -504,7 +505,9 @@ export class ProcessingCoordinator {
    */
   async getFileProcessingStatus(fileId: string): Promise<JobInfo | null> {
     const jobs = await this.queue.getJobsByFileId(fileId);
-    if (jobs.length === 0) return null;
+    if (jobs.length === 0) {
+return null;
+}
 
     // Return the most recent job
     return jobs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] ?? null;
@@ -550,13 +553,15 @@ export class ProcessingCoordinator {
    */
   private async processBatch(
     fileIds: string[],
-    options: BatchProcessOptions & { metadata?: Record<string, unknown> }
+    options: BatchProcessOptions & { metadata?: Record<string, unknown> },
   ): Promise<string[]> {
     const jobs: ProcessingJob[] = [];
 
     for (const fileId of fileIds.slice(0, this.config.maxBatchSize)) {
       const file = await this.storage.getFile(fileId);
-      if (!file) continue;
+      if (!file) {
+continue;
+}
 
       const processingType = options.processingType ?? this.determineProcessingType(file.mimeType);
 
@@ -584,8 +589,8 @@ export class ProcessingCoordinator {
     // Update file records
     await Promise.all(
       jobIds.map((jobId, index) =>
-        this.fileRecords.markProcessing(fileIds[index]!, jobId)
-      )
+        this.fileRecords.markProcessing(fileIds[index]!, jobId),
+      ),
     );
 
     return jobIds;
@@ -689,7 +694,7 @@ export function createProcessingCoordinator(
   queue: ProcessingQueue,
   storage: StorageService,
   fileRecords: FileRecordService,
-  config?: CoordinatorConfig
+  config?: CoordinatorConfig,
 ): ProcessingCoordinator {
   return new ProcessingCoordinator(queue, storage, fileRecords, config);
 }

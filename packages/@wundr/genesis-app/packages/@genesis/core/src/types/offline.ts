@@ -170,6 +170,130 @@ export type ActionPayload =
   | UpdateProfilePayload
   | MarkReadPayload;
 
+// =============================================================================
+// Action Result Types
+// =============================================================================
+
+/**
+ * Result of a send message action.
+ */
+export interface SendMessageResult {
+  messageId: string;
+  channelId: string;
+  createdAt: Date;
+}
+
+/**
+ * Result of an edit message action.
+ */
+export interface EditMessageResult {
+  messageId: string;
+  updatedAt: Date;
+}
+
+/**
+ * Result of a delete message action.
+ */
+export interface DeleteMessageResult {
+  messageId: string;
+  deletedAt: Date;
+}
+
+/**
+ * Result of an add reaction action.
+ */
+export interface AddReactionResult {
+  messageId: string;
+  emoji: string;
+  reactionCount: number;
+}
+
+/**
+ * Result of a remove reaction action.
+ */
+export interface RemoveReactionResult {
+  messageId: string;
+  emoji: string;
+  reactionCount: number;
+}
+
+/**
+ * Result of an update status action.
+ */
+export interface UpdateStatusResult {
+  status: 'online' | 'away' | 'busy' | 'offline';
+  updatedAt: Date;
+}
+
+/**
+ * Result of a join channel action.
+ */
+export interface JoinChannelResult {
+  channelId: string;
+  joinedAt: Date;
+}
+
+/**
+ * Result of a leave channel action.
+ */
+export interface LeaveChannelResult {
+  channelId: string;
+  leftAt: Date;
+}
+
+/**
+ * Result of an upload file action.
+ */
+export interface UploadFileResult {
+  fileId: string;
+  url: string;
+  thumbnailUrl?: string;
+  uploadedAt: Date;
+}
+
+/**
+ * Result of a create thread action.
+ */
+export interface CreateThreadResult {
+  threadId: string;
+  parentMessageId: string;
+  createdAt: Date;
+}
+
+/**
+ * Result of an update profile action.
+ */
+export interface UpdateProfileResult {
+  userId: string;
+  updatedAt: Date;
+}
+
+/**
+ * Result of a mark read action.
+ */
+export interface MarkReadResult {
+  channelId: string;
+  messageId: string;
+  markedAt: Date;
+}
+
+/**
+ * Union type for all action results.
+ */
+export type ActionResult =
+  | SendMessageResult
+  | EditMessageResult
+  | DeleteMessageResult
+  | AddReactionResult
+  | RemoveReactionResult
+  | UpdateStatusResult
+  | JoinChannelResult
+  | LeaveChannelResult
+  | UploadFileResult
+  | CreateThreadResult
+  | UpdateProfileResult
+  | MarkReadResult;
+
 /**
  * A queued action waiting to be synchronized.
  */
@@ -407,6 +531,47 @@ export interface PrivacyPreferences {
 }
 
 /**
+ * Sync entity data union - maps entity types to their data types.
+ */
+export type SyncEntityData =
+  | { entityType: 'workspace'; data: SyncWorkspace }
+  | { entityType: 'channel'; data: SyncChannel }
+  | { entityType: 'user'; data: SyncUser }
+  | { entityType: 'message'; data: SyncMessage }
+  | { entityType: 'reaction'; data: SyncReaction }
+  | { entityType: 'member'; data: SyncMember }
+  | { entityType: 'file'; data: SyncFile }
+  | { entityType: 'preference'; data: SyncPreferences };
+
+/**
+ * Member data for sync.
+ */
+export interface SyncMember {
+  id: string;
+  userId: string;
+  channelId: string;
+  role: 'owner' | 'admin' | 'member' | 'guest';
+  joinedAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * File data for sync.
+ */
+export interface SyncFile {
+  id: string;
+  name: string;
+  size: number;
+  mimeType: string;
+  url: string;
+  thumbnailUrl?: string;
+  channelId: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
  * A change from incremental sync.
  */
 export interface SyncChange {
@@ -416,8 +581,8 @@ export interface SyncChange {
   entityId: string;
   /** Type of change */
   changeType: 'create' | 'update';
-  /** Changed data */
-  data: unknown;
+  /** Changed data - type depends on entityType, use type guards for type-safe access */
+  data: SyncWorkspace | SyncChannel | SyncUser | SyncMessage | SyncReaction | SyncMember | SyncFile | SyncPreferences;
   /** Timestamp of the change */
   timestamp: Date;
   /** Version number for conflict detection */
@@ -454,6 +619,11 @@ export type SyncEntityType =
 // =============================================================================
 
 /**
+ * Type alias for sync entity data types.
+ */
+export type SyncEntityDataType = SyncWorkspace | SyncChannel | SyncUser | SyncMessage | SyncReaction | SyncMember | SyncFile | SyncPreferences;
+
+/**
  * A conflict detected during sync.
  */
 export interface SyncConflict {
@@ -463,10 +633,10 @@ export interface SyncConflict {
   entityType: SyncEntityType;
   /** Entity ID */
   entityId: string;
-  /** The local version of the data */
-  localData: unknown;
-  /** The server version of the data */
-  serverData: unknown;
+  /** The local version of the data - type depends on entityType */
+  localData: SyncEntityDataType;
+  /** The server version of the data - type depends on entityType */
+  serverData: SyncEntityDataType;
   /** Local version number */
   localVersion: number;
   /** Server version number */
@@ -494,8 +664,8 @@ export interface ConflictResolution {
   conflictId: string;
   /** Resolution strategy */
   strategy: ResolutionStrategy;
-  /** Custom merged data (for manual merge) */
-  mergedData?: unknown;
+  /** Custom merged data (for manual merge) - type depends on entity being resolved */
+  mergedData?: SyncEntityDataType;
 }
 
 /**
@@ -687,7 +857,8 @@ export interface ActionCompletedEvent extends BaseOfflineEvent {
   type: 'ACTION_COMPLETED';
   actionId: string;
   actionType: ActionType;
-  result?: unknown;
+  /** Result of the action - type depends on actionType */
+  result?: ActionResult;
 }
 
 /**
@@ -798,7 +969,7 @@ export type OnActionQueuedCallback = (action: QueuedAction) => void;
 /**
  * Callback for action completed events.
  */
-export type OnActionCompletedCallback = (actionId: string, result?: unknown) => void;
+export type OnActionCompletedCallback = (actionId: string, result?: ActionResult) => void;
 
 /**
  * Callback for action failed events.

@@ -10,7 +10,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -21,6 +20,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { ExecuteWorkflowInput, WorkflowExecution, WorkflowStepResult, WorkflowAction, WorkflowTrigger } from '@/lib/validations/workflow';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -36,7 +36,7 @@ interface RouteContext {
 async function executeWorkflowActions(
   actions: WorkflowAction[],
   triggerData: Record<string, unknown>,
-  _workspaceId: string
+  _workspaceId: string,
 ): Promise<{ steps: WorkflowStepResult[]; success: boolean; error?: string }> {
   const steps: WorkflowStepResult[] = [];
   let success = true;
@@ -98,7 +98,7 @@ async function executeWorkflowActions(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -106,7 +106,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -122,7 +122,7 @@ export async function POST(
     if (!workspace) {
       return NextResponse.json(
         createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -138,7 +138,7 @@ export async function POST(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -155,7 +155,7 @@ export async function POST(
     if (!workspaceMembership) {
       return NextResponse.json(
         createErrorResponse('You must be a workspace member to execute workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -170,7 +170,7 @@ export async function POST(
     if (!workflow) {
       return NextResponse.json(
         createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -178,7 +178,7 @@ export async function POST(
     if (workflow.status !== 'ACTIVE') {
       return NextResponse.json(
         createErrorResponse('Only active workflows can be executed', WORKFLOW_ERROR_CODES.WORKFLOW_INACTIVE),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -200,9 +200,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -220,7 +220,7 @@ export async function POST(
     const { steps, success, error } = await executeWorkflowActions(
       actions,
       triggerData,
-      workspaceId
+      workspaceId,
     );
 
     const completedAt = new Date();
@@ -276,7 +276,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/workflows/:workflowId/execute] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

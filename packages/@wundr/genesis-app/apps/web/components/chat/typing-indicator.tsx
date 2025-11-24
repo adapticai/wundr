@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+
 import type { TypingUser } from '@/types/chat';
 
 interface TypingIndicatorProps {
@@ -9,7 +10,9 @@ interface TypingIndicatorProps {
 }
 
 export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps) {
-  if (typingUsers.length === 0) return null;
+  if (typingUsers.length === 0) {
+return null;
+}
 
   const getTypingText = () => {
     if (typingUsers.length === 1) {
@@ -28,7 +31,7 @@ export function TypingIndicator({ typingUsers, className }: TypingIndicatorProps
     <div
       className={cn(
         'flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground',
-        className
+        className,
       )}
     >
       <TypingDots />

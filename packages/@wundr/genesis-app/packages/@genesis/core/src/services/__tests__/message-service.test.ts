@@ -12,7 +12,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { PrismaClient } from '@prisma/client';
 
 import {
   createMockMessage,
@@ -20,9 +19,9 @@ import {
   createMockMessageWithRelations,
   createMockMessageList,
   createMockReaction,
-  createMockReactionSummary,
+  _createMockReactionSummary,
   createMockThread,
-  createMockThreadReplies,
+  _createMockThreadReplies,
   createMockMessageAuthor,
   createMockEventEmitter,
   createMockPrismaMessageModel,
@@ -31,10 +30,13 @@ import {
   generateMessageId,
   generateChannelId,
   generateUserId,
-  type Message,
-  type MessageWithAuthor,
-  type Reaction,
+  type _Message,
+  type _MessageWithAuthor,
+  type _Reaction,
 } from '../../test-utils/message-factories';
+
+import type { _PrismaClient } from '@prisma/client';
+
 
 // =============================================================================
 // MOCK SETUP
@@ -100,7 +102,7 @@ describe('MessageService', () => {
       const mockAuthor = createMockMessageAuthor({ id: authorId });
       const createdMessage = createMockMessageWithAuthor(
         { channelId, authorId, content },
-        mockAuthor
+        mockAuthor,
       );
 
       mockPrisma.channel.findUnique.mockResolvedValue(mockChannel);
@@ -130,7 +132,7 @@ describe('MessageService', () => {
             content,
             type: 'TEXT',
           }),
-        })
+        }),
       );
     });
 
@@ -163,7 +165,7 @@ describe('MessageService', () => {
           type: 'MESSAGE_CREATED',
           channelId,
           messageId: createdMessage.id,
-        })
+        }),
       );
     });
 
@@ -207,13 +209,13 @@ describe('MessageService', () => {
           data: expect.objectContaining({
             parentId,
           }),
-        })
+        }),
       );
     });
 
     it('validates content length', async () => {
-      const channelId = generateChannelId();
-      const authorId = generateUserId();
+      const _channelId = generateChannelId();
+      const _authorId = generateUserId();
       const MAX_MESSAGE_LENGTH = 10000;
 
       // Content exceeds maximum length
@@ -309,7 +311,7 @@ describe('MessageService', () => {
           data: expect.objectContaining({
             content: updatedContent,
           }),
-        })
+        }),
       );
     });
 
@@ -401,7 +403,7 @@ describe('MessageService', () => {
           payload: expect.objectContaining({
             previousContent,
           }),
-        })
+        }),
       );
     });
 
@@ -456,7 +458,7 @@ describe('MessageService', () => {
           data: expect.objectContaining({
             deletedAt: expect.any(Date),
           }),
-        })
+        }),
       );
     });
 
@@ -517,7 +519,7 @@ describe('MessageService', () => {
         expect.objectContaining({
           type: 'MESSAGE_DELETED',
           messageId,
-        })
+        }),
       );
     });
 
@@ -615,7 +617,7 @@ describe('MessageService', () => {
       expect(mockPrisma.message.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           cursor: { id: cursorMessageId },
-        })
+        }),
       );
     });
 
@@ -632,7 +634,7 @@ describe('MessageService', () => {
           where: expect.objectContaining({
             deletedAt: null,
           }),
-        })
+        }),
       );
     });
 
@@ -649,7 +651,7 @@ describe('MessageService', () => {
           where: expect.not.objectContaining({
             deletedAt: null,
           }),
-        })
+        }),
       );
     });
   });
@@ -754,7 +756,7 @@ describe('ReactionService', () => {
               emoji,
             }),
           }),
-        })
+        }),
       );
     });
 
@@ -826,7 +828,7 @@ describe('ReactionService', () => {
         expect.objectContaining({
           type: 'MESSAGE_REACTION_REMOVED',
           messageId,
-        })
+        }),
       );
     });
 
@@ -1005,7 +1007,7 @@ describe('ThreadService', () => {
         expect.objectContaining({
           type: 'MESSAGE_THREAD_REPLY_ADDED',
           messageId: parentId,
-        })
+        }),
       );
     });
 
@@ -1122,12 +1124,12 @@ describe('ThreadService', () => {
 
 describe('Optimistic Updates', () => {
   let mockPrisma: ReturnType<typeof createMockPrismaClient>;
-  let mockEventEmitter: ReturnType<typeof createMockEventEmitter>;
+  let _mockEventEmitter: ReturnType<typeof createMockEventEmitter>;
 
   beforeEach(() => {
     resetMessageIdCounters();
     mockPrisma = createMockPrismaClient();
-    mockEventEmitter = createMockEventEmitter();
+    _mockEventEmitter = createMockEventEmitter();
   });
 
   it('supports optimistic message creation', async () => {
@@ -1211,7 +1213,7 @@ describe('Optimistic Updates', () => {
       mockPrisma.message.update({
         where: { id: messageId },
         data: { content: newContent },
-      })
+      }),
     ).rejects.toThrow('Update failed');
 
     // Client should rollback to original content
@@ -1246,7 +1248,7 @@ describe('Event Broadcasting', () => {
       expect.objectContaining({
         type: 'MESSAGE_CREATED',
         channelId,
-      })
+      }),
     );
   });
 

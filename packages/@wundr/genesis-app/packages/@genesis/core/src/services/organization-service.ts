@@ -7,7 +7,6 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient, Prisma, OrganizationRole } from '@genesis/database';
 import { prisma } from '@genesis/database';
 
 import {
@@ -15,13 +14,13 @@ import {
   TransactionError,
   OrganizationNotFoundError,
 } from '../errors';
-import { generateSlug } from '../utils';
 import {
   DEFAULT_ORG_LIST_OPTIONS,
   MAX_NAME_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_SLUG_LENGTH,
 } from '../types/organization';
+import { generateSlug } from '../utils';
 
 import type {
   OrganizationWithMembers,
@@ -31,7 +30,7 @@ import type {
   PaginatedOrgResult,
   OrganizationMemberRole,
 } from '../types/organization';
-import type { Organization, OrganizationMember } from '@genesis/database';
+import type { PrismaClient, Prisma, OrganizationRole , Organization, OrganizationMember } from '@genesis/database';
 
 // =============================================================================
 // Custom Errors
@@ -46,7 +45,7 @@ export class OrganizationAlreadyExistsError extends GenesisError {
       `Organization with slug '${slug}' already exists`,
       'ORGANIZATION_ALREADY_EXISTS',
       409,
-      { slug }
+      { slug },
     );
     this.name = 'OrganizationAlreadyExistsError';
   }
@@ -74,7 +73,7 @@ export class UserNotFoundError extends GenesisError {
       `User not found: ${userId}`,
       'USER_NOT_FOUND',
       404,
-      { userId }
+      { userId },
     );
     this.name = 'UserNotFoundError';
   }
@@ -89,7 +88,7 @@ export class OrganizationMemberNotFoundError extends GenesisError {
       `User ${userId} is not a member of organization ${orgId}`,
       'ORGANIZATION_MEMBER_NOT_FOUND',
       404,
-      { orgId, userId }
+      { orgId, userId },
     );
     this.name = 'OrganizationMemberNotFoundError';
   }
@@ -493,7 +492,7 @@ export class OrganizationServiceImpl implements OrganizationService {
   async addMember(
     orgId: string,
     userId: string,
-    role: OrganizationMemberRole
+    role: OrganizationMemberRole,
   ): Promise<OrganizationMember> {
     // Verify organization exists
     const org = await this.getOrganization(orgId);
@@ -577,7 +576,7 @@ export class OrganizationServiceImpl implements OrganizationService {
   async updateMemberRole(
     orgId: string,
     userId: string,
-    role: OrganizationMemberRole
+    role: OrganizationMemberRole,
   ): Promise<OrganizationMember> {
     // Verify organization exists
     const org = await this.getOrganization(orgId);

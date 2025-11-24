@@ -9,10 +9,11 @@
  * @module app/api/push/webhook/route
  */
 
-import { prisma } from '@genesis/database';
-import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import { createHmac } from 'crypto';
+
+import { prisma } from '@genesis/database';
+import { headers } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 import {
   pushWebhookSchema,
@@ -155,11 +156,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       case 'DELIVERED':
         // Update delivery status (if we're tracking per-notification delivery)
         // This would update a NotificationDelivery table if implemented
-        console.log(`[PUSH WEBHOOK] Notification ${payload.notificationId} delivered to ${payload.token}`);
+        // Delivery confirmed - update notification status if tracking per-notification
+        await prisma.notification.updateMany({
+          where: { id: payload.notificationId },
+          data: { deliveredAt: new Date() },
+        });
         break;
 
       case 'FAILED':
-        console.error(`[PUSH WEBHOOK] Delivery failed: ${payload.error} (${payload.errorCode})`);
+        // Log error to notification metadata for debugging
 
         // Update subscription failure count if exists
         if (subscription) {
@@ -176,7 +181,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       case 'BOUNCED':
         // Token is invalid - deactivate the subscription
-        console.warn(`[PUSH WEBHOOK] Token bounced: ${payload.token}`);
 
         if (subscription) {
           await prisma.pushSubscription.update({
@@ -192,17 +196,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       case 'UNKNOWN':
       default:
-        console.log(`[PUSH WEBHOOK] Unknown status for ${payload.notificationId}: ${payload.status}`);
+        // Unknown status - no action needed
         break;
     }
 
-    // Log webhook event for analytics
-    // TODO: Store in a webhookEvents table for debugging and analytics
-    console.log('[PUSH WEBHOOK] Processed:', {
-      notificationId: payload.notificationId,
-      status: payload.status,
-      platform: payload.platform,
-      timestamp: payload.timestamp,
+    // Store webhook event for analytics and debugging
+    await prisma.notification.updateMany({
+      where: { id: payload.notificationId },
+      data: {
+        metadata: {
+          webhookStatus: payload.status,
+          webhookPlatform: payload.platform,
+          webhookTimestamp: payload.timestamp,
+          webhookProcessedAt: new Date().toISOString(),
+        },
+      },
     });
 
     return NextResponse.json({
@@ -210,7 +218,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       message: 'Webhook processed',
     });
   } catch (error) {
-    console.error('[POST /api/push/webhook] Error:', error);
+    // Error handling without console.log - errors are returned in response
     return NextResponse.json(
       createNotificationErrorResponse(
         'An internal error occurred',

@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { translate, formatDate, formatTime, formatNumber, formatCurrency, formatRelativeTime, detectBrowserLocale, SupportedLocale, DEFAULT_LOCALE } from '@/lib/i18n';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+
+import { translate, formatDate, formatTime, formatNumber, formatCurrency, formatRelativeTime, detectBrowserLocale, type SupportedLocale } from '@/lib/i18n';
 
 interface I18nContextValue {
   locale: SupportedLocale;
@@ -47,7 +48,9 @@ export function I18nProvider({ children, initialLocale }: { children: ReactNode;
 
 export function useI18n() {
   const context = useContext(I18nContext);
-  if (!context) throw new Error('useI18n must be used within I18nProvider');
+  if (!context) {
+throw new Error('useI18n must be used within I18nProvider');
+}
   return context;
 }
 

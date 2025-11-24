@@ -17,7 +17,7 @@ import type {
 
 /** Create a mock function */
 export function createMock<T extends (...args: unknown[]) => unknown>(
-  config?: Partial<MockConfig>
+  config?: Partial<MockConfig>,
 ): T & MockInstance {
   const calls: MockCall[] = [];
   let implementation: ((...args: unknown[]) => unknown) | undefined = config?.implementation as
@@ -26,7 +26,7 @@ export function createMock<T extends (...args: unknown[]) => unknown>(
   let returnValue: unknown = config?.returnValue;
   let resolvedValue: unknown = config?.resolvedValue;
   let rejectedValue: unknown = config?.rejectedValue;
-  let mockOnce = config?.mockOnce ?? false;
+  const mockOnce = config?.mockOnce ?? false;
 
   const mockFn = ((...args: unknown[]) => {
     const call: MockCall = {
@@ -128,7 +128,7 @@ export function createMock<T extends (...args: unknown[]) => unknown>(
 /** Create a spy on an object method */
 export function createSpy<T extends object, K extends keyof T>(
   obj: T,
-  method: K
+  method: K,
 ): T[K] & MockInstance {
   const original = obj[method];
   const mock = createMock<T[K] extends (...args: unknown[]) => unknown ? T[K] : never>({
@@ -151,7 +151,7 @@ export function createSpy<T extends object, K extends keyof T>(
 export function createFixture<T>(
   name: string,
   data: T,
-  options?: { setup?: () => Promise<void>; teardown?: () => Promise<void> }
+  options?: { setup?: () => Promise<void>; teardown?: () => Promise<void> },
 ): Fixture<T> {
   return {
     name,
@@ -179,7 +179,7 @@ export function createSeeder<T>(
   name: string,
   factory: FactoryFunction<T>,
   count: number,
-  dependencies?: string[]
+  dependencies?: string[],
 ): Seeder<T> {
   return {
     name,
@@ -245,7 +245,7 @@ export const vpFactory = createFactory({
 /** Wait for a condition */
 export async function waitFor(
   condition: () => boolean | Promise<boolean>,
-  options: { timeout?: number; interval?: number } = {}
+  options: { timeout?: number; interval?: number } = {},
 ): Promise<void> {
   const { timeout = 5000, interval = 100 } = options;
   const startTime = Date.now();
@@ -269,15 +269,15 @@ export function wait(ms: number): Promise<void> {
 export function createMockServer(baseUrl: string = 'http://localhost:3000'): MockServer {
   const routes: Map<string, MockResponse> = new Map();
   const requests: Array<{ method: string; path: string }> = [];
-  let isRunning = false;
+  let _isRunning = false;
 
   return {
     baseUrl,
     start: async () => {
-      isRunning = true;
+      _isRunning = true;
     },
     stop: async () => {
-      isRunning = false;
+      _isRunning = false;
     },
     reset: () => {
       routes.clear();
@@ -340,7 +340,9 @@ function topologicalSort<T>(seeders: Seeder<T>[]): Seeder<T>[] {
   const seederMap = new Map(seeders.map((s) => [s.name, s]));
 
   function visit(seeder: Seeder<T>): void {
-    if (visited.has(seeder.name)) return;
+    if (visited.has(seeder.name)) {
+return;
+}
     if (visiting.has(seeder.name)) {
       throw new Error(`Circular dependency detected: ${seeder.name}`);
     }
@@ -376,7 +378,7 @@ export const assert = {
 
   deepEqual: <T>(actual: T, expected: T, message?: string): void => {
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-      throw new Error(message || `Objects are not deeply equal`);
+      throw new Error(message || 'Objects are not deeply equal');
     }
   },
 

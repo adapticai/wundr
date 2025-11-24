@@ -8,6 +8,7 @@
  */
 
 import { OCREngine } from '../types/ocr';
+
 import type {
   OCROptions,
   OCRResult,

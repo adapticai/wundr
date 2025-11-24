@@ -9,10 +9,13 @@
  * @module app/api/daemon/status/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
 import { redis } from '@genesis/core';
+import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -20,10 +23,15 @@ import * as jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-production';
 
 /**
- * Valid VP operational statuses
+ * Schema for status update request body
  */
-const VALID_STATUSES = ['active', 'paused', 'error'] as const;
-type VPOperationalStatus = (typeof VALID_STATUSES)[number];
+const statusUpdateSchema = z.object({
+  status: z.enum(['active', 'paused', 'error']),
+  message: z.string().optional(),
+});
+
+/** Inferred type from status schema */
+type StatusUpdateInput = z.infer<typeof statusUpdateSchema>;
 
 /**
  * Error codes for status operations
@@ -95,7 +103,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: STATUS_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -106,7 +114,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: STATUS_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -122,7 +130,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid status. Must be one of: active, paused, error',
           code: STATUS_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -139,7 +147,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!vp) {
       return NextResponse.json(
         { error: 'Unauthorized', code: STATUS_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -174,7 +182,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       await redis.setex(
         statusKey,
         10 * 60, // 10 minutes TTL
-        JSON.stringify(statusData)
+        JSON.stringify(statusData),
       );
 
       // Publish status update for monitoring dashboards
@@ -184,7 +192,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           type: 'vp_status_update',
           vpId: token.vpId,
           ...statusData,
-        })
+        }),
       );
     } catch (redisError) {
       console.error('Redis status update error:', redisError);
@@ -196,7 +204,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     console.error('[PUT /api/daemon/status] Error:', error);
     return NextResponse.json(
       { error: 'Failed to update status', code: STATUS_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

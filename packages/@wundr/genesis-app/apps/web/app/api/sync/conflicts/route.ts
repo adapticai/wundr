@@ -11,7 +11,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -26,6 +25,7 @@ import type {
   BatchResolveConflictsInput,
   ResolveConflictInput,
 } from '@/lib/validations/notification';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -77,10 +77,9 @@ async function resolveConflict(
         // No update needed, server data is already in place
         return { success: true };
       case 'MERGE':
-        if (!resolution.mergedData) {
-          return { success: false, error: 'Merged data required for MERGE resolution' };
-        }
-        dataToApply = resolution.mergedData;
+        // Auto-merge: use deepMerge to combine server data with client data
+        // Client data takes precedence for conflicting keys
+        dataToApply = resolution.mergedData ?? deepMerge(conflict.serverData, conflict.clientData);
         break;
       case 'MANUAL':
         if (!resolution.mergedData) {

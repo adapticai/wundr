@@ -9,9 +9,10 @@
  * @module app/api/sync/incremental/route
  */
 
+import { randomUUID } from 'crypto';
+
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 
 import { auth } from '@/lib/auth';
 import {

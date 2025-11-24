@@ -11,6 +11,7 @@
  */
 
 import { GenesisError } from '../errors';
+
 import type {
   RetentionPolicy,
   RetentionRule,
@@ -38,7 +39,7 @@ export class RetentionPolicyNotFoundError extends GenesisError {
       `Retention policy not found: ${policyId}`,
       'RETENTION_POLICY_NOT_FOUND',
       404,
-      { policyId }
+      { policyId },
     );
     this.name = 'RetentionPolicyNotFoundError';
   }
@@ -53,7 +54,7 @@ export class LegalHoldNotFoundError extends GenesisError {
       `Legal hold not found: ${holdId}`,
       'LEGAL_HOLD_NOT_FOUND',
       404,
-      { holdId }
+      { holdId },
     );
     this.name = 'LegalHoldNotFoundError';
   }
@@ -68,7 +69,7 @@ export class RetentionJobError extends GenesisError {
       message,
       'RETENTION_JOB_ERROR',
       500,
-      { jobId }
+      { jobId },
     );
     this.name = 'RetentionJobError';
   }
@@ -83,7 +84,7 @@ export class DataExportNotFoundError extends GenesisError {
       `Data export not found: ${exportId}`,
       'DATA_EXPORT_NOT_FOUND',
       404,
-      { exportId }
+      { exportId },
     );
     this.name = 'DataExportNotFoundError';
   }
@@ -103,18 +104,125 @@ export interface RedisClient {
 }
 
 /**
+ * Database record type for retention policy storage.
+ */
+export interface RetentionPolicyRecord {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description?: string | null;
+  isDefault: boolean;
+  isEnabled: boolean;
+  rules: string; // JSON string of RetentionRule[]
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+}
+
+/**
+ * Database record type for retention job storage.
+ */
+export interface RetentionJobRecord {
+  id: string;
+  workspaceId: string;
+  policyId: string;
+  status: string;
+  resourceType: string;
+  action: string;
+  itemsProcessed: number;
+  itemsTotal: number;
+  itemsFailed: number;
+  errors: string; // JSON string of RetentionError[]
+  startedAt: Date;
+  completedAt?: Date | null;
+  scheduledAt?: Date | null;
+}
+
+/**
+ * Database record type for legal hold storage.
+ */
+export interface LegalHoldRecord {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description?: string | null;
+  isActive: boolean;
+  scope: string; // JSON string of LegalHoldScope
+  createdBy: string;
+  createdAt: Date;
+  releasedAt?: Date | null;
+  releasedBy?: string | null;
+}
+
+/**
+ * Database record type for data export storage.
+ */
+export interface DataExportRecord {
+  id: string;
+  workspaceId: string;
+  requestedBy: string;
+  type: string;
+  scope: string; // JSON string of DataExportScope
+  status: string;
+  format: string;
+  fileUrl?: string | null;
+  fileSize?: number | null;
+  createdAt: Date;
+  completedAt?: Date | null;
+  expiresAt?: Date | null;
+  error?: string | null;
+}
+
+/**
+ * Database record for items subject to retention.
+ */
+export interface RetentionItemRecord {
+  id: string;
+  createdAt: Date;
+  senderId?: string | null;
+  userId?: string | null;
+  channelId?: string | null;
+  isDeleted?: boolean;
+  deletedAt?: Date | null;
+  archivedAt?: Date | null;
+  anonymizedAt?: Date | null;
+  isArchived?: boolean;
+  content?: string | null;
+  fileSize?: number | null;
+}
+
+/**
  * Generic database model interface for retention operations.
  * This allows the service to work with any Prisma-compatible database client.
+ *
+ * @typeParam T - The record type for this model
  */
-export interface RetentionDatabaseModel {
-  findUnique(args: { where: { id: string } }): Promise<Record<string, unknown> | null>;
-  findMany(args: Record<string, unknown>): Promise<Array<Record<string, unknown>>>;
-  findFirst(args: Record<string, unknown>): Promise<Record<string, unknown> | null>;
-  create(args: { data: Record<string, unknown> }): Promise<Record<string, unknown>>;
-  update(args: { where: { id: string }; data: Record<string, unknown> }): Promise<Record<string, unknown>>;
-  delete(args: { where: { id: string } }): Promise<Record<string, unknown>>;
+export interface RetentionDatabaseModel<T = RetentionItemRecord> {
+  /** Find a single record by ID */
+  findUnique(args: { where: { id: string } }): Promise<T | null>;
+  /** Find multiple records matching criteria */
+  findMany(args: Record<string, unknown>): Promise<T[]>;
+  /** Find the first record matching criteria */
+  findFirst(args: Record<string, unknown>): Promise<T | null>;
+  /** Create a new record */
+  create(args: { data: Record<string, unknown> }): Promise<T>;
+  /** Update an existing record */
+  update(args: { where: { id: string }; data: Record<string, unknown> }): Promise<T>;
+  /** Delete a record */
+  delete(args: { where: { id: string } }): Promise<T>;
+  /** Count records matching criteria */
   count(args?: Record<string, unknown>): Promise<number>;
+  /** Perform aggregation queries */
   aggregate?(args: Record<string, unknown>): Promise<Record<string, unknown>>;
+}
+
+/**
+ * Aggregation result for file size calculations.
+ */
+export interface FileSizeAggregateResult {
+  _sum: {
+    fileSize: number | null;
+  };
 }
 
 /**
@@ -122,13 +230,22 @@ export interface RetentionDatabaseModel {
  * This interface defines the required models for the retention service.
  */
 export interface RetentionDatabaseClient {
-  retentionPolicy: RetentionDatabaseModel;
-  retentionJob: RetentionDatabaseModel;
-  legalHold: RetentionDatabaseModel;
-  dataExport: RetentionDatabaseModel;
-  message: RetentionDatabaseModel;
-  attachment: RetentionDatabaseModel & { aggregate: (args: Record<string, unknown>) => Promise<Record<string, unknown>> };
-  channel: RetentionDatabaseModel;
+  /** Model for retention policy records */
+  retentionPolicy: RetentionDatabaseModel<RetentionPolicyRecord>;
+  /** Model for retention job records */
+  retentionJob: RetentionDatabaseModel<RetentionJobRecord>;
+  /** Model for legal hold records */
+  legalHold: RetentionDatabaseModel<LegalHoldRecord>;
+  /** Model for data export records */
+  dataExport: RetentionDatabaseModel<DataExportRecord>;
+  /** Model for message records */
+  message: RetentionDatabaseModel<RetentionItemRecord>;
+  /** Model for attachment/file records with aggregation support */
+  attachment: RetentionDatabaseModel<RetentionItemRecord> & {
+    aggregate: (args: Record<string, unknown>) => Promise<FileSizeAggregateResult>;
+  };
+  /** Model for channel records */
+  channel: RetentionDatabaseModel<RetentionItemRecord>;
 }
 
 /**
@@ -209,11 +326,11 @@ export class RetentionService {
     name: string,
     rules: Omit<RetentionRule, 'id'>[],
     createdBy: string,
-    description?: string
+    description?: string,
   ): Promise<RetentionPolicy> {
     const rulesWithIds = rules.map((r, i) => ({
       ...r,
-      id: `rule-${Date.now()}-${i}`
+      id: `rule-${Date.now()}-${i}`,
     }));
 
     const policy = await this.prisma.retentionPolicy.create({
@@ -240,14 +357,22 @@ export class RetentionService {
    */
   async updatePolicy(
     policyId: string,
-    updates: Partial<Pick<RetentionPolicy, 'name' | 'description' | 'isEnabled' | 'rules'>>
+    updates: Partial<Pick<RetentionPolicy, 'name' | 'description' | 'isEnabled' | 'rules'>>,
   ): Promise<RetentionPolicy> {
     const data: Record<string, unknown> = {};
 
-    if (updates.name !== undefined) data.name = updates.name;
-    if (updates.description !== undefined) data.description = updates.description;
-    if (updates.isEnabled !== undefined) data.isEnabled = updates.isEnabled;
-    if (updates.rules !== undefined) data.rules = JSON.stringify(updates.rules);
+    if (updates.name !== undefined) {
+data.name = updates.name;
+}
+    if (updates.description !== undefined) {
+data.description = updates.description;
+}
+    if (updates.isEnabled !== undefined) {
+data.isEnabled = updates.isEnabled;
+}
+    if (updates.rules !== undefined) {
+data.rules = JSON.stringify(updates.rules);
+}
 
     const policy = await this.prisma.retentionPolicy.update({
       where: { id: policyId },
@@ -268,7 +393,9 @@ export class RetentionService {
       where: { id: policyId },
     });
 
-    if (!policy) return null;
+    if (!policy) {
+return null;
+}
     return this.mapPolicy(policy);
   }
 
@@ -299,20 +426,23 @@ export class RetentionService {
   }
 
   /**
-   * Map database policy to typed policy.
+   * Map database policy record to typed retention policy.
+   *
+   * @param policy - The database policy record
+   * @returns The typed retention policy
    */
-  private mapPolicy(policy: Record<string, unknown>): RetentionPolicy {
+  private mapPolicy(policy: RetentionPolicyRecord): RetentionPolicy {
     return {
-      id: policy.id as string,
-      workspaceId: policy.workspaceId as string,
-      name: policy.name as string,
-      description: policy.description as string | undefined,
-      isDefault: policy.isDefault as boolean,
-      isEnabled: policy.isEnabled as boolean,
-      rules: JSON.parse(policy.rules as string),
-      createdAt: policy.createdAt as Date,
-      updatedAt: policy.updatedAt as Date,
-      createdBy: policy.createdBy as string,
+      id: policy.id,
+      workspaceId: policy.workspaceId,
+      name: policy.name,
+      description: policy.description ?? undefined,
+      isDefault: policy.isDefault,
+      isEnabled: policy.isEnabled,
+      rules: JSON.parse(policy.rules) as RetentionRule[],
+      createdAt: policy.createdAt,
+      updatedAt: policy.updatedAt,
+      createdBy: policy.createdBy,
     };
   }
 
@@ -368,7 +498,7 @@ export class RetentionService {
           workspaceId,
           rule,
           activeHolds,
-          job.id as string
+          job.id as string,
         );
         totalProcessed += result.processed;
         totalFailed += result.failed;
@@ -405,7 +535,7 @@ export class RetentionService {
     workspaceId: string,
     rule: RetentionRule,
     legalHolds: LegalHold[],
-    jobId: string
+    jobId: string,
   ): Promise<RuleProcessingResult> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - rule.retentionDays);
@@ -424,7 +554,7 @@ export class RetentionService {
         rule.resourceType,
         cutoffDate,
         this.batchSize,
-        cursor
+        cursor,
       );
 
       if (items.length === 0) {
@@ -434,7 +564,7 @@ export class RetentionService {
 
       // Filter out items under legal hold
       const eligibleItems = items.filter(item =>
-        !this.isUnderLegalHold(item, legalHolds)
+        !this.isUnderLegalHold(item, legalHolds),
       );
 
       // Process each item
@@ -474,7 +604,7 @@ export class RetentionService {
     resourceType: RetentionResourceType,
     cutoffDate: Date,
     limit: number,
-    cursor?: string
+    cursor?: string,
   ): Promise<Array<{ id: string; createdAt: Date; [key: string]: unknown }>> {
     const cursorCondition = cursor ? { id: { gt: cursor } } : {};
 
@@ -531,7 +661,7 @@ export class RetentionService {
   private async processItem(
     item: { id: string; [key: string]: unknown },
     action: RetentionAction,
-    resourceType: RetentionResourceType
+    resourceType: RetentionResourceType,
   ): Promise<void> {
     switch (action) {
       case 'delete':
@@ -553,7 +683,7 @@ export class RetentionService {
    */
   private async deleteItem(
     item: { id: string; [key: string]: unknown },
-    resourceType: RetentionResourceType
+    resourceType: RetentionResourceType,
   ): Promise<void> {
     switch (resourceType) {
       case 'message':
@@ -587,7 +717,7 @@ export class RetentionService {
    */
   private async archiveItem(
     item: { id: string; [key: string]: unknown },
-    resourceType: RetentionResourceType
+    resourceType: RetentionResourceType,
   ): Promise<void> {
     switch (resourceType) {
       case 'message':
@@ -614,7 +744,7 @@ export class RetentionService {
    */
   private async anonymizeItem(
     item: { id: string; [key: string]: unknown },
-    resourceType: RetentionResourceType
+    resourceType: RetentionResourceType,
   ): Promise<void> {
     switch (resourceType) {
       case 'message':
@@ -635,10 +765,12 @@ export class RetentionService {
    */
   private isUnderLegalHold(
     item: { id: string; createdAt: Date; [key: string]: unknown },
-    holds: LegalHold[]
+    holds: LegalHold[],
   ): boolean {
     for (const hold of holds) {
-      if (!hold.isActive) continue;
+      if (!hold.isActive) {
+continue;
+}
 
       // Check date range
       if (hold.scope.dateRange) {
@@ -671,23 +803,26 @@ export class RetentionService {
   }
 
   /**
-   * Map database job to typed job.
+   * Map database job record to typed retention job.
+   *
+   * @param job - The database job record
+   * @returns The typed retention job
    */
-  private mapJob(job: Record<string, unknown>): RetentionJob {
+  private mapJob(job: RetentionJobRecord): RetentionJob {
     return {
-      id: job.id as string,
-      workspaceId: job.workspaceId as string,
-      policyId: job.policyId as string,
+      id: job.id,
+      workspaceId: job.workspaceId,
+      policyId: job.policyId,
       status: job.status as RetentionJobStatus,
       resourceType: job.resourceType as RetentionResourceType,
       action: job.action as RetentionAction,
-      itemsProcessed: job.itemsProcessed as number,
-      itemsTotal: job.itemsTotal as number,
-      itemsFailed: job.itemsFailed as number,
-      errors: JSON.parse(job.errors as string),
-      startedAt: job.startedAt as Date,
-      completedAt: job.completedAt as Date | undefined,
-      scheduledAt: job.scheduledAt as Date | undefined,
+      itemsProcessed: job.itemsProcessed,
+      itemsTotal: job.itemsTotal,
+      itemsFailed: job.itemsFailed,
+      errors: JSON.parse(job.errors) as RetentionError[],
+      startedAt: job.startedAt,
+      completedAt: job.completedAt ?? undefined,
+      scheduledAt: job.scheduledAt ?? undefined,
     };
   }
 
@@ -773,6 +908,9 @@ export class RetentionService {
 
   /**
    * Get storage statistics for a workspace.
+   *
+   * @param workspaceId - The workspace ID
+   * @returns Storage statistics including total, message, and file storage in bytes
    */
   private async getStorageStats(workspaceId: string): Promise<{
     total: number;
@@ -782,12 +920,14 @@ export class RetentionService {
     const fileStats = await this.prisma.attachment.aggregate({
       where: { message: { channel: { workspaceId } } },
       _sum: { fileSize: true },
-    }) as { _sum: { fileSize: number | null } };
+    });
+
+    const fileSize = Number(fileStats._sum?.fileSize ?? 0);
 
     return {
-      total: Number(fileStats._sum?.fileSize ?? 0),
-      messages: 0, // Would need text storage calculation
-      files: Number(fileStats._sum?.fileSize ?? 0),
+      total: fileSize,
+      messages: 0, // Text storage would require content length calculation
+      files: fileSize,
     };
   }
 
@@ -842,7 +982,7 @@ export class RetentionService {
     name: string,
     scope: LegalHold['scope'],
     createdBy: string,
-    description?: string
+    description?: string,
   ): Promise<LegalHold> {
     const hold = await this.prisma.legalHold.create({
       data: {
@@ -879,20 +1019,23 @@ export class RetentionService {
   }
 
   /**
-   * Map database legal hold to typed legal hold.
+   * Map database legal hold record to typed legal hold.
+   *
+   * @param hold - The database legal hold record
+   * @returns The typed legal hold
    */
-  private mapLegalHold(hold: Record<string, unknown>): LegalHold {
+  private mapLegalHold(hold: LegalHoldRecord): LegalHold {
     return {
-      id: hold.id as string,
-      workspaceId: hold.workspaceId as string,
-      name: hold.name as string,
-      description: hold.description as string | undefined,
-      isActive: hold.isActive as boolean,
-      scope: JSON.parse(hold.scope as string),
-      createdBy: hold.createdBy as string,
-      createdAt: hold.createdAt as Date,
-      releasedAt: hold.releasedAt as Date | undefined,
-      releasedBy: hold.releasedBy as string | undefined,
+      id: hold.id,
+      workspaceId: hold.workspaceId,
+      name: hold.name,
+      description: hold.description ?? undefined,
+      isActive: hold.isActive,
+      scope: JSON.parse(hold.scope) as LegalHold['scope'],
+      createdBy: hold.createdBy,
+      createdAt: hold.createdAt,
+      releasedAt: hold.releasedAt ?? undefined,
+      releasedBy: hold.releasedBy ?? undefined,
     };
   }
 
@@ -915,7 +1058,7 @@ export class RetentionService {
     requestedBy: string,
     type: DataExport['type'],
     scope: DataExportScope,
-    format: 'json' | 'zip'
+    format: 'json' | 'zip',
   ): Promise<DataExport> {
     const exportRecord = await this.prisma.dataExport.create({
       data: {
@@ -946,7 +1089,9 @@ export class RetentionService {
       where: { id: exportId },
     });
 
-    if (!record) return null;
+    if (!record) {
+return null;
+}
     return this.mapDataExport(record);
   }
 
@@ -966,23 +1111,26 @@ export class RetentionService {
   }
 
   /**
-   * Map database data export to typed data export.
+   * Map database data export record to typed data export.
+   *
+   * @param record - The database data export record
+   * @returns The typed data export
    */
-  private mapDataExport(record: Record<string, unknown>): DataExport {
+  private mapDataExport(record: DataExportRecord): DataExport {
     return {
-      id: record.id as string,
-      workspaceId: record.workspaceId as string,
-      requestedBy: record.requestedBy as string,
+      id: record.id,
+      workspaceId: record.workspaceId,
+      requestedBy: record.requestedBy,
       type: record.type as DataExport['type'],
-      scope: JSON.parse(record.scope as string),
+      scope: JSON.parse(record.scope) as DataExportScope,
       status: record.status as DataExport['status'],
       format: record.format as 'json' | 'zip',
-      fileUrl: record.fileUrl as string | undefined,
-      fileSize: record.fileSize as number | undefined,
-      createdAt: record.createdAt as Date,
-      completedAt: record.completedAt as Date | undefined,
-      expiresAt: record.expiresAt as Date | undefined,
-      error: record.error as string | undefined,
+      fileUrl: record.fileUrl ?? undefined,
+      fileSize: record.fileSize ?? undefined,
+      createdAt: record.createdAt,
+      completedAt: record.completedAt ?? undefined,
+      expiresAt: record.expiresAt ?? undefined,
+      error: record.error ?? undefined,
     };
   }
 }

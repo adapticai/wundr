@@ -8,6 +8,12 @@
  */
 
 // Types
+// Factory functions for convenience
+import { MemoryProcessingQueue } from './memory-queue';
+import { RedisProcessingQueue } from './redis-queue';
+
+import type { RedisQueueConfig, MemoryQueueConfig, ProcessorRegistry } from './types';
+
 export {
   // Processing types
   ProcessingType,
@@ -86,11 +92,6 @@ export {
   BatchProcessOptions,
   createProcessingCoordinator,
 } from './coordinator';
-
-// Factory functions for convenience
-import { RedisProcessingQueue } from './redis-queue';
-import { MemoryProcessingQueue } from './memory-queue';
-import type { RedisQueueConfig, MemoryQueueConfig, ProcessorRegistry } from './types';
 
 /**
  * Queue type selection
@@ -175,7 +176,7 @@ export function createQueue(options: QueueFactoryOptions): RedisProcessingQueue 
  * ```
  */
 export function createQueueFromEnv(
-  processorRegistry?: ProcessorRegistry
+  processorRegistry?: ProcessorRegistry,
 ): RedisProcessingQueue | MemoryProcessingQueue {
   const queueType = (process.env.QUEUE_TYPE ?? 'memory') as QueueType;
 
@@ -193,7 +194,7 @@ export function createQueueFromEnv(
           concurrency: parseInt(process.env.QUEUE_CONCURRENCY ?? '3', 10),
         },
       },
-      processorRegistry
+      processorRegistry,
     );
   }
 
@@ -203,6 +204,6 @@ export function createQueueFromEnv(
         concurrency: parseInt(process.env.QUEUE_CONCURRENCY ?? '2', 10),
       },
     },
-    processorRegistry
+    processorRegistry,
   );
 }

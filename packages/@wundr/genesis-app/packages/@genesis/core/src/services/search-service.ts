@@ -15,8 +15,6 @@
  * @module @genesis/core/services/search-service
  */
 
-import type { PrismaClient } from '@prisma/client';
-import type { Redis } from 'ioredis';
 import type {
   SearchQuery,
   SearchResponse,
@@ -28,6 +26,8 @@ import type {
   SearchIndexDocument,
   SearchSort,
 } from '../types/search';
+import type { PrismaClient } from '@prisma/client';
+import type { Redis } from 'ioredis';
 
 // =============================================================================
 // TYPES
@@ -170,7 +170,7 @@ export class SearchServiceImpl implements SearchService {
 
     const limit = Math.min(
       query.pagination?.limit ?? this.defaultLimit,
-      this.maxLimit
+      this.maxLimit,
     );
     const offset = query.pagination?.offset ?? 0;
 
@@ -178,7 +178,7 @@ export class SearchServiceImpl implements SearchService {
     const types = query.filters?.types ?? ['message', 'file', 'channel', 'user', 'vp'];
 
     const searchPromises = types.map((type) =>
-      this.searchByType(type, query, limit, offset)
+      this.searchByType(type, query, limit, offset),
     );
 
     const typeResults = await Promise.all(searchPromises);
@@ -228,7 +228,7 @@ export class SearchServiceImpl implements SearchService {
     type: SearchResultType,
     query: SearchQuery,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<SearchResult[]> {
     const tsQuery = this.buildTsQuery(query.query);
 
@@ -256,11 +256,11 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false
+    highlight = false,
   ): Promise<SearchResult[]> {
     // Build WHERE conditions dynamically
     const conditions: string[] = [
-      `to_tsvector('english', m.content) @@ to_tsquery('english', $1)`,
+      'to_tsvector(\'english\', m.content) @@ to_tsquery(\'english\', $1)',
     ];
     const params: unknown[] = [tsQuery];
     let paramIndex = 2;
@@ -290,14 +290,14 @@ export class SearchServiceImpl implements SearchService {
     }
 
     if (filters?.isThreadReply !== undefined) {
-      conditions.push(filters.isThreadReply ? `m."threadId" IS NOT NULL` : `m."threadId" IS NULL`);
+      conditions.push(filters.isThreadReply ? 'm."threadId" IS NOT NULL' : 'm."threadId" IS NULL');
     }
 
     const whereClause = conditions.join(' AND ');
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? `, ts_headline('english', m.content, to_tsquery('english', $1)) as headline`
+      ? ', ts_headline(\'english\', m.content, to_tsquery(\'english\', $1)) as headline'
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -365,10 +365,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false
+    highlight = false,
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      `to_tsvector('english', COALESCE(a."fileName", '') || ' ' || COALESCE(a."extractedText", '')) @@ to_tsquery('english', $1)`,
+      'to_tsvector(\'english\', COALESCE(a."fileName", \'\') || \' \' || COALESCE(a."extractedText", \'\')) @@ to_tsquery(\'english\', $1)',
     ];
     const params: unknown[] = [tsQuery];
     let paramIndex = 2;
@@ -395,7 +395,7 @@ export class SearchServiceImpl implements SearchService {
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? `, ts_headline('english', COALESCE(a."extractedText", a."fileName"), to_tsquery('english', $1)) as headline`
+      ? ', ts_headline(\'english\', COALESCE(a."extractedText", a."fileName"), to_tsquery(\'english\', $1)) as headline'
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -467,10 +467,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false
+    highlight = false,
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      `to_tsvector('english', c.name || ' ' || COALESCE(c.description, '')) @@ to_tsquery('english', $1)`,
+      'to_tsvector(\'english\', c.name || \' \' || COALESCE(c.description, \'\')) @@ to_tsquery(\'english\', $1)',
     ];
     const params: unknown[] = [tsQuery];
     let paramIndex = 2;
@@ -485,7 +485,7 @@ export class SearchServiceImpl implements SearchService {
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? `, ts_headline('english', c.name || ' ' || COALESCE(c.description, ''), to_tsquery('english', $1)) as headline`
+      ? ', ts_headline(\'english\', c.name || \' \' || COALESCE(c.description, \'\'), to_tsquery(\'english\', $1)) as headline'
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -542,10 +542,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false
+    highlight = false,
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      `to_tsvector('english', u.name || ' ' || u.email || ' ' || COALESCE(u.discipline, '')) @@ to_tsquery('english', $1)`,
+      'to_tsvector(\'english\', u.name || \' \' || u.email || \' \' || COALESCE(u.discipline, \'\')) @@ to_tsquery(\'english\', $1)',
     ];
     const params: unknown[] = [tsQuery];
     let paramIndex = 2;
@@ -566,7 +566,7 @@ export class SearchServiceImpl implements SearchService {
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? `, ts_headline('english', u.name || ' ' || u.email, to_tsquery('english', $1)) as headline`
+      ? ', ts_headline(\'english\', u.name || \' \' || u.email, to_tsquery(\'english\', $1)) as headline'
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -624,10 +624,10 @@ export class SearchServiceImpl implements SearchService {
     filters?: SearchFilters,
     limit = 20,
     offset = 0,
-    highlight = false
+    highlight = false,
   ): Promise<SearchResult[]> {
     const conditions: string[] = [
-      `to_tsvector('english', vp.name || ' ' || vp.discipline || ' ' || array_to_string(vp.capabilities, ' ')) @@ to_tsquery('english', $1)`,
+      'to_tsvector(\'english\', vp.name || \' \' || vp.discipline || \' \' || array_to_string(vp.capabilities, \' \')) @@ to_tsquery(\'english\', $1)',
     ];
     const params: unknown[] = [tsQuery];
     let paramIndex = 2;
@@ -654,7 +654,7 @@ export class SearchServiceImpl implements SearchService {
     params.push(limit, offset);
 
     const highlightSelect = highlight
-      ? `, ts_headline('english', vp.name || ' ' || vp.discipline, to_tsquery('english', $1)) as headline`
+      ? ', ts_headline(\'english\', vp.name || \' \' || vp.discipline, to_tsquery(\'english\', $1)) as headline'
       : ', NULL as headline';
 
     const sqlQuery = `
@@ -720,7 +720,7 @@ export class SearchServiceImpl implements SearchService {
    */
   private sortResults(
     results: SearchResult[],
-    sort: SearchSort
+    sort: SearchSort,
   ): SearchResult[] {
     const multiplier = sort.direction === 'asc' ? 1 : -1;
 
@@ -747,7 +747,7 @@ export class SearchServiceImpl implements SearchService {
       (data.sentAt as Date) ||
         (data.uploadedAt as Date) ||
         (data.createdAt as Date) ||
-        0
+        0,
     );
   }
 
@@ -756,7 +756,7 @@ export class SearchServiceImpl implements SearchService {
    */
   private async buildFacets(
     query: SearchQuery,
-    types: SearchResultType[]
+    types: SearchResultType[],
   ): Promise<SearchFacets> {
     const facets: SearchFacets = {};
 
@@ -791,7 +791,7 @@ export class SearchServiceImpl implements SearchService {
     prefix: string,
     _workspaceId: string,
     userId: string,
-    limit = 5
+    limit = 5,
   ): Promise<SearchSuggestion[]> {
     const suggestions: SearchSuggestion[] = [];
 

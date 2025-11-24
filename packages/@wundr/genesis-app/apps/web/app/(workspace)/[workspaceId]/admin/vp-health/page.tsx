@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useState, useMemo, useCallback } from 'react';
 
-import { cn } from '@/lib/utils';
 import {
   VPStatusCard,
   VPStatusCardSkeleton,
 } from '@/components/presence/vp-status-card';
 import { useVPHealthList } from '@/hooks/use-presence';
+import { cn } from '@/lib/utils';
 
 type FilterStatus = 'all' | 'online' | 'offline' | 'unhealthy';
 

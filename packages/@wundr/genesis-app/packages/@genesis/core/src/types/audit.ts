@@ -227,7 +227,9 @@ export function isAuditCategory(value: unknown): value is AuditCategory {
 }
 
 export function isAuditLogEntry(value: unknown): value is AuditLogEntry {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object') {
+return false;
+}
   const entry = value as Record<string, unknown>;
   return (
     typeof entry.id === 'string' &&

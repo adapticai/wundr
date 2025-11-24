@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface AdminSidebarProps {
@@ -126,7 +127,7 @@ export function AdminSidebar({
     <nav
       className={cn(
         'w-64 h-full border-r border-border bg-card overflow-y-auto',
-        className
+        className,
       )}
       aria-label="Admin navigation"
     >
@@ -151,7 +152,7 @@ export function AdminSidebar({
                   'flex w-full items-center justify-between px-3 py-2',
                   'text-xs font-semibold uppercase tracking-wider',
                   'text-muted-foreground hover:text-foreground',
-                  'transition-colors rounded-md'
+                  'transition-colors rounded-md',
                 )}
                 aria-expanded={!isCollapsed}
               >
@@ -159,7 +160,7 @@ export function AdminSidebar({
                 <ChevronIcon
                   className={cn(
                     'h-3 w-3 transition-transform',
-                    isCollapsed ? '-rotate-90' : ''
+                    isCollapsed ? '-rotate-90' : '',
                   )}
                 />
               </button>
@@ -181,7 +182,7 @@ export function AdminSidebar({
                           'text-sm font-medium transition-colors',
                           active
                             ? 'bg-primary/10 text-primary'
-                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                         )}
                         aria-current={active ? 'page' : undefined}
                       >

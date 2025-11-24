@@ -7,20 +7,8 @@
  * @packageDocumentation
  */
 
-import type {
-  PrismaClient,
-  OrganizationRole,
-  WorkspaceRole,
-  ChannelRole,
-} from '@genesis/database';
 import { prisma as defaultPrisma } from '@genesis/database';
 
-import { Permission } from './permissions';
-import {
-  getOrganizationRolePermissions,
-  getWorkspaceRolePermissions,
-  getChannelRolePermissions,
-} from './roles';
 import {
   PermissionDeniedError,
   NotOrganizationMemberError,
@@ -28,6 +16,19 @@ import {
   NotChannelMemberError,
   InvalidPermissionContextError,
 } from './errors';
+import { Permission } from './permissions';
+import {
+  getOrganizationRolePermissions,
+  getWorkspaceRolePermissions,
+  getChannelRolePermissions,
+} from './roles';
+
+import type {
+  PrismaClient,
+  OrganizationRole,
+  WorkspaceRole,
+  ChannelRole,
+} from '@genesis/database';
 
 // =============================================================================
 // Types
@@ -162,7 +163,7 @@ export class PermissionChecker {
    */
   async canAccessWorkspace(
     userId: string,
-    workspaceId: string
+    workspaceId: string,
   ): Promise<boolean> {
     const membership = await this.getWorkspaceMembership(userId, workspaceId);
     return membership.isMember;
@@ -217,7 +218,7 @@ export class PermissionChecker {
   async hasPermission(
     userId: string,
     permission: Permission,
-    context: PermissionContext
+    context: PermissionContext,
   ): Promise<boolean> {
     // Get all applicable permissions for the user in this context
     const userPermissions = await this.getPermissions(userId, context);
@@ -249,7 +250,7 @@ export class PermissionChecker {
    */
   async getPermissions(
     userId: string,
-    context: PermissionContext
+    context: PermissionContext,
   ): Promise<Permission[]> {
     const permissions = new Set<Permission>();
 
@@ -257,11 +258,11 @@ export class PermissionChecker {
     if (context.organizationId) {
       const orgMembership = await this.getOrganizationMembership(
         userId,
-        context.organizationId
+        context.organizationId,
       );
       if (orgMembership.isMember && orgMembership.role) {
         const orgPerms = getOrganizationRolePermissions(
-          orgMembership.role as OrganizationRole
+          orgMembership.role as OrganizationRole,
         );
         orgPerms.forEach((p) => permissions.add(p));
       }
@@ -271,11 +272,11 @@ export class PermissionChecker {
     if (context.workspaceId) {
       const workspaceMembership = await this.getWorkspaceMembership(
         userId,
-        context.workspaceId
+        context.workspaceId,
       );
       if (workspaceMembership.isMember && workspaceMembership.role) {
         const wsPerms = getWorkspaceRolePermissions(
-          workspaceMembership.role as WorkspaceRole
+          workspaceMembership.role as WorkspaceRole,
         );
         wsPerms.forEach((p) => permissions.add(p));
       }
@@ -285,11 +286,11 @@ export class PermissionChecker {
     if (context.channelId) {
       const channelMembership = await this.getChannelMembership(
         userId,
-        context.channelId
+        context.channelId,
       );
       if (channelMembership.isMember && channelMembership.role) {
         const chPerms = getChannelRolePermissions(
-          channelMembership.role as ChannelRole
+          channelMembership.role as ChannelRole,
         );
         chPerms.forEach((p) => permissions.add(p));
       }
@@ -310,7 +311,7 @@ export class PermissionChecker {
   async requirePermission(
     userId: string,
     permission: Permission,
-    context: PermissionContext
+    context: PermissionContext,
   ): Promise<void> {
     const hasPermission = await this.hasPermission(userId, permission, context);
     if (!hasPermission) {
@@ -327,11 +328,11 @@ export class PermissionChecker {
    */
   async requireOrganizationMember(
     userId: string,
-    organizationId: string
+    organizationId: string,
   ): Promise<MembershipInfo> {
     const membership = await this.getOrganizationMembership(
       userId,
-      organizationId
+      organizationId,
     );
     if (!membership.isMember) {
       throw new NotOrganizationMemberError(userId, organizationId);
@@ -348,7 +349,7 @@ export class PermissionChecker {
    */
   async requireWorkspaceMember(
     userId: string,
-    workspaceId: string
+    workspaceId: string,
   ): Promise<MembershipInfo> {
     const membership = await this.getWorkspaceMembership(userId, workspaceId);
     if (!membership.isMember) {
@@ -366,7 +367,7 @@ export class PermissionChecker {
    */
   async requireChannelMember(
     userId: string,
-    channelId: string
+    channelId: string,
   ): Promise<MembershipInfo> {
     // First check explicit channel membership
     const membership = await this.getChannelMembership(userId, channelId);
@@ -383,7 +384,7 @@ export class PermissionChecker {
     if (channel?.type === 'PUBLIC') {
       const workspaceMembership = await this.getWorkspaceMembership(
         userId,
-        channel.workspaceId
+        channel.workspaceId,
       );
       if (workspaceMembership.isMember) {
         // Return workspace role as effective channel role for public channels
@@ -410,7 +411,7 @@ export class PermissionChecker {
    */
   async getOrganizationMembership(
     userId: string,
-    organizationId: string
+    organizationId: string,
   ): Promise<MembershipInfo> {
     const cacheKey = `${userId}:${organizationId}`;
 
@@ -461,7 +462,7 @@ export class PermissionChecker {
    */
   async getWorkspaceMembership(
     userId: string,
-    workspaceId: string
+    workspaceId: string,
   ): Promise<MembershipInfo> {
     const cacheKey = `${userId}:${workspaceId}`;
 
@@ -512,7 +513,7 @@ export class PermissionChecker {
    */
   async getChannelMembership(
     userId: string,
-    channelId: string
+    channelId: string,
   ): Promise<MembershipInfo> {
     const cacheKey = `${userId}:${channelId}`;
 
@@ -588,7 +589,7 @@ export class PermissionChecker {
    */
   private getFromCache<T>(
     cache: Map<string, CacheEntry<T>>,
-    key: string
+    key: string,
   ): T | undefined {
     const entry = cache.get(key);
     if (!entry) {
@@ -609,7 +610,7 @@ export class PermissionChecker {
   private setInCache<T>(
     cache: Map<string, CacheEntry<T>>,
     key: string,
-    value: T
+    value: T,
   ): void {
     cache.set(key, {
       value,
@@ -622,7 +623,7 @@ export class PermissionChecker {
    */
   private invalidateCacheByPrefix<T>(
     cache: Map<string, CacheEntry<T>>,
-    prefix: string
+    prefix: string,
   ): void {
     const keysToDelete: string[] = [];
     cache.forEach((_value, key) => {
@@ -645,7 +646,7 @@ export class PermissionChecker {
    */
   private hasAnyVariant(
     permissions: Permission[],
-    ownershipPermission: Permission
+    ownershipPermission: Permission,
   ): boolean {
     const anyVariant = ownershipPermission.replace('_own', '_any') as Permission;
     return permissions.includes(anyVariant);
@@ -665,7 +666,7 @@ export class PermissionChecker {
  */
 export function createPermissionChecker(
   prisma?: PrismaClient,
-  config?: PermissionCheckerConfig
+  config?: PermissionCheckerConfig,
 ): PermissionChecker {
   return new PermissionChecker(prisma, config);
 }
@@ -689,7 +690,7 @@ export const permissionChecker = new PermissionChecker();
  */
 export function validatePermissionContext(
   permission: Permission,
-  context: PermissionContext
+  context: PermissionContext,
 ): void {
   const resource = permission.split(':')[0];
   const missingFields: string[] = [];
@@ -726,7 +727,7 @@ export function validatePermissionContext(
   if (missingFields.length > 0) {
     throw new InvalidPermissionContextError(
       missingFields,
-      `Permission '${permission}' requires context: ${missingFields.join(', ')}`
+      `Permission '${permission}' requires context: ${missingFields.join(', ')}`,
     );
   }
 }

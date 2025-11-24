@@ -10,10 +10,12 @@
  * @module app/api/daemon/events/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
 import { redis } from '@genesis/core';
+import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -96,7 +98,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: EVENT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -117,7 +119,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!vp) {
       return NextResponse.json(
         { error: 'Unauthorized', code: EVENT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -191,7 +193,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Fetch additional author info for mentions
     const mentionAuthorIds = Array.from(new Set(mentionMessagesTyped.map((m) => m.authorId))).filter(
-      (id) => !authorMap.has(id)
+      (id) => !authorMap.has(id),
     );
     if (mentionAuthorIds.length > 0) {
       const mentionAuthors = await prisma.user.findMany({
@@ -252,7 +254,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/daemon/events] Error:', error);
     return NextResponse.json(
       { error: 'Failed to get events', code: EVENT_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -285,7 +287,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: EVENT_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -296,7 +298,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: EVENT_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -306,7 +308,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     if (!eventIds?.length) {
       return NextResponse.json(
         { error: 'Event IDs required', code: EVENT_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -348,7 +350,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     console.error('[DELETE /api/daemon/events] Error:', error);
     return NextResponse.json(
       { error: 'Failed to acknowledge events', code: EVENT_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

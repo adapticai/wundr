@@ -54,7 +54,7 @@ export class PdfProcessor {
    */
   async process(
     filePath: string,
-    options: PdfProcessingOptions = {}
+    options: PdfProcessingOptions = {},
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -137,7 +137,7 @@ export class PdfProcessor {
    */
   private async parsePdf(
     _buffer: Buffer,
-    _options: PdfProcessingOptions
+    _options: PdfProcessingOptions,
   ): Promise<{
     text: string;
     pageCount: number;
@@ -191,7 +191,7 @@ export class PdfProcessor {
    */
   private async performOcr(
     _buffer: Buffer,
-    _options: PdfProcessingOptions
+    _options: PdfProcessingOptions,
   ): Promise<{ text: string; confidence: number }> {
     // TODO: Implement OCR with tesseract.js
     // This would convert PDF pages to images and run OCR
@@ -208,7 +208,7 @@ export class PdfProcessor {
    */
   private async extractTables(
     _buffer: Buffer,
-    _options: PdfProcessingOptions
+    _options: PdfProcessingOptions,
   ): Promise<TableData[]> {
     // TODO: Implement table extraction
     // This could use pdf-parse with custom render or specialized library

@@ -7,8 +7,16 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@genesis/database';
 import { prisma } from '@genesis/database';
+
+import { GenesisError, VPNotFoundError } from '../errors';
+import {
+  DEFAULT_HEARTBEAT_CONFIG,
+  DEFAULT_HEARTBEAT_METRICS,
+  DEFAULT_HEALTH_STATUS,
+  HEARTBEAT_REDIS_KEYS,
+  isHeartbeatDaemonInfo,
+} from '../types/heartbeat';
 
 import type {
   HeartbeatDaemonInfo,
@@ -18,14 +26,7 @@ import type {
   HealthStatusType,
   HeartbeatConfig,
 } from '../types/heartbeat';
-import {
-  DEFAULT_HEARTBEAT_CONFIG,
-  DEFAULT_HEARTBEAT_METRICS,
-  DEFAULT_HEALTH_STATUS,
-  HEARTBEAT_REDIS_KEYS,
-  isHeartbeatDaemonInfo,
-} from '../types/heartbeat';
-import { GenesisError, VPNotFoundError } from '../errors';
+import type { PrismaClient } from '@genesis/database';
 
 // =============================================================================
 // Redis Client Interface
@@ -77,7 +78,7 @@ export class DaemonNotRegisteredError extends HeartbeatError {
       `Daemon not registered for VP: ${vpId}`,
       'DAEMON_NOT_REGISTERED',
       404,
-      { vpId }
+      { vpId },
     );
     this.name = 'DaemonNotRegisteredError';
   }
@@ -92,7 +93,7 @@ export class DaemonAlreadyRegisteredError extends HeartbeatError {
       `Daemon already registered for VP: ${vpId}`,
       'DAEMON_ALREADY_REGISTERED',
       409,
-      { vpId }
+      { vpId },
     );
     this.name = 'DaemonAlreadyRegisteredError';
   }
@@ -225,7 +226,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   constructor(
     redis: RedisClient,
     config?: Partial<HeartbeatConfig>,
-    database?: PrismaClient
+    database?: PrismaClient,
   ) {
     this.redis = redis;
     this.config = { ...DEFAULT_HEARTBEAT_CONFIG, ...config };
@@ -273,7 +274,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.daemon(vpId),
       JSON.stringify(daemonData),
-      { EX: this.config.heartbeatTTLSeconds * 10 } // Longer TTL for daemon info
+      { EX: this.config.heartbeatTTLSeconds * 10 }, // Longer TTL for daemon info
     );
 
     // Add to registered VPs set
@@ -289,7 +290,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.health(vpId),
       JSON.stringify(healthStatus),
-      { EX: this.config.heartbeatTTLSeconds }
+      { EX: this.config.heartbeatTTLSeconds },
     );
 
     // Initialize sequence counter
@@ -392,7 +393,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           startedAt: heartbeatRecord.daemonInfo.startedAt.toISOString(),
         },
       }),
-      { EX: this.config.heartbeatTTLSeconds }
+      { EX: this.config.heartbeatTTLSeconds },
     );
 
     // Add to history
@@ -406,21 +407,21 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           ...heartbeatRecord.daemonInfo,
           startedAt: heartbeatRecord.daemonInfo.startedAt.toISOString(),
         },
-      })
+      }),
     );
 
     // Trim history to max entries
     const historyCount = (await this.redis.zrange(
       HEARTBEAT_REDIS_KEYS.history(vpId),
       0,
-      -1
+      -1,
     )).length;
 
     if (historyCount > this.config.maxHistoryEntries) {
       await this.redis.zremrangebyrank(
         HEARTBEAT_REDIS_KEYS.history(vpId),
         0,
-        historyCount - this.config.maxHistoryEntries - 1
+        historyCount - this.config.maxHistoryEntries - 1,
       );
     }
 
@@ -430,7 +431,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     // Refresh daemon info TTL
     await this.redis.expire(
       HEARTBEAT_REDIS_KEYS.daemon(vpId),
-      this.config.heartbeatTTLSeconds * 10
+      this.config.heartbeatTTLSeconds * 10,
     );
   }
 
@@ -573,7 +574,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.health(vpId),
       JSON.stringify(health),
-      { EX: this.config.heartbeatTTLSeconds }
+      { EX: this.config.heartbeatTTLSeconds },
     );
   }
 
@@ -595,7 +596,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     await this.redis.set(
       HEARTBEAT_REDIS_KEYS.health(vpId),
       JSON.stringify(health),
-      { EX: this.config.heartbeatTTLSeconds }
+      { EX: this.config.heartbeatTTLSeconds },
     );
 
     // Update VP status to ONLINE
@@ -632,7 +633,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     const historyStrs = await this.redis.zrange(
       HEARTBEAT_REDIS_KEYS.history(vpId),
       -limit,
-      -1
+      -1,
     );
 
     return historyStrs.map((str) => {
@@ -663,7 +664,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    */
   private async updateHealthStatus(
     vpId: string,
-    heartbeat: HeartbeatRecord
+    heartbeat: HeartbeatRecord,
   ): Promise<void> {
     const currentHealth = await this.checkHealth(vpId);
 
@@ -685,7 +686,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           ...health,
           lastHeartbeat: health.lastHeartbeat?.toISOString(),
         }),
-        { EX: this.config.heartbeatTTLSeconds }
+        { EX: this.config.heartbeatTTLSeconds },
       );
     } else {
       // Normal heartbeat update
@@ -714,7 +715,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
           ...health,
           lastHeartbeat: health.lastHeartbeat?.toISOString(),
         }),
-        { EX: this.config.heartbeatTTLSeconds }
+        { EX: this.config.heartbeatTTLSeconds },
       );
     }
   }
@@ -725,22 +726,29 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   private getHealthDetails(
     status: HealthStatusType,
     missedHeartbeats: number,
-    metrics?: HeartbeatMetrics
+    metrics?: HeartbeatMetrics,
   ): string {
     switch (status) {
       case 'healthy':
         return 'VP daemon is operating normally';
-      case 'degraded':
+      case 'degraded': {
         const issues: string[] = [];
         if (missedHeartbeats > 0) {
           issues.push(`${missedHeartbeats} missed heartbeat(s)`);
         }
         if (metrics) {
-          if (metrics.cpuUsage > 90) issues.push('high CPU usage');
-          if (metrics.memoryUsage > 90) issues.push('high memory usage');
-          if (metrics.messageQueueSize > 1000) issues.push('large message queue');
+          if (metrics.cpuUsage > 90) {
+issues.push('high CPU usage');
+}
+          if (metrics.memoryUsage > 90) {
+issues.push('high memory usage');
+}
+          if (metrics.messageQueueSize > 1000) {
+issues.push('large message queue');
+}
         }
         return `VP daemon is degraded: ${issues.join(', ')}`;
+      }
       case 'unhealthy':
         return `VP daemon is unhealthy: ${missedHeartbeats} consecutive missed heartbeats`;
       case 'recovering':
@@ -797,7 +805,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
 export function createHeartbeatService(
   redis: RedisClient,
   config?: Partial<HeartbeatConfig>,
-  database?: PrismaClient
+  database?: PrismaClient,
 ): HeartbeatServiceImpl {
   return new HeartbeatServiceImpl(redis, config, database);
 }

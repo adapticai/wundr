@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import { NotificationBadge } from './notification-badge';
 import { NotificationItem } from './notification-item';
+
 import type { Notification, NotificationType } from '@/types/notification';
 
 type NotificationTab = 'all' | 'mentions' | 'messages' | 'calls';
@@ -50,7 +53,9 @@ export function NotificationCenter({
   // Filter notifications by tab
   const filteredNotifications = notifications.filter((n) => {
     const tab = TABS.find((t) => t.id === activeTab);
-    if (!tab || tab.types.length === 0) return true;
+    if (!tab || tab.types.length === 0) {
+return true;
+}
     return tab.types.includes(n.type);
   });
 
@@ -59,7 +64,7 @@ export function NotificationCenter({
       acc[tab.id] = unreadCount;
     } else {
       acc[tab.id] = notifications.filter(
-        (n) => !n.read && tab.types.includes(n.type)
+        (n) => !n.read && tab.types.includes(n.type),
       ).length;
     }
     return acc;
@@ -84,7 +89,9 @@ export function NotificationCenter({
 
   // Infinite scroll
   const handleScroll = useCallback(() => {
-    if (!scrollRef.current || !hasMore || isLoading) return;
+    if (!scrollRef.current || !hasMore || isLoading) {
+return;
+}
 
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
     if (scrollHeight - scrollTop - clientHeight < 100) {
@@ -121,7 +128,7 @@ export function NotificationCenter({
             'absolute right-0 top-full mt-2 w-[380px] max-w-[calc(100vw-2rem)]',
             'rounded-lg border bg-popover shadow-lg',
             'z-50',
-            'animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200'
+            'animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200',
           )}
         >
           {/* Header */}
@@ -159,7 +166,7 @@ export function NotificationCenter({
                   'relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors',
                   activeTab === tab.id
                     ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {tab.label}

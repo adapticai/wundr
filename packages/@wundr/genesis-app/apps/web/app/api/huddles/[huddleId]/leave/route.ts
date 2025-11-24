@@ -20,7 +20,37 @@ import {
 } from '@/lib/validations/call';
 import { createErrorResponse } from '@/lib/validations/organization';
 
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+
+/**
+ * Huddle data stored in workspace settings JSON field.
+ * Uses ISO string for dates since JSON doesn't support Date objects.
+ */
+interface StoredHuddleData {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string | null;
+  isPublic: boolean;
+  roomName: string;
+  status: 'active' | 'ended';
+  createdAt: string;
+  endedAt: string | null;
+  createdBy: {
+    id: string;
+    name: string | null;
+  };
+  participantCount: number;
+}
+
+/**
+ * Workspace settings structure containing huddles
+ */
+interface WorkspaceSettingsWithHuddles {
+  huddles?: StoredHuddleData[];
+  [key: string]: unknown;
+}
 
 /**
  * Route context with huddle ID parameter
@@ -40,7 +70,7 @@ interface RouteContext {
  * @returns Success message
  */
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -189,7 +219,7 @@ export async function POST(
           const updatedHuddles = settings.huddles.map((h) =>
             h.id === params.huddleId
               ? { ...h, status: 'ended' as const, endedAt: now.toISOString() }
-              : h
+              : h,
           );
 
           await prisma.workspace.update({

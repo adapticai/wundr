@@ -119,7 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           PRESENCE_ERROR_CODES.RATE_LIMITED,
           {
             retryAfter: Math.ceil((rateLimitInfo.resetAt - Date.now()) / 1000),
-          }
+          },
         ),
         {
           status: 429,
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': String(Math.floor(rateLimitInfo.resetAt / 1000)),
           },
-        }
+        },
       );
     }
 
@@ -164,9 +164,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -216,16 +216,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           'X-RateLimit-Remaining': String(rateLimitInfo.remaining),
           'X-RateLimit-Reset': String(Math.floor(rateLimitInfo.resetAt / 1000)),
         },
-      }
+      },
     );
   } catch (error) {
     console.error('[POST /api/presence/heartbeat] Error:', error);
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

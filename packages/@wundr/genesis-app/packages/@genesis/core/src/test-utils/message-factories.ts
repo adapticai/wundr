@@ -177,7 +177,7 @@ export function createMockMessage(overrides?: Partial<Message>): Message {
  * Create a mock message author
  */
 export function createMockMessageAuthor(
-  overrides?: Partial<MessageAuthor>
+  overrides?: Partial<MessageAuthor>,
 ): MessageAuthor {
   const id = overrides?.id ?? generateUserId();
 
@@ -196,7 +196,7 @@ export function createMockMessageAuthor(
  */
 export function createMockMessageWithAuthor(
   messageOverrides?: Partial<Message>,
-  authorOverrides?: Partial<MessageAuthor>
+  authorOverrides?: Partial<MessageAuthor>,
 ): MessageWithAuthor {
   const message = createMockMessage(messageOverrides);
   const author = createMockMessageAuthor({
@@ -221,7 +221,7 @@ export function createMockMessageWithRelations(
     latestReplies?: MessageWithAuthor[];
     channelName?: string;
     channelType?: string;
-  }
+  },
 ): MessageWithRelations {
   const messageWithAuthor = createMockMessageWithAuthor(messageOverrides);
 
@@ -243,7 +243,7 @@ export function createMockMessageWithRelations(
  */
 export function createMockMessageList(
   count: number,
-  overrides?: Partial<Message>
+  overrides?: Partial<Message>,
 ): Message[] {
   const channelId = overrides?.channelId ?? generateChannelId();
   const baseTime = new Date();
@@ -266,7 +266,7 @@ export function createMockMessageList(
  */
 export function createMockMessageListWithAuthors(
   count: number,
-  overrides?: Partial<Message>
+  overrides?: Partial<Message>,
 ): MessageWithAuthor[] {
   const channelId = overrides?.channelId ?? generateChannelId();
   const baseTime = new Date();
@@ -310,7 +310,7 @@ export function createMockReaction(overrides?: Partial<Reaction>): Reaction {
  * Create a mock reaction summary
  */
 export function createMockReactionSummary(
-  overrides?: Partial<ReactionSummary>
+  overrides?: Partial<ReactionSummary>,
 ): ReactionSummary {
   return {
     emoji: '\u{1F44D}',
@@ -327,7 +327,7 @@ export function createMockReactionSummary(
 export function createMockReactionList(
   messageId: string,
   count: number,
-  options?: { emoji?: string; uniqueUsers?: boolean }
+  options?: { emoji?: string; uniqueUsers?: boolean },
 ): Reaction[] {
   const emoji = options?.emoji ?? '\u{1F44D}';
   const baseTime = new Date();
@@ -348,7 +348,7 @@ export function createMockReactionList(
  */
 export function createMockReactionSummaries(
   emojis: string[],
-  options?: { currentUserId?: string }
+  options?: { currentUserId?: string },
 ): ReactionSummary[] {
   return emojis.map((emoji, index) => ({
     emoji,
@@ -356,7 +356,7 @@ export function createMockReactionSummaries(
     hasReacted: index === 0 && !!options?.currentUserId, // First emoji reacted by current user
     userIds: Array.from(
       { length: Math.floor(Math.random() * 3) + 1 },
-      () => generateUserId()
+      () => generateUserId(),
     ),
   }));
 }
@@ -373,7 +373,7 @@ export function createMockThread(
   options?: {
     parentOverrides?: Partial<Message>;
     channelId?: string;
-  }
+  },
 ): Thread {
   const channelId = options?.channelId ?? generateChannelId();
   const parent = createMockMessageWithAuthor({
@@ -408,7 +408,7 @@ export function createMockThread(
 export function createMockThreadReplies(
   parentId: string,
   count: number,
-  channelId?: string
+  channelId?: string,
 ): MessageWithAuthor[] {
   const channel = channelId ?? generateChannelId();
   const baseTime = new Date();
@@ -434,7 +434,7 @@ export function createMockThreadReplies(
  */
 export function createMockSystemMessage(
   systemType: 'user_joined' | 'user_left' | 'channel_created' | 'channel_renamed',
-  overrides?: Partial<Message>
+  overrides?: Partial<Message>,
 ): Message {
   const contentMap = {
     user_joined: 'User joined the channel',
@@ -460,7 +460,7 @@ export function createMockSystemMessage(
 export function createMockCodeMessage(
   code: string,
   language: string,
-  overrides?: Partial<Message>
+  overrides?: Partial<Message>,
 ): Message {
   return createMockMessage({
     ...overrides,
@@ -479,7 +479,7 @@ export function createMockCodeMessage(
 export function createMockFileMessage(
   filename: string,
   mimeType: string,
-  overrides?: Partial<Message>
+  overrides?: Partial<Message>,
 ): Message {
   return createMockMessage({
     ...overrides,

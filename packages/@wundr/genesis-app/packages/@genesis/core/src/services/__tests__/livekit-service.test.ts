@@ -11,12 +11,17 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+import {
+  generateCallTestId,
+  resetCallIdCounter,
+} from '../../test-utils/call-factories';
 import {
   createMockLiveKitService,
-  createMockRoom,
+  _createMockRoom,
   createMockParticipant,
   createMockParticipantTrack,
-  createMockToken,
+  _createMockToken,
   createMockWebhookEvent,
   createMockWebhookSignature,
   type MockLiveKitService,
@@ -24,22 +29,18 @@ import {
   type RoomOptions,
   type TokenOptions,
 } from '../../test-utils/mock-livekit';
-import {
-  generateCallTestId,
-  resetCallIdCounter,
-} from '../../test-utils/call-factories';
 
 // =============================================================================
 // TEST CONFIGURATION
 // =============================================================================
 
-const DEFAULT_ROOM_OPTIONS: RoomOptions = {
+const _DEFAULT_ROOM_OPTIONS: RoomOptions = {
   name: 'test-room',
   maxParticipants: 50,
   emptyTimeout: 300,
 };
 
-const DEFAULT_TOKEN_OPTIONS: TokenOptions = {
+const _DEFAULT_TOKEN_OPTIONS: TokenOptions = {
   identity: 'user-123',
   name: 'Test User',
   ttl: 3600,
@@ -289,7 +290,7 @@ describe('LiveKitService', () => {
 
     it('verifies expired tokens as invalid', async () => {
       // Create a token with very short TTL
-      const token = await livekit.createToken({
+      const _token = await livekit.createToken({
         identity: 'expiring-user',
         ttl: -1, // Already expired
         grants: { room: 'test-room', roomJoin: true },
@@ -304,7 +305,7 @@ describe('LiveKitService', () => {
         iss: 'test-api-key',
       };
       const expiredToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${Buffer.from(
-        JSON.stringify(payload)
+        JSON.stringify(payload),
       ).toString('base64')}.mock-signature`;
 
       const verification = await livekit.verifyToken(expiredToken);
@@ -362,7 +363,7 @@ describe('LiveKitService', () => {
       expect(remaining).toHaveLength(0);
       expect(livekit.removeParticipant).toHaveBeenCalledWith(
         testRoom.name,
-        'to-remove'
+        'to-remove',
       );
     });
 
@@ -398,7 +399,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'speaker',
         'track-audio-1',
-        true
+        true,
       );
 
       expect(mutedTrack).toBeDefined();
@@ -424,7 +425,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'video-user',
         'track-video-1',
-        false
+        false,
       );
 
       expect(unmutedTrack?.muted).toBe(false);
@@ -438,7 +439,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'no-track',
         'non-existent-track',
-        true
+        true,
       );
 
       expect(result).toBeNull();
@@ -472,7 +473,7 @@ describe('LiveKitService', () => {
       const updated = await livekit.updateParticipant(
         testRoom.name,
         'meta-user',
-        JSON.stringify({ role: 'moderator' })
+        JSON.stringify({ role: 'moderator' }),
       );
 
       expect(updated?.metadata).toBe(JSON.stringify({ role: 'moderator' }));
@@ -498,7 +499,7 @@ describe('LiveKitService', () => {
         testRoom.name,
         'permission-user',
         undefined,
-        { canPublish: false }
+        { canPublish: false },
       );
 
       expect(updated?.permission.canPublish).toBe(false);
@@ -532,7 +533,7 @@ describe('LiveKitService', () => {
       const event = createMockWebhookEvent(
         'participant_joined',
         { name: 'webhook-room' },
-        { identity: 'joining-user' }
+        { identity: 'joining-user' },
       );
 
       const body = JSON.stringify(event);
@@ -547,7 +548,7 @@ describe('LiveKitService', () => {
       const event = createMockWebhookEvent(
         'participant_left',
         { name: 'webhook-room' },
-        { identity: 'leaving-user' }
+        { identity: 'leaving-user' },
       );
 
       const body = JSON.stringify(event);
@@ -581,7 +582,7 @@ describe('LiveKitService', () => {
       const event = createMockWebhookEvent(
         'track_published',
         { name: 'track-room' },
-        { identity: 'publisher' }
+        { identity: 'publisher' },
       );
 
       const body = JSON.stringify(event);
@@ -645,7 +646,7 @@ describe('LiveKitService', () => {
     });
 
     it('deletes room', async () => {
-      const room = await livekit.createRoom({ name: 'to-delete' });
+      const _room = await livekit.createRoom({ name: 'to-delete' });
 
       expect(await livekit.getRoom('to-delete')).toBeDefined();
 
@@ -686,7 +687,7 @@ describe('LiveKitService', () => {
 
       const updated = await livekit.updateRoomMetadata(
         'metadata-room',
-        JSON.stringify({ updated: true })
+        JSON.stringify({ updated: true }),
       );
 
       expect(updated?.metadata).toBe(JSON.stringify({ updated: true }));

@@ -8,6 +8,8 @@
  * @packageDocumentation
  */
 
+import { ExtractionError, PDFExtractionError } from '../types/extraction';
+
 import type { FileProcessorConfig } from '../config';
 import type {
   PDFOptions,
@@ -24,7 +26,6 @@ import type {
   TextBlock,
   BoundingBox,
 } from '../types/extraction';
-import { ExtractionError, PDFExtractionError } from '../types/extraction';
 
 // ============================================================================
 // PDF Extractor Interface
@@ -130,7 +131,7 @@ interface PDFParsedMetadata {
 /**
  * Page render callback context.
  */
-interface PageRenderContext {
+interface _PageRenderContext {
   pageIndex: number;
   pageInfo: {
     num: number;
@@ -205,7 +206,7 @@ export class PDFExtractorImpl implements PDFExtractor {
         throw new ExtractionError(
           'pdf-parse library not available. Please install: npm install pdf-parse',
           'EXTRACTION_FAILED',
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
     }
@@ -225,7 +226,7 @@ export class PDFExtractorImpl implements PDFExtractor {
       if (!this.isPDFBuffer(buffer)) {
         throw new PDFExtractionError(
           'Invalid PDF: Buffer does not start with PDF signature',
-          'INVALID_FILE'
+          'INVALID_FILE',
         );
       }
 
@@ -234,14 +235,14 @@ export class PDFExtractorImpl implements PDFExtractor {
       // Prepare options for pdf-parse
       const maxPages = options?.maxPages ?? this.config.maxPages ?? 500;
       let currentPageText: string[] = [];
-      let currentPageIndex = 0;
+      let _currentPageIndex = 0;
 
       // Custom page render function to capture per-page content
       const pageRender = (pageData: { getTextContent: () => Promise<{ items: Array<{ str: string }> }> }) => {
         return pageData.getTextContent().then((textContent) => {
           const pageText = textContent.items.map((item) => item.str).join(' ');
           currentPageText.push(pageText);
-          currentPageIndex++;
+          _currentPageIndex++;
           return pageText;
         });
       };
@@ -268,7 +269,7 @@ export class PDFExtractorImpl implements PDFExtractor {
         if (errorMessage.includes('password') || errorMessage.includes('encrypted')) {
           throw new PDFExtractionError(
             'PDF is password protected. Please provide the password.',
-            'PASSWORD_REQUIRED'
+            'PASSWORD_REQUIRED',
           );
         }
 
@@ -276,7 +277,7 @@ export class PDFExtractorImpl implements PDFExtractor {
           `Failed to parse PDF: ${errorMessage}`,
           'EXTRACTION_FAILED',
           undefined,
-          parseError instanceof Error ? parseError : undefined
+          parseError instanceof Error ? parseError : undefined,
         );
       }
 
@@ -371,7 +372,7 @@ export class PDFExtractorImpl implements PDFExtractor {
         `PDF extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'EXTRACTION_FAILED',
         undefined,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -383,7 +384,7 @@ export class PDFExtractorImpl implements PDFExtractor {
     buffer: Buffer,
     startPage: number,
     endPage: number,
-    options?: PDFOptions
+    options?: PDFOptions,
   ): Promise<PDFPage[]> {
     const result = await this.extract(buffer, {
       ...options,
@@ -391,7 +392,7 @@ export class PDFExtractorImpl implements PDFExtractor {
     });
 
     return result.pages.filter(
-      (page) => page.pageNumber >= startPage && page.pageNumber <= endPage
+      (page) => page.pageNumber >= startPage && page.pageNumber <= endPage,
     );
   }
 
@@ -564,7 +565,7 @@ export class PDFExtractorImpl implements PDFExtractor {
     }
 
     const rows = lines.map(line =>
-      line.split(delimiter).map(cell => cell.trim()).filter(cell => cell.length > 0)
+      line.split(delimiter).map(cell => cell.trim()).filter(cell => cell.length > 0),
     );
 
     // Ensure consistent column count
@@ -717,7 +718,7 @@ export class PDFExtractorImpl implements PDFExtractor {
    */
   private async extractImages(
     _buffer: Buffer,
-    _options?: PDFOptions
+    _options?: PDFOptions,
   ): Promise<ExtractedImage[]> {
     // TODO: Implement with pdfjs-dist for full image extraction
     return [];

@@ -100,7 +100,9 @@ async function getCallWithAccess(callId: string, userId: string) {
     }
   }
 
-  if (!call) return null;
+  if (!call) {
+return null;
+}
 
   // Verify channel access
   const channel = await prisma.channel.findUnique({
@@ -108,7 +110,9 @@ async function getCallWithAccess(callId: string, userId: string) {
     include: { workspace: true },
   });
 
-  if (!channel) return null;
+  if (!channel) {
+return null;
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -119,7 +123,9 @@ async function getCallWithAccess(callId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   // For private channels, check membership
   if (channel.type === 'PRIVATE') {
@@ -131,7 +137,9 @@ async function getCallWithAccess(callId: string, userId: string) {
         },
       },
     });
-    if (!channelMembership) return null;
+    if (!channelMembership) {
+return null;
+}
   }
 
   // Check if user can manage recording (creator or admin)

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import { clsx } from 'clsx';
+import { useState, useEffect, useRef, useCallback } from 'react';
+
 import { useLocalMedia } from '@/hooks/use-call';
+
 import type { MediaDevice } from '@/types/call';
 
 export interface PreJoinProps {
@@ -46,7 +48,7 @@ function DeviceSelect({
           'bg-muted border border-border',
           'text-sm text-foreground',
           'focus:outline-none focus:ring-2 focus:ring-primary',
-          'disabled:opacity-50 disabled:cursor-not-allowed'
+          'disabled:opacity-50 disabled:cursor-not-allowed',
         )}
         aria-label={label}
       >
@@ -95,7 +97,9 @@ function AudioLevelIndicator({
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
     const updateLevel = () => {
-      if (!analyserRef.current) return;
+      if (!analyserRef.current) {
+return;
+}
 
       analyserRef.current.getByteFrequencyData(dataArray);
       const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
@@ -121,7 +125,7 @@ function AudioLevelIndicator({
         <div
           className={clsx(
             'h-full transition-all duration-75',
-            level > 70 ? 'bg-green-500' : level > 30 ? 'bg-yellow-500' : 'bg-muted-foreground'
+            level > 70 ? 'bg-green-500' : level > 30 ? 'bg-yellow-500' : 'bg-muted-foreground',
           )}
           style={{ width: `${level}%` }}
         />
@@ -234,7 +238,7 @@ export function PreJoin({
       className={clsx(
         'flex flex-col items-center justify-center min-h-screen p-6',
         'bg-background',
-        className
+        className,
       )}
     >
       <div className="w-full max-w-2xl space-y-6">
@@ -250,7 +254,7 @@ export function PreJoin({
         <div
           className={clsx(
             'relative aspect-video rounded-xl overflow-hidden',
-            'bg-muted border border-border'
+            'bg-muted border border-border',
           )}
         >
           {isVideoEnabled && videoTrack ? (
@@ -293,7 +297,7 @@ export function PreJoin({
                 'w-12 h-12 rounded-full flex items-center justify-center transition-all',
                 isAudioEnabled
                   ? 'bg-muted hover:bg-muted/80 text-foreground'
-                  : 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white',
               )}
               aria-label={isAudioEnabled ? 'Mute microphone' : 'Unmute microphone'}
             >
@@ -339,7 +343,7 @@ export function PreJoin({
                 'w-12 h-12 rounded-full flex items-center justify-center transition-all',
                 isVideoEnabled
                   ? 'bg-muted hover:bg-muted/80 text-foreground'
-                  : 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white',
               )}
               aria-label={isVideoEnabled ? 'Turn off camera' : 'Turn on camera'}
             >
@@ -426,7 +430,7 @@ export function PreJoin({
                 'w-full px-3 py-2 rounded-lg',
                 'bg-muted border border-border',
                 'text-foreground placeholder:text-muted-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-primary'
+                'focus:outline-none focus:ring-2 focus:ring-primary',
               )}
               autoFocus
             />
@@ -442,7 +446,7 @@ export function PreJoin({
                 'flex-1 px-4 py-3 rounded-lg',
                 'bg-muted hover:bg-muted/80',
                 'text-foreground font-medium',
-                'transition-colors'
+                'transition-colors',
               )}
             >
               Cancel
@@ -456,7 +460,7 @@ export function PreJoin({
               'bg-primary hover:bg-primary/90',
               'text-primary-foreground font-medium',
               'transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             {isJoining ? 'Joining...' : 'Join call'}

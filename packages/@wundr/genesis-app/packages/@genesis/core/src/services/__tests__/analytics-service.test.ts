@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
 import {
   AnalyticsServiceImpl,
   AnalyticsFlushError,
@@ -10,8 +11,9 @@ import {
   getAnalyticsService,
   resetAnalyticsService,
 } from '../analytics-service';
-import type { AnalyticsDatabaseClient, AnalyticsRedisClient } from '../analytics-service';
+
 import type { AnalyticsPeriod } from '../../types/analytics';
+import type { AnalyticsDatabaseClient, AnalyticsRedisClient } from '../analytics-service';
 
 // =============================================================================
 // MOCK FACTORIES
@@ -261,7 +263,7 @@ describe('AnalyticsService', () => {
 
     it('should re-queue events on flush failure', async () => {
       (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('Database error')
+        new Error('Database error'),
       );
 
       await analyticsService.track({
@@ -502,7 +504,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
       );
 
       expect(trend.current).toBe(150);
@@ -521,7 +523,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
       );
 
       expect(trend.change).toBe(-50);
@@ -538,7 +540,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
       );
 
       expect(trend.change).toBe(0);
@@ -555,7 +557,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'messages',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
       );
 
       expect(trend.changePercent).toBe(100);
@@ -571,7 +573,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'active_users',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
       );
 
       expect(trend.current).toBe(30);
@@ -588,7 +590,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'files',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
       );
 
       expect(trend.current).toBe(25);
@@ -600,7 +602,7 @@ describe('AnalyticsService', () => {
         'ws-1',
         'unknown_metric',
         { start: new Date('2024-01-08'), end: new Date('2024-01-14') },
-        { start: new Date('2024-01-01'), end: new Date('2024-01-07') }
+        { start: new Date('2024-01-01'), end: new Date('2024-01-07') },
       );
 
       expect(trend.current).toBe(0);

@@ -7,15 +7,12 @@
  * @packageDocumentation
  */
 
-import Tesseract, {
-  Worker,
+import {
   createWorker,
   createScheduler,
-  Scheduler,
-  RecognizeResult,
 } from 'tesseract.js';
 
-import { BaseOCRService, OCRServiceInfo } from './ocr-service';
+import { BaseOCRService } from './ocr-service';
 import {
   OCRProcessingStage,
   OCREngine,
@@ -23,6 +20,8 @@ import {
   BlockType,
   DocumentType,
 } from '../types/ocr';
+
+import type { OCRServiceInfo } from './ocr-service';
 import type {
   OCROptions,
   OCRResult,
@@ -37,6 +36,11 @@ import type {
   OCRServiceConfig,
   SupportedLanguage,
 } from '../types/ocr';
+import type Tesseract from 'tesseract.js';
+import type {
+  Worker,
+  Scheduler,
+  RecognizeResult} from 'tesseract.js';
 
 /**
  * Default configuration for Tesseract OCR service
@@ -165,7 +169,7 @@ export class TesseractOCRService extends BaseOCRService {
   async recognizeText(
     image: Buffer | Blob | string,
     options: OCROptions = {},
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
   ): Promise<OCRResult> {
     this.ensureReady();
 
@@ -202,7 +206,7 @@ export class TesseractOCRService extends BaseOCRService {
    */
   async recognizeDocument(
     image: Buffer | Blob | string,
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
   ): Promise<DocumentOCRResult> {
     // First, perform basic recognition
     const basicResult = await this.recognizeText(
@@ -212,7 +216,7 @@ export class TesseractOCRService extends BaseOCRService {
         includeLineDetails: true,
         includeWordDetails: true,
       },
-      onProgress
+      onProgress,
     );
 
     // Perform document-level analysis
@@ -236,7 +240,7 @@ export class TesseractOCRService extends BaseOCRService {
   async recognizeMultiple(
     images: Array<Buffer | Blob | string>,
     options: OCROptions = {},
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
   ): Promise<OCRResult[]> {
     this.ensureReady();
 
@@ -259,7 +263,7 @@ export class TesseractOCRService extends BaseOCRService {
         onProgress,
         OCRProcessingStage.RECOGNIZING,
         Math.round((processedCount / totalImages) * 100),
-        `Processing image ${index + 1} of ${totalImages}`
+        `Processing image ${index + 1} of ${totalImages}`,
       );
 
       return result;
@@ -274,7 +278,7 @@ export class TesseractOCRService extends BaseOCRService {
   async recognizePDFPages(
     _pdf: Buffer,
     _options: PDFOCROptions = {},
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
   ): Promise<OCRResult[]> {
     this.ensureReady();
 
@@ -293,7 +297,7 @@ export class TesseractOCRService extends BaseOCRService {
     // 3. Return combined results
 
     throw new Error(
-      'PDF processing not yet implemented. Please convert PDF pages to images first and use recognizeMultiple.'
+      'PDF processing not yet implemented. Please convert PDF pages to images first and use recognizeMultiple.',
     );
   }
 
@@ -310,7 +314,7 @@ export class TesseractOCRService extends BaseOCRService {
    */
   async loadLanguage(
     lang: string | string[],
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
   ): Promise<void> {
     const languages = Array.isArray(lang) ? lang : [lang];
     const toLoad = languages.filter((l) => !this.loadedLanguages.has(l));
@@ -323,7 +327,7 @@ export class TesseractOCRService extends BaseOCRService {
       onProgress,
       OCRProcessingStage.LOADING_LANGUAGE,
       0,
-      `Loading languages: ${toLoad.join(', ')}`
+      `Loading languages: ${toLoad.join(', ')}`,
     );
 
     // Load language data in each worker using setParameters
@@ -340,7 +344,7 @@ export class TesseractOCRService extends BaseOCRService {
       onProgress,
       OCRProcessingStage.LOADING_LANGUAGE,
       100,
-      `Loaded languages: ${toLoad.join(', ')}`
+      `Loaded languages: ${toLoad.join(', ')}`,
     );
   }
 
@@ -419,7 +423,7 @@ export class TesseractOCRService extends BaseOCRService {
    */
   private async ensureLanguagesLoaded(
     languages: string[],
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
   ): Promise<void> {
     const unloaded = languages.filter((l) => !this.loadedLanguages.has(l));
     if (unloaded.length > 0) {
@@ -434,7 +438,7 @@ export class TesseractOCRService extends BaseOCRService {
     image: Buffer | Blob | string,
     languages: string[],
     options: OCROptions,
-    onProgress?: OCRProgressCallback
+    onProgress?: OCRProgressCallback,
   ): Promise<RecognizeResult> {
     if (!this.scheduler) {
       throw new Error('Scheduler not initialized');
@@ -611,7 +615,7 @@ export class TesseractOCRService extends BaseOCRService {
    * Extract form fields from recognition result
    */
   private extractFormFields(
-    _result: OCRResult
+    _result: OCRResult,
   ): Array<{ key: string; value: string; confidence: number }> {
     // Basic form field extraction - looks for "label: value" patterns
     // This is a simplified implementation; production would use more sophisticated NLP
@@ -623,7 +627,7 @@ export class TesseractOCRService extends BaseOCRService {
    * Extract tables from recognition result
    */
   private extractTables(
-    _result: OCRResult
+    _result: OCRResult,
   ): Array<{
     headers: string[];
     rows: string[][];
@@ -644,7 +648,7 @@ export class TesseractOCRService extends BaseOCRService {
     callback: OCRProgressCallback | undefined,
     stage: OCRProcessingStage,
     progress: number,
-    message?: string
+    message?: string,
   ): void {
     if (callback) {
       const progressInfo: OCRProgress = {
@@ -686,7 +690,7 @@ export class TesseractOCRService extends BaseOCRService {
  * @returns New TesseractOCRService instance
  */
 export function createTesseractOCRService(
-  config?: Partial<OCRServiceConfig>
+  config?: Partial<OCRServiceConfig>,
 ): TesseractOCRService {
   return new TesseractOCRService(config);
 }

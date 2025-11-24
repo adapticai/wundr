@@ -462,8 +462,12 @@ export function isResizeOptions(value: unknown): value is ResizeOptions {
     return false;
   }
   const obj = value as Record<string, unknown>;
-  if (obj['width'] !== undefined && typeof obj['width'] !== 'number') return false;
-  if (obj['height'] !== undefined && typeof obj['height'] !== 'number') return false;
+  if (obj['width'] !== undefined && typeof obj['width'] !== 'number') {
+return false;
+}
+  if (obj['height'] !== undefined && typeof obj['height'] !== 'number') {
+return false;
+}
   if (
     obj['fit'] !== undefined &&
     !['cover', 'contain', 'fill', 'inside', 'outside'].includes(obj['fit'] as string)
@@ -482,11 +486,19 @@ export function isOptimizeOptions(value: unknown): value is OptimizeOptions {
   }
   const obj = value as Record<string, unknown>;
   if (obj['quality'] !== undefined) {
-    if (typeof obj['quality'] !== 'number') return false;
-    if (obj['quality'] < 1 || obj['quality'] > 100) return false;
+    if (typeof obj['quality'] !== 'number') {
+return false;
+}
+    if (obj['quality'] < 1 || obj['quality'] > 100) {
+return false;
+}
   }
-  if (obj['format'] !== undefined && !isImageFormat(obj['format'])) return false;
-  if (obj['progressive'] !== undefined && typeof obj['progressive'] !== 'boolean') return false;
+  if (obj['format'] !== undefined && !isImageFormat(obj['format'])) {
+return false;
+}
+  if (obj['progressive'] !== undefined && typeof obj['progressive'] !== 'boolean') {
+return false;
+}
   if (obj['stripMetadata'] !== undefined && typeof obj['stripMetadata'] !== 'boolean') {
     return false;
   }

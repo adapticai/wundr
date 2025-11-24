@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
+import { useState, useCallback, useEffect, useRef } from 'react';
+
 import type { User } from '@/types/chat';
 
 export interface CallInviteDialogProps {
@@ -36,7 +37,7 @@ function UserSearchItem({
         'transition-colors',
         isSelected
           ? 'bg-primary/10 text-primary'
-          : 'hover:bg-muted text-foreground'
+          : 'hover:bg-muted text-foreground',
       )}
       role="option"
       aria-selected={isSelected}
@@ -44,7 +45,7 @@ function UserSearchItem({
       <div
         className={clsx(
           'w-8 h-8 rounded-full flex items-center justify-center',
-          'bg-primary/10 text-primary font-medium'
+          'bg-primary/10 text-primary font-medium',
         )}
       >
         {avatarUrl ? (
@@ -93,7 +94,7 @@ function SelectedUserChip({
     <div
       className={clsx(
         'inline-flex items-center gap-1.5 px-2 py-1',
-        'bg-primary/10 text-primary rounded-full'
+        'bg-primary/10 text-primary rounded-full',
       )}
     >
       <span className="text-sm">{user.name || user.email}</span>
@@ -166,7 +167,7 @@ export function CallInviteDialog({
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/members?search=${encodeURIComponent(query)}`
+        `/api/workspaces/${workspaceId}/members?search=${encodeURIComponent(query)}`,
       );
       if (!response.ok) {
         throw new Error('Failed to search users');
@@ -230,7 +231,7 @@ export function CallInviteDialog({
     if (selectedUsers.length > 0) {
       onInvite(
         selectedUsers.map((u) => u.id),
-        sendNotification
+        sendNotification,
       );
       onClose();
     }
@@ -238,7 +239,9 @@ export function CallInviteDialog({
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+return;
+}
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -252,7 +255,9 @@ export function CallInviteDialog({
 
   // Handle click outside
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+return;
+}
 
     const handleClickOutside = (event: MouseEvent) => {
       if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
@@ -264,7 +269,9 @@ export function CallInviteDialog({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div
@@ -272,7 +279,7 @@ export function CallInviteDialog({
         'fixed inset-0 z-50',
         'flex items-center justify-center',
         'bg-background/80 backdrop-blur-sm',
-        className
+        className,
       )}
       role="dialog"
       aria-modal="true"
@@ -284,7 +291,7 @@ export function CallInviteDialog({
           'w-full max-w-md',
           'bg-card border border-border rounded-xl',
           'shadow-lg',
-          'animate-scale-in'
+          'animate-scale-in',
         )}
       >
         {/* Header */}
@@ -297,7 +304,7 @@ export function CallInviteDialog({
             className={clsx(
               'w-8 h-8 rounded-lg flex items-center justify-center',
               'hover:bg-muted transition-colors',
-              'text-muted-foreground hover:text-foreground'
+              'text-muted-foreground hover:text-foreground',
             )}
             aria-label="Close dialog"
           >
@@ -331,7 +338,7 @@ export function CallInviteDialog({
                   'flex-1 px-3 py-2 rounded-lg',
                   'bg-muted border border-border',
                   'text-sm text-muted-foreground',
-                  'truncate'
+                  'truncate',
                 )}
               />
               <button
@@ -341,7 +348,7 @@ export function CallInviteDialog({
                   'bg-muted hover:bg-muted/80',
                   'text-sm font-medium',
                   'transition-colors',
-                  copySuccess && 'text-green-500'
+                  copySuccess && 'text-green-500',
                 )}
               >
                 {copySuccess ? 'Copied!' : 'Copy'}
@@ -386,7 +393,7 @@ export function CallInviteDialog({
                   'w-full pl-10 pr-4 py-2 rounded-lg',
                   'bg-muted border border-border',
                   'text-foreground placeholder:text-muted-foreground',
-                  'focus:outline-none focus:ring-2 focus:ring-primary'
+                  'focus:outline-none focus:ring-2 focus:ring-primary',
                 )}
               />
             </div>
@@ -443,7 +450,7 @@ export function CallInviteDialog({
               'px-4 py-2 rounded-lg',
               'bg-muted hover:bg-muted/80',
               'text-sm font-medium text-foreground',
-              'transition-colors'
+              'transition-colors',
             )}
           >
             Cancel
@@ -456,7 +463,7 @@ export function CallInviteDialog({
               'bg-primary hover:bg-primary/90',
               'text-sm font-medium text-primary-foreground',
               'transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             Invite {selectedUsers.length > 0 && `(${selectedUsers.length})`}

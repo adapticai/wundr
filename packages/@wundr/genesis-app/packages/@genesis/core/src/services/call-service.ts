@@ -9,13 +9,16 @@
  */
 
 import { createId } from '@paralleldrive/cuid2';
+
 import { GenesisError } from '../errors';
 import {
-  LiveKitServiceImpl,
   createLiveKitServiceFromEnv,
   LiveKitError,
   RoomNotFoundError,
 } from './livekit-service';
+
+import type {
+  LiveKitServiceImpl} from './livekit-service';
 import type {
   Participant,
   RecordingOptions,
@@ -263,7 +266,7 @@ export class CallNotFoundError extends GenesisError {
       `Call not found: ${callId}`,
       'CALL_NOT_FOUND',
       404,
-      { callId }
+      { callId },
     );
     this.name = 'CallNotFoundError';
   }
@@ -278,7 +281,7 @@ export class ActiveCallExistsError extends GenesisError {
       `An active call already exists in channel: ${channelId}`,
       'ACTIVE_CALL_EXISTS',
       409,
-      { channelId }
+      { channelId },
     );
     this.name = 'ActiveCallExistsError';
   }
@@ -293,7 +296,7 @@ export class HuddleNotFoundError extends GenesisError {
       `Huddle not found: ${huddleId}`,
       'HUDDLE_NOT_FOUND',
       404,
-      { huddleId }
+      { huddleId },
     );
     this.name = 'HuddleNotFoundError';
   }
@@ -308,7 +311,7 @@ export class CallOperationError extends GenesisError {
       `Call operation '${operation}' failed: ${reason}`,
       'CALL_OPERATION_ERROR',
       500,
-      { operation, reason }
+      { operation, reason },
     );
     this.name = 'CallOperationError';
   }
@@ -556,7 +559,7 @@ export class CallServiceImpl implements CallService {
       }
       throw new CallOperationError(
         'createCall',
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : 'Unknown error',
       );
     }
   }
@@ -737,7 +740,7 @@ export class CallServiceImpl implements CallService {
       }
       throw new CallOperationError(
         'createHuddle',
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : 'Unknown error',
       );
     }
   }
@@ -905,7 +908,7 @@ export class CallServiceImpl implements CallService {
    */
   async getCallHistory(
     channelId: string,
-    options?: HistoryOptions
+    options?: HistoryOptions,
   ): Promise<PaginatedCallResult> {
     const limit = options?.limit ?? 20;
     const offset = options?.offset ?? 0;

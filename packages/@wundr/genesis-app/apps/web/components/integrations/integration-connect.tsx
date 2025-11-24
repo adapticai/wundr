@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { IntegrationProvider } from '@/types/integration';
 import { INTEGRATION_PROVIDERS } from '@/types/integration';
+
+import type { IntegrationProvider } from '@/types/integration';
 
 export interface IntegrationConnectProps {
   isOpen: boolean;
@@ -40,7 +42,9 @@ export function IntegrationConnect({
 
   // Filter providers based on search
   const filteredProviders = useMemo(() => {
-    if (!searchQuery.trim()) return allProviders;
+    if (!searchQuery.trim()) {
+return allProviders;
+}
     const query = searchQuery.toLowerCase();
     return allProviders.filter(
       ([, config]) =>
@@ -63,7 +67,9 @@ export function IntegrationConnect({
   }, []);
 
   const handleConnect = useCallback(async () => {
-    if (!selectedProvider) return;
+    if (!selectedProvider) {
+return;
+}
 
     setIsConnecting(true);
     setError(null);
@@ -91,7 +97,9 @@ export function IntegrationConnect({
     onClose();
   }, [onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

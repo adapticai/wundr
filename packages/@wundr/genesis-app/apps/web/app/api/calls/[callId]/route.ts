@@ -59,7 +59,9 @@ async function getCallWithAccess(callId: string, userId: string) {
         include: { workspace: true },
       });
 
-      if (!channel) return null;
+      if (!channel) {
+return null;
+}
 
       const orgMembership = await prisma.organizationMember.findUnique({
         where: {
@@ -70,7 +72,9 @@ async function getCallWithAccess(callId: string, userId: string) {
         },
       });
 
-      if (!orgMembership) return null;
+      if (!orgMembership) {
+return null;
+}
 
       // For private channels, check membership
       if (channel.type === 'PRIVATE') {
@@ -82,7 +86,9 @@ async function getCallWithAccess(callId: string, userId: string) {
             },
           },
         });
-        if (!channelMembership) return null;
+        if (!channelMembership) {
+return null;
+}
       }
 
       return {
@@ -116,11 +122,15 @@ async function getCallWithAccess(callId: string, userId: string) {
     include: { workspace: true },
   });
 
-  if (channels.length === 0) return null;
+  if (channels.length === 0) {
+return null;
+}
 
   const channel = channels[0];
   const settings = channel.settings as { activeCall?: CallResponse } | null;
-  if (!settings?.activeCall) return null;
+  if (!settings?.activeCall) {
+return null;
+}
 
   // Check access
   const orgMembership = await prisma.organizationMember.findUnique({
@@ -132,7 +142,9 @@ async function getCallWithAccess(callId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   if (channel.type === 'PRIVATE') {
     const channelMembership = await prisma.channelMember.findUnique({
@@ -143,7 +155,9 @@ async function getCallWithAccess(callId: string, userId: string) {
         },
       },
     });
-    if (!channelMembership) return null;
+    if (!channelMembership) {
+return null;
+}
   }
 
   return {

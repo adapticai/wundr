@@ -10,9 +10,11 @@
  * @module app/api/daemon/channels/[channelId]/join/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -79,7 +81,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ channelId: string }> }
+  { params }: { params: Promise<{ channelId: string }> },
 ): Promise<NextResponse> {
   try {
     // Verify authentication
@@ -89,7 +91,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -107,7 +109,7 @@ export async function POST(
     if (!vp) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -126,7 +128,7 @@ export async function POST(
     if (!channel) {
       return NextResponse.json(
         { error: 'Channel not found', code: CHANNEL_ERROR_CODES.CHANNEL_NOT_FOUND },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -134,7 +136,7 @@ export async function POST(
     if (channel.type === 'PRIVATE' || channel.type === 'DM') {
       return NextResponse.json(
         { error: 'Cannot join private channel', code: CHANNEL_ERROR_CODES.CHANNEL_PRIVATE },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -142,7 +144,7 @@ export async function POST(
     if (channel.workspace.organizationId !== vp.organizationId) {
       return NextResponse.json(
         { error: 'Channel not found', code: CHANNEL_ERROR_CODES.CHANNEL_NOT_FOUND },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -157,7 +159,7 @@ export async function POST(
     if (existingMembership) {
       return NextResponse.json(
         { error: 'Already a member of this channel', code: CHANNEL_ERROR_CODES.ALREADY_MEMBER },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -175,7 +177,7 @@ export async function POST(
     console.error('[POST /api/daemon/channels/[channelId]/join] Error:', error);
     return NextResponse.json(
       { error: 'Failed to join channel', code: CHANNEL_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -197,7 +199,7 @@ export async function POST(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ channelId: string }> }
+  { params }: { params: Promise<{ channelId: string }> },
 ): Promise<NextResponse> {
   try {
     // Verify authentication
@@ -207,7 +209,7 @@ export async function DELETE(
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -222,7 +224,7 @@ export async function DELETE(
     if (!vp) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -237,7 +239,7 @@ export async function DELETE(
     if (!membership) {
       return NextResponse.json(
         { error: 'Not a member of this channel', code: CHANNEL_ERROR_CODES.NOT_MEMBER },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -251,7 +253,7 @@ export async function DELETE(
     console.error('[DELETE /api/daemon/channels/[channelId]/join] Error:', error);
     return NextResponse.json(
       { error: 'Failed to leave channel', code: CHANNEL_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

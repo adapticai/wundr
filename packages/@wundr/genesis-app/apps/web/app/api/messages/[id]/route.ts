@@ -12,7 +12,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -24,6 +23,7 @@ import {
 } from '@/lib/validations/message';
 
 import type { UpdateMessageInput } from '@/lib/validations/message';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -41,7 +41,7 @@ async function getMessageWithAccessCheck(messageId: string, userId: string) {
   const message = await prisma.message.findUnique({
     where: { id: messageId },
     include: {
-      user: {
+      author: {
         select: {
           id: true,
           name: true,
@@ -110,7 +110,7 @@ async function getMessageWithAccessCheck(messageId: string, userId: string) {
   return {
     ...rest,
     channel: channelData,
-    isOwner: message.userId === userId,
+    isOwner: message.authorId === userId,
     memberRole: message.channel.members[0]?.role ?? null,
   };
 }
@@ -279,7 +279,7 @@ export async function PATCH(
         ...(input.metadata && { metadata: input.metadata as Prisma.InputJsonValue }),
       },
       include: {
-        user: {
+        author: {
           select: {
             id: true,
             name: true,

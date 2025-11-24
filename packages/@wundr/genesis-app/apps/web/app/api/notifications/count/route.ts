@@ -18,6 +18,7 @@ import {
   NOTIFICATION_ERROR_CODES,
 } from '@/lib/validations/notification';
 
+import type { NotificationType, NotificationPriority } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -96,8 +97,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       const count = await prisma.notification.count({
         where: {
           ...baseWhere,
-          ...(typeFilter && { type: typeFilter }),
-          ...(priorityFilter && { priority: priorityFilter }),
+          ...(typeFilter && { type: typeFilter as NotificationType }),
+          ...(priorityFilter && { priority: priorityFilter as NotificationPriority }),
         },
       });
 

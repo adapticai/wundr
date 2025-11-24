@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef, useCallback, useMemo } from 'react';
 import {
   VideoTrack,
   AudioTrack,
@@ -8,9 +7,12 @@ import {
   useIsSpeaking,
   useTracks,
 } from '@livekit/components-react';
-import type { TrackReferenceOrPlaceholder } from '@livekit/components-react';
-import { Participant, Track } from 'livekit-client';
 import { clsx } from 'clsx';
+import { Track } from 'livekit-client';
+import { useRef, useCallback, useMemo } from 'react';
+
+import type { TrackReferenceOrPlaceholder } from '@livekit/components-react';
+import type { Participant} from 'livekit-client';
 
 export interface ParticipantTileProps {
   participant: Participant;
@@ -66,7 +68,7 @@ function ConnectionQualityBadge({ participant }: { participant: Participant }) {
           key={bar}
           className={clsx(
             'w-0.5 rounded-full transition-colors',
-            bar <= getQualityBars() ? getQualityColor() : 'bg-muted'
+            bar <= getQualityBars() ? getQualityColor() : 'bg-muted',
           )}
           style={{ height: `${bar * 3}px` }}
         />
@@ -79,7 +81,9 @@ function ConnectionQualityBadge({ participant }: { participant: Participant }) {
  * Speaking indicator with animated bars
  */
 function SpeakingIndicator({ isSpeaking }: { isSpeaking: boolean }) {
-  if (!isSpeaking) return null;
+  if (!isSpeaking) {
+return null;
+}
 
   return (
     <div className="flex items-center gap-0.5 h-3" aria-label="Speaking">
@@ -119,22 +123,22 @@ export function ParticipantTile({
       { source: Track.Source.Camera, withPlaceholder: true },
       { source: Track.Source.Microphone, withPlaceholder: false },
     ],
-    { onlySubscribed: false }
+    { onlySubscribed: false },
   );
 
   // Filter tracks for this participant
   const participantTracks = useMemo(() => {
     return tracks.filter(
       (track): track is TrackReferenceOrPlaceholder =>
-        track.participant?.sid === participant.sid
+        track.participant?.sid === participant.sid,
     );
   }, [tracks, participant.sid]);
 
   const cameraTrack = participantTracks.find(
-    (t) => t.source === Track.Source.Camera
+    (t) => t.source === Track.Source.Camera,
   );
   const microphoneTrack = participantTracks.find(
-    (t) => t.source === Track.Source.Microphone
+    (t) => t.source === Track.Source.Microphone,
   );
 
   const hasVideo = cameraTrack?.publication?.isSubscribed &&
@@ -149,7 +153,7 @@ export function ParticipantTile({
         onPin(participant.sid);
       }
     },
-    [onPin, participant.sid]
+    [onPin, participant.sid],
   );
 
   // Size classes
@@ -167,7 +171,7 @@ export function ParticipantTile({
         isPinned ? 'border-primary ring-2 ring-primary/20' : 'border-transparent',
         isSpeaking && !isMuted && 'ring-2 ring-green-500/50',
         sizeClasses[size],
-        className
+        className,
       )}
       onKeyDown={handleKeyDown}
       tabIndex={0}
@@ -180,7 +184,7 @@ export function ParticipantTile({
           trackRef={cameraTrack as TrackReferenceOrPlaceholder & { publication: NonNullable<TrackReferenceOrPlaceholder['publication']> }}
           className={clsx(
             'w-full h-full object-cover',
-            isLocal && 'transform scale-x-[-1]' // Mirror local video
+            isLocal && 'transform scale-x-[-1]', // Mirror local video
           )}
           ref={videoRef}
         />
@@ -190,7 +194,7 @@ export function ParticipantTile({
           <div
             className={clsx(
               'rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold',
-              size === 'small' ? 'w-12 h-12 text-lg' : 'w-20 h-20 text-2xl'
+              size === 'small' ? 'w-12 h-12 text-lg' : 'w-20 h-20 text-2xl',
             )}
           >
             {(participant.name || participant.identity || '?').charAt(0).toUpperCase()}
@@ -208,7 +212,7 @@ export function ParticipantTile({
         className={clsx(
           'absolute bottom-0 left-0 right-0',
           'bg-gradient-to-t from-black/70 to-transparent',
-          'p-2 flex items-end justify-between'
+          'p-2 flex items-end justify-between',
         )}
       >
         <div className="flex items-center gap-2 min-w-0">
@@ -265,7 +269,7 @@ export function ParticipantTile({
             isPinned
               ? 'bg-primary text-primary-foreground'
               : 'bg-black/50 text-white hover:bg-black/70',
-            'opacity-0 group-hover:opacity-100 focus:opacity-100'
+            'opacity-0 group-hover:opacity-100 focus:opacity-100',
           )}
           title={isPinned ? 'Unpin' : 'Pin'}
           aria-label={isPinned ? 'Unpin participant' : 'Pin participant'}

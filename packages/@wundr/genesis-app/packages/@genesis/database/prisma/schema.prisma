@@ -102,9 +102,10 @@ model Organization {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  workspaces Workspace[]
-  members    OrganizationMember[]
-  vps        VP[]
+  workspaces  Workspace[]
+  members     OrganizationMember[]
+  vps         VP[]
+  disciplines Discipline[]
 
   @@index([slug])
   @@map("organizations")
@@ -177,6 +178,31 @@ model User {
   @@map("users")
 }
 
+/// Discipline - VP discipline/department category
+model Discipline {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  color       String? // Hex color for UI display (e.g., "#3B82F6")
+  icon        String? // Icon identifier for UI display
+
+  // Foreign keys
+  organizationId String @map("organization_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vps          VP[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([name])
+  @@map("disciplines")
+}
+
 /// VP (Virtual Person) - AI agent metadata
 model VP {
   id             String   @id @default(cuid())
@@ -187,21 +213,24 @@ model VP {
   status         VPStatus @default(OFFLINE)
 
   // Foreign keys
-  userId         String  @unique @map("user_id")
-  organizationId String  @map("organization_id")
-  workspaceId    String? @map("workspace_id")
+  userId         String   @unique @map("user_id")
+  organizationId String   @map("organization_id")
+  workspaceId    String?  @map("workspace_id")
+  disciplineId   String?  @map("discipline_id")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  daemonCredentials DaemonCredential[]
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  disciplineRelation Discipline?        @relation(fields: [disciplineId], references: [id], onDelete: SetNull)
+  daemonCredentials  DaemonCredential[]
 
   @@index([organizationId])
   @@index([workspaceId])
+  @@index([disciplineId])
   @@index([discipline])
   @@index([status])
   @@map("vps")

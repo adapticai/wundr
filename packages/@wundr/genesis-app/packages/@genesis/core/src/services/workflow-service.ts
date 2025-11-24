@@ -7,6 +7,17 @@
  * @packageDocumentation
  */
 
+import { GenesisError } from '../errors';
+import {
+  DEFAULT_WORKFLOW_LIST_OPTIONS,
+  DEFAULT_EXECUTION_LIST_OPTIONS,
+  MAX_WORKFLOW_NAME_LENGTH,
+  MAX_ACTIONS_PER_WORKFLOW,
+  DEFAULT_MAX_LOOP_ITERATIONS,
+  MAX_WEBHOOK_TIMEOUT_MS,
+} from '../types/workflow';
+import { generateCUID } from '../utils';
+
 import type {
   Workflow,
   WorkflowTrigger,
@@ -34,16 +45,6 @@ import type {
   WebhookActionConfig,
   InvokeVPConfig,
 } from '../types/workflow';
-import {
-  DEFAULT_WORKFLOW_LIST_OPTIONS,
-  DEFAULT_EXECUTION_LIST_OPTIONS,
-  MAX_WORKFLOW_NAME_LENGTH,
-  MAX_ACTIONS_PER_WORKFLOW,
-  DEFAULT_MAX_LOOP_ITERATIONS,
-  MAX_WEBHOOK_TIMEOUT_MS,
-} from '../types/workflow';
-import { GenesisError } from '../errors';
-import { generateCUID } from '../utils';
 
 // =============================================================================
 // Error Classes
@@ -57,7 +58,7 @@ export class WorkflowError extends GenesisError {
     message: string,
     code: string,
     statusCode: number = 500,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ) {
     super(message, code, statusCode, metadata);
     this.name = 'WorkflowError';
@@ -96,7 +97,7 @@ export class WorkflowExecutionError extends GenesisError {
       `Workflow execution failed for ${workflowId}: ${reason}`,
       'WORKFLOW_EXECUTION_ERROR',
       500,
-      { workflowId, reason }
+      { workflowId, reason },
     );
     this.name = 'WorkflowExecutionError';
   }
@@ -121,7 +122,7 @@ export class ActionExecutionError extends GenesisError {
       `Action execution failed for ${actionId}: ${reason}`,
       'ACTION_EXECUTION_ERROR',
       500,
-      { actionId, reason }
+      { actionId, reason },
     );
     this.name = 'ActionExecutionError';
   }
@@ -195,10 +196,10 @@ export class InMemoryWorkflowStorage implements WorkflowStorage {
 
   async listWorkflows(
     workspaceId: string,
-    options: ListWorkflowsOptions = {}
+    options: ListWorkflowsOptions = {},
   ): Promise<PaginatedWorkflowResult> {
     let results = Array.from(this.workflows.values()).filter(
-      (w) => w.workspaceId === workspaceId
+      (w) => w.workspaceId === workspaceId,
     );
 
     if (options.status) {
@@ -235,7 +236,7 @@ export class InMemoryWorkflowStorage implements WorkflowStorage {
 
   async updateWorkflow(
     id: string,
-    updates: Partial<Workflow>
+    updates: Partial<Workflow>,
   ): Promise<Workflow> {
     const existing = this.workflows.get(id);
     if (!existing) {
@@ -257,10 +258,10 @@ export class InMemoryWorkflowStorage implements WorkflowStorage {
 
   async listExecutions(
     workflowId: string,
-    options: ListExecutionsOptions = {}
+    options: ListExecutionsOptions = {},
   ): Promise<PaginatedExecutionResult> {
     let results = Array.from(this.executions.values()).filter(
-      (e) => e.workflowId === workflowId
+      (e) => e.workflowId === workflowId,
     );
 
     if (options.status) {
@@ -293,7 +294,7 @@ export class InMemoryWorkflowStorage implements WorkflowStorage {
   }
 
   async createExecution(
-    execution: WorkflowExecution
+    execution: WorkflowExecution,
   ): Promise<WorkflowExecution> {
     this.executions.set(execution.id, execution);
     return execution;
@@ -301,7 +302,7 @@ export class InMemoryWorkflowStorage implements WorkflowStorage {
 
   async updateExecution(
     id: string,
-    updates: Partial<WorkflowExecution>
+    updates: Partial<WorkflowExecution>,
   ): Promise<WorkflowExecution> {
     const existing = this.executions.get(id);
     if (!existing) {
@@ -617,7 +618,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   async createWorkflow(
     input: CreateWorkflowInput,
-    createdBy: string
+    createdBy: string,
   ): Promise<Workflow> {
     this.validateCreateWorkflowInput(input);
 
@@ -657,14 +658,14 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   async listWorkflows(
     workspaceId: string,
-    options?: ListWorkflowsOptions
+    options?: ListWorkflowsOptions,
   ): Promise<PaginatedWorkflowResult> {
     return this.storage.listWorkflows(workspaceId, options);
   }
 
   async updateWorkflow(
     id: string,
-    updates: UpdateWorkflowInput
+    updates: UpdateWorkflowInput,
   ): Promise<Workflow> {
     const existing = await this.storage.getWorkflow(id);
     if (!existing) {
@@ -761,7 +762,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   async executeWorkflow(
     workflowId: string,
-    triggerData: Record<string, unknown>
+    triggerData: Record<string, unknown>,
   ): Promise<WorkflowExecution> {
     const workflow = await this.storage.getWorkflow(workflowId);
     if (!workflow) {
@@ -771,7 +772,7 @@ export class WorkflowServiceImpl implements WorkflowService {
     if (workflow.status !== 'active') {
       throw new WorkflowExecutionError(
         workflowId,
-        `Workflow is ${workflow.status}, not active`
+        `Workflow is ${workflow.status}, not active`,
       );
     }
 
@@ -861,7 +862,7 @@ export class WorkflowServiceImpl implements WorkflowService {
     if (execution.status !== 'running' && execution.status !== 'pending') {
       throw new WorkflowExecutionError(
         execution.workflowId,
-        `Cannot cancel execution in status: ${execution.status}`
+        `Cannot cancel execution in status: ${execution.status}`,
       );
     }
 
@@ -876,7 +877,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   async getExecutionHistory(
     workflowId: string,
-    options?: ListExecutionsOptions
+    options?: ListExecutionsOptions,
   ): Promise<PaginatedExecutionResult> {
     const workflow = await this.storage.getWorkflow(workflowId);
     if (!workflow) {
@@ -901,7 +902,7 @@ export class WorkflowServiceImpl implements WorkflowService {
     templateId: string,
     workspaceId: string,
     createdBy: string,
-    overrides?: Partial<CreateWorkflowInput>
+    overrides?: Partial<CreateWorkflowInput>,
   ): Promise<Workflow> {
     const template = BUILT_IN_TEMPLATES.find((t) => t.id === templateId);
     if (!template) {
@@ -933,7 +934,7 @@ export class WorkflowServiceImpl implements WorkflowService {
    */
   async executeAction(
     action: WorkflowAction,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<ActionResult> {
     const startedAt = new Date();
 
@@ -988,7 +989,7 @@ export class WorkflowServiceImpl implements WorkflowService {
    */
   evaluateCondition(
     condition: WorkflowCondition,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): boolean {
     const fieldValue = this.resolveVariable(condition.field, context);
 
@@ -1051,7 +1052,7 @@ export class WorkflowServiceImpl implements WorkflowService {
    */
   interpolateTemplate(
     template: string,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): string {
     return template.replace(/\{\{([^}]+)\}\}/g, (_, path) => {
       const value = this.resolveVariable(path.trim(), context);
@@ -1094,7 +1095,7 @@ export class WorkflowServiceImpl implements WorkflowService {
   }
 
   private initializeVariables(
-    variables: WorkflowVariable[]
+    variables: WorkflowVariable[],
   ): Record<string, unknown> {
     const result: Record<string, unknown> = {};
     for (const variable of variables) {
@@ -1105,7 +1106,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private async executeActions(
     actions: WorkflowAction[],
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<ActionResult[]> {
     const results: ActionResult[] = [];
 
@@ -1143,7 +1144,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private async executeBuiltInAction(
     action: WorkflowAction,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<unknown> {
     const config = action.config;
 
@@ -1172,7 +1173,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private async executeDelayAction(
     config: DelayConfig,
-    _context: ExecutionContext
+    _context: ExecutionContext,
   ): Promise<{ delayed: number }> {
     let durationMs = config.duration;
 
@@ -1204,7 +1205,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private async executeConditionAction(
     config: ConditionConfig,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<{ matched: boolean; branch: string }> {
     const allMatch = this.evaluateConditions(config.conditions, context);
 
@@ -1212,7 +1213,7 @@ export class WorkflowServiceImpl implements WorkflowService {
       // Execute then actions
       const thenActionIds = new Set(config.thenActions);
       const thenActions = context.workflow.actions.filter((a) =>
-        thenActionIds.has(a.id)
+        thenActionIds.has(a.id),
       );
       await this.executeActions(thenActions, context);
       return { matched: true, branch: 'then' };
@@ -1220,7 +1221,7 @@ export class WorkflowServiceImpl implements WorkflowService {
       // Execute else actions
       const elseActionIds = new Set(config.elseActions);
       const elseActions = context.workflow.actions.filter((a) =>
-        elseActionIds.has(a.id)
+        elseActionIds.has(a.id),
       );
       await this.executeActions(elseActions, context);
       return { matched: false, branch: 'else' };
@@ -1231,7 +1232,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private executeSetVariableAction(
     config: SetVariableConfig,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): { name: string; value: unknown } {
     let value: unknown = config.value;
 
@@ -1247,14 +1248,14 @@ export class WorkflowServiceImpl implements WorkflowService {
   private async executeLoopAction(
     config: LoopConfig,
     action: WorkflowAction,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<{ iterations: number; results: unknown[] }> {
     const collection = this.resolveVariable(config.collection, context);
 
     if (!Array.isArray(collection)) {
       throw new ActionExecutionError(
         action.id,
-        `Loop collection is not an array: ${config.collection}`
+        `Loop collection is not an array: ${config.collection}`,
       );
     }
 
@@ -1278,7 +1279,7 @@ export class WorkflowServiceImpl implements WorkflowService {
       // Execute loop actions
       const actionIds = new Set(config.actions);
       const loopActions = context.workflow.actions.filter((a) =>
-        actionIds.has(a.id)
+        actionIds.has(a.id),
       );
 
       const loopResults = await this.executeActions(loopActions, context);
@@ -1291,7 +1292,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private executeSendMessageAction(
     config: SendMessageConfig,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): { channelId: string; message: string } {
     const channelId = this.interpolateTemplate(config.channelId, context);
     const message = this.interpolateTemplate(config.message, context);
@@ -1302,7 +1303,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private executeSendDMAction(
     config: SendDMConfig,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): { userId: string; message: string } {
     const userId = this.interpolateTemplate(config.userId, context);
     const message = this.interpolateTemplate(config.message, context);
@@ -1313,12 +1314,12 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private async executeWebhookAction(
     config: WebhookActionConfig,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<{ status: number; body: string; url: string; timeout: number; requestBody?: string }> {
     const url = this.interpolateTemplate(config.url, context);
     const timeout = Math.min(
       config.timeout ?? MAX_WEBHOOK_TIMEOUT_MS,
-      MAX_WEBHOOK_TIMEOUT_MS
+      MAX_WEBHOOK_TIMEOUT_MS,
     );
 
     let requestBody: string | undefined;
@@ -1343,7 +1344,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private async executeInvokeVPAction(
     config: InvokeVPConfig,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<{ vpId: string; prompt: string; response?: string }> {
     const vpId = this.interpolateTemplate(config.vpId, context);
     const prompt = this.interpolateTemplate(config.prompt, context);
@@ -1359,7 +1360,7 @@ export class WorkflowServiceImpl implements WorkflowService {
 
   private evaluateConditions(
     conditions: WorkflowCondition[],
-    context: ExecutionContext
+    context: ExecutionContext,
   ): boolean {
     if (conditions.length === 0) {
       return true;
@@ -1404,7 +1405,7 @@ export class WorkflowServiceImpl implements WorkflowService {
             acc[v.name] = context.variables[v.name] ?? v.defaultValue;
             return acc;
           },
-          {} as Record<string, unknown>
+          {} as Record<string, unknown>,
         );
         break;
       default:
@@ -1431,7 +1432,7 @@ export class WorkflowServiceImpl implements WorkflowService {
   }
 
   private buildActionResultsMap(
-    results: ActionResult[]
+    results: ActionResult[],
   ): Record<string, unknown> {
     const map: Record<string, unknown> = {};
     for (const result of results) {
@@ -1453,7 +1454,7 @@ export class WorkflowServiceImpl implements WorkflowService {
  * Creates a new Workflow Service with in-memory storage.
  */
 export function createWorkflowService(
-  config?: Partial<WorkflowServiceConfig>
+  config?: Partial<WorkflowServiceConfig>,
 ): WorkflowServiceImpl {
   const storage = config?.storage ?? new InMemoryWorkflowStorage();
   return new WorkflowServiceImpl({

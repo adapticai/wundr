@@ -15,8 +15,8 @@
  * @module apps/web/app/api/messages/__tests__/messages.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
@@ -93,10 +93,10 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-function createMockRequest(
+function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
-  searchParams?: Record<string, string>
+  searchParams?: Record<string, string>,
 ): NextRequest {
   const url = new URL('http://localhost:3000/api/messages');
 
@@ -152,7 +152,7 @@ function createMockReactionResponse(overrides?: Record<string, unknown>) {
   };
 }
 
-function createMockChannelMember(overrides?: Record<string, unknown>) {
+function _createMockChannelMember(overrides?: Record<string, unknown>) {
   return {
     id: 'member-123',
     userId: 'user-123',
@@ -213,7 +213,7 @@ describe('Message API Routes', () => {
           channelId: 'ch-123',
           authorId: session.user.id,
           content: 'Hello, world!',
-        })
+        }),
       );
     });
 
@@ -243,11 +243,11 @@ describe('Message API Routes', () => {
           channelId: 'ch-other',
           authorId: session.user.id,
           content: 'Test',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_NOT_CHANNEL_MEMBER',
-        })
+        }),
       );
     });
 
@@ -270,11 +270,11 @@ describe('Message API Routes', () => {
           channelId: 'ch-123',
           authorId: session.user.id,
           content: emptyContent,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_INVALID_CONTENT',
-        })
+        }),
       );
     });
 
@@ -297,11 +297,11 @@ describe('Message API Routes', () => {
           channelId: 'ch-123',
           authorId: session.user.id,
           content: longContent,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_CONTENT_TOO_LONG',
-        })
+        }),
       );
     });
 
@@ -338,11 +338,11 @@ describe('Message API Routes', () => {
           authorId: session.user.id,
           content: 'Nested reply',
           parentId: 'msg-already-a-reply',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_NESTED_THREAD_NOT_ALLOWED',
-        })
+        }),
       );
     });
   });
@@ -357,7 +357,7 @@ describe('Message API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       const mockMessages = Array.from({ length: 20 }, (_, i) =>
-        createMockMessageResponse({ id: `msg-${i}` })
+        createMockMessageResponse({ id: `msg-${i}` }),
       );
 
       mockMessageService.listMessages.mockResolvedValue({
@@ -390,7 +390,7 @@ describe('Message API Routes', () => {
 
       const cursorMessageId = 'msg-cursor';
       const mockMessages = Array.from({ length: 10 }, (_, i) =>
-        createMockMessageResponse({ id: `msg-${i + 20}` })
+        createMockMessageResponse({ id: `msg-${i + 20}` }),
       );
 
       mockMessageService.listMessages.mockResolvedValue({
@@ -417,7 +417,7 @@ describe('Message API Routes', () => {
       expect(mockMessageService.listMessages).toHaveBeenCalledWith(
         expect.objectContaining({
           after: cursorMessageId,
-        })
+        }),
       );
     });
 
@@ -426,7 +426,7 @@ describe('Message API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       const activeMessages = Array.from({ length: 10 }, (_, i) =>
-        createMockMessageResponse({ id: `msg-${i}`, deletedAt: null })
+        createMockMessageResponse({ id: `msg-${i}`, deletedAt: null }),
       );
 
       mockMessageService.listMessages.mockResolvedValue({
@@ -471,11 +471,11 @@ describe('Message API Routes', () => {
       await expect(
         mockMessageService.listMessages({
           channelId: 'ch-private',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_NOT_CHANNEL_MEMBER',
-        })
+        }),
       );
     });
 
@@ -491,11 +491,11 @@ describe('Message API Routes', () => {
       await expect(
         mockMessageService.listMessages({
           channelId: 'ch-nonexistent',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_CHANNEL_NOT_FOUND',
-        })
+        }),
       );
     });
   });
@@ -543,11 +543,11 @@ describe('Message API Routes', () => {
         mockMessageService.updateMessage(messageId, {
           content: 'Trying to edit',
           userId: session.user.id,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_FORBIDDEN',
-        })
+        }),
       );
     });
 
@@ -564,11 +564,11 @@ describe('Message API Routes', () => {
         mockMessageService.updateMessage('msg-nonexistent', {
           content: 'Update',
           userId: session.user.id,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -585,11 +585,11 @@ describe('Message API Routes', () => {
         mockMessageService.updateMessage('msg-deleted', {
           content: 'Update',
           userId: session.user.id,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_DELETED',
-        })
+        }),
       );
     });
 
@@ -607,11 +607,11 @@ describe('Message API Routes', () => {
         mockMessageService.updateMessage('msg-123', {
           content: '',
           userId: session.user.id,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_INVALID_CONTENT',
-        })
+        }),
       );
     });
   });
@@ -677,11 +677,11 @@ describe('Message API Routes', () => {
       await expect(
         mockMessageService.deleteMessage('msg-123', {
           userId: session.user.id,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_FORBIDDEN',
-        })
+        }),
       );
     });
 
@@ -697,11 +697,11 @@ describe('Message API Routes', () => {
       await expect(
         mockMessageService.deleteMessage('msg-nonexistent', {
           userId: session.user.id,
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_NOT_FOUND',
-        })
+        }),
       );
     });
   });
@@ -749,11 +749,11 @@ describe('Message API Routes', () => {
           messageId: 'msg-123',
           userId: session.user.id,
           emoji: '\u{1F44D}',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_DUPLICATE_REACTION',
-        })
+        }),
       );
     });
 
@@ -771,11 +771,11 @@ describe('Message API Routes', () => {
           messageId: 'msg-nonexistent',
           userId: session.user.id,
           emoji: '\u{1F44D}',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -806,7 +806,7 @@ describe('Message API Routes', () => {
           messageId,
           userId: session.user.id,
           emoji,
-        })
+        }),
       ).resolves.toBeUndefined();
 
       expect(mockReactionService.removeReaction).toHaveBeenCalledWith({
@@ -830,11 +830,11 @@ describe('Message API Routes', () => {
           messageId: 'msg-123',
           userId: session.user.id,
           emoji: '\u{1F600}',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_REACTION_NOT_FOUND',
-        })
+        }),
       );
     });
   });
@@ -850,7 +850,7 @@ describe('Message API Routes', () => {
 
       const parentId = 'msg-parent';
       const replies = Array.from({ length: 5 }, (_, i) =>
-        createMockMessageResponse({ id: `msg-reply-${i}`, parentId })
+        createMockMessageResponse({ id: `msg-reply-${i}`, parentId }),
       );
 
       mockThreadService.getThread.mockResolvedValue({
@@ -899,11 +899,11 @@ describe('Message API Routes', () => {
       });
 
       await expect(
-        mockThreadService.getThread('msg-nonexistent')
+        mockThreadService.getThread('msg-nonexistent'),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -918,11 +918,11 @@ describe('Message API Routes', () => {
       });
 
       await expect(
-        mockThreadService.getThread('msg-already-a-reply')
+        mockThreadService.getThread('msg-already-a-reply'),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_PARENT_NOT_FOUND',
-        })
+        }),
       );
     });
   });
@@ -940,7 +940,7 @@ describe('Message API Routes', () => {
         createMockMessageResponse({
           id: `msg-${i}`,
           content: `Search result ${i}`,
-        })
+        }),
       );
 
       mockMessageService.searchMessages.mockResolvedValue({
@@ -957,7 +957,7 @@ describe('Message API Routes', () => {
       expect(mockMessageService.searchMessages).toHaveBeenCalledWith(
         expect.objectContaining({
           query: 'search',
-        })
+        }),
       );
     });
 
@@ -978,7 +978,7 @@ describe('Message API Routes', () => {
       expect(mockMessageService.searchMessages).toHaveBeenCalledWith(
         expect.objectContaining({
           channelIds: ['ch-specific'],
-        })
+        }),
       );
     });
 
@@ -1004,7 +1004,7 @@ describe('Message API Routes', () => {
         expect.objectContaining({
           startDate,
           endDate,
-        })
+        }),
       );
     });
   });
@@ -1028,11 +1028,11 @@ describe('Message API Routes', () => {
           channelId: 'ch-123',
           authorId: session.user.id,
           content: 'Spam message',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_RATE_LIMITED',
-        })
+        }),
       );
     });
 
@@ -1050,11 +1050,11 @@ describe('Message API Routes', () => {
           messageId: 'msg-123',
           userId: session.user.id,
           emoji: '\u{1F44D}',
-        })
+        }),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'MESSAGE_RATE_LIMITED',
-        })
+        }),
       );
     });
   });

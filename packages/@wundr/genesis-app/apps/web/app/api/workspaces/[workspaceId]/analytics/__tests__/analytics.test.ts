@@ -2,8 +2,11 @@
  * @fileoverview Tests for analytics API routes
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { prisma } from '@genesis/database';
 import { NextRequest } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 
 // =============================================================================
 // MOCKS
@@ -150,9 +153,6 @@ vi.mock('@genesis/core', () => ({
   })),
 }));
 
-import { getServerSession } from 'next-auth';
-import { prisma } from '@genesis/database';
-
 describe('Analytics API Routes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -192,10 +192,9 @@ describe('Analytics API Routes', () => {
         id: 'mem-1',
         userId: 'user-1',
         workspaceId: 'ws-1',
-        role: 'member',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as any);
+        role: 'MEMBER',
+        joinedAt: new Date(),
+      });
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics?period=month');
@@ -213,8 +212,11 @@ describe('Analytics API Routes', () => {
       });
       vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
         id: 'mem-1',
-        role: 'member',
-      } as any);
+        userId: 'user-1',
+        workspaceId: 'ws-1',
+        role: 'MEMBER',
+        joinedAt: new Date(),
+      });
 
       const { GET } = await import('../metrics/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/metrics?period=week');
@@ -232,8 +234,11 @@ describe('Analytics API Routes', () => {
       });
       vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
         id: 'mem-1',
-        role: 'member',
-      } as any);
+        userId: 'user-1',
+        workspaceId: 'ws-1',
+        role: 'MEMBER',
+        joinedAt: new Date(),
+      });
 
       const { GET } = await import('../realtime/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/realtime');
@@ -254,8 +259,11 @@ describe('Analytics API Routes', () => {
       });
       vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
         id: 'mem-1',
-        role: 'member',
-      } as any);
+        userId: 'user-1',
+        workspaceId: 'ws-1',
+        role: 'MEMBER',
+        joinedAt: new Date(),
+      });
 
       const { GET } = await import('../trends/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/trends?metric=messages');
@@ -276,8 +284,11 @@ describe('Analytics API Routes', () => {
       });
       vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
         id: 'mem-1',
-        role: 'member',
-      } as any);
+        userId: 'user-1',
+        workspaceId: 'ws-1',
+        role: 'MEMBER',
+        joinedAt: new Date(),
+      });
 
       const { GET } = await import('../insights/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/insights?period=month');
@@ -337,8 +348,11 @@ describe('Analytics API Routes', () => {
       });
       vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
         id: 'mem-1',
-        role: 'member',
-      } as any);
+        userId: 'user-1',
+        workspaceId: 'ws-1',
+        role: 'MEMBER',
+        joinedAt: new Date(),
+      });
 
       const { POST } = await import('../export/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/export', {
@@ -357,8 +371,11 @@ describe('Analytics API Routes', () => {
       });
       vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
         id: 'mem-1',
-        role: 'admin',
-      } as any);
+        userId: 'user-1',
+        workspaceId: 'ws-1',
+        role: 'ADMIN',
+        joinedAt: new Date(),
+      });
 
       const { POST } = await import('../export/route');
       const request = new NextRequest('http://localhost/api/workspaces/ws-1/analytics/export', {

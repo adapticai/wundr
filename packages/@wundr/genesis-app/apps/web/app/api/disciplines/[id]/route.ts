@@ -40,7 +40,9 @@ async function checkDisciplineAccess(disciplineId: string, userId: string) {
     where: { id: disciplineId },
   });
 
-  if (!discipline) return null;
+  if (!discipline) {
+return null;
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -51,7 +53,9 @@ async function checkDisciplineAccess(disciplineId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   return {
     discipline,
@@ -69,7 +73,7 @@ async function checkDisciplineAccess(disciplineId: string, userId: string) {
  * @returns Discipline details
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -291,7 +295,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

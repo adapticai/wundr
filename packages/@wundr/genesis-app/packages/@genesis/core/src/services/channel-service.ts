@@ -7,20 +7,19 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient, Prisma, ChannelRole } from '@genesis/database';
 import { prisma } from '@genesis/database';
 
 import {
   GenesisError,
   TransactionError,
 } from '../errors';
-import { generateSlug } from '../utils';
 import {
   DEFAULT_CHANNEL_LIST_OPTIONS,
   MAX_NAME_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_SLUG_LENGTH,
 } from '../types/organization';
+import { generateSlug } from '../utils';
 
 import type {
   CreateChannelInput,
@@ -28,7 +27,7 @@ import type {
   ChannelListOptions,
   ChannelMemberRole,
 } from '../types/organization';
-import type { Channel, ChannelMember } from '@genesis/database';
+import type { PrismaClient, Prisma, ChannelRole , Channel, ChannelMember } from '@genesis/database';
 
 // =============================================================================
 // Custom Errors
@@ -43,7 +42,7 @@ export class ChannelNotFoundError extends GenesisError {
       `Channel not found with ${identifierType}: ${identifier}`,
       'CHANNEL_NOT_FOUND',
       404,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'ChannelNotFoundError';
   }
@@ -58,7 +57,7 @@ export class ChannelAlreadyExistsError extends GenesisError {
       `Channel with slug '${slug}' already exists in workspace`,
       'CHANNEL_ALREADY_EXISTS',
       409,
-      { slug, workspaceId }
+      { slug, workspaceId },
     );
     this.name = 'ChannelAlreadyExistsError';
   }
@@ -86,7 +85,7 @@ export class WorkspaceNotFoundError extends GenesisError {
       `Workspace not found with ${identifierType}: ${identifier}`,
       'WORKSPACE_NOT_FOUND',
       404,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'WorkspaceNotFoundError';
   }
@@ -101,7 +100,7 @@ export class UserNotFoundError extends GenesisError {
       `User not found: ${userId}`,
       'USER_NOT_FOUND',
       404,
-      { userId }
+      { userId },
     );
     this.name = 'UserNotFoundError';
   }
@@ -116,7 +115,7 @@ export class ChannelMemberNotFoundError extends GenesisError {
       `User ${userId} is not a member of channel ${channelId}`,
       'CHANNEL_MEMBER_NOT_FOUND',
       404,
-      { channelId, userId }
+      { channelId, userId },
     );
     this.name = 'ChannelMemberNotFoundError';
   }
@@ -361,7 +360,7 @@ export class ChannelServiceImpl implements ChannelService {
    */
   async listChannels(
     workspaceId: string,
-    options: ChannelListOptions = {}
+    options: ChannelListOptions = {},
   ): Promise<Channel[]> {
     const {
       type,
@@ -507,7 +506,7 @@ export class ChannelServiceImpl implements ChannelService {
   async addMember(
     channelId: string,
     userId: string,
-    role: ChannelMemberRole = 'MEMBER'
+    role: ChannelMemberRole = 'MEMBER',
   ): Promise<ChannelMember> {
     // Verify channel exists
     const channel = await this.getChannel(channelId);
@@ -591,7 +590,7 @@ export class ChannelServiceImpl implements ChannelService {
   async updateMemberRole(
     channelId: string,
     userId: string,
-    role: ChannelMemberRole
+    role: ChannelMemberRole,
   ): Promise<ChannelMember> {
     // Verify channel exists
     const channel = await this.getChannel(channelId);

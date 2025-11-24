@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface BillingPlan {
@@ -129,19 +130,10 @@ export function BillingOverview({ workspaceId, className }: BillingOverviewProps
   };
 
   const formatStorage = (gb: number) => {
-    if (gb < 1) return `${Math.round(gb * 1024)} MB`;
+    if (gb < 1) {
+return `${Math.round(gb * 1024)} MB`;
+}
     return `${gb} GB`;
-  };
-
-  const getUsagePercentage = (used: number, limit: number) => {
-    if (limit === -1) return 0;
-    return Math.min((used / limit) * 100, 100);
-  };
-
-  const getUsageColor = (percentage: number) => {
-    if (percentage >= 90) return 'bg-red-500';
-    if (percentage >= 75) return 'bg-yellow-500';
-    return 'bg-primary';
   };
 
   if (isLoading) {
@@ -260,7 +252,7 @@ export function BillingOverview({ workspaceId, className }: BillingOverviewProps
                             ? 'bg-green-500/10 text-green-500'
                             : item.status === 'pending'
                             ? 'bg-yellow-500/10 text-yellow-500'
-                            : 'bg-red-500/10 text-red-500'
+                            : 'bg-red-500/10 text-red-500',
                         )}
                       >
                         {item.status}
@@ -319,7 +311,7 @@ export function BillingOverview({ workspaceId, className }: BillingOverviewProps
                         'p-4 border rounded-lg',
                         isCurrent
                           ? 'border-primary bg-primary/5'
-                          : 'border-border'
+                          : 'border-border',
                       )}
                     >
                       <h4 className="text-lg font-semibold text-foreground">
@@ -357,7 +349,7 @@ export function BillingOverview({ workspaceId, className }: BillingOverviewProps
                           isCurrent
                             ? 'bg-muted text-muted-foreground cursor-default'
                             : 'bg-primary text-primary-foreground hover:bg-primary/90',
-                          'disabled:opacity-50 disabled:cursor-not-allowed'
+                          'disabled:opacity-50 disabled:cursor-not-allowed',
                         )}
                       >
                         {isCurrent
@@ -393,9 +385,15 @@ function UsageMeter({
   const isUnlimited = limit === -1;
 
   const getColor = () => {
-    if (isUnlimited) return 'bg-primary';
-    if (percentage >= 90) return 'bg-red-500';
-    if (percentage >= 75) return 'bg-yellow-500';
+    if (isUnlimited) {
+return 'bg-primary';
+}
+    if (percentage >= 90) {
+return 'bg-red-500';
+}
+    if (percentage >= 75) {
+return 'bg-yellow-500';
+}
     return 'bg-primary';
   };
 

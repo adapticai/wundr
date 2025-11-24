@@ -5,8 +5,7 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient, ChannelType } from '@prisma/client';
-import type { Redis } from 'ioredis';
+import type { DaemonAuthService } from './daemon-auth-service';
 import type {
   DaemonToken,
   DaemonScope,
@@ -14,8 +13,10 @@ import type {
   DaemonEventType,
   DaemonConfig,
   DaemonMetrics,
+  DaemonEventPayload,
 } from '../types/daemon';
-import { DaemonAuthService } from './daemon-auth-service';
+import type { PrismaClient, ChannelType } from '@prisma/client';
+import type { Redis } from 'ioredis';
 
 // =============================================================================
 // Configuration Types
@@ -28,44 +29,114 @@ export interface DaemonApiServiceConfig {
   eventPrefix?: string;
 }
 
-export interface SendMessageParams {
-  channelId: string;
-  content: string;
-  parentId?: string;
-  attachments?: Array<{
-    type: string;
-    url: string;
-    name: string;
-    size: number;
-  }>;
-  metadata?: Record<string, unknown>;
+/**
+ * Attachment data for a message sent via the daemon API.
+ */
+export interface DaemonMessageAttachment {
+  /** Attachment type (e.g., 'image', 'document', 'file') */
+  type: string;
+  /** URL or identifier for the attachment */
+  url: string;
+  /** Display name of the attachment */
+  name: string;
+  /** File size in bytes */
+  size: number;
 }
 
+/**
+ * Metadata for daemon messages.
+ * Contains structured data about how the message was generated or processed.
+ */
+export interface DaemonMessageMetadata {
+  /** Source of the message (e.g., 'automated', 'triggered', 'scheduled') */
+  source?: string;
+  /** Reference ID for tracking (e.g., workflow execution ID) */
+  referenceId?: string;
+  /** Priority level for message handling */
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  /** Tags for categorization */
+  tags?: string[];
+  /** Additional custom properties */
+  [key: string]: string | string[] | boolean | number | undefined;
+}
+
+/**
+ * Parameters for sending a message via the daemon API.
+ */
+export interface SendMessageParams {
+  /** Target channel ID */
+  channelId: string;
+  /** Message content */
+  content: string;
+  /** Parent message ID for threading */
+  parentId?: string;
+  /** File attachments */
+  attachments?: DaemonMessageAttachment[];
+  /** Message metadata */
+  metadata?: DaemonMessageMetadata;
+}
+
+/**
+ * Channel information returned by the daemon API.
+ */
 export interface ChannelInfo {
+  /** Channel unique identifier */
   id: string;
+  /** Channel display name */
   name: string;
+  /** Channel description */
   description?: string;
+  /** Channel type */
   type: 'public' | 'private' | 'dm';
+  /** Number of members in the channel */
   memberCount: number;
+  /** Whether the VP has access to this channel */
   vpCanAccess: boolean;
 }
 
+/**
+ * User information returned by the daemon API.
+ */
 export interface UserInfo {
+  /** User unique identifier */
   id: string;
+  /** User display name */
   name: string;
+  /** User email address */
   email: string;
+  /** User role in the workspace */
   role: string;
+  /** User discipline (for VPs) */
   discipline?: string;
+  /** Whether the user is currently online */
   isOnline: boolean;
+}
+
+/**
+ * Message query filter for cursor-based pagination.
+ */
+interface MessageQueryFilter {
+  channelId: string;
+  id?: { lt?: string; gt?: string };
 }
 
 // =============================================================================
 // Error Classes
 // =============================================================================
 
+/**
+ * Error thrown by daemon API operations.
+ */
 export class DaemonApiError extends Error {
+  /** Error code for programmatic handling */
   code: string;
 
+  /**
+   * Creates a new DaemonApiError.
+   *
+   * @param message - Human-readable error message
+   * @param code - Machine-readable error code
+   */
   constructor(message: string, code: string) {
     super(message);
     this.name = 'DaemonApiError';
@@ -92,12 +163,24 @@ function mapChannelType(type: ChannelType): 'public' | 'private' | 'dm' {
 // Service Implementation
 // =============================================================================
 
+/**
+ * Service for daemon-to-platform API operations.
+ *
+ * Provides methods for VP daemons to interact with the Genesis platform,
+ * including sending messages, reading channels, managing presence, and
+ * subscribing to events.
+ */
 export class DaemonApiService {
   private prisma: PrismaClient;
   private redis: Redis;
   private authService: DaemonAuthService;
   private eventPrefix: string;
 
+  /**
+   * Creates a new DaemonApiService instance.
+   *
+   * @param config - Service configuration options
+   */
   constructor(config: DaemonApiServiceConfig) {
     this.prisma = config.prisma;
     this.redis = config.redis;
@@ -177,7 +260,7 @@ export class DaemonApiService {
       limit?: number;
       before?: string;
       after?: string;
-    }
+    },
   ): Promise<Array<{
     id: string;
     content: string;
@@ -204,7 +287,7 @@ export class DaemonApiService {
     }
 
     const limit = Math.min(options?.limit ?? 50, 100);
-    const where: Record<string, unknown> = { channelId };
+    const where: MessageQueryFilter = { channelId };
 
     if (options?.before) {
       where.id = { lt: options.before };
@@ -350,7 +433,7 @@ export class DaemonApiService {
    */
   async getUsers(
     token: DaemonToken,
-    options?: { limit?: number; search?: string }
+    options?: { limit?: number; search?: string },
   ): Promise<UserInfo[]> {
     this.requireScope(token, 'users:read');
 
@@ -399,7 +482,7 @@ export class DaemonApiService {
   async updatePresence(
     token: DaemonToken,
     status: 'online' | 'away' | 'busy' | 'offline',
-    statusText?: string
+    statusText?: string,
   ): Promise<void> {
     this.requireScope(token, 'presence:write');
 
@@ -467,7 +550,7 @@ export class DaemonApiService {
   async updateVPStatus(
     token: DaemonToken,
     status: 'active' | 'paused' | 'error',
-    message?: string
+    message?: string,
   ): Promise<void> {
     this.requireScope(token, 'vp:status');
 
@@ -485,7 +568,7 @@ export class DaemonApiService {
     await this.updatePresence(
       token,
       status === 'active' ? 'online' : status === 'paused' ? 'away' : 'busy',
-      message
+      message,
     );
   }
 
@@ -547,7 +630,7 @@ export class DaemonApiService {
    */
   async getPendingEvents(
     token: DaemonToken,
-    since?: Date
+    since?: Date,
   ): Promise<DaemonEvent[]> {
     const eventsKey = `${this.eventPrefix}${token.daemonId}`;
     const events = await this.redis.lrange(eventsKey, 0, 99);
@@ -608,13 +691,18 @@ export class DaemonApiService {
   }
 
   /**
-   * Publish daemon event
+   * Publishes a daemon event to Redis for delivery.
+   *
+   * @param daemonId - The daemon instance ID
+   * @param vpId - The VP ID associated with the event
+   * @param type - The event type
+   * @param payload - Event-specific data payload
    */
   private async publishEvent(
     daemonId: string,
     vpId: string,
     type: DaemonEventType,
-    payload: Record<string, unknown>
+    payload: DaemonEventPayload,
   ): Promise<void> {
     const event: DaemonEvent = {
       id: `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`,

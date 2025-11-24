@@ -29,7 +29,7 @@ export class GenesisError extends Error {
     message: string,
     code: string,
     statusCode: number = 500,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'GenesisError';
@@ -68,7 +68,7 @@ export class VPNotFoundError extends GenesisError {
       `VP not found with ${identifierType}: ${identifier}`,
       'VP_NOT_FOUND',
       404,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'VPNotFoundError';
   }
@@ -83,7 +83,7 @@ export class VPAlreadyExistsError extends GenesisError {
       `VP already exists with ${identifierType}: ${identifier}`,
       'VP_ALREADY_EXISTS',
       409,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'VPAlreadyExistsError';
   }
@@ -112,7 +112,7 @@ export class VPOperationNotPermittedError extends GenesisError {
       `VP operation '${operation}' not permitted: ${reason}`,
       'VP_OPERATION_NOT_PERMITTED',
       403,
-      { operation, reason }
+      { operation, reason },
     );
     this.name = 'VPOperationNotPermittedError';
   }
@@ -127,7 +127,7 @@ export class VPInvalidStateError extends GenesisError {
       `VP ${vpId} is in state '${currentState}', but '${requiredState}' is required`,
       'VP_INVALID_STATE',
       409,
-      { vpId, currentState, requiredState }
+      { vpId, currentState, requiredState },
     );
     this.name = 'VPInvalidStateError';
   }
@@ -173,7 +173,7 @@ export class APIKeyGenerationError extends GenesisError {
       `Failed to generate API key for VP ${vpId}: ${reason}`,
       'API_KEY_GENERATION_FAILED',
       500,
-      { vpId, reason }
+      { vpId, reason },
     );
     this.name = 'APIKeyGenerationError';
   }
@@ -192,7 +192,7 @@ export class OrganizationNotFoundError extends GenesisError {
       `Organization not found with ${identifierType}: ${identifier}`,
       'ORGANIZATION_NOT_FOUND',
       404,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'OrganizationNotFoundError';
   }
@@ -211,7 +211,7 @@ export class DatabaseError extends GenesisError {
       `Database operation '${operation}' failed: ${originalError?.message || 'Unknown error'}`,
       'DATABASE_ERROR',
       500,
-      { operation, originalError: originalError?.message }
+      { operation, originalError: originalError?.message },
     );
     this.name = 'DatabaseError';
   }
@@ -226,7 +226,7 @@ export class TransactionError extends GenesisError {
       `Transaction failed during '${operation}': ${originalError?.message || 'Unknown error'}`,
       'TRANSACTION_ERROR',
       500,
-      { operation, originalError: originalError?.message }
+      { operation, originalError: originalError?.message },
     );
     this.name = 'TransactionError';
   }
@@ -276,7 +276,7 @@ export function wrapError(error: unknown, context: string): GenesisError {
       `${context}: ${error.message}`,
       'WRAPPED_ERROR',
       500,
-      { originalError: error.message, context }
+      { originalError: error.message, context },
     );
   }
 
@@ -284,6 +284,6 @@ export function wrapError(error: unknown, context: string): GenesisError {
     `${context}: Unknown error`,
     'UNKNOWN_ERROR',
     500,
-    { context }
+    { context },
   );
 }

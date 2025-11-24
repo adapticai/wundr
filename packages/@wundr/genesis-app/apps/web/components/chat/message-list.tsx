@@ -1,10 +1,13 @@
 'use client';
 
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
-import { cn } from '@/lib/utils';
-import type { Message, User } from '@/types/chat';
-import { MessageItem } from './message-item';
+
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { cn } from '@/lib/utils';
+
+import { MessageItem } from './message-item';
+
+import type { Message, User } from '@/types/chat';
 
 interface MessageListProps {
   messages: Message[];
@@ -57,7 +60,9 @@ export function MessageList({
   // Handle scroll for infinite loading and auto-scroll detection
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+return;
+}
 
     const { scrollTop, scrollHeight, clientHeight } = container;
 
@@ -108,7 +113,9 @@ export function MessageList({
   // Attach scroll listener
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {
+return;
+}
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);

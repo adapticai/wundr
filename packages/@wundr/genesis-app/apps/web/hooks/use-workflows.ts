@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useMemo, useReducer } from 'react';
+
 import type {
   Workflow,
   WorkflowStatus,
@@ -36,14 +37,16 @@ interface UseWorkflowsReturn {
 
 export function useWorkflows(
   workspaceId: string,
-  options?: UseWorkflowsOptions
+  options?: UseWorkflowsOptions,
 ): UseWorkflowsReturn {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchWorkflows = useCallback(async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -69,7 +72,7 @@ export function useWorkflows(
           ...w,
           createdAt: w.createdAt,
           updatedAt: w.updatedAt,
-        }))
+        })),
       );
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -111,7 +114,7 @@ export function useWorkflows(
         return null;
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   return {
@@ -148,7 +151,9 @@ export function useWorkflow(workflowId: string): UseWorkflowReturn {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchWorkflow = useCallback(async () => {
-    if (!workflowId) return;
+    if (!workflowId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -200,7 +205,7 @@ export function useWorkflow(workflowId: string): UseWorkflowReturn {
         return null;
       }
     },
-    [workflowId]
+    [workflowId],
   );
 
   const deleteWorkflow = useCallback(async (): Promise<boolean> => {
@@ -278,7 +283,7 @@ export function useWorkflow(workflowId: string): UseWorkflowReturn {
         return null;
       }
     },
-    [workflowId]
+    [workflowId],
   );
 
   const testWorkflow = useCallback(async (): Promise<WorkflowExecution | null> => {
@@ -320,7 +325,7 @@ interface UseWorkflowExecutionsReturn {
 
 export function useWorkflowExecutions(
   workflowId: string,
-  options?: UseWorkflowExecutionsOptions
+  options?: UseWorkflowExecutionsOptions,
 ): UseWorkflowExecutionsReturn {
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -330,16 +335,24 @@ export function useWorkflowExecutions(
 
   const fetchExecutions = useCallback(
     async (loadMore = false) => {
-      if (!workflowId) return;
+      if (!workflowId) {
+return;
+}
 
       setIsLoading(true);
       setError(null);
 
       try {
         const params = new URLSearchParams();
-        if (options?.status) params.set('status', options.status);
-        if (options?.limit) params.set('limit', String(options.limit));
-        if (loadMore && cursor) params.set('cursor', cursor);
+        if (options?.status) {
+params.set('status', options.status);
+}
+        if (options?.limit) {
+params.set('limit', String(options.limit));
+}
+        if (loadMore && cursor) {
+params.set('cursor', cursor);
+}
 
         const url = `/api/workflows/${workflowId}/executions?${params.toString()}`;
         const response = await fetch(url);
@@ -367,7 +380,7 @@ export function useWorkflowExecutions(
         setIsLoading(false);
       }
     },
-    [workflowId, options?.status, options?.limit, cursor]
+    [workflowId, options?.status, options?.limit, cursor],
   );
 
   useEffect(() => {
@@ -386,7 +399,7 @@ export function useWorkflowExecutions(
       try {
         const response = await fetch(
           `/api/workflows/${workflowId}/executions/${executionId}/cancel`,
-          { method: 'POST' }
+          { method: 'POST' },
         );
 
         if (!response.ok) {
@@ -395,8 +408,8 @@ export function useWorkflowExecutions(
 
         setExecutions((prev) =>
           prev.map((e) =>
-            e.id === executionId ? { ...e, status: 'cancelled' as ExecutionStatus } : e
-          )
+            e.id === executionId ? { ...e, status: 'cancelled' as ExecutionStatus } : e,
+          ),
         );
         return true;
       } catch (err) {
@@ -404,7 +417,7 @@ export function useWorkflowExecutions(
         return false;
       }
     },
-    [workflowId]
+    [workflowId],
   );
 
   return {
@@ -434,7 +447,7 @@ interface UseWorkflowTemplatesReturn {
 }
 
 export function useWorkflowTemplates(
-  category?: WorkflowTemplateCategory
+  category?: WorkflowTemplateCategory,
 ): UseWorkflowTemplatesReturn {
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -446,7 +459,9 @@ export function useWorkflowTemplates(
 
     try {
       const params = new URLSearchParams();
-      if (category) params.set('category', category);
+      if (category) {
+params.set('category', category);
+}
 
       const url = `/api/workflow-templates?${params.toString()}`;
       const response = await fetch(url);
@@ -471,7 +486,7 @@ export function useWorkflowTemplates(
     async (
       templateId: string,
       workspaceId: string,
-      overrides?: Partial<CreateWorkflowInput>
+      overrides?: Partial<CreateWorkflowInput>,
     ): Promise<Workflow | null> => {
       try {
         const response = await fetch(
@@ -480,7 +495,7 @@ export function useWorkflowTemplates(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ templateId, ...overrides }),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -493,7 +508,7 @@ export function useWorkflowTemplates(
         return null;
       }
     },
-    []
+    [],
   );
 
   return {
@@ -542,7 +557,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
       return {
         ...state,
         actions: state.actions.map((a) =>
-          a.id === action.payload.id ? { ...a, ...action.payload.config } : a
+          a.id === action.payload.id ? { ...a, ...action.payload.config } : a,
         ),
       };
     case 'REMOVE_ACTION':
@@ -593,7 +608,7 @@ interface UseWorkflowBuilderReturn {
 }
 
 export function useWorkflowBuilder(
-  initialWorkflow?: Partial<Workflow>
+  initialWorkflow?: Partial<Workflow>,
 ): UseWorkflowBuilderReturn {
   const [state, dispatch] = useReducer(builderReducer, {
     trigger: initialWorkflow?.trigger ?? null,
@@ -646,8 +661,12 @@ export function useWorkflowBuilder(
   }, [state.trigger, state.actions]);
 
   const getWorkflowData = useCallback((): CreateWorkflowInput | null => {
-    if (!validate()) return null;
-    if (!state.trigger) return null;
+    if (!validate()) {
+return null;
+}
+    if (!state.trigger) {
+return null;
+}
 
     return {
       name: '',

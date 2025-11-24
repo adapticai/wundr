@@ -31,7 +31,7 @@ const avatarVariants = cva(
     defaultVariants: {
       size: 'md',
     },
-  }
+  },
 );
 
 /**
@@ -70,7 +70,7 @@ const statusVariants = cva(
       status: 'offline',
       size: 'md',
     },
-  }
+  },
 );
 
 /**
@@ -185,7 +185,7 @@ const Avatar = React.forwardRef<
       showStatus = false,
       ...props
     },
-    ref
+    ref,
   ) => {
     // Generate initials if fallback looks like a full name
     const displayFallback = React.useMemo(() => {
@@ -222,7 +222,7 @@ const Avatar = React.forwardRef<
               size === 'sm' && 'text-xs',
               size === 'md' && 'text-sm',
               size === 'lg' && 'text-base',
-              size === 'xl' && 'text-lg'
+              size === 'xl' && 'text-lg',
             )}
             delayMs={600}
           >
@@ -237,7 +237,7 @@ const Avatar = React.forwardRef<
         )}
       </div>
     );
-  }
+  },
 );
 
 Avatar.displayName = 'Avatar';

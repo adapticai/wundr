@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { clsx } from 'clsx';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface AuditLogEntry {
   id: string;
@@ -60,12 +60,18 @@ export function AuditLogViewer({ workspaceId, className }: AuditLogViewerProps) 
         offset: String(page * pageSize),
       });
 
-      if (filters.severity) params.set('severity', filters.severity);
-      if (filters.category) params.set('category', filters.category);
-      if (filters.search) params.set('search', filters.search);
+      if (filters.severity) {
+params.set('severity', filters.severity);
+}
+      if (filters.category) {
+params.set('category', filters.category);
+}
+      if (filters.search) {
+params.set('search', filters.search);
+}
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/audit-logs?${params.toString()}`
+        `/api/workspaces/${workspaceId}/admin/audit-logs?${params.toString()}`,
       );
 
       if (response.ok) {
@@ -91,7 +97,7 @@ export function AuditLogViewer({ workspaceId, className }: AuditLogViewerProps) 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ format: 'csv', filters }),
-      }
+      },
     );
 
     if (response.ok) {
@@ -113,7 +119,7 @@ export function AuditLogViewer({ workspaceId, className }: AuditLogViewerProps) 
           className={clsx(
             'flex-1 min-w-[200px] px-3 py-2 rounded-lg',
             'bg-muted border border-border',
-            'text-foreground placeholder:text-muted-foreground'
+            'text-foreground placeholder:text-muted-foreground',
           )}
         />
 

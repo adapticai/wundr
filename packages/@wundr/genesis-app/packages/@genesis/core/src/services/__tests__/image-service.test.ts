@@ -16,7 +16,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   createMockImageMetadata,
   createMockImageVariant,
-  createMockImageVariants,
+  _createMockImageVariants,
 } from '../../test-utils/file-factories';
 
 // =============================================================================
@@ -90,7 +90,7 @@ function createMockImageService() {
     resizeImage: vi.fn(async (
       inputKey: string,
       outputKey: string,
-      options: ResizeOptions
+      options: ResizeOptions,
     ): Promise<{ key: string; width: number; height: number }> => {
       const originalWidth = 1920;
       const originalHeight = 1080;
@@ -145,7 +145,7 @@ function createMockImageService() {
      */
     generateVariants: vi.fn(async (
       key: string,
-      sizes: ImageSize[]
+      sizes: ImageSize[],
     ): Promise<ImageVariant[]> => {
       return sizes.map((size) => createMockImageVariant(size, key));
     }),
@@ -155,7 +155,7 @@ function createMockImageService() {
      */
     optimizeImage: vi.fn(async (
       key: string,
-      quality: number
+      quality: number,
     ): Promise<{ key: string; originalSize: number; optimizedSize: number }> => {
       const originalSize = 500000; // 500KB
       const compressionRatio = quality / 100;
@@ -173,7 +173,7 @@ function createMockImageService() {
      */
     convertFormat: vi.fn(async (
       inputKey: string,
-      outputFormat: string
+      outputFormat: string,
     ): Promise<string> => {
       return inputKey.replace(/\.[^.]+$/, `.${outputFormat}`);
     }),
@@ -649,7 +649,7 @@ describe('ImageService Integration Scenarios', () => {
       const result = await imageService.resizeImage(
         key,
         key.replace('.jpg', `_${size.width}.webp`),
-        { ...size, fit: 'cover' }
+        { ...size, fit: 'cover' },
       );
       expect(result.width).toBe(size.width);
       expect(result.height).toBe(size.height);

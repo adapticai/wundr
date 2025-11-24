@@ -527,7 +527,7 @@ export type {
   WebhookDelivery,
   WebhookAttempt,
   IntegrationEvent,
-  SyncResult as IntegrationSyncResult,
+  IntegrationSyncResult,
   SlackIntegrationConfig,
   GitHubIntegrationConfig,
   JiraIntegrationConfig,

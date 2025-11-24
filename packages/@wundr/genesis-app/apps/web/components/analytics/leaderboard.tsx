@@ -33,7 +33,7 @@ export function Leaderboard({
             key={item.id}
             className={clsx(
               'flex items-center gap-3 p-2 rounded-lg',
-              'hover:bg-muted transition-colors'
+              'hover:bg-muted transition-colors',
             )}
           >
             {showRank && (
@@ -43,7 +43,7 @@ export function Leaderboard({
                   index === 0 && 'bg-yellow-500/20 text-yellow-500',
                   index === 1 && 'bg-gray-400/20 text-gray-500',
                   index === 2 && 'bg-orange-500/20 text-orange-500',
-                  index > 2 && 'bg-muted text-muted-foreground'
+                  index > 2 && 'bg-muted text-muted-foreground',
                 )}
               >
                 {index + 1}

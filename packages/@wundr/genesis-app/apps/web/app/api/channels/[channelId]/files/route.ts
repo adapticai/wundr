@@ -12,8 +12,8 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import {
@@ -23,9 +23,9 @@ import {
   ALLOWED_FILE_TYPES,
   generateFileUrl,
 } from '@/lib/validations/upload';
-import { z } from 'zod';
 
 import type { WorkspaceFilesInput } from '@/lib/validations/upload';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**

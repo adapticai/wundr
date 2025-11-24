@@ -10,9 +10,11 @@
  * @module app/api/workspaces/[workspaceId]/admin/invites/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
 import { randomBytes } from 'crypto';
+
+import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
+
 
 import { auth } from '@/lib/auth';
 import {
@@ -23,6 +25,8 @@ import {
   type Invite,
   type InviteStatus,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -49,14 +53,14 @@ function generateInviteToken(): string {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -70,7 +74,7 @@ export async function GET(
     if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -87,9 +91,9 @@ export async function GET(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -121,7 +125,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/invites] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to fetch invites', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -137,14 +141,14 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -162,7 +166,7 @@ export async function POST(
     if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -173,7 +177,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -184,9 +188,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -209,9 +213,9 @@ export async function POST(
         createAdminErrorResponse(
           'Some emails are already members',
           ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER,
-          { existingEmails }
+          { existingEmails },
         ),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -272,7 +276,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/admin/invites] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to create invites', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

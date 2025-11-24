@@ -45,7 +45,7 @@ const UNREGISTER_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', UNREGISTER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -101,9 +101,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           UNREGISTER_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!apiKey.startsWith('gns_')) {
       return NextResponse.json(
         createErrorResponse('Invalid API key', UNREGISTER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -142,9 +142,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Daemon not registered',
-            UNREGISTER_ERROR_CODES.DAEMON_NOT_REGISTERED
+            UNREGISTER_ERROR_CODES.DAEMON_NOT_REGISTERED,
           ),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -152,9 +152,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        UNREGISTER_ERROR_CODES.INTERNAL_ERROR
+        UNREGISTER_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

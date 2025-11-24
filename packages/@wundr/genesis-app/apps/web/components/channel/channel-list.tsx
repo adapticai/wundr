@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useCallback, useMemo } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { Channel, DirectMessageChannel } from '@/types/channel';
+
 import { CreateChannelDialog } from './create-channel-dialog';
+
+import type { Channel, DirectMessageChannel } from '@/types/channel';
 
 interface ChannelListProps {
   workspaceId: string;
@@ -49,30 +52,36 @@ export function ChannelList({
 
   // Filter channels based on search
   const filteredChannels = useMemo(() => {
-    if (!searchQuery.trim()) return channels;
+    if (!searchQuery.trim()) {
+return channels;
+}
     const query = searchQuery.toLowerCase();
     return channels.filter(
       (c) =>
         c.name.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query)
+        c.description?.toLowerCase().includes(query),
     );
   }, [channels, searchQuery]);
 
   const filteredStarred = useMemo(() => {
-    if (!searchQuery.trim()) return starredChannels;
+    if (!searchQuery.trim()) {
+return starredChannels;
+}
     const query = searchQuery.toLowerCase();
     return starredChannels.filter(
       (c) =>
         c.name.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query)
+        c.description?.toLowerCase().includes(query),
     );
   }, [starredChannels, searchQuery]);
 
   const filteredDMs = useMemo(() => {
-    if (!searchQuery.trim()) return directMessages;
+    if (!searchQuery.trim()) {
+return directMessages;
+}
     const query = searchQuery.toLowerCase();
     return directMessages.filter((dm) =>
-      dm.participants.some((p) => p.user.name.toLowerCase().includes(query))
+      dm.participants.some((p) => p.user.name.toLowerCase().includes(query)),
     );
   }, [directMessages, searchQuery]);
 
@@ -86,7 +95,7 @@ export function ChannelList({
       await onCreateChannel?.(input);
       setIsCreateDialogOpen(false);
     },
-    [onCreateChannel]
+    [onCreateChannel],
   );
 
   if (isLoading) {
@@ -237,7 +246,7 @@ function ChannelSection({
           <ChevronIcon
             className={cn(
               'h-3 w-3 transition-transform',
-              isExpanded ? 'rotate-90' : ''
+              isExpanded ? 'rotate-90' : '',
             )}
           />
           {icon}
@@ -267,7 +276,7 @@ function ChannelItem({ channel, workspaceId, isActive }: ChannelItemProps) {
         isActive
           ? 'bg-accent text-foreground'
           : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-        hasUnread && 'font-semibold text-foreground'
+        hasUnread && 'font-semibold text-foreground',
       )}
     >
       <ChannelTypeIcon type={channel.type} className="h-4 w-4 shrink-0" />
@@ -302,7 +311,7 @@ function DirectMessageItem({ dm, workspaceId, isActive }: DirectMessageItemProps
         isActive
           ? 'bg-accent text-foreground'
           : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-        hasUnread && 'font-semibold text-foreground'
+        hasUnread && 'font-semibold text-foreground',
       )}
     >
       <div className="relative">

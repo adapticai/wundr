@@ -10,7 +10,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -21,6 +20,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { ExecutionFiltersInput } from '@/lib/validations/workflow';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -46,7 +46,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -54,7 +54,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -70,7 +70,7 @@ export async function GET(
     if (!workspace) {
       return NextResponse.json(
         createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -86,7 +86,7 @@ export async function GET(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -101,7 +101,7 @@ export async function GET(
     if (!workflow) {
       return NextResponse.json(
         createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -114,9 +114,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -158,7 +158,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/workflows/:workflowId/executions] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

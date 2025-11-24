@@ -7,10 +7,10 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient, Prisma, FileStatus } from '@genesis/database';
 import { prisma } from '@genesis/database';
 
 import { GenesisError, TransactionError } from '../errors';
+
 import type {
   CreateFileRecordInput,
   UpdateFileRecordInput,
@@ -18,6 +18,7 @@ import type {
   FileRecordListOptions,
   PaginatedFileRecordResult,
 } from '../types/storage';
+import type { PrismaClient, Prisma, FileStatus } from '@genesis/database';
 
 // =============================================================================
 // Custom Errors
@@ -32,7 +33,7 @@ export class FileRecordNotFoundError extends GenesisError {
       `File record not found with ${identifierType}: ${identifier}`,
       'FILE_RECORD_NOT_FOUND',
       404,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'FileRecordNotFoundError';
   }
@@ -60,7 +61,7 @@ export class WorkspaceNotFoundError extends GenesisError {
       `Workspace not found: ${workspaceId}`,
       'WORKSPACE_NOT_FOUND',
       404,
-      { workspaceId }
+      { workspaceId },
     );
     this.name = 'WorkspaceNotFoundError';
   }
@@ -75,7 +76,7 @@ export class UserNotFoundError extends GenesisError {
       `User not found: ${userId}`,
       'USER_NOT_FOUND',
       404,
-      { userId }
+      { userId },
     );
     this.name = 'UserNotFoundError';
   }
@@ -380,7 +381,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async getRecordsByChannel(
     channelId: string,
-    options: FileRecordListOptions = {}
+    options: FileRecordListOptions = {},
   ): Promise<PaginatedFileRecordResult> {
     const {
       status,
@@ -429,7 +430,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async getRecordsByWorkspace(
     workspaceId: string,
-    options: FileRecordListOptions = {}
+    options: FileRecordListOptions = {},
   ): Promise<PaginatedFileRecordResult> {
     const {
       status,
@@ -471,7 +472,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async getRecordsByUser(
     userId: string,
-    options: FileRecordListOptions = {}
+    options: FileRecordListOptions = {},
   ): Promise<PaginatedFileRecordResult> {
     const {
       status,
@@ -517,7 +518,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async updateRecord(
     id: string,
-    data: UpdateFileRecordInput
+    data: UpdateFileRecordInput,
   ): Promise<FileRecordWithRelations> {
     // Check record exists
     const existing = await this.getRecord(id);
@@ -557,7 +558,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   async updateStatus(
     id: string,
-    status: 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'
+    status: 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED',
   ): Promise<FileRecordWithRelations> {
     // Check record exists
     const existing = await this.getRecord(id);
@@ -769,7 +770,7 @@ export class FileRecordServiceImpl implements FileRecordService {
    */
   private getIncludeOptions(
     includeWorkspace: boolean,
-    includeUploader: boolean
+    includeUploader: boolean,
   ): Prisma.FileInclude {
     return {
       ...(includeWorkspace && {

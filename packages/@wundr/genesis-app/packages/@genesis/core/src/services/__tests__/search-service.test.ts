@@ -12,6 +12,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
+import { createMockRedis, type MockRedis } from '../../test-utils/mock-redis';
 import {
   SearchServiceImpl,
   createSearchService,
@@ -19,7 +21,6 @@ import {
   resetSearchService,
   SearchValidationError,
 } from '../search-service';
-import { createMockRedis, type MockRedis } from '../../test-utils/mock-redis';
 
 // =============================================================================
 // MOCK SETUP
@@ -47,7 +48,7 @@ function extendMockRedisWithListOps(mockRedis: MockRedis) {
       const list = listStore.get(key) || [];
       const actualStop = stop === -1 ? list.length : stop + 1;
       return list.slice(start, actualStop);
-    }
+    },
   );
 
   (mockRedis as unknown as Record<string, unknown>).lpush = vi.fn(
@@ -56,7 +57,7 @@ function extendMockRedisWithListOps(mockRedis: MockRedis) {
       list.unshift(...values);
       listStore.set(key, list);
       return list.length;
-    }
+    },
   );
 
   (mockRedis as unknown as Record<string, unknown>).ltrim = vi.fn(
@@ -65,7 +66,7 @@ function extendMockRedisWithListOps(mockRedis: MockRedis) {
       const actualStop = stop === -1 ? list.length : stop + 1;
       listStore.set(key, list.slice(start, actualStop));
       return 'OK';
-    }
+    },
   );
 
   return {
@@ -116,18 +117,18 @@ describe('SearchService', () => {
   describe('search', () => {
     it('should throw validation error for empty query', async () => {
       await expect(
-        searchService.search({ query: '' })
+        searchService.search({ query: '' }),
       ).rejects.toThrow(SearchValidationError);
 
       await expect(
-        searchService.search({ query: '   ' })
+        searchService.search({ query: '   ' }),
       ).rejects.toThrow(SearchValidationError);
     });
 
     it('should throw validation error for query exceeding max length', async () => {
       const longQuery = 'a'.repeat(501);
       await expect(
-        searchService.search({ query: longQuery })
+        searchService.search({ query: longQuery }),
       ).rejects.toThrow(SearchValidationError);
     });
 
@@ -542,7 +543,7 @@ describe('SearchService', () => {
       const suggestions = await searchService.getSuggestions(
         'test',
         'ws-1',
-        'user-1'
+        'user-1',
       );
 
       expect(suggestions).toHaveLength(2);
@@ -564,7 +565,7 @@ describe('SearchService', () => {
         'test',
         'ws-1',
         'user-1',
-        3
+        3,
       );
 
       expect(suggestions.length).toBeLessThanOrEqual(3);
@@ -576,7 +577,7 @@ describe('SearchService', () => {
       const suggestions = await searchService.getSuggestions(
         'test',
         'ws-1',
-        'user-1'
+        'user-1',
       );
 
       expect(suggestions).toHaveLength(0);
@@ -588,7 +589,7 @@ describe('SearchService', () => {
       const suggestions = await searchService.getSuggestions(
         'test',
         'ws-1',
-        'user-1'
+        'user-1',
       );
 
       expect(suggestions).toHaveLength(2);
@@ -605,16 +606,16 @@ describe('SearchService', () => {
 
       expect(mockRedis.lpush).toHaveBeenCalledWith(
         'test:search:recent:user-1',
-        'test query'
+        'test query',
       );
       expect(mockRedis.ltrim).toHaveBeenCalledWith(
         'test:search:recent:user-1',
         0,
-        49
+        49,
       );
       expect(mockRedis.expire).toHaveBeenCalledWith(
         'test:search:recent:user-1',
-        86400 * 30
+        86400 * 30,
       );
     });
   });
@@ -672,7 +673,7 @@ describe('SearchService', () => {
       expect(mockRedis.setex).toHaveBeenCalledWith(
         'test:search:index:message:doc-1',
         3600,
-        JSON.stringify(doc)
+        JSON.stringify(doc),
       );
     });
   });

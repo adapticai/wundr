@@ -9,9 +9,11 @@
  * @module app/api/daemon/channels/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -80,7 +82,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -96,7 +98,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!vp) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -148,7 +150,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/daemon/channels] Error:', error);
     return NextResponse.json(
       { error: 'Failed to get channels', code: CHANNEL_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { Channel, ChannelPermissions } from '@/types/channel';
 
 interface ChannelHeaderProps {
@@ -28,7 +30,9 @@ export function ChannelHeader({
   const [showMenu, setShowMenu] = useState(false);
 
   const handleToggleStar = useCallback(async () => {
-    if (isStarring) return;
+    if (isStarring) {
+return;
+}
     setIsStarring(true);
     try {
       await onToggleStar?.(channel.isStarred || false);
@@ -65,7 +69,7 @@ export function ChannelHeader({
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                 className={cn(
                   'text-left text-xs text-muted-foreground hover:text-foreground',
-                  !isDescriptionExpanded && 'truncate max-w-xs'
+                  !isDescriptionExpanded && 'truncate max-w-xs',
                 )}
               >
                 {channel.description}
@@ -121,7 +125,7 @@ export function ChannelHeader({
               'rounded-md p-2 transition-colors',
               channel.isStarred
                 ? 'text-yellow-500 hover:bg-accent'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
             )}
             title={channel.isStarred ? 'Unstar channel' : 'Star channel'}
           >

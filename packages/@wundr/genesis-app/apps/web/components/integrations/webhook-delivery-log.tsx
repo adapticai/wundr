@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { WebhookDelivery, WebhookDeliveryStatus } from '@/types/integration';
 import { WEBHOOK_EVENTS } from '@/types/integration';
+
+import type { WebhookDelivery, WebhookDeliveryStatus } from '@/types/integration';
 
 export interface WebhookDeliveryLogProps {
   deliveries: WebhookDelivery[];

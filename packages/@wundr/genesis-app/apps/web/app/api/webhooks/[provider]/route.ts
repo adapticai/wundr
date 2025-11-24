@@ -68,7 +68,7 @@ interface GitHubEvent {
  */
 async function handleSlackWebhook(
   request: NextRequest,
-  body: string
+  body: string,
 ): Promise<NextResponse> {
   // Get Slack signature headers
   const signature = request.headers.get('x-slack-signature');
@@ -77,7 +77,7 @@ async function handleSlackWebhook(
   if (!signature || !timestamp) {
     return NextResponse.json(
       createErrorResponse('Missing Slack signature headers', INTEGRATION_ERROR_CODES.WEBHOOK_SECRET_MISMATCH),
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -86,7 +86,7 @@ async function handleSlackWebhook(
   if (Math.abs(now - parseInt(timestamp, 10)) > 300) {
     return NextResponse.json(
       createErrorResponse('Request timestamp is too old', INTEGRATION_ERROR_CODES.WEBHOOK_SECRET_MISMATCH),
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -94,7 +94,7 @@ async function handleSlackWebhook(
   if (!verifySlackSignature(body, signature, timestamp)) {
     return NextResponse.json(
       createErrorResponse('Invalid Slack signature', INTEGRATION_ERROR_CODES.WEBHOOK_SECRET_MISMATCH),
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -157,7 +157,7 @@ async function handleSlackWebhook(
  */
 async function handleGitHubWebhook(
   request: NextRequest,
-  body: string
+  body: string,
 ): Promise<NextResponse> {
   // Get GitHub signature header
   const signature = request.headers.get('x-hub-signature-256');
@@ -167,7 +167,7 @@ async function handleGitHubWebhook(
   if (!signature) {
     return NextResponse.json(
       createErrorResponse('Missing GitHub signature header', INTEGRATION_ERROR_CODES.WEBHOOK_SECRET_MISMATCH),
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -175,7 +175,7 @@ async function handleGitHubWebhook(
   if (!verifyGitHubSignature(body, signature)) {
     return NextResponse.json(
       createErrorResponse('Invalid GitHub signature', INTEGRATION_ERROR_CODES.WEBHOOK_SECRET_MISMATCH),
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -249,7 +249,7 @@ async function handleGitHubWebhook(
  */
 async function handleGitLabWebhook(
   request: NextRequest,
-  body: string
+  body: string,
 ): Promise<NextResponse> {
   // Get GitLab token header
   const token = request.headers.get('x-gitlab-token');
@@ -260,7 +260,7 @@ async function handleGitLabWebhook(
   if (expectedToken && token !== expectedToken) {
     return NextResponse.json(
       createErrorResponse('Invalid GitLab token', INTEGRATION_ERROR_CODES.WEBHOOK_SECRET_MISMATCH),
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -282,7 +282,7 @@ async function handleGitLabWebhook(
  */
 async function handleLinearWebhook(
   _request: NextRequest,
-  body: string
+  body: string,
 ): Promise<NextResponse> {
   // Linear uses a signature in the request body
   const payload = JSON.parse(body) as { type?: string; action?: string };
@@ -301,7 +301,7 @@ async function handleLinearWebhook(
  */
 async function handleCustomWebhook(
   request: NextRequest,
-  body: string
+  body: string,
 ): Promise<NextResponse> {
   console.log('[Custom Webhook] Event received:', {
     contentType: request.headers.get('content-type'),
@@ -330,7 +330,7 @@ async function handleCustomWebhook(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Get provider
@@ -340,7 +340,7 @@ export async function POST(
     if (!provider) {
       return NextResponse.json(
         createErrorResponse('Provider is required', INTEGRATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -350,7 +350,7 @@ export async function POST(
     if (!body) {
       return NextResponse.json(
         createErrorResponse('Empty request body', INTEGRATION_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -374,14 +374,14 @@ export async function POST(
       default:
         return NextResponse.json(
           createErrorResponse(`Unknown provider: ${provider}`, INTEGRATION_ERROR_CODES.VALIDATION_ERROR),
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (error) {
     console.error('[POST /api/webhooks/:provider] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -399,7 +399,7 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const params = await context.params;
@@ -423,14 +423,14 @@ export async function GET(
     // Return method not allowed for other cases
     return NextResponse.json(
       createErrorResponse('Method not allowed', INTEGRATION_ERROR_CODES.VALIDATION_ERROR),
-      { status: 405 }
+      { status: 405 },
     );
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[GET /api/webhooks/:provider] Error:', errorMessage);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

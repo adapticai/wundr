@@ -16,16 +16,18 @@
  * @module apps/web/app/api/vps/__tests__/vps.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
 // =============================================================================
 
-// Mock NextAuth
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+// Mock auth module
+const mockAuth = vi.fn();
+vi.mock('@/lib/auth', () => ({
+  auth: mockAuth,
+  mockAuth: mockAuth,
 }));
 
 // Mock the VP service
@@ -86,7 +88,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
 function createMockRequest(
   method: string,
   body?: Record<string, unknown>,
-  searchParams?: Record<string, string>
+  searchParams?: Record<string, string>,
 ): NextRequest {
   const url = new URL('http://localhost:3000/api/vps');
 
@@ -133,12 +135,8 @@ function createMockVPResponse() {
 // =============================================================================
 
 describe('VP API Routes', () => {
-  let getServerSession: ReturnType<typeof vi.fn>;
-
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    const nextAuth = await import('next-auth');
-    getServerSession = nextAuth.getServerSession as ReturnType<typeof vi.fn>;
   });
 
   afterEach(() => {
@@ -152,7 +150,7 @@ describe('VP API Routes', () => {
   describe('POST /api/vps', () => {
     it('creates VP with valid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const mockVP = createMockVPResponse();
       mockVPService.createVP.mockResolvedValue(mockVP);
@@ -164,9 +162,9 @@ describe('VP API Routes', () => {
         organizationId: 'org-123',
       };
 
-      const request = createMockRequest('POST', requestBody);
+      const _request = createMockRequest('POST', requestBody);
 
-      // Simulating route handler behavior
+      // Simulating route handler behavior (TODO: use request with actual route handler)
       expect(session.user.role).toBe('ADMIN');
       expect(requestBody.name).toBeDefined();
       expect(requestBody.discipline).toBeDefined();
@@ -181,10 +179,10 @@ describe('VP API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       // Without session, request should be rejected
-      const session = await getServerSession();
+      const session = await mockAuth();
       expect(session).toBeNull();
 
       // In actual route handler, this would return 401
@@ -201,7 +199,7 @@ describe('VP API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       // Check permission
       const hasPermission = session.user.role === 'ADMIN';
@@ -214,7 +212,7 @@ describe('VP API Routes', () => {
 
     it('returns 400 for invalid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       // Missing required fields
       const invalidRequestBody = {
@@ -223,17 +221,17 @@ describe('VP API Routes', () => {
       };
 
       mockVPService.createVP.mockRejectedValue(
-        new Error('VP validation failed')
+        new Error('VP validation failed'),
       );
 
       await expect(
-        mockVPService.createVP(invalidRequestBody)
+        mockVPService.createVP(invalidRequestBody),
       ).rejects.toThrow('VP validation failed');
     });
 
     it('validates name length', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const invalidName = 'a'.repeat(101); // Over 100 char limit
 
@@ -245,11 +243,11 @@ describe('VP API Routes', () => {
       };
 
       mockVPService.createVP.mockRejectedValue(
-        new Error('Name must be 100 characters or less')
+        new Error('Name must be 100 characters or less'),
       );
 
       await expect(mockVPService.createVP(requestBody)).rejects.toThrow(
-        'Name must be 100 characters or less'
+        'Name must be 100 characters or less',
       );
     });
   });
@@ -261,7 +259,7 @@ describe('VP API Routes', () => {
   describe('GET /api/vps', () => {
     it('lists VPs in organization', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const mockVPs = [createMockVPResponse(), createMockVPResponse()];
       mockVPService.listVPsByOrganization.mockResolvedValue({
@@ -271,19 +269,19 @@ describe('VP API Routes', () => {
       });
 
       const result = await mockVPService.listVPsByOrganization(
-        session.user.organizationId
+        session.user.organizationId,
       );
 
       expect(result.data).toHaveLength(2);
       expect(result.total).toBe(2);
       expect(mockVPService.listVPsByOrganization).toHaveBeenCalledWith(
-        'org-123'
+        'org-123',
       );
     });
 
     it('filters by status', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const onlineVP = { ...createMockVPResponse(), status: 'ONLINE' };
       mockVPService.listVPsByOrganization.mockResolvedValue({
@@ -294,7 +292,7 @@ describe('VP API Routes', () => {
 
       const result = await mockVPService.listVPsByOrganization(
         session.user.organizationId,
-        { status: 'ONLINE' }
+        { status: 'ONLINE' },
       );
 
       expect(result.data).toHaveLength(1);
@@ -303,7 +301,7 @@ describe('VP API Routes', () => {
 
     it('paginates results', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const mockVPs = Array.from({ length: 10 }, () => createMockVPResponse());
       mockVPService.listVPsByOrganization.mockResolvedValue({
@@ -315,7 +313,7 @@ describe('VP API Routes', () => {
 
       const result = await mockVPService.listVPsByOrganization(
         session.user.organizationId,
-        { take: 10, skip: 0 }
+        { take: 10, skip: 0 },
       );
 
       expect(result.data).toHaveLength(10);
@@ -324,9 +322,9 @@ describe('VP API Routes', () => {
     });
 
     it('returns 401 without authentication', async () => {
-      getServerSession.mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
-      const session = await getServerSession();
+      const session = await mockAuth();
       expect(session).toBeNull();
     });
   });
@@ -338,7 +336,7 @@ describe('VP API Routes', () => {
   describe('GET /api/vps/:id', () => {
     it('returns VP when found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const mockVP = createMockVPResponse();
       mockVPService.getVP.mockResolvedValue(mockVP);
@@ -351,7 +349,7 @@ describe('VP API Routes', () => {
 
     it('returns 404 when VP not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockVPService.getVP.mockResolvedValue(null);
 
@@ -368,7 +366,7 @@ describe('VP API Routes', () => {
   describe('PUT /api/vps/:id', () => {
     it('updates VP with valid data', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const updatedVP = {
         ...createMockVPResponse(),
@@ -389,14 +387,14 @@ describe('VP API Routes', () => {
 
     it('returns 404 when VP not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockVPService.updateVP.mockRejectedValue(
-        new Error('VP not found with id: non-existent-id')
+        new Error('VP not found with id: non-existent-id'),
       );
 
       await expect(
-        mockVPService.updateVP('non-existent-id', { name: 'New Name' })
+        mockVPService.updateVP('non-existent-id', { name: 'New Name' }),
       ).rejects.toThrow('VP not found');
     });
   });
@@ -408,7 +406,7 @@ describe('VP API Routes', () => {
   describe('DELETE /api/vps/:id', () => {
     it('deletes VP when authorized', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockVPService.deleteVP.mockResolvedValue(undefined);
 
@@ -418,14 +416,14 @@ describe('VP API Routes', () => {
 
     it('returns 404 when VP not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockVPService.deleteVP.mockRejectedValue(
-        new Error('VP not found with id: non-existent-id')
+        new Error('VP not found with id: non-existent-id'),
       );
 
       await expect(mockVPService.deleteVP('non-existent-id')).rejects.toThrow(
-        'VP not found'
+        'VP not found',
       );
     });
 
@@ -438,7 +436,7 @@ describe('VP API Routes', () => {
           organizationId: 'org-123',
         },
       });
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const canDelete = session.user.role === 'ADMIN' || session.user.role === 'OWNER';
       expect(canDelete).toBe(false);
@@ -452,7 +450,7 @@ describe('VP API Routes', () => {
   describe('POST /api/vps/:id/activate', () => {
     it('activates VP', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const activatedVP = {
         ...createMockVPResponse(),
@@ -467,14 +465,14 @@ describe('VP API Routes', () => {
 
     it('returns 404 when VP not found', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockVPService.activateVP.mockRejectedValue(
-        new Error('VP not found with id: non-existent-id')
+        new Error('VP not found with id: non-existent-id'),
       );
 
       await expect(
-        mockVPService.activateVP('non-existent-id')
+        mockVPService.activateVP('non-existent-id'),
       ).rejects.toThrow('VP not found');
     });
   });
@@ -486,7 +484,7 @@ describe('VP API Routes', () => {
   describe('POST /api/vps/:id/deactivate', () => {
     it('deactivates VP', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const deactivatedVP = {
         ...createMockVPResponse(),
@@ -507,7 +505,7 @@ describe('VP API Routes', () => {
   describe('POST /api/vps/:id/api-key', () => {
     it('generates API key for VP', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const apiKeyResult = {
         key: 'gns_testkey123456789',
@@ -524,14 +522,14 @@ describe('VP API Routes', () => {
 
     it('returns error when VP already has active key', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockVPService.generateAPIKey.mockRejectedValue(
-        new Error('VP already has an active API key')
+        new Error('VP already has an active API key'),
       );
 
       await expect(mockVPService.generateAPIKey('vp-123')).rejects.toThrow(
-        'already has an active API key'
+        'already has an active API key',
       );
     });
   });
@@ -543,7 +541,7 @@ describe('VP API Routes', () => {
   describe('POST /api/vps/:id/api-key/rotate', () => {
     it('rotates API key', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       const rotationResult = {
         key: 'gns_newkey123456789',
@@ -567,12 +565,12 @@ describe('VP API Routes', () => {
   describe('DELETE /api/vps/:id/api-key', () => {
     it('revokes API key', async () => {
       const session = createMockSession();
-      getServerSession.mockResolvedValue(session);
+      mockAuth.mockResolvedValue(session);
 
       mockVPService.revokeAPIKey.mockResolvedValue(undefined);
 
       await expect(
-        mockVPService.revokeAPIKey('vp-123')
+        mockVPService.revokeAPIKey('vp-123'),
       ).resolves.toBeUndefined();
     });
   });

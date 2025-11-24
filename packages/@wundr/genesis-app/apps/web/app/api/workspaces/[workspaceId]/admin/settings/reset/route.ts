@@ -9,8 +9,8 @@
  * @module app/api/workspaces/[workspaceId]/admin/settings/reset/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -19,6 +19,8 @@ import {
   ADMIN_ERROR_CODES,
   type WorkspaceSettings,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -67,14 +69,14 @@ const DEFAULT_SETTINGS: WorkspaceSettings = {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -89,7 +91,7 @@ export async function POST(
     if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -111,9 +113,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -153,7 +155,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/admin/settings/reset] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to reset settings', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

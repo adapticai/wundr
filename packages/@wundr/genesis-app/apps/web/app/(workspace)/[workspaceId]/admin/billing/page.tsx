@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useState, useCallback } from 'react';
 
-import { cn } from '@/lib/utils';
 import { useBilling } from '@/hooks/use-admin';
+import { cn } from '@/lib/utils';
+
 
 type BillingInterval = 'monthly' | 'yearly';
 
@@ -32,7 +33,7 @@ export default function AdminBillingPage() {
         setIsUpgrading(false);
       }
     },
-    [upgradePlan, billingInterval]
+    [upgradePlan, billingInterval],
   );
 
   const plans: Plan[] = [
@@ -192,7 +193,7 @@ export default function AdminBillingPage() {
             'rounded-md px-4 py-2 text-sm font-medium',
             billingInterval === 'monthly'
               ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           Monthly
@@ -204,7 +205,7 @@ export default function AdminBillingPage() {
             'rounded-md px-4 py-2 text-sm font-medium',
             billingInterval === 'yearly'
               ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           Yearly
@@ -284,7 +285,7 @@ export default function AdminBillingPage() {
                       'rounded-full px-2 py-0.5 text-xs font-medium',
                       invoice.status === 'paid'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                     )}
                   >
                     {invoice.status}
@@ -367,7 +368,7 @@ function UsageCard({
           <div
             className={cn(
               'h-full rounded-full',
-              percentage > 90 ? 'bg-red-500' : percentage > 70 ? 'bg-yellow-500' : 'bg-primary'
+              percentage > 90 ? 'bg-red-500' : percentage > 70 ? 'bg-yellow-500' : 'bg-primary',
             )}
             style={{ width: `${percentage}%` }}
           />
@@ -392,7 +393,7 @@ function PlanCard({ plan, billingInterval, isCurrentPlan, onSelect }: PlanCardPr
     <div
       className={cn(
         'relative rounded-lg border bg-card p-6',
-        plan.popular && 'border-primary ring-1 ring-primary'
+        plan.popular && 'border-primary ring-1 ring-primary',
       )}
     >
       {plan.popular && (
@@ -436,7 +437,7 @@ function PlanCard({ plan, billingInterval, isCurrentPlan, onSelect }: PlanCardPr
             ? 'cursor-not-allowed bg-muted text-muted-foreground'
             : plan.popular
             ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-            : 'border border-input hover:bg-muted'
+            : 'border border-input hover:bg-muted',
         )}
       >
         {isCurrentPlan ? 'Current Plan' : 'Select Plan'}
@@ -485,7 +486,7 @@ function UpgradeModal({
             disabled={isUpgrading}
             className={cn(
               'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-              'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+              'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
             )}
           >
             {isUpgrading ? 'Processing...' : 'Confirm Upgrade'}
@@ -523,7 +524,9 @@ function BillingOverviewSkeleton() {
 
 // Utility Functions
 function formatStorage(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) {
+return '0 B';
+}
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));

@@ -11,7 +11,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -23,6 +22,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { TemplateFiltersInput, CreateFromTemplateInput, WorkflowTemplate } from '@/lib/validations/workflow';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -268,7 +268,7 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -276,7 +276,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -292,7 +292,7 @@ export async function GET(
     if (!workspace) {
       return NextResponse.json(
         createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -308,7 +308,7 @@ export async function GET(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -321,9 +321,9 @@ export async function GET(
         createErrorResponse(
           'Invalid query parameters',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -340,7 +340,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/workflows/templates] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -356,7 +356,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -364,7 +364,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -380,7 +380,7 @@ export async function POST(
     if (!workspace) {
       return NextResponse.json(
         createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -396,7 +396,7 @@ export async function POST(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -413,7 +413,7 @@ export async function POST(
     if (!workspaceMembership) {
       return NextResponse.json(
         createErrorResponse('You must be a workspace member to create workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -424,7 +424,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -435,9 +435,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -448,7 +448,7 @@ export async function POST(
     if (!template) {
       return NextResponse.json(
         createErrorResponse('Template not found', WORKFLOW_ERROR_CODES.TEMPLATE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -479,13 +479,13 @@ export async function POST(
 
     return NextResponse.json(
       { workflow, message: 'Workflow created from template successfully' },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/workspaces/:workspaceId/workflows/templates] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

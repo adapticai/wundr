@@ -195,7 +195,7 @@ export class ImageProcessor {
    */
   async process(
     filePath: string,
-    options: ImageProcessingOptions = {}
+    options: ImageProcessingOptions = {},
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -299,7 +299,7 @@ export class ImageProcessor {
    */
   private async preprocessImage(
     filePath: string,
-    options: ImageProcessingOptions
+    options: ImageProcessingOptions,
   ): Promise<string> {
     if (!options.preprocessing) {
       return filePath;
@@ -334,7 +334,7 @@ export class ImageProcessor {
    */
   private async performOcr(
     _filePath: string,
-    _options: ImageProcessingOptions
+    _options: ImageProcessingOptions,
   ): Promise<OcrResult> {
     // TODO: Implement with tesseract.js
     // const Tesseract = require('tesseract.js');
@@ -481,7 +481,7 @@ type TesseractWorkerPool = unknown;
  * Create image processor instance
  */
 export function createImageProcessor(
-  config: FileProcessorConfig
+  config: FileProcessorConfig,
 ): ImageProcessor {
   return new ImageProcessor(config);
 }

@@ -11,7 +11,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+import {
+  VPNotFoundError,
+  VPAlreadyExistsError,
+  VPValidationError,
+  OrganizationNotFoundError,
+  APIKeyGenerationError,
+} from '../../errors';
+import { VPServiceImpl, createVPService } from '../vp-service';
+
 import type { PrismaClient } from '@prisma/client';
+
+// Import service after mocking
 
 // =============================================================================
 // TEST UTILITIES
@@ -57,7 +69,7 @@ function createMockUser(overrides: Record<string, unknown> = {}) {
   const id = (overrides.id as string) || generateCuid();
   return {
     id,
-    email: `test-vp@vp.test-org.genesis.local`,
+    email: 'test-vp@vp.test-org.genesis.local',
     name: 'Test VP',
     displayName: 'Test VP',
     avatarUrl: null,
@@ -96,7 +108,7 @@ function createMockVP(overrides: Record<string, unknown> = {}) {
 // Mock VP with user
 function createMockVPWithUser(
   vpOverrides: Record<string, unknown> = {},
-  userOverrides: Record<string, unknown> = {}
+  userOverrides: Record<string, unknown> = {},
 ) {
   const vp = createMockVP(vpOverrides);
   const user = createMockUser({ id: vp.userId, ...userOverrides });
@@ -164,16 +176,6 @@ vi.mock('@genesis/database', () => ({
   prisma: null,
 }));
 
-// Import service after mocking
-import { VPServiceImpl, createVPService } from '../vp-service';
-import {
-  VPNotFoundError,
-  VPAlreadyExistsError,
-  VPValidationError,
-  OrganizationNotFoundError,
-  APIKeyGenerationError,
-} from '../../errors';
-
 // =============================================================================
 // TESTS
 // =============================================================================
@@ -210,7 +212,7 @@ describe('VPService', () => {
       const createdUser = createMockUser({ name: input.name });
       const createdVP = createMockVPWithUser(
         { organizationId: orgId, userId: createdUser.id },
-        createdUser
+        createdUser,
       );
 
       mockPrisma.organization.findUnique.mockResolvedValue(mockOrg);
@@ -270,7 +272,7 @@ describe('VPService', () => {
           discipline: 'Engineering',
           role: 'VP',
           organizationId: generateCuid(),
-        })
+        }),
       ).rejects.toThrow(VPValidationError);
 
       await expect(
@@ -279,7 +281,7 @@ describe('VPService', () => {
           discipline: '',
           role: 'VP',
           organizationId: generateCuid(),
-        })
+        }),
       ).rejects.toThrow(VPValidationError);
 
       await expect(
@@ -288,7 +290,7 @@ describe('VPService', () => {
           discipline: 'Eng',
           role: '',
           organizationId: generateCuid(),
-        })
+        }),
       ).rejects.toThrow(VPValidationError);
     });
 
@@ -307,7 +309,7 @@ describe('VPService', () => {
           role: 'VP',
           organizationId: orgId,
           email: existingUser.email,
-        })
+        }),
       ).rejects.toThrow(VPAlreadyExistsError);
     });
 
@@ -320,7 +322,7 @@ describe('VPService', () => {
           discipline: 'Engineering',
           role: 'VP',
           organizationId: generateCuid(),
-        })
+        }),
       ).rejects.toThrow(OrganizationNotFoundError);
     });
   });
@@ -385,7 +387,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(
-        vpService.updateVP('non-existent-id', { name: 'New Name' })
+        vpService.updateVP('non-existent-id', { name: 'New Name' }),
       ).rejects.toThrow(VPNotFoundError);
     });
   });
@@ -422,7 +424,7 @@ describe('VPService', () => {
       expect(mockPrisma.vP.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ status: 'ONLINE' }),
-        })
+        }),
       );
     });
 
@@ -430,7 +432,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(vpService.activateVP('non-existent-id')).rejects.toThrow(
-        VPNotFoundError
+        VPNotFoundError,
       );
     });
   });
@@ -459,7 +461,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(vpService.deleteVP('non-existent-id')).rejects.toThrow(
-        VPNotFoundError
+        VPNotFoundError,
       );
     });
   });
@@ -498,7 +500,7 @@ describe('VPService', () => {
             apiKeyRevoked: true,
             charter: createMockCharter(),
           },
-        }
+        },
       );
 
       mockPrisma.user.findMany.mockResolvedValue([
@@ -519,7 +521,7 @@ describe('VPService', () => {
     it('generates new API key for VP', async () => {
       const existingVP = createMockVPWithUser(
         {},
-        { vpConfig: { charter: createMockCharter() } }
+        { vpConfig: { charter: createMockCharter() } },
       );
 
       mockPrisma.vP.findUnique.mockResolvedValue(existingVP);
@@ -536,7 +538,7 @@ describe('VPService', () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(vpService.generateAPIKey('non-existent-id')).rejects.toThrow(
-        VPNotFoundError
+        VPNotFoundError,
       );
     });
 
@@ -549,13 +551,13 @@ describe('VPService', () => {
             apiKeyRevoked: false,
             charter: createMockCharter(),
           },
-        }
+        },
       );
 
       mockPrisma.vP.findUnique.mockResolvedValue(existingVP);
 
       await expect(vpService.generateAPIKey(existingVP.id)).rejects.toThrow(
-        APIKeyGenerationError
+        APIKeyGenerationError,
       );
     });
   });
@@ -606,7 +608,7 @@ describe('VPService', () => {
     it('paginates results correctly', async () => {
       const orgId = generateCuid();
       const mockVPs = Array.from({ length: 10 }, () =>
-        createMockVPWithUser({ organizationId: orgId })
+        createMockVPWithUser({ organizationId: orgId }),
       );
 
       mockPrisma.vP.count.mockResolvedValue(25);

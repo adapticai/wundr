@@ -21,7 +21,37 @@ import {
 } from '@/lib/validations/call';
 import { createErrorResponse } from '@/lib/validations/organization';
 
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+
+/**
+ * Huddle data stored in workspace settings JSON field.
+ * Uses ISO string for dates since JSON doesn't support Date objects.
+ */
+interface StoredHuddleData {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string | null;
+  isPublic: boolean;
+  roomName: string;
+  status: 'active' | 'ended';
+  createdAt: string;
+  endedAt: string | null;
+  createdBy: {
+    id: string;
+    name: string | null;
+  };
+  participantCount: number;
+}
+
+/**
+ * Workspace settings structure containing huddles
+ */
+interface WorkspaceSettingsWithHuddles {
+  huddles?: StoredHuddleData[];
+  [key: string]: unknown;
+}
 
 /**
  * Route context with huddle ID parameter
@@ -59,7 +89,9 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
         where: { id: huddle.workspace_id },
       });
 
-      if (!workspace) return null;
+      if (!workspace) {
+return null;
+}
 
       const orgMembership = await prisma.organizationMember.findUnique({
         where: {
@@ -70,7 +102,9 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
         },
       });
 
-      if (!orgMembership) return null;
+      if (!orgMembership) {
+return null;
+}
 
       return {
         huddle: {
@@ -113,7 +147,9 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
         },
       });
 
-      if (!orgMembership) return null;
+      if (!orgMembership) {
+return null;
+}
 
       const fullWorkspace = await prisma.workspace.findUnique({
         where: { id: workspace.id },
@@ -144,7 +180,7 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
  * @returns Huddle details including participants
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -307,7 +343,7 @@ export async function GET(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -385,20 +421,22 @@ export async function DELETE(
         select: { settings: true },
       });
 
-      const settings = workspace?.settings as { huddles?: HuddleResponse[] } | null;
-      const updatedHuddles = settings?.huddles?.map((h) =>
+      const settings = workspace?.settings as WorkspaceSettingsWithHuddles | null;
+      const updatedHuddles: StoredHuddleData[] = settings?.huddles?.map((h) =>
         h.id === params.huddleId
           ? { ...h, status: 'ended' as const, endedAt: now.toISOString() }
-          : h
+          : h,
       ) ?? [];
+
+      const updatedSettings: Prisma.InputJsonValue = {
+        ...settings,
+        huddles: updatedHuddles,
+      };
 
       await prisma.workspace.update({
         where: { id: result.workspace.id },
         data: {
-          settings: {
-            ...settings,
-            huddles: updatedHuddles,
-          },
+          settings: updatedSettings,
         },
       });
     } else {

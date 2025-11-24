@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { Notification, NotificationType } from '@/types/notification';
 
 interface NotificationItemProps {
@@ -41,7 +43,9 @@ export function NotificationItem({
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (touchStartRef.current === null) return;
+    if (touchStartRef.current === null) {
+return;
+}
     const diff = e.touches[0].clientX - touchStartRef.current;
     // Only allow left swipe (negative direction)
     if (diff < 0) {
@@ -74,14 +78,14 @@ export function NotificationItem({
       className={cn(
         'relative overflow-hidden',
         isDismissing && 'opacity-0 transition-opacity duration-200',
-        className
+        className,
       )}
     >
       {/* Dismiss background */}
       <div
         className={cn(
           'absolute inset-y-0 right-0 flex items-center justify-end bg-destructive px-4 text-destructive-foreground',
-          'w-[100px]'
+          'w-[100px]',
         )}
       >
         <TrashIcon className="h-5 w-5" />
@@ -107,7 +111,7 @@ export function NotificationItem({
           'relative flex gap-3 px-4 py-3 cursor-pointer transition-all duration-150',
           'bg-background',
           !notification.read && 'bg-accent/30',
-          isHovered && 'bg-accent/50'
+          isHovered && 'bg-accent/50',
         )}
       >
         {/* Icon */}
@@ -122,7 +126,7 @@ export function NotificationItem({
               <p
                 className={cn(
                   'text-sm line-clamp-1',
-                  !notification.read ? 'font-semibold text-foreground' : 'text-foreground'
+                  !notification.read ? 'font-semibold text-foreground' : 'text-foreground',
                 )}
               >
                 {notification.title}
@@ -206,7 +210,7 @@ interface NotificationIconProps {
 function NotificationIcon({ type, className }: NotificationIconProps) {
   const iconClasses = cn(
     'h-8 w-8 rounded-full flex items-center justify-center',
-    className
+    className,
   );
 
   switch (type) {
@@ -270,10 +274,18 @@ function formatRelativeTime(date: Date): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'now';
-  if (diffMins < 60) return `${diffMins}m`;
-  if (diffHours < 24) return `${diffHours}h`;
-  if (diffDays < 7) return `${diffDays}d`;
+  if (diffMins < 1) {
+return 'now';
+}
+  if (diffMins < 60) {
+return `${diffMins}m`;
+}
+  if (diffHours < 24) {
+return `${diffHours}h`;
+}
+  if (diffDays < 7) {
+return `${diffDays}d`;
+}
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 

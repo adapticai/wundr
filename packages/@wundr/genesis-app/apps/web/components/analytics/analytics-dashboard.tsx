@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { clsx } from 'clsx';
-import { MetricCard } from './metric-card';
-import { LineChart } from './line-chart';
+import { useState, useEffect, useCallback } from 'react';
+
 import { BarChart } from './bar-chart';
 import { Leaderboard } from './leaderboard';
+import { LineChart } from './line-chart';
+import { MetricCard } from './metric-card';
 
 export interface AnalyticsDashboardProps {
   workspaceId: string;
@@ -123,7 +124,7 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
                 'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 period === p
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80',
               )}
             >
               {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -284,9 +285,15 @@ function BotIcon() {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) {
+return `${bytes} B`;
+}
+  if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
+  if (bytes < 1024 * 1024 * 1024) {
+return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 

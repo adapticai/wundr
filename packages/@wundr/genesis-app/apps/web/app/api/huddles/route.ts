@@ -23,7 +23,37 @@ import {
 } from '@/lib/validations/call';
 import { createErrorResponse } from '@/lib/validations/organization';
 
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+
+/**
+ * Huddle data stored in workspace settings JSON field.
+ * Uses ISO string for dates since JSON doesn't support Date objects.
+ */
+interface StoredHuddleData {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string | null;
+  isPublic: boolean;
+  roomName: string;
+  status: 'active' | 'ended';
+  createdAt: string;
+  endedAt: string | null;
+  createdBy: {
+    id: string;
+    name: string | null;
+  };
+  participantCount: number;
+}
+
+/**
+ * Workspace settings structure containing huddles
+ */
+interface WorkspaceSettingsWithHuddles {
+  huddles?: StoredHuddleData[];
+  [key: string]: unknown;
+}
 
 /**
  * Generate a unique room name for LiveKit huddle
@@ -42,7 +72,9 @@ async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
     where: { id: workspaceId },
   });
 
-  if (!workspace) return null;
+  if (!workspace) {
+return null;
+}
 
   // Check organization membership
   const orgMembership = await prisma.organizationMember.findUnique({
@@ -54,7 +86,9 @@ async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   // Check workspace membership (optional for public workspaces)
   const workspaceMembership = await prisma.workspaceMember.findUnique({
@@ -148,34 +182,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         select: { settings: true },
       });
 
-      const currentSettings = workspace?.settings as { huddles?: HuddleResponse[] } | null;
+      const currentSettings = workspace?.settings as WorkspaceSettingsWithHuddles | null;
       const existingHuddles = currentSettings?.huddles ?? [];
+
+      const newHuddle: StoredHuddleData = {
+        id: huddleId,
+        workspaceId,
+        name,
+        description: description ?? null,
+        isPublic: isPublic ?? true,
+        roomName,
+        status: 'active',
+        createdAt: now.toISOString(),
+        endedAt: null,
+        createdBy: {
+          id: session.user.id,
+          name: user?.displayName ?? user?.name ?? null,
+        },
+        participantCount: 1,
+      };
+
+      const updatedSettings: Prisma.InputJsonValue = {
+        ...currentSettings,
+        huddles: [...existingHuddles, newHuddle],
+      };
 
       await prisma.workspace.update({
         where: { id: workspaceId },
         data: {
-          settings: {
-            ...currentSettings,
-            huddles: [
-              ...existingHuddles,
-              {
-                id: huddleId,
-                workspaceId,
-                name,
-                description: description ?? null,
-                isPublic: isPublic ?? true,
-                roomName,
-                status: 'active',
-                createdAt: now.toISOString(),
-                endedAt: null,
-                createdBy: {
-                  id: session.user.id,
-                  name: user?.displayName ?? user?.name ?? null,
-                },
-                participantCount: 1,
-              },
-            ],
-          },
+          settings: updatedSettings,
         },
       });
     }
@@ -369,9 +404,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       for (const workspace of workspaces) {
-        const settings = workspace.settings as { huddles?: HuddleResponse[] } | null;
+        const settings = workspace.settings as WorkspaceSettingsWithHuddles | null;
         if (settings?.huddles) {
-          let workspaceHuddles = settings.huddles;
+          // Convert stored huddle data to HuddleResponse (string dates to Date objects)
+          let workspaceHuddles: HuddleResponse[] = settings.huddles.map((h) => ({
+            ...h,
+            createdAt: new Date(h.createdAt),
+            endedAt: h.endedAt ? new Date(h.endedAt) : null,
+          }));
 
           if (activeOnly) {
             workspaceHuddles = workspaceHuddles.filter((h) => h.status === 'active');
@@ -388,9 +428,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       huddles.sort((a, b) => {
         const aVal = a[sortBy as keyof HuddleResponse];
         const bVal = b[sortBy as keyof HuddleResponse];
-        if (aVal === null || bVal === null) return 0;
-        if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+        if (aVal === null || aVal === undefined || bVal === null || bVal === undefined) {
+          return 0;
+        }
+        if (aVal < bVal) {
+          return sortOrder === 'asc' ? -1 : 1;
+        }
+        if (aVal > bVal) {
+          return sortOrder === 'asc' ? 1 : -1;
+        }
         return 0;
       });
 

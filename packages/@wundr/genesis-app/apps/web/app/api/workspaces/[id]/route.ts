@@ -12,7 +12,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -24,6 +23,7 @@ import {
 } from '@/lib/validations/organization';
 
 import type { UpdateWorkspaceInput } from '@/lib/validations/organization';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -44,7 +44,9 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     },
   });
 
-  if (!workspace) return null;
+  if (!workspace) {
+return null;
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -55,7 +57,9 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {

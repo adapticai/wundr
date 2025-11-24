@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useState, useMemo, useCallback } from 'react';
 
-import { cn } from '@/lib/utils';
 import { useAdminActivity } from '@/hooks/use-admin';
+import { cn } from '@/lib/utils';
+
 
 type AdminActionType =
   | 'all'
@@ -57,7 +58,7 @@ export default function AdminActivityPage() {
           action.actorName?.toLowerCase().includes(query) ||
           action.action.toLowerCase().includes(query) ||
           action.resourceName?.toLowerCase().includes(query) ||
-          action.details?.toLowerCase().includes(query)
+          action.details?.toLowerCase().includes(query),
       );
     }
 
@@ -75,7 +76,7 @@ export default function AdminActivityPage() {
           action.resourceName || action.resourceType,
           action.details || '',
           action.ipAddress || '',
-        ].join(',')
+        ].join(','),
       ),
     ].join('\n');
 
@@ -124,7 +125,7 @@ export default function AdminActivityPage() {
           onClick={handleExport}
           className={cn(
             'inline-flex items-center gap-2 rounded-md border border-input',
-            'bg-background px-4 py-2 text-sm font-medium hover:bg-muted'
+            'bg-background px-4 py-2 text-sm font-medium hover:bg-muted',
           )}
         >
           <DownloadIcon className="h-4 w-4" />
@@ -141,7 +142,7 @@ export default function AdminActivityPage() {
             onChange={(e) => setFilterAction(e.target.value as AdminActionType)}
             className={cn(
               'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             {actionFilterOptions.map((option) => (
@@ -157,7 +158,7 @@ export default function AdminActivityPage() {
             onChange={(e) => setDateRange(e.target.value as typeof dateRange)}
             className={cn(
               'rounded-md border border-input bg-background px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             {dateRangeOptions.map((option) => (
@@ -180,7 +181,7 @@ export default function AdminActivityPage() {
               'w-full rounded-md border border-input bg-background py-2 pl-9 pr-4',
               'text-sm placeholder:text-muted-foreground',
               'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-              'lg:w-64'
+              'lg:w-64',
             )}
           />
         </div>
@@ -240,7 +241,7 @@ export default function AdminActivityPage() {
                   index === 0 ||
                   !isSameDay(
                     new Date(action.timestamp),
-                    new Date(filteredActions[index - 1].timestamp)
+                    new Date(filteredActions[index - 1].timestamp),
                   )
                 }
               />
@@ -362,7 +363,7 @@ function ActivityRow({
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                actionConfig.className
+                actionConfig.className,
               )}
             >
               {actionConfig.label}

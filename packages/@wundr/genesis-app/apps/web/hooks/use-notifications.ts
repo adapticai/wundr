@@ -39,7 +39,7 @@ interface UseNotificationsReturn {
 }
 
 export function useNotifications(
-  options: UseNotificationsOptions = {}
+  options: UseNotificationsOptions = {},
 ): UseNotificationsReturn {
   const { enabled = true, pollInterval = 30000 } = options;
 
@@ -53,13 +53,15 @@ export function useNotifications(
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.read).length,
-    [notifications]
+    [notifications],
   );
 
   // Fetch notifications
   const fetchNotifications = useCallback(
     async (refresh = false) => {
-      if (!enabled) return;
+      if (!enabled) {
+return;
+}
 
       try {
         setIsLoading(true);
@@ -97,12 +99,14 @@ export function useNotifications(
         setIsLoading(false);
       }
     },
-    [enabled, cursor]
+    [enabled, cursor],
   );
 
   // Initial fetch and polling
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+return;
+}
 
     fetchNotifications(true);
 
@@ -130,7 +134,7 @@ export function useNotifications(
       }
 
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
       );
     } catch (err) {
       console.error('Error marking notification as read:', err);
@@ -173,7 +177,9 @@ export function useNotifications(
 
   // Load more notifications
   const loadMore = useCallback(async () => {
-    if (!hasMore || isLoading) return;
+    if (!hasMore || isLoading) {
+return;
+}
     await fetchNotifications(false);
   }, [hasMore, isLoading, fetchNotifications]);
 
@@ -233,7 +239,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
   // Request permission
   const requestPermission = useCallback(async (): Promise<boolean> => {
-    if (!isSupported) return false;
+    if (!isSupported) {
+return false;
+}
 
     try {
       const result = await Notification.requestPermission();
@@ -248,7 +256,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
   // Subscribe to push notifications
   const subscribeToPush = useCallback(async () => {
-    if (!isSupported || !isEnabled) return;
+    if (!isSupported || !isEnabled) {
+return;
+}
 
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -279,7 +289,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
   // Unsubscribe from push notifications
   const unsubscribeFromPush = useCallback(async () => {
-    if (!isSupported) return;
+    if (!isSupported) {
+return;
+}
 
     try {
       const registration = await navigator.serviceWorker.ready;
@@ -352,7 +364,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
           parsed.map((a: QueuedAction) => ({
             ...a,
             createdAt: new Date(a.createdAt),
-          }))
+          })),
         );
       }
     } catch {
@@ -408,7 +420,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
         forceSync();
       }
     },
-    [isOnline]
+    [isOnline],
   );
 
   // Force sync queued actions
@@ -485,7 +497,9 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
   const resolveConflict = useCallback(
     async (id: string, resolution: 'local' | 'server' | 'merge') => {
       const conflict = conflicts.find((c) => c.id === id);
-      if (!conflict) return;
+      if (!conflict) {
+return;
+}
 
       try {
         const response = await fetch('/api/sync/resolve', {
@@ -511,7 +525,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
         console.error('Error resolving conflict:', err);
       }
     },
-    [conflicts]
+    [conflicts],
   );
 
   return {
@@ -570,7 +584,9 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
   // Update settings
   const updateSettings = useCallback(
     async (updates: Partial<NotificationSettings>) => {
-      if (!settings) return;
+      if (!settings) {
+return;
+}
 
       const newSettings = { ...settings, ...updates };
 
@@ -594,29 +610,33 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
         console.error('Error updating settings:', err);
       }
     },
-    [settings]
+    [settings],
   );
 
   // Mute channel
   const muteChannel = useCallback(
     async (channelId: string) => {
-      if (!settings) return;
+      if (!settings) {
+return;
+}
 
       const newMuted = [...settings.mutedChannels, channelId];
       await updateSettings({ mutedChannels: newMuted });
     },
-    [settings, updateSettings]
+    [settings, updateSettings],
   );
 
   // Unmute channel
   const unmuteChannel = useCallback(
     async (channelId: string) => {
-      if (!settings) return;
+      if (!settings) {
+return;
+}
 
       const newMuted = settings.mutedChannels.filter((id) => id !== channelId);
       await updateSettings({ mutedChannels: newMuted });
     },
-    [settings, updateSettings]
+    [settings, updateSettings],
   );
 
   // Send test notification

@@ -7,6 +7,7 @@ import {
   DEFAULT_MAX_FILES,
   getFileType,
 } from '@/types/upload';
+
 import type {
   FileRecord,
   SignedUrl,
@@ -68,7 +69,7 @@ export function useFileUpload(options: UploadOptions = {}) {
 
       return null;
     },
-    [maxSize, accept]
+    [maxSize, accept],
   );
 
   /**
@@ -83,12 +84,12 @@ export function useFileUpload(options: UploadOptions = {}) {
         // Update status to uploading
         setUploads((prev) =>
           prev.map((u) =>
-            u.id === uploadState.id ? { ...u, status: 'uploading' as const, abortController } : u
-          )
+            u.id === uploadState.id ? { ...u, status: 'uploading' as const, abortController } : u,
+          ),
         );
 
         // Simulate getting a signed URL (replace with actual API call)
-        const uploadUrl = `/api/upload`;
+        const uploadUrl = '/api/upload';
 
         // Create form data
         const formData = new FormData();
@@ -106,8 +107,8 @@ export function useFileUpload(options: UploadOptions = {}) {
               const percentComplete = Math.round((event.loaded / event.total) * 100);
               setUploads((prev) =>
                 prev.map((u) =>
-                  u.id === uploadState.id ? { ...u, progress: percentComplete } : u
-                )
+                  u.id === uploadState.id ? { ...u, progress: percentComplete } : u,
+                ),
               );
               onProgress?.(uploadState.id, percentComplete);
             }
@@ -145,8 +146,8 @@ export function useFileUpload(options: UploadOptions = {}) {
           prev.map((u) =>
             u.id === uploadState.id
               ? { ...u, status: 'completed' as const, progress: 100, url }
-              : u
-          )
+              : u,
+          ),
         );
 
         onComplete?.(uploadState.id, url);
@@ -156,16 +157,16 @@ export function useFileUpload(options: UploadOptions = {}) {
         if (errorMessage === 'Upload cancelled') {
           setUploads((prev) =>
             prev.map((u) =>
-              u.id === uploadState.id ? { ...u, status: 'cancelled' as const } : u
-            )
+              u.id === uploadState.id ? { ...u, status: 'cancelled' as const } : u,
+            ),
           );
         } else {
           setUploads((prev) =>
             prev.map((u) =>
               u.id === uploadState.id
                 ? { ...u, status: 'error' as const, error: errorMessage }
-                : u
-            )
+                : u,
+            ),
           );
           onError?.(uploadState.id, errorMessage);
         }
@@ -173,7 +174,7 @@ export function useFileUpload(options: UploadOptions = {}) {
         uploadQueueRef.current.delete(uploadState.id);
       }
     },
-    [channelId, onProgress, onComplete, onError]
+    [channelId, onProgress, onComplete, onError],
   );
 
   /**
@@ -210,7 +211,7 @@ export function useFileUpload(options: UploadOptions = {}) {
           });
       }
     },
-    [maxFiles, validateFile, isPaused, uploadFile]
+    [maxFiles, validateFile, isPaused, uploadFile],
   );
 
   /**
@@ -222,7 +223,7 @@ export function useFileUpload(options: UploadOptions = {}) {
       controller.abort();
     }
     setUploads((prev) =>
-      prev.map((u) => (u.id === fileId ? { ...u, status: 'cancelled' as const } : u))
+      prev.map((u) => (u.id === fileId ? { ...u, status: 'cancelled' as const } : u)),
     );
   }, []);
 
@@ -237,8 +238,8 @@ export function useFileUpload(options: UploadOptions = {}) {
       prev.map((u) =>
         u.status === 'uploading' || u.status === 'pending'
           ? { ...u, status: 'cancelled' as const }
-          : u
-      )
+          : u,
+      ),
     );
   }, []);
 
@@ -250,8 +251,8 @@ export function useFileUpload(options: UploadOptions = {}) {
     failedUploads.forEach((uploadState) => {
       setUploads((prev) =>
         prev.map((u) =>
-          u.id === uploadState.id ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u
-        )
+          u.id === uploadState.id ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u,
+        ),
       );
       uploadFile(uploadState);
     });
@@ -266,13 +267,13 @@ export function useFileUpload(options: UploadOptions = {}) {
       if (uploadState && uploadState.status === 'error') {
         setUploads((prev) =>
           prev.map((u) =>
-            u.id === fileId ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u
-          )
+            u.id === fileId ? { ...u, status: 'pending' as const, progress: 0, error: undefined } : u,
+          ),
         );
         uploadFile(uploadState);
       }
     },
-    [uploads, uploadFile]
+    [uploads, uploadFile],
   );
 
   /**
@@ -291,7 +292,7 @@ export function useFileUpload(options: UploadOptions = {}) {
    */
   const clearCompleted = useCallback(() => {
     setUploads((prev) =>
-      prev.filter((u) => u.status === 'uploading' || u.status === 'pending')
+      prev.filter((u) => u.status === 'uploading' || u.status === 'pending'),
     );
   }, []);
 
@@ -305,8 +306,8 @@ export function useFileUpload(options: UploadOptions = {}) {
     });
     setUploads((prev) =>
       prev.map((u) =>
-        u.status === 'uploading' ? { ...u, status: 'pending' as const } : u
-      )
+        u.status === 'uploading' ? { ...u, status: 'pending' as const } : u,
+      ),
     );
   }, []);
 
@@ -391,7 +392,7 @@ export function useSignedUpload(channelId: string) {
         setIsLoading(false);
       }
     },
-    [channelId]
+    [channelId],
   );
 
   return {
@@ -413,7 +414,9 @@ export function useChannelFiles(channelId: string) {
 
   const fetchFiles = useCallback(
     async (reset = false) => {
-      if (isLoading || (!hasMore && !reset)) return;
+      if (isLoading || (!hasMore && !reset)) {
+return;
+}
 
       setIsLoading(true);
       setError(null);
@@ -451,7 +454,7 @@ export function useChannelFiles(channelId: string) {
         setIsLoading(false);
       }
     },
-    [channelId, cursor, hasMore, isLoading]
+    [channelId, cursor, hasMore, isLoading],
   );
 
   const loadMore = useCallback(() => {

@@ -12,7 +12,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -23,6 +22,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { UpdateWorkflowInput } from '@/lib/validations/workflow';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -38,13 +38,15 @@ interface RouteContext {
 async function getWorkflowWithAccess(
   workspaceId: string,
   workflowId: string,
-  userId: string
+  userId: string,
 ) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
   });
 
-  if (!workspace) return { error: 'workspace_not_found' };
+  if (!workspace) {
+return { error: 'workspace_not_found' };
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -55,7 +57,9 @@ async function getWorkflowWithAccess(
     },
   });
 
-  if (!orgMembership) return { error: 'workspace_not_found' };
+  if (!orgMembership) {
+return { error: 'workspace_not_found' };
+}
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
@@ -80,7 +84,9 @@ async function getWorkflowWithAccess(
     },
   });
 
-  if (!workflow) return { error: 'workflow_not_found' };
+  if (!workflow) {
+return { error: 'workflow_not_found' };
+}
 
   return {
     workspace,
@@ -101,7 +107,7 @@ async function getWorkflowWithAccess(
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -109,7 +115,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -124,13 +130,13 @@ export async function GET(
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
           createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -140,7 +146,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -156,7 +162,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -164,7 +170,7 @@ export async function PATCH(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -179,13 +185,13 @@ export async function PATCH(
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
           createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -194,7 +200,7 @@ export async function PATCH(
     if (!result.workspaceMembership) {
       return NextResponse.json(
         createErrorResponse('You must be a workspace member to update workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -205,7 +211,7 @@ export async function PATCH(
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -216,9 +222,9 @@ export async function PATCH(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -227,13 +233,27 @@ export async function PATCH(
     // Build update data
     const updateData: Prisma.WorkflowUpdateInput = {};
 
-    if (input.name !== undefined) updateData.name = input.name;
-    if (input.description !== undefined) updateData.description = input.description;
-    if (input.trigger !== undefined) updateData.trigger = input.trigger as Prisma.InputJsonValue;
-    if (input.actions !== undefined) updateData.actions = input.actions as unknown as Prisma.InputJsonValue;
-    if (input.status !== undefined) updateData.status = input.status;
-    if (input.tags !== undefined) updateData.tags = input.tags;
-    if (input.metadata !== undefined) updateData.metadata = input.metadata as Prisma.InputJsonValue;
+    if (input.name !== undefined) {
+updateData.name = input.name;
+}
+    if (input.description !== undefined) {
+updateData.description = input.description;
+}
+    if (input.trigger !== undefined) {
+updateData.trigger = input.trigger as Prisma.InputJsonValue;
+}
+    if (input.actions !== undefined) {
+updateData.actions = input.actions as unknown as Prisma.InputJsonValue;
+}
+    if (input.status !== undefined) {
+updateData.status = input.status;
+}
+    if (input.tags !== undefined) {
+updateData.tags = input.tags;
+}
+    if (input.metadata !== undefined) {
+updateData.metadata = input.metadata as Prisma.InputJsonValue;
+}
 
     // Update workflow
     const workflow = await prisma.workflow.update({
@@ -253,7 +273,7 @@ export async function PATCH(
     console.error('[PATCH /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -269,7 +289,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -277,7 +297,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -292,13 +312,13 @@ export async function DELETE(
       if (result.error === 'workspace_not_found') {
         return NextResponse.json(
           createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
       if (result.error === 'workflow_not_found') {
         return NextResponse.json(
           createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -307,7 +327,7 @@ export async function DELETE(
     if (!result.workspaceMembership || result.workspaceMembership.role !== 'ADMIN') {
       return NextResponse.json(
         createErrorResponse('Admin role required to delete workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -326,7 +346,7 @@ export async function DELETE(
     console.error('[DELETE /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

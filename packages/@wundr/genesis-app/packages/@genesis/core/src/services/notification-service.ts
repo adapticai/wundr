@@ -12,11 +12,11 @@
  */
 
 import { EventEmitter } from 'events';
-import * as webpush from 'web-push';
-import * as admin from 'firebase-admin';
-import { createId } from '@paralleldrive/cuid2';
 
 import { prisma } from '@genesis/database';
+import { createId } from '@paralleldrive/cuid2';
+import * as admin from 'firebase-admin';
+import * as webpush from 'web-push';
 
 import {
   GenesisError,
@@ -31,7 +31,6 @@ import {
   NOTIFICATION_TYPE_TO_PREFERENCE,
 } from '../types/notification';
 
-import type { PrismaClient } from '@genesis/database';
 import type {
   PushNotification,
   DeviceRegistration,
@@ -51,6 +50,7 @@ import type {
   OnNotificationReadCallback,
   OnPushSentCallback,
 } from '../types/notification';
+import type { PrismaClient } from '@genesis/database';
 
 // =============================================================================
 // Custom Errors
@@ -276,7 +276,9 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     // Initialize FCM
     if (this.config.fcm) {
       try {
+        // eslint-disable-next-line import/namespace
         this.fcmApp = admin.initializeApp({
+          // eslint-disable-next-line import/namespace
           credential: admin.credential.cert({
             projectId: this.config.fcm.projectId,
             privateKey: this.config.fcm.privateKey.replace(/\\n/g, '\n'),
@@ -630,6 +632,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
         } : undefined,
       };
 
+      // eslint-disable-next-line import/namespace
       const response = await admin.messaging(this.fcmApp).send(message);
 
       return {
@@ -668,7 +671,9 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
    */
   private async cleanupInvalidTokens(userId: string, tokens: string[]): Promise<void> {
     const userDeviceIds = devicesByUser.get(userId);
-    if (!userDeviceIds) return;
+    if (!userDeviceIds) {
+return;
+}
 
     Array.from(userDeviceIds).forEach(deviceId => {
       const device = deviceStore.get(deviceId);
@@ -750,7 +755,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     if (activeDevices.length >= MAX_DEVICES_PER_USER) {
       // Deactivate oldest device
       const oldestDevice = activeDevices.sort(
-        (a, b) => a.lastSeenAt.getTime() - b.lastSeenAt.getTime()
+        (a, b) => a.lastSeenAt.getTime() - b.lastSeenAt.getTime(),
       )[0];
       if (oldestDevice) {
         oldestDevice.isActive = false;
@@ -761,7 +766,7 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     try {
       // Check if device with this token already exists
       const existingDevice = Array.from(deviceStore.values()).find(
-        d => d.token === device.token && d.platform === device.platform
+        d => d.token === device.token && d.platform === device.platform,
       );
 
       if (existingDevice) {
@@ -833,7 +838,9 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
    */
   async getDevices(userId: string): Promise<Device[]> {
     const userDeviceIds = devicesByUser.get(userId);
-    if (!userDeviceIds) return [];
+    if (!userDeviceIds) {
+return [];
+}
 
     return Array.from(userDeviceIds)
       .map(id => deviceStore.get(id))
@@ -1039,7 +1046,9 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
    */
   async markAllAsRead(userId: string): Promise<number> {
     const userNotifIds = notificationsByUser.get(userId);
-    if (!userNotifIds) return 0;
+    if (!userNotifIds) {
+return 0;
+}
 
     let count = 0;
     const now = new Date();
@@ -1087,12 +1096,24 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     let notifications = Array.from(userNotifIds)
       .map(id => notificationStore.get(id))
       .filter((n): n is Notification => {
-        if (!n) return false;
-        if (isRead !== undefined && n.isRead !== isRead) return false;
-        if (type && n.type !== type) return false;
-        if (after && n.createdAt <= after) return false;
-        if (before && n.createdAt >= before) return false;
-        if (!includeExpired && n.expiresAt && n.expiresAt < now) return false;
+        if (!n) {
+return false;
+}
+        if (isRead !== undefined && n.isRead !== isRead) {
+return false;
+}
+        if (type && n.type !== type) {
+return false;
+}
+        if (after && n.createdAt <= after) {
+return false;
+}
+        if (before && n.createdAt >= before) {
+return false;
+}
+        if (!includeExpired && n.expiresAt && n.expiresAt < now) {
+return false;
+}
         return true;
       })
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -1103,8 +1124,12 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
     const unreadCount = Array.from(userNotifIds)
       .map(id => notificationStore.get(id))
       .filter((n): n is Notification => {
-        if (!n || n.isRead) return false;
-        if (n.expiresAt && n.expiresAt < now) return false;
+        if (!n || n.isRead) {
+return false;
+}
+        if (n.expiresAt && n.expiresAt < now) {
+return false;
+}
         return true;
       }).length;
 
@@ -1126,15 +1151,21 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
    */
   async getUnreadCount(userId: string): Promise<number> {
     const userNotifIds = notificationsByUser.get(userId);
-    if (!userNotifIds) return 0;
+    if (!userNotifIds) {
+return 0;
+}
 
     const now = new Date();
 
     return Array.from(userNotifIds)
       .map(id => notificationStore.get(id))
       .filter((n): n is Notification => {
-        if (!n || n.isRead) return false;
-        if (n.expiresAt && n.expiresAt < now) return false;
+        if (!n || n.isRead) {
+return false;
+}
+        if (n.expiresAt && n.expiresAt < now) {
+return false;
+}
         return true;
       }).length;
   }
@@ -1162,7 +1193,9 @@ export class NotificationServiceImpl implements NotificationService, Notificatio
    */
   async deleteAllNotifications(userId: string): Promise<number> {
     const userNotifIds = notificationsByUser.get(userId);
-    if (!userNotifIds) return 0;
+    if (!userNotifIds) {
+return 0;
+}
 
     const count = userNotifIds.size;
 

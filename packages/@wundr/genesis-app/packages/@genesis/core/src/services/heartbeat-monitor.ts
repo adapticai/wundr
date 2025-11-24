@@ -7,21 +7,22 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@genesis/database';
 import { prisma } from '@genesis/database';
 
+import { createHeartbeatService } from './heartbeat-service';
+import {
+  DEFAULT_HEARTBEAT_CONFIG,
+  HEARTBEAT_REDIS_KEYS,
+} from '../types/heartbeat';
+
+import type { RedisClient, HeartbeatService } from './heartbeat-service';
 import type {
   HealthStatus,
   HeartbeatConfig,
   OnVPUnhealthyCallback,
   OnVPRecoveredCallback,
 } from '../types/heartbeat';
-import {
-  DEFAULT_HEARTBEAT_CONFIG,
-  HEARTBEAT_REDIS_KEYS,
-} from '../types/heartbeat';
-import type { RedisClient, HeartbeatService } from './heartbeat-service';
-import { createHeartbeatService } from './heartbeat-service';
+import type { PrismaClient } from '@genesis/database';
 
 // =============================================================================
 // Heartbeat Monitor Interface
@@ -160,7 +161,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   constructor(
     redis: RedisClient,
     config?: Partial<HeartbeatConfig>,
-    database?: PrismaClient
+    database?: PrismaClient,
   ) {
     this.redis = redis;
     this.config = { ...DEFAULT_HEARTBEAT_CONFIG, ...config };
@@ -322,7 +323,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   private async handleStateTransition(
     vpId: string,
     previousState: HealthStatus | undefined,
-    currentState: HealthStatus
+    currentState: HealthStatus,
   ): Promise<void> {
     const wasHealthy = previousState?.healthy ?? true;
     const wasUnhealthy = previousState?.status === 'unhealthy';
@@ -479,7 +480,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
 export function createHeartbeatMonitor(
   redis: RedisClient,
   config?: Partial<HeartbeatConfig>,
-  database?: PrismaClient
+  database?: PrismaClient,
 ): HeartbeatMonitor {
   return new HeartbeatMonitor(redis, config, database);
 }

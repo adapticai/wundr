@@ -34,7 +34,7 @@ export function generateSlug(
     maxLength?: number;
     separator?: string;
     appendUniqueSuffix?: boolean;
-  } = {}
+  } = {},
 ): string {
   const { maxLength = 50, separator = '-', appendUniqueSuffix = false } = options;
 
@@ -74,7 +74,7 @@ export function generateSlug(
 export function generateVPEmail(
   name: string,
   organizationSlug: string,
-  domain: string = 'vp.genesis.local'
+  domain: string = 'vp.genesis.local',
 ): string {
   const slug = generateSlug(name, { maxLength: 30 });
   const uniqueId = generateShortId(6);
@@ -279,7 +279,7 @@ export function isValidSlug(slug: string): boolean {
  */
 export function deepMerge<T extends object>(
   target: T,
-  source: Partial<T>
+  source: Partial<T>,
 ): T {
   const result = { ...target } as T;
 
@@ -298,7 +298,7 @@ export function deepMerge<T extends object>(
     ) {
       (result as Record<string, unknown>)[key as string] = deepMerge(
         targetValue as object,
-        sourceValue as object
+        sourceValue as object,
       );
     } else if (sourceValue !== undefined) {
       (result as Record<string, unknown>)[key as string] = sourceValue;
@@ -319,7 +319,7 @@ export function deepMerge<T extends object>(
 export function safeGet<T>(
   obj: Record<string, unknown>,
   path: string,
-  defaultValue?: T
+  defaultValue?: T,
 ): T | undefined {
   const keys = path.split('.');
   let current: unknown = obj;

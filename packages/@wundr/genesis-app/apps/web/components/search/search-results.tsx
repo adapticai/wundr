@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { clsx } from 'clsx';
 import Link from 'next/link';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface SearchResult {
   id: string;
@@ -38,7 +38,7 @@ function MessageResult({ result, workspaceId }: { result: SearchResult; workspac
       href={`/${workspaceId}/channel/${data.channelId}?message=${data.messageId}`}
       className={clsx(
         'block p-4 rounded-lg',
-        'hover:bg-muted transition-colors'
+        'hover:bg-muted transition-colors',
       )}
     >
       <div className="flex items-start gap-3">
@@ -77,8 +77,12 @@ function FileResult({ result, workspaceId }: { result: SearchResult; workspaceId
   };
 
   const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+return `${bytes} B`;
+}
+    if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
@@ -89,7 +93,7 @@ function FileResult({ result, workspaceId }: { result: SearchResult; workspaceId
       rel="noopener noreferrer"
       className={clsx(
         'flex items-center gap-4 p-4 rounded-lg',
-        'hover:bg-muted transition-colors'
+        'hover:bg-muted transition-colors',
       )}
     >
       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -129,7 +133,7 @@ function ChannelResult({ result, workspaceId }: { result: SearchResult; workspac
       href={`/${workspaceId}/channel/${data.channelId}`}
       className={clsx(
         'flex items-center gap-4 p-4 rounded-lg',
-        'hover:bg-muted transition-colors'
+        'hover:bg-muted transition-colors',
       )}
     >
       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -176,7 +180,7 @@ function UserResult({ result, workspaceId }: { result: SearchResult; workspaceId
       href={`/${workspaceId}/dm/${data.userId}`}
       className={clsx(
         'flex items-center gap-4 p-4 rounded-lg',
-        'hover:bg-muted transition-colors'
+        'hover:bg-muted transition-colors',
       )}
     >
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
@@ -211,7 +215,7 @@ function VPResult({ result, workspaceId }: { result: SearchResult; workspaceId: 
       href={`/${workspaceId}/vp/${data.vpId}`}
       className={clsx(
         'flex items-center gap-4 p-4 rounded-lg',
-        'hover:bg-muted transition-colors'
+        'hover:bg-muted transition-colors',
       )}
     >
       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
@@ -237,7 +241,7 @@ function VPResult({ result, workspaceId }: { result: SearchResult; workspaceId: 
           <span
             className={clsx(
               'px-1.5 py-0.5 text-xs rounded',
-              data.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'
+              data.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground',
             )}
           >
             {data.status}
@@ -294,7 +298,7 @@ export function SearchResults({
       }
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/search?${params.toString()}`
+        `/api/workspaces/${workspaceId}/search?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -383,7 +387,7 @@ export function SearchResults({
             className={clsx(
               'px-3 py-1.5 rounded-lg text-sm',
               'bg-muted hover:bg-muted/80',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             Previous
@@ -397,7 +401,7 @@ export function SearchResults({
             className={clsx(
               'px-3 py-1.5 rounded-lg text-sm',
               'bg-muted hover:bg-muted/80',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             Next

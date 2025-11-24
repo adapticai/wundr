@@ -34,7 +34,7 @@ export function useAnalytics(workspaceId: string) {
         // Silently fail analytics tracking
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const trackPageView = useCallback(
@@ -44,7 +44,7 @@ export function useAnalytics(workspaceId: string) {
         eventData: { page, url: window.location.href },
       });
     },
-    [track]
+    [track],
   );
 
   const trackClick = useCallback(
@@ -54,7 +54,7 @@ export function useAnalytics(workspaceId: string) {
         eventData: { element, ...metadata },
       });
     },
-    [track]
+    [track],
   );
 
   return { track, trackPageView, trackClick, sessionId: sessionId.current };
@@ -82,7 +82,7 @@ export function useMetrics(workspaceId: string, period: string = 'month') {
 
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/analytics/metrics?period=${period}`
+        `/api/workspaces/${workspaceId}/analytics/metrics?period=${period}`,
       );
 
       if (!response.ok) {
@@ -121,7 +121,7 @@ export function useRealTimeStats(workspaceId: string, refreshInterval = 10000) {
     const fetchStats = async () => {
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/analytics/realtime`
+          `/api/workspaces/${workspaceId}/analytics/realtime`,
         );
         if (response.ok) {
           const data = await response.json();

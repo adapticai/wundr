@@ -36,7 +36,7 @@ export interface SecuritySettings {
   ipWhitelist?: string[];
   ssoEnabled: boolean;
   ssoProvider?: 'okta' | 'azure_ad' | 'google' | 'saml';
-  ssoConfig?: Record<string, unknown>;
+  ssoConfig?: SSOConfig;
 }
 
 export interface PasswordPolicy {
@@ -48,6 +48,43 @@ export interface PasswordPolicy {
   expirationDays?: number;
   preventReuse: number;
 }
+
+/** SSO Configuration types per provider */
+export interface OktaSSOConfig {
+  domain: string;
+  clientId: string;
+  clientSecret: string;
+  issuer?: string;
+}
+
+export interface AzureADSSOConfig {
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  redirectUri?: string;
+}
+
+export interface GoogleSSOConfig {
+  clientId: string;
+  clientSecret: string;
+  hostedDomain?: string;
+}
+
+export interface SAMLSSOConfig {
+  entryPoint: string;
+  issuer: string;
+  cert: string;
+  signatureAlgorithm?: 'sha1' | 'sha256' | 'sha512';
+  privateKey?: string;
+}
+
+export type SSOConfig = OktaSSOConfig | AzureADSSOConfig | GoogleSSOConfig | SAMLSSOConfig;
+
+/** Custom member field value types */
+export type MemberCustomFieldValue = string | number | boolean | string[] | Date;
+
+/** Custom member fields map */
+export type MemberCustomFields = Record<string, MemberCustomFieldValue>;
 
 export interface MessagingSettings {
   allowEditing: boolean;
@@ -134,7 +171,7 @@ export interface MemberInfo {
   joinedAt: Date;
   lastActiveAt?: Date;
   invitedBy?: string;
-  customFields?: Record<string, unknown>;
+  customFields?: MemberCustomFields;
   user?: { id: string; name: string; email: string; image?: string };
   role?: Role;
 }
@@ -187,13 +224,68 @@ export interface AdminAction {
   action: AdminActionType;
   resource: string;
   resourceId?: string;
-  details: Record<string, unknown>;
+  details: AdminActionDetails;
   ipAddress?: string;
   userAgent?: string;
   timestamp: Date;
 }
 
 export type AdminActionType = 'settings.updated' | 'role.created' | 'role.updated' | 'role.deleted' | 'member.invited' | 'member.removed' | 'member.suspended' | 'member.role_changed' | 'invite.revoked' | 'billing.plan_changed' | 'security.mfa_enabled' | 'security.sso_configured' | 'compliance.dlp_rule_added' | 'compliance.legal_hold_applied';
+
+/** Admin action detail types based on action type */
+export interface SettingsUpdatedDetails {
+  section: keyof WorkspaceSettings;
+  previousValue: string;
+  newValue: string;
+}
+
+export interface RoleActionDetails {
+  roleName: string;
+  roleId: string;
+  permissions?: Permission[];
+}
+
+export interface MemberActionDetails {
+  memberId: string;
+  memberEmail: string;
+  previousRole?: string;
+  newRole?: string;
+  reason?: string;
+}
+
+export interface InviteActionDetails {
+  inviteId: string;
+  email: string;
+  roleId?: string;
+}
+
+export interface BillingActionDetails {
+  previousPlan: PlanType;
+  newPlan: PlanType;
+  seats?: number;
+}
+
+export interface SecurityActionDetails {
+  setting: string;
+  enabled: boolean;
+  provider?: string;
+}
+
+export interface ComplianceActionDetails {
+  ruleId?: string;
+  ruleName?: string;
+  targetType?: string;
+  targetId?: string;
+}
+
+export type AdminActionDetails =
+  | SettingsUpdatedDetails
+  | RoleActionDetails
+  | MemberActionDetails
+  | InviteActionDetails
+  | BillingActionDetails
+  | SecurityActionDetails
+  | ComplianceActionDetails;
 
 export interface UpdateSettingsInput {
   general?: Partial<GeneralSettings>;

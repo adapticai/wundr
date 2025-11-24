@@ -264,7 +264,7 @@ let eventIdCounter = 0;
  */
 export function createMockLiveKitService(
   apiKey = 'test-api-key',
-  apiSecret = 'test-api-secret'
+  apiSecret = 'test-api-secret',
 ): MockLiveKitService {
   const store: MockLiveKitStore = {
     rooms: new Map(),
@@ -349,11 +349,13 @@ export function createMockLiveKitService(
     updateRoomMetadata: vi.fn(
       async (roomName: string, metadata: string): Promise<Room | null> => {
         const room = store.rooms.get(roomName);
-        if (!room) return null;
+        if (!room) {
+return null;
+}
 
         room.metadata = metadata;
         return room;
-      }
+      },
     ),
 
     // =========================================================================
@@ -362,22 +364,28 @@ export function createMockLiveKitService(
 
     listParticipants: vi.fn(async (roomName: string): Promise<Participant[]> => {
       const roomParticipants = store.participants.get(roomName);
-      if (!roomParticipants) return [];
+      if (!roomParticipants) {
+return [];
+}
       return Array.from(roomParticipants.values());
     }),
 
     getParticipant: vi.fn(
       async (roomName: string, identity: string): Promise<Participant | null> => {
         const roomParticipants = store.participants.get(roomName);
-        if (!roomParticipants) return null;
+        if (!roomParticipants) {
+return null;
+}
         return roomParticipants.get(identity) ?? null;
-      }
+      },
     ),
 
     removeParticipant: vi.fn(
       async (roomName: string, identity: string): Promise<void> => {
         const roomParticipants = store.participants.get(roomName);
-        if (!roomParticipants) return;
+        if (!roomParticipants) {
+return;
+}
 
         const participant = roomParticipants.get(identity);
         if (participant) {
@@ -388,11 +396,11 @@ export function createMockLiveKitService(
           if (room) {
             room.numParticipants = roomParticipants.size;
             room.numPublishers = Array.from(roomParticipants.values()).filter(
-              (p) => p.isPublisher
+              (p) => p.isPublisher,
             ).length;
           }
         }
-      }
+      },
     ),
 
     mutePublishedTrack: vi.fn(
@@ -400,20 +408,26 @@ export function createMockLiveKitService(
         roomName: string,
         identity: string,
         trackSid: string,
-        muted: boolean
+        muted: boolean,
       ): Promise<ParticipantTrack | null> => {
         const roomParticipants = store.participants.get(roomName);
-        if (!roomParticipants) return null;
+        if (!roomParticipants) {
+return null;
+}
 
         const participant = roomParticipants.get(identity);
-        if (!participant) return null;
+        if (!participant) {
+return null;
+}
 
         const track = participant.tracks.find((t) => t.sid === trackSid);
-        if (!track) return null;
+        if (!track) {
+return null;
+}
 
         track.muted = muted;
         return track;
-      }
+      },
     ),
 
     updateParticipant: vi.fn(
@@ -422,22 +436,30 @@ export function createMockLiveKitService(
         identity: string,
         metadata?: string,
         permission?: Partial<ParticipantPermission>,
-        name?: string
+        name?: string,
       ): Promise<Participant | null> => {
         const roomParticipants = store.participants.get(roomName);
-        if (!roomParticipants) return null;
+        if (!roomParticipants) {
+return null;
+}
 
         const participant = roomParticipants.get(identity);
-        if (!participant) return null;
+        if (!participant) {
+return null;
+}
 
-        if (metadata !== undefined) participant.metadata = metadata;
-        if (name !== undefined) participant.name = name;
+        if (metadata !== undefined) {
+participant.metadata = metadata;
+}
+        if (name !== undefined) {
+participant.name = name;
+}
         if (permission) {
           participant.permission = { ...participant.permission, ...permission };
         }
 
         return participant;
-      }
+      },
     ),
 
     // =========================================================================
@@ -479,12 +501,12 @@ export function createMockLiveKitService(
 
         const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64');
         return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.mock-signature`;
-      }
+      },
     ),
 
     verifyToken: vi.fn(
       async (
-        token: string
+        token: string,
       ): Promise<{ identity: string; grants: VideoGrant; valid: boolean }> => {
         try {
           const parts = token.split('.');
@@ -508,7 +530,7 @@ export function createMockLiveKitService(
         } catch {
           return { identity: '', grants: {}, valid: false };
         }
-      }
+      },
     ),
 
     // =========================================================================
@@ -521,13 +543,13 @@ export function createMockLiveKitService(
         // In real implementation, this verifies HMAC-SHA256 signature
         // For testing, we accept any signature that starts with 'valid-'
         return signature.startsWith('valid-') || signature === `sha256=${apiSecret}`;
-      }
+      },
     ),
 
     parseWebhook: vi.fn(
       async (body: string): Promise<WebhookEvent> => {
         return JSON.parse(body) as WebhookEvent;
-      }
+      },
     ),
 
     // =========================================================================
@@ -537,7 +559,7 @@ export function createMockLiveKitService(
     startRoomCompositeEgress: vi.fn(
       async (
         roomName: string,
-        _output: { file?: { filepath: string }; stream?: { protocol: string; urls: string[] } }
+        _output: { file?: { filepath: string }; stream?: { protocol: string; urls: string[] } },
       ): Promise<EgressInfo> => {
         const room = store.rooms.get(roomName);
         if (room) {
@@ -549,7 +571,7 @@ export function createMockLiveKitService(
           roomName,
           status: 'active',
         };
-      }
+      },
     ),
 
     stopEgress: vi.fn(async (egressId: string): Promise<EgressInfo> => {
@@ -608,7 +630,7 @@ export function createMockLiveKitService(
       if (room) {
         room.numParticipants = roomParticipants.size;
         room.numPublishers = Array.from(roomParticipants.values()).filter(
-          (p) => p.isPublisher
+          (p) => p.isPublisher,
         ).length;
       }
     },
@@ -622,7 +644,7 @@ export function createMockLiveKitService(
         if (room) {
           room.numParticipants = roomParticipants.size;
           room.numPublishers = Array.from(roomParticipants.values()).filter(
-            (p) => p.isPublisher
+            (p) => p.isPublisher,
           ).length;
         }
       }
@@ -702,7 +724,7 @@ export function createMockParticipant(overrides?: Partial<Participant>): Partici
  * Create a mock ParticipantTrack object
  */
 export function createMockParticipantTrack(
-  overrides?: Partial<ParticipantTrack>
+  overrides?: Partial<ParticipantTrack>,
 ): ParticipantTrack {
   return {
     sid: `TR_${Date.now()}_${Math.random().toString(36).substring(7)}`,
@@ -723,7 +745,7 @@ export function createMockParticipantTrack(
 export function createMockToken(
   identity: string,
   room?: string,
-  grants?: Partial<VideoGrant>
+  grants?: Partial<VideoGrant>,
 ): string {
   const payload = {
     sub: identity,
@@ -751,7 +773,7 @@ export function createMockToken(
 export function createMockWebhookEvent(
   eventType: WebhookEventType,
   room?: Partial<Room>,
-  participant?: Partial<Participant>
+  participant?: Partial<Participant>,
 ): WebhookEvent {
   eventIdCounter++;
   return {

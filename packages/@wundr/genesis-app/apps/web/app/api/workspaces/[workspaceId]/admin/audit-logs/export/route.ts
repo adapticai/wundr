@@ -11,12 +11,14 @@
  * @module app/api/workspaces/[workspaceId]/admin/audit-logs/export/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
-import { redis } from '@genesis/core/redis';
 import { AuditServiceImpl, type AuditDatabaseClient, type AuditRedisClient } from '@genesis/core';
+import { redis } from '@genesis/core/redis';
+import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -43,7 +45,7 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -73,7 +75,7 @@ export async function POST(
       workspaceId,
       session.user.id,
       body.filters || { workspaceId },
-      body.format || 'csv'
+      body.format || 'csv',
     );
 
     return NextResponse.json(exportResult);
@@ -81,7 +83,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/admin/audit-logs/export] Error:', error);
     return NextResponse.json(
       { error: 'Failed to create export' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -102,7 +104,7 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
@@ -143,7 +145,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/audit-logs/export] Error:', error);
     return NextResponse.json(
       { error: 'Failed to get export status' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

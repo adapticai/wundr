@@ -1,10 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+
 import { authOptions } from '@/lib/auth';
+
+import type { NextRequest} from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  { params }: { params: { workspaceId: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -50,7 +53,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  { params }: { params: { workspaceId: string } },
 ) {
   try {
     const session = await getServerSession(authOptions);

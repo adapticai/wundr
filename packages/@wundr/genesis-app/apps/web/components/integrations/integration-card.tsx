@@ -1,12 +1,13 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { INTEGRATION_PROVIDERS, INTEGRATION_STATUS_CONFIG } from '@/types/integration';
+
 import type {
   IntegrationConfig,
   IntegrationProvider,
   IntegrationStatus,
 } from '@/types/integration';
-import { INTEGRATION_PROVIDERS, INTEGRATION_STATUS_CONFIG } from '@/types/integration';
 
 export interface IntegrationCardProps {
   integration: IntegrationConfig;

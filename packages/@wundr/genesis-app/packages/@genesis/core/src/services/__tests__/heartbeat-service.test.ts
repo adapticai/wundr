@@ -18,19 +18,20 @@ import {
   vi,
   beforeEach,
   afterEach,
-  type Mock,
+  type _Mock,
 } from 'vitest';
+
 import {
   createMockRedis,
   type MockRedis,
 } from '../../test-utils/mock-redis';
 import {
-  createMockHeartbeatRecord,
+  _createMockHeartbeatRecord,
   createMockVPMetrics,
-  createMockHealthStatus,
-  createMockDegradedHealthStatus,
-  createMockUnhealthyHealthStatus,
-  createMockUnknownHealthStatus,
+  _createMockHealthStatus,
+  _createMockDegradedHealthStatus,
+  _createMockUnhealthyHealthStatus,
+  _createMockUnknownHealthStatus,
   generatePresenceTestId,
   resetPresenceIdCounter,
   type HeartbeatRecord,
@@ -44,7 +45,7 @@ import {
 // =============================================================================
 
 const HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds
-const HEARTBEAT_TIMEOUT_MS = 90000; // 3 missed heartbeats = unhealthy
+const _HEARTBEAT_TIMEOUT_MS = 90000; // 3 missed heartbeats = unhealthy
 const DEGRADED_THRESHOLD = 1; // 1 missed = degraded
 const UNHEALTHY_THRESHOLD = 3; // 3 missed = unhealthy
 
@@ -75,14 +76,14 @@ class MockHeartbeatService {
       heartbeatIntervalMs: HEARTBEAT_INTERVAL_MS,
       degradedThreshold: DEGRADED_THRESHOLD,
       unhealthyThreshold: UNHEALTHY_THRESHOLD,
-    }
+    },
   ) {}
 
   // Heartbeat operations
   async sendHeartbeat(
     vpId: string,
     daemonId: string,
-    metrics?: VPMetrics
+    metrics?: VPMetrics,
   ): Promise<void> {
     const key = `${HEARTBEAT_KEY_PREFIX}${vpId}`;
     const now = new Date().toISOString();
@@ -138,7 +139,7 @@ class MockHeartbeatService {
     const lastHeartbeat = new Date(data.timestamp);
     const timeSinceLastHeartbeat = now.getTime() - lastHeartbeat.getTime();
     const missedHeartbeats = Math.floor(
-      timeSinceLastHeartbeat / this.config.heartbeatIntervalMs
+      timeSinceLastHeartbeat / this.config.heartbeatIntervalMs,
     );
 
     let status: HealthStatus;
@@ -193,7 +194,7 @@ class MockHeartbeatService {
 
   async registerVP(
     vpId: string,
-    organizationId?: string
+    organizationId?: string,
   ): Promise<void> {
     await this.redis.sadd(VP_REGISTRY_KEY, vpId);
 
@@ -219,13 +220,13 @@ class MockHeartbeatService {
 
   // Callback setters for monitoring
   setOnUnhealthy(
-    callback: (vpId: string, status: HealthCheckStatus) => void
+    callback: (vpId: string, status: HealthCheckStatus) => void,
   ): void {
     this.healthCallbacks.onUnhealthy = callback;
   }
 
   setOnRecovered(
-    callback: (vpId: string, status: HealthCheckStatus) => void
+    callback: (vpId: string, status: HealthCheckStatus) => void,
   ): void {
     this.healthCallbacks.onRecovered = callback;
   }
@@ -270,11 +271,13 @@ class MockHeartbeatMonitor {
 
   constructor(
     private heartbeatService: MockHeartbeatService,
-    private checkIntervalMs: number = 10000
+    private checkIntervalMs: number = 10000,
   ) {}
 
   start(): void {
-    if (this.running) return;
+    if (this.running) {
+return;
+}
 
     this.running = true;
     this.intervalId = setInterval(() => {
@@ -295,13 +298,13 @@ class MockHeartbeatMonitor {
   }
 
   setOnUnhealthy(
-    callback: (vpId: string, status: HealthCheckStatus) => void
+    callback: (vpId: string, status: HealthCheckStatus) => void,
   ): void {
     this.onUnhealthyCallback = callback;
   }
 
   setOnRecovered(
-    callback: (vpId: string, status: HealthCheckStatus) => void
+    callback: (vpId: string, status: HealthCheckStatus) => void,
   ): void {
     this.onRecoveredCallback = callback;
   }
@@ -463,7 +466,7 @@ describe('HeartbeatService', () => {
 
       expect(redis.publish).toHaveBeenCalledWith(
         HEARTBEAT_CHANNEL,
-        expect.stringContaining(vpId)
+        expect.stringContaining(vpId),
       );
 
       const event = JSON.parse(redis._publishedMessages[0].message);
@@ -479,8 +482,8 @@ describe('HeartbeatService', () => {
       // Send multiple rapid heartbeats
       await Promise.all(
         Array.from({ length: 10 }, () =>
-          heartbeatService.sendHeartbeat(vpId, daemonId)
-        )
+          heartbeatService.sendHeartbeat(vpId, daemonId),
+        ),
       );
 
       const key = `${HEARTBEAT_KEY_PREFIX}${vpId}`;
@@ -595,7 +598,7 @@ describe('HeartbeatService', () => {
   describe('getUnhealthyVPs', () => {
     it('returns list of unhealthy VPs', async () => {
       vi.useFakeTimers();
-      const orgId = generatePresenceTestId('org');
+      const _orgId = generatePresenceTestId('org');
 
       // Register VPs
       const healthyVP = generatePresenceTestId('vp');
@@ -814,7 +817,7 @@ describe('HeartbeatMonitor', () => {
         expect.objectContaining({
           status: 'unhealthy',
           vpId,
-        })
+        }),
       );
     });
 
@@ -840,7 +843,7 @@ describe('HeartbeatMonitor', () => {
         expect.objectContaining({
           status: 'healthy',
           vpId,
-        })
+        }),
       );
     });
 

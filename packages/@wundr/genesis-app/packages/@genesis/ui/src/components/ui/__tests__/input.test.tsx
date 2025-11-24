@@ -212,7 +212,7 @@ describe('Input', () => {
           aria-label="Email address"
           aria-describedby="email-help"
           data-testid="input"
-        />
+        />,
       );
 
       const input = screen.getByTestId('input');
@@ -229,7 +229,7 @@ describe('Input', () => {
         <>
           <label htmlFor="test-input">Test Label</label>
           <Input id="test-input" />
-        </>
+        </>,
       );
 
       const input = screen.getByLabelText('Test Label');
@@ -251,7 +251,7 @@ describe('Input', () => {
           value="<script>alert('xss')</script>"
           onChange={() => {}}
           data-testid="input"
-        />
+        />,
       );
 
       const input = screen.getByTestId('input') as HTMLInputElement;
@@ -264,7 +264,7 @@ describe('Input', () => {
           data-testid="custom-input"
           data-custom="value"
           autoComplete="off"
-        />
+        />,
       );
 
       const input = screen.getByTestId('custom-input');

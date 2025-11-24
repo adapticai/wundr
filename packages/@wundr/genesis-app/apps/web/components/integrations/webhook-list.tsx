@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { Webhook } from '@/types/integration';
 import { WEBHOOK_EVENTS, INTEGRATION_STATUS_CONFIG } from '@/types/integration';
+
+import type { Webhook } from '@/types/integration';
 
 export interface WebhookListProps {
   webhooks: Webhook[];
@@ -36,7 +38,9 @@ export function WebhookList({
         const matchesSearch =
           webhook.name.toLowerCase().includes(query) ||
           webhook.url.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
+        if (!matchesSearch) {
+return false;
+}
       }
 
       // Status filter

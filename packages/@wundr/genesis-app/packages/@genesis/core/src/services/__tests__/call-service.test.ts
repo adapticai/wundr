@@ -13,21 +13,16 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  createMockLiveKitService,
-  createMockRoom,
-  createMockParticipant,
-  type MockLiveKitService,
-} from '../../test-utils/mock-livekit';
+
 import {
   createMockCall,
   createMockActiveCall,
   createMockEndedCall,
   createMockHuddle,
-  createMockActiveHuddle,
+  _createMockActiveHuddle,
   createMockCallParticipant,
   createMockConnectedParticipant,
-  createMockJoinToken,
+  _createMockJoinToken,
   createMockCreateCallInput,
   createMockCreateHuddleInput,
   generateCallTestId,
@@ -37,6 +32,12 @@ import {
   type CallParticipant,
   type CreateCallInput,
 } from '../../test-utils/call-factories';
+import {
+  createMockLiveKitService,
+  _createMockRoom,
+  createMockParticipant,
+  type MockLiveKitService,
+} from '../../test-utils/mock-livekit';
 
 // =============================================================================
 // MOCK PRISMA CLIENT
@@ -114,14 +115,14 @@ class MockCallService {
   constructor(
     private prisma: MockPrisma,
     private livekit: MockLiveKitService,
-    private config: { serverUrl: string } = { serverUrl: 'wss://test.livekit.cloud' }
+    private config: { serverUrl: string } = { serverUrl: 'wss://test.livekit.cloud' },
   ) {}
 
   async createCall(
     input: CreateCallInput,
     creatorId: string,
     workspaceId: string,
-    organizationId: string
+    organizationId: string,
   ): Promise<Call> {
     // Check for existing active call in channel
     const existingCall = await this.prisma.call.findFirst({
@@ -172,7 +173,7 @@ class MockCallService {
   async joinCall(
     callId: string,
     userId: string,
-    userName?: string
+    userName?: string,
   ): Promise<{ token: string; call: Call }> {
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
 
@@ -285,7 +286,7 @@ class MockCallService {
   }
 
   // Validate user has access to join a call
-  async validateAccess(callId: string, userId: string): Promise<boolean> {
+  async validateAccess(callId: string, _userId: string): Promise<boolean> {
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
 
     if (!call) {
@@ -306,14 +307,14 @@ class MockHuddleService {
   constructor(
     private prisma: MockPrisma,
     private livekit: MockLiveKitService,
-    private config: { serverUrl: string } = { serverUrl: 'wss://test.livekit.cloud' }
+    private config: { serverUrl: string } = { serverUrl: 'wss://test.livekit.cloud' },
   ) {}
 
   async createHuddle(
     input: { channelId: string; name: string; description?: string; maxParticipants?: number },
     creatorId: string,
     workspaceId: string,
-    organizationId: string
+    organizationId: string,
   ): Promise<Huddle> {
     const roomName = `huddle-${generateCallTestId('room')}`;
 
@@ -346,7 +347,7 @@ class MockHuddleService {
   async joinHuddle(
     huddleId: string,
     userId: string,
-    userName?: string
+    userName?: string,
   ): Promise<{ token: string; huddle: Huddle }> {
     const huddle = await this.prisma.huddle.findUnique({ where: { id: huddleId } });
 
@@ -392,7 +393,7 @@ class MockHuddleService {
     return { token, huddle };
   }
 
-  async leaveHuddle(huddleId: string, userId: string): Promise<void> {
+  async leaveHuddle(huddleId: string, _userId: string): Promise<void> {
     const huddle = await this.prisma.huddle.findUnique({ where: { id: huddleId } });
 
     if (!huddle) {
@@ -466,7 +467,7 @@ describe('CallService', () => {
         input,
         'user-123',
         'workspace-456',
-        'org-789'
+        'org-789',
       );
 
       expect(call).toBeDefined();
@@ -487,11 +488,11 @@ describe('CallService', () => {
         title: 'Team Standup',
       });
 
-      const call = await callService.createCall(
+      const _call = await callService.createCall(
         input,
         'creator-id',
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(prisma.call.create).toHaveBeenCalledWith({
@@ -511,7 +512,7 @@ describe('CallService', () => {
       const input = createMockCreateCallInput({ channelId: 'channel-123' });
 
       await expect(
-        callService.createCall(input, 'user-123', 'ws-123', 'org-123')
+        callService.createCall(input, 'user-123', 'ws-123', 'org-123'),
       ).rejects.toThrow('DUPLICATE_ACTIVE_CALL');
     });
 
@@ -525,7 +526,7 @@ describe('CallService', () => {
         input,
         'user-123',
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(call).toBeDefined();
@@ -544,7 +545,7 @@ describe('CallService', () => {
       expect(livekit.createRoom).toHaveBeenCalledWith(
         expect.objectContaining({
           maxParticipants: 10,
-        })
+        }),
       );
     });
 
@@ -559,7 +560,7 @@ describe('CallService', () => {
         input,
         'user-123',
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(call.recordingEnabled).toBe(true);
@@ -578,7 +579,7 @@ describe('CallService', () => {
         input,
         'user-123',
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(call.scheduledAt).toBe(scheduledAt);
@@ -614,7 +615,7 @@ describe('CallService', () => {
             userId: 'user-456',
             status: 'joining',
           }),
-        })
+        }),
       );
     });
 
@@ -622,7 +623,7 @@ describe('CallService', () => {
       prisma.call.findUnique.mockResolvedValue(null);
 
       await expect(
-        callService.joinCall('non-existent-call', 'user-123')
+        callService.joinCall('non-existent-call', 'user-123'),
       ).rejects.toThrow('CALL_NOT_FOUND');
     });
 
@@ -631,7 +632,7 @@ describe('CallService', () => {
       prisma.call.findUnique.mockResolvedValue(endedCall);
 
       await expect(
-        callService.joinCall(endedCall.id, 'user-123')
+        callService.joinCall(endedCall.id, 'user-123'),
       ).rejects.toThrow('CALL_ENDED');
     });
 
@@ -646,7 +647,7 @@ describe('CallService', () => {
         expect.objectContaining({
           where: { id: pendingCall.id },
           data: expect.objectContaining({ status: 'active' }),
-        })
+        }),
       );
     });
 
@@ -665,7 +666,7 @@ describe('CallService', () => {
             canPublish: true,
             canSubscribe: true,
           }),
-        })
+        }),
       );
     });
 
@@ -678,7 +679,7 @@ describe('CallService', () => {
       expect(livekit.createToken).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Display Name',
-        })
+        }),
       );
     });
   });
@@ -728,7 +729,7 @@ describe('CallService', () => {
             status: 'left',
             leftAt: expect.any(String),
           }),
-        })
+        }),
       );
     });
 
@@ -746,7 +747,7 @@ describe('CallService', () => {
           data: expect.objectContaining({
             duration: expect.any(Number),
           }),
-        })
+        }),
       );
     });
 
@@ -754,7 +755,7 @@ describe('CallService', () => {
       prisma.callParticipant.findFirst.mockResolvedValue(null);
 
       await expect(
-        callService.leaveCall('call-123', 'not-in-call')
+        callService.leaveCall('call-123', 'not-in-call'),
       ).rejects.toThrow('NOT_IN_CALL');
     });
   });
@@ -797,7 +798,7 @@ describe('CallService', () => {
       prisma.call.findUnique.mockResolvedValue(null);
 
       await expect(callService.endCall('fake-call')).rejects.toThrow(
-        'CALL_NOT_FOUND'
+        'CALL_NOT_FOUND',
       );
     });
   });
@@ -868,7 +869,7 @@ describe('HuddleService', () => {
         input,
         'user-123',
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(huddle).toBeDefined();
@@ -878,7 +879,7 @@ describe('HuddleService', () => {
       expect(livekit.createRoom).toHaveBeenCalledWith(
         expect.objectContaining({
           emptyTimeout: 0, // Never auto-close
-        })
+        }),
       );
     });
 
@@ -905,7 +906,7 @@ describe('HuddleService', () => {
           data: expect.objectContaining({
             activeParticipants: 1,
           }),
-        })
+        }),
       );
     });
 
@@ -920,7 +921,7 @@ describe('HuddleService', () => {
           data: expect.objectContaining({
             isActive: true,
           }),
-        })
+        }),
       );
     });
 
@@ -935,7 +936,7 @@ describe('HuddleService', () => {
           data: expect.objectContaining({
             activeParticipants: 2,
           }),
-        })
+        }),
       );
     });
 
@@ -951,7 +952,7 @@ describe('HuddleService', () => {
             activeParticipants: 0,
             isActive: false,
           }),
-        })
+        }),
       );
     });
 
@@ -973,7 +974,7 @@ describe('HuddleService', () => {
       prisma.huddle.findUnique.mockResolvedValue(null);
 
       await expect(
-        huddleService.joinHuddle('fake-huddle', 'user-123')
+        huddleService.joinHuddle('fake-huddle', 'user-123'),
       ).rejects.toThrow('HUDDLE_NOT_FOUND');
     });
 
@@ -988,7 +989,7 @@ describe('HuddleService', () => {
           data: expect.objectContaining({
             lastActivityAt: expect.any(String),
           }),
-        })
+        }),
       );
     });
   });

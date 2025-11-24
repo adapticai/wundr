@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { IntegrationConfig, IntegrationProvider, IntegrationStatus } from '@/types/integration';
 import { INTEGRATION_PROVIDERS } from '@/types/integration';
+
 import { IntegrationCard, IntegrationCardSkeleton } from './integration-card';
+
+import type { IntegrationConfig, IntegrationProvider, IntegrationStatus } from '@/types/integration';
 
 export interface IntegrationListProps {
   integrations: IntegrationConfig[];
@@ -50,7 +53,9 @@ export function IntegrationList({
           integration.name.toLowerCase().includes(query) ||
           integration.description?.toLowerCase().includes(query) ||
           INTEGRATION_PROVIDERS[integration.provider].name.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
+        if (!matchesSearch) {
+return false;
+}
       }
 
       // Provider filter

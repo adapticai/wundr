@@ -40,7 +40,9 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     where: { id: workspaceId },
   });
 
-  if (!workspace) return null;
+  if (!workspace) {
+return null;
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -51,7 +53,9 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {

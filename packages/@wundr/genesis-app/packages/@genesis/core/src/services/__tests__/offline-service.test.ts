@@ -14,16 +14,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import {
   createMockQueuedAction,
-  createMockFailedQueuedAction,
+  _createMockFailedQueuedAction,
   createMockQueuedActionList,
   createMockSyncState,
   createMockSyncConflict,
-  createMockSyncData,
-  createMockSyncDataWithNotifications,
-  createMockSyncDataWithConflicts,
-  createMockNotificationList,
-  createMockOfflineQueueService,
-  createMockSyncService,
+  _createMockSyncData,
+  _createMockSyncDataWithNotifications,
+  _createMockSyncDataWithConflicts,
+  _createMockNotificationList,
+  _createMockOfflineQueueService,
+  _createMockSyncService,
   createMockPrismaOfflineQueueActionModel,
   createMockPrismaSyncStateModel,
   createMockPrismaSyncConflictModel,
@@ -148,7 +148,7 @@ describe('OfflineQueueService', () => {
       // Verify FIFO order (oldest first)
       for (let i = 1; i < queued.length; i++) {
         expect(queued[i]!.createdAt.getTime()).toBeGreaterThanOrEqual(
-          queued[i - 1]!.createdAt.getTime()
+          queued[i - 1]!.createdAt.getTime(),
         );
       }
     });
@@ -344,7 +344,7 @@ describe('OfflineQueueService', () => {
               processedAt: new Date(),
             },
           });
-        })
+        }),
       );
 
       expect(results).toHaveLength(5);
@@ -562,7 +562,7 @@ describe('SyncService', () => {
 
       // First page
       mockPrisma.notification.findMany.mockResolvedValueOnce(
-        createMockNotificationList(pageSize, { userId })
+        createMockNotificationList(pageSize, { userId }),
       );
       mockPrisma.notification.count.mockResolvedValue(totalChanges);
 
@@ -767,11 +767,11 @@ describe('SyncService', () => {
       const userId = generateUserId();
 
       mockPrisma.syncState.findUnique.mockRejectedValue(
-        new Error('Database connection lost')
+        new Error('Database connection lost'),
       );
 
       await expect(
-        mockPrisma.syncState.findUnique({ where: { userId } })
+        mockPrisma.syncState.findUnique({ where: { userId } }),
       ).rejects.toThrow('Database connection lost');
     });
 
@@ -848,12 +848,12 @@ describe('SyncService', () => {
       mockPrisma.notification.findMany.mockImplementation(
         () =>
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Request timeout')), 100)
-          )
+            setTimeout(() => reject(new Error('Request timeout')), 100),
+          ),
       );
 
       await expect(
-        mockPrisma.notification.findMany({ where: { userId } })
+        mockPrisma.notification.findMany({ where: { userId } }),
       ).rejects.toThrow('Request timeout');
     });
   });

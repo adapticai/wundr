@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+
 import { useWorkspaceUsers } from '@/hooks/use-channel';
+import { cn } from '@/lib/utils';
+
 import type { User } from '@/types/chat';
 
 interface CreateChannelDialogProps {
@@ -55,7 +57,9 @@ export function CreateChannelDialog({
   }, [resetForm, onClose]);
 
   const handleSubmit = useCallback(async () => {
-    if (!name.trim() || isSubmitting) return;
+    if (!name.trim() || isSubmitting) {
+return;
+}
 
     setIsSubmitting(true);
     try {
@@ -73,7 +77,9 @@ export function CreateChannelDialog({
 
   const handleAddMember = useCallback((user: User) => {
     setSelectedMembers((prev) => {
-      if (prev.some((m) => m.id === user.id)) return prev;
+      if (prev.some((m) => m.id === user.id)) {
+return prev;
+}
       return [...prev, user];
     });
     setMemberSearch('');
@@ -87,7 +93,9 @@ export function CreateChannelDialog({
   const displayName = name.trim().toLowerCase().replace(/\s+/g, '-');
   const isValid = name.trim().length > 0;
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div
@@ -163,13 +171,13 @@ export function CreateChannelDialog({
                   'flex flex-1 items-start gap-3 rounded-lg border p-3 text-left transition-colors',
                   type === 'public'
                     ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
+                    : 'border-border hover:border-primary/50',
                 )}
               >
                 <div
                   className={cn(
                     'mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border',
-                    type === 'public' ? 'border-primary bg-primary' : 'border-muted-foreground'
+                    type === 'public' ? 'border-primary bg-primary' : 'border-muted-foreground',
                   )}
                 >
                   {type === 'public' && (
@@ -195,13 +203,13 @@ export function CreateChannelDialog({
                   'flex flex-1 items-start gap-3 rounded-lg border p-3 text-left transition-colors',
                   type === 'private'
                     ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
+                    : 'border-border hover:border-primary/50',
                 )}
               >
                 <div
                   className={cn(
                     'mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border',
-                    type === 'private' ? 'border-primary bg-primary' : 'border-muted-foreground'
+                    type === 'private' ? 'border-primary bg-primary' : 'border-muted-foreground',
                   )}
                 >
                   {type === 'private' && (

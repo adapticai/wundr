@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { Reaction } from '@/types/chat';
 
 interface ReactionDisplayProps {
@@ -15,7 +17,9 @@ export function ReactionDisplay({
   onToggleReaction,
   className,
 }: ReactionDisplayProps) {
-  if (reactions.length === 0) return null;
+  if (reactions.length === 0) {
+return null;
+}
 
   return (
     <div className={cn('flex flex-wrap gap-1', className)}>
@@ -39,8 +43,12 @@ function ReactionBadge({ reaction, onClick }: ReactionBadgeProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const getUserNames = () => {
-    if (reaction.users.length === 0) return '';
-    if (reaction.users.length === 1) return reaction.users[0].name;
+    if (reaction.users.length === 0) {
+return '';
+}
+    if (reaction.users.length === 1) {
+return reaction.users[0].name;
+}
     if (reaction.users.length === 2) {
       return `${reaction.users[0].name} and ${reaction.users[1].name}`;
     }
@@ -63,7 +71,7 @@ function ReactionBadge({ reaction, onClick }: ReactionBadgeProps) {
           'flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-colors',
           reaction.hasReacted
             ? 'border-primary/50 bg-primary/10 text-primary hover:border-primary'
-            : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted'
+            : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted',
         )}
       >
         <span className="text-base">{reaction.emoji}</span>

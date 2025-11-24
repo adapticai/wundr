@@ -2,9 +2,11 @@
 
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/types/upload';
-import type { UploadState } from '@/types/upload';
 
 import { UploadProgress } from './upload-progress';
+
+import type { UploadState } from '@/types/upload';
+
 
 interface UploadQueueProps {
   uploads: UploadState[];
@@ -34,7 +36,7 @@ export function UploadQueue({
   const completedCount = uploads.filter((u) => u.status === 'completed').length;
   const failedCount = uploads.filter((u) => u.status === 'error').length;
   const uploadingCount = uploads.filter(
-    (u) => u.status === 'uploading' || u.status === 'pending'
+    (u) => u.status === 'uploading' || u.status === 'pending',
   ).length;
 
   const totalSize = uploads.reduce((acc, u) => acc + u.size, 0);
@@ -80,7 +82,7 @@ export function UploadQueue({
                 'border border-input bg-background',
                 'hover:bg-accent hover:text-accent-foreground',
                 'transition-colors duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
               )}
             >
               {isPaused ? 'Resume All' : 'Pause All'}
@@ -96,7 +98,7 @@ export function UploadQueue({
                 'border border-destructive/50 text-destructive',
                 'hover:bg-destructive/10',
                 'transition-colors duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
               )}
             >
               Cancel All

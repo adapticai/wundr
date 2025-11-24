@@ -9,8 +9,8 @@
  * @module app/api/workspaces/[workspaceId]/admin/invites/[inviteId]/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -19,6 +19,8 @@ import {
   type Invite,
   type InviteStatus,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID and invite ID parameters
@@ -38,14 +40,14 @@ interface RouteContext {
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -59,7 +61,7 @@ export async function DELETE(
     if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -77,7 +79,7 @@ export async function DELETE(
     if (inviteIndex === -1) {
       return NextResponse.json(
         createAdminErrorResponse('Invite not found', ADMIN_ERROR_CODES.INVITE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -87,14 +89,14 @@ export async function DELETE(
     if (invite.status === 'ACCEPTED') {
       return NextResponse.json(
         createAdminErrorResponse('Invite has already been accepted', ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (invite.status === 'REVOKED') {
       return NextResponse.json(
         createAdminErrorResponse('Invite has already been revoked', ADMIN_ERROR_CODES.INVITE_REVOKED),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -130,7 +132,7 @@ export async function DELETE(
     console.error('[DELETE /api/workspaces/:workspaceId/admin/invites/:inviteId] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to revoke invite', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { clsx } from 'clsx';
+import { useState, useEffect, useCallback } from 'react';
 
 interface DaemonCredential {
   id: string;
@@ -72,7 +72,7 @@ export function DaemonManager({
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/daemons?vpId=${vpId}`
+        `/api/workspaces/${workspaceId}/admin/daemons?vpId=${vpId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -179,7 +179,7 @@ export function DaemonManager({
     try {
       await fetch(
         `/api/workspaces/${workspaceId}/admin/daemons/${daemonId}/sessions/${sessionId}`,
-        { method: 'DELETE' }
+        { method: 'DELETE' },
       );
       setSessions(prev => ({
         ...prev,
@@ -213,7 +213,7 @@ export function DaemonManager({
           disabled={isRegistering}
           className={clsx(
             'px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium',
-            'disabled:opacity-50'
+            'disabled:opacity-50',
           )}
         >
           {isRegistering ? 'Registering...' : 'Register New Daemon'}
@@ -277,7 +277,7 @@ export function DaemonManager({
                         'px-2 py-0.5 text-xs rounded',
                         cred.isActive
                           ? 'bg-green-500/10 text-green-500'
-                          : 'bg-muted text-muted-foreground'
+                          : 'bg-muted text-muted-foreground',
                       )}
                     >
                       {cred.isActive ? 'Active' : 'Disabled'}
@@ -336,7 +336,7 @@ export function DaemonManager({
                           <div
                             className={clsx(
                               'w-2 h-2 rounded-full',
-                              STATUS_COLORS[session.status] || 'bg-gray-400'
+                              STATUS_COLORS[session.status] || 'bg-gray-400',
                             )}
                           />
                           <div>

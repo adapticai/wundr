@@ -639,7 +639,7 @@ function isReadableStream(value: unknown): value is Readable {
  * @returns File category or 'other'
  */
 export function getFileCategory(
-  mimeType: string
+  mimeType: string,
 ): 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other' {
   if (MIME_TYPE_CATEGORIES.images.includes(mimeType as (typeof MIME_TYPE_CATEGORIES.images)[number])) {
     return 'image';

@@ -54,7 +54,7 @@ export class DocxProcessor {
    */
   async process(
     filePath: string,
-    options: DocxProcessingOptions = {}
+    options: DocxProcessingOptions = {},
   ): Promise<ProcessorResult> {
     const startTime = Date.now();
 
@@ -122,7 +122,7 @@ export class DocxProcessor {
    */
   private async parseDocx(
     _filePath: string,
-    _options: DocxProcessingOptions
+    _options: DocxProcessingOptions,
   ): Promise<{
     text: string;
     html: string;
@@ -245,7 +245,7 @@ interface HeadingData {
  * Create DOCX processor instance
  */
 export function createDocxProcessor(
-  config: FileProcessorConfig
+  config: FileProcessorConfig,
 ): DocxProcessor {
   return new DocxProcessor(config);
 }

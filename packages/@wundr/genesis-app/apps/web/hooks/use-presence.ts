@@ -34,7 +34,9 @@ export function useUserPresence(userId: string): UserPresence | null {
   const [presence, setPresence] = useState<UserPresence | null>(null);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+return;
+}
 
     const fetchPresence = async () => {
       try {
@@ -69,7 +71,9 @@ export function useMultiplePresence(userIds: string[]): Map<string, UserPresence
   const userIdsKey = useMemo(() => userIds.sort().join(','), [userIds]);
 
   useEffect(() => {
-    if (userIds.length === 0) return;
+    if (userIds.length === 0) {
+return;
+}
 
     const fetchPresence = async () => {
       try {
@@ -114,7 +118,9 @@ export function useChannelPresence(channelId: string): UserPresence[] {
   const [presenceList, setPresenceList] = useState<UserPresence[]>([]);
 
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId) {
+return;
+}
 
     const fetchPresence = async () => {
       try {
@@ -196,7 +202,9 @@ export function useVPHealth(vpId: string): VPHealthStatus | null {
   const [health, setHealth] = useState<VPHealthStatus | null>(null);
 
   useEffect(() => {
-    if (!vpId) return;
+    if (!vpId) {
+return;
+}
 
     const fetchHealth = async () => {
       try {
@@ -234,7 +242,9 @@ export function useVPHealthList(orgId: string): {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchHealth = useCallback(async () => {
-    if (!orgId) return;
+    if (!orgId) {
+return;
+}
 
     try {
       const response = await fetch(`/api/organizations/${orgId}/vps/health`);
@@ -274,10 +284,14 @@ export function usePresenceHeartbeat(enabled: boolean = true): void {
   }, [enabled]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+return;
+}
 
     const sendHeartbeat = async () => {
-      if (!isEnabled.current) return;
+      if (!isEnabled.current) {
+return;
+}
 
       try {
         await fetch('/api/presence/heartbeat', {
@@ -325,7 +339,9 @@ export function usePresenceSubscription(
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId) {
+return;
+}
 
     const connect = () => {
       const eventSource = new EventSource(

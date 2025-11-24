@@ -17,6 +17,7 @@ import {
   createProcessingErrorResponse,
   PROCESSING_ERROR_CODES,
 } from '@/lib/validations/processing';
+
 import { processingJobs } from '../route';
 
 import type { NextRequest } from 'next/server';
@@ -202,9 +203,15 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
  * @returns Formatted duration string
  */
 function formatDuration(ms: number): string {
-  if (ms < 1000) return `${Math.round(ms)}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`;
+  if (ms < 1000) {
+return `${Math.round(ms)}ms`;
+}
+  if (ms < 60000) {
+return `${(ms / 1000).toFixed(1)}s`;
+}
+  if (ms < 3600000) {
+return `${(ms / 60000).toFixed(1)}m`;
+}
   return `${(ms / 3600000).toFixed(1)}h`;
 }
 

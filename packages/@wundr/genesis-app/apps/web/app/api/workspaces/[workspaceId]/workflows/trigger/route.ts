@@ -10,7 +10,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -21,6 +20,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { TriggerWorkflowsInput, WorkflowTrigger, WorkflowAction, WorkflowStepResult } from '@/lib/validations/workflow';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -35,7 +35,7 @@ interface RouteContext {
  */
 function checkTriggerConditions(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>
+  eventData: Record<string, unknown>,
 ): boolean {
   if (!trigger.conditions || trigger.conditions.length === 0) {
     return true;
@@ -46,34 +46,54 @@ function checkTriggerConditions(
 
     switch (condition.operator) {
       case 'equals':
-        if (fieldValue !== condition.value) return false;
+        if (fieldValue !== condition.value) {
+return false;
+}
         break;
       case 'not_equals':
-        if (fieldValue === condition.value) return false;
+        if (fieldValue === condition.value) {
+return false;
+}
         break;
       case 'contains':
-        if (typeof fieldValue !== 'string' || !fieldValue.includes(String(condition.value))) return false;
+        if (typeof fieldValue !== 'string' || !fieldValue.includes(String(condition.value))) {
+return false;
+}
         break;
       case 'not_contains':
-        if (typeof fieldValue === 'string' && fieldValue.includes(String(condition.value))) return false;
+        if (typeof fieldValue === 'string' && fieldValue.includes(String(condition.value))) {
+return false;
+}
         break;
       case 'greater_than':
-        if (typeof fieldValue !== 'number' || fieldValue <= Number(condition.value)) return false;
+        if (typeof fieldValue !== 'number' || fieldValue <= Number(condition.value)) {
+return false;
+}
         break;
       case 'less_than':
-        if (typeof fieldValue !== 'number' || fieldValue >= Number(condition.value)) return false;
+        if (typeof fieldValue !== 'number' || fieldValue >= Number(condition.value)) {
+return false;
+}
         break;
       case 'exists':
-        if (fieldValue === undefined || fieldValue === null) return false;
+        if (fieldValue === undefined || fieldValue === null) {
+return false;
+}
         break;
       case 'not_exists':
-        if (fieldValue !== undefined && fieldValue !== null) return false;
+        if (fieldValue !== undefined && fieldValue !== null) {
+return false;
+}
         break;
       case 'in':
-        if (!Array.isArray(condition.value) || !condition.value.includes(fieldValue as string)) return false;
+        if (!Array.isArray(condition.value) || !condition.value.includes(fieldValue as string)) {
+return false;
+}
         break;
       case 'not_in':
-        if (Array.isArray(condition.value) && condition.value.includes(fieldValue as string)) return false;
+        if (Array.isArray(condition.value) && condition.value.includes(fieldValue as string)) {
+return false;
+}
         break;
       default:
         break;
@@ -100,7 +120,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
  */
 function checkTriggerFilters(
   trigger: WorkflowTrigger,
-  eventData: Record<string, unknown>
+  eventData: Record<string, unknown>,
 ): boolean {
   if (!trigger.filters) {
     return true;
@@ -143,7 +163,7 @@ async function executeWorkflow(
   workspaceId: string,
   triggerType: string,
   triggerData: Record<string, unknown>,
-  triggeredBy: string
+  triggeredBy: string,
 ): Promise<{ executionId: string; success: boolean }> {
   const startedAt = new Date();
 
@@ -245,7 +265,7 @@ async function executeWorkflow(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user (internal services should also authenticate)
@@ -253,7 +273,7 @@ export async function POST(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -269,7 +289,7 @@ export async function POST(
     if (!workspace) {
       return NextResponse.json(
         createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -285,7 +305,7 @@ export async function POST(
     if (!orgMembership) {
       return NextResponse.json(
         createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -296,7 +316,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', WORKFLOW_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -307,9 +327,9 @@ export async function POST(
         createErrorResponse(
           'Validation failed',
           WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -342,7 +362,7 @@ export async function POST(
           workspaceId,
           input.event,
           input.data,
-          session.user.id
+          session.user.id,
         );
         executions.push(result.executionId);
       } catch (err) {
@@ -361,7 +381,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/workflows/trigger] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

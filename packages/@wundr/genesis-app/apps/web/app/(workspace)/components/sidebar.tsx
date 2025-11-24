@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { useState, useCallback } from 'react';
+
 import { ChannelList } from '@/components/channel';
 import { useChannels, useDirectMessages, useChannelMutations } from '@/hooks/use-channel';
+import { cn } from '@/lib/utils';
 
 interface Workspace {
   id: string;
@@ -50,7 +51,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
     }) => {
       await createChannel(workspaceId, input);
     },
-    [workspaceId, createChannel]
+    [workspaceId, createChannel],
   );
 
   const navItems = [
@@ -83,7 +84,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
             <ChevronDownIcon
               className={cn(
                 'h-4 w-4 text-muted-foreground transition-transform',
-                showWorkspaceSwitcher && 'rotate-180'
+                showWorkspaceSwitcher && 'rotate-180',
               )}
             />
           </button>
@@ -103,7 +104,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
                     onClick={() => setShowWorkspaceSwitcher(false)}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2 hover:bg-accent',
-                      workspace.id === currentWorkspace?.id && 'bg-accent/50'
+                      workspace.id === currentWorkspace?.id && 'bg-accent/50',
                     )}
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-bold">
@@ -209,7 +210,7 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
         isActive
           ? 'bg-accent text-foreground'
-          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
       )}
     >
       <span className="flex h-5 w-5 items-center justify-center">{icon}</span>

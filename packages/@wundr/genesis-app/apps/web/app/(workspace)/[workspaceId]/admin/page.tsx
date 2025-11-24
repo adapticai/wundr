@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
 import { clsx } from 'clsx';
+import { useParams } from 'next/navigation';
+import { useState } from 'react';
 
 type AdminTab = 'settings' | 'members' | 'roles' | 'billing' | 'activity';
 
@@ -36,7 +36,7 @@ export default function AdminPage() {
                       'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                       activeTab === tab.id
                         ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                     )}
                   >
                     {tab.icon}
@@ -61,7 +61,7 @@ export default function AdminPage() {
   );
 }
 
-function SettingsPanel({ workspaceId }: { workspaceId: string }) {
+function SettingsPanel({ workspaceId: _workspaceId }: { workspaceId: string }) {
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold">Workspace Settings</h2>
@@ -112,7 +112,7 @@ function RolesPanel({ workspaceId }: { workspaceId: string }) {
   );
 }
 
-function BillingPanel({ workspaceId }: { workspaceId: string }) {
+function BillingPanel({ workspaceId: _workspaceId }: { workspaceId: string }) {
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Billing & Plans</h2>

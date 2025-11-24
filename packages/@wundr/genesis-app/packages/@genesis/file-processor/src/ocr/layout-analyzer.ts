@@ -8,6 +8,7 @@
  */
 
 import { BlockType, DocumentType } from '../types/ocr';
+
 import type {
   BoundingBox,
   OCRBlock,
@@ -245,7 +246,7 @@ export class LayoutAnalyzer {
    */
   async analyzeLayout(
     blocks: OCRBlock[],
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
   ): Promise<LayoutResult> {
     const startTime = Date.now();
 
@@ -350,7 +351,7 @@ export class LayoutAnalyzer {
    */
   async detectImages(
     blocks: OCRBlock[],
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
   ): Promise<ImageRegion[]> {
     const textRegions = blocks.map((b) => b.bbox);
     const gaps = this.findLargeGaps(textRegions, dimensions);
@@ -417,16 +418,22 @@ export class LayoutAnalyzer {
     const used = new Set<number>();
 
     for (let i = 0; i < regions.length; i++) {
-      if (used.has(i)) continue;
+      if (used.has(i)) {
+continue;
+}
 
       const region = { ...regions[i] };
       let bbox = { ...region.bbox };
 
       for (let j = i + 1; j < regions.length; j++) {
-        if (used.has(j)) continue;
+        if (used.has(j)) {
+continue;
+}
 
         const other = regions[j];
-        if (region.type !== other.type) continue;
+        if (region.type !== other.type) {
+continue;
+}
 
         if (this.areRegionsNearby(bbox, other.bbox, threshold)) {
           bbox = this.mergeBboxes(bbox, other.bbox);
@@ -469,7 +476,7 @@ export class LayoutAnalyzer {
    */
   private detectHeadersFooters(
     regions: Region[],
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
   ): Region[] {
     const headerThreshold = dimensions.height * 0.1;
     const footerThreshold = dimensions.height * 0.9;
@@ -537,11 +544,13 @@ export class LayoutAnalyzer {
    * Create table region from aligned regions
    */
   private createTableRegion(regions: Region[]): TableRegion | null {
-    if (regions.length < 4) return null;
+    if (regions.length < 4) {
+return null;
+}
 
     const bbox = regions.reduce(
       (acc, r) => this.mergeBboxes(acc, r.bbox),
-      regions[0].bbox
+      regions[0].bbox,
     );
 
     // Estimate rows and columns
@@ -565,7 +574,7 @@ export class LayoutAnalyzer {
    */
   private determineReadingOrder(
     regions: Region[],
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
   ): number[] {
     // Detect if multi-column
     const columnCount = this.detectColumnCount(regions, dimensions);
@@ -586,7 +595,9 @@ export class LayoutAnalyzer {
     const indexed = regions.map((r, i) => ({ region: r, index: i }));
     indexed.sort((a, b) => {
       const yDiff = a.region.bbox.y0 - b.region.bbox.y0;
-      if (Math.abs(yDiff) > 10) return yDiff;
+      if (Math.abs(yDiff) > 10) {
+return yDiff;
+}
       return a.region.bbox.x0 - b.region.bbox.x0;
     });
     return indexed.map((item) => item.index);
@@ -598,7 +609,7 @@ export class LayoutAnalyzer {
   private multiColumnOrder(
     regions: Region[],
     columnCount: number,
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
   ): number[] {
     const columnWidth = dimensions.width / columnCount;
     const indexed = regions.map((r, i) => ({ region: r, index: i }));
@@ -607,7 +618,9 @@ export class LayoutAnalyzer {
       const colA = Math.floor(a.region.bbox.x0 / columnWidth);
       const colB = Math.floor(b.region.bbox.x0 / columnWidth);
 
-      if (colA !== colB) return colA - colB;
+      if (colA !== colB) {
+return colA - colB;
+}
       return a.region.bbox.y0 - b.region.bbox.y0;
     });
 
@@ -619,9 +632,11 @@ export class LayoutAnalyzer {
    */
   private detectColumnCount(
     regions: Region[],
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
   ): number {
-    if (regions.length === 0) return 1;
+    if (regions.length === 0) {
+return 1;
+}
 
     // Find gaps in the middle of the page
     const middleX = dimensions.width / 2;
@@ -648,7 +663,7 @@ export class LayoutAnalyzer {
    */
   private classifyDocumentType(
     regions: Region[],
-    _dimensions: { width: number; height: number }
+    _dimensions: { width: number; height: number },
   ): DocumentType {
     const text = regions
       .filter((r) => r.text)
@@ -687,7 +702,9 @@ export class LayoutAnalyzer {
       }
     }
 
-    if (lineHeights.length === 0) return 0;
+    if (lineHeights.length === 0) {
+return 0;
+}
     return lineHeights.reduce((a, b) => a + b, 0) / lineHeights.length;
   }
 
@@ -695,12 +712,16 @@ export class LayoutAnalyzer {
    * Detect text alignment
    */
   private detectTextAlignment(
-    block: OCRBlock
+    block: OCRBlock,
   ): 'left' | 'center' | 'right' | 'justified' | undefined {
-    if (block.paragraphs.length === 0) return undefined;
+    if (block.paragraphs.length === 0) {
+return undefined;
+}
 
     const lines = block.paragraphs.flatMap((p) => p.lines);
-    if (lines.length < 2) return undefined;
+    if (lines.length < 2) {
+return undefined;
+}
 
     const leftMargins = lines.map((l) => l.bbox.x0);
     const rightMargins = lines.map((l) => l.bbox.x1);
@@ -708,13 +729,21 @@ export class LayoutAnalyzer {
     const leftVariance = this.variance(leftMargins);
     const rightVariance = this.variance(rightMargins);
 
-    if (leftVariance < 10 && rightVariance < 10) return 'justified';
-    if (leftVariance < 10) return 'left';
-    if (rightVariance < 10) return 'right';
+    if (leftVariance < 10 && rightVariance < 10) {
+return 'justified';
+}
+    if (leftVariance < 10) {
+return 'left';
+}
+    if (rightVariance < 10) {
+return 'right';
+}
 
     // Check for center alignment
     const centers = lines.map((l) => (l.bbox.x0 + l.bbox.x1) / 2);
-    if (this.variance(centers) < 20) return 'center';
+    if (this.variance(centers) < 20) {
+return 'center';
+}
 
     return 'left';
   }
@@ -723,7 +752,9 @@ export class LayoutAnalyzer {
    * Calculate variance
    */
   private variance(values: number[]): number {
-    if (values.length === 0) return 0;
+    if (values.length === 0) {
+return 0;
+}
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     return values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
   }
@@ -740,11 +771,13 @@ export class LayoutAnalyzer {
    * Analyze table structure
    */
   private analyzeTableStructure(blocks: OCRBlock[]): TableRegion | null {
-    if (blocks.length === 0) return null;
+    if (blocks.length === 0) {
+return null;
+}
 
     const bbox = blocks.reduce(
       (acc, b) => this.mergeBboxes(acc, b.bbox),
-      blocks[0].bbox
+      blocks[0].bbox,
     );
 
     return {
@@ -764,7 +797,7 @@ export class LayoutAnalyzer {
    */
   private findLargeGaps(
     textRegions: BoundingBox[],
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
   ): BoundingBox[] {
     const gaps: BoundingBox[] = [];
     const minGapSize = Math.min(dimensions.width, dimensions.height) * 0.1;
@@ -806,7 +839,9 @@ export class LayoutAnalyzer {
    * Calculate overall layout confidence
    */
   private calculateLayoutConfidence(regions: Region[]): number {
-    if (regions.length === 0) return 0;
+    if (regions.length === 0) {
+return 0;
+}
     const avgConfidence =
       regions.reduce((sum, r) => sum + r.confidence, 0) / regions.length;
     return Math.round(avgConfidence);
@@ -820,7 +855,7 @@ export class LayoutAnalyzer {
  * @returns New LayoutAnalyzer instance
  */
 export function createLayoutAnalyzer(
-  options?: Partial<LayoutAnalyzerOptions>
+  options?: Partial<LayoutAnalyzerOptions>,
 ): LayoutAnalyzer {
   return new LayoutAnalyzer(options);
 }

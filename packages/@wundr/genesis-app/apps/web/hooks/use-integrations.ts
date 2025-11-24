@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+
 import type {
   IntegrationConfig,
   IntegrationProvider,
@@ -38,25 +39,31 @@ interface UseIntegrationsReturn {
  */
 export function useIntegrations(
   workspaceId: string,
-  options?: UseIntegrationsOptions
+  options?: UseIntegrationsOptions,
 ): UseIntegrationsReturn {
   const [integrations, setIntegrations] = useState<IntegrationConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchIntegrations = useCallback(async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams();
-      if (options?.provider) params.set('provider', options.provider);
-      if (options?.status) params.set('status', options.status);
+      if (options?.provider) {
+params.set('provider', options.provider);
+}
+      if (options?.status) {
+params.set('status', options.status);
+}
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/integrations?${params.toString()}`
+        `/api/workspaces/${workspaceId}/integrations?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -113,7 +120,9 @@ export function useIntegration(integrationId: string): UseIntegrationReturn {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchIntegration = useCallback(async () => {
-    if (!integrationId) return;
+    if (!integrationId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -202,7 +211,7 @@ export function useIntegration(integrationId: string): UseIntegrationReturn {
         return null;
       }
     },
-    [integrationId]
+    [integrationId],
   );
 
   const deleteIntegration = useCallback(async (): Promise<boolean> => {
@@ -262,7 +271,7 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
   const createIntegration = useCallback(
     async (
       workspaceId: string,
-      input: CreateIntegrationInput
+      input: CreateIntegrationInput,
     ): Promise<IntegrationConfig | null> => {
       setIsLoading(true);
       setError(null);
@@ -287,13 +296,13 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const initiateOAuth = useCallback(
     async (
       workspaceId: string,
-      provider: IntegrationProvider
+      provider: IntegrationProvider,
     ): Promise<IntegrationOAuthResponse | null> => {
       setIsLoading(true);
       setError(null);
@@ -318,7 +327,7 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   return {
@@ -355,18 +364,24 @@ export function useWebhooks(workspaceId: string, options?: UseWebhooksOptions): 
   const [error, setError] = useState<Error | null>(null);
 
   const fetchWebhooks = useCallback(async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams();
-      if (options?.integrationId) params.set('integrationId', options.integrationId);
-      if (options?.status) params.set('status', options.status);
+      if (options?.integrationId) {
+params.set('integrationId', options.integrationId);
+}
+      if (options?.status) {
+params.set('status', options.status);
+}
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/webhooks?${params.toString()}`
+        `/api/workspaces/${workspaceId}/webhooks?${params.toString()}`,
       );
 
       if (!response.ok) {
@@ -407,7 +422,7 @@ export function useWebhooks(workspaceId: string, options?: UseWebhooksOptions): 
         return null;
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const refetch = useCallback(() => {
@@ -445,7 +460,9 @@ export function useWebhook(webhookId: string): UseWebhookReturn {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchWebhook = useCallback(async () => {
-    if (!webhookId) return;
+    if (!webhookId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -500,7 +517,7 @@ export function useWebhook(webhookId: string): UseWebhookReturn {
         setDeliveries((prev) => [data.delivery, ...prev].slice(0, 10));
       }
       return { success: true, delivery: data.delivery };
-    } catch (err) {
+    } catch (_err) {
       return { success: false };
     }
   }, [webhookId]);
@@ -526,7 +543,7 @@ export function useWebhook(webhookId: string): UseWebhookReturn {
         return null;
       }
     },
-    [webhookId]
+    [webhookId],
   );
 
   const deleteWebhook = useCallback(async (): Promise<boolean> => {
@@ -603,7 +620,7 @@ interface UseWebhookDeliveriesReturn {
  */
 export function useWebhookDeliveries(
   webhookId: string,
-  options?: UseWebhookDeliveriesOptions
+  options?: UseWebhookDeliveriesOptions,
 ): UseWebhookDeliveriesReturn {
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
   const [total, setTotal] = useState(0);
@@ -615,7 +632,9 @@ export function useWebhookDeliveries(
 
   const fetchDeliveries = useCallback(
     async (append = false) => {
-      if (!webhookId) return;
+      if (!webhookId) {
+return;
+}
 
       setIsLoading(true);
       setError(null);
@@ -624,10 +643,12 @@ export function useWebhookDeliveries(
         const params = new URLSearchParams();
         params.set('limit', limit.toString());
         params.set('offset', (append ? offset : 0).toString());
-        if (options?.status) params.set('status', options.status);
+        if (options?.status) {
+params.set('status', options.status);
+}
 
         const response = await fetch(
-          `/api/webhooks/${webhookId}/deliveries?${params.toString()}`
+          `/api/webhooks/${webhookId}/deliveries?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -650,7 +671,7 @@ export function useWebhookDeliveries(
         setIsLoading(false);
       }
     },
-    [webhookId, offset, limit, options?.status]
+    [webhookId, offset, limit, options?.status],
   );
 
   useEffect(() => {
@@ -671,7 +692,7 @@ export function useWebhookDeliveries(
           `/api/webhooks/${webhookId}/deliveries/${deliveryId}/retry`,
           {
             method: 'POST',
-          }
+          },
         );
 
         if (!response.ok) {
@@ -682,7 +703,7 @@ export function useWebhookDeliveries(
 
         // Update the delivery in the list
         setDeliveries((prev) =>
-          prev.map((d) => (d.id === deliveryId ? data : d))
+          prev.map((d) => (d.id === deliveryId ? data : d)),
         );
 
         return data;
@@ -691,7 +712,7 @@ export function useWebhookDeliveries(
         return null;
       }
     },
-    [webhookId]
+    [webhookId],
   );
 
   return {

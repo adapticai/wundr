@@ -2,8 +2,8 @@
  * @fileoverview Tests for daemon API routes
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mocks
 vi.mock('@/lib/prisma', () => ({

@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/types/upload';
+
 import type { FileRecord } from '@/types/upload';
 
 interface FileAttachmentProps {
@@ -147,7 +148,9 @@ export function FileAttachment({
 
   // Truncate filename if too long
   const truncatedName = (name: string, maxLength: number = 24) => {
-    if (name.length <= maxLength) return name;
+    if (name.length <= maxLength) {
+return name;
+}
     const ext = name.split('.').pop() || '';
     const baseName = name.slice(0, name.length - ext.length - 1);
     const truncatedBase = baseName.slice(0, maxLength - ext.length - 4) + '...';
@@ -160,7 +163,7 @@ export function FileAttachment({
         className={cn(
           'inline-flex items-center gap-2 rounded-md border px-2 py-1',
           'bg-muted/50 transition-colors hover:bg-muted',
-          className
+          className,
         )}
       >
         <FileIcon type={file.type} mimeType={file.mimeType} />
@@ -175,7 +178,7 @@ export function FileAttachment({
       className={cn(
         'group overflow-hidden rounded-lg border bg-card',
         'transition-all duration-200 hover:shadow-md',
-        className
+        className,
       )}
     >
       {/* Image Preview or File Icon Header */}
@@ -197,7 +200,7 @@ export function FileAttachment({
             className={cn(
               'absolute inset-0 flex items-center justify-center',
               'bg-black/30 opacity-0 transition-opacity duration-200',
-              'group-hover:opacity-100'
+              'group-hover:opacity-100',
             )}
           >
             <svg
@@ -244,7 +247,7 @@ export function FileAttachment({
                 'rounded-md p-1.5',
                 'text-muted-foreground hover:bg-muted hover:text-foreground',
                 'transition-colors duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
               )}
               aria-label={`Download ${file.name}`}
             >
@@ -273,7 +276,7 @@ export function FileAttachment({
                 'rounded-md p-1.5',
                 'text-muted-foreground hover:bg-muted hover:text-foreground',
                 'transition-colors duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
               )}
               aria-label={`Preview ${file.name}`}
             >
@@ -302,7 +305,7 @@ export function FileAttachment({
               'rounded-md p-1.5',
               'text-destructive/70 hover:bg-destructive/10 hover:text-destructive',
               'transition-colors duration-200',
-              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
             )}
             aria-label={`Delete ${file.name}`}
           >

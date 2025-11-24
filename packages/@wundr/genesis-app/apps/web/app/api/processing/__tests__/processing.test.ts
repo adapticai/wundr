@@ -12,7 +12,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { NextRequest } from 'next/server';
+
+import type { NextRequest } from 'next/server';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -170,7 +171,7 @@ function createJsonResponse(data: unknown, status = 200) {
  */
 async function handleExtractText(
   request: NextRequest,
-  params: { id: string }
+  params: { id: string },
 ): Promise<{ json: () => Promise<unknown>; status: number }> {
   // Check authentication
   const session = await mockGetServerSession();
@@ -224,7 +225,7 @@ async function handleExtractText(
  */
 async function handleOCR(
   request: NextRequest,
-  params: { id: string }
+  params: { id: string },
 ): Promise<{ json: () => Promise<unknown>; status: number }> {
   // Check authentication
   const session = await mockGetServerSession();
@@ -265,13 +266,13 @@ async function handleOCR(
   // Validate language options
   const validLanguages = ['eng', 'spa', 'fra', 'deu', 'ita', 'por', 'chi_sim', 'jpn', 'kor'];
   const invalidLanguages = options.languages.filter(
-    (lang: string) => !validLanguages.includes(lang)
+    (lang: string) => !validLanguages.includes(lang),
   );
 
   if (invalidLanguages.length > 0) {
     return createJsonResponse(
       { error: `Invalid language(s): ${invalidLanguages.join(', ')}` },
-      400
+      400,
     );
   }
 
@@ -290,7 +291,7 @@ async function handleOCR(
  */
 async function handleGetJobStatus(
   _request: NextRequest,
-  params: { jobId: string }
+  params: { jobId: string },
 ): Promise<{ json: () => Promise<unknown>; status: number }> {
   // Check authentication
   const session = await mockGetServerSession();
@@ -377,7 +378,7 @@ describe('Processing API', () => {
       expect(data.job.type).toBe('TEXT_EXTRACTION');
       expect(mockProcessingService.extractText).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ extractTables: true })
+        expect.objectContaining({ extractTables: true }),
       );
     });
 
@@ -459,13 +460,13 @@ describe('Processing API', () => {
           extractTables: true,
           extractImages: true,
           maxPages: 50,
-        }
+        },
       );
     });
 
     it('handles service errors', async () => {
       mockProcessingService.extractText.mockRejectedValue(
-        new Error('Queue unavailable')
+        new Error('Queue unavailable'),
       );
 
       const request = createMockRequest({
@@ -524,7 +525,7 @@ describe('Processing API', () => {
       expect(response.status).toBe(201);
       expect(mockProcessingService.runOCR).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ languages: ['eng', 'fra', 'spa'] })
+        expect.objectContaining({ languages: ['eng', 'fra', 'spa'] }),
       );
     });
 
@@ -538,7 +539,7 @@ describe('Processing API', () => {
 
       expect(mockProcessingService.runOCR).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ languages: ['eng'] })
+        expect.objectContaining({ languages: ['eng'] }),
       );
     });
 
@@ -567,7 +568,7 @@ describe('Processing API', () => {
 
       expect(mockProcessingService.runOCR).toHaveBeenCalledWith(
         'file_123',
-        expect.objectContaining({ enhanceImage: true })
+        expect.objectContaining({ enhanceImage: true }),
       );
     });
   });

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/types/upload';
+
 import type { FileRecord } from '@/types/upload';
 
 interface LightboxProps {
@@ -44,7 +45,9 @@ export function Lightbox({
 
   // Keyboard navigation
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+return;
+}
 
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -52,10 +55,14 @@ export function Lightbox({
           onClose();
           break;
         case 'ArrowLeft':
-          if (hasPrevious) onNavigate(currentIndex - 1);
+          if (hasPrevious) {
+onNavigate(currentIndex - 1);
+}
           break;
         case 'ArrowRight':
-          if (hasNext) onNavigate(currentIndex + 1);
+          if (hasNext) {
+onNavigate(currentIndex + 1);
+}
           break;
         case 'i':
           setShowInfoPanel((prev) => !prev);
@@ -95,7 +102,7 @@ export function Lightbox({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handleZoomIn = useCallback(() => {
@@ -110,7 +117,9 @@ export function Lightbox({
     setScale(1);
   }, []);
 
-  if (!isOpen || !currentImage) return null;
+  if (!isOpen || !currentImage) {
+return null;
+}
 
   return (
     <div
@@ -141,7 +150,7 @@ export function Lightbox({
               'hover:bg-white/10 hover:text-white',
               'transition-colors duration-200',
               'disabled:cursor-not-allowed disabled:opacity-50',
-              'focus:outline-none focus:ring-2 focus:ring-white/50'
+              'focus:outline-none focus:ring-2 focus:ring-white/50',
             )}
             aria-label="Zoom out"
           >
@@ -168,7 +177,7 @@ export function Lightbox({
               'min-w-[3rem] rounded-md px-2 py-1 text-sm text-white/80',
               'hover:bg-white/10 hover:text-white',
               'transition-colors duration-200',
-              'focus:outline-none focus:ring-2 focus:ring-white/50'
+              'focus:outline-none focus:ring-2 focus:ring-white/50',
             )}
             aria-label="Reset zoom"
           >
@@ -184,7 +193,7 @@ export function Lightbox({
               'hover:bg-white/10 hover:text-white',
               'transition-colors duration-200',
               'disabled:cursor-not-allowed disabled:opacity-50',
-              'focus:outline-none focus:ring-2 focus:ring-white/50'
+              'focus:outline-none focus:ring-2 focus:ring-white/50',
             )}
             aria-label="Zoom in"
           >
@@ -216,7 +225,7 @@ export function Lightbox({
                 'rounded-full p-2 text-white/80',
                 'hover:bg-white/10 hover:text-white',
                 'transition-colors duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-white/50'
+                'focus:outline-none focus:ring-2 focus:ring-white/50',
               )}
               aria-label="Download image"
             >
@@ -246,7 +255,7 @@ export function Lightbox({
                 'rounded-full p-2 text-white/80',
                 'hover:bg-white/10 hover:text-white',
                 'transition-colors duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-white/50'
+                'focus:outline-none focus:ring-2 focus:ring-white/50',
               )}
               aria-label="Share image"
             >
@@ -279,7 +288,7 @@ export function Lightbox({
                 'hover:bg-white/10 hover:text-white',
                 'transition-colors duration-200',
                 'focus:outline-none focus:ring-2 focus:ring-white/50',
-                showInfoPanel && 'bg-white/10 text-white'
+                showInfoPanel && 'bg-white/10 text-white',
               )}
               aria-label="Toggle image info"
             >
@@ -310,7 +319,7 @@ export function Lightbox({
               'rounded-full p-2 text-white/80',
               'hover:bg-white/10 hover:text-white',
               'transition-colors duration-200',
-              'focus:outline-none focus:ring-2 focus:ring-white/50'
+              'focus:outline-none focus:ring-2 focus:ring-white/50',
             )}
             aria-label="Close lightbox"
           >
@@ -341,7 +350,7 @@ export function Lightbox({
             'bg-black/50 text-white/80',
             'hover:bg-black/70 hover:text-white',
             'transition-colors duration-200',
-            'focus:outline-none focus:ring-2 focus:ring-white/50'
+            'focus:outline-none focus:ring-2 focus:ring-white/50',
           )}
           aria-label="Previous image"
         >
@@ -370,7 +379,7 @@ export function Lightbox({
             'bg-black/50 text-white/80',
             'hover:bg-black/70 hover:text-white',
             'transition-colors duration-200',
-            'focus:outline-none focus:ring-2 focus:ring-white/50'
+            'focus:outline-none focus:ring-2 focus:ring-white/50',
           )}
           aria-label="Next image"
         >
@@ -403,7 +412,7 @@ export function Lightbox({
           className={cn(
             'max-h-full max-w-full object-contain',
             'transition-all duration-200',
-            isLoading && 'opacity-0'
+            isLoading && 'opacity-0',
           )}
           style={{
             transform: `scale(${scale})`,
@@ -417,7 +426,7 @@ export function Lightbox({
         <div
           className={cn(
             'absolute bottom-0 right-0 top-14 w-80 bg-black/80 p-4',
-            'overflow-y-auto backdrop-blur-sm'
+            'overflow-y-auto backdrop-blur-sm',
           )}
         >
           <h3 className="mb-4 text-lg font-semibold text-white">Image Info</h3>
@@ -469,7 +478,7 @@ export function Lightbox({
                   'focus:outline-none focus:ring-2 focus:ring-white/50',
                   index === currentIndex
                     ? 'ring-2 ring-white'
-                    : 'opacity-60 hover:opacity-100'
+                    : 'opacity-60 hover:opacity-100',
                 )}
               >
                 <img

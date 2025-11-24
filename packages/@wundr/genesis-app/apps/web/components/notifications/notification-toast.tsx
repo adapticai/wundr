@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { Notification, NotificationType } from '@/types/notification';
 
 interface NotificationToastProps {
@@ -104,7 +106,7 @@ export function NotificationToast({
         isExiting
           ? 'translate-x-full opacity-0'
           : 'animate-in slide-in-from-right-full fade-in-0',
-        className
+        className,
       )}
     >
       <div className="p-4">
@@ -212,7 +214,7 @@ export function ToastContainer({
       className={cn(
         'pointer-events-none fixed z-50 flex flex-col gap-2',
         positionClasses[position],
-        className
+        className,
       )}
       aria-live="polite"
       aria-atomic="true"

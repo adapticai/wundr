@@ -15,7 +15,7 @@
  * @packageDocumentation
  */
 
-import { Queue, Worker, Job, QueueEvents } from 'bullmq';
+import { Queue, Worker, QueueEvents } from 'bullmq';
 import Redis from 'ioredis';
 
 import { BaseProcessingQueue } from './processing-queue';
@@ -36,6 +36,8 @@ import {
   type JobRetryEvent,
   type QueueErrorEvent,
 } from './types';
+
+import type { Job} from 'bullmq';
 
 /**
  * Default configuration for Redis queue
@@ -202,7 +204,7 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
           connection: this.connection.duplicate(),
           concurrency: this.config.queue.concurrency!,
           stalledInterval: this.config.queue.stalledJobInterval,
-        }
+        },
       );
 
       // Create queue events listener
@@ -228,7 +230,9 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
    * Setup BullMQ event handlers
    */
   private setupEventHandlers(): void {
-    if (!this.worker || !this.queueEvents) return;
+    if (!this.worker || !this.queueEvents) {
+return;
+}
 
     // Worker events
     this.worker.on('completed', (job: Job, result: ProcessingResult) => {
@@ -240,7 +244,9 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
     });
 
     this.worker.on('failed', (job: Job | undefined, error: Error) => {
-      if (!job) return;
+      if (!job) {
+return;
+}
 
       const willRetry = job.attemptsMade < (this.config.queue.maxRetries! + 1);
 
@@ -279,7 +285,7 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
     });
 
     // Queue events
-    this.queueEvents.on('waiting', ({ jobId }) => {
+    this.queueEvents.on('waiting', ({ jobId: _jobId }) => {
       // Job added event is emitted in addJob
     });
 
@@ -358,7 +364,9 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
    * Move a job to the dead letter queue
    */
   private async moveToDeadLetterQueue(job: Job, error: Error): Promise<void> {
-    if (!this.deadLetterQueue) return;
+    if (!this.deadLetterQueue) {
+return;
+}
 
     await this.deadLetterQueue.add(
       'dead-letter',
@@ -373,7 +381,7 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
         removeOnComplete: {
           age: Math.floor((this.config.deadLetterQueue?.retentionTime ?? 604800000) / 1000),
         },
-      }
+      },
     );
   }
 
@@ -381,7 +389,9 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
    * Close all connections gracefully
    */
   async close(): Promise<void> {
-    if (!this.ready) return;
+    if (!this.ready) {
+return;
+}
 
     this.ready = false;
 
@@ -478,7 +488,9 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
     this.ensureReady();
 
     const job = await this.queue!.getJob(jobId);
-    if (!job) return null;
+    if (!job) {
+return null;
+}
 
     return this.mapJobToInfo(job);
   }
@@ -490,7 +502,9 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
     this.ensureReady();
 
     const job = await this.queue!.getJob(jobId);
-    if (!job) return false;
+    if (!job) {
+return false;
+}
 
     const state = await job.getState();
     if (state === 'active') {
@@ -508,7 +522,9 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
     this.ensureReady();
 
     const job = await this.queue!.getJob(jobId);
-    if (!job) return false;
+    if (!job) {
+return false;
+}
 
     const state = await job.getState();
     if (state !== 'failed') {
@@ -765,7 +781,7 @@ export class RedisProcessingQueue extends BaseProcessingQueue {
  */
 export function createRedisProcessingQueue(
   config?: Partial<RedisQueueConfig>,
-  processorRegistry?: ProcessorRegistry
+  processorRegistry?: ProcessorRegistry,
 ): RedisProcessingQueue {
   return new RedisProcessingQueue(config, processorRegistry);
 }

@@ -36,7 +36,9 @@ interface RouteContext {
  * Check if user is online based on last activity
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
-  if (!lastActiveAt) return false;
+  if (!lastActiveAt) {
+return false;
+}
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
@@ -69,7 +71,7 @@ function isUserOnline(lastActiveAt: Date | null): boolean {
  */
 export async function GET(
   _request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -77,7 +79,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -87,7 +89,7 @@ export async function GET(
     if (!paramResult.success) {
       return NextResponse.json(
         createPresenceErrorResponse('Invalid VP ID format', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -107,7 +109,7 @@ export async function GET(
     if (!vp) {
       return NextResponse.json(
         createPresenceErrorResponse('VP not found', PRESENCE_ERROR_CODES.VP_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -136,9 +138,9 @@ export async function GET(
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

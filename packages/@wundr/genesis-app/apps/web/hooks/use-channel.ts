@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useMemo } from 'react';
+
 import type {
   Channel,
   ChannelMember,
@@ -20,7 +21,9 @@ export function useChannels(workspaceId: string) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchChannels = useCallback(async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -37,7 +40,7 @@ export function useChannels(workspaceId: string) {
           ...c,
           createdAt: new Date(c.createdAt),
           updatedAt: new Date(c.updatedAt),
-        }))
+        })),
       );
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -83,7 +86,9 @@ export function useChannel(channelId: string) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchChannel = useCallback(async () => {
-    if (!channelId) return;
+    if (!channelId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -133,7 +138,9 @@ export function useChannelMembers(channelId: string) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchMembers = useCallback(async () => {
-    if (!channelId) return;
+    if (!channelId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -149,7 +156,7 @@ export function useChannelMembers(channelId: string) {
         data.members.map((m: ChannelMember) => ({
           ...m,
           joinedAt: new Date(m.joinedAt),
-        }))
+        })),
       );
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -165,7 +172,7 @@ export function useChannelMembers(channelId: string) {
   // Separate online and offline members
   const { onlineMembers, offlineMembers } = useMemo(() => {
     const online = members.filter(
-      (m) => m.user.status === 'online' || m.user.status === 'busy' || m.user.status === 'away'
+      (m) => m.user.status === 'online' || m.user.status === 'busy' || m.user.status === 'away',
     );
     const offline = members.filter((m) => m.user.status === 'offline' || !m.user.status);
 
@@ -218,7 +225,7 @@ export function useChannelMutations() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const updateChannel = useCallback(
@@ -250,7 +257,7 @@ export function useChannelMutations() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const deleteChannel = useCallback(async (channelId: string): Promise<boolean> => {
@@ -319,7 +326,7 @@ export function useChannelMutations() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const leaveChannel = useCallback(async (channelId: string): Promise<boolean> => {
@@ -368,7 +375,7 @@ export function useChannelMutations() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const removeMember = useCallback(
@@ -393,7 +400,7 @@ export function useChannelMutations() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   const changeMemberRole = useCallback(
@@ -420,7 +427,7 @@ export function useChannelMutations() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   return {
@@ -502,7 +509,9 @@ export function useDirectMessages(workspaceId: string) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchDirectMessages = useCallback(async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -547,7 +556,7 @@ export function useDirectMessages(workspaceId: string) {
         return null;
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   return {
@@ -577,7 +586,7 @@ export function useWorkspaceUsers(workspaceId: string) {
 
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/users?search=${encodeURIComponent(query)}`
+          `/api/workspaces/${workspaceId}/users?search=${encodeURIComponent(query)}`,
         );
         if (!response.ok) {
           throw new Error('Failed to search users');
@@ -591,11 +600,13 @@ export function useWorkspaceUsers(workspaceId: string) {
         setIsLoading(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const fetchAllUsers = useCallback(async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     setIsLoading(true);
 

@@ -9,9 +9,19 @@
  * @module app/api/daemon/auth/refresh/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { redis, hashAPIKey } from '@genesis/core';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+import type { NextRequest} from 'next/server';
+
+/**
+ * Schema for token refresh request body
+ */
+const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, 'Refresh token is required'),
+});
 
 /**
  * JWT configuration
@@ -68,19 +78,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: REFRESH_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const { refreshToken } = body as { refreshToken?: string };
-
-    // Validate required fields
-    if (!refreshToken) {
+    // Validate input using Zod schema
+    const parseResult = refreshTokenSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
         { error: 'Refresh token required', code: REFRESH_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
+
+    const { refreshToken } = parseResult.data;
 
     // Verify and decode refresh token
     let decoded: RefreshTokenPayload;
@@ -90,12 +101,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (jwtError instanceof jwt.TokenExpiredError) {
         return NextResponse.json(
           { error: 'Token expired', code: REFRESH_ERROR_CODES.TOKEN_EXPIRED },
-          { status: 401 }
+          { status: 401 },
         );
       }
       return NextResponse.json(
         { error: 'Invalid or revoked token', code: REFRESH_ERROR_CODES.INVALID_TOKEN },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -103,7 +114,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (decoded.type !== 'refresh') {
       return NextResponse.json(
         { error: 'Invalid token type', code: REFRESH_ERROR_CODES.INVALID_TOKEN },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -127,7 +138,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (providedHash !== sessionData.refreshToken) {
         return NextResponse.json(
           { error: 'Token has been revoked', code: REFRESH_ERROR_CODES.TOKEN_REVOKED },
-          { status: 401 }
+          { status: 401 },
         );
       }
     }
@@ -145,7 +156,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         type: 'access',
       },
       JWT_SECRET,
-      { expiresIn: ACCESS_TOKEN_EXPIRY }
+      { expiresIn: ACCESS_TOKEN_EXPIRY },
     );
 
     // Update session last activity
@@ -157,7 +168,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           JSON.stringify({
             ...sessionData,
             lastRefresh: new Date().toISOString(),
-          })
+          }),
         );
       } catch (redisError) {
         console.error('Redis session update error:', redisError);
@@ -172,7 +183,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/daemon/auth/refresh] Error:', error);
     return NextResponse.json(
       { error: 'Token refresh failed', code: REFRESH_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

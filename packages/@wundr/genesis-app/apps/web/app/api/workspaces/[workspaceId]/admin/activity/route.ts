@@ -9,8 +9,8 @@
  * @module app/api/workspaces/[workspaceId]/admin/activity/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -20,6 +20,8 @@ import {
   type AdminAction,
   type AdminActionType,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -39,14 +41,14 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -61,7 +63,7 @@ export async function GET(
     if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -83,9 +85,9 @@ export async function GET(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -129,12 +131,12 @@ export async function GET(
          WHERE ${whereClause}
          ORDER BY created_at DESC
          LIMIT ${limit}
-         OFFSET ${offset}`
+         OFFSET ${offset}`,
       );
 
       // Get total count
       const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-        `SELECT COUNT(*) as count FROM admin_actions WHERE ${whereClause}`
+        `SELECT COUNT(*) as count FROM admin_actions WHERE ${whereClause}`,
       );
       const total = Number(countResult[0]?.count || 0);
 
@@ -198,7 +200,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/activity] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to fetch activity log', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -11,8 +11,8 @@
  * @module app/api/workspaces/[workspaceId]/admin/members/[userId]/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -21,6 +21,8 @@ import {
   ADMIN_ERROR_CODES,
   type MemberStatus,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID and user ID parameters
@@ -40,14 +42,14 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -61,7 +63,7 @@ export async function GET(
     if (!adminMembership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(adminMembership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -88,7 +90,7 @@ export async function GET(
     if (!member) {
       return NextResponse.json(
         createAdminErrorResponse('Member not found', ADMIN_ERROR_CODES.MEMBER_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -127,7 +129,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/members/:userId] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to fetch member', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -143,14 +145,14 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -164,7 +166,7 @@ export async function PATCH(
     if (!adminMembership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(adminMembership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -176,7 +178,7 @@ export async function PATCH(
     if (!member) {
       return NextResponse.json(
         createAdminErrorResponse('Member not found', ADMIN_ERROR_CODES.MEMBER_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -184,7 +186,7 @@ export async function PATCH(
     if (member.role === 'OWNER' && adminMembership.role !== 'OWNER') {
       return NextResponse.json(
         createAdminErrorResponse('Cannot modify workspace owner', ADMIN_ERROR_CODES.CANNOT_MODIFY_OWNER),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -195,7 +197,7 @@ export async function PATCH(
     } catch {
       return NextResponse.json(
         createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -206,9 +208,9 @@ export async function PATCH(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -280,7 +282,7 @@ export async function PATCH(
     console.error('[PATCH /api/workspaces/:workspaceId/admin/members/:userId] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to update member', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -296,14 +298,14 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -313,7 +315,7 @@ export async function DELETE(
     if (session.user.id === userId) {
       return NextResponse.json(
         createAdminErrorResponse('Cannot remove yourself', ADMIN_ERROR_CODES.CANNOT_REMOVE_SELF),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -325,7 +327,7 @@ export async function DELETE(
     if (!adminMembership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(adminMembership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -338,7 +340,7 @@ export async function DELETE(
     if (!member) {
       return NextResponse.json(
         createAdminErrorResponse('Member not found', ADMIN_ERROR_CODES.MEMBER_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -346,7 +348,7 @@ export async function DELETE(
     if (member.role === 'OWNER' && adminMembership.role !== 'OWNER') {
       return NextResponse.json(
         createAdminErrorResponse('Cannot remove workspace owner', ADMIN_ERROR_CODES.CANNOT_MODIFY_OWNER),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -369,7 +371,7 @@ export async function DELETE(
     console.error('[DELETE /api/workspaces/:workspaceId/admin/members/:userId] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to remove member', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

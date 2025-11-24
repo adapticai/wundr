@@ -8,6 +8,7 @@
  */
 
 import Redis from 'ioredis';
+
 import type { RedisOptions } from 'ioredis';
 
 // =============================================================================
@@ -273,7 +274,7 @@ export async function disconnectRedis(): Promise<void> {
     disconnectPromises.push(
       singletonClient.quit().then(() => {
         singletonClient = null;
-      })
+      }),
     );
   }
 
@@ -281,7 +282,7 @@ export async function disconnectRedis(): Promise<void> {
     disconnectPromises.push(
       subscriberClient.quit().then(() => {
         subscriberClient = null;
-      })
+      }),
     );
   }
 

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { WorkspaceMember } from './member-list';
 
 export interface MemberEditModalProps {
@@ -43,7 +45,9 @@ export function MemberEditModal({
   }, [member]);
 
   const fetchMemberDetails = useCallback(async () => {
-    if (!member) return;
+    if (!member) {
+return;
+}
 
     setIsLoading(true);
     try {
@@ -68,7 +72,9 @@ export function MemberEditModal({
   }, [member, workspaceId]);
 
   const handleSaveRole = async () => {
-    if (!member) return;
+    if (!member) {
+return;
+}
 
     setIsSaving(true);
     try {
@@ -78,7 +84,7 @@ export function MemberEditModal({
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: selectedRole, customFields }),
-        }
+        },
       );
       if (response.ok) {
         onSave();
@@ -91,8 +97,12 @@ export function MemberEditModal({
   };
 
   const handleSuspend = async () => {
-    if (!member) return;
-    if (!confirm(`Are you sure you want to suspend ${member.name}?`)) return;
+    if (!member) {
+return;
+}
+    if (!confirm(`Are you sure you want to suspend ${member.name}?`)) {
+return;
+}
 
     try {
       await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}/suspend`, {
@@ -105,7 +115,9 @@ export function MemberEditModal({
   };
 
   const handleActivate = async () => {
-    if (!member) return;
+    if (!member) {
+return;
+}
 
     try {
       await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}/activate`, {
@@ -118,13 +130,16 @@ export function MemberEditModal({
   };
 
   const handleRemove = async () => {
-    if (!member) return;
+    if (!member) {
+return;
+}
     if (
       !confirm(
-        `Are you sure you want to remove ${member.name} from this workspace? This action cannot be undone.`
+        `Are you sure you want to remove ${member.name} from this workspace? This action cannot be undone.`,
       )
-    )
-      return;
+    ) {
+return;
+}
 
     try {
       await fetch(`/api/workspaces/${workspaceId}/admin/members/${member.id}`, {
@@ -136,7 +151,9 @@ export function MemberEditModal({
     }
   };
 
-  if (!member) return null;
+  if (!member) {
+return null;
+}
 
   return (
     <div
@@ -146,7 +163,7 @@ export function MemberEditModal({
       <div
         className={cn(
           'w-full max-w-2xl bg-card border border-border rounded-xl shadow-lg',
-          className
+          className,
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -193,7 +210,7 @@ export function MemberEditModal({
                     ? tab === 'danger'
                       ? 'border-destructive text-destructive'
                       : 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground',
                 )}
               >
                 {tab === 'danger' ? 'Danger Zone' : tab}
@@ -295,7 +312,7 @@ export function MemberEditModal({
                             ? 'text-green-500'
                             : member.status === 'suspended'
                             ? 'text-red-500'
-                            : 'text-yellow-500'
+                            : 'text-yellow-500',
                         )}
                       >
                         {member.status}
@@ -412,7 +429,7 @@ export function MemberEditModal({
               disabled={isSaving}
               className={cn(
                 'px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm',
-                'disabled:opacity-50 disabled:cursor-not-allowed'
+                'disabled:opacity-50 disabled:cursor-not-allowed',
               )}
             >
               {isSaving ? 'Saving...' : 'Save Changes'}

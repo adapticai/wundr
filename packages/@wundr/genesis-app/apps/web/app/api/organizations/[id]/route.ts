@@ -12,7 +12,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -24,6 +23,7 @@ import {
 } from '@/lib/validations/organization';
 
 import type { UpdateOrganizationInput } from '@/lib/validations/organization';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -71,7 +71,7 @@ async function checkOrganizationAccess(orgId: string, userId: string) {
  * @returns Organization details
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -110,7 +110,7 @@ export async function GET(
       data: membership.organization,
       membership: {
         role: membership.role,
-        joinedAt: membership.createdAt,
+        joinedAt: membership.joinedAt,
       },
     });
   } catch (error) {
@@ -252,7 +252,7 @@ export async function PATCH(
  * @returns Success message
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

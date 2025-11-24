@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { clsx } from 'clsx';
+import { useState, useCallback } from 'react';
+
 import type { Huddle, HuddleParticipant } from '@/types/call';
 
 export interface HuddleBarProps {
@@ -37,7 +38,7 @@ function ParticipantAvatar({
         'text-primary font-medium',
         'border-2 border-background',
         'relative',
-        sizeClasses[size]
+        sizeClasses[size],
       )}
       title={participant.user.name || participant.user.email}
     >
@@ -82,7 +83,7 @@ function StackedAvatars({
             'w-6 h-6 rounded-full',
             'bg-muted flex items-center justify-center',
             'text-xs font-medium text-foreground',
-            'border-2 border-background'
+            'border-2 border-background',
           )}
         >
           +{remainingCount}
@@ -113,7 +114,7 @@ export function HuddleBar({
         action();
       }
     },
-    []
+    [],
   );
 
   // Find speaking participant(s)
@@ -129,7 +130,7 @@ export function HuddleBar({
         'shadow-lg',
         'transition-all duration-200',
         isHovered && 'scale-105',
-        className
+        className,
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -165,7 +166,7 @@ export function HuddleBar({
         className={clsx(
           'text-sm font-medium text-foreground',
           'hover:text-primary transition-colors',
-          'truncate max-w-[120px]'
+          'truncate max-w-[120px]',
         )}
         aria-label={`Expand huddle: ${huddle.name}`}
       >
@@ -192,7 +193,7 @@ export function HuddleBar({
           'w-8 h-8 rounded-full flex items-center justify-center transition-all',
           isMuted
             ? 'bg-red-500 hover:bg-red-600 text-white'
-            : 'bg-muted hover:bg-muted/80 text-foreground'
+            : 'bg-muted hover:bg-muted/80 text-foreground',
         )}
         aria-label={isMuted ? 'Unmute' : 'Mute'}
         aria-pressed={isMuted}
@@ -240,7 +241,7 @@ export function HuddleBar({
         className={clsx(
           'w-8 h-8 rounded-full flex items-center justify-center',
           'bg-muted hover:bg-muted/80 text-foreground',
-          'transition-colors'
+          'transition-colors',
         )}
         aria-label="Expand to full view"
       >
@@ -268,7 +269,7 @@ export function HuddleBar({
         className={clsx(
           'w-8 h-8 rounded-full flex items-center justify-center',
           'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
-          'transition-colors'
+          'transition-colors',
         )}
         aria-label="Leave huddle"
       >
@@ -309,7 +310,7 @@ export function HuddleInviteToast({
         'flex items-center gap-3 p-4',
         'bg-card border border-border rounded-lg',
         'shadow-lg',
-        'animate-slide-up'
+        'animate-slide-up',
       )}
       role="alert"
     >
@@ -326,7 +327,7 @@ export function HuddleInviteToast({
             'px-3 py-1.5 rounded-lg',
             'bg-muted hover:bg-muted/80',
             'text-sm text-foreground',
-            'transition-colors'
+            'transition-colors',
           )}
         >
           Dismiss
@@ -337,7 +338,7 @@ export function HuddleInviteToast({
             'px-3 py-1.5 rounded-lg',
             'bg-primary hover:bg-primary/90',
             'text-sm text-primary-foreground',
-            'transition-colors'
+            'transition-colors',
           )}
         >
           Join

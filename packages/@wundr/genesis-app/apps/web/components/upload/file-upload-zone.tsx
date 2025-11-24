@@ -10,6 +10,7 @@ import {
   formatFileSize,
   getAcceptString,
 } from '@/types/upload';
+
 import type { AcceptedFileTypes } from '@/types/upload';
 
 interface FileUploadZoneProps {
@@ -57,7 +58,7 @@ export function FileUploadZone({
         onFilesSelected(acceptedFiles);
       }
     },
-    [maxSize, maxFiles, onFilesSelected]
+    [maxSize, maxFiles, onFilesSelected],
   );
 
   const dropzoneOptions: DropzoneOptions = {
@@ -94,7 +95,7 @@ export function FileUploadZone({
             'border-primary bg-primary/5': isDragActive && isDragAccept,
             'border-destructive bg-destructive/5': isDragReject,
             'cursor-not-allowed opacity-50': disabled,
-          }
+          },
         )}
       >
         <input {...getInputProps()} aria-label="File upload input" />
@@ -109,7 +110,7 @@ export function FileUploadZone({
                 {
                   'bg-primary/10': isDragActive && isDragAccept,
                   'bg-destructive/10': isDragReject,
-                }
+                },
               )}
             >
               <svg

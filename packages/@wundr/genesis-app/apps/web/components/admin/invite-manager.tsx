@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface Invite {
@@ -62,7 +63,9 @@ export function InviteManager({
       ? bulkEmails.split(/[,\n]/).map((e) => e.trim()).filter(Boolean)
       : [email.trim()];
 
-    if (emails.length === 0) return;
+    if (emails.length === 0) {
+return;
+}
 
     setIsSending(true);
     try {
@@ -102,7 +105,9 @@ export function InviteManager({
   };
 
   const handleRevokeInvite = async (inviteId: string) => {
-    if (!confirm('Are you sure you want to revoke this invite?')) return;
+    if (!confirm('Are you sure you want to revoke this invite?')) {
+return;
+}
 
     try {
       await fetch(`/api/workspaces/${workspaceId}/admin/invites/${inviteId}`, {
@@ -122,7 +127,7 @@ export function InviteManager({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: selectedRole }),
-        }
+        },
       );
       if (response.ok) {
         const data = await response.json();
@@ -196,7 +201,7 @@ export function InviteManager({
                     'flex-1 py-2 rounded-lg text-sm font-medium',
                     !isBulkMode
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
+                      : 'bg-muted text-muted-foreground',
                   )}
                 >
                   Single
@@ -208,7 +213,7 @@ export function InviteManager({
                     'flex-1 py-2 rounded-lg text-sm font-medium',
                     isBulkMode
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
+                      : 'bg-muted text-muted-foreground',
                   )}
                 >
                   Bulk
@@ -329,7 +334,7 @@ export function InviteManager({
                 }
                 className={cn(
                   'px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm',
-                  'disabled:opacity-50 disabled:cursor-not-allowed'
+                  'disabled:opacity-50 disabled:cursor-not-allowed',
                 )}
               >
                 {isSending ? 'Sending...' : 'Send Invite'}
@@ -371,7 +376,7 @@ export function InviteManager({
                         <span
                           className={cn(
                             'px-2 py-0.5 text-xs rounded capitalize',
-                            STATUS_COLORS[invite.status]
+                            STATUS_COLORS[invite.status],
                           )}
                         >
                           {invite.status}
@@ -451,7 +456,7 @@ export function InviteManager({
                           <span
                             className={cn(
                               'px-2 py-0.5 text-xs rounded capitalize',
-                              STATUS_COLORS[invite.status]
+                              STATUS_COLORS[invite.status],
                             )}
                           >
                             {invite.status}

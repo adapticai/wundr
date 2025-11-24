@@ -1,11 +1,14 @@
 'use client';
 
-import { memo, lazy, Suspense, ComponentType, ReactNode, useRef, useEffect, useState } from 'react';
+import { memo, lazy, Suspense, useRef, useEffect, useState } from 'react';
+
 import { useLazyLoad, useConnectionAware, useVirtualizedData } from '@/hooks/use-performance';
+
+import type { ComponentType, ReactNode} from 'react';
 
 /** Lazy component wrapper with loading fallback */
 export function lazyWithPreload<T extends ComponentType<unknown>>(
-  importFn: () => Promise<{ default: T }>
+  importFn: () => Promise<{ default: T }>,
 ): T & { preload: () => Promise<{ default: T }> } {
   const LazyComponent = lazy(importFn) as T & { preload: () => Promise<{ default: T }> };
   LazyComponent.preload = importFn;
@@ -16,7 +19,7 @@ export function lazyWithPreload<T extends ComponentType<unknown>>(
 export function Skeleton({
   className = '',
   width,
-  height
+  height,
 }: {
   className?: string;
   width?: string | number;
@@ -268,8 +271,12 @@ export function Progressive({
     setJsEnabled(true);
   }, []);
 
-  if (!mounted) return <>{ssr}</>;
-  if (!jsEnabled) return <>{client}</>;
+  if (!mounted) {
+return <>{ssr}</>;
+}
+  if (!jsEnabled) {
+return <>{client}</>;
+}
   return <>{enhanced || client}</>;
 }
 

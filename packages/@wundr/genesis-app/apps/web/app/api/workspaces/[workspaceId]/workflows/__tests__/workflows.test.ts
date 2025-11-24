@@ -20,21 +20,16 @@
  * @module apps/web/app/api/workspaces/[workspaceId]/workflows/__tests__/workflows.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import type {
   Workflow,
-  WorkflowStatus,
   TriggerType,
-  ActionType,
   WorkflowExecution,
-  ExecutionStatus,
   WorkflowTemplate,
-  WorkflowTemplateCategory,
   TriggerConfig,
   ActionConfig,
-  WorkflowVariable,
-  ActionResult,
 } from '@/types/workflow';
 
 // =============================================================================
@@ -102,10 +97,11 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Utility function kept for future route handler tests
 function createMockRequest(
   method: string,
   body?: Record<string, unknown>,
-  searchParams?: Record<string, string>
+  searchParams?: Record<string, string>,
 ): NextRequest {
   const url = new URL('http://localhost:3000/api/workspaces/ws_test/workflows');
 
@@ -339,14 +335,14 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
-        new Error('Workflow name is required')
+        new Error('Workflow name is required'),
       );
 
       await expect(
         mockWorkflowService.createWorkflow('ws_test', {
           trigger: { type: 'message' },
           actions: [],
-        })
+        }),
       ).rejects.toThrow('Workflow name is required');
     });
 
@@ -355,7 +351,7 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
-        new Error('Invalid trigger type: invalid_type')
+        new Error('Invalid trigger type: invalid_type'),
       );
 
       await expect(
@@ -363,7 +359,7 @@ describe('Workflow API Routes', () => {
           name: 'Test',
           trigger: { type: 'invalid_type' as TriggerType },
           actions: [],
-        })
+        }),
       ).rejects.toThrow('Invalid trigger type');
     });
 
@@ -372,7 +368,7 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
-        new Error('At least one action is required')
+        new Error('At least one action is required'),
       );
 
       await expect(
@@ -380,7 +376,7 @@ describe('Workflow API Routes', () => {
           name: 'Test',
           trigger: { type: 'message' },
           actions: [],
-        })
+        }),
       ).rejects.toThrow('At least one action is required');
     });
 
@@ -391,7 +387,7 @@ describe('Workflow API Routes', () => {
       const longName = 'a'.repeat(256);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
-        new Error('Name must be 255 characters or less')
+        new Error('Name must be 255 characters or less'),
       );
 
       await expect(
@@ -399,7 +395,7 @@ describe('Workflow API Routes', () => {
           name: longName,
           trigger: { type: 'message' },
           actions: [{ type: 'send_message', config: {} }],
-        })
+        }),
       ).rejects.toThrow('Name must be 255 characters or less');
     });
 
@@ -408,7 +404,7 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
-        new Error('send_message action requires message field')
+        new Error('send_message action requires message field'),
       );
 
       await expect(
@@ -416,7 +412,7 @@ describe('Workflow API Routes', () => {
           name: 'Test',
           trigger: { type: 'message' },
           actions: [{ type: 'send_message', config: {} }],
-        })
+        }),
       ).rejects.toThrow('send_message action requires message field');
     });
   });
@@ -495,7 +491,7 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       const mockWorkflows = Array.from({ length: 10 }, (_, i) =>
-        createMockWorkflow({ id: `wf_${i}`, name: `Workflow ${i}` })
+        createMockWorkflow({ id: `wf_${i}`, name: `Workflow ${i}` }),
       );
       mockWorkflowService.listWorkflows.mockResolvedValue({
         workflows: mockWorkflows,
@@ -598,11 +594,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.getWorkflow.mockRejectedValue(
-        new Error('Access denied')
+        new Error('Access denied'),
       );
 
       await expect(mockWorkflowService.getWorkflow('wf_test123')).rejects.toThrow(
-        'Access denied'
+        'Access denied',
       );
     });
   });
@@ -680,11 +676,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.updateWorkflow.mockRejectedValue(
-        new Error('Workflow not found')
+        new Error('Workflow not found'),
       );
 
       await expect(
-        mockWorkflowService.updateWorkflow('wf_nonexistent', { name: 'New' })
+        mockWorkflowService.updateWorkflow('wf_nonexistent', { name: 'New' }),
       ).rejects.toThrow('Workflow not found');
     });
 
@@ -693,13 +689,13 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.updateWorkflow.mockRejectedValue(
-        new Error('Invalid trigger configuration')
+        new Error('Invalid trigger configuration'),
       );
 
       await expect(
         mockWorkflowService.updateWorkflow('wf_test123', {
           trigger: { type: 'invalid' as TriggerType },
-        })
+        }),
       ).rejects.toThrow('Invalid trigger configuration');
     });
   });
@@ -726,11 +722,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.deleteWorkflow.mockRejectedValue(
-        new Error('Workflow not found')
+        new Error('Workflow not found'),
       );
 
       await expect(
-        mockWorkflowService.deleteWorkflow('wf_nonexistent')
+        mockWorkflowService.deleteWorkflow('wf_nonexistent'),
       ).rejects.toThrow('Workflow not found');
     });
 
@@ -754,11 +750,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.deleteWorkflow.mockRejectedValue(
-        new Error('Cannot delete workflow with running executions')
+        new Error('Cannot delete workflow with running executions'),
       );
 
       await expect(
-        mockWorkflowService.deleteWorkflow('wf_active')
+        mockWorkflowService.deleteWorkflow('wf_active'),
       ).rejects.toThrow('Cannot delete workflow with running executions');
     });
   });
@@ -797,11 +793,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.activateWorkflow.mockRejectedValue(
-        new Error('Workflow not found')
+        new Error('Workflow not found'),
       );
 
       await expect(
-        mockWorkflowService.activateWorkflow('wf_nonexistent')
+        mockWorkflowService.activateWorkflow('wf_nonexistent'),
       ).rejects.toThrow('Workflow not found');
     });
 
@@ -810,11 +806,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.activateWorkflow.mockRejectedValue(
-        new Error('Cannot activate workflow with validation errors')
+        new Error('Cannot activate workflow with validation errors'),
       );
 
       await expect(
-        mockWorkflowService.activateWorkflow('wf_invalid')
+        mockWorkflowService.activateWorkflow('wf_invalid'),
       ).rejects.toThrow('Cannot activate workflow with validation errors');
     });
 
@@ -853,11 +849,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.deactivateWorkflow.mockRejectedValue(
-        new Error('Workflow not found')
+        new Error('Workflow not found'),
       );
 
       await expect(
-        mockWorkflowService.deactivateWorkflow('wf_nonexistent')
+        mockWorkflowService.deactivateWorkflow('wf_nonexistent'),
       ).rejects.toThrow('Workflow not found');
     });
 
@@ -932,11 +928,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.executeWorkflow.mockRejectedValue(
-        new Error('Workflow not found')
+        new Error('Workflow not found'),
       );
 
       await expect(
-        mockWorkflowService.executeWorkflow('wf_nonexistent')
+        mockWorkflowService.executeWorkflow('wf_nonexistent'),
       ).rejects.toThrow('Workflow not found');
     });
 
@@ -945,11 +941,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.executeWorkflow.mockRejectedValue(
-        new Error('Cannot execute inactive workflow')
+        new Error('Cannot execute inactive workflow'),
       );
 
       await expect(
-        mockWorkflowService.executeWorkflow('wf_inactive')
+        mockWorkflowService.executeWorkflow('wf_inactive'),
       ).rejects.toThrow('Cannot execute inactive workflow');
     });
 
@@ -1029,7 +1025,7 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       const executions = Array.from({ length: 20 }, (_, i) =>
-        createMockExecution({ id: `exec_${i}` })
+        createMockExecution({ id: `exec_${i}` }),
       );
       mockWorkflowService.getExecutions.mockResolvedValue({
         executions,
@@ -1076,7 +1072,7 @@ describe('Workflow API Routes', () => {
 
       const result = await mockWorkflowService.cancelExecution(
         'wf_test123',
-        'exec_running'
+        'exec_running',
       );
 
       expect(result.status).toBe('cancelled');
@@ -1087,11 +1083,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.cancelExecution.mockRejectedValue(
-        new Error('Execution not found')
+        new Error('Execution not found'),
       );
 
       await expect(
-        mockWorkflowService.cancelExecution('wf_test123', 'exec_nonexistent')
+        mockWorkflowService.cancelExecution('wf_test123', 'exec_nonexistent'),
       ).rejects.toThrow('Execution not found');
     });
 
@@ -1100,11 +1096,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.cancelExecution.mockRejectedValue(
-        new Error('Cannot cancel completed execution')
+        new Error('Cannot cancel completed execution'),
       );
 
       await expect(
-        mockWorkflowService.cancelExecution('wf_test123', 'exec_completed')
+        mockWorkflowService.cancelExecution('wf_test123', 'exec_completed'),
       ).rejects.toThrow('Cannot cancel completed execution');
     });
 
@@ -1113,11 +1109,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.cancelExecution.mockRejectedValue(
-        new Error('Cannot cancel failed execution')
+        new Error('Cannot cancel failed execution'),
       );
 
       await expect(
-        mockWorkflowService.cancelExecution('wf_test123', 'exec_failed')
+        mockWorkflowService.cancelExecution('wf_test123', 'exec_failed'),
       ).rejects.toThrow('Cannot cancel failed execution');
     });
   });
@@ -1195,7 +1191,7 @@ describe('Workflow API Routes', () => {
 
       const result = await mockWorkflowService.createFromTemplate(
         'ws_test',
-        'tmpl_welcome'
+        'tmpl_welcome',
       );
 
       expect(result.name).toBe('Welcome Message');
@@ -1211,7 +1207,7 @@ describe('Workflow API Routes', () => {
       const result = await mockWorkflowService.createFromTemplate(
         'ws_test',
         'tmpl_welcome',
-        { name: 'Custom Welcome' }
+        { name: 'Custom Welcome' },
       );
 
       expect(result.name).toBe('Custom Welcome');
@@ -1222,11 +1218,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createFromTemplate.mockRejectedValue(
-        new Error('Template not found')
+        new Error('Template not found'),
       );
 
       await expect(
-        mockWorkflowService.createFromTemplate('ws_test', 'tmpl_nonexistent')
+        mockWorkflowService.createFromTemplate('ws_test', 'tmpl_nonexistent'),
       ).rejects.toThrow('Template not found');
     });
   });
@@ -1241,11 +1237,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.listWorkflows.mockRejectedValue(
-        new Error('Database connection failed')
+        new Error('Database connection failed'),
       );
 
       await expect(
-        mockWorkflowService.listWorkflows('ws_test')
+        mockWorkflowService.listWorkflows('ws_test'),
       ).rejects.toThrow('Database connection failed');
     });
 
@@ -1254,11 +1250,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.executeWorkflow.mockRejectedValue(
-        new Error('Rate limit exceeded')
+        new Error('Rate limit exceeded'),
       );
 
       await expect(
-        mockWorkflowService.executeWorkflow('wf_test123')
+        mockWorkflowService.executeWorkflow('wf_test123'),
       ).rejects.toThrow('Rate limit exceeded');
     });
 
@@ -1267,11 +1263,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.updateWorkflow.mockRejectedValue(
-        new Error('Workflow was modified by another user')
+        new Error('Workflow was modified by another user'),
       );
 
       await expect(
-        mockWorkflowService.updateWorkflow('wf_test123', { name: 'New Name' })
+        mockWorkflowService.updateWorkflow('wf_test123', { name: 'New Name' }),
       ).rejects.toThrow('Workflow was modified by another user');
     });
 
@@ -1280,11 +1276,11 @@ describe('Workflow API Routes', () => {
       getServerSession.mockResolvedValue(session);
 
       mockWorkflowService.createWorkflow.mockRejectedValue(
-        new Error('Invalid JSON in request body')
+        new Error('Invalid JSON in request body'),
       );
 
       await expect(
-        mockWorkflowService.createWorkflow('ws_test', 'invalid' as unknown as Record<string, unknown>)
+        mockWorkflowService.createWorkflow('ws_test', 'invalid' as unknown as Record<string, unknown>),
       ).rejects.toThrow('Invalid JSON in request body');
     });
   });

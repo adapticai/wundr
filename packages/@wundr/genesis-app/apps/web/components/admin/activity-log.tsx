@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface AdminActivity {
@@ -57,12 +58,18 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
         limit: String(pageSize),
         offset: String(page * pageSize),
       });
-      if (filters.actionType) params.set('actionType', filters.actionType);
-      if (filters.actorId) params.set('actorId', filters.actorId);
-      if (filters.resourceType) params.set('resourceType', filters.resourceType);
+      if (filters.actionType) {
+params.set('actionType', filters.actionType);
+}
+      if (filters.actorId) {
+params.set('actorId', filters.actorId);
+}
+      if (filters.resourceType) {
+params.set('resourceType', filters.resourceType);
+}
 
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/activity?${params.toString()}`
+        `/api/workspaces/${workspaceId}/admin/activity?${params.toString()}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -88,10 +95,18 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffMins < 1) {
+return 'Just now';
+}
+    if (diffMins < 60) {
+return `${diffMins} minutes ago`;
+}
+    if (diffHours < 24) {
+return `${diffHours} hours ago`;
+}
+    if (diffDays < 7) {
+return `${diffDays} days ago`;
+}
     return date.toLocaleDateString();
   };
 
@@ -209,7 +224,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
                       <div
                         className={cn(
                           'w-8 h-8 rounded-full flex items-center justify-center',
-                          config.color
+                          config.color,
                         )}
                       >
                         <IconComponent className="h-4 w-4 text-white" />

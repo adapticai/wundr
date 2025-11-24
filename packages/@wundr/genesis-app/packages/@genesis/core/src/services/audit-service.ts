@@ -55,6 +55,14 @@
  * ```
  */
 
+import {
+  CRITICAL_ACTIONS,
+  WARNING_ACTIONS,
+  DEFAULT_AUDIT_RETENTION_DAYS,
+  DEFAULT_AUDIT_BATCH_SIZE,
+  DEFAULT_AUDIT_PAGE_SIZE,
+} from '../types/audit';
+
 import type {
   AuditLogEntry,
   AuditAction,
@@ -69,57 +77,207 @@ import type {
   AuditLogExport,
   AuditContext,
 } from '../types/audit';
-import {
-  CRITICAL_ACTIONS,
-  WARNING_ACTIONS,
-  DEFAULT_AUDIT_RETENTION_DAYS,
-  DEFAULT_AUDIT_BATCH_SIZE,
-  DEFAULT_AUDIT_PAGE_SIZE,
-} from '../types/audit';
 
 // =============================================================================
 // DATABASE CLIENT INTERFACES
 // =============================================================================
 
 /**
- * Audit log database delegate interface
- * This abstracts the Prisma client to allow for future schema additions
+ * Input data for creating an audit log entry in the database.
+ */
+export interface AuditLogCreateInput {
+  timestamp: Date;
+  action: string;
+  category: string;
+  severity: string;
+  actorId: string;
+  actorType: string;
+  actorName: string;
+  actorEmail?: string | null;
+  resourceType: string;
+  resourceId: string;
+  resourceName?: string | null;
+  workspaceId: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  sessionId?: string | null;
+  changes?: string | null;
+  metadata?: string | null;
+  success: boolean;
+  errorMessage?: string | null;
+}
+
+/**
+ * Raw audit log record from the database.
+ */
+export interface AuditLogRecord {
+  id: string;
+  timestamp: Date;
+  action: string;
+  category: string;
+  severity: string;
+  actorId: string;
+  actorType: string;
+  actorName: string;
+  actorEmail?: string | null;
+  resourceType: string;
+  resourceId: string;
+  resourceName?: string | null;
+  workspaceId: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  sessionId?: string | null;
+  changes?: string | null;
+  metadata?: string | null;
+  success: boolean;
+  errorMessage?: string | null;
+}
+
+/**
+ * Where clause for filtering audit logs.
+ */
+export interface AuditLogWhereInput {
+  workspaceId?: string;
+  action?: string | { in: string[] };
+  category?: string | { in: string[] };
+  severity?: string | { in: string[] };
+  actorId?: string | { in: string[] };
+  actorType?: string | { in: string[] };
+  resourceType?: string | { in: string[] };
+  resourceId?: string | { in: string[] };
+  timestamp?: { gte?: Date; lte?: Date; lt?: Date };
+  success?: boolean;
+  OR?: Array<{
+    actorName?: { contains: string; mode: string };
+    resourceName?: { contains: string; mode: string };
+    action?: { contains: string; mode: string };
+  }>;
+}
+
+/**
+ * Order by clause for audit log queries.
+ */
+export interface AuditLogOrderByInput {
+  timestamp?: 'asc' | 'desc';
+  action?: 'asc' | 'desc';
+  severity?: 'asc' | 'desc';
+  actorName?: 'asc' | 'desc';
+  _count?: { action?: 'asc' | 'desc'; actorId?: 'asc' | 'desc' };
+}
+
+/**
+ * Group by result with count.
+ */
+export interface AuditLogGroupByResult {
+  category?: string;
+  severity?: string;
+  action?: string;
+  actorId?: string;
+  actorName?: string;
+  _count: number | { action: number } | { actorId: number };
+}
+
+/**
+ * Audit log database delegate interface.
+ * This abstracts the Prisma client to allow for future schema additions.
  */
 export interface AuditLogDelegate {
+  /**
+   * Creates multiple audit log entries in a batch.
+   */
   createMany(args: {
-    data: Array<Record<string, unknown>>;
+    data: AuditLogCreateInput[];
   }): Promise<{ count: number }>;
+  /**
+   * Finds multiple audit log entries matching the criteria.
+   */
   findMany(args: {
-    where: Record<string, unknown>;
-    orderBy?: Record<string, unknown>;
+    where: AuditLogWhereInput;
+    orderBy?: AuditLogOrderByInput;
     take?: number;
     skip?: number;
-  }): Promise<Array<Record<string, unknown>>>;
-  count(args: { where: Record<string, unknown> }): Promise<number>;
+  }): Promise<AuditLogRecord[]>;
+  /**
+   * Counts audit log entries matching the criteria.
+   */
+  count(args: { where: AuditLogWhereInput }): Promise<number>;
+  /**
+   * Groups audit log entries by specified fields.
+   */
   groupBy(args: {
     by: string[];
-    where: Record<string, unknown>;
+    where: AuditLogWhereInput;
     _count: boolean;
-    orderBy?: Record<string, unknown>;
+    orderBy?: AuditLogOrderByInput;
     take?: number;
-  }): Promise<Array<Record<string, unknown>>>;
+  }): Promise<AuditLogGroupByResult[]>;
+  /**
+   * Deletes multiple audit log entries matching the criteria.
+   */
   deleteMany(args: {
-    where: Record<string, unknown>;
+    where: AuditLogWhereInput;
   }): Promise<{ count: number }>;
 }
 
-export interface AuditLogExportDelegate {
-  create(args: {
-    data: Record<string, unknown>;
-  }): Promise<Record<string, unknown>>;
-  findUnique(args: {
-    where: { id: string };
-  }): Promise<Record<string, unknown> | null>;
+/**
+ * Input data for creating an audit log export record.
+ */
+export interface AuditLogExportCreateInput {
+  workspaceId: string;
+  requestedBy: string;
+  filter: string;
+  format: string;
+  status: string;
+  expiresAt?: Date | null;
 }
 
+/**
+ * Raw audit log export record from the database.
+ */
+export interface AuditLogExportRecord {
+  id: string;
+  workspaceId: string;
+  requestedBy: string;
+  filter: string;
+  format: string;
+  status: string;
+  fileUrl?: string | null;
+  fileSize?: number | null;
+  entryCount?: number | null;
+  createdAt: Date;
+  completedAt?: Date | null;
+  expiresAt?: Date | null;
+  error?: string | null;
+}
+
+/**
+ * Audit log export database delegate interface.
+ */
+export interface AuditLogExportDelegate {
+  /**
+   * Creates a new audit log export record.
+   */
+  create(args: {
+    data: AuditLogExportCreateInput;
+  }): Promise<AuditLogExportRecord>;
+  /**
+   * Finds a unique audit log export by ID.
+   */
+  findUnique(args: {
+    where: { id: string };
+  }): Promise<AuditLogExportRecord | null>;
+}
+
+/**
+ * Database client interface for audit logging.
+ * Abstracts the Prisma client for dependency injection and testing.
+ */
 export interface AuditDatabaseClient {
+  /** Audit log operations */
   auditLog: AuditLogDelegate;
+  /** Audit log export operations */
   auditLogExport: AuditLogExportDelegate;
+  /** Execute raw SQL query */
   $queryRaw<T>(
     query: TemplateStringsArray,
     ...values: unknown[]
@@ -293,7 +451,9 @@ export class AuditServiceImpl implements AuditService {
       this.batchTimeout = null;
     }
 
-    if (this.batchQueue.length === 0) return;
+    if (this.batchQueue.length === 0) {
+return;
+}
 
     const entries = [...this.batchQueue];
     this.batchQueue = [];
@@ -319,7 +479,7 @@ export class AuditServiceImpl implements AuditService {
   async query(
     filter: AuditLogFilter,
     pagination?: AuditLogPagination,
-    sort?: AuditLogSort
+    sort?: AuditLogSort,
   ): Promise<AuditLogResponse> {
     const limit = pagination?.limit ?? DEFAULT_AUDIT_PAGE_SIZE;
     const offset = pagination?.offset ?? 0;
@@ -350,10 +510,13 @@ export class AuditServiceImpl implements AuditService {
   }
 
   /**
-   * Build where clause from filter
+   * Build where clause from filter.
+   *
+   * @param filter - The audit log filter criteria
+   * @returns A properly typed where clause for database queries
    */
-  private buildWhereClause(filter: AuditLogFilter): Record<string, unknown> {
-    const where: Record<string, unknown> = {
+  private buildWhereClause(filter: AuditLogFilter): AuditLogWhereInput {
+    const where: AuditLogWhereInput = {
       workspaceId: filter.workspaceId,
     };
 
@@ -408,41 +571,48 @@ export class AuditServiceImpl implements AuditService {
   }
 
   /**
-   * Map database entry to typed entry
+   * Map database record to typed audit log entry.
+   *
+   * @param record - The raw database record
+   * @returns A properly typed AuditLogEntry
    */
-  private mapEntry(entry: Record<string, unknown>): AuditLogEntry {
+  private mapEntry(record: AuditLogRecord): AuditLogEntry {
     return {
-      id: entry.id as string,
-      timestamp: entry.timestamp as Date,
-      action: entry.action as AuditAction,
-      category: entry.category as AuditCategory,
-      severity: entry.severity as AuditSeverity,
-      actorId: entry.actorId as string,
-      actorType: entry.actorType as 'user' | 'vp' | 'system' | 'api',
-      actorName: entry.actorName as string,
-      actorEmail: entry.actorEmail as string | undefined,
-      resourceType: entry.resourceType as string,
-      resourceId: entry.resourceId as string,
-      resourceName: entry.resourceName as string | undefined,
-      workspaceId: entry.workspaceId as string,
-      ipAddress: entry.ipAddress as string | undefined,
-      userAgent: entry.userAgent as string | undefined,
-      sessionId: entry.sessionId as string | undefined,
-      changes: entry.changes ? JSON.parse(entry.changes as string) : undefined,
-      metadata: entry.metadata ? JSON.parse(entry.metadata as string) : undefined,
-      success: entry.success as boolean,
-      errorMessage: entry.errorMessage as string | undefined,
+      id: record.id,
+      timestamp: record.timestamp,
+      action: record.action as AuditAction,
+      category: record.category as AuditCategory,
+      severity: record.severity as AuditSeverity,
+      actorId: record.actorId,
+      actorType: record.actorType as 'user' | 'vp' | 'system' | 'api',
+      actorName: record.actorName,
+      actorEmail: record.actorEmail ?? undefined,
+      resourceType: record.resourceType,
+      resourceId: record.resourceId,
+      resourceName: record.resourceName ?? undefined,
+      workspaceId: record.workspaceId,
+      ipAddress: record.ipAddress ?? undefined,
+      userAgent: record.userAgent ?? undefined,
+      sessionId: record.sessionId ?? undefined,
+      changes: record.changes ? JSON.parse(record.changes) : undefined,
+      metadata: record.metadata ? JSON.parse(record.metadata) : undefined,
+      success: record.success,
+      errorMessage: record.errorMessage ?? undefined,
     };
   }
 
   /**
-   * Get statistics for audit logs
+   * Get statistics for audit logs.
+   *
+   * @param workspaceId - The workspace ID to get stats for
+   * @param dateRange - Optional date range filter
+   * @returns Audit log statistics
    */
   async getStats(
     workspaceId: string,
-    dateRange?: { start: Date; end: Date }
+    dateRange?: { start: Date; end: Date },
   ): Promise<AuditLogStats> {
-    const where: Record<string, unknown> = { workspaceId };
+    const where: AuditLogWhereInput = { workspaceId };
     if (dateRange) {
       where.timestamp = { gte: dateRange.start, lte: dateRange.end };
     }
@@ -480,21 +650,37 @@ export class AuditServiceImpl implements AuditService {
     return {
       totalEntries,
       byCategory: Object.fromEntries(
-        byCategory.map((c: Record<string, unknown>) => [c.category, c._count])
+        byCategory.map((c: AuditLogGroupByResult) => [c.category, this.extractCount(c._count)]),
       ) as Record<AuditCategory, number>,
       bySeverity: Object.fromEntries(
-        bySeverity.map((s: Record<string, unknown>) => [s.severity, s._count])
+        bySeverity.map((s: AuditLogGroupByResult) => [s.severity, this.extractCount(s._count)]),
       ) as Record<AuditSeverity, number>,
       byAction: Object.fromEntries(
-        byAction.map((a: Record<string, unknown>) => [a.action, a._count])
+        byAction.map((a: AuditLogGroupByResult) => [a.action, this.extractCount(a._count)]),
       ),
-      byActor: byActor.map((a: Record<string, unknown>) => ({
-        actorId: a.actorId as string,
-        actorName: a.actorName as string,
-        count: a._count as number,
+      byActor: byActor.map((a: AuditLogGroupByResult) => ({
+        actorId: a.actorId ?? '',
+        actorName: a.actorName ?? '',
+        count: this.extractCount(a._count),
       })),
       timeline,
     };
+  }
+
+  /**
+   * Extracts a numeric count from a group by result.
+   */
+  private extractCount(count: number | { action: number } | { actorId: number }): number {
+    if (typeof count === 'number') {
+      return count;
+    }
+    if ('action' in count) {
+      return count.action;
+    }
+    if ('actorId' in count) {
+      return count.actorId;
+    }
+    return 0;
   }
 
   /**
@@ -502,7 +688,7 @@ export class AuditServiceImpl implements AuditService {
    */
   private async getTimeline(
     workspaceId: string,
-    dateRange?: { start: Date; end: Date }
+    dateRange?: { start: Date; end: Date },
   ): Promise<Array<{ date: string; count: number }>> {
     const start =
       dateRange?.start ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -533,7 +719,7 @@ export class AuditServiceImpl implements AuditService {
     workspaceId: string,
     requestedBy: string,
     filter: AuditLogFilter,
-    format: 'json' | 'csv' | 'pdf'
+    format: 'json' | 'csv' | 'pdf',
   ): Promise<AuditLogExport> {
     const exportRecord = await this.prisma.auditLogExport.create({
       data: {
@@ -581,7 +767,9 @@ export class AuditServiceImpl implements AuditService {
       where: { id: exportId },
     });
 
-    if (!record) return null;
+    if (!record) {
+return null;
+}
 
     return {
       id: record.id as string,
@@ -653,8 +841,12 @@ export class AuditServiceImpl implements AuditService {
    * Get severity for action
    */
   private getSeverity(action: AuditAction): AuditSeverity {
-    if (CRITICAL_ACTIONS.includes(action)) return 'critical';
-    if (WARNING_ACTIONS.includes(action)) return 'warning';
+    if (CRITICAL_ACTIONS.includes(action)) {
+return 'critical';
+}
+    if (WARNING_ACTIONS.includes(action)) {
+return 'warning';
+}
     return 'info';
   }
 
@@ -662,11 +854,11 @@ export class AuditServiceImpl implements AuditService {
    * Publish critical event for real-time alerting
    */
   private async publishCriticalEvent(
-    entry: Omit<AuditLogEntry, 'id'>
+    entry: Omit<AuditLogEntry, 'id'>,
   ): Promise<void> {
     await this.redis.publish(
       `audit:critical:${entry.workspaceId}`,
-      JSON.stringify(entry)
+      JSON.stringify(entry),
     );
   }
 
@@ -701,7 +893,7 @@ let auditServiceInstance: AuditService | null = null;
 export function getAuditService(): AuditService {
   if (!auditServiceInstance) {
     throw new AuditError(
-      'Audit service not initialized. Call createAuditService first.'
+      'Audit service not initialized. Call createAuditService first.',
     );
   }
   return auditServiceInstance;

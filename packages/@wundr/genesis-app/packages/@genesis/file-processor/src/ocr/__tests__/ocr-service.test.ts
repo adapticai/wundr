@@ -170,7 +170,7 @@ function createMockOCRService(): OCRService {
         await worker.terminate();
 
         return result;
-      }
+      },
     ),
 
     recognizeTextFromBuffer: vi.fn(
@@ -185,13 +185,13 @@ function createMockOCRService(): OCRService {
         await worker.terminate();
 
         return result;
-      }
+      },
     ),
 
     preprocessImage: vi.fn(
       async (
         imagePath: string,
-        options: PreprocessingOptions = {}
+        options: PreprocessingOptions = {},
       ): Promise<PreprocessingResult> => {
         const transformations: string[] = [];
         let buffer = createMockImageBuffer();
@@ -234,7 +234,7 @@ function createMockOCRService(): OCRService {
           skewAngle,
           enhancedContrast: options.improveContrast ? 1.2 : undefined,
         };
-      }
+      },
     ),
 
     detectLanguage: vi.fn(async (imagePath: string): Promise<string[]> => {
@@ -472,7 +472,7 @@ describe('OCRService', () => {
       mockWorker.recognize.mockRejectedValue(new Error('OCR engine failed'));
 
       await expect(service.recognizeText('/path/to/invalid.png')).rejects.toThrow(
-        'OCR engine failed'
+        'OCR engine failed',
       );
     });
   });
@@ -547,11 +547,11 @@ describe('OCRService', () => {
       // Re-create service to pick up new mock
       const errorService = createMockOCRService();
       (errorService.preprocessImage as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('Image processing failed')
+        new Error('Image processing failed'),
       );
 
       await expect(errorService.preprocessImage('/path/to/corrupted.png', {})).rejects.toThrow(
-        'Image processing failed'
+        'Image processing failed',
       );
     });
   });
@@ -626,7 +626,7 @@ describe('OCRService', () => {
       mockWorker.recognize.mockRejectedValue(new Error('Invalid image data'));
 
       await expect(service.recognizeTextFromBuffer(invalidBuffer)).rejects.toThrow(
-        'Invalid image data'
+        'Invalid image data',
       );
     });
   });
@@ -779,7 +779,7 @@ describe('OCRService Integration', () => {
     });
 
     const results = await Promise.all(
-      pages.map((buffer) => service.recognizeTextFromBuffer(buffer))
+      pages.map((buffer) => service.recognizeTextFromBuffer(buffer)),
     );
 
     expect(results).toHaveLength(3);

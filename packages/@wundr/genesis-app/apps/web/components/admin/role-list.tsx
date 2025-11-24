@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface Role {
@@ -65,8 +66,12 @@ export function RoleList({
   };
 
   const formatPermissions = (permissions: string[]) => {
-    if (permissions.length === 0) return 'No permissions';
-    if (permissions.length <= 3) return permissions.join(', ');
+    if (permissions.length === 0) {
+return 'No permissions';
+}
+    if (permissions.length <= 3) {
+return permissions.join(', ');
+}
     return `${permissions.slice(0, 3).join(', ')} +${permissions.length - 3} more`;
   };
 

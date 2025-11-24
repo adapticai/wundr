@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+
 import { cn } from '@/lib/utils';
+
 import type { SyncStatus, ConflictResolution } from '@/types/notification';
 
 interface SyncStatusProps {
@@ -22,7 +24,9 @@ export function SyncStatusIndicator({
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleManualSync = useCallback(async () => {
-    if (!onManualSync || isSyncing) return;
+    if (!onManualSync || isSyncing) {
+return;
+}
     setIsSyncing(true);
     try {
       await onManualSync();
@@ -32,7 +36,9 @@ export function SyncStatusIndicator({
   }, [onManualSync, isSyncing]);
 
   const formattedLastSynced = useMemo(() => {
-    if (!lastSynced) return null;
+    if (!lastSynced) {
+return null;
+}
     return formatRelativeTime(lastSynced);
   }, [lastSynced]);
 
@@ -43,7 +49,7 @@ export function SyncStatusIndicator({
     <div
       className={cn(
         'flex items-center gap-2 text-sm',
-        className
+        className,
       )}
     >
       {/* Status indicator */}
@@ -103,14 +109,16 @@ export function ConflictResolutionDialog({
   onResolve,
   onClose,
 }: ConflictResolutionDialogProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         className={cn(
           'w-full max-w-lg rounded-lg bg-popover shadow-lg',
-          'animate-in fade-in-0 zoom-in-95 duration-200'
+          'animate-in fade-in-0 zoom-in-95 duration-200',
         )}
         role="dialog"
         aria-modal="true"
@@ -148,7 +156,7 @@ export function ConflictResolutionDialog({
               onClick={() => onResolve('local')}
               className={cn(
                 'flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
-                'hover:bg-accent hover:border-accent-foreground/20'
+                'hover:bg-accent hover:border-accent-foreground/20',
               )}
             >
               <div className="rounded-full bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
@@ -168,7 +176,7 @@ export function ConflictResolutionDialog({
               onClick={() => onResolve('server')}
               className={cn(
                 'flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
-                'hover:bg-accent hover:border-accent-foreground/20'
+                'hover:bg-accent hover:border-accent-foreground/20',
               )}
             >
               <div className="rounded-full bg-green-100 p-2 text-green-600 dark:bg-green-900/30 dark:text-green-400">
@@ -188,7 +196,7 @@ export function ConflictResolutionDialog({
               onClick={() => onResolve('merge')}
               className={cn(
                 'flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
-                'hover:bg-accent hover:border-accent-foreground/20'
+                'hover:bg-accent hover:border-accent-foreground/20',
               )}
             >
               <div className="rounded-full bg-purple-100 p-2 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
@@ -232,7 +240,7 @@ export function SyncStatusBadge({ status, size = 'md', className }: SyncStatusBa
         config.bgColor,
         config.textColor,
         sizeClasses,
-        className
+        className,
       )}
     >
       {status === 'syncing' ? (
@@ -293,9 +301,15 @@ function formatRelativeTime(date: Date): string {
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
 
-  if (diffSecs < 60) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffSecs < 60) {
+return 'just now';
+}
+  if (diffMins < 60) {
+return `${diffMins}m ago`;
+}
+  if (diffHours < 24) {
+return `${diffHours}h ago`;
+}
   return date.toLocaleDateString();
 }
 

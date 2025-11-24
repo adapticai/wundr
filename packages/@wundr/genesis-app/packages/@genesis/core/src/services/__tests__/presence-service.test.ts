@@ -13,15 +13,16 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import {
   createMockRedis,
   type MockRedis,
 } from '../../test-utils/mock-redis';
 import {
-  createMockUserPresence,
-  createMockVPPresence,
-  createMockDaemonInfo,
-  createMockChannelPresence,
+  _createMockUserPresence,
+  _createMockVPPresence,
+  _createMockDaemonInfo,
+  _createMockChannelPresence,
   generatePresenceTestId,
   resetPresenceIdCounter,
   type UserPresence,
@@ -58,13 +59,13 @@ class MockPresenceService {
     } = {
       presenceTTL: PRESENCE_TTL_SECONDS,
       heartbeatInterval: HEARTBEAT_INTERVAL_MS,
-    }
+    },
   ) {}
 
   // User presence methods
   async setUserOnline(
     userId: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     const presence: UserPresence = {
       userId,
@@ -92,7 +93,7 @@ class MockPresenceService {
         userId,
         status: 'online',
         timestamp: new Date().toISOString(),
-      })
+      }),
     );
   }
 
@@ -114,7 +115,7 @@ class MockPresenceService {
         userId,
         status: 'offline',
         timestamp: new Date().toISOString(),
-      })
+      }),
     );
 
     // Remove from all channel presence sets
@@ -131,7 +132,9 @@ class MockPresenceService {
     const key = `${PRESENCE_KEY_PREFIX}${userId}`;
     const data = await this.redis.hgetall(key);
 
-    if (!data) return null;
+    if (!data) {
+return null;
+}
 
     return {
       userId: data.userId,
@@ -146,7 +149,7 @@ class MockPresenceService {
 
   async setUserStatus(
     userId: string,
-    status: UserPresenceStatus
+    status: UserPresenceStatus,
   ): Promise<void> {
     const key = `${PRESENCE_KEY_PREFIX}${userId}`;
     await this.redis.hset(key, 'status', status);
@@ -159,14 +162,14 @@ class MockPresenceService {
         userId,
         status,
         timestamp: new Date().toISOString(),
-      })
+      }),
     );
   }
 
   async setUserCustomStatus(
     userId: string,
     customStatus: string,
-    emoji?: string
+    emoji?: string,
   ): Promise<void> {
     const key = `${PRESENCE_KEY_PREFIX}${userId}`;
     await this.redis.hset(key, 'customStatus', customStatus);
@@ -194,7 +197,7 @@ class MockPresenceService {
   // VP presence methods
   async setVPOnline(
     vpId: string,
-    daemonInfo: { daemonId: string; endpoint: string; version: string }
+    daemonInfo: { daemonId: string; endpoint: string; version: string },
   ): Promise<void> {
     const key = `${VP_PRESENCE_KEY_PREFIX}${vpId}`;
     const now = new Date().toISOString();
@@ -219,7 +222,7 @@ class MockPresenceService {
         status: 'online',
         daemonInfo,
         timestamp: now,
-      })
+      }),
     );
   }
 
@@ -237,7 +240,7 @@ class MockPresenceService {
         vpId,
         status: 'offline',
         timestamp: now,
-      })
+      }),
     );
 
     await this.redis.del(key);
@@ -247,7 +250,9 @@ class MockPresenceService {
     const key = `${VP_PRESENCE_KEY_PREFIX}${vpId}`;
     const data = await this.redis.hgetall(key);
 
-    if (!data) return null;
+    if (!data) {
+return null;
+}
 
     return {
       vpId: data.vpId,
@@ -259,7 +264,7 @@ class MockPresenceService {
       activeConversations: parseInt(data.activeConversations || '0', 10),
       maxConcurrentConversations: parseInt(
         data.maxConcurrentConversations || '10',
-        10
+        10,
       ),
       daemonInfo: {
         daemonId: data.daemonId,
@@ -272,7 +277,7 @@ class MockPresenceService {
 
   async updateVPHeartbeat(
     vpId: string,
-    metrics?: Record<string, unknown>
+    metrics?: Record<string, unknown>,
   ): Promise<void> {
     const key = `${VP_PRESENCE_KEY_PREFIX}${vpId}`;
     const now = new Date().toISOString();
@@ -351,7 +356,7 @@ describe('PresenceService', () => {
 
       expect(redis.publish).toHaveBeenCalledWith(
         PRESENCE_CHANNEL,
-        expect.stringContaining('user_online')
+        expect.stringContaining('user_online'),
       );
 
       const publishedMessage = redis._publishedMessages[0];
@@ -369,17 +374,17 @@ describe('PresenceService', () => {
 
       expect(redis.expire).toHaveBeenCalledWith(
         `${PRESENCE_KEY_PREFIX}${userId}`,
-        PRESENCE_TTL_SECONDS
+        PRESENCE_TTL_SECONDS,
       );
     });
 
     it('handles multiple users going online', async () => {
       const userIds = Array.from({ length: 5 }, () =>
-        generatePresenceTestId('user')
+        generatePresenceTestId('user'),
       );
 
       await Promise.all(
-        userIds.map((userId) => presenceService.setUserOnline(userId))
+        userIds.map((userId) => presenceService.setUserOnline(userId)),
       );
 
       // Verify all users are stored
@@ -399,14 +404,14 @@ describe('PresenceService', () => {
       // First connection
       await presenceService.setUserOnline(userId, { session: 'first' });
       const firstConnection = await redis.hgetall(
-        `${PRESENCE_KEY_PREFIX}${userId}`
+        `${PRESENCE_KEY_PREFIX}${userId}`,
       );
 
       // Wait a bit and reconnect
       await new Promise((resolve) => setTimeout(resolve, 10));
       await presenceService.setUserOnline(userId, { session: 'second' });
       const secondConnection = await redis.hgetall(
-        `${PRESENCE_KEY_PREFIX}${userId}`
+        `${PRESENCE_KEY_PREFIX}${userId}`,
       );
 
       expect(secondConnection?.metadata).toBe(JSON.stringify({ session: 'second' }));
@@ -442,7 +447,7 @@ describe('PresenceService', () => {
       expect(redis.hset).toHaveBeenCalledWith(
         `${PRESENCE_KEY_PREFIX}${userId}`,
         'lastSeen',
-        expect.any(String)
+        expect.any(String),
       );
     });
 
@@ -456,7 +461,7 @@ describe('PresenceService', () => {
 
       expect(redis.publish).toHaveBeenCalledWith(
         PRESENCE_CHANNEL,
-        expect.stringContaining('user_offline')
+        expect.stringContaining('user_offline'),
       );
 
       const publishedMessage = redis._publishedMessages[0];
@@ -478,17 +483,17 @@ describe('PresenceService', () => {
 
       // Verify user is in channels
       expect(await presenceService.getOnlineChannelMembers(channelId1)).toContain(
-        userId
+        userId,
       );
 
       await presenceService.setUserOffline(userId);
 
       // Verify user is removed from channels
       expect(
-        await presenceService.getOnlineChannelMembers(channelId1)
+        await presenceService.getOnlineChannelMembers(channelId1),
       ).not.toContain(userId);
       expect(
-        await presenceService.getOnlineChannelMembers(channelId2)
+        await presenceService.getOnlineChannelMembers(channelId2),
       ).not.toContain(userId);
     });
 
@@ -497,7 +502,7 @@ describe('PresenceService', () => {
 
       // Should not throw
       await expect(
-        presenceService.setUserOffline(userId)
+        presenceService.setUserOffline(userId),
       ).resolves.toBeUndefined();
 
       // Should still publish event
@@ -709,7 +714,7 @@ describe('PresenceService', () => {
 
       expect(redis.publish).toHaveBeenCalledWith(
         PRESENCE_CHANNEL,
-        expect.stringContaining('vp_online')
+        expect.stringContaining('vp_online'),
       );
 
       const event = JSON.parse(redis._publishedMessages[0].message);
@@ -728,7 +733,7 @@ describe('PresenceService', () => {
 
       expect(redis.publish).toHaveBeenCalledWith(
         PRESENCE_CHANNEL,
-        expect.stringContaining('vp_offline')
+        expect.stringContaining('vp_offline'),
       );
 
       const event = JSON.parse(redis._publishedMessages[0].message);
@@ -749,8 +754,8 @@ describe('PresenceService', () => {
 
       await Promise.all(
         vps.map(({ vpId, daemonInfo }) =>
-          presenceService.setVPOnline(vpId, daemonInfo)
-        )
+          presenceService.setVPOnline(vpId, daemonInfo),
+        ),
       );
 
       for (const { vpId } of vps) {
@@ -779,7 +784,7 @@ describe('PresenceService', () => {
 
     it('handles concurrent operations', async () => {
       const userIds = Array.from({ length: 10 }, () =>
-        generatePresenceTestId('user')
+        generatePresenceTestId('user'),
       );
 
       // Concurrent online/offline operations
@@ -828,7 +833,7 @@ describe('PresenceService', () => {
 
       expect(redis.expire).toHaveBeenCalledWith(
         `${PRESENCE_KEY_PREFIX}${userId}`,
-        PRESENCE_TTL_SECONDS
+        PRESENCE_TTL_SECONDS,
       );
     });
 
@@ -840,7 +845,7 @@ describe('PresenceService', () => {
 
       expect(redis.expire).toHaveBeenCalledWith(
         `${VP_PRESENCE_KEY_PREFIX}${vpId}`,
-        PRESENCE_TTL_SECONDS
+        PRESENCE_TTL_SECONDS,
       );
     });
 
@@ -855,7 +860,7 @@ describe('PresenceService', () => {
 
       expect(redis.expire).toHaveBeenCalledWith(
         `${VP_PRESENCE_KEY_PREFIX}${vpId}`,
-        PRESENCE_TTL_SECONDS
+        PRESENCE_TTL_SECONDS,
       );
     });
   });

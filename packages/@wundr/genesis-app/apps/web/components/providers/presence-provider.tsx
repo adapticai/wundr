@@ -10,8 +10,8 @@ import {
   useMemo,
 } from 'react';
 
-import type { ReactNode } from 'react';
 import type { PresenceStatus } from '@/components/presence/presence-indicator';
+import type { ReactNode } from 'react';
 
 // Types
 interface UserPresence {
@@ -71,7 +71,9 @@ export function PresenceProvider({
 
   // Send heartbeat to maintain presence
   const sendHeartbeat = useCallback(async () => {
-    if (!userId || !enabled) return;
+    if (!userId || !enabled) {
+return;
+}
 
     try {
       const response = await fetch('/api/presence/heartbeat', {
@@ -96,7 +98,9 @@ export function PresenceProvider({
   // Set user status
   const setStatus = useCallback(
     async (status: PresenceStatus) => {
-      if (!userId) return;
+      if (!userId) {
+return;
+}
 
       try {
         const response = await fetch('/api/presence/me', {
@@ -120,7 +124,9 @@ export function PresenceProvider({
   // Set custom status text
   const setCustomStatus = useCallback(
     async (text: string) => {
-      if (!userId) return;
+      if (!userId) {
+return;
+}
 
       try {
         const response = await fetch('/api/presence/me', {
@@ -143,7 +149,9 @@ export function PresenceProvider({
 
   // Clear custom status
   const clearCustomStatus = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+return;
+}
 
     try {
       const response = await fetch('/api/presence/me/custom-status', {
@@ -195,7 +203,9 @@ export function PresenceProvider({
 
   // Connect to presence SSE stream
   const connect = useCallback(() => {
-    if (!userId || !enabled) return;
+    if (!userId || !enabled) {
+return;
+}
 
     // Close existing connection
     if (eventSourceRef.current) {
@@ -259,7 +269,9 @@ export function PresenceProvider({
 
   // Fetch presence for subscribed users
   useEffect(() => {
-    if (subscribedUserIds.size === 0) return;
+    if (subscribedUserIds.size === 0) {
+return;
+}
 
     const fetchPresence = async () => {
       try {
@@ -293,7 +305,9 @@ export function PresenceProvider({
 
   // Set up heartbeat and connection
   useEffect(() => {
-    if (!userId || !enabled) return;
+    if (!userId || !enabled) {
+return;
+}
 
     // Initial heartbeat and connection
     sendHeartbeat();

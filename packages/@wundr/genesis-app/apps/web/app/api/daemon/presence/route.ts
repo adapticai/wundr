@@ -9,10 +9,12 @@
  * @module app/api/daemon/presence/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
 import { redis } from '@genesis/core';
+import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -94,7 +96,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: PRESENCE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -105,7 +107,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: PRESENCE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -121,7 +123,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           error: 'Invalid status. Must be one of: online, away, busy, offline',
           code: PRESENCE_ERROR_CODES.VALIDATION_ERROR,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -138,7 +140,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!vp) {
       return NextResponse.json(
         { error: 'Unauthorized', code: PRESENCE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -174,7 +176,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       await redis.setex(
         presenceKey,
         5 * 60, // 5 minutes TTL
-        JSON.stringify(presenceData)
+        JSON.stringify(presenceData),
       );
 
       // Publish presence update for real-time subscriptions
@@ -184,7 +186,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
           type: 'vp_presence_update',
           vpId: token.vpId,
           ...presenceData,
-        })
+        }),
       );
     } catch (redisError) {
       console.error('Redis presence update error:', redisError);
@@ -196,7 +198,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     console.error('[PUT /api/daemon/presence] Error:', error);
     return NextResponse.json(
       { error: 'Failed to update presence', code: PRESENCE_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

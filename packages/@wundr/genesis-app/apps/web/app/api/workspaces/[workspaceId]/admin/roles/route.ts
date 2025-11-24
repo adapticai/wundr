@@ -10,8 +10,8 @@
  * @module app/api/workspaces/[workspaceId]/admin/roles/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -20,6 +20,8 @@ import {
   ADMIN_ERROR_CODES,
   type Role,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -89,14 +91,14 @@ const SYSTEM_ROLES: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>[] = [
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -110,7 +112,7 @@ export async function GET(
     if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -138,7 +140,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/admin/roles] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to fetch roles', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -154,14 +156,14 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -175,7 +177,7 @@ export async function POST(
     if (!membership || !['admin', 'owner', 'ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         createAdminErrorResponse('Admin access required', ADMIN_ERROR_CODES.FORBIDDEN),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -186,7 +188,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -197,20 +199,20 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Check if role name already exists (including system roles)
     const existingSystemRole = SYSTEM_ROLES.find(
-      r => r.name.toLowerCase() === parseResult.data.name.toLowerCase()
+      r => r.name.toLowerCase() === parseResult.data.name.toLowerCase(),
     );
     if (existingSystemRole) {
       return NextResponse.json(
         createAdminErrorResponse('Role name already exists', ADMIN_ERROR_CODES.ROLE_NAME_EXISTS),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -259,7 +261,7 @@ export async function POST(
     console.error('[POST /api/workspaces/:workspaceId/admin/roles] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to create role', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

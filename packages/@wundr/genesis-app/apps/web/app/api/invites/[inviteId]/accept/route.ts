@@ -9,8 +9,8 @@
  * @module app/api/invites/[inviteId]/accept/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
@@ -20,6 +20,8 @@ import {
   type Invite,
   type InviteStatus,
 } from '@/lib/validations/admin';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * Route context with invite ID parameter
@@ -39,14 +41,14 @@ interface RouteContext {
  */
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         createAdminErrorResponse('Unauthorized', ADMIN_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -59,7 +61,7 @@ export async function POST(
     } catch {
       return NextResponse.json(
         createAdminErrorResponse('Invalid JSON body', ADMIN_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -70,9 +72,9 @@ export async function POST(
         createAdminErrorResponse(
           'Validation failed',
           ADMIN_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -100,7 +102,7 @@ export async function POST(
     if (!foundWorkspace || !foundInvite) {
       return NextResponse.json(
         createAdminErrorResponse('Invite not found', ADMIN_ERROR_CODES.INVITE_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -108,7 +110,7 @@ export async function POST(
     if (foundInvite.token !== token) {
       return NextResponse.json(
         createAdminErrorResponse('Invalid invite token', ADMIN_ERROR_CODES.INVALID_INVITE_TOKEN),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -116,14 +118,14 @@ export async function POST(
     if (foundInvite.status === 'ACCEPTED') {
       return NextResponse.json(
         createAdminErrorResponse('Invite has already been accepted', ADMIN_ERROR_CODES.INVITE_ALREADY_ACCEPTED),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (foundInvite.status === 'REVOKED') {
       return NextResponse.json(
         createAdminErrorResponse('Invite has been revoked', ADMIN_ERROR_CODES.INVITE_REVOKED),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -131,7 +133,7 @@ export async function POST(
     if (new Date(foundInvite.expiresAt) < new Date()) {
       return NextResponse.json(
         createAdminErrorResponse('Invite has expired', ADMIN_ERROR_CODES.INVITE_EXPIRED),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -145,9 +147,9 @@ export async function POST(
       return NextResponse.json(
         createAdminErrorResponse(
           'This invite was sent to a different email address',
-          ADMIN_ERROR_CODES.VALIDATION_ERROR
+          ADMIN_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -159,7 +161,7 @@ export async function POST(
     if (existingMembership) {
       return NextResponse.json(
         createAdminErrorResponse('You are already a member of this workspace', ADMIN_ERROR_CODES.EMAIL_ALREADY_MEMBER),
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -224,7 +226,7 @@ export async function POST(
     console.error('[POST /api/invites/:inviteId/accept] Error:', error);
     return NextResponse.json(
       createAdminErrorResponse('Failed to accept invite', ADMIN_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

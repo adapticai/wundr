@@ -43,7 +43,9 @@ async function checkChannelAccess(channelId: string, userId: string) {
     },
   });
 
-  if (!channel) return null;
+  if (!channel) {
+return null;
+}
 
   const orgMembership = await prisma.organizationMember.findUnique({
     where: {
@@ -54,7 +56,9 @@ async function checkChannelAccess(channelId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   const channelMembership = await prisma.channelMember.findUnique({
     where: {

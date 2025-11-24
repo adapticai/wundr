@@ -44,7 +44,9 @@ async function verifyChannelAccess(channelId: string, userId: string) {
     },
   });
 
-  if (!channel) return null;
+  if (!channel) {
+return null;
+}
 
   // Check organization membership
   const orgMembership = await prisma.organizationMember.findUnique({
@@ -56,7 +58,9 @@ async function verifyChannelAccess(channelId: string, userId: string) {
     },
   });
 
-  if (!orgMembership) return null;
+  if (!orgMembership) {
+return null;
+}
 
   // For private channels, check channel membership
   if (channel.type === 'PRIVATE') {
@@ -68,7 +72,9 @@ async function verifyChannelAccess(channelId: string, userId: string) {
         },
       },
     });
-    if (!channelMembership) return null;
+    if (!channelMembership) {
+return null;
+}
   }
 
   return { channel, orgMembership };
@@ -308,6 +314,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     let totalCount = 0;
 
     try {
+      // Build ORDER BY clause based on sortBy and sortOrder
+      const sortColumn = sortBy === 'startedAt' ? 'c.started_at' : 'c.created_at';
+      const sortDirection = sortOrder === 'asc' ? 'ASC' : 'DESC';
+
       // Attempt to get calls from dedicated table
       const callResults = await prisma.$queryRaw<Array<{
         id: string;
@@ -338,7 +348,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         LEFT JOIN users u ON c.created_by_id = u.id
         WHERE c.channel_id = ANY(${channelIds})
         ${activeOnly ? prisma.$queryRaw`AND c.status IN ('pending', 'active')` : prisma.$queryRaw``}
-        ORDER BY c.created_at DESC
+        ORDER BY ${prisma.$queryRawUnsafe(sortColumn)} ${prisma.$queryRawUnsafe(sortDirection)}
         LIMIT ${limit}
         OFFSET ${offset}
       `;

@@ -55,7 +55,7 @@ async function checkOrganizationAccess(orgId: string, userId: string) {
  * @returns List of organization members
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {

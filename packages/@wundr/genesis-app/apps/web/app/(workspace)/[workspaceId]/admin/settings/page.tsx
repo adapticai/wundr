@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useState, useCallback } from 'react';
 
-import { cn } from '@/lib/utils';
 import { useWorkspaceSettings } from '@/hooks/use-admin';
+import { cn } from '@/lib/utils';
+
 
 type SettingsTab = 'general' | 'security' | 'notifications' | 'advanced';
 
@@ -37,7 +38,7 @@ export default function AdminSettingsPage() {
         setIsSaving(false);
       }
     },
-    [updateSettings]
+    [updateSettings],
   );
 
   const tabs: { id: SettingsTab; label: string; icon: React.FC<{ className?: string }> }[] = [
@@ -84,7 +85,7 @@ export default function AdminSettingsPage() {
                 'flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-medium',
                 activeTab === tab.id
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
               <tab.icon className="h-4 w-4" />
@@ -169,7 +170,7 @@ function GeneralSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
       e.preventDefault();
       await onSave({ name, description });
     },
-    [name, description, onSave]
+    [name, description, onSave],
   );
 
   return (
@@ -187,7 +188,7 @@ function GeneralSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
             className={cn(
               'mt-1 block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
             placeholder="My Workspace"
           />
@@ -205,7 +206,7 @@ function GeneralSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
             className={cn(
               'mt-1 block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
             placeholder="Describe your workspace..."
           />
@@ -218,7 +219,7 @@ function GeneralSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -233,7 +234,7 @@ function SecuritySettings({ settings, onSave, isSaving }: SettingsSectionProps) 
   const [requireTwoFactor, setRequireTwoFactor] = useState(settings?.requireTwoFactor ?? false);
   const [sessionTimeout, setSessionTimeout] = useState(settings?.sessionTimeout ?? 30);
   const [allowedDomains, setAllowedDomains] = useState(
-    settings?.allowedDomains?.join(', ') ?? ''
+    settings?.allowedDomains?.join(', ') ?? '',
   );
 
   const handleSubmit = useCallback(
@@ -248,7 +249,7 @@ function SecuritySettings({ settings, onSave, isSaving }: SettingsSectionProps) 
           .filter(Boolean),
       });
     },
-    [requireTwoFactor, sessionTimeout, allowedDomains, onSave]
+    [requireTwoFactor, sessionTimeout, allowedDomains, onSave],
   );
 
   return (
@@ -278,7 +279,7 @@ function SecuritySettings({ settings, onSave, isSaving }: SettingsSectionProps) 
             className={cn(
               'mt-1 block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           >
             <option value={7}>7 days</option>
@@ -304,7 +305,7 @@ function SecuritySettings({ settings, onSave, isSaving }: SettingsSectionProps) 
             className={cn(
               'mt-1 block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm placeholder:text-muted-foreground',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
             placeholder="example.com, company.org"
           />
@@ -317,7 +318,7 @@ function SecuritySettings({ settings, onSave, isSaving }: SettingsSectionProps) 
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -330,10 +331,10 @@ function SecuritySettings({ settings, onSave, isSaving }: SettingsSectionProps) 
 // Notification Settings Section
 function NotificationSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
   const [notifyOnNewMember, setNotifyOnNewMember] = useState(
-    settings?.notifyOnNewMember ?? true
+    settings?.notifyOnNewMember ?? true,
   );
   const [notifyOnSecurityEvent, setNotifyOnSecurityEvent] = useState(
-    settings?.notifyOnSecurityEvent ?? true
+    settings?.notifyOnSecurityEvent ?? true,
   );
   const [weeklyDigest, setWeeklyDigest] = useState(settings?.weeklyDigest ?? false);
 
@@ -342,7 +343,7 @@ function NotificationSettings({ settings, onSave, isSaving }: SettingsSectionPro
       e.preventDefault();
       await onSave({ notifyOnNewMember, notifyOnSecurityEvent, weeklyDigest });
     },
-    [notifyOnNewMember, notifyOnSecurityEvent, weeklyDigest, onSave]
+    [notifyOnNewMember, notifyOnSecurityEvent, weeklyDigest, onSave],
   );
 
   return (
@@ -385,7 +386,7 @@ function NotificationSettings({ settings, onSave, isSaving }: SettingsSectionPro
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -398,7 +399,7 @@ function NotificationSettings({ settings, onSave, isSaving }: SettingsSectionPro
 // Advanced Settings Section
 function AdvancedSettings({ settings, onSave, isSaving }: SettingsSectionProps) {
   const [dataRetentionDays, setDataRetentionDays] = useState(
-    settings?.dataRetentionDays ?? 365
+    settings?.dataRetentionDays ?? 365,
   );
   const [exportEnabled, setExportEnabled] = useState(settings?.exportEnabled ?? true);
   const [apiRateLimit, setApiRateLimit] = useState(settings?.apiRateLimit ?? 1000);
@@ -408,7 +409,7 @@ function AdvancedSettings({ settings, onSave, isSaving }: SettingsSectionProps) 
       e.preventDefault();
       await onSave({ dataRetentionDays, exportEnabled, apiRateLimit });
     },
-    [dataRetentionDays, exportEnabled, apiRateLimit, onSave]
+    [dataRetentionDays, exportEnabled, apiRateLimit, onSave],
   );
 
   return (
@@ -434,7 +435,7 @@ function AdvancedSettings({ settings, onSave, isSaving }: SettingsSectionProps) 
             className={cn(
               'mt-1 block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           />
         </div>
@@ -466,7 +467,7 @@ function AdvancedSettings({ settings, onSave, isSaving }: SettingsSectionProps) 
             className={cn(
               'mt-1 block w-full rounded-md border border-input bg-background',
               'px-3 py-2 text-sm',
-              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+              'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
             )}
           />
         </div>
@@ -478,7 +479,7 @@ function AdvancedSettings({ settings, onSave, isSaving }: SettingsSectionProps) 
           disabled={isSaving}
           className={cn(
             'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+            'hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -504,13 +505,13 @@ function ToggleSwitch({
       onClick={() => onChange(!checked)}
       className={cn(
         'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-        checked ? 'bg-primary' : 'bg-muted'
+        checked ? 'bg-primary' : 'bg-muted',
       )}
     >
       <span
         className={cn(
           'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1'
+          checked ? 'translate-x-6' : 'translate-x-1',
         )}
       />
     </button>

@@ -1,20 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import {
   Room,
   RoomEvent,
-  LocalParticipant,
-  RemoteParticipant,
   Track,
-  LocalVideoTrack,
-  LocalAudioTrack,
   ConnectionState,
   ConnectionQuality,
   createLocalVideoTrack,
   createLocalAudioTrack,
   VideoPresets,
 } from 'livekit-client';
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
+
 import type {
   CallParticipant,
   MediaDevice,
@@ -22,6 +19,11 @@ import type {
   HuddleParticipant,
   ParticipantConnectionQuality,
 } from '@/types/call';
+import type {
+  LocalParticipant,
+  RemoteParticipant,
+  LocalVideoTrack,
+  LocalAudioTrack} from 'livekit-client';
 
 /**
  * Map LiveKit connection quality to our internal type
@@ -47,7 +49,7 @@ function mapConnectionQuality(quality: ConnectionQuality): ParticipantConnection
 function toCallParticipant(
   participant: LocalParticipant | RemoteParticipant,
   isLocal: boolean,
-  pinnedParticipants: Set<string>
+  pinnedParticipants: Set<string>,
 ): CallParticipant {
   const videoTrack = participant.getTrackPublication(Track.Source.Camera);
   const audioTrack = participant.getTrackPublication(Track.Source.Microphone);
@@ -85,7 +87,7 @@ export function useCall(roomName: string) {
   const [participants, setParticipants] = useState<CallParticipant[]>([]);
   const [localParticipant, setLocalParticipant] = useState<LocalParticipant | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>(
-    ConnectionState.Disconnected
+    ConnectionState.Disconnected,
   );
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -94,14 +96,16 @@ export function useCall(roomName: string) {
 
   // Update participants list
   const updateParticipants = useCallback(() => {
-    if (!roomRef.current) return;
+    if (!roomRef.current) {
+return;
+}
 
     const allParticipants: CallParticipant[] = [];
 
     // Add local participant
     if (roomRef.current.localParticipant) {
       allParticipants.push(
-        toCallParticipant(roomRef.current.localParticipant, true, pinnedParticipants)
+        toCallParticipant(roomRef.current.localParticipant, true, pinnedParticipants),
       );
     }
 
@@ -116,7 +120,9 @@ export function useCall(roomName: string) {
   // Connect to room
   const connect = useCallback(
     async (token: string) => {
-      if (!roomName || isConnecting || connectionState === ConnectionState.Connected) return;
+      if (!roomName || isConnecting || connectionState === ConnectionState.Connected) {
+return;
+}
 
       setIsConnecting(true);
       setError(null);
@@ -168,7 +174,7 @@ export function useCall(roomName: string) {
         setIsConnecting(false);
       }
     },
-    [roomName, isConnecting, connectionState, updateParticipants]
+    [roomName, isConnecting, connectionState, updateParticipants],
   );
 
   // Disconnect from room
@@ -208,13 +214,13 @@ export function useCall(roomName: string) {
   // Get active speaker
   const activeSpeaker = useMemo(
     () => participants.find((p) => p.isSpeaking && !p.isLocal) || null,
-    [participants]
+    [participants],
   );
 
   // Get screen sharers
   const screenSharers = useMemo(
     () => participants.filter((p) => p.isScreenSharing),
-    [participants]
+    [participants],
   );
 
   return {
@@ -413,7 +419,7 @@ export function useLocalMedia() {
         setVideoTrack(newTrack);
       }
     },
-    [isVideoEnabled, videoTrack]
+    [isVideoEnabled, videoTrack],
   );
 
   // Change audio device
@@ -431,7 +437,7 @@ export function useLocalMedia() {
         setAudioTrack(newTrack);
       }
     },
-    [isAudioEnabled, audioTrack]
+    [isAudioEnabled, audioTrack],
   );
 
   // Cleanup on unmount
@@ -484,7 +490,9 @@ export function useHuddle(workspaceId: string) {
 
   // Fetch available huddles
   const fetchHuddles = useCallback(async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -504,7 +512,7 @@ export function useHuddle(workspaceId: string) {
             ...p,
             joinedAt: new Date(p.joinedAt),
           })),
-        }))
+        })),
       );
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -515,7 +523,9 @@ export function useHuddle(workspaceId: string) {
 
   // Subscribe to huddle updates
   useEffect(() => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+return;
+}
 
     fetchHuddles();
 
@@ -541,8 +551,8 @@ export function useHuddle(workspaceId: string) {
                     ...data.huddle,
                     createdAt: new Date(data.huddle.createdAt),
                   }
-                : h
-            )
+                : h,
+            ),
           );
           // Update active huddle if it's the one being updated
           if (activeHuddle?.id === data.huddle.id) {
@@ -578,7 +588,9 @@ export function useHuddle(workspaceId: string) {
   // Join a huddle
   const joinHuddle = useCallback(
     async (huddleId: string) => {
-      if (!workspaceId) return;
+      if (!workspaceId) {
+return;
+}
 
       setIsJoining(true);
       setError(null);
@@ -603,12 +615,14 @@ export function useHuddle(workspaceId: string) {
         setIsJoining(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   // Leave the active huddle
   const leaveHuddle = useCallback(async () => {
-    if (!workspaceId || !activeHuddle) return;
+    if (!workspaceId || !activeHuddle) {
+return;
+}
 
     try {
       await fetch(`/api/workspaces/${workspaceId}/huddles/${activeHuddle.id}/leave`, {
@@ -624,7 +638,9 @@ export function useHuddle(workspaceId: string) {
   // Create a new huddle
   const createHuddle = useCallback(
     async (name: string, channelId?: string): Promise<Huddle | null> => {
-      if (!workspaceId) return null;
+      if (!workspaceId) {
+return null;
+}
 
       setIsLoading(true);
       setError(null);
@@ -657,7 +673,7 @@ export function useHuddle(workspaceId: string) {
         setIsLoading(false);
       }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   return {

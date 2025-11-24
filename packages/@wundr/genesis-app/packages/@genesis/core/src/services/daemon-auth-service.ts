@@ -5,8 +5,8 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@prisma/client';
-import type { Redis } from 'ioredis';
+import { DAEMON_TOKEN_EXPIRY, DAEMON_REDIS_KEYS, DAEMON_SCOPE_SETS } from '../types/daemon';
+
 import type {
   DaemonToken,
   DaemonTokenPair,
@@ -19,7 +19,8 @@ import type {
   DaemonMetrics,
   DaemonMetadata,
 } from '../types/daemon';
-import { DAEMON_TOKEN_EXPIRY, DAEMON_REDIS_KEYS, DAEMON_SCOPE_SETS } from '../types/daemon';
+import type { PrismaClient } from '@prisma/client';
+import type { Redis } from 'ioredis';
 
 // =============================================================================
 // Configuration Types
@@ -127,12 +128,12 @@ export class DaemonAuthService {
    */
   async authenticate(credentials: DaemonCredentials): Promise<DaemonAuthResult> {
     // Validate API key and get VP
+    // Note: We look for any VP user that has vpConfig set
     const user = await this.prisma.user.findFirst({
       where: {
         isVP: true,
         vpConfig: {
-          path: ['apiKeyHash'],
-          not: null,
+          not: { equals: null },
         },
       },
     });
@@ -141,9 +142,18 @@ export class DaemonAuthService {
       throw new InvalidCredentialsError('Invalid API key');
     }
 
+    /**
+     * VP configuration stored as JSON in the user record.
+     */
+    interface VPConfig {
+      apiKeyHash?: string;
+      apiKeyRevoked?: boolean;
+      apiKeyExpiresAt?: string;
+    }
+
     // Verify API key hash
-    const vpConfig = user.vpConfig as Record<string, unknown> | null;
-    const storedHash = vpConfig?.apiKeyHash as string | undefined;
+    const vpConfig = user.vpConfig as VPConfig | null;
+    const storedHash = vpConfig?.apiKeyHash;
 
     if (!storedHash || !await this.verifyApiKey(credentials.apiKey, storedHash)) {
       throw new InvalidCredentialsError('Invalid API key');
@@ -155,7 +165,7 @@ export class DaemonAuthService {
     }
 
     // Check if API key is expired
-    const expiresAt = vpConfig?.apiKeyExpiresAt as string | undefined;
+    const expiresAt = vpConfig?.apiKeyExpiresAt;
     if (expiresAt && new Date(expiresAt) < new Date()) {
       throw new InvalidCredentialsError('API key has expired');
     }
@@ -185,7 +195,8 @@ export class DaemonAuthService {
 
     // Determine granted scopes
     const requestedScopes = credentials.requestedScopes ?? DAEMON_SCOPE_SETS.standard;
-    const grantedScopes = this.resolveScopes(requestedScopes, vp.capabilities ?? []);
+    const vpCapabilities = Array.isArray(vp.capabilities) ? vp.capabilities as string[] : [];
+    const grantedScopes = this.resolveScopes(requestedScopes, vpCapabilities);
 
     // Create session
     const session = await this.createSession({
@@ -308,7 +319,9 @@ export class DaemonAuthService {
    */
   async terminateSession(sessionId: string, reason: DaemonSessionStatus = 'terminated'): Promise<void> {
     const session = await this.getSession(sessionId);
-    if (!session) return;
+    if (!session) {
+return;
+}
 
     session.status = reason;
     await this.saveSession(session);
@@ -341,7 +354,7 @@ export class DaemonAuthService {
   async updateHeartbeat(
     sessionId: string,
     status: DaemonSessionStatus = 'active',
-    metrics?: DaemonMetrics
+    metrics?: DaemonMetrics,
   ): Promise<void> {
     const session = await this.getSession(sessionId);
     if (!session) {
@@ -491,7 +504,9 @@ export class DaemonAuthService {
     const key = DAEMON_REDIS_KEYS.session(sessionId);
     const data = await this.redis.get(key);
 
-    if (!data) return null;
+    if (!data) {
+return null;
+}
 
     const session = JSON.parse(data) as DaemonSession;
     session.createdAt = new Date(session.createdAt);
@@ -509,10 +524,50 @@ export class DaemonAuthService {
     }
   }
 
+  /**
+   * Resolves the scopes to grant based on requested scopes and VP capabilities.
+   *
+   * @param requested - Scopes requested by the daemon
+   * @param vpCapabilities - Capabilities configured for the VP
+   * @returns Array of granted scopes
+   */
   private resolveScopes(requested: DaemonScope[], vpCapabilities: string[]): DaemonScope[] {
-    // For now, grant all requested scopes that are in the standard set
-    // In production, this would check against VP's allowed scopes
+    // Build allowed scopes based on VP capabilities
     const allowedScopes = new Set(DAEMON_SCOPE_SETS.full);
+
+    // If VP has specific capabilities configured, restrict scopes accordingly
+    if (vpCapabilities.length > 0) {
+      // Map capabilities to allowed scope sets
+      const capabilityToScopes: Record<string, DaemonScope[]> = {
+        messaging: ['messages:read', 'messages:write', 'channels:read'],
+        channels: ['channels:read', 'channels:join'],
+        presence: ['presence:read', 'presence:write'],
+        files: ['files:read', 'files:write'],
+        calls: ['calls:join', 'calls:manage'],
+        users: ['users:read'],
+        admin: ['admin:read', 'admin:write'],
+      };
+
+      // Build restricted scope set from capabilities
+      const restrictedScopes = new Set<DaemonScope>();
+      for (const capability of vpCapabilities) {
+        const scopes = capabilityToScopes[capability];
+        if (scopes) {
+          scopes.forEach(scope => restrictedScopes.add(scope));
+        }
+      }
+
+      // Always allow basic VP scopes
+      restrictedScopes.add('vp:status');
+      restrictedScopes.add('vp:config');
+
+      // Return intersection of requested, allowed, and restricted
+      return requested.filter(
+        scope => allowedScopes.has(scope) && restrictedScopes.has(scope)
+      );
+    }
+
+    // No capability restrictions - grant all allowed requested scopes
     return requested.filter(scope => allowedScopes.has(scope));
   }
 
@@ -523,7 +578,7 @@ export class DaemonAuthService {
     const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url');
     const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
     const signature = Buffer.from(
-      `${encodedHeader}.${encodedPayload}.${this.jwtSecret}`
+      `${encodedHeader}.${encodedPayload}.${this.jwtSecret}`,
     ).toString('base64url');
 
     return `${encodedHeader}.${encodedPayload}.${signature}`;
@@ -536,8 +591,13 @@ export class DaemonAuthService {
         throw new DaemonAuthError('Invalid token format', 'INVALID_TOKEN');
       }
 
+      const encodedPayload = parts[1];
+      if (!encodedPayload) {
+        throw new DaemonAuthError('Invalid token format', 'INVALID_TOKEN');
+      }
+
       const payload = JSON.parse(
-        Buffer.from(parts[1], 'base64url').toString()
+        Buffer.from(encodedPayload, 'base64url').toString(),
       ) as DaemonTokenPayload;
 
       // Check expiration
@@ -547,7 +607,9 @@ export class DaemonAuthService {
 
       return payload;
     } catch (error) {
-      if (error instanceof DaemonAuthError) throw error;
+      if (error instanceof DaemonAuthError) {
+throw error;
+}
       throw new DaemonAuthError('Invalid token', 'INVALID_TOKEN');
     }
   }

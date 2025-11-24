@@ -7,7 +7,6 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient, Prisma, WorkspaceRole, WorkspaceVisibility } from '@genesis/database';
 import { prisma } from '@genesis/database';
 
 import {
@@ -15,13 +14,13 @@ import {
   TransactionError,
   OrganizationNotFoundError,
 } from '../errors';
-import { generateSlug } from '../utils';
 import {
   DEFAULT_WORKSPACE_LIST_OPTIONS,
   MAX_NAME_LENGTH,
   MAX_DESCRIPTION_LENGTH,
   MAX_SLUG_LENGTH,
 } from '../types/organization';
+import { generateSlug } from '../utils';
 
 import type {
   WorkspaceWithMembers,
@@ -31,7 +30,7 @@ import type {
   PaginatedWorkspaceResult,
   WorkspaceMemberRole,
 } from '../types/organization';
-import type { Workspace, WorkspaceMember } from '@genesis/database';
+import type { PrismaClient, Prisma, WorkspaceRole, WorkspaceVisibility , Workspace, WorkspaceMember } from '@genesis/database';
 
 // =============================================================================
 // Custom Errors
@@ -46,7 +45,7 @@ export class WorkspaceNotFoundError extends GenesisError {
       `Workspace not found with ${identifierType}: ${identifier}`,
       'WORKSPACE_NOT_FOUND',
       404,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'WorkspaceNotFoundError';
   }
@@ -61,7 +60,7 @@ export class WorkspaceAlreadyExistsError extends GenesisError {
       `Workspace with slug '${slug}' already exists in organization`,
       'WORKSPACE_ALREADY_EXISTS',
       409,
-      { slug, organizationId }
+      { slug, organizationId },
     );
     this.name = 'WorkspaceAlreadyExistsError';
   }
@@ -89,7 +88,7 @@ export class UserNotFoundError extends GenesisError {
       `User not found: ${userId}`,
       'USER_NOT_FOUND',
       404,
-      { userId }
+      { userId },
     );
     this.name = 'UserNotFoundError';
   }
@@ -104,7 +103,7 @@ export class WorkspaceMemberNotFoundError extends GenesisError {
       `User ${userId} is not a member of workspace ${workspaceId}`,
       'WORKSPACE_MEMBER_NOT_FOUND',
       404,
-      { workspaceId, userId }
+      { workspaceId, userId },
     );
     this.name = 'WorkspaceMemberNotFoundError';
   }
@@ -367,7 +366,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
    */
   async listWorkspacesWithPagination(
     orgId: string,
-    options: ListWorkspacesOptions = {}
+    options: ListWorkspacesOptions = {},
   ): Promise<PaginatedWorkspaceResult> {
     const {
       visibility,
@@ -568,7 +567,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
   async addMember(
     workspaceId: string,
     userId: string,
-    role: WorkspaceMemberRole
+    role: WorkspaceMemberRole,
   ): Promise<WorkspaceMember> {
     // Verify workspace exists
     const workspace = await this.getWorkspace(workspaceId);
@@ -680,7 +679,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
   async updateMemberRole(
     workspaceId: string,
     userId: string,
-    role: WorkspaceMemberRole
+    role: WorkspaceMemberRole,
   ): Promise<WorkspaceMember> {
     // Verify workspace exists
     const workspace = await this.getWorkspace(workspaceId);

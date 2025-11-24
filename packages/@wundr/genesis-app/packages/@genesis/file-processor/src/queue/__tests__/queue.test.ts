@@ -14,9 +14,10 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-import { JobStatus, FileType } from '../../types';
-import type { FileProcessingJob, ProcessorResult, JobProgress } from '../../types';
+import { FileType } from '../../types';
+
 import type { QueueStats, JobResult, QueueEvent, QueueEventListener } from '../../queue';
+import type { FileProcessingJob, ProcessorResult, JobProgress as _JobProgress, JobStatus } from '../../types';
 
 // =============================================================================
 // MOCK SETUP
@@ -55,7 +56,7 @@ const mockBullWorker = {
 /**
  * Mock Redis connection
  */
-const mockRedisConnection = {
+const _mockRedisConnection = {
   connect: vi.fn(),
   disconnect: vi.fn(),
   quit: vi.fn(),
@@ -153,7 +154,9 @@ function createMockProcessingQueue(): ProcessingQueue {
       }
 
       const job = await mockBullQueue.getJob(jobId);
-      if (!job) return null;
+      if (!job) {
+return null;
+}
 
       return {
         jobId: job.id,
@@ -173,7 +176,9 @@ function createMockProcessingQueue(): ProcessingQueue {
       }
 
       const job = await mockBullQueue.getJob(jobId);
-      if (!job) return false;
+      if (!job) {
+return false;
+}
 
       if (job.status === 'active') {
         return false; // Cannot cancel active jobs
@@ -189,7 +194,9 @@ function createMockProcessingQueue(): ProcessingQueue {
       }
 
       const job = await mockBullQueue.getJob(jobId);
-      if (!job) return false;
+      if (!job) {
+return false;
+}
 
       if (job.status !== 'failed') {
         return false;
@@ -337,7 +344,7 @@ describe('ProcessingQueue', () => {
         expect.objectContaining({
           priority: 5,
           attempts: 3,
-        })
+        }),
       );
     });
 
@@ -364,14 +371,14 @@ describe('ProcessingQueue', () => {
         1,
         'high_priority',
         highPriorityJob,
-        expect.objectContaining({ priority: 1 })
+        expect.objectContaining({ priority: 1 }),
       );
 
       expect(mockBullQueue.add).toHaveBeenNthCalledWith(
         2,
         'low_priority',
         lowPriorityJob,
-        expect.objectContaining({ priority: 10 })
+        expect.objectContaining({ priority: 10 }),
       );
     });
 
@@ -384,7 +391,7 @@ describe('ProcessingQueue', () => {
       expect(mockBullQueue.add).toHaveBeenCalledWith(
         'default_priority',
         job,
-        expect.objectContaining({ priority: 5 })
+        expect.objectContaining({ priority: 5 }),
       );
     });
 
@@ -466,11 +473,11 @@ describe('ProcessingQueue', () => {
 
     it('handles concurrent jobs', async () => {
       const jobs = Array.from({ length: 10 }, (_, i) =>
-        createMockJob({ jobId: `concurrent_${i}` })
+        createMockJob({ jobId: `concurrent_${i}` }),
       );
 
       mockBullQueue.addBulk.mockResolvedValue(
-        jobs.map((j) => ({ id: j.jobId }))
+        jobs.map((j) => ({ id: j.jobId })),
       );
 
       const jobIds = await queue.addBulkJobs(jobs);
@@ -867,7 +874,7 @@ describe('ProcessingQueue Integration', () => {
       async (_name: string, data: FileProcessingJob, opts: { priority: number }) => {
         processOrder.push(opts.priority);
         return { id: data.jobId };
-      }
+      },
     );
 
     await queue.addJob(createMockJob({ jobId: 'low', priority: 10 }));

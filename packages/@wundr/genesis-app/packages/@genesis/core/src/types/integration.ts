@@ -94,7 +94,7 @@ export interface IntegrationConfig {
   webhookSecret?: string;
 
   /** Provider-specific settings */
-  settings: Record<string, unknown>;
+  settings: IntegrationSettings;
 
   /** Permissions granted to this integration */
   permissions: IntegrationPermission[];
@@ -230,6 +230,114 @@ export const DEFAULT_WEBHOOK_RETRY_POLICY: WebhookRetryPolicy = {
 };
 
 // =============================================================================
+// Webhook Payload Types
+// =============================================================================
+
+/**
+ * Base interface for all webhook payloads.
+ */
+export interface BaseWebhookPayload {
+  /** Event type identifier */
+  event: WebhookEvent;
+
+  /** Timestamp when the event occurred */
+  timestamp: string;
+
+  /** Workspace ID where the event occurred */
+  workspaceId: string;
+}
+
+/**
+ * Payload for message-related webhook events.
+ */
+export interface MessageWebhookPayload extends BaseWebhookPayload {
+  event: 'message.created' | 'message.updated' | 'message.deleted';
+  data: {
+    messageId: string;
+    channelId: string;
+    authorId: string;
+    content?: string;
+    threadId?: string;
+  };
+}
+
+/**
+ * Payload for channel-related webhook events.
+ */
+export interface ChannelWebhookPayload extends BaseWebhookPayload {
+  event: 'channel.created' | 'channel.updated' | 'channel.deleted';
+  data: {
+    channelId: string;
+    name: string;
+    type: string;
+  };
+}
+
+/**
+ * Payload for member-related webhook events.
+ */
+export interface MemberWebhookPayload extends BaseWebhookPayload {
+  event: 'member.joined' | 'member.left';
+  data: {
+    userId: string;
+    channelId: string;
+  };
+}
+
+/**
+ * Payload for file-related webhook events.
+ */
+export interface FileWebhookPayload extends BaseWebhookPayload {
+  event: 'file.uploaded' | 'file.deleted';
+  data: {
+    fileId: string;
+    channelId?: string;
+    filename: string;
+    mimeType: string;
+    size: number;
+  };
+}
+
+/**
+ * Payload for call-related webhook events.
+ */
+export interface CallWebhookPayload extends BaseWebhookPayload {
+  event: 'call.started' | 'call.ended';
+  data: {
+    callId: string;
+    channelId: string;
+    participants: string[];
+    duration?: number;
+  };
+}
+
+/**
+ * Payload for VP-related webhook events.
+ */
+export interface VPWebhookPayload extends BaseWebhookPayload {
+  event: 'vp.message' | 'vp.action';
+  data: {
+    vpId: string;
+    channelId?: string;
+    action?: string;
+    content?: string;
+  };
+}
+
+/**
+ * Union type for all webhook payloads.
+ * Includes typed payloads for known events and a generic record for flexibility.
+ */
+export type WebhookPayload =
+  | MessageWebhookPayload
+  | ChannelWebhookPayload
+  | MemberWebhookPayload
+  | FileWebhookPayload
+  | CallWebhookPayload
+  | VPWebhookPayload
+  | Record<string, unknown>;
+
+// =============================================================================
 // Webhook Delivery Types
 // =============================================================================
 
@@ -247,7 +355,7 @@ export interface WebhookDelivery {
   event: WebhookEvent;
 
   /** Payload sent to the webhook */
-  payload: Record<string, unknown>;
+  payload: WebhookPayload;
 
   /** Current delivery status */
   status: 'pending' | 'success' | 'failed';
@@ -290,6 +398,104 @@ export interface WebhookAttempt {
 // =============================================================================
 
 /**
+ * Base interface for integration event payloads from external providers.
+ */
+export interface BaseIntegrationEventPayload {
+  /** Source provider identifier */
+  source: IntegrationProvider;
+
+  /** External event ID from the provider */
+  externalEventId?: string;
+
+  /** Raw data received (serialized JSON string for audit) */
+  rawData?: string;
+}
+
+/**
+ * Slack-specific event payload.
+ */
+export interface SlackEventPayload extends BaseIntegrationEventPayload {
+  source: 'slack';
+  teamId: string;
+  channelId?: string;
+  userId?: string;
+  messageTs?: string;
+  text?: string;
+}
+
+/**
+ * GitHub-specific event payload.
+ */
+export interface GitHubEventPayload extends BaseIntegrationEventPayload {
+  source: 'github';
+  repositoryId: number;
+  repositoryName: string;
+  action: string;
+  sender: {
+    id: number;
+    login: string;
+  };
+  pullRequest?: {
+    number: number;
+    title: string;
+    state: string;
+  };
+  issue?: {
+    number: number;
+    title: string;
+    state: string;
+  };
+}
+
+/**
+ * Jira-specific event payload.
+ */
+export interface JiraEventPayload extends BaseIntegrationEventPayload {
+  source: 'jira';
+  webhookEvent: string;
+  issueKey?: string;
+  issueId?: string;
+  projectKey?: string;
+  user?: {
+    accountId: string;
+    displayName: string;
+  };
+  changelog?: {
+    field: string;
+    fromString: string;
+    toString: string;
+  }[];
+}
+
+/**
+ * Generic event payload for custom or other integrations.
+ */
+export interface GenericIntegrationEventPayload extends BaseIntegrationEventPayload {
+  source: 'teams' | 'notion' | 'linear' | 'salesforce' | 'hubspot' | 'zapier' | 'custom';
+  eventName: string;
+  data: Record<string, string | number | boolean | null>;
+}
+
+/**
+ * Empty payload for initialization or placeholder events.
+ */
+export interface EmptyIntegrationEventPayload {
+  [key: string]: never;
+}
+
+/**
+ * Union type for all integration event payloads.
+ * Includes typed payloads for known providers and a generic record for flexibility.
+ */
+export type IntegrationEventPayload =
+  | SlackEventPayload
+  | GitHubEventPayload
+  | JiraEventPayload
+  | GenericIntegrationEventPayload
+  | EmptyIntegrationEventPayload
+  | Record<string, unknown>;
+
+/**
  * Integration event for tracking data sync operations.
  */
 export interface IntegrationEvent {
@@ -309,7 +515,7 @@ export interface IntegrationEvent {
   eventType: string;
 
   /** Event payload */
-  payload: Record<string, unknown>;
+  payload: IntegrationEventPayload;
 
   /** Processing status */
   status: 'pending' | 'processed' | 'failed';
@@ -423,6 +629,39 @@ export interface JiraIntegrationConfig {
   notifyOn: ('issue_created' | 'issue_updated' | 'comment_added')[];
 }
 
+/**
+ * Custom integration configuration for generic or third-party integrations.
+ */
+export interface CustomIntegrationConfig {
+  /** Custom endpoint URL */
+  endpointUrl?: string;
+
+  /** Custom authentication headers */
+  authHeaders?: Record<string, string>;
+
+  /** Custom configuration options */
+  options?: Record<string, string | number | boolean>;
+}
+
+/**
+ * Union type for all known provider-specific integration settings.
+ * Use this for type-safe operations with known providers.
+ */
+export type KnownIntegrationSettings =
+  | SlackIntegrationConfig
+  | GitHubIntegrationConfig
+  | JiraIntegrationConfig
+  | CustomIntegrationConfig;
+
+/**
+ * Flexible integration settings type that supports both known configurations
+ * and arbitrary key-value pairs for extensibility.
+ *
+ * For type-safe operations with known providers, use type guards or cast to
+ * the specific config type (SlackIntegrationConfig, etc.).
+ */
+export type IntegrationSettings = Record<string, unknown>;
+
 // =============================================================================
 // Input Types
 // =============================================================================
@@ -444,7 +683,7 @@ export interface CreateIntegrationInput {
   description?: string;
 
   /** Provider-specific settings */
-  settings?: Record<string, unknown>;
+  settings?: IntegrationSettings;
 
   /** Permissions to grant */
   permissions?: IntegrationPermission[];
@@ -464,7 +703,7 @@ export interface UpdateIntegrationInput {
   status?: IntegrationStatus;
 
   /** Updated settings */
-  settings?: Record<string, unknown>;
+  settings?: IntegrationSettings;
 
   /** Updated permissions */
   permissions?: IntegrationPermission[];
@@ -652,6 +891,47 @@ export interface PaginatedDeliveryResult {
 // =============================================================================
 
 /**
+ * Connection test details containing diagnostic information.
+ */
+export interface ConnectionTestDetails {
+  /** HTTP status code from the test request */
+  statusCode?: number;
+
+  /** Human-readable message about the connection test */
+  message?: string;
+
+  /** API version detected */
+  apiVersion?: string;
+
+  /** Server or service name */
+  serverName?: string;
+
+  /** Available scopes or permissions */
+  scopes?: string[];
+
+  /** Rate limit information */
+  rateLimit?: {
+    limit: number;
+    remaining: number;
+    resetAt?: string;
+  };
+
+  /** Authentication method used */
+  authMethod?: 'oauth' | 'api_key' | 'basic' | 'bearer';
+
+  /** HTTP response headers (relevant ones) */
+  responseHeaders?: Record<string, string>;
+
+  /** Provider-specific diagnostic data */
+  providerInfo?: {
+    name: string;
+    version?: string;
+    region?: string;
+    tier?: string;
+  };
+}
+
+/**
  * Result of testing an integration connection.
  */
 export interface ConnectionTestResult {
@@ -665,7 +945,7 @@ export interface ConnectionTestResult {
   errorMessage?: string;
 
   /** Additional details about the connection */
-  details?: Record<string, unknown>;
+  details?: ConnectionTestDetails;
 }
 
 // =============================================================================

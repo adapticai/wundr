@@ -10,9 +10,11 @@
  * @module app/api/daemon/messages/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+
+import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -108,7 +110,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -123,7 +125,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!channelId) {
       return NextResponse.json(
         { error: 'Channel ID required', code: MESSAGE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -132,7 +134,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!hasAccess) {
       return NextResponse.json(
         { error: 'Channel access denied', code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -202,7 +204,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.error('[GET /api/daemon/messages] Error:', error);
     return NextResponse.json(
       { error: 'Failed to get messages', code: MESSAGE_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -238,7 +240,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Unauthorized', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -247,7 +249,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!hasWriteScope) {
       return NextResponse.json(
         { error: 'Insufficient permissions', code: MESSAGE_ERROR_CODES.INSUFFICIENT_SCOPE },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -258,11 +260,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: MESSAGE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const { channelId, content, threadId, attachments, metadata } = body as {
+    const { channelId, content, threadId, attachments: _attachments, metadata } = body as {
       channelId?: string;
       content?: string;
       threadId?: string;
@@ -274,7 +276,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!channelId || !content) {
       return NextResponse.json(
         { error: 'Channel ID and content required', code: MESSAGE_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -283,7 +285,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!hasAccess) {
       return NextResponse.json(
         { error: 'Channel access denied', code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -296,7 +298,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!vp) {
       return NextResponse.json(
         { error: 'VP not found', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -337,7 +339,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/daemon/messages] Error:', error);
     return NextResponse.json(
       { error: 'Failed to send message', code: MESSAGE_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

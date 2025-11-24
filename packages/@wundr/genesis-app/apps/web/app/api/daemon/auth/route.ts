@@ -9,10 +9,22 @@
  * @module app/api/daemon/auth/route
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@genesis/database';
 import { redis, hashAPIKey } from '@genesis/core';
+import { prisma } from '@genesis/database';
 import * as jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+import type { NextRequest} from 'next/server';
+
+/**
+ * Schema for daemon authentication request body
+ */
+const daemonAuthSchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+  apiSecret: z.string().min(1, 'API secret is required'),
+  scopes: z.array(z.string()).optional().default([]),
+});
 
 /**
  * JWT configuration
@@ -51,7 +63,7 @@ function generateTokens(vpId: string, daemonId: string, scopes: string[]): {
       type: 'access',
     },
     JWT_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRY }
+    { expiresIn: ACCESS_TOKEN_EXPIRY },
   );
 
   const refreshToken = jwt.sign(
@@ -61,7 +73,7 @@ function generateTokens(vpId: string, daemonId: string, scopes: string[]): {
       type: 'refresh',
     },
     JWT_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRY }
+    { expiresIn: REFRESH_TOKEN_EXPIRY },
   );
 
   return { accessToken, refreshToken, expiresAt };
@@ -96,30 +108,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON body', code: AUTH_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const { apiKey, apiSecret, scopes = [] } = body as {
-      apiKey?: string;
-      apiSecret?: string;
-      scopes?: string[];
-    };
-
-    // Validate required fields
-    if (!apiKey || !apiSecret) {
+    // Validate input using Zod schema
+    const parseResult = daemonAuthSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
         { error: 'API key and secret required', code: AUTH_ERROR_CODES.VALIDATION_ERROR },
-        { status: 400 }
+        { status: 400 },
       );
     }
+
+    const { apiKey, apiSecret, scopes } = parseResult.data;
 
     // Extract VP ID from API key prefix (format: vp_<vpId>_<random>)
     const keyParts = apiKey.split('_');
     if (keyParts.length < 3 || keyParts[0] !== 'vp') {
       return NextResponse.json(
         { error: 'Invalid credentials', code: AUTH_ERROR_CODES.INVALID_CREDENTIALS },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -150,7 +159,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!vp) {
       return NextResponse.json(
         { error: 'Invalid credentials', code: AUTH_ERROR_CODES.INVALID_CREDENTIALS },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -158,7 +167,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (vp.status === 'OFFLINE') {
       return NextResponse.json(
         { error: 'Daemon is disabled', code: AUTH_ERROR_CODES.DAEMON_DISABLED },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -169,7 +178,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (providedHash !== vpCapabilities.apiKeyHash) {
         return NextResponse.json(
           { error: 'Invalid credentials', code: AUTH_ERROR_CODES.INVALID_CREDENTIALS },
-          { status: 401 }
+          { status: 401 },
         );
       }
     }
@@ -179,7 +188,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { accessToken, refreshToken, expiresAt } = generateTokens(
       vpId,
       sessionId,
-      scopes as string[]
+      scopes,
     );
 
     // Store session in Redis
@@ -193,7 +202,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           refreshToken: await hashAPIKey(refreshToken),
           createdAt: new Date().toISOString(),
           lastHeartbeat: new Date().toISOString(),
-        })
+        }),
       );
     } catch (redisError) {
       console.error('Redis session storage error:', redisError);
@@ -226,7 +235,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.error('[POST /api/daemon/auth] Error:', error);
     return NextResponse.json(
       { error: 'Authentication failed', code: AUTH_ERROR_CODES.INTERNAL_ERROR },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

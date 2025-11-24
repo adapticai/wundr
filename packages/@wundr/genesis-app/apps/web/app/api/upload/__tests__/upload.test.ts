@@ -92,9 +92,15 @@ const MAX_FILE_SIZES: Record<FileType, number> = {
  * Get file type from MIME type
  */
 function getFileType(mimeType: string): FileType {
-  if (mimeType.startsWith('image/')) return 'IMAGE';
-  if (mimeType.startsWith('video/')) return 'VIDEO';
-  if (mimeType.startsWith('audio/')) return 'AUDIO';
+  if (mimeType.startsWith('image/')) {
+return 'IMAGE';
+}
+  if (mimeType.startsWith('video/')) {
+return 'VIDEO';
+}
+  if (mimeType.startsWith('audio/')) {
+return 'AUDIO';
+}
   if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.startsWith('text/')) {
     return 'DOCUMENT';
   }
@@ -139,7 +145,7 @@ function createMockStorageService() {
       expiresAt: new Date(Date.now() + 3600000),
     }),
     getSignedDownloadUrl: vi.fn().mockResolvedValue(
-      'https://bucket.s3.amazonaws.com/download?signature=mock'
+      'https://bucket.s3.amazonaws.com/download?signature=mock',
     ),
   };
 }
@@ -155,7 +161,7 @@ function createMockImageService() {
       format: 'jpeg',
     }),
     generateThumbnail: vi.fn().mockResolvedValue(
-      'https://cdn.example.com/thumb.webp'
+      'https://cdn.example.com/thumb.webp',
     ),
   };
 }
@@ -232,7 +238,7 @@ function createUploadHandler(deps: {
       // Generate signed URL
       const result = await deps.storageService.getSignedUploadUrl(
         `channels/${input.channelId}/files/${deps.currentUser.id}/${Date.now()}-${input.filename}`,
-        input.contentType
+        input.contentType,
       );
 
       return {
@@ -747,7 +753,7 @@ describe('Upload API', () => {
           data: expect.objectContaining({
             channelId: 'ch_456',
           }),
-        })
+        }),
       );
     });
 
@@ -827,7 +833,7 @@ describe('Upload API', () => {
               tags: ['finance', 'quarterly'],
             },
           }),
-        })
+        }),
       );
     });
   });
@@ -871,7 +877,7 @@ describe('Upload API Error Handling', () => {
     });
 
     mockStorageService.getSignedUploadUrl.mockRejectedValue(
-      new Error('S3 Service Unavailable')
+      new Error('S3 Service Unavailable'),
     );
 
     const input: UploadRequestInput = {
@@ -886,7 +892,7 @@ describe('Upload API Error Handling', () => {
 
   it('handles database errors gracefully', async () => {
     mockPrisma.channelMember.findUnique.mockRejectedValue(
-      new Error('Database connection lost')
+      new Error('Database connection lost'),
     );
 
     const input: UploadRequestInput = {
@@ -920,7 +926,7 @@ describe('Upload API Error Handling', () => {
 
     // Image processing fails
     mockImageService.processImage.mockRejectedValue(
-      new Error('Image processing failed')
+      new Error('Image processing failed'),
     );
 
     const input: CompleteUploadInput = {

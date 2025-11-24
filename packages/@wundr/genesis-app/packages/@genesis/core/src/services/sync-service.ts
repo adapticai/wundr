@@ -8,9 +8,15 @@
  */
 
 import { EventEmitter } from 'events';
+
 import { createId } from '@paralleldrive/cuid2';
 
 import { GenesisError } from '../errors';
+import {
+  type LocalStorageService,
+  createLocalStorageService,
+  generateStorageKey,
+} from './local-storage-service';
 import {
   DEFAULT_SYNC_CONFIG,
   type SyncConfig,
@@ -25,11 +31,6 @@ import {
   type OnConflictDetectedCallback,
   type SyncResult,
 } from '../types/offline';
-import {
-  type LocalStorageService,
-  createLocalStorageService,
-  generateStorageKey,
-} from './local-storage-service';
 
 // =============================================================================
 // Custom Errors

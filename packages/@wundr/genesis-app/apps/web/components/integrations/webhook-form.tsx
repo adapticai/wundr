@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { Webhook, WebhookEventType } from '@/types/integration';
 import { WEBHOOK_EVENTS } from '@/types/integration';
+
+import type { Webhook, WebhookEventType } from '@/types/integration';
 
 export interface WebhookFormProps {
   webhook?: Webhook | null;
@@ -160,7 +162,9 @@ export function WebhookForm({
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!validate()) return;
+      if (!validate()) {
+return;
+}
 
       setIsSubmitting(true);
 
@@ -184,7 +188,9 @@ export function WebhookForm({
     [name, url, events, headers, retryPolicy, validate, onSubmit, onClose],
   );
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   const allEvents = Object.entries(WEBHOOK_EVENTS) as [WebhookEventType, { label: string; description: string }][];
   const allSelected = events.length === allEvents.length;

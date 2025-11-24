@@ -29,7 +29,7 @@ import {
   type QueueStats,
   type MemoryQueueConfig,
   type ProcessingResult,
-  type JobProcessor,
+  type JobProcessor as _JobProcessor,
   type ProcessorRegistry,
   type JobAddedEvent,
   type JobStartedEvent,
@@ -177,7 +177,9 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
    * Close the queue
    */
   async close(): Promise<void> {
-    if (!this.ready) return;
+    if (!this.ready) {
+return;
+}
 
     this.ready = false;
 
@@ -267,7 +269,9 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
    */
   async getJob(jobId: string): Promise<JobInfo | null> {
     const job = this.jobs.get(jobId);
-    if (!job) return null;
+    if (!job) {
+return null;
+}
     return this.mapToJobInfo(job);
   }
 
@@ -276,7 +280,9 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
    */
   async cancelJob(jobId: string): Promise<boolean> {
     const job = this.jobs.get(jobId);
-    if (!job) return false;
+    if (!job) {
+return false;
+}
 
     if (job.status === JobStatus.ACTIVE) {
       return false; // Cannot cancel active jobs
@@ -299,7 +305,9 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
    */
   async retryJob(jobId: string): Promise<boolean> {
     const job = this.jobs.get(jobId);
-    if (!job) return false;
+    if (!job) {
+return false;
+}
 
     if (job.status !== JobStatus.FAILED) {
       return false;
@@ -501,7 +509,9 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
     for (const job of this.jobs.values()) {
       if (job.status === status) {
         result.push(this.mapToJobInfo(job));
-        if (result.length >= limit) break;
+        if (result.length >= limit) {
+break;
+}
       }
     }
 
@@ -512,17 +522,23 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
    * Process next available jobs
    */
   private async processNextJobs(): Promise<void> {
-    if (this.paused || !this.ready) return;
+    if (this.paused || !this.ready) {
+return;
+}
 
     const concurrency = this.config.queue.concurrency ?? 2;
     const availableSlots = concurrency - this.activeJobs.size;
 
     for (let i = 0; i < availableSlots && this.waitingQueue.length > 0; i++) {
       const jobId = this.waitingQueue.shift();
-      if (!jobId) continue;
+      if (!jobId) {
+continue;
+}
 
       const job = this.jobs.get(jobId);
-      if (!job || job.status !== JobStatus.WAITING) continue;
+      if (!job || job.status !== JobStatus.WAITING) {
+continue;
+}
 
       this.processJob(job).catch((error) => {
         console.error(`Error processing job ${jobId}:`, error);
@@ -572,7 +588,7 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
       const result = await this.withTimeout(
         processor.process(job.data),
         timeout,
-        `Job ${job.id} timed out after ${timeout}ms`
+        `Job ${job.id} timed out after ${timeout}ms`,
       );
 
       // Success
@@ -736,12 +752,12 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
   private async withTimeout<T>(
     promise: Promise<T>,
     timeoutMs: number,
-    message: string
+    message: string,
   ): Promise<T> {
     return Promise.race([
       promise,
       new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error(message)), timeoutMs)
+        setTimeout(() => reject(new Error(message)), timeoutMs),
       ),
     ]);
   }
@@ -756,7 +772,7 @@ export class MemoryProcessingQueue extends BaseProcessingQueue {
  */
 export function createMemoryProcessingQueue(
   config?: Partial<MemoryQueueConfig>,
-  processorRegistry?: ProcessorRegistry
+  processorRegistry?: ProcessorRegistry,
 ): MemoryProcessingQueue {
   return new MemoryProcessingQueue(config, processorRegistry);
 }

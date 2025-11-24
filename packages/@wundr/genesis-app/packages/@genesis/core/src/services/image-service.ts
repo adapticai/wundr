@@ -10,6 +10,16 @@
  */
 
 import sharp from 'sharp';
+
+import {
+  THUMBNAIL_SIZES,
+  DEFAULT_QUALITY,
+  MIME_TO_FORMAT,
+  DEFAULT_VALIDATION_OPTIONS,
+  DEFAULT_OPTIMIZE_OPTIONS,
+  DEFAULT_VARIANTS,
+} from '../types/image';
+
 import type {
   ImageFormat,
   ThumbnailSize,
@@ -25,14 +35,6 @@ import type {
   ImageValidationResult,
   ImageValidationOptions,
   ImagePosition,
-} from '../types/image';
-import {
-  THUMBNAIL_SIZES,
-  DEFAULT_QUALITY,
-  MIME_TO_FORMAT,
-  DEFAULT_VALIDATION_OPTIONS,
-  DEFAULT_OPTIMIZE_OPTIONS,
-  DEFAULT_VARIANTS,
 } from '../types/image';
 
 // =============================================================================
@@ -183,7 +185,7 @@ export class UnsupportedFormatError extends ImageProcessingError {
 export class ImageValidationError extends ImageProcessingError {
   constructor(
     message: string,
-    public readonly errors: string[]
+    public readonly errors: string[],
   ) {
     super(message, 'VALIDATION_ERROR');
     this.name = 'ImageValidationError';
@@ -198,7 +200,7 @@ export class ImageOperationError extends ImageProcessingError {
     super(
       `Image operation failed: ${operation}${cause ? ` - ${cause.message}` : ''}`,
       'OPERATION_ERROR',
-      cause
+      cause,
     );
     this.name = 'ImageOperationError';
   }
@@ -319,7 +321,7 @@ export class ImageServiceImpl implements ImageService {
     } catch (error) {
       throw new ImageOperationError(
         `generate thumbnail (${size})`,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -419,7 +421,9 @@ export class ImageServiceImpl implements ImageService {
         })
         .toBuffer();
     } catch (error) {
-      if (error instanceof ImageProcessingError) throw error;
+      if (error instanceof ImageProcessingError) {
+throw error;
+}
       throw new ImageOperationError('crop', error instanceof Error ? error : undefined);
     }
   }
@@ -471,7 +475,9 @@ export class ImageServiceImpl implements ImageService {
 
       return await pipeline.toBuffer();
     } catch (error) {
-      if (error instanceof ImageProcessingError) throw error;
+      if (error instanceof ImageProcessingError) {
+throw error;
+}
       throw new ImageOperationError(`convert to ${format}`, error instanceof Error ? error : undefined);
     }
   }
@@ -603,7 +609,7 @@ export class ImageServiceImpl implements ImageService {
       } catch (error) {
         throw new ImageOperationError(
           `generate variant ${config.name}`,
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
     });
@@ -616,7 +622,7 @@ export class ImageServiceImpl implements ImageService {
    */
   async validateImage(
     input: Buffer,
-    options?: ImageValidationOptions
+    options?: ImageValidationOptions,
   ): Promise<ImageValidationResult> {
     const opts = { ...DEFAULT_VALIDATION_OPTIONS, ...options };
     const errors: string[] = [];
@@ -674,7 +680,7 @@ export class ImageServiceImpl implements ImageService {
         detectedFormat: format,
         dimensions: { width, height },
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         valid: false,
         errors: ['Failed to read image: file may be corrupted or invalid'],
@@ -759,8 +765,12 @@ export class ImageServiceImpl implements ImageService {
    * Formats bytes to human-readable string.
    */
   private formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+return `${bytes} B`;
+}
+    if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 }

@@ -21,8 +21,8 @@ import {
 } from '@/lib/validations/presence';
 
 import type { SetStatusInput, UserPresenceResponse, PresenceStatusType } from '@/lib/validations/presence';
-import type { NextRequest } from 'next/server';
 import type { UserStatus, Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 
 /** Time in ms after which a user is considered offline (5 minutes) */
 const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;
@@ -38,7 +38,9 @@ interface UserPreferences {
  * Check if user is online based on last activity
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
-  if (!lastActiveAt) return false;
+  if (!lastActiveAt) {
+return false;
+}
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
@@ -123,7 +125,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -141,7 +143,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     if (!user) {
       return NextResponse.json(
         createPresenceErrorResponse('User not found', PRESENCE_ERROR_CODES.USER_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -153,9 +155,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -199,7 +201,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!session?.user?.id) {
       return NextResponse.json(
         createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -210,7 +212,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createPresenceErrorResponse('Invalid JSON body', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -221,9 +223,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -266,9 +268,9 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

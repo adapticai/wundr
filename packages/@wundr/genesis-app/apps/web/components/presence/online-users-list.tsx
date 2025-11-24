@@ -62,7 +62,9 @@ export function OnlineUsersList({
   }, [users]);
 
   const toggleSection = (status: PresenceStatus) => {
-    if (!collapsibleSections) return;
+    if (!collapsibleSections) {
+return;
+}
 
     setCollapsedSections((prev) => {
       const next = new Set(prev);

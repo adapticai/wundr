@@ -11,7 +11,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -24,6 +23,7 @@ import {
 } from '@/lib/validations/message';
 
 import type { SendMessageInput, ThreadListInput } from '@/lib/validations/message';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -184,7 +184,7 @@ export async function GET(
         createdAt: 'asc',
       },
       include: {
-        user: {
+        author: {
           select: {
             id: true,
             name: true,
@@ -387,11 +387,11 @@ export async function POST(
         type: input.type,
         metadata: input.metadata as Prisma.InputJsonValue,
         channelId: parentMessage.channelId,
-        userId: session.user.id,
+        authorId: session.user.id,
         parentId: params.id,
       },
       include: {
-        user: {
+        author: {
           select: {
             id: true,
             name: true,

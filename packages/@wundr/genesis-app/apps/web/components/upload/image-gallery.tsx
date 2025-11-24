@@ -3,9 +3,11 @@
 import { useCallback, useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import type { FileRecord } from '@/types/upload';
 
 import { Lightbox } from './lightbox';
+
+import type { FileRecord } from '@/types/upload';
+
 
 interface ImageGalleryProps {
   images: FileRecord[];
@@ -93,7 +95,7 @@ export function ImageGallery({
               'group relative overflow-hidden rounded-lg',
               'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
               'transition-all duration-200',
-              aspect[aspectRatio]
+              aspect[aspectRatio],
             )}
           >
             <img
@@ -101,7 +103,7 @@ export function ImageGallery({
               alt={image.name}
               className={cn(
                 'h-full w-full object-cover',
-                'transition-transform duration-300 group-hover:scale-105'
+                'transition-transform duration-300 group-hover:scale-105',
               )}
               loading="lazy"
             />
@@ -111,7 +113,7 @@ export function ImageGallery({
               className={cn(
                 'absolute inset-0 flex items-center justify-center',
                 'bg-black/40 opacity-0 transition-opacity duration-200',
-                'group-hover:opacity-100'
+                'group-hover:opacity-100',
               )}
             >
               <svg
@@ -204,7 +206,7 @@ export function ImageGalleryPreview({
                 'row-span-2': visibleImages.length === 3 && index === 0,
                 'aspect-square': visibleImages.length > 1,
                 'aspect-video': visibleImages.length === 1,
-              }
+              },
             )}
           >
             <img
@@ -219,7 +221,7 @@ export function ImageGalleryPreview({
               <div
                 className={cn(
                   'absolute inset-0 flex items-center justify-center',
-                  'bg-black/60 text-white'
+                  'bg-black/60 text-white',
                 )}
               >
                 <span className="text-2xl font-bold">+{remainingCount}</span>
@@ -236,7 +238,7 @@ export function ImageGalleryPreview({
           onClick={onViewAll}
           className={cn(
             'mt-2 text-sm text-primary hover:underline',
-            'focus:outline-none focus:underline'
+            'focus:outline-none focus:underline',
           )}
         >
           View all {images.length} images

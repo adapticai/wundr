@@ -10,9 +10,17 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Readable } from 'stream';
+
+
+import { createOfficeExtractor } from './office-extractor';
+import { createPDFExtractor } from './pdf-extractor';
+import { createTableExtractor } from './table-extractor';
+import { ExtractionError } from '../types/extraction';
 
 import type { FileProcessorConfig } from '../config';
+import type { OfficeExtractor } from './office-extractor';
+import type { PDFExtractor } from './pdf-extractor';
+import type { TableExtractor } from './table-extractor';
 import type {
   ExtractionInput,
   ExtractionResult,
@@ -30,11 +38,7 @@ import type {
   ExtractedImage,
   PageContent,
 } from '../types/extraction';
-import { ExtractionError } from '../types/extraction';
-
-import { createPDFExtractor, PDFExtractor } from './pdf-extractor';
-import { createOfficeExtractor, OfficeExtractor } from './office-extractor';
-import { createTableExtractor, TableExtractor } from './table-extractor';
+import type { Readable } from 'stream';
 
 // ============================================================================
 // File Signatures for Type Detection
@@ -244,7 +248,7 @@ export class TextExtractor implements TextExtractionService {
       if (!fileType.supported) {
         throw new ExtractionError(
           `Unsupported file format: ${fileType.mimeType}`,
-          'UNSUPPORTED_FORMAT'
+          'UNSUPPORTED_FORMAT',
         );
       }
 
@@ -268,7 +272,7 @@ export class TextExtractor implements TextExtractionService {
         default:
           throw new ExtractionError(
             `No extractor available for format: ${fileType.extension}`,
-            'UNSUPPORTED_FORMAT'
+            'UNSUPPORTED_FORMAT',
           );
       }
 
@@ -407,7 +411,7 @@ export class TextExtractor implements TextExtractionService {
       if (!fs.existsSync(filePath)) {
         throw new ExtractionError(
           `File not found: ${filePath}`,
-          'FILE_NOT_FOUND'
+          'FILE_NOT_FOUND',
         );
       }
 
@@ -416,7 +420,7 @@ export class TextExtractor implements TextExtractionService {
       if (stats.size > this.config.maxFileSize) {
         throw new ExtractionError(
           `File size exceeds maximum allowed: ${stats.size} > ${this.config.maxFileSize}`,
-          'OUT_OF_MEMORY'
+          'OUT_OF_MEMORY',
         );
       }
 
@@ -450,7 +454,7 @@ export class TextExtractor implements TextExtractionService {
         if (totalSize > this.config.maxFileSize) {
           throw new ExtractionError(
             `Stream size exceeds maximum allowed: ${totalSize} > ${this.config.maxFileSize}`,
-            'OUT_OF_MEMORY'
+            'OUT_OF_MEMORY',
           );
         }
         chunks.push(Buffer.from(chunk));
@@ -486,7 +490,7 @@ export class TextExtractor implements TextExtractionService {
     if (input.buffer.length > this.config.maxFileSize) {
       throw new ExtractionError(
         `File size exceeds maximum allowed: ${input.buffer.length} > ${this.config.maxFileSize}`,
-        'OUT_OF_MEMORY'
+        'OUT_OF_MEMORY',
       );
     }
   }
@@ -506,7 +510,7 @@ export class TextExtractor implements TextExtractionService {
     if (buffer.length > this.config.maxFileSize) {
       throw new ExtractionError(
         `Buffer size exceeds maximum allowed: ${buffer.length} > ${this.config.maxFileSize}`,
-        'OUT_OF_MEMORY'
+        'OUT_OF_MEMORY',
       );
     }
   }
@@ -540,7 +544,7 @@ export class TextExtractor implements TextExtractionService {
       // Simple check: look for content type markers in the buffer
       const content = buffer.toString('utf8', 0, Math.min(buffer.length, 4096));
 
-      for (const [marker, type] of Object.entries(OOXML_CONTENT_TYPES)) {
+      for (const [marker, _type] of Object.entries(OOXML_CONTENT_TYPES)) {
         if (content.includes(marker) || content.includes('[Content_Types].xml')) {
           // Try to determine specific type
           if (content.includes('word/') || content.includes('wordprocessingml')) {

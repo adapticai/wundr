@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+
 import { useWorkspaceUsers } from '@/hooks/use-channel';
+import { cn } from '@/lib/utils';
+
 import type { User } from '@/types/chat';
 
 interface InviteDialogProps {
@@ -41,7 +43,7 @@ export function InviteDialog({
   // Filter out existing members and already selected users
   const availableUsers = users.filter(
     (u) =>
-      !existingMemberIds.includes(u.id) && !selectedUsers.some((s) => s.id === u.id)
+      !existingMemberIds.includes(u.id) && !selectedUsers.some((s) => s.id === u.id),
   );
 
   const resetForm = useCallback(() => {
@@ -56,13 +58,15 @@ export function InviteDialog({
   }, [resetForm, onClose]);
 
   const handleSubmit = useCallback(async () => {
-    if (selectedUsers.length === 0 || isSubmitting) return;
+    if (selectedUsers.length === 0 || isSubmitting) {
+return;
+}
 
     setIsSubmitting(true);
     try {
       await onInvite(
         selectedUsers.map((u) => u.id),
-        role
+        role,
       );
       handleClose();
     } finally {
@@ -79,7 +83,9 @@ export function InviteDialog({
     setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
   }, []);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div
@@ -207,7 +213,7 @@ export function InviteDialog({
                     'flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
                     role === 'member'
                       ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/50'
+                      : 'border-border text-muted-foreground hover:border-primary/50',
                   )}
                 >
                   <MemberIcon className="h-4 w-4" />
@@ -221,7 +227,7 @@ export function InviteDialog({
                     'flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
                     role === 'admin'
                       ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/50'
+                      : 'border-border text-muted-foreground hover:border-primary/50',
                   )}
                 >
                   <ShieldIcon className="h-4 w-4" />

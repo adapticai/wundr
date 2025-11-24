@@ -3,7 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
 import { AuditServiceImpl } from '../audit-service';
+
 import type {
   AuditDatabaseClient,
   AuditRedisClient,
@@ -110,7 +112,7 @@ describe('AuditService', () => {
 
       expect(mockRedis.publish).toHaveBeenCalledWith(
         'audit:critical:ws-1',
-        expect.any(String)
+        expect.any(String),
       );
     });
 
@@ -252,7 +254,7 @@ describe('AuditService', () => {
 
       const result = await auditService.query(
         { workspaceId: 'ws-1' },
-        { limit: 10, offset: 20 }
+        { limit: 10, offset: 20 },
       );
 
       expect(result.pagination.hasMore).toBe(true);
@@ -305,7 +307,7 @@ describe('AuditService', () => {
       await auditService.query(
         { workspaceId: 'ws-1' },
         undefined,
-        { field: 'severity', direction: 'asc' }
+        { field: 'severity', direction: 'asc' },
       );
 
       const orderBy = (mockPrisma.auditLog.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].orderBy;
@@ -374,13 +376,13 @@ describe('AuditService', () => {
         'ws-1',
         'user-1',
         { workspaceId: 'ws-1' },
-        'csv'
+        'csv',
       );
 
       expect(result.status).toBe('pending');
       expect(mockRedis.lpush).toHaveBeenCalledWith(
         'audit:export:queue',
-        'export-1'
+        'export-1',
       );
     });
 
@@ -401,7 +403,7 @@ describe('AuditService', () => {
         'ws-1',
         'user-1',
         { workspaceId: 'ws-1' },
-        'pdf'
+        'pdf',
       );
 
       expect(result.format).toBe('pdf');

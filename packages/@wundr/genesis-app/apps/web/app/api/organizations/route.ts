@@ -221,8 +221,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           name: input.name,
           slug: input.slug,
           description: input.description,
-          logoUrl: input.logoUrl,
-          website: input.website,
+          avatarUrl: input.logoUrl,
           settings: input.settings as Prisma.InputJsonValue,
         },
       });

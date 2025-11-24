@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
+
 import type {
   Message,
   Channel,
@@ -26,7 +27,9 @@ export function useMessages(channelId: string, filters?: MessageFilters) {
 
   const fetchMessages = useCallback(
     async (loadMore = false) => {
-      if (!channelId) return;
+      if (!channelId) {
+return;
+}
 
       if (loadMore) {
         setIsLoadingMore(true);
@@ -38,10 +41,18 @@ export function useMessages(channelId: string, filters?: MessageFilters) {
       try {
         const params = new URLSearchParams();
         params.set('channelId', channelId);
-        if (filters?.limit) params.set('limit', String(filters.limit));
-        if (filters?.before) params.set('before', filters.before);
-        if (filters?.after) params.set('after', filters.after);
-        if (filters?.search) params.set('search', filters.search);
+        if (filters?.limit) {
+params.set('limit', String(filters.limit));
+}
+        if (filters?.before) {
+params.set('before', filters.before);
+}
+        if (filters?.after) {
+params.set('after', filters.after);
+}
+        if (filters?.search) {
+params.set('search', filters.search);
+}
 
         // If loading more, use the oldest message ID as cursor
         if (loadMore && messages.length > 0) {
@@ -74,7 +85,7 @@ export function useMessages(channelId: string, filters?: MessageFilters) {
         setIsLoadingMore(false);
       }
     },
-    [channelId, filters?.limit, filters?.before, filters?.after, filters?.search, messages]
+    [channelId, filters?.limit, filters?.before, filters?.after, filters?.search, messages],
   );
 
   // Initial fetch
@@ -85,7 +96,9 @@ export function useMessages(channelId: string, filters?: MessageFilters) {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId) {
+return;
+}
 
     // Simulated WebSocket subscription
     // In production, this would connect to a real WebSocket or SSE endpoint
@@ -115,8 +128,8 @@ export function useMessages(channelId: string, filters?: MessageFilters) {
                         ? new Date(data.message.editedAt)
                         : null,
                     }
-                  : m
-              )
+                  : m,
+              ),
             );
           } else if (data.type === 'message_deleted') {
             setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
@@ -160,7 +173,7 @@ export function useMessages(channelId: string, filters?: MessageFilters) {
   // Update message optimistically
   const updateOptimisticMessage = useCallback((messageId: string, updates: Partial<Message>) => {
     setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, ...updates } : m))
+      prev.map((m) => (m.id === messageId ? { ...m, ...updates } : m)),
     );
   }, []);
 
@@ -192,7 +205,9 @@ export function useThread(parentId: string) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchThread = useCallback(async () => {
-    if (!parentId) return;
+    if (!parentId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -230,7 +245,9 @@ export function useThread(parentId: string) {
 
   const addOptimisticReply = useCallback((message: Message) => {
     setThread((prev) => {
-      if (!prev) return null;
+      if (!prev) {
+return null;
+}
       return {
         ...prev,
         messages: [...prev.messages, message],
@@ -258,7 +275,7 @@ export function useSendMessage() {
     async (
       input: SendMessageInput,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _currentUser: User
+      _currentUser: User,
     ): Promise<{ optimisticId: string; message: Message | null }> => {
       setIsSending(true);
       setError(null);
@@ -272,8 +289,12 @@ export function useSendMessage() {
         const formData = new FormData();
         formData.append('content', input.content);
         formData.append('channelId', input.channelId);
-        if (input.parentId) formData.append('parentId', input.parentId);
-        if (input.mentions) formData.append('mentions', JSON.stringify(input.mentions));
+        if (input.parentId) {
+formData.append('parentId', input.parentId);
+}
+        if (input.mentions) {
+formData.append('mentions', JSON.stringify(input.mentions));
+}
         if (input.attachments) {
           input.attachments.forEach((file) => {
             formData.append('attachments', file);
@@ -304,7 +325,7 @@ export function useSendMessage() {
         setIsSending(false);
       }
     },
-    []
+    [],
   );
 
   const editMessage = useCallback(
@@ -337,7 +358,7 @@ export function useSendMessage() {
         setIsSending(false);
       }
     },
-    []
+    [],
   );
 
   const deleteMessage = useCallback(async (messageId: string): Promise<boolean> => {
@@ -380,7 +401,9 @@ export function useReactions(messageId: string) {
 
   const toggleReaction = useCallback(
     async (emoji: string): Promise<Reaction[] | null> => {
-      if (!messageId) return null;
+      if (!messageId) {
+return null;
+}
 
       setIsToggling(true);
       setError(null);
@@ -405,7 +428,7 @@ export function useReactions(messageId: string) {
         setIsToggling(false);
       }
     },
-    [messageId]
+    [messageId],
   );
 
   return {
@@ -425,7 +448,9 @@ export function useTypingIndicator(channelId: string, currentUserId: string) {
 
   // Listen for typing events
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId) {
+return;
+}
 
     const eventSource = new EventSource(`/api/channels/${channelId}/typing`);
 
@@ -463,7 +488,9 @@ export function useTypingIndicator(channelId: string, currentUserId: string) {
 
   // Send typing indicator
   const startTyping = useCallback(() => {
-    if (!channelId || isTyping) return;
+    if (!channelId || isTyping) {
+return;
+}
 
     setIsTyping(true);
 
@@ -485,7 +512,9 @@ export function useTypingIndicator(channelId: string, currentUserId: string) {
   }, [channelId, isTyping]);
 
   const stopTyping = useCallback(() => {
-    if (!channelId || !isTyping) return;
+    if (!channelId || !isTyping) {
+return;
+}
 
     setIsTyping(false);
 
@@ -506,7 +535,7 @@ export function useTypingIndicator(channelId: string, currentUserId: string) {
   // Filter out current user from typing users
   const otherTypingUsers = useMemo(
     () => typingUsers.filter((t) => t.user.id !== currentUserId),
-    [typingUsers, currentUserId]
+    [typingUsers, currentUserId],
   );
 
   return {
@@ -525,7 +554,9 @@ export function useChannel(channelId: string) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchChannel = useCallback(async () => {
-    if (!channelId) return;
+    if (!channelId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -578,7 +609,7 @@ export function useMentionSuggestions(channelId: string) {
 
       try {
         const response = await fetch(
-          `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`
+          `/api/channels/${channelId}/members?search=${encodeURIComponent(query)}`,
         );
         if (!response.ok) {
           throw new Error('Failed to search users');
@@ -592,7 +623,7 @@ export function useMentionSuggestions(channelId: string) {
         setIsLoading(false);
       }
     },
-    [channelId]
+    [channelId],
   );
 
   return {

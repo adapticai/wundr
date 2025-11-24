@@ -45,7 +45,7 @@ interface RouteContext {
  */
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  context: RouteContext,
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -53,7 +53,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', INTEGRATION_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -65,9 +65,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace ID and provider are required',
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -79,9 +79,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           `Unsupported OAuth provider: ${providerParam}`,
-          INTEGRATION_ERROR_CODES.VALIDATION_ERROR
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -91,9 +91,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Workspace not found or access denied',
-          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
         ),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -101,9 +101,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Admin permission required to connect integrations',
-          INTEGRATION_ERROR_CODES.FORBIDDEN
+          INTEGRATION_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -121,9 +121,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'OAuth provider not configured',
-          INTEGRATION_ERROR_CODES.OAUTH_PROVIDER_ERROR
+          INTEGRATION_ERROR_CODES.OAUTH_PROVIDER_ERROR,
         ),
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -142,7 +142,7 @@ export async function GET(
     console.error('[GET /api/workspaces/:workspaceId/integrations/oauth/:provider] Error:', error);
     return NextResponse.json(
       createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -16,8 +16,8 @@
  * @module apps/web/app/api/organizations/__tests__/organizations.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
@@ -80,7 +80,7 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-function createMockRequest(
+function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
   searchParams?: Record<string, string>,

@@ -1,12 +1,15 @@
 'use client';
 
 import { useCallback } from 'react';
+
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { cn } from '@/lib/utils';
-import type { Message, User, Thread } from '@/types/chat';
+
+import { MessageInput } from './message-input';
 import { MessageItem } from './message-item';
 import { MessageList } from './message-list';
-import { MessageInput } from './message-input';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+
+import type { Message, User, Thread } from '@/types/chat';
 
 interface ThreadPanelProps {
   thread: Thread | null;
@@ -39,16 +42,18 @@ export function ThreadPanel({
     (content: string, mentions: string[], attachments: File[]) => {
       onSendReply(content, mentions, attachments);
     },
-    [onSendReply]
+    [onSendReply],
   );
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div
       className={cn(
         'fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l bg-background shadow-lg sm:w-96 lg:relative lg:shadow-none',
-        className
+        className,
       )}
     >
       {/* Header */}

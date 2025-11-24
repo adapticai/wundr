@@ -22,7 +22,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createId } from '@paralleldrive/cuid2';
-import type { Readable } from 'stream';
+
 
 import { GenesisError } from '../errors';
 import {
@@ -44,6 +44,8 @@ import {
   type KeyGenerationOptions,
 } from '../types/storage';
 
+import type { Readable } from 'stream';
+
 // =============================================================================
 // Custom Errors
 // =============================================================================
@@ -56,7 +58,7 @@ export class StorageError extends GenesisError {
     message: string,
     code: string,
     statusCode: number = 500,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ) {
     super(message, code, statusCode, metadata);
     this.name = 'StorageError';
@@ -72,7 +74,7 @@ export class FileNotFoundError extends StorageError {
       `File not found: ${key}`,
       'STORAGE_FILE_NOT_FOUND',
       404,
-      { key, bucket }
+      { key, bucket },
     );
     this.name = 'FileNotFoundError';
   }
@@ -100,7 +102,7 @@ export class FileSizeError extends StorageError {
       `File size ${formatBytes(size)} exceeds maximum allowed size ${formatBytes(maxSize)}`,
       'STORAGE_FILE_TOO_LARGE',
       413,
-      { size, maxSize }
+      { size, maxSize },
     );
     this.name = 'FileSizeError';
   }
@@ -115,7 +117,7 @@ export class MimeTypeError extends StorageError {
       `MIME type '${mimeType}' is not allowed`,
       'STORAGE_INVALID_MIME_TYPE',
       415,
-      { mimeType, allowedTypes }
+      { mimeType, allowedTypes },
     );
     this.name = 'MimeTypeError';
   }
@@ -409,7 +411,7 @@ export class StorageServiceImpl implements StorageService {
           `Failed to fetch file from URL: ${response.status} ${response.statusText}`,
           'STORAGE_FETCH_ERROR',
           502,
-          { url, status: response.status }
+          { url, status: response.status },
         );
       }
 
@@ -439,7 +441,7 @@ export class StorageServiceImpl implements StorageService {
         `Failed to upload from URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'STORAGE_URL_UPLOAD_ERROR',
         500,
-        { url }
+        { url },
       );
     }
   }
@@ -534,7 +536,7 @@ export class StorageServiceImpl implements StorageService {
    */
   async getSignedUploadUrl(
     key: string,
-    options?: SignedUrlOptions
+    options?: SignedUrlOptions,
   ): Promise<SignedUploadUrl> {
     const expiresIn = options?.expiresIn ?? this.config.signedUrlExpiration ?? 3600;
 
@@ -678,10 +680,10 @@ export class StorageServiceImpl implements StorageService {
         // Ignore cleanup errors
       }
       throw new StorageError(
-        `Failed to move file: could not delete source after copy`,
+        'Failed to move file: could not delete source after copy',
         'STORAGE_MOVE_ERROR',
         500,
-        { sourceKey, destKey }
+        { sourceKey, destKey },
       );
     }
   }
@@ -854,7 +856,7 @@ export class StorageServiceImpl implements StorageService {
 
     if (errors.length > 0) {
       throw new StorageConfigError(
-        `Invalid storage configuration: ${errors.join(', ')}`
+        `Invalid storage configuration: ${errors.join(', ')}`,
       );
     }
   }
@@ -1013,7 +1015,7 @@ export class StorageServiceImpl implements StorageService {
       `Storage operation '${operation}' failed: ${errorMessage}`,
       `STORAGE_${errorName.toUpperCase()}`,
       500,
-      { operation, key, originalError: errorMessage }
+      { operation, key, originalError: errorMessage },
     );
   }
 }
@@ -1054,7 +1056,7 @@ export function createStorageServiceFromEnv(): StorageServiceImpl {
 
   if (!bucket || !accessKeyId || !secretAccessKey) {
     throw new StorageConfigError(
-      'Missing required storage environment variables: STORAGE_BUCKET, access key, and secret key'
+      'Missing required storage environment variables: STORAGE_BUCKET, access key, and secret key',
     );
   }
 
@@ -1112,7 +1114,9 @@ export function createStorageService(config: StorageConfig): StorageServiceImpl 
  * Formats bytes into human-readable string.
  */
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {
+return '0 Bytes';
+}
 
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];

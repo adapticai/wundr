@@ -267,19 +267,27 @@ export interface RuntimeCacheRule {
   };
 }
 
+/** Base request info for deduplication and rate limiting */
+export interface BaseRequestInfo {
+  url: string;
+  method: string;
+  headers?: Record<string, string>;
+  body?: string | null;
+}
+
 /** Request deduplication config */
-export interface DeduplicationConfig {
+export interface DeduplicationConfig<TRequest extends BaseRequestInfo = BaseRequestInfo> {
   enabled: boolean;
   windowMs: number;
-  keyGenerator: (request: unknown) => string;
+  keyGenerator: (request: TRequest) => string;
 }
 
 /** Rate limiting config */
-export interface RateLimitConfig {
+export interface RateLimitConfig<TRequest extends BaseRequestInfo = BaseRequestInfo> {
   enabled: boolean;
   windowMs: number;
   maxRequests: number;
-  keyGenerator: (request: unknown) => string;
+  keyGenerator: (request: TRequest) => string;
   onRateLimited: (key: string) => void;
 }
 

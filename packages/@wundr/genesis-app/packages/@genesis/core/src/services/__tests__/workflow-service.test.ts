@@ -30,20 +30,21 @@ import {
   type WorkflowServiceConfig,
   type ActionHandler,
 } from '../workflow-service';
+
 import type {
   Workflow,
   WorkflowExecution,
   WorkflowAction,
   WorkflowCondition,
   CreateWorkflowInput,
-  UpdateWorkflowInput,
+  _UpdateWorkflowInput,
   ExecutionContext,
   ActionResult,
   SendMessageConfig,
-  DelayConfig,
-  ConditionConfig,
-  SetVariableConfig,
-  LoopConfig,
+  _DelayConfig,
+  _ConditionConfig,
+  _SetVariableConfig,
+  _LoopConfig,
 } from '../../types/workflow';
 
 // =============================================================================
@@ -93,7 +94,7 @@ function createMockWorkflow(overrides: Partial<Workflow> = {}): Workflow {
 }
 
 function createMockExecution(
-  overrides: Partial<WorkflowExecution> = {}
+  overrides: Partial<WorkflowExecution> = {},
 ): WorkflowExecution {
   const id = overrides.id ?? generateTestId();
   return {
@@ -112,7 +113,7 @@ function createMockExecution(
 
 function createTestService(
   storage?: WorkflowStorage,
-  actionHandlers?: Map<string, ActionHandler>
+  actionHandlers?: Map<string, ActionHandler>,
 ): WorkflowServiceImpl {
   const config: WorkflowServiceConfig = {
     storage: storage ?? new InMemoryWorkflowStorage(),
@@ -123,7 +124,7 @@ function createTestService(
 }
 
 function createValidInput(
-  overrides: Partial<CreateWorkflowInput> = {}
+  overrides: Partial<CreateWorkflowInput> = {},
 ): CreateWorkflowInput {
   return {
     workspaceId: overrides.workspaceId ?? generateTestId(),
@@ -243,7 +244,7 @@ describe('WorkflowService', () => {
       const input = createValidInput({ workspaceId: '' });
 
       await expect(
-        service.createWorkflow(input, 'user_123')
+        service.createWorkflow(input, 'user_123'),
       ).rejects.toThrow(WorkflowValidationError);
     });
 
@@ -251,7 +252,7 @@ describe('WorkflowService', () => {
       const input = createValidInput({ name: '' });
 
       await expect(
-        service.createWorkflow(input, 'user_123')
+        service.createWorkflow(input, 'user_123'),
       ).rejects.toThrow(WorkflowValidationError);
     });
 
@@ -259,7 +260,7 @@ describe('WorkflowService', () => {
       const input = createValidInput({ name: 'a'.repeat(101) });
 
       await expect(
-        service.createWorkflow(input, 'user_123')
+        service.createWorkflow(input, 'user_123'),
       ).rejects.toThrow(WorkflowValidationError);
     });
 
@@ -267,7 +268,7 @@ describe('WorkflowService', () => {
       const input = createValidInput({ actions: [] });
 
       await expect(
-        service.createWorkflow(input, 'user_123')
+        service.createWorkflow(input, 'user_123'),
       ).rejects.toThrow(WorkflowValidationError);
     });
 
@@ -283,7 +284,7 @@ describe('WorkflowService', () => {
       const input = createValidInput({ actions });
 
       await expect(
-        service.createWorkflow(input, 'user_123')
+        service.createWorkflow(input, 'user_123'),
       ).rejects.toThrow(WorkflowValidationError);
     });
   });
@@ -322,10 +323,10 @@ describe('WorkflowService', () => {
     it('filters by status', async () => {
       const workspaceId = generateTestId();
       await storage.createWorkflow(
-        createMockWorkflow({ workspaceId, status: 'active' })
+        createMockWorkflow({ workspaceId, status: 'active' }),
       );
       await storage.createWorkflow(
-        createMockWorkflow({ workspaceId, status: 'draft' })
+        createMockWorkflow({ workspaceId, status: 'draft' }),
       );
 
       const result = await service.listWorkflows(workspaceId, {
@@ -342,7 +343,7 @@ describe('WorkflowService', () => {
         createMockWorkflow({
           workspaceId,
           trigger: { id: 'tr1', type: 'manual', config: { type: 'manual' } },
-        })
+        }),
       );
       await storage.createWorkflow(
         createMockWorkflow({
@@ -352,7 +353,7 @@ describe('WorkflowService', () => {
             type: 'scheduled',
             config: { type: 'scheduled', schedule: '0 * * * *' },
           },
-        })
+        }),
       );
 
       const result = await service.listWorkflows(workspaceId, {
@@ -366,10 +367,10 @@ describe('WorkflowService', () => {
     it('excludes inactive by default', async () => {
       const workspaceId = generateTestId();
       await storage.createWorkflow(
-        createMockWorkflow({ workspaceId, status: 'active' })
+        createMockWorkflow({ workspaceId, status: 'active' }),
       );
       await storage.createWorkflow(
-        createMockWorkflow({ workspaceId, status: 'inactive' })
+        createMockWorkflow({ workspaceId, status: 'inactive' }),
       );
 
       const result = await service.listWorkflows(workspaceId);
@@ -380,10 +381,10 @@ describe('WorkflowService', () => {
     it('includes inactive when specified', async () => {
       const workspaceId = generateTestId();
       await storage.createWorkflow(
-        createMockWorkflow({ workspaceId, status: 'active' })
+        createMockWorkflow({ workspaceId, status: 'active' }),
       );
       await storage.createWorkflow(
-        createMockWorkflow({ workspaceId, status: 'inactive' })
+        createMockWorkflow({ workspaceId, status: 'inactive' }),
       );
 
       const result = await service.listWorkflows(workspaceId, {
@@ -478,7 +479,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent workflow', async () => {
       await expect(
-        service.updateWorkflow('non_existent', { name: 'New Name' })
+        service.updateWorkflow('non_existent', { name: 'New Name' }),
       ).rejects.toThrow(WorkflowNotFoundError);
     });
 
@@ -487,7 +488,7 @@ describe('WorkflowService', () => {
       await storage.createWorkflow(workflow);
 
       await expect(
-        service.updateWorkflow(workflow.id, { name: 'a'.repeat(101) })
+        service.updateWorkflow(workflow.id, { name: 'a'.repeat(101) }),
       ).rejects.toThrow(WorkflowValidationError);
     });
   });
@@ -505,7 +506,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent workflow', async () => {
       await expect(service.deleteWorkflow('non_existent')).rejects.toThrow(
-        WorkflowNotFoundError
+        WorkflowNotFoundError,
       );
     });
   });
@@ -545,7 +546,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent workflow', async () => {
       await expect(service.activateWorkflow('non_existent')).rejects.toThrow(
-        WorkflowNotFoundError
+        WorkflowNotFoundError,
       );
     });
   });
@@ -571,7 +572,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent workflow', async () => {
       await expect(service.deactivateWorkflow('non_existent')).rejects.toThrow(
-        WorkflowNotFoundError
+        WorkflowNotFoundError,
       );
     });
   });
@@ -641,7 +642,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent workflow', async () => {
       await expect(
-        service.executeWorkflow('non_existent', {})
+        service.executeWorkflow('non_existent', {}),
       ).rejects.toThrow(WorkflowNotFoundError);
     });
 
@@ -650,7 +651,7 @@ describe('WorkflowService', () => {
       await storage.createWorkflow(workflow);
 
       await expect(
-        service.executeWorkflow(workflow.id, {})
+        service.executeWorkflow(workflow.id, {}),
       ).rejects.toThrow(WorkflowExecutionError);
     });
 
@@ -659,7 +660,7 @@ describe('WorkflowService', () => {
       await storage.createWorkflow(workflow);
 
       await expect(
-        service.executeWorkflow(workflow.id, {})
+        service.executeWorkflow(workflow.id, {}),
       ).rejects.toThrow(WorkflowExecutionError);
     });
 
@@ -762,7 +763,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent execution', async () => {
       await expect(service.cancelExecution('non_existent')).rejects.toThrow(
-        ExecutionNotFoundError
+        ExecutionNotFoundError,
       );
     });
 
@@ -771,7 +772,7 @@ describe('WorkflowService', () => {
       await storage.createExecution(execution);
 
       await expect(service.cancelExecution(execution.id)).rejects.toThrow(
-        WorkflowExecutionError
+        WorkflowExecutionError,
       );
     });
 
@@ -780,7 +781,7 @@ describe('WorkflowService', () => {
       await storage.createExecution(execution);
 
       await expect(service.cancelExecution(execution.id)).rejects.toThrow(
-        WorkflowExecutionError
+        WorkflowExecutionError,
       );
     });
   });
@@ -804,10 +805,10 @@ describe('WorkflowService', () => {
       const workflow = createMockWorkflow({ id: workflowId });
       await storage.createWorkflow(workflow);
       await storage.createExecution(
-        createMockExecution({ workflowId, status: 'completed' })
+        createMockExecution({ workflowId, status: 'completed' }),
       );
       await storage.createExecution(
-        createMockExecution({ workflowId, status: 'failed' })
+        createMockExecution({ workflowId, status: 'failed' }),
       );
 
       const result = await service.getExecutionHistory(workflowId, {
@@ -820,7 +821,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent workflow', async () => {
       await expect(
-        service.getExecutionHistory('non_existent')
+        service.getExecutionHistory('non_existent'),
       ).rejects.toThrow(WorkflowNotFoundError);
     });
   });
@@ -1146,7 +1147,7 @@ describe('WorkflowService', () => {
       const result = await service.createFromTemplate(
         template.id,
         'workspace_123',
-        'user_123'
+        'user_123',
       );
 
       expect(result).toBeDefined();
@@ -1163,7 +1164,7 @@ describe('WorkflowService', () => {
         template.id,
         'workspace_123',
         'user_123',
-        { name: 'Custom Name' }
+        { name: 'Custom Name' },
       );
 
       expect(result.name).toBe('Custom Name');
@@ -1176,7 +1177,7 @@ describe('WorkflowService', () => {
         template.id,
         'workspace_123',
         'user_123',
-        { status: 'active' }
+        { status: 'active' },
       );
 
       expect(result.status).toBe('active');
@@ -1184,7 +1185,7 @@ describe('WorkflowService', () => {
 
     it('throws error for non-existent template', async () => {
       await expect(
-        service.createFromTemplate('non_existent', 'workspace_123', 'user_123')
+        service.createFromTemplate('non_existent', 'workspace_123', 'user_123'),
       ).rejects.toThrow(TemplateNotFoundError);
     });
   });

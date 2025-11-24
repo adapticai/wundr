@@ -13,11 +13,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+import {
+  DEFAULT_GENERAL_SETTINGS,
+  DEFAULT_SECURITY_SETTINGS,
+  DEFAULT_MESSAGING_SETTINGS,
+  _SYSTEM_ROLES,
+  PLAN_FEATURES,
+} from '../../types/admin';
 import {
   AdminServiceImpl,
   createAdminService,
   InMemoryAdminStorage,
-  SettingsNotFoundError,
+  _SettingsNotFoundError,
   RoleNotFoundError,
   RoleAlreadyExistsError,
   RoleValidationError,
@@ -26,6 +34,7 @@ import {
   InviteNotFoundError,
   InviteInvalidError,
 } from '../admin-service';
+
 import type {
   WorkspaceSettings,
   Role,
@@ -34,13 +43,6 @@ import type {
   BillingInfo,
   Permission,
   CreateRoleInput,
-} from '../../types/admin';
-import {
-  DEFAULT_GENERAL_SETTINGS,
-  DEFAULT_SECURITY_SETTINGS,
-  DEFAULT_MESSAGING_SETTINGS,
-  SYSTEM_ROLES,
-  PLAN_FEATURES,
 } from '../../types/admin';
 
 // =============================================================================
@@ -199,7 +201,7 @@ describe('AdminService', () => {
     describe('updateSettings', () => {
       it('updates general settings', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'My Workspace', timezone: 'America/New_York' }
+          general: { displayName: 'My Workspace', timezone: 'America/New_York' },
         }, userId);
 
         expect(result.general.displayName).toBe('My Workspace');
@@ -208,7 +210,7 @@ describe('AdminService', () => {
 
       it('updates security settings', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          security: { mfaRequired: true, sessionTimeout: 120 }
+          security: { mfaRequired: true, sessionTimeout: 120 },
         }, userId);
 
         expect(result.security.mfaRequired).toBe(true);
@@ -217,7 +219,7 @@ describe('AdminService', () => {
 
       it('updates password policy within security', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          security: { passwordPolicy: { minLength: 12 } }
+          security: { passwordPolicy: { minLength: 12 } },
         }, userId);
 
         expect(result.security.passwordPolicy.minLength).toBe(12);
@@ -226,7 +228,7 @@ describe('AdminService', () => {
 
       it('updates messaging settings', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          messaging: { maxMessageLength: 10000, enableThreads: false }
+          messaging: { maxMessageLength: 10000, enableThreads: false },
         }, userId);
 
         expect(result.messaging.maxMessageLength).toBe(10000);
@@ -235,7 +237,7 @@ describe('AdminService', () => {
 
       it('updates notification settings', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          notifications: { defaultEmail: true, digestFrequency: 'daily' }
+          notifications: { defaultEmail: true, digestFrequency: 'daily' },
         }, userId);
 
         expect(result.notifications.defaultEmail).toBe(true);
@@ -244,7 +246,7 @@ describe('AdminService', () => {
 
       it('updates integration settings', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          integrations: { allowThirdPartyApps: false, apiRateLimitPerMinute: 30 }
+          integrations: { allowThirdPartyApps: false, apiRateLimitPerMinute: 30 },
         }, userId);
 
         expect(result.integrations.allowThirdPartyApps).toBe(false);
@@ -253,7 +255,7 @@ describe('AdminService', () => {
 
       it('updates compliance settings', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          compliance: { dlpEnabled: true, dataRetentionDays: 90 }
+          compliance: { dlpEnabled: true, dataRetentionDays: 90 },
         }, userId);
 
         expect(result.compliance.dlpEnabled).toBe(true);
@@ -262,7 +264,7 @@ describe('AdminService', () => {
 
       it('updates branding settings', async () => {
         const result = await adminService.updateSettings(workspaceId, {
-          branding: { primaryColor: '#FF0000', logoUrl: 'https://example.com/logo.png' }
+          branding: { primaryColor: '#FF0000', logoUrl: 'https://example.com/logo.png' },
         }, userId);
 
         expect(result.branding.primaryColor).toBe('#FF0000');
@@ -273,7 +275,7 @@ describe('AdminService', () => {
         const result = await adminService.updateSettings(workspaceId, {
           general: { displayName: 'Updated' },
           security: { mfaRequired: true },
-          messaging: { maxMessageLength: 5000 }
+          messaging: { maxMessageLength: 5000 },
         }, userId);
 
         expect(result.general.displayName).toBe('Updated');
@@ -283,7 +285,7 @@ describe('AdminService', () => {
 
       it('logs admin action on update', async () => {
         await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Test' }
+          general: { displayName: 'Test' },
         }, userId);
 
         const actions = await adminService.getAdminActions(workspaceId);
@@ -294,7 +296,7 @@ describe('AdminService', () => {
       it('updates updatedAt and updatedBy', async () => {
         const before = new Date();
         const result = await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Test' }
+          general: { displayName: 'Test' },
         }, 'user_456');
 
         expect(result.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
@@ -305,7 +307,7 @@ describe('AdminService', () => {
     describe('resetSettings', () => {
       it('resets specific section to defaults', async () => {
         await adminService.updateSettings(workspaceId, {
-          general: { displayName: 'Custom', timezone: 'Asia/Tokyo' }
+          general: { displayName: 'Custom', timezone: 'Asia/Tokyo' },
         }, userId);
 
         const result = await adminService.resetSettings(workspaceId, 'general');
@@ -317,7 +319,7 @@ describe('AdminService', () => {
       it('resets all sections to defaults', async () => {
         await adminService.updateSettings(workspaceId, {
           general: { displayName: 'Custom' },
-          security: { mfaRequired: true }
+          security: { mfaRequired: true },
         }, userId);
 
         const result = await adminService.resetSettings(workspaceId);
@@ -328,7 +330,7 @@ describe('AdminService', () => {
 
       it('resets security section including password policy', async () => {
         await adminService.updateSettings(workspaceId, {
-          security: { passwordPolicy: { minLength: 20 } }
+          security: { passwordPolicy: { minLength: 20 } },
         }, userId);
 
         const result = await adminService.resetSettings(workspaceId, 'security');
@@ -348,7 +350,7 @@ describe('AdminService', () => {
         const input: CreateRoleInput = {
           name: 'Moderator',
           description: 'Can moderate content',
-          permissions: [{ resource: 'messages', actions: ['read', 'delete'] }]
+          permissions: [{ resource: 'messages', actions: ['read', 'delete'] }],
         };
 
         const result = await adminService.createRole(workspaceId, input, userId);
@@ -362,7 +364,7 @@ describe('AdminService', () => {
       it('creates role with default priority', async () => {
         const input: CreateRoleInput = {
           name: 'Custom Role',
-          permissions: [{ resource: 'channels', actions: ['read'] }]
+          permissions: [{ resource: 'channels', actions: ['read'] }],
         };
 
         const result = await adminService.createRole(workspaceId, input, userId);
@@ -374,7 +376,7 @@ describe('AdminService', () => {
         const input: CreateRoleInput = {
           name: 'High Priority Role',
           permissions: [{ resource: 'channels', actions: ['read'] }],
-          priority: 200
+          priority: 200,
         };
 
         const result = await adminService.createRole(workspaceId, input, userId);
@@ -385,53 +387,53 @@ describe('AdminService', () => {
       it('throws error for duplicate role name', async () => {
         const input: CreateRoleInput = {
           name: 'Unique Role',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         };
 
         await adminService.createRole(workspaceId, input, userId);
 
         await expect(
-          adminService.createRole(workspaceId, input, userId)
+          adminService.createRole(workspaceId, input, userId),
         ).rejects.toThrow(RoleAlreadyExistsError);
       });
 
       it('throws validation error for empty name', async () => {
         const input: CreateRoleInput = {
           name: '',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         };
 
         await expect(
-          adminService.createRole(workspaceId, input, userId)
+          adminService.createRole(workspaceId, input, userId),
         ).rejects.toThrow(RoleValidationError);
       });
 
       it('throws validation error for empty permissions', async () => {
         const input: CreateRoleInput = {
           name: 'No Permissions',
-          permissions: []
+          permissions: [],
         };
 
         await expect(
-          adminService.createRole(workspaceId, input, userId)
+          adminService.createRole(workspaceId, input, userId),
         ).rejects.toThrow(RoleValidationError);
       });
 
       it('throws validation error for name too long', async () => {
         const input: CreateRoleInput = {
           name: 'A'.repeat(100),
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         };
 
         await expect(
-          adminService.createRole(workspaceId, input, userId)
+          adminService.createRole(workspaceId, input, userId),
         ).rejects.toThrow(RoleValidationError);
       });
 
       it('logs admin action on create', async () => {
         const input: CreateRoleInput = {
           name: 'New Role',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         };
 
         await adminService.createRole(workspaceId, input, userId);
@@ -445,7 +447,7 @@ describe('AdminService', () => {
       it('returns role by ID', async () => {
         const created = await adminService.createRole(workspaceId, {
           name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         const result = await adminService.getRole(created.id);
@@ -465,11 +467,11 @@ describe('AdminService', () => {
       it('lists all roles in workspace', async () => {
         await adminService.createRole(workspaceId, {
           name: 'Role 1',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
         await adminService.createRole(workspaceId, {
           name: 'Role 2',
-          permissions: [{ resource: 'channels', actions: ['read'] }]
+          permissions: [{ resource: 'channels', actions: ['read'] }],
         }, userId);
 
         const result = await adminService.listRoles(workspaceId);
@@ -487,12 +489,12 @@ describe('AdminService', () => {
         await adminService.createRole(workspaceId, {
           name: 'Low',
           permissions: [{ resource: 'messages', actions: ['read'] }],
-          priority: 10
+          priority: 10,
         }, userId);
         await adminService.createRole(workspaceId, {
           name: 'High',
           permissions: [{ resource: 'messages', actions: ['read'] }],
-          priority: 100
+          priority: 100,
         }, userId);
 
         const result = await adminService.listRoles(workspaceId);
@@ -506,11 +508,11 @@ describe('AdminService', () => {
       it('updates role name', async () => {
         const role = await adminService.createRole(workspaceId, {
           name: 'Original',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         const result = await adminService.updateRole(role.id, {
-          name: 'Updated'
+          name: 'Updated',
         }, userId);
 
         expect(result.name).toBe('Updated');
@@ -519,15 +521,15 @@ describe('AdminService', () => {
       it('updates role permissions', async () => {
         const role = await adminService.createRole(workspaceId, {
           name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         const newPermissions: Permission[] = [
-          { resource: 'messages', actions: ['read', 'create', 'delete'] }
+          { resource: 'messages', actions: ['read', 'create', 'delete'] },
         ];
 
         const result = await adminService.updateRole(role.id, {
-          permissions: newPermissions
+          permissions: newPermissions,
         }, userId);
 
         expect(result.permissions[0].actions).toContain('delete');
@@ -536,11 +538,11 @@ describe('AdminService', () => {
       it('updates role priority', async () => {
         const role = await adminService.createRole(workspaceId, {
           name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         const result = await adminService.updateRole(role.id, {
-          priority: 150
+          priority: 150,
         }, userId);
 
         expect(result.priority).toBe(150);
@@ -548,7 +550,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent role', async () => {
         await expect(
-          adminService.updateRole('non_existent', { name: 'New' }, userId)
+          adminService.updateRole('non_existent', { name: 'New' }, userId),
         ).rejects.toThrow(RoleNotFoundError);
       });
 
@@ -557,29 +559,29 @@ describe('AdminService', () => {
         await storage.saveRole(systemRole);
 
         await expect(
-          adminService.updateRole(systemRole.id, { name: 'New' }, userId)
+          adminService.updateRole(systemRole.id, { name: 'New' }, userId),
         ).rejects.toThrow(SystemRoleError);
       });
 
       it('throws error for duplicate name when updating', async () => {
         await adminService.createRole(workspaceId, {
           name: 'Existing',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
         const role = await adminService.createRole(workspaceId, {
           name: 'Another',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         await expect(
-          adminService.updateRole(role.id, { name: 'Existing' }, userId)
+          adminService.updateRole(role.id, { name: 'Existing' }, userId),
         ).rejects.toThrow(RoleAlreadyExistsError);
       });
 
       it('logs admin action on update', async () => {
         const role = await adminService.createRole(workspaceId, {
           name: 'Test',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         await adminService.updateRole(role.id, { name: 'Updated' }, userId);
@@ -593,7 +595,7 @@ describe('AdminService', () => {
       it('deletes a custom role', async () => {
         const role = await adminService.createRole(workspaceId, {
           name: 'ToDelete',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         await adminService.deleteRole(role.id, userId);
@@ -604,7 +606,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent role', async () => {
         await expect(
-          adminService.deleteRole('non_existent', userId)
+          adminService.deleteRole('non_existent', userId),
         ).rejects.toThrow(RoleNotFoundError);
       });
 
@@ -613,14 +615,14 @@ describe('AdminService', () => {
         await storage.saveRole(systemRole);
 
         await expect(
-          adminService.deleteRole(systemRole.id, userId)
+          adminService.deleteRole(systemRole.id, userId),
         ).rejects.toThrow(SystemRoleError);
       });
 
       it('logs admin action on delete', async () => {
         const role = await adminService.createRole(workspaceId, {
           name: 'ToDelete',
-          permissions: [{ resource: 'messages', actions: ['read'] }]
+          permissions: [{ resource: 'messages', actions: ['read'] }],
         }, userId);
 
         await adminService.deleteRole(role.id, userId);
@@ -778,7 +780,7 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         const result = await adminService.updateMember(workspaceId, userId, {
-          roleId: 'new_role'
+          roleId: 'new_role',
         }, 'admin_user');
 
         expect(result.roleId).toBe('new_role');
@@ -789,7 +791,7 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         const result = await adminService.updateMember(workspaceId, userId, {
-          status: 'suspended'
+          status: 'suspended',
         }, 'admin_user');
 
         expect(result.status).toBe('suspended');
@@ -800,7 +802,7 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         const result = await adminService.updateMember(workspaceId, userId, {
-          customFields: { department: 'Engineering' }
+          customFields: { department: 'Engineering' },
         }, 'admin_user');
 
         expect(result.customFields?.department).toBe('Engineering');
@@ -808,7 +810,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.updateMember(workspaceId, 'non_existent', { status: 'active' }, userId)
+          adminService.updateMember(workspaceId, 'non_existent', { status: 'active' }, userId),
         ).rejects.toThrow(MemberNotFoundError);
       });
 
@@ -817,7 +819,7 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         await expect(
-          adminService.updateMember(workspaceId, userId, { roleId: 'non_existent' }, 'admin')
+          adminService.updateMember(workspaceId, userId, { roleId: 'non_existent' }, 'admin'),
         ).rejects.toThrow(RoleNotFoundError);
       });
     });
@@ -828,7 +830,7 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         const result = await adminService.suspendMember(
-          workspaceId, userId, 'Violation of terms', 'admin_user'
+          workspaceId, userId, 'Violation of terms', 'admin_user',
         );
 
         expect(result.status).toBe('suspended');
@@ -847,7 +849,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.suspendMember(workspaceId, 'non_existent', 'Test', userId)
+          adminService.suspendMember(workspaceId, 'non_existent', 'Test', userId),
         ).rejects.toThrow(MemberNotFoundError);
       });
     });
@@ -875,7 +877,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.removeMember(workspaceId, 'non_existent', userId)
+          adminService.removeMember(workspaceId, 'non_existent', userId),
         ).rejects.toThrow(MemberNotFoundError);
       });
     });
@@ -888,7 +890,7 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         const result = await adminService.changeMemberRole(
-          workspaceId, userId, 'admin_role', 'owner_user'
+          workspaceId, userId, 'admin_role', 'owner_user',
         );
 
         expect(result.roleId).toBe('admin_role');
@@ -911,7 +913,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent member', async () => {
         await expect(
-          adminService.changeMemberRole(workspaceId, 'non_existent', 'role_123', userId)
+          adminService.changeMemberRole(workspaceId, 'non_existent', 'role_123', userId),
         ).rejects.toThrow(MemberNotFoundError);
       });
 
@@ -920,7 +922,7 @@ describe('AdminService', () => {
         await storage.saveMember(member);
 
         await expect(
-          adminService.changeMemberRole(workspaceId, userId, 'non_existent', 'admin')
+          adminService.changeMemberRole(workspaceId, userId, 'non_existent', 'admin'),
         ).rejects.toThrow(RoleNotFoundError);
       });
     });
@@ -939,7 +941,7 @@ describe('AdminService', () => {
     describe('createInvite', () => {
       it('creates a new invite', async () => {
         const result = await adminService.createInvite(workspaceId, {
-          email: 'newuser@example.com'
+          email: 'newuser@example.com',
         }, userId);
 
         expect(result.email).toBe('newuser@example.com');
@@ -949,7 +951,7 @@ describe('AdminService', () => {
 
       it('normalizes email to lowercase', async () => {
         const result = await adminService.createInvite(workspaceId, {
-          email: 'User@Example.COM'
+          email: 'User@Example.COM',
         }, userId);
 
         expect(result.email).toBe('user@example.com');
@@ -957,7 +959,7 @@ describe('AdminService', () => {
 
       it('uses default role when not specified', async () => {
         const result = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         expect(result.roleId).toBe('role_123');
@@ -969,7 +971,7 @@ describe('AdminService', () => {
 
         const result = await adminService.createInvite(workspaceId, {
           email: 'user@example.com',
-          roleId: 'custom_role'
+          roleId: 'custom_role',
         }, userId);
 
         expect(result.roleId).toBe('custom_role');
@@ -977,10 +979,10 @@ describe('AdminService', () => {
 
       it('returns existing pending invite for same email', async () => {
         const first = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
         const second = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         expect(second.id).toBe(first.id);
@@ -989,7 +991,7 @@ describe('AdminService', () => {
       it('sets expiration date', async () => {
         const before = new Date();
         const result = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         expect(result.expiresAt.getTime()).toBeGreaterThan(before.getTime());
@@ -997,7 +999,7 @@ describe('AdminService', () => {
 
       it('logs admin action', async () => {
         await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         const actions = await adminService.getAdminActions(workspaceId);
@@ -1038,7 +1040,7 @@ describe('AdminService', () => {
     describe('revokeInvite', () => {
       it('revokes a pending invite', async () => {
         const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         await adminService.revokeInvite(invite.id, userId);
@@ -1049,7 +1051,7 @@ describe('AdminService', () => {
 
       it('logs admin action', async () => {
         const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         await adminService.revokeInvite(invite.id, userId);
@@ -1060,7 +1062,7 @@ describe('AdminService', () => {
 
       it('throws error for non-existent invite', async () => {
         await expect(
-          adminService.revokeInvite('non_existent', userId)
+          adminService.revokeInvite('non_existent', userId),
         ).rejects.toThrow(InviteNotFoundError);
       });
     });
@@ -1068,7 +1070,7 @@ describe('AdminService', () => {
     describe('acceptInvite', () => {
       it('accepts invite and creates member', async () => {
         const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         const result = await adminService.acceptInvite(invite.id, 'new_user_123');
@@ -1080,7 +1082,7 @@ describe('AdminService', () => {
 
       it('marks invite as accepted', async () => {
         const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
 
         await adminService.acceptInvite(invite.id, 'new_user_123');
@@ -1093,7 +1095,7 @@ describe('AdminService', () => {
       it('assigns role from invite', async () => {
         const invite = await adminService.createInvite(workspaceId, {
           email: 'user@example.com',
-          roleId: 'role_123'
+          roleId: 'role_123',
         }, userId);
 
         const result = await adminService.acceptInvite(invite.id, 'new_user_123');
@@ -1103,7 +1105,7 @@ describe('AdminService', () => {
 
       it('records inviter', async () => {
         const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, 'inviter_user');
 
         const result = await adminService.acceptInvite(invite.id, 'new_user_123');
@@ -1113,29 +1115,29 @@ describe('AdminService', () => {
 
       it('throws error for non-existent invite', async () => {
         await expect(
-          adminService.acceptInvite('non_existent', userId)
+          adminService.acceptInvite('non_existent', userId),
         ).rejects.toThrow(InviteNotFoundError);
       });
 
       it('throws error for revoked invite', async () => {
         const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
         await adminService.revokeInvite(invite.id, userId);
 
         await expect(
-          adminService.acceptInvite(invite.id, 'new_user')
+          adminService.acceptInvite(invite.id, 'new_user'),
         ).rejects.toThrow(InviteInvalidError);
       });
 
       it('throws error for already accepted invite', async () => {
         const invite = await adminService.createInvite(workspaceId, {
-          email: 'user@example.com'
+          email: 'user@example.com',
         }, userId);
         await adminService.acceptInvite(invite.id, 'first_user');
 
         await expect(
-          adminService.acceptInvite(invite.id, 'second_user')
+          adminService.acceptInvite(invite.id, 'second_user'),
         ).rejects.toThrow(InviteInvalidError);
       });
 
@@ -1146,7 +1148,7 @@ describe('AdminService', () => {
         await storage.saveInvite(invite);
 
         await expect(
-          adminService.acceptInvite(invite.id, 'new_user')
+          adminService.acceptInvite(invite.id, 'new_user'),
         ).rejects.toThrow(InviteInvalidError);
       });
     });
@@ -1228,7 +1230,7 @@ describe('AdminService', () => {
           actorId: userId,
           action: 'settings.updated',
           resource: 'settings',
-          details: { section: 'general' }
+          details: { section: 'general' },
         });
 
         expect(result.id).toBeDefined();
@@ -1245,7 +1247,7 @@ describe('AdminService', () => {
           resourceId: 'invite_123',
           details: { email: 'test@example.com' },
           ipAddress: '192.168.1.1',
-          userAgent: 'Mozilla/5.0'
+          userAgent: 'Mozilla/5.0',
         });
 
         expect(result.resourceId).toBe('invite_123');
@@ -1261,14 +1263,14 @@ describe('AdminService', () => {
           actorId: userId,
           action: 'settings.updated',
           resource: 'settings',
-          details: {}
+          details: {},
         });
         await adminService.logAdminAction({
           workspaceId,
           actorId: userId,
           action: 'role.created',
           resource: 'roles',
-          details: {}
+          details: {},
         });
 
         const result = await adminService.getAdminActions(workspaceId);
@@ -1283,18 +1285,18 @@ describe('AdminService', () => {
           actorId: 'user_1',
           action: 'settings.updated',
           resource: 'settings',
-          details: {}
+          details: {},
         });
         await adminService.logAdminAction({
           workspaceId,
           actorId: 'user_2',
           action: 'role.created',
           resource: 'roles',
-          details: {}
+          details: {},
         });
 
         const result = await adminService.getAdminActions(workspaceId, {
-          actorId: 'user_1'
+          actorId: 'user_1',
         });
 
         expect(result.data).toHaveLength(1);
@@ -1307,18 +1309,18 @@ describe('AdminService', () => {
           actorId: userId,
           action: 'settings.updated',
           resource: 'settings',
-          details: {}
+          details: {},
         });
         await adminService.logAdminAction({
           workspaceId,
           actorId: userId,
           action: 'role.created',
           resource: 'roles',
-          details: {}
+          details: {},
         });
 
         const result = await adminService.getAdminActions(workspaceId, {
-          action: 'role.created'
+          action: 'role.created',
         });
 
         expect(result.data).toHaveLength(1);
@@ -1331,18 +1333,18 @@ describe('AdminService', () => {
           actorId: userId,
           action: 'settings.updated',
           resource: 'settings',
-          details: {}
+          details: {},
         });
         await adminService.logAdminAction({
           workspaceId,
           actorId: userId,
           action: 'member.invited',
           resource: 'invites',
-          details: {}
+          details: {},
         });
 
         const result = await adminService.getAdminActions(workspaceId, {
-          resource: 'settings'
+          resource: 'settings',
         });
 
         expect(result.data).toHaveLength(1);
@@ -1361,7 +1363,7 @@ describe('AdminService', () => {
           action: 'settings.updated',
           resource: 'settings',
           details: {},
-          timestamp: oldDate
+          timestamp: oldDate,
         });
         await storage.saveAdminAction({
           id: 'recent_action',
@@ -1370,14 +1372,14 @@ describe('AdminService', () => {
           action: 'role.created',
           resource: 'roles',
           details: {},
-          timestamp: recentDate
+          timestamp: recentDate,
         });
 
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 5);
 
         const result = await adminService.getAdminActions(workspaceId, {
-          startDate
+          startDate,
         });
 
         expect(result.data).toHaveLength(1);
@@ -1391,7 +1393,7 @@ describe('AdminService', () => {
             actorId: userId,
             action: 'settings.updated',
             resource: 'settings',
-            details: { index: i }
+            details: { index: i },
           });
         }
 
@@ -1409,7 +1411,7 @@ describe('AdminService', () => {
           actorId: userId,
           action: 'settings.updated',
           resource: 'settings',
-          details: { order: 1 }
+          details: { order: 1 },
         });
         await new Promise(resolve => setTimeout(resolve, 10));
         await adminService.logAdminAction({
@@ -1417,7 +1419,7 @@ describe('AdminService', () => {
           actorId: userId,
           action: 'role.created',
           resource: 'roles',
-          details: { order: 2 }
+          details: { order: 2 },
         });
 
         const result = await adminService.getAdminActions(workspaceId);

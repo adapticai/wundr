@@ -11,8 +11,8 @@
  * @module @genesis/core/services/__tests__/retention-service.test
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RetentionService } from '../retention-service';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import {
   createMockPrisma,
   createRetentionMockRedis,
@@ -27,6 +27,7 @@ import {
   generatePolicyId,
   generateHoldId,
 } from '../../test-utils/retention-factories';
+import { RetentionService } from '../retention-service';
 
 // Aliases for easier use in tests
 const generateUserId = generateRetentionUserId;
@@ -64,7 +65,7 @@ describe('RetentionService', () => {
           name: 'Test Policy',
           description: 'Test description',
           createdBy: userId,
-        })
+        }),
       );
 
       const policy = await retentionService.createPolicy(
@@ -72,7 +73,7 @@ describe('RetentionService', () => {
         'Test Policy',
         [{ resourceType: 'message', action: 'delete', retentionDays: 90, priority: 1 }],
         userId,
-        'Test description'
+        'Test description',
       );
 
       expect(policy.name).toBe('Test Policy');
@@ -100,14 +101,14 @@ describe('RetentionService', () => {
           workspaceId,
           name: 'Multi-rule Policy',
           rules: rules.map((r, i) => ({ ...r, id: `rule-${i}` })),
-        })
+        }),
       );
 
       const policy = await retentionService.createPolicy(
         workspaceId,
         'Multi-rule Policy',
         rules,
-        userId
+        userId,
       );
 
       expect(policy.rules).toHaveLength(2);
@@ -122,7 +123,7 @@ describe('RetentionService', () => {
         createMockPolicyRecord({
           id: policyId,
           name: 'Updated Name',
-        })
+        }),
       );
 
       const policy = await retentionService.updatePolicy(policyId, {
@@ -143,7 +144,7 @@ describe('RetentionService', () => {
         createMockPolicyRecord({
           id: policyId,
           isEnabled: false,
-        })
+        }),
       );
 
       const policy = await retentionService.updatePolicy(policyId, {
@@ -197,7 +198,7 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'message', action: 'delete', retentionDays: 90 })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.create.mockResolvedValue(
@@ -206,7 +207,7 @@ describe('RetentionService', () => {
           policyId,
           status: 'running',
           itemsProcessed: 0,
-        })
+        }),
       );
       mockPrisma.message.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.update.mockResolvedValue(
@@ -215,7 +216,7 @@ describe('RetentionService', () => {
           policyId,
           status: 'completed',
           itemsProcessed: 0,
-        })
+        }),
       );
 
       const job = await retentionService.runRetentionJob(policyId);
@@ -242,7 +243,7 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'message', action: 'delete', retentionDays: 90 })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([
         createMockLegalHoldRecord({
@@ -252,13 +253,13 @@ describe('RetentionService', () => {
         }),
       ]);
       mockPrisma.retentionJob.create.mockResolvedValue(
-        createMockJobRecord({ workspaceId, policyId, status: 'running' })
+        createMockJobRecord({ workspaceId, policyId, status: 'running' }),
       );
       mockPrisma.message.findMany.mockResolvedValue([
         { id: 'msg-1', channelId, createdAt: new Date('2020-01-01') },
       ]);
       mockPrisma.retentionJob.update.mockResolvedValue(
-        createMockJobRecord({ status: 'completed', itemsProcessed: 0 })
+        createMockJobRecord({ status: 'completed', itemsProcessed: 0 }),
       );
 
       const job = await retentionService.runRetentionJob(policyId);
@@ -277,11 +278,11 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'message', action: 'delete', retentionDays: 90 })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.create.mockResolvedValue(
-        createMockJobRecord({ workspaceId, policyId, status: 'running' })
+        createMockJobRecord({ workspaceId, policyId, status: 'running' }),
       );
 
       // First batch returns items, second batch returns empty
@@ -291,13 +292,13 @@ describe('RetentionService', () => {
             id: `msg-${i}`,
             channelId: 'ch-1',
             createdAt: new Date('2020-01-01'),
-          }))
+          })),
         )
         .mockResolvedValueOnce([]);
 
       mockPrisma.message.update.mockResolvedValue({ id: 'msg-1' });
       mockPrisma.retentionJob.update.mockResolvedValue(
-        createMockJobRecord({ status: 'completed', itemsProcessed: 10 })
+        createMockJobRecord({ status: 'completed', itemsProcessed: 10 }),
       );
 
       const job = await retentionService.runRetentionJob(policyId);
@@ -365,14 +366,14 @@ describe('RetentionService', () => {
             isActive: true,
             scope: { userIds: ['user-1'] },
             createdBy: userId,
-          })
+          }),
         );
 
         const hold = await retentionService.createLegalHold(
           workspaceId,
           'Investigation Hold',
           { userIds: ['user-1'] },
-          userId
+          userId,
         );
 
         expect(hold.name).toBe('Investigation Hold');
@@ -393,14 +394,14 @@ describe('RetentionService', () => {
             workspaceId,
             name: 'Date Range Hold',
             scope: { dateRange },
-          })
+          }),
         );
 
         const hold = await retentionService.createLegalHold(
           workspaceId,
           'Date Range Hold',
           { dateRange },
-          userId
+          userId,
         );
 
         expect(hold.scope.dateRange).toBeDefined();
@@ -419,7 +420,7 @@ describe('RetentionService', () => {
             isActive: false,
             releasedAt,
             releasedBy,
-          })
+          }),
         );
 
         const hold = await retentionService.releaseLegalHold(holdId, releasedBy);
@@ -466,7 +467,7 @@ describe('RetentionService', () => {
             type: 'full',
             status: 'pending',
             format: 'zip',
-          })
+          }),
         );
 
         const dataExport = await retentionService.requestExport(
@@ -474,14 +475,14 @@ describe('RetentionService', () => {
           userId,
           'full',
           {},
-          'zip'
+          'zip',
         );
 
         expect(dataExport.status).toBe('pending');
         expect(dataExport.format).toBe('zip');
         expect(mockRedis.lpush).toHaveBeenCalledWith(
           'retention:export:queue',
-          expect.any(String)
+          expect.any(String),
         );
       });
 
@@ -500,7 +501,7 @@ describe('RetentionService', () => {
             requestedBy: userId,
             type: 'partial',
             scope,
-          })
+          }),
         );
 
         const dataExport = await retentionService.requestExport(
@@ -508,7 +509,7 @@ describe('RetentionService', () => {
           userId,
           'partial',
           scope,
-          'json'
+          'json',
         );
 
         expect(dataExport.scope.channelIds).toEqual(['ch-1', 'ch-2']);
@@ -524,7 +525,7 @@ describe('RetentionService', () => {
             id: exportId,
             status: 'completed',
             fileUrl: 'https://example.com/export.zip',
-          })
+          }),
         );
 
         const dataExport = await retentionService.getExport(exportId);
@@ -573,18 +574,18 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'message', action: 'delete' })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.create.mockResolvedValue(
-        createMockJobRecord({ workspaceId, policyId, status: 'running' })
+        createMockJobRecord({ workspaceId, policyId, status: 'running' }),
       );
       mockPrisma.message.findMany
         .mockResolvedValueOnce([{ id: 'msg-1', createdAt: new Date('2020-01-01') }])
         .mockResolvedValueOnce([]);
       mockPrisma.message.update.mockResolvedValue({ id: 'msg-1', isDeleted: true });
       mockPrisma.retentionJob.update.mockResolvedValue(
-        createMockJobRecord({ status: 'completed', itemsProcessed: 1 })
+        createMockJobRecord({ status: 'completed', itemsProcessed: 1 }),
       );
 
       await retentionService.runRetentionJob(policyId);
@@ -606,18 +607,18 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'file', action: 'delete' })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.create.mockResolvedValue(
-        createMockJobRecord({ workspaceId, policyId, status: 'running' })
+        createMockJobRecord({ workspaceId, policyId, status: 'running' }),
       );
       mockPrisma.attachment.findMany
         .mockResolvedValueOnce([{ id: 'file-1', createdAt: new Date('2020-01-01') }])
         .mockResolvedValueOnce([]);
       mockPrisma.attachment.update.mockResolvedValue({ id: 'file-1' });
       mockPrisma.retentionJob.update.mockResolvedValue(
-        createMockJobRecord({ status: 'completed', itemsProcessed: 1 })
+        createMockJobRecord({ status: 'completed', itemsProcessed: 1 }),
       );
 
       await retentionService.runRetentionJob(policyId);
@@ -634,18 +635,18 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'channel', action: 'archive' })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.create.mockResolvedValue(
-        createMockJobRecord({ workspaceId, policyId, status: 'running' })
+        createMockJobRecord({ workspaceId, policyId, status: 'running' }),
       );
       mockPrisma.channel.findMany
         .mockResolvedValueOnce([{ id: 'ch-1', isArchived: true, createdAt: new Date('2020-01-01') }])
         .mockResolvedValueOnce([]);
       mockPrisma.channel.update.mockResolvedValue({ id: 'ch-1', isArchived: true });
       mockPrisma.retentionJob.update.mockResolvedValue(
-        createMockJobRecord({ status: 'completed', itemsProcessed: 1 })
+        createMockJobRecord({ status: 'completed', itemsProcessed: 1 }),
       );
 
       await retentionService.runRetentionJob(policyId);
@@ -667,18 +668,18 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'message', action: 'anonymize' })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.create.mockResolvedValue(
-        createMockJobRecord({ workspaceId, policyId, status: 'running' })
+        createMockJobRecord({ workspaceId, policyId, status: 'running' }),
       );
       mockPrisma.message.findMany
         .mockResolvedValueOnce([{ id: 'msg-1', createdAt: new Date('2020-01-01') }])
         .mockResolvedValueOnce([]);
       mockPrisma.message.update.mockResolvedValue({ id: 'msg-1' });
       mockPrisma.retentionJob.update.mockResolvedValue(
-        createMockJobRecord({ status: 'completed', itemsProcessed: 1 })
+        createMockJobRecord({ status: 'completed', itemsProcessed: 1 }),
       );
 
       await retentionService.runRetentionJob(policyId);
@@ -707,11 +708,11 @@ describe('RetentionService', () => {
           id: policyId,
           workspaceId,
           rules: [createMockRetentionRule({ resourceType: 'message', action: 'delete' })],
-        })
+        }),
       );
       mockPrisma.legalHold.findMany.mockResolvedValue([]);
       mockPrisma.retentionJob.create.mockResolvedValue(
-        createMockJobRecord({ workspaceId, policyId, status: 'running' })
+        createMockJobRecord({ workspaceId, policyId, status: 'running' }),
       );
       mockPrisma.message.findMany
         .mockResolvedValueOnce([{ id: 'msg-1', createdAt: new Date('2020-01-01') }])
@@ -723,7 +724,7 @@ describe('RetentionService', () => {
           itemsProcessed: 0,
           itemsFailed: 1,
           errors: [{ resourceId: 'msg-1', resourceType: 'message', error: 'Database error', timestamp: new Date() }],
-        })
+        }),
       );
 
       const job = await retentionService.runRetentionJob(policyId);

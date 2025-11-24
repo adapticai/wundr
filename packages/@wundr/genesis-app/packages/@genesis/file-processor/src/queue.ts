@@ -386,7 +386,7 @@ export class FileProcessingQueue {
    */
   private async updateProgress(
     job: BullJob,
-    progress: JobProgress
+    progress: JobProgress,
   ): Promise<void> {
     // await job.updateProgress(progress);
     this.emit(QueueEvent.JOB_PROGRESS, {
@@ -400,7 +400,7 @@ export class FileProcessingQueue {
    */
   private async _sendCallback(
     _callbackUrl: string,
-    _result: ProcessorResult
+    _result: ProcessorResult,
   ): Promise<void> {
     try {
       // TODO: Implement callback sending
@@ -503,7 +503,7 @@ type BullJob = {
  * Create file processing queue instance
  */
 export function createFileProcessingQueue(
-  config: FileProcessorConfig
+  config: FileProcessorConfig,
 ): FileProcessingQueue {
   return new FileProcessingQueue(config);
 }

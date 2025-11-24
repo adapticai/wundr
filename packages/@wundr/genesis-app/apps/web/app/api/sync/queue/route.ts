@@ -10,7 +10,6 @@
  */
 
 import { prisma } from '@genesis/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -26,6 +25,7 @@ import type {
   QueueProcessingResult,
   ConflictItem,
 } from '@/lib/validations/notification';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**

@@ -873,7 +873,7 @@ export function isWorkflowExecution(value: unknown): value is WorkflowExecution 
  * Type guard for CreateWorkflowInput.
  */
 export function isValidCreateWorkflowInput(
-  value: unknown
+  value: unknown,
 ): value is CreateWorkflowInput {
   if (typeof value !== 'object' || value === null) {
     return false;

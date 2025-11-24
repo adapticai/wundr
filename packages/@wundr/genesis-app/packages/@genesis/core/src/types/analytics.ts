@@ -251,7 +251,9 @@ export function isAnalyticsPeriod(value: unknown): value is AnalyticsPeriod {
  * Type guard to check if value is a valid TrendData
  */
 export function isTrendData(value: unknown): value is TrendData {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const t = value as TrendData;
   return (
     typeof t.current === 'number' &&
@@ -266,7 +268,9 @@ export function isTrendData(value: unknown): value is TrendData {
  * Type guard to check if value is a valid AnalyticsQuery
  */
 export function isAnalyticsQuery(value: unknown): value is AnalyticsQuery {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const q = value as AnalyticsQuery;
   return typeof q.workspaceId === 'string' && isAnalyticsPeriod(q.period);
 }

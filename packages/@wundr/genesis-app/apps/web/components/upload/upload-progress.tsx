@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/types/upload';
+
 import type { UploadState } from '@/types/upload';
 
 interface UploadProgressProps {
@@ -146,7 +147,7 @@ export function UploadProgress({ upload, onCancel, onRetry, className }: UploadP
           'border-green-500/20 bg-green-500/5': isCompleted,
           'border-destructive/20 bg-destructive/5': isError || isCancelled,
         },
-        className
+        className,
       )}
     >
       {/* File Icon */}
@@ -216,7 +217,7 @@ export function UploadProgress({ upload, onCancel, onRetry, className }: UploadP
               'rounded-full p-1.5',
               'text-muted-foreground hover:bg-muted hover:text-foreground',
               'transition-colors duration-200',
-              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
             )}
             aria-label="Cancel upload"
           >
@@ -244,7 +245,7 @@ export function UploadProgress({ upload, onCancel, onRetry, className }: UploadP
               'rounded-full p-1.5',
               'text-muted-foreground hover:bg-muted hover:text-foreground',
               'transition-colors duration-200',
-              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
             )}
             aria-label="Retry upload"
           >

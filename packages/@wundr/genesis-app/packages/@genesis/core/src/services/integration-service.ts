@@ -9,6 +9,10 @@
 
 import * as crypto from 'crypto';
 
+import { GenesisError } from '../errors';
+import { DEFAULT_WEBHOOK_RETRY_POLICY } from '../types/integration';
+import { generateShortId, generateCUID } from '../utils';
+
 import type {
   IntegrationConfig,
   IntegrationProvider,
@@ -17,6 +21,7 @@ import type {
   WebhookEvent,
   WebhookDelivery,
   WebhookAttempt,
+  WebhookPayload,
   IntegrationEvent,
   SyncResult,
   CreateIntegrationInput,
@@ -31,9 +36,6 @@ import type {
   PaginatedDeliveryResult,
   ConnectionTestResult,
 } from '../types/integration';
-import { DEFAULT_WEBHOOK_RETRY_POLICY } from '../types/integration';
-import { GenesisError } from '../errors';
-import { generateShortId, generateCUID } from '../utils';
 
 // =============================================================================
 // Error Classes
@@ -68,7 +70,7 @@ export class IntegrationAlreadyExistsError extends GenesisError {
       `Integration '${name}' already exists in workspace ${workspaceId}`,
       'INTEGRATION_ALREADY_EXISTS',
       409,
-      { name, workspaceId }
+      { name, workspaceId },
     );
     this.name = 'IntegrationAlreadyExistsError';
   }
@@ -96,7 +98,7 @@ export class OAuthRefreshError extends GenesisError {
       `Failed to refresh OAuth token for integration ${integrationId}: ${reason}`,
       'OAUTH_REFRESH_ERROR',
       401,
-      { integrationId, reason }
+      { integrationId, reason },
     );
     this.name = 'OAuthRefreshError';
   }
@@ -121,7 +123,7 @@ export class WebhookDeliveryError extends GenesisError {
       `Webhook delivery failed for ${webhookId}: ${reason}`,
       'WEBHOOK_DELIVERY_ERROR',
       500,
-      { webhookId, reason }
+      { webhookId, reason },
     );
     this.name = 'WebhookDeliveryError';
   }
@@ -146,7 +148,7 @@ export class ConnectionTestError extends GenesisError {
       `Connection test failed for integration ${integrationId}: ${reason}`,
       'CONNECTION_TEST_ERROR',
       503,
-      { integrationId, reason }
+      { integrationId, reason },
     );
     this.name = 'ConnectionTestError';
   }
@@ -191,19 +193,67 @@ export interface IntegrationStorage {
 // =============================================================================
 
 /**
+ * HTTP request options for configuring headers and timeout.
+ */
+export interface HttpRequestOptions {
+  /** Custom headers to include in the request */
+  headers?: Record<string, string>;
+  /** Request timeout in milliseconds */
+  timeout?: number;
+}
+
+/**
+ * HTTP response structure from client operations.
+ */
+export interface HttpResponse {
+  /** HTTP status code */
+  status: number;
+  /** Response body as string */
+  body: string;
+}
+
+/**
+ * JSON-serializable value type for HTTP request bodies.
+ * Supports primitives, arrays, and nested objects.
+ */
+export type JsonSerializable =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonSerializable[]
+  | { [key: string]: JsonSerializable };
+
+/**
  * Interface for HTTP client operations.
+ * Used for webhook delivery and provider API calls.
  */
 export interface HttpClient {
+  /**
+   * Sends a POST request with a JSON body.
+   *
+   * @param url - Target URL
+   * @param body - JSON-serializable request body
+   * @param options - Optional request configuration
+   * @returns Response with status code and body
+   */
   post(
     url: string,
-    body: unknown,
-    options?: { headers?: Record<string, string>; timeout?: number }
-  ): Promise<{ status: number; body: string }>;
+    body: JsonSerializable | WebhookPayload,
+    options?: HttpRequestOptions
+  ): Promise<HttpResponse>;
 
+  /**
+   * Sends a GET request.
+   *
+   * @param url - Target URL
+   * @param options - Optional request configuration
+   * @returns Response with status code and body
+   */
   get(
     url: string,
-    options?: { headers?: Record<string, string>; timeout?: number }
-  ): Promise<{ status: number; body: string }>;
+    options?: HttpRequestOptions
+  ): Promise<HttpResponse>;
 }
 
 // =============================================================================
@@ -473,13 +523,22 @@ export interface IntegrationServiceConfig {
 
 /**
  * Default HTTP client implementation using fetch.
+ * Provides JSON-based HTTP communication for webhook delivery and API calls.
  */
 class DefaultHttpClient implements HttpClient {
+  /**
+   * Sends a POST request with a JSON body.
+   *
+   * @param url - Target URL
+   * @param body - JSON-serializable request body
+   * @param options - Optional request configuration
+   * @returns Response with status code and body
+   */
   async post(
     url: string,
-    body: unknown,
-    options?: { headers?: Record<string, string>; timeout?: number }
-  ): Promise<{ status: number; body: string }> {
+    body: JsonSerializable | WebhookPayload,
+    options?: HttpRequestOptions,
+  ): Promise<HttpResponse> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), options?.timeout ?? 30000);
 
@@ -501,10 +560,17 @@ class DefaultHttpClient implements HttpClient {
     }
   }
 
+  /**
+   * Sends a GET request.
+   *
+   * @param url - Target URL
+   * @param options - Optional request configuration
+   * @returns Response with status code and body
+   */
   async get(
     url: string,
-    options?: { headers?: Record<string, string>; timeout?: number }
-  ): Promise<{ status: number; body: string }> {
+    options?: HttpRequestOptions,
+  ): Promise<HttpResponse> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), options?.timeout ?? 30000);
 
@@ -570,7 +636,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
   async listIntegrations(
     workspaceId: string,
-    options?: ListIntegrationsOptions
+    options?: ListIntegrationsOptions,
   ): Promise<PaginatedIntegrationResult> {
     return this.storage.listIntegrations(workspaceId, options);
   }
@@ -899,7 +965,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
   async triggerWebhook(
     webhookId: string,
     event: WebhookEvent,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ): Promise<WebhookDelivery> {
     const webhook = await this.storage.getWebhook(webhookId);
     if (!webhook) {
@@ -990,7 +1056,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
   async getDeliveryHistory(
     webhookId: string,
-    options?: ListDeliveriesOptions
+    options?: ListDeliveriesOptions,
   ): Promise<PaginatedDeliveryResult> {
     const webhook = await this.storage.getWebhook(webhookId);
     if (!webhook) {
@@ -1020,7 +1086,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
     try {
       return crypto.timingSafeEqual(
         Buffer.from(signature),
-        Buffer.from(expectedSignature)
+        Buffer.from(expectedSignature),
       );
     } catch {
       return false;
@@ -1108,8 +1174,8 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
   private async attemptDelivery(
     webhook: WebhookConfig,
-    payload: Record<string, unknown>,
-    attemptNumber: number
+    payload: WebhookPayload,
+    attemptNumber: number,
   ): Promise<WebhookAttempt> {
     const startTime = Date.now();
     const payloadString = JSON.stringify(payload);
@@ -1126,11 +1192,15 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
 
     const signature = this.generateSignature(payloadString, webhook.secret);
 
+    // Safely extract event and deliveryId from payload (handles both typed and generic payloads)
+    const eventValue = 'event' in payload ? String(payload.event) : 'unknown';
+    const deliveryIdValue = 'deliveryId' in payload ? String(payload.deliveryId) : generateShortId();
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'X-Webhook-Signature': signature,
-      'X-Webhook-Event': payload.event as string || 'unknown',
-      'X-Webhook-Delivery': payload.deliveryId as string || generateShortId(),
+      'X-Webhook-Event': eventValue,
+      'X-Webhook-Delivery': deliveryIdValue,
       ...webhook.headers,
     };
 
@@ -1170,7 +1240,7 @@ export class IntegrationServiceImpl implements IntegrationService, WebhookServic
  * Creates a new Integration Service with in-memory storage.
  */
 export function createIntegrationService(
-  config?: Partial<IntegrationServiceConfig>
+  config?: Partial<IntegrationServiceConfig>,
 ): IntegrationServiceImpl {
   const storage = config?.storage ?? new InMemoryIntegrationStorage();
   return new IntegrationServiceImpl({

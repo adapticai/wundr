@@ -280,7 +280,7 @@ export class TableExtractorImpl implements TableExtractor {
     const tableRegex = /<table[^>]*>([\s\S]*?)<\/table>/gi;
 
     let match;
-    let tableIndex = 0;
+    let _tableIndex = 0;
 
     while ((match = tableRegex.exec(html)) !== null) {
       const tableHtml = match[1];
@@ -289,7 +289,7 @@ export class TableExtractorImpl implements TableExtractor {
       if (table && table.rowCount >= this.config.minRows - 1 && table.columnCount >= this.config.minColumns) {
         tables.push(table);
       }
-      tableIndex++;
+      _tableIndex++;
     }
 
     return tables;
@@ -431,7 +431,7 @@ export class TableExtractorImpl implements TableExtractor {
   normalizeTable(table: ExtractedTable): ExtractedTable {
     const maxCols = Math.max(
       table.headers.length,
-      ...table.rows.map((row) => row.length)
+      ...table.rows.map((row) => row.length),
     );
 
     const normalizedHeaders = [...table.headers];
@@ -546,7 +546,7 @@ export class TableExtractorImpl implements TableExtractor {
   private parseTableLines(
     lines: string[],
     delimiter: RegExp,
-    startRow: number
+    startRow: number,
   ): ExtractedTable | null {
     // Filter out separator lines
     const dataLines = lines.filter((line) => !this.isSeparatorLine(line));
@@ -557,7 +557,7 @@ export class TableExtractorImpl implements TableExtractor {
 
     // Parse rows
     const rows = dataLines.map((line) =>
-      line.split(delimiter).map((cell) => cell.trim())
+      line.split(delimiter).map((cell) => cell.trim()),
     );
 
     // Normalize column count
@@ -714,7 +714,9 @@ export class TableExtractorImpl implements TableExtractor {
           break;
         }
       }
-      if (dataRowsHaveNumbers) break;
+      if (dataRowsHaveNumbers) {
+break;
+}
     }
 
     // First row is likely headers if it's all text and data rows have numbers
@@ -824,7 +826,7 @@ export class TableExtractorImpl implements TableExtractor {
     text: string,
     delimiter: string,
     quote: string,
-    escape: string
+    escape: string,
   ): string[][] {
     const rows: string[][] = [];
     const lines = text.split(/\r?\n/);

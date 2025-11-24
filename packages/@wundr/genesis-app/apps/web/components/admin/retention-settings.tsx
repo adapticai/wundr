@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { clsx } from 'clsx';
+import { useState, useEffect, useCallback } from 'react';
 
 interface RetentionPolicy {
   id: string;
@@ -45,9 +45,15 @@ const ACTIONS = [
 ];
 
 function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) {
+return `${bytes} B`;
+}
+  if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
+  if (bytes < 1024 * 1024 * 1024) {
+return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -187,7 +193,7 @@ export function RetentionSettings({ workspaceId, className }: RetentionSettingsP
                           'px-2 py-0.5 text-xs rounded',
                           policy.isEnabled
                             ? 'bg-green-500/10 text-green-500'
-                            : 'bg-muted text-muted-foreground'
+                            : 'bg-muted text-muted-foreground',
                         )}
                       >
                         {policy.isEnabled ? 'Active' : 'Disabled'}

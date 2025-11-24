@@ -11,8 +11,8 @@
  * @module apps/web/app/api/workspaces/[workspaceId]/admin/audit-logs/__tests__/audit.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
@@ -201,7 +201,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs?severity=critical&category=security&limit=25'
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs?severity=critical&category=security&limit=25',
       );
       await GET(request, { params: Promise.resolve({ workspaceId: 'ws-1' }) });
 
@@ -214,7 +214,7 @@ describe('Audit Logs API Routes', () => {
         expect.objectContaining({
           limit: 25,
         }),
-        undefined
+        undefined,
       );
     });
 
@@ -225,7 +225,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs?sort=timestamp&order=asc'
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs?sort=timestamp&order=asc',
       );
       await GET(request, { params: Promise.resolve({ workspaceId: 'ws-1' }) });
 
@@ -235,7 +235,7 @@ describe('Audit Logs API Routes', () => {
         expect.objectContaining({
           field: 'timestamp',
           direction: 'asc',
-        })
+        }),
       );
     });
 
@@ -248,7 +248,7 @@ describe('Audit Logs API Routes', () => {
       const fromDate = '2024-01-01T00:00:00Z';
       const toDate = '2024-12-31T23:59:59Z';
       const request = new NextRequest(
-        `http://localhost/api/workspaces/ws-1/admin/audit-logs?from=${fromDate}&to=${toDate}`
+        `http://localhost/api/workspaces/ws-1/admin/audit-logs?from=${fromDate}&to=${toDate}`,
       );
       await GET(request, { params: Promise.resolve({ workspaceId: 'ws-1' }) });
 
@@ -260,7 +260,7 @@ describe('Audit Logs API Routes', () => {
           }),
         }),
         expect.anything(),
-        undefined
+        undefined,
       );
     });
 
@@ -271,7 +271,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs?search=login'
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs?search=login',
       );
       await GET(request, { params: Promise.resolve({ workspaceId: 'ws-1' }) });
 
@@ -280,7 +280,7 @@ describe('Audit Logs API Routes', () => {
           search: 'login',
         }),
         expect.anything(),
-        undefined
+        undefined,
       );
     });
   });
@@ -327,7 +327,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../export/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=export-1'
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=export-1',
       );
       const response = await GET(request, { params: Promise.resolve({ workspaceId: 'ws-1' }) });
 
@@ -344,7 +344,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../export/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=non-existent'
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export?id=non-existent',
       );
       const response = await GET(request, { params: Promise.resolve({ workspaceId: 'ws-1' }) });
 
@@ -357,7 +357,7 @@ describe('Audit Logs API Routes', () => {
 
       const { GET } = await import('../export/route');
       const request = new NextRequest(
-        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export'
+        'http://localhost/api/workspaces/ws-1/admin/audit-logs/export',
       );
       const response = await GET(request, { params: Promise.resolve({ workspaceId: 'ws-1' }) });
 

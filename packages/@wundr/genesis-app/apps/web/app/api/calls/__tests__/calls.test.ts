@@ -14,8 +14,8 @@
  * @module apps/web/app/api/calls/__tests__/calls.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
@@ -91,10 +91,10 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-function createMockRequest(
+function _createMockRequest(
   method: string,
   body?: Record<string, unknown>,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
 ): NextRequest {
   const url = new URL('http://localhost:3000/api/calls');
 
@@ -156,7 +156,7 @@ function createMockJoinTokenResponse(overrides?: Record<string, unknown>) {
 function createMockWebhookEvent(
   event: string,
   room?: { name: string; sid?: string },
-  participant?: { identity: string; sid?: string }
+  participant?: { identity: string; sid?: string },
 ) {
   return {
     event,
@@ -223,7 +223,7 @@ describe('Call API Routes', () => {
         requestBody,
         session.user.id,
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(result.type).toBe('video');
@@ -236,7 +236,7 @@ describe('Call API Routes', () => {
         }),
         session.user.id,
         'ws-123',
-        'org-123'
+        'org-123',
       );
     });
 
@@ -251,7 +251,7 @@ describe('Call API Routes', () => {
         { channelId: 'ch-123', type: 'voice' },
         session.user.id,
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(result.type).toBe('voice');
@@ -277,7 +277,7 @@ describe('Call API Routes', () => {
         },
         session.user.id,
         'ws-123',
-        'org-123'
+        'org-123',
       );
 
       expect(result.scheduledAt).toBe(scheduledAt);
@@ -298,12 +298,12 @@ describe('Call API Routes', () => {
           { channelId: 'ch-not-member', type: 'video' },
           session.user.id,
           'ws-123',
-          'org-123'
-        )
+          'org-123',
+        ),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        })
+        }),
       );
     });
 
@@ -332,12 +332,12 @@ describe('Call API Routes', () => {
           { channelId: 'ch-123', type: 'invalid' },
           session.user.id,
           'ws-123',
-          'org-123'
-        )
+          'org-123',
+        ),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'VALIDATION_ERROR',
-        })
+        }),
       );
     });
 
@@ -355,12 +355,12 @@ describe('Call API Routes', () => {
           { channelId: 'ch-with-active-call', type: 'video' },
           session.user.id,
           'ws-123',
-          'org-123'
-        )
+          'org-123',
+        ),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'DUPLICATE_ACTIVE_CALL',
-        })
+        }),
       );
     });
   });
@@ -385,7 +385,7 @@ describe('Call API Routes', () => {
       const result = await mockCallService.joinCall(
         'call-123',
         session.user.id,
-        session.user.email
+        session.user.email,
       );
 
       expect(result.token).toBeDefined();
@@ -403,11 +403,11 @@ describe('Call API Routes', () => {
       });
 
       await expect(
-        mockCallService.joinCall('non-existent-call', session.user.id)
+        mockCallService.joinCall('non-existent-call', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CALL_NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -421,11 +421,11 @@ describe('Call API Routes', () => {
       });
 
       await expect(
-        mockCallService.joinCall('ended-call', session.user.id)
+        mockCallService.joinCall('ended-call', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'CALL_ENDED',
-        })
+        }),
       );
     });
 
@@ -440,11 +440,11 @@ describe('Call API Routes', () => {
       });
 
       await expect(
-        mockCallService.joinCall('call-in-other-channel', session.user.id)
+        mockCallService.joinCall('call-in-other-channel', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        })
+        }),
       );
     });
 
@@ -481,7 +481,7 @@ describe('Call API Routes', () => {
       mockCallService.leaveCall.mockResolvedValue(undefined);
 
       await expect(
-        mockCallService.leaveCall('call-123', session.user.id)
+        mockCallService.leaveCall('call-123', session.user.id),
       ).resolves.toBeUndefined();
     });
 
@@ -495,11 +495,11 @@ describe('Call API Routes', () => {
       });
 
       await expect(
-        mockCallService.leaveCall('call-not-in', session.user.id)
+        mockCallService.leaveCall('call-not-in', session.user.id),
       ).rejects.toEqual(
         expect.objectContaining({
           code: 'NOT_IN_CALL',
-        })
+        }),
       );
     });
   });
@@ -540,7 +540,7 @@ describe('Call API Routes', () => {
       await expect(mockCallService.endCall('fake-call')).rejects.toEqual(
         expect.objectContaining({
           code: 'CALL_NOT_FOUND',
-        })
+        }),
       );
     });
 
@@ -556,7 +556,7 @@ describe('Call API Routes', () => {
       await expect(mockCallService.endCall('call-not-host')).rejects.toEqual(
         expect.objectContaining({
           code: 'FORBIDDEN',
-        })
+        }),
       );
     });
   });
@@ -600,7 +600,7 @@ describe('Call API Routes', () => {
       const webhookEvent = createMockWebhookEvent(
         'participant_joined',
         { name: 'call-room-123' },
-        { identity: 'user-123' }
+        { identity: 'user-123' },
       );
 
       mockLiveKitService.verifyWebhook.mockResolvedValue(true);
@@ -608,10 +608,10 @@ describe('Call API Routes', () => {
 
       const isValid = await mockLiveKitService.verifyWebhook(
         JSON.stringify(webhookEvent),
-        'valid-signature'
+        'valid-signature',
       );
       const parsed = await mockLiveKitService.parseWebhook(
-        JSON.stringify(webhookEvent)
+        JSON.stringify(webhookEvent),
       );
 
       expect(isValid).toBe(true);
@@ -623,14 +623,14 @@ describe('Call API Routes', () => {
       const webhookEvent = createMockWebhookEvent(
         'participant_left',
         { name: 'call-room-123' },
-        { identity: 'user-123' }
+        { identity: 'user-123' },
       );
 
       mockLiveKitService.verifyWebhook.mockResolvedValue(true);
       mockLiveKitService.parseWebhook.mockResolvedValue(webhookEvent);
 
       const parsed = await mockLiveKitService.parseWebhook(
-        JSON.stringify(webhookEvent)
+        JSON.stringify(webhookEvent),
       );
 
       expect(parsed.event).toBe('participant_left');
@@ -645,7 +645,7 @@ describe('Call API Routes', () => {
       mockLiveKitService.parseWebhook.mockResolvedValue(webhookEvent);
 
       const parsed = await mockLiveKitService.parseWebhook(
-        JSON.stringify(webhookEvent)
+        JSON.stringify(webhookEvent),
       );
 
       expect(parsed.event).toBe('room_finished');
@@ -661,7 +661,7 @@ describe('Call API Routes', () => {
       mockLiveKitService.parseWebhook.mockResolvedValue(webhookEvent);
 
       const parsed = await mockLiveKitService.parseWebhook(
-        JSON.stringify(webhookEvent)
+        JSON.stringify(webhookEvent),
       );
 
       expect(parsed.event).toBe('room_started');
@@ -676,13 +676,13 @@ describe('Call API Routes', () => {
 
       const isValid = await mockLiveKitService.verifyWebhook(
         JSON.stringify(webhookEvent),
-        'valid-signature'
+        'valid-signature',
       );
 
       expect(isValid).toBe(true);
       expect(mockLiveKitService.verifyWebhook).toHaveBeenCalledWith(
         JSON.stringify(webhookEvent),
-        'valid-signature'
+        'valid-signature',
       );
     });
 
@@ -695,7 +695,7 @@ describe('Call API Routes', () => {
 
       const isValid = await mockLiveKitService.verifyWebhook(
         JSON.stringify(webhookEvent),
-        'invalid-signature'
+        'invalid-signature',
       );
 
       expect(isValid).toBe(false);
@@ -705,14 +705,14 @@ describe('Call API Routes', () => {
       const webhookEvent = createMockWebhookEvent(
         'track_published',
         { name: 'call-room-123' },
-        { identity: 'user-123' }
+        { identity: 'user-123' },
       );
 
       mockLiveKitService.verifyWebhook.mockResolvedValue(true);
       mockLiveKitService.parseWebhook.mockResolvedValue(webhookEvent);
 
       const parsed = await mockLiveKitService.parseWebhook(
-        JSON.stringify(webhookEvent)
+        JSON.stringify(webhookEvent),
       );
 
       expect(parsed.event).toBe('track_published');
@@ -735,7 +735,7 @@ describe('Call API Routes', () => {
       mockLiveKitService.parseWebhook.mockResolvedValue(webhookEvent);
 
       const parsed = await mockLiveKitService.parseWebhook(
-        JSON.stringify(webhookEvent)
+        JSON.stringify(webhookEvent),
       );
 
       expect(parsed.event).toBe('egress_ended');

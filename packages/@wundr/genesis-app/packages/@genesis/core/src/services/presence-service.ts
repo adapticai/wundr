@@ -8,13 +8,17 @@
  * @packageDocumentation
  */
 
-import type Redis from 'ioredis';
+import { GenesisError } from '../errors';
 import {
   createRedisClient,
   createSubscriberClient,
   isRedisAvailable,
 } from '../redis/client';
-import { GenesisError } from '../errors';
+import {
+  PRESENCE_KEY_PATTERNS,
+  DEFAULT_PRESENCE_CONFIG,
+} from '../types/presence';
+
 import type {
   PresenceStatus,
   UserPresence,
@@ -29,11 +33,15 @@ import type {
   UserPresenceEvent,
   VPPresenceEvent,
   ChannelPresenceEvent,
+  PresenceEvent,
 } from '../types/presence';
-import {
-  PRESENCE_KEY_PATTERNS,
-  DEFAULT_PRESENCE_CONFIG,
-} from '../types/presence';
+import type Redis from 'ioredis';
+
+/**
+ * Union type for all presence event callback functions.
+ * Used internally by the subscription system.
+ */
+type PresenceEventCallback = PresenceCallback | ChannelPresenceCallback | VPPresenceCallback;
 
 // =============================================================================
 // Custom Errors
@@ -57,7 +65,7 @@ export class RedisUnavailableError extends GenesisError {
     super(
       'Redis is not available. Presence service is operating in degraded mode.',
       'REDIS_UNAVAILABLE',
-      503
+      503,
     );
     this.name = 'RedisUnavailableError';
   }
@@ -260,12 +268,18 @@ export interface PresenceStats {
 
 /**
  * Redis-based presence service implementation.
+ * Provides real-time user, VP, and channel presence tracking with pub/sub notifications.
  */
 export class PresenceServiceImpl implements PresenceService {
+  /** Redis client for presence data operations */
   private readonly redis: Redis;
+  /** Redis subscriber client for pub/sub operations */
   private readonly subscriber: Redis;
+  /** Service configuration */
   private readonly config: PresenceConfig;
-  private readonly subscriptions: Map<string, Set<(...args: unknown[]) => void>>;
+  /** Map of channel names to sets of callback functions */
+  private readonly subscriptions: Map<string, Set<PresenceEventCallback>>;
+  /** Whether the subscriber client is ready for operations */
   private isSubscriberReady: boolean = false;
 
   /**
@@ -477,7 +491,7 @@ export class PresenceServiceImpl implements PresenceService {
     try {
       // Fetch all presences in parallel
       const presences = await Promise.all(
-        limitedIds.map((id) => this.getUserPresence(id))
+        limitedIds.map((id) => this.getUserPresence(id)),
       );
 
       presences.forEach((presence, index) => {
@@ -772,6 +786,10 @@ export class PresenceServiceImpl implements PresenceService {
 
   /**
    * Subscribes to presence changes for a specific user.
+   *
+   * @param userId - The user ID to watch
+   * @param callback - Function called when the user's presence changes
+   * @returns Unsubscribe function to remove the subscription
    */
   subscribeToUser(userId: string, callback: PresenceCallback): UnsubscribeFunction {
     if (!this.config.enablePubSub) {
@@ -779,11 +797,15 @@ export class PresenceServiceImpl implements PresenceService {
     }
 
     const channel = `${PRESENCE_KEY_PATTERNS.USER_EVENTS}${userId}`;
-    return this.subscribe(channel, callback as (...args: unknown[]) => void);
+    return this.subscribe(channel, callback);
   }
 
   /**
    * Subscribes to presence changes for a channel.
+   *
+   * @param channelId - The channel ID to watch
+   * @param callback - Function called when channel presence changes
+   * @returns Unsubscribe function to remove the subscription
    */
   subscribeToChannel(channelId: string, callback: ChannelPresenceCallback): UnsubscribeFunction {
     if (!this.config.enablePubSub) {
@@ -791,11 +813,15 @@ export class PresenceServiceImpl implements PresenceService {
     }
 
     const channel = `${PRESENCE_KEY_PATTERNS.CHANNEL_EVENTS}${channelId}`;
-    return this.subscribe(channel, callback as (...args: unknown[]) => void);
+    return this.subscribe(channel, callback);
   }
 
   /**
    * Subscribes to presence changes for a VP.
+   *
+   * @param vpId - The VP ID to watch
+   * @param callback - Function called when the VP's presence changes
+   * @returns Unsubscribe function to remove the subscription
    */
   subscribeToVP(vpId: string, callback: VPPresenceCallback): UnsubscribeFunction {
     if (!this.config.enablePubSub) {
@@ -803,7 +829,7 @@ export class PresenceServiceImpl implements PresenceService {
     }
 
     const channel = `${PRESENCE_KEY_PATTERNS.VP_EVENTS}${vpId}`;
-    return this.subscribe(channel, callback as (...args: unknown[]) => void);
+    return this.subscribe(channel, callback);
   }
 
   // ===========================================================================
@@ -939,6 +965,7 @@ export class PresenceServiceImpl implements PresenceService {
 
   /**
    * Initializes the subscriber client for pub/sub.
+   * Sets up event handlers for ready, message, and error events.
    */
   private initializeSubscriber(): void {
     if (!this.config.enablePubSub) {
@@ -953,8 +980,12 @@ export class PresenceServiceImpl implements PresenceService {
       const callbacks = this.subscriptions.get(channel);
       if (callbacks) {
         try {
-          const event = JSON.parse(message);
-          callbacks.forEach((cb) => cb(event));
+          const event = JSON.parse(message) as PresenceEvent;
+          callbacks.forEach((cb) => {
+            // Call the callback with the appropriate event type
+            // The callback will receive the correctly typed event
+            (cb as (event: PresenceEvent) => void)(event);
+          });
         } catch (error) {
           this.logError('Failed to parse pub/sub message', error);
         }
@@ -967,21 +998,29 @@ export class PresenceServiceImpl implements PresenceService {
   }
 
   /**
-   * Generic subscribe method.
+   * Generic subscribe method for presence events.
+   * Manages Redis pub/sub subscriptions and callback registration.
+   *
+   * @param channel - The Redis channel to subscribe to
+   * @param callback - The callback function to invoke on events
+   * @returns Unsubscribe function to remove the subscription
    */
-  private subscribe(channel: string, callback: (...args: unknown[]) => void): UnsubscribeFunction {
+  private subscribe(channel: string, callback: PresenceEventCallback): UnsubscribeFunction {
     if (!this.subscriptions.has(channel)) {
       this.subscriptions.set(channel, new Set());
 
       // Subscribe to Redis channel if subscriber is ready
       if (this.isSubscriberReady) {
-        this.subscriber.subscribe(channel).catch((err) => {
+        this.subscriber.subscribe(channel).catch((err: Error) => {
           this.logError(`Failed to subscribe to ${channel}`, err);
         });
       }
     }
 
-    this.subscriptions.get(channel)!.add(callback);
+    const callbackSet = this.subscriptions.get(channel);
+    if (callbackSet) {
+      callbackSet.add(callback);
+    }
 
     // Return unsubscribe function
     return () => {
@@ -993,7 +1032,7 @@ export class PresenceServiceImpl implements PresenceService {
         if (callbacks.size === 0) {
           this.subscriptions.delete(channel);
           if (this.isSubscriberReady) {
-            this.subscriber.unsubscribe(channel).catch((err) => {
+            this.subscriber.unsubscribe(channel).catch((err: Error) => {
               this.logError(`Failed to unsubscribe from ${channel}`, err);
             });
           }
@@ -1094,7 +1133,7 @@ export class PresenceServiceImpl implements PresenceService {
  */
 export function createPresenceService(
   redisClient?: Redis,
-  config?: Partial<PresenceConfig>
+  config?: Partial<PresenceConfig>,
 ): PresenceServiceImpl {
   return new PresenceServiceImpl(redisClient, config);
 }
@@ -1117,15 +1156,34 @@ export function getPresenceService(): PresenceServiceImpl {
 }
 
 /**
+ * Type-safe property accessor for presence service.
+ * Used by the proxy to access service methods and properties.
+ */
+type PresenceServiceProperty = keyof PresenceServiceImpl;
+
+/**
  * Singleton presence service for convenience.
+ * Uses a Proxy to lazily initialize the service on first access.
+ *
+ * @example
+ * ```typescript
+ * // The service is lazily initialized on first use
+ * await presenceService.setUserOnline('user_123');
+ * const presence = await presenceService.getUserPresence('user_123');
+ * ```
  */
 export const presenceService = new Proxy({} as PresenceServiceImpl, {
-  get(_target, prop) {
+  get(_target, prop: string | symbol) {
     const service = getPresenceService();
-    const value = (service as unknown as Record<string | symbol, unknown>)[prop];
-    if (typeof value === 'function') {
-      return value.bind(service);
+    // Ensure prop is a valid key
+    if (typeof prop === 'string' || typeof prop === 'symbol') {
+      const key = prop as PresenceServiceProperty;
+      const value = service[key];
+      if (typeof value === 'function') {
+        return (value as (...args: unknown[]) => unknown).bind(service);
+      }
+      return value;
     }
-    return value;
+    return undefined;
   },
 });

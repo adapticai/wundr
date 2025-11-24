@@ -50,7 +50,9 @@ const TYPING_TTL_MS = 5000;
  */
 function cleanupExpiredTyping(channelId: string) {
   const channelTyping = typingStore.get(channelId);
-  if (!channelTyping) return;
+  if (!channelTyping) {
+return;
+}
 
   const now = Date.now();
   for (const [userId, data] of channelTyping.entries()) {
@@ -70,7 +72,9 @@ function cleanupExpiredTyping(channelId: string) {
 function getTypingUsers(channelId: string, excludeUserId?: string) {
   cleanupExpiredTyping(channelId);
   const channelTyping = typingStore.get(channelId);
-  if (!channelTyping) return [];
+  if (!channelTyping) {
+return [];
+}
 
   const users: Array<{ userId: string; userName: string }> = [];
   for (const [userId, data] of channelTyping.entries()) {

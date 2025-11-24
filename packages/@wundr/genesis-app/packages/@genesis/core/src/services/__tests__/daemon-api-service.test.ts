@@ -3,10 +3,12 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { DaemonApiService } from '../daemon-api-service';
-import { DaemonAuthService } from '../daemon-auth-service';
+
 import { createMockRedis, type MockRedis } from '../../test-utils/mock-redis';
 import { createMockPrismaClient } from '../../test-utils/vp-factories';
+import { DaemonApiService } from '../daemon-api-service';
+import { DaemonAuthService } from '../daemon-auth-service';
+
 import type { DaemonToken, DaemonScope } from '../../types/daemon';
 
 // =============================================================================
@@ -193,7 +195,7 @@ describe('DaemonApiService', () => {
       mockPrisma.channelMember.findFirst.mockResolvedValue(null);
 
       await expect(
-        apiService.sendMessage(mockToken, { channelId: 'ch-1', content: 'Hello' })
+        apiService.sendMessage(mockToken, { channelId: 'ch-1', content: 'Hello' }),
       ).rejects.toThrow('VP does not have access to this channel');
     });
 
@@ -204,7 +206,7 @@ describe('DaemonApiService', () => {
       };
 
       await expect(
-        apiService.sendMessage(limitedToken, { channelId: 'ch-1', content: 'Hello' })
+        apiService.sendMessage(limitedToken, { channelId: 'ch-1', content: 'Hello' }),
       ).rejects.toThrow('Missing required scope');
     });
   });
@@ -254,7 +256,7 @@ describe('DaemonApiService', () => {
         expect.objectContaining({
           where: { channelId: 'ch-1', id: { lt: 'msg-5' } },
           take: 10,
-        })
+        }),
       );
     });
 
@@ -269,7 +271,7 @@ describe('DaemonApiService', () => {
         expect.objectContaining({
           where: { channelId: 'ch-1', id: { gt: 'msg-5' } },
           take: 10,
-        })
+        }),
       );
     });
 
@@ -283,7 +285,7 @@ describe('DaemonApiService', () => {
       expect(mockPrisma.message.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           take: 100,
-        })
+        }),
       );
     });
   });
@@ -387,7 +389,7 @@ describe('DaemonApiService', () => {
       mockPrisma.channel.findUnique.mockResolvedValue(null);
 
       await expect(apiService.joinChannel(mockToken, 'ch-404')).rejects.toThrow(
-        'Channel not found'
+        'Channel not found',
       );
     });
 
@@ -398,7 +400,7 @@ describe('DaemonApiService', () => {
       });
 
       await expect(apiService.joinChannel(mockToken, 'ch-1')).rejects.toThrow(
-        'Cannot join private channel'
+        'Cannot join private channel',
       );
     });
   });
@@ -465,7 +467,7 @@ describe('DaemonApiService', () => {
           where: expect.objectContaining({
             workspaceId: 'ws-1',
           }),
-        })
+        }),
       );
     });
   });
@@ -493,7 +495,7 @@ describe('DaemonApiService', () => {
 
       expect(mockRedis.publish).toHaveBeenCalledWith(
         `workspace:${mockToken.workspaceId}:presence`,
-        expect.stringContaining('away')
+        expect.stringContaining('away'),
       );
     });
   });
@@ -583,7 +585,7 @@ describe('DaemonApiService', () => {
           messagesSent: 10,
           messagesReceived: 20,
           errors: 0,
-        })
+        }),
       );
       expect(mockRedis.expire).toHaveBeenCalled();
     });
@@ -609,7 +611,7 @@ describe('DaemonApiService', () => {
       expect(topic).toBe('channel:ch-1:messages');
       expect(mockRedis.sadd).toHaveBeenCalledWith(
         `daemon:subscriptions:${mockToken.daemonId}`,
-        'ch-1'
+        'ch-1',
       );
     });
 
@@ -618,7 +620,7 @@ describe('DaemonApiService', () => {
 
       expect(mockRedis.srem).toHaveBeenCalledWith(
         `daemon:subscriptions:${mockToken.daemonId}`,
-        'ch-1'
+        'ch-1',
       );
     });
 
@@ -674,7 +676,7 @@ describe('DaemonApiService', () => {
       expect(mockRedis.del).toHaveBeenCalled();
       expect(mockRedis.rpush).toHaveBeenCalledWith(
         expect.any(String),
-        JSON.stringify({ id: 'evt-2' })
+        JSON.stringify({ id: 'evt-2' }),
       );
     });
   });
@@ -691,7 +693,7 @@ describe('DaemonApiService', () => {
       };
 
       await expect(apiService.getChannels(noScopeToken)).rejects.toThrow(
-        'Missing required scope: channels:read'
+        'Missing required scope: channels:read',
       );
     });
 

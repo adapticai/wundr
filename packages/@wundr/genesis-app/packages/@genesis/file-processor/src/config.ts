@@ -202,7 +202,7 @@ export const defaultConfig: FileProcessorConfig = {
  * Create configuration with overrides
  */
 export function createConfig(
-  overrides: Partial<FileProcessorConfig> = {}
+  overrides: Partial<FileProcessorConfig> = {},
 ): FileProcessorConfig {
   return {
     ...defaultConfig,

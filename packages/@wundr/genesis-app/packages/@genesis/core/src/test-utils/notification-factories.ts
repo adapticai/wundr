@@ -239,7 +239,7 @@ export function createMockNotification(overrides?: Partial<Notification>): Notif
  * Create a mock mention notification
  */
 export function createMockMentionNotification(
-  overrides?: Partial<Notification>
+  overrides?: Partial<Notification>,
 ): Notification {
   return createMockNotification({
     type: 'MENTION',
@@ -258,7 +258,7 @@ export function createMockMentionNotification(
  * Create a mock thread reply notification
  */
 export function createMockThreadReplyNotification(
-  overrides?: Partial<Notification>
+  overrides?: Partial<Notification>,
 ): Notification {
   return createMockNotification({
     type: 'THREAD_REPLY',
@@ -278,7 +278,7 @@ export function createMockThreadReplyNotification(
  * Create a mock call started notification
  */
 export function createMockCallNotification(
-  overrides?: Partial<Notification>
+  overrides?: Partial<Notification>,
 ): Notification {
   return createMockNotification({
     type: 'CALL_STARTED',
@@ -299,7 +299,7 @@ export function createMockCallNotification(
  */
 export function createMockNotificationList(
   count: number,
-  overrides?: Partial<Notification>
+  overrides?: Partial<Notification>,
 ): Notification[] {
   const userId = overrides?.userId ?? generateUserId();
   const baseTime = new Date();
@@ -361,7 +361,7 @@ export function createMockWebPushDevice(overrides?: Partial<PushDevice>): PushDe
  */
 export function createMockFCMDevice(
   platform: 'IOS' | 'ANDROID',
-  overrides?: Partial<PushDevice>
+  overrides?: Partial<PushDevice>,
 ): PushDevice {
   return createMockPushDevice({
     platform,
@@ -378,7 +378,7 @@ export function createMockFCMDevice(
  */
 export function createMockPushDeviceList(
   count: number,
-  overrides?: Partial<PushDevice>
+  overrides?: Partial<PushDevice>,
 ): PushDevice[] {
   const userId = overrides?.userId ?? generateUserId();
 
@@ -400,7 +400,7 @@ export function createMockPushDeviceList(
  * Create mock notification preferences
  */
 export function createMockPreferences(
-  overrides?: Partial<NotificationPreferences>
+  overrides?: Partial<NotificationPreferences>,
 ): NotificationPreferences {
   const now = new Date();
   const userId = overrides?.userId ?? generateUserId();
@@ -429,7 +429,7 @@ export function createMockPreferences(
  * Create mock preferences with quiet hours
  */
 export function createMockPreferencesWithQuietHours(
-  overrides?: Partial<NotificationPreferences>
+  overrides?: Partial<NotificationPreferences>,
 ): NotificationPreferences {
   return createMockPreferences({
     quietHoursEnabled: true,
@@ -444,7 +444,7 @@ export function createMockPreferencesWithQuietHours(
  * Create mock preferences with all disabled
  */
 export function createMockDisabledPreferences(
-  overrides?: Partial<NotificationPreferences>
+  overrides?: Partial<NotificationPreferences>,
 ): NotificationPreferences {
   return createMockPreferences({
     emailEnabled: false,
@@ -492,7 +492,7 @@ export function createMockQueuedAction(overrides?: Partial<QueuedAction>): Queue
  * Create a mock failed queued action
  */
 export function createMockFailedQueuedAction(
-  overrides?: Partial<QueuedAction>
+  overrides?: Partial<QueuedAction>,
 ): QueuedAction {
   return createMockQueuedAction({
     status: 'FAILED',
@@ -507,7 +507,7 @@ export function createMockFailedQueuedAction(
  */
 export function createMockQueuedActionList(
   count: number,
-  overrides?: Partial<QueuedAction>
+  overrides?: Partial<QueuedAction>,
 ): QueuedAction[] {
   const userId = overrides?.userId ?? generateUserId();
   const baseTime = new Date();
@@ -537,7 +537,7 @@ export function createMockSyncState(overrides?: Partial<SyncState>): SyncState {
     userId,
     lastSyncAt: new Date(),
     syncToken: Buffer.from(
-      JSON.stringify({ userId, version, timestamp: Date.now() })
+      JSON.stringify({ userId, version, timestamp: Date.now() }),
     ).toString('base64'),
     version,
     ...overrides,
@@ -581,7 +581,7 @@ export function createMockSyncData(overrides?: Partial<SyncData>): SyncData {
 
   return {
     syncToken: Buffer.from(
-      JSON.stringify({ userId, version, timestamp: Date.now() })
+      JSON.stringify({ userId, version, timestamp: Date.now() }),
     ).toString('base64'),
     changes: {
       messages: [],
@@ -599,7 +599,7 @@ export function createMockSyncData(overrides?: Partial<SyncData>): SyncData {
  */
 export function createMockSyncDataWithNotifications(
   notificationCount: number,
-  overrides?: Partial<SyncData>
+  overrides?: Partial<SyncData>,
 ): SyncData {
   const userId = generateUserId();
   const notifications = createMockNotificationList(notificationCount, { userId });
@@ -620,11 +620,11 @@ export function createMockSyncDataWithNotifications(
  */
 export function createMockSyncDataWithConflicts(
   conflictCount: number,
-  overrides?: Partial<SyncData>
+  overrides?: Partial<SyncData>,
 ): SyncData {
   const userId = generateUserId();
   const conflicts = Array.from({ length: conflictCount }, () =>
-    createMockSyncConflict({ userId })
+    createMockSyncConflict({ userId }),
   );
 
   return createMockSyncData({

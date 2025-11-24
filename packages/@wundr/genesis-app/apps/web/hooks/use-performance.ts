@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import type { CoreWebVitals } from '@genesis/core';
+
 import {
   measureWebVitals,
   getPerformanceRating,
@@ -14,8 +14,10 @@ import {
   createLazyObserver,
 } from '@/lib/performance';
 
+import type { CoreWebVitals } from '@genesis/core';
+
 /** Hook for measuring component render performance */
-export function useRenderMetrics(componentName: string) {
+export function useRenderMetrics(_componentName: string) {
   const renderCount = useRef(0);
   const renderTimes = useRef<number[]>([]);
   const lastRenderStart = useRef(performance.now());
@@ -65,7 +67,9 @@ export function useWebVitals() {
 
   const getRating = useCallback((metric: keyof CoreWebVitals) => {
     const value = vitals[metric];
-    if (value === undefined || value === null) return null;
+    if (value === undefined || value === null) {
+return null;
+}
     return getPerformanceRating(metric, value);
   }, [vitals]);
 
@@ -120,21 +124,23 @@ export function useConnectionAware() {
 /** Hook for lazy loading with Intersection Observer */
 export function useLazyLoad<T extends HTMLElement>(
   onVisible: () => void,
-  options: IntersectionObserverInit = {}
+  options: IntersectionObserverInit = {},
 ) {
   const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const element = ref.current;
-    if (!element || isVisible) return;
+    if (!element || isVisible) {
+return;
+}
 
     const observer = createLazyObserver(
       () => {
         setIsVisible(true);
         onVisible();
       },
-      options
+      options,
     );
 
     if (observer) {
@@ -153,7 +159,7 @@ export function useLazyLoad<T extends HTMLElement>(
 /** Hook for deferred loading */
 export function useDeferredLoad<T>(
   loader: () => Promise<T>,
-  options: { delay?: number; onIdle?: boolean } = {}
+  options: { delay?: number; onIdle?: boolean } = {},
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -259,7 +265,7 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
 /** Hook for throttled callback */
 export function useThrottledCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
-  delay: number
+  delay: number,
 ): T {
   const lastCall = useRef(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -284,7 +290,7 @@ export function useThrottledCallback<T extends (...args: unknown[]) => unknown>(
         }, remaining);
       }
     }) as T,
-    [callback, delay]
+    [callback, delay],
   );
 }
 
@@ -295,7 +301,7 @@ export function useVirtualizedData<T>(
     itemHeight: number;
     containerHeight: number;
     overscan?: number;
-  }
+  },
 ) {
   const [scrollTop, setScrollTop] = useState(0);
   const { itemHeight, containerHeight, overscan = 3 } = options;
@@ -304,7 +310,7 @@ export function useVirtualizedData<T>(
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
   const endIndex = Math.min(
     items.length,
-    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan,
   );
 
   const visibleItems = items.slice(startIndex, endIndex).map((item, index) => ({

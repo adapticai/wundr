@@ -33,7 +33,7 @@ const HEALTH_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {
@@ -83,7 +83,7 @@ function createErrorResponse(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ vpId: string }> }
+  { params }: { params: Promise<{ vpId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -91,7 +91,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json(
         createErrorResponse('Authentication required', HEALTH_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -122,7 +122,7 @@ export async function GET(
     if (!vp) {
       return NextResponse.json(
         createErrorResponse('VP not found', HEALTH_ERROR_CODES.VP_NOT_FOUND),
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -138,9 +138,9 @@ export async function GET(
       return NextResponse.json(
         createErrorResponse(
           'Access denied to this VP',
-          HEALTH_ERROR_CODES.FORBIDDEN
+          HEALTH_ERROR_CODES.FORBIDDEN,
         ),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -201,9 +201,9 @@ export async function GET(
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        HEALTH_ERROR_CODES.INTERNAL_ERROR
+        HEALTH_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

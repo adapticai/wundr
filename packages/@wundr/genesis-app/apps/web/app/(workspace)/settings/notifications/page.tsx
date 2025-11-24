@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { cn } from '@/lib/utils';
+
 import {
   useNotificationSettings,
   usePushNotifications,
 } from '@/hooks/use-notifications';
+import { cn } from '@/lib/utils';
+
 import type { NotificationType, NotificationSettings } from '@/types/notification';
 
 const NOTIFICATION_TYPE_LABELS: Record<NotificationType, { label: string; description: string }> = {
@@ -74,17 +76,23 @@ export default function NotificationSettingsPage() {
   const [isSendingTest, setIsSendingTest] = useState(false);
 
   const handleToggleEnabled = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+return;
+}
     await updateSettings({ enabled: !settings.enabled });
   }, [settings, updateSettings]);
 
   const handleToggleSound = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+return;
+}
     await updateSettings({ sound: !settings.sound });
   }, [settings, updateSettings]);
 
   const handleToggleDesktop = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+return;
+}
 
     if (!settings.desktop && !pushEnabled) {
       const granted = await requestPermission();
@@ -106,7 +114,9 @@ export default function NotificationSettingsPage() {
   }, [updateSettings]);
 
   const handleQuietHoursToggle = useCallback(async () => {
-    if (!settings) return;
+    if (!settings) {
+return;
+}
     await updateSettings({
       quietHours: {
         ...settings.quietHours,
@@ -116,7 +126,9 @@ export default function NotificationSettingsPage() {
   }, [settings, updateSettings]);
 
   const handleQuietHoursChange = useCallback(async (field: 'start' | 'end', value: string) => {
-    if (!settings) return;
+    if (!settings) {
+return;
+}
     await updateSettings({
       quietHours: {
         ...settings.quietHours,
@@ -126,7 +138,9 @@ export default function NotificationSettingsPage() {
   }, [settings, updateSettings]);
 
   const handleTypeToggle = useCallback(async (type: NotificationType, field: 'enabled' | 'sound' | 'desktop') => {
-    if (!settings) return;
+    if (!settings) {
+return;
+}
 
     const currentPrefs = settings.preferences[type];
     await updateSettings({
@@ -225,7 +239,7 @@ export default function NotificationSettingsPage() {
             className={cn(
               'w-full rounded-md border bg-background px-3 py-2 text-sm',
               'focus:outline-none focus:ring-2 focus:ring-primary/20',
-              'disabled:cursor-not-allowed disabled:opacity-50'
+              'disabled:cursor-not-allowed disabled:opacity-50',
             )}
           >
             {DIGEST_FREQUENCY_OPTIONS.map((option) => (
@@ -267,7 +281,7 @@ export default function NotificationSettingsPage() {
                 className={cn(
                   'w-full rounded-md border bg-background px-3 py-2 text-sm',
                   'focus:outline-none focus:ring-2 focus:ring-primary/20',
-                  'disabled:cursor-not-allowed disabled:opacity-50'
+                  'disabled:cursor-not-allowed disabled:opacity-50',
                 )}
               />
             </div>
@@ -284,7 +298,7 @@ export default function NotificationSettingsPage() {
                 className={cn(
                   'w-full rounded-md border bg-background px-3 py-2 text-sm',
                   'focus:outline-none focus:ring-2 focus:ring-primary/20',
-                  'disabled:cursor-not-allowed disabled:opacity-50'
+                  'disabled:cursor-not-allowed disabled:opacity-50',
                 )}
               />
             </div>
@@ -342,7 +356,7 @@ export default function NotificationSettingsPage() {
                   </div>
                 </div>
               </div>
-            )
+            ),
           )}
         </div>
       </section>
@@ -388,7 +402,7 @@ export default function NotificationSettingsPage() {
           className={cn(
             'mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
             'hover:bg-primary/90 transition-colors',
-            'disabled:cursor-not-allowed disabled:opacity-50'
+            'disabled:cursor-not-allowed disabled:opacity-50',
           )}
         >
           {isSendingTest ? 'Sending...' : 'Send Test Notification'}
@@ -424,7 +438,7 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
           'transition-colors duration-200 ease-in-out',
           'focus:outline-none focus:ring-2 focus:ring-primary/20',
           'disabled:cursor-not-allowed disabled:opacity-50',
-          checked ? 'bg-primary' : 'bg-muted'
+          checked ? 'bg-primary' : 'bg-muted',
         )}
       >
         <span
@@ -432,7 +446,7 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
             'pointer-events-none inline-block h-5 w-5 transform rounded-full',
             'bg-white shadow-lg ring-0 transition duration-200 ease-in-out',
             'translate-y-0.5',
-            checked ? 'translate-x-5' : 'translate-x-0.5'
+            checked ? 'translate-x-5' : 'translate-x-0.5',
           )}
         />
       </button>

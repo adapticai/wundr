@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useMemo } from 'react';
+
 import type { VP, VPFilters, CreateVPInput, UpdateVPInput } from '@/types/vp';
 
 /**
@@ -12,7 +13,9 @@ export function useVP(id: string) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchVP = useCallback(async () => {
-    if (!id) return;
+    if (!id) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -57,7 +60,9 @@ export function useVPs(orgId: string, filters?: VPFilters) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchVPs = useCallback(async () => {
-    if (!orgId) return;
+    if (!orgId) {
+return;
+}
 
     setIsLoading(true);
     setError(null);
@@ -66,9 +71,15 @@ export function useVPs(orgId: string, filters?: VPFilters) {
       // Build query params
       const params = new URLSearchParams();
       params.set('orgId', orgId);
-      if (filters?.discipline) params.set('discipline', filters.discipline);
-      if (filters?.status) params.set('status', filters.status);
-      if (filters?.search) params.set('search', filters.search);
+      if (filters?.discipline) {
+params.set('discipline', filters.discipline);
+}
+      if (filters?.status) {
+params.set('status', filters.status);
+}
+      if (filters?.search) {
+params.set('search', filters.search);
+}
 
       // TODO: Replace with actual API call
       const response = await fetch(`/api/vps?${params.toString()}`);
@@ -102,7 +113,7 @@ export function useVPs(orgId: string, filters?: VPFilters) {
         (vp) =>
           vp.title.toLowerCase().includes(searchLower) ||
           vp.description?.toLowerCase().includes(searchLower) ||
-          vp.discipline?.toLowerCase().includes(searchLower)
+          vp.discipline?.toLowerCase().includes(searchLower),
       );
     }
 

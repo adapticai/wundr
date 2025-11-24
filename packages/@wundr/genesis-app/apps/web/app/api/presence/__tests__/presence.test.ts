@@ -13,8 +13,8 @@
  * @module apps/web/app/api/presence/__tests__/presence.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // =============================================================================
 // MOCKS
@@ -103,11 +103,11 @@ function createMockSession(overrides?: Partial<MockSession>): MockSession {
   };
 }
 
-function createMockRequest(
+function _createMockRequest(
   method: string,
   path: string,
   body?: Record<string, unknown>,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
 ): NextRequest {
   const url = new URL(`http://localhost:3000${path}`);
 
@@ -193,7 +193,7 @@ describe('Presence API', () => {
 
       expect(mockPresenceService.setUserStatus).toHaveBeenCalledWith(
         'user-123',
-        'away'
+        'away',
       );
     });
 
@@ -245,13 +245,13 @@ describe('Presence API', () => {
       await mockPresenceService.setUserCustomStatus(
         session.user.id,
         requestBody.customStatus,
-        requestBody.customStatusEmoji
+        requestBody.customStatusEmoji,
       );
 
       expect(mockPresenceService.setUserCustomStatus).toHaveBeenCalledWith(
         'user-123',
         'In a meeting',
-        '...'
+        '...',
       );
     });
 
@@ -359,7 +359,7 @@ describe('Presence API', () => {
 
       expect(mockPresenceService.addUserToChannel).toHaveBeenCalledWith(
         'user-123',
-        'channel-123'
+        'channel-123',
       );
     });
 
@@ -368,7 +368,7 @@ describe('Presence API', () => {
       getServerSession.mockResolvedValue(session);
 
       // In actual implementation, would check channel membership
-      const channelId = 'restricted-channel';
+      const _channelId = 'restricted-channel';
       const isMember = false; // Simulating non-member
 
       if (!isMember) {
@@ -422,7 +422,7 @@ describe('Presence API', () => {
 
       expect(mockPresenceService.removeUserFromChannel).toHaveBeenCalledWith(
         'user-123',
-        'channel-123'
+        'channel-123',
       );
     });
 
@@ -436,7 +436,7 @@ describe('Presence API', () => {
       mockPresenceService.removeUserFromChannel.mockResolvedValue(undefined);
 
       await expect(
-        mockPresenceService.removeUserFromChannel(session.user.id, channelId)
+        mockPresenceService.removeUserFromChannel(session.user.id, channelId),
       ).resolves.toBeUndefined();
     });
   });
@@ -512,7 +512,7 @@ describe('Presence API', () => {
         expect.objectContaining({
           responseTimeMs: 150,
           messagesProcessed: 100,
-        })
+        }),
       );
     });
 
@@ -535,7 +535,7 @@ describe('Presence API', () => {
     });
 
     it('stores metrics', async () => {
-      const apiKey = 'gns_valid_api_key_123';
+      const _apiKey = 'gns_valid_api_key_123';
       const vpId = 'vp-123';
       const daemonId = 'daemon-456';
       const metrics = {
@@ -558,7 +558,7 @@ describe('Presence API', () => {
       expect(mockHeartbeatService.sendHeartbeat).toHaveBeenCalledWith(
         vpId,
         daemonId,
-        metrics
+        metrics,
       );
     });
 
@@ -601,7 +601,7 @@ describe('Presence API', () => {
     });
 
     it('returns health status in response', async () => {
-      const apiKey = 'gns_valid_api_key_123';
+      const _apiKey = 'gns_valid_api_key_123';
       const vpId = 'vp-123';
       const daemonId = 'daemon-456';
 
@@ -635,7 +635,7 @@ describe('Presence API', () => {
 
   describe('GET /api/daemon/health', () => {
     it('returns VP health status', async () => {
-      const apiKey = 'gns_valid_api_key_123';
+      const _apiKey = 'gns_valid_api_key_123';
       const vpId = 'vp-123';
 
       mockVPService.validateAPIKey.mockResolvedValue({
@@ -843,11 +843,11 @@ describe('Presence API', () => {
       getServerSession.mockResolvedValue(session);
 
       mockPresenceService.setUserStatus.mockRejectedValue(
-        new Error('Redis connection refused')
+        new Error('Redis connection refused'),
       );
 
       await expect(
-        mockPresenceService.setUserStatus(session.user.id, 'online')
+        mockPresenceService.setUserStatus(session.user.id, 'online'),
       ).rejects.toThrow('Redis connection refused');
     });
 
@@ -867,11 +867,11 @@ describe('Presence API', () => {
       getServerSession.mockResolvedValue(session);
 
       mockPresenceService.getUserPresence.mockRejectedValue(
-        new Error('Request timeout')
+        new Error('Request timeout'),
       );
 
       await expect(
-        mockPresenceService.getUserPresence('user-123')
+        mockPresenceService.getUserPresence('user-123'),
       ).rejects.toThrow('Request timeout');
     });
   });

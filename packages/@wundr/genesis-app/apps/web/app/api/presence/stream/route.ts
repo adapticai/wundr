@@ -27,8 +27,8 @@ import {
 } from '@/lib/validations/presence';
 
 import type { UserPresenceResponse, PresenceStatusType } from '@/lib/validations/presence';
-import type { NextRequest } from 'next/server';
 import type { UserStatus, Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 
 /** Time in ms after which a user is considered offline (5 minutes) */
 const OFFLINE_THRESHOLD_MS = 5 * 60 * 1000;
@@ -50,7 +50,9 @@ interface UserPreferences {
  * Check if user is online based on last activity
  */
 function isUserOnline(lastActiveAt: Date | null): boolean {
-  if (!lastActiveAt) return false;
+  if (!lastActiveAt) {
+return false;
+}
   return Date.now() - lastActiveAt.getTime() < OFFLINE_THRESHOLD_MS;
 }
 
@@ -149,7 +151,7 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
     if (!session?.user?.id) {
       return NextResponse.json(
         createPresenceErrorResponse('Authentication required', PRESENCE_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -162,9 +164,9 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
         createPresenceErrorResponse(
           'Validation failed',
           PRESENCE_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -188,9 +190,9 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
           createPresenceErrorResponse(
             'Access denied to some channels',
             PRESENCE_ERROR_CODES.FORBIDDEN,
-            { unauthorizedChannels }
+            { unauthorizedChannels },
           ),
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -209,8 +211,8 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
               timestamp: new Date().toISOString(),
               subscribedChannels: channelIds,
               subscribedUsers: userIds,
-            })
-          )
+            }),
+          ),
         );
 
         // Send initial presence state
@@ -229,7 +231,7 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
             const presence = buildPresenceResponse(user);
             previousPresence.set(user.id, presence);
             controller.enqueue(
-              encoder.encode(formatSSEMessage('presence:update', presence))
+              encoder.encode(formatSSEMessage('presence:update', presence)),
             );
           }
         }
@@ -265,8 +267,8 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
                   channelId: channel.id,
                   totalOnline: onlineUsers.length,
                   onlineUsers,
-                })
-              )
+                }),
+              ),
             );
 
             // Store member presence for change detection
@@ -283,7 +285,9 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
           try {
             // Get all tracked user IDs
             const trackedUserIds = Array.from(previousPresence.keys());
-            if (trackedUserIds.length === 0) return;
+            if (trackedUserIds.length === 0) {
+return;
+}
 
             // Fetch current presence
             const users = await prisma.user.findMany({
@@ -309,7 +313,7 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
                   prevPresence.customStatus !== currentPresence.customStatus)
               ) {
                 controller.enqueue(
-                  encoder.encode(formatSSEMessage('presence:update', currentPresence))
+                  encoder.encode(formatSSEMessage('presence:update', currentPresence)),
                 );
                 previousPresence.set(user.id, currentPresence);
               }
@@ -326,8 +330,8 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
               encoder.encode(
                 formatSSEMessage('heartbeat', {
                   timestamp: new Date().toISOString(),
-                })
-              )
+                }),
+              ),
             );
           } catch {
             // Connection closed, intervals will be cleaned up
@@ -357,9 +361,9 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
     return NextResponse.json(
       createPresenceErrorResponse(
         'An internal error occurred',
-        PRESENCE_ERROR_CODES.INTERNAL_ERROR
+        PRESENCE_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

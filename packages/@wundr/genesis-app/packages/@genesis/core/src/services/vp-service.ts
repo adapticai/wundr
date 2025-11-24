@@ -7,8 +7,28 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient, Prisma } from '@genesis/database';
 import { prisma } from '@genesis/database';
+
+import {
+  VPNotFoundError,
+  VPAlreadyExistsError,
+  VPValidationError,
+  APIKeyGenerationError,
+  OrganizationNotFoundError,
+  TransactionError,
+} from '../errors';
+import { DEFAULT_VP_CHARTER, isVPServiceAccountConfig } from '../types/vp';
+import {
+  generateVPEmail,
+  generateAPIKey,
+  hashAPIKey,
+  extractKeyPrefix,
+  isValidAPIKeyFormat,
+  verifyAPIKey,
+  isExpired,
+  deepMerge,
+  isValidEmail,
+} from '../utils';
 
 import type {
   VPWithUser,
@@ -22,26 +42,7 @@ import type {
   APIKeyValidationResult,
   VPServiceAccountConfig,
 } from '../types/vp';
-import { DEFAULT_VP_CHARTER, isVPServiceAccountConfig } from '../types/vp';
-import {
-  VPNotFoundError,
-  VPAlreadyExistsError,
-  VPValidationError,
-  APIKeyGenerationError,
-  OrganizationNotFoundError,
-  TransactionError,
-} from '../errors';
-import {
-  generateVPEmail,
-  generateAPIKey,
-  hashAPIKey,
-  extractKeyPrefix,
-  isValidAPIKeyFormat,
-  verifyAPIKey,
-  isExpired,
-  deepMerge,
-  isValidEmail,
-} from '../utils';
+import type { PrismaClient, Prisma } from '@genesis/database';
 
 // =============================================================================
 // VP Service Interface
@@ -308,7 +309,7 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
    */
   async listVPsByOrganization(
     orgId: string,
-    options: ListVPsOptions = {}
+    options: ListVPsOptions = {},
   ): Promise<PaginatedVPResult> {
     const {
       status,
@@ -401,7 +402,7 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
             const existingConfig = this.parseVPConfig(existing.user.vpConfig);
             const mergedCharter = deepMerge(
               existingConfig.charter ?? DEFAULT_VP_CHARTER,
-              data.charter
+              data.charter,
             );
             userUpdate.vpConfig = {
               ...existingConfig,
@@ -540,7 +541,7 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
     if (existingConfig.apiKeyHash && !existingConfig.apiKeyRevoked) {
       throw new APIKeyGenerationError(
         vpId,
-        'VP already has an active API key. Use rotateAPIKey to replace it.'
+        'VP already has an active API key. Use rotateAPIKey to replace it.',
       );
     }
 

@@ -27,6 +27,7 @@ import {
   type HttpClient,
   type IntegrationServiceConfig,
 } from '../integration-service';
+
 import type {
   IntegrationConfig,
   WebhookConfig,
@@ -121,7 +122,7 @@ function createMockDelivery(overrides: Partial<WebhookDelivery> = {}): WebhookDe
 
 function createTestService(
   httpClient?: HttpClient,
-  storage?: IntegrationStorage
+  storage?: IntegrationStorage,
 ): IntegrationServiceImpl {
   const config: IntegrationServiceConfig = {
     storage: storage ?? new InMemoryIntegrationStorage(),
@@ -201,7 +202,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.createIntegration(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError
+        IntegrationValidationError,
       );
     });
 
@@ -213,7 +214,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.createIntegration(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError
+        IntegrationValidationError,
       );
     });
 
@@ -225,7 +226,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.createIntegration(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError
+        IntegrationValidationError,
       );
     });
   });
@@ -323,7 +324,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(
-        service.updateIntegration('non_existent', { name: 'New' })
+        service.updateIntegration('non_existent', { name: 'New' }),
       ).rejects.toThrow(IntegrationNotFoundError);
     });
   });
@@ -358,7 +359,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(service.deleteIntegration('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError
+        IntegrationNotFoundError,
       );
     });
   });
@@ -393,7 +394,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.setOAuthToken('non_existent', token)).rejects.toThrow(
-        IntegrationNotFoundError
+        IntegrationNotFoundError,
       );
     });
   });
@@ -425,13 +426,13 @@ describe('IntegrationService', () => {
       await storage.createIntegration(mockIntegration);
 
       await expect(service.refreshOAuthToken(mockIntegration.id)).rejects.toThrow(
-        OAuthRefreshError
+        OAuthRefreshError,
       );
     });
 
     it('throws error when integration not found', async () => {
       await expect(service.refreshOAuthToken('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError
+        IntegrationNotFoundError,
       );
     });
   });
@@ -485,7 +486,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(service.testConnection('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError
+        IntegrationNotFoundError,
       );
     });
   });
@@ -519,7 +520,7 @@ describe('IntegrationService', () => {
 
     it('throws error when integration not found', async () => {
       await expect(service.syncIntegration('non_existent')).rejects.toThrow(
-        IntegrationNotFoundError
+        IntegrationNotFoundError,
       );
     });
   });
@@ -572,7 +573,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.createWebhook(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError
+        IntegrationValidationError,
       );
     });
 
@@ -585,7 +586,7 @@ describe('IntegrationService', () => {
       };
 
       await expect(service.createWebhook(input, 'user_123')).rejects.toThrow(
-        IntegrationValidationError
+        IntegrationValidationError,
       );
     });
   });
@@ -668,7 +669,7 @@ describe('IntegrationService', () => {
 
     it('throws error when webhook not found', async () => {
       await expect(
-        service.updateWebhook('non_existent', { name: 'New' })
+        service.updateWebhook('non_existent', { name: 'New' }),
       ).rejects.toThrow(WebhookNotFoundError);
     });
   });
@@ -686,7 +687,7 @@ describe('IntegrationService', () => {
 
     it('throws error when webhook not found', async () => {
       await expect(service.deleteWebhook('non_existent')).rejects.toThrow(
-        WebhookNotFoundError
+        WebhookNotFoundError,
       );
     });
   });
@@ -708,7 +709,7 @@ describe('IntegrationService', () => {
       const result = await service.triggerWebhook(
         mockWebhook.id,
         'message.created',
-        { message: 'test' }
+        { message: 'test' },
       );
 
       expect(result.status).toBe('success');
@@ -721,7 +722,7 @@ describe('IntegrationService', () => {
       await storage.createWebhook(mockWebhook);
 
       await expect(
-        service.triggerWebhook(mockWebhook.id, 'message.created', {})
+        service.triggerWebhook(mockWebhook.id, 'message.created', {}),
       ).rejects.toThrow(WebhookDeliveryError);
     });
 
@@ -730,13 +731,13 @@ describe('IntegrationService', () => {
       await storage.createWebhook(mockWebhook);
 
       await expect(
-        service.triggerWebhook(mockWebhook.id, 'message.deleted', {})
+        service.triggerWebhook(mockWebhook.id, 'message.deleted', {}),
       ).rejects.toThrow(WebhookDeliveryError);
     });
 
     it('throws error when webhook not found', async () => {
       await expect(
-        service.triggerWebhook('non_existent', 'message.created', {})
+        service.triggerWebhook('non_existent', 'message.created', {}),
       ).rejects.toThrow(WebhookNotFoundError);
     });
   });
@@ -872,7 +873,7 @@ describe('IntegrationService', () => {
 
     it('throws error when webhook not found', async () => {
       await expect(service.getDeliveryHistory('non_existent')).rejects.toThrow(
-        WebhookNotFoundError
+        WebhookNotFoundError,
       );
     });
   });

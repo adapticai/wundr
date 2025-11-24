@@ -175,7 +175,9 @@ export function createMockRedis(): MockRedis {
   // Helper to check if key is expired
   const isExpired = (key: string): boolean => {
     const expiry = store.ttls.get(key);
-    if (expiry === undefined) return false;
+    if (expiry === undefined) {
+return false;
+}
     return Date.now() >= expiry;
   };
 
@@ -210,10 +212,14 @@ export function createMockRedis(): MockRedis {
       async (
         key: string,
         value: string,
-        options?: { EX?: number; PX?: number; NX?: boolean; XX?: boolean }
+        options?: { EX?: number; PX?: number; NX?: boolean; XX?: boolean },
       ): Promise<'OK' | null> => {
-        if (options?.NX && store.strings.has(key)) return null;
-        if (options?.XX && !store.strings.has(key)) return null;
+        if (options?.NX && store.strings.has(key)) {
+return null;
+}
+        if (options?.XX && !store.strings.has(key)) {
+return null;
+}
 
         store.strings.set(key, value);
 
@@ -225,7 +231,7 @@ export function createMockRedis(): MockRedis {
         }
 
         return 'OK';
-      }
+      },
     ),
 
     del: vi.fn(async (...keys: string[]): Promise<number> => {
@@ -257,7 +263,7 @@ export function createMockRedis(): MockRedis {
           store.strings.set(key, value);
         }
         return 'OK';
-      }
+      },
     ),
 
     incr: vi.fn(async (key: string): Promise<number> => {
@@ -281,11 +287,13 @@ export function createMockRedis(): MockRedis {
         store.strings.set(key, value);
         store.ttls.set(key, Date.now() + seconds * 1000);
         return 'OK';
-      }
+      },
     ),
 
     setnx: vi.fn(async (key: string, value: string): Promise<number> => {
-      if (store.strings.has(key)) return 0;
+      if (store.strings.has(key)) {
+return 0;
+}
       store.strings.set(key, value);
       return 1;
     }),
@@ -304,7 +312,7 @@ export function createMockRedis(): MockRedis {
       async (
         key: string,
         field: string,
-        value: string
+        value: string,
       ): Promise<number> => {
         cleanExpired(key);
         let hash = store.hashes.get(key);
@@ -315,16 +323,20 @@ export function createMockRedis(): MockRedis {
         const isNew = !hash.has(field);
         hash.set(field, value);
         return isNew ? 1 : 0;
-      }
+      },
     ),
 
     hdel: vi.fn(async (key: string, ...fields: string[]): Promise<number> => {
       cleanExpired(key);
       const hash = store.hashes.get(key);
-      if (!hash) return 0;
+      if (!hash) {
+return 0;
+}
       let count = 0;
       for (const field of fields) {
-        if (hash.delete(field)) count++;
+        if (hash.delete(field)) {
+count++;
+}
       }
       return count;
     }),
@@ -333,9 +345,11 @@ export function createMockRedis(): MockRedis {
       async (key: string): Promise<Record<string, string> | null> => {
         cleanExpired(key);
         const hash = store.hashes.get(key);
-        if (!hash || hash.size === 0) return null;
+        if (!hash || hash.size === 0) {
+return null;
+}
         return Object.fromEntries(hash);
-      }
+      },
     ),
 
     hmset: vi.fn(
@@ -350,7 +364,7 @@ export function createMockRedis(): MockRedis {
           hash.set(field, value);
         }
         return 'OK';
-      }
+      },
     ),
 
     hmget: vi.fn(
@@ -358,7 +372,7 @@ export function createMockRedis(): MockRedis {
         cleanExpired(key);
         const hash = store.hashes.get(key);
         return fields.map((field) => hash?.get(field) ?? null);
-      }
+      },
     ),
 
     hincrby: vi.fn(
@@ -373,7 +387,7 @@ export function createMockRedis(): MockRedis {
         const newValue = current + increment;
         hash.set(field, String(newValue));
         return newValue;
-      }
+      },
     ),
 
     hexists: vi.fn(async (key: string, field: string): Promise<number> => {
@@ -424,10 +438,14 @@ export function createMockRedis(): MockRedis {
     srem: vi.fn(async (key: string, ...members: string[]): Promise<number> => {
       cleanExpired(key);
       const set = store.sets.get(key);
-      if (!set) return 0;
+      if (!set) {
+return 0;
+}
       let removed = 0;
       for (const member of members) {
-        if (set.delete(member)) removed++;
+        if (set.delete(member)) {
+removed++;
+}
       }
       return removed;
     }),
@@ -451,7 +469,9 @@ export function createMockRedis(): MockRedis {
     }),
 
     sdiff: vi.fn(async (...keys: string[]): Promise<string[]> => {
-      if (keys.length === 0) return [];
+      if (keys.length === 0) {
+return [];
+}
       const firstSet = store.sets.get(keys[0]) ?? new Set();
       const result = new Set(firstSet);
 
@@ -466,7 +486,9 @@ export function createMockRedis(): MockRedis {
     }),
 
     sinter: vi.fn(async (...keys: string[]): Promise<string[]> => {
-      if (keys.length === 0) return [];
+      if (keys.length === 0) {
+return [];
+}
       const firstSet = store.sets.get(keys[0]) ?? new Set();
       const result = new Set(firstSet);
 
@@ -515,21 +537,27 @@ export function createMockRedis(): MockRedis {
         for (let i = 0; i < scoreMembers.length; i += 2) {
           const score = scoreMembers[i] as number;
           const member = scoreMembers[i + 1] as string;
-          if (!sortedSet.has(member)) added++;
+          if (!sortedSet.has(member)) {
+added++;
+}
           sortedSet.set(member, score);
         }
 
         return added;
-      }
+      },
     ),
 
     zrem: vi.fn(async (key: string, ...members: string[]): Promise<number> => {
       cleanExpired(key);
       const sortedSet = store.sortedSets.get(key);
-      if (!sortedSet) return 0;
+      if (!sortedSet) {
+return 0;
+}
       let removed = 0;
       for (const member of members) {
-        if (sortedSet.delete(member)) removed++;
+        if (sortedSet.delete(member)) {
+removed++;
+}
       }
       return removed;
     }),
@@ -538,41 +566,47 @@ export function createMockRedis(): MockRedis {
       async (key: string, start: number, stop: number): Promise<string[]> => {
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
-        if (!sortedSet) return [];
+        if (!sortedSet) {
+return [];
+}
 
         const sorted = Array.from(sortedSet.entries()).sort(
-          (a, b) => a[1] - b[1]
+          (a, b) => a[1] - b[1],
         );
         const actualStop = stop < 0 ? sorted.length + stop + 1 : stop + 1;
         return sorted.slice(start, actualStop).map(([member]) => member);
-      }
+      },
     ),
 
     zrangebyscore: vi.fn(
       async (key: string, min: number, max: number): Promise<string[]> => {
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
-        if (!sortedSet) return [];
+        if (!sortedSet) {
+return [];
+}
 
         return Array.from(sortedSet.entries())
           .filter(([, score]) => score >= min && score <= max)
           .sort((a, b) => a[1] - b[1])
           .map(([member]) => member);
-      }
+      },
     ),
 
     zrevrange: vi.fn(
       async (key: string, start: number, stop: number): Promise<string[]> => {
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
-        if (!sortedSet) return [];
+        if (!sortedSet) {
+return [];
+}
 
         const sorted = Array.from(sortedSet.entries()).sort(
-          (a, b) => b[1] - a[1]
+          (a, b) => b[1] - a[1],
         );
         const actualStop = stop < 0 ? sorted.length + stop + 1 : stop + 1;
         return sorted.slice(start, actualStop).map(([member]) => member);
-      }
+      },
     ),
 
     zscore: vi.fn(
@@ -581,7 +615,7 @@ export function createMockRedis(): MockRedis {
         const sortedSet = store.sortedSets.get(key);
         const score = sortedSet?.get(member);
         return score !== undefined ? String(score) : null;
-      }
+      },
     ),
 
     zcard: vi.fn(async (key: string): Promise<number> => {
@@ -594,13 +628,15 @@ export function createMockRedis(): MockRedis {
       async (key: string, member: string): Promise<number | null> => {
         cleanExpired(key);
         const sortedSet = store.sortedSets.get(key);
-        if (!sortedSet || !sortedSet.has(member)) return null;
+        if (!sortedSet || !sortedSet.has(member)) {
+return null;
+}
 
         const sorted = Array.from(sortedSet.entries()).sort(
-          (a, b) => a[1] - b[1]
+          (a, b) => a[1] - b[1],
         );
         return sorted.findIndex(([m]) => m === member);
-      }
+      },
     ),
 
     // ==========================================================================
@@ -621,7 +657,7 @@ export function createMockRedis(): MockRedis {
       // Notify pattern subscribers
       for (const [pattern, callbacks] of patternSubscriptions) {
         const regex = new RegExp(
-          '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$'
+          '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
         );
         if (regex.test(channel)) {
           for (const callback of callbacks) {
@@ -641,7 +677,7 @@ export function createMockRedis(): MockRedis {
           subscriptions.set(channel, subs);
         }
         subs.add(callback);
-      }
+      },
     ),
 
     unsubscribe: vi.fn(async (channel: string): Promise<void> => {
@@ -651,7 +687,7 @@ export function createMockRedis(): MockRedis {
     psubscribe: vi.fn(
       async (
         pattern: string,
-        callback: PatternSubscriptionCallback
+        callback: PatternSubscriptionCallback,
       ): Promise<void> => {
         let subs = patternSubscriptions.get(pattern);
         if (!subs) {
@@ -659,7 +695,7 @@ export function createMockRedis(): MockRedis {
           patternSubscriptions.set(pattern, subs);
         }
         subs.add(callback);
-      }
+      },
     ),
 
     punsubscribe: vi.fn(async (pattern: string): Promise<void> => {
@@ -677,7 +713,9 @@ export function createMockRedis(): MockRedis {
         store.sets.has(key) ||
         store.sortedSets.has(key);
 
-      if (!keyExists) return 0;
+      if (!keyExists) {
+return 0;
+}
       store.ttls.set(key, Date.now() + seconds * 1000);
       return 1;
     }),
@@ -689,7 +727,9 @@ export function createMockRedis(): MockRedis {
         store.sets.has(key) ||
         store.sortedSets.has(key);
 
-      if (!keyExists) return 0;
+      if (!keyExists) {
+return 0;
+}
       store.ttls.set(key, timestamp * 1000);
       return 1;
     }),
@@ -701,22 +741,32 @@ export function createMockRedis(): MockRedis {
         store.sets.has(key) ||
         store.sortedSets.has(key);
 
-      if (!keyExists) return 0;
+      if (!keyExists) {
+return 0;
+}
       store.ttls.set(key, Date.now() + milliseconds);
       return 1;
     }),
 
     ttl: vi.fn(async (key: string): Promise<number> => {
       const expiry = store.ttls.get(key);
-      if (expiry === undefined) return -1;
-      if (Date.now() >= expiry) return -2;
+      if (expiry === undefined) {
+return -1;
+}
+      if (Date.now() >= expiry) {
+return -2;
+}
       return Math.ceil((expiry - Date.now()) / 1000);
     }),
 
     pttl: vi.fn(async (key: string): Promise<number> => {
       const expiry = store.ttls.get(key);
-      if (expiry === undefined) return -1;
-      if (Date.now() >= expiry) return -2;
+      if (expiry === undefined) {
+return -1;
+}
+      if (Date.now() >= expiry) {
+return -2;
+}
       return expiry - Date.now();
     }),
 
@@ -750,7 +800,7 @@ export function createMockRedis(): MockRedis {
 
     keys: vi.fn(async (pattern: string): Promise<string[]> => {
       const regex = new RegExp(
-        '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$'
+        '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
       );
 
       const allKeys = new Set([
@@ -769,7 +819,7 @@ export function createMockRedis(): MockRedis {
     scan: vi.fn(
       async (
         cursor: number,
-        options?: { MATCH?: string; COUNT?: number }
+        options?: { MATCH?: string; COUNT?: number },
       ): Promise<{ cursor: number; keys: string[] }> => {
         const pattern = options?.MATCH ?? '*';
         const count = options?.COUNT ?? 10;
@@ -783,15 +833,23 @@ export function createMockRedis(): MockRedis {
           cursor: nextCursor,
           keys: matchingKeys.slice(start, end),
         };
-      }
+      },
     ),
 
     type: vi.fn(async (key: string): Promise<string> => {
       cleanExpired(key);
-      if (store.strings.has(key)) return 'string';
-      if (store.hashes.has(key)) return 'hash';
-      if (store.sets.has(key)) return 'set';
-      if (store.sortedSets.has(key)) return 'zset';
+      if (store.strings.has(key)) {
+return 'string';
+}
+      if (store.hashes.has(key)) {
+return 'hash';
+}
+      if (store.sets.has(key)) {
+return 'set';
+}
+      if (store.sortedSets.has(key)) {
+return 'zset';
+}
       return 'none';
     }),
 

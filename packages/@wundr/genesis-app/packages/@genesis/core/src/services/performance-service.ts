@@ -10,15 +10,26 @@ import type {
   PerformanceMetric,
   CoreWebVitals,
   PerformanceRating,
-  WEB_VITALS_THRESHOLDS,
   QueryMetrics,
   ApiMetrics,
   RenderMetrics,
   MemoizationConfig,
 } from '../types/performance';
 
-/** LRU Cache implementation */
-export class LRUCache<T = unknown> {
+/**
+ * LRU (Least Recently Used) Cache implementation.
+ * Provides efficient caching with automatic eviction of least recently accessed items.
+ *
+ * @typeParam T - The type of values stored in the cache
+ *
+ * @example
+ * ```typescript
+ * const cache = new LRUCache<User>({ ttl: 60000, maxSize: 100 });
+ * cache.set('user:123', userData);
+ * const user = cache.get('user:123');
+ * ```
+ */
+export class LRUCache<T> {
   private cache: Map<string, CacheEntry<T>> = new Map();
   private stats: CacheStats = {
     hits: 0,
@@ -126,7 +137,9 @@ export class LRUCache<T = unknown> {
   /** Check if key exists */
   has(key: string): boolean {
     const entry = this.cache.get(key);
-    if (!entry) return false;
+    if (!entry) {
+return false;
+}
     if (Date.now() > entry.expiresAt) {
       this.cache.delete(key);
       this.stats.size--;
@@ -213,8 +226,12 @@ export class MetricsCollector {
     };
 
     const threshold = thresholds[name];
-    if (value <= threshold.good) return 'good';
-    if (value <= threshold.needsImprovement) return 'needs-improvement';
+    if (value <= threshold.good) {
+return 'good';
+}
+    if (value <= threshold.needsImprovement) {
+return 'needs-improvement';
+}
     return 'poor';
   }
 
@@ -331,7 +348,7 @@ export class MetricsCollector {
 /** Memoization utility */
 export function memoize<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  config: Partial<MemoizationConfig> = {}
+  config: Partial<MemoizationConfig> = {},
 ): T {
   const { maxSize = 100, ttl = 60000, keyGenerator } = config;
   const cache = new LRUCache<ReturnType<T>>({ ttl, maxSize });
@@ -353,7 +370,7 @@ export function memoize<T extends (...args: unknown[]) => unknown>(
 /** Debounce utility */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -371,7 +388,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 /** Throttle utility */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let lastCall = 0;
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -397,11 +414,30 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
   };
 }
 
-/** Request deduplication */
+/**
+ * Request deduplication utility.
+ * Prevents duplicate concurrent requests by returning the same promise
+ * for identical requests made within a specified time window.
+ *
+ * @example
+ * ```typescript
+ * const dedup = new RequestDeduplicator(100);
+ * // These will return the same promise if called within 100ms
+ * const result1 = await dedup.dedupe('user:123', () => fetchUser(123));
+ * const result2 = await dedup.dedupe('user:123', () => fetchUser(123));
+ * ```
+ */
 export class RequestDeduplicator {
+  /** Map of pending requests by key */
   private pending: Map<string, Promise<unknown>> = new Map();
+  /** Time window in milliseconds for deduplication */
   private windowMs: number;
 
+  /**
+   * Creates a new RequestDeduplicator instance.
+   *
+   * @param windowMs - Time window in milliseconds to keep completed requests for deduplication
+   */
   constructor(windowMs: number = 100) {
     this.windowMs = windowMs;
   }
@@ -441,7 +477,7 @@ export class BatchProcessor<T, R> {
 
   constructor(
     private processor: (items: T[]) => Promise<R[]>,
-    private options: { maxSize: number; maxWait: number } = { maxSize: 50, maxWait: 10 }
+    private options: { maxSize: number; maxWait: number } = { maxSize: 50, maxWait: 10 },
   ) {}
 
   /** Add item to batch */
@@ -464,7 +500,9 @@ export class BatchProcessor<T, R> {
       this.timeoutId = null;
     }
 
-    if (this.queue.length === 0) return;
+    if (this.queue.length === 0) {
+return;
+}
 
     const batch = this.queue.splice(0, this.options.maxSize);
     const items = batch.map(b => b.item);
@@ -481,7 +519,7 @@ export class BatchProcessor<T, R> {
 /** Performance observer wrapper */
 export function observePerformance(
   entryTypes: string[],
-  callback: (entries: PerformanceEntry[]) => void
+  callback: (entries: PerformanceEntry[]) => void,
 ): (() => void) | null {
   if (typeof PerformanceObserver === 'undefined') {
     return null;
@@ -499,10 +537,30 @@ export function observePerformance(
   }
 }
 
-/** Create performance service instance */
+/**
+ * Main performance service providing caching, metrics collection, and request deduplication.
+ * Acts as a facade for all performance-related utilities.
+ *
+ * @example
+ * ```typescript
+ * const perfService = new PerformanceService({ ttl: 300000, maxSize: 1000 });
+ *
+ * // Use caching
+ * perfService.getCache().set('key', value);
+ *
+ * // Measure operations
+ * const result = await perfService.measure('fetchUsers', () => api.getUsers());
+ *
+ * // Get performance report
+ * const report = perfService.getReport();
+ * ```
+ */
 export class PerformanceService {
-  private cache: LRUCache;
+  /** LRU cache instance for general caching */
+  private cache: LRUCache<unknown>;
+  /** Metrics collector instance */
   private metrics: MetricsCollector;
+  /** Request deduplicator instance */
   private deduplicator: RequestDeduplicator;
 
   constructor(cacheConfig?: Partial<CacheConfig>) {
@@ -515,22 +573,42 @@ export class PerformanceService {
     this.deduplicator = new RequestDeduplicator();
   }
 
-  /** Get cache */
-  getCache(): LRUCache {
+  /**
+   * Gets the LRU cache instance.
+   *
+   * @returns The cache instance for storing and retrieving cached values
+   */
+  getCache(): LRUCache<unknown> {
     return this.cache;
   }
 
-  /** Get metrics collector */
+  /**
+   * Gets the metrics collector instance.
+   *
+   * @returns The metrics collector for recording performance metrics
+   */
   getMetrics(): MetricsCollector {
     return this.metrics;
   }
 
-  /** Get request deduplicator */
+  /**
+   * Gets the request deduplicator instance.
+   *
+   * @returns The request deduplicator for preventing duplicate concurrent requests
+   */
   getDeduplicator(): RequestDeduplicator {
     return this.deduplicator;
   }
 
-  /** Measure async operation */
+  /**
+   * Measures the execution time of an async operation.
+   *
+   * @typeParam T - The return type of the operation
+   * @param name - The name of the metric to record
+   * @param fn - The async function to measure
+   * @param tags - Optional tags to attach to the metric
+   * @returns The result of the async operation
+   */
   async measure<T>(name: string, fn: () => Promise<T>, tags?: Record<string, string>): Promise<T> {
     const start = performance.now();
     try {
@@ -543,7 +621,11 @@ export class PerformanceService {
     }
   }
 
-  /** Get performance report */
+  /**
+   * Generates a comprehensive performance report.
+   *
+   * @returns Performance report containing cache stats, web vitals, API metrics, and more
+   */
   getReport(): {
     cache: CacheStats;
     webVitals: Partial<CoreWebVitals>;

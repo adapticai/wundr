@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation';
+import { prisma } from '@genesis/database';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
-import { prisma } from '@genesis/database';
 import { cn } from '@/lib/utils';
 
 import type { Metadata } from 'next';
@@ -117,7 +117,7 @@ function AdminNavItem({ href, label, icon: Icon }: NavItemProps) {
       className={cn(
         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium',
         'text-muted-foreground hover:bg-accent hover:text-foreground',
-        'transition-colors'
+        'transition-colors',
       )}
     >
       <Icon className="h-4 w-4" />
@@ -131,7 +131,7 @@ interface MobileAdminNavProps {
   navItems: NavItemProps[];
 }
 
-function MobileAdminNav({ workspaceId, navItems }: MobileAdminNavProps) {
+function MobileAdminNav({ workspaceId: _workspaceId, navItems }: MobileAdminNavProps) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background lg:hidden">
       <nav className="flex justify-around px-2 py-2">

@@ -1,15 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import type { Message, User } from '@/types/chat';
-import {
-  useMessages,
-  useSendMessage,
-  useChannel,
-  useTypingIndicator,
-  useThread,
-} from '@/hooks/use-chat';
+import { useState, useCallback } from 'react';
+
+
 import {
   MessageList,
   MessageInput,
@@ -17,6 +11,15 @@ import {
   TypingIndicator,
 } from '@/components/chat';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import {
+  useMessages,
+  useSendMessage,
+  useChannel,
+  useTypingIndicator,
+  useThread,
+} from '@/hooks/use-chat';
+
+import type { Message, User } from '@/types/chat';
 
 // Mock current user - in production, this comes from auth
 const MOCK_CURRENT_USER: User = {
@@ -53,7 +56,7 @@ export default function ChannelPage() {
   // Typing indicator
   const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
     channelId,
-    MOCK_CURRENT_USER.id
+    MOCK_CURRENT_USER.id,
   );
 
   // Thread state
@@ -68,7 +71,7 @@ export default function ChannelPage() {
     async (content: string, mentions: string[], attachments: File[]) => {
       const { optimisticId, message } = await sendMessage(
         { content, channelId, mentions, attachments },
-        MOCK_CURRENT_USER
+        MOCK_CURRENT_USER,
       );
 
       // Add optimistic message
@@ -95,17 +98,19 @@ export default function ChannelPage() {
         removeOptimisticMessage(optimisticId);
       }
     },
-    [channelId, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage]
+    [channelId, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
   );
 
   // Handle send thread reply
   const handleSendThreadReply = useCallback(
     async (content: string, mentions: string[], attachments: File[]) => {
-      if (!activeThreadId) return;
+      if (!activeThreadId) {
+return;
+}
 
       const { optimisticId } = await sendMessage(
         { content, channelId, parentId: activeThreadId, mentions, attachments },
-        MOCK_CURRENT_USER
+        MOCK_CURRENT_USER,
       );
 
       // Add optimistic reply
@@ -129,7 +134,7 @@ export default function ChannelPage() {
         replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
       });
     },
-    [activeThreadId, channelId, sendMessage, addOptimisticReply, updateOptimisticMessage, messages]
+    [activeThreadId, channelId, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
   );
 
   // Handle edit message
@@ -140,7 +145,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(message.id, result);
       }
     },
-    [editMessage, updateOptimisticMessage]
+    [editMessage, updateOptimisticMessage],
   );
 
   // Handle delete message
@@ -151,7 +156,7 @@ export default function ChannelPage() {
         removeOptimisticMessage(messageId);
       }
     },
-    [deleteMessage, removeOptimisticMessage]
+    [deleteMessage, removeOptimisticMessage],
   );
 
   // Handle reaction toggle
@@ -159,7 +164,9 @@ export default function ChannelPage() {
     async (messageId: string, emoji: string) => {
       // Optimistic update
       const message = messages.find((m) => m.id === messageId);
-      if (!message) return;
+      if (!message) {
+return;
+}
 
       const existingReaction = message.reactions.find((r) => r.emoji === emoji);
       let updatedReactions = [...message.reactions];
@@ -178,7 +185,7 @@ export default function ChannelPage() {
                     hasReacted: false,
                     users: r.users.filter((u) => u.id !== MOCK_CURRENT_USER.id),
                   }
-                : r
+                : r,
             );
           }
         } else {
@@ -191,7 +198,7 @@ export default function ChannelPage() {
                   hasReacted: true,
                   users: [...r.users, MOCK_CURRENT_USER],
                 }
-              : r
+              : r,
           );
         }
       } else {
@@ -218,7 +225,7 @@ export default function ChannelPage() {
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
-    [messages, updateOptimisticMessage]
+    [messages, updateOptimisticMessage],
   );
 
   // Handle reply (open thread)

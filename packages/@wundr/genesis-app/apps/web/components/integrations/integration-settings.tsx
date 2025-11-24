@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { IntegrationConfig } from '@/types/integration';
 import { INTEGRATION_PROVIDERS, INTEGRATION_STATUS_CONFIG } from '@/types/integration';
+
+import type { IntegrationConfig } from '@/types/integration';
 
 export interface IntegrationSettingsProps {
   integration: IntegrationConfig;
@@ -110,7 +112,9 @@ export function IntegrationSettings({
     setChannelMappings((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

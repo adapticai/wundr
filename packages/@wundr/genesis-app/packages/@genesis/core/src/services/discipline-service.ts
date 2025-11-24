@@ -8,7 +8,6 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient, Prisma } from '@genesis/database';
 import { prisma } from '@genesis/database';
 
 import {
@@ -26,7 +25,7 @@ import type {
   ListDisciplinesOptions,
   PaginatedDisciplineResult,
 } from '../types/organization';
-import type { VP } from '@genesis/database';
+import type { PrismaClient, Prisma , VP } from '@genesis/database';
 
 // =============================================================================
 // Custom Errors
@@ -41,7 +40,7 @@ export class DisciplineNotFoundError extends GenesisError {
       `Discipline not found with ${identifierType}: ${identifier}`,
       'DISCIPLINE_NOT_FOUND',
       404,
-      { identifier, identifierType }
+      { identifier, identifierType },
     );
     this.name = 'DisciplineNotFoundError';
   }
@@ -56,7 +55,7 @@ export class DisciplineAlreadyExistsError extends GenesisError {
       `Discipline '${name}' already exists in organization`,
       'DISCIPLINE_ALREADY_EXISTS',
       409,
-      { name, organizationId }
+      { name, organizationId },
     );
     this.name = 'DisciplineAlreadyExistsError';
   }
@@ -84,7 +83,7 @@ export class VPNotFoundError extends GenesisError {
       `VP not found: ${vpId}`,
       'VP_NOT_FOUND',
       404,
-      { vpId }
+      { vpId },
     );
     this.name = 'VPNotFoundError';
   }
@@ -444,7 +443,7 @@ export class DisciplineServiceImpl implements DisciplineService {
 
     // Sort by name
     return Array.from(disciplineMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
+      a.name.localeCompare(b.name),
     );
   }
 
@@ -457,7 +456,7 @@ export class DisciplineServiceImpl implements DisciplineService {
    */
   async listDisciplinesWithPagination(
     orgId: string,
-    options: ListDisciplinesOptions = {}
+    options: ListDisciplinesOptions = {},
   ): Promise<PaginatedDisciplineResult> {
     const {
       includeEmpty = true,

@@ -352,6 +352,33 @@ export type DaemonEventType =
   | 'system.reconnect_required';
 
 /**
+ * Event payload data for daemon events.
+ * Contains event-specific data with known key types.
+ */
+export interface DaemonEventPayload {
+  /** Message ID (for message events) */
+  messageId?: string;
+  /** Channel ID (for channel events) */
+  channelId?: string;
+  /** User ID (for user/presence events) */
+  userId?: string;
+  /** Call ID (for call events) */
+  callId?: string;
+  /** Status value (for status events) */
+  status?: string;
+  /** Status text description */
+  statusText?: string;
+  /** Reaction value (for reaction events) */
+  reaction?: string;
+  /** Content data */
+  content?: string;
+  /** Timestamp data */
+  timestamp?: string;
+  /** Additional event-specific data */
+  [key: string]: string | number | boolean | undefined;
+}
+
+/**
  * Base daemon event structure.
  */
 export interface DaemonEvent {
@@ -367,8 +394,8 @@ export interface DaemonEvent {
   /** VP ID the event is for */
   vpId: string;
 
-  /** Event payload */
-  payload: Record<string, unknown>;
+  /** Event payload with structured data */
+  payload: DaemonEventPayload;
 
   /** When the event was created */
   timestamp: Date;
@@ -502,7 +529,9 @@ export function isDaemonScope(value: string): value is DaemonScope {
  * Check if a value is a valid daemon token.
  */
 export function isDaemonToken(value: unknown): value is DaemonToken {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const token = value as Record<string, unknown>;
   return (
     typeof token.token === 'string' &&
@@ -519,7 +548,9 @@ export function isDaemonToken(value: unknown): value is DaemonToken {
  * Check if a value is a valid daemon session.
  */
 export function isDaemonSession(value: unknown): value is DaemonSession {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const session = value as Record<string, unknown>;
   return (
     typeof session.id === 'string' &&
@@ -534,7 +565,9 @@ export function isDaemonSession(value: unknown): value is DaemonSession {
  * Check if a value is a valid daemon event.
  */
 export function isDaemonEvent(value: unknown): value is DaemonEvent {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== 'object' || value === null) {
+return false;
+}
   const event = value as Record<string, unknown>;
   return (
     typeof event.id === 'string' &&

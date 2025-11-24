@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   LiveKitRoom,
   RoomAudioRenderer,
   useTracks,
   useRoomContext,
 } from '@livekit/components-react';
-import { Track, RoomEvent } from 'livekit-client';
 import { clsx } from 'clsx';
-import { ParticipantTile } from './participant-tile';
+import { Track, RoomEvent } from 'livekit-client';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+
+import { useLocalMedia, useCallDuration } from '@/hooks/use-call';
+
 import { CallControls } from './call-controls';
 import { CallHeader } from './call-header';
-import { useLocalMedia, useCallDuration } from '@/hooks/use-call';
+import { ParticipantTile } from './participant-tile';
 
 export type LayoutMode = 'grid' | 'spotlight' | 'sidebar';
 
@@ -70,18 +72,18 @@ function VideoRoomInner({
       { source: Track.Source.Camera, withPlaceholder: true },
       { source: Track.Source.ScreenShare, withPlaceholder: false },
     ],
-    { onlySubscribed: false }
+    { onlySubscribed: false },
   );
 
   // Separate camera and screen share tracks
   const cameraTracks = useMemo(
     () => tracks.filter((t) => t.source === Track.Source.Camera),
-    [tracks]
+    [tracks],
   );
 
   const screenShareTracks = useMemo(
     () => tracks.filter((t) => t.source === Track.Source.ScreenShare),
-    [tracks]
+    [tracks],
   );
 
   // Get participants
@@ -168,7 +170,7 @@ function VideoRoomInner({
   // Get pinned participant
   const pinnedParticipant = useMemo(
     () => participants.find((p) => p.participant?.sid === pinnedParticipantId),
-    [participants, pinnedParticipantId]
+    [participants, pinnedParticipantId],
   );
 
   // Get featured participant (pinned, screen sharer, or active speaker)
@@ -186,9 +188,11 @@ function VideoRoomInner({
 
   // Get other participants (excluding featured)
   const otherParticipants = useMemo(() => {
-    if (!featuredParticipant?.participant) return participants;
+    if (!featuredParticipant?.participant) {
+return participants;
+}
     return participants.filter(
-      (p) => p.participant?.sid !== featuredParticipant.participant?.sid
+      (p) => p.participant?.sid !== featuredParticipant.participant?.sid,
     );
   }, [participants, featuredParticipant]);
 
@@ -280,7 +284,7 @@ function VideoRoomInner({
                   key={trackRef.participant?.sid || 'unknown'}
                   className={clsx(
                     'flex items-center gap-3 p-2 rounded-lg',
-                    'hover:bg-muted transition-colors'
+                    'hover:bg-muted transition-colors',
                   )}
                 >
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
@@ -333,7 +337,7 @@ function VideoRoomInner({
             onClick={() => setLayout('grid')}
             className={clsx(
               'p-2 rounded transition-colors',
-              layout === 'grid' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+              layout === 'grid' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
             )}
             aria-label="Grid layout"
             aria-pressed={layout === 'grid'}
@@ -358,7 +362,7 @@ function VideoRoomInner({
             onClick={() => setLayout('spotlight')}
             className={clsx(
               'p-2 rounded transition-colors',
-              layout === 'spotlight' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+              layout === 'spotlight' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
             )}
             aria-label="Spotlight layout"
             aria-pressed={layout === 'spotlight'}

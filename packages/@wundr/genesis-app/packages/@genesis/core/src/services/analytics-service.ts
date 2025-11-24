@@ -26,6 +26,13 @@
  * ```
  */
 
+import {
+  DEFAULT_ANALYTICS_BATCH_SIZE,
+  DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS,
+  ANALYTICS_REDIS_KEYS,
+  ANALYTICS_REDIS_TTL_SECONDS,
+} from '../types/analytics';
+
 import type {
   AnalyticsEvent,
   AnalyticsQuery,
@@ -42,81 +49,215 @@ import type {
   InsightHighlight,
   InsightRecommendation,
 } from '../types/analytics';
-import {
-  DEFAULT_ANALYTICS_BATCH_SIZE,
-  DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS,
-  ANALYTICS_REDIS_KEYS,
-  ANALYTICS_REDIS_TTL_SECONDS,
-} from '../types/analytics';
 
 // =============================================================================
 // DATABASE CLIENT INTERFACES
 // =============================================================================
 
 /**
- * Analytics event database delegate interface
+ * Input data for creating an analytics event in the database.
  */
-export interface AnalyticsEventDelegate {
-  createMany(args: { data: Array<Record<string, unknown>> }): Promise<{ count: number }>;
-  findMany(args: {
-    where: Record<string, unknown>;
-    orderBy?: Record<string, unknown>;
-    take?: number;
-    skip?: number;
-  }): Promise<Array<Record<string, unknown>>>;
-  count(args: { where: Record<string, unknown> }): Promise<number>;
+export interface AnalyticsEventCreateInput {
+  workspaceId: string;
+  userId?: string | null;
+  vpId?: string | null;
+  eventType: string;
+  eventData: string;
+  sessionId?: string | null;
+  timestamp: Date;
+  metadata?: string | null;
 }
 
 /**
- * Database client interface for analytics
+ * Raw analytics event record from the database.
+ */
+export interface AnalyticsEventRecord {
+  id: string;
+  workspaceId: string;
+  userId?: string | null;
+  vpId?: string | null;
+  eventType: string;
+  eventData: string;
+  sessionId?: string | null;
+  timestamp: Date;
+  metadata?: string | null;
+}
+
+/**
+ * Where clause for filtering analytics events.
+ */
+export interface AnalyticsEventWhereInput {
+  workspaceId?: string;
+  userId?: string;
+  vpId?: string;
+  eventType?: string | { in: string[] };
+  timestamp?: { gte?: Date; lte?: Date };
+}
+
+/**
+ * Order by clause for analytics event queries.
+ */
+export interface AnalyticsEventOrderByInput {
+  timestamp?: 'asc' | 'desc';
+  eventType?: 'asc' | 'desc';
+}
+
+/**
+ * Analytics event database delegate interface.
+ */
+export interface AnalyticsEventDelegate {
+  /**
+   * Creates multiple analytics events in a batch.
+   */
+  createMany(args: { data: AnalyticsEventCreateInput[] }): Promise<{ count: number }>;
+  /**
+   * Finds multiple analytics events matching the criteria.
+   */
+  findMany(args: {
+    where: AnalyticsEventWhereInput;
+    orderBy?: AnalyticsEventOrderByInput;
+    take?: number;
+    skip?: number;
+  }): Promise<AnalyticsEventRecord[]>;
+  /**
+   * Counts analytics events matching the criteria.
+   */
+  count(args: { where: AnalyticsEventWhereInput }): Promise<number>;
+}
+
+/**
+ * Where clause for filtering messages.
+ */
+export interface MessageWhereInput {
+  channel?: { workspaceId: string };
+  createdAt?: { gte?: Date; lte?: Date };
+  threadId?: { not?: null } | null;
+}
+
+/**
+ * Where clause for filtering workspace members.
+ */
+export interface WorkspaceMemberWhereInput {
+  workspaceId?: string;
+  createdAt?: { gte?: Date; lte?: Date };
+}
+
+/**
+ * Where clause for filtering channels.
+ */
+export interface ChannelWhereInput {
+  workspaceId?: string;
+  isPrivate?: boolean;
+  createdAt?: { gte?: Date; lte?: Date };
+}
+
+/**
+ * Where clause for filtering attachments.
+ */
+export interface AttachmentWhereInput {
+  message?: { channel?: { workspaceId: string } };
+  createdAt?: { gte?: Date; lte?: Date };
+}
+
+/**
+ * Aggregation result for attachments.
+ */
+export interface AttachmentAggregateResult {
+  _count?: number;
+  _sum: { fileSize: number | null };
+  _avg: { fileSize: number | null };
+}
+
+/**
+ * Where clause for filtering VPs.
+ */
+export interface VPWhereInput {
+  workspaceId?: string;
+  status?: string;
+}
+
+/**
+ * Where clause for filtering reactions.
+ */
+export interface ReactionWhereInput {
+  message?: { channel?: { workspaceId: string } };
+  createdAt?: { gte?: Date; lte?: Date };
+}
+
+/**
+ * Database client interface for analytics.
+ * Abstracts the Prisma client for dependency injection and testing.
  */
 export interface AnalyticsDatabaseClient {
+  /** Analytics event delegate (optional - may not exist in schema yet) */
   analyticsEvent?: AnalyticsEventDelegate;
+  /** Message count operations */
   message: {
-    count(args: { where: Record<string, unknown> }): Promise<number>;
+    count(args: { where: MessageWhereInput }): Promise<number>;
   };
+  /** Workspace member count operations */
   workspaceMember: {
-    count(args: { where: Record<string, unknown> }): Promise<number>;
+    count(args: { where: WorkspaceMemberWhereInput }): Promise<number>;
   };
+  /** Channel count operations */
   channel: {
-    count(args: { where: Record<string, unknown> }): Promise<number>;
+    count(args: { where: ChannelWhereInput }): Promise<number>;
   };
+  /** Attachment operations */
   attachment: {
-    count(args: { where: Record<string, unknown> }): Promise<number>;
+    count(args: { where: AttachmentWhereInput }): Promise<number>;
     aggregate(args: {
-      where: Record<string, unknown>;
+      where: AttachmentWhereInput;
       _count?: boolean;
-      _sum?: Record<string, boolean>;
-      _avg?: Record<string, boolean>;
-    }): Promise<{
-      _count?: number;
-      _sum: Record<string, number | null>;
-      _avg: Record<string, number | null>;
-    }>;
+      _sum?: { fileSize: boolean };
+      _avg?: { fileSize: boolean };
+    }): Promise<AttachmentAggregateResult>;
   };
+  /** VP count operations */
   vP: {
-    count(args: { where: Record<string, unknown> }): Promise<number>;
+    count(args: { where: VPWhereInput }): Promise<number>;
   };
+  /** Reaction count operations */
   reaction: {
-    count(args: { where: Record<string, unknown> }): Promise<number>;
+    count(args: { where: ReactionWhereInput }): Promise<number>;
   };
+  /** Execute raw SQL query */
   $queryRaw<T>(query: TemplateStringsArray, ...values: unknown[]): Promise<T>;
 }
 
 /**
- * Redis client interface for analytics
+ * Redis pipeline operation result.
+ */
+export type RedisPipelineResult = [Error | null, number | string | string[] | null];
+
+/**
+ * Redis pipeline interface for batching commands.
+ */
+export interface RedisPipeline {
+  /** Increment hash field by integer */
+  hincrby(key: string, field: string, increment: number): RedisPipeline;
+  /** Add members to a set */
+  sadd(key: string, ...members: string[]): RedisPipeline;
+  /** Set key expiration */
+  expire(key: string, seconds: number): RedisPipeline;
+  /** Execute all queued commands */
+  exec(): Promise<RedisPipelineResult[]>;
+}
+
+/**
+ * Redis client interface for analytics real-time counters.
  */
 export interface AnalyticsRedisClient {
+  /** Increment hash field by integer */
   hincrby(key: string, field: string, increment: number): Promise<number>;
+  /** Get all fields and values in a hash */
   hgetall(key: string): Promise<Record<string, string>>;
+  /** Add members to a set */
   sadd(key: string, ...members: string[]): Promise<number>;
+  /** Set key expiration time */
   expire(key: string, seconds: number): Promise<number>;
-  pipeline(): {
-    hincrby(key: string, field: string, increment: number): unknown;
-    sadd(key: string, ...members: string[]): unknown;
-    expire(key: string, seconds: number): unknown;
-    exec(): Promise<Array<[Error | null, unknown]>>;
-  };
+  /** Create a pipeline for batching commands */
+  pipeline(): RedisPipeline;
 }
 
 // =============================================================================
@@ -216,7 +357,9 @@ export class AnalyticsServiceImpl implements AnalyticsService {
       this.flushTimeout = null;
     }
 
-    if (this.eventQueue.length === 0) return;
+    if (this.eventQueue.length === 0) {
+return;
+}
 
     const events = [...this.eventQueue];
     this.eventQueue = [];
@@ -241,7 +384,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
       this.eventQueue.push(...events);
       throw new AnalyticsFlushError(
         `Failed to flush analytics events: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        events.length
+        events.length,
       );
     }
   }
@@ -311,7 +454,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
   private async getMessageMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<MessageMetrics> {
     const [totalMessages, byDay, byChannel, byUser, threads, reactions] = await Promise.all([
       this.prisma.message.count({
@@ -370,7 +513,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
 
     const days = Math.max(
       1,
-      Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+      Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
     );
 
     return {
@@ -394,7 +537,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
   private async getUserMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<UserMetrics> {
     const [totalMembers, newUsers, activeUsers, dailyActive, topContributors] = await Promise.all([
       this.prisma.workspaceMember.count({ where: { workspaceId } }),
@@ -458,7 +601,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
   private async getChannelMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ChannelMetrics> {
     const [total, publicCount, newChannels, mostActive] = await Promise.all([
       this.prisma.channel.count({ where: { workspaceId } }),
@@ -510,7 +653,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
   private async getFileMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<FileMetrics> {
     const [stats, byType, topUploaders] = await Promise.all([
       this.prisma.attachment.aggregate({
@@ -568,7 +711,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
   private async getCallMetrics(
     _workspaceId: string,
     _startDate: Date,
-    _endDate: Date
+    _endDate: Date,
   ): Promise<CallMetrics> {
     // Would require Call model - returning placeholder
     return {
@@ -587,7 +730,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
   private async getVPMetrics(
     workspaceId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<VPMetrics> {
     const [totalVPs, activeVPs, vpMessages] = await Promise.all([
       this.prisma.vP.count({ where: { workspaceId } }),
@@ -634,7 +777,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
     workspaceId: string,
     metric: string,
     currentPeriod: { start: Date; end: Date },
-    previousPeriod: { start: Date; end: Date }
+    previousPeriod: { start: Date; end: Date },
   ): Promise<TrendData> {
     const [current, previous] = await Promise.all([
       this.getMetricValue(workspaceId, metric, currentPeriod.start, currentPeriod.end),
@@ -660,7 +803,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
     workspaceId: string,
     metric: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<number> {
     switch (metric) {
       case 'messages':
@@ -770,7 +913,7 @@ export class AnalyticsServiceImpl implements AnalyticsService {
   getPeriodDates(
     period: AnalyticsPeriod,
     customStart?: Date,
-    customEnd?: Date
+    customEnd?: Date,
   ): { startDate: Date; endDate: Date } {
     const now = new Date();
     let startDate: Date;

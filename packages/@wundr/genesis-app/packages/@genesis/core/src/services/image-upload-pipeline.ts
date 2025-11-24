@@ -7,8 +7,19 @@
  * @packageDocumentation
  */
 
-import type { PrismaClient } from '@genesis/database';
 import { prisma } from '@genesis/database';
+
+import {
+  ImageValidationError,
+  createImageService,
+  type ImageService,
+} from './image-service';
+import {
+  DEFAULT_VARIANTS,
+  DEFAULT_VALIDATION_OPTIONS,
+  IMAGE_MIME_TYPES,
+} from '../types/image';
+import { generateCUID } from '../utils';
 
 import type {
   ImageUploadInput,
@@ -19,17 +30,7 @@ import type {
   VariantConfig,
   ImageFormat,
 } from '../types/image';
-import {
-  DEFAULT_VARIANTS,
-  DEFAULT_VALIDATION_OPTIONS,
-  IMAGE_MIME_TYPES,
-} from '../types/image';
-import {
-  ImageValidationError,
-  createImageService,
-  type ImageService,
-} from './image-service';
-import { generateCUID } from '../utils';
+import type { PrismaClient } from '@genesis/database';
 
 // =============================================================================
 // S3 Client Interface (to be implemented by consumer)
@@ -154,19 +155,67 @@ export class DatabaseRecordError extends ImageUploadError {
 // =============================================================================
 
 /**
+ * Variant metadata stored in file record.
+ * Contains the S3 key and public URL for each generated variant.
+ */
+interface VariantMetadata {
+  /** S3 object key for the variant */
+  key: string;
+  /** Public URL of the variant */
+  url: string;
+}
+
+/**
+ * File record metadata structure.
+ * Contains image-specific metadata and variant information.
+ */
+interface FileRecordMetadata {
+  /** Image width in pixels */
+  width: number;
+  /** Image height in pixels */
+  height: number;
+  /** Image format (jpeg, png, webp, etc.) */
+  format: string;
+  /** Whether image has alpha channel */
+  hasAlpha: boolean;
+  /** Whether image is animated (GIF, APNG) */
+  isAnimated: boolean;
+  /** Organization ID the file belongs to */
+  organizationId: string;
+  /** Optional channel ID if uploaded to a channel */
+  channelId?: string;
+  /** Optional message ID if attached to a message */
+  messageId?: string;
+  /** Generated variants with their S3 keys and URLs */
+  variants: Record<string, VariantMetadata>;
+  /** Additional custom metadata provided during upload */
+  [key: string]: unknown;
+}
+
+/**
  * Internal representation of file record from database.
  */
 interface FileRecord {
+  /** Unique file identifier */
   id: string;
+  /** Sanitized filename with extension */
   filename: string;
+  /** Original filename as uploaded */
   originalName: string;
+  /** MIME type of the file */
   mimeType: string;
+  /** File size in bytes */
   size: bigint;
+  /** S3 object key for the original file */
   s3Key: string;
+  /** S3 bucket name */
   s3Bucket: string;
+  /** URL of the thumbnail variant */
   thumbnailUrl: string | null;
+  /** Creation timestamp */
   createdAt: Date;
-  metadata: unknown;
+  /** File metadata including variants */
+  metadata: FileRecordMetadata;
 }
 
 /**
@@ -256,13 +305,13 @@ export class ImageUploadPipeline {
     // 1. Validate image
     const validationResult = await this.imageService.validateImage(
       input.buffer,
-      this.config.validationOptions
+      this.config.validationOptions,
     );
 
     if (!validationResult.valid) {
       throw new ImageValidationError(
         'Image validation failed',
-        validationResult.errors
+        validationResult.errors,
       );
     }
 
@@ -279,14 +328,14 @@ export class ImageUploadPipeline {
     const variantConfigs = input.variants ?? this.config.defaultVariants;
     const variants = await this.imageService.generateVariants(
       processedBuffer,
-      variantConfigs
+      variantConfigs,
     );
 
     // Also optimize the original
     const originalVariant = await this.createOriginalVariant(
       processedBuffer,
       metadata,
-      validationResult.detectedFormat ?? 'jpeg'
+      validationResult.detectedFormat ?? 'jpeg',
     );
 
     // 5. Generate file ID and paths
@@ -299,7 +348,7 @@ export class ImageUploadPipeline {
       basePath,
       originalVariant,
       variants,
-      input.filename
+      input.filename,
     );
 
     // 7. Create database record
@@ -307,7 +356,7 @@ export class ImageUploadPipeline {
       fileId,
       input,
       uploadedVariants,
-      metadata
+      metadata,
     );
 
     // 8. Build and return result
@@ -330,7 +379,7 @@ export class ImageUploadPipeline {
     }
 
     // Parse variants from metadata
-    const variantKeys = this.extractVariantKeys(file.metadata as Record<string, unknown>);
+    const variantKeys = this.extractVariantKeys(file.metadata as FileRecordMetadata);
 
     // Delete from S3
     const deletePromises: Promise<void>[] = [];
@@ -360,7 +409,7 @@ export class ImageUploadPipeline {
    */
   async getSignedUrls(
     fileId: string,
-    expiresIn = 3600
+    expiresIn = 3600,
   ): Promise<{ original: string; variants: Record<string, string> }> {
     const file = await this.prisma.file.findUnique({
       where: { id: fileId },
@@ -370,7 +419,7 @@ export class ImageUploadPipeline {
       throw new ImageUploadError(`File not found: ${fileId}`, 'FILE_NOT_FOUND');
     }
 
-    const variantKeys = this.extractVariantKeys(file.metadata as Record<string, unknown>);
+    const variantKeys = this.extractVariantKeys(file.metadata as FileRecordMetadata);
 
     const [originalUrl, ...variantUrls] = await Promise.all([
       this.s3Client.getSignedUrl(file.s3Key, expiresIn),
@@ -378,7 +427,7 @@ export class ImageUploadPipeline {
     ]);
 
     const variants: Record<string, string> = {};
-    const variantNames = this.extractVariantNames(file.metadata as Record<string, unknown>);
+    const variantNames = this.extractVariantNames(file.metadata as FileRecordMetadata);
     variantUrls.forEach((url, index) => {
       const name = variantNames[index];
       if (name) {
@@ -402,7 +451,7 @@ export class ImageUploadPipeline {
   private async createOriginalVariant(
     buffer: Buffer,
     metadata: ImageMetadata,
-    format: ImageFormat
+    format: ImageFormat,
   ): Promise<ImageVariant> {
     const optimizedBuffer = await this.imageService.optimizeImage(buffer, {
       format: this.config.preferredFormat ?? format,
@@ -425,7 +474,7 @@ export class ImageUploadPipeline {
   private generateBasePath(
     input: ImageUploadInput,
     fileId: string,
-    timestamp: number
+    timestamp: number,
   ): string {
     const parts = [this.config.bucketPrefix, input.organizationId];
 
@@ -442,7 +491,7 @@ export class ImageUploadPipeline {
     parts.push(
       date.getUTCFullYear().toString(),
       (date.getUTCMonth() + 1).toString().padStart(2, '0'),
-      date.getUTCDate().toString().padStart(2, '0')
+      date.getUTCDate().toString().padStart(2, '0'),
     );
 
     parts.push(fileId);
@@ -457,7 +506,7 @@ export class ImageUploadPipeline {
     basePath: string,
     original: ImageVariant,
     variants: ImageVariant[],
-    originalFilename: string
+    originalFilename: string,
   ): Promise<UploadedVariants> {
     const extension = this.getExtension(original.format);
     const baseFilename = this.sanitizeFilename(originalFilename);
@@ -467,7 +516,7 @@ export class ImageUploadPipeline {
     const originalUrl = await this.uploadToS3(
       originalKey,
       original.buffer,
-      IMAGE_MIME_TYPES[original.format]
+      IMAGE_MIME_TYPES[original.format],
     );
 
     // Upload variants
@@ -480,7 +529,7 @@ export class ImageUploadPipeline {
         const url = await this.uploadToS3(
           variantKey,
           variant.buffer,
-          IMAGE_MIME_TYPES[variant.format]
+          IMAGE_MIME_TYPES[variant.format],
         );
 
         variantResults[variant.name ?? 'unknown'] = { key: variantKey, url };
@@ -489,7 +538,7 @@ export class ImageUploadPipeline {
         if (variant.name === 'thumb_md') {
           thumbnailResult = { key: variantKey, url };
         }
-      })
+      }),
     );
 
     // Fallback if no thumb_md
@@ -512,7 +561,7 @@ export class ImageUploadPipeline {
   private async uploadToS3(
     key: string,
     buffer: Buffer,
-    contentType: string
+    contentType: string,
   ): Promise<string> {
     try {
       return await this.s3Client.upload(key, buffer, contentType);
@@ -529,7 +578,7 @@ export class ImageUploadPipeline {
     fileId: string,
     input: ImageUploadInput,
     uploadedVariants: UploadedVariants,
-    metadata: ImageMetadata
+    metadata: ImageMetadata,
   ): Promise<FileRecord> {
     try {
       const sanitizedFilename = this.sanitizeFilename(input.filename);
@@ -563,11 +612,12 @@ export class ImageUploadPipeline {
         },
       });
 
-      return record as FileRecord;
+      // Cast through unknown to handle Prisma's JsonValue type for metadata
+      return record as unknown as FileRecord;
     } catch (error) {
       throw new DatabaseRecordError(
         'create file record',
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -578,7 +628,7 @@ export class ImageUploadPipeline {
   private buildResult(
     fileRecord: FileRecord,
     uploadedVariants: UploadedVariants,
-    metadata: ImageMetadata
+    metadata: ImageMetadata,
   ): ImageUploadResult {
     const variants: Record<string, string> = {};
     for (const [name, data] of Object.entries(uploadedVariants.variants)) {
@@ -629,19 +679,29 @@ export class ImageUploadPipeline {
 
   /**
    * Extracts variant S3 keys from file metadata.
+   *
+   * @param metadata - File record metadata containing variants
+   * @returns Array of S3 keys for all variants
    */
-  private extractVariantKeys(metadata: Record<string, unknown>): string[] {
-    const variants = metadata['variants'] as Record<string, { key: string }> | undefined;
-    if (!variants) return [];
+  private extractVariantKeys(metadata: FileRecordMetadata): string[] {
+    const variants = metadata.variants;
+    if (!variants) {
+      return [];
+    }
     return Object.values(variants).map((v) => v.key);
   }
 
   /**
    * Extracts variant names from file metadata.
+   *
+   * @param metadata - File record metadata containing variants
+   * @returns Array of variant names
    */
-  private extractVariantNames(metadata: Record<string, unknown>): string[] {
-    const variants = metadata['variants'] as Record<string, { key: string }> | undefined;
-    if (!variants) return [];
+  private extractVariantNames(metadata: FileRecordMetadata): string[] {
+    const variants = metadata.variants;
+    if (!variants) {
+      return [];
+    }
     return Object.keys(variants);
   }
 }
@@ -657,7 +717,7 @@ export class ImageUploadPipeline {
  * @returns ImageUploadPipeline instance
  */
 export function createImageUploadPipeline(
-  config: ImageUploadPipelineConfig
+  config: ImageUploadPipelineConfig,
 ): ImageUploadPipeline {
   return new ImageUploadPipeline(config);
 }

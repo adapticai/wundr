@@ -1,19 +1,22 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-/** Accessibility preferences */
+/** Accessibility preferences - matches @genesis/core/types AccessibilityPreferences */
 export interface A11yPreferences {
   reduceMotion: boolean;
   highContrast: boolean;
   largeText: boolean;
+  screenReaderMode: boolean;
   focusIndicators: 'default' | 'enhanced';
+  colorBlindMode?: 'protanopia' | 'deuteranopia' | 'tritanopia';
 }
 
 const defaultPreferences: A11yPreferences = {
   reduceMotion: false,
   highContrast: false,
   largeText: false,
+  screenReaderMode: false,
   focusIndicators: 'default',
 };
 
@@ -43,7 +46,9 @@ export function A11yProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         setPreferences(prev => ({ ...prev, ...JSON.parse(saved) }));
-      } catch {}
+      } catch {
+        // Ignore JSON parse errors for corrupted localStorage
+      }
     }
   }, []);
 
@@ -70,7 +75,9 @@ export function A11yProvider({ children }: { children: ReactNode }) {
 
 export function useA11y() {
   const context = useContext(A11yContext);
-  if (!context) throw new Error('useA11y must be used within A11yProvider');
+  if (!context) {
+throw new Error('useA11y must be used within A11yProvider');
+}
   return context;
 }
 
@@ -95,7 +102,7 @@ export function VisuallyHidden({ children }: { children: ReactNode }) {
 export function LiveRegion({ 
   children, 
   politeness = 'polite',
-  atomic = true 
+  atomic = true, 
 }: { 
   children: ReactNode; 
   politeness?: 'off' | 'polite' | 'assertive';
@@ -111,17 +118,21 @@ export function LiveRegion({
 /** Focus trap for modals */
 export function useFocusTrap(containerRef: React.RefObject<HTMLElement>, active: boolean) {
   useEffect(() => {
-    if (!active || !containerRef.current) return;
+    if (!active || !containerRef.current) {
+return;
+}
 
     const container = containerRef.current;
     const focusableElements = container.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== 'Tab') {
+return;
+}
 
       if (e.shiftKey && document.activeElement === firstElement) {
         e.preventDefault();

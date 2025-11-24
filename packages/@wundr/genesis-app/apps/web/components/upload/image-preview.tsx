@@ -55,7 +55,7 @@ export function ImagePreview({
         'group relative overflow-hidden rounded-lg border bg-card',
         'transition-all duration-200',
         onClick && 'cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2',
-        className
+        className,
       )}
     >
       {/* Image Container */}
@@ -103,7 +103,7 @@ export function ImagePreview({
             onError={handleImageError}
             className={cn(
               'h-full w-full object-cover transition-opacity duration-300',
-              isLoading ? 'opacity-0' : 'opacity-100'
+              isLoading ? 'opacity-0' : 'opacity-100',
             )}
           />
         )}
@@ -114,7 +114,7 @@ export function ImagePreview({
             className={cn(
               'absolute inset-0 flex items-center justify-center',
               'bg-black/40 opacity-0 transition-opacity duration-200',
-              'group-hover:opacity-100'
+              'group-hover:opacity-100',
             )}
           >
             <svg
@@ -160,7 +160,7 @@ export function ImagePreview({
             'opacity-0 transition-opacity duration-200',
             'hover:bg-black/70',
             'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white',
-            'group-hover:opacity-100'
+            'group-hover:opacity-100',
           )}
           aria-label={`Remove ${file.name}`}
         >

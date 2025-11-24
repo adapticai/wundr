@@ -62,7 +62,7 @@ const REGISTER_ERROR_CODES = {
 function createErrorResponse(
   message: string,
   code: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ) {
   return {
     error: {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } catch {
       return NextResponse.json(
         createErrorResponse('Invalid JSON body', REGISTER_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -127,9 +127,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createErrorResponse(
           'Validation failed',
           REGISTER_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors }
+          { errors: parseResult.error.flatten().fieldErrors },
         ),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!apiKey.startsWith('gns_')) {
       return NextResponse.json(
         createErrorResponse('Invalid API key', REGISTER_ERROR_CODES.UNAUTHORIZED),
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
         message: 'Daemon registered successfully',
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error('[POST /api/daemon/register] Error:', error);
@@ -185,15 +185,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json(
           createErrorResponse(
             'Daemon already registered for this VP',
-            REGISTER_ERROR_CODES.DAEMON_ALREADY_REGISTERED
+            REGISTER_ERROR_CODES.DAEMON_ALREADY_REGISTERED,
           ),
-          { status: 409 }
+          { status: 409 },
         );
       }
       if (error.message.includes('VP not found')) {
         return NextResponse.json(
           createErrorResponse('VP not found', REGISTER_ERROR_CODES.VP_NOT_FOUND),
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -201,9 +201,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       createErrorResponse(
         'An internal error occurred',
-        REGISTER_ERROR_CODES.INTERNAL_ERROR
+        REGISTER_ERROR_CODES.INTERNAL_ERROR,
       ),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { useChannel, useChannelMembers, useChannelMutations, useChannelPermissions } from '@/hooks/use-channel';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useState, useCallback, useEffect } from 'react';
+
 import { InviteDialog } from '@/components/channel/invite-dialog';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useChannel, useChannelMembers, useChannelMutations, useChannelPermissions } from '@/hooks/use-channel';
+import { cn } from '@/lib/utils';
+
 import type { ChannelMember } from '@/types/channel';
 
 type Tab = 'overview' | 'members' | 'permissions' | 'advanced';
@@ -34,7 +36,7 @@ export default function ChannelSettingsPage() {
     useChannelMembers(channelId);
   const { permissions, isLoading: isPermissionsLoading } = useChannelPermissions(
     channelId,
-    MOCK_CURRENT_USER_ID
+    MOCK_CURRENT_USER_ID,
   );
   const {
     updateChannel,
@@ -66,7 +68,7 @@ export default function ChannelSettingsPage() {
         refetchMembers();
       }
     },
-    [channelId, inviteMembers, refetchMembers]
+    [channelId, inviteMembers, refetchMembers],
   );
 
   const handleRemoveMember = useCallback(
@@ -76,7 +78,7 @@ export default function ChannelSettingsPage() {
         refetchMembers();
       }
     },
-    [channelId, removeMember, refetchMembers]
+    [channelId, removeMember, refetchMembers],
   );
 
   const handleChangeRole = useCallback(
@@ -86,7 +88,7 @@ export default function ChannelSettingsPage() {
         refetchMembers();
       }
     },
-    [channelId, changeMemberRole, refetchMembers]
+    [channelId, changeMemberRole, refetchMembers],
   );
 
   if (isLoading) {
@@ -136,7 +138,7 @@ export default function ChannelSettingsPage() {
                   'w-full rounded-md px-3 py-2 text-left text-sm font-medium transition-colors',
                   activeTab === tab.id
                     ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-background/50 hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-background/50 hover:text-foreground',
                 )}
               >
                 {tab.label}

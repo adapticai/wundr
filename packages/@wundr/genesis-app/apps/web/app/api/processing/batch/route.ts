@@ -9,9 +9,10 @@
  * @module app/api/processing/batch/route
  */
 
+import crypto from 'crypto';
+
 import { prisma } from '@genesis/database';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 import { auth } from '@/lib/auth';
 import {
@@ -22,10 +23,11 @@ import {
   supportsOCR,
   supportsConversion,
 } from '@/lib/validations/processing';
+
 import { processingJobs } from '../route';
 
-import type { NextRequest } from 'next/server';
 import type { BatchProcessingInput } from '@/lib/validations/processing';
+import type { NextRequest } from 'next/server';
 
 /**
  * Check if processing type is supported for the given file

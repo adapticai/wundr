@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
-import type { Message, User } from '@/types/chat';
+
 import { ReactionDisplay } from './reaction-display';
 import { ReactionPickerTrigger } from './reaction-picker';
+
+import type { Message, User } from '@/types/chat';
 
 interface MessageItemProps {
   message: Message;
@@ -44,7 +47,7 @@ export function MessageItem({
         hour: 'numeric',
         minute: '2-digit',
       }),
-    [message.createdAt]
+    [message.createdAt],
   );
 
   const formattedDate = useMemo(() => {
@@ -70,7 +73,7 @@ export function MessageItem({
     (emoji: string) => {
       onReaction?.(message.id, emoji);
     },
-    [message.id, onReaction]
+    [message.id, onReaction],
   );
 
   const handleSaveEdit = useCallback(() => {
@@ -119,7 +122,7 @@ export function MessageItem({
       <div
         className={cn(
           'group relative px-4 py-2 transition-colors hover:bg-accent/50',
-          className
+          className,
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -283,14 +286,14 @@ function MessageContent({ content }: MessageContentProps) {
     while ((match = codeBlockRegex.exec(content)) !== null) {
       if (match.index > lastIndex) {
         result.push(
-          <span key={key++}>{parseInlineContent(content.slice(lastIndex, match.index))}</span>
+          <span key={key++}>{parseInlineContent(content.slice(lastIndex, match.index))}</span>,
         );
       }
 
       const language = match[1] || 'text';
       const code = match[2];
       result.push(
-        <CodeBlock key={key++} language={language} code={code.trim()} />
+        <CodeBlock key={key++} language={language} code={code.trim()} />,
       );
 
       lastIndex = match.index + match[0].length;
@@ -298,7 +301,7 @@ function MessageContent({ content }: MessageContentProps) {
 
     if (lastIndex < content.length) {
       result.push(
-        <span key={key++}>{parseInlineContent(content.slice(lastIndex))}</span>
+        <span key={key++}>{parseInlineContent(content.slice(lastIndex))}</span>,
       );
     }
 
@@ -386,8 +389,12 @@ interface AttachmentPreviewProps {
 
 function AttachmentPreview({ attachment }: AttachmentPreviewProps) {
   const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+return `${bytes} B`;
+}
+    if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
@@ -439,7 +446,7 @@ function ActionButton({ icon, title, onClick, className }: ActionButtonProps) {
       title={title}
       className={cn(
         'rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground',
-        className
+        className,
       )}
     >
       {icon}

@@ -9,6 +9,7 @@
  */
 
 import { vi } from 'vitest';
+
 import type {
   VPCharter,
   VPPersonality,
@@ -58,7 +59,7 @@ export function resetIdCounter(): void {
  * Create mock personality traits
  */
 export function createMockPersonality(
-  overrides?: Partial<VPPersonality>
+  overrides?: Partial<VPPersonality>,
 ): VPPersonality {
   return {
     tone: 'professional',
@@ -74,7 +75,7 @@ export function createMockPersonality(
  * Create mock communication preferences
  */
 export function createMockCommunicationPreferences(
-  overrides?: Partial<VPCommunicationPreferences>
+  overrides?: Partial<VPCommunicationPreferences>,
 ): VPCommunicationPreferences {
   return {
     responseLength: 'moderate',
@@ -90,7 +91,7 @@ export function createMockCommunicationPreferences(
  * Create mock operational config
  */
 export function createMockOperationalConfig(
-  overrides?: Partial<VPOperationalConfig>
+  overrides?: Partial<VPOperationalConfig>,
 ): VPOperationalConfig {
   return {
     workHours: {
@@ -226,7 +227,7 @@ export function createMockUser(overrides?: Partial<MockUser>): MockUser {
  */
 export function createMockVPWithUser(
   vpOverrides?: Partial<MockVP>,
-  userOverrides?: Partial<MockUser>
+  userOverrides?: Partial<MockUser>,
 ): MockVPWithUser {
   const vp = createMockVP(vpOverrides);
   const user = createMockUser({
@@ -245,7 +246,7 @@ export function createMockVPWithUser(
  */
 export function createMockVPList(
   count: number,
-  overrides?: Partial<MockVP>
+  overrides?: Partial<MockVP>,
 ): MockVPWithUser[] {
   return Array.from({ length: count }, (_, index) =>
     createMockVPWithUser(
@@ -255,8 +256,8 @@ export function createMockVPList(
       {
         name: `Test VP ${index + 1}`,
         displayName: `Test VP ${index + 1}`,
-      }
-    )
+      },
+    ),
   );
 }
 
@@ -268,7 +269,7 @@ export function createMockVPList(
  * Create a mock API key generation result
  */
 export function createMockAPIKeyResult(
-  overrides?: Partial<APIKeyGenerationResult>
+  overrides?: Partial<APIKeyGenerationResult>,
 ): APIKeyGenerationResult {
   const key = `gns_${generateTestId('key')}`;
   return {
@@ -283,7 +284,7 @@ export function createMockAPIKeyResult(
  * Create a mock VP service account config
  */
 export function createMockServiceAccountConfig(
-  overrides?: Partial<VPServiceAccountConfig>
+  overrides?: Partial<VPServiceAccountConfig>,
 ): VPServiceAccountConfig {
   return {
     apiKeyHash: undefined,
@@ -312,7 +313,7 @@ export interface MockDiscipline {
  * Create a mock discipline
  */
 export function createMockDiscipline(
-  overrides?: Partial<MockDiscipline>
+  overrides?: Partial<MockDiscipline>,
 ): MockDiscipline {
   const id = overrides?.id ?? generateCuid();
 
@@ -366,7 +367,7 @@ export function createMockDisciplineList(): MockDiscipline[] {
  * Create a mock CreateVPInput
  */
 export function createMockCreateVPInput(
-  overrides?: Partial<CreateVPInput>
+  overrides?: Partial<CreateVPInput>,
 ): CreateVPInput {
   return {
     name: 'New Test VP',
@@ -388,7 +389,7 @@ export function createMockCreateVPInput(
  * Create a mock UpdateVPInput
  */
 export function createMockUpdateVPInput(
-  overrides?: Partial<UpdateVPInput>
+  overrides?: Partial<UpdateVPInput>,
 ): UpdateVPInput {
   return {
     name: 'Updated VP Name',
@@ -416,7 +417,7 @@ export interface MockOrganization {
  * Create a mock organization
  */
 export function createMockOrganization(
-  overrides?: Partial<MockOrganization>
+  overrides?: Partial<MockOrganization>,
 ): MockOrganization {
   const id = overrides?.id ?? generateCuid();
   const now = new Date();
@@ -533,7 +534,7 @@ export function createMockPrismaClient(): MockPrismaClient {
             },
           };
           return callback(tx);
-        }
+        },
       ),
     $connect: vi.fn(),
     $disconnect: vi.fn(),

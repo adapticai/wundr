@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface WorkspaceSettings {
@@ -97,7 +98,7 @@ const LANGUAGES = [
 ];
 
 export function SettingsForm({
-  workspaceId,
+  workspaceId: _workspaceId,
   initialSettings,
   onSave,
   className,
@@ -127,7 +128,7 @@ export function SettingsForm({
   const updateSettings = useCallback(
     <K extends keyof WorkspaceSettings>(
       section: K,
-      updates: Partial<WorkspaceSettings[K]>
+      updates: Partial<WorkspaceSettings[K]>,
     ) => {
       setSettings((prev) => ({
         ...prev,
@@ -135,7 +136,7 @@ export function SettingsForm({
       }));
       setErrors({});
     },
-    []
+    [],
   );
 
   const validate = useCallback((): boolean => {
@@ -158,7 +159,9 @@ export function SettingsForm({
   }, [settings]);
 
   const handleSave = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+return;
+}
 
     setIsSaving(true);
     try {
@@ -190,7 +193,7 @@ export function SettingsForm({
                 'pb-3 text-sm font-medium border-b-2 transition-colors',
                 activeTab === tab.id
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
               aria-selected={activeTab === tab.id}
             >
@@ -245,7 +248,7 @@ export function SettingsForm({
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium',
               'bg-muted text-muted-foreground hover:bg-muted/80',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             Reset
@@ -257,7 +260,7 @@ export function SettingsForm({
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium',
               'bg-primary text-primary-foreground hover:bg-primary/90',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
@@ -291,7 +294,7 @@ function GeneralSettings({
           className={cn(
             'w-full max-w-md px-3 py-2 rounded-lg',
             'bg-muted border text-foreground',
-            errors['general.name'] ? 'border-destructive' : 'border-border'
+            errors['general.name'] ? 'border-destructive' : 'border-border',
           )}
           placeholder="My Workspace"
         />
@@ -376,7 +379,7 @@ function SecurityTabSettings({
           onClick={() => onChange({ mfaRequired: !settings.mfaRequired })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.mfaRequired ? 'bg-primary' : 'bg-muted'
+            settings.mfaRequired ? 'bg-primary' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.mfaRequired}
@@ -384,7 +387,7 @@ function SecurityTabSettings({
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.mfaRequired ? 'translate-x-5' : 'translate-x-0'
+              settings.mfaRequired ? 'translate-x-5' : 'translate-x-0',
             )}
           />
         </button>
@@ -414,7 +417,7 @@ function SecurityTabSettings({
           onChange={(e) => onChange({ passwordMinLength: parseInt(e.target.value) || 6 })}
           className={cn(
             'w-32 px-3 py-2 rounded-lg bg-muted border text-foreground',
-            errors['security.passwordMinLength'] ? 'border-destructive' : 'border-border'
+            errors['security.passwordMinLength'] ? 'border-destructive' : 'border-border',
           )}
           min={6}
           max={32}
@@ -455,7 +458,7 @@ function MessagingSettings({
           onClick={() => onChange({ allowEditing: !settings.allowEditing })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.allowEditing ? 'bg-primary' : 'bg-muted'
+            settings.allowEditing ? 'bg-primary' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.allowEditing}
@@ -463,7 +466,7 @@ function MessagingSettings({
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.allowEditing ? 'translate-x-5' : 'translate-x-0'
+              settings.allowEditing ? 'translate-x-5' : 'translate-x-0',
             )}
           />
         </button>
@@ -480,7 +483,7 @@ function MessagingSettings({
             onChange={(e) => onChange({ editWindowMinutes: parseInt(e.target.value) || 0 })}
             className={cn(
               'w-32 px-3 py-2 rounded-lg bg-muted border text-foreground',
-              errors['messaging.editWindowMinutes'] ? 'border-destructive' : 'border-border'
+              errors['messaging.editWindowMinutes'] ? 'border-destructive' : 'border-border',
             )}
             min={0}
           />
@@ -504,7 +507,7 @@ function MessagingSettings({
           onClick={() => onChange({ allowDeletion: !settings.allowDeletion })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.allowDeletion ? 'bg-primary' : 'bg-muted'
+            settings.allowDeletion ? 'bg-primary' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.allowDeletion}
@@ -512,7 +515,7 @@ function MessagingSettings({
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.allowDeletion ? 'translate-x-5' : 'translate-x-0'
+              settings.allowDeletion ? 'translate-x-5' : 'translate-x-0',
             )}
           />
         </button>
@@ -538,7 +541,7 @@ function MessagingSettings({
 // Notification settings section
 function NotificationSettings({
   settings,
-  errors,
+  errors: _errors,
   onChange,
 }: {
   settings: WorkspaceSettings['notifications'];
@@ -561,7 +564,7 @@ function NotificationSettings({
           onClick={() => onChange({ defaultSound: !settings.defaultSound })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.defaultSound ? 'bg-primary' : 'bg-muted'
+            settings.defaultSound ? 'bg-primary' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.defaultSound}
@@ -569,7 +572,7 @@ function NotificationSettings({
           <span
             className={cn(
               'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform',
-              settings.defaultSound ? 'translate-x-5' : 'translate-x-0'
+              settings.defaultSound ? 'translate-x-5' : 'translate-x-0',
             )}
           />
         </button>
