@@ -9,7 +9,10 @@
  *   createMockVP,
  *   createMockVPWithUser,
  *   createMockPrismaClient,
- *   VPFactories
+ *   VPFactories,
+ *   createMockMessage,
+ *   createMockReaction,
+ *   MessageFactories
  * } from '../test-utils';
  * ```
  *
@@ -17,3 +20,4 @@
  */
 
 export * from './vp-factories';
+export * from './message-factories';

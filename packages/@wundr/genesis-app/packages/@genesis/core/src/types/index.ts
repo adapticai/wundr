@@ -53,6 +53,64 @@ export {
 } from './vp';
 
 // =============================================================================
+// Message Types
+// =============================================================================
+
+export type {
+  // Core message types
+  MessageWithAuthor,
+  MessageWithRelations,
+  ReactionWithUser,
+
+  // Input types
+  SendMessageInput,
+  UpdateMessageInput,
+
+  // Query types
+  MessageQueryOptions,
+  PaginatedMessages,
+
+  // Reaction types
+  ReactionCount,
+  AddReactionResult,
+
+  // Thread types
+  ThreadSummary,
+
+  // Event types
+  MessageEventType,
+  BaseMessageEvent,
+  MessageCreatedEvent,
+  MessageUpdatedEvent,
+  MessageDeletedEvent,
+  ReactionAddedEvent,
+  ReactionRemovedEvent,
+  ThreadUpdatedEvent,
+  MessageEvent,
+
+  // Callback types
+  OnMessageCreatedCallback,
+  OnMessageUpdatedCallback,
+  OnMessageDeletedCallback,
+  OnReactionAddedCallback,
+  OnReactionRemovedCallback,
+} from './message';
+
+export {
+  // Type guards
+  isMessageWithAuthor,
+  isMessageWithRelations,
+  isValidSendMessageInput,
+
+  // Constants
+  DEFAULT_MESSAGE_QUERY_OPTIONS,
+  MAX_MESSAGE_LIMIT,
+  MAX_MESSAGE_CONTENT_LENGTH,
+  MAX_REACTIONS_PER_MESSAGE,
+  MESSAGE_TYPES,
+} from './message';
+
+// =============================================================================
 // Re-export Database Types
 // =============================================================================
 
@@ -64,10 +122,12 @@ export type {
   Workspace,
   Channel,
   Message,
+  Reaction,
   Session,
   VPStatus,
   UserStatus,
   OrganizationRole,
   WorkspaceRole,
   ChannelRole,
+  MessageType,
 } from '@genesis/database';

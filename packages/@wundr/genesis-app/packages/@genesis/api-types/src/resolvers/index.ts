@@ -25,7 +25,28 @@ export {
 } from './vp-resolvers.js';
 
 // =============================================================================
-// RE-EXPORT DEFAULT
+// MESSAGE RESOLVERS
+// =============================================================================
+
+export {
+  messageResolvers,
+  messageQueries,
+  messageMutations,
+  messageSubscriptions,
+  MessageFieldResolvers,
+  MESSAGE_CREATED,
+  MESSAGE_UPDATED,
+  MESSAGE_DELETED,
+  REACTION_CHANGED,
+  THREAD_UPDATED,
+  MessageType,
+  type MessageTypeValue,
+  type MessageService,
+} from './message-resolvers.js';
+
+// =============================================================================
+// RE-EXPORT DEFAULTS
 // =============================================================================
 
 export { default as vpResolversDefault } from './vp-resolvers.js';
+export { default as messageResolversDefault } from './message-resolvers.js';

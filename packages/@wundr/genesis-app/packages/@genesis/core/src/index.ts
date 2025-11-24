@@ -51,9 +51,24 @@ export {
   createVPService,
   vpService,
 
+  // Message Service
+  MessageServiceImpl,
+  createMessageService,
+  messageService,
+
   // Interfaces
   type VPService,
   type ServiceAccountService,
+  type MessageService,
+  type ThreadService,
+  type ReactionService,
+  type MessageEvents,
+
+  // Message Errors
+  MessageNotFoundError,
+  ChannelNotFoundError,
+  MessageValidationError,
+  ReactionError,
 } from './services';
 
 // =============================================================================
@@ -70,7 +85,7 @@ export type {
   VPWorkHours,
   VPEscalationConfig,
 
-  // Input types
+  // VP Input types
   CreateVPInput,
   UpdateVPInput,
 
@@ -81,16 +96,42 @@ export type {
   APIKeyValidationResult,
   VPServiceAccountConfig,
 
-  // Query types
+  // VP Query types
   ListVPsOptions,
   PaginatedVPResult,
 
-  // Event types
+  // VP Event types
   VPEventType,
   VPEvent,
 
   // Utility types
   SlugOptions,
+
+  // Message types
+  MessageWithAuthor,
+  MessageWithRelations,
+  ReactionWithUser,
+  SendMessageInput,
+  UpdateMessageInput,
+  MessageQueryOptions,
+  PaginatedMessages,
+  ReactionCount,
+  AddReactionResult,
+  ThreadSummary,
+  MessageEventType,
+  BaseMessageEvent,
+  MessageCreatedEvent,
+  MessageUpdatedEvent,
+  MessageDeletedEvent,
+  ReactionAddedEvent,
+  ReactionRemovedEvent,
+  ThreadUpdatedEvent,
+  MessageEvent,
+  OnMessageCreatedCallback,
+  OnMessageUpdatedCallback,
+  OnMessageDeletedCallback,
+  OnReactionAddedCallback,
+  OnReactionRemovedCallback,
 
   // Re-exported database types
   VP,
@@ -99,21 +140,35 @@ export type {
   Workspace,
   Channel,
   Message,
+  Reaction,
   Session,
   VPStatus,
   UserStatus,
   OrganizationRole,
   WorkspaceRole,
   ChannelRole,
+  MessageType,
 } from './types';
 
 export {
-  // Type guards
+  // VP Type guards
   isVPCharter,
   isVPServiceAccountConfig,
 
-  // Constants
+  // VP Constants
   DEFAULT_VP_CHARTER,
+
+  // Message Type guards
+  isMessageWithAuthor,
+  isMessageWithRelations,
+  isValidSendMessageInput,
+
+  // Message Constants
+  DEFAULT_MESSAGE_QUERY_OPTIONS,
+  MAX_MESSAGE_LIMIT,
+  MAX_MESSAGE_CONTENT_LENGTH,
+  MAX_REACTIONS_PER_MESSAGE,
+  MESSAGE_TYPES,
 } from './types';
 
 // =============================================================================

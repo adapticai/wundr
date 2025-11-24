@@ -1,0 +1,195 @@
+'use client';
+
+import { useCallback } from 'react';
+import { cn } from '@/lib/utils';
+import type { Message, User, Thread } from '@/types/chat';
+import { MessageItem } from './message-item';
+import { MessageList } from './message-list';
+import { MessageInput } from './message-input';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+
+interface ThreadPanelProps {
+  thread: Thread | null;
+  currentUser: User;
+  channelId: string;
+  isLoading?: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  onSendReply: (content: string, mentions: string[], attachments: File[]) => void;
+  onEditMessage?: (message: Message) => void;
+  onDeleteMessage?: (messageId: string) => void;
+  onReaction?: (messageId: string, emoji: string) => void;
+  className?: string;
+}
+
+export function ThreadPanel({
+  thread,
+  currentUser,
+  channelId,
+  isLoading = false,
+  isOpen,
+  onClose,
+  onSendReply,
+  onEditMessage,
+  onDeleteMessage,
+  onReaction,
+  className,
+}: ThreadPanelProps) {
+  const handleSendReply = useCallback(
+    (content: string, mentions: string[], attachments: File[]) => {
+      onSendReply(content, mentions, attachments);
+    },
+    [onSendReply]
+  );
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className={cn(
+        'fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l bg-background shadow-lg sm:w-96 lg:relative lg:shadow-none',
+        className
+      )}
+    >
+      {/* Header */}
+      <div className="flex h-14 items-center justify-between border-b px-4">
+        <div className="flex items-center gap-2">
+          <ThreadIcon />
+          <h2 className="font-semibold">Thread</h2>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+          title="Close thread"
+        >
+          <CloseIcon />
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="flex flex-1 items-center justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      ) : thread ? (
+        <>
+          {/* Parent message */}
+          <div className="border-b">
+            <MessageItem
+              message={thread.parentMessage}
+              currentUser={currentUser}
+              onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
+              onReaction={onReaction}
+              isThreadView
+            />
+          </div>
+
+          {/* Participants */}
+          {thread.participants.length > 0 && (
+            <div className="flex items-center gap-2 border-b px-4 py-2">
+              <div className="flex -space-x-2">
+                {thread.participants.slice(0, 5).map((participant) => (
+                  <ParticipantAvatar
+                    key={participant.id}
+                    user={participant}
+                  />
+                ))}
+                {thread.participants.length > 5 && (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-medium">
+                    +{thread.participants.length - 5}
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {thread.participants.length}{' '}
+                {thread.participants.length === 1 ? 'participant' : 'participants'}
+              </span>
+            </div>
+          )}
+
+          {/* Thread messages */}
+          <div className="flex-1 overflow-hidden">
+            <MessageList
+              messages={thread.messages}
+              currentUser={currentUser}
+              onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
+              onReaction={onReaction}
+              isThreadView
+            />
+          </div>
+
+          {/* Reply input */}
+          <MessageInput
+            channelId={channelId}
+            parentId={thread.parentMessage.id}
+            currentUser={currentUser}
+            placeholder="Reply to thread..."
+            onSend={handleSendReply}
+          />
+        </>
+      ) : (
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center">
+            <ThreadIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="text-lg font-medium text-foreground">No thread selected</p>
+            <p className="text-sm text-muted-foreground">
+              Click on a message to view its thread.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ParticipantAvatarProps {
+  user: User;
+}
+
+function ParticipantAvatar({ user }: ParticipantAvatarProps) {
+  return (
+    <div className="relative" title={user.name}>
+      {user.image ? (
+        <img
+          src={user.image}
+          alt={user.name}
+          className="h-6 w-6 rounded-full border-2 border-background object-cover"
+        />
+      ) : (
+        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-primary text-xs font-medium text-primary-foreground">
+          {user.name.charAt(0).toUpperCase()}
+        </div>
+      )}
+      {user.status === 'online' && (
+        <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-green-500" />
+      )}
+    </div>
+  );
+}
+
+function ThreadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className || 'h-5 w-5'}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
