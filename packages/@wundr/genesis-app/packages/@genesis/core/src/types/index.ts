@@ -458,6 +458,78 @@ export {
 } from './livekit';
 
 // =============================================================================
+// Notification Types
+// =============================================================================
+
+export type {
+  // Core notification types
+  DevicePlatform,
+  NotificationType,
+  NotificationPriority,
+  DigestFrequency,
+  DeliveryStatus,
+
+  // Push notification types
+  NotificationAction,
+  PushNotification,
+  PushSendResult,
+  BatchResult,
+
+  // Device types
+  DeviceRegistration,
+  Device,
+
+  // Preference types
+  QuietHours,
+  NotificationPreferences,
+  UpdatePreferencesInput,
+
+  // In-app notification types
+  Notification,
+  CreateNotificationInput,
+  NotificationListOptions,
+  PaginatedNotificationResult,
+
+  // Event types
+  NotificationEventType,
+  BaseNotificationEvent,
+  NotificationCreatedEvent,
+  NotificationReadEvent,
+  PushSentEvent,
+  NotificationEvent,
+
+  // Callback types
+  OnNotificationCreatedCallback,
+  OnNotificationReadCallback,
+  OnPushSentCallback,
+
+  // Configuration types
+  WebPushConfig,
+  FCMConfig,
+  NotificationServiceConfig,
+} from './notification';
+
+export {
+  // Type guards
+  isDevicePlatform,
+  isNotificationType,
+  isDigestFrequency,
+  isNotificationPreferences,
+  isDeviceRegistration,
+  isPushNotification,
+  isCreateNotificationInput,
+
+  // Constants
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  DEFAULT_NOTIFICATION_LIST_OPTIONS,
+  MAX_NOTIFICATION_LIMIT,
+  DEFAULT_PUSH_TTL,
+  MAX_DEVICES_PER_USER,
+  NOTIFICATION_TYPES,
+  NOTIFICATION_TYPE_TO_PREFERENCE,
+} from './notification';
+
+// =============================================================================
 // Re-export Database Types
 // =============================================================================
 
@@ -485,3 +557,118 @@ export type {
   ChannelType,
   WorkspaceVisibility,
 } from '@genesis/database';
+
+// =============================================================================
+// Offline Types
+// =============================================================================
+
+export type {
+  // Action types
+  ActionType,
+  QueuedActionStatus,
+  ActionPriority,
+
+  // Payload types
+  BaseActionPayload,
+  SendMessagePayload,
+  EditMessagePayload,
+  DeleteMessagePayload,
+  AddReactionPayload,
+  RemoveReactionPayload,
+  UpdateStatusPayload,
+  JoinChannelPayload,
+  LeaveChannelPayload,
+  UploadFilePayload,
+  CreateThreadPayload,
+  UpdateProfilePayload,
+  MarkReadPayload,
+  ActionPayload,
+
+  // Queue types
+  QueuedAction,
+  QueueStatus,
+  SyncResult,
+  SyncFailure,
+
+  // Sync data types
+  InitialSyncData,
+  IncrementalSyncData,
+  SyncWorkspace,
+  SyncChannel,
+  SyncUser,
+  SyncMessage,
+  SyncReaction,
+  SyncPreferences,
+  NotificationPreferences as OfflineNotificationPreferences,
+  PrivacyPreferences,
+  SyncChange,
+  SyncDeletion,
+  SyncEntityType,
+
+  // Conflict types
+  SyncConflict,
+  ConflictType,
+  ConflictResolution,
+  ResolutionStrategy,
+
+  // Sync state types
+  SyncState,
+  SyncStatus,
+  StaleEntity,
+
+  // Storage types
+  StorageMetadata,
+  StoredItem,
+  StorageOptions,
+  StorageStats,
+  PruneResult,
+
+  // Event types
+  OfflineEventType,
+  BaseOfflineEvent,
+  ActionQueuedEvent,
+  ActionProcessingEvent,
+  ActionCompletedEvent,
+  ActionFailedEvent,
+  QueueEmptyEvent,
+  SyncStartedEvent,
+  SyncCompletedEvent,
+  SyncFailedEvent,
+  ConflictDetectedEvent,
+  ConflictResolvedEvent,
+  OnlineStatusChangedEvent,
+  StorageQuotaWarningEvent,
+  OfflineEvent,
+
+  // Callback types
+  OnActionQueuedCallback,
+  OnActionCompletedCallback,
+  OnActionFailedCallback,
+  OnSyncCompletedCallback,
+  OnConflictDetectedCallback,
+  OnOnlineStatusChangedCallback,
+
+  // Configuration types
+  OfflineQueueConfig,
+  SyncConfig,
+  LocalStorageConfig,
+} from './offline';
+
+export {
+  // Type guards
+  isQueuedAction,
+  isSyncConflict,
+  isActionType,
+  isSyncStatus,
+  isSendMessagePayload,
+
+  // Utility functions
+  calculateRetryDelay,
+  isOrderDependentAction,
+  getDefaultPriority,
+
+  // Default configurations
+  DEFAULT_OFFLINE_QUEUE_CONFIG,
+  DEFAULT_SYNC_CONFIG,
+  DEFAULT_LOCAL_STORAGE_CONFIG,
+} from './offline';

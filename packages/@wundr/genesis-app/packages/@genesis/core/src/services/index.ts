@@ -326,3 +326,110 @@ export {
   HuddleNotFoundError,
   CallOperationError,
 } from './call-service';
+
+// =============================================================================
+// Notification Service
+// =============================================================================
+
+export {
+  // Service implementation
+  NotificationServiceImpl,
+  createNotificationService,
+  createNotificationServiceFromEnv,
+  getNotificationService,
+  notificationService,
+
+  // Interfaces
+  type NotificationService,
+  type NotificationEvents,
+
+  // Errors
+  NotificationError,
+  NotificationNotFoundError,
+  UserNotFoundError as NotificationUserNotFoundError,
+  DeviceNotFoundError,
+  DeviceRegistrationError,
+  PushSendError,
+  NotificationConfigError,
+  NotificationValidationError,
+} from './notification-service';
+
+// =============================================================================
+// Local Storage Service
+// =============================================================================
+
+export {
+  // Service implementation
+  LocalStorageServiceImpl,
+  createLocalStorageService,
+  createMemoryStorageService,
+  getLocalStorageService,
+  localStorageService,
+
+  // Interfaces
+  type LocalStorageService,
+
+  // Errors
+  LocalStorageError,
+  StorageUnavailableError,
+  StorageQuotaExceededError,
+  StorageOperationError,
+
+  // Utility functions
+  generateStorageKey,
+  parseStorageKey,
+  createNamespacedStorage,
+} from './local-storage-service';
+
+// =============================================================================
+// Offline Queue Service
+// =============================================================================
+
+export {
+  // Service implementation
+  OfflineQueueServiceImpl,
+  createOfflineQueueService,
+  getOfflineQueueService,
+  offlineQueueService,
+
+  // Interfaces
+  type OfflineQueueService,
+  type EnqueueActionInput,
+  type ActionProcessor,
+
+  // Errors
+  OfflineQueueError,
+  QueueFullError,
+  ActionNotFoundError,
+  ActionProcessingError,
+  ActionValidationError,
+} from './offline-service';
+
+// =============================================================================
+// Sync Service
+// =============================================================================
+
+export {
+  // Service implementation
+  SyncServiceImpl,
+  createSyncService,
+  getSyncService,
+  syncService,
+
+  // Interfaces
+  type SyncService,
+  type SyncDataFetcher,
+  type InitialSyncOptions,
+  type UploadResult,
+
+  // Errors
+  SyncError,
+  SyncFailedError,
+  SyncInProgressError,
+  ConflictResolutionError,
+  InvalidSyncTokenError,
+
+  // Utility functions
+  mergeObjects,
+  areValuesEqual,
+} from './sync-service';

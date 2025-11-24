@@ -21,5 +21,13 @@ export { useFileUpload, useSignedUpload, useChannelFiles } from "./use-upload";
 // Call hooks
 export { useCall, useLocalMedia, useHuddle, useCallDuration } from "./use-call";
 
+// Notification hooks
+export {
+  useNotifications,
+  usePushNotifications,
+  useOfflineStatus,
+  useNotificationSettings,
+} from "./use-notifications";
+
 // Re-export from next-auth/react for convenience
 export { signIn, signOut, useSession } from "next-auth/react";

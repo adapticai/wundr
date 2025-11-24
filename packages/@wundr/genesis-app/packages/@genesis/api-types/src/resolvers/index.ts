@@ -214,3 +214,32 @@ export {
 } from './call-resolvers.js';
 
 export { default as callResolversDefault } from './call-resolvers.js';
+
+// =============================================================================
+// NOTIFICATION RESOLVERS
+// =============================================================================
+
+export {
+  notificationResolvers,
+  notificationQueries,
+  notificationMutations,
+  notificationSubscriptions,
+  NotificationFieldResolvers,
+  PushDeviceFieldResolvers,
+  NOTIFICATION_RECEIVED,
+  SYNC_REQUIRED,
+  NotificationType,
+  DevicePlatform,
+  SyncType,
+  ConflictResolution,
+  QueuedActionStatus,
+  type NotificationTypeValue,
+  type DevicePlatformType,
+  type SyncTypeValue,
+  type ConflictResolutionType,
+  type QueuedActionStatusType,
+  type NotificationService,
+  type GraphQLContext as NotificationGraphQLContext,
+} from './notification-resolvers.js';
+
+export { default as notificationResolversDefault } from './notification-resolvers.js';

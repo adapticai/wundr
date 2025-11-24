@@ -167,6 +167,8 @@ model User {
   reactions               Reaction[]
   createdChannels         Channel[]            @relation("ChannelCreator")
   vp                      VP?
+  notifications           Notification[]
+  pushSubscriptions       PushSubscription[]
 
   @@index([email])
   @@index([status])
@@ -206,6 +208,7 @@ model Channel {
   name        String
   slug        String
   description String?
+  topic       String?
   type        ChannelType @default(PUBLIC)
   isArchived  Boolean     @default(false) @map("is_archived")
   settings    Json        @default("{}")
@@ -242,10 +245,11 @@ model Message {
   isEdited  Boolean   @default(false) @map("is_edited")
   isDeleted Boolean   @default(false) @map("is_deleted")
   editedAt  DateTime? @map("edited_at")
+  deletedAt DateTime? @map("deleted_at")
 
   // Foreign keys
   channelId String  @map("channel_id")
-  userId    String  @map("user_id")
+  authorId  String  @map("author_id")
   parentId  String? @map("parent_id")
 
   // Timestamps
@@ -254,17 +258,18 @@ model Message {
 
   // Relations
   channel     Channel             @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  author      User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
   parent      Message?            @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
   replies     Message[]           @relation("MessageThread")
   reactions   Reaction[]
   attachments MessageAttachment[]
 
   @@index([channelId])
-  @@index([userId])
+  @@index([authorId])
   @@index([parentId])
   @@index([createdAt])
   @@index([type])
+  @@index([deletedAt])
   @@map("messages")
 }
 
@@ -361,6 +366,7 @@ model ChannelMember {
   // Timestamps
   joinedAt   DateTime  @default(now()) @map("joined_at")
   lastReadAt DateTime? @map("last_read_at")
+  leftAt     DateTime? @map("left_at")
 
   // Relations
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
@@ -369,6 +375,7 @@ model ChannelMember {
   @@unique([channelId, userId])
   @@index([channelId])
   @@index([userId])
+  @@index([leftAt])
   @@map("channel_members")
 }
 
@@ -440,4 +447,102 @@ model Session {
   @@index([token])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+// =============================================================================
+// Notification Models
+// =============================================================================
+
+/// Notification type enumeration
+enum NotificationType {
+  MESSAGE
+  MENTION
+  THREAD_REPLY
+  CALL
+  CHANNEL_INVITE
+  ORGANIZATION_UPDATE
+  SYSTEM
+}
+
+/// Notification priority enumeration
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+/// Push platform enumeration
+enum PushPlatform {
+  web
+  ios
+  android
+}
+
+/// Notification - User notification
+model Notification {
+  id           String               @id @default(cuid())
+  title        String
+  body         String
+  type         NotificationType
+  priority     NotificationPriority @default(NORMAL)
+  resourceId   String?              @map("resource_id")
+  resourceType String?              @map("resource_type")
+  actionUrl    String?              @map("action_url")
+  metadata     Json                 @default("{}")
+  read         Boolean              @default(false)
+  readAt       DateTime?            @map("read_at")
+  archived     Boolean              @default(false)
+  expiresAt    DateTime?            @map("expires_at")
+
+  // Foreign keys
+  userId String @map("user_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+/// PushSubscription - Device push notification subscription
+model PushSubscription {
+  id                   String       @id @default(cuid())
+  token                String       @unique
+  platform             PushPlatform
+  userAgent            String?      @map("user_agent")
+  deviceName           String?      @map("device_name")
+  deviceModel          String?      @map("device_model")
+  appVersion           String?      @map("app_version")
+  active               Boolean      @default(true)
+  deactivatedAt        DateTime?    @map("deactivated_at")
+  deactivationReason   String?      @map("deactivation_reason")
+  failureCount         Int          @default(0) @map("failure_count")
+  lastFailureAt        DateTime?    @map("last_failure_at")
+  lastFailureReason    String?      @map("last_failure_reason")
+
+  // Foreign keys
+  userId String @map("user_id")
+
+  // Timestamps
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastActiveAt DateTime? @map("last_active_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([platform])
+  @@index([active])
+  @@map("push_subscriptions")
 }
