@@ -143,7 +143,7 @@ export class ProjectInitOrchestrator {
     // Apply customizations
     await this.customizationEngine.customizeProject(
       options.projectPath,
-      this.createContext(options.projectName, template)
+      this.createContext(options.projectName, template),
     );
 
     // Validate setup
@@ -206,7 +206,7 @@ export class ProjectInitOrchestrator {
       const pathModule = await import('path');
       await this.customizationEngine.customizeProject(
         projectPath,
-        this.createContext(pathModule.basename(projectPath), template)
+        this.createContext(pathModule.basename(projectPath), template),
       );
     }
   }
@@ -268,7 +268,7 @@ export class ProjectInitOrchestrator {
    */
   private createContext(
     projectName: string,
-    template: TemplateMetadata
+    template: TemplateMetadata,
   ): TemplateContext {
     return {
       profile: {

@@ -359,12 +359,12 @@ export class GracefulShutdownHandler {
     for (const signal of this.config.signals) {
       const handler = (): void => {
         this.config.logger?.info(
-          `Received ${signal} signal, initiating shutdown`
+          `Received ${signal} signal, initiating shutdown`,
         );
         this.shutdown('signal').catch(error => {
           this.config.logger?.error(
             'Error during signal-triggered shutdown',
-            error
+            error,
           );
         });
       };
@@ -402,7 +402,7 @@ export class GracefulShutdownHandler {
     }
 
     this.config.logger?.info(
-      `Initiating graceful shutdown (reason: ${reason})`
+      `Initiating graceful shutdown (reason: ${reason})`,
     );
     this.shutdownPromise = this.performShutdown(reason);
 
@@ -416,7 +416,7 @@ export class GracefulShutdownHandler {
    */
   public forceShutdown(exitCode = 1): void {
     this.config.logger?.warning(
-      `Forcing immediate shutdown with exit code ${exitCode}`
+      `Forcing immediate shutdown with exit code ${exitCode}`,
     );
     this.stop();
     process.exit(exitCode);
@@ -430,7 +430,7 @@ export class GracefulShutdownHandler {
    * Perform the shutdown sequence
    */
   private async performShutdown(
-    reason: ShutdownReason
+    reason: ShutdownReason,
   ): Promise<ShutdownResult> {
     const start = Date.now();
     const taskResults: TaskResult[] = [];
@@ -487,14 +487,14 @@ export class GracefulShutdownHandler {
     this.requestTracker.startDraining();
 
     const drainSuccess = await this.requestTracker.waitForDrain(
-      this.config.drainTimeout
+      this.config.drainTimeout,
     );
 
     if (!drainSuccess) {
       const remaining = this.requestTracker.getInFlightDetails();
       this.config.logger?.warning(
         `Drain timeout reached with ${remaining.length} requests still in-flight`,
-        { requests: remaining }
+        { requests: remaining },
       );
     }
 
@@ -504,7 +504,7 @@ export class GracefulShutdownHandler {
 
     // Sort tasks by priority (higher first)
     const sortedTasks = Array.from(this.cleanupTasks.values()).sort(
-      (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
+      (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
     );
 
     for (const registration of sortedTasks) {
@@ -523,7 +523,7 @@ export class GracefulShutdownHandler {
    * Run a single cleanup task with timeout
    */
   private async runCleanupTask(
-    registration: CleanupTaskRegistration
+    registration: CleanupTaskRegistration,
   ): Promise<TaskResult> {
     const start = Date.now();
     const timeout = registration.timeout ?? this.config.taskTimeout;
@@ -536,8 +536,8 @@ export class GracefulShutdownHandler {
         setTimeout(() => {
           reject(
             new Error(
-              `Cleanup task '${registration.name}' timed out after ${timeout}ms`
-            )
+              `Cleanup task '${registration.name}' timed out after ${timeout}ms`,
+            ),
           );
         }, timeout);
       });
@@ -557,7 +557,7 @@ export class GracefulShutdownHandler {
         error instanceof Error ? error.message : String(error);
       this.config.logger?.error(
         `Cleanup task failed: ${registration.name}`,
-        error
+        error,
       );
 
       return {
@@ -576,7 +576,7 @@ export class GracefulShutdownHandler {
     return new Promise((_, reject) => {
       setTimeout(() => {
         reject(
-          new Error(`Shutdown timed out after ${this.config.shutdownTimeout}ms`)
+          new Error(`Shutdown timed out after ${this.config.shutdownTimeout}ms`),
         );
       }, this.config.shutdownTimeout);
     });
@@ -590,7 +590,7 @@ export class GracefulShutdownHandler {
  * @returns Configured shutdown handler
  */
 export function createGracefulShutdownHandler(
-  logger?: Logger
+  logger?: Logger,
 ): GracefulShutdownHandler {
   return new GracefulShutdownHandler({ logger });
 }

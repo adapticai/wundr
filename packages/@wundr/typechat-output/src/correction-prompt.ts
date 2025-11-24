@@ -101,7 +101,7 @@ export class CorrectionPromptGenerator {
 
     if (errors.length > this.config.maxErrors) {
       lines.push(
-        `  ... and ${errors.length - this.config.maxErrors} more errors`
+        `  ... and ${errors.length - this.config.maxErrors} more errors`,
       );
     }
 
@@ -136,7 +136,7 @@ export class CorrectionPromptGenerator {
       }
       if (error.typeInfo.examples && error.typeInfo.examples.length > 0) {
         parts.push(
-          `  Valid examples: ${error.typeInfo.examples.map(this.formatValue).join(', ')}`
+          `  Valid examples: ${error.typeInfo.examples.map(this.formatValue).join(', ')}`,
         );
       }
     }
@@ -165,14 +165,14 @@ export class CorrectionPromptGenerator {
     // Original response (if configured)
     if (this.config.includeOriginalResponse && context.originalResponse) {
       sections.push(
-        this.buildOriginalResponseSection(context.originalResponse)
+        this.buildOriginalResponseSection(context.originalResponse),
       );
     }
 
     // Schema source (if configured)
     if (this.config.includeSchemaSource && context.schemaSource) {
       sections.push(
-        this.buildSchemaSection(context.schemaSource, context.schemaName)
+        this.buildSchemaSection(context.schemaSource, context.schemaName),
       );
     }
 
@@ -222,7 +222,7 @@ export class CorrectionPromptGenerator {
 
     if (errors.length > this.config.maxErrors) {
       lines.push(
-        `*Note: ${errors.length - this.config.maxErrors} additional errors not shown.*`
+        `*Note: ${errors.length - this.config.maxErrors} additional errors not shown.*`,
       );
     }
 
@@ -280,7 +280,7 @@ export class CorrectionPromptGenerator {
       lines.push(
         '\n**Important:** This is attempt ' +
           (context.previousAttempts + 1) +
-          '. Please carefully review all error messages and ensure each field matches the expected type exactly.'
+          '. Please carefully review all error messages and ensure each field matches the expected type exactly.',
       );
     }
 
@@ -300,7 +300,7 @@ export class CorrectionPromptGenerator {
       .replace(/\{\{attemptNumber\}\}/g, String(context.previousAttempts + 1))
       .replace(
         /\{\{examples\}\}/g,
-        context.examples ? JSON.stringify(context.examples, null, 2) : ''
+        context.examples ? JSON.stringify(context.examples, null, 2) : '',
       );
   }
 
@@ -339,13 +339,13 @@ export class CorrectionPromptGenerator {
       case 'invalid_string':
         if (error.message.includes('email')) {
           suggestions.push(
-            'Provide a valid email address (e.g., user@example.com)'
+            'Provide a valid email address (e.g., user@example.com)',
           );
         } else if (error.message.includes('url')) {
           suggestions.push('Provide a valid URL (e.g., https://example.com)');
         } else if (error.message.includes('uuid')) {
           suggestions.push(
-            'Provide a valid UUID (e.g., 123e4567-e89b-12d3-a456-426614174000)'
+            'Provide a valid UUID (e.g., 123e4567-e89b-12d3-a456-426614174000)',
           );
         } else {
           suggestions.push('Ensure the string matches the required format');
@@ -374,25 +374,25 @@ export class CorrectionPromptGenerator {
 
       case 'invalid_union':
         suggestions.push(
-          'Ensure the value matches one of the allowed union types'
+          'Ensure the value matches one of the allowed union types',
         );
         break;
 
       case 'unrecognized_keys':
         suggestions.push(
-          'Remove the extra fields that are not defined in the type'
+          'Remove the extra fields that are not defined in the type',
         );
         break;
 
       case 'required':
         suggestions.push(
-          `Provide a value for the required field "${formatErrorPath(error.path)}"`
+          `Provide a value for the required field "${formatErrorPath(error.path)}"`,
         );
         break;
 
       default:
         suggestions.push(
-          'Review the error message and adjust the value accordingly'
+          'Review the error message and adjust the value accordingly',
         );
     }
 
@@ -444,7 +444,7 @@ export class CorrectionPromptGenerator {
  * @returns Configured CorrectionPromptGenerator instance
  */
 export function createCorrectionPromptGenerator(
-  config?: Partial<CorrectionPromptConfig>
+  config?: Partial<CorrectionPromptConfig>,
 ): CorrectionPromptGenerator {
   return new CorrectionPromptGenerator(config);
 }
@@ -462,7 +462,7 @@ export function generateCorrectionPrompt(
   errors: TypeChatError[],
   originalResponse: string,
   schemaSource?: string,
-  schemaName?: string
+  schemaName?: string,
 ): string {
   const generator = new CorrectionPromptGenerator();
   return generator.generate({

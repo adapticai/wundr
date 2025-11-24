@@ -53,7 +53,7 @@ export class ConfigComposer {
       throw new HydraConfigError(
         'Invalid composer options',
         HydraErrorCode.VALIDATION_ERROR,
-        { errors: validation.error.errors }
+        { errors: validation.error.errors },
       );
     }
 
@@ -86,7 +86,7 @@ export class ConfigComposer {
    */
   compose<T = Record<string, unknown>>(
     hydraConfig: HydraConfig,
-    cliArgs: string[] = []
+    cliArgs: string[] = [],
   ): ComposedConfig<T> {
     this.sources.length = 0;
     this.sourceOrder = 0;
@@ -100,7 +100,7 @@ export class ConfigComposer {
     // Apply group selections from CLI
     const effectiveGroups = this.applyGroupSelections(
       hydraConfig.groups,
-      parsedOverrides.groupSelections
+      parsedOverrides.groupSelections,
     );
 
     // Load defaults in order
@@ -123,7 +123,7 @@ export class ConfigComposer {
           throw error;
         }
         warnings.push(
-          `Failed to load optional config: ${path} - ${error instanceof Error ? error.message : String(error)}`
+          `Failed to load optional config: ${path} - ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     }
@@ -157,11 +157,11 @@ export class ConfigComposer {
         throw new HydraConfigError(
           `Unresolved interpolations: ${interpolationResult.unresolved.join(', ')}`,
           HydraErrorCode.INTERPOLATION_ERROR,
-          { unresolved: interpolationResult.unresolved }
+          { unresolved: interpolationResult.unresolved },
         );
       }
       warnings.push(
-        `Unresolved interpolations: ${interpolationResult.unresolved.join(', ')}`
+        `Unresolved interpolations: ${interpolationResult.unresolved.join(', ')}`,
       );
     }
 
@@ -249,7 +249,7 @@ export class ConfigComposer {
    */
   private applyGroupSelections(
     groups: Record<string, ConfigGroup>,
-    selections: GroupSelection[]
+    selections: GroupSelection[],
   ): Record<string, ConfigGroup> {
     const result = { ...groups };
 
@@ -259,7 +259,7 @@ export class ConfigComposer {
         // Update the group path to point to the variant
         const variantPath = baseGroup.path.replace(
           /\/[^/]+\.ya?ml$/,
-          `/${selection.variant}.yaml`
+          `/${selection.variant}.yaml`,
         );
         result[selection.group] = {
           ...baseGroup,
@@ -277,7 +277,7 @@ export class ConfigComposer {
    * @returns Parsed environment overrides
    */
   private resolveEnvOverrides(
-    prefix = this.options.envPrefix
+    prefix = this.options.envPrefix,
   ): Record<string, CliOverrideValue> {
     const overrides: Record<string, CliOverrideValue> = {};
 
@@ -343,7 +343,7 @@ export class ConfigComposer {
   private setNestedValue(
     obj: Record<string, CliOverrideValue>,
     path: string,
-    value: SweepValue
+    value: SweepValue,
   ): void {
     const parts = path.split('.');
     let current: Record<string, CliOverrideValue> = obj;
@@ -393,7 +393,7 @@ export class ConfigComposer {
       throw new HydraConfigError(
         'Configuration validation failed',
         HydraErrorCode.VALIDATION_ERROR,
-        { errors: result.error.errors }
+        { errors: result.error.errors },
       );
     }
     return result.data;
@@ -442,7 +442,7 @@ export function createComposer(options: ComposerOptions): ConfigComposer {
 export function composeConfig<T = Record<string, unknown>>(
   configPath: string,
   cliArgs: string[] = [],
-  options: Partial<ComposerOptions> = {}
+  options: Partial<ComposerOptions> = {},
 ): ComposedConfig<T> {
   const basePath = options.basePath ?? process.cwd();
   const composer = new ConfigComposer({ ...options, basePath });

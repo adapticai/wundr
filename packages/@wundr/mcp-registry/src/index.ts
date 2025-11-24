@@ -205,7 +205,7 @@ export {
  * ```
  */
 export async function createMCPRegistrySystem(
-  config?: MCPRegistrySystemConfig
+  config?: MCPRegistrySystemConfig,
 ): Promise<MCPRegistrySystem> {
   const { MCPServerRegistry } = await import('./registry');
   const { ServerDiscoveryService } = await import('./discovery');

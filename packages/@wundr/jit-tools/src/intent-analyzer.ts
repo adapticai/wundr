@@ -291,14 +291,14 @@ export class IntentAnalyzer {
     const requiredCapabilities = this.extractCapabilities(
       normalizedQuery,
       action,
-      context
+      context,
     );
 
     // Extract categories
     const relevantCategories = this.extractCategories(
       normalizedQuery,
       action,
-      context
+      context,
     );
 
     // Extract keywords
@@ -308,7 +308,7 @@ export class IntentAnalyzer {
     const confidence = this.calculateConfidence(
       action,
       entities,
-      requiredCapabilities
+      requiredCapabilities,
     );
 
     return {
@@ -332,7 +332,7 @@ export class IntentAnalyzer {
    */
   analyzeWithTaskContext(
     query: string,
-    taskContext: TaskContext
+    taskContext: TaskContext,
   ): ParsedIntent {
     const baseIntent = this.analyze(query);
 
@@ -346,7 +346,7 @@ export class IntentAnalyzer {
     let confidence = baseIntent.confidence;
     if (
       taskContext.requiredCapabilities.some(cap =>
-        baseIntent.requiredCapabilities.includes(cap)
+        baseIntent.requiredCapabilities.includes(cap),
       )
     ) {
       confidence = Math.min(confidence + 0.1, 1.0);
@@ -440,7 +440,7 @@ export class IntentAnalyzer {
         if (value && value.length > 1) {
           const confidence = this.calculateEntityConfidence(
             value,
-            pattern.type
+            pattern.type,
           );
 
           if (confidence >= this.config.minEntityConfidence) {
@@ -466,7 +466,7 @@ export class IntentAnalyzer {
   private extractCapabilities(
     query: string,
     action: string,
-    context?: AgentContext
+    context?: AgentContext,
   ): string[] {
     const capabilities = new Set<string>();
 
@@ -500,7 +500,7 @@ export class IntentAnalyzer {
   private extractCategories(
     query: string,
     action: string,
-    context?: AgentContext
+    context?: AgentContext,
   ): ToolCategory[] {
     const categories = new Set<ToolCategory>();
 
@@ -659,7 +659,7 @@ export class IntentAnalyzer {
   private calculateConfidence(
     action: string,
     entities: IntentEntity[],
-    capabilities: string[]
+    capabilities: string[],
   ): number {
     let confidence = 0.5; // Base confidence
 
@@ -707,7 +707,7 @@ export class IntentAnalyzer {
  * @returns IntentAnalyzer instance
  */
 export function createIntentAnalyzer(
-  config?: Partial<IntentAnalyzerConfig>
+  config?: Partial<IntentAnalyzerConfig>,
 ): IntentAnalyzer {
   return new IntentAnalyzer(config);
 }

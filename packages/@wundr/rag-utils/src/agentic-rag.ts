@@ -183,7 +183,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
 
   constructor(
     config: Partial<AgenticRAGConfig> = {},
-    chunkingOptions?: Partial<ChunkingOptions>
+    chunkingOptions?: Partial<ChunkingOptions>,
   ) {
     super();
     this.config = { ...DEFAULT_AGENTIC_RAG_CONFIG, ...config };
@@ -219,11 +219,11 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
    * @returns Number of chunks indexed
    */
   async indexFiles(
-    files: Array<{ path: string; content: string; language?: string }>
+    files: Array<{ path: string; content: string; language?: string }>,
   ): Promise<number> {
     if (!this.initialized) {
       throw new Error(
-        'AgenticRAGSystem not initialized. Call initialize() with API key first.'
+        'AgenticRAGSystem not initialized. Call initialize() with API key first.',
       );
     }
 
@@ -239,11 +239,11 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
    */
   async agenticRetrieve(
     query: string,
-    options: Partial<RetrievalOptions> = {}
+    options: Partial<RetrievalOptions> = {},
   ): Promise<AgenticRetrievalResult> {
     if (!this.initialized) {
       throw new Error(
-        'AgenticRAGSystem not initialized. Call initialize() with API key first.'
+        'AgenticRAGSystem not initialized. Call initialize() with API key first.',
       );
     }
 
@@ -321,7 +321,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
             results,
             {
               iteration: i + 1,
-            }
+            },
           );
           this.emit('agentic:reformulation', reformulation);
 
@@ -336,7 +336,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
           ) {
             const suggestionResults = await this.trySuggestions(
               critique.querySuggestions,
-              options
+              options,
             );
             allResults = this.mergeResults(allResults, suggestionResults);
           }
@@ -349,7 +349,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
       // Apply final filtering
       const finalResults = allResults.slice(
         0,
-        options.topK ?? this.config.retrievalOptions.topK ?? 10
+        options.topK ?? this.config.retrievalOptions.topK ?? 10,
       );
 
       // Compact context if enabled
@@ -396,7 +396,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
     options?: {
       maxTokens?: number;
       targetTokens?: number;
-    }
+    },
   ): Promise<CompactedContext> {
     return this.compactor.compact(results, options);
   }
@@ -410,7 +410,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
    */
   async critiqueRetrieval(
     query: string,
-    results: SearchResult[]
+    results: SearchResult[],
   ): Promise<CritiqueResult> {
     return this.critic.critique(query, results);
   }
@@ -426,7 +426,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
   async reformulateQuery(
     query: string,
     results: SearchResult[],
-    options?: { iteration?: number }
+    options?: { iteration?: number },
   ): Promise<ReformulationResult> {
     return this.reformulator.reformulate(query, results, options);
   }
@@ -542,7 +542,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
 
   private async trySuggestions(
     suggestions: string[],
-    options: Partial<RetrievalOptions>
+    options: Partial<RetrievalOptions>,
   ): Promise<SearchResult[]> {
     const allResults: SearchResult[] = [];
 
@@ -560,7 +560,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
 
   private mergeResults(
     existing: SearchResult[],
-    newResults: SearchResult[]
+    newResults: SearchResult[],
   ): SearchResult[] {
     const seen = new Set(existing.map(r => r.chunk.id));
     const merged = [...existing];
@@ -591,11 +591,11 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
   private generateSummary(
     query: string,
     iterations: RetrievalIteration[],
-    qualityScore: number
+    qualityScore: number,
   ): string {
     const totalResults = iterations.reduce(
       (sum, i) => sum + i.results.length,
-      0
+      0,
     );
     const reformulations = iterations.filter(i => i.reformulation).length;
     const avgDuration =
@@ -612,7 +612,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
 
     parts.push(
       `Final quality score: ${(qualityScore * 100).toFixed(1)}%.`,
-      `Average iteration time: ${avgDuration.toFixed(0)}ms.`
+      `Average iteration time: ${avgDuration.toFixed(0)}ms.`,
     );
 
     return parts.join(' ');
@@ -630,7 +630,7 @@ export class AgenticRAGSystem extends EventEmitter<AgenticRAGEvents> {
 export function createAgenticRAGSystem(
   apiKey?: string,
   config?: Partial<AgenticRAGConfig>,
-  chunkingOptions?: Partial<ChunkingOptions>
+  chunkingOptions?: Partial<ChunkingOptions>,
 ): AgenticRAGSystem {
   const system = new AgenticRAGSystem(config, chunkingOptions);
   if (apiKey) {

@@ -373,7 +373,7 @@ export const MacroDefinitionSchema = z.object({
           .optional(),
         required: z.boolean().optional(),
         default: z.unknown().optional(),
-      })
+      }),
     )
     .optional(),
   example: z.string().optional(),

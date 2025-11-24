@@ -282,7 +282,7 @@ export function createAgentWorkflow(options: {
         systemPrompt: options.systemPrompt,
         tools: options.tools,
       },
-    })
+    }),
   );
 
   // Add tool node if tools provided
@@ -296,7 +296,7 @@ export function createAgentWorkflow(options: {
           tools: options.tools,
           parallel: true,
         },
-      })
+      }),
     );
 
     // Add edges
@@ -346,7 +346,7 @@ export function createChatWorkflow(options: {
         systemPrompt: options.systemPrompt,
       },
       maxHistoryLength: options.maxHistory ?? 50,
-    })
+    }),
   );
 
   graph.setEntryPoint('chat');
@@ -396,7 +396,7 @@ export function createDecisionTree(options: {
         field: decision.field,
         cases: decision.branches,
         default: decision.default,
-      })
+      }),
     );
   });
 

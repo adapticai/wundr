@@ -74,7 +74,7 @@ export class CostCalculator {
     const pricing = this.getPricing(model);
     if (!pricing) {
       throw new CostCalculationError(
-        `Unknown model: ${model}. Please add pricing configuration.`
+        `Unknown model: ${model}. Please add pricing configuration.`,
       );
     }
 
@@ -229,7 +229,7 @@ export class CostCalculator {
   compareModels(
     inputTokens: number,
     outputTokens: number,
-    models?: string[]
+    models?: string[],
   ): ModelComparison[] {
     const modelsToCompare = models || Array.from(this.pricingMap.keys());
     const comparisons: ModelComparison[] = [];
@@ -329,7 +329,7 @@ export class CostCalculator {
   calculateCacheSavings(
     model: string,
     inputTokens: number,
-    outputTokens: number
+    outputTokens: number,
   ): CacheSavings {
     const pricing = this.getPricing(model);
     if (!pricing) {
@@ -482,7 +482,7 @@ export function createCostCalculator(): CostCalculator {
 export function quickCostCalculation(
   model: string,
   inputTokens: number,
-  outputTokens: number
+  outputTokens: number,
 ): number {
   const calculator = new CostCalculator();
   return calculator.calculateCost({ model, inputTokens, outputTokens });

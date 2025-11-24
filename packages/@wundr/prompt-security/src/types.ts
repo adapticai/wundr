@@ -850,7 +850,7 @@ export const SecurityConfigSchema = z.object({
       replacement: z.string(),
       enabled: z.boolean(),
       severity: z.enum(['low', 'medium', 'high', 'critical']),
-    })
+    }),
   ),
   actionRules: z.array(
     z.object({
@@ -867,14 +867,14 @@ export const SecurityConfigSchema = z.object({
           'system_command',
           'api_call',
           'custom',
-        ])
+        ]),
       ),
       condition: z.string().optional(),
       decision: z.enum(['allow', 'deny', 'require_confirmation', 'sandbox']),
       priority: z.number(),
       enabled: z.boolean(),
       reason: z.string().optional(),
-    })
+    }),
   ),
   contextSettings: z.object({
     enableSeparation: z.boolean(),
@@ -910,7 +910,7 @@ const ParameterValueSchema = z.union([
  */
 const ActionParametersSchema = z.record(
   z.string(),
-  ParameterValueSchema.optional()
+  ParameterValueSchema.optional(),
 );
 
 /**
@@ -931,7 +931,7 @@ const MetadataValueSchema = z.union([
  */
 const ActionMetadataSchema = z.record(
   z.string(),
-  MetadataValueSchema.optional()
+  MetadataValueSchema.optional(),
 );
 
 /**

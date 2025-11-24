@@ -31,10 +31,10 @@ export class HealthCheckError extends Error {
   constructor(
     public readonly serverId: string,
     public readonly checkName: string,
-    message?: string
+    message?: string,
   ) {
     super(
-      message ?? `Health check "${checkName}" failed for server: ${serverId}`
+      message ?? `Health check "${checkName}" failed for server: ${serverId}`,
     );
     this.name = 'HealthCheckError';
   }
@@ -188,7 +188,7 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
    */
   constructor(
     private readonly registry: MCPServerRegistry,
-    config: HealthMonitorConfig = {}
+    config: HealthMonitorConfig = {},
   ) {
     super();
 
@@ -196,7 +196,7 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
     const validation = HealthMonitorConfigSchema.safeParse(config);
     if (!validation.success) {
       throw new Error(
-        `Invalid health monitor config: ${validation.error.message}`
+        `Invalid health monitor config: ${validation.error.message}`,
       );
     }
 
@@ -368,8 +368,8 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
       servers.map(server =>
         this.performHealthCheck(server).catch(error => {
           console.error(`Health check failed for server ${server.id}:`, error);
-        })
-      )
+        }),
+      ),
     );
   }
 
@@ -422,7 +422,7 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
    * Perform health check on a server
    */
   private async performHealthCheck(
-    server: MCPServerRegistration
+    server: MCPServerRegistration,
   ): Promise<HealthStatus> {
     const startTime = Date.now();
     const checkResults: HealthCheckResult[] = [];
@@ -529,12 +529,12 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
    */
   private async runCheckWithTimeout(
     check: RegisteredHealthCheck,
-    server: MCPServerRegistration
+    server: MCPServerRegistration,
   ): Promise<HealthCheckResult> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(
-          new HealthCheckError(server.id, check.name, 'Health check timed out')
+          new HealthCheckError(server.id, check.name, 'Health check timed out'),
         );
       }, check.timeout);
 
@@ -556,7 +556,7 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
    */
   private createPingCheck(): HealthCheckFn {
     return async (
-      server: MCPServerRegistration
+      server: MCPServerRegistration,
     ): Promise<HealthCheckResult> => {
       const startTime = Date.now();
 
@@ -677,7 +677,7 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
   private emitHealthCheckEvent(
     serverId: string,
     status: HealthStatus,
-    checks: readonly HealthCheckResult[]
+    checks: readonly HealthCheckResult[],
   ): void {
     const event: HealthCheckEvent = {
       serverId,
@@ -695,7 +695,7 @@ export class ServerHealthMonitor extends EventEmitter<HealthMonitorEvents> {
   private emitHealthChangeEvent(
     serverId: string,
     previousStatus: HealthLevel,
-    newStatus: HealthLevel
+    newStatus: HealthLevel,
   ): void {
     const event: HealthChangeEvent = {
       serverId,
@@ -843,7 +843,7 @@ export interface HealthMonitorStats {
  */
 export function createServerHealthMonitor(
   registry: MCPServerRegistry,
-  config?: HealthMonitorConfig
+  config?: HealthMonitorConfig,
 ): ServerHealthMonitor {
   return new ServerHealthMonitor(registry, config);
 }

@@ -184,7 +184,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
       maxTokens?: number;
       targetTokens?: number;
       strategy?: CompactionStrategy;
-    } = {}
+    } = {},
   ): Promise<CompactedContext> {
     const startTime = Date.now();
     const maxTokens = options.maxTokens ?? this.config.maxTokens;
@@ -192,7 +192,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
     const strategy = options.strategy ?? this.config.strategy;
 
     const originalTokenCount = this.calculateTotalTokens(
-      results.map(r => r.chunk)
+      results.map(r => r.chunk),
     );
     this.emit('compaction:start', results.length, originalTokenCount);
 
@@ -210,7 +210,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
         case 'truncate':
           compactedChunks = this.applyTruncation(
             compactedChunks,
-            effectiveTarget
+            effectiveTarget,
           );
           techniquesApplied.push('truncation');
           break;
@@ -218,7 +218,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
         case 'summarize':
           compactedChunks = await this.applySummarization(
             compactedChunks,
-            effectiveTarget
+            effectiveTarget,
           );
           techniquesApplied.push('summarization');
           break;
@@ -226,7 +226,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
         case 'prioritize':
           compactedChunks = this.applyPrioritization(
             compactedChunks,
-            effectiveTarget
+            effectiveTarget,
           );
           techniquesApplied.push('prioritization');
           break;
@@ -250,7 +250,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
             this.emit('compaction:progress', 'prioritization', 0.5);
             compactedChunks = this.applyPrioritization(
               compactedChunks,
-              effectiveTarget
+              effectiveTarget,
             );
             techniquesApplied.push('prioritization');
             iterations++;
@@ -262,7 +262,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
             this.emit('compaction:progress', 'truncation', 0.75);
             compactedChunks = this.applyTruncation(
               compactedChunks,
-              effectiveTarget
+              effectiveTarget,
             );
             techniquesApplied.push('truncation');
             iterations++;
@@ -326,7 +326,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
   async updateContextWindow(
     windowId: string,
     chunks: CompactedChunk[],
-    maxTokens?: number
+    maxTokens?: number,
   ): Promise<ContextWindow> {
     const max = maxTokens ?? this.config.maxTokens;
     let window = this.contextWindows.get(windowId);
@@ -440,7 +440,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
   generateContextSummary(context: CompactedContext): string {
     const keyInfo = this.extractKeyInformation(context.chunks);
     const fileCount = new Set(
-      context.chunks.map(c => c.chunk.metadata.sourceFile)
+      context.chunks.map(c => c.chunk.metadata.sourceFile),
     ).size;
 
     const parts: string[] = [
@@ -460,7 +460,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
     }
 
     parts.push(
-      `Token count: ${context.tokenCount} (${(context.compressionRatio * 100).toFixed(1)}% of original)`
+      `Token count: ${context.tokenCount} (${(context.compressionRatio * 100).toFixed(1)}% of original)`,
     );
 
     return parts.join(' ');
@@ -495,10 +495,10 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
 
   private applyTruncation(
     chunks: CompactedChunk[],
-    targetTokens: number
+    targetTokens: number,
   ): CompactedChunk[] {
     const sorted = [...chunks].sort(
-      (a, b) => b.relevanceScore - a.relevanceScore
+      (a, b) => b.relevanceScore - a.relevanceScore,
     );
     const result: CompactedChunk[] = [];
     let currentTokens = 0;
@@ -514,7 +514,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
           // Minimum meaningful chunk
           const truncatedContent = this.truncateContent(
             chunk.compactedContent,
-            remainingTokens
+            remainingTokens,
           );
           result.push({
             ...chunk,
@@ -532,7 +532,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
 
   private async applySummarization(
     chunks: CompactedChunk[],
-    targetTokens: number
+    targetTokens: number,
   ): Promise<CompactedChunk[]> {
     // Simple extractive summarization for code
     // In production, this could use an LLM for abstractive summarization
@@ -544,7 +544,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
       const targetChunkTokens = Math.floor(targetTokens / chunks.length);
       const summarized = this.extractiveSummarize(
         chunk.compactedContent,
-        targetChunkTokens
+        targetChunkTokens,
       );
 
       return {
@@ -558,16 +558,16 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
 
   private applyPrioritization(
     chunks: CompactedChunk[],
-    targetTokens: number
+    targetTokens: number,
   ): CompactedChunk[] {
     // Sort by relevance and keep top chunks within budget
     const sorted = [...chunks].sort(
-      (a, b) => b.relevanceScore - a.relevanceScore
+      (a, b) => b.relevanceScore - a.relevanceScore,
     );
 
     // Filter out low relevance chunks
     const filtered = sorted.filter(
-      c => c.relevanceScore >= this.config.minRelevanceThreshold
+      c => c.relevanceScore >= this.config.minRelevanceThreshold,
     );
 
     // Select chunks within budget
@@ -622,7 +622,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
 
       // Sort by line number
       fileChunks.sort(
-        (a, b) => a.chunk.metadata.startLine - b.chunk.metadata.startLine
+        (a, b) => a.chunk.metadata.startLine - b.chunk.metadata.startLine,
       );
 
       // Merge adjacent chunks
@@ -651,7 +651,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
   private calculateTotalTokens(chunks: DocumentChunk[]): number {
     return chunks.reduce(
       (sum, chunk) => sum + this.estimateTokens(chunk.content),
-      0
+      0,
     );
   }
 
@@ -742,7 +742,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
 
     for (const chunk of chunks) {
       const isDuplicate = result.some(
-        existing => this.calculateSimilarity(existing, chunk) > 0.8
+        existing => this.calculateSimilarity(existing, chunk) > 0.8,
       );
 
       if (!isDuplicate) {
@@ -755,7 +755,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
 
   private calculateSimilarity(
     chunk1: CompactedChunk,
-    chunk2: CompactedChunk
+    chunk2: CompactedChunk,
   ): number {
     const terms1 = new Set(this.extractTerms(chunk1.compactedContent));
     const terms2 = new Set(this.extractTerms(chunk2.compactedContent));
@@ -775,7 +775,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
 
   private mergeChunks(
     chunk1: CompactedChunk,
-    chunk2: CompactedChunk
+    chunk2: CompactedChunk,
   ): CompactedChunk {
     const mergedContent =
       chunk1.compactedContent + '\n' + chunk2.compactedContent;
@@ -843,7 +843,7 @@ export class ContextCompactor extends EventEmitter<ContextCompactorEvents> {
  * @returns Configured ContextCompactor instance
  */
 export function createContextCompactor(
-  config?: Partial<ContextCompactionConfig>
+  config?: Partial<ContextCompactionConfig>,
 ): ContextCompactor {
   return new ContextCompactor(config);
 }

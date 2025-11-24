@@ -84,7 +84,7 @@ class InMemoryLogStore implements LogStore {
     if (this.config.flushIntervalMs > 0) {
       this.flushTimer = setInterval(
         () => this.flush(),
-        this.config.flushIntervalMs
+        this.config.flushIntervalMs,
       );
     }
   }
@@ -95,12 +95,12 @@ class InMemoryLogStore implements LogStore {
     // Enforce max events limit
     if (this.events.size > this.config.maxEvents) {
       const eventsArray = Array.from(this.events.entries()).sort(
-        ([, a], [, b]) => a.timestamp.getTime() - b.timestamp.getTime()
+        ([, a], [, b]) => a.timestamp.getTime() - b.timestamp.getTime(),
       );
 
       const toRemove = eventsArray.slice(
         0,
-        this.events.size - this.config.maxEvents
+        this.events.size - this.config.maxEvents,
       );
       for (const [id] of toRemove) {
         this.events.delete(id);
@@ -152,14 +152,14 @@ class InMemoryLogStore implements LogStore {
       results = results.filter(
         e =>
           e.message.toLowerCase().includes(queryLower) ||
-          JSON.stringify(e.data).toLowerCase().includes(queryLower)
+          JSON.stringify(e.data).toLowerCase().includes(queryLower),
       );
     }
     if (options.labels) {
       results = results.filter(e =>
         Object.entries(options.labels!).every(
-          ([k, v]) => e.metadata.labels[k] === v
-        )
+          ([k, v]) => e.metadata.labels[k] === v,
+        ),
       );
     }
 
@@ -276,7 +276,7 @@ class InMemoryLogStore implements LogStore {
     // Estimate storage size (rough approximation)
     const storageSizeBytes = events.reduce(
       (sum, e) => sum + JSON.stringify(e).length,
-      0
+      0,
     );
 
     return {
@@ -384,7 +384,7 @@ export class ObservabilityPipeline {
     if (this.config.bufferingEnabled) {
       this.bufferFlushTimer = setInterval(
         () => this.flushBuffer(),
-        this.config.bufferFlushIntervalMs
+        this.config.bufferFlushIntervalMs,
       );
     }
 
@@ -439,7 +439,7 @@ export class ObservabilityPipeline {
     category: EventCategory,
     message: string,
     data?: Record<string, unknown>,
-    metadata?: Partial<EventMetadata>
+    metadata?: Partial<EventMetadata>,
   ): Promise<ObservabilityEvent> {
     return this.log({ level: 'trace', category, message, data, metadata });
   }
@@ -451,7 +451,7 @@ export class ObservabilityPipeline {
     category: EventCategory,
     message: string,
     data?: Record<string, unknown>,
-    metadata?: Partial<EventMetadata>
+    metadata?: Partial<EventMetadata>,
   ): Promise<ObservabilityEvent> {
     return this.log({ level: 'debug', category, message, data, metadata });
   }
@@ -463,7 +463,7 @@ export class ObservabilityPipeline {
     category: EventCategory,
     message: string,
     data?: Record<string, unknown>,
-    metadata?: Partial<EventMetadata>
+    metadata?: Partial<EventMetadata>,
   ): Promise<ObservabilityEvent> {
     return this.log({ level: 'info', category, message, data, metadata });
   }
@@ -475,7 +475,7 @@ export class ObservabilityPipeline {
     category: EventCategory,
     message: string,
     data?: Record<string, unknown>,
-    metadata?: Partial<EventMetadata>
+    metadata?: Partial<EventMetadata>,
   ): Promise<ObservabilityEvent> {
     return this.log({ level: 'warn', category, message, data, metadata });
   }
@@ -490,7 +490,7 @@ export class ObservabilityPipeline {
       | Error
       | { name: string; message: string; stack?: string; code?: string },
     data?: Record<string, unknown>,
-    metadata?: Partial<EventMetadata>
+    metadata?: Partial<EventMetadata>,
   ): Promise<ObservabilityEvent> {
     return this.log({
       level: 'error',
@@ -512,7 +512,7 @@ export class ObservabilityPipeline {
       | Error
       | { name: string; message: string; stack?: string; code?: string },
     data?: Record<string, unknown>,
-    metadata?: Partial<EventMetadata>
+    metadata?: Partial<EventMetadata>,
   ): Promise<ObservabilityEvent> {
     return this.log({
       level: 'fatal',
@@ -532,7 +532,7 @@ export class ObservabilityPipeline {
     message: string,
     durationMs: number,
     data?: Record<string, unknown>,
-    metadata?: Partial<EventMetadata>
+    metadata?: Partial<EventMetadata>,
   ): Promise<ObservabilityEvent> {
     return this.log({
       level: 'info',
@@ -564,7 +564,7 @@ export class ObservabilityPipeline {
         category: EventCategory,
         message: string,
         data?: Record<string, unknown>,
-        metadata?: Partial<EventMetadata>
+        metadata?: Partial<EventMetadata>,
       ) => {
         const durationMs = Date.now() - startTime;
         return this.timed(category, message, durationMs, data, metadata);
@@ -785,7 +785,7 @@ export class ObservabilityPipeline {
         event.durationMs,
         {
           category: event.category,
-        }
+        },
       );
     }
 
@@ -834,7 +834,7 @@ export class ObservabilityPipeline {
       } catch (error) {
         console.error(
           `Error in pipeline event handler for ${eventType}:`,
-          error
+          error,
         );
       }
     }
@@ -848,7 +848,7 @@ export class ObservabilityPipeline {
  * @returns Configured ObservabilityPipeline instance
  */
 export function createObservabilityPipeline(
-  config: Partial<ObservabilityPipelineConfig> = {}
+  config: Partial<ObservabilityPipelineConfig> = {},
 ): ObservabilityPipeline {
   return new ObservabilityPipeline(config);
 }

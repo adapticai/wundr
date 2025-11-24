@@ -274,7 +274,7 @@ export class TypeChatValidationError extends Error {
   constructor(
     message: string,
     public readonly code: TypeChatErrorCode,
-    public readonly details?: Record<string, unknown>
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'TypeChatValidationError';
@@ -288,12 +288,12 @@ export class MaxRetriesExceededError extends TypeChatValidationError {
   constructor(
     public readonly attempts: number,
     public readonly lastErrors: TypeChatError[],
-    public readonly rawResponses: string[]
+    public readonly rawResponses: string[],
   ) {
     super(
       `Validation failed after ${attempts} attempts`,
       'MAX_RETRIES_EXCEEDED',
-      { attempts, lastErrors, rawResponses }
+      { attempts, lastErrors, rawResponses },
     );
     this.name = 'MaxRetriesExceededError';
   }
@@ -305,12 +305,12 @@ export class MaxRetriesExceededError extends TypeChatValidationError {
 export class TimeoutError extends TypeChatValidationError {
   constructor(
     public readonly timeoutMs: number,
-    public readonly elapsedMs: number
+    public readonly elapsedMs: number,
   ) {
     super(
       `Operation timed out after ${elapsedMs}ms (timeout: ${timeoutMs}ms)`,
       'TIMEOUT',
-      { timeoutMs, elapsedMs }
+      { timeoutMs, elapsedMs },
     );
     this.name = 'TimeoutError';
   }

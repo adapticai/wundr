@@ -83,7 +83,7 @@ export class InterpolationResolver {
    */
   resolve<T extends Record<string, unknown>>(
     config: T,
-    context: Record<string, unknown> = {}
+    context: Record<string, unknown> = {},
   ): InterpolationResult {
     this.resolved.clear();
     this.unresolved.length = 0;
@@ -108,7 +108,7 @@ export class InterpolationResolver {
    */
   private resolveValue(
     value: unknown,
-    context: Record<string, unknown>
+    context: Record<string, unknown>,
   ): unknown {
     if (typeof value === 'string') {
       return this.resolveString(value, context);
@@ -137,7 +137,7 @@ export class InterpolationResolver {
    */
   private resolveString(
     str: string,
-    context: Record<string, unknown>
+    context: Record<string, unknown>,
   ): unknown {
     // Check if the entire string is a single interpolation
     const fullMatch = str.match(/^\$\{([^}]+)\}$/);
@@ -162,14 +162,14 @@ export class InterpolationResolver {
    */
   private resolveReference(
     ref: string,
-    context: Record<string, unknown>
+    context: Record<string, unknown>,
   ): unknown {
     // Check recursion depth
     if (this.currentDepth >= this.options.maxDepth) {
       throw new HydraConfigError(
         `Maximum interpolation depth (${this.options.maxDepth}) exceeded`,
         HydraErrorCode.CIRCULAR_REFERENCE,
-        { reference: ref }
+        { reference: ref },
       );
     }
 
@@ -181,7 +181,7 @@ export class InterpolationResolver {
       if (envMatch !== null) {
         return this.resolveEnvVar(
           envMatch[1] as string,
-          envMatch[2] as string | undefined
+          envMatch[2] as string | undefined,
         );
       }
 
@@ -208,7 +208,7 @@ export class InterpolationResolver {
    */
   private resolveEnvVar(
     name: string,
-    defaultValue: string | undefined
+    defaultValue: string | undefined,
   ): string | undefined {
     const value = this.options.env[name];
 
@@ -226,7 +226,7 @@ export class InterpolationResolver {
       throw new HydraConfigError(
         `Environment variable '${name}' is not defined`,
         HydraErrorCode.INTERPOLATION_ERROR,
-        { variable: name }
+        { variable: name },
       );
     }
 
@@ -244,7 +244,7 @@ export class InterpolationResolver {
   private resolveCustom(
     resolverName: string,
     key: string,
-    context: Record<string, unknown>
+    context: Record<string, unknown>,
   ): unknown {
     const resolver = this.options.resolvers[resolverName];
 
@@ -253,7 +253,7 @@ export class InterpolationResolver {
         throw new HydraConfigError(
           `Unknown resolver '${resolverName}'`,
           HydraErrorCode.INTERPOLATION_ERROR,
-          { resolver: resolverName, key }
+          { resolver: resolverName, key },
         );
       }
 
@@ -274,7 +274,7 @@ export class InterpolationResolver {
    */
   private resolveFromContext(
     path: string,
-    context: Record<string, unknown>
+    context: Record<string, unknown>,
   ): unknown {
     const parts = path.split('.');
     let current: unknown = context;
@@ -285,7 +285,7 @@ export class InterpolationResolver {
           throw new HydraConfigError(
             `Cannot resolve '${path}': intermediate value is not an object`,
             HydraErrorCode.INTERPOLATION_ERROR,
-            { path, failedAt: part }
+            { path, failedAt: part },
           );
         }
         this.unresolved.push(path);
@@ -300,7 +300,7 @@ export class InterpolationResolver {
         throw new HydraConfigError(
           `Reference '${path}' could not be resolved`,
           HydraErrorCode.INTERPOLATION_ERROR,
-          { path }
+          { path },
         );
       }
       this.unresolved.push(path);
@@ -346,7 +346,7 @@ export const interpolationResolver = new InterpolationResolver();
 export function resolveInterpolations<T extends Record<string, unknown>>(
   config: T,
   context: Record<string, unknown> = {},
-  options: InterpolationOptions = {}
+  options: InterpolationOptions = {},
 ): T {
   const resolver = new InterpolationResolver(options);
   const result = resolver.resolve(config, context);
@@ -355,7 +355,7 @@ export function resolveInterpolations<T extends Record<string, unknown>>(
     throw new HydraConfigError(
       `Unresolved interpolations: ${result.unresolved.join(', ')}`,
       HydraErrorCode.INTERPOLATION_ERROR,
-      { unresolved: result.unresolved }
+      { unresolved: result.unresolved },
     );
   }
 

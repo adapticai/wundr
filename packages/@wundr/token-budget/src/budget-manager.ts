@@ -149,7 +149,7 @@ export class TokenBudgetManager {
     ) {
       withinBudget = false;
       warnings.push(
-        `Total tokens (${projectedTotals.totalTokens}) would exceed limit (${limits.maxTotalTokens})`
+        `Total tokens (${projectedTotals.totalTokens}) would exceed limit (${limits.maxTotalTokens})`,
       );
     }
 
@@ -159,7 +159,7 @@ export class TokenBudgetManager {
     ) {
       withinBudget = false;
       warnings.push(
-        `Input tokens (${projectedTotals.inputTokens}) would exceed limit (${limits.maxInputTokens})`
+        `Input tokens (${projectedTotals.inputTokens}) would exceed limit (${limits.maxInputTokens})`,
       );
     }
 
@@ -169,14 +169,14 @@ export class TokenBudgetManager {
     ) {
       withinBudget = false;
       warnings.push(
-        `Output tokens (${projectedTotals.outputTokens}) would exceed limit (${limits.maxOutputTokens})`
+        `Output tokens (${projectedTotals.outputTokens}) would exceed limit (${limits.maxOutputTokens})`,
       );
     }
 
     if (limits.maxCostUsd && projectedTotals.costUsd > limits.maxCostUsd) {
       withinBudget = false;
       warnings.push(
-        `Cost ($${projectedTotals.costUsd.toFixed(4)}) would exceed limit ($${limits.maxCostUsd})`
+        `Cost ($${projectedTotals.costUsd.toFixed(4)}) would exceed limit ($${limits.maxCostUsd})`,
       );
     }
 
@@ -185,11 +185,11 @@ export class TokenBudgetManager {
       const utilization = this.calculateUtilization(projectedTotals);
       if (utilization >= limits.criticalThreshold) {
         warnings.push(
-          `Approaching critical budget threshold (${(utilization * 100).toFixed(1)}%)`
+          `Approaching critical budget threshold (${(utilization * 100).toFixed(1)}%)`,
         );
       } else if (utilization >= limits.warningThreshold) {
         warnings.push(
-          `Approaching budget warning threshold (${(utilization * 100).toFixed(1)}%)`
+          `Approaching budget warning threshold (${(utilization * 100).toFixed(1)}%)`,
         );
       }
     }
@@ -557,7 +557,7 @@ export class TokenBudgetManager {
         suggestions: this.suggestOptimization(),
       },
       null,
-      2
+      2,
     );
   }
 
@@ -586,7 +586,7 @@ export class TokenBudgetManager {
       }
 
       return this.usageTracker.getUsageInWindow(
-        this.config.limits.timeWindowMs
+        this.config.limits.timeWindowMs,
       );
     }
 
@@ -667,7 +667,7 @@ export class BudgetManagerError extends Error {
  * @returns TokenBudgetManager instance
  */
 export function createBudgetManager(
-  config: Partial<TokenBudgetConfig> = {}
+  config: Partial<TokenBudgetConfig> = {},
 ): TokenBudgetManager {
   return new TokenBudgetManager(config);
 }
@@ -681,7 +681,7 @@ export function createBudgetManager(
  */
 export function createStrictBudgetManager(
   maxTokens: number,
-  maxCostUsd: number
+  maxCostUsd: number,
 ): TokenBudgetManager {
   return new TokenBudgetManager({
     limits: {
@@ -706,7 +706,7 @@ export function createStrictBudgetManager(
 export function createSessionBudgetManager(
   sessionId: string,
   agentId?: string,
-  config: Partial<TokenBudgetConfig> = {}
+  config: Partial<TokenBudgetConfig> = {},
 ): TokenBudgetManager {
   return new TokenBudgetManager({
     ...config,

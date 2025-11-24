@@ -50,7 +50,7 @@ abstract class BaseGrammarEnforcer implements GrammarEnforcer {
     position: number,
     expected: string,
     found: string,
-    message: string
+    message: string,
   ): GrammarError {
     return { position, expected, found, message };
   }
@@ -92,7 +92,7 @@ export class JsonSchemaGrammarEnforcer extends BaseGrammarEnforcer {
             'expected' in issue ? String(issue.expected) : 'valid value',
           found: 'received' in issue ? String(issue.received) : 'invalid value',
           message: `${issue.path.join('.')}: ${issue.message}`,
-        })
+        }),
       );
 
       return {
@@ -108,7 +108,7 @@ export class JsonSchemaGrammarEnforcer extends BaseGrammarEnforcer {
             0,
             'valid JSON',
             input.substring(0, 50),
-            error instanceof Error ? error.message : 'Failed to parse JSON'
+            error instanceof Error ? error.message : 'Failed to parse JSON',
           ),
         ],
         grammarUsed: 'json-schema',
@@ -143,12 +143,12 @@ export class RegexGrammarEnforcer extends BaseGrammarEnforcer {
     this.patterns.set('url', /^https?:\/\/[^\s/$.?#].[^\s]*$/i);
     this.patterns.set(
       'uuid',
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     );
     this.patterns.set('date', /^\d{4}-\d{2}-\d{2}$/);
     this.patterns.set(
       'datetime',
-      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/,
     );
     this.patterns.set('time', /^\d{2}:\d{2}:\d{2}$/);
     this.patterns.set('phone', /^\+?[\d\s-()]{10,}$/);
@@ -187,7 +187,7 @@ export class RegexGrammarEnforcer extends BaseGrammarEnforcer {
               0,
               customPattern,
               input.substring(0, 50),
-              'Input does not match pattern'
+              'Input does not match pattern',
             ),
           ],
           grammarUsed: 'regex',
@@ -201,7 +201,7 @@ export class RegexGrammarEnforcer extends BaseGrammarEnforcer {
             0,
             'valid JSON or pattern',
             input.substring(0, 50),
-            'Failed to parse input'
+            'Failed to parse input',
           ),
         ],
         grammarUsed: 'regex',
@@ -237,7 +237,7 @@ export class RegexGrammarEnforcer extends BaseGrammarEnforcer {
 
   private validateWithPatterns(
     data: unknown,
-    schema: ZodSchema
+    schema: ZodSchema,
   ): GrammarError[] {
     const errors: GrammarError[] = [];
     const metadata = introspectSchema(schema);
@@ -260,8 +260,8 @@ export class RegexGrammarEnforcer extends BaseGrammarEnforcer {
                 0,
                 'required field',
                 'missing',
-                `Field "${key}" is required`
-              )
+                `Field "${key}" is required`,
+              ),
             );
           }
           continue;
@@ -284,8 +284,8 @@ export class RegexGrammarEnforcer extends BaseGrammarEnforcer {
                     0,
                     patternName,
                     value.substring(0, 30),
-                    `Field "${key}" does not match ${patternName} pattern`
-                  )
+                    `Field "${key}" does not match ${patternName} pattern`,
+                  ),
                 );
               }
             }
@@ -320,7 +320,7 @@ export class RegexGrammarEnforcer extends BaseGrammarEnforcer {
               valuePattern = '.*';
           }
           return `"${key}"\\s*:\\s*${valuePattern}`;
-        }
+        },
       );
 
       patterns.push(`\\{\\s*${fieldPatterns.join('\\s*,\\s*')}\\s*\\}`);
@@ -372,7 +372,7 @@ export class PegGrammarEnforcer extends BaseGrammarEnforcer {
       if (this.config.customGrammar) {
         const pegResult = this.applyPegGrammar(
           input,
-          this.config.customGrammar
+          this.config.customGrammar,
         );
         if (!pegResult.valid) {
           return pegResult;
@@ -396,7 +396,7 @@ export class PegGrammarEnforcer extends BaseGrammarEnforcer {
             'expected' in issue ? String(issue.expected) : 'valid value',
           found: 'received' in issue ? String(issue.received) : 'invalid value',
           message: `${issue.path.join('.')}: ${issue.message}`,
-        })
+        }),
       );
 
       return {
@@ -412,7 +412,7 @@ export class PegGrammarEnforcer extends BaseGrammarEnforcer {
             0,
             'valid PEG input',
             input.substring(0, 50),
-            error instanceof Error ? error.message : 'Failed to parse'
+            error instanceof Error ? error.message : 'Failed to parse',
           ),
         ],
         grammarUsed: 'peg-grammar',
@@ -426,7 +426,7 @@ export class PegGrammarEnforcer extends BaseGrammarEnforcer {
    */
   private applyPegGrammar(
     input: string,
-    grammar: string
+    grammar: string,
   ): GrammarEnforcementResult {
     // Parse the grammar definition
     const rules = this.parseGrammarDefinition(grammar);
@@ -445,8 +445,8 @@ export class PegGrammarEnforcer extends BaseGrammarEnforcer {
             position,
             rule.name,
             input.substring(position, position + 20),
-            match.error ?? 'Rule not matched'
-          )
+            match.error ?? 'Rule not matched',
+          ),
         );
       }
     }
@@ -485,7 +485,7 @@ export class PegGrammarEnforcer extends BaseGrammarEnforcer {
   private matchRule(
     input: string,
     position: number,
-    rule: PegRule
+    rule: PegRule,
   ): { success: boolean; newPosition: number; error?: string } {
     // Simple pattern matching for common PEG expressions
     const pattern = rule.pattern;
@@ -610,7 +610,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
       if (this.config.customGrammar) {
         const cfgResult = this.applyCfgGrammar(
           input,
-          this.config.customGrammar
+          this.config.customGrammar,
         );
         if (!cfgResult.valid) {
           return cfgResult;
@@ -634,7 +634,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
             'expected' in issue ? String(issue.expected) : 'valid value',
           found: 'received' in issue ? String(issue.received) : 'invalid value',
           message: `${issue.path.join('.')}: ${issue.message}`,
-        })
+        }),
       );
 
       return {
@@ -650,7 +650,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
             0,
             'valid CFG input',
             input.substring(0, 50),
-            error instanceof Error ? error.message : 'Failed to parse'
+            error instanceof Error ? error.message : 'Failed to parse',
           ),
         ],
         grammarUsed: 'context-free-grammar',
@@ -663,7 +663,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
    */
   private applyCfgGrammar(
     input: string,
-    grammar: string
+    grammar: string,
   ): GrammarEnforcementResult {
     // Parse CFG rules
     const rules = this.parseCfgRules(grammar);
@@ -684,7 +684,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
       input.trim(),
       startSymbol,
       rules,
-      new Set()
+      new Set(),
     );
 
     if (derivable) {
@@ -698,7 +698,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
           0,
           startSymbol,
           input.substring(0, 50),
-          'Input cannot be derived from grammar'
+          'Input cannot be derived from grammar',
         ),
       ],
       grammarUsed: 'context-free-grammar',
@@ -733,7 +733,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
     input: string,
     symbol: string,
     rules: CfgRule[],
-    visited: Set<string>
+    visited: Set<string>,
   ): boolean {
     // Prevent infinite recursion
     const key = `${symbol}:${input}`;
@@ -768,7 +768,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
     input: string,
     symbols: string[],
     rules: CfgRule[],
-    visited: Set<string>
+    visited: Set<string>,
   ): boolean {
     if (symbols.length === 0) {
       return input.length === 0;
@@ -829,7 +829,7 @@ export class CfgGrammarEnforcer extends BaseGrammarEnforcer {
     grammarLines.push('CHARS -> CHAR CHARS | epsilon');
     grammarLines.push('NUMBER -> DIGIT | DIGIT NUMBER');
     grammarLines.push(
-      'DIGIT -> "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"'
+      'DIGIT -> "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"',
     );
     grammarLines.push('BOOL -> "true" | "false"');
     grammarLines.push('NULL -> "null"');
@@ -854,7 +854,7 @@ interface CfgRule {
  */
 export function createGrammarEnforcer(
   method: GrammarEnforcementMethod,
-  config?: Partial<GrammarEnforcementConfig>
+  config?: Partial<GrammarEnforcementConfig>,
 ): GrammarEnforcer {
   switch (method) {
     case 'json-schema':
@@ -906,7 +906,7 @@ class NoOpGrammarEnforcer extends BaseGrammarEnforcer {
             0,
             'valid JSON',
             input.substring(0, 50),
-            'Failed to parse'
+            'Failed to parse',
           ),
         ],
         grammarUsed: 'none',

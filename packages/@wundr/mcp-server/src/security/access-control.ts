@@ -237,7 +237,7 @@ export class MCPAccessController {
     if (config.enableCache) {
       this.cache = new AuthorizationCache(
         config.maxCacheSize ?? 1000,
-        config.cacheTtlMs ?? 60000
+        config.cacheTtlMs ?? 60000,
       );
     } else {
       this.cache = null;
@@ -297,13 +297,13 @@ export class MCPAccessController {
             'Rate limit exceeded',
             'RATE_LIMITED',
             undefined,
-            startTime
+            startTime,
           );
           this.emitSecurityEvent(
             'RATE_LIMIT_EXCEEDED',
             'medium',
             request,
-            result
+            result,
           );
           return result;
         }
@@ -318,7 +318,7 @@ export class MCPAccessController {
             ipResult.reason,
             'IP_BLOCKED',
             undefined,
-            startTime
+            startTime,
           );
           this.emitSecurityEvent('IP_BLOCKED', 'high', request, result);
           return result;
@@ -349,7 +349,7 @@ export class MCPAccessController {
         `Policy evaluation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'POLICY_EVALUATION_ERROR',
         undefined,
-        startTime
+        startTime,
       );
 
       this.emitSecurityEvent('AUTHORIZATION_FAILURE', 'high', request, result);
@@ -368,7 +368,7 @@ export class MCPAccessController {
    */
   public verifyTokenAudience(
     claims: TokenClaims,
-    options: AudienceVerificationOptions
+    options: AudienceVerificationOptions,
   ): TokenValidationResult {
     const audience = claims.aud;
 
@@ -392,7 +392,7 @@ export class MCPAccessController {
     if (options.matchAny) {
       // At least one expected audience must match
       const hasMatch = expectedAudiences.some(expected =>
-        audiences.includes(expected)
+        audiences.includes(expected),
       );
       if (!hasMatch) {
         return {
@@ -404,7 +404,7 @@ export class MCPAccessController {
     } else {
       // All expected audiences must be present
       const allMatch = expectedAudiences.every(expected =>
-        audiences.includes(expected)
+        audiences.includes(expected),
       );
       if (!allMatch) {
         return {
@@ -427,7 +427,7 @@ export class MCPAccessController {
    */
   public validateTokenTiming(
     claims: TokenClaims,
-    clockSkewMs = 60000
+    clockSkewMs = 60000,
   ): TokenValidationResult {
     const now = Math.floor(Date.now() / 1000);
     const skewSeconds = Math.floor(clockSkewMs / 1000);
@@ -509,11 +509,11 @@ export class MCPAccessController {
    */
   private evaluatePolicy(
     request: AuthorizationRequest,
-    startTime: number
+    startTime: number,
   ): AuthorizationResult {
     // Sort rules by priority (higher first)
     const sortedRules = [...this.policy.rules].sort(
-      (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
+      (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
     );
 
     // Evaluate each rule
@@ -527,7 +527,7 @@ export class MCPAccessController {
           `${allowed ? 'Allowed' : 'Denied'} by rule: ${rule.id}`,
           allowed ? undefined : 'ACCESS_DENIED',
           rule,
-          startTime
+          startTime,
         );
       }
     }
@@ -539,7 +539,7 @@ export class MCPAccessController {
       `${allowed ? 'Allowed' : 'Denied'} by default policy`,
       allowed ? undefined : 'ACCESS_DENIED',
       undefined,
-      startTime
+      startTime,
     );
   }
 
@@ -548,7 +548,7 @@ export class MCPAccessController {
    */
   private ruleMatches(
     rule: PolicyRule,
-    request: AuthorizationRequest
+    request: AuthorizationRequest,
   ): boolean {
     // Check resource type
     if (!rule.resourceTypes.includes(request.resourceType)) {
@@ -563,7 +563,7 @@ export class MCPAccessController {
     // Check resource patterns
     if (rule.resourcePatterns && rule.resourcePatterns.length > 0) {
       const matchesPattern = rule.resourcePatterns.some(pattern =>
-        this.matchesGlobPattern(request.resourceName, pattern)
+        this.matchesGlobPattern(request.resourceName, pattern),
       );
       if (!matchesPattern) {
         return false;
@@ -573,7 +573,7 @@ export class MCPAccessController {
     // Check conditions
     if (rule.conditions && rule.conditions.length > 0) {
       const allConditionsMet = rule.conditions.every(condition =>
-        this.evaluateCondition(condition, request)
+        this.evaluateCondition(condition, request),
       );
       if (!allConditionsMet) {
         return false;
@@ -606,7 +606,7 @@ export class MCPAccessController {
       operator: string;
       value: string | string[] | RegExp;
     },
-    request: AuthorizationRequest
+    request: AuthorizationRequest,
   ): boolean {
     // Get field value from request
     const fieldValue = this.getFieldValue(condition.field, request);
@@ -723,7 +723,7 @@ export class MCPAccessController {
     reason: string,
     errorCode: AuthorizationErrorCode | undefined,
     matchedRule: PolicyRule | undefined,
-    startTime: number
+    startTime: number,
   ): AuthorizationResult {
     return {
       allowed,
@@ -742,7 +742,7 @@ export class MCPAccessController {
     type: SecurityEventType,
     severity: SecurityEventSeverity,
     request: AuthorizationRequest,
-    result: AuthorizationResult
+    result: AuthorizationResult,
   ): void {
     if (!this.emitEvents || !this.onSecurityEvent) {
       return;

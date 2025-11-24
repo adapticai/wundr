@@ -117,7 +117,7 @@ export class EpisodicStore {
    */
   async store(
     content: unknown,
-    options: StoreMemoryOptions & { episode?: Partial<EpisodeMetadata> }
+    options: StoreMemoryOptions & { episode?: Partial<EpisodeMetadata> },
   ): Promise<Memory> {
     const tokenCount = this.config.tokenEstimator!(content);
 
@@ -210,7 +210,7 @@ export class EpisodicStore {
   async queryByTimeRange(
     start: Date,
     end: Date,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<RetrievalResult> {
     const startTime = Date.now();
     const results: Memory[] = [];
@@ -230,7 +230,7 @@ export class EpisodicStore {
 
     // Sort by creation time (newest first)
     results.sort(
-      (a, b) => b.metadata.createdAt.getTime() - a.metadata.createdAt.getTime()
+      (a, b) => b.metadata.createdAt.getTime() - a.metadata.createdAt.getTime(),
     );
 
     const truncated = results.length > limit;
@@ -253,7 +253,7 @@ export class EpisodicStore {
    */
   async queryBySession(
     sessionId: string,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<RetrievalResult> {
     const startTime = Date.now();
     const memoryIds = this.sessionIndex.get(sessionId) || new Set();
@@ -269,7 +269,7 @@ export class EpisodicStore {
     }
 
     results.sort(
-      (a, b) => b.metadata.createdAt.getTime() - a.metadata.createdAt.getTime()
+      (a, b) => b.metadata.createdAt.getTime() - a.metadata.createdAt.getTime(),
     );
 
     const truncated = results.length > limit;
@@ -298,19 +298,19 @@ export class EpisodicStore {
     // Apply filters
     if (options.minStrength !== undefined) {
       candidates = candidates.filter(
-        m => m.metadata.retentionStrength >= options.minStrength!
+        m => m.metadata.retentionStrength >= options.minStrength!,
       );
     }
 
     if (options.tags && options.tags.length > 0) {
       candidates = candidates.filter(m =>
-        options.tags!.some(tag => m.metadata.tags.includes(tag))
+        options.tags!.some(tag => m.metadata.tags.includes(tag)),
       );
     }
 
     if (options.agentId) {
       candidates = candidates.filter(
-        m => m.metadata.agentId === options.agentId
+        m => m.metadata.agentId === options.agentId,
       );
     }
 
@@ -327,7 +327,7 @@ export class EpisodicStore {
     candidates = this.sortMemories(
       candidates,
       options.sortBy || 'recency',
-      options.sortDirection || 'desc'
+      options.sortDirection || 'desc',
     );
 
     // Update access metadata
@@ -356,11 +356,11 @@ export class EpisodicStore {
    */
   async findSimilar(
     queryEmbedding: number[],
-    limit: number = 10
+    limit: number = 10,
   ): Promise<RetrievalResult> {
     const startTime = Date.now();
     const candidates = Array.from(this.memories.values()).filter(
-      m => !this.isExpired(m) && m.embedding && m.embedding.length > 0
+      m => !this.isExpired(m) && m.embedding && m.embedding.length > 0,
     );
 
     const scored = candidates.map(memory => ({
@@ -371,7 +371,7 @@ export class EpisodicStore {
     scored.sort((a, b) => b.similarity - a.similarity);
 
     const filtered = scored.filter(
-      s => s.similarity >= this.config.similarityThreshold!
+      s => s.similarity >= this.config.similarityThreshold!,
     );
 
     const memories = filtered.slice(0, limit).map(s => {
@@ -397,13 +397,13 @@ export class EpisodicStore {
    */
   getConsolidationCandidates(
     strengthThreshold: number = 0.7,
-    accessCountThreshold: number = 3
+    accessCountThreshold: number = 3,
   ): Memory[] {
     return Array.from(this.memories.values()).filter(
       m =>
         !this.isExpired(m) &&
         m.metadata.retentionStrength >= strengthThreshold &&
-        m.metadata.accessCount >= accessCountThreshold
+        m.metadata.accessCount >= accessCountThreshold,
     );
   }
 
@@ -416,7 +416,7 @@ export class EpisodicStore {
    */
   update(
     id: string,
-    updates: { content?: unknown; metadata?: Partial<MemoryMetadata> }
+    updates: { content?: unknown; metadata?: Partial<MemoryMetadata> },
   ): Memory | null {
     const memory = this.memories.get(id);
     if (!memory) {
@@ -602,12 +602,12 @@ export class EpisodicStore {
       validMemories.length > 0
         ? validMemories.reduce(
             (sum, m) => sum + m.metadata.retentionStrength,
-            0
+            0,
           ) / validMemories.length
         : 0;
 
     const sortedByDate = validMemories.sort(
-      (a, b) => a.metadata.createdAt.getTime() - b.metadata.createdAt.getTime()
+      (a, b) => a.metadata.createdAt.getTime() - b.metadata.createdAt.getTime(),
     );
 
     return {
@@ -696,7 +696,7 @@ export class EpisodicStore {
   private addToIndices(memory: Memory): void {
     // Time index (hourly buckets)
     const hourBucket = Math.floor(
-      memory.metadata.createdAt.getTime() / (1000 * 60 * 60)
+      memory.metadata.createdAt.getTime() / (1000 * 60 * 60),
     );
     if (!this.timeIndex.has(hourBucket)) {
       this.timeIndex.set(hourBucket, new Set());
@@ -736,7 +736,7 @@ export class EpisodicStore {
   private removeFromIndices(memory: Memory): void {
     // Remove from time index
     const hourBucket = Math.floor(
-      memory.metadata.createdAt.getTime() / (1000 * 60 * 60)
+      memory.metadata.createdAt.getTime() / (1000 * 60 * 60),
     );
     this.timeIndex.get(hourBucket)?.delete(memory.id);
 
@@ -764,7 +764,7 @@ export class EpisodicStore {
   private updateTagIndex(
     id: string,
     oldTags: string[],
-    newTags: string[]
+    newTags: string[],
   ): void {
     for (const tag of oldTags) {
       if (!newTags.includes(tag)) {
@@ -795,7 +795,7 @@ export class EpisodicStore {
     const candidates = Array.from(this.memories.values())
       .filter(m => !m.metadata.pinned)
       .sort(
-        (a, b) => a.metadata.retentionStrength - b.metadata.retentionStrength
+        (a, b) => a.metadata.retentionStrength - b.metadata.retentionStrength,
       );
 
     for (const memory of candidates) {
@@ -811,7 +811,7 @@ export class EpisodicStore {
 
   private semanticSearch(
     memories: Memory[],
-    queryEmbedding: number[]
+    queryEmbedding: number[],
   ): Memory[] {
     return memories
       .filter(m => m.embedding && m.embedding.length > 0)
@@ -849,7 +849,7 @@ export class EpisodicStore {
   private sortMemories(
     memories: Memory[],
     sortBy: string,
-    direction: 'asc' | 'desc'
+    direction: 'asc' | 'desc',
   ): Memory[] {
     const multiplier = direction === 'asc' ? 1 : -1;
 

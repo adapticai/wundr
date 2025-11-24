@@ -490,7 +490,7 @@ export class StructuredOutputError extends Error {
   constructor(
     message: string,
     public readonly code: StructuredOutputErrorCode,
-    public readonly details?: Record<string, unknown>
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'StructuredOutputError';
@@ -517,12 +517,12 @@ export class MaxRetriesExceededError extends StructuredOutputError {
   constructor(
     public readonly attempts: number,
     public readonly lastErrors: ValidationError[],
-    public readonly rawResponses: string[]
+    public readonly rawResponses: string[],
   ) {
     super(
       `Validation failed after ${attempts} attempts`,
       'MAX_RETRIES_EXCEEDED',
-      { attempts, lastErrors, rawResponses }
+      { attempts, lastErrors, rawResponses },
     );
     this.name = 'MaxRetriesExceededError';
   }
@@ -534,12 +534,12 @@ export class MaxRetriesExceededError extends StructuredOutputError {
 export class TimeoutError extends StructuredOutputError {
   constructor(
     public readonly timeoutMs: number,
-    public readonly elapsedMs: number
+    public readonly elapsedMs: number,
   ) {
     super(
       `Request timed out after ${elapsedMs}ms (timeout: ${timeoutMs}ms)`,
       'TIMEOUT',
-      { timeoutMs, elapsedMs }
+      { timeoutMs, elapsedMs },
     );
     this.name = 'TimeoutError';
   }

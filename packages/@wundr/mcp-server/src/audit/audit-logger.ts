@@ -486,7 +486,7 @@ export class AuditLogger {
    */
   public logCustomEvent(
     event: Omit<AuditEvent, 'id' | 'timestamp'> &
-      Partial<Pick<AuditEvent, 'id' | 'timestamp'>>
+      Partial<Pick<AuditEvent, 'id' | 'timestamp'>>,
   ): void {
     const fullEvent: AuditEvent = {
       ...event,
@@ -508,7 +508,7 @@ export class AuditLogger {
   public createToolInvocationTracker(
     toolName: string,
     context: ToolContext,
-    principal?: AuditPrincipal
+    principal?: AuditPrincipal,
   ): ToolInvocationTracker {
     return new ToolInvocationTracker(this, toolName, context, principal);
   }
@@ -568,7 +568,7 @@ export class AuditLogger {
    * Get the appropriate log method for a severity level
    */
   private getLogMethod(
-    severity: AuditSeverity
+    severity: AuditSeverity,
   ): (message: string, data?: unknown) => void {
     if (!this.config.logger) {
       return () => {};
@@ -625,7 +625,7 @@ export class AuditLogger {
       // Check redact fields
       if (
         this.config.sanitization.redactFields?.some(f =>
-          lowerKey.includes(f.toLowerCase())
+          lowerKey.includes(f.toLowerCase()),
         )
       ) {
         sanitized[key] = '[REDACTED]';
@@ -635,7 +635,7 @@ export class AuditLogger {
       // Check mask fields
       if (
         this.config.sanitization.maskFields?.some(f =>
-          lowerKey.includes(f.toLowerCase())
+          lowerKey.includes(f.toLowerCase()),
         )
       ) {
         if (typeof value === 'string' && value.length > 4) {
@@ -736,7 +736,7 @@ export class ToolInvocationTracker {
     auditLogger: AuditLogger,
     toolName: string,
     context: ToolContext,
-    principal?: AuditPrincipal
+    principal?: AuditPrincipal,
   ) {
     this.auditLogger = auditLogger;
     this.toolName = toolName;

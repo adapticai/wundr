@@ -10,5 +10,6 @@ export * from './installers';
 export * from './validators';
 export * from './types';
 
-// Default export for easy importing
-export { EnvironmentManager } from './core/environment-manager';
+// Re-export with alias for convenience
+import { EnvironmentManager as _EnvironmentManager } from './core/environment-manager';
+export { _EnvironmentManager as EnvManager };

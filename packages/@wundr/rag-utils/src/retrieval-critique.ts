@@ -165,7 +165,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
    */
   async critique(
     query: string,
-    results: SearchResult[]
+    results: SearchResult[],
   ): Promise<CritiqueResult> {
     this.emit('critique:start', results.length);
 
@@ -208,7 +208,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
       const querySuggestions = this.generateQuerySuggestions(
         query,
         dimensions,
-        results
+        results,
       );
 
       // Generate summary
@@ -347,7 +347,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
         const similarity = this.calculateContentSimilarity(
           results[i]!.chunk,
-          results[j]!.chunk
+          results[j]!.chunk,
         );
 
         if (similarity > 0.7) {
@@ -364,7 +364,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
     const redundantCount = redundantGroups.reduce(
       (sum, group) => sum + group.length - 1,
-      0
+      0,
     );
     const redundancyRatio =
       results.length > 0 ? redundantCount / results.length : 0;
@@ -393,7 +393,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
     // Bonus for concept presence
     const conceptMatches = queryConcepts.filter(c =>
-      content.includes(c.toLowerCase())
+      content.includes(c.toLowerCase()),
     ).length;
     const conceptBonus =
       queryConcepts.length > 0
@@ -436,7 +436,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
   private analyzeRelevanceDimension(
     query: string,
-    results: SearchResult[]
+    results: SearchResult[],
   ): QualityDimension {
     const analysis = this.analyzeRelevance(query, results);
     const issues: string[] = [];
@@ -444,17 +444,17 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
     if (analysis.averageScore < this.config.minRelevanceScore) {
       issues.push(
-        `Average relevance score (${analysis.averageScore.toFixed(2)}) below threshold`
+        `Average relevance score (${analysis.averageScore.toFixed(2)}) below threshold`,
       );
       recommendations.push(
-        'Consider reformulating query with more specific terms'
+        'Consider reformulating query with more specific terms',
       );
     }
 
     if (analysis.distribution.low > analysis.distribution.high) {
       issues.push('More low-relevance results than high-relevance results');
       recommendations.push(
-        'Filter out low-scoring results or adjust retrieval parameters'
+        'Filter out low-scoring results or adjust retrieval parameters',
       );
     }
 
@@ -469,7 +469,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
   private analyzeCoverageDimension(
     query: string,
-    results: SearchResult[]
+    results: SearchResult[],
   ): QualityDimension {
     const analysis = this.analyzeCoverage(query, results);
     const issues: string[] = [];
@@ -477,12 +477,12 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
     if (analysis.conceptCoverage < this.config.minCoverageScore) {
       issues.push(
-        `Concept coverage (${(analysis.conceptCoverage * 100).toFixed(0)}%) below threshold`
+        `Concept coverage (${(analysis.conceptCoverage * 100).toFixed(0)}%) below threshold`,
       );
       if (analysis.missingConcepts.length > 0) {
         issues.push(`Missing concepts: ${analysis.missingConcepts.join(', ')}`);
         recommendations.push(
-          `Add query terms for: ${analysis.missingConcepts.join(', ')}`
+          `Add query terms for: ${analysis.missingConcepts.join(', ')}`,
         );
       }
     }
@@ -508,12 +508,12 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
     // Calculate diversity based on unique files and content types
     const uniqueFiles = new Set(results.map(r => r.chunk.metadata.sourceFile));
     const uniqueTypes = new Set(
-      results.map(r => r.chunk.metadata.type).filter(Boolean)
+      results.map(r => r.chunk.metadata.type).filter(Boolean),
     );
 
     const fileDiversity = Math.min(
       uniqueFiles.size / Math.max(results.length * 0.5, 1),
-      1
+      1,
     );
     const typeDiversity = uniqueTypes.size / 4; // 4 possible types
 
@@ -526,7 +526,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
       }
       if (typeDiversity < 0.5) {
         recommendations.push(
-          'Include different content types (code, comments, documentation)'
+          'Include different content types (code, comments, documentation)',
         );
       }
     }
@@ -541,7 +541,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
   }
 
   private analyzeRedundancyDimension(
-    results: SearchResult[]
+    results: SearchResult[],
   ): QualityDimension {
     const analysis = this.analyzeRedundancy(results);
     const issues: string[] = [];
@@ -552,12 +552,12 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
     if (analysis.redundancyRatio > this.config.maxRedundancyRatio) {
       issues.push(
-        `High redundancy (${(analysis.redundancyRatio * 100).toFixed(0)}%) in results`
+        `High redundancy (${(analysis.redundancyRatio * 100).toFixed(0)}%) in results`,
       );
       recommendations.push('Remove duplicate or near-duplicate results');
       if (analysis.redundantGroups.length > 0) {
         recommendations.push(
-          `${analysis.redundantGroups.length} groups of redundant content found`
+          `${analysis.redundantGroups.length} groups of redundant content found`,
         );
       }
     }
@@ -575,7 +575,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
     const totalWeight = dimensions.reduce((sum, d) => sum + d.weight, 0);
     const weightedSum = dimensions.reduce(
       (sum, d) => sum + d.score * d.weight,
-      0
+      0,
     );
 
     return totalWeight > 0 ? weightedSum / totalWeight : 0;
@@ -622,7 +622,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
   private generateQuerySuggestions(
     query: string,
     dimensions: QualityDimension[],
-    results: SearchResult[]
+    results: SearchResult[],
   ): string[] {
     const suggestions: string[] = [];
     const concepts = this.extractConcepts(query);
@@ -643,7 +643,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
       const synonyms = this.getSynonyms(concepts);
       if (synonyms.length > 0) {
         suggestions.push(
-          [...concepts.slice(0, 2), ...synonyms.slice(0, 2)].join(' ')
+          [...concepts.slice(0, 2), ...synonyms.slice(0, 2)].join(' '),
         );
       }
     }
@@ -659,7 +659,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
   private generateSummary(
     dimensions: QualityDimension[],
-    overallScore: number
+    overallScore: number,
   ): string {
     const totalIssues = dimensions.reduce((sum, d) => sum + d.issues.length, 0);
 
@@ -713,7 +713,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
 
   private calculateContentSimilarity(
     chunk1: DocumentChunk,
-    chunk2: DocumentChunk
+    chunk2: DocumentChunk,
   ): number {
     const terms1 = new Set(this.extractConcepts(chunk1.content));
     const terms2 = new Set(this.extractConcepts(chunk2.content));
@@ -754,7 +754,7 @@ export class RetrievalCritic extends EventEmitter<RetrievalCriticEvents> {
  * @returns Configured RetrievalCritic instance
  */
 export function createRetrievalCritic(
-  config?: Partial<RetrievalCritiqueConfig>
+  config?: Partial<RetrievalCritiqueConfig>,
 ): RetrievalCritic {
   return new RetrievalCritic(config);
 }

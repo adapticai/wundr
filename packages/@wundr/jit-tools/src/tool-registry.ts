@@ -157,7 +157,7 @@ export class ToolRegistry extends EventEmitter {
   async register(
     tool: Partial<ToolSpec> &
       Pick<ToolSpec, 'id' | 'name' | 'description' | 'category'>,
-    options: RegisterToolOptions = {}
+    options: RegisterToolOptions = {},
   ): Promise<RegistrationResult> {
     const warnings: string[] = [];
 
@@ -230,7 +230,7 @@ export class ToolRegistry extends EventEmitter {
       Partial<ToolSpec> &
         Pick<ToolSpec, 'id' | 'name' | 'description' | 'category'>
     >,
-    options: RegisterToolOptions = {}
+    options: RegisterToolOptions = {},
   ): Promise<RegistrationResult[]> {
     const results: RegistrationResult[] = [];
 
@@ -276,7 +276,7 @@ export class ToolRegistry extends EventEmitter {
    */
   async update(
     toolId: string,
-    updates: Partial<Omit<ToolSpec, 'id'>>
+    updates: Partial<Omit<ToolSpec, 'id'>>,
   ): Promise<ToolSpec | null> {
     const existingTool = this.tools.get(toolId);
 
@@ -417,7 +417,7 @@ export class ToolRegistry extends EventEmitter {
       const permissionMatches = new Set<string>();
       for (const tool of this.tools.values()) {
         const hasAllPermissions = options.permissions.every(perm =>
-          tool.permissions.includes(perm)
+          tool.permissions.includes(perm),
         );
         if (hasAllPermissions) {
           permissionMatches.add(tool.id);
@@ -587,7 +587,7 @@ export class ToolRegistry extends EventEmitter {
           acc[category] = toolsByCategory[category] || 0;
           return acc;
         },
-        {} as Record<ToolCategory, number>
+        {} as Record<ToolCategory, number>,
       );
 
     return {
@@ -619,7 +619,7 @@ export class ToolRegistry extends EventEmitter {
   private buildCompleteSpec(
     partial: Partial<ToolSpec> &
       Pick<ToolSpec, 'id' | 'name' | 'description' | 'category'>,
-    metadataOverrides?: Partial<ToolMetadata>
+    metadataOverrides?: Partial<ToolMetadata>,
   ): ToolSpec {
     const now = new Date();
 
@@ -896,7 +896,7 @@ export class ToolRegistry extends EventEmitter {
    */
   async import(
     data: { tools: ToolSpec[] },
-    options: RegisterToolOptions = { overwrite: true }
+    options: RegisterToolOptions = { overwrite: true },
   ): Promise<RegistrationResult[]> {
     return this.registerBatch(data.tools, options);
   }
@@ -910,7 +910,7 @@ export class ToolRegistry extends EventEmitter {
  */
 export function createToolSpec(
   spec: Partial<ToolSpec> &
-    Pick<ToolSpec, 'id' | 'name' | 'description' | 'category'>
+    Pick<ToolSpec, 'id' | 'name' | 'description' | 'category'>,
 ): ToolSpec {
   const now = new Date();
 

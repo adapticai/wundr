@@ -110,13 +110,13 @@ export class DelegationManager extends EventEmitter {
     task: Task,
     fromMember: CrewMember,
     reason: string,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): DelegationRequest {
     // Check if member is allowed to delegate
     if (!fromMember.allowDelegation) {
       throw new CrewError(
         CrewErrorCode.DELEGATION_FAILED,
-        `Member ${fromMember.id} is not allowed to delegate tasks`
+        `Member ${fromMember.id} is not allowed to delegate tasks`,
       );
     }
 
@@ -124,7 +124,7 @@ export class DelegationManager extends EventEmitter {
     if (this.options.requireReason && !reason.trim()) {
       throw new CrewError(
         CrewErrorCode.DELEGATION_FAILED,
-        'Delegation reason is required'
+        'Delegation reason is required',
       );
     }
 
@@ -134,7 +134,7 @@ export class DelegationManager extends EventEmitter {
       throw new CrewError(
         CrewErrorCode.DELEGATION_FAILED,
         `Maximum delegation depth (${this.options.maxDelegationDepth}) exceeded for task ${task.id}`,
-        { currentDepth: currentChain.length }
+        { currentDepth: currentChain.length },
       );
     }
 
@@ -143,7 +143,7 @@ export class DelegationManager extends EventEmitter {
       throw new CrewError(
         CrewErrorCode.DELEGATION_FAILED,
         `Circular delegation detected: ${fromMember.id} is already in the delegation chain`,
-        { delegationChain: currentChain }
+        { delegationChain: currentChain },
       );
     }
 
@@ -185,7 +185,7 @@ export class DelegationManager extends EventEmitter {
   async processDelegation(
     request: DelegationRequest,
     availableMembers: CrewMember[],
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<DelegationResponse> {
     // Note: context.previousResults is available for future use in delegation decisions
     void context.previousResults;
@@ -202,7 +202,7 @@ export class DelegationManager extends EventEmitter {
 
     // Use strategy to find best member
     const fromMember = availableMembers.find(
-      m => m.id === request.fromMemberId
+      m => m.id === request.fromMemberId,
     );
     if (!fromMember) {
       return this.createRejectionResponse(request, 'Original member not found');
@@ -231,13 +231,13 @@ export class DelegationManager extends EventEmitter {
       taskForStrategy,
       fromMember,
       candidates,
-      context
+      context,
     );
 
     if (!selectedMember) {
       const response = this.createRejectionResponse(
         request,
-        'No suitable member found for delegation'
+        'No suitable member found for delegation',
       );
       this.updateHistory(request.taskId, request.id, 'rejected', response);
       this.emitEvent('delegation:rejected', {
@@ -385,7 +385,7 @@ export class DelegationManager extends EventEmitter {
     }
 
     const chainLengths = Array.from(this.delegationChains.values()).map(
-      chain => chain.length
+      chain => chain.length,
     );
     const averageChainLength =
       chainLengths.length > 0
@@ -427,7 +427,7 @@ export class DelegationManager extends EventEmitter {
     task: Task,
     _fromMember: CrewMember,
     availableMembers: CrewMember[],
-    _context: ExecutionContext
+    _context: ExecutionContext,
   ): Promise<CrewMember | null> {
     if (availableMembers.length === 0) {
       return null;
@@ -480,7 +480,7 @@ export class DelegationManager extends EventEmitter {
    */
   private createRejectionResponse(
     request: DelegationRequest,
-    reason: string
+    reason: string,
   ): DelegationResponse {
     return {
       requestId: request.id,
@@ -499,7 +499,7 @@ export class DelegationManager extends EventEmitter {
 
     // Reduce estimate if member has matching capabilities
     const matchingCaps = member.capabilities.filter(cap =>
-      task.description.toLowerCase().includes(cap.toLowerCase())
+      task.description.toLowerCase().includes(cap.toLowerCase()),
     );
     estimate -= matchingCaps.length * 30000;
 
@@ -523,7 +523,7 @@ export class DelegationManager extends EventEmitter {
     taskId: string,
     requestId: string,
     outcome: DelegationHistoryEntry['outcome'],
-    response?: DelegationResponse
+    response?: DelegationResponse,
   ): void {
     const history = this.delegationHistory.get(taskId) ?? [];
     const entryIndex = history.findIndex(e => e.request.id === requestId);
@@ -541,7 +541,7 @@ export class DelegationManager extends EventEmitter {
    */
   private emitEvent(
     type: CrewEvent['type'],
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): void {
     const event: CrewEvent = {
       type,

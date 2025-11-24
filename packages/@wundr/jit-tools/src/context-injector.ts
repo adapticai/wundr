@@ -105,7 +105,7 @@ export class ContextInjector extends EventEmitter {
   constructor(
     retriever: JITToolRetriever,
     config: Partial<JITToolConfig> = {},
-    options: Partial<InjectionOptions> = {}
+    options: Partial<InjectionOptions> = {},
   ) {
     super();
     this.retriever = retriever;
@@ -128,7 +128,7 @@ export class ContextInjector extends EventEmitter {
   async inject(
     query: string,
     context?: AgentContext,
-    options: Partial<InjectionOptions> = {}
+    options: Partial<InjectionOptions> = {},
   ): Promise<InjectionResult> {
     const mergedOptions = { ...this.defaultOptions, ...options };
 
@@ -161,7 +161,7 @@ export class ContextInjector extends EventEmitter {
    */
   injectTools(
     tools: ToolSpec[],
-    options: Partial<InjectionOptions> = {}
+    options: Partial<InjectionOptions> = {},
   ): InjectionResult {
     const mergedOptions = { ...this.defaultOptions, ...options };
 
@@ -206,7 +206,7 @@ export class ContextInjector extends EventEmitter {
   async reinject(
     previousResult: InjectionResult,
     newContext: AgentContext,
-    options: Partial<InjectionOptions> = {}
+    options: Partial<InjectionOptions> = {},
   ): Promise<InjectionResult> {
     // Use the previous tools but reformat for new context
     const mergedOptions = { ...this.defaultOptions, ...options };
@@ -220,7 +220,7 @@ export class ContextInjector extends EventEmitter {
         permissionScore: 1.0,
         finalScore: 1.0,
         matchReasons: ['Re-injected'],
-      })
+      }),
     );
 
     const retrievalResult: ToolRetrievalResult = {
@@ -250,7 +250,7 @@ export class ContextInjector extends EventEmitter {
    */
   private buildInjectionResult(
     retrievalResult: ToolRetrievalResult,
-    options: InjectionOptions
+    options: InjectionOptions,
   ): InjectionResult {
     const excludedTools: ExcludedTool[] = [];
     const includedTools: ToolSpec[] = [];
@@ -365,7 +365,7 @@ export class ContextInjector extends EventEmitter {
       lines.push('Parameters:');
       for (const param of tool.parameters) {
         lines.push(
-          `  - ${param.name} (${param.type}${param.required ? ', required' : ''}): ${param.description}`
+          `  - ${param.name} (${param.type}${param.required ? ', required' : ''}): ${param.description}`,
         );
       }
     }
@@ -397,7 +397,7 @@ export class ContextInjector extends EventEmitter {
       lines.push('  <parameters>');
       for (const param of tool.parameters) {
         lines.push(
-          `    <param name="${param.name}" type="${param.type}" required="${param.required}">`
+          `    <param name="${param.name}" type="${param.type}" required="${param.required}">`,
         );
         lines.push(`      ${this.escapeXml(param.description)}`);
         lines.push('    </param>');
@@ -411,10 +411,10 @@ export class ContextInjector extends EventEmitter {
       for (const example of examples) {
         lines.push('    <example>');
         lines.push(
-          `      <description>${this.escapeXml(example.description)}</description>`
+          `      <description>${this.escapeXml(example.description)}</description>`,
         );
         lines.push(
-          `      <input>${this.escapeXml(JSON.stringify(example.input))}</input>`
+          `      <input>${this.escapeXml(JSON.stringify(example.input))}</input>`,
         );
         lines.push('    </example>');
       }
@@ -478,7 +478,7 @@ export class ContextInjector extends EventEmitter {
       for (const param of tool.parameters) {
         const required = param.required ? ' *(required)*' : '';
         lines.push(
-          `- \`${param.name}\` (${param.type})${required}: ${param.description}`
+          `- \`${param.name}\` (${param.type})${required}: ${param.description}`,
         );
       }
     }
@@ -502,7 +502,7 @@ export class ContextInjector extends EventEmitter {
    */
   private generateContextString(
     tools: ToolSpec[],
-    options: InjectionOptions
+    options: InjectionOptions,
   ): string {
     if (tools.length === 0) {
       return (
@@ -561,7 +561,7 @@ export class ContextInjector extends EventEmitter {
    */
   private generateHeader(
     toolCount: number,
-    style: InjectionOptions['formatStyle']
+    style: InjectionOptions['formatStyle'],
   ): string {
     switch (style) {
       case 'xml':
@@ -582,7 +582,7 @@ export class ContextInjector extends EventEmitter {
    */
   private formatCategoryHeader(
     category: string,
-    style: InjectionOptions['formatStyle']
+    style: InjectionOptions['formatStyle'],
   ): string {
     const formattedCategory =
       category.charAt(0).toUpperCase() + category.slice(1);
@@ -694,7 +694,7 @@ export class ContextInjector extends EventEmitter {
 export function createContextInjector(
   retriever: JITToolRetriever,
   config?: Partial<JITToolConfig>,
-  options?: Partial<InjectionOptions>
+  options?: Partial<InjectionOptions>,
 ): ContextInjector {
   return new ContextInjector(retriever, config, options);
 }

@@ -74,7 +74,7 @@ export class DefaultsManager {
   createFromGroup(
     group: string,
     variant?: string,
-    optional = false
+    optional = false,
   ): ConfigDefaults {
     const result: ConfigDefaults = { group, optional };
     if (variant !== undefined) {
@@ -107,7 +107,7 @@ export class DefaultsManager {
    */
   deepMerge<T extends Record<string, unknown>>(
     target: T,
-    source: Record<string, unknown>
+    source: Record<string, unknown>,
   ): T {
     if (!this.options.deepMerge) {
       return { ...target, ...source } as T;
@@ -125,7 +125,7 @@ export class DefaultsManager {
         result[key] = this.applyMergeStrategy(
           strategy,
           targetValue,
-          sourceValue
+          sourceValue,
         );
         continue;
       }
@@ -143,7 +143,7 @@ export class DefaultsManager {
       if (this.isPlainObject(sourceValue) && this.isPlainObject(targetValue)) {
         result[key] = this.deepMerge(
           targetValue as Record<string, unknown>,
-          sourceValue as Record<string, unknown>
+          sourceValue as Record<string, unknown>,
         );
       } else {
         result[key] = sourceValue;
@@ -163,7 +163,7 @@ export class DefaultsManager {
   private applyMergeStrategy(
     strategy: MergeStrategy,
     target: unknown,
-    source: unknown
+    source: unknown,
   ): unknown {
     switch (strategy) {
       case 'replace':
@@ -173,7 +173,7 @@ export class DefaultsManager {
         if (this.isPlainObject(target) && this.isPlainObject(source)) {
           return this.deepMerge(
             target as Record<string, unknown>,
-            source as Record<string, unknown>
+            source as Record<string, unknown>,
           );
         }
         return source;
@@ -216,7 +216,7 @@ export class DefaultsManager {
    * @returns Ordered array of paths to load
    */
   resolveDefaultsOrder(
-    config: HydraConfig
+    config: HydraConfig,
   ): Array<{ path: string; optional: boolean }> {
     const result: Array<{ path: string; optional: boolean }> = [];
 
@@ -292,7 +292,7 @@ export class DefaultsManager {
    */
   validateRequired(
     config: Record<string, unknown>,
-    requiredFields: string[]
+    requiredFields: string[],
   ): string[] {
     const missing: string[] = [];
 
@@ -338,7 +338,7 @@ export class DefaultsManager {
     name: string,
     path: string,
     values: Record<string, ConfigValue> = {},
-    description?: string
+    description?: string,
   ): ConfigGroup {
     const result: ConfigGroup = {
       name,

@@ -111,7 +111,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
   checkTrigger(
     message: Message,
     participants: ChatParticipant[],
-    context: ChatContext
+    context: ChatContext,
   ): NestedChatConfig | null {
     for (const config of this.configs.values()) {
       if (
@@ -135,7 +135,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
     trigger: NestedChatTrigger,
     message: Message,
     participants: ChatParticipant[],
-    context: ChatContext
+    context: ChatContext,
   ): boolean {
     switch (trigger.type) {
       case 'keyword':
@@ -145,7 +145,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
         return this.evaluateParticipantTrigger(
           trigger.value,
           message,
-          participants
+          participants,
         );
 
       case 'condition':
@@ -167,7 +167,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
    */
   private evaluateKeywordTrigger(
     value: NestedChatTriggerValue,
-    message: Message
+    message: Message,
   ): boolean {
     const keywords: string[] = Array.isArray(value)
       ? value
@@ -177,7 +177,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
     const contentLower = message.content.toLowerCase();
 
     return keywords.some(keyword =>
-      contentLower.includes(keyword.toLowerCase())
+      contentLower.includes(keyword.toLowerCase()),
     );
   }
 
@@ -191,7 +191,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
   private evaluateParticipantTrigger(
     value: NestedChatTriggerValue,
     message: Message,
-    participants: ChatParticipant[]
+    participants: ChatParticipant[],
   ): boolean {
     const targetParticipants: string[] = Array.isArray(value)
       ? value
@@ -225,7 +225,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
   private evaluateConditionTrigger(
     value: NestedChatTriggerValue,
     message: Message,
-    context: ChatContext
+    context: ChatContext,
   ): boolean {
     // Check if value is a function (NestedChatConditionFn)
     if (typeof value === 'function') {
@@ -260,7 +260,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
    */
   private evaluateManualTrigger(
     value: NestedChatTriggerValue,
-    context: ChatContext
+    context: ChatContext,
   ): boolean {
     // For manual triggers, value should be a string representing the state key
     const triggerKey = typeof value === 'string' ? value : String(value);
@@ -281,18 +281,18 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
     parentChatId: string,
     parentMessageId: string,
     allParticipants: ChatParticipant[],
-    parentContext: ChatContext
+    parentContext: ChatContext,
   ): string {
     const nestedChatId = uuidv4();
 
     // Select participants for nested chat
     const nestedParticipants = allParticipants.filter(p =>
-      config.participants.includes(p.name)
+      config.participants.includes(p.name),
     );
 
     if (nestedParticipants.length < 2) {
       throw new Error(
-        `Nested chat requires at least 2 participants, found ${nestedParticipants.length}`
+        `Nested chat requires at least 2 participants, found ${nestedParticipants.length}`,
       );
     }
 
@@ -372,7 +372,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
   async endNestedChat(
     nestedChatId: string,
     status: ChatStatus = 'completed',
-    terminationReason?: string
+    terminationReason?: string,
   ): Promise<NestedChatResult> {
     const state = this.activeChats.get(nestedChatId);
     if (!state) {
@@ -384,7 +384,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
     // Generate summary
     const summary = await this.generateSummary(
       state.messages,
-      state.config.summaryMethod || 'last'
+      state.config.summaryMethod || 'last',
     );
 
     // Create chat result
@@ -428,7 +428,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
    */
   private async generateSummary(
     messages: Message[],
-    method: SummaryMethod
+    method: SummaryMethod,
   ): Promise<string> {
     switch (method) {
       case 'last':
@@ -481,7 +481,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
       if (message.role !== 'system') {
         participantMessages.set(
           message.name,
-          (participantMessages.get(message.name) || 0) + 1
+          (participantMessages.get(message.name) || 0) + 1,
         );
 
         // Extract potential topics (simplified)
@@ -523,7 +523,7 @@ export class NestedChatManager extends EventEmitter<NestedChatEvents> {
       'done',
     ];
     const hasResolution = nonSystemMessages.some(m =>
-      resolutionKeywords.some(k => m.content.toLowerCase().includes(k))
+      resolutionKeywords.some(k => m.content.toLowerCase().includes(k)),
     );
 
     const participants = [...new Set(nonSystemMessages.map(m => m.name))];
@@ -705,7 +705,7 @@ export class NestedChatConfigBuilder {
    * @param condition - Condition expression or function
    */
   withConditionTrigger(
-    condition: string | ((message: Message, context: ChatContext) => boolean)
+    condition: string | ((message: Message, context: ChatContext) => boolean),
   ): this {
     this.config.trigger = {
       type: 'condition',

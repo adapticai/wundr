@@ -84,7 +84,7 @@ export class ConfigLoader {
    */
   load<T = Record<string, unknown>>(
     filePath: string,
-    optional = false
+    optional = false,
   ): LoadResult<T> {
     const absolutePath = this.resolvePath(filePath);
 
@@ -94,7 +94,7 @@ export class ConfigLoader {
         throw new HydraConfigError(
           `Configuration file not found: ${absolutePath}`,
           HydraErrorCode.FILE_NOT_FOUND,
-          { path: absolutePath }
+          { path: absolutePath },
         );
       }
 
@@ -118,7 +118,7 @@ export class ConfigLoader {
         {
           path: absolutePath,
           error: error instanceof Error ? error.message : String(error),
-        }
+        },
       );
     }
 
@@ -131,7 +131,7 @@ export class ConfigLoader {
       throw new HydraConfigError(
         `Configuration file must contain an object: ${absolutePath}`,
         HydraErrorCode.PARSE_ERROR,
-        { path: absolutePath, actualType: typeof data }
+        { path: absolutePath, actualType: typeof data },
       );
     }
 
@@ -168,10 +168,10 @@ export class ConfigLoader {
    * @returns Array of LoadResults
    */
   loadMultiple<T = Record<string, unknown>>(
-    filePaths: Array<{ path: string; optional?: boolean }>
+    filePaths: Array<{ path: string; optional?: boolean }>,
   ): LoadResult<T>[] {
     return filePaths.map(({ path: filePath, optional }) =>
-      this.load<T>(filePath, optional)
+      this.load<T>(filePath, optional),
     );
   }
 
@@ -183,7 +183,7 @@ export class ConfigLoader {
    */
   loadDefaults(
     defaults: ConfigDefaults[],
-    groups: Record<string, ConfigGroup>
+    groups: Record<string, ConfigGroup>,
   ): LoadResult[] {
     const results: LoadResult[] = [];
 
@@ -194,13 +194,13 @@ export class ConfigLoader {
         const group = groups[defaultEntry.group];
         if (group !== undefined) {
           results.push(
-            this.load(group.path, defaultEntry.optional ?? group.optional)
+            this.load(group.path, defaultEntry.optional ?? group.optional),
           );
         } else if (!defaultEntry.optional) {
           throw new HydraConfigError(
             `Configuration group not found: ${defaultEntry.group}`,
             HydraErrorCode.MISSING_GROUP,
-            { group: defaultEntry.group }
+            { group: defaultEntry.group },
           );
         }
       }
@@ -216,7 +216,7 @@ export class ConfigLoader {
    * @returns Map of filename to LoadResult
    */
   loadDirectory<T = Record<string, unknown>>(
-    dirPath: string
+    dirPath: string,
   ): Map<string, LoadResult<T>> {
     const absolutePath = this.resolvePath(dirPath);
 
@@ -224,7 +224,7 @@ export class ConfigLoader {
       throw new HydraConfigError(
         `Configuration directory not found: ${absolutePath}`,
         HydraErrorCode.FILE_NOT_FOUND,
-        { path: absolutePath }
+        { path: absolutePath },
       );
     }
 
@@ -233,7 +233,7 @@ export class ConfigLoader {
       throw new HydraConfigError(
         `Path is not a directory: ${absolutePath}`,
         HydraErrorCode.FILE_NOT_FOUND,
-        { path: absolutePath }
+        { path: absolutePath },
       );
     }
 
@@ -309,7 +309,7 @@ export const configLoader = new ConfigLoader();
  */
 export function loadConfig<T = Record<string, unknown>>(
   filePath: string,
-  options: LoaderOptions = {}
+  options: LoaderOptions = {},
 ): T {
   const loader = new ConfigLoader(options);
   const result = loader.load<T>(filePath);
@@ -340,7 +340,7 @@ export function configExists(filePath: string, basePath?: string): boolean {
 export function writeConfig(
   filePath: string,
   data: Record<string, unknown>,
-  basePath?: string
+  basePath?: string,
 ): void {
   const options: LoaderOptions = {};
   if (basePath !== undefined) {

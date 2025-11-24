@@ -237,7 +237,7 @@ export class FileCheckpointer implements GraphCheckpointer {
     }
 
     const latest = summaries.reduce((a, b) =>
-      a.stepNumber > b.stepNumber ? a : b
+      a.stepNumber > b.stepNumber ? a : b,
     );
 
     return this.load(latest.id);
@@ -291,7 +291,7 @@ function createNodeFileSystem(): FileSystem {
     },
     async mkdir(
       path: string,
-      options?: { recursive?: boolean }
+      options?: { recursive?: boolean },
     ): Promise<void> {
       const fs = await import('fs').then(m => m.promises);
       await fs.mkdir(path, options);
@@ -357,7 +357,7 @@ export class TimeTravelDebugger<TState extends AgentState = AgentState> {
    */
   async travelToStep(
     executionId: string,
-    stepNumber: number
+    stepNumber: number,
   ): Promise<TState | null> {
     const summaries = await this.checkpointer.list(executionId);
     const summary = summaries.find(s => s.stepNumber === stepNumber);
@@ -375,7 +375,7 @@ export class TimeTravelDebugger<TState extends AgentState = AgentState> {
    */
   async compare(
     checkpointId1: string,
-    checkpointId2: string
+    checkpointId2: string,
   ): Promise<StateDiff[]> {
     const [cp1, cp2] = await Promise.all([
       this.checkpointer.load(checkpointId1),
@@ -395,7 +395,7 @@ export class TimeTravelDebugger<TState extends AgentState = AgentState> {
    * @returns Array of state changes
    */
   async getStateHistory(
-    executionId: string
+    executionId: string,
   ): Promise<StateHistoryItem<TState>[]> {
     const summaries = await this.checkpointer.list(executionId);
     const history: StateHistoryItem<TState>[] = [];
@@ -432,7 +432,7 @@ export class TimeTravelDebugger<TState extends AgentState = AgentState> {
    */
   async findTransitions(
     executionId: string,
-    condition: (state: TState) => boolean
+    condition: (state: TState) => boolean,
   ): Promise<CheckpointSummary[]> {
     const summaries = await this.checkpointer.list(executionId);
     const transitions: CheckpointSummary[] = [];
@@ -613,7 +613,7 @@ export interface RetentionPolicy {
 export async function applyRetentionPolicy(
   checkpointer: GraphCheckpointer,
   executionId: string,
-  policy: RetentionPolicy
+  policy: RetentionPolicy,
 ): Promise<number> {
   const summaries = await checkpointer.list(executionId);
   let deleted = 0;
@@ -691,7 +691,7 @@ export const CheckpointSchema = z.object({
  * Validate a checkpoint
  */
 export function validateCheckpoint(
-  checkpoint: unknown
+  checkpoint: unknown,
 ): checkpoint is Checkpoint {
   try {
     CheckpointSchema.parse(checkpoint);

@@ -123,7 +123,7 @@ export class ActionInterceptor {
    */
   async intercept<T>(
     action: Action,
-    executor: () => Promise<T>
+    executor: () => Promise<T>,
   ): Promise<SecureActionResult<T>> {
     const auditTrail: AuditEntry[] = [];
     const startTime = Date.now();
@@ -136,7 +136,7 @@ export class ActionInterceptor {
         actionId: action.id,
         actionType: action.type,
         target: action.target,
-      }
+      },
     );
 
     // Validate the action
@@ -145,12 +145,12 @@ export class ActionInterceptor {
       this.addAuditEntry(
         auditTrail,
         'validation_failed',
-        validationResult.reason ?? 'Unknown validation error'
+        validationResult.reason ?? 'Unknown validation error',
       );
       return this.createDeniedResult<T>(
         auditTrail,
         [],
-        validationResult.reason
+        validationResult.reason,
       );
     }
 
@@ -174,7 +174,7 @@ export class ActionInterceptor {
           {
             ruleId: rule.id,
             decision: rule.decision,
-          }
+          },
         );
 
         // Apply the decision (first matching rule wins due to priority sorting)
@@ -202,7 +202,7 @@ export class ActionInterceptor {
           action,
           executor,
           auditTrail,
-          matchedRules
+          matchedRules,
         );
         break;
       case 'deny':
@@ -212,7 +212,7 @@ export class ActionInterceptor {
         result = this.createConfirmationRequiredResult<T>(
           auditTrail,
           matchedRules,
-          reason
+          reason,
         );
         break;
       case 'sandbox':
@@ -220,14 +220,14 @@ export class ActionInterceptor {
           action,
           executor,
           auditTrail,
-          matchedRules
+          matchedRules,
         );
         break;
       default:
         result = this.createDeniedResult<T>(
           auditTrail,
           matchedRules,
-          'Unknown decision type'
+          'Unknown decision type',
         );
     }
 
@@ -242,7 +242,7 @@ export class ActionInterceptor {
       {
         duration: Date.now() - startTime,
         allowed: result.allowed,
-      }
+      },
     );
 
     return result;
@@ -364,7 +364,7 @@ export class ActionInterceptor {
     source: {
       origin: 'user' | 'llm' | 'system' | 'plugin';
       trustLevel: TrustLevel;
-    }
+    },
   ): Action<T> {
     return {
       id: this.generateActionId(),
@@ -477,7 +477,7 @@ export class ActionInterceptor {
   private applyTrustLevelOverrides(
     action: Action,
     currentDecision: ActionDecision,
-    auditTrail: AuditEntry[]
+    auditTrail: AuditEntry[],
   ): ActionDecision {
     const trustLevel = action.source.trustLevel;
 
@@ -495,7 +495,7 @@ export class ActionInterceptor {
         this.addAuditEntry(
           auditTrail,
           'trust_override',
-          'Strict mode override: denying untrusted dangerous action'
+          'Strict mode override: denying untrusted dangerous action',
         );
         return 'deny';
       }
@@ -513,19 +513,19 @@ export class ActionInterceptor {
     action: Action,
     executor: () => Promise<T>,
     auditTrail: AuditEntry[],
-    matchedRules: string[]
+    matchedRules: string[],
   ): Promise<SecureActionResult<T>> {
     try {
       this.addAuditEntry(
         auditTrail,
         'execution_started',
-        'Action execution started'
+        'Action execution started',
       );
       const result = await executor();
       this.addAuditEntry(
         auditTrail,
         'execution_completed',
-        'Action execution completed successfully'
+        'Action execution completed successfully',
       );
 
       return {
@@ -541,7 +541,7 @@ export class ActionInterceptor {
       this.addAuditEntry(
         auditTrail,
         'execution_failed',
-        `Action execution failed: ${errorMessage}`
+        `Action execution failed: ${errorMessage}`,
       );
 
       return {
@@ -558,14 +558,14 @@ export class ActionInterceptor {
     _action: Action,
     executor: () => Promise<T>,
     auditTrail: AuditEntry[],
-    matchedRules: string[]
+    matchedRules: string[],
   ): Promise<SecureActionResult<T>> {
     // In a real implementation, this would execute in an isolated environment
     // For now, we execute with additional monitoring
     this.addAuditEntry(
       auditTrail,
       'sandbox_started',
-      'Sandboxed execution started'
+      'Sandboxed execution started',
     );
 
     try {
@@ -573,7 +573,7 @@ export class ActionInterceptor {
       this.addAuditEntry(
         auditTrail,
         'sandbox_completed',
-        'Sandboxed execution completed'
+        'Sandboxed execution completed',
       );
 
       return {
@@ -589,7 +589,7 @@ export class ActionInterceptor {
       this.addAuditEntry(
         auditTrail,
         'sandbox_failed',
-        `Sandboxed execution failed: ${errorMessage}`
+        `Sandboxed execution failed: ${errorMessage}`,
       );
 
       return {
@@ -605,7 +605,7 @@ export class ActionInterceptor {
   private createDeniedResult<T>(
     auditTrail: AuditEntry[],
     matchedRules: string[],
-    reason?: string
+    reason?: string,
   ): SecureActionResult<T> {
     return {
       allowed: false,
@@ -619,7 +619,7 @@ export class ActionInterceptor {
   private createConfirmationRequiredResult<T>(
     auditTrail: AuditEntry[],
     matchedRules: string[],
-    reason?: string
+    reason?: string,
   ): SecureActionResult<T> {
     return {
       allowed: false,
@@ -634,7 +634,7 @@ export class ActionInterceptor {
     auditTrail: AuditEntry[],
     event: string,
     description: string,
-    details?: AuditDetails
+    details?: AuditDetails,
   ): void {
     auditTrail.push({
       timestamp: new Date(),

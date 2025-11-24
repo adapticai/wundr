@@ -65,7 +65,7 @@ export const DecisionNodeConfigSchema = z.object({
         value: z.unknown().optional(),
       }),
       priority: z.number().optional(),
-    })
+    }),
   ),
   defaultBranch: z.string().optional(),
   throwOnNoMatch: z.boolean().optional(),
@@ -119,7 +119,7 @@ export function createDecisionNode<
     config: nodeConfig,
     execute: async (
       state: TState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<TState>> => {
       context.services.logger.debug('Evaluating decision branches', {
         branchCount: config.branches.length,
@@ -137,7 +137,7 @@ export function createDecisionNode<
 
       // Sort branches by priority
       const sortedBranches = [...config.branches].sort(
-        (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
+        (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
       );
 
       // Evaluate branches in order
@@ -172,7 +172,7 @@ export function createDecisionNode<
       }
 
       context.services.logger.warn(
-        'No decision branch matched, workflow may terminate'
+        'No decision branch matched, workflow may terminate',
       );
       return { state };
     },
@@ -184,7 +184,7 @@ export function createDecisionNode<
  */
 async function evaluateCondition(
   condition: EdgeCondition,
-  state: AgentState
+  state: AgentState,
 ): Promise<boolean> {
   const fieldValue = condition.field
     ? getFieldValue(state, condition.field)
@@ -319,7 +319,7 @@ export function createSwitchNode<
         field: options.field,
         value,
       },
-    })
+    }),
   );
 
   return createDecisionNode<TState>({
@@ -367,7 +367,7 @@ export function createThresholdNode<
 }): NodeDefinition<TState> {
   // Sort thresholds in descending order
   const sortedThresholds = [...options.thresholds].sort(
-    (a, b) => b.value - a.value
+    (a, b) => b.value - a.value,
   );
 
   const branches: DecisionBranch[] = sortedThresholds.map(
@@ -392,7 +392,7 @@ export function createThresholdNode<
         },
       },
       priority: sortedThresholds.length - index,
-    })
+    }),
   );
 
   return createDecisionNode<TState>({
@@ -513,7 +513,7 @@ export function createMultiConditionNode<
       type: 'custom' as ConditionType,
       evaluate: async (state: AgentState) => {
         const results = await Promise.all(
-          branch.conditions.map(cond => evaluateCondition(cond, state))
+          branch.conditions.map(cond => evaluateCondition(cond, state)),
         );
 
         if (branch.logic === 'AND') {

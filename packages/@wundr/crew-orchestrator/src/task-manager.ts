@@ -152,7 +152,7 @@ export class TaskManager extends EventEmitter {
       throw new CrewError(
         CrewErrorCode.INVALID_CONFIG,
         `Invalid task configuration: ${parseResult.error.message}`,
-        { validationErrors: parseResult.error.errors }
+        { validationErrors: parseResult.error.errors },
       );
     }
 
@@ -191,7 +191,7 @@ export class TaskManager extends EventEmitter {
    */
   getTasksByStatus(status: TaskStatus): Task[] {
     return Array.from(this.tasks.values()).filter(
-      task => task.status === status
+      task => task.status === status,
     );
   }
 
@@ -207,13 +207,13 @@ export class TaskManager extends EventEmitter {
   updateTaskStatus(
     taskId: string,
     status: TaskStatus,
-    additionalData: Partial<Task> = {}
+    additionalData: Partial<Task> = {},
   ): Task {
     const task = this.tasks.get(taskId);
     if (!task) {
       throw new CrewError(
         CrewErrorCode.TASK_NOT_FOUND,
-        `Task ${taskId} not found`
+        `Task ${taskId} not found`,
       );
     }
 
@@ -254,13 +254,13 @@ export class TaskManager extends EventEmitter {
   async assignTask(
     taskId: string,
     availableMembers: CrewMember[],
-    _context?: ExecutionContext
+    _context?: ExecutionContext,
   ): Promise<CrewMember | null> {
     const task = this.tasks.get(taskId);
     if (!task) {
       throw new CrewError(
         CrewErrorCode.TASK_NOT_FOUND,
-        `Task ${taskId} not found`
+        `Task ${taskId} not found`,
       );
     }
 
@@ -270,7 +270,7 @@ export class TaskManager extends EventEmitter {
       throw new CrewError(
         CrewErrorCode.DEPENDENCY_NOT_MET,
         `Task ${taskId} has unmet dependencies: ${unmetDependencies.join(', ')}`,
-        { unmetDependencies }
+        { unmetDependencies },
       );
     }
 
@@ -445,7 +445,7 @@ export class TaskManager extends EventEmitter {
       if (hasCycle(task.id)) {
         throw new CrewError(
           CrewErrorCode.CIRCULAR_DEPENDENCY,
-          `Circular dependency detected involving task: ${task.id}`
+          `Circular dependency detected involving task: ${task.id}`,
         );
       }
     }
@@ -469,7 +469,7 @@ export class TaskManager extends EventEmitter {
 
     const totalDuration = completedResults.reduce(
       (sum, r) => sum + r.duration,
-      0
+      0,
     );
     const averageDuration =
       completedResults.length > 0 ? totalDuration / completedResults.length : 0;
@@ -538,7 +538,7 @@ export class TaskManager extends EventEmitter {
    */
   private findBestMember(
     task: Task,
-    availableMembers: CrewMember[]
+    availableMembers: CrewMember[],
   ): CrewMember | null {
     if (availableMembers.length === 0) {
       return null;
@@ -554,7 +554,7 @@ export class TaskManager extends EventEmitter {
       if (task.tools && task.tools.length > 0) {
         const memberTools = member.tools ?? [];
         const hasAllTools = task.tools.every(tool =>
-          memberTools.includes(tool)
+          memberTools.includes(tool),
         );
         if (!hasAllTools) {
           return false;
@@ -603,7 +603,7 @@ export class TaskManager extends EventEmitter {
    */
   private emitEvent(
     type: CrewEvent['type'],
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): void {
     const event: CrewEvent = {
       type,

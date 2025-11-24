@@ -130,7 +130,7 @@ export class SemanticStore {
    */
   async store(
     content: unknown,
-    options: StoreMemoryOptions & { semantic?: Partial<SemanticMetadata> }
+    options: StoreMemoryOptions & { semantic?: Partial<SemanticMetadata> },
   ): Promise<Memory> {
     const tokenCount = this.config.tokenEstimator!(content);
 
@@ -206,7 +206,7 @@ export class SemanticStore {
       category: KnowledgeCategory;
       domain?: string;
       confidence: number;
-    }[]
+    }[],
   ): Promise<Memory[]> {
     const extracted = extractor(episodes);
     const created: Memory[] = [];
@@ -275,14 +275,14 @@ export class SemanticStore {
     // Increase confidence (with diminishing returns)
     const confidenceBoost = Math.min(
       0.1 * evidence.length,
-      (1 - semantic.confidence) * 0.5
+      (1 - semantic.confidence) * 0.5,
     );
     semantic.confidence = Math.min(1.0, semantic.confidence + confidenceBoost);
 
     // Boost retention strength
     memory.metadata.retentionStrength = Math.min(
       1.0,
-      memory.metadata.retentionStrength + 0.1
+      memory.metadata.retentionStrength + 0.1,
     );
     memory.metadata.lastAccessedAt = new Date();
     memory.metadata.accessCount++;
@@ -320,7 +320,7 @@ export class SemanticStore {
     const confidenceReduction = 0.1 * contradictingEvidence.length;
     semantic.confidence = Math.max(
       0,
-      semantic.confidence - confidenceReduction
+      semantic.confidence - confidenceReduction,
     );
 
     // If confidence drops below threshold, consider removal
@@ -361,7 +361,7 @@ export class SemanticStore {
    */
   async queryByCategory(
     category: KnowledgeCategory,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<RetrievalResult> {
     const startTime = Date.now();
     const memoryIds = this.categoryIndex.get(category) || new Set();
@@ -403,7 +403,7 @@ export class SemanticStore {
    */
   async queryByDomain(
     domain: string,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<RetrievalResult> {
     const startTime = Date.now();
     const memoryIds = this.domainIndex.get(domain) || new Set();
@@ -449,19 +449,19 @@ export class SemanticStore {
     // Apply filters
     if (options.minStrength !== undefined) {
       candidates = candidates.filter(
-        m => m.metadata.retentionStrength >= options.minStrength!
+        m => m.metadata.retentionStrength >= options.minStrength!,
       );
     }
 
     if (options.tags && options.tags.length > 0) {
       candidates = candidates.filter(m =>
-        options.tags!.some(tag => m.metadata.tags.includes(tag))
+        options.tags!.some(tag => m.metadata.tags.includes(tag)),
       );
     }
 
     if (options.agentId) {
       candidates = candidates.filter(
-        m => m.metadata.agentId === options.agentId
+        m => m.metadata.agentId === options.agentId,
       );
     }
 
@@ -474,7 +474,7 @@ export class SemanticStore {
     candidates = this.sortMemories(
       candidates,
       options.sortBy || 'relevance',
-      options.sortDirection || 'desc'
+      options.sortDirection || 'desc',
     );
 
     // Update access metadata
@@ -502,11 +502,11 @@ export class SemanticStore {
    */
   async findSimilar(
     queryEmbedding: number[],
-    limit: number = 10
+    limit: number = 10,
   ): Promise<RetrievalResult> {
     const startTime = Date.now();
     const candidates = Array.from(this.memories.values()).filter(
-      m => m.embedding && m.embedding.length > 0
+      m => m.embedding && m.embedding.length > 0,
     );
 
     const scored = candidates.map(memory => ({
@@ -517,7 +517,7 @@ export class SemanticStore {
     scored.sort((a, b) => b.similarity - a.similarity);
 
     const filtered = scored.filter(
-      s => s.similarity >= this.config.similarityThreshold!
+      s => s.similarity >= this.config.similarityThreshold!,
     );
 
     const memories = filtered.slice(0, limit).map(s => {
@@ -571,7 +571,7 @@ export class SemanticStore {
    */
   update(
     id: string,
-    updates: { content?: unknown; metadata?: Partial<MemoryMetadata> }
+    updates: { content?: unknown; metadata?: Partial<MemoryMetadata> },
   ): Memory | null {
     const memory = this.memories.get(id);
     if (!memory) {
@@ -754,7 +754,7 @@ export class SemanticStore {
         : 0;
 
     const sortedByDate = memories.sort(
-      (a, b) => a.metadata.createdAt.getTime() - b.metadata.createdAt.getTime()
+      (a, b) => a.metadata.createdAt.getTime() - b.metadata.createdAt.getTime(),
     );
 
     return {
@@ -946,7 +946,7 @@ export class SemanticStore {
 
   private semanticSearch(
     memories: Memory[],
-    queryEmbedding: number[]
+    queryEmbedding: number[],
   ): Memory[] {
     return memories
       .filter(m => m.embedding && m.embedding.length > 0)
@@ -984,7 +984,7 @@ export class SemanticStore {
   private sortMemories(
     memories: Memory[],
     sortBy: string,
-    direction: 'asc' | 'desc'
+    direction: 'asc' | 'desc',
   ): Memory[] {
     const multiplier = direction === 'asc' ? 1 : -1;
 

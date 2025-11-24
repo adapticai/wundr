@@ -120,7 +120,7 @@ export const PlanSchema = z.array(
     toolArgs: z.record(z.unknown()).optional(),
     dependsOn: z.array(z.string()).optional(),
     expectedOutput: z.string().optional(),
-  })
+  }),
 );
 
 /**
@@ -147,7 +147,7 @@ export const PlanSchema = z.array(
  * @returns Configured StateGraph
  */
 export function createPlanExecuteRefineGraph(
-  config: PlanExecuteRefineConfig
+  config: PlanExecuteRefineConfig,
 ): StateGraph<PlanExecuteState> {
   const graph = new StateGraph<PlanExecuteState>('plan-execute-refine');
 
@@ -202,7 +202,7 @@ export function createPlanExecuteRefineGraph(
     config: {},
     execute: async (
       state: PlanExecuteState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<PlanExecuteState>> => {
       const plan = state.data.plan;
 
@@ -348,7 +348,7 @@ export function createPlanExecuteRefineGraph(
     config: {},
     execute: async (
       state: PlanExecuteState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<PlanExecuteState>> => {
       const plan = state.data.plan ?? [];
       const currentIndex = state.data.currentStepIndex ?? 0;
@@ -383,7 +383,7 @@ export function createPlanExecuteRefineGraph(
       }
 
       context.services.logger.info(
-        `Executing step ${currentIndex + 1}: ${step.description}`
+        `Executing step ${currentIndex + 1}: ${step.description}`,
       );
 
       let result: StepResult;
@@ -475,7 +475,7 @@ export function createPlanExecuteRefineGraph(
         const resultsText = results
           .map(
             (r: StepResult) =>
-              `Step ${r.stepId}: ${r.success ? 'Success' : 'Failed'}\n${r.success ? JSON.stringify(r.result) : r.error}`
+              `Step ${r.stepId}: ${r.success ? 'Success' : 'Failed'}\n${r.success ? JSON.stringify(r.result) : r.error}`,
           )
           .join('\n\n');
 
@@ -585,7 +585,7 @@ Please refine the plan to address any issues and ensure task completion.`;
     config: {},
     execute: async (
       state: PlanExecuteState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<PlanExecuteState>> => {
       context.services.logger.info('Workflow completed successfully');
 
@@ -616,7 +616,7 @@ Please refine the plan to address any issues and ensure task completion.`;
     config: {},
     execute: async (
       state: PlanExecuteState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<PlanExecuteState>> => {
       context.services.logger.error('Workflow failed after max refinements');
 
@@ -759,7 +759,7 @@ Output your refined plan in the same JSON format as the original.`;
  * ```
  */
 export function createSimpleTaskGraph(
-  config: Omit<PlanExecuteRefineConfig, 'requireApproval' | 'humanHandler'>
+  config: Omit<PlanExecuteRefineConfig, 'requireApproval' | 'humanHandler'>,
 ): StateGraph<PlanExecuteState> {
   return createPlanExecuteRefineGraph({
     ...config,

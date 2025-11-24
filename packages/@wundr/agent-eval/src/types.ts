@@ -285,7 +285,7 @@ export const HumanFeedbackSchema = z.object({
         agreesWithScore: z.boolean(),
         suggestedScore: z.number().min(0).max(10).optional(),
         comment: z.string().optional(),
-      })
+      }),
     )
     .default([]),
   /** Suggested improvements for the rubric */
@@ -319,7 +319,7 @@ export const FailureAnalysisSchema = z.object({
       frequency: z.number().min(0).max(1),
       /** Suggested remediation */
       suggestedRemediation: z.string().optional(),
-    })
+    }),
   ),
   /** Common criteria that failed */
   commonFailingCriteria: z.array(
@@ -328,7 +328,7 @@ export const FailureAnalysisSchema = z.object({
       criterionName: z.string(),
       failureRate: z.number().min(0).max(1),
       avgScore: z.number().min(0).max(10),
-    })
+    }),
   ),
   /** Root cause hypotheses */
   rootCauses: z.array(z.string()),

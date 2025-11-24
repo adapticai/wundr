@@ -22,7 +22,7 @@ import type {
  * @returns The appropriate speaker selection strategy
  */
 export function createSpeakerSelector(
-  method: SpeakerSelectionMethod
+  method: SpeakerSelectionMethod,
 ): SpeakerSelectionStrategy {
   switch (method) {
     case 'round_robin':
@@ -60,10 +60,10 @@ export class RoundRobinSelector implements SpeakerSelectionStrategy {
     participants: ChatParticipant[],
     messages: Message[],
     _context: ChatContext,
-    _config?: SpeakerSelectionConfig
+    _config?: SpeakerSelectionConfig,
   ): Promise<SpeakerSelectionResult> {
     const activeParticipants = participants.filter(
-      p => p.status === 'active' || p.status === 'idle'
+      p => p.status === 'active' || p.status === 'idle',
     );
 
     if (activeParticipants.length === 0) {
@@ -74,7 +74,7 @@ export class RoundRobinSelector implements SpeakerSelectionStrategy {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage) {
       const lastSpeakerIndex = activeParticipants.findIndex(
-        p => p.name === lastMessage.name
+        p => p.name === lastMessage.name,
       );
       if (lastSpeakerIndex !== -1) {
         this.currentIndex = (lastSpeakerIndex + 1) % activeParticipants.length;
@@ -120,10 +120,10 @@ export class RandomSelector implements SpeakerSelectionStrategy {
     participants: ChatParticipant[],
     messages: Message[],
     context: ChatContext,
-    config?: SpeakerSelectionConfig
+    config?: SpeakerSelectionConfig,
   ): Promise<SpeakerSelectionResult> {
     const activeParticipants = participants.filter(
-      p => p.status === 'active' || p.status === 'idle'
+      p => p.status === 'active' || p.status === 'idle',
     );
 
     if (activeParticipants.length === 0) {
@@ -136,7 +136,7 @@ export class RandomSelector implements SpeakerSelectionStrategy {
 
     if (lastMessage && activeParticipants.length > 1) {
       eligibleParticipants = activeParticipants.filter(
-        p => p.name !== lastMessage.name
+        p => p.name !== lastMessage.name,
       );
     }
 
@@ -145,11 +145,11 @@ export class RandomSelector implements SpeakerSelectionStrategy {
     if (config?.weights && Object.keys(config.weights).length > 0) {
       selectedParticipant = this.weightedSelection(
         eligibleParticipants,
-        config.weights
+        config.weights,
       );
     } else {
       const randomIndex = Math.floor(
-        Math.random() * eligibleParticipants.length
+        Math.random() * eligibleParticipants.length,
       );
       selectedParticipant = eligibleParticipants[randomIndex]!;
     }
@@ -172,11 +172,11 @@ export class RandomSelector implements SpeakerSelectionStrategy {
    */
   private weightedSelection(
     participants: ChatParticipant[],
-    weights: Record<string, number>
+    weights: Record<string, number>,
   ): ChatParticipant {
     const totalWeight = participants.reduce(
       (sum, p) => sum + (weights[p.name] || 1),
-      0
+      0,
     );
 
     let random = Math.random() * totalWeight;
@@ -210,10 +210,10 @@ export class LLMSelector implements SpeakerSelectionStrategy {
     participants: ChatParticipant[],
     messages: Message[],
     context: ChatContext,
-    config?: SpeakerSelectionConfig
+    config?: SpeakerSelectionConfig,
   ): Promise<SpeakerSelectionResult> {
     const activeParticipants = participants.filter(
-      p => p.status === 'active' || p.status === 'idle'
+      p => p.status === 'active' || p.status === 'idle',
     );
 
     if (activeParticipants.length === 0) {
@@ -225,18 +225,18 @@ export class LLMSelector implements SpeakerSelectionStrategy {
       activeParticipants,
       messages,
       context,
-      config
+      config,
     );
 
     // Simulate LLM selection (in real implementation, call actual LLM)
     const selectedName = await this.simulateLLMSelection(
       selectionPrompt,
       activeParticipants,
-      messages
+      messages,
     );
 
     const selectedParticipant = activeParticipants.find(
-      p => p.name === selectedName
+      p => p.name === selectedName,
     );
 
     if (!selectedParticipant) {
@@ -275,11 +275,11 @@ export class LLMSelector implements SpeakerSelectionStrategy {
     participants: ChatParticipant[],
     messages: Message[],
     context: ChatContext,
-    config?: SpeakerSelectionConfig
+    config?: SpeakerSelectionConfig,
   ): string {
     const participantDescriptions = participants
       .map(
-        p => `- ${p.name}: ${p.description || p.systemPrompt.slice(0, 100)}...`
+        p => `- ${p.name}: ${p.description || p.systemPrompt.slice(0, 100)}...`,
       )
       .join('\n');
 
@@ -318,7 +318,7 @@ Return only the participant name.`;
   private async simulateLLMSelection(
     _prompt: string,
     participants: ChatParticipant[],
-    messages: Message[]
+    messages: Message[],
   ): Promise<string> {
     // In a real implementation, this would call an actual LLM
     // For now, use heuristics to simulate intelligent selection
@@ -329,7 +329,7 @@ Return only the participant name.`;
     if (lastMessage) {
       const relevantParticipant = this.findMostRelevantParticipant(
         lastMessage.content,
-        participants
+        participants,
       );
       if (relevantParticipant) {
         return relevantParticipant.name;
@@ -353,7 +353,7 @@ Return only the participant name.`;
    */
   private findMostRelevantParticipant(
     content: string,
-    participants: ChatParticipant[]
+    participants: ChatParticipant[],
   ): ChatParticipant | null {
     const contentLower = content.toLowerCase();
 
@@ -412,10 +412,10 @@ export class PrioritySelector implements SpeakerSelectionStrategy {
     participants: ChatParticipant[],
     messages: Message[],
     context: ChatContext,
-    config?: SpeakerSelectionConfig
+    config?: SpeakerSelectionConfig,
   ): Promise<SpeakerSelectionResult> {
     const activeParticipants = participants.filter(
-      p => p.status === 'active' || p.status === 'idle'
+      p => p.status === 'active' || p.status === 'idle',
     );
 
     if (activeParticipants.length === 0) {
@@ -430,7 +430,7 @@ export class PrioritySelector implements SpeakerSelectionStrategy {
       const nextSpeaker = this.applyTransitionRules(
         lastMessage.name,
         config.transitionRules,
-        activeParticipants
+        activeParticipants,
       );
       if (nextSpeaker) {
         return {
@@ -449,7 +449,7 @@ export class PrioritySelector implements SpeakerSelectionStrategy {
       const allowed = config.allowedTransitions[lastMessage.name];
       if (allowed && allowed.length > 0) {
         const eligibleParticipants = activeParticipants.filter(p =>
-          allowed.includes(p.name)
+          allowed.includes(p.name),
         );
         if (eligibleParticipants.length > 0) {
           const selected = eligibleParticipants[0]!;
@@ -484,7 +484,7 @@ export class PrioritySelector implements SpeakerSelectionStrategy {
     // Fallback to first available participant
     const fallback =
       activeParticipants.find(
-        p => !lastMessage || p.name !== lastMessage.name
+        p => !lastMessage || p.name !== lastMessage.name,
       ) || activeParticipants[0]!;
 
     return {
@@ -507,7 +507,7 @@ export class PrioritySelector implements SpeakerSelectionStrategy {
   private applyTransitionRules(
     fromSpeaker: string,
     rules: TransitionRule[],
-    participants: ChatParticipant[]
+    participants: ChatParticipant[],
   ): ChatParticipant | null {
     // Find rules matching the current speaker
     const matchingRules = rules.filter(rule => rule.from === fromSpeaker);
@@ -524,7 +524,7 @@ export class PrioritySelector implements SpeakerSelectionStrategy {
       for (const toName of rule.to) {
         const participant = participants.find(
           p =>
-            p.name === toName && (p.status === 'active' || p.status === 'idle')
+            p.name === toName && (p.status === 'active' || p.status === 'idle'),
         );
         if (participant) {
           return participant;
@@ -550,10 +550,10 @@ export class ManualSelector implements SpeakerSelectionStrategy {
   async selectSpeaker(
     participants: ChatParticipant[],
     _messages: Message[],
-    context: ChatContext
+    context: ChatContext,
   ): Promise<SpeakerSelectionResult> {
     const activeParticipants = participants.filter(
-      p => p.status === 'active' || p.status === 'idle'
+      p => p.status === 'active' || p.status === 'idle',
     );
 
     if (activeParticipants.length === 0) {
@@ -565,7 +565,7 @@ export class ManualSelector implements SpeakerSelectionStrategy {
 
     if (manualSelection) {
       const participant = activeParticipants.find(
-        p => p.name === manualSelection
+        p => p.name === manualSelection,
       );
       if (participant) {
         return {
@@ -581,7 +581,7 @@ export class ManualSelector implements SpeakerSelectionStrategy {
 
     // If no manual selection, wait or use fallback
     throw new Error(
-      'Manual selection mode requires nextSpeaker in context state'
+      'Manual selection mode requires nextSpeaker in context state',
     );
   }
 }
@@ -606,10 +606,10 @@ export class AutoSelector implements SpeakerSelectionStrategy {
     participants: ChatParticipant[],
     messages: Message[],
     context: ChatContext,
-    config?: SpeakerSelectionConfig
+    config?: SpeakerSelectionConfig,
   ): Promise<SpeakerSelectionResult> {
     const activeParticipants = participants.filter(
-      p => p.status === 'active' || p.status === 'idle'
+      p => p.status === 'active' || p.status === 'idle',
     );
 
     if (activeParticipants.length === 0) {
@@ -621,7 +621,7 @@ export class AutoSelector implements SpeakerSelectionStrategy {
       activeParticipants,
       messages,
       context,
-      config
+      config,
     );
 
     let result: SpeakerSelectionResult;
@@ -632,7 +632,7 @@ export class AutoSelector implements SpeakerSelectionStrategy {
           participants,
           messages,
           context,
-          config
+          config,
         );
         break;
       case 'llm':
@@ -640,7 +640,7 @@ export class AutoSelector implements SpeakerSelectionStrategy {
           participants,
           messages,
           context,
-          config
+          config,
         );
         break;
       case 'round_robin':
@@ -649,7 +649,7 @@ export class AutoSelector implements SpeakerSelectionStrategy {
           participants,
           messages,
           context,
-          config
+          config,
         );
         break;
     }
@@ -672,7 +672,7 @@ export class AutoSelector implements SpeakerSelectionStrategy {
     participants: ChatParticipant[],
     messages: Message[],
     context: ChatContext,
-    config?: SpeakerSelectionConfig
+    config?: SpeakerSelectionConfig,
   ): 'priority' | 'llm' | 'round_robin' {
     // Use priority if transition rules or priority order are configured
     if (
@@ -690,7 +690,7 @@ export class AutoSelector implements SpeakerSelectionStrategy {
 
     // Use LLM if participants have distinct capabilities
     const uniqueCapabilities = new Set(
-      participants.flatMap(p => p.capabilities)
+      participants.flatMap(p => p.capabilities),
     );
     if (uniqueCapabilities.size > participants.length * 2) {
       return 'llm';
@@ -744,13 +744,13 @@ export class SpeakerSelectionManager {
     participants: ChatParticipant[],
     messages: Message[],
     context: ChatContext,
-    config?: SpeakerSelectionConfig
+    config?: SpeakerSelectionConfig,
   ): Promise<SpeakerSelectionResult> {
     return this.currentStrategy.selectSpeaker(
       participants,
       messages,
       context,
-      config
+      config,
     );
   }
 

@@ -129,7 +129,7 @@ const DEFAULT_INTROSPECTION_OPTIONS: SchemaIntrospectionOptions = {
 export function introspectSchema(
   schema: ZodSchema,
   options: Partial<SchemaIntrospectionOptions> = {},
-  depth = 0
+  depth = 0,
 ): SchemaMetadata {
   const opts = { ...DEFAULT_INTROSPECTION_OPTIONS, ...options };
 
@@ -205,7 +205,7 @@ function callZodToJsonSchema(
     name?: string;
     $refStrategy?: 'none' | 'root' | 'relative' | 'seen';
     target?: 'jsonSchema7' | 'jsonSchema2019-09' | 'openApi3';
-  }
+  },
 ): Record<string, unknown> {
   // Break the type recursion by going through unknown
   // The zodToJsonSchema library returns a valid JSON Schema object
@@ -222,7 +222,7 @@ function callZodToJsonSchema(
  */
 export function toJsonSchema(
   schema: ZodSchema,
-  options: JsonSchemaOptions = {}
+  options: JsonSchemaOptions = {},
 ): Record<string, unknown> {
   const jsonSchema = callZodToJsonSchema(schema, {
     name: options.name,
@@ -250,7 +250,7 @@ export function generateSchemaPrompt(schema: ZodSchema, name?: string): string {
  */
 function formatSchemaForPrompt(
   schema: Record<string, unknown>,
-  indent = 0
+  indent = 0,
 ): string {
   const spaces = '  '.repeat(indent);
   const lines: string[] = [];
@@ -282,7 +282,7 @@ function formatSchemaForPrompt(
       const reqMark = isRequired ? ' (required)' : ' (optional)';
 
       lines.push(
-        `${spaces}  - ${key}: ${type}${reqMark}${desc ? ` - ${desc}` : ''}`
+        `${spaces}  - ${key}: ${type}${reqMark}${desc ? ` - ${desc}` : ''}`,
       );
 
       // Handle nested objects
@@ -322,7 +322,7 @@ function formatSchemaForPrompt(
  */
 export function createObjectSchema<T extends Record<string, ZodSchema>>(
   fields: T,
-  options?: { description?: string }
+  options?: { description?: string },
 ): ZodObject<T> {
   const schema = z.object(fields);
   return options?.description ? schema.describe(options.description) : schema;
@@ -332,7 +332,7 @@ export function createObjectSchema<T extends Record<string, ZodSchema>>(
  * Make all fields in an object schema optional
  */
 export function makePartial<T extends ZodObject<Record<string, ZodSchema>>>(
-  schema: T
+  schema: T,
 ) {
   return schema.partial();
 }
@@ -341,7 +341,7 @@ export function makePartial<T extends ZodObject<Record<string, ZodSchema>>>(
  * Make all fields in an object schema required
  */
 export function makeRequired<T extends ZodObject<Record<string, ZodSchema>>>(
-  schema: T
+  schema: T,
 ) {
   return schema.required();
 }
@@ -358,7 +358,7 @@ export function pickFields<
       acc[key as string] = true;
       return acc;
     },
-    {} as Record<string, true>
+    {} as Record<string, true>,
   );
   return schema.pick(pickObj);
 }
@@ -375,7 +375,7 @@ export function omitFields<
       acc[key as string] = true;
       return acc;
     },
-    {} as Record<string, true>
+    {} as Record<string, true>,
   );
   return schema.omit(omitObj);
 }
@@ -409,7 +409,7 @@ export function mergeSchemas<
  */
 export function safeParse<T>(
   schema: ZodSchema<T>,
-  data: unknown
+  data: unknown,
 ):
   | { success: true; data: T }
   | { success: false; errors: Array<{ path: string; message: string }> } {

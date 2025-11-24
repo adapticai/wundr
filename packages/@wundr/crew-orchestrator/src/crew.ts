@@ -123,7 +123,7 @@ export class AgentCrew extends EventEmitter {
       throw new CrewError(
         CrewErrorCode.INVALID_CONFIG,
         `Invalid crew configuration: ${parseResult.error.message}`,
-        { validationErrors: parseResult.error.errors }
+        { validationErrors: parseResult.error.errors },
       );
     }
 
@@ -169,12 +169,12 @@ export class AgentCrew extends EventEmitter {
    */
   async kickoff(
     taskInputs: TaskInput[],
-    executor?: TaskExecutor
+    executor?: TaskExecutor,
   ): Promise<CrewResult> {
     if (this.isRunning) {
       throw new CrewError(
         CrewErrorCode.TASK_EXECUTION_FAILED,
-        'Crew is already running'
+        'Crew is already running',
       );
     }
 
@@ -213,7 +213,7 @@ export class AgentCrew extends EventEmitter {
         default:
           throw new CrewError(
             CrewErrorCode.INVALID_CONFIG,
-            `Unknown process type: ${this.config.process}`
+            `Unknown process type: ${this.config.process}`,
           );
       }
     } catch (error) {
@@ -395,7 +395,7 @@ export class AgentCrew extends EventEmitter {
    */
   private async executeSequential(
     tasks: Task[],
-    executor: TaskExecutor
+    executor: TaskExecutor,
   ): Promise<TaskResult[]> {
     const results: TaskResult[] = [];
 
@@ -404,13 +404,13 @@ export class AgentCrew extends EventEmitter {
       const member = await this.taskManager.assignTask(
         task.id,
         this.getAvailableMembers(),
-        this.executionContext!
+        this.executionContext!,
       );
 
       if (!member) {
         throw new CrewError(
           CrewErrorCode.NO_AVAILABLE_MEMBER,
-          `No available member for task: ${task.id}`
+          `No available member for task: ${task.id}`,
         );
       }
 
@@ -446,7 +446,7 @@ export class AgentCrew extends EventEmitter {
    */
   private async executeHierarchical(
     tasks: Task[],
-    executor: TaskExecutor
+    executor: TaskExecutor,
   ): Promise<TaskResult[]> {
     const results: TaskResult[] = [];
     const manager = this.getManager();
@@ -454,25 +454,25 @@ export class AgentCrew extends EventEmitter {
     if (!manager) {
       throw new CrewError(
         CrewErrorCode.MEMBER_NOT_FOUND,
-        'No manager found for hierarchical process'
+        'No manager found for hierarchical process',
       );
     }
 
     for (const task of tasks) {
       // Assign task to worker
       const workers = this.getAvailableMembers().filter(
-        m => m.id !== manager.id
+        m => m.id !== manager.id,
       );
       const worker = await this.taskManager.assignTask(
         task.id,
         workers,
-        this.executionContext!
+        this.executionContext!,
       );
 
       if (!worker) {
         throw new CrewError(
           CrewErrorCode.NO_AVAILABLE_MEMBER,
-          `No available worker for task: ${task.id}`
+          `No available worker for task: ${task.id}`,
         );
       }
 
@@ -484,7 +484,7 @@ export class AgentCrew extends EventEmitter {
           task,
           result,
           manager,
-          this.executionContext!
+          this.executionContext!,
         );
 
         if (feedback.decision === 'approved') {
@@ -514,14 +514,14 @@ export class AgentCrew extends EventEmitter {
               task,
               worker,
               feedback.feedback,
-              this.executionContext!
+              this.executionContext!,
             );
 
             const delegationResponse =
               await this.delegationManager.processDelegation(
                 delegationRequest,
                 workers.filter(w => w.id !== worker.id),
-                this.executionContext!
+                this.executionContext!,
               );
 
             if (delegationResponse.accepted) {
@@ -562,7 +562,7 @@ export class AgentCrew extends EventEmitter {
    */
   private async executeConsensus(
     tasks: Task[],
-    executor: TaskExecutor
+    executor: TaskExecutor,
   ): Promise<TaskResult[]> {
     const results: TaskResult[] = [];
     const minVoters = Math.ceil(this.members.size / 2) + 1;
@@ -573,7 +573,7 @@ export class AgentCrew extends EventEmitter {
       if (availableMembers.length < minVoters) {
         throw new CrewError(
           CrewErrorCode.CONSENSUS_FAILED,
-          `Not enough members for consensus: need ${minVoters}, have ${availableMembers.length}`
+          `Not enough members for consensus: need ${minVoters}, have ${availableMembers.length}`,
         );
       }
 
@@ -581,7 +581,7 @@ export class AgentCrew extends EventEmitter {
       const memberResults: TaskResult[] = [];
       const voters = availableMembers.slice(
         0,
-        Math.min(availableMembers.length, 3)
+        Math.min(availableMembers.length, 3),
       );
 
       for (const member of voters) {
@@ -601,7 +601,7 @@ export class AgentCrew extends EventEmitter {
       if (!bestResult) {
         throw new CrewError(
           CrewErrorCode.CONSENSUS_FAILED,
-          `Failed to reach consensus for task: ${task.id}`
+          `Failed to reach consensus for task: ${task.id}`,
         );
       }
 
@@ -629,7 +629,7 @@ export class AgentCrew extends EventEmitter {
   private async executeTask(
     task: Task,
     member: CrewMember,
-    executor: TaskExecutor
+    executor: TaskExecutor,
   ): Promise<TaskResult> {
     const startTime = new Date();
     this.updateMemberStatus(member.id, 'working');
@@ -697,7 +697,7 @@ export class AgentCrew extends EventEmitter {
   private async placeholderExecutor(
     task: Task,
     member: CrewMember,
-    _context: ExecutionContext
+    _context: ExecutionContext,
   ): Promise<TaskResult> {
     const startTime = new Date();
 
@@ -746,7 +746,7 @@ export class AgentCrew extends EventEmitter {
       throw new CrewError(
         CrewErrorCode.INVALID_CONFIG,
         `Invalid member configuration: ${parseResult.error.message}`,
-        { validationErrors: parseResult.error.errors }
+        { validationErrors: parseResult.error.errors },
       );
     }
 
@@ -784,7 +784,7 @@ export class AgentCrew extends EventEmitter {
   private buildCrewResult(
     taskResults: TaskResult[],
     startTime: Date,
-    endTime: Date
+    endTime: Date,
   ): CrewResult {
     const memberMetrics: CrewResult['memberMetrics'] = {};
 
@@ -794,10 +794,10 @@ export class AgentCrew extends EventEmitter {
       const completed = memberTasks.filter(r => r.success).length;
       const failed = memberTasks.filter(r => !r.success).length;
       const delegationsReceived = taskResults.filter(r =>
-        r.delegationChain.includes(member.id)
+        r.delegationChain.includes(member.id),
       ).length;
       const delegationsSent = taskResults.filter(
-        r => r.delegationChain[0] === member.id && r.delegationChain.length > 1
+        r => r.delegationChain[0] === member.id && r.delegationChain.length > 1,
       ).length;
       const totalDuration = memberTasks.reduce((sum, r) => sum + r.duration, 0);
       const avgIterations =
@@ -819,11 +819,11 @@ export class AgentCrew extends EventEmitter {
     const success = taskResults.every(r => r.success);
     const totalIterations = taskResults.reduce(
       (sum, r) => sum + r.iterationsUsed,
-      0
+      0,
     );
     const totalTokens = taskResults.reduce(
       (sum, r) => sum + (r.tokensUsed ?? 0),
-      0
+      0,
     );
 
     // Get final output from last task
@@ -877,7 +877,7 @@ export class AgentCrew extends EventEmitter {
    */
   private emitEvent(
     type: CrewEvent['type'],
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): void {
     const event: CrewEvent = {
       type,

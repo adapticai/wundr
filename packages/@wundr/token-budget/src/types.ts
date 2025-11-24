@@ -218,7 +218,7 @@ export const SessionUsageSummarySchema = z.object({
       totalTokens: z.number().nonnegative(),
       costUsd: z.number().nonnegative(),
       operationCount: z.number().nonnegative(),
-    })
+    }),
   ),
   /** Breakdown by operation type */
   byOperationType: z.record(
@@ -228,7 +228,7 @@ export const SessionUsageSummarySchema = z.object({
       totalTokens: z.number().nonnegative(),
       costUsd: z.number().nonnegative(),
       operationCount: z.number().nonnegative(),
-    })
+    }),
   ),
   /** Cache hit rate */
   cacheHitRate: z.number().min(0).max(1),

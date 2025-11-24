@@ -475,7 +475,7 @@ export class InputSanitizer {
   }
 
   private getRecommendation(
-    riskLevel: 'safe' | 'low' | 'medium' | 'high' | 'critical'
+    riskLevel: 'safe' | 'low' | 'medium' | 'high' | 'critical',
   ): string {
     const recommendations: Record<string, string> = {
       safe: 'Input appears safe to use',
@@ -601,7 +601,7 @@ export interface RiskAssessment {
  * @returns Configured InputSanitizer
  */
 export function createSanitizer(
-  preset: 'strict' | 'standard' | 'permissive'
+  preset: 'strict' | 'standard' | 'permissive',
 ): InputSanitizer {
   switch (preset) {
     case 'strict':

@@ -75,7 +75,7 @@ class ConsoleLogger implements Logger {
     if (this.shouldLog('debug')) {
       // Using process.stderr for logging to avoid polluting stdout
       process.stderr.write(
-        `[DEBUG] ${message} ${data ? JSON.stringify(data) : ''}\n`
+        `[DEBUG] ${message} ${data ? JSON.stringify(data) : ''}\n`,
       );
     }
   }
@@ -84,7 +84,7 @@ class ConsoleLogger implements Logger {
     if (this.shouldLog('info')) {
       // Using process.stderr for logging to avoid polluting stdout
       process.stderr.write(
-        `[INFO] ${message} ${data ? JSON.stringify(data) : ''}\n`
+        `[INFO] ${message} ${data ? JSON.stringify(data) : ''}\n`,
       );
     }
   }
@@ -307,7 +307,7 @@ export class StateGraph<
   getConfig(): GraphConfig {
     if (!this.entryPoint) {
       throw new Error(
-        'Entry point not set. Call setEntryPoint() before getConfig()'
+        'Entry point not set. Call setEntryPoint() before getConfig()',
       );
     }
 
@@ -340,7 +340,7 @@ export class StateGraph<
   async execute(options?: ExecutionOptions): Promise<ExecutionResult> {
     if (!this.entryPoint) {
       throw new Error(
-        'Entry point not set. Call setEntryPoint() before execute()'
+        'Entry point not set. Call setEntryPoint() before execute()',
       );
     }
 
@@ -371,7 +371,7 @@ export class StateGraph<
         if (!node) {
           throw this.createError(
             'NODE_NOT_FOUND',
-            `Node "${currentNode}" not found`
+            `Node "${currentNode}" not found`,
           );
         }
 
@@ -387,7 +387,7 @@ export class StateGraph<
           node,
           state,
           executionId,
-          iterations
+          iterations,
         );
         nodesExecuted++;
 
@@ -415,7 +415,7 @@ export class StateGraph<
             state,
             currentNode,
             executionId,
-            iterations
+            iterations,
           );
           checkpointsCreated++;
           this.emit('checkpoint:created', checkpoint);
@@ -434,7 +434,7 @@ export class StateGraph<
         const nextNode = await this.determineNextNode(
           currentNode,
           result,
-          state
+          state,
         );
         currentNode = nextNode ?? '';
 
@@ -447,7 +447,7 @@ export class StateGraph<
       if (iterations >= this.config.maxIterations) {
         throw this.createError(
           'MAX_ITERATIONS',
-          `Exceeded maximum iterations (${this.config.maxIterations})`
+          `Exceeded maximum iterations (${this.config.maxIterations})`,
         );
       }
 
@@ -475,7 +475,7 @@ export class StateGraph<
     } catch (error) {
       const workflowError = this.normalizeError(
         error,
-        currentNode ?? 'unknown'
+        currentNode ?? 'unknown',
       );
       state = {
         ...state,
@@ -547,7 +547,7 @@ export class StateGraph<
   private validateNodeExists(nodeName: string): void {
     if (!this.nodes.has(nodeName)) {
       throw new Error(
-        `Node "${nodeName}" does not exist in graph "${this.name}"`
+        `Node "${nodeName}" does not exist in graph "${this.name}"`,
       );
     }
   }
@@ -566,7 +566,7 @@ export class StateGraph<
       for (const edge of edges) {
         if (!this.nodes.has(edge.to)) {
           throw new Error(
-            `Graph validation failed: Edge from "${source}" references non-existent node "${edge.to}"`
+            `Graph validation failed: Edge from "${source}" references non-existent node "${edge.to}"`,
           );
         }
       }
@@ -575,14 +575,14 @@ export class StateGraph<
     // Check entry point is reachable
     if (!this.nodes.has(this.entryPoint)) {
       throw new Error(
-        `Graph validation failed: Entry point "${this.entryPoint}" does not exist`
+        `Graph validation failed: Entry point "${this.entryPoint}" does not exist`,
       );
     }
   }
 
   private async initializeState(
     executionId: string,
-    options?: ExecutionOptions
+    options?: ExecutionOptions,
   ): Promise<TState> {
     const now = new Date();
     const metadata: StateMetadata = {
@@ -624,7 +624,7 @@ export class StateGraph<
     node: NodeDefinition<TState>,
     state: TState,
     executionId: string,
-    iterationCount: number
+    iterationCount: number,
   ): Promise<NodeResult<TState>> {
     const retryConfig = { ...this.config.retry, ...node.config.retry };
     let lastError: Error | null = null;
@@ -695,7 +695,7 @@ export class StateGraph<
         const delay = Math.min(
           retryConfig.initialDelay *
             Math.pow(retryConfig.backoffMultiplier, retryCount),
-          retryConfig.maxDelay
+          retryConfig.maxDelay,
         );
 
         this.logger.warn(`Retrying node ${node.name} after ${delay}ms`, {
@@ -714,7 +714,7 @@ export class StateGraph<
   private updateStateWithHistory(
     newState: TState,
     nodeName: string,
-    previousState: TState
+    previousState: TState,
   ): TState {
     const changes = this.computeStateChanges(previousState, newState);
 
@@ -742,7 +742,7 @@ export class StateGraph<
 
   private computeStateChanges(
     previous: TState,
-    current: TState
+    current: TState,
   ): StateChange[] {
     const changes: StateChange[] = [];
 
@@ -780,7 +780,7 @@ export class StateGraph<
   private async determineNextNode(
     currentNode: string,
     result: NodeResult<TState>,
-    state: TState
+    state: TState,
   ): Promise<string | undefined> {
     // If node explicitly specifies next
     if (result.next) {
@@ -799,7 +799,7 @@ export class StateGraph<
       const shouldFollow = await this.evaluateEdgeCondition(
         edge,
         result,
-        state
+        state,
       );
       if (shouldFollow) {
         return edge.to;
@@ -813,7 +813,7 @@ export class StateGraph<
   private async evaluateEdgeCondition(
     edge: EdgeDefinition,
     result: NodeResult<TState>,
-    state: TState
+    state: TState,
   ): Promise<boolean> {
     // Direct edges always follow
     if (edge.type === 'direct' || edge.type === 'parallel') {
@@ -897,7 +897,7 @@ export class StateGraph<
     state: TState,
     nodeName: string,
     executionId: string,
-    stepNumber: number
+    stepNumber: number,
   ): Promise<Checkpoint> {
     const checkpoint: Checkpoint = {
       id: uuidv4(),
@@ -918,7 +918,7 @@ export class StateGraph<
   private createError(
     code: string,
     message: string,
-    node?: string
+    node?: string,
   ): WorkflowError {
     return {
       code,

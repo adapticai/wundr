@@ -69,7 +69,7 @@ export const DEFAULT_CONTEXT_ENGINEERING_OPTIONS: ContextEngineeringOptions = {
  */
 export async function setupContextEngineering(
   options: ContextEngineeringOptions = DEFAULT_CONTEXT_ENGINEERING_OPTIONS,
-  platform: SetupPlatform
+  platform: SetupPlatform,
 ): Promise<ContextEngineeringResult> {
   const result: ContextEngineeringResult = {
     success: false,
@@ -138,8 +138,8 @@ export async function setupContextEngineering(
           platform,
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     result.success = result.errors.length === 0;
@@ -160,7 +160,7 @@ export async function setupContextEngineering(
  */
 async function setupJitTools(
   config: NonNullable<ContextEngineeringOptions['jitTools']>,
-  _platform: SetupPlatform
+  _platform: SetupPlatform,
 ): Promise<void> {
   logger.info('Setting up JIT tools...');
 
@@ -192,11 +192,11 @@ async function setupJitTools(
   await fs.mkdir(jitConfig.cacheDir, { recursive: true });
   await fs.writeFile(
     jitConfig.toolRegistry,
-    JSON.stringify(toolRegistry, null, 2)
+    JSON.stringify(toolRegistry, null, 2),
   );
   await fs.writeFile(
     path.join(jitConfigDir, 'config.json'),
-    JSON.stringify(jitConfig, null, 2)
+    JSON.stringify(jitConfig, null, 2),
   );
 
   logger.info('JIT tools configuration created');
@@ -207,7 +207,7 @@ async function setupJitTools(
  */
 async function setupAgenticRag(
   config: NonNullable<ContextEngineeringOptions['agenticRag']>,
-  platform: SetupPlatform
+  platform: SetupPlatform,
 ): Promise<void> {
   logger.info('Setting up Agentic RAG...');
 
@@ -257,14 +257,14 @@ async function setupAgenticRag(
       });
     } catch (_error) {
       logger.warn(
-        'Could not install chromadb - you may need to install it manually'
+        'Could not install chromadb - you may need to install it manually',
       );
     }
   }
 
   await fs.writeFile(
     path.join(ragConfigDir, 'config.json'),
-    JSON.stringify(ragConfig, null, 2)
+    JSON.stringify(ragConfig, null, 2),
   );
 
   logger.info('Agentic RAG configuration created');
@@ -274,7 +274,7 @@ async function setupAgenticRag(
  * Configures memory architecture for conversation and concept storage
  */
 async function setupMemoryArchitecture(
-  config: NonNullable<ContextEngineeringOptions['memoryArchitecture']>
+  config: NonNullable<ContextEngineeringOptions['memoryArchitecture']>,
 ): Promise<void> {
   logger.info('Setting up memory architecture...');
 
@@ -320,7 +320,7 @@ async function setupMemoryArchitecture(
 
   await fs.writeFile(
     path.join(memoryDir, 'config.json'),
-    JSON.stringify(memoryConfig, null, 2)
+    JSON.stringify(memoryConfig, null, 2),
   );
 
   // Initialize empty memory stores
@@ -329,16 +329,16 @@ async function setupMemoryArchitecture(
     JSON.stringify(
       { entries: [], lastUpdated: new Date().toISOString() },
       null,
-      2
-    )
+      2,
+    ),
   );
   await fs.writeFile(
     path.join(memoryDir, 'long-term.json'),
     JSON.stringify(
       { entries: [], lastUpdated: new Date().toISOString() },
       null,
-      2
-    )
+      2,
+    ),
   );
 
   logger.info('Memory architecture configuration created');
@@ -353,7 +353,7 @@ export async function validateContextEngineering(): Promise<boolean> {
   const configPath = path.join(
     os.homedir(),
     '.wundr',
-    'context-engineering.json'
+    'context-engineering.json',
   );
 
   try {
@@ -377,7 +377,7 @@ export async function validateContextEngineering(): Promise<boolean> {
 export function getContextEngineeringSteps(
   _profile: DeveloperProfile,
   platform: SetupPlatform,
-  options: ContextEngineeringOptions = DEFAULT_CONTEXT_ENGINEERING_OPTIONS
+  options: ContextEngineeringOptions = DEFAULT_CONTEXT_ENGINEERING_OPTIONS,
 ): SetupStep[] {
   const steps: SetupStep[] = [];
 

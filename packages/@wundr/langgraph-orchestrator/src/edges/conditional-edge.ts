@@ -127,7 +127,7 @@ export class ConditionalEdgeBuilder<TState extends AgentState = AgentState> {
   whenCustom(evaluate: EdgeConditionEvaluator<TState>, target: string): this {
     return this.when(
       { type: 'custom', evaluate: evaluate as EdgeConditionEvaluator },
-      target
+      target,
     );
   }
 
@@ -152,7 +152,7 @@ export class ConditionalEdgeBuilder<TState extends AgentState = AgentState> {
         to: target,
         type: 'conditional' as const,
         condition,
-      })
+      }),
     );
 
     if (this.defaultTarget) {
@@ -188,7 +188,7 @@ export class ConditionalEdgeBuilder<TState extends AgentState = AgentState> {
  * @returns ConditionalEdgeBuilder
  */
 export function conditionalEdge<TState extends AgentState = AgentState>(
-  from: string
+  from: string,
 ): ConditionalEdgeBuilder<TState> {
   return new ConditionalEdgeBuilder<TState>(from);
 }
@@ -298,7 +298,7 @@ export const conditions = {
    * Create a custom condition
    */
   custom<TState extends AgentState = AgentState>(
-    evaluate: EdgeConditionEvaluator<TState>
+    evaluate: EdgeConditionEvaluator<TState>,
   ): EdgeCondition {
     return { type: 'custom', evaluate: evaluate as EdgeConditionEvaluator };
   },
@@ -396,7 +396,7 @@ export const conditions = {
    */
   isType(
     field: string,
-    type: 'string' | 'number' | 'boolean' | 'object' | 'array'
+    type: 'string' | 'number' | 'boolean' | 'object' | 'array',
   ): EdgeCondition {
     return {
       type: 'custom',
@@ -417,7 +417,7 @@ export const conditions = {
 async function evaluateCondition(
   condition: EdgeCondition,
   state: AgentState,
-  context: EdgeContext
+  context: EdgeContext,
 ): Promise<boolean> {
   const fieldValue = condition.field
     ? getFieldValue(state, condition.field)

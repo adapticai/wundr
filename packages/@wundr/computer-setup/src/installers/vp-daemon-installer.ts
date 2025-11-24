@@ -19,8 +19,9 @@ import * as path from 'path';
 
 import { execa } from 'execa';
 
-import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
 import { Logger } from '../utils/logger';
+
+import type { SetupPlatform, SetupStep, DeveloperProfile } from '../types';
 
 /**
  * Configuration for VP Daemon installation
@@ -123,14 +124,14 @@ export class VPDaemonInstaller extends EventEmitter {
    */
   async install(
     _profile?: DeveloperProfile,
-    _platform?: SetupPlatform
+    _platform?: SetupPlatform,
   ): Promise<void> {
     const result = await this.installWithResult();
     if (!result.success) {
       throw new Error(
         result.errors.length > 0
           ? result.errors[0].message
-          : 'VP Daemon installation failed'
+          : 'VP Daemon installation failed',
       );
     }
   }
@@ -356,7 +357,7 @@ export class VPDaemonInstaller extends EventEmitter {
       // Create sessions index
       await fs.writeFile(
         path.join(this.vpDaemonDir, 'sessions', 'index.json'),
-        JSON.stringify({ sessions: [], lastUpdated: new Date().toISOString() }, null, 2)
+        JSON.stringify({ sessions: [], lastUpdated: new Date().toISOString() }, null, 2),
       );
     } catch (error) {
       this.logger.error('Failed to install VP daemon files:', error);
@@ -424,8 +425,8 @@ export class VPDaemonInstaller extends EventEmitter {
           webhooks: [],
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     // Gmail integration template
@@ -440,8 +441,8 @@ export class VPDaemonInstaller extends EventEmitter {
           scopes: ['gmail.readonly', 'gmail.send'],
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     // Google Drive integration template
@@ -456,8 +457,8 @@ export class VPDaemonInstaller extends EventEmitter {
           rootFolderId: '',
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     // Twilio integration template
@@ -471,8 +472,8 @@ export class VPDaemonInstaller extends EventEmitter {
           phoneNumber: '',
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     this.logger.info('Integration configuration templates created');
@@ -540,7 +541,7 @@ export class VPDaemonInstaller extends EventEmitter {
     for (const [name, config] of Object.entries(archetypes)) {
       await fs.writeFile(
         path.join(archetypesDir, `${name}.archetype.json`),
-        JSON.stringify(config, null, 2)
+        JSON.stringify(config, null, 2),
       );
     }
 
@@ -596,7 +597,7 @@ export class VPDaemonInstaller extends EventEmitter {
 
     await fs.writeFile(
       path.join(memoryDir, 'memory-config.json'),
-      JSON.stringify(memoryConfig, null, 2)
+      JSON.stringify(memoryConfig, null, 2),
     );
 
     this.logger.info('Memory architecture configured');

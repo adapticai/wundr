@@ -36,7 +36,7 @@ import type {
 export class ServerNotFoundError extends Error {
   constructor(
     public readonly serverId: string,
-    message?: string
+    message?: string,
   ) {
     super(message ?? `Server not found: ${serverId}`);
     this.name = 'ServerNotFoundError';
@@ -49,7 +49,7 @@ export class ServerNotFoundError extends Error {
 export class ServerAlreadyExistsError extends Error {
   constructor(
     public readonly serverName: string,
-    message?: string
+    message?: string,
   ) {
     super(message ?? `Server already registered: ${serverName}`);
     this.name = 'ServerAlreadyExistsError';
@@ -62,11 +62,11 @@ export class ServerAlreadyExistsError extends Error {
 export class RegistrationValidationError extends Error {
   constructor(
     public readonly validationErrors: readonly string[],
-    message?: string
+    message?: string,
   ) {
     super(
       message ??
-        `Registration validation failed: ${validationErrors.join(', ')}`
+        `Registration validation failed: ${validationErrors.join(', ')}`,
     );
     this.name = 'RegistrationValidationError';
   }
@@ -162,13 +162,13 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
    * @throws {RegistrationValidationError} If options are invalid
    */
   async register(
-    options: ServerRegistrationOptions
+    options: ServerRegistrationOptions,
   ): Promise<MCPServerRegistration> {
     // Validate options
     const validation = ServerRegistrationOptionsSchema.safeParse(options);
     if (!validation.success) {
       const errors = validation.error.errors.map(
-        e => `${e.path.join('.')}: ${e.message}`
+        e => `${e.path.join('.')}: ${e.message}`,
       );
       throw new RegistrationValidationError(errors);
     }
@@ -339,7 +339,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
    */
   async updateCapabilities(
     serverId: string,
-    capabilities: readonly MCPCapability[]
+    capabilities: readonly MCPCapability[],
   ): Promise<MCPServerRegistration> {
     const server = this.servers.get(serverId);
     if (!server) {
@@ -367,7 +367,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
    */
   async updateTools(
     serverId: string,
-    tools: readonly ToolDefinition[]
+    tools: readonly ToolDefinition[],
   ): Promise<MCPServerRegistration> {
     const server = this.servers.get(serverId);
     if (!server) {
@@ -426,7 +426,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
    */
   async updateResources(
     serverId: string,
-    resources: readonly ResourceDefinition[]
+    resources: readonly ResourceDefinition[],
   ): Promise<MCPServerRegistration> {
     const server = this.servers.get(serverId);
     if (!server) {
@@ -454,7 +454,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
    */
   async updatePrompts(
     serverId: string,
-    prompts: readonly PromptDefinition[]
+    prompts: readonly PromptDefinition[],
   ): Promise<MCPServerRegistration> {
     const server = this.servers.get(serverId);
     if (!server) {
@@ -484,10 +484,10 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
    * @returns Matching servers
    */
   findByCapability(
-    category: CapabilityCategory
+    category: CapabilityCategory,
   ): readonly MCPServerRegistration[] {
     return Array.from(this.servers.values()).filter(server =>
-      server.capabilities.some(cap => cap.category === category && cap.enabled)
+      server.capabilities.some(cap => cap.category === category && cap.enabled),
     );
   }
 
@@ -506,7 +506,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
     return Array.from(serverIds)
       .map(id => this.servers.get(id))
       .filter(
-        (server): server is MCPServerRegistration => server !== undefined
+        (server): server is MCPServerRegistration => server !== undefined,
       );
   }
 
@@ -525,7 +525,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
     return Array.from(serverIds)
       .map(id => this.servers.get(id))
       .filter(
-        (server): server is MCPServerRegistration => server !== undefined
+        (server): server is MCPServerRegistration => server !== undefined,
       );
   }
 
@@ -668,7 +668,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
   private emitEvent(
     type: RegistryEventType,
     serverId: string,
-    data?: Record<string, unknown>
+    data?: Record<string, unknown>,
   ): void {
     const event: RegistryEvent = {
       type,
@@ -722,7 +722,7 @@ export class MCPServerRegistry extends EventEmitter<RegistryEvents> {
    * Group servers by priority
    */
   private groupByPriority(
-    servers: readonly MCPServerRegistration[]
+    servers: readonly MCPServerRegistration[],
   ): Record<number, number> {
     const grouped: Record<number, number> = {};
     for (const server of servers) {

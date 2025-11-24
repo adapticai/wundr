@@ -89,7 +89,7 @@ export function createToolNode<
     config: nodeConfig,
     execute: async (
       state: TState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<TState>> => {
       // Get pending tool calls from state
       const pendingToolCalls = state.data['pendingToolCalls'] as
@@ -98,7 +98,7 @@ export function createToolNode<
 
       if (!pendingToolCalls || pendingToolCalls.length === 0) {
         context.services.logger.warn(
-          'Tool node executed with no pending tool calls'
+          'Tool node executed with no pending tool calls',
         );
         return { state };
       }
@@ -118,7 +118,7 @@ export function createToolNode<
         pendingToolCalls,
         toolMap,
         config,
-        context
+        context,
       );
 
       // Build tool result messages
@@ -179,7 +179,7 @@ async function executeToolCalls(
   toolCalls: ToolCall[],
   toolMap: Map<string, Tool>,
   config: ToolNodeConfig,
-  context: NodeContext
+  context: NodeContext,
 ): Promise<ToolResult[]> {
   if (config.parallel) {
     return executeParallel(toolCalls, toolMap, config, context);
@@ -194,7 +194,7 @@ async function executeSequential(
   toolCalls: ToolCall[],
   toolMap: Map<string, Tool>,
   config: ToolNodeConfig,
-  context: NodeContext
+  context: NodeContext,
 ): Promise<ToolResult[]> {
   const results: ToolResult[] = [];
 
@@ -218,7 +218,7 @@ async function executeParallel(
   toolCalls: ToolCall[],
   toolMap: Map<string, Tool>,
   config: ToolNodeConfig,
-  context: NodeContext
+  context: NodeContext,
 ): Promise<ToolResult[]> {
   const maxConcurrency = config.maxConcurrency ?? 5;
   const results: ToolResult[] = [];
@@ -252,7 +252,7 @@ async function executeSingleTool(
   toolCall: ToolCall,
   toolMap: Map<string, Tool>,
   config: ToolNodeConfig,
-  context: NodeContext
+  context: NodeContext,
 ): Promise<ToolResult> {
   const tool = toolMap.get(toolCall.name);
 
@@ -323,15 +323,15 @@ async function executeSingleTool(
 async function executeWithTimeout(
   tool: Tool,
   args: Record<string, unknown>,
-  timeout: number
+  timeout: number,
 ): Promise<unknown> {
   return Promise.race([
     tool.execute(args),
     new Promise((_, reject) =>
       setTimeout(
         () => reject(new Error(`Tool execution timed out after ${timeout}ms`)),
-        timeout
-      )
+        timeout,
+      ),
     ),
   ]);
 }
@@ -473,7 +473,7 @@ export function createBatchToolNode<
     config: nodeConfig,
     execute: async (
       state: TState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<TState>> => {
       const pendingToolCalls = state.data['pendingToolCalls'] as
         | ToolCall[]

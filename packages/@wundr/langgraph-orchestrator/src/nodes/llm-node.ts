@@ -97,7 +97,7 @@ export function createLLMNode<TState extends AgentState = AgentState>(options: {
     config: nodeConfig,
     execute: async (
       state: TState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<TState>> => {
       const llmProvider = context.services.llmProvider;
 
@@ -323,7 +323,7 @@ export function createStructuredLLMNode<
           }
         } catch (error) {
           throw new Error(
-            `Failed to parse structured output: ${error instanceof Error ? error.message : String(error)}`
+            `Failed to parse structured output: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
 
@@ -378,7 +378,7 @@ export function createConversationalLLMNode<
     config: nodeConfig,
     execute: async (
       state: TState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<TState>> => {
       const llmProvider = context.services.llmProvider;
 
@@ -392,7 +392,7 @@ export function createConversationalLLMNode<
         // Keep system message if present, then most recent messages
         const systemMessages = historyMessages.filter(m => m.role === 'system');
         const nonSystemMessages = historyMessages.filter(
-          m => m.role !== 'system'
+          m => m.role !== 'system',
         );
         const trimmedNonSystem = nonSystemMessages.slice(-maxHistoryLength);
         historyMessages = [...systemMessages, ...trimmedNonSystem];

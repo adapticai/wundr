@@ -172,7 +172,7 @@ export type {
 export function createSimpleCrew(
   name: string,
   members: CrewMemberInput[],
-  process: ProcessType = 'sequential'
+  process: ProcessType = 'sequential',
 ): AgentCrew {
   return new AgentCrew({
     name,
@@ -204,7 +204,7 @@ export function createSimpleCrew(
 export function createHierarchicalCrew(
   name: string,
   manager: CrewMemberInput,
-  workers: CrewMemberInput[]
+  workers: CrewMemberInput[],
 ): AgentCrew {
   return new AgentCrew({
     name,
@@ -231,7 +231,7 @@ export function createHierarchicalCrew(
  */
 export function createConsensusCrew(
   name: string,
-  members: CrewMemberInput[]
+  members: CrewMemberInput[],
 ): AgentCrew {
   if (members.length < 3) {
     console.warn('Consensus crews work best with at least 3 members');

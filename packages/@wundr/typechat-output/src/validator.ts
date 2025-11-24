@@ -95,7 +95,7 @@ export class TypeChatValidator {
   validate<T>(
     response: string,
     schema: ZodSchema<T>,
-    schemaSource?: string
+    schemaSource?: string,
   ): TypeChatResult<T> {
     const startTime = Date.now();
 
@@ -113,7 +113,7 @@ export class TypeChatValidator {
         return this.createSuccessResult<T>(
           validationResult.data,
           response,
-          startTime
+          startTime,
         );
       }
 
@@ -122,14 +122,14 @@ export class TypeChatValidator {
       const correctionPrompt = this.generateCorrectionPrompt(
         errors,
         response,
-        schemaSource ?? this.config.schemaSource
+        schemaSource ?? this.config.schemaSource,
       );
 
       return this.createFailureResult<T>(
         errors,
         response,
         correctionPrompt,
-        startTime
+        startTime,
       );
     } catch (error) {
       // Parse error
@@ -137,14 +137,14 @@ export class TypeChatValidator {
       const correctionPrompt = this.generateCorrectionPrompt(
         [parseError],
         response,
-        schemaSource ?? this.config.schemaSource
+        schemaSource ?? this.config.schemaSource,
       );
 
       return this.createFailureResult<T>(
         [parseError],
         response,
         correctionPrompt,
-        startTime
+        startTime,
       );
     }
   }
@@ -159,12 +159,12 @@ export class TypeChatValidator {
    */
   validateWithSchema<T>(
     response: string,
-    schema: TypeScriptSchema
+    schema: TypeScriptSchema,
   ): TypeChatResult<T> {
     return this.validate<T>(
       response,
       schema.zodSchema as ZodSchema<T>,
-      schema.source
+      schema.source,
     );
   }
 
@@ -182,7 +182,7 @@ export class TypeChatValidator {
     initialResponse: string,
     schema: ZodSchema<T>,
     llmCallback: (correctionPrompt: string) => Promise<string>,
-    schemaSource?: string
+    schemaSource?: string,
   ): Promise<TypeChatResult<T>> {
     const startTime = Date.now();
     const rawResponses: string[] = [];
@@ -225,7 +225,7 @@ export class TypeChatValidator {
       this.config.onRetry?.(
         attempt + 1,
         lastErrors,
-        result.correctionPrompt ?? ''
+        result.correctionPrompt ?? '',
       );
 
       // Generate correction prompt
@@ -233,7 +233,7 @@ export class TypeChatValidator {
         lastErrors,
         currentResponse,
         schemaSource ?? this.config.schemaSource,
-        attempt
+        attempt,
       );
 
       // Call LLM for correction
@@ -259,7 +259,7 @@ export class TypeChatValidator {
     throw new MaxRetriesExceededError(
       this.config.maxRetries + 1,
       lastErrors,
-      rawResponses
+      rawResponses,
     );
   }
 
@@ -275,13 +275,13 @@ export class TypeChatValidator {
   async validateWithRetrySchema<T>(
     initialResponse: string,
     schema: TypeScriptSchema,
-    llmCallback: (correctionPrompt: string) => Promise<string>
+    llmCallback: (correctionPrompt: string) => Promise<string>,
   ): Promise<TypeChatResult<T>> {
     return this.validateWithRetry<T>(
       initialResponse,
       schema.zodSchema as ZodSchema<T>,
       llmCallback,
-      schema.source
+      schema.source,
     );
   }
 
@@ -298,7 +298,7 @@ export class TypeChatValidator {
     errors: TypeChatError[],
     originalResponse: string,
     schemaSource?: string,
-    previousAttempts = 0
+    previousAttempts = 0,
   ): string {
     const context: CorrectionContext = {
       errors,
@@ -343,7 +343,7 @@ export class TypeChatValidator {
   createSchema(
     zodSchema: ZodSchema,
     name: string,
-    description?: string
+    description?: string,
   ): TypeScriptSchema {
     return this.schemaLoader.createFromZod(zodSchema, name, description);
   }
@@ -461,7 +461,7 @@ export class TypeChatValidator {
   private createSuccessResult<T>(
     data: T,
     rawResponse: string,
-    startTime: number
+    startTime: number,
   ): TypeChatSuccessResult<T> {
     return {
       success: true,
@@ -480,7 +480,7 @@ export class TypeChatValidator {
     errors: TypeChatError[],
     rawResponse: string,
     correctionPrompt: string,
-    startTime: number
+    startTime: number,
   ): TypeChatFailureResult<T> {
     return {
       success: false,
@@ -497,7 +497,7 @@ export class TypeChatValidator {
    * Create validation metadata
    */
   private createMetadata(
-    parserUsed: TypeChatMetadata['parserUsed']
+    parserUsed: TypeChatMetadata['parserUsed'],
   ): TypeChatMetadata {
     return {
       timestamp: new Date(),
@@ -517,7 +517,7 @@ export class TypeChatValidator {
  * @returns Configured TypeChatValidator instance
  */
 export function createTypeChatValidator(
-  config?: PartialTypeChatConfig
+  config?: PartialTypeChatConfig,
 ): TypeChatValidator {
   return new TypeChatValidator(config);
 }
@@ -532,7 +532,7 @@ export function createTypeChatValidator(
  */
 export function validateResponse<T>(
   response: string,
-  schema: ZodSchema<T>
+  schema: ZodSchema<T>,
 ): TypeChatResult<T> {
   const validator = new TypeChatValidator();
   return validator.validate(response, schema);
@@ -552,7 +552,7 @@ export async function validateWithRetry<T>(
   response: string,
   schema: ZodSchema<T>,
   llmCallback: (correctionPrompt: string) => Promise<string>,
-  maxRetries = 3
+  maxRetries = 3,
 ): Promise<TypeChatResult<T>> {
   const validator = new TypeChatValidator({ maxRetries });
   return validator.validateWithRetry(response, schema, llmCallback);

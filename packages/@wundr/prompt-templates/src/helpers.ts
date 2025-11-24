@@ -22,7 +22,7 @@ import type {
  */
 export function formatTools(
   tools: ToolDefinition[] | undefined,
-  options?: Handlebars.HelperOptions
+  options?: Handlebars.HelperOptions,
 ): string {
   if (!tools || tools.length === 0) {
     return '';
@@ -81,7 +81,7 @@ export function formatTools(
 export function ifDefined(
   this: unknown,
   value: unknown,
-  options: Handlebars.HelperOptions
+  options: Handlebars.HelperOptions,
 ): string {
   if (value !== undefined && value !== null) {
     return options.fn(this);
@@ -104,7 +104,7 @@ export function ifDefined(
 export function codeBlock(
   this: unknown,
   language: string | Handlebars.HelperOptions,
-  options?: Handlebars.HelperOptions
+  options?: Handlebars.HelperOptions,
 ): string {
   // Handle case where language is not provided
   if (typeof language === 'object' && !options) {
@@ -129,7 +129,7 @@ export function codeBlock(
  */
 export function formatMemory(
   messages: ConversationMessage[] | undefined,
-  options?: Handlebars.HelperOptions
+  options?: Handlebars.HelperOptions,
 ): string {
   if (!messages || messages.length === 0) {
     return '';
@@ -149,7 +149,7 @@ export function formatMemory(
     return slicedMessages
       .map(
         m =>
-          `<message role="${m.role}"${m.name ? ` name="${m.name}"` : ''}>\n${m.content}\n</message>`
+          `<message role="${m.role}"${m.name ? ` name="${m.name}"` : ''}>\n${m.content}\n</message>`,
       )
       .join('\n\n');
   }
@@ -178,7 +178,7 @@ export function formatMemory(
 export function repeat(
   this: unknown,
   count: number,
-  options: Handlebars.HelperOptions
+  options: Handlebars.HelperOptions,
 ): string {
   const results: string[] = [];
   for (let i = 0; i < count; i++) {
@@ -203,7 +203,7 @@ export function repeat(
  */
 export function formatDate(
   date: Date | string | number | undefined,
-  formatStr?: string
+  formatStr?: string,
 ): string {
   if (!date) {
     return '';
@@ -262,7 +262,7 @@ export function formatDate(
  */
 export function json(
   value: unknown,
-  options?: Handlebars.HelperOptions
+  options?: Handlebars.HelperOptions,
 ): string {
   const indent = (options?.hash?.['indent'] as number) ?? 2;
   try {
@@ -286,7 +286,7 @@ export function json(
 export function truncate(
   text: string | undefined,
   length?: number | Handlebars.HelperOptions,
-  suffix?: string | Handlebars.HelperOptions
+  suffix?: string | Handlebars.HelperOptions,
 ): string {
   if (!text) {
     return '';
@@ -314,7 +314,7 @@ export function truncate(
  */
 export function join(
   items: unknown[] | undefined,
-  separator?: string | Handlebars.HelperOptions
+  separator?: string | Handlebars.HelperOptions,
 ): string {
   if (!items || !Array.isArray(items)) {
     return '';
@@ -341,7 +341,7 @@ export function compare(
   a: unknown,
   operator: string,
   b: unknown,
-  options: Handlebars.HelperOptions
+  options: Handlebars.HelperOptions,
 ): string {
   let result = false;
 
@@ -452,7 +452,7 @@ export function lowercase(text: string | undefined): string {
  */
 export function indent(
   text: string | undefined,
-  spaces?: number | Handlebars.HelperOptions
+  spaces?: number | Handlebars.HelperOptions,
 ): string {
   if (!text) {
     return '';
@@ -478,7 +478,7 @@ export function indent(
  */
 export function wrap(
   text: string | undefined,
-  width?: number | Handlebars.HelperOptions
+  width?: number | Handlebars.HelperOptions,
 ): string {
   if (!text) {
     return '';
@@ -519,7 +519,7 @@ export function wrap(
  */
 export function bulletList(
   items: unknown[] | undefined,
-  options?: Handlebars.HelperOptions
+  options?: Handlebars.HelperOptions,
 ): string {
   if (!items || !Array.isArray(items)) {
     return '';
@@ -541,7 +541,7 @@ export function bulletList(
  */
 export function numberedList(
   items: unknown[] | undefined,
-  options?: Handlebars.HelperOptions
+  options?: Handlebars.HelperOptions,
 ): string {
   if (!items || !Array.isArray(items)) {
     return '';

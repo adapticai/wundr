@@ -73,7 +73,7 @@ Please correct these issues and provide a valid response.`;
   protected calculateDelay(
     baseDelay: number,
     maxDelay: number,
-    jitter: boolean
+    jitter: boolean,
   ): number {
     let delay = Math.min(baseDelay, maxDelay);
     if (jitter) {
@@ -103,7 +103,7 @@ export class SimpleRetryStrategy extends BaseRetryStrategy {
       delayMs: this.calculateDelay(
         config.initialDelayMs,
         config.maxDelayMs,
-        config.jitter
+        config.jitter,
       ),
       reason: shouldRetry
         ? `Simple retry attempt ${context.attemptNumber}/${config.maxRetries}`
@@ -131,7 +131,7 @@ export class ExponentialBackoffRetryStrategy extends BaseRetryStrategy {
     const delayMs = this.calculateDelay(
       baseDelay,
       config.maxDelayMs,
-      config.jitter
+      config.jitter,
     );
 
     return {
@@ -167,7 +167,7 @@ export class AdaptiveRetryStrategy extends BaseRetryStrategy {
     const delayMs = this.calculateDelay(
       baseDelay,
       config.maxDelayMs,
-      config.jitter
+      config.jitter,
     );
 
     // Generate targeted instructions based on error types
@@ -288,7 +288,7 @@ export class AdaptiveRetryStrategy extends BaseRetryStrategy {
 
     if (analysis.hasTypeErrors) {
       instructions.push(
-        'Use correct data types (number vs string, boolean vs string).'
+        'Use correct data types (number vs string, boolean vs string).',
       );
     }
 
@@ -302,7 +302,7 @@ export class AdaptiveRetryStrategy extends BaseRetryStrategy {
 
     if (analysis.hasFormatErrors) {
       instructions.push(
-        'Ensure string formats match requirements (dates, emails, etc.).'
+        'Ensure string formats match requirements (dates, emails, etc.).',
       );
     }
 
@@ -340,12 +340,12 @@ export class ErrorTargetedRetryStrategy extends BaseRetryStrategy {
     const delayMs = this.calculateDelay(
       config.initialDelayMs * 0.5,
       config.maxDelayMs * 0.5,
-      config.jitter
+      config.jitter,
     );
 
     // Generate targeted modification of the prompt
     const targetedInstructions = this.generateTargetedInstructions(
-      context.previousErrors
+      context.previousErrors,
     );
 
     return {
@@ -421,13 +421,13 @@ export class SchemaGuidedRetryStrategy extends BaseRetryStrategy {
     const delayMs = this.calculateDelay(
       config.initialDelayMs * context.attemptNumber,
       config.maxDelayMs,
-      config.jitter
+      config.jitter,
     );
 
     // Generate schema-aware instructions
     const schemaInstructions = this.generateSchemaInstructions(
       context.previousErrors,
-      context.attemptNumber
+      context.attemptNumber,
     );
 
     return {
@@ -464,7 +464,7 @@ export class SchemaGuidedRetryStrategy extends BaseRetryStrategy {
 
   private generateSchemaInstructions(
     errors: ValidationError[],
-    attemptNumber: number
+    attemptNumber: number,
   ): string {
     // Progressively more detailed instructions on each retry
     const instructions: string[] = [];
@@ -527,7 +527,7 @@ export async function executeWithRetry<T>(
   fn: () => Promise<T>,
   strategy: RetryStrategy,
   config: RetryConfig,
-  onRetry?: (context: RetryContext) => void
+  onRetry?: (context: RetryContext) => void,
 ): Promise<T> {
   let lastError: Error | undefined;
   const startTime = Date.now();

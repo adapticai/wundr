@@ -75,7 +75,7 @@ export const DEFAULT_SECURITY_OPTIONS: SecurityOptions = {
  */
 export async function setupSecurity(
   options: SecurityOptions = DEFAULT_SECURITY_OPTIONS,
-  platform: SetupPlatform
+  platform: SetupPlatform,
 ): Promise<SecuritySetupResult> {
   const result: SecuritySetupResult = {
     success: false,
@@ -144,8 +144,8 @@ export async function setupSecurity(
           platform,
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     result.success = result.errors.length === 0;
@@ -194,7 +194,7 @@ function sanitizeOptionsForStorage(options: SecurityOptions): SecurityOptions {
  * Configures prompt security measures
  */
 async function setupPromptSecurity(
-  config: NonNullable<SecurityOptions['promptSecurity']>
+  config: NonNullable<SecurityOptions['promptSecurity']>,
 ): Promise<void> {
   logger.info('Setting up prompt security...');
 
@@ -228,7 +228,7 @@ async function setupPromptSecurity(
 
   await fs.writeFile(
     path.join(securityDir, 'config.json'),
-    JSON.stringify(promptSecurityConfig, null, 2)
+    JSON.stringify(promptSecurityConfig, null, 2),
   );
 
   // Create blocked keywords file (separate for easy updates)
@@ -241,8 +241,8 @@ async function setupPromptSecurity(
         lastUpdated: new Date().toISOString(),
       },
       null,
-      2
-    )
+      2,
+    ),
   );
 
   logger.info('Prompt security configuration created');
@@ -354,7 +354,7 @@ function getRedactionPatterns(): string[] {
  * Configures MCP (Model Context Protocol) access control
  */
 async function setupMcpAccessControl(
-  config: NonNullable<SecurityOptions['mcpAccessControl']>
+  config: NonNullable<SecurityOptions['mcpAccessControl']>,
 ): Promise<void> {
   logger.info('Setting up MCP access control...');
 
@@ -396,13 +396,13 @@ async function setupMcpAccessControl(
 
   await fs.writeFile(
     path.join(mcpDir, 'config.json'),
-    JSON.stringify(mcpConfig, null, 2)
+    JSON.stringify(mcpConfig, null, 2),
   );
 
   // Create audit log file
   await fs.writeFile(
     path.join(mcpDir, 'audit.log'),
-    `# MCP Audit Log\n# Created: ${new Date().toISOString()}\n`
+    `# MCP Audit Log\n# Created: ${new Date().toISOString()}\n`,
   );
 
   // Create tool whitelist file for easy management
@@ -415,8 +415,8 @@ async function setupMcpAccessControl(
         lastUpdated: new Date().toISOString(),
       },
       null,
-      2
-    )
+      2,
+    ),
   );
 
   // Create tool blacklist file
@@ -429,8 +429,8 @@ async function setupMcpAccessControl(
         lastUpdated: new Date().toISOString(),
       },
       null,
-      2
-    )
+      2,
+    ),
   );
 
   logger.info('MCP access control configuration created');
@@ -441,7 +441,7 @@ async function setupMcpAccessControl(
  */
 async function setupApiKeyManagement(
   config: NonNullable<SecurityOptions['apiKeyManagement']>,
-  platform: SetupPlatform
+  platform: SetupPlatform,
 ): Promise<void> {
   logger.info('Setting up API key management...');
 
@@ -474,7 +474,7 @@ async function setupApiKeyManagement(
 
   await fs.writeFile(
     path.join(keysDir, 'config.json'),
-    JSON.stringify(keysConfig, null, 2)
+    JSON.stringify(keysConfig, null, 2),
   );
 
   // Setup keychain integration on macOS
@@ -515,12 +515,12 @@ ${config.envPrefix || 'WUNDR_'}GOOGLE_API_KEY=your-google-api-key-here
         {
           lastReminder: new Date().toISOString(),
           nextReminder: new Date(
-            Date.now() + 90 * 24 * 60 * 60 * 1000
+            Date.now() + 90 * 24 * 60 * 60 * 1000,
           ).toISOString(),
         },
         null,
-        2
-      )
+        2,
+      ),
     );
   }
 
@@ -532,7 +532,7 @@ ${config.envPrefix || 'WUNDR_'}GOOGLE_API_KEY=your-google-api-key-here
  */
 async function setupMacOSKeychain(
   keysDir: string,
-  envPrefix: string
+  envPrefix: string,
 ): Promise<void> {
   logger.info('Setting up macOS Keychain integration...');
 
@@ -587,7 +587,7 @@ async function setupLinuxSecretService(keysDir: string): Promise<void> {
     await execa('which', ['secret-tool']);
   } catch {
     logger.warn(
-      'secret-tool not found - you may need to install libsecret-tools'
+      'secret-tool not found - you may need to install libsecret-tools',
     );
     return;
   }
@@ -660,7 +660,7 @@ export async function validateSecuritySetup(): Promise<boolean> {
 export function getSecuritySteps(
   _profile: DeveloperProfile,
   platform: SetupPlatform,
-  options: SecurityOptions = DEFAULT_SECURITY_OPTIONS
+  options: SecurityOptions = DEFAULT_SECURITY_OPTIONS,
 ): SetupStep[] {
   const steps: SetupStep[] = [];
 

@@ -154,7 +154,7 @@ export class AuditLogManager {
   async logDelegationCreated(
     hubAgentId: string,
     task: DelegationTask,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'delegation_created',
@@ -182,7 +182,7 @@ export class AuditLogManager {
     hubAgentId: string,
     task: DelegationTask,
     agent: AgentDefinition,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'delegation_assigned',
@@ -210,7 +210,7 @@ export class AuditLogManager {
     hubAgentId: string,
     taskId: string,
     agentId: string,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'delegation_started',
@@ -236,7 +236,7 @@ export class AuditLogManager {
     hubAgentId: string,
     result: DelegationResult,
     agent: AgentDefinition,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'delegation_completed',
@@ -265,7 +265,7 @@ export class AuditLogManager {
     hubAgentId: string,
     result: DelegationResult,
     agent: AgentDefinition,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'delegation_failed',
@@ -293,7 +293,7 @@ export class AuditLogManager {
     hubAgentId: string,
     taskId: string,
     reason: string,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'delegation_cancelled',
@@ -321,7 +321,7 @@ export class AuditLogManager {
   async logResultReceived(
     hubAgentId: string,
     result: DelegationResult,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'result_received',
@@ -349,7 +349,7 @@ export class AuditLogManager {
     hubAgentId: string,
     resultIds: string[],
     strategy: string,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'synthesis_started',
@@ -373,7 +373,7 @@ export class AuditLogManager {
   async logSynthesisCompleted(
     hubAgentId: string,
     synthesis: SynthesisResult,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'synthesis_completed',
@@ -408,7 +408,7 @@ export class AuditLogManager {
     taskId: string,
     selectedModel: string,
     criteria: Record<string, unknown>,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'model_selected',
@@ -432,7 +432,7 @@ export class AuditLogManager {
   async logAgentSpawned(
     hubAgentId: string,
     agent: AgentDefinition,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'agent_spawned',
@@ -459,7 +459,7 @@ export class AuditLogManager {
     hubAgentId: string,
     agentId: string,
     reason: string,
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     await this.log({
       eventType: 'agent_terminated',
@@ -489,7 +489,7 @@ export class AuditLogManager {
     hubAgentId: string,
     error: Error | DelegationError,
     context: Record<string, unknown> = {},
-    correlationId?: string
+    correlationId?: string,
   ): Promise<void> {
     const errorDetails: Record<string, unknown> = {
       errorName: error.name,
@@ -758,7 +758,7 @@ export function createAuditLog(sessionId?: string): AuditLogManager {
  */
 export function createAuditLogWithHandler(
   handler: (entry: AuditLogEntry) => Promise<void>,
-  sessionId?: string
+  sessionId?: string,
 ): AuditLogManager {
   return new AuditLogManager({
     enabled: true,

@@ -133,11 +133,11 @@ export class RealSetupOrchestrator extends EventEmitter {
     // Core tools installers (to be implemented)
     this.installers.set(
       'git',
-      this.createCoreToolInstaller('git', 'Git version control')
+      this.createCoreToolInstaller('git', 'Git version control'),
     );
     this.installers.set(
       'node',
-      this.createCoreToolInstaller('node', 'Node.js runtime')
+      this.createCoreToolInstaller('node', 'Node.js runtime'),
     );
     this.installers.set('vscode', new VSCodeInstaller() as Installer);
   }
@@ -235,7 +235,7 @@ export class RealSetupOrchestrator extends EventEmitter {
    */
   private createCoreToolInstaller(
     toolName: string,
-    description: string
+    description: string,
   ): Installer {
     const isInstalled = async (): Promise<boolean> => {
       try {
@@ -298,7 +298,7 @@ export class RealSetupOrchestrator extends EventEmitter {
   async orchestrate(
     profileName: string,
     options: Partial<SetupOptions> | Partial<EnhancedSetupOptions> = {},
-    progressCallback?: ProgressCallback
+    progressCallback?: ProgressCallback,
   ): Promise<SetupResult> {
     const sessionId = this.generateSessionId();
     const startTime = Date.now();
@@ -326,7 +326,7 @@ export class RealSetupOrchestrator extends EventEmitter {
           await this.setupSystemPermissions();
         },
         0,
-        8
+        8,
       );
 
       // Phase 2: Security setup (early to protect subsequent operations)
@@ -337,7 +337,7 @@ export class RealSetupOrchestrator extends EventEmitter {
             await this.setupSecurityConfiguration(enhancedOptions.security!);
           },
           8,
-          15
+          15,
         );
       }
 
@@ -348,7 +348,7 @@ export class RealSetupOrchestrator extends EventEmitter {
           await this.installCoreSystemTools(plan);
         },
         15,
-        30
+        30,
       );
 
       // Phase 4: Development tools
@@ -358,7 +358,7 @@ export class RealSetupOrchestrator extends EventEmitter {
           await this.installDevelopmentTools(plan);
         },
         30,
-        55
+        55,
       );
 
       // Phase 5: Context engineering setup
@@ -367,11 +367,11 @@ export class RealSetupOrchestrator extends EventEmitter {
           'Context Engineering',
           async () => {
             await this.setupContextEngineeringConfiguration(
-              enhancedOptions.contextEngineering!
+              enhancedOptions.contextEngineering!,
             );
           },
           55,
-          65
+          65,
         );
       }
 
@@ -381,11 +381,11 @@ export class RealSetupOrchestrator extends EventEmitter {
           'Orchestration Frameworks',
           async () => {
             await this.setupOrchestrationConfiguration(
-              enhancedOptions.orchestration!
+              enhancedOptions.orchestration!,
             );
           },
           65,
-          75
+          75,
         );
       }
 
@@ -397,7 +397,7 @@ export class RealSetupOrchestrator extends EventEmitter {
           await this.validateInstallation(plan);
         },
         75,
-        92
+        92,
       );
 
       // Phase 8: Finalization
@@ -407,7 +407,7 @@ export class RealSetupOrchestrator extends EventEmitter {
           await this.finalizeSetup();
         },
         92,
-        100
+        100,
       );
 
       // Generate result
@@ -428,12 +428,12 @@ export class RealSetupOrchestrator extends EventEmitter {
       const result = await this.generateResult(
         startTime,
         false,
-        error as Error
+        error as Error,
       );
       this.emitProgress(
         `Setup failed: ${(error as Error).message}`,
         this.getCurrentProgress(),
-        0
+        0,
       );
 
       return result;
@@ -466,14 +466,14 @@ export class RealSetupOrchestrator extends EventEmitter {
       const remainingSteps = plan.steps.filter(
         step =>
           !this.state!.completedSteps.has(step.id) &&
-          !this.state!.failedSteps.has(step.id)
+          !this.state!.failedSteps.has(step.id),
       );
 
       await this.executeSteps(remainingSteps);
 
       const result = await this.generateResult(
         this.state.startTime.getTime(),
-        true
+        true,
       );
       await this.cleanupState();
 
@@ -483,7 +483,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       const result = await this.generateResult(
         Date.now(),
         false,
-        error as Error
+        error as Error,
       );
       return result;
     }
@@ -523,7 +523,7 @@ export class RealSetupOrchestrator extends EventEmitter {
   private async initializeState(
     sessionId: string,
     profileName: string,
-    _options: Partial<SetupOptions>
+    _options: Partial<SetupOptions>,
   ): Promise<void> {
     const profile = this.createDeveloperProfile(profileName);
 
@@ -546,7 +546,7 @@ export class RealSetupOrchestrator extends EventEmitter {
    * Create installation plan based on profile
    */
   private async createInstallationPlan(
-    profileName: string
+    profileName: string,
   ): Promise<InstallationPlan> {
     const profileConfig = this.profiles.get(profileName);
     if (!profileConfig) {
@@ -562,7 +562,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       if (installer && installer.getSteps) {
         const toolSteps = installer.getSteps(
           this.createDeveloperProfile(profileName),
-          this.platform
+          this.platform,
         );
         steps.push(...toolSteps);
 
@@ -577,7 +577,7 @@ export class RealSetupOrchestrator extends EventEmitter {
     const sortedSteps = this.topologicalSort(steps);
     const estimatedDuration = sortedSteps.reduce(
       (total, step) => total + step.estimatedTime,
-      0
+      0,
     );
     const criticalPath = this.findCriticalPath(sortedSteps, dependencies);
 
@@ -597,7 +597,7 @@ export class RealSetupOrchestrator extends EventEmitter {
     phaseName: string,
     phaseFunction: () => Promise<void>,
     startPercent: number,
-    endPercent: number
+    endPercent: number,
   ): Promise<void> {
     this.emitProgress(`Starting ${phaseName}`, startPercent, 0);
 
@@ -608,7 +608,7 @@ export class RealSetupOrchestrator extends EventEmitter {
       this.emitProgress(
         `${phaseName} failed: ${(error as Error).message}`,
         startPercent,
-        0
+        0,
       );
       throw error;
     }
@@ -632,7 +632,7 @@ export class RealSetupOrchestrator extends EventEmitter {
 
     if (availableSpace < requiredSpaceBytes) {
       throw new Error(
-        `Insufficient disk space. Required: 5GB, Available: ${Math.round(availableSpace / 1024 / 1024 / 1024)}GB`
+        `Insufficient disk space. Required: 5GB, Available: ${Math.round(availableSpace / 1024 / 1024 / 1024)}GB`,
       );
     }
 
@@ -751,7 +751,7 @@ export class RealSetupOrchestrator extends EventEmitter {
 
     if (failedValidations.length > 0) {
       this.logger.warn(
-        `Some tools failed validation: ${failedValidations.join(', ')}`
+        `Some tools failed validation: ${failedValidations.join(', ')}`,
       );
       // Don't throw here - log warnings but continue
     }
@@ -765,26 +765,26 @@ export class RealSetupOrchestrator extends EventEmitter {
    * @param options - Security options from EnhancedSetupOptions
    */
   private async setupSecurityConfiguration(
-    options: NonNullable<EnhancedSetupOptions['security']>
+    options: NonNullable<EnhancedSetupOptions['security']>,
   ): Promise<void> {
     this.logger.info('Setting up security configuration...');
 
     try {
       const result = await setupSecurity(
         { ...DEFAULT_SECURITY_OPTIONS, ...options },
-        this.platform
+        this.platform,
       );
 
       if (!result.success) {
         const errorMessages = result.errors.map(e => e.message).join(', ');
         this.logger.warn(
-          `Security setup completed with errors: ${errorMessages}`
+          `Security setup completed with errors: ${errorMessages}`,
         );
       }
 
       if (result.warnings.length > 0) {
         result.warnings.forEach(warning =>
-          this.logger.warn(`Security warning: ${warning}`)
+          this.logger.warn(`Security warning: ${warning}`),
         );
       }
 
@@ -805,26 +805,26 @@ export class RealSetupOrchestrator extends EventEmitter {
    * @param options - Context engineering options from EnhancedSetupOptions
    */
   private async setupContextEngineeringConfiguration(
-    options: NonNullable<EnhancedSetupOptions['contextEngineering']>
+    options: NonNullable<EnhancedSetupOptions['contextEngineering']>,
   ): Promise<void> {
     this.logger.info('Setting up context engineering...');
 
     try {
       const result = await setupContextEngineering(
         { ...DEFAULT_CONTEXT_ENGINEERING_OPTIONS, ...options },
-        this.platform
+        this.platform,
       );
 
       if (!result.success) {
         const errorMessages = result.errors.map(e => e.message).join(', ');
         this.logger.warn(
-          `Context engineering setup completed with errors: ${errorMessages}`
+          `Context engineering setup completed with errors: ${errorMessages}`,
         );
       }
 
       if (result.warnings.length > 0) {
         result.warnings.forEach(warning =>
-          this.logger.warn(`Context engineering warning: ${warning}`)
+          this.logger.warn(`Context engineering warning: ${warning}`),
         );
       }
 
@@ -845,26 +845,26 @@ export class RealSetupOrchestrator extends EventEmitter {
    * @param options - Orchestration options from EnhancedSetupOptions
    */
   private async setupOrchestrationConfiguration(
-    options: NonNullable<EnhancedSetupOptions['orchestration']>
+    options: NonNullable<EnhancedSetupOptions['orchestration']>,
   ): Promise<void> {
     this.logger.info('Setting up orchestration frameworks...');
 
     try {
       const result = await setupOrchestrationFrameworks(
         { ...DEFAULT_ORCHESTRATION_OPTIONS, ...options },
-        this.platform
+        this.platform,
       );
 
       if (!result.success) {
         const errorMessages = result.errors.map(e => e.message).join(', ');
         this.logger.warn(
-          `Orchestration setup completed with errors: ${errorMessages}`
+          `Orchestration setup completed with errors: ${errorMessages}`,
         );
       }
 
       if (result.warnings.length > 0) {
         result.warnings.forEach(warning =>
-          this.logger.warn(`Orchestration warning: ${warning}`)
+          this.logger.warn(`Orchestration warning: ${warning}`),
         );
       }
 
@@ -903,7 +903,7 @@ export class RealSetupOrchestrator extends EventEmitter {
    */
   private async executeInstaller(
     name: string,
-    installer: Installer
+    installer: Installer,
   ): Promise<void> {
     if (!this.state) {
       return;
@@ -976,14 +976,14 @@ export class RealSetupOrchestrator extends EventEmitter {
       this.emitProgress(
         `Executing: ${step.name}`,
         this.getCurrentProgress(),
-        step.estimatedTime
+        step.estimatedTime,
       );
 
       // Validate dependencies
       for (const depId of step.dependencies) {
         if (!this.state.completedSteps.has(depId)) {
           throw new Error(
-            `Dependency not met: ${depId} required for ${step.id}`
+            `Dependency not met: ${depId} required for ${step.id}`,
           );
         }
       }
@@ -1010,7 +1010,7 @@ export class RealSetupOrchestrator extends EventEmitter {
   private emitProgress(
     message: string,
     percentage: number,
-    timeRemaining: number
+    timeRemaining: number,
   ): void {
     const progress: SetupProgress = {
       totalSteps: this.getTotalSteps(),
@@ -1174,7 +1174,7 @@ export class RealSetupOrchestrator extends EventEmitter {
 
   private findCriticalPath(
     _steps: SetupStep[],
-    dependencies: Map<string, string[]>
+    dependencies: Map<string, string[]>,
   ): string[] {
     // Simple critical path - longest dependency chain
     const depths = new Map<string, number>();
@@ -1316,13 +1316,13 @@ alias ports='netstat -tulanp'
     this.logger.info('Setup completed! Next steps:');
     this.logger.info('1. Restart your terminal or run: source ~/.zshrc');
     this.logger.info(
-      '2. Configure Git with: git config --global user.name "Your Name"'
+      '2. Configure Git with: git config --global user.name "Your Name"',
     );
     this.logger.info(
-      '3. Configure Git with: git config --global user.email "your.email@example.com"'
+      '3. Configure Git with: git config --global user.email "your.email@example.com"',
     );
     this.logger.info(
-      '4. Check installed versions with: brew --version && git --version && node --version'
+      '4. Check installed versions with: brew --version && git --version && node --version',
     );
     this.logger.info('5. Start coding in ~/Development/projects/');
     this.logger.info('Happy coding!');
@@ -1339,7 +1339,7 @@ alias ports='netstat -tulanp'
       currentStep: this.state.currentStep,
       completedSteps: Array.from(this.state.completedSteps),
       failedSteps: Array.from(this.state.failedSteps.entries()).map(
-        ([id, error]) => [id, error.message]
+        ([id, error]) => [id, error.message],
       ),
       skippedSteps: Array.from(this.state.skippedSteps),
       profile: this.state.profile,
@@ -1368,7 +1368,7 @@ alias ports='netstat -tulanp'
           parsedState.failedSteps.map(([id, msg]: [string, string]) => [
             id,
             new Error(msg),
-          ])
+          ]),
         ),
         skippedSteps: new Set(parsedState.skippedSteps),
         profile: parsedState.profile,
@@ -1391,7 +1391,7 @@ alias ports='netstat -tulanp'
   private async generateResult(
     startTime: number,
     success: boolean,
-    error?: Error
+    error?: Error,
   ): Promise<SetupResult> {
     const duration = Date.now() - startTime;
 

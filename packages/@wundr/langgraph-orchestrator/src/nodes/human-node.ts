@@ -111,7 +111,7 @@ export const HumanNodeConfigSchema = z.object({
         label: z.string(),
         description: z.string().optional(),
         default: z.boolean().optional(),
-      })
+      }),
     )
     .optional(),
   requireConfirmation: z.boolean().optional(),
@@ -160,7 +160,7 @@ export function createHumanNode<
     config: nodeConfig,
     execute: async (
       state: TState,
-      context: NodeContext
+      context: NodeContext,
     ): Promise<NodeResult<TState>> => {
       const requestId = uuidv4();
 
@@ -243,7 +243,7 @@ export function createHumanNode<
           config.validation.parse(response.value);
         } catch (validationError) {
           throw new Error(
-            `Human input validation failed: ${validationError instanceof Error ? validationError.message : String(validationError)}`
+            `Human input validation failed: ${validationError instanceof Error ? validationError.message : String(validationError)}`,
           );
         }
       }
@@ -303,7 +303,7 @@ function sanitizeStateForHuman(state: AgentState): Partial<AgentState> {
  */
 function createTimeoutPromise(
   timeout: number,
-  _requestId: string
+  _requestId: string,
 ): Promise<HumanResponse> {
   return new Promise((_, reject) => {
     setTimeout(() => reject(new Error('TIMEOUT')), timeout);
@@ -534,7 +534,7 @@ export function createFeedbackNode<
     config: options.nodeConfig ?? {},
     execute: async (
       state: TState,
-      _context: NodeContext
+      _context: NodeContext,
     ): Promise<NodeResult<TState>> => {
       const feedback: Record<string, unknown> = {};
 

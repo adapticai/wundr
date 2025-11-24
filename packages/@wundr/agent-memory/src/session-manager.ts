@@ -112,7 +112,7 @@ export class SessionManager {
    */
   initialize(
     persistenceCallback?: (state: SessionState) => Promise<void>,
-    loadCallback?: (sessionId: string) => Promise<SessionState | null>
+    loadCallback?: (sessionId: string) => Promise<SessionState | null>,
   ): void {
     this.persistenceCallback = persistenceCallback;
     this.loadCallback = loadCallback;
@@ -402,7 +402,7 @@ export class SessionManager {
     }
 
     return summaries.sort(
-      (a, b) => b.lastActiveAt.getTime() - a.lastActiveAt.getTime()
+      (a, b) => b.lastActiveAt.getTime() - a.lastActiveAt.getTime(),
     );
   }
 
@@ -419,7 +419,7 @@ export class SessionManager {
     }
 
     return summaries.sort(
-      (a, b) => b.lastActiveAt.getTime() - a.lastActiveAt.getTime()
+      (a, b) => b.lastActiveAt.getTime() - a.lastActiveAt.getTime(),
     );
   }
 
@@ -430,7 +430,7 @@ export class SessionManager {
    */
   getSessionsNeedingCompaction(): SessionState[] {
     return Array.from(this.sessions.values()).filter(
-      s => s.pendingCompaction && s.isActive
+      s => s.pendingCompaction && s.isActive,
     );
   }
 
@@ -517,7 +517,7 @@ export class SessionManager {
       for (const memory of session.scratchpadState) {
         memory.metadata.createdAt = new Date(memory.metadata.createdAt);
         memory.metadata.lastAccessedAt = new Date(
-          memory.metadata.lastAccessedAt
+          memory.metadata.lastAccessedAt,
         );
       }
 
@@ -548,7 +548,7 @@ export class SessionManager {
     const sortedSessions = Array.from(this.sessions.entries())
       .filter(([, session]) => !session.isActive) // Only evict inactive sessions
       .sort(
-        ([, a], [, b]) => a.lastActiveAt.getTime() - b.lastActiveAt.getTime()
+        ([, a], [, b]) => a.lastActiveAt.getTime() - b.lastActiveAt.getTime(),
       );
 
     // Remove oldest sessions until within limit

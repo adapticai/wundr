@@ -256,17 +256,17 @@ export class AlertManager {
 
       // Trim old events outside the evaluation window
       const maxWindow = Math.max(
-        ...alertConfig.conditions.map(c => c.windowMs)
+        ...alertConfig.conditions.map(c => c.windowMs),
       );
       const windowCutoff = new Date(Date.now() - maxWindow);
       state.matchingEvents = state.matchingEvents.filter(
-        e => e.timestamp >= windowCutoff
+        e => e.timestamp >= windowCutoff,
       );
 
       // Limit events per evaluation
       if (state.matchingEvents.length > this.config.maxEventsPerEvaluation) {
         state.matchingEvents = state.matchingEvents.slice(
-          -this.config.maxEventsPerEvaluation
+          -this.config.maxEventsPerEvaluation,
         );
       }
 
@@ -275,7 +275,7 @@ export class AlertManager {
         const cooldownMs =
           alertConfig.cooldownMs ?? this.config.defaultCooldownMs;
         const cooldownEnd = new Date(
-          state.lastTriggered.getTime() + cooldownMs
+          state.lastTriggered.getTime() + cooldownMs,
         );
         if (new Date() < cooldownEnd) {
           continue;
@@ -284,7 +284,7 @@ export class AlertManager {
 
       // Evaluate all conditions
       const allConditionsMet = alertConfig.conditions.every(condition =>
-        this.evaluateCondition(condition, state.matchingEvents)
+        this.evaluateCondition(condition, state.matchingEvents),
       );
 
       if (allConditionsMet) {
@@ -371,7 +371,7 @@ export class AlertManager {
    */
   getActiveAlerts(): TriggeredAlert[] {
     return Array.from(this.triggeredAlerts.values()).filter(
-      a => a.state === 'active'
+      a => a.state === 'active',
     );
   }
 
@@ -382,7 +382,7 @@ export class AlertManager {
    */
   getAcknowledgedAlerts(): TriggeredAlert[] {
     return Array.from(this.triggeredAlerts.values()).filter(
-      a => a.state === 'acknowledged'
+      a => a.state === 'acknowledged',
     );
   }
 
@@ -394,7 +394,7 @@ export class AlertManager {
    */
   getAlertsBySeverity(severity: AlertSeverity): TriggeredAlert[] {
     return Array.from(this.triggeredAlerts.values()).filter(
-      a => a.severity === severity
+      a => a.severity === severity,
     );
   }
 
@@ -455,7 +455,7 @@ export class AlertManager {
     return {
       totalConfigurations: this.alerts.size,
       enabledConfigurations: Array.from(this.alerts.values()).filter(
-        a => a.enabled
+        a => a.enabled,
       ).length,
       activeAlerts: this.getActiveAlerts().length,
       acknowledgedAlerts: this.getAcknowledgedAlerts().length,
@@ -518,7 +518,7 @@ export class AlertManager {
    */
   private evaluateCondition(
     condition: AlertCondition,
-    events: ObservabilityEvent[]
+    events: ObservabilityEvent[],
   ): boolean {
     // Filter events within the condition's window
     const windowStart = new Date(Date.now() - condition.windowMs);
@@ -556,7 +556,7 @@ export class AlertManager {
    */
   private extractFieldValue(
     event: ObservabilityEvent,
-    field: string
+    field: string,
   ): number | string | undefined {
     const parts = field.split('.');
     let value: unknown = event;
@@ -581,7 +581,7 @@ export class AlertManager {
   private compareValues(
     value: number | string,
     operator: AlertOperator,
-    threshold: number | string
+    threshold: number | string,
   ): boolean {
     switch (operator) {
       case 'gt':
@@ -614,7 +614,7 @@ export class AlertManager {
    */
   private triggerAlert(
     alertConfig: AlertConfig,
-    state: AlertState
+    state: AlertState,
   ): TriggeredAlert {
     const triggeredAlert: TriggeredAlert = {
       id: uuidv4(),
@@ -676,7 +676,7 @@ export class AlertManager {
  * @returns Configured AlertManager instance
  */
 export function createAlertManager(
-  config: Partial<AlertManagerConfig> = {}
+  config: Partial<AlertManagerConfig> = {},
 ): AlertManager {
   return new AlertManager(config);
 }
@@ -693,7 +693,7 @@ export const CommonAlerts = {
       threshold?: number;
       windowMs?: number;
       cooldownMs?: number;
-    } = {}
+    } = {},
   ): AlertConfig {
     return {
       id: 'high-error-rate',
@@ -752,7 +752,7 @@ export const CommonAlerts = {
       thresholdMs?: number;
       windowMs?: number;
       minOccurrences?: number;
-    } = {}
+    } = {},
   ): AlertConfig {
     return {
       id: 'slow-response-time',
@@ -783,7 +783,7 @@ export const CommonAlerts = {
     options: {
       thresholdPercent?: number;
       windowMs?: number;
-    } = {}
+    } = {},
   ): AlertConfig {
     return {
       id: 'memory-pressure',

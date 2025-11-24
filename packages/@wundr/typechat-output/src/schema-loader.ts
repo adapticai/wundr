@@ -222,7 +222,7 @@ export class SchemaLoader {
   createFromZod(
     zodSchema: ZodSchema,
     name: string,
-    description?: string
+    description?: string,
   ): TypeScriptSchema {
     const source = this.generateTypeScriptSource(zodSchema, name);
 
@@ -320,7 +320,7 @@ export class SchemaLoader {
         // Check if it's an object type literal
         if (typeBody.trim().startsWith('{')) {
           const properties = this.parseInterfaceBody(
-            typeBody.trim().slice(1, -1)
+            typeBody.trim().slice(1, -1),
           );
           definitions.push({
             name,
@@ -438,7 +438,7 @@ export class SchemaLoader {
    */
   private convertToZodSchema(
     definition: ParsedTypeDefinition,
-    allDefinitions: ParsedTypeDefinition[]
+    allDefinitions: ParsedTypeDefinition[],
   ): ZodSchema {
     if (definition.kind === 'enum' && definition.enumValues) {
       // Create enum schema
@@ -502,7 +502,7 @@ export class SchemaLoader {
    */
   private typeStringToZod(
     typeStr: string,
-    allDefinitions: ParsedTypeDefinition[]
+    allDefinitions: ParsedTypeDefinition[],
   ): ZodSchema {
     const normalized = typeStr.trim();
 
@@ -561,7 +561,7 @@ export class SchemaLoader {
     if (genericArrayMatch?.[1]) {
       const elementType = this.typeStringToZod(
         genericArrayMatch[1],
-        allDefinitions
+        allDefinitions,
       );
       return z.array(elementType);
     }
@@ -570,7 +570,7 @@ export class SchemaLoader {
     if (normalized.includes(' | ')) {
       const unionParts = this.splitUnionTypes(normalized);
       const unionSchemas = unionParts.map(part =>
-        this.typeStringToZod(part, allDefinitions)
+        this.typeStringToZod(part, allDefinitions),
       );
       if (unionSchemas.length >= 2) {
         return z.union(unionSchemas as [ZodSchema, ZodSchema, ...ZodSchema[]]);
@@ -600,7 +600,7 @@ export class SchemaLoader {
     // Unknown type - log warning and return unknown
     this.addDiagnostic(
       'warning',
-      `Unknown type '${normalized}', using z.unknown()`
+      `Unknown type '${normalized}', using z.unknown()`,
     );
     return z.unknown();
   }
@@ -732,7 +732,7 @@ export class SchemaLoader {
   private addDiagnostic(
     severity: SchemaLoadDiagnostic['severity'],
     message: string,
-    location?: { line: number; column: number }
+    location?: { line: number; column: number },
   ): void {
     this.diagnostics.push({ severity, message, location });
   }
@@ -748,7 +748,7 @@ export class SchemaLoader {
  * @returns Configured SchemaLoader instance
  */
 export function createSchemaLoader(
-  options?: Partial<SchemaLoadOptions>
+  options?: Partial<SchemaLoadOptions>,
 ): SchemaLoader {
   return new SchemaLoader(options);
 }
@@ -764,7 +764,7 @@ export function createSchemaLoader(
 export function loadSchema(
   source: string,
   typeName: string,
-  options?: Partial<SchemaLoadOptions>
+  options?: Partial<SchemaLoadOptions>,
 ): SchemaLoadResult {
   const loader = new SchemaLoader(options);
   return loader.loadFromSource(source, typeName);
@@ -779,7 +779,7 @@ export function loadSchema(
  */
 export function generateTypeScriptFromZod(
   schema: ZodSchema,
-  name: string
+  name: string,
 ): string {
   const loader = new SchemaLoader();
   return loader.generateTypeScriptSource(schema, name);

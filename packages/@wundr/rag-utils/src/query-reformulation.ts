@@ -140,7 +140,7 @@ export class QueryReformulator extends EventEmitter<QueryReformulatorEvents> {
       strategy?: ReformulationStrategy;
       iteration?: number;
       targetConcepts?: string[];
-    } = {}
+    } = {},
   ): Promise<ReformulationResult> {
     this.emit('reformulation:start', query);
 
@@ -161,7 +161,7 @@ export class QueryReformulator extends EventEmitter<QueryReformulatorEvents> {
         query,
         gaps,
         strategy,
-        options.targetConcepts
+        options.targetConcepts,
       );
 
       // Calculate confidence
@@ -394,7 +394,7 @@ export class QueryReformulator extends EventEmitter<QueryReformulatorEvents> {
     query: string,
     gaps: ContextGap[],
     strategy: ReformulationStrategy,
-    targetConcepts?: string[]
+    targetConcepts?: string[],
   ): string {
     const terms = this.extractTerms(query);
 
@@ -434,7 +434,7 @@ export class QueryReformulator extends EventEmitter<QueryReformulatorEvents> {
 
   private calculateConfidence(
     gaps: ContextGap[],
-    results: SearchResult[]
+    results: SearchResult[],
   ): number {
     if (gaps.length === 0 && results.length > 0) {
       return 1.0;
@@ -442,7 +442,7 @@ export class QueryReformulator extends EventEmitter<QueryReformulatorEvents> {
 
     const gapPenalty = gaps.reduce(
       (sum, gap) => sum + (1 - gap.confidence) * 0.1,
-      0
+      0,
     );
     const resultBonus = Math.min(results.length * 0.05, 0.3);
 
@@ -558,20 +558,20 @@ export class QueryReformulator extends EventEmitter<QueryReformulatorEvents> {
 
   private findMissingTerms(
     queryTerms: string[],
-    results: SearchResult[]
+    results: SearchResult[],
   ): string[] {
     const resultContent = results
       .map(r => r.chunk.content.toLowerCase())
       .join(' ');
 
     return queryTerms.filter(
-      term => !resultContent.includes(term.toLowerCase())
+      term => !resultContent.includes(term.toLowerCase()),
     );
   }
 
   private generateSpecificTerms(
     _query: string,
-    results: SearchResult[]
+    results: SearchResult[],
   ): string[] {
     // Extract specific terms from high-scoring results
     const highScoreResults = results.filter(r => r.score >= 0.8);
@@ -625,7 +625,7 @@ export class QueryReformulator extends EventEmitter<QueryReformulatorEvents> {
  * @returns Configured QueryReformulator instance
  */
 export function createQueryReformulator(
-  config?: Partial<QueryReformulationConfig>
+  config?: Partial<QueryReformulationConfig>,
 ): QueryReformulator {
   return new QueryReformulator(config);
 }

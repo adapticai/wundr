@@ -180,7 +180,7 @@ export class HydraConfigError extends Error {
   constructor(
     message: string,
     public readonly code: HydraErrorCode,
-    public readonly details?: Record<string, unknown>
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'HydraConfigError';
@@ -226,7 +226,7 @@ export const ConfigValueSchema: z.ZodType<ConfigValue> = z.lazy(() =>
     z.null(),
     z.array(ConfigValueSchema),
     z.record(z.string(), ConfigValueSchema),
-  ])
+  ]),
 );
 
 /**

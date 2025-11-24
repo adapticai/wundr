@@ -15,6 +15,8 @@ export * from './manager/index.js';
 export const version = '1.0.0';
 export const name = '@wundr/plugin-system';
 
-// Default exports for convenience
-export { getHookRegistry } from './hooks/index.js';
-export { WundrPluginManager as PluginManager } from './manager/index.js';
+// Re-export with aliases for convenience
+import { getHookRegistry as _getHookRegistry } from './hooks/index.js';
+import { WundrPluginManager } from './manager/index.js';
+export { _getHookRegistry as getHookReg };
+export { WundrPluginManager as PluginManager };

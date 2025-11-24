@@ -214,14 +214,14 @@ export interface JITToolsSystem {
  * ```
  */
 export function createJITToolsSystem(
-  config: JITToolsSystemConfig = {}
+  config: JITToolsSystemConfig = {},
 ): JITToolsSystem {
   const registry = new ToolRegistry();
   const retriever = new JITToolRetriever(registry, config.jitConfig);
   const injector = new ContextInjector(
     retriever,
     config.jitConfig,
-    config.injectionOptions
+    config.injectionOptions,
   );
 
   return {

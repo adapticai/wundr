@@ -198,7 +198,7 @@ export class AgentMemoryManager {
         memories: session.scratchpadState,
         currentTokens: session.scratchpadState.reduce(
           (sum, m) => sum + m.tokenCount,
-          0
+          0,
         ),
       });
     }
@@ -220,7 +220,7 @@ export class AgentMemoryManager {
     const scratchpadMemories = this.scratchpad.getAll();
     this.sessionManager.updateScratchpad(
       this.currentSessionId,
-      scratchpadMemories
+      scratchpadMemories,
     );
 
     await this.sessionManager.endSession(this.currentSessionId, persist);
@@ -309,7 +309,7 @@ export class AgentMemoryManager {
       let memories = this.scratchpad.getAll();
       if (options.tags) {
         memories = memories.filter(m =>
-          options.tags!.some(tag => m.metadata.tags.includes(tag))
+          options.tags!.some(tag => m.metadata.tags.includes(tag)),
         );
       }
       if (options.agentId) {
@@ -359,7 +359,7 @@ export class AgentMemoryManager {
    * @returns Compiled managed context
    */
   async compileContext(
-    options: CompileContextOptions
+    options: CompileContextOptions,
   ): Promise<ManagedContext> {
     const systemPromptTokens = this.tokenEstimator(options.systemPrompt);
     let availableTokens = options.maxTokens - systemPromptTokens;
@@ -375,12 +375,12 @@ export class AgentMemoryManager {
       // Filter by agent/task if specified
       if (options.agentId) {
         scratchpad = scratchpad.filter(
-          m => m.metadata.agentId === options.agentId
+          m => m.metadata.agentId === options.agentId,
         );
       }
       if (options.taskId) {
         scratchpad = scratchpad.filter(
-          m => m.metadata.taskId === options.taskId
+          m => m.metadata.taskId === options.taskId,
         );
       }
 
@@ -495,7 +495,7 @@ export class AgentMemoryManager {
   async promote(
     memoryId: string,
     fromTier: MemoryTier,
-    toTier: MemoryTier
+    toTier: MemoryTier,
   ): Promise<Memory | null> {
     let sourceMemory: Memory | null = null;
 
@@ -576,7 +576,7 @@ export class AgentMemoryManager {
 
     // Apply decay to episodic memories
     const episodicResult = this.forgettingCurve.applyDecayBatch(
-      this.episodic.getAll()
+      this.episodic.getAll(),
     );
 
     for (const memory of episodicResult.toForget) {
@@ -592,7 +592,7 @@ export class AgentMemoryManager {
 
     // Apply decay to semantic memories
     const semanticResult = this.forgettingCurve.applyDecayBatch(
-      this.semantic.getAll()
+      this.semantic.getAll(),
     );
 
     for (const memory of semanticResult.toForget) {
@@ -614,7 +614,7 @@ export class AgentMemoryManager {
     // Get consolidation candidates from episodic
     const candidates = this.episodic.getConsolidationCandidates(
       this.config.forgettingCurve.consolidationThreshold,
-      2
+      2,
     );
 
     // Simple consolidation: promote high-value episodic memories to semantic
@@ -927,7 +927,7 @@ export class AgentMemoryManager {
           console.error('Auto-compaction failed:', error);
         }
       },
-      5 * 60 * 1000
+      5 * 60 * 1000,
     );
   }
 

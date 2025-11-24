@@ -490,7 +490,7 @@ export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
     JsonPrimitiveSchema,
     z.array(JsonValueSchema),
     z.record(z.string(), JsonValueSchema),
-  ])
+  ]),
 );
 
 /**
@@ -498,7 +498,7 @@ export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
  */
 export const JsonRecordSchema: z.ZodType<JsonRecord> = z.record(
   z.string(),
-  JsonValueSchema
+  JsonValueSchema,
 );
 
 /**
@@ -675,7 +675,7 @@ export const ParsedIntentSchema = z.object({
       startIndex: z.number().int().nonnegative(),
       endIndex: z.number().int().nonnegative(),
       confidence: z.number().min(0).max(1),
-    })
+    }),
   ),
   requiredCapabilities: z.array(z.string()),
   relevantCategories: z.array(ToolCategorySchema),

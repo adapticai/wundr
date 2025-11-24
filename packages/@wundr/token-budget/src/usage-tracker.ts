@@ -271,7 +271,7 @@ export class UsageTracker {
   getUsageInWindow(windowMs: number): UsageTotals {
     const windowStart = new Date(Date.now() - windowMs);
     const recordsInWindow = this.usageRecords.filter(
-      r => r.timestamp >= windowStart
+      r => r.timestamp >= windowStart,
     );
 
     let totalInputTokens = 0;
@@ -384,7 +384,7 @@ export class UsageTracker {
         summary: this.getSessionSummary(),
       },
       null,
-      2
+      2,
     );
   }
 
@@ -419,7 +419,7 @@ export class UsageTracker {
         r.operationType,
         r.cacheHit,
         r.taskId || '',
-      ].join(',')
+      ].join(','),
     );
 
     return [headers.join(','), ...rows].join('\n');
@@ -569,7 +569,7 @@ export class UsageTrackingError extends Error {
  * @returns UsageTracker instance
  */
 export function createUsageTracker(
-  options: UsageTrackerOptions = {}
+  options: UsageTrackerOptions = {},
 ): UsageTracker {
   return new UsageTracker(options);
 }

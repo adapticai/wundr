@@ -15,6 +15,8 @@ export * from './manager/index.js';
 export const version = '1.0.0';
 export const name = '@wundr/config';
 
-// Convenience exports
-export { WundrConfigManager as ConfigManager } from './manager/index.js';
-export { JsonConfigSource, YamlConfigSource, EnvConfigSource, MemoryConfigSource } from './sources/index.js';
+// Re-export with aliases for convenience
+import { WundrConfigManager } from './manager/index.js';
+import { JsonConfigSource, YamlConfigSource, EnvConfigSource, MemoryConfigSource } from './sources/index.js';
+export { WundrConfigManager as ConfigManager };
+export { JsonConfigSource as JsonSource, YamlConfigSource as YamlSource, EnvConfigSource as EnvSource, MemoryConfigSource as MemorySource };

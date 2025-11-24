@@ -133,7 +133,7 @@ export class TemplateLoader {
    */
   loadTemplatesFromDirectory(
     dirPath?: string,
-    recursive: boolean = false
+    recursive: boolean = false,
   ): PromptTemplateConfig[] {
     const absolutePath = dirPath
       ? path.isAbsolute(dirPath)
@@ -169,7 +169,7 @@ export class TemplateLoader {
     if (!fs.existsSync(absolutePath)) {
       throw this.createError(
         'TEMPLATE_NOT_FOUND',
-        `Template file not found: ${absolutePath}`
+        `Template file not found: ${absolutePath}`,
       );
     }
 
@@ -190,7 +190,7 @@ export class TemplateLoader {
     } catch {
       throw this.createError(
         'TEMPLATE_NOT_FOUND',
-        `Template file not found: ${absolutePath}`
+        `Template file not found: ${absolutePath}`,
       );
     }
 
@@ -274,7 +274,7 @@ export class TemplateLoader {
     if (!fs.existsSync(filePath)) {
       throw this.createError(
         'TEMPLATE_NOT_FOUND',
-        `Template file not found: ${filePath}`
+        `Template file not found: ${filePath}`,
       );
     }
 
@@ -286,14 +286,14 @@ export class TemplateLoader {
    * Load template configuration from file asynchronously
    */
   private async loadFromFileAsync(
-    filePath: string
+    filePath: string,
   ): Promise<PromptTemplateConfig> {
     try {
       await fs.promises.access(filePath, fs.constants.R_OK);
     } catch {
       throw this.createError(
         'TEMPLATE_NOT_FOUND',
-        `Template file not found: ${filePath}`
+        `Template file not found: ${filePath}`,
       );
     }
 
@@ -306,7 +306,7 @@ export class TemplateLoader {
    */
   private parseTemplateContent(
     content: string,
-    filePath: string
+    filePath: string,
   ): PromptTemplateConfig {
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
 
@@ -398,7 +398,7 @@ export class TemplateLoader {
         .join(', ');
       throw this.createError(
         'INVALID_TEMPLATE_CONFIG',
-        `Invalid template configuration: ${errors}`
+        `Invalid template configuration: ${errors}`,
       );
     }
 

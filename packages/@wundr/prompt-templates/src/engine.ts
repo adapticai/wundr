@@ -86,7 +86,7 @@ export class PromptTemplateEngine {
   render(
     template: string,
     context: TemplateContext = { variables: {} },
-    options?: Partial<RenderOptions>
+    options?: Partial<RenderOptions>,
   ): RenderResult {
     const startTime = Date.now();
     const _mergedOptions = { ...this.defaultOptions, ...options };
@@ -145,7 +145,7 @@ export class PromptTemplateEngine {
   async renderAsync(
     template: string,
     context: TemplateContext = { variables: {} },
-    options?: Partial<RenderOptions>
+    options?: Partial<RenderOptions>,
   ): Promise<RenderResult> {
     const mergedOptions = { ...this.defaultOptions, ...options };
 
@@ -372,7 +372,7 @@ export class PromptTemplateEngine {
    */
   on<K extends keyof EngineEvents>(
     event: K,
-    handler: EngineEventHandler<K>
+    handler: EngineEventHandler<K>,
   ): () => void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
@@ -436,10 +436,10 @@ export class PromptTemplateEngine {
     this.handlebars.registerHelper('subtract', (a: number, b: number) => a - b);
     this.handlebars.registerHelper('multiply', (a: number, b: number) => a * b);
     this.handlebars.registerHelper('divide', (a: number, b: number) =>
-      b !== 0 ? a / b : 0
+      b !== 0 ? a / b : 0,
     );
     this.handlebars.registerHelper('mod', (a: number, b: number) =>
-      b !== 0 ? a % b : 0
+      b !== 0 ? a % b : 0,
     );
     this.handlebars.registerHelper('abs', (a: number) => Math.abs(a));
     this.handlebars.registerHelper('ceil', (a: number) => Math.ceil(a));
@@ -465,7 +465,7 @@ export class PromptTemplateEngine {
               : '';
         }
         return result;
-      }
+      },
     );
 
     this.handlebars.registerHelper(
@@ -482,7 +482,7 @@ export class PromptTemplateEngine {
               : '';
         }
         return result;
-      }
+      },
     );
 
     this.handlebars.registerHelper('not', (value: unknown) => !value);
@@ -505,7 +505,7 @@ export class PromptTemplateEngine {
       'object',
       (options: Handlebars.HelperOptions) => {
         return options?.hash || {};
-      }
+      },
     );
 
     // Ternary helper
@@ -513,7 +513,7 @@ export class PromptTemplateEngine {
       'ternary',
       (condition: unknown, ifTrue: unknown, ifFalse: unknown) => {
         return condition ? ifTrue : ifFalse;
-      }
+      },
     );
 
     // Default value helper
@@ -521,7 +521,7 @@ export class PromptTemplateEngine {
       'default',
       (value: unknown, defaultValue: unknown) => {
         return value !== undefined && value !== null ? value : defaultValue;
-      }
+      },
     );
   }
 
@@ -562,7 +562,7 @@ export class PromptTemplateEngine {
    */
   private createTemplateError(
     error: unknown,
-    templateId?: string
+    templateId?: string,
   ): TemplateError {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
@@ -586,7 +586,7 @@ export class PromptTemplateEngine {
    */
   private emit<K extends keyof EngineEvents>(
     event: K,
-    data: EngineEvents[K]
+    data: EngineEvents[K],
   ): void {
     const handlers = this.eventHandlers.get(event);
     if (handlers) {
@@ -610,7 +610,7 @@ export class PromptTemplateEngine {
  */
 export function createEngine(
   options?: Partial<RenderOptions>,
-  loaderBaseDir?: string
+  loaderBaseDir?: string,
 ): PromptTemplateEngine {
   return new PromptTemplateEngine(options, loaderBaseDir);
 }

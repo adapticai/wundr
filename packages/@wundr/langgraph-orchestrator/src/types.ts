@@ -675,7 +675,7 @@ export const MessageSchema = z.object({
         id: z.string(),
         name: z.string(),
         arguments: z.record(z.unknown()),
-      })
+      }),
     )
     .optional(),
   toolResult: z

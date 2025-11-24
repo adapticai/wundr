@@ -146,7 +146,7 @@ export function createEvalSuite(
   name: string,
   description: string,
   testCases: EvalTestCase[],
-  rubric: GradingRubric = DEFAULT_GRADING_RUBRIC
+  rubric: GradingRubric = DEFAULT_GRADING_RUBRIC,
 ): EvalSuite {
   const suite: EvalSuite = {
     id: uuidv4(),
@@ -182,7 +182,7 @@ export function createEvalSuite(
 export function createTestCase(
   name: string,
   input: string,
-  options: Partial<Omit<EvalTestCase, 'id' | 'name' | 'input'>> = {}
+  options: Partial<Omit<EvalTestCase, 'id' | 'name' | 'input'>> = {},
 ): EvalTestCase {
   const testCase: EvalTestCase = {
     id: uuidv4(),
@@ -218,7 +218,7 @@ export function createGradingRubric(
   criteria: GradingRubric['criteria'],
   options: Partial<
     Omit<GradingRubric, 'id' | 'name' | 'description' | 'criteria'>
-  > = {}
+  > = {},
 ): GradingRubric {
   const rubric: GradingRubric = {
     id: uuidv4(),
@@ -273,7 +273,7 @@ export function validateSuite(suite: unknown): {
 export function mergeSuites(
   suites: EvalSuite[],
   name: string,
-  description: string
+  description: string,
 ): EvalSuite {
   if (suites.length === 0) {
     throw new Error('At least one suite is required to merge');
@@ -314,6 +314,6 @@ export function mergeSuites(
     name,
     description,
     [...testCaseMap.values()],
-    suites[0].defaultRubric
+    suites[0].defaultRubric,
   );
 }

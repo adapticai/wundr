@@ -115,7 +115,7 @@ export class JITToolRetriever extends EventEmitter {
   async retrieve(
     query: string,
     context?: AgentContext,
-    options: RetrievalOptions = {}
+    options: RetrievalOptions = {},
   ): Promise<ToolRetrievalResult> {
     const startTime = Date.now();
 
@@ -146,21 +146,21 @@ export class JITToolRetriever extends EventEmitter {
         candidates,
         intent,
         context,
-        options
+        options,
       );
 
       // Filter by permissions
       const permissionFiltered = this.filterByPermissions(
         scoredTools,
         context,
-        options
+        options,
       );
 
       // Filter by score threshold
       const minScore =
         options.minRelevanceScore ?? this.config.minRelevanceScore;
       const scoreFiltered = permissionFiltered.filter(
-        rt => rt.finalScore >= minScore
+        rt => rt.finalScore >= minScore,
       );
 
       // Apply token budget and max tools limit
@@ -169,7 +169,7 @@ export class JITToolRetriever extends EventEmitter {
       const finalTools = this.applyBudgetConstraints(
         scoreFiltered,
         maxTools,
-        maxBudget
+        maxBudget,
       );
 
       // Build result
@@ -180,7 +180,7 @@ export class JITToolRetriever extends EventEmitter {
         retrievalTimeMs: Date.now() - startTime,
         totalTokenCost: finalTools.reduce(
           (sum, rt) => sum + rt.tool.tokenCost,
-          0
+          0,
         ),
         metadata: {
           toolsScanned: candidates.length,
@@ -217,7 +217,7 @@ export class JITToolRetriever extends EventEmitter {
   async retrieveByCapabilities(
     capabilities: string[],
     context?: AgentContext,
-    options: RetrievalOptions = {}
+    options: RetrievalOptions = {},
   ): Promise<ToolRetrievalResult> {
     const query = `Find tools with capabilities: ${capabilities.join(', ')}`;
     return this.retrieve(query, context, options);
@@ -234,7 +234,7 @@ export class JITToolRetriever extends EventEmitter {
   async retrieveByCategories(
     categories: ToolCategory[],
     context?: AgentContext,
-    options: RetrievalOptions = {}
+    options: RetrievalOptions = {},
   ): Promise<ToolRetrievalResult> {
     const boostedOptions: RetrievalOptions = {
       ...options,
@@ -243,7 +243,7 @@ export class JITToolRetriever extends EventEmitter {
           acc[cat] = 2.0; // Double the weight for specified categories
           return acc;
         },
-        {} as Partial<Record<ToolCategory, number>>
+        {} as Partial<Record<ToolCategory, number>>,
       ),
     };
 
@@ -260,13 +260,13 @@ export class JITToolRetriever extends EventEmitter {
    */
   async getRecommendations(
     context: AgentContext,
-    options: RetrievalOptions = {}
+    options: RetrievalOptions = {},
   ): Promise<ToolRetrievalResult> {
     // Build query from agent history and preferences
     const recentTools = context.toolHistory
       .slice(0, 10)
       .filter(
-        record => record.success && record.relevanceFeedback !== 'not_helpful'
+        record => record.success && record.relevanceFeedback !== 'not_helpful',
       )
       .map(record => record.toolId);
 
@@ -292,7 +292,7 @@ export class JITToolRetriever extends EventEmitter {
     tools: ToolSpec[],
     intent: ParsedIntent,
     context?: AgentContext,
-    options: RetrievalOptions = {}
+    options: RetrievalOptions = {},
   ): Promise<RetrievedTool[]> {
     const weights = this.config.scoringWeights;
     const categoryBoosts = options.categoryBoosts || {};
@@ -311,7 +311,7 @@ export class JITToolRetriever extends EventEmitter {
       const categoryScore = this.calculateCategoryScore(
         tool,
         intent,
-        categoryBoosts
+        categoryBoosts,
       );
 
       // Calculate weighted final score
@@ -368,7 +368,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private async calculateSemanticScore(
     tool: ToolSpec,
-    intent: ParsedIntent
+    intent: ParsedIntent,
   ): Promise<number> {
     // Get or compute tool embedding
     const toolEmbedding = await this.getToolEmbedding(tool);
@@ -421,7 +421,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private calculatePermissionScore(
     tool: ToolSpec,
-    context?: AgentContext
+    context?: AgentContext,
   ): number {
     if (!context || this.config.permissionMode === 'disabled') {
       return 1.0;
@@ -432,7 +432,7 @@ export class JITToolRetriever extends EventEmitter {
 
     // Check if agent has all required permissions
     const matchedPermissions = toolPermissions.filter(p =>
-      agentPermissions.has(p)
+      agentPermissions.has(p),
     );
     const permissionRatio =
       toolPermissions.length > 0
@@ -448,7 +448,7 @@ export class JITToolRetriever extends EventEmitter {
   private calculateCategoryScore(
     tool: ToolSpec,
     intent: ParsedIntent,
-    boosts: Partial<Record<ToolCategory, number>>
+    boosts: Partial<Record<ToolCategory, number>>,
   ): number {
     let score = 0;
 
@@ -471,7 +471,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private calculateHistoryBoost(toolId: string, context: AgentContext): number {
     const relevantHistory = context.toolHistory.filter(
-      h => h.toolId === toolId
+      h => h.toolId === toolId,
     );
 
     if (relevantHistory.length === 0) {
@@ -484,7 +484,7 @@ export class JITToolRetriever extends EventEmitter {
 
     // Calculate helpfulness rate
     const helpfulCount = relevantHistory.filter(
-      h => h.relevanceFeedback === 'helpful'
+      h => h.relevanceFeedback === 'helpful',
     ).length;
     const helpfulRate = relevantHistory.some(h => h.relevanceFeedback)
       ? helpfulCount / relevantHistory.filter(h => h.relevanceFeedback).length
@@ -504,7 +504,7 @@ export class JITToolRetriever extends EventEmitter {
   private getCandidateTools(
     intent: ParsedIntent,
     context?: AgentContext,
-    options: RetrievalOptions = {}
+    options: RetrievalOptions = {},
   ): ToolSpec[] {
     // Start with all tools or filtered by category
     let candidates: ToolSpec[];
@@ -535,7 +535,7 @@ export class JITToolRetriever extends EventEmitter {
     // Filter by excluded categories
     if (this.config.excludedCategories.length > 0) {
       candidates = candidates.filter(
-        tool => !this.config.excludedCategories.includes(tool.category)
+        tool => !this.config.excludedCategories.includes(tool.category),
       );
     }
 
@@ -570,7 +570,7 @@ export class JITToolRetriever extends EventEmitter {
   private filterByPermissions(
     tools: RetrievedTool[],
     context?: AgentContext,
-    options: RetrievalOptions = {}
+    options: RetrievalOptions = {},
   ): RetrievedTool[] {
     if (
       options.bypassPermissions ||
@@ -606,7 +606,7 @@ export class JITToolRetriever extends EventEmitter {
   private applyBudgetConstraints(
     tools: RetrievedTool[],
     maxTools: number,
-    maxBudget: number
+    maxBudget: number,
   ): RetrievedTool[] {
     const result: RetrievedTool[] = [];
     let totalTokens = 0;
@@ -740,7 +740,7 @@ export class JITToolRetriever extends EventEmitter {
    */
   private getCachedResult(
     query: string,
-    context?: AgentContext
+    context?: AgentContext,
   ): ToolRetrievalResult | null {
     const queryHash = this.hashQuery(query, context);
     const entry = this.cache.get(queryHash);
@@ -770,7 +770,7 @@ export class JITToolRetriever extends EventEmitter {
   private cacheResult(
     query: string,
     context: AgentContext | undefined,
-    result: ToolRetrievalResult
+    result: ToolRetrievalResult,
   ): void {
     const queryHash = this.hashQuery(query, context);
 
@@ -841,7 +841,7 @@ export class JITToolRetriever extends EventEmitter {
       keywordScore: number;
       permissionScore: number;
       categoryScore: number;
-    }
+    },
   ): string[] {
     const reasons: string[] = [];
 
@@ -851,7 +851,7 @@ export class JITToolRetriever extends EventEmitter {
 
     if (scores.keywordScore > 0.5) {
       const matchingKeywords = tool.keywords.filter(k =>
-        intent.keywords.includes(k.toLowerCase())
+        intent.keywords.includes(k.toLowerCase()),
       );
       if (matchingKeywords.length > 0) {
         reasons.push(`Keywords: ${matchingKeywords.slice(0, 3).join(', ')}`);
@@ -863,7 +863,7 @@ export class JITToolRetriever extends EventEmitter {
     }
 
     const matchingCaps = tool.capabilities.filter(c =>
-      intent.requiredCapabilities.includes(c)
+      intent.requiredCapabilities.includes(c),
     );
     if (matchingCaps.length > 0) {
       reasons.push(`Capabilities: ${matchingCaps.slice(0, 3).join(', ')}`);
@@ -905,7 +905,7 @@ export class JITToolRetriever extends EventEmitter {
  */
 export function createToolRetriever(
   registry: ToolRegistry,
-  config?: Partial<JITToolConfig>
+  config?: Partial<JITToolConfig>,
 ): JITToolRetriever {
   return new JITToolRetriever(registry, config);
 }

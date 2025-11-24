@@ -179,7 +179,7 @@ export class OutputFilter {
     // Apply severity filter
     const minSeverity = options.minSeverity ?? 'low';
     const filteredPatterns = enabledPatterns.filter(
-      p => this.severityRank(p.severity) >= this.severityRank(minSeverity)
+      p => this.severityRank(p.severity) >= this.severityRank(minSeverity),
     );
 
     for (const pattern of filteredPatterns) {
@@ -337,7 +337,7 @@ export class OutputFilter {
    * @returns Stream handler function
    */
   createStreamFilter(
-    onChunk: (filtered: string, hadRedactions: boolean) => void
+    onChunk: (filtered: string, hadRedactions: boolean) => void,
   ): (chunk: string) => void {
     let buffer = '';
     const maxBufferSize = 1000;
@@ -363,7 +363,7 @@ export class OutputFilter {
    * @returns Function to get final filtered content
    */
   createStreamFlush(
-    onFlush: (filtered: string, hadRedactions: boolean) => void
+    onFlush: (filtered: string, hadRedactions: boolean) => void,
   ): (remainingBuffer: string) => void {
     return (remainingBuffer: string) => {
       if (remainingBuffer.length > 0) {
@@ -393,7 +393,7 @@ export class OutputFilter {
   }
 
   private getCompiledPattern(
-    pattern: SensitiveDataPattern
+    pattern: SensitiveDataPattern,
   ): RegExp | undefined {
     return this.compiledPatterns.get(pattern.id);
   }
@@ -411,7 +411,7 @@ export class OutputFilter {
   private createPreview(
     content: string,
     position: number,
-    length: number
+    length: number,
   ): string {
     const previewLength = 20;
     const start = Math.max(0, position - previewLength);
@@ -430,7 +430,7 @@ export class OutputFilter {
   }
 
   private createDetectionSummary(
-    findings: DetectedSensitiveData[]
+    findings: DetectedSensitiveData[],
   ): DetectionSummary {
     const byType: Record<string, number> = {};
     const bySeverity: Record<Severity, number> = {
@@ -550,7 +550,7 @@ export interface DetectionSummary {
  * @returns Configured OutputFilter
  */
 export function createOutputFilter(
-  preset: 'strict' | 'standard' | 'minimal'
+  preset: 'strict' | 'standard' | 'minimal',
 ): OutputFilter {
   const filter = new OutputFilter();
 

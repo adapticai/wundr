@@ -107,7 +107,7 @@ export function createMemoryHealthCheck(
   thresholds: {
     degradedPercent?: number;
     unhealthyPercent?: number;
-  } = {}
+  } = {},
 ): HealthCheckFunction {
   const degradedThreshold = thresholds.degradedPercent ?? 80;
   const unhealthyThreshold = thresholds.unhealthyPercent ?? 95;
@@ -158,7 +158,7 @@ export function createEventLoopHealthCheck(
   thresholds: {
     degradedMs?: number;
     unhealthyMs?: number;
-  } = {}
+  } = {},
 ): HealthCheckFunction {
   const degradedThreshold = thresholds.degradedMs ?? 100;
   const unhealthyThreshold = thresholds.unhealthyMs ?? 500;
@@ -500,7 +500,7 @@ export class HealthCheckManager {
    * Execute a health check with timeout
    */
   private async executeCheck(
-    registration: HealthCheckRegistration
+    registration: HealthCheckRegistration,
   ): Promise<HealthCheckResult> {
     const timeout = registration.timeout ?? this.config.defaultTimeout ?? 5000;
     const start = Date.now();
@@ -511,8 +511,8 @@ export class HealthCheckManager {
         setTimeout(() => {
           reject(
             new Error(
-              `Health check '${registration.name}' timed out after ${timeout}ms`
-            )
+              `Health check '${registration.name}' timed out after ${timeout}ms`,
+            ),
           );
         }, timeout);
       });
@@ -564,25 +564,25 @@ export class HealthCheckManager {
         if (result.status === 'unhealthy' && registration.critical) {
           this.logger?.error(
             `Critical health check failed: ${registration.name}`,
-            result
+            result,
           );
         } else if (result.status !== 'healthy') {
           this.logger?.warning(
             `Health check degraded: ${registration.name}`,
-            result
+            result,
           );
         }
       } catch (error) {
         this.logger?.error(
           `Error running periodic health check: ${registration.name}`,
-          error
+          error,
         );
       }
     }, interval);
 
     this.periodicChecks.set(registration.name, timer);
     this.logger?.debug(
-      `Started periodic check: ${registration.name} (interval: ${interval}ms)`
+      `Started periodic check: ${registration.name} (interval: ${interval}ms)`,
     );
   }
 
@@ -625,7 +625,7 @@ export class HealthCheckManager {
  */
 export function createHealthCheckManager(
   serverName: string,
-  version: string
+  version: string,
 ): HealthCheckManager {
   return new HealthCheckManager({
     serverName,

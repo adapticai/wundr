@@ -28,7 +28,7 @@ import type {
 export class NoServersFoundError extends Error {
   constructor(
     public readonly query: CapabilityQuery,
-    message?: string
+    message?: string,
   ) {
     super(message ?? 'No servers found matching the query');
     this.name = 'NoServersFoundError';
@@ -41,7 +41,7 @@ export class NoServersFoundError extends Error {
 export class InvalidQueryError extends Error {
   constructor(
     public readonly validationErrors: readonly string[],
-    message?: string
+    message?: string,
   ) {
     super(message ?? `Invalid query: ${validationErrors.join(', ')}`);
     this.name = 'InvalidQueryError';
@@ -193,7 +193,7 @@ export class CapabilityQueryBuilder {
     const validation = CapabilityQuerySchema.safeParse(query);
     if (!validation.success) {
       const errors = validation.error.errors.map(
-        e => `${e.path.join('.')}: ${e.message}`
+        e => `${e.path.join('.')}: ${e.message}`,
       );
       throw new InvalidQueryError(errors);
     }
@@ -286,7 +286,7 @@ export class ServerDiscoveryService {
    */
   async discover(
     query: CapabilityQuery,
-    options: DiscoveryOptions = {}
+    options: DiscoveryOptions = {},
   ): Promise<DiscoveryResult> {
     const allServers = this.registry.getAll();
     let matchingServers = this.filterServers(allServers, query, options);
@@ -315,7 +315,7 @@ export class ServerDiscoveryService {
    * @returns The best server for the tool, or undefined
    */
   async findBestServerForTool(
-    toolName: string
+    toolName: string,
   ): Promise<MCPServerRegistration | undefined> {
     const servers = this.registry.findByTool(toolName);
 
@@ -356,7 +356,7 @@ export class ServerDiscoveryService {
    * @returns Servers that provide all specified tools
    */
   async findServersForTools(
-    toolNames: readonly string[]
+    toolNames: readonly string[],
   ): Promise<readonly MCPServerRegistration[]> {
     if (toolNames.length === 0) {
       return [];
@@ -364,7 +364,7 @@ export class ServerDiscoveryService {
 
     // Get servers for each tool
     const serverSets = toolNames.map(
-      name => new Set(this.registry.findByTool(name).map(s => s.id))
+      name => new Set(this.registry.findByTool(name).map(s => s.id)),
     );
 
     // Find intersection of all sets
@@ -376,7 +376,7 @@ export class ServerDiscoveryService {
     return Array.from(intersection)
       .map(id => this.registry.get(id))
       .filter(
-        (server): server is MCPServerRegistration => server !== undefined
+        (server): server is MCPServerRegistration => server !== undefined,
       );
   }
 
@@ -387,7 +387,7 @@ export class ServerDiscoveryService {
    * @returns Recommended servers sorted by relevance
    */
   async getRecommendations(
-    context: RecommendationContext
+    context: RecommendationContext,
   ): Promise<readonly ServerRecommendation[]> {
     const allServers = this.registry.getAll();
     const recommendations: ServerRecommendation[] = [];
@@ -418,13 +418,13 @@ export class ServerDiscoveryService {
   private filterServers(
     servers: readonly MCPServerRegistration[],
     query: CapabilityQuery,
-    options: DiscoveryOptions
+    options: DiscoveryOptions,
   ): MCPServerRegistration[] {
     return servers.filter(server => {
       // Filter by capability category
       if (query.category !== undefined) {
         const hasCategory = server.capabilities.some(
-          cap => cap.category === query.category && cap.enabled
+          cap => cap.category === query.category && cap.enabled,
         );
         if (!hasCategory) {
           return false;
@@ -434,10 +434,10 @@ export class ServerDiscoveryService {
       // Filter by capability names
       if (query.capabilities !== undefined && query.capabilities.length > 0) {
         const serverCapNames = new Set(
-          server.capabilities.filter(c => c.enabled).map(c => c.name)
+          server.capabilities.filter(c => c.enabled).map(c => c.name),
         );
         const hasAllCaps = query.capabilities.every(cap =>
-          serverCapNames.has(cap)
+          serverCapNames.has(cap),
         );
         if (!hasAllCaps) {
           return false;
@@ -448,7 +448,7 @@ export class ServerDiscoveryService {
       if (query.tools !== undefined && query.tools.length > 0) {
         const serverToolNames = new Set(server.tools.map(t => t.name));
         const hasAllTools = query.tools.every(tool =>
-          serverToolNames.has(tool)
+          serverToolNames.has(tool),
         );
         if (!hasAllTools) {
           return false;
@@ -499,7 +499,7 @@ export class ServerDiscoveryService {
    */
   private sortServers(
     servers: readonly MCPServerRegistration[],
-    options: DiscoveryOptions
+    options: DiscoveryOptions,
   ): MCPServerRegistration[] {
     const sorted = [...servers];
     const sortBy = options.sortBy ?? 'priority';
@@ -539,7 +539,7 @@ export class ServerDiscoveryService {
    */
   private calculateRecommendationScore(
     server: MCPServerRegistration,
-    context: RecommendationContext
+    context: RecommendationContext,
   ): number {
     let score = 0;
 
@@ -577,7 +577,7 @@ export class ServerDiscoveryService {
     if (context.preferredTools !== undefined) {
       const serverToolNames = new Set(server.tools.map(t => t.name));
       const matchingTools = context.preferredTools.filter(t =>
-        serverToolNames.has(t)
+        serverToolNames.has(t),
       );
       score += matchingTools.length * 15;
     }
@@ -592,10 +592,10 @@ export class ServerDiscoveryService {
     // Capability match score
     if (context.requiredCapabilities !== undefined) {
       const serverCapNames = new Set(
-        server.capabilities.filter(c => c.enabled).map(c => c.name)
+        server.capabilities.filter(c => c.enabled).map(c => c.name),
       );
       const matchingCaps = context.requiredCapabilities.filter(c =>
-        serverCapNames.has(c)
+        serverCapNames.has(c),
       );
       score += matchingCaps.length * 20;
     }
@@ -614,7 +614,7 @@ export class ServerDiscoveryService {
   private getRecommendationReasons(
     server: MCPServerRegistration,
     context: RecommendationContext,
-    score: number
+    score: number,
   ): readonly string[] {
     const reasons: string[] = [];
     const health = this.registry.getHealthStatus(server.id);
@@ -634,7 +634,7 @@ export class ServerDiscoveryService {
     if (context.preferredTools !== undefined) {
       const serverToolNames = new Set(server.tools.map(t => t.name));
       const matchingTools = context.preferredTools.filter(t =>
-        serverToolNames.has(t)
+        serverToolNames.has(t),
       );
       if (matchingTools.length > 0) {
         reasons.push(`Provides ${matchingTools.length} preferred tool(s)`);
@@ -714,7 +714,7 @@ export interface ServerRecommendation {
  * ```
  */
 export function createServerDiscoveryService(
-  registry: MCPServerRegistry
+  registry: MCPServerRegistry,
 ): ServerDiscoveryService {
   return new ServerDiscoveryService(registry);
 }

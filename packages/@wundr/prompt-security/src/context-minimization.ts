@@ -73,14 +73,14 @@ export class ContextMinimizer {
     content: string,
     source: string,
     tags: string[] = [],
-    sanitized = false
+    sanitized = false,
   ): string {
     const section = this.createSection(
       content,
       'trusted',
       source,
       tags,
-      sanitized
+      sanitized,
     );
     this.trustedSections.push(section);
     return section.id;
@@ -99,14 +99,14 @@ export class ContextMinimizer {
     content: string,
     source: string,
     tags: string[] = [],
-    sanitized = false
+    sanitized = false,
   ): string {
     const section = this.createSection(
       content,
       'semi-trusted',
       source,
       tags,
-      sanitized
+      sanitized,
     );
     this.untrustedSections.push(section);
     return section.id;
@@ -125,14 +125,14 @@ export class ContextMinimizer {
     content: string,
     source: string,
     tags: string[] = [],
-    sanitized = false
+    sanitized = false,
   ): string {
     const section = this.createSection(
       content,
       'untrusted',
       source,
       tags,
-      sanitized
+      sanitized,
     );
     this.untrustedSections.push(section);
     return section.id;
@@ -152,7 +152,7 @@ export class ContextMinimizer {
       'system',
       source,
       [...tags, 'system'],
-      true
+      true,
     );
     this.trustedSections.unshift(section); // System content goes first
     return section.id;
@@ -169,12 +169,12 @@ export class ContextMinimizer {
 
     if (totalTokens > this.settings.maxContextTokens) {
       warnings.push(
-        `Context size (${totalTokens} tokens) exceeds maximum (${this.settings.maxContextTokens} tokens)`
+        `Context size (${totalTokens} tokens) exceeds maximum (${this.settings.maxContextTokens} tokens)`,
       );
     }
 
     const hasUnsanitizedUntrusted = this.untrustedSections.some(
-      s => !s.sanitized
+      s => !s.sanitized,
     );
     if (hasUnsanitizedUntrusted) {
       warnings.push('Some untrusted sections have not been sanitized');
@@ -269,7 +269,7 @@ export class ContextMinimizer {
    */
   buildMinimalContext(
     maxTokens: number,
-    prioritizeTrusted = true
+    prioritizeTrusted = true,
   ): SeparatedContext {
     const minimized: SeparatedContext = {
       trusted: [],
@@ -317,7 +317,7 @@ export class ContextMinimizer {
             minimized.untrusted.push(truncated);
           }
           minimized.metadata.warnings.push(
-            `Section "${section.id}" was truncated to fit token limit`
+            `Section "${section.id}" was truncated to fit token limit`,
           );
         }
         break;
@@ -367,7 +367,7 @@ export class ContextMinimizer {
   updateSection(
     sectionId: string,
     content: string,
-    sanitized?: boolean
+    sanitized?: boolean,
   ): boolean {
     const section =
       this.trustedSections.find(s => s.id === sectionId) ??
@@ -420,11 +420,11 @@ export class ContextMinimizer {
   getStats(): ContextStats {
     const trustedChars = this.trustedSections.reduce(
       (sum, s) => sum + s.content.length,
-      0
+      0,
     );
     const untrustedChars = this.untrustedSections.reduce(
       (sum, s) => sum + s.content.length,
-      0
+      0,
     );
 
     return {
@@ -450,11 +450,11 @@ export class ContextMinimizer {
 
     // Check for unsanitized untrusted content
     const unsanitizedCount = this.untrustedSections.filter(
-      s => !s.sanitized
+      s => !s.sanitized,
     ).length;
     if (unsanitizedCount > 0) {
       errors.push(
-        `${unsanitizedCount} untrusted section(s) have not been sanitized`
+        `${unsanitizedCount} untrusted section(s) have not been sanitized`,
       );
     }
 
@@ -462,11 +462,11 @@ export class ContextMinimizer {
     const tokens = this.estimateTokens();
     if (tokens > this.settings.maxContextTokens) {
       errors.push(
-        `Context exceeds token limit: ${tokens} > ${this.settings.maxContextTokens}`
+        `Context exceeds token limit: ${tokens} > ${this.settings.maxContextTokens}`,
       );
     } else if (tokens > this.settings.maxContextTokens * 0.9) {
       warnings.push(
-        `Context is near token limit: ${tokens} / ${this.settings.maxContextTokens}`
+        `Context is near token limit: ${tokens} / ${this.settings.maxContextTokens}`,
       );
     }
 
@@ -494,7 +494,7 @@ export class ContextMinimizer {
     trustLevel: TrustLevel,
     source: string,
     tags: string[],
-    sanitized: boolean
+    sanitized: boolean,
   ): ContextSection {
     this.sectionCounter++;
     return {
@@ -521,7 +521,7 @@ export class ContextMinimizer {
 
   private truncateSection(
     section: ContextSection,
-    maxTokens: number
+    maxTokens: number,
   ): ContextSection | null {
     const maxChars = Math.floor(maxTokens / TOKENS_PER_CHAR);
 
@@ -660,7 +660,7 @@ export function createSeparatedContext(
     content: string;
     trusted: boolean;
     source: string;
-  }> = []
+  }> = [],
 ): SeparatedContext {
   const minimizer = new ContextMinimizer();
 

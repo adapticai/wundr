@@ -140,7 +140,7 @@ export class LoopEdgeBuilder<TState extends AgentState = AgentState> {
   build(): LoopConfig {
     if (!this.condition) {
       throw new Error(
-        'Loop condition is required. Call while() before build()'
+        'Loop condition is required. Call while() before build()',
       );
     }
 
@@ -160,7 +160,7 @@ export class LoopEdgeBuilder<TState extends AgentState = AgentState> {
   buildEdge(): EdgeDefinition {
     if (!this.condition) {
       throw new Error(
-        'Loop condition is required. Call while() before buildEdge()'
+        'Loop condition is required. Call while() before buildEdge()',
       );
     }
 
@@ -197,7 +197,7 @@ export class LoopEdgeBuilder<TState extends AgentState = AgentState> {
         if (currentCount >= maxIterations) {
           if (onMaxIterations === 'error') {
             throw new Error(
-              `Loop exceeded maximum iterations (${maxIterations})`
+              `Loop exceeded maximum iterations (${maxIterations})`,
             );
           }
           return false; // Exit loop
@@ -231,7 +231,7 @@ export class LoopEdgeBuilder<TState extends AgentState = AgentState> {
  */
 export function loopEdge<TState extends AgentState = AgentState>(
   from: string,
-  to?: string
+  to?: string,
 ): LoopEdgeBuilder<TState> {
   return new LoopEdgeBuilder<TState>(from, to);
 }
@@ -429,7 +429,7 @@ export function createRetryLoop(options: {
         const succeeded = await evaluateCondition(
           options.successCondition,
           state,
-          context
+          context,
         );
         if (succeeded) {
           return false; // Exit loop to success node
@@ -516,7 +516,7 @@ export function createPaginationLoop(options: {
 async function evaluateCondition(
   condition: EdgeCondition,
   state: AgentState,
-  context: EdgeContext
+  context: EdgeContext,
 ): Promise<boolean> {
   const fieldValue = condition.field
     ? getFieldValue(state, condition.field)

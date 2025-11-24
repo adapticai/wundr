@@ -118,7 +118,7 @@ export class ReviewLoopManager extends EventEmitter {
     task: Task,
     result: TaskResult,
     reviewer: CrewMember,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<ReviewFeedback> {
     // Check iteration limit
     const currentCycles = this.reviewCycles.get(task.id) ?? [];
@@ -128,7 +128,7 @@ export class ReviewLoopManager extends EventEmitter {
       throw new CrewError(
         CrewErrorCode.MAX_ITERATIONS_EXCEEDED,
         `Maximum review iterations (${this.options.maxReviewIterations}) exceeded for task ${task.id}`,
-        { taskId: task.id, iterations: iteration }
+        { taskId: task.id, iterations: iteration },
       );
     }
 
@@ -172,7 +172,7 @@ export class ReviewLoopManager extends EventEmitter {
       result,
       task,
       reviewer,
-      context
+      context,
     );
 
     // Update cycle with feedback
@@ -441,7 +441,7 @@ export class ReviewLoopManager extends EventEmitter {
     result: TaskResult,
     task: Task,
     reviewer: CrewMember,
-    _context: ExecutionContext
+    _context: ExecutionContext,
   ): Promise<ReviewFeedback> {
     // Determine quality score based on various factors
     let qualityScore = 0.5;
@@ -522,7 +522,7 @@ export class ReviewLoopManager extends EventEmitter {
   private updateCycle(
     taskId: string,
     iteration: number,
-    feedback: ReviewFeedback
+    feedback: ReviewFeedback,
   ): void {
     const cycles = this.reviewCycles.get(taskId) ?? [];
     const cycleIndex = cycles.findIndex(c => c.iteration === iteration);
@@ -558,7 +558,7 @@ export class ReviewLoopManager extends EventEmitter {
    */
   private emitEvent(
     type: CrewEvent['type'],
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): void {
     const event: CrewEvent = {
       type,
