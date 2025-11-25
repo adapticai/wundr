@@ -623,6 +623,7 @@ return;
     typingTimeoutRef.current = setTimeout(() => {
       stopTyping();
     }, 5000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelId, isTyping]);
 
   const stopTyping = useCallback(() => {
@@ -752,6 +753,7 @@ export function useMentionSuggestions(channelId: string): UseMentionSuggestionsR
         setIsLoading(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [channelId],
   );
 

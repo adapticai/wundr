@@ -40,6 +40,8 @@ export function VPCard({
           {/* Avatar */}
           <div className="relative">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+
               {vp.avatarUrl ? (
                 <img
                   src={vp.avatarUrl}

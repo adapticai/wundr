@@ -170,6 +170,8 @@ interface ParticipantAvatarProps {
 function ParticipantAvatar({ user }: ParticipantAvatarProps) {
   return (
     <div className="relative" title={user.name}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+
       {user.image ? (
         <img
           src={user.image}

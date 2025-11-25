@@ -58,6 +58,8 @@ export function UserMenu({ className }: UserMenuProps) {
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+
         {user.image ? (
           <img
             src={user.image}

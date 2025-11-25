@@ -300,6 +300,8 @@ return `${diffDays}d ago`;
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+
                           {member.image ? (
                             <img
                               src={member.image}
@@ -321,7 +323,7 @@ return `${diffDays}d ago`;
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs capitalize">
+                    <span className="px-2 py-1 bg-stone-700/10 dark:bg-stone-300/10 text-stone-700 dark:text-stone-300 rounded text-xs capitalize">
                       {member.role}
                     </span>
                   </td>

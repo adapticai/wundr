@@ -59,7 +59,7 @@ function DeviceSelect({
           'w-full px-3 py-2 rounded-lg',
           'bg-muted border border-border',
           'text-sm text-foreground',
-          'focus:outline-none focus:ring-2 focus:ring-primary',
+          'focus:outline-none focus:ring-2 focus:ring-stone-500',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         )}
         aria-label={label}
@@ -197,6 +197,7 @@ export function PreJoin({
       disableVideo();
       disableAudio();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Attach video track to preview element
@@ -204,6 +205,7 @@ export function PreJoin({
     if (videoTrack && videoPreviewRef.current) {
       videoTrack.attach(videoPreviewRef.current);
       return () => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         videoTrack.detach(videoPreviewRef.current!);
       };
     }
@@ -279,7 +281,7 @@ export function PreJoin({
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto rounded-full bg-stone-500/10 flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -288,7 +290,7 @@ export function PreJoin({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="w-10 h-10 text-primary"
+                    className="w-10 h-10 text-stone-700 dark:text-stone-300"
                   >
                     <path d="M10.66 6H14a2 2 0 0 1 2 2v2.34l1 1L22 8v8" />
                     <path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l10 10Z" />
@@ -441,7 +443,7 @@ export function PreJoin({
                 'w-full px-3 py-2 rounded-lg',
                 'bg-muted border border-border',
                 'text-foreground placeholder:text-muted-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-primary',
+                'focus:outline-none focus:ring-2 focus:ring-stone-500',
               )}
               autoFocus
             />
@@ -468,8 +470,8 @@ export function PreJoin({
             disabled={!canJoin || isJoining}
             className={clsx(
               'flex-1 px-4 py-3 rounded-lg',
-              'bg-primary hover:bg-primary/90',
-              'text-primary-foreground font-medium',
+              'bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700',
+              'text-white font-medium',
               'transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed',
             )}

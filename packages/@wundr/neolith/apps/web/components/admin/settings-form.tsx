@@ -199,10 +199,10 @@ return;
               className={cn(
                 'pb-3 text-sm font-medium border-b-2 transition-colors',
                 activeTab === tab.id
-                  ? 'border-primary text-primary'
+                  ? 'border-stone-700 dark:border-stone-300 text-stone-700 dark:text-stone-300'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
-              aria-selected={activeTab === tab.id}
+              aria-selected={activeTab === tab.id} // eslint-disable-line jsx-a11y/role-supports-aria-props
             >
               {tab.label}
             </button>
@@ -398,7 +398,7 @@ function SecurityTabSettings({ settings, errors, onChange }: SecurityTabSettings
           onClick={() => onChange({ mfaRequired: !settings.mfaRequired })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.mfaRequired ? 'bg-primary' : 'bg-muted',
+            settings.mfaRequired ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.mfaRequired}
@@ -483,7 +483,7 @@ function MessagingSettings({ settings, errors, onChange }: MessagingSettingsProp
           onClick={() => onChange({ allowEditing: !settings.allowEditing })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.allowEditing ? 'bg-primary' : 'bg-muted',
+            settings.allowEditing ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.allowEditing}
@@ -532,7 +532,7 @@ function MessagingSettings({ settings, errors, onChange }: MessagingSettingsProp
           onClick={() => onChange({ allowDeletion: !settings.allowDeletion })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.allowDeletion ? 'bg-primary' : 'bg-muted',
+            settings.allowDeletion ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.allowDeletion}
@@ -595,7 +595,7 @@ function NotificationSettings({ settings, errors: _errors, onChange }: Notificat
           onClick={() => onChange({ defaultSound: !settings.defaultSound })}
           className={cn(
             'relative w-11 h-6 rounded-full transition-colors',
-            settings.defaultSound ? 'bg-primary' : 'bg-muted',
+            settings.defaultSound ? 'bg-stone-700 dark:bg-stone-300' : 'bg-muted',
           )}
           role="switch"
           aria-checked={settings.defaultSound}

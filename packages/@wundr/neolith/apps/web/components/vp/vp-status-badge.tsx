@@ -46,8 +46,8 @@ export function VPStatusBadge({
       )}
       {showPulse && status === 'PROVISIONING' && (
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-blue-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
+          <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-stone-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-stone-500" />
         </span>
       )}
       {showPulse && status === 'ERROR' && (
@@ -81,7 +81,7 @@ const dotSizeClasses = {
 const statusDotColors: Record<VPStatus, string> = {
   ACTIVE: 'bg-green-500',
   INACTIVE: 'bg-gray-400',
-  PROVISIONING: 'bg-blue-500',
+  PROVISIONING: 'bg-stone-500',
   ERROR: 'bg-red-500',
   SUSPENDED: 'bg-yellow-500',
 };
@@ -104,7 +104,7 @@ export function VPStatusDot({
         <span
           className={cn(
             'absolute inline-flex h-full w-full rounded-full opacity-75',
-            status === 'ACTIVE' ? 'animate-ping bg-green-400' : 'animate-pulse bg-blue-400',
+            status === 'ACTIVE' ? 'animate-ping bg-green-400' : 'animate-pulse bg-stone-400',
           )}
         />
       )}

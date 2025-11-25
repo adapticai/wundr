@@ -144,6 +144,8 @@ export function MessageItem({
         <div className="flex gap-3">
           {/* Avatar */}
           <div className="shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+
             {message.author.image ? (
               <img
                 src={message.author.image}
@@ -174,7 +176,7 @@ export function MessageItem({
                 <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
-                  className="min-h-[60px] w-full resize-none rounded-md border bg-background p-2 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  className="min-h-[60px] w-full resize-none rounded-md border bg-background p-2 text-sm outline-none focus:ring-2 focus:ring-stone-500/20"
                   autoFocus
                 />
                 <div className="flex gap-2">
@@ -222,7 +224,7 @@ export function MessageItem({
               <button
                 type="button"
                 onClick={() => onOpenThread?.(message)}
-                className="mt-2 flex items-center gap-2 text-sm text-primary hover:underline"
+                className="mt-2 flex items-center gap-2 text-sm text-stone-600 hover:underline dark:text-stone-400"
               >
                 <ThreadIcon />
                 <span>
@@ -420,6 +422,7 @@ return `${(bytes / 1024).toFixed(1)} KB`;
         rel="noopener noreferrer"
         className="block max-w-xs overflow-hidden rounded-md border"
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={attachment.url}
           alt={attachment.name}

@@ -263,6 +263,7 @@ export const LazyImage = memo(function LazyImage({
 
   return (
     <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       {!loaded && !error && placeholder === 'blur' && blurDataURL && (
         <img
           src={blurDataURL}
@@ -274,6 +275,7 @@ export const LazyImage = memo(function LazyImage({
       {!loaded && !error && !blurDataURL && (
         <Skeleton className="absolute inset-0" />
       )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
         src={src}
@@ -435,6 +437,7 @@ export const ResponsiveImage = memo(function ResponsiveImage({
 }: ResponsiveImageProps) {
   const srcSet = widths.map(w => `${src}?w=${w} ${w}w`).join(', ');
 
+  // eslint-disable-next-line @next/next/no-img-element
   return (
     <img
       src={`${src}?w=${widths[widths.length - 1]}`}

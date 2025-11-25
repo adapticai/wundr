@@ -1,6 +1,7 @@
 'use client';
 
 import { clsx } from 'clsx';
+import Image from 'next/image';
 
 /**
  * Props for the Leaderboard component.
@@ -53,9 +54,9 @@ export function Leaderboard({
               <span
                 className={clsx(
                   'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
-                  index === 0 && 'bg-yellow-500/20 text-yellow-500',
-                  index === 1 && 'bg-gray-400/20 text-gray-500',
-                  index === 2 && 'bg-orange-500/20 text-orange-500',
+                  index === 0 && 'bg-stone-600/20 text-stone-600 dark:text-stone-400',
+                  index === 1 && 'bg-stone-500/20 text-stone-500 dark:text-stone-400',
+                  index === 2 && 'bg-stone-400/20 text-stone-400',
                   index > 2 && 'bg-muted text-muted-foreground',
                 )}
               >
@@ -65,7 +66,13 @@ export function Leaderboard({
 
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
               {item.avatarUrl ? (
-                <img src={item.avatarUrl} alt={item.name} className="w-full h-full object-cover" />
+                <Image
+                  src={item.avatarUrl}
+                  alt={item.name}
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <span className="text-primary text-sm font-medium">
                   {item.name.charAt(0).toUpperCase()}

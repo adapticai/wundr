@@ -59,7 +59,7 @@ function FileIcon({ type, mimeType }: { type: string; mimeType: string }) {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={cn(iconClass, 'text-purple-500')}
+        className={cn(iconClass, 'text-stone-500')}
       >
         <path d="m22 8-6 4 6 4V8Z" />
         <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
@@ -200,6 +200,7 @@ return name;
           role="button"
           tabIndex={0}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={file.thumbnailUrl || file.url}
             alt={file.name}

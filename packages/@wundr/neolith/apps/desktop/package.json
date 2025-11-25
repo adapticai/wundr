@@ -1,12 +1,12 @@
 {
   "name": "@neolith/desktop",
   "version": "0.1.0",
-  "description": "Genesis Desktop Application - AI-powered organizational design",
+  "description": "Neolith Desktop Application - AI-powered organizational design",
   "main": "dist/main.js",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm run dev:main\" \"pnpm run dev:renderer\"",
-    "dev:main": "tsc -p tsconfig.json && electron .",
+    "dev": "tsc -p tsconfig.json && NODE_ENV=development electron .",
+    "dev:main": "tsc -p tsconfig.json && NODE_ENV=development electron .",
     "dev:renderer": "echo 'Renderer dev server placeholder'",
     "build": "tsc -p tsconfig.json",
     "build:all": "pnpm run build && pnpm run package",

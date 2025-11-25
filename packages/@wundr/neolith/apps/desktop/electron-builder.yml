@@ -1,8 +1,8 @@
-# Genesis Desktop Application - Electron Builder Configuration
+# Neolith Desktop Application - Electron Builder Configuration
 # Documentation: https://www.electron.build/configuration/configuration
 
-appId: ai.adaptic.genesis
-productName: Genesis
+appId: ai.adaptic.neolith
+productName: Neolith
 copyright: Copyright (c) 2024 Adaptic.ai
 
 # Directories
@@ -17,8 +17,12 @@ files:
 
 # Additional resources
 extraResources:
-  - from: assets/
-    to: assets/
+  - from: assets/icons/
+    to: assets/icons/
+    filter:
+      - "**/*"
+  - from: build/
+    to: build/
     filter:
       - "**/*"
 
@@ -90,7 +94,7 @@ nsis:
   installerHeaderIcon: build/icon.ico
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: Genesis
+  shortcutName: Neolith
 
 # ============================================
 # Linux Configuration
@@ -111,7 +115,7 @@ linux:
   category: Development
   icon: build/icons
   synopsis: AI-powered organizational design
-  description: Genesis is an AI-powered application for designing and generating organizational structures.
+  description: Neolith is an AI-powered application for designing and generating organizational structures.
   maintainer: Adaptic.ai <engineering@adaptic.ai>
 
 deb:
@@ -135,7 +139,7 @@ rpm:
 publish:
   - provider: github
     owner: adaptic-ai
-    repo: genesis
+    repo: neolith
     releaseType: release
   # Alternative: S3 provider
   # - provider: s3
@@ -154,16 +158,16 @@ compression: maximum
 
 # Protocols for deep linking
 protocols:
-  - name: Genesis
+  - name: Neolith
     schemes:
-      - genesis
+      - neolith
 
 # File associations
 fileAssociations:
-  - ext: genesis
-    name: Genesis Organization File
-    description: Genesis organization configuration file
-    mimeType: application/x-genesis
+  - ext: neolith
+    name: Neolith Organization File
+    description: Neolith organization configuration file
+    mimeType: application/x-neolith
     role: Editor
     icon: build/file-icon.icns
 

@@ -49,8 +49,8 @@ const STATUS_CONFIG: Record<
   },
   retrying: {
     label: 'Retrying',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-500/10',
+    color: 'text-stone-600',
+    bgColor: 'bg-stone-500/10',
     icon: RefreshIcon,
   },
 };

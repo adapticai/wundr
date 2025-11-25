@@ -396,7 +396,7 @@ function getActionConfig(actionType: string): {
     'member.invited': {
       label: 'Invite',
       description: 'invited',
-      className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'member.removed': {
       label: 'Remove',
@@ -416,7 +416,7 @@ function getActionConfig(actionType: string): {
     'member.role_changed': {
       label: 'Role Change',
       description: 'changed role for',
-      className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'role.created': {
       label: 'Create',
@@ -436,12 +436,12 @@ function getActionConfig(actionType: string): {
     'settings.updated': {
       label: 'Settings',
       description: 'updated workspace settings',
-      className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'billing.plan_changed': {
       label: 'Billing',
       description: 'updated billing information',
-      className: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+      className: 'bg-stone-100 text-stone-800 dark:bg-stone-900/30 dark:text-stone-300',
     },
     'channel.created': {
       label: 'Channel',

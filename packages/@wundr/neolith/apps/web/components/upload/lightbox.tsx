@@ -416,6 +416,7 @@ return null;
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white border-t-transparent" />
           </div>
         )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={currentImage.url}
           alt={currentImage.name}
@@ -492,6 +493,7 @@ return null;
                     : 'opacity-60 hover:opacity-100',
                 )}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={image.thumbnailUrl || image.url}
                   alt={`Thumbnail ${index + 1}`}

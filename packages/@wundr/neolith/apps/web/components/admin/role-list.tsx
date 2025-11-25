@@ -123,7 +123,7 @@ return permissions.join(', ');
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-foreground">{role.name}</h3>
                     {role.isSystem && (
-                      <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-xs rounded">
+                      <span className="px-2 py-0.5 bg-stone-500/10 text-stone-500 text-xs rounded">
                         System
                       </span>
                     )}

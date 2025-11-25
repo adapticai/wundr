@@ -24,8 +24,9 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "dev": "pnpm --filter @neolith/* --parallel run dev",
-    "build": "pnpm --filter @neolith/* run build",
+    "dev": "echo 'Neolith parent package - dev handled by turbo for individual apps'",
+    "dev:desktop": "concurrently \"pnpm --filter @neolith/web run dev\" \"sleep 5 && pnpm --filter @neolith/desktop run dev\"",
+    "build": "echo 'Neolith parent package - builds handled by turbo for individual apps'",
     "lint": "pnpm --filter @neolith/* run lint",
     "lint:fix": "pnpm --filter @neolith/* run lint -- --fix",
     "typecheck": "pnpm --filter @neolith/* run typecheck",
@@ -35,13 +36,18 @@
     "clean": "pnpm --filter @neolith/* run clean && rm -rf node_modules .turbo",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "prepare": "echo 'Neolith App monorepo ready'"
+    "prepare": "echo 'Neolith App monorepo ready'",
+    "package:mac": "pnpm --filter @neolith/desktop run package:mac",
+    "package:win": "pnpm --filter @neolith/desktop run package:win",
+    "package:linux": "pnpm --filter @neolith/desktop run package:linux"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/node": "^20.14.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.6",
+    "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -49,8 +55,7 @@
     "prettier": "^3.3.0",
     "turbo": "^2.0.0",
     "typescript": "^5.4.5",
-    "vitest": "^2.1.6",
-    "@vitest/coverage-v8": "^2.1.6"
+    "vitest": "^2.1.6"
   },
   "pnpm": {
     "overrides": {

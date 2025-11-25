@@ -197,13 +197,13 @@ function ExecutionItem({
           'absolute left-2 top-4 h-5 w-5 rounded-full border-2 border-background',
           execution.status === 'completed' && 'bg-green-500',
           execution.status === 'failed' && 'bg-red-500',
-          execution.status === 'running' && 'bg-indigo-500',
-          execution.status === 'pending' && 'bg-blue-500',
+          execution.status === 'running' && 'bg-stone-500',
+          execution.status === 'pending' && 'bg-stone-500',
           execution.status === 'cancelled' && 'bg-gray-500',
         )}
       >
         {execution.status === 'running' && (
-          <span className="absolute inset-0 animate-ping rounded-full bg-indigo-400 opacity-75" />
+          <span className="absolute inset-0 animate-ping rounded-full bg-stone-400 opacity-75" />
         )}
       </div>
 
@@ -363,8 +363,8 @@ function ExecutionStatusBadge({ status, className }: ExecutionStatusBadgeProps) 
     >
       {status === 'running' && (
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-stone-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-stone-500" />
         </span>
       )}
       {config.label}
@@ -378,8 +378,8 @@ interface ActionStatusBadgeProps {
 
 function ActionStatusBadge({ status }: ActionStatusBadgeProps) {
   const statusClasses: Record<ActionResult['status'], string> = {
-    pending: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    running: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+    pending: 'bg-stone-100 text-stone-700 dark:bg-stone-900/30 dark:text-stone-400',
+    running: 'bg-stone-100 text-stone-700 dark:bg-stone-900/30 dark:text-stone-400',
     completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     skipped: 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-400',

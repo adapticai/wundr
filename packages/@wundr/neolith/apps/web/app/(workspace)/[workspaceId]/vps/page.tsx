@@ -126,8 +126,8 @@ stats.error++;
         <StatCard
           label="Provisioning"
           value={vpStats.provisioning}
-          color="text-blue-600"
-          bgColor="bg-blue-50"
+          color="text-stone-600"
+          bgColor="bg-stone-50"
         />
         <StatCard
           label="Error"

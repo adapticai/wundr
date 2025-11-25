@@ -392,6 +392,7 @@ export function useFileUpload(options: UploadOptions = {}): UseFileUploadReturn 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       uploadQueueRef.current.forEach((controller) => {
         controller.abort();
       });

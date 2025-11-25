@@ -185,7 +185,7 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
           <LineChart
             title="Daily Active Users"
             data={metrics.users.dailyActiveUsers.map(d => ({ date: d.date, value: d.count }))}
-            color="#10b981"
+            color="#57534e"
             height={200}
           />
         </div>

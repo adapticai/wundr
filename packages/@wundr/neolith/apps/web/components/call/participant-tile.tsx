@@ -178,7 +178,7 @@ export function ParticipantTile({
       className={clsx(
         'relative rounded-lg overflow-hidden bg-muted',
         'border-2 transition-all duration-200',
-        isPinned ? 'border-primary ring-2 ring-primary/20' : 'border-transparent',
+        isPinned ? 'border-stone-600 dark:border-stone-400 ring-2 ring-stone-500/20' : 'border-transparent',
         isSpeaking && !isMuted && 'ring-2 ring-green-500/50',
         sizeClasses[size],
         className,
@@ -203,7 +203,7 @@ export function ParticipantTile({
         <div className="w-full h-full flex items-center justify-center bg-muted">
           <div
             className={clsx(
-              'rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold',
+              'rounded-full bg-stone-500/10 flex items-center justify-center text-stone-700 dark:text-stone-300 font-semibold',
               size === 'small' ? 'w-12 h-12 text-lg' : 'w-20 h-20 text-2xl',
             )}
           >
@@ -277,7 +277,7 @@ export function ParticipantTile({
             'flex items-center justify-center',
             'transition-all duration-200',
             isPinned
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-stone-700 dark:bg-stone-600 text-white'
               : 'bg-black/50 text-white hover:bg-black/70',
             'opacity-0 group-hover:opacity-100 focus:opacity-100',
           )}
@@ -302,7 +302,7 @@ export function ParticipantTile({
 
       {/* Local indicator badge */}
       {isLocal && (
-        <div className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded">
+        <div className="absolute top-2 left-2 px-2 py-0.5 bg-stone-700 dark:bg-stone-600 text-white text-xs font-medium rounded">
           You
         </div>
       )}

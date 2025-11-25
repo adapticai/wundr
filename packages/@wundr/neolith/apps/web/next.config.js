@@ -50,8 +50,11 @@ const nextConfig = {
     optimizePackageImports: ['@apollo/client', 'lucide-react'],
   },
 
-  // Turbopack configuration (empty to acknowledge webpack config exists)
-  turbopack: {},
+  // Turbopack configuration
+  turbopack: {
+    // Set workspace root to avoid lockfile warning
+    root: '../../../..',
+  },
 
   // Strict mode for React
   reactStrictMode: true,

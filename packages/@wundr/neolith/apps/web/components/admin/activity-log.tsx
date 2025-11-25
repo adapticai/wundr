@@ -87,9 +87,9 @@ export interface ActivityLogProps {
 
 const ACTION_TYPE_CONFIG = {
   create: { color: 'bg-emerald-500', icon: PlusIcon },
-  update: { color: 'bg-blue-500', icon: EditIcon },
+  update: { color: 'bg-stone-500', icon: EditIcon },
   delete: { color: 'bg-destructive', icon: TrashIcon },
-  access: { color: 'bg-violet-500', icon: EyeIcon },
+  access: { color: 'bg-stone-500', icon: EyeIcon },
   security: { color: 'bg-amber-500', icon: ShieldIcon },
   billing: { color: 'bg-orange-500', icon: CreditCardIcon },
 };

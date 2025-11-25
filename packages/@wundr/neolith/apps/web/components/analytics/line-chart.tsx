@@ -11,7 +11,7 @@ export interface LineChartProps {
   data: Array<{ date: string; value: number }>;
   /** Optional title displayed above the chart */
   title?: string;
-  /** Line color in CSS format (default: #3b82f6) */
+  /** Line color in CSS format (default: #78716c stone-500) */
   color?: string;
   /** Chart height in pixels (default: 200) */
   height?: number;
@@ -24,7 +24,7 @@ export interface LineChartProps {
 export function LineChart({
   data,
   title,
-  color = '#3b82f6',
+  color = '#78716c',
   height = 200,
   showGrid = true,
   className,

@@ -363,9 +363,9 @@ function TemplatePreviewModal({ template, onClose, onUse }: TemplatePreviewModal
           {/* Trigger */}
           <div>
             <h3 className="text-sm font-medium text-foreground">Trigger</h3>
-            <div className="mt-2 flex items-center gap-3 rounded-md bg-blue-500/10 p-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
-                <TriggerIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="mt-2 flex items-center gap-3 rounded-md bg-stone-500/10 p-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-500/20">
+                <TriggerIcon className="h-5 w-5 text-stone-600 dark:text-stone-400" />
               </div>
               <div>
                 <p className="font-medium text-foreground">{triggerConfig.label}</p>

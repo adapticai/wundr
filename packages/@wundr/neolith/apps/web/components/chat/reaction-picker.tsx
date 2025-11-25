@@ -113,7 +113,7 @@ return categories;
           placeholder="Search emoji..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border bg-background px-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-md border bg-background px-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-stone-500/20"
           autoFocus
         />
       </div>
@@ -142,7 +142,7 @@ return categories;
             className={cn(
               'shrink-0 rounded-md px-2 py-1 text-xs transition-colors',
               activeCategory === category.id
-                ? 'bg-primary/10 text-primary'
+                ? 'bg-stone-100 text-stone-900 dark:bg-stone-800 dark:text-stone-100'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground',
             )}
           >

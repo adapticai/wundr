@@ -742,6 +742,7 @@ params.set('status', options.status);
 
   useEffect(() => {
     fetchDeliveries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webhookId, options?.status]);
 
   const loadMore = useCallback(async () => {

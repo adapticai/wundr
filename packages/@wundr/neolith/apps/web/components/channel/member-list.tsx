@@ -216,6 +216,8 @@ function MemberItem({
         {/* Avatar with status */}
         <div className="relative">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+
             {member.user.image ? (
               <img
                 src={member.user.image}

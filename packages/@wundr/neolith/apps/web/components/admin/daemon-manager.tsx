@@ -57,9 +57,9 @@ export interface DaemonManagerProps {
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-green-500',
   connected: 'bg-green-400',
-  authenticated: 'bg-blue-500',
+  authenticated: 'bg-stone-500',
   idle: 'bg-yellow-500',
-  connecting: 'bg-blue-400',
+  connecting: 'bg-stone-400',
   disconnected: 'bg-gray-400',
   error: 'bg-red-500',
 };

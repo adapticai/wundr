@@ -203,6 +203,7 @@ return;
         handleSend();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [showMentions, mentionUsers, selectedMentionIndex, insertMention],
   );
 
@@ -359,7 +360,7 @@ return;
             disabled={disabled}
             rows={1}
             className={cn(
-              'max-h-[200px] min-h-[40px] w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50',
+              'max-h-[200px] min-h-[40px] w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-stone-500/20 disabled:cursor-not-allowed disabled:opacity-50',
               isNearLimit && 'border-destructive focus:ring-destructive/20',
             )}
           />
@@ -429,6 +430,8 @@ return `${(bytes / 1024).toFixed(1)} KB`;
 
   return (
     <div className="group relative flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+
       {preview ? (
         <img
           src={preview}

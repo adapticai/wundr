@@ -108,6 +108,8 @@ return;
                   className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium"
                   style={{ zIndex: 3 - index }}
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+
                   {member.user.image ? (
                     <img
                       src={member.user.image}

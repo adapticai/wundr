@@ -66,34 +66,34 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
   ];
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r bg-card lg:block dark:bg-card">
+    <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-stone-800 bg-stone-950 lg:block">
       <div className="flex h-full flex-col">
         {/* Workspace Switcher */}
-        <div className="relative border-b">
+        <div className="relative border-b border-stone-800">
           <button
             type="button"
             onClick={() => setShowWorkspaceSwitcher(!showWorkspaceSwitcher)}
-            className="flex h-14 w-full items-center gap-3 px-4 hover:bg-accent"
+            className="flex h-14 w-full items-center gap-3 px-4 hover:bg-stone-900"
           >
             {currentWorkspace?.icon ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-100">
                 {currentWorkspace.icon}
               </div>
             ) : currentWorkspace?.name ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-100">
                 {currentWorkspace.name.charAt(0).toUpperCase()}
               </div>
             ) : (
-              <Logo />
+              <Logo className="h-6 w-auto text-stone-100" />
             )}
             <div className="flex-1 text-left">
-              <p className="font-semibold text-foreground">
+              <p className="font-semibold text-stone-100">
                 {currentWorkspace?.name || 'Neolith'}
               </p>
             </div>
             <ChevronDownIcon
               className={cn(
-                'h-4 w-4 text-muted-foreground transition-transform',
+                'h-4 w-4 text-stone-400 transition-transform',
                 showWorkspaceSwitcher && 'rotate-180',
               )}
             />
@@ -106,33 +106,33 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
                 className="fixed inset-0 z-10"
                 onClick={() => setShowWorkspaceSwitcher(false)}
               />
-              <div className="absolute left-2 right-2 top-full z-20 mt-1 rounded-md border bg-card py-1 shadow-lg">
+              <div className="absolute left-2 right-2 top-full z-20 mt-1 rounded-md border border-stone-800 bg-stone-900 py-1 shadow-lg">
                 {workspaces.map((workspace) => (
                   <Link
                     key={workspace.id}
                     href={`/${workspace.id}/dashboard`}
                     onClick={() => setShowWorkspaceSwitcher(false)}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 hover:bg-accent',
-                      workspace.id === currentWorkspace?.id && 'bg-accent/50',
+                      'flex items-center gap-3 px-3 py-2 text-stone-100 hover:bg-stone-800',
+                      workspace.id === currentWorkspace?.id && 'bg-stone-800/50',
                     )}
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-bold">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-sm font-bold text-stone-100">
                       {workspace.icon || workspace.name.charAt(0).toUpperCase()}
                     </div>
                     <span className="text-sm font-medium">{workspace.name}</span>
                     {workspace.id === currentWorkspace?.id && (
-                      <CheckIcon className="ml-auto h-4 w-4 text-primary" />
+                      <CheckIcon className="ml-auto h-4 w-4 text-stone-400" />
                     )}
                   </Link>
                 ))}
-                <div className="my-1 h-px bg-border" />
+                <div className="my-1 h-px bg-stone-800" />
                 <Link
                   href="/workspaces/new"
                   onClick={() => setShowWorkspaceSwitcher(false)}
-                  className="flex items-center gap-3 px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  className="flex items-center gap-3 px-3 py-2 text-stone-400 hover:bg-stone-800 hover:text-stone-100"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-stone-700">
                     <PlusIcon className="h-4 w-4" />
                   </div>
                   <span className="text-sm">Create workspace</span>
@@ -155,7 +155,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
           ))}
         </nav>
 
-        <div className="h-px bg-border" />
+        <div className="h-px bg-stone-800" />
 
         {/* Channel List */}
         <div className="flex-1 overflow-hidden">
@@ -171,13 +171,13 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
         </div>
 
         {/* User Section */}
-        <div className="border-t p-3">
+        <div className="border-t border-stone-800 p-3">
           <Link
             href={`/${workspaceId}/settings/profile`}
-            className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent"
+            className="flex items-center gap-3 rounded-lg p-2 hover:bg-stone-900"
           >
             <div className="relative">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground overflow-hidden">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-800 text-sm font-medium text-stone-100 overflow-hidden">
                 {user?.image ? (
                   <Image
                     src={user.image}
@@ -190,13 +190,13 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
                   user?.name?.charAt(0).toUpperCase() || 'U'
                 )}
               </div>
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card bg-green-500" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-stone-950 bg-green-500" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">
+              <p className="truncate text-sm font-medium text-stone-100">
                 {user?.name || 'User'}
               </p>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate text-xs text-stone-400">
                 {user?.email || 'user@example.com'}
               </p>
             </div>
@@ -221,8 +221,8 @@ function NavItem({ href, icon, label, isActive }: NavItemProps) {
       className={cn(
         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
         isActive
-          ? 'bg-accent text-foreground'
-          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+          ? 'bg-stone-900 text-stone-100'
+          : 'text-stone-400 hover:bg-stone-900 hover:text-stone-100',
       )}
     >
       <span className="flex h-5 w-5 items-center justify-center">{icon}</span>

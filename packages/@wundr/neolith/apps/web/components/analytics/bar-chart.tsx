@@ -43,7 +43,7 @@ export function BarChart({
                   className="h-full rounded transition-all duration-300"
                   style={{
                     width: `${(item.value / maxValue) * 100}%`,
-                    backgroundColor: item.color || '#3b82f6',
+                    backgroundColor: item.color || '#78716c',
                   }}
                 />
               </div>
@@ -72,7 +72,7 @@ export function BarChart({
                 className="w-full rounded-t transition-all duration-300"
                 style={{
                   height: `${(item.value / maxValue) * 100}%`,
-                  backgroundColor: item.color || '#3b82f6',
+                  backgroundColor: item.color || '#78716c',
                 }}
               />
             </div>

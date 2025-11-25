@@ -180,6 +180,7 @@ return null;
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg font-medium">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               {member.image ? (
                 <img
                   src={member.image}
@@ -218,7 +219,7 @@ return null;
                   activeTab === tab
                     ? tab === 'danger'
                       ? 'border-destructive text-destructive'
-                      : 'border-primary text-primary'
+                      : 'border-stone-700 dark:border-stone-300 text-stone-700 dark:text-stone-300'
                     : 'border-transparent text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -352,7 +353,7 @@ return null;
                           key={entry.id}
                           className="flex items-start gap-3 p-3 bg-muted rounded-lg"
                         >
-                          <div className="w-2 h-2 mt-2 rounded-full bg-primary" />
+                          <div className="w-2 h-2 mt-2 rounded-full bg-stone-700 dark:bg-stone-300" />
                           <div className="flex-1">
                             <p className="text-sm text-foreground">{entry.action}</p>
                             {entry.details && (

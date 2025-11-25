@@ -149,6 +149,8 @@ return;
           </div>
 
           {/* Actor info */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+
           {notification.actor && (
             <div className="mt-1 flex items-center gap-2">
               {notification.actor.image ? (
@@ -224,13 +226,13 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
   switch (type) {
     case 'message':
       return (
-        <div className={cn(iconClasses, 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400')}>
+        <div className={cn(iconClasses, 'bg-stone-100 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400')}>
           <MessageIcon className="h-4 w-4" />
         </div>
       );
     case 'mention':
       return (
-        <div className={cn(iconClasses, 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400')}>
+        <div className={cn(iconClasses, 'bg-stone-200 text-stone-700 dark:bg-stone-800/30 dark:text-stone-300')}>
           <AtIcon className="h-4 w-4" />
         </div>
       );
@@ -248,7 +250,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
       );
     case 'channel_invite':
       return (
-        <div className={cn(iconClasses, 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400')}>
+        <div className={cn(iconClasses, 'bg-stone-300 text-stone-800 dark:bg-stone-700/30 dark:text-stone-200')}>
           <InviteIcon className="h-4 w-4" />
         </div>
       );
@@ -268,7 +270,7 @@ function NotificationIcon({ type, className }: NotificationIconProps) {
     case 'system':
     default:
       return (
-        <div className={cn(iconClasses, 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400')}>
+        <div className={cn(iconClasses, 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400')}>
           <BellIcon className="h-4 w-4" />
         </div>
       );

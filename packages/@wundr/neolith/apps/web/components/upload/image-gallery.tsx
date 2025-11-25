@@ -107,6 +107,7 @@ export function ImageGallery({
               aspect[aspectRatio],
             )}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={image.thumbnailUrl || image.url}
               alt={image.name}
@@ -225,6 +226,7 @@ export function ImageGalleryPreview({
               },
             )}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={image.thumbnailUrl || image.url}
               alt={image.name}

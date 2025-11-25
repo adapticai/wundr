@@ -43,14 +43,16 @@ function ParticipantAvatar({
   return (
     <div
       className={clsx(
-        'rounded-full bg-primary/10 flex items-center justify-center',
-        'text-primary font-medium',
+        'rounded-full bg-stone-500/10 flex items-center justify-center',
+        'text-stone-700 dark:text-stone-300 font-medium',
         'border-2 border-background',
         'relative',
         sizeClasses[size],
       )}
       title={participant.user.name || participant.user.email}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+
       {avatarUrl ? (
         <img
           src={avatarUrl}
@@ -174,7 +176,7 @@ export function HuddleBar({
         onKeyDown={(e) => handleKeyDown(e, onExpand)}
         className={clsx(
           'text-sm font-medium text-foreground',
-          'hover:text-primary transition-colors',
+          'hover:text-stone-700 dark:hover:text-stone-300 transition-colors',
           'truncate max-w-[120px]',
         )}
         aria-label={`Expand huddle: ${huddle.name}`}
@@ -345,8 +347,8 @@ export function HuddleInviteToast({
           onClick={onJoin}
           className={clsx(
             'px-3 py-1.5 rounded-lg',
-            'bg-primary hover:bg-primary/90',
-            'text-sm text-primary-foreground',
+            'bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700',
+            'text-sm text-white',
             'transition-colors',
           )}
         >

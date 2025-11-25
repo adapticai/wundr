@@ -187,7 +187,7 @@ export function AdminSidebar({
                         className={cn(
                           'w-full justify-start gap-3 px-3 h-9',
                           'text-sm font-medium',
-                          active && 'bg-primary/10 text-primary hover:bg-primary/15',
+                          active && 'bg-stone-700/10 dark:bg-stone-300/10 text-stone-700 dark:text-stone-300 hover:bg-stone-700/15 dark:hover:bg-stone-300/15',
                         )}
                         aria-current={active ? 'page' : undefined}
                       >

@@ -152,6 +152,8 @@ export function NotificationToast({
             </div>
 
             {/* Actor info */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+
             {notification.actor && (
               <div className="mt-2 flex items-center gap-2">
                 {notification.actor.image ? (
@@ -278,7 +280,7 @@ function ToastIcon({ type, priority }: ToastIconProps) {
       );
     case 'channel_invite':
       return (
-        <div className={cn(baseClasses, 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400')}>
+        <div className={cn(baseClasses, 'bg-stone-100 text-stone-600 dark:bg-stone-900/30 dark:text-stone-400')}>
           <UserPlusIcon className="h-4 w-4" />
         </div>
       );

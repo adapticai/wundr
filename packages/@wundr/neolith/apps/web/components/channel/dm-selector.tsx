@@ -209,6 +209,8 @@ return null;
                       className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent"
                     >
                       {/* Avatar(s) */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+
                       {dm.participants.length === 1 ? (
                         <div className="relative">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
@@ -304,6 +306,8 @@ function UserItem({ user, isVP, onSelect }: UserItemProps) {
     >
       <div className="relative">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+
           {user.image ? (
             <img
               src={user.image}

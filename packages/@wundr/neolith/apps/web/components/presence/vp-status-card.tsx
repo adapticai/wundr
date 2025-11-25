@@ -102,6 +102,7 @@ export function VPStatusCard({
         {/* Avatar */}
         <div className="relative flex-shrink-0">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary font-heading">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             {vp.avatarUrl ? (
               <img
                 src={vp.avatarUrl}
@@ -247,11 +248,11 @@ interface VPStatusDotProps {
 
 function VPStatusDot({ status, className }: VPStatusDotProps) {
   const statusColors: Record<VPStatus, string> = {
-    ACTIVE: 'bg-green-500',
-    INACTIVE: 'bg-gray-400',
-    PROVISIONING: 'bg-blue-500',
-    ERROR: 'bg-red-500',
-    SUSPENDED: 'bg-yellow-500',
+    ACTIVE: 'bg-emerald-500',
+    INACTIVE: 'bg-stone-400',
+    PROVISIONING: 'bg-stone-500',
+    ERROR: 'bg-rose-500',
+    SUSPENDED: 'bg-amber-500',
   };
 
   return (

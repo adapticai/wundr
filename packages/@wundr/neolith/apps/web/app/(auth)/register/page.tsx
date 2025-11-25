@@ -146,7 +146,7 @@ export default function RegisterPage() {
           type='text'
           placeholder='Full name'
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           disabled={isLoading}
           autoComplete='name'
           required
@@ -155,7 +155,7 @@ export default function RegisterPage() {
           type='email'
           placeholder='Email address'
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
           disabled={isLoading}
           autoComplete='email'
           required
@@ -164,7 +164,7 @@ export default function RegisterPage() {
           type='password'
           placeholder='Password'
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
           disabled={isLoading}
           autoComplete='new-password'
           required
@@ -173,7 +173,7 @@ export default function RegisterPage() {
           type='password'
           placeholder='Confirm password'
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
           disabled={isLoading}
           autoComplete='new-password'
           required

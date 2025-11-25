@@ -457,9 +457,9 @@ function WorkflowPreview({ name, description, trigger, actions }: WorkflowPrevie
         <h3 className="mb-4 text-sm font-semibold text-foreground">Workflow Flow</h3>
 
         {/* Trigger */}
-        <div className="flex items-center gap-3 rounded-md bg-blue-500/10 p-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
-            <TriggerPreviewIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        <div className="flex items-center gap-3 rounded-md bg-stone-500/10 p-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-500/20">
+            <TriggerPreviewIcon className="h-5 w-5 text-stone-600 dark:text-stone-400" />
           </div>
           <div>
             <p className="font-medium text-foreground">Trigger: {trigger.type.replace(/_/g, ' ')}</p>

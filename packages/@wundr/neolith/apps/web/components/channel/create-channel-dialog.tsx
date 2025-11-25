@@ -319,6 +319,8 @@ return null;
                       className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-accent"
                     >
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+
                         {user.image ? (
                           <img
                             src={user.image}

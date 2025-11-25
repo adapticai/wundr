@@ -298,7 +298,7 @@ return participants;
                     'hover:bg-muted transition-colors',
                   )}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                  <div className="w-8 h-8 rounded-full bg-stone-500/10 flex items-center justify-center text-stone-700 dark:text-stone-300 font-medium">
                     {(trackRef.participant?.name || trackRef.participant?.identity || '?')
                       .charAt(0)
                       .toUpperCase()}
@@ -348,7 +348,7 @@ return participants;
             onClick={() => setLayout('grid')}
             className={clsx(
               'p-2 rounded transition-colors',
-              layout === 'grid' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
+              layout === 'grid' ? 'bg-stone-700 dark:bg-stone-600 text-white' : 'hover:bg-muted',
             )}
             aria-label="Grid layout"
             aria-pressed={layout === 'grid'}
@@ -373,7 +373,7 @@ return participants;
             onClick={() => setLayout('spotlight')}
             className={clsx(
               'p-2 rounded transition-colors',
-              layout === 'spotlight' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
+              layout === 'spotlight' ? 'bg-stone-700 dark:bg-stone-600 text-white' : 'hover:bg-muted',
             )}
             aria-label="Spotlight layout"
             aria-pressed={layout === 'spotlight'}

@@ -259,11 +259,11 @@ interface TypeBadgeProps {
 
 function TypeBadge({ type }: TypeBadgeProps) {
   const colorClasses: Record<WorkflowVariable['type'], string> = {
-    string: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    string: 'bg-stone-100 text-stone-700 dark:bg-stone-900/30 dark:text-stone-400',
     number: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    boolean: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    boolean: 'bg-stone-100 text-stone-700 dark:bg-stone-900/30 dark:text-stone-400',
     array: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    object: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+    object: 'bg-stone-100 text-stone-700 dark:bg-stone-900/30 dark:text-stone-400',
   };
 
   return (

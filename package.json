@@ -39,6 +39,7 @@
     "clean": "turbo clean && pnpm -r clean",
     "create:package": "ts-node scripts/create-package.ts new",
     "dev": "turbo dev",
+    "dev:apps": "turbo dev --filter=@neolith/web --filter=@wundr.io/dashboard",
     "dev:computer-setup": "npx tsx packages/@wundr/cli/src/index.ts computer-setup",
     "dev:create": "npx tsx packages/@wundr/cli/src/index.ts create",
     "dev:analyze": "npx tsx packages/@wundr/cli/src/index.ts analyze",

@@ -46,7 +46,7 @@ function UserSearchItem({
         'w-full flex items-center gap-3 p-2 rounded-lg',
         'transition-colors',
         isSelected
-          ? 'bg-primary/10 text-primary'
+          ? 'bg-stone-500/10 text-stone-700 dark:text-stone-300'
           : 'hover:bg-muted text-foreground',
       )}
       role="option"
@@ -55,9 +55,11 @@ function UserSearchItem({
       <div
         className={clsx(
           'w-8 h-8 rounded-full flex items-center justify-center',
-          'bg-primary/10 text-primary font-medium',
+          'bg-stone-500/10 text-stone-700 dark:text-stone-300 font-medium',
         )}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+
         {avatarUrl ? (
           <img
             src={avatarUrl}
@@ -81,7 +83,7 @@ function UserSearchItem({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="w-5 h-5 text-primary"
+          className="w-5 h-5 text-stone-700 dark:text-stone-300"
         >
           <polyline points="20 6 9 17 4 12" />
         </svg>
@@ -104,13 +106,13 @@ function SelectedUserChip({
     <div
       className={clsx(
         'inline-flex items-center gap-1.5 px-2 py-1',
-        'bg-primary/10 text-primary rounded-full',
+        'bg-stone-500/10 text-stone-700 dark:text-stone-300 rounded-full',
       )}
     >
       <span className="text-sm">{user.name || user.email}</span>
       <button
         onClick={() => onRemove(user.id)}
-        className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+        className="hover:bg-stone-500/20 rounded-full p-0.5 transition-colors"
         aria-label={`Remove ${user.name || user.email}`}
       >
         <svg
@@ -404,7 +406,7 @@ return null;
                   'w-full pl-10 pr-4 py-2 rounded-lg',
                   'bg-muted border border-border',
                   'text-foreground placeholder:text-muted-foreground',
-                  'focus:outline-none focus:ring-2 focus:ring-primary',
+                  'focus:outline-none focus:ring-2 focus:ring-stone-500',
                 )}
               />
             </div>
@@ -444,7 +446,7 @@ return null;
                 type="checkbox"
                 checked={sendNotification}
                 onChange={(e) => setSendNotification(e.target.checked)}
-                className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                className="w-4 h-4 rounded border-border text-stone-700 dark:text-stone-600 focus:ring-stone-500"
               />
               <span className="text-sm text-foreground">
                 Send notification to invited users
@@ -471,8 +473,8 @@ return null;
             disabled={selectedUsers.length === 0}
             className={clsx(
               'px-4 py-2 rounded-lg',
-              'bg-primary hover:bg-primary/90',
-              'text-sm font-medium text-primary-foreground',
+              'bg-stone-700 hover:bg-stone-800 dark:bg-stone-600 dark:hover:bg-stone-700',
+              'text-sm font-medium text-white',
               'transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed',
             )}

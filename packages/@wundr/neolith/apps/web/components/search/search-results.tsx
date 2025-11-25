@@ -283,6 +283,7 @@ function UserResult({ result, workspaceId }: ResultRendererProps) {
     >
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
         {data.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={data.avatarUrl} alt={data.name} className="w-full h-full object-cover" />
         ) : (
           <span className="text-primary font-medium font-heading">{data.name?.charAt(0) || '?'}</span>

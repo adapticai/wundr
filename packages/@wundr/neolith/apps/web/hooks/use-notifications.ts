@@ -556,6 +556,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Queue an action for offline sync
@@ -575,6 +576,7 @@ export function useOfflineStatus(): UseOfflineStatusReturn {
         forceSync();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isOnline],
   );
 

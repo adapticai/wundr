@@ -218,6 +218,8 @@ function UserListItem({
         {/* Avatar with presence indicator */}
         <div className="relative flex-shrink-0">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+
             {user.image ? (
               <img
                 src={user.image}

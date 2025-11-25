@@ -343,7 +343,7 @@ el.indeterminate = someSelected;
                                       'inline-flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer',
                                       'text-xs transition-colors',
                                       isChecked
-                                        ? 'bg-primary/10 text-primary'
+                                        ? 'bg-stone-700/10 dark:bg-stone-300/10 text-stone-700 dark:text-stone-300'
                                         : 'bg-muted text-muted-foreground hover:text-foreground',
                                     )}
                                   >

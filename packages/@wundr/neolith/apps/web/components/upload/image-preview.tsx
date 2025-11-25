@@ -103,6 +103,7 @@ export function ImagePreview({
         )}
 
         {/* Preview Image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         {preview && !error && (
           <img
             src={preview}

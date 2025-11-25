@@ -23,7 +23,7 @@ interface WindowState {
   isMaximized?: boolean;
 }
 
-interface GenesisConfig {
+interface NeolithConfig {
   windowState: WindowState;
   theme: 'light' | 'dark' | 'system';
   autoUpdate: boolean;
@@ -31,7 +31,7 @@ interface GenesisConfig {
 }
 
 // Store for persistent configuration
-const store = new Store<GenesisConfig>({
+const store = new Store<NeolithConfig>({
   defaults: {
     windowState: {
       width: 1400,
@@ -48,8 +48,13 @@ let tray: Tray | null = null;
 let isQuitting = false;
 
 // Constants
-const isDev = process.env.NODE_ENV === 'development';
-const PROTOCOL_NAME = 'genesis';
+const isDev = !app.isPackaged;
+const PROTOCOL_NAME = 'neolith';
+
+console.log('Neolith Desktop starting...');
+console.log('isDev:', isDev);
+console.log('isPackaged:', app.isPackaged);
+console.log('__dirname:', __dirname);
 
 /**
  * Create the main application window
@@ -64,7 +69,7 @@ function createWindow(): void {
     y: windowState.y,
     minWidth: 1024,
     minHeight: 768,
-    title: 'Genesis',
+    title: 'Neolith',
     icon: getAppIcon(),
     show: false, // Show when ready to prevent flicker
     webPreferences: {
@@ -85,29 +90,28 @@ function createWindow(): void {
   }
 
   // Load the app
+  console.log('Loading app, isDev:', isDev);
+
   if (isDev) {
-    // Wait for Next.js dev server to be ready
-    const loadDevServer = async () => {
-      const maxRetries = 30;
-      for (let i = 0; i < maxRetries; i++) {
-        try {
-          const response = await fetch('http://localhost:3000');
-          if (response.ok) {
-            mainWindow?.loadURL('http://localhost:3000');
-            mainWindow?.webContents.openDevTools();
-            return;
-          }
-        } catch {
-          // Server not ready, wait and retry
-        }
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      console.error('Failed to connect to Next.js dev server on port 3000');
-      mainWindow?.loadURL(
-        'data:text/html,<h1>Error: Next.js dev server not running on port 3000</h1>'
-      );
-    };
-    loadDevServer();
+    // In dev mode, load from Next.js dev server
+    const devUrl = 'http://localhost:3000';
+    console.log('Loading dev URL:', devUrl);
+
+    // Add error handling for page load
+    mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+      console.error('Failed to load:', errorCode, errorDescription);
+    });
+
+    mainWindow.webContents.on('did-finish-load', () => {
+      console.log('Page finished loading');
+    });
+
+    mainWindow.webContents.on('console-message', (_event, _level, message) => {
+      console.log('Renderer console:', message);
+    });
+
+    mainWindow.loadURL(devUrl);
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
@@ -165,13 +169,35 @@ function createWindow(): void {
  * Get the application icon
  */
 function getAppIcon(): Electron.NativeImage {
-  const iconPath = isDev
-    ? path.join(__dirname, '../assets/icon.png')
-    : path.join(process.resourcesPath, 'assets/icon.png');
+  // Use app.getAppPath() which gives us the correct base path
+  const appPath = app.getAppPath();
+  const iconPath = path.join(appPath, 'assets', 'icons', 'icon.png');
+
+  console.log('App path:', appPath);
+  console.log('Loading icon from:', iconPath);
 
   try {
-    return nativeImage.createFromPath(iconPath);
-  } catch {
+    const icon = nativeImage.createFromPath(iconPath);
+    console.log('Icon isEmpty:', icon.isEmpty());
+    console.log('Icon size:', icon.getSize());
+
+    if (icon.isEmpty()) {
+      // Try icns for macOS
+      const icnsPath = path.join(appPath, 'assets', 'icons', 'icon.icns');
+      console.log('Trying icns:', icnsPath);
+      const icnsIcon = nativeImage.createFromPath(icnsPath);
+      if (!icnsIcon.isEmpty()) {
+        return icnsIcon;
+      }
+
+      // Fallback to build directory
+      const fallbackPath = path.join(appPath, 'build', 'icon.png');
+      console.log('Trying fallback:', fallbackPath);
+      return nativeImage.createFromPath(fallbackPath);
+    }
+    return icon;
+  } catch (error) {
+    console.error('Failed to load icon:', error);
     return nativeImage.createEmpty();
   }
 }
@@ -185,7 +211,7 @@ function createTray(): void {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Open Genesis',
+      label: 'Open Neolith',
       click: () => {
         mainWindow?.show();
         mainWindow?.focus();
@@ -212,7 +238,7 @@ function createTray(): void {
     },
     { type: 'separator' },
     {
-      label: 'Quit Genesis',
+      label: 'Quit Neolith',
       click: () => {
         isQuitting = true;
         app.quit();
@@ -220,7 +246,7 @@ function createTray(): void {
     },
   ]);
 
-  tray.setToolTip('Genesis');
+  tray.setToolTip('Neolith');
   tray.setContextMenu(contextMenu);
 
   tray.on('click', () => {
@@ -337,13 +363,13 @@ function createMenu(): void {
         {
           label: 'Documentation',
           click: () => {
-            shell.openExternal('https://docs.adaptic.ai/genesis');
+            shell.openExternal('https://docs.adaptic.ai/neolith');
           },
         },
         {
           label: 'Report Issue',
           click: () => {
-            shell.openExternal('https://github.com/adaptic-ai/genesis/issues');
+            shell.openExternal('https://github.com/adaptic-ai/neolith/issues');
           },
         },
       ],
@@ -361,15 +387,15 @@ function registerIpcHandlers(): void {
   // Configuration
   ipcMain.handle(
     'config:get',
-    (_event: IpcMainInvokeEvent, key: keyof GenesisConfig) => {
+    (_event: IpcMainInvokeEvent, key: keyof NeolithConfig) => {
       return store.get(key);
     }
   );
 
   ipcMain.handle(
     'config:set',
-    (_event: IpcMainInvokeEvent, key: keyof GenesisConfig, value: unknown) => {
-      store.set(key, value as GenesisConfig[keyof GenesisConfig]);
+    (_event: IpcMainInvokeEvent, key: keyof NeolithConfig, value: unknown) => {
+      store.set(key, value as NeolithConfig[keyof NeolithConfig]);
       return true;
     }
   );
@@ -602,6 +628,15 @@ if (!gotTheLock) {
 } else {
   // App lifecycle
   app.whenReady().then(() => {
+    // Set dock icon on macOS
+    if (process.platform === 'darwin') {
+      const dockIcon = getAppIcon();
+      if (!dockIcon.isEmpty()) {
+        app.dock.setIcon(dockIcon);
+        console.log('Dock icon set successfully');
+      }
+    }
+
     setupDeepLinks();
     createWindow();
     createTray();

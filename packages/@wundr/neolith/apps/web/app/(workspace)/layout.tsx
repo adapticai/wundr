@@ -43,14 +43,13 @@ export default async function WorkspaceLayout({
 
 function MobileHeader() {
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 lg:hidden">
+    <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-stone-800 bg-stone-950 px-4 lg:hidden">
       <div className="flex items-center gap-2">
-        <Logo />
-        <span className="font-semibold">Neolith</span>
+        <Logo className="h-6 w-auto text-stone-100" />
       </div>
       <button
         type="button"
-        className="rounded-lg p-2 hover:bg-accent"
+        className="rounded-lg p-2 text-stone-400 hover:bg-stone-900"
         aria-label="Open menu"
       >
         <MenuIcon />
