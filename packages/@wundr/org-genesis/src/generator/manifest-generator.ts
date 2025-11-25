@@ -274,7 +274,7 @@ export class ManifestGenerator {
     // Validate slug format
     if (!isValidSlug(slug)) {
       warnings.push(
-        `Generated slug "${slug}" may contain invalid characters. Consider providing a custom slug.`
+        `Generated slug "${slug}" may contain invalid characters. Consider providing a custom slug.`,
       );
     }
 
@@ -288,11 +288,11 @@ export class ManifestGenerator {
     // Validate VP count against size recommendations
     if (vpCount < sizeConfig.min) {
       warnings.push(
-        `VP count ${vpCount} is below recommended minimum ${sizeConfig.min} for ${config.size} organizations.`
+        `VP count ${vpCount} is below recommended minimum ${sizeConfig.min} for ${config.size} organizations.`,
       );
     } else if (vpCount > sizeConfig.max) {
       warnings.push(
-        `VP count ${vpCount} exceeds recommended maximum ${sizeConfig.max} for ${config.size} organizations.`
+        `VP count ${vpCount} exceeds recommended maximum ${sizeConfig.max} for ${config.size} organizations.`,
       );
       vpCount = sizeConfig.max;
     }
@@ -325,7 +325,7 @@ export class ManifestGenerator {
         'HIPAA',
       ];
       warnings.push(
-        'Added HIPAA compliance framework for healthcare organization.'
+        'Added HIPAA compliance framework for healthcare organization.',
       );
     }
     if (
@@ -338,7 +338,7 @@ export class ManifestGenerator {
         'PCI-DSS',
       ];
       warnings.push(
-        'Added SOC2 and PCI-DSS compliance frameworks for finance organization.'
+        'Added SOC2 and PCI-DSS compliance frameworks for finance organization.',
       );
     }
 
@@ -387,7 +387,7 @@ export class ManifestGenerator {
    */
   update(
     manifest: OrganizationManifest,
-    updates: Partial<OrganizationManifest>
+    updates: Partial<OrganizationManifest>,
   ): OrganizationManifest {
     const now = new Date();
 
@@ -788,7 +788,7 @@ export class ManifestGenerator {
    */
   addVP(
     manifest: OrganizationManifest,
-    vp: VPNodeMapping
+    vp: VPNodeMapping,
   ): OrganizationManifest {
     // Check for duplicate VP ID
     const existingVp = manifest.vpRegistry.find(v => v.vpId === vp.vpId);
@@ -905,7 +905,7 @@ export class ManifestGenerator {
       parsed = JSON.parse(json);
     } catch (error) {
       throw new Error(
-        `Invalid JSON: ${error instanceof Error ? error.message : 'Parse error'}`
+        `Invalid JSON: ${error instanceof Error ? error.message : 'Parse error'}`,
       );
     }
 
@@ -946,7 +946,7 @@ export class ManifestGenerator {
           ? {
               ...vp.healthMetrics,
               lastHealthCheck: new Date(
-                vp.healthMetrics.lastHealthCheck as unknown as string
+                vp.healthMetrics.lastHealthCheck as unknown as string,
               ),
             }
           : undefined,
@@ -999,7 +999,7 @@ export class ManifestGenerator {
    */
   clone(
     manifest: OrganizationManifest,
-    newName?: string
+    newName?: string,
   ): OrganizationManifest {
     const now = new Date();
     const name = newName ?? `${manifest.name} (Copy)`;
@@ -1047,7 +1047,7 @@ export class ManifestGenerator {
       manifest.lifecycleState !== 'suspended'
     ) {
       blockers.push(
-        `Cannot activate from "${manifest.lifecycleState}" state. Must be in "draft" or "suspended".`
+        `Cannot activate from "${manifest.lifecycleState}" state. Must be in "draft" or "suspended".`,
       );
     }
 
@@ -1060,7 +1060,7 @@ export class ManifestGenerator {
     const errorVps = manifest.vpRegistry.filter(vp => vp.status === 'error');
     if (errorVps.length > 0) {
       blockers.push(
-        `${errorVps.length} VP(s) are in error state: ${errorVps.map(v => v.vpId).join(', ')}`
+        `${errorVps.length} VP(s) are in error state: ${errorVps.map(v => v.vpId).join(', ')}`,
       );
     }
 
@@ -1069,8 +1069,8 @@ export class ManifestGenerator {
     if (!validation.valid) {
       blockers.push(
         ...validation.errors.map(
-          e => `Validation error: ${e.message} (${e.path})`
-        )
+          e => `Validation error: ${e.message} (${e.path})`,
+        ),
       );
     }
 
@@ -1113,7 +1113,7 @@ export class ManifestGenerator {
  * ```
  */
 export function createManifestGenerator(
-  config?: ManifestGeneratorConfig
+  config?: ManifestGeneratorConfig,
 ): ManifestGenerator {
   return new ManifestGenerator(config);
 }

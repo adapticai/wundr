@@ -2,12 +2,16 @@ packages:
   # Core packages with shared functionality
   - 'packages/*'
   - 'packages/@wundr/*'
-  
+
+  # Neolith monorepo internals
+  - 'packages/@wundr/neolith/apps/*'
+  - 'packages/@wundr/neolith/packages/@neolith/*'
+
   # Applications
   - 'apps/*'
-  
+
   # Development tools and scripts
   - 'tools/*'
-  
+
   # Configuration packages
   - 'config/*'

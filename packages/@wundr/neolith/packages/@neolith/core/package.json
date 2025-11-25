@@ -1,0 +1,72 @@
+{
+  "name": "@neolith/core",
+  "version": "0.1.0",
+  "description": "Core service layer for Genesis App - VP management, authentication, and business logic",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.679.0",
+    "@aws-sdk/s3-request-presigner": "^3.679.0",
+    "@neolith/database": "workspace:*",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "firebase-admin": "^12.7.0",
+    "ioredis": "^5.4.1",
+    "livekit-server-sdk": "^2.9.1",
+    "sharp": "^0.33.2",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@neolith/eslint-config": "workspace:*",
+    "@neolith/typescript-config": "workspace:*",
+    "@types/node": "^20.14.0",
+    "@types/web-push": "^3.6.4",
+    "@vitest/coverage-v8": "^2.1.6",
+    "typescript": "^5.4.5",
+    "vitest": "^2.1.6"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./services": {
+      "import": "./dist/services/index.js",
+      "require": "./dist/services/index.js",
+      "types": "./dist/services/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./errors": {
+      "import": "./dist/errors/index.js",
+      "require": "./dist/errors/index.js",
+      "types": "./dist/errors/index.d.ts"
+    },
+    "./permissions": {
+      "import": "./dist/permissions/index.js",
+      "require": "./dist/permissions/index.js",
+      "types": "./dist/permissions/index.d.ts"
+    },
+    "./redis": {
+      "import": "./dist/redis/index.js",
+      "require": "./dist/redis/index.js",
+      "types": "./dist/redis/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "license": "UNLICENSED"
+}

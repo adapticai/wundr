@@ -645,7 +645,7 @@ export class DisciplineGenerator {
    * ```
    */
   async generate(
-    context: DisciplineGenerationContext
+    context: DisciplineGenerationContext,
   ): Promise<GenerateDisciplinesResult> {
     const warnings: string[] = [];
 
@@ -657,18 +657,18 @@ export class DisciplineGenerator {
       try {
         const response = await this.config.llmCallback(
           systemPrompt,
-          userPrompt
+          userPrompt,
         );
         const parsedData = parseDisciplineGenerationResponse(response);
 
         // Limit to max disciplines
         const limitedData = parsedData.slice(
           0,
-          this.config.maxDisciplinesPerVP
+          this.config.maxDisciplinesPerVP,
         );
         if (parsedData.length > this.config.maxDisciplinesPerVP) {
           warnings.push(
-            `Generated ${parsedData.length} disciplines, limited to ${this.config.maxDisciplinesPerVP}`
+            `Generated ${parsedData.length} disciplines, limited to ${this.config.maxDisciplinesPerVP}`,
           );
         }
 
@@ -727,7 +727,7 @@ export class DisciplineGenerator {
    */
   async refine(
     discipline: DisciplinePack,
-    feedback: string
+    feedback: string,
   ): Promise<RefineDisciplineResult> {
     if (!this.config.llmCallback) {
       throw new Error('LLM callback is required for discipline refinement');
@@ -1041,7 +1041,7 @@ export class DisciplineGenerator {
    */
   async generateForVP(
     vpCharter: VPCharter,
-    industry: string
+    industry: string,
   ): Promise<DisciplinePack[]> {
     const context: DisciplineGenerationContext = {
       orgName: 'Organization', // Could be passed in or extracted from vpCharter
@@ -1129,7 +1129,7 @@ export class DisciplineGenerator {
    * @returns Array of default discipline packs
    */
   private generateDefaultDisciplines(
-    context: DisciplineGenerationContext
+    context: DisciplineGenerationContext,
   ): DisciplinePack[] {
     const disciplines: DisciplinePack[] = [];
     const now = new Date();
@@ -1191,7 +1191,7 @@ export class DisciplineGenerator {
         agentIds: [],
         createdAt: now,
         updatedAt: now,
-      })
+      }),
     );
 
     // Add additional disciplines based on responsibilities
@@ -1216,7 +1216,7 @@ export class DisciplineGenerator {
             agentIds: [],
             createdAt: now,
             updatedAt: now,
-          })
+          }),
         );
       }
     }
@@ -1277,7 +1277,7 @@ export class DisciplineGenerator {
  * ```
  */
 export function createDisciplineGenerator(
-  config?: DisciplineGeneratorConfig
+  config?: DisciplineGeneratorConfig,
 ): DisciplineGenerator {
   return new DisciplineGenerator(config);
 }

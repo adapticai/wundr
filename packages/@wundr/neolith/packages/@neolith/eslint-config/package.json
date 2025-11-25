@@ -1,0 +1,32 @@
+{
+  "name": "@neolith/eslint-config",
+  "version": "0.1.0",
+  "description": "Shared ESLint configurations for Genesis monorepo packages",
+  "license": "MIT",
+  "main": "base.js",
+  "exports": {
+    "./base": "./base.js",
+    "./library": "./library.js",
+    "./next": "./next.js"
+  },
+  "files": ["base.js", "library.js", "next.js"],
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint-config-next": "^14.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  },
+  "peerDependencies": {
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -547,7 +547,7 @@ export class GenesisEngine {
    */
   async generate(
     prompt: string,
-    options?: GenesisOptions
+    options?: GenesisOptions,
   ): Promise<GenesisResult> {
     const startedAt = new Date();
     const industry = options?.industry ?? 'technology';
@@ -606,7 +606,7 @@ export class GenesisEngine {
    */
   async generateFromConfig(
     config: CreateOrgConfig,
-    options?: GenesisOptions
+    options?: GenesisOptions,
   ): Promise<GenesisResult> {
     const startedAt = new Date();
     const totalTokensUsed = 0;
@@ -625,17 +625,17 @@ export class GenesisEngine {
     this.reportProgress(
       options?.onProgress,
       'Phase 2: Generating disciplines',
-      40
+      40,
     );
     const disciplines = await this.generatePhase2(
       vps,
       config.industry,
-      options
+      options,
     );
     this.reportProgress(
       options?.onProgress,
       'Phase 2: Disciplines generated',
-      65
+      65,
     );
 
     // Phase 3: Generate agents
@@ -647,7 +647,7 @@ export class GenesisEngine {
     this.reportProgress(
       options?.onProgress,
       'Creating organization manifest',
-      95
+      95,
     );
     const manifest = await this.createManifest(config, vps, disciplines);
 
@@ -695,7 +695,7 @@ export class GenesisEngine {
    */
   async generatePhase1(
     config: CreateOrgConfig,
-    options?: GenesisOptions
+    options?: GenesisOptions,
   ): Promise<VPCharter[]> {
     const size = config.size;
     const vpRange = VP_COUNT_BY_SIZE[size];
@@ -735,7 +735,7 @@ export class GenesisEngine {
       this.reportProgress(
         options?.onProgress,
         `Generated VP: ${vp.identity.name}`,
-        progress
+        progress,
       );
     }
 
@@ -764,7 +764,7 @@ export class GenesisEngine {
   async generatePhase2(
     vps: VPCharter[],
     industry: OrgIndustry,
-    options?: GenesisOptions
+    options?: GenesisOptions,
   ): Promise<DisciplinePack[]> {
     const allDisciplines: DisciplinePack[] = [];
     const existingDisciplineSlugs: string[] = [];
@@ -777,13 +777,13 @@ export class GenesisEngine {
       // Use the convenience method to generate disciplines for this VP
       const disciplines = await this.disciplineGenerator.generateForVP(
         vp,
-        industry
+        industry,
       );
 
       // Limit disciplines per VP
       const limitedDisciplines = disciplines.slice(
         0,
-        this.config.maxDisciplinesPerVP
+        this.config.maxDisciplinesPerVP,
       );
 
       for (let i = 0; i < limitedDisciplines.length; i++) {
@@ -809,12 +809,12 @@ export class GenesisEngine {
           Math.floor(
             ((vpIndex * limitedDisciplines.length + i) /
               (vps.length * limitedDisciplines.length)) *
-              25
+              25,
           );
         this.reportProgress(
           options?.onProgress,
           `Generated discipline: ${discipline.name}`,
-          overallProgress
+          overallProgress,
         );
       }
     }
@@ -841,7 +841,7 @@ export class GenesisEngine {
    */
   async generatePhase3(
     disciplines: DisciplinePack[],
-    options?: GenesisOptions
+    options?: GenesisOptions,
   ): Promise<AgentDefinition[]> {
     const allAgents: AgentDefinition[] = [];
     const existingAgentSlugs: string[] = [];
@@ -865,7 +865,7 @@ export class GenesisEngine {
       // Limit agents per discipline
       const limitedAgents = result.agents.slice(
         0,
-        this.config.maxAgentsPerDiscipline
+        this.config.maxAgentsPerDiscipline,
       );
 
       for (let i = 0; i < limitedAgents.length; i++) {
@@ -899,12 +899,12 @@ export class GenesisEngine {
           Math.floor(
             ((discIndex * limitedAgents.length + i) /
               (disciplines.length * limitedAgents.length)) *
-              20
+              20,
           );
         this.reportProgress(
           options?.onProgress,
           `Generated agent: ${agent.name}`,
-          overallProgress
+          overallProgress,
         );
       }
     }
@@ -1000,7 +1000,7 @@ export class GenesisEngine {
     const manifestPath = pathModule.join(path, 'manifest.json');
     await fs.writeFile(
       manifestPath,
-      JSON.stringify(this.serializeManifest(result.manifest), null, 2)
+      JSON.stringify(this.serializeManifest(result.manifest), null, 2),
     );
     this.log(`Wrote manifest to ${manifestPath}`);
 
@@ -1019,15 +1019,15 @@ export class GenesisEngine {
     for (const discipline of result.disciplines) {
       const disciplinePath = pathModule.join(
         disciplinesDir,
-        `${discipline.slug}.json`
+        `${discipline.slug}.json`,
       );
       await fs.writeFile(
         disciplinePath,
-        JSON.stringify(this.serializeDiscipline(discipline), null, 2)
+        JSON.stringify(this.serializeDiscipline(discipline), null, 2),
       );
     }
     this.log(
-      `Wrote ${result.disciplines.length} discipline packs to ${disciplinesDir}`
+      `Wrote ${result.disciplines.length} discipline packs to ${disciplinesDir}`,
     );
 
     // Create and write agents
@@ -1037,7 +1037,7 @@ export class GenesisEngine {
       const agentPath = pathModule.join(agentsDir, `${agent.slug}.json`);
       await fs.writeFile(
         agentPath,
-        JSON.stringify(this.serializeAgent(agent), null, 2)
+        JSON.stringify(this.serializeAgent(agent), null, 2),
       );
     }
     this.log(`Wrote ${result.agents.length} agent definitions to ${agentsDir}`);
@@ -1064,7 +1064,7 @@ export class GenesisEngine {
     prompt: string,
     industry: OrgIndustry,
     size: OrgSize,
-    options?: GenesisOptions
+    options?: GenesisOptions,
   ): CreateOrgConfig {
     // Extract organization name from prompt or generate default
     const name =
@@ -1227,7 +1227,7 @@ export class GenesisEngine {
   private async createManifest(
     config: CreateOrgConfig,
     vps: VPCharter[],
-    disciplines: DisciplinePack[]
+    disciplines: DisciplinePack[],
   ): Promise<OrganizationManifest> {
     // Generate the manifest
     const result = await this.manifestGenerator.generate({
@@ -1271,7 +1271,7 @@ export class GenesisEngine {
   private reportProgress(
     callback: ((phase: string, progress: number) => void) | undefined,
     phase: string,
-    progress: number
+    progress: number,
   ): void {
     if (callback) {
       callback(phase, progress);
@@ -1307,7 +1307,7 @@ export class GenesisEngine {
    * @internal
    */
   private serializeManifest(
-    manifest: OrganizationManifest
+    manifest: OrganizationManifest,
   ): Record<string, unknown> {
     return {
       ...manifest,
@@ -1333,7 +1333,7 @@ export class GenesisEngine {
    * @internal
    */
   private serializeDiscipline(
-    discipline: DisciplinePack
+    discipline: DisciplinePack,
   ): Record<string, unknown> {
     return {
       ...discipline,
@@ -1389,7 +1389,7 @@ export class GenesisEngine {
  * ```
  */
 export function createGenesisEngine(
-  config?: GenesisEngineConfig
+  config?: GenesisEngineConfig,
 ): GenesisEngine {
   return new GenesisEngine(config);
 }

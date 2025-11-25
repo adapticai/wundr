@@ -1,0 +1,14 @@
+{
+  "name": "@neolith/typescript-config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared TypeScript configurations for Genesis monorepo",
+  "license": "MIT",
+  "exports": {
+    "./base.json": "./base.json",
+    "./nextjs.json": "./nextjs.json",
+    "./react-library.json": "./react-library.json",
+    "./node.json": "./node.json"
+  },
+  "files": ["base.json", "nextjs.json", "react-library.json", "node.json"]
+}

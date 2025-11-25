@@ -1,0 +1,59 @@
+{
+  "name": "@neolith/database",
+  "version": "0.1.0",
+  "description": "Prisma database client and schema for Genesis App",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@vitest/coverage-v8": "^2.1.6",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.3.3",
+    "vitest": "^2.1.6"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./edge": {
+      "import": "./dist/edge.js",
+      "require": "./dist/edge.js",
+      "types": "./dist/edge.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "require": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./migration": {
+      "import": "./dist/migration.js",
+      "require": "./dist/migration.js",
+      "types": "./dist/migration.d.ts"
+    }
+  },
+  "files": ["dist", "prisma"],
+  "license": "MIT"
+}

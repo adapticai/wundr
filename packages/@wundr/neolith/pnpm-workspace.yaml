@@ -1,0 +1,35 @@
+# pnpm-workspace.yaml
+# ===================
+#
+# This file defines the workspace configuration for the Neolith monorepo.
+# It specifies which directories contain packages that should be linked together
+# and managed as a single workspace.
+#
+# Workspace Structure:
+# --------------------
+# packages/@wundr/neolith/
+#   apps/           - Application packages (web, api, cli)
+#   packages/       - Shared library packages (ui, utils, config)
+#
+# Usage:
+# ------
+# - All packages in apps/* and packages/* will be linked together
+# - Dependencies between workspace packages are automatically resolved
+# - Use workspace protocol (workspace:*) for internal dependencies
+#
+# Example package.json dependency:
+#   "dependencies": {
+#     "@neolith/ui": "workspace:*"
+#   }
+#
+# For more information, see:
+# https://pnpm.io/workspaces
+
+packages:
+  # Application packages
+  # Contains deployable applications like web frontend, API server, CLI tools
+  - "apps/*"
+
+  # Shared library packages (scoped under @neolith)
+  # Contains reusable libraries, UI components, utilities, and configurations
+  - "packages/@neolith/*"

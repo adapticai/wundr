@@ -556,7 +556,7 @@ export async function runCLI(args: string[]): Promise<void> {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       console.error(
-        `Error executing command '${command.name}': ${errorMessage}`
+        `Error executing command '${command.name}': ${errorMessage}`,
       );
 
       if (options.flags.verbose && error instanceof Error && error.stack) {
@@ -606,7 +606,7 @@ export async function runCLI(args: string[]): Promise<void> {
  * ```
  */
 export function createCLI(
-  customCommands: CommandDefinition[]
+  customCommands: CommandDefinition[],
 ): (args: string[]) => Promise<void> {
   // Register custom commands
   for (const command of customCommands) {
@@ -666,7 +666,7 @@ export function createSuccessResult(data?: unknown): CLIResult {
  */
 export function validateRequiredFlags(
   flags: Record<string, string | boolean>,
-  required: string[]
+  required: string[],
 ): string | undefined {
   const missing: string[] = [];
 
@@ -694,7 +694,7 @@ export function validateRequiredFlags(
 export function getFlagString(
   flags: Record<string, string | boolean>,
   name: string,
-  defaultValue?: string
+  defaultValue?: string,
 ): string | undefined {
   const value = flags[name];
   if (value === undefined) {
@@ -717,7 +717,7 @@ export function getFlagString(
 export function getFlagBoolean(
   flags: Record<string, string | boolean>,
   name: string,
-  defaultValue = false
+  defaultValue = false,
 ): boolean {
   const value = flags[name];
   if (value === undefined) {

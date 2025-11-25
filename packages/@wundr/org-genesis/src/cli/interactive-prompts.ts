@@ -122,7 +122,7 @@ function createReadlineInterface(): readline.Interface {
  */
 function readlineQuestion(
   rl: readline.Interface,
-  prompt: string
+  prompt: string,
 ): Promise<string> {
   return new Promise(resolve => {
     rl.question(prompt, answer => {
@@ -165,7 +165,7 @@ function formatPrompt(message: string, defaultValue?: string): string {
  */
 export async function promptText(
   message: string,
-  defaultValue?: string
+  defaultValue?: string,
 ): Promise<string> {
   const rl = createReadlineInterface();
 
@@ -202,7 +202,7 @@ export async function promptText(
  */
 export async function promptTextAdvanced(
   message: string,
-  options: TextPromptOptions = {}
+  options: TextPromptOptions = {},
 ): Promise<string> {
   const { defaultValue, validate, transform } = options;
   const rl = createReadlineInterface();
@@ -256,7 +256,7 @@ export async function promptTextAdvanced(
  */
 export async function promptConfirm(
   message: string,
-  defaultValue = false
+  defaultValue = false,
 ): Promise<boolean> {
   const rl = createReadlineInterface();
 
@@ -300,7 +300,7 @@ export async function promptConfirm(
 export async function promptSelect<T>(
   message: string,
   choices: PromptChoice<T>[],
-  options: SelectPromptOptions = {}
+  options: SelectPromptOptions = {},
 ): Promise<T> {
   const rl = createReadlineInterface();
   const { defaultIndex = 0 } = options;
@@ -360,7 +360,7 @@ export async function promptSelect<T>(
  */
 export async function promptMultiSelect<T>(
   message: string,
-  choices: PromptChoice<T>[]
+  choices: PromptChoice<T>[],
 ): Promise<T[]> {
   const rl = createReadlineInterface();
 
@@ -543,18 +543,18 @@ export async function promptOrgConfig(): Promise<CreateOrgConfig> {
 
   const industry = await promptSelect<OrgIndustry>(
     'Select industry',
-    INDUSTRY_CHOICES
+    INDUSTRY_CHOICES,
   );
 
   const size = await promptSelect<OrgSize>(
     'Select organization size',
-    SIZE_CHOICES
+    SIZE_CHOICES,
   );
 
   // Optional fields
   const includeOptional = await promptConfirm(
     'Configure optional settings?',
-    false
+    false,
   );
 
   let description: string | undefined;
@@ -565,7 +565,7 @@ export async function promptOrgConfig(): Promise<CreateOrgConfig> {
 
   if (includeOptional) {
     description = await promptText(
-      'Description (optional, press Enter to skip)'
+      'Description (optional, press Enter to skip)',
     );
     if (description === '') {
       description = undefined;
@@ -582,17 +582,17 @@ export async function promptOrgConfig(): Promise<CreateOrgConfig> {
 
     generateDisciplines = await promptConfirm(
       'Auto-generate discipline structures?',
-      true
+      true,
     );
 
     generateAgents = await promptConfirm(
       'Auto-generate agents for each discipline?',
-      true
+      true,
     );
 
     dryRun = await promptConfirm(
       'Dry run mode (no actual provisioning)?',
-      false
+      false,
     );
   }
 
@@ -641,14 +641,14 @@ export async function promptVPConfig(): Promise<CreateVPConfig> {
   // Capabilities selection
   const selectCapabilities = await promptConfirm(
     'Select specific capabilities? (default: all)',
-    false
+    false,
   );
 
   let capabilities: VPCapability[] | undefined;
   if (selectCapabilities) {
     capabilities = await promptMultiSelect<VPCapability>(
       'Select VP capabilities',
-      VP_CAPABILITY_CHOICES
+      VP_CAPABILITY_CHOICES,
     );
     if (capabilities.length === 0) {
       capabilities = undefined; // Use defaults
@@ -658,7 +658,7 @@ export async function promptVPConfig(): Promise<CreateVPConfig> {
   // Optional fields
   const includeOptional = await promptConfirm(
     'Configure optional settings?',
-    false
+    false,
   );
 
   let slackHandle: string | undefined;
@@ -671,7 +671,7 @@ export async function promptVPConfig(): Promise<CreateVPConfig> {
     }
 
     const toolsInput = await promptText(
-      'MCP tools (comma-separated, or Enter to skip)'
+      'MCP tools (comma-separated, or Enter to skip)',
     );
     if (toolsInput !== '') {
       mcpTools = toolsInput
@@ -707,7 +707,7 @@ export async function promptVPConfig(): Promise<CreateVPConfig> {
  * ```
  */
 export async function promptDisciplineSelection(
-  available: DisciplinePack[]
+  available: DisciplinePack[],
 ): Promise<DisciplinePack> {
   if (available.length === 0) {
     throw new Error('No discipline packs available for selection');
@@ -740,7 +740,7 @@ export async function promptNumber(
   message: string,
   min: number,
   max: number,
-  defaultValue?: number
+  defaultValue?: number,
 ): Promise<number> {
   const rl = createReadlineInterface();
 

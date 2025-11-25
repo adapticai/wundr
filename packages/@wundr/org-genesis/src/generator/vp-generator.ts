@@ -376,7 +376,7 @@ export class VPGenerator {
     const validation = validateVPGenerationContext(context);
     if (!validation.valid) {
       throw new Error(
-        `Invalid generation context: ${validation.errors.join(', ')}`
+        `Invalid generation context: ${validation.errors.join(', ')}`,
       );
     }
 
@@ -384,7 +384,7 @@ export class VPGenerator {
     const requestedCount = Math.min(context.vpCount, this.config.maxVPs);
     if (context.vpCount > this.config.maxVPs) {
       warnings.push(
-        `Requested ${context.vpCount} VPs, but max is ${this.config.maxVPs}. Generating ${requestedCount}.`
+        `Requested ${context.vpCount} VPs, but max is ${this.config.maxVPs}. Generating ${requestedCount}.`,
       );
     }
 
@@ -431,14 +431,14 @@ export class VPGenerator {
       const charterValidation = this.validateCharter(vp);
       if (!charterValidation.valid) {
         warnings.push(
-          `VP '${vp.identity.name}' has validation issues: ${charterValidation.errors.map(e => e.message).join(', ')}`
+          `VP '${vp.identity.name}' has validation issues: ${charterValidation.errors.map(e => e.message).join(', ')}`,
         );
       }
       if (charterValidation.warnings.length > 0) {
         warnings.push(
           ...charterValidation.warnings.map(
-            w => `VP '${vp.identity.name}': ${w.message}`
-          )
+            w => `VP '${vp.identity.name}': ${w.message}`,
+          ),
         );
       }
     }
@@ -902,7 +902,7 @@ export class VPGenerator {
    * @returns The LLM response text
    */
   private async callLLM(
-    messages: Array<{ role: 'system' | 'user'; content: string }>
+    messages: Array<{ role: 'system' | 'user'; content: string }>,
   ): Promise<string> {
     let lastError: Error | null = null;
 
@@ -969,7 +969,7 @@ export class VPGenerator {
    */
   private generateMockRefinementResponse(
     vp: VPCharter,
-    feedback: string
+    feedback: string,
   ): string {
     // Simple mock: append feedback summary to persona
     const refinedVP: ParsedVPData = {
@@ -995,7 +995,7 @@ export class VPGenerator {
    */
   private buildVPCharters(
     parsedVPs: ParsedVPData[],
-    _context: VPGenerationContext
+    _context: VPGenerationContext,
   ): VPCharter[] {
     return parsedVPs.map(parsed => {
       const partialCharter = this.parsedVPToPartialCharter(parsed);

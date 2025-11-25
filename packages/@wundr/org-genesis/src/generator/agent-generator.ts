@@ -570,7 +570,7 @@ export class AgentGenerator {
    * ```
    */
   async generate(
-    context: AgentGenerationContext
+    context: AgentGenerationContext,
   ): Promise<GenerateAgentsResult> {
     const warnings: string[] = [];
     const agents: AgentDefinition[] = [];
@@ -578,7 +578,7 @@ export class AgentGenerator {
 
     const maxAgents = context.maxAgents ?? this.config.maxAgentsPerDiscipline;
     const existingSlugs = new Set(
-      (context.existingAgents ?? []).map(a => a.slug)
+      (context.existingAgents ?? []).map(a => a.slug),
     );
 
     // Add universal agents if configured and room allows
@@ -587,13 +587,13 @@ export class AgentGenerator {
       for (const agent of universalAgents) {
         if (agents.length >= maxAgents) {
           warnings.push(
-            `Max agent limit (${maxAgents}) reached, stopping generation`
+            `Max agent limit (${maxAgents}) reached, stopping generation`,
           );
           break;
         }
         if (existingSlugs.has(agent.slug)) {
           warnings.push(
-            `Universal agent "${agent.slug}" already exists, skipped`
+            `Universal agent "${agent.slug}" already exists, skipped`,
           );
           continue;
         }
@@ -611,7 +611,7 @@ export class AgentGenerator {
       const disciplineResult = await this.generateDisciplineSpecificAgents(
         context,
         maxAgents - agents.length,
-        existingSlugs
+        existingSlugs,
       );
 
       agents.push(...disciplineResult.agents);
@@ -650,7 +650,7 @@ export class AgentGenerator {
   async refine(
     agent: AgentDefinition,
     feedback: string,
-    feedbackType: AgentRefinementFeedback['type'] = 'general'
+    feedbackType: AgentRefinementFeedback['type'] = 'general',
   ): Promise<AgentDefinition> {
     if (!this.config.llmProvider) {
       // Without LLM, return the agent unchanged
@@ -752,7 +752,7 @@ export class AgentGenerator {
       !agent.tools.some(t => t.name === 'write' || t.name === 'edit')
     ) {
       warnings.push(
-        'Agent has write capability but no write/edit tools; may need additional tools'
+        'Agent has write capability but no write/edit tools; may need additional tools',
       );
     }
 
@@ -878,7 +878,7 @@ export class AgentGenerator {
    * ```
    */
   async generateForDiscipline(
-    discipline: DisciplinePack
+    discipline: DisciplinePack,
   ): Promise<GenerateAgentsResult> {
     const context: AgentGenerationContext = {
       disciplineName: discipline.name,
@@ -901,7 +901,7 @@ export class AgentGenerator {
   private async generateDisciplineSpecificAgents(
     context: AgentGenerationContext,
     maxAgents: number,
-    existingSlugs: Set<string>
+    existingSlugs: Set<string>,
   ): Promise<GenerateAgentsResult> {
     const warnings: string[] = [];
     const agents: AgentDefinition[] = [];
@@ -911,7 +911,7 @@ export class AgentGenerator {
     if (!this.config.llmProvider) {
       const templateAgents = this.getTemplateAgentsForCategory(
         context.disciplineCategory,
-        context.disciplineSlug
+        context.disciplineSlug,
       );
 
       for (const agent of templateAgents) {
@@ -920,7 +920,7 @@ export class AgentGenerator {
         }
         if (existingSlugs.has(agent.slug)) {
           warnings.push(
-            `Template agent "${agent.slug}" already exists, skipped`
+            `Template agent "${agent.slug}" already exists, skipped`,
           );
           continue;
         }
@@ -962,7 +962,7 @@ export class AgentGenerator {
 
         if (existingSlugs.has(partial.slug)) {
           warnings.push(
-            `Generated agent "${partial.slug}" already exists, skipped`
+            `Generated agent "${partial.slug}" already exists, skipped`,
           );
           continue;
         }
@@ -973,7 +973,7 @@ export class AgentGenerator {
         const validation = this.validateDefinition(agent);
         if (!validation.valid) {
           warnings.push(
-            `Generated agent "${partial.slug}" failed validation: ${validation.errors.join(', ')}`
+            `Generated agent "${partial.slug}" failed validation: ${validation.errors.join(', ')}`,
           );
           continue;
         }
@@ -984,12 +984,12 @@ export class AgentGenerator {
       }
     } catch (error) {
       warnings.push(
-        `LLM generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `LLM generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       // Fall back to template agents
       const templateAgents = this.getTemplateAgentsForCategory(
         context.disciplineCategory,
-        context.disciplineSlug
+        context.disciplineSlug,
       );
       for (const agent of templateAgents) {
         if (agents.length >= maxAgents) {
@@ -1011,7 +1011,7 @@ export class AgentGenerator {
    */
   private getTemplateAgentsForCategory(
     category: string,
-    disciplineSlug: string
+    disciplineSlug: string,
   ): AgentDefinition[] {
     const now = new Date();
     const templates = CATEGORY_AGENT_TEMPLATES[category] ?? [];
@@ -1612,7 +1612,7 @@ const CATEGORY_AGENT_TEMPLATES: Record<string, GeneratedAgentPartial[]> = {
  * ```
  */
 export function createAgentGenerator(
-  config?: AgentGeneratorConfig
+  config?: AgentGeneratorConfig,
 ): AgentGenerator {
   return new AgentGenerator(config);
 }
