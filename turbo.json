@@ -33,6 +33,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build", "typecheck"],
+      "persistent": false,
       "inputs": [
         "src/**/*.{ts,tsx,js,jsx}",
         "app/**/*.{ts,tsx}",
@@ -54,13 +55,11 @@
         "dist/**",
         ".next/**",
         "!.next/cache/**",
+        "!.next/lock",
         "build/**",
         "out/**"
       ],
-      "env": [
-        "NODE_ENV",
-        "NEXT_PUBLIC_*"
-      ]
+      "env": ["NODE_ENV", "NEXT_PUBLIC_*"]
     },
     "build:watch": {
       "dependsOn": ["^build"],
@@ -70,11 +69,8 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": [
-        "NODE_ENV",
-        "PORT",
-        "NEXT_PUBLIC_*"
-      ]
+      "env": ["NODE_ENV", "PORT", "NEXT_PUBLIC_*"],
+      "dependsOn": []
     },
     "start": {
       "dependsOn": ["build"],
@@ -97,10 +93,7 @@
         "tsconfig.json",
         "tsconfig.*.json"
       ],
-      "outputs": [
-        "dist/**/*.d.ts",
-        "tsconfig.tsbuildinfo"
-      ]
+      "outputs": ["dist/**/*.d.ts", "tsconfig.tsbuildinfo"]
     },
     "lint": {
       "dependsOn": ["^lint"],
@@ -119,9 +112,7 @@
         "eslint.config.*",
         "package.json"
       ],
-      "outputs": [
-        ".eslintcache"
-      ]
+      "outputs": [".eslintcache"]
     },
     "lint:fix": {
       "dependsOn": ["^lint"],
@@ -161,15 +152,8 @@
         "jest.setup.*",
         "package.json"
       ],
-      "outputs": [
-        "coverage/**",
-        "test-results/**",
-        ".nyc_output/**"
-      ],
-      "env": [
-        "NODE_ENV",
-        "CI"
-      ]
+      "outputs": ["coverage/**", "test-results/**", ".nyc_output/**"],
+      "env": ["NODE_ENV", "CI"]
     },
     "test:unit": {
       "dependsOn": ["^build"],
@@ -182,9 +166,7 @@
         "jest.config.*",
         "jest.setup.*"
       ],
-      "outputs": [
-        "coverage/**"
-      ]
+      "outputs": ["coverage/**"]
     },
     "test:integration": {
       "dependsOn": ["^build", "test:unit"],
@@ -195,11 +177,7 @@
         "jest.config.*",
         "playwright.config.*"
       ],
-      "outputs": [
-        "coverage/**",
-        "test-results/**",
-        "playwright-report/**"
-      ]
+      "outputs": ["coverage/**", "test-results/**", "playwright-report/**"]
     },
     "test:e2e": {
       "dependsOn": ["^build"],
@@ -212,10 +190,7 @@
         "playwright.config.*",
         "package.json"
       ],
-      "outputs": [
-        "test-results/**",
-        "playwright-report/**"
-      ],
+      "outputs": ["test-results/**", "playwright-report/**"],
       "cache": false
     },
     "test:coverage": {
@@ -227,9 +202,7 @@
         "jest.config.*",
         "jest.setup.*"
       ],
-      "outputs": [
-        "coverage/**"
-      ]
+      "outputs": ["coverage/**"]
     },
     "test:watch": {
       "dependsOn": ["^build"],
@@ -246,15 +219,8 @@
         "jest.setup.*",
         "playwright.config.*"
       ],
-      "outputs": [
-        "coverage/**",
-        "test-results/**",
-        "playwright-report/**"
-      ],
-      "env": [
-        "NODE_ENV",
-        "CI"
-      ]
+      "outputs": ["coverage/**", "test-results/**", "playwright-report/**"],
+      "env": ["NODE_ENV", "CI"]
     },
     "format": {
       "inputs": [

@@ -86,8 +86,28 @@ function createWindow(): void {
 
   // Load the app
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
+    // Wait for Next.js dev server to be ready
+    const loadDevServer = async () => {
+      const maxRetries = 30;
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const response = await fetch('http://localhost:3000');
+          if (response.ok) {
+            mainWindow?.loadURL('http://localhost:3000');
+            mainWindow?.webContents.openDevTools();
+            return;
+          }
+        } catch {
+          // Server not ready, wait and retry
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      console.error('Failed to connect to Next.js dev server on port 3000');
+      mainWindow?.loadURL(
+        'data:text/html,<h1>Error: Next.js dev server not running on port 3000</h1>'
+      );
+    };
+    loadDevServer();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
@@ -132,7 +152,7 @@ function createWindow(): void {
   mainWindow.webContents.on('will-navigate', (event, url) => {
     const parsedUrl = new URL(url);
     if (
-      parsedUrl.origin !== 'http://localhost:5173' &&
+      parsedUrl.origin !== 'http://localhost:3000' &&
       !url.startsWith('file://')
     ) {
       event.preventDefault();
@@ -343,7 +363,7 @@ function registerIpcHandlers(): void {
     'config:get',
     (_event: IpcMainInvokeEvent, key: keyof GenesisConfig) => {
       return store.get(key);
-    },
+    }
   );
 
   ipcMain.handle(
@@ -351,7 +371,7 @@ function registerIpcHandlers(): void {
     (_event: IpcMainInvokeEvent, key: keyof GenesisConfig, value: unknown) => {
       store.set(key, value as GenesisConfig[keyof GenesisConfig]);
       return true;
-    },
+    }
   );
 
   ipcMain.handle('config:getAll', () => {
@@ -374,7 +394,7 @@ function registerIpcHandlers(): void {
         filters: filters || [{ name: 'All Files', extensions: ['*'] }],
       });
       return result.canceled ? null : result.filePaths[0];
-    },
+    }
   );
 
   ipcMain.handle(
@@ -382,14 +402,14 @@ function registerIpcHandlers(): void {
     async (
       _event: IpcMainInvokeEvent,
       defaultPath?: string,
-      filters?: Electron.FileFilter[],
+      filters?: Electron.FileFilter[]
     ) => {
       const result = await dialog.showSaveDialog(mainWindow!, {
         defaultPath,
         filters: filters || [{ name: 'All Files', extensions: ['*'] }],
       });
       return result.canceled ? null : result.filePath;
-    },
+    }
   );
 
   ipcMain.handle(
@@ -397,7 +417,7 @@ function registerIpcHandlers(): void {
     async (_event: IpcMainInvokeEvent, options: Electron.MessageBoxOptions) => {
       const result = await dialog.showMessageBox(mainWindow!, options);
       return result.response;
-    },
+    }
   );
 
   // Shell operations
@@ -405,14 +425,14 @@ function registerIpcHandlers(): void {
     'shell:openExternal',
     (_event: IpcMainInvokeEvent, url: string) => {
       return shell.openExternal(url);
-    },
+    }
   );
 
   ipcMain.handle(
     'shell:openPath',
     (_event: IpcMainInvokeEvent, path: string) => {
       return shell.openPath(path);
-    },
+    }
   );
 
   ipcMain.handle(
@@ -420,7 +440,7 @@ function registerIpcHandlers(): void {
     (_event: IpcMainInvokeEvent, path: string) => {
       shell.showItemInFolder(path);
       return true;
-    },
+    }
   );
 
   // App info
@@ -432,10 +452,10 @@ function registerIpcHandlers(): void {
     'app:getPath',
     (
       _event: IpcMainInvokeEvent,
-      name: 'home' | 'appData' | 'userData' | 'temp' | 'desktop' | 'documents',
+      name: 'home' | 'appData' | 'userData' | 'temp' | 'desktop' | 'documents'
     ) => {
       return app.getPath(name);
-    },
+    }
   );
 
   ipcMain.handle('app:getPlatform', () => {
@@ -615,7 +635,7 @@ if (!gotTheLock) {
     contents.on('will-navigate', (navEvent, url) => {
       const parsedUrl = new URL(url);
       if (
-        parsedUrl.origin !== 'http://localhost:5173' &&
+        parsedUrl.origin !== 'http://localhost:3000' &&
         !url.startsWith('file://')
       ) {
         navEvent.preventDefault();

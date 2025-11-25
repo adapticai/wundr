@@ -5,11 +5,11 @@
   "main": "dist/main.js",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:main\" \"npm run dev:renderer\"",
+    "dev": "concurrently \"pnpm run dev:main\" \"pnpm run dev:renderer\"",
     "dev:main": "tsc -p tsconfig.json && electron .",
     "dev:renderer": "echo 'Renderer dev server placeholder'",
     "build": "tsc -p tsconfig.json",
-    "build:all": "npm run build && npm run package",
+    "build:all": "pnpm run build && pnpm run package",
     "package": "electron-builder build --publish never",
     "package:mac": "electron-builder build --mac --publish never",
     "package:win": "electron-builder build --win --publish never",
