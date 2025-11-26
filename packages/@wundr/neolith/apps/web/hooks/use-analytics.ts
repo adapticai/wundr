@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 // =============================================================================
-// Types
+// Types - Analytics Tracking
 // =============================================================================
 
 /**
@@ -47,7 +47,271 @@ export interface UseAnalyticsReturn {
 }
 
 // =============================================================================
-// useAnalytics Hook
+// Types - Workspace Analytics Data
+// =============================================================================
+
+/**
+ * Time series data point
+ */
+export interface TimeSeriesDataPoint {
+  timestamp: string;
+  value: number;
+}
+
+/**
+ * VP activity metrics
+ */
+export interface VPActivity {
+  vpId: string;
+  vpName: string;
+  messageCount: number;
+  taskCount: number;
+  completedTasks: number;
+  status: string;
+}
+
+/**
+ * Channel engagement metrics
+ */
+export interface ChannelEngagement {
+  channelId: string;
+  channelName: string;
+  messageCount: number;
+  memberCount: number;
+  type: string;
+}
+
+/**
+ * Task metrics by status and priority
+ */
+export interface TaskMetrics {
+  byStatus: Record<string, number>;
+  byPriority: Record<string, number>;
+  averageCompletionHours?: number;
+}
+
+/**
+ * Workflow metrics
+ */
+export interface WorkflowMetrics {
+  byStatus: Record<string, number>;
+  successRate: number;
+  averageDurationMs?: number;
+}
+
+/**
+ * Complete workspace analytics data structure
+ */
+export interface WorkspaceAnalytics {
+  workspace: {
+    id: string;
+    name: string;
+  };
+  dateRange: {
+    start: string;
+    end: string;
+    granularity: string;
+  };
+  summary: {
+    totalMessages: number;
+    totalChannels: number;
+    totalMembers: number;
+    totalVPs: number;
+    totalTasks: number;
+    totalWorkflows: number;
+    activeVPs: number;
+    completedTasks: number;
+    successfulWorkflows: number;
+  };
+  timeSeries: {
+    messageVolume: TimeSeriesDataPoint[];
+    taskCompletion: TimeSeriesDataPoint[];
+    workflowExecution: TimeSeriesDataPoint[];
+  };
+  vpActivity: VPActivity[];
+  channelEngagement: ChannelEngagement[];
+  taskMetrics: TaskMetrics;
+  workflowMetrics: WorkflowMetrics;
+}
+
+/**
+ * Query parameters for fetching analytics
+ */
+export interface AnalyticsQueryParams {
+  startDate?: string;
+  endDate?: string;
+  granularity?: 'daily' | 'weekly' | 'monthly';
+}
+
+/**
+ * Export options for analytics data
+ */
+export interface ExportOptions {
+  format: 'csv' | 'json';
+  metrics?: string[];
+  stream?: boolean;
+}
+
+/**
+ * Return type for the useWorkspaceAnalytics hook
+ */
+export interface UseWorkspaceAnalyticsReturn {
+  /** The fetched analytics data, or null if not yet loaded */
+  data: WorkspaceAnalytics | null;
+  /** Whether the analytics are currently being fetched */
+  isLoading: boolean;
+  /** Error message if fetch failed, or null */
+  error: string | null;
+  /** Function to manually refetch analytics */
+  refetch: () => Promise<void>;
+  /** Function to export analytics data */
+  exportData: (options: ExportOptions) => Promise<void>;
+  /** Whether export is in progress */
+  isExporting: boolean;
+  /** Update query parameters and refetch */
+  updateParams: (params: Partial<AnalyticsQueryParams>) => void;
+  /** Current query parameters */
+  params: AnalyticsQueryParams;
+}
+
+// =============================================================================
+// Types - Usage Metrics
+// =============================================================================
+
+/**
+ * Message usage metrics
+ */
+export interface MessageMetrics {
+  /** Total number of messages */
+  total: number;
+  /** Average messages per day */
+  averagePerDay: number;
+  /** Number of threads created */
+  threadsCreated: number;
+  /** Number of reactions added */
+  reactionsAdded: number;
+}
+
+/**
+ * User activity metrics
+ */
+export interface UserMetrics {
+  /** Number of currently active users */
+  activeUsers: number;
+  /** Total number of workspace members */
+  totalMembers: number;
+  /** Number of new users in period */
+  newUsers: number;
+}
+
+/**
+ * Channel metrics
+ */
+export interface ChannelMetrics {
+  /** Total number of channels */
+  total: number;
+  /** Number of public channels */
+  public: number;
+  /** Number of private channels */
+  private: number;
+  /** Number of new channels created */
+  newChannels: number;
+}
+
+/**
+ * File storage metrics
+ */
+export interface FileMetrics {
+  /** Total number of uploaded files */
+  totalUploaded: number;
+  /** Total size of all files in bytes */
+  totalSize: number;
+}
+
+/**
+ * VP (Virtual Person) metrics
+ */
+export interface VPMetrics {
+  /** Total number of VPs */
+  totalVPs: number;
+  /** Number of currently active VPs */
+  activeVPs: number;
+  /** Total messages sent by VPs */
+  messagesSent: number;
+}
+
+/**
+ * Aggregated usage metrics for a workspace
+ */
+export interface UsageMetrics {
+  /** Message-related metrics */
+  messages: MessageMetrics;
+  /** User activity metrics */
+  users: UserMetrics;
+  /** Channel metrics */
+  channels: ChannelMetrics;
+  /** File storage metrics */
+  files: FileMetrics;
+  /** VP metrics */
+  vp: VPMetrics;
+}
+
+/**
+ * Return type for the useMetrics hook
+ */
+export interface UseMetricsReturn {
+  /** The fetched metrics data, or null if not yet loaded */
+  metrics: UsageMetrics | null;
+  /** Whether the metrics are currently being fetched */
+  isLoading: boolean;
+  /** Error message if fetch failed, or null */
+  error: string | null;
+  /** Function to manually refetch metrics */
+  refetch: () => Promise<void>;
+}
+
+// =============================================================================
+// Types - Real-Time Stats
+// =============================================================================
+
+/**
+ * Real-time statistics data
+ */
+export interface RealTimeStatsData {
+  /** Currently online users count */
+  onlineUsers?: number;
+  /** Active channels count */
+  activeChannels?: number;
+  /** Messages in the last hour */
+  messagesLastHour?: number;
+  /** Active calls count */
+  activeCalls?: number;
+  /** Additional custom stats */
+  [key: string]: number | undefined;
+}
+
+/**
+ * Real-time statistics response
+ */
+export interface RealTimeStats {
+  /** Statistics data */
+  stats: RealTimeStatsData;
+  /** ISO timestamp of when stats were collected */
+  timestamp: string;
+}
+
+/**
+ * Return type for the useRealTimeStats hook
+ */
+export interface UseRealTimeStatsReturn {
+  /** The real-time stats data, or null if not yet loaded */
+  stats: RealTimeStats | null;
+  /** Whether stats are currently being fetched */
+  isLoading: boolean;
+}
+
+// =============================================================================
+// useAnalytics Hook - Event Tracking
 // =============================================================================
 
 /**
@@ -126,87 +390,162 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
 }
 
 // =============================================================================
-// UsageMetrics Types
+// useWorkspaceAnalytics Hook - Comprehensive Analytics Data
 // =============================================================================
 
 /**
- * Message usage metrics
+ * Hook for fetching comprehensive workspace analytics data
+ *
+ * Fetches detailed analytics including time series data, VP activity,
+ * channel engagement, task metrics, and workflow metrics.
+ *
+ * @param workspaceId - The workspace ID to fetch analytics for
+ * @param initialParams - Initial query parameters for date range and granularity
+ * @returns Analytics data, loading state, and control functions
+ *
+ * @example
+ * ```tsx
+ * function AnalyticsDashboard() {
+ *   const {
+ *     data,
+ *     isLoading,
+ *     error,
+ *     refetch,
+ *     exportData,
+ *     isExporting,
+ *     updateParams
+ *   } = useWorkspaceAnalytics('workspace-123', {
+ *     granularity: 'daily',
+ *     startDate: '2024-01-01',
+ *     endDate: '2024-01-31'
+ *   });
+ *
+ *   if (isLoading) return <Spinner />;
+ *   if (error) return <Error message={error} />;
+ *
+ *   return (
+ *     <div>
+ *       <h1>{data?.workspace.name} Analytics</h1>
+ *       <p>Total Messages: {data?.summary.totalMessages}</p>
+ *       <button onClick={() => exportData({ format: 'csv' })}>
+ *         Export CSV
+ *       </button>
+ *       <button onClick={() => updateParams({ granularity: 'weekly' })}>
+ *         Weekly View
+ *       </button>
+ *     </div>
+ *   );
+ * }
+ * ```
  */
-export interface MessageMetrics {
-  /** Total number of messages */
-  total: number;
-}
+export function useWorkspaceAnalytics(
+  workspaceId: string,
+  initialParams: AnalyticsQueryParams = {},
+): UseWorkspaceAnalyticsReturn {
+  const [data, setData] = useState<WorkspaceAnalytics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [params, setParams] = useState<AnalyticsQueryParams>(initialParams);
 
-/**
- * User activity metrics
- */
-export interface UserMetrics {
-  /** Number of currently active users */
-  activeUsers: number;
-  /** Total number of workspace members */
-  totalMembers: number;
-}
+  const fetchAnalytics = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
 
-/**
- * Channel metrics
- */
-export interface ChannelMetrics {
-  /** Total number of channels */
-  total: number;
-}
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.startDate) queryParams.set('startDate', params.startDate);
+      if (params.endDate) queryParams.set('endDate', params.endDate);
+      if (params.granularity) queryParams.set('granularity', params.granularity);
 
-/**
- * File storage metrics
- */
-export interface FileMetrics {
-  /** Total number of uploaded files */
-  totalUploaded: number;
-  /** Total size of all files in bytes */
-  totalSize: number;
-}
+      const queryString = queryParams.toString();
+      const url = `/api/workspaces/${workspaceId}/analytics${queryString ? `?${queryString}` : ''}`;
 
-/**
- * VP (Virtual Person) metrics
- */
-export interface VPMetrics {
-  /** Total number of VPs */
-  totalVPs: number;
-  /** Number of currently active VPs */
-  activeVPs: number;
-}
+      const response = await fetch(url);
 
-/**
- * Aggregated usage metrics for a workspace
- */
-export interface UsageMetrics {
-  /** Message-related metrics */
-  messages: MessageMetrics;
-  /** User activity metrics */
-  users: UserMetrics;
-  /** Channel metrics */
-  channels: ChannelMetrics;
-  /** File storage metrics */
-  files: FileMetrics;
-  /** VP metrics */
-  vp: VPMetrics;
-}
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to fetch analytics: ${response.statusText}`);
+      }
 
-/**
- * Return type for the useMetrics hook
- */
-export interface UseMetricsReturn {
-  /** The fetched metrics data, or null if not yet loaded */
-  metrics: UsageMetrics | null;
-  /** Whether the metrics are currently being fetched */
-  isLoading: boolean;
-  /** Error message if fetch failed, or null */
-  error: string | null;
-  /** Function to manually refetch metrics */
-  refetch: () => Promise<void>;
+      const analyticsData: WorkspaceAnalytics = await response.json();
+      setData(analyticsData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      console.error('[useWorkspaceAnalytics] Fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [workspaceId, params]);
+
+  const exportData = useCallback(
+    async (options: ExportOptions): Promise<void> => {
+      setIsExporting(true);
+
+      try {
+        const queryParams = new URLSearchParams();
+        queryParams.set('format', options.format);
+        if (params.startDate) queryParams.set('from', params.startDate);
+        if (params.endDate) queryParams.set('to', params.endDate);
+        if (options.metrics) queryParams.set('metrics', options.metrics.join(','));
+        if (options.stream) queryParams.set('stream', 'true');
+
+        const url = `/api/workspaces/${workspaceId}/analytics/export?${queryParams.toString()}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`Export failed: ${response.statusText}`);
+        }
+
+        // Handle file download
+        const contentDisposition = response.headers.get('Content-Disposition');
+        const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+        const filename = filenameMatch?.[1] || `analytics-${workspaceId}.${options.format}`;
+
+        const blob = await response.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Export failed';
+        setError(errorMessage);
+        console.error('[useWorkspaceAnalytics] Export error:', err);
+        throw err;
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [workspaceId, params],
+  );
+
+  const updateParams = useCallback((newParams: Partial<AnalyticsQueryParams>): void => {
+    setParams((prev) => ({ ...prev, ...newParams }));
+  }, []);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch: fetchAnalytics,
+    exportData,
+    isExporting,
+    updateParams,
+    params,
+  };
 }
 
 // =============================================================================
-// useMetrics Hook
+// useMetrics Hook - Usage Metrics
 // =============================================================================
 
 /**
@@ -270,47 +609,7 @@ export function useMetrics(workspaceId: string, period: string = 'month'): UseMe
 }
 
 // =============================================================================
-// RealTimeStats Types
-// =============================================================================
-
-/**
- * Real-time statistics data
- */
-export interface RealTimeStatsData {
-  /** Currently online users count */
-  onlineUsers?: number;
-  /** Active channels count */
-  activeChannels?: number;
-  /** Messages in the last hour */
-  messagesLastHour?: number;
-  /** Active calls count */
-  activeCalls?: number;
-  /** Additional custom stats */
-  [key: string]: number | undefined;
-}
-
-/**
- * Real-time statistics response
- */
-export interface RealTimeStats {
-  /** Statistics data */
-  stats: RealTimeStatsData;
-  /** ISO timestamp of when stats were collected */
-  timestamp: string;
-}
-
-/**
- * Return type for the useRealTimeStats hook
- */
-export interface UseRealTimeStatsReturn {
-  /** The real-time stats data, or null if not yet loaded */
-  stats: RealTimeStats | null;
-  /** Whether stats are currently being fetched */
-  isLoading: boolean;
-}
-
-// =============================================================================
-// useRealTimeStats Hook
+// useRealTimeStats Hook - Live Statistics
 // =============================================================================
 
 /**
@@ -346,9 +645,7 @@ export function useRealTimeStats(
   useEffect(() => {
     const fetchStats = async (): Promise<void> => {
       try {
-        const response = await fetch(
-          `/api/workspaces/${workspaceId}/analytics/realtime`,
-        );
+        const response = await fetch(`/api/workspaces/${workspaceId}/analytics/realtime`);
         if (response.ok) {
           const data: RealTimeStats = await response.json();
           setStats(data);

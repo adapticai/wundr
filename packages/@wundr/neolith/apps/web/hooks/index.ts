@@ -178,6 +178,35 @@ export type {
 } from './use-analytics';
 
 // =============================================================================
+// Dashboard Hooks
+// =============================================================================
+export { useDashboard, useDashboardStats, useDashboardActivity } from './use-dashboard';
+export type {
+  TimeRange,
+  ActivityType,
+  MemberStats,
+  ChannelStats,
+  MessageStats,
+  WorkflowStats,
+  TaskStats,
+  RecentActivity,
+  TopContributor,
+  DashboardStats,
+  DashboardStatsResponse,
+  ActivityActor,
+  ActivityTarget,
+  ActivityEntry,
+  ActivityPagination,
+  WorkspaceInfo,
+  DashboardActivityResponse,
+  DashboardStatsOptions,
+  DashboardActivityOptions,
+  UseDashboardStatsReturn,
+  UseDashboardActivityReturn,
+  UseDashboardReturn,
+} from './use-dashboard';
+
+// =============================================================================
 // Integration Hooks
 // =============================================================================
 export {

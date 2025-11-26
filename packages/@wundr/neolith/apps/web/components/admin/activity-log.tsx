@@ -97,51 +97,113 @@ const ACTION_TYPE_CONFIG = {
 export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
   const [activities, setActivities] = useState<AdminActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<{
     actionType?: string;
     actorId?: string;
     resourceType?: string;
   }>({});
+  const [useInfiniteScroll, setUseInfiniteScroll] = useState(false);
 
   const pageSize = 30;
 
-  const fetchActivities = useCallback(async () => {
-    setIsLoading(true);
+  const fetchActivities = useCallback(async (append = false) => {
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+    }
+    setError(null);
+
     try {
       const params = new URLSearchParams({
         limit: String(pageSize),
         offset: String(page * pageSize),
       });
       if (filters.actionType) {
-params.set('actionType', filters.actionType);
-}
+        params.set('action', filters.actionType);
+      }
       if (filters.actorId) {
-params.set('actorId', filters.actorId);
-}
+        params.set('actorId', filters.actorId);
+      }
       if (filters.resourceType) {
-params.set('resourceType', filters.resourceType);
-}
+        params.set('resourceType', filters.resourceType);
+      }
 
       const response = await fetch(
         `/api/workspaces/${workspaceId}/admin/activity?${params.toString()}`,
       );
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data.activities || []);
-        setTotal(data.total || 0);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch activities: ${response.statusText}`);
       }
-    } catch {
-      // Handle error
+
+      const data = await response.json();
+
+      // Map API response to component format
+      const mappedActivities: AdminActivity[] = (data.actions || []).map((action: any) => ({
+        id: action.id,
+        action: action.action,
+        actionType: inferActionType(action.action),
+        actor: {
+          id: action.actorId || action.actor?.id,
+          name: action.actor?.name || 'Unknown User',
+          email: action.actor?.email || '',
+          image: action.actor?.image,
+        },
+        resource: {
+          type: action.targetType || 'resource',
+          id: action.targetId || action.id,
+          name: action.targetName,
+        },
+        details: action.metadata || {},
+        timestamp: action.createdAt,
+        ipAddress: action.ipAddress,
+      }));
+
+      if (append) {
+        setActivities(prev => [...prev, ...mappedActivities]);
+      } else {
+        setActivities(mappedActivities);
+      }
+      setTotal(data.total || 0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch activities');
+      console.error('Failed to fetch activities:', err);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   }, [workspaceId, page, filters]);
 
+  // Infer action type from action string
+  const inferActionType = (action: string): AdminActivity['actionType'] => {
+    const lowerAction = action.toLowerCase();
+    if (lowerAction.includes('create') || lowerAction.includes('add')) return 'create';
+    if (lowerAction.includes('update') || lowerAction.includes('edit') || lowerAction.includes('modify')) return 'update';
+    if (lowerAction.includes('delete') || lowerAction.includes('remove')) return 'delete';
+    if (lowerAction.includes('view') || lowerAction.includes('access')) return 'access';
+    if (lowerAction.includes('security') || lowerAction.includes('auth') || lowerAction.includes('permission')) return 'security';
+    if (lowerAction.includes('billing') || lowerAction.includes('payment') || lowerAction.includes('subscription')) return 'billing';
+    return 'access';
+  };
+
   useEffect(() => {
-    fetchActivities();
-  }, [fetchActivities]);
+    if (page === 0) {
+      fetchActivities(false);
+    } else {
+      fetchActivities(useInfiniteScroll);
+    }
+  }, [fetchActivities, page, useInfiniteScroll]);
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && (page + 1) * pageSize < total) {
+      setPage(p => p + 1);
+    }
+  };
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -152,17 +214,17 @@ params.set('resourceType', filters.resourceType);
     const diffDays = Math.floor(diffMs / 86400000);
 
     if (diffMins < 1) {
-return 'Just now';
-}
+      return 'Just now';
+    }
     if (diffMins < 60) {
-return `${diffMins} minutes ago`;
-}
+      return `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
+    }
     if (diffHours < 24) {
-return `${diffHours} hours ago`;
-}
+      return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+    }
     if (diffDays < 7) {
-return `${diffDays} days ago`;
-}
+      return `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+    }
     return date.toLocaleDateString();
   };
 
@@ -258,15 +320,33 @@ return `${diffDays} days ago`;
       </div>
 
       {/* Activity timeline */}
-      {isLoading ? (
+      {error && (
+        <div className="p-4 text-center bg-destructive/10 text-destructive rounded-lg border border-destructive/20">
+          <p className="font-medium">Error loading activities</p>
+          <p className="text-sm mt-1">{error}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => {
+              setPage(0);
+              fetchActivities(false);
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {isLoading && page === 0 ? (
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="md" />
         </div>
-      ) : activities.length === 0 ? (
+      ) : activities.length === 0 && !error ? (
         <div className="p-8 text-center bg-muted/50 rounded-lg">
           <p className="text-muted-foreground">No activity recorded</p>
         </div>
-      ) : (
+      ) : !error && (
         <div className="space-y-6">
           {Object.entries(groupedActivities).map(([date, dayActivities]) => (
             <div key={date}>
@@ -293,7 +373,7 @@ return `${diffDays} days ago`;
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {/* Actor avatar */}
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={activity.actor.image} alt={activity.actor.name} />
@@ -301,9 +381,12 @@ return `${diffDays} days ago`;
                               {activity.actor.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-sm font-medium text-foreground">
+                          <a
+                            href={`/workspaces/${workspaceId}/members/${activity.actor.id}`}
+                            className="text-sm font-medium text-foreground hover:underline"
+                          >
                             {activity.actor.name}
-                          </span>
+                          </a>
                           <span className="text-sm text-muted-foreground">
                             {formatAction(activity)}
                           </span>
@@ -341,28 +424,64 @@ return `${diffDays} days ago`;
         </div>
       )}
 
-      {/* Pagination */}
-      {total > pageSize && (
-        <div className="flex items-center justify-between pt-4">
+      {/* Load more / Pagination */}
+      {total > activities.length && (
+        <div className="flex flex-col items-center gap-4 pt-4">
           <p className="text-sm text-muted-foreground">
-            Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, total)} of {total}
+            Showing {activities.length} of {total} activities
           </p>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-4">
+            {useInfiniteScroll ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore || activities.length >= total}
+              >
+                {isLoadingMore ? (
+                  <>
+                    <LoadingSpinner size="sm" className="mr-2" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More'
+                )}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0 || isLoadingMore}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {page + 1} of {Math.ceil(total / pageSize)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={(page + 1) * pageSize >= total || isLoadingMore}
+                >
+                  Next
+                </Button>
+              </>
+            )}
+
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
+              onClick={() => {
+                setUseInfiniteScroll(!useInfiniteScroll);
+                setPage(0);
+                setActivities([]);
+              }}
             >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={(page + 1) * pageSize >= total}
-            >
-              Next
+              {useInfiniteScroll ? 'Use Pagination' : 'Use Infinite Scroll'}
             </Button>
           </div>
         </div>

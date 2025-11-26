@@ -29,22 +29,35 @@ interface WorkspaceStats {
   vpsCount: number;
 }
 
+interface DashboardErrors {
+  activities?: string;
+  stats?: string;
+}
+
 export function DashboardContent({ userName, workspaceId }: DashboardContentProps) {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [stats, setStats] = useState<WorkspaceStats | null>(null);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [errors, setErrors] = useState<DashboardErrors>({});
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
         const response = await fetch(`/api/workspaces/${workspaceId}/activity?limit=5`);
-        if (response.ok) {
-          const data = await response.json();
-          setActivities(data.activities || []);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch activities: ${response.status} ${response.statusText}`);
         }
+        const data = await response.json();
+        setActivities(data.activities || []);
+        setErrors((prev) => ({ ...prev, activities: undefined }));
       } catch (error) {
         console.error('Failed to fetch activities:', error);
+        setErrors((prev) => ({
+          ...prev,
+          activities: error instanceof Error ? error.message : 'Failed to load recent activity'
+        }));
+        setActivities([]);
       } finally {
         setIsLoadingActivities(false);
       }
@@ -52,40 +65,70 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
 
     const fetchStats = async () => {
       try {
-        const [membersRes, workflowsRes] = await Promise.all([
+        const [membersRes, workflowsRes, vpsRes, workspaceRes] = await Promise.all([
           fetch(`/api/workspaces/${workspaceId}/members`),
           fetch(`/api/workspaces/${workspaceId}/workflows`),
+          fetch(`/api/workspaces/${workspaceId}/vps`),
+          fetch(`/api/workspaces/${workspaceId}`),
         ]);
 
         let membersCount = 0;
         let channelsCount = 0;
         let workflowsCount = 0;
+        let vpsCount = 0;
 
+        // Parse members response
         if (membersRes.ok) {
           const membersData = await membersRes.json();
-          membersCount = membersData.pagination?.totalCount || membersData.data?.length || 0;
+          membersCount = membersData.pagination?.totalCount || 0;
+        } else {
+          console.warn('Failed to fetch members count:', membersRes.status);
         }
 
+        // Parse workflows response - API returns { workflows, total }
         if (workflowsRes.ok) {
           const workflowsData = await workflowsRes.json();
-          workflowsCount = workflowsData.pagination?.totalCount || workflowsData.data?.length || 0;
+          workflowsCount = workflowsData.total || 0;
+        } else {
+          console.warn('Failed to fetch workflows count:', workflowsRes.status);
         }
 
-        // Fetch workspace details to get channels count
-        const workspaceRes = await fetch(`/api/workspaces/${workspaceId}`);
+        // Parse VPs response
+        if (vpsRes.ok) {
+          const vpsData = await vpsRes.json();
+          vpsCount = vpsData.pagination?.totalCount || 0;
+        } else {
+          console.warn('Failed to fetch VPs count:', vpsRes.status);
+        }
+
+        // Parse workspace response for channels count
         if (workspaceRes.ok) {
           const workspaceData = await workspaceRes.json();
           channelsCount = workspaceData.data?._count?.channels || 0;
+        } else {
+          console.warn('Failed to fetch workspace details:', workspaceRes.status);
         }
 
         setStats({
           membersCount,
           channelsCount,
           workflowsCount,
-          vpsCount: 0, // TODO: Add VPs count when endpoint is available
+          vpsCount,
         });
+        setErrors((prev) => ({ ...prev, stats: undefined }));
       } catch (error) {
         console.error('Failed to fetch stats:', error);
+        setErrors((prev) => ({
+          ...prev,
+          stats: error instanceof Error ? error.message : 'Failed to load workspace statistics'
+        }));
+        // Set default stats on error
+        setStats({
+          membersCount: 0,
+          channelsCount: 0,
+          workflowsCount: 0,
+          vpsCount: 0,
+        });
       } finally {
         setIsLoadingStats(false);
       }
@@ -139,7 +182,12 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
           {/* Recent Activity */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <h3 className="font-semibold mb-4">Recent Activity</h3>
-            {activities.length > 0 ? (
+            {errors.activities ? (
+              <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+                <p className="font-medium">Error loading activity</p>
+                <p className="mt-1 text-xs">{errors.activities}</p>
+              </div>
+            ) : activities.length > 0 ? (
               <div className="space-y-3">
                 {activities.slice(0, 4).map((activity) => (
                   <ActivityItem
@@ -151,19 +199,34 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No recent activity</p>
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="rounded-full bg-muted p-3 mb-3">
+                  <ActivityIcon />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">No recent activity</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Activity will appear here as your team works
+                </p>
+              </div>
             )}
           </div>
 
           {/* Quick Stats */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <h3 className="font-semibold mb-4">Quick Stats</h3>
-            <div className="space-y-4">
-              <StatItem label="Team Members" value={stats?.membersCount.toString() || '0'} />
-              <StatItem label="Channels" value={stats?.channelsCount.toString() || '0'} />
-              <StatItem label="Workflows" value={stats?.workflowsCount.toString() || '0'} />
-              <StatItem label="Virtual Persons" value={stats?.vpsCount.toString() || '0'} />
-            </div>
+            {errors.stats ? (
+              <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+                <p className="font-medium">Error loading statistics</p>
+                <p className="mt-1 text-xs">{errors.stats}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <StatItem label="Team Members" value={stats?.membersCount.toString() || '0'} />
+                <StatItem label="Channels" value={stats?.channelsCount.toString() || '0'} />
+                <StatItem label="Workflows" value={stats?.workflowsCount.toString() || '0'} />
+                <StatItem label="Virtual Persons" value={stats?.vpsCount.toString() || '0'} />
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -172,11 +235,11 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
             <div className="space-y-2">
               <QuickAction
                 label="Invite Team Member"
-                href={`/${workspaceId}/settings/members`}
+                href={`/${workspaceId}/admin/members`}
               />
-              <QuickAction label="Create Channel" href={`/${workspaceId}/channels/new`} />
-              <QuickAction label="New Workflow" href={`/${workspaceId}/workflows/new`} />
-              <QuickAction label="View Activity" href={`/${workspaceId}/activity`} />
+              <QuickAction label="Create Channel" href={`/${workspaceId}/channels`} />
+              <QuickAction label="New Workflow" href={`/${workspaceId}/workflows`} />
+              <QuickAction label="View Activity" href={`/${workspaceId}/admin/activity`} />
             </div>
           </div>
         </div>
@@ -243,6 +306,26 @@ function ChevronRightIcon() {
       strokeLinejoin="round"
     >
       <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+function ActivityIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-muted-foreground"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
     </svg>
   );
 }
