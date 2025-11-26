@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import {
   WORKFLOW_STATUS_CONFIG,
   TRIGGER_TYPE_CONFIG,
+  ACTION_TYPE_CONFIG,
   EXECUTION_STATUS_CONFIG,
   TEMPLATE_CATEGORY_CONFIG,
 } from '@/types/workflow';
@@ -605,7 +606,7 @@ function ActionList({ actions, onUpdate, onRemove }: ActionListProps) {
               }
               className="rounded-md border border-input bg-background px-2 py-1 text-sm"
             >
-              {Object.entries(TRIGGER_TYPE_CONFIG).map(([key, cfg]) => (
+              {Object.entries(ACTION_TYPE_CONFIG).map(([key, cfg]) => (
                 <option key={key} value={key}>
                   {cfg.label}
                 </option>

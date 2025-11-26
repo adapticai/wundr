@@ -139,7 +139,7 @@ export async function GET(
       agents = agents.filter(
         (agent) =>
           agent.name.toLowerCase().includes(searchLower) ||
-          agent.description.toLowerCase().includes(searchLower),
+          (agent.description && agent.description.toLowerCase().includes(searchLower)),
       );
     }
 

@@ -1,9 +1,10 @@
+/* CSS imports must precede all other rules */
+@import '../styles/tablet-breakpoints.css';
+@import '../styles/4k-display.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Tablet-specific breakpoint utilities */
-@import '../styles/tablet-breakpoints.css';
 
 @layer base {
   :root {
