@@ -1,0 +1,260 @@
+{
+  "page": "Virtual Persons (VPs)",
+  "review_date": "2025-01-26",
+  "files_reviewed": [
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/vps/page.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/api-key/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/status/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/analytics/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/backlog/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-vp.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/services/vp-analytics-service.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-card.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/types/vp.ts"
+  ],
+  "summary": {
+    "total_issues": 8,
+    "critical": 3,
+    "high": 2,
+    "medium": 2,
+    "low": 1,
+    "overall_status": "Mostly Complete with Critical Gaps",
+    "completion_percentage": 75
+  },
+  "issues": [
+    {
+      "id": 1,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx",
+      "line": 353,
+      "type": "incomplete",
+      "severity": "high",
+      "description": "Activity tab placeholder - shows 'Activity log coming soon' with no implementation",
+      "code_snippet": "        {activeTab === 'activity' && (\n          <div className=\"rounded-lg border bg-card p-6\">\n            <h3 className=\"mb-4 text-sm font-semibold text-foreground\">Recent Activity</h3>\n            <div className=\"text-center py-8 text-muted-foreground\">\n              <ClockIcon className=\"mx-auto h-12 w-12 mb-3 opacity-50\" />\n              <p className=\"text-sm\">Activity log coming soon</p>\n            </div>\n          </div>\n        )}",
+      "recommended_fix": "Implement activity log by creating an API endpoint at /api/vps/[id]/activity that fetches audit logs, task updates, and status changes. Display as a timeline with filtering options."
+    },
+    {
+      "id": 2,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx",
+      "line": 361,
+      "type": "incomplete",
+      "severity": "high",
+      "description": "Agents tab placeholder - shows 'Agent management coming soon' with no implementation",
+      "code_snippet": "        {activeTab === 'agents' && (\n          <div className=\"rounded-lg border bg-card p-6\">\n            <div className=\"flex items-center justify-between mb-4\">\n              <h3 className=\"text-sm font-semibold text-foreground\">Managed Agents</h3>\n              <span className=\"rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground\">\n                {vp.agentCount} agents\n              </span>\n            </div>\n            <div className=\"text-center py-8 text-muted-foreground\">\n              <AgentIcon className=\"mx-auto h-12 w-12 mb-3 opacity-50\" />\n              <p className=\"text-sm\">Agent management coming soon</p>\n            </div>\n          </div>\n        )}",
+      "recommended_fix": "Implement agent management by creating an API endpoint at /api/vps/[id]/agents to list, add, and remove agents. Include agent status, capabilities, and performance metrics."
+    },
+    {
+      "id": 3,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-vp.ts",
+      "line": 369,
+      "type": "missing-api",
+      "severity": "critical",
+      "description": "API key rotation endpoint mismatch - hook calls /api/vps/:id/rotate-key but actual endpoint is /api/vps/:id/api-key (POST)",
+      "code_snippet": "  const rotateAPIKey = useCallback(async (id: string): Promise<{ apiKey: string } | null> => {\n    setIsLoading(true);\n    setError(null);\n\n    try {\n      const response = await fetch(`/api/vps/${id}/rotate-key`, {\n        method: 'POST',\n      });\n\n      if (!response.ok) {\n        throw new Error('Failed to rotate API key');\n      }\n\n      const data: { apiKey: string } = await response.json();\n      return data;\n    } catch (err) {\n      setError(err instanceof Error ? err : new Error('Unknown error'));\n      return null;\n    } finally {\n      setIsLoading(false);\n    }\n  }, []);",
+      "recommended_fix": "Change the endpoint in the hook from `/api/vps/${id}/rotate-key` to `/api/vps/${id}/api-key` and update response parsing to match the actual API response structure which returns { data: { apiKey, name, scopes, ... }, message, warning }"
+    },
+    {
+      "id": 4,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-vp.ts",
+      "line": 108,
+      "type": "missing-integration",
+      "severity": "critical",
+      "description": "Response parsing mismatch - API returns { data: VP } but hook expects VP directly",
+      "code_snippet": "    try {\n      const response = await fetch(`/api/vps/${id}`);\n      if (!response.ok) {\n        throw new Error('Failed to fetch VP');\n      }\n      const data: VP = await response.json();\n      setVP(data);\n    } catch (err) {\n      setError(err instanceof Error ? err : new Error('Unknown error'));\n    } finally {\n      setIsLoading(false);\n    }",
+      "recommended_fix": "Update line 112 to parse the nested response: `const { data } = await response.json(); setVP(data);` - API consistently returns { data: ..., message?: ... } structure"
+    },
+    {
+      "id": 5,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-vp.ts",
+      "line": 199,
+      "type": "missing-integration",
+      "severity": "critical",
+      "description": "Response parsing mismatch in useVPs hook - API returns { data: VP[], pagination: {...} } but hook expects { vps?: VP[] }",
+      "code_snippet": "      const response = await fetch(`/api/vps?${params.toString()}`);\n      if (!response.ok) {\n        throw new Error('Failed to fetch VPs');\n      }\n      const data: { vps?: VP[] } = await response.json();\n      setVPs(data.vps || []);",
+      "recommended_fix": "Update to match actual API response: `const { data, pagination } = await response.json(); setVPs(data || []);` - Also consider storing pagination metadata for UI pagination controls"
+    },
+    {
+      "id": 6,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-vp.ts",
+      "line": 302,
+      "type": "missing-integration",
+      "severity": "medium",
+      "description": "Response parsing inconsistency in createVP - expects VP directly but API returns { data: VP, message: string }",
+      "code_snippet": "      const response = await fetch('/api/vps', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n      });\n\n      if (!response.ok) {\n        throw new Error('Failed to create VP');\n      }\n\n      const data: VP = await response.json();\n      return data;",
+      "recommended_fix": "Update to parse nested response: `const { data } = await response.json(); return data;`"
+    },
+    {
+      "id": 7,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-vp.ts",
+      "line": 327,
+      "type": "missing-integration",
+      "severity": "medium",
+      "description": "Response parsing inconsistency in updateVP - expects VP directly but API returns { data: VP, message: string }",
+      "code_snippet": "      const response = await fetch(`/api/vps/${id}`, {\n        method: 'PATCH',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n      });\n\n      if (!response.ok) {\n        throw new Error('Failed to update VP');\n      }\n\n      const data: VP = await response.json();\n      return data;",
+      "recommended_fix": "Update to parse nested response: `const { data } = await response.json(); return data;`"
+    },
+    {
+      "id": 8,
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/api-key/route.ts",
+      "line": 212,
+      "type": "incomplete",
+      "severity": "low",
+      "description": "TODO comment - audit logging not implemented for API key generation",
+      "code_snippet": "    // Update VP with new API key\n    await prisma.vP.update({\n      where: { id: params.id },\n      data: { capabilities: updatedCapabilities },\n    });\n\n    // TODO: Log the action to audit log service in production",
+      "recommended_fix": "Implement audit logging by creating an AuditLog entry with action='API_KEY_GENERATED', actorId=session.user.id, targetId=vpId, metadata={ name, scopes, expiresAt }"
+    }
+  ],
+  "positive_findings": [
+    {
+      "category": "API Implementation",
+      "description": "Comprehensive API endpoints implemented for VP CRUD operations with proper authentication, authorization, and validation"
+    },
+    {
+      "category": "Data Validation",
+      "description": "Robust Zod schema validation for all API inputs with detailed error messages"
+    },
+    {
+      "category": "Security",
+      "description": "API key hashing using SHA-256, stored securely with only hash in database"
+    },
+    {
+      "category": "Analytics",
+      "description": "Well-implemented VP analytics service with trend analysis, metrics calculation, and time-range support"
+    },
+    {
+      "category": "UI/UX",
+      "description": "Comprehensive filtering, search, and sorting capabilities on VP list page with real-time updates"
+    },
+    {
+      "category": "Error Handling",
+      "description": "Consistent error handling with proper HTTP status codes and user-friendly error messages"
+    },
+    {
+      "category": "Loading States",
+      "description": "Skeleton loaders and loading spinners implemented for good UX during data fetching"
+    },
+    {
+      "category": "Type Safety",
+      "description": "Strong TypeScript typing throughout with proper interfaces and type guards"
+    }
+  ],
+  "recommendations": {
+    "immediate_priority": [
+      {
+        "priority": "P0",
+        "action": "Fix API response parsing mismatches in use-vp.ts hooks",
+        "impact": "Critical - VPs list and details pages are currently broken",
+        "estimated_effort": "30 minutes"
+      },
+      {
+        "priority": "P0",
+        "action": "Fix rotateAPIKey endpoint URL mismatch",
+        "impact": "Critical - API key rotation feature is non-functional",
+        "estimated_effort": "15 minutes"
+      }
+    ],
+    "short_term": [
+      {
+        "priority": "P1",
+        "action": "Implement Activity Log tab functionality",
+        "impact": "High - Users cannot track VP activity history",
+        "estimated_effort": "4-6 hours",
+        "requirements": [
+          "Create /api/vps/[id]/activity endpoint",
+          "Design ActivityLog database table or use existing audit logs",
+          "Build ActivityTimeline component",
+          "Add filtering by event type and date range"
+        ]
+      },
+      {
+        "priority": "P1",
+        "action": "Implement Agent Management tab functionality",
+        "impact": "High - Users cannot manage VP agents",
+        "estimated_effort": "6-8 hours",
+        "requirements": [
+          "Create /api/vps/[id]/agents endpoint (LIST, POST, DELETE)",
+          "Build AgentList component with add/remove capabilities",
+          "Add agent assignment to tasks/conversations",
+          "Display agent performance metrics"
+        ]
+      }
+    ],
+    "medium_term": [
+      {
+        "priority": "P2",
+        "action": "Add audit logging for sensitive VP operations",
+        "impact": "Medium - Important for compliance and security",
+        "estimated_effort": "3-4 hours",
+        "scope": [
+          "API key generation/rotation/revocation",
+          "VP creation/deletion",
+          "Status changes",
+          "Configuration updates"
+        ]
+      },
+      {
+        "priority": "P2",
+        "action": "Add pagination controls to VP list UI",
+        "impact": "Medium - Currently shows all VPs, will have performance issues at scale",
+        "estimated_effort": "2-3 hours"
+      }
+    ],
+    "nice_to_have": [
+      {
+        "priority": "P3",
+        "action": "Add real-time VP status updates using WebSocket",
+        "impact": "Low - Would improve UX for monitoring active VPs",
+        "estimated_effort": "8-10 hours"
+      },
+      {
+        "priority": "P3",
+        "action": "Add VP performance comparison dashboard",
+        "impact": "Low - Would help users optimize VP allocation",
+        "estimated_effort": "6-8 hours"
+      }
+    ]
+  },
+  "testing_recommendations": [
+    {
+      "type": "Integration Tests",
+      "description": "Add tests for API response parsing in all use-vp.ts hooks",
+      "files": [
+        "hooks/use-vp.test.ts"
+      ]
+    },
+    {
+      "type": "E2E Tests",
+      "description": "Add Playwright tests for VP list, detail, creation, and status toggle flows",
+      "files": [
+        "__tests__/e2e/vp-management.spec.ts"
+      ]
+    },
+    {
+      "type": "API Tests",
+      "description": "Expand API test coverage for edge cases in VP endpoints",
+      "files": [
+        "app/api/vps/__tests__/vps.test.ts"
+      ]
+    }
+  ],
+  "architecture_notes": [
+    {
+      "observation": "Mismatch between API response structure and frontend expectations",
+      "recommendation": "Create a shared API response type contract in @neolith/core to ensure consistency"
+    },
+    {
+      "observation": "No centralized API client or response parsing logic",
+      "recommendation": "Consider creating an API client wrapper that handles response parsing, error handling, and type safety"
+    },
+    {
+      "observation": "Analytics service is well-designed but could benefit from caching",
+      "recommendation": "Add Redis caching for VP metrics to reduce database load"
+    },
+    {
+      "observation": "API key storage in VP capabilities JSON field is non-standard",
+      "recommendation": "Consider creating a separate APIKey table with proper relations for better querying and management"
+    }
+  ]
+}

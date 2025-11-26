@@ -76,13 +76,18 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
  * GET /api/workspaces/:workspaceId/members
  *
  * List all members of a workspace. Requires workspace membership or org admin.
+ * Supports pagination via limit/offset query parameters.
  *
- * @param request - Next.js request object
+ * Query Parameters:
+ * - limit: Number of items to return (default: 50, max: 100)
+ * - offset: Number of items to skip (default: 0)
+ *
+ * @param request - Next.js request object with query parameters
  * @param context - Route context containing workspace ID
- * @returns List of workspace members
+ * @returns List of workspace members with pagination metadata
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -117,7 +122,20 @@ export async function GET(
       );
     }
 
-    // Fetch all members
+    // Parse pagination parameters
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(
+      Math.max(1, parseInt(searchParams.get('limit') || '50', 10)),
+      100,
+    );
+    const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
+
+    // Get total count for pagination metadata
+    const totalCount = await prisma.workspaceMember.count({
+      where: { workspaceId: params.workspaceId },
+    });
+
+    // Fetch paginated members
     const members = await prisma.workspaceMember.findMany({
       where: { workspaceId: params.workspaceId },
       include: {
@@ -136,11 +154,18 @@ export async function GET(
         { role: 'asc' },
         { joinedAt: 'asc' },
       ],
+      skip: offset,
+      take: limit,
     });
 
     return NextResponse.json({
       data: members,
-      count: members.length,
+      pagination: {
+        limit,
+        offset,
+        totalCount,
+        hasMore: offset + limit < totalCount,
+      },
     });
   } catch (error) {
     console.error('[GET /api/workspaces/:workspaceId/members] Error:', error);

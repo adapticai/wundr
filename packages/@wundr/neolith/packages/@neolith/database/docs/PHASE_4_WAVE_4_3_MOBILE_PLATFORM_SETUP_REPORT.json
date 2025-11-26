@@ -1,0 +1,409 @@
+{
+  "phase": "4",
+  "wave": "4.3",
+  "title": "Mobile Platform Setup",
+  "status": "PARTIALLY_IMPLEMENTED",
+  "overall_completion": "45%",
+  "date": "2025-11-26",
+  "summary": "Mobile platform infrastructure is configured but external platform registrations (Apple Developer, Google Play, Firebase) cannot be verified in codebase. Push notification service implementation is complete.",
+
+  "task_groups": {
+    "4.3.1_ios_platform_setup": {
+      "title": "iOS Platform Setup",
+      "status": "EXTERNAL_CONFIGURATION_REQUIRED",
+      "completion": "30%",
+      "items": [
+        {
+          "task": "Apple Developer account setup",
+          "status": "EXTERNAL",
+          "verification": "Cannot verify - external account setup",
+          "evidence": "No configuration files found in codebase",
+          "notes": "Requires manual registration at developer.apple.com"
+        },
+        {
+          "task": "App ID registration",
+          "status": "CONFIGURED_IN_CODE",
+          "verification": "PARTIAL",
+          "evidence": "apps/mobile/capacitor.config.ts: appId: 'com.wundr.neolith'",
+          "notes": "App ID defined in code, but not verified to be registered in Apple Developer Portal"
+        },
+        {
+          "task": "Provisioning profiles",
+          "status": "NOT_FOUND",
+          "verification": "MISSING",
+          "evidence": "No .mobileprovision files found in codebase",
+          "notes": "Must be generated after Apple Developer account setup"
+        },
+        {
+          "task": "Push notification certificate",
+          "status": "NOT_FOUND",
+          "verification": "MISSING",
+          "evidence": "No APNs certificate files (.p12) found",
+          "notes": "Documentation exists in apps/mobile/README.md for setup instructions"
+        },
+        {
+          "task": "App Store Connect listing",
+          "status": "EXTERNAL",
+          "verification": "Cannot verify - external platform",
+          "evidence": "No configuration files in codebase",
+          "notes": "Requires manual setup in App Store Connect console"
+        },
+        {
+          "task": "TestFlight setup",
+          "status": "EXTERNAL",
+          "verification": "Cannot verify - external platform",
+          "evidence": "No TestFlight configuration found",
+          "notes": "Setup via App Store Connect after app submission"
+        }
+      ],
+      "blocking_issues": [
+        "iOS platform not initialized (ios/ folder missing - run: npm run add:ios)",
+        "No provisioning profiles configured",
+        "APNs certificates not found"
+      ],
+      "next_steps": [
+        "Initialize iOS platform: cd apps/mobile && npm run add:ios",
+        "Register Apple Developer account",
+        "Create App ID in Apple Developer Portal",
+        "Generate provisioning profiles",
+        "Create APNs certificates for push notifications",
+        "Configure signing in Xcode"
+      ]
+    },
+
+    "4.3.2_android_platform_setup": {
+      "title": "Android Platform Setup",
+      "status": "EXTERNAL_CONFIGURATION_REQUIRED",
+      "completion": "30%",
+      "items": [
+        {
+          "task": "Google Play Console setup",
+          "status": "EXTERNAL",
+          "verification": "Cannot verify - external account setup",
+          "evidence": "No configuration files found in codebase",
+          "notes": "Requires manual registration at play.google.com/console"
+        },
+        {
+          "task": "Firebase project",
+          "status": "NOT_CONFIGURED",
+          "verification": "MISSING",
+          "evidence": "No Firebase config found",
+          "notes": "Environment variables for FCM exist in .env.production.template but not populated"
+        },
+        {
+          "task": "google-services.json",
+          "status": "NOT_FOUND",
+          "verification": "MISSING",
+          "evidence": "File not found at apps/mobile/android/app/google-services.json",
+          "notes": "Documentation exists in apps/mobile/README.md for download instructions"
+        },
+        {
+          "task": "Release keystore",
+          "status": "NOT_FOUND",
+          "verification": "MISSING",
+          "evidence": "No .keystore or .jks files found in codebase",
+          "notes": "Must be generated for release builds (not committed to repo for security)"
+        },
+        {
+          "task": "Play Store metadata",
+          "status": "EXTERNAL",
+          "verification": "Cannot verify - external platform",
+          "evidence": "No Play Store listing configuration found",
+          "notes": "Configured in Google Play Console after app creation"
+        }
+      ],
+      "blocking_issues": [
+        "Android platform not initialized (android/ folder missing - run: npm run add:android)",
+        "No Firebase project configured",
+        "google-services.json not present",
+        "No release keystore configured"
+      ],
+      "next_steps": [
+        "Initialize Android platform: cd apps/mobile && npm run add:android",
+        "Create Firebase project at console.firebase.google.com",
+        "Add Android app to Firebase with package name 'com.wundr.neolith'",
+        "Download google-services.json to android/app/",
+        "Generate release keystore for signing",
+        "Create Google Play Console account",
+        "Configure signing in build.gradle"
+      ]
+    },
+
+    "4.3.3_push_notifications_integration": {
+      "title": "Push Notifications Integration",
+      "status": "IMPLEMENTED",
+      "completion": "85%",
+      "items": [
+        {
+          "task": "APNs token registration",
+          "status": "IMPLEMENTED",
+          "verification": "VERIFIED",
+          "evidence": [
+            "packages/@neolith/core/src/services/notification-service.ts:615-632 - APNs configuration in FCM",
+            "apps/web/app/api/push/subscribe/route.ts - Device registration API",
+            "Environment variables: VAPID_* for web push in .env.production.template:125-127"
+          ],
+          "implementation_details": {
+            "service": "NotificationServiceImpl",
+            "method": "sendFCM() with APNs payload",
+            "supports": ["alert", "badge", "sound", "mutable-content"],
+            "configuration": "Uses Firebase Cloud Messaging with APNs integration"
+          }
+        },
+        {
+          "task": "FCM token registration",
+          "status": "IMPLEMENTED",
+          "verification": "VERIFIED",
+          "evidence": [
+            "packages/@neolith/core/src/services/notification-service.ts:569-656 - FCM send implementation",
+            "packages/@neolith/core/src/services/notification-service.ts:278-292 - FCM initialization",
+            "Environment variables: FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL"
+          ],
+          "implementation_details": {
+            "service": "NotificationServiceImpl",
+            "initialization": "admin.initializeApp() with service account credentials",
+            "platforms": ["ios", "android"],
+            "features": ["priority", "ttl", "collapse_key", "data_payload"]
+          }
+        },
+        {
+          "task": "Push sending service",
+          "status": "IMPLEMENTED",
+          "verification": "VERIFIED",
+          "evidence": [
+            "packages/@neolith/core/src/services/notification-service.ts:302-384 - sendPush()",
+            "packages/@neolith/core/src/services/notification-service.ts:389-431 - sendBulkPush()",
+            "packages/@neolith/core/src/services/notification-service.ts:436-469 - sendToChannel()",
+            "apps/web/app/api/push/subscribe/route.ts - Subscription API",
+            "apps/web/app/api/push/unsubscribe/route.ts - Unsubscribe API",
+            "apps/web/app/api/push/test/route.ts - Test push API"
+          ],
+          "implementation_details": {
+            "methods": [
+              "sendPush(userId, notification) - Single user",
+              "sendBulkPush(userIds[], notification) - Multiple users",
+              "sendToChannel(channelId, notification) - Channel broadcast"
+            ],
+            "features": [
+              "User preference checking",
+              "Quiet hours support",
+              "Invalid token cleanup",
+              "Batch processing (500 users/batch)",
+              "Retry mechanism (3 attempts, 1s delay)"
+            ],
+            "device_management": [
+              "registerDevice()",
+              "unregisterDevice()",
+              "getDevices()",
+              "updateDeviceToken()"
+            ],
+            "database": {
+              "table": "PushSubscription",
+              "storage": "In-memory stores + Prisma database",
+              "note": "Service uses in-memory storage that should be migrated to DB tables"
+            }
+          }
+        }
+      ],
+      "configuration_status": {
+        "capacitor_config": {
+          "file": "apps/mobile/capacitor.config.ts",
+          "status": "CONFIGURED",
+          "plugins": {
+            "PushNotifications": {
+              "presentationOptions": ["badge", "sound", "alert"]
+            }
+          }
+        },
+        "environment_variables": {
+          "web_push_vapid": {
+            "VAPID_PUBLIC_KEY": "Template defined",
+            "VAPID_PRIVATE_KEY": "Template defined",
+            "VAPID_SUBJECT": "Template defined",
+            "status": "NEEDS_GENERATION",
+            "command": "npx web-push generate-vapid-keys"
+          },
+          "firebase_fcm": {
+            "FIREBASE_PROJECT_ID": "Template defined",
+            "FIREBASE_PRIVATE_KEY": "Template defined",
+            "FIREBASE_CLIENT_EMAIL": "Template defined",
+            "status": "NEEDS_CONFIGURATION",
+            "source": "Firebase Console service account"
+          }
+        }
+      },
+      "blocking_issues": [
+        "VAPID keys not generated (required for web push)",
+        "Firebase service account credentials not configured",
+        "APNs certificates not created (for iOS push via FCM)"
+      ],
+      "next_steps": [
+        "Generate VAPID keys: npx web-push generate-vapid-keys",
+        "Create Firebase project and download service account credentials",
+        "Configure FIREBASE_* environment variables",
+        "Create APNs certificates and upload to Firebase Console",
+        "Test push notifications on real devices",
+        "Consider migrating in-memory device storage to database tables"
+      ]
+    }
+  },
+
+  "architecture_analysis": {
+    "push_notification_flow": {
+      "web_platform": {
+        "technology": "Web Push API + VAPID",
+        "service": "webpush npm package",
+        "implementation": "notification-service.ts:500-564",
+        "status": "IMPLEMENTED"
+      },
+      "mobile_platforms": {
+        "technology": "Firebase Cloud Messaging (FCM)",
+        "ios_delivery": "FCM → APNs → iOS Device",
+        "android_delivery": "FCM → Android Device",
+        "implementation": "notification-service.ts:569-656",
+        "status": "IMPLEMENTED"
+      },
+      "device_registration": {
+        "api_endpoint": "/api/push/subscribe",
+        "method": "POST",
+        "storage": "PushSubscription database table",
+        "supports": ["ios", "android", "web"]
+      }
+    },
+
+    "configuration_dependencies": {
+      "ios_push_requires": [
+        "Apple Developer account",
+        "APNs certificate (.p12)",
+        "Firebase project with iOS app",
+        "APNs auth key uploaded to Firebase",
+        "Bundle ID: com.wundr.neolith"
+      ],
+      "android_push_requires": [
+        "Firebase project with Android app",
+        "google-services.json in android/app/",
+        "Package name: com.wundr.neolith",
+        "Cloud Messaging enabled in Firebase"
+      ],
+      "web_push_requires": [
+        "VAPID key pair",
+        "Service worker registration",
+        "Push notification permission from user"
+      ]
+    }
+  },
+
+  "critical_findings": {
+    "blocking_for_mobile_deployment": [
+      {
+        "issue": "Native platforms not initialized",
+        "severity": "CRITICAL",
+        "impact": "Cannot build or test mobile apps",
+        "resolution": "Run npm run add:ios and npm run add:android in apps/mobile"
+      },
+      {
+        "issue": "Next.js static export not enabled",
+        "severity": "CRITICAL",
+        "impact": "Mobile app cannot load web content",
+        "resolution": "See MOBILE_CONFIG_VERIFICATION_REPORT.md - requires architecture decision",
+        "reference": "apps/mobile/MOBILE_CONFIG_VERIFICATION_REPORT.md"
+      },
+      {
+        "issue": "Firebase configuration missing",
+        "severity": "HIGH",
+        "impact": "Push notifications won't work on mobile",
+        "resolution": "Create Firebase project and configure environment variables"
+      },
+      {
+        "issue": "VAPID keys not generated",
+        "severity": "HIGH",
+        "impact": "Web push notifications won't work",
+        "resolution": "Run: npx web-push generate-vapid-keys"
+      }
+    ],
+
+    "external_setup_required": [
+      {
+        "platform": "Apple Developer",
+        "tasks": ["Account registration", "App ID creation", "Provisioning profiles", "APNs certificates"],
+        "cost": "$99/year",
+        "timeline": "1-2 days for approval"
+      },
+      {
+        "platform": "Google Play Console",
+        "tasks": ["Account registration", "App creation", "Release keystore"],
+        "cost": "$25 one-time",
+        "timeline": "Instant approval"
+      },
+      {
+        "platform": "Firebase",
+        "tasks": ["Project creation", "iOS app setup", "Android app setup", "Service account creation"],
+        "cost": "Free tier available",
+        "timeline": "Instant setup"
+      }
+    ]
+  },
+
+  "verification_summary": {
+    "can_verify_in_codebase": {
+      "capacitor_configuration": "VERIFIED",
+      "push_notification_service": "VERIFIED",
+      "api_endpoints": "VERIFIED",
+      "environment_variable_templates": "VERIFIED",
+      "documentation": "VERIFIED"
+    },
+    "cannot_verify_in_codebase": {
+      "apple_developer_account": "EXTERNAL - requires developer.apple.com",
+      "google_play_account": "EXTERNAL - requires play.google.com/console",
+      "firebase_project": "EXTERNAL - requires console.firebase.google.com",
+      "app_store_listing": "EXTERNAL - requires appstoreconnect.apple.com",
+      "testflight_setup": "EXTERNAL - requires appstoreconnect.apple.com",
+      "actual_credentials": "SECURITY - should not be in codebase"
+    },
+    "security_notes": [
+      "APNs certificates (.p12) should NOT be committed to repo",
+      "Release keystores (.jks) should NOT be committed to repo",
+      "google-services.json may contain sensitive data - use .gitignore",
+      "All credentials should be stored in environment variables or secure vaults",
+      "Service account JSON files should NOT be committed"
+    ]
+  },
+
+  "recommendations": {
+    "immediate_actions": [
+      "Initialize iOS and Android platforms",
+      "Resolve Next.js static export issue (see MOBILE_CONFIG_VERIFICATION_REPORT.md)",
+      "Generate VAPID keys for web push",
+      "Create Firebase project"
+    ],
+    "short_term": [
+      "Register Apple Developer account",
+      "Register Google Play Console account",
+      "Configure Firebase for both platforms",
+      "Generate release signing keys",
+      "Test push notifications end-to-end"
+    ],
+    "long_term": [
+      "Migrate device storage from in-memory to database tables",
+      "Implement push notification analytics",
+      "Add support for rich notifications",
+      "Implement notification action handlers",
+      "Set up automated certificate renewal"
+    ]
+  },
+
+  "files_reviewed": [
+    "apps/mobile/capacitor.config.ts",
+    "apps/mobile/package.json",
+    "apps/mobile/README.md",
+    "apps/mobile/MOBILE_CONFIG_VERIFICATION_REPORT.md",
+    "packages/@neolith/core/src/services/notification-service.ts",
+    "packages/@neolith/core/src/types/notification.ts",
+    "apps/web/app/api/push/subscribe/route.ts",
+    "apps/web/app/api/push/unsubscribe/route.ts",
+    "apps/web/app/api/push/test/route.ts",
+    ".env.production.template"
+  ],
+
+  "conclusion": "Mobile platform setup is technically implemented in the codebase with comprehensive push notification infrastructure. However, external platform registrations (Apple Developer, Google Play Console, Firebase) cannot be verified and are required for deployment. The critical blocker is the Next.js configuration issue preventing static export for Capacitor. Once platforms are initialized and external accounts are configured, the system is ready for mobile deployment."
+}

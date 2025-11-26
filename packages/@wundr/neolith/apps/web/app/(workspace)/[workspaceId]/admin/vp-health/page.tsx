@@ -61,7 +61,7 @@ export default function VPHealthDashboardPage() {
   const handleHealthCheck = useCallback(async () => {
     setIsCheckingHealth(true);
     try {
-      await fetch(`/api/organizations/${workspaceId}/vps/health-check`, {
+      await fetch(`/api/workspaces/${workspaceId}/vps/health-check`, {
         method: 'POST',
       });
       await refetch();

@@ -133,13 +133,13 @@ export interface UseIntegrationReturn {
 /**
  * Hook for single integration operations
  */
-export function useIntegration(integrationId: string): UseIntegrationReturn {
+export function useIntegration(workspaceId: string, integrationId: string): UseIntegrationReturn {
   const [integration, setIntegration] = useState<IntegrationConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchIntegration = useCallback(async () => {
-    if (!integrationId) {
+    if (!workspaceId || !integrationId) {
 return;
 }
 
@@ -147,7 +147,7 @@ return;
     setError(null);
 
     try {
-      const response = await fetch(`/api/integrations/${integrationId}`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/integrations/${integrationId}`);
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -164,7 +164,7 @@ return;
     } finally {
       setIsLoading(false);
     }
-  }, [integrationId]);
+  }, [workspaceId, integrationId]);
 
   useEffect(() => {
     fetchIntegration();
@@ -172,7 +172,7 @@ return;
 
   const testConnection = useCallback(async (): Promise<{ success: boolean; message?: string }> => {
     try {
-      const response = await fetch(`/api/integrations/${integrationId}/test`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/integrations/${integrationId}/test`, {
         method: 'POST',
       });
 
@@ -189,11 +189,11 @@ return;
         message: err instanceof Error ? err.message : 'Connection test failed',
       };
     }
-  }, [integrationId]);
+  }, [workspaceId, integrationId]);
 
   const syncIntegration = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/integrations/${integrationId}/sync`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/integrations/${integrationId}/sync`, {
         method: 'POST',
       });
 
@@ -207,12 +207,12 @@ return;
       setError(err instanceof Error ? err : new Error('Failed to sync integration'));
       return false;
     }
-  }, [integrationId, fetchIntegration]);
+  }, [workspaceId, integrationId, fetchIntegration]);
 
   const updateIntegration = useCallback(
     async (input: UpdateIntegrationInput): Promise<IntegrationConfig | null> => {
       try {
-        const response = await fetch(`/api/integrations/${integrationId}`, {
+        const response = await fetch(`/api/workspaces/${workspaceId}/integrations/${integrationId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(input),
@@ -230,12 +230,12 @@ return;
         return null;
       }
     },
-    [integrationId],
+    [workspaceId, integrationId],
   );
 
   const deleteIntegration = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/integrations/${integrationId}`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/integrations/${integrationId}`, {
         method: 'DELETE',
       });
 
@@ -249,7 +249,7 @@ return;
       setError(err instanceof Error ? err : new Error('Failed to delete integration'));
       return false;
     }
-  }, [integrationId]);
+  }, [workspaceId, integrationId]);
 
   const refetch = useCallback(() => {
     fetchIntegration();
@@ -334,10 +334,9 @@ export function useIntegrationMutations(): UseIntegrationMutationsReturn {
       setError(null);
 
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/integrations/oauth`, {
+        const response = await fetch(`/api/workspaces/${workspaceId}/integrations/oauth/${provider}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ provider }),
         });
 
         if (!response.ok) {
@@ -504,14 +503,14 @@ export interface UseWebhookReturn {
 /**
  * Hook for single webhook operations
  */
-export function useWebhook(webhookId: string): UseWebhookReturn {
+export function useWebhook(workspaceId: string, webhookId: string): UseWebhookReturn {
   const [webhook, setWebhook] = useState<WebhookConfig | null>(null);
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchWebhook = useCallback(async () => {
-    if (!webhookId) {
+    if (!workspaceId || !webhookId) {
 return;
 }
 
@@ -520,8 +519,8 @@ return;
 
     try {
       const [webhookResponse, deliveriesResponse] = await Promise.all([
-        fetch(`/api/webhooks/${webhookId}`),
-        fetch(`/api/webhooks/${webhookId}/deliveries?limit=10`),
+        fetch(`/api/workspaces/${workspaceId}/webhooks/${webhookId}`),
+        fetch(`/api/workspaces/${workspaceId}/webhooks/${webhookId}/deliveries?limit=10`),
       ]);
 
       if (!webhookResponse.ok) {
@@ -544,7 +543,7 @@ return;
     } finally {
       setIsLoading(false);
     }
-  }, [webhookId]);
+  }, [workspaceId, webhookId]);
 
   useEffect(() => {
     fetchWebhook();
@@ -555,7 +554,7 @@ return;
     delivery?: WebhookDelivery;
   }> => {
     try {
-      const response = await fetch(`/api/webhooks/${webhookId}/test`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/webhooks/${webhookId}/test`, {
         method: 'POST',
       });
 
@@ -571,12 +570,12 @@ return;
     } catch (_err) {
       return { success: false };
     }
-  }, [webhookId]);
+  }, [workspaceId, webhookId]);
 
   const updateWebhook = useCallback(
     async (input: UpdateWebhookInput): Promise<WebhookConfig | null> => {
       try {
-        const response = await fetch(`/api/webhooks/${webhookId}`, {
+        const response = await fetch(`/api/workspaces/${workspaceId}/webhooks/${webhookId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(input),
@@ -594,12 +593,12 @@ return;
         return null;
       }
     },
-    [webhookId],
+    [workspaceId, webhookId],
   );
 
   const deleteWebhook = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/webhooks/${webhookId}`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/webhooks/${webhookId}`, {
         method: 'DELETE',
       });
 
@@ -613,11 +612,11 @@ return;
       setError(err instanceof Error ? err : new Error('Failed to delete webhook'));
       return false;
     }
-  }, [webhookId]);
+  }, [workspaceId, webhookId]);
 
   const rotateSecret = useCallback(async (): Promise<{ secret: string } | null> => {
     try {
-      const response = await fetch(`/api/webhooks/${webhookId}/rotate-secret`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/webhooks/${webhookId}/rotate-secret`, {
         method: 'POST',
       });
 
@@ -632,7 +631,7 @@ return;
       setError(err instanceof Error ? err : new Error('Failed to rotate secret'));
       return null;
     }
-  }, [webhookId, fetchWebhook]);
+  }, [workspaceId, webhookId, fetchWebhook]);
 
   const refetch = useCallback(() => {
     fetchWebhook();
@@ -685,6 +684,7 @@ export interface UseWebhookDeliveriesReturn {
  * Hook for webhook delivery history with pagination
  */
 export function useWebhookDeliveries(
+  workspaceId: string,
   webhookId: string,
   options?: UseWebhookDeliveriesOptions,
 ): UseWebhookDeliveriesReturn {
@@ -698,7 +698,7 @@ export function useWebhookDeliveries(
 
   const fetchDeliveries = useCallback(
     async (append = false) => {
-      if (!webhookId) {
+      if (!workspaceId || !webhookId) {
 return;
 }
 
@@ -714,7 +714,7 @@ params.set('status', options.status);
 }
 
         const response = await fetch(
-          `/api/webhooks/${webhookId}/deliveries?${params.toString()}`,
+          `/api/workspaces/${workspaceId}/webhooks/${webhookId}/deliveries?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -737,13 +737,13 @@ params.set('status', options.status);
         setIsLoading(false);
       }
     },
-    [webhookId, offset, limit, options?.status],
+    [workspaceId, webhookId, offset, limit, options?.status],
   );
 
   useEffect(() => {
     fetchDeliveries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [webhookId, options?.status]);
+  }, [workspaceId, webhookId, options?.status]);
 
   const loadMore = useCallback(async () => {
     if (hasMore && !isLoading) {
@@ -756,7 +756,7 @@ params.set('status', options.status);
     async (deliveryId: string): Promise<WebhookDelivery | null> => {
       try {
         const response = await fetch(
-          `/api/webhooks/${webhookId}/deliveries/${deliveryId}/retry`,
+          `/api/workspaces/${workspaceId}/webhooks/${webhookId}/deliveries/${deliveryId}/retry`,
           {
             method: 'POST',
           },
@@ -779,7 +779,7 @@ params.set('status', options.status);
         return null;
       }
     },
-    [webhookId],
+    [workspaceId, webhookId],
   );
 
   return {

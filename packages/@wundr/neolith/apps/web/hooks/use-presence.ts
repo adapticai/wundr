@@ -294,21 +294,21 @@ return;
 }
 
 /**
- * Hook for listing all VP health statuses in an organization
- * @param orgId - The ID of the organization to fetch VP health for
+ * Hook for listing all VP health statuses in a workspace
+ * @param workspaceId - The ID of the workspace to fetch VP health for
  * @returns List of VP health statuses with loading state and refetch method
  */
-export function useVPHealthList(orgId: string): UseVPHealthListReturn {
+export function useVPHealthList(workspaceId: string): UseVPHealthListReturn {
   const [vpList, setVpList] = useState<VPHealthStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchHealth = useCallback(async () => {
-    if (!orgId) {
+    if (!workspaceId) {
 return;
 }
 
     try {
-      const response = await fetch(`/api/organizations/${orgId}/vps/health`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/vps/health`);
       if (response.ok) {
         const data = await response.json();
         setVpList(
@@ -323,7 +323,7 @@ return;
     } finally {
       setIsLoading(false);
     }
-  }, [orgId]);
+  }, [workspaceId]);
 
   useEffect(() => {
     fetchHealth();

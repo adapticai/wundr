@@ -6,6 +6,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 import { InviteDialog } from '@/components/channel/invite-dialog';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useAuth } from '@/hooks/use-auth';
 import { useChannel, useChannelMembers, useChannelMutations, useChannelPermissions } from '@/hooks/use-channel';
 import { cn } from '@/lib/utils';
 
@@ -20,14 +21,12 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'advanced', label: 'Advanced' },
 ];
 
-// Mock current user ID - in production, this comes from auth
-const MOCK_CURRENT_USER_ID = 'user-1';
-
 export default function ChannelSettingsPage() {
   const params = useParams();
   const router = useRouter();
   const workspaceId = params.workspaceId as string;
   const channelId = params.channelId as string;
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -37,7 +36,7 @@ export default function ChannelSettingsPage() {
     useChannelMembers(channelId);
   const { permissions, isLoading: isPermissionsLoading } = useChannelPermissions(
     channelId,
-    MOCK_CURRENT_USER_ID,
+    authUser?.id || '',
   );
   const {
     updateChannel,
@@ -49,14 +48,16 @@ export default function ChannelSettingsPage() {
     isLoading: isMutating,
   } = useChannelMutations();
 
-  const isLoading = isChannelLoading || isPermissionsLoading;
+  const isLoading = isChannelLoading || isPermissionsLoading || isAuthLoading;
 
-  // Redirect if user doesn't have permission to view settings
+  // Redirect if user is not authenticated or doesn't have permission to view settings
   useEffect(() => {
-    if (!isPermissionsLoading && !permissions.canEdit) {
+    if (!isAuthLoading && !authUser) {
+      router.push(`/${workspaceId}/channels/${channelId}`);
+    } else if (!isPermissionsLoading && !permissions.canEdit) {
       router.push(`/${workspaceId}/channels/${channelId}`);
     }
-  }, [isPermissionsLoading, permissions.canEdit, router, workspaceId, channelId]);
+  }, [isAuthLoading, authUser, isPermissionsLoading, permissions.canEdit, router, workspaceId, channelId]);
 
   const handleBack = useCallback(() => {
     router.push(`/${workspaceId}/channels/${channelId}`);
@@ -169,7 +170,7 @@ export default function ChannelSettingsPage() {
               members={members}
               onlineMembers={onlineMembers}
               offlineMembers={offlineMembers}
-              currentUserId={MOCK_CURRENT_USER_ID}
+              currentUserId={authUser?.id || ''}
               permissions={permissions}
               onInvite={() => setIsInviteDialogOpen(true)}
               onRemove={handleRemoveMember}

@@ -1,0 +1,321 @@
+{
+  "page": "Channels",
+  "review_date": "2025-11-26",
+  "files_reviewed": [
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/page.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/page.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/settings/page.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/loading.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/messages/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/members/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/typing/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-chat.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/channel/invite-dialog.tsx"
+  ],
+  "issues": [
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/page.tsx",
+      "line": 9,
+      "type": "incomplete",
+      "severity": "critical",
+      "description": "Channel list page has hardcoded empty array instead of fetching actual channels from API",
+      "code_snippet": "// TODO: Replace with actual channel fetching logic\nconst channels: any[] = [];\nconst isLoading = false;\nconst error = null;",
+      "recommended_fix": "Implement useChannels hook with workspaceId to fetch channels from /api/channels or /api/workspaces/{workspaceId}/channels endpoint"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/page.tsx",
+      "line": 82,
+      "type": "incomplete",
+      "severity": "critical",
+      "description": "Create Channel Dialog is a non-functional placeholder - only shows a close button",
+      "code_snippet": "{/* Create Channel Dialog - TODO: Implement */}\n{isCreateDialogOpen && (\n  <div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/50\">\n    <div className=\"rounded-lg bg-background p-6\">\n      <h2 className=\"text-xl font-semibold\">Create Channel</h2>\n      <p className=\"mt-2 text-sm text-muted-foreground\">\n        Channel creation dialog to be implemented\n      </p>",
+      "recommended_fix": "Replace placeholder with CreateChannelDialog component from @/components/channel/create-channel-dialog.tsx or implement a proper form with name, description, type (public/private), and member selection"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/page.tsx",
+      "line": 26,
+      "type": "non-interactive",
+      "severity": "high",
+      "description": "Create Channel button opens dialog but dialog is non-functional placeholder",
+      "code_snippet": "<button\n  type=\"button\"\n  onClick={() => setIsCreateDialogOpen(true)}\n  className=\"inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90\"\n>\n  <Plus className=\"h-4 w-4\" />\n  Create Channel\n</button>",
+      "recommended_fix": "Connect to CreateChannelDialog component with onSubmit handler that calls POST /api/channels endpoint"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/page.tsx",
+      "line": 24,
+      "type": "mock-data",
+      "severity": "critical",
+      "description": "Using hardcoded MOCK_CURRENT_USER instead of getting user from auth session",
+      "code_snippet": "// Mock current user - in production, this comes from auth\nconst MOCK_CURRENT_USER: User = {\n  id: 'user-1',\n  name: 'Current User',\n  email: 'current@example.com',\n  status: 'online',\n};",
+      "recommended_fix": "Replace with useSession() hook or getServerSession() to get authenticated user data from auth context"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/page.tsx",
+      "line": 271,
+      "type": "non-interactive",
+      "severity": "medium",
+      "description": "Settings button has no onClick handler - doesn't navigate to settings page",
+      "code_snippet": "<button\n  type=\"button\"\n  className=\"rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground\"\n  title=\"Channel settings\"\n>\n  <SettingsIcon />\n</button>",
+      "recommended_fix": "Add onClick handler to navigate to /{workspaceId}/channels/{channelId}/settings using router.push()"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/settings/page.tsx",
+      "line": 24,
+      "type": "mock-data",
+      "severity": "critical",
+      "description": "Using hardcoded MOCK_CURRENT_USER_ID instead of getting user ID from auth session",
+      "code_snippet": "// Mock current user ID - in production, this comes from auth\nconst MOCK_CURRENT_USER_ID = 'user-1';",
+      "recommended_fix": "Get current user ID from auth session using useSession() or getServerSession()"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/settings/page.tsx",
+      "line": 588,
+      "type": "incomplete",
+      "severity": "medium",
+      "description": "Permissions tab has state but no save functionality - changes are not persisted",
+      "code_snippet": "const [postingPermission, setPostingPermission] = useState('everyone');\nconst [mentionPermission, setMentionPermission] = useState('everyone');",
+      "recommended_fix": "Add save button and API endpoint to persist permission changes (PATCH /api/channels/{channelId}/permissions)"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-chat.ts",
+      "line": 221,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "EventSource subscription to /api/channels/{channelId}/subscribe endpoint that doesn't exist",
+      "code_snippet": "const eventSource = new EventSource(`/api/channels/${channelId}/subscribe`);",
+      "recommended_fix": "Create /api/channels/[channelId]/subscribe endpoint for Server-Sent Events or implement WebSocket connection"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-chat.ts",
+      "line": 330,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Fetching thread from /api/messages/{parentId}/thread endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/messages/${parentId}/thread`);",
+      "recommended_fix": "Create /api/messages/[messageId]/thread endpoint to fetch thread replies or update to use existing messages endpoint with parentId filter"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-chat.ts",
+      "line": 418,
+      "type": "missing-api",
+      "severity": "critical",
+      "description": "Sending message to /api/messages endpoint that doesn't exist in channels context",
+      "code_snippet": "const response = await fetch('/api/messages', {\n  method: 'POST',\n  body: formData,\n});",
+      "recommended_fix": "Use /api/channels/{channelId}/messages endpoint instead, which exists and handles message creation"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-chat.ts",
+      "line": 569,
+      "type": "missing-api",
+      "severity": "medium",
+      "description": "EventSource listening to /api/channels/{channelId}/typing for real-time typing updates, but endpoint returns JSON not SSE",
+      "code_snippet": "const eventSource = new EventSource(`/api/channels/${channelId}/typing`);",
+      "recommended_fix": "Update /api/channels/[channelId]/typing endpoint to support Server-Sent Events (SSE) or use polling mechanism with setInterval"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 158,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Fetching channels from /api/workspaces/{workspaceId}/channels endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/workspaces/${workspaceId}/channels`);",
+      "recommended_fix": "Use /api/channels?workspaceId={workspaceId} endpoint instead, which exists and supports filtering by workspace"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 331,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Creating channel via /api/workspaces/{workspaceId}/channels endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/workspaces/${workspaceId}/channels`, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(input),\n});",
+      "recommended_fix": "Use /api/channels endpoint (POST) which exists and accepts workspaceId in request body"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 416,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Archiving channel via /api/channels/{channelId}/archive endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/channels/${channelId}/archive`, {\n  method: 'POST',\n});",
+      "recommended_fix": "Use PATCH /api/channels/{channelId} with { isArchived: true } in request body, which is supported by existing endpoint"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 439,
+      "type": "missing-api",
+      "severity": "medium",
+      "description": "Toggle star via /api/channels/{channelId}/star endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/channels/${channelId}/star`, {\n  method: isStarred ? 'DELETE' : 'POST',\n});",
+      "recommended_fix": "Create /api/channels/[channelId]/star endpoint for POST/DELETE operations or add isStarred field to channel updates"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 463,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Leave channel via /api/channels/{channelId}/leave endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/channels/${channelId}/leave`, {\n  method: 'POST',\n});",
+      "recommended_fix": "Use existing /api/channels/[channelId]/leave endpoint (verify it exists) or DELETE /api/channels/{channelId}/members/{userId} with current user ID"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 486,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Inviting members expects array of userIds but API only accepts single userId",
+      "code_snippet": "const response = await fetch(`/api/channels/${channelId}/members`, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ userIds, role }),\n});",
+      "recommended_fix": "Update API endpoint to accept userIds array or loop through userIds and make individual POST requests for each user"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 538,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Changing member role via /api/channels/{channelId}/members/{userId}/role endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/channels/${channelId}/members/${userId}/role`, {\n  method: 'PATCH',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ role }),\n});",
+      "recommended_fix": "Create /api/channels/[channelId]/members/[userId]/route.ts with PATCH handler to update member role, or update existing DELETE endpoint to also handle PATCH"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 598,
+      "type": "missing-api",
+      "severity": "high",
+      "description": "Fetching permissions from /api/channels/{channelId}/permissions endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/channels/${channelId}/permissions`);",
+      "recommended_fix": "Create /api/channels/[channelId]/permissions/route.ts with GET handler to return user permissions based on role and membership"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 646,
+      "type": "missing-api",
+      "severity": "medium",
+      "description": "Fetching direct messages from /api/workspaces/{workspaceId}/direct-messages endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(`/api/workspaces/${workspaceId}/direct-messages`);",
+      "recommended_fix": "Create /api/workspaces/[workspaceId]/direct-messages endpoint or use channels endpoint with type=DIRECT filter"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-channel.ts",
+      "line": 715,
+      "type": "missing-api",
+      "severity": "medium",
+      "description": "Searching workspace users from /api/workspaces/{workspaceId}/users endpoint that doesn't exist",
+      "code_snippet": "const response = await fetch(\n  `/api/workspaces/${workspaceId}/users?search=${encodeURIComponent(query)}`,\n);",
+      "recommended_fix": "Create /api/workspaces/[workspaceId]/users endpoint or use /api/users endpoint with workspaceId filter"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/typing/route.ts",
+      "line": 38,
+      "type": "ui-issue",
+      "severity": "medium",
+      "description": "Typing indicator uses in-memory Map storage which won't work in serverless or multi-instance deployments",
+      "code_snippet": "const typingStore = new Map<\n  string,\n  Map<string, { userId: string; userName: string; expiresAt: number }>\n>();",
+      "recommended_fix": "Use Redis or database-backed storage for typing indicators to support distributed deployments"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/members/route.ts",
+      "line": 182,
+      "type": "missing-integration",
+      "severity": "medium",
+      "description": "POST endpoint only accepts single userId but hook expects to send multiple userIds",
+      "code_snippet": "const parseResult = addChannelMemberSchema.safeParse(body);\n// Schema expects: { userId: string, role: 'ADMIN' | 'MEMBER' }",
+      "recommended_fix": "Update endpoint to accept userIds array and create multiple memberships in transaction, or update hook to make sequential requests"
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/channels/[channelId]/route.ts",
+      "line": 223,
+      "type": "ui-issue",
+      "severity": "low",
+      "description": "Channel data returned doesn't include members array but frontend expects it",
+      "code_snippet": "const channel = await prisma.channel.findUnique({\n  where: { id: params.channelId },\n  include: {\n    workspace: { ... },\n    _count: { select: { members: true, messages: true } },\n  },\n});",
+      "recommended_fix": "Include members in the response or update frontend to fetch members separately (which is already done via useChannelMembers hook)"
+    }
+  ],
+  "summary": {
+    "total_issues": 25,
+    "critical": 6,
+    "high": 11,
+    "medium": 7,
+    "low": 1,
+    "categories": {
+      "incomplete": 3,
+      "non-interactive": 2,
+      "mock-data": 3,
+      "missing-api": 13,
+      "missing-integration": 1,
+      "ui-issue": 3
+    }
+  },
+  "missing_api_endpoints": [
+    "/api/channels/[channelId]/subscribe (SSE endpoint for real-time updates)",
+    "/api/messages/[messageId]/thread (GET thread replies)",
+    "/api/messages (POST - should use /api/channels/[channelId]/messages instead)",
+    "/api/workspaces/[workspaceId]/channels (GET/POST - exists as /api/channels with workspaceId param)",
+    "/api/channels/[channelId]/archive (POST - can use PATCH to main endpoint)",
+    "/api/channels/[channelId]/star (POST/DELETE)",
+    "/api/channels/[channelId]/members/[userId]/role (PATCH)",
+    "/api/channels/[channelId]/permissions (GET)",
+    "/api/workspaces/[workspaceId]/direct-messages (GET/POST)",
+    "/api/workspaces/[workspaceId]/users (GET)"
+  ],
+  "priority_fixes": [
+    {
+      "priority": 1,
+      "description": "Replace MOCK_CURRENT_USER with actual auth session data in all channel pages",
+      "impact": "Authentication and authorization completely broken"
+    },
+    {
+      "priority": 2,
+      "description": "Implement channel fetching in channels list page (currently shows empty array)",
+      "impact": "Users cannot see any channels"
+    },
+    {
+      "priority": 3,
+      "description": "Implement CreateChannelDialog component with working form",
+      "impact": "Users cannot create new channels"
+    },
+    {
+      "priority": 4,
+      "description": "Fix API endpoint mismatches between hooks and actual API routes",
+      "impact": "Most functionality will fail at runtime"
+    },
+    {
+      "priority": 5,
+      "description": "Create missing API endpoints for permissions, starring, and member role changes",
+      "impact": "Settings and member management features won't work"
+    },
+    {
+      "priority": 6,
+      "description": "Implement real-time subscriptions (WebSocket or SSE) for messages and typing indicators",
+      "impact": "No real-time updates for messages or typing status"
+    }
+  ],
+  "positive_findings": [
+    "API routes have comprehensive validation using Zod schemas",
+    "Good separation of concerns with custom hooks for different functionalities",
+    "Proper error handling and status codes in API routes",
+    "Optimistic updates implemented in useMessages hook",
+    "Loading and error states properly handled in UI components",
+    "InviteDialog component is well-structured and functional",
+    "Channel settings page has good permission checks and access control",
+    "API routes include proper authentication checks",
+    "TypeScript types are well-defined for all data structures",
+    "Proper transaction usage in database operations for data consistency"
+  ],
+  "recommendations": [
+    "Create a centralized API client utility to handle endpoint URLs and reduce hardcoding",
+    "Add environment variable for API base URL to make endpoint changes easier",
+    "Implement proper WebSocket or SSE infrastructure for real-time features",
+    "Create authentication context provider to avoid hardcoded user data",
+    "Add comprehensive error boundary components for better error handling",
+    "Implement request/response interceptors for common error handling",
+    "Add unit tests for custom hooks with mock API responses",
+    "Create integration tests for API routes",
+    "Document all API endpoints in OpenAPI/Swagger format",
+    "Add loading skeletons for better perceived performance",
+    "Implement retry logic for failed API requests",
+    "Add telemetry/logging for API failures and user actions"
+  ]
+}

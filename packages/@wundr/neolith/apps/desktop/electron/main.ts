@@ -52,6 +52,33 @@ let nextServer: any = null;
 const isDev = !app.isPackaged;
 const PROTOCOL_NAME = 'neolith';
 
+// OAuth providers that should be allowed to navigate within Electron
+const ALLOWED_OAUTH_HOSTS = [
+  'accounts.google.com',
+  'github.com',
+  'api.github.com',
+  'oauth.github.com',
+  'localhost',
+];
+
+/**
+ * Check if URL is an allowed OAuth or local URL
+ */
+function isAllowedUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    // Allow localhost
+    if (parsedUrl.hostname === 'localhost') return true;
+    // Allow file:// URLs
+    if (parsedUrl.protocol === 'file:') return true;
+    // Allow OAuth providers
+    if (ALLOWED_OAUTH_HOSTS.some(host => parsedUrl.hostname.endsWith(host))) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 console.log('Neolith Desktop starting...');
 console.log('isDev:', isDev);
 console.log('isPackaged:', app.isPackaged);
@@ -204,22 +231,34 @@ function createWindow(): void {
     mainWindow = null;
   });
 
-  // Handle external links
+  // Handle external links - only open truly external URLs in browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isAllowedUrl(url)) {
+      // Allow OAuth popups to open in a new Electron window
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 500,
+          height: 700,
+          webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+          },
+        },
+      };
+    }
+    // Open other external URLs in system browser
     shell.openExternal(url);
     return { action: 'deny' };
   });
 
-  // Security: Prevent navigation to external URLs
+  // Security: Prevent navigation to truly external URLs, but allow OAuth
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    const parsedUrl = new URL(url);
-    if (
-      parsedUrl.origin !== 'http://localhost:3000' &&
-      !url.startsWith('file://')
-    ) {
+    if (!isAllowedUrl(url)) {
       event.preventDefault();
       shell.openExternal(url);
     }
+    // OAuth URLs are allowed to navigate within the window
   });
 }
 
@@ -733,19 +772,30 @@ if (!gotTheLock) {
 
   // Security: Prevent web contents from loading insecure content
   app.on('web-contents-created', (_event, contents) => {
-    // Disable navigation to external URLs
+    // Allow navigation to OAuth providers, block other external URLs
     contents.on('will-navigate', (navEvent, url) => {
-      const parsedUrl = new URL(url);
-      if (
-        parsedUrl.origin !== 'http://localhost:3000' &&
-        !url.startsWith('file://')
-      ) {
+      if (!isAllowedUrl(url)) {
         navEvent.preventDefault();
+        shell.openExternal(url);
       }
     });
 
-    // Disable new window creation (popups)
-    contents.setWindowOpenHandler(() => {
+    // Allow OAuth popups, deny other new windows
+    contents.setWindowOpenHandler(({ url }) => {
+      if (isAllowedUrl(url)) {
+        return {
+          action: 'allow',
+          overrideBrowserWindowOptions: {
+            width: 500,
+            height: 700,
+            webPreferences: {
+              nodeIntegration: false,
+              contextIsolation: true,
+            },
+          },
+        };
+      }
+      shell.openExternal(url);
       return { action: 'deny' };
     });
   });

@@ -1,0 +1,262 @@
+{
+  "report_metadata": {
+    "report_title": "Phase 0 Task Group 0.3 - Critical Configuration Issues Status Report",
+    "report_date": "2025-11-26",
+    "evaluated_by": "DevOps Engineer Agent",
+    "project": "Neolith",
+    "task_group": "0.3 - Critical Configuration Issues"
+  },
+  "executive_summary": {
+    "total_tasks": 6,
+    "completed_tasks": 5,
+    "incomplete_tasks": 1,
+    "completion_percentage": 83.33,
+    "status": "MOSTLY_COMPLETE",
+    "blocking_issues": [
+      "Task 0.3.6: Package versions not aligned to 1.0.3 - all Neolith packages are at 0.1.0"
+    ],
+    "critical_notes": [
+      "Task 0.3.2 has conflicting configuration: Next.js config has 'distDir: out' but no 'output: export' for static export mode",
+      "One branding inconsistency found in mobile package.json description"
+    ]
+  },
+  "task_status": [
+    {
+      "task_id": "0.3.1",
+      "task_name": "Fix mobile Capacitor config (webDir: '../web/out' not 'dist')",
+      "status": "COMPLETE",
+      "completion_percentage": 100,
+      "evidence": {
+        "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/capacitor.config.ts",
+        "line_numbers": "3-6",
+        "current_configuration": {
+          "appId": "com.wundr.neolith",
+          "appName": "Neolith",
+          "webDir": "../web/out"
+        },
+        "verification": "PASSED - webDir is correctly set to '../web/out' (not 'dist')"
+      },
+      "findings": "Configuration is correct. The webDir points to '../web/out' as required."
+    },
+    {
+      "task_id": "0.3.2",
+      "task_name": "Configure Next.js static export for mobile: output: 'export'",
+      "status": "INCOMPLETE",
+      "completion_percentage": 50,
+      "evidence": {
+        "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/next.config.js",
+        "line_numbers": "6, 90",
+        "current_configuration": {
+          "distDir": "out",
+          "output": "commented out (line 90)"
+        },
+        "verification": "FAILED - output: 'export' is not set"
+      },
+      "findings": "Next.js config has distDir set to 'out' but the 'output: export' option is not configured. Line 90 shows a commented 'output: standalone' with a TODO note. For static export to mobile (Capacitor), 'output: export' should be explicitly set.",
+      "required_action": "Add 'output: \"export\"' to next.config.js to enable static HTML export for Capacitor mobile app",
+      "impact": "MEDIUM - May cause issues with mobile app build or dynamic features that don't work in static export mode"
+    },
+    {
+      "task_id": "0.3.3",
+      "task_name": "Fix desktop Electron renderer path",
+      "status": "COMPLETE",
+      "completion_percentage": 100,
+      "evidence": {
+        "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/desktop/electron/main.ts",
+        "line_numbers": "144-201",
+        "current_configuration": {
+          "dev_mode": "http://localhost:3000",
+          "production_mode": "next start -p 3000 OR ../out/index.html fallback",
+          "webAppDir": "path.join(__dirname, '..')"
+        },
+        "verification": "PASSED - Production uses Next.js server with fallback to static files in 'out' directory"
+      },
+      "findings": "Desktop Electron configuration is correctly set up with proper path resolution for both development and production modes. Production mode starts Next.js server from the webAppDir with fallback to static HTML files."
+    },
+    {
+      "task_id": "0.3.4",
+      "task_name": "Standardize branding (Genesis → Neolith everywhere)",
+      "status": "INCOMPLETE",
+      "completion_percentage": 95,
+      "evidence": {
+        "remaining_references": [
+          {
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/package.json",
+            "line": 5,
+            "content": "\"description\": \"Genesis App - Mobile (iOS & Android) via Capacitor\"",
+            "context": "Package description still references 'Genesis App'"
+          }
+        ],
+        "verified_neolith_references": [
+          {
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/capacitor.config.ts",
+            "appId": "com.wundr.neolith",
+            "appName": "Neolith"
+          },
+          {
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/desktop/electron-builder.yml",
+            "appId": "ai.adaptic.neolith",
+            "productName": "Neolith"
+          },
+          {
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/desktop/electron/main.ts",
+            "references": "Multiple 'Neolith' references throughout (window title, tray, menu, protocol)"
+          }
+        ]
+      },
+      "findings": "Almost complete. Found 1 remaining 'Genesis' reference in mobile package.json description. All other critical branding (appId, appName, productName, window titles, etc.) correctly uses 'Neolith'.",
+      "required_action": "Update mobile package.json description from 'Genesis App' to 'Neolith App'",
+      "impact": "LOW - Only affects package description, not runtime behavior"
+    },
+    {
+      "task_id": "0.3.5",
+      "task_name": "Update capacitor.config appId to 'com.wundr.neolith'",
+      "status": "COMPLETE",
+      "completion_percentage": 100,
+      "evidence": {
+        "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/capacitor.config.ts",
+        "line_numbers": "4-5",
+        "current_configuration": {
+          "appId": "com.wundr.neolith",
+          "appName": "Neolith"
+        },
+        "verification": "PASSED - appId is correctly set to 'com.wundr.neolith'"
+      },
+      "findings": "Capacitor config correctly has appId set to 'com.wundr.neolith' as required."
+    },
+    {
+      "task_id": "0.3.6",
+      "task_name": "Align all package versions to 1.0.3",
+      "status": "INCOMPLETE",
+      "completion_percentage": 0,
+      "evidence": {
+        "package_versions_found": {
+          "neolith_root": "0.1.0",
+          "apps": {
+            "mobile": "0.1.0",
+            "web": "0.1.0",
+            "desktop": "0.1.0"
+          },
+          "packages": {
+            "@neolith/typescript-config": "0.1.0",
+            "@neolith/file-processor": "0.1.0",
+            "@neolith/core": "0.1.0",
+            "@neolith/tailwind-config": "0.1.0",
+            "@neolith/api-types": "0.1.0",
+            "@neolith/eslint-config": "0.1.0",
+            "@neolith/database": "0.1.0",
+            "@neolith/daemon-sdk": "0.1.0",
+            "@neolith/org-integration": "0.1.0",
+            "@neolith/ui": "0.1.0"
+          }
+        },
+        "expected_version": "1.0.3",
+        "verification": "FAILED - All Neolith packages are at version 0.1.0, not 1.0.3"
+      },
+      "findings": "All Neolith monorepo packages are currently at version 0.1.0. The recent git commits show that other @wundr packages were standardized to 1.0.3, but the Neolith packages were not included in that standardization.",
+      "required_action": "Update all Neolith package.json files (root, apps, and packages) from version 0.1.0 to 1.0.3",
+      "impact": "MEDIUM - Version misalignment affects package consistency and dependency management across the monorepo",
+      "affected_files": [
+        "/Users/iroselli/wundr/packages/@wundr/neolith/package.json",
+        "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/package.json",
+        "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/package.json",
+        "/Users/iroselli/wundr/packages/@wundr/neolith/apps/desktop/package.json",
+        "/Users/iroselli/wundr/packages/@wundr/neolith/packages/@neolith/*/package.json (10 packages)"
+      ]
+    }
+  ],
+  "configuration_verification": {
+    "mobile_capacitor": {
+      "status": "VERIFIED",
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/capacitor.config.ts",
+      "config": {
+        "appId": "com.wundr.neolith",
+        "appName": "Neolith",
+        "webDir": "../web/out",
+        "ios_scheme": "Neolith",
+        "android_scheme": "https"
+      }
+    },
+    "web_nextjs": {
+      "status": "NEEDS_ATTENTION",
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/next.config.js",
+      "config": {
+        "distDir": "out",
+        "output": "NOT_SET (should be 'export' for static mobile build)",
+        "reactStrictMode": true,
+        "images_unoptimized": true
+      },
+      "issue": "Missing 'output: export' for static export mode required by Capacitor"
+    },
+    "desktop_electron": {
+      "status": "VERIFIED",
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/desktop/electron/main.ts",
+      "config": {
+        "protocol": "neolith",
+        "window_title": "Neolith",
+        "dev_url": "http://localhost:3000",
+        "production_strategy": "Next.js server with static fallback",
+        "webAppDir": "path.join(__dirname, '..')"
+      }
+    }
+  },
+  "recommendations": {
+    "immediate_actions": [
+      {
+        "priority": "HIGH",
+        "action": "Add 'output: \"export\"' to next.config.js",
+        "reason": "Required for proper static HTML export for Capacitor mobile builds",
+        "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/next.config.js"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Update all Neolith package versions from 0.1.0 to 1.0.3",
+        "reason": "Align with project-wide version standardization (14+ package.json files)",
+        "scope": "Entire Neolith monorepo"
+      },
+      {
+        "priority": "LOW",
+        "action": "Update mobile package.json description",
+        "reason": "Remove last 'Genesis' branding reference",
+        "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/package.json"
+      }
+    ],
+    "validation_steps": [
+      "After adding 'output: export', run 'pnpm --filter @neolith/web run build' to verify static export",
+      "After version updates, run 'pnpm install' at root to update lockfile",
+      "Test mobile build with 'npx cap sync' to ensure webDir path works correctly",
+      "Verify desktop app loads correctly in both dev and production modes"
+    ]
+  },
+  "risk_assessment": {
+    "overall_risk": "MEDIUM",
+    "risks": [
+      {
+        "area": "Next.js Export Configuration",
+        "risk_level": "MEDIUM",
+        "description": "Missing 'output: export' may cause mobile build issues or unexpected dynamic features in static build",
+        "mitigation": "Add explicit 'output: export' configuration"
+      },
+      {
+        "area": "Version Alignment",
+        "risk_level": "MEDIUM",
+        "description": "Version misalignment (0.1.0 vs 1.0.3) could cause dependency resolution issues",
+        "mitigation": "Batch update all package versions to 1.0.3"
+      },
+      {
+        "area": "Branding Consistency",
+        "risk_level": "LOW",
+        "description": "Minor branding inconsistency in package description",
+        "mitigation": "Update description text"
+      }
+    ]
+  },
+  "git_context": {
+    "recent_commits": [
+      "b673f24 - fix(cli): call main() explicitly in bin script",
+      "09ff368 - chore(packages): standardize all @wundr packages to version 1.0.3",
+      "3d9fe62 - feat: publish all @wundr packages to npm (34 packages)"
+    ],
+    "note": "Commit 09ff368 standardized @wundr packages to 1.0.3 but did not include Neolith packages"
+  }
+}

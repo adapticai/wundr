@@ -16,11 +16,8 @@
  */
 
 import { prisma } from '@neolith/database';
-import { migrateOrgGenesisResult } from '@neolith/org-integration';
 import { Prisma } from '@prisma/client';
-import { createGenesisEngine } from '@wundr.io/org-genesis';
 import { NextResponse } from 'next/server';
-
 
 import { auth } from '@/lib/auth';
 import {
@@ -30,9 +27,115 @@ import {
   type GenerateOrgInput,
 } from '@/lib/validations/workspace-genesis';
 
-import type { NeolithResult, MigrationResult } from '@neolith/org-integration';
-import type { GenesisResult } from '@wundr.io/org-genesis';
 import type { NextRequest } from 'next/server';
+
+// Dynamic imports for org-genesis packages to avoid build-time resolution issues
+// These packages are loaded at runtime when the API is called
+async function getOrgGenesisModules() {
+  const [orgGenesis, orgIntegration] = await Promise.all([
+    import('@wundr.io/org-genesis'),
+    import('@neolith/org-integration'),
+  ]);
+  return {
+    createGenesisEngine: orgGenesis.createGenesisEngine,
+    migrateOrgGenesisResult: orgIntegration.migrateOrgGenesisResult,
+  };
+}
+
+// Type definitions for the dynamically imported modules
+type GenesisResult = {
+  manifest: { id: string; name: string; description?: string; mission?: string };
+  vps: Array<{
+    id: string;
+    identity: { name: string; persona?: string };
+    coreDirective: string;
+    capabilities?: string[];
+    disciplineIds?: string[];
+  }>;
+  disciplines: Array<{
+    id: string;
+    name: string;
+    description: string;
+    slug: string;
+    parentVpId?: string;
+    claudeMd?: { objectives?: string[] };
+    hooks?: Array<{ description: string }>;
+    agentIds?: string[];
+  }>;
+  agents: Array<{
+    id: string;
+    name: string;
+    description: string;
+    usedByDisciplines?: string[];
+    capabilities?: Record<string, boolean>;
+    charter?: string;
+  }>;
+  stats: {
+    vpCount: number;
+    disciplineCount: number;
+    agentCount: number;
+    generationTimeMs: number;
+  };
+};
+
+type NeolithResult = {
+  manifest: {
+    id: string;
+    name: string;
+    description: string;
+    type: string;
+    mission?: string;
+    vision: string;
+    values: string[];
+    createdAt: string;
+    schemaVersion: string;
+  };
+  vps: Array<{
+    id: string;
+    name: string;
+    title: string;
+    responsibilities: string[];
+    disciplines: string[];
+    persona: {
+      communicationStyle: string;
+      decisionMakingStyle: string;
+      background: string;
+      traits: string[];
+    };
+    kpis: string[];
+  }>;
+  disciplines: Array<{
+    id: string;
+    name: string;
+    description: string;
+    vpId: string;
+    slug: string;
+    purpose: string;
+    activities: string[];
+    capabilities: string[];
+  }>;
+  agents: Array<{
+    id: string;
+    name: string;
+    role: string;
+    disciplineId: string;
+    capabilities: string[];
+    instructions: string;
+  }>;
+  metadata: {
+    generatedAt: string;
+    generatorVersion: string;
+    configHash: string;
+    durationMs: number;
+  };
+};
+
+type MigrationResult = {
+  status: string;
+  vpMappings: { total: number };
+  disciplineMappings: { total: number };
+  warnings: string[];
+};
 
 /**
  * POST /api/workspaces/generate-org
@@ -158,6 +261,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 5. Generate Organization Structure using org-genesis
     // =========================================================================
     console.log('[generate-org] Starting org-genesis generation...');
+
+    // Load org-genesis modules dynamically at runtime
+    const { createGenesisEngine, migrateOrgGenesisResult } = await getOrgGenesisModules();
+
     const genesisEngine = createGenesisEngine({
       verbose: input.verbose,
     });

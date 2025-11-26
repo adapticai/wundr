@@ -95,6 +95,8 @@ export default function WorkflowsPage() {
   }, []);
 
   const handleSelectTemplate = useCallback((template: WorkflowTemplate) => {
+    // Create temporary workflow object from template for UI builder
+    // Note: createdBy will be set by API from session when actually saved
     setSelectedWorkflow({
       id: '',
       workspaceId,
@@ -106,7 +108,7 @@ export default function WorkflowsPage() {
       variables: template.variables?.map((v) => ({ ...v, source: 'custom' as const })) ?? [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      createdBy: '',
+      createdBy: '', // Temporary - API sets from session.user.id on save
       runCount: 0,
       errorCount: 0,
     });

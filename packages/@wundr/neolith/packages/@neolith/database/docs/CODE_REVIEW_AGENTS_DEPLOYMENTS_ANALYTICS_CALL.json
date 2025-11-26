@@ -1,0 +1,708 @@
+{
+  "review_metadata": {
+    "review_date": "2025-11-26",
+    "reviewer": "Code Quality Analyzer",
+    "files_analyzed": 4,
+    "total_issues": 38,
+    "overall_quality_score": "4/10",
+    "technical_debt_estimate": "16-24 hours"
+  },
+  "executive_summary": {
+    "critical_findings": [
+      "Agents page is completely non-functional - empty state only with non-working button",
+      "Deployments page is completely non-functional - empty state only with non-working button",
+      "Missing API routes: /api/workspaces/[workspaceId]/calls/[callId]/* do not exist",
+      "Analytics dashboard makes API calls but has no error handling beyond silent failures",
+      "Call page references API endpoints that don't exist in the workspace context"
+    ],
+    "positive_findings": [
+      "Analytics dashboard has proper loading and error states",
+      "Call page has comprehensive state management and error handling",
+      "Call components are well-implemented with LiveKit integration",
+      "Analytics uses @neolith/core package correctly for service layer"
+    ],
+    "completion_estimate": "Analytics: 80%, Call: 65%, Agents: 5%, Deployments: 5%"
+  },
+  "file_reviews": [
+    {
+      "file_path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/agents/page.tsx",
+      "lines_of_code": 44,
+      "complexity_score": "1/10",
+      "quality_score": "2/10",
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "incomplete_functionality",
+          "line": 35,
+          "title": "Non-functional 'Create Agent' button",
+          "description": "Button has no onClick handler, does nothing when clicked",
+          "impact": "Users cannot create agents - core feature is completely broken",
+          "recommendation": "Add onClick handler that opens a dialog or navigates to agent creation page",
+          "estimated_effort": "2-4 hours (requires design of agent creation flow)"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_functionality",
+          "line": 1,
+          "title": "No data fetching implementation",
+          "description": "Page shows only empty state, no logic to fetch or display agents",
+          "impact": "Even if agents exist, users cannot see them",
+          "recommendation": "Implement data fetching with useEffect, loading state, error handling, and agent list display",
+          "estimated_effort": "4-6 hours"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": 1,
+          "title": "Missing API endpoint for agents",
+          "description": "No /api/workspaces/[workspaceId]/agents endpoint exists",
+          "impact": "Cannot fetch agent data even with UI implementation",
+          "recommendation": "Create API routes for CRUD operations on agents",
+          "estimated_effort": "6-8 hours"
+        },
+        {
+          "severity": "high",
+          "category": "missing_package_integration",
+          "line": 1,
+          "title": "No @wundr package integration",
+          "description": "Agents likely need integration with @wundr/vp-daemon or similar packages",
+          "impact": "Missing the core agent functionality that should be imported",
+          "recommendation": "Check @wundr packages for agent services and integrate them",
+          "estimated_effort": "4-6 hours"
+        },
+        {
+          "severity": "medium",
+          "category": "ui_ux_issues",
+          "line": 1,
+          "title": "Missing loading/error states",
+          "description": "No loading spinner, error handling, or retry logic",
+          "impact": "Poor user experience, no feedback on failures",
+          "recommendation": "Add loading, error, and empty states",
+          "estimated_effort": "2 hours"
+        }
+      ],
+      "code_smells": [
+        {
+          "type": "stub_implementation",
+          "description": "Entire page is a placeholder with no real functionality",
+          "severity": "critical"
+        }
+      ],
+      "missing_features": [
+        "Agent list display",
+        "Agent creation dialog/form",
+        "Agent editing",
+        "Agent deletion",
+        "Agent status indicators",
+        "Agent configuration management",
+        "Search and filtering",
+        "Pagination"
+      ],
+      "completion_percentage": 5
+    },
+    {
+      "file_path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/deployments/page.tsx",
+      "lines_of_code": 43,
+      "complexity_score": "1/10",
+      "quality_score": "2/10",
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "incomplete_functionality",
+          "line": 34,
+          "title": "Non-functional 'New Deployment' button",
+          "description": "Button has no onClick handler, does nothing when clicked",
+          "impact": "Users cannot create deployments - core feature is completely broken",
+          "recommendation": "Add onClick handler to trigger deployment creation flow",
+          "estimated_effort": "2-4 hours"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_functionality",
+          "line": 1,
+          "title": "No data fetching implementation",
+          "description": "Page shows only empty state, no logic to fetch or display deployments",
+          "impact": "Even if deployments exist, users cannot see them",
+          "recommendation": "Implement data fetching, loading state, and deployment list display",
+          "estimated_effort": "4-6 hours"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": 1,
+          "title": "Missing API endpoint for deployments",
+          "description": "No /api/workspaces/[workspaceId]/deployments endpoint exists",
+          "impact": "Cannot fetch deployment data even with UI implementation",
+          "recommendation": "Create API routes for deployment management",
+          "estimated_effort": "6-8 hours (may integrate with Railway/Netlify MCP)"
+        },
+        {
+          "severity": "high",
+          "category": "missing_package_integration",
+          "line": 1,
+          "title": "No deployment platform integration",
+          "description": "Missing integration with Railway/Netlify MCPs mentioned in CLAUDE.md",
+          "impact": "Core deployment monitoring functionality is absent",
+          "recommendation": "Integrate with Railway and Netlify MCP servers for deployment monitoring",
+          "estimated_effort": "8-12 hours"
+        },
+        {
+          "severity": "medium",
+          "category": "ui_ux_issues",
+          "line": 1,
+          "title": "Missing loading/error states",
+          "description": "No loading spinner, error handling, or retry logic",
+          "impact": "Poor user experience, no feedback on failures",
+          "recommendation": "Add loading, error, and empty states",
+          "estimated_effort": "2 hours"
+        }
+      ],
+      "code_smells": [
+        {
+          "type": "stub_implementation",
+          "description": "Entire page is a placeholder with no real functionality",
+          "severity": "critical"
+        }
+      ],
+      "missing_features": [
+        "Deployment list display",
+        "Deployment status indicators",
+        "Deployment logs viewer",
+        "Deployment triggering",
+        "Deployment rollback",
+        "Railway/Netlify integration",
+        "Build/deploy monitoring",
+        "Error tracking"
+      ],
+      "completion_percentage": 5
+    },
+    {
+      "file_path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/analytics/page.tsx",
+      "lines_of_code": 18,
+      "complexity_score": "2/10",
+      "quality_score": "7/10",
+      "issues": [
+        {
+          "severity": "low",
+          "category": "code_quality",
+          "line": 1,
+          "title": "Minimal wrapper component",
+          "description": "Page is just a thin wrapper around AnalyticsDashboard",
+          "impact": "No issues, but could be simplified",
+          "recommendation": "Consider if this wrapper adds value or could be removed",
+          "estimated_effort": "30 minutes"
+        },
+        {
+          "severity": "medium",
+          "category": "ui_ux_issues",
+          "line": 12,
+          "title": "Duplicate background class",
+          "description": "Sets bg-background when parent layout likely already has it",
+          "impact": "Minor - potential styling conflicts",
+          "recommendation": "Remove bg-background or ensure it's needed",
+          "estimated_effort": "15 minutes"
+        }
+      ],
+      "code_smells": [
+        {
+          "type": "unnecessary_wrapper",
+          "description": "Component serves mainly as a passthrough",
+          "severity": "low"
+        }
+      ],
+      "positive_aspects": [
+        "Properly extracts workspaceId from params",
+        "Uses 'use client' directive correctly",
+        "Clean and simple implementation",
+        "Delegates complexity to child component"
+      ],
+      "completion_percentage": 80
+    },
+    {
+      "file_path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/analytics/analytics-dashboard.tsx",
+      "lines_of_code": 305,
+      "complexity_score": "6/10",
+      "quality_score": "7/10",
+      "issues": [
+        {
+          "severity": "high",
+          "category": "error_handling",
+          "line": 85,
+          "title": "Silent error handling in data fetch",
+          "description": "Catch block is empty - errors are completely swallowed",
+          "impact": "Users never know why analytics failed to load",
+          "recommendation": "Add error state, logging, and user feedback",
+          "estimated_effort": "1 hour"
+        },
+        {
+          "severity": "medium",
+          "category": "api_integration",
+          "line": 65,
+          "title": "API endpoints may not exist",
+          "description": "Calls /api/workspaces/[id]/analytics/metrics and /analytics/trends but only checked /analytics/metrics/route.ts exists",
+          "impact": "Metrics might work but trends endpoint might not exist",
+          "recommendation": "Verify all API endpoints exist and handle 404s gracefully",
+          "estimated_effort": "2 hours"
+        },
+        {
+          "severity": "low",
+          "category": "type_safety",
+          "line": 147,
+          "title": "Hardcoded type assertion on trend",
+          "description": "Forces trend as 'up' | 'down' | 'stable' without validation",
+          "impact": "Could crash if API returns unexpected values",
+          "recommendation": "Add runtime validation or use discriminated union",
+          "estimated_effort": "30 minutes"
+        },
+        {
+          "severity": "low",
+          "category": "data_validation",
+          "line": 145,
+          "title": "No validation on metrics data structure",
+          "description": "Assumes API response matches UsageMetrics interface",
+          "impact": "Could crash if API structure changes",
+          "recommendation": "Add zod schema validation or type guards",
+          "estimated_effort": "1 hour"
+        },
+        {
+          "severity": "medium",
+          "category": "accessibility",
+          "line": 124,
+          "title": "Period selector buttons lack ARIA labels",
+          "description": "Screen readers won't announce what each period button does",
+          "impact": "Poor accessibility for visually impaired users",
+          "recommendation": "Add aria-label to period buttons",
+          "estimated_effort": "15 minutes"
+        }
+      ],
+      "code_smells": [
+        {
+          "type": "magic_numbers",
+          "description": "Chart heights hardcoded to 200, could be constants",
+          "severity": "low",
+          "line": 181
+        },
+        {
+          "type": "inline_styles",
+          "description": "Color '#57534e' hardcoded in component",
+          "severity": "low",
+          "line": 188
+        }
+      ],
+      "positive_aspects": [
+        "Excellent use of loading and error states",
+        "Proper memoization and callbacks",
+        "Good component composition",
+        "Integrates with @neolith/core analytics service",
+        "Responsive grid layouts",
+        "Period selector is intuitive",
+        "Uses proper Promise.all for parallel fetches"
+      ],
+      "missing_features": [
+        "Export analytics data",
+        "Custom date range picker",
+        "Real-time updates",
+        "Drill-down on metrics",
+        "Compare periods",
+        "Alert thresholds"
+      ],
+      "completion_percentage": 75
+    },
+    {
+      "file_path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/call/[callId]/page.tsx",
+      "lines_of_code": 325,
+      "complexity_score": "7/10",
+      "quality_score": "6/10",
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": 176,
+          "title": "API endpoint does not exist in workspace context",
+          "description": "Calls /api/workspaces/[workspaceId]/calls/[callId] but no such route exists. Only /api/calls/[callId] exists",
+          "impact": "Call loading will always fail - critical broken functionality",
+          "recommendation": "Either create the workspace-scoped endpoint or change to use /api/calls/[callId]",
+          "estimated_effort": "2-4 hours"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": 257,
+          "title": "Invite endpoint does not exist",
+          "description": "Calls /api/workspaces/[workspaceId]/calls/[callId]/invite but route doesn't exist in workspace context",
+          "impact": "Invite functionality is broken",
+          "recommendation": "Create workspace-scoped invite endpoint or use existing /api/calls/[callId]/invite",
+          "estimated_effort": "2-3 hours"
+        },
+        {
+          "severity": "high",
+          "category": "error_handling",
+          "line": 262,
+          "title": "Silent failure on invite errors",
+          "description": "Catch block has comment 'Handle silently or show toast' but does nothing",
+          "impact": "Users won't know if invite failed",
+          "recommendation": "Add toast notification or error state",
+          "estimated_effort": "1 hour"
+        },
+        {
+          "severity": "medium",
+          "category": "hardcoded_data",
+          "line": 194,
+          "title": "Fallback to environment variable for serverUrl",
+          "description": "Falls back to NEXT_PUBLIC_LIVEKIT_URL if API doesn't provide serverUrl",
+          "impact": "Could use wrong server URL if API response is incomplete",
+          "recommendation": "Ensure API always provides serverUrl or validate env var exists",
+          "estimated_effort": "30 minutes"
+        },
+        {
+          "severity": "medium",
+          "category": "type_safety",
+          "line": 168,
+          "title": "Unsafe type assertion on params",
+          "description": "Casts params to string without validation",
+          "impact": "Could crash if params are malformed",
+          "recommendation": "Add runtime validation using zod",
+          "estimated_effort": "30 minutes"
+        },
+        {
+          "severity": "low",
+          "category": "code_duplication",
+          "line": 223,
+          "title": "Duplicate navigation to workspace",
+          "description": "router.push(`/${workspaceId}`) appears multiple times",
+          "impact": "Minor - could be extracted to a helper",
+          "recommendation": "Extract to handleBackToWorkspace function",
+          "estimated_effort": "15 minutes"
+        },
+        {
+          "severity": "low",
+          "category": "ui_ux_issues",
+          "line": 295,
+          "title": "requireName prop based on missing user.name",
+          "description": "Forces name input if user.name is missing, but doesn't validate displayName",
+          "impact": "User might have displayName but not name, causing unnecessary prompt",
+          "recommendation": "Check for displayName as well",
+          "estimated_effort": "30 minutes"
+        }
+      ],
+      "code_smells": [
+        {
+          "type": "complex_state_management",
+          "description": "CallState type with 6 possible states, could be simplified with discriminated union",
+          "severity": "medium",
+          "line": 19
+        },
+        {
+          "type": "god_component",
+          "description": "Component handles routing, auth, data fetching, state management - could be split",
+          "severity": "medium",
+          "line": 152
+        },
+        {
+          "type": "magic_string",
+          "description": "Redirect URL string constructed manually",
+          "severity": "low",
+          "line": 209
+        }
+      ],
+      "positive_aspects": [
+        "Comprehensive error handling states",
+        "Good loading states",
+        "Proper authentication check",
+        "Clean separation of UI components (CallError, CallLoading, CallEnded)",
+        "Uses useCallback appropriately",
+        "Proper cleanup with handleDisconnect",
+        "LiveKit integration appears complete",
+        "Invite dialog implementation exists"
+      ],
+      "missing_features": [
+        "Recording controls",
+        "Call quality indicators",
+        "Participant muting by admin",
+        "Waiting room",
+        "Background effects/blur",
+        "Chat during call",
+        "Call settings persistence"
+      ],
+      "completion_percentage": 65
+    }
+  ],
+  "cross_cutting_concerns": {
+    "api_integration_issues": [
+      {
+        "severity": "critical",
+        "title": "Workspace-scoped call endpoints missing",
+        "description": "Call page expects /api/workspaces/[workspaceId]/calls/* but only /api/calls/* exists",
+        "affected_files": [
+          "call/[callId]/page.tsx"
+        ],
+        "recommendation": "Create workspace-scoped call routes or update call page to use existing routes",
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "severity": "critical",
+        "title": "No agents API endpoints",
+        "description": "Agents page has no backend support",
+        "affected_files": [
+          "agents/page.tsx"
+        ],
+        "recommendation": "Create full CRUD API for agents with proper authentication",
+        "estimated_effort": "8-12 hours"
+      },
+      {
+        "severity": "critical",
+        "title": "No deployments API endpoints",
+        "description": "Deployments page has no backend support",
+        "affected_files": [
+          "deployments/page.tsx"
+        ],
+        "recommendation": "Create deployment API with Railway/Netlify MCP integration",
+        "estimated_effort": "8-12 hours"
+      },
+      {
+        "severity": "high",
+        "title": "Analytics trends endpoint may be missing",
+        "description": "AnalyticsDashboard calls /analytics/trends but only /analytics/metrics verified",
+        "affected_files": [
+          "analytics/analytics-dashboard.tsx"
+        ],
+        "recommendation": "Verify trends endpoint exists or handle 404 gracefully",
+        "estimated_effort": "2 hours"
+      }
+    ],
+    "package_integration_gaps": [
+      {
+        "severity": "high",
+        "title": "Missing @wundr/vp-daemon integration for agents",
+        "description": "Agents page doesn't import or use any @wundr packages",
+        "recommendation": "Integrate with @wundr/vp-daemon for agent management",
+        "estimated_effort": "6-8 hours"
+      },
+      {
+        "severity": "high",
+        "title": "Missing Railway/Netlify MCP integration",
+        "description": "Deployments page doesn't use MCP tools mentioned in CLAUDE.md",
+        "recommendation": "Use mcp__railway__* and mcp__netlify__* tools for deployment monitoring",
+        "estimated_effort": "8-12 hours"
+      },
+      {
+        "severity": "medium",
+        "title": "Analytics uses @neolith/core but limited",
+        "description": "Only uses AnalyticsServiceImpl, might be missing other features",
+        "recommendation": "Review @neolith/core for additional analytics capabilities",
+        "estimated_effort": "2-3 hours"
+      }
+    ],
+    "authentication_and_authorization": [
+      {
+        "severity": "low",
+        "title": "Inconsistent auth patterns",
+        "description": "Analytics uses getServerSession, call page uses auth() function",
+        "recommendation": "Standardize on one auth method",
+        "estimated_effort": "1 hour"
+      },
+      {
+        "severity": "medium",
+        "title": "Missing workspace membership checks",
+        "description": "Agents and deployments pages don't verify workspace access",
+        "recommendation": "Add workspace membership validation",
+        "estimated_effort": "2 hours"
+      }
+    ],
+    "error_handling_patterns": [
+      {
+        "severity": "high",
+        "title": "Silent error handling in analytics",
+        "description": "Empty catch blocks in AnalyticsDashboard and call invite",
+        "recommendation": "Add proper error logging and user feedback",
+        "estimated_effort": "2-3 hours"
+      },
+      {
+        "severity": "medium",
+        "title": "No error boundaries",
+        "description": "None of the pages have error boundaries for unexpected crashes",
+        "recommendation": "Add error boundaries at page level",
+        "estimated_effort": "2 hours"
+      }
+    ],
+    "ui_ux_consistency": [
+      {
+        "severity": "medium",
+        "title": "Empty states follow same pattern",
+        "description": "Agents and deployments use identical empty state structure - good consistency",
+        "is_positive": true
+      },
+      {
+        "severity": "low",
+        "title": "Inconsistent color scheme",
+        "description": "Agents/deployments use stone-* colors, call page uses generic semantic colors",
+        "recommendation": "Standardize on design system colors",
+        "estimated_effort": "1-2 hours"
+      }
+    ]
+  },
+  "prioritized_action_items": [
+    {
+      "priority": "P0 - Critical",
+      "item": "Create workspace-scoped call API endpoints or update call page to use existing /api/calls/* routes",
+      "estimated_effort": "4-6 hours",
+      "impact": "Unblocks call functionality"
+    },
+    {
+      "priority": "P0 - Critical",
+      "item": "Create agents API endpoints with CRUD operations",
+      "estimated_effort": "8-12 hours",
+      "impact": "Enables agents page functionality"
+    },
+    {
+      "priority": "P0 - Critical",
+      "item": "Create deployments API with Railway/Netlify MCP integration",
+      "estimated_effort": "8-12 hours",
+      "impact": "Enables deployments page functionality"
+    },
+    {
+      "priority": "P1 - High",
+      "item": "Implement agent list fetching and display with loading/error states",
+      "estimated_effort": "4-6 hours",
+      "impact": "Makes agents page usable"
+    },
+    {
+      "priority": "P1 - High",
+      "item": "Implement deployment list fetching and display with loading/error states",
+      "estimated_effort": "4-6 hours",
+      "impact": "Makes deployments page usable"
+    },
+    {
+      "priority": "P1 - High",
+      "item": "Add proper error handling to analytics dashboard (replace empty catch blocks)",
+      "estimated_effort": "2 hours",
+      "impact": "Better user experience and debugging"
+    },
+    {
+      "priority": "P1 - High",
+      "item": "Add onClick handlers to 'Create Agent' and 'New Deployment' buttons",
+      "estimated_effort": "4-6 hours",
+      "impact": "Enables creation flows"
+    },
+    {
+      "priority": "P2 - Medium",
+      "item": "Integrate @wundr/vp-daemon with agents page",
+      "estimated_effort": "6-8 hours",
+      "impact": "Connects to actual agent infrastructure"
+    },
+    {
+      "priority": "P2 - Medium",
+      "item": "Add error boundaries to all pages",
+      "estimated_effort": "2 hours",
+      "impact": "Prevents entire page crashes"
+    },
+    {
+      "priority": "P2 - Medium",
+      "item": "Add workspace membership checks to all pages",
+      "estimated_effort": "2 hours",
+      "impact": "Security and authorization"
+    },
+    {
+      "priority": "P3 - Low",
+      "item": "Standardize auth patterns across pages",
+      "estimated_effort": "1 hour",
+      "impact": "Code consistency"
+    },
+    {
+      "priority": "P3 - Low",
+      "item": "Add runtime validation for API responses with zod",
+      "estimated_effort": "2-3 hours",
+      "impact": "Type safety and error prevention"
+    },
+    {
+      "priority": "P3 - Low",
+      "item": "Improve accessibility with ARIA labels",
+      "estimated_effort": "1 hour",
+      "impact": "Better accessibility"
+    }
+  ],
+  "recommendations": {
+    "immediate_actions": [
+      "Fix critical API endpoint mismatches - call page will fail 100% of the time currently",
+      "Implement basic CRUD for agents and deployments so pages are functional",
+      "Add error handling to analytics to show users when things fail"
+    ],
+    "short_term": [
+      "Add workspace membership validation to all routes",
+      "Integrate with @wundr packages for agents and deployments",
+      "Add error boundaries and improve error states",
+      "Implement creation flows for agents and deployments"
+    ],
+    "long_term": [
+      "Add comprehensive analytics export and filtering",
+      "Implement advanced call features (recording, waiting room, etc.)",
+      "Add real-time updates to analytics dashboard",
+      "Create agent templates and configuration wizards",
+      "Build deployment pipeline visualization"
+    ],
+    "technical_debt": [
+      "Refactor call page - it's becoming a god component",
+      "Standardize auth and error handling patterns",
+      "Add comprehensive API response validation",
+      "Create reusable empty state component",
+      "Extract common layout patterns"
+    ]
+  },
+  "code_quality_metrics": {
+    "agents_page": {
+      "completion": "5%",
+      "maintainability": "High (once implemented)",
+      "testability": "N/A - no logic to test",
+      "complexity": "Low",
+      "tech_debt_hours": 12
+    },
+    "deployments_page": {
+      "completion": "5%",
+      "maintainability": "High (once implemented)",
+      "testability": "N/A - no logic to test",
+      "complexity": "Low",
+      "tech_debt_hours": 12
+    },
+    "analytics_page": {
+      "completion": "80%",
+      "maintainability": "High",
+      "testability": "High",
+      "complexity": "Medium",
+      "tech_debt_hours": 3
+    },
+    "analytics_dashboard": {
+      "completion": "75%",
+      "maintainability": "Medium",
+      "testability": "Medium",
+      "complexity": "Medium-High",
+      "tech_debt_hours": 4
+    },
+    "call_page": {
+      "completion": "65%",
+      "maintainability": "Medium",
+      "testability": "Medium",
+      "complexity": "High",
+      "tech_debt_hours": 8
+    }
+  },
+  "testing_recommendations": {
+    "unit_tests_needed": [
+      "Analytics dashboard data transformation logic",
+      "Call page state machine transitions",
+      "Period selector in analytics",
+      "formatBytes utility function"
+    ],
+    "integration_tests_needed": [
+      "Analytics API endpoints with AnalyticsServiceImpl",
+      "Call flow from pre-join through disconnect",
+      "Agent CRUD operations (once implemented)",
+      "Deployment monitoring (once implemented)"
+    ],
+    "e2e_tests_needed": [
+      "Full analytics dashboard user flow",
+      "Complete call flow with multiple participants",
+      "Agent creation and configuration",
+      "Deployment triggering and monitoring"
+    ]
+  }
+}

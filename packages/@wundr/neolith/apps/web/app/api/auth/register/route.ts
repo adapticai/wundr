@@ -1,0 +1,220 @@
+/**
+ * User Registration API Route
+ *
+ * Handles new user sign-ups with email/password authentication.
+ * This endpoint creates a new user account and stores the hashed password.
+ *
+ * Routes:
+ * - POST /api/auth/register - Create a new user account
+ *
+ * @module app/api/auth/register/route
+ */
+
+import { avatarService } from '@neolith/core/services';
+import { prisma } from '@neolith/database';
+import { Prisma } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import { NextResponse } from 'next/server';
+
+import {
+  AUTH_ERROR_CODES,
+  createAuthErrorResponse,
+  registerSchema,
+} from '@/lib/validations/auth';
+
+import type { RegisterInput } from '@/lib/validations/auth';
+import type { NextRequest } from 'next/server';
+
+/**
+ * Number of salt rounds for bcrypt hashing
+ * Higher values = more secure but slower
+ * 10 rounds is a good balance for production
+ */
+const BCRYPT_SALT_ROUNDS = 10;
+
+/**
+ * POST /api/auth/register
+ *
+ * Register a new user account with email and password.
+ *
+ * @param request - Next.js request with user registration data
+ * @returns Created user object (without password) or error
+ *
+ * @example
+ * ```
+ * POST /api/auth/register
+ * Content-Type: application/json
+ *
+ * {
+ *   "email": "user@example.com",
+ *   "password": "SecurePass123",
+ *   "name": "John Doe"
+ * }
+ * ```
+ *
+ * @example Response (201 Created)
+ * ```json
+ * {
+ *   "data": {
+ *     "id": "clx123456",
+ *     "email": "user@example.com",
+ *     "name": "John Doe",
+ *     "avatarUrl": "https://...",
+ *     "status": "ACTIVE"
+ *   },
+ *   "message": "User registered successfully"
+ * }
+ * ```
+ *
+ * @example Error Response (409 Conflict)
+ * ```json
+ * {
+ *   "error": "A user with this email already exists",
+ *   "code": "EMAIL_EXISTS"
+ * }
+ * ```
+ */
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    // Parse request body
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        createAuthErrorResponse('Invalid JSON body', AUTH_ERROR_CODES.VALIDATION_ERROR),
+        { status: 400 },
+      );
+    }
+
+    // Validate input
+    const parseResult = registerSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        createAuthErrorResponse('Validation failed', AUTH_ERROR_CODES.VALIDATION_ERROR, {
+          errors: parseResult.error.flatten().fieldErrors,
+        }),
+        { status: 400 },
+      );
+    }
+
+    const input: RegisterInput = parseResult.data;
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: input.email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        createAuthErrorResponse(
+          'A user with this email already exists',
+          AUTH_ERROR_CODES.EMAIL_EXISTS,
+        ),
+        { status: 409 },
+      );
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(input.password, BCRYPT_SALT_ROUNDS);
+
+    // Create user and credentials account in a transaction
+    const newUser = await prisma.$transaction(async (tx) => {
+      // Create the user
+      const user = await tx.user.create({
+        data: {
+          email: input.email,
+          name: input.name,
+          displayName: input.name,
+          status: 'ACTIVE',
+          emailVerified: null, // User needs to verify email
+        },
+      });
+
+      // Create credentials account for password authentication
+      await tx.account.create({
+        data: {
+          userId: user.id,
+          type: 'credentials',
+          provider: 'credentials',
+          providerAccountId: user.id,
+          // Store hashed password in the refresh_token field
+          // This is a common pattern for credentials-based auth
+          refresh_token: hashedPassword,
+        },
+      });
+
+      return user;
+    });
+
+    // Generate fallback avatar with user's name or email
+    try {
+      await avatarService.generateFallbackAvatar({
+        name: newUser.name || newUser.email || 'User',
+        userId: newUser.id,
+      });
+
+      // Fetch updated user with avatar
+      const userWithAvatar = await prisma.user.findUnique({
+        where: { id: newUser.id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          displayName: true,
+          avatarUrl: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          data: userWithAvatar,
+          message: 'User registered successfully',
+        },
+        { status: 201 },
+      );
+    } catch (avatarError) {
+      console.error('[POST /api/auth/register] Avatar generation failed:', avatarError);
+
+      // Return user without avatar if generation fails
+      // This is not a critical failure
+      const userWithoutAvatar = {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        displayName: newUser.displayName,
+        avatarUrl: newUser.avatarUrl,
+        status: newUser.status,
+        createdAt: newUser.createdAt,
+      };
+
+      return NextResponse.json(
+        {
+          data: userWithoutAvatar,
+          message: 'User registered successfully',
+        },
+        { status: 201 },
+      );
+    }
+  } catch (error) {
+    console.error('[POST /api/auth/register] Error:', error);
+
+    // Handle Prisma unique constraint errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        createAuthErrorResponse(
+          'A user with this email already exists',
+          AUTH_ERROR_CODES.EMAIL_EXISTS,
+        ),
+        { status: 409 },
+      );
+    }
+
+    return NextResponse.json(
+      createAuthErrorResponse('An internal error occurred', AUTH_ERROR_CODES.INTERNAL_ERROR),
+      { status: 500 },
+    );
+  }
+}

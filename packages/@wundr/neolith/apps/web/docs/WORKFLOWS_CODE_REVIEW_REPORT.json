@@ -1,0 +1,286 @@
+{
+  "reviewMetadata": {
+    "reviewDate": "2025-11-26",
+    "reviewer": "Code Quality Analyzer",
+    "scope": "Workflows Feature - Neolith Web App",
+    "filesReviewed": 7,
+    "totalIssues": 18,
+    "criticalIssues": 6,
+    "majorIssues": 8,
+    "minorIssues": 4
+  },
+  "filesAnalyzed": [
+    "/apps/web/app/(workspace)/[workspaceId]/workflows/page.tsx",
+    "/apps/web/hooks/use-workflows.ts",
+    "/apps/web/types/workflow.ts",
+    "/apps/web/app/api/workspaces/[workspaceId]/workflows/route.ts",
+    "/apps/web/app/api/workspaces/[workspaceId]/workflows/templates/route.ts",
+    "/apps/web/app/api/workspaces/[workspaceId]/workflows/[workflowId]/route.ts",
+    "/apps/web/app/api/workspaces/[workspaceId]/workflows/[workflowId]/activate/route.ts"
+  ],
+  "issues": {
+    "incompleteFunctionality": [
+      {
+        "severity": "CRITICAL",
+        "file": "page.tsx",
+        "location": "Lines 606-610",
+        "issue": "Action type selector uses TRIGGER_TYPE_CONFIG instead of ACTION_TYPE_CONFIG",
+        "description": "In the ActionList component, the select dropdown for action types incorrectly maps over TRIGGER_TYPE_CONFIG instead of ACTION_TYPE_CONFIG. This means users see trigger types (schedule, message, keyword) when selecting action types (send_message, send_dm, etc.).",
+        "impact": "Users cannot properly select action types when building workflows. This is a critical bug that breaks the workflow builder functionality.",
+        "recommendation": "Change line 606 from `Object.entries(TRIGGER_TYPE_CONFIG)` to `Object.entries(ACTION_TYPE_CONFIG)`",
+        "codeSnippet": "Object.entries(TRIGGER_TYPE_CONFIG).map(([key, cfg]) => (\n  <option key={key} value={key}>\n    {cfg.label}\n  </option>\n))"
+      },
+      {
+        "severity": "CRITICAL",
+        "file": "execute/route.ts",
+        "location": "Lines 36-88",
+        "issue": "Workflow execution is simulated, not actually executed",
+        "description": "The executeWorkflowActions function is a stub that simulates execution without performing real actions. All actions return success with mock output regardless of configuration.",
+        "impact": "Workflows appear to execute but don't perform any actual operations. This makes the entire workflow system non-functional.",
+        "recommendation": "Implement actual action handlers for each action type (send_message, send_dm, create_channel, etc.) or integrate with the @wundr/workflow-engine package if available",
+        "codeSnippet": "// Simulate action execution with context\n// In a real implementation, this would call the actual action handlers\nconst stepResult: WorkflowStepResult = {\n  actionId: action.id ?? `action-${i}`,\n  actionType: action.type,\n  status: 'success',\n  output: {\n    executed: true,\n    config: action.config,\n    triggerData,\n  },\n  startedAt,\n  completedAt: new Date(),\n  durationMs: new Date().getTime() - startedAt.getTime(),\n};"
+      },
+      {
+        "severity": "MAJOR",
+        "file": "page.tsx",
+        "location": "Lines 477-480",
+        "issue": "TriggerSelector component lacks configuration for complex triggers",
+        "description": "TriggerSelector only allows selecting trigger type but doesn't provide UI for configuring trigger-specific settings (e.g., schedule cron expression, keyword list, channel filters).",
+        "impact": "Users can select triggers but cannot configure them properly, limiting workflow functionality.",
+        "recommendation": "Add conditional form fields based on selected trigger type to configure schedule, keywords, channels, etc."
+      },
+      {
+        "severity": "MAJOR",
+        "file": "page.tsx",
+        "location": "Lines 489-506",
+        "issue": "Action configuration UI is minimal",
+        "description": "ActionList component only shows action type dropdown but provides no UI for configuring action-specific settings (message content, channel selection, HTTP request details, etc.).",
+        "impact": "Users cannot properly configure actions beyond selecting the type.",
+        "recommendation": "Add expandable configuration panels for each action type with relevant form fields"
+      },
+      {
+        "severity": "MAJOR",
+        "file": "hooks/use-workflows.ts",
+        "location": "Lines 276-282",
+        "issue": "useWorkflow hook fetches from wrong endpoint",
+        "description": "The hook uses `/api/workflows/${workflowId}` but the actual route is `/api/workspaces/${workspaceId}/workflows/${workflowId}`. Missing workspaceId in URL.",
+        "impact": "Individual workflow fetching will fail with 404 errors.",
+        "recommendation": "Update endpoint to include workspaceId: `/api/workspaces/${workspaceId}/workflows/${workflowId}` and add workspaceId parameter to hook"
+      },
+      {
+        "severity": "MAJOR",
+        "file": "hooks/use-workflows.ts",
+        "location": "Lines 304, 327, 345, 364, 384, 514, 558",
+        "issue": "Multiple hooks use incorrect API endpoints missing workspaceId",
+        "description": "useWorkflow methods (update, delete, activate, deactivate, execute) and useWorkflowExecutions all use endpoints without workspaceId.",
+        "impact": "All single workflow operations will fail.",
+        "recommendation": "Add workspaceId parameter to all these hooks and update endpoints accordingly"
+      }
+    ],
+    "nonInteractiveElements": [
+      {
+        "severity": "MINOR",
+        "file": "page.tsx",
+        "location": "Lines 330-343",
+        "issue": "WorkflowCard action buttons lack visual feedback",
+        "description": "The 'History' and 'Edit' buttons in WorkflowCard don't show loading states or disabled states during operations.",
+        "impact": "Poor UX - users may click multiple times without feedback.",
+        "recommendation": "Add loading states and disabled states during async operations"
+      }
+    ],
+    "mockAndHardcodedData": [
+      {
+        "severity": "INFO",
+        "file": "templates/route.ts",
+        "location": "Lines 38-258",
+        "issue": "Workflow templates are hardcoded",
+        "description": "BUILT_IN_TEMPLATES array contains 7 hardcoded templates. No database storage or custom template support.",
+        "impact": "Users cannot create custom templates or modify built-in ones.",
+        "recommendation": "Consider storing templates in database and allowing workspace admins to create custom templates"
+      }
+    ],
+    "missingApiIntegrations": [
+      {
+        "severity": "CRITICAL",
+        "file": "hooks/use-workflows.ts",
+        "location": "Lines 655-656",
+        "issue": "Workflow templates endpoint doesn't exist",
+        "description": "useWorkflowTemplates fetches from `/api/workflow-templates` but no such route exists. Actual route is `/api/workspaces/${workspaceId}/workflows/templates`.",
+        "impact": "Template browsing will fail completely.",
+        "recommendation": "Update endpoint to `/api/workspaces/${workspaceId}/workflows/templates` and add workspaceId parameter"
+      },
+      {
+        "severity": "CRITICAL",
+        "file": "hooks/use-workflows.ts",
+        "location": "Lines 681-687",
+        "issue": "Create from template endpoint is incorrect",
+        "description": "Uses `/api/workspaces/${workspaceId}/workflows/from-template` but actual endpoint is `/api/workspaces/${workspaceId}/workflows/templates` (POST).",
+        "impact": "Creating workflows from templates will fail.",
+        "recommendation": "Change endpoint to match actual API route"
+      }
+    ],
+    "missingPackageIntegrations": [
+      {
+        "severity": "MAJOR",
+        "file": "execute/route.ts",
+        "location": "Line 36",
+        "issue": "No integration with @wundr/workflow-engine or execution service",
+        "description": "Workflow execution doesn't use any @wundr/* package for actual execution logic. It's a local stub function.",
+        "impact": "Missing centralized workflow execution logic, error handling, retry logic, and monitoring.",
+        "recommendation": "Check if @wundr/workflow-engine exists and integrate it, or create a shared execution service"
+      }
+    ],
+    "uiUxIssues": [
+      {
+        "severity": "MAJOR",
+        "file": "page.tsx",
+        "location": "Lines 424-528",
+        "issue": "WorkflowBuilderModal lacks save/validation feedback",
+        "description": "When validation fails (validate() returns false), there's no user feedback - the save button just doesn't do anything.",
+        "impact": "Users won't understand why their workflow isn't saving.",
+        "recommendation": "Show validation error messages in a toast or alert when validation fails"
+      },
+      {
+        "severity": "MINOR",
+        "file": "page.tsx",
+        "location": "Lines 751-836",
+        "issue": "ExecutionHistoryDrawer lacks detailed step information",
+        "description": "Execution history shows summary info but clicking on an execution doesn't expand to show individual step results.",
+        "impact": "Users cannot debug failed workflows effectively.",
+        "recommendation": "Add expandable execution details showing each action's status, output, and timing"
+      },
+      {
+        "severity": "MINOR",
+        "file": "page.tsx",
+        "location": "Lines 245-252",
+        "issue": "WorkflowBuilderModal is shown in modal overlay but isn't keyboard accessible",
+        "description": "No ESC key handler, focus trap, or ARIA attributes for accessibility.",
+        "impact": "Poor accessibility for keyboard and screen reader users.",
+        "recommendation": "Add focus management, ESC key handler, and proper ARIA attributes"
+      }
+    ],
+    "typeInconsistencies": [
+      {
+        "severity": "MAJOR",
+        "file": "types/workflow.ts vs hooks",
+        "location": "Multiple locations",
+        "issue": "Type mismatch between frontend types and database schema",
+        "description": "Frontend uses WorkflowStatus = 'active' | 'inactive' | 'draft' | 'error' but database schema uses 'ACTIVE' | 'INACTIVE' | 'DRAFT' | 'ARCHIVED'. Case mismatch throughout.",
+        "impact": "Status filtering and display may fail due to case sensitivity.",
+        "recommendation": "Standardize on uppercase status values to match database schema, or add normalization layer"
+      },
+      {
+        "severity": "MAJOR",
+        "file": "types/workflow.ts",
+        "location": "Lines 28-57",
+        "issue": "TriggerConfig type structure doesn't match API",
+        "description": "Frontend TriggerConfig has optional fields for all trigger types, but API validation schema likely requires specific fields based on type.",
+        "impact": "Type checking won't catch missing required trigger configuration.",
+        "recommendation": "Use discriminated union types for TriggerConfig based on trigger type"
+      }
+    ],
+    "missingErrorHandling": [
+      {
+        "severity": "MINOR",
+        "file": "page.tsx",
+        "location": "Lines 65-75",
+        "issue": "handleCreateWorkflow doesn't handle errors",
+        "description": "If createWorkflow returns null, the function silently fails without user feedback.",
+        "impact": "Users won't know why workflow creation failed.",
+        "recommendation": "Show error toast when createWorkflow returns null"
+      }
+    ],
+    "validationIssues": [
+      {
+        "severity": "MAJOR",
+        "file": "page.tsx",
+        "location": "Lines 911-924",
+        "issue": "useWorkflowBuilder validate function only checks trigger and actions existence",
+        "description": "Validation doesn't check if trigger is properly configured for its type, or if actions have required config fields.",
+        "impact": "Users can create invalid workflows that will fail during execution.",
+        "recommendation": "Add deep validation of trigger config and action config based on their types"
+      }
+    ]
+  },
+  "summary": {
+    "overallQualityScore": "4.5/10",
+    "readinessForProduction": "NOT READY - Critical issues prevent core functionality",
+    "criticalBlockers": [
+      "Action type selector shows trigger types instead of action types",
+      "Workflow execution is stubbed/simulated - no actual execution",
+      "API endpoint mismatches in multiple hooks will cause runtime failures",
+      "Template fetching uses wrong endpoint",
+      "Status value case mismatch (lowercase vs uppercase) causes data inconsistency"
+    ],
+    "strengths": [
+      "Comprehensive type definitions for workflow domain models",
+      "Well-structured component hierarchy with clear separation of concerns",
+      "Good loading and error states in UI components",
+      "Proper authentication and authorization checks in API routes",
+      "Database transactions used for cascading deletes",
+      "Comprehensive test suite covering API routes"
+    ],
+    "immediateActions": [
+      {
+        "priority": 1,
+        "action": "Fix action type selector bug in ActionList component",
+        "files": ["page.tsx"]
+      },
+      {
+        "priority": 1,
+        "action": "Fix all API endpoint paths to include workspaceId",
+        "files": ["hooks/use-workflows.ts"]
+      },
+      {
+        "priority": 1,
+        "action": "Standardize status value casing throughout codebase",
+        "files": ["types/workflow.ts", "page.tsx", "all API routes"]
+      },
+      {
+        "priority": 2,
+        "action": "Implement actual workflow execution logic",
+        "files": ["execute/route.ts", "create workflow-executor service"]
+      },
+      {
+        "priority": 2,
+        "action": "Add trigger and action configuration UI components",
+        "files": ["page.tsx", "create new components"]
+      },
+      {
+        "priority": 3,
+        "action": "Add deep validation for trigger and action configs",
+        "files": ["page.tsx", "lib/validations/workflow.ts"]
+      }
+    ]
+  },
+  "recommendations": {
+    "architecture": [
+      "Extract workflow execution into a separate @wundr/workflow-executor package",
+      "Create a workflow action registry pattern for extensibility",
+      "Implement workflow versioning to track changes over time",
+      "Add workflow simulation mode for testing without side effects",
+      "Consider event sourcing for workflow execution history"
+    ],
+    "codeQuality": [
+      "Add integration tests for complete workflow lifecycle",
+      "Implement proper TypeScript discriminated unions for trigger/action configs",
+      "Add comprehensive JSDoc comments for all public APIs",
+      "Extract reusable access control logic into shared middleware",
+      "Add proper error boundaries in React components"
+    ],
+    "userExperience": [
+      "Add workflow templates preview before creation",
+      "Implement drag-and-drop for action reordering",
+      "Add visual workflow builder with nodes and edges",
+      "Implement workflow execution real-time monitoring",
+      "Add workflow analytics and performance metrics dashboard"
+    ],
+    "performance": [
+      "Add pagination to workflow list",
+      "Implement virtual scrolling for large execution histories",
+      "Cache workflow templates to reduce API calls",
+      "Add database indexes on workflow execution queries",
+      "Consider Redis caching for frequently accessed workflows"
+    ]
+  }
+}

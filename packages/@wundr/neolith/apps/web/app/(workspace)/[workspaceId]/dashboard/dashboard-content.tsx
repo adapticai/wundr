@@ -1,100 +1,168 @@
 'use client';
 
-import { LayoutDashboard } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-import { EmptyState } from '@/components/ui/empty-state';
-import { CreateWorkspaceCard } from '@/components/workspace/create-workspace-card';
-import { WorkspaceCardSkeleton } from '@/components/workspace/workspace-card';
+import { DashboardSkeleton } from '@/components/skeletons/dashboard-skeleton';
 
 interface DashboardContentProps {
   userName: string;
+  workspaceId: string;
 }
 
-export function DashboardContent({ userName }: DashboardContentProps) {
-  // TODO: Replace with actual workspace fetching logic
-  const workspaces: unknown[] = []; // This should fetch user's workspaces
-  const isLoading = false; // This should come from data fetching state
+interface ActivityEntry {
+  id: string;
+  type: string;
+  user: {
+    name: string | null;
+    displayName: string | null;
+  };
+  resourceType?: string | null;
+  resourceName?: string | null;
+  createdAt: string;
+}
+
+interface WorkspaceStats {
+  membersCount: number;
+  channelsCount: number;
+  workflowsCount: number;
+  vpsCount: number;
+}
+
+export function DashboardContent({ userName, workspaceId }: DashboardContentProps) {
+  const [activities, setActivities] = useState<ActivityEntry[]>([]);
+  const [stats, setStats] = useState<WorkspaceStats | null>(null);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch(`/api/workspaces/${workspaceId}/activity?limit=5`);
+        if (response.ok) {
+          const data = await response.json();
+          setActivities(data.activities || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch activities:', error);
+      } finally {
+        setIsLoadingActivities(false);
+      }
+    };
+
+    const fetchStats = async () => {
+      try {
+        const [membersRes, workflowsRes] = await Promise.all([
+          fetch(`/api/workspaces/${workspaceId}/members`),
+          fetch(`/api/workspaces/${workspaceId}/workflows`),
+        ]);
+
+        let membersCount = 0;
+        let channelsCount = 0;
+        let workflowsCount = 0;
+
+        if (membersRes.ok) {
+          const membersData = await membersRes.json();
+          membersCount = membersData.pagination?.totalCount || membersData.data?.length || 0;
+        }
+
+        if (workflowsRes.ok) {
+          const workflowsData = await workflowsRes.json();
+          workflowsCount = workflowsData.pagination?.totalCount || workflowsData.data?.length || 0;
+        }
+
+        // Fetch workspace details to get channels count
+        const workspaceRes = await fetch(`/api/workspaces/${workspaceId}`);
+        if (workspaceRes.ok) {
+          const workspaceData = await workspaceRes.json();
+          channelsCount = workspaceData.data?._count?.channels || 0;
+        }
+
+        setStats({
+          membersCount,
+          channelsCount,
+          workflowsCount,
+          vpsCount: 0, // TODO: Add VPs count when endpoint is available
+        });
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchActivities();
+    fetchStats();
+  }, [workspaceId]);
+
+  const formatActivityTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString();
+  };
+
+  const formatActivityTitle = (activity: ActivityEntry): string => {
+    const type = activity.type.split('.')[1] || activity.type;
+    return type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' ');
+  };
+
+  const formatActivityDescription = (activity: ActivityEntry): string => {
+    const userName = activity.user.displayName || activity.user.name || 'Unknown user';
+    if (activity.resourceName) {
+      return `${userName}: ${activity.resourceName}`;
+    }
+    return userName;
+  };
+
+  const isLoading = isLoadingActivities || isLoadingStats;
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="py-2">
       <h1 className="text-3xl font-bold mb-8">Welcome, {userName}</h1>
 
       <div className="grid grid-cols-1 gap-8">
-        {/* Workspaces Section */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Your Workspaces</h2>
-
-          {/* Empty State for New Users */}
-          {!isLoading && workspaces.length === 0 ? (
-            <EmptyState
-              icon={LayoutDashboard}
-              title="Welcome to Your Dashboard"
-              description="Get started by creating your first workspace. Workspaces help you organize your projects, teams, and AI-powered virtual persons."
-              action={{
-                label: 'Create Your First Workspace',
-                onClick: () => {
-                  window.location.href = '/workspaces/new';
-                },
-              }}
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Workspace cards will be rendered here */}
-              {isLoading ? (
-                <>
-                  <WorkspaceCardSkeleton />
-                  <WorkspaceCardSkeleton />
-                </>
-              ) : (
-                workspaces.map((workspace: unknown, index: number) => (
-                  <div key={index}>
-                    {/* Workspace card component */}
-                  </div>
-                ))
-              )}
-              <CreateWorkspaceCard />
-            </div>
-          )}
-        </section>
-
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Recent Activity */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <h3 className="font-semibold mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              <ActivityItem
-                title="Organization created"
-                description="AI Research Lab"
-                time="2 hours ago"
-              />
-              <ActivityItem
-                title="Agent deployed"
-                description="Data Analyst Agent"
-                time="5 hours ago"
-              />
-              <ActivityItem
-                title="Workflow updated"
-                description="Onboarding Pipeline"
-                time="1 day ago"
-              />
-              <ActivityItem
-                title="Team member added"
-                description="john@example.com"
-                time="2 days ago"
-              />
-            </div>
+            {activities.length > 0 ? (
+              <div className="space-y-3">
+                {activities.slice(0, 4).map((activity) => (
+                  <ActivityItem
+                    key={activity.id}
+                    title={formatActivityTitle(activity)}
+                    description={formatActivityDescription(activity)}
+                    time={formatActivityTime(activity.createdAt)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No recent activity</p>
+            )}
           </div>
 
           {/* Quick Stats */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <h3 className="font-semibold mb-4">Quick Stats</h3>
             <div className="space-y-4">
-              <StatItem label="Organizations" value="3" />
-              <StatItem label="Active Agents" value="12" />
-              <StatItem label="Workflows" value="8" />
-              <StatItem label="Deployments" value="5" />
+              <StatItem label="Team Members" value={stats?.membersCount.toString() || '0'} />
+              <StatItem label="Channels" value={stats?.channelsCount.toString() || '0'} />
+              <StatItem label="Workflows" value={stats?.workflowsCount.toString() || '0'} />
+              <StatItem label="Virtual Persons" value={stats?.vpsCount.toString() || '0'} />
             </div>
           </div>
 
@@ -103,12 +171,12 @@ export function DashboardContent({ userName }: DashboardContentProps) {
             <h3 className="font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
               <QuickAction
-                label="Create Organization"
-                href="/organizations/new"
+                label="Invite Team Member"
+                href={`/${workspaceId}/settings/members`}
               />
-              <QuickAction label="Deploy Agent" href="/agents/deploy" />
-              <QuickAction label="New Workflow" href="/workflows/new" />
-              <QuickAction label="View Documentation" href="/docs" />
+              <QuickAction label="Create Channel" href={`/${workspaceId}/channels/new`} />
+              <QuickAction label="New Workflow" href={`/${workspaceId}/workflows/new`} />
+              <QuickAction label="View Activity" href={`/${workspaceId}/activity`} />
             </div>
           </div>
         </div>

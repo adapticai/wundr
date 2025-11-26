@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import useSWR from 'swr';
+import type { AdminAction, AdminActionType } from '@/lib/validations/admin';
 
 // =============================================================================
 // Types
@@ -180,65 +181,9 @@ export interface BillingInfo {
 }
 
 /**
- * Admin action types for audit logging
+ * Re-export AdminAction types from validation schema
  */
-export type AdminActionType =
-  | 'member.invited'
-  | 'member.removed'
-  | 'member.suspended'
-  | 'member.unsuspended'
-  | 'member.role_changed'
-  | 'role.created'
-  | 'role.updated'
-  | 'role.deleted'
-  | 'settings.updated'
-  | 'billing.plan_changed'
-  | 'channel.created'
-  | 'channel.deleted'
-  | 'channel.archived'
-  | string;
-
-/**
- * Admin action details with structured data
- */
-export interface AdminActionDetails {
-  /** Previous value for change actions */
-  previousValue?: string | number | boolean;
-  /** New value for change actions */
-  newValue?: string | number | boolean;
-  /** Reason for the action */
-  reason?: string;
-  /** IP address of the actor */
-  ipAddress?: string;
-  /** User agent of the actor */
-  userAgent?: string;
-  /** Additional context */
-  [key: string]: string | number | boolean | undefined;
-}
-
-/**
- * Admin action for audit logging
- */
-export interface AdminAction {
-  /** Unique action ID */
-  id: string;
-  /** Type of action performed */
-  type: AdminActionType;
-  /** ID of the user who performed the action */
-  actorId: string;
-  /** Display name of the actor */
-  actorName?: string;
-  /** Type of entity affected (e.g., 'member', 'role', 'channel') */
-  targetType?: string;
-  /** ID of the affected entity */
-  targetId?: string;
-  /** Display name of the affected entity */
-  targetName?: string;
-  /** Additional details about the action */
-  details?: AdminActionDetails;
-  /** When the action was performed */
-  createdAt: Date;
-}
+export type { AdminAction, AdminActionType } from '@/lib/validations/admin';
 
 // =============================================================================
 // Fetcher
@@ -437,13 +382,13 @@ export interface UseRolesReturn {
  */
 export function useRoles(workspaceId: string): UseRolesReturn {
   const { data, error, isLoading, mutate } = useSWR<{ roles: Role[] }>(
-    `/api/workspaces/${workspaceId}/roles`,
+    `/api/workspaces/${workspaceId}/admin/roles`,
     fetcher,
   );
 
   const createRole = useCallback(
     async (role: Omit<Role, 'id'>): Promise<Role> => {
-      const res = await fetch(`/api/workspaces/${workspaceId}/roles`, {
+      const res = await fetch(`/api/workspaces/${workspaceId}/admin/roles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(role),
@@ -457,7 +402,7 @@ export function useRoles(workspaceId: string): UseRolesReturn {
 
   const updateRole = useCallback(
     async (roleId: string, updates: Partial<Role>) => {
-      await fetch(`/api/workspaces/${workspaceId}/roles/${roleId}`, {
+      await fetch(`/api/workspaces/${workspaceId}/admin/roles/${roleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -469,7 +414,7 @@ export function useRoles(workspaceId: string): UseRolesReturn {
 
   const deleteRole = useCallback(
     async (roleId: string) => {
-      await fetch(`/api/workspaces/${workspaceId}/roles/${roleId}`, {
+      await fetch(`/api/workspaces/${workspaceId}/admin/roles/${roleId}`, {
         method: 'DELETE',
       });
       await mutate();
@@ -618,13 +563,13 @@ export interface UseWorkspaceSettingsReturn {
  */
 export function useWorkspaceSettings(workspaceId: string): UseWorkspaceSettingsReturn {
   const { data, error, isLoading, mutate } = useSWR<{ settings: WorkspaceSettings }>(
-    `/api/workspaces/${workspaceId}/settings`,
+    `/api/workspaces/${workspaceId}/admin/settings`,
     fetcher,
   );
 
   const updateSettings = useCallback(
     async (updates: Partial<WorkspaceSettings>) => {
-      await fetch(`/api/workspaces/${workspaceId}/settings`, {
+      await fetch(`/api/workspaces/${workspaceId}/admin/settings`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -802,42 +747,43 @@ export function useAdminActivity(
   workspaceId: string,
   options: UseAdminActivityOptions = {},
 ): UseAdminActivityReturn {
-  const [page, setPage] = useState(1);
+  const [offset, setOffset] = useState(0);
   const [allActivities, setAllActivities] = useState<AdminAction[]>([]);
   const limit = options.limit ?? 50;
 
   const queryParams = new URLSearchParams({
-    page: String(page),
+    offset: String(offset),
     limit: String(limit),
-    ...(options.type && { type: options.type }),
+    ...(options.type && { action: options.type }),
     ...(options.actorId && { actorId: options.actorId }),
   });
 
   const { data, error, isLoading, mutate } = useSWR<{
-    activities: AdminAction[];
+    actions: AdminAction[];
     total: number;
-    hasMore: boolean;
-  }>(`/api/workspaces/${workspaceId}/activity?${queryParams}`, fetcher);
+  }>(`/api/workspaces/${workspaceId}/admin/activity?${queryParams}`, fetcher);
 
   useEffect(() => {
-    if (data?.activities) {
-      if (page === 1) {
-        setAllActivities(data.activities);
+    if (data?.actions) {
+      if (offset === 0) {
+        setAllActivities(data.actions);
       } else {
-        setAllActivities((prev) => [...prev, ...data.activities]);
+        setAllActivities((prev) => [...prev, ...data.actions]);
       }
     }
-  }, [data, page]);
+  }, [data, offset]);
+
+  const hasMore = data ? allActivities.length < data.total : false;
 
   return {
     activities: allActivities,
     total: data?.total ?? 0,
     isLoading,
-    hasMore: data?.hasMore ?? false,
+    hasMore,
     error: error as Error | undefined,
-    loadMore: () => setPage((p) => p + 1),
+    loadMore: () => setOffset((o) => o + limit),
     refresh: () => {
-      setPage(1);
+      setOffset(0);
       setAllActivities([]);
       mutate();
     },

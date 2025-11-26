@@ -1,0 +1,589 @@
+{
+  "reviewMetadata": {
+    "date": "2025-01-26",
+    "reviewer": "Claude Code Quality Analyzer",
+    "scope": "Admin-related files in Neolith web app",
+    "filesReviewed": 8,
+    "issuesFound": 47,
+    "severity": {
+      "critical": 12,
+      "high": 18,
+      "medium": 11,
+      "low": 6
+    }
+  },
+  "fileReviews": [
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/page.tsx",
+      "linesOfCode": 152,
+      "issues": [
+        {
+          "severity": "high",
+          "category": "incomplete_functionality",
+          "line": "1-152",
+          "description": "Entire admin page is a placeholder with no real functionality",
+          "details": "The page.tsx file should redirect to admin/settings or admin/overview, not render a duplicate admin interface. The layout.tsx already handles navigation."
+        },
+        {
+          "severity": "high",
+          "category": "non_interactive_elements",
+          "line": "34-44",
+          "description": "Tab navigation buttons don't actually navigate - they use local state instead of Next.js routing",
+          "details": "Should use Link components or router.push() to navigate to /admin/settings, /admin/members, etc."
+        },
+        {
+          "severity": "high",
+          "category": "non_interactive_elements",
+          "line": "86",
+          "description": "Save Changes button has no onClick handler",
+          "details": "Button does nothing when clicked"
+        },
+        {
+          "severity": "high",
+          "category": "non_interactive_elements",
+          "line": "96",
+          "description": "Invite Members button has no onClick handler",
+          "details": "Button does nothing when clicked"
+        },
+        {
+          "severity": "high",
+          "category": "non_interactive_elements",
+          "line": "108",
+          "description": "Create Role button has no onClick handler",
+          "details": "Button does nothing when clicked"
+        },
+        {
+          "severity": "high",
+          "category": "non_interactive_elements",
+          "line": "123",
+          "description": "Upgrade Plan button has no onClick handler",
+          "details": "Button does nothing when clicked"
+        },
+        {
+          "severity": "medium",
+          "category": "mock_data",
+          "line": "64-89",
+          "description": "SettingsPanel uses hardcoded placeholder values",
+          "details": "workspaceId parameter is unused (_workspaceId). No data fetching or API integration."
+        },
+        {
+          "severity": "medium",
+          "category": "mock_data",
+          "line": "91-101",
+          "description": "MembersPanel shows placeholder text only",
+          "details": "No actual member list, just displays workspaceId as text"
+        },
+        {
+          "severity": "medium",
+          "category": "mock_data",
+          "line": "103-113",
+          "description": "RolesPanel shows placeholder text only",
+          "details": "No actual role list, just displays workspaceId as text"
+        },
+        {
+          "severity": "medium",
+          "category": "mock_data",
+          "line": "115-126",
+          "description": "BillingPanel shows hardcoded 'Free' plan",
+          "details": "No dynamic billing data, workspaceId parameter unused"
+        },
+        {
+          "severity": "medium",
+          "category": "mock_data",
+          "line": "128-135",
+          "description": "ActivityPanel shows placeholder text only",
+          "details": "No actual activity log, just displays workspaceId as text"
+        },
+        {
+          "severity": "low",
+          "category": "ui_issues",
+          "line": "1-152",
+          "description": "Duplicate admin interface conflicts with layout.tsx",
+          "details": "This page should either be deleted or simplified to redirect to /admin/settings"
+        }
+      ],
+      "recommendations": [
+        "Delete this file entirely and let layout.tsx handle the admin navigation",
+        "Or convert to a simple redirect component that sends users to /admin/settings",
+        "Remove all panel components as they duplicate functionality in dedicated pages"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/layout.tsx",
+      "linesOfCode": 298,
+      "issues": [
+        {
+          "severity": "low",
+          "category": "ui_issues",
+          "line": "134",
+          "description": "workspaceId parameter unused in MobileAdminNav",
+          "details": "Parameter is named _workspaceId indicating it's unused"
+        }
+      ],
+      "recommendations": [
+        "This file is well-implemented with proper authentication and authorization",
+        "Consider adding loading states for async params",
+        "Mobile navigation could be enhanced with active state indicators"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/members/page.tsx",
+      "linesOfCode": 769,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "7",
+          "description": "useMembers hook returns mock/empty data - API endpoint may not be implemented",
+          "details": "Hook calls /api/workspaces/${workspaceId}/members but actual data structure from API doesn't match expected Member type"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "44",
+          "description": "useInvites hook calls non-existent API endpoint",
+          "details": "Calls /api/workspaces/${workspaceId}/invites which is in admin/ subdirectory"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "45",
+          "description": "useRoles hook calls non-existent API endpoint",
+          "details": "Should call /api/workspaces/${workspaceId}/admin/roles not /api/workspaces/${workspaceId}/roles"
+        },
+        {
+          "severity": "high",
+          "category": "ui_issues",
+          "line": "316",
+          "description": "Hardcoded typo in className: 'bg-stone/10' should be 'bg-muted/10'",
+          "details": "Invalid Tailwind class - 'stone' is not a valid opacity value"
+        },
+        {
+          "severity": "medium",
+          "category": "type_mismatch",
+          "line": "272-281",
+          "description": "Local Member interface doesn't match hook's Member type",
+          "details": "Missing fields like lastActiveAt, adds roleId that may not exist in API response"
+        }
+      ],
+      "recommendations": [
+        "Verify all API endpoints exist and match the paths in hooks",
+        "Update hook imports to use correct API paths (include /admin/ in URL)",
+        "Fix Tailwind class typo on line 316",
+        "Ensure Member type matches API response structure",
+        "Add error handling for failed API calls"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/roles/page.tsx",
+      "linesOfCode": 530,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "21",
+          "description": "useRoles hook API path mismatch",
+          "details": "Hook calls /api/workspaces/${workspaceId}/roles but should call /api/workspaces/${workspaceId}/admin/roles"
+        },
+        {
+          "severity": "medium",
+          "category": "mock_data",
+          "line": "51-67",
+          "description": "Hardcoded permission list",
+          "details": "availablePermissions array is hardcoded and not fetched from API or configuration"
+        },
+        {
+          "severity": "low",
+          "category": "ui_issues",
+          "line": "178",
+          "description": "Local Role interface extends hook's Role with optional color field",
+          "details": "Color field is UI-only and not persisted to backend"
+        }
+      ],
+      "recommendations": [
+        "Update useRoles hook to call correct /admin/roles endpoint",
+        "Move permission definitions to a shared configuration file or fetch from API",
+        "Document that color field is UI-only and not persisted",
+        "Add validation for permission IDs before saving"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/billing/page.tsx",
+      "linesOfCode": 555,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "21",
+          "description": "useBilling hook calls /api/workspaces/${workspaceId}/billing instead of /admin/billing",
+          "details": "API endpoint path mismatch - should be /api/workspaces/${workspaceId}/admin/billing"
+        },
+        {
+          "severity": "high",
+          "category": "mock_data",
+          "line": "40-106",
+          "description": "Hardcoded plan data in component instead of API",
+          "details": "Plan definitions, pricing, and features are hardcoded arrays rather than fetched from API"
+        },
+        {
+          "severity": "medium",
+          "category": "type_mismatch",
+          "line": "31",
+          "description": "Type casting plan string to union type without validation",
+          "details": "await updatePlan(planId as 'free' | 'starter' | 'pro' | 'enterprise') - unsafe cast"
+        },
+        {
+          "severity": "high",
+          "category": "non_interactive_elements",
+          "line": "159",
+          "description": "Manage subscription button has no functionality",
+          "details": "Button has no onClick handler, just displays text"
+        },
+        {
+          "severity": "high",
+          "category": "non_interactive_elements",
+          "line": "254",
+          "description": "Update payment method button has no functionality",
+          "details": "Button has no onClick handler"
+        }
+      ],
+      "recommendations": [
+        "Update useBilling hook to call /api/workspaces/${workspaceId}/admin/billing",
+        "Move plan definitions to API or shared configuration",
+        "Add proper validation for plan IDs before type casting",
+        "Implement payment method update modal/flow",
+        "Implement subscription management flow (cancel, update card, etc.)",
+        "Add loading states for all async operations"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/activity/page.tsx",
+      "linesOfCode": 555,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "38",
+          "description": "useAdminActivity hook may call wrong endpoint",
+          "details": "Hook calls /api/workspaces/${workspaceId}/activity but should likely be /api/workspaces/${workspaceId}/admin/activity"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "line": "70-92",
+          "description": "CSV export creates client-side export - should use API endpoint",
+          "details": "Export function generates CSV client-side from filtered data, missing server-side pagination"
+        },
+        {
+          "severity": "low",
+          "category": "ui_issues",
+          "line": "317",
+          "description": "Hardcoded date separator background color",
+          "details": "Uses 'bg-stone/50' which may not match design system"
+        }
+      ],
+      "recommendations": [
+        "Verify useAdminActivity hook calls correct endpoint with /admin/ prefix",
+        "Implement server-side CSV export endpoint to handle full dataset",
+        "Add pagination info to export (e.g., 'Exported 50 of 500 records')",
+        "Consider adding export options (date range, filters, format)"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/settings/page.tsx",
+      "linesOfCode": 655,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "21",
+          "description": "useWorkspaceSettings hook calls /api/workspaces/${workspaceId}/settings instead of /admin/settings",
+          "details": "API endpoint path mismatch"
+        },
+        {
+          "severity": "high",
+          "category": "type_mismatch",
+          "line": "140-169",
+          "description": "Local WorkspaceSettings interface significantly extends hook's interface",
+          "details": "Adds many fields that may not exist in API: icon, defaultChannelId, requireTwoFactor, sessionTimeout, allowedDomains, etc."
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "line": "248-283",
+          "description": "SecuritySettings uses local state not synchronized with API response",
+          "details": "Fields like requireTwoFactor, sessionTimeout, allowedDomains may not be in settings object"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "line": "347-411",
+          "description": "NotificationSettings fields may not exist in API",
+          "details": "notifyOnNewMember, notifyOnSecurityEvent, weeklyDigest are not in hook's NotificationDefaults type"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "line": "415-504",
+          "description": "AdvancedSettings fields likely don't exist in API",
+          "details": "dataRetentionDays, exportEnabled, apiRateLimit are not in hook's WorkspaceSettings type"
+        }
+      ],
+      "recommendations": [
+        "Update useWorkspaceSettings hook to call /api/workspaces/${workspaceId}/admin/settings",
+        "Align WorkspaceSettings interface with actual API response",
+        "Add backend support for all security, notification, and advanced settings",
+        "Add field-level error handling for unsupported settings",
+        "Consider splitting settings into multiple API endpoints by category"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/vp-health/page.tsx",
+      "linesOfCode": 395,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_component_integration",
+          "line": "7-9",
+          "description": "Imports VPStatusCard components that may not exist",
+          "details": "Imports from @/components/presence/vp-status-card which needs verification"
+        },
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "line": "64",
+          "description": "Health check endpoint may not exist",
+          "details": "Calls /api/organizations/${workspaceId}/vps/health-check but uses workspaceId not organizationId"
+        },
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "line": "87",
+          "description": "Daemon restart endpoint may not exist",
+          "details": "Calls /api/vps/${vpId}/daemon/restart"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "line": "63-73",
+          "description": "Health check silently fails with no user feedback",
+          "details": "Catch block is empty, user won't know if health check failed"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "line": "84-97",
+          "description": "Daemon restart silently fails with no user feedback",
+          "details": "Catch block is empty, user won't know if restart failed"
+        }
+      ],
+      "recommendations": [
+        "Verify VPStatusCard component exists and matches expected interface",
+        "Fix endpoint to use organizationId or update to use workspaceId consistently",
+        "Add error toast notifications for failed operations",
+        "Add loading states for health check and daemon restart",
+        "Add confirmation modal before restarting daemon",
+        "Implement retry logic for failed operations"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-admin.ts",
+      "linesOfCode": 847,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "344",
+          "description": "useMembers hook calls /api/workspaces/${workspaceId}/members without /admin/ prefix",
+          "details": "Should call /api/workspaces/${workspaceId}/admin/members based on actual API route structure"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "440",
+          "description": "useRoles hook calls /api/workspaces/${workspaceId}/roles without /admin/ prefix",
+          "details": "Should call /api/workspaces/${workspaceId}/admin/roles"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "535",
+          "description": "useInvites hook calls /api/workspaces/${workspaceId}/invites without /admin/ prefix",
+          "details": "Should call /api/workspaces/${workspaceId}/admin/invites"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "621",
+          "description": "useWorkspaceSettings hook calls /api/workspaces/${workspaceId}/settings without /admin/ prefix",
+          "details": "Should call /api/workspaces/${workspaceId}/admin/settings"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "690",
+          "description": "useBilling hook calls /api/workspaces/${workspaceId}/billing without /admin/ prefix",
+          "details": "Should call /api/workspaces/${workspaceId}/admin/billing"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "line": "820",
+          "description": "useAdminActivity hook calls /api/workspaces/${workspaceId}/activity without /admin/ prefix",
+          "details": "Should call /api/workspaces/${workspaceId}/admin/activity"
+        }
+      ],
+      "recommendations": [
+        "Update ALL hook API paths to include /admin/ prefix to match actual API structure",
+        "This is the root cause of most missing API integration issues in the pages",
+        "Add tests to verify hooks call correct endpoints",
+        "Consider creating a base admin API path constant to avoid repetition"
+      ]
+    }
+  ],
+  "apiRouteAnalysis": {
+    "implemented": [
+      "/api/workspaces/[workspaceId]/admin/members - GET",
+      "/api/workspaces/[workspaceId]/admin/members/[userId] - PATCH, DELETE",
+      "/api/workspaces/[workspaceId]/admin/members/[userId]/suspend - POST",
+      "/api/workspaces/[workspaceId]/admin/members/[userId]/unsuspend - POST",
+      "/api/workspaces/[workspaceId]/admin/roles - GET, POST",
+      "/api/workspaces/[workspaceId]/admin/roles/[roleId] - PATCH, DELETE",
+      "/api/workspaces/[workspaceId]/admin/invites - GET, POST",
+      "/api/workspaces/[workspaceId]/admin/invites/[inviteId] - DELETE",
+      "/api/workspaces/[workspaceId]/admin/settings - GET, PATCH (mock data)",
+      "/api/workspaces/[workspaceId]/admin/billing - GET",
+      "/api/workspaces/[workspaceId]/admin/billing/upgrade - POST",
+      "/api/workspaces/[workspaceId]/admin/activity - GET",
+      "/api/workspaces/[workspaceId]/admin/audit-logs - GET",
+      "/api/workspaces/[workspaceId]/admin/audit-logs/export - GET"
+    ],
+    "missing": [
+      "/api/workspaces/[workspaceId]/admin/invites/[inviteId]/resend - POST (referenced in hook)",
+      "/api/workspaces/[workspaceId]/admin/billing/plan - POST (referenced in hook)",
+      "/api/workspaces/[workspaceId]/admin/billing/cancel - POST (referenced in hook)",
+      "/api/workspaces/[workspaceId]/admin/billing/invoices/[invoiceId] - GET (referenced in hook)",
+      "/api/organizations/[orgId]/vps/health - GET (referenced in vp-health page)",
+      "/api/organizations/[orgId]/vps/health-check - POST (referenced in vp-health page)",
+      "/api/vps/[vpId]/health - GET (referenced in use-presence hook)",
+      "/api/vps/[vpId]/daemon/restart - POST (referenced in vp-health page)"
+    ],
+    "mismatches": [
+      {
+        "hook": "useMembers",
+        "expected": "/api/workspaces/[workspaceId]/admin/members",
+        "actual": "/api/workspaces/[workspaceId]/members"
+      },
+      {
+        "hook": "useRoles",
+        "expected": "/api/workspaces/[workspaceId]/admin/roles",
+        "actual": "/api/workspaces/[workspaceId]/roles"
+      },
+      {
+        "hook": "useInvites",
+        "expected": "/api/workspaces/[workspaceId]/admin/invites",
+        "actual": "/api/workspaces/[workspaceId]/invites"
+      },
+      {
+        "hook": "useWorkspaceSettings",
+        "expected": "/api/workspaces/[workspaceId]/admin/settings",
+        "actual": "/api/workspaces/[workspaceId]/settings"
+      },
+      {
+        "hook": "useBilling",
+        "expected": "/api/workspaces/[workspaceId]/admin/billing",
+        "actual": "/api/workspaces/[workspaceId]/billing"
+      },
+      {
+        "hook": "useAdminActivity",
+        "expected": "/api/workspaces/[workspaceId]/admin/activity",
+        "actual": "/api/workspaces/[workspaceId]/activity"
+      }
+    ]
+  },
+  "criticalIssues": [
+    {
+      "priority": 1,
+      "issue": "All admin hooks use wrong API paths - missing /admin/ prefix",
+      "impact": "None of the admin pages can fetch real data from the backend",
+      "files": ["hooks/use-admin.ts"],
+      "fix": "Update all hooks to use /api/workspaces/${workspaceId}/admin/* endpoints"
+    },
+    {
+      "priority": 2,
+      "issue": "admin/page.tsx is a duplicate interface that conflicts with layout.tsx",
+      "impact": "Confusing navigation, non-functional buttons, wasted code",
+      "files": ["app/(workspace)/[workspaceId]/admin/page.tsx"],
+      "fix": "Delete file or convert to redirect to /admin/settings"
+    },
+    {
+      "priority": 3,
+      "issue": "Settings page uses fields that don't exist in API response",
+      "impact": "Security, notification, and advanced settings cannot be saved",
+      "files": ["app/(workspace)/[workspaceId]/admin/settings/page.tsx", "app/api/workspaces/[workspaceId]/admin/settings/route.ts"],
+      "fix": "Extend API to support all settings fields or remove unsupported UI"
+    },
+    {
+      "priority": 4,
+      "issue": "Billing page has hardcoded plans and non-functional upgrade flow",
+      "impact": "Users cannot actually upgrade their plan",
+      "files": ["app/(workspace)/[workspaceId]/admin/billing/page.tsx"],
+      "fix": "Implement upgrade flow API endpoint and payment integration"
+    },
+    {
+      "priority": 5,
+      "issue": "VP Health endpoints use inconsistent resource naming (organizations vs workspaces)",
+      "impact": "VP health features may not work",
+      "files": ["app/(workspace)/[workspaceId]/admin/vp-health/page.tsx"],
+      "fix": "Standardize on workspaceId or organizationId throughout VP health feature"
+    }
+  ],
+  "recommendations": {
+    "immediate": [
+      "Fix all hook API paths to include /admin/ prefix",
+      "Delete or fix admin/page.tsx",
+      "Add error handling and user feedback for all API calls",
+      "Verify VPStatusCard component exists"
+    ],
+    "shortTerm": [
+      "Implement missing API endpoints for billing, invites, settings",
+      "Add proper TypeScript types matching actual API responses",
+      "Implement payment integration for billing upgrades",
+      "Add comprehensive error states and loading indicators",
+      "Fix all non-interactive buttons"
+    ],
+    "longTerm": [
+      "Add end-to-end tests for all admin workflows",
+      "Implement proper RBAC for all admin endpoints",
+      "Add audit logging for all admin actions",
+      "Create admin documentation for all features",
+      "Implement real-time updates for member presence and VP health"
+    ]
+  },
+  "summary": {
+    "overallQuality": "4/10",
+    "mainIssues": [
+      "Critical disconnect between frontend hooks and backend API structure",
+      "Many non-functional UI elements that appear interactive but do nothing",
+      "Extensive mock/hardcoded data instead of real API integration",
+      "Missing API endpoints for core admin functionality",
+      "Type mismatches between components and API responses"
+    ],
+    "strengths": [
+      "Well-structured component hierarchy",
+      "Good use of TypeScript for type safety",
+      "Comprehensive admin layout with proper authentication",
+      "Clean separation of concerns between pages",
+      "Good skeleton loading states"
+    ],
+    "estimatedWorkToComplete": "40-60 hours",
+    "breakdown": {
+      "hookRefactoring": "8 hours",
+      "apiImplementation": "20 hours",
+      "buttonFunctionality": "8 hours",
+      "typeAlignment": "4 hours",
+      "testing": "10 hours",
+      "documentation": "6 hours"
+    }
+  }
+}

@@ -1,0 +1,586 @@
+{
+  "phase": "4",
+  "wave": "4.2",
+  "name": "Mobile App Foundation",
+  "date": "2025-11-26",
+  "overall_status": "PARTIALLY_COMPLETE",
+  "completion_percentage": 40,
+  "critical_blockers": 2,
+  "warnings": 3,
+  "summary": "Mobile infrastructure is configured but native platforms are not initialized and architecture is incompatible with static export requirements.",
+
+  "task_groups": {
+    "4.2.1_native_project_initialization": {
+      "name": "Native Project Initialization",
+      "status": "NOT_STARTED",
+      "completion": 0,
+      "subtasks": {
+        "ios_project_created": {
+          "status": "NOT_STARTED",
+          "command": "npm run add:ios",
+          "expected_output": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/ios/",
+          "actual": "Directory does not exist",
+          "blocker": true,
+          "severity": "CRITICAL",
+          "notes": "iOS platform must be initialized using Capacitor CLI"
+        },
+        "android_project_created": {
+          "status": "NOT_STARTED",
+          "command": "npm run add:android",
+          "expected_output": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/android/",
+          "actual": "Directory does not exist",
+          "blocker": true,
+          "severity": "CRITICAL",
+          "notes": "Android platform must be initialized using Capacitor CLI"
+        },
+        "bundle_ids_configured": {
+          "status": "COMPLETE",
+          "app_id": "com.wundr.neolith",
+          "app_name": "Neolith",
+          "config_file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/capacitor.config.ts",
+          "notes": "Bundle ID properly configured in capacitor.config.ts"
+        },
+        "initial_sync": {
+          "status": "BLOCKED",
+          "blocker_reason": "Native platforms not initialized",
+          "command": "npm run sync",
+          "prerequisites": ["ios_project_created", "android_project_created"],
+          "notes": "Cannot sync until platforms are added"
+        }
+      }
+    },
+
+    "4.2.2_mobile_assets": {
+      "name": "Mobile Assets",
+      "status": "NOT_STARTED",
+      "completion": 0,
+      "subtasks": {
+        "app_icon_designed": {
+          "status": "NOT_STARTED",
+          "required_files": [
+            "icon.png (1024x1024)",
+            "icon-only.png (optional)"
+          ],
+          "actual": "No icon assets found",
+          "notes": "App icon source file needs to be created"
+        },
+        "splash_screen_designed": {
+          "status": "NOT_STARTED",
+          "required_files": [
+            "splash.png (2732x2732 recommended)",
+            "splash-dark.png (optional)"
+          ],
+          "actual": "No splash screen assets found",
+          "notes": "Splash screen source file needs to be created"
+        },
+        "capacitor_assets_installed": {
+          "status": "NOT_STARTED",
+          "package": "@capacitor/assets",
+          "verification_command": "grep '@capacitor/assets' package.json",
+          "actual": "Package not found in dependencies",
+          "notes": "Install with: npm install -D @capacitor/assets"
+        },
+        "assets_generated": {
+          "status": "NOT_STARTED",
+          "command": "npx capacitor-assets generate",
+          "prerequisites": ["app_icon_designed", "splash_screen_designed", "capacitor_assets_installed"],
+          "notes": "Will auto-generate platform-specific assets from source files"
+        }
+      }
+    },
+
+    "4.2.3_mobile_specific_optimizations": {
+      "name": "Mobile-Specific Optimizations",
+      "status": "PARTIAL",
+      "completion": 25,
+      "subtasks": {
+        "viewport_meta_tags": {
+          "status": "COMPLETE",
+          "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/layout.tsx",
+          "details": {
+            "width": "device-width",
+            "initialScale": 1,
+            "maximumScale": 1,
+            "userScalable": false,
+            "viewportFit": "cover"
+          },
+          "line_numbers": "37-43",
+          "notes": "Properly configured for mobile with viewport-fit: cover for notch support"
+        },
+        "safe_area_css": {
+          "status": "NOT_FOUND",
+          "expected_location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/globals.css",
+          "search_pattern": "env(safe-area-inset-*)",
+          "actual": "No safe-area CSS variables found",
+          "severity": "WARNING",
+          "notes": "Safe area insets should be implemented for iOS notch/Dynamic Island support"
+        },
+        "capacitor_plugins": {
+          "keyboard": {
+            "status": "NOT_INSTALLED",
+            "package": "@capacitor/keyboard",
+            "notes": "Required for keyboard behavior management"
+          },
+          "status_bar": {
+            "status": "NOT_INSTALLED",
+            "package": "@capacitor/status-bar",
+            "notes": "Required for status bar styling control"
+          },
+          "network": {
+            "status": "NOT_INSTALLED",
+            "package": "@capacitor/network",
+            "notes": "Required for network connectivity monitoring"
+          },
+          "haptics": {
+            "status": "NOT_INSTALLED",
+            "package": "@capacitor/haptics",
+            "notes": "Required for tactile feedback"
+          },
+          "existing_plugins": {
+            "app": {
+              "status": "INSTALLED",
+              "version": "^6.0.0",
+              "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/package.json"
+            },
+            "splash_screen": {
+              "status": "INSTALLED",
+              "version": "^6.0.0",
+              "configured": true,
+              "config_location": "capacitor.config.ts lines 28-38"
+            },
+            "push_notifications": {
+              "status": "INSTALLED",
+              "version": "^6.0.0",
+              "configured": true,
+              "config_location": "capacitor.config.ts lines 39-41"
+            },
+            "preferences": {
+              "status": "INSTALLED",
+              "version": "^6.0.0",
+              "configured": true
+            }
+          }
+        },
+        "use_native_hook": {
+          "status": "NOT_FOUND",
+          "expected_location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/hooks/use-native.ts",
+          "search_results": "File not found",
+          "severity": "WARNING",
+          "notes": "Custom hook for Capacitor native feature access should be implemented"
+        }
+      }
+    },
+
+    "4.2.4_pwa_manifest": {
+      "name": "PWA Manifest",
+      "status": "NOT_FOUND",
+      "completion": 0,
+      "subtasks": {
+        "manifest_json_exists": {
+          "status": "NOT_FOUND",
+          "expected_location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/public/manifest.json",
+          "actual": "public/ directory does not exist",
+          "severity": "WARNING",
+          "notes": "Next.js 13+ uses app/ directory, manifest should be in app/ or public/"
+        },
+        "manifest_configuration": {
+          "status": "NOT_STARTED",
+          "required_fields": [
+            "name",
+            "short_name",
+            "description",
+            "icons",
+            "theme_color",
+            "background_color",
+            "display",
+            "start_url",
+            "scope"
+          ],
+          "notes": "PWA manifest enables Add to Home Screen and progressive web app features"
+        },
+        "service_worker_integration": {
+          "status": "PARTIAL",
+          "service_worker_file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/service-worker.ts",
+          "implementation": "TypeScript utility for service worker registration",
+          "actual_sw_file": "NOT_FOUND",
+          "expected_sw_file": "/sw.js or /service-worker.js",
+          "notes": "Service worker registration utilities exist but actual sw.js file not found"
+        },
+        "pwa_meta_tags": {
+          "status": "PARTIAL",
+          "viewport_configured": true,
+          "theme_color": "NOT_FOUND",
+          "apple_mobile_web_app_capable": "NOT_FOUND",
+          "notes": "Additional PWA meta tags should be added to layout.tsx"
+        }
+      }
+    }
+  },
+
+  "architecture_analysis": {
+    "next_js_configuration": {
+      "status": "INCOMPATIBLE",
+      "severity": "CRITICAL",
+      "issue": "Next.js is building in standalone server mode, not static export mode",
+      "current_config": {
+        "output": "undefined (defaults to server mode)",
+        "distDir": "out",
+        "standalone": true
+      },
+      "required_config": {
+        "output": "export",
+        "images": {
+          "unoptimized": true
+        }
+      },
+      "verification": {
+        "command": "ls -la apps/web/out/",
+        "found": ["server/", "build/", ".nft.json files"],
+        "missing": ["index.html", "static HTML pages"]
+      },
+      "blocker": true,
+      "impact": "Capacitor cannot load Next.js server-rendered pages. Static export required.",
+      "refactoring_required": true
+    },
+    "server_side_features": {
+      "api_routes": {
+        "count": "10+",
+        "examples": [
+          "/api/auth/[...nextauth]",
+          "/api/graphql",
+          "/api/workspaces/*",
+          "/api/vps/*",
+          "/api/tasks/*"
+        ],
+        "impact": "All API routes must be moved to separate backend or converted to static generation"
+      },
+      "server_components": {
+        "status": "DETECTED",
+        "impact": "Server components must be converted to client components with API calls"
+      },
+      "database_access": {
+        "status": "DETECTED",
+        "impact": "Direct Prisma usage in pages must be moved to API layer"
+      }
+    },
+    "recommended_approach": {
+      "option_a": {
+        "name": "Full Static Export (Recommended)",
+        "effort": "3-5 days",
+        "steps": [
+          "Move all API routes to separate backend service",
+          "Convert server components to client components",
+          "Implement client-side data fetching",
+          "Use environment variables for API endpoints",
+          "Enable output: 'export' in next.config.js",
+          "Test full mobile build pipeline"
+        ],
+        "benefits": [
+          "True mobile app experience",
+          "Better performance",
+          "Simpler deployment",
+          "Cleaner architecture"
+        ]
+      },
+      "option_b": {
+        "name": "Hybrid Approach",
+        "effort": "1-2 days",
+        "steps": [
+          "Create conditional config based on BUILD_TARGET env var",
+          "Maintain server-rendered web app",
+          "Create separate static build for mobile",
+          "Duplicate some logic for mobile compatibility"
+        ],
+        "drawbacks": [
+          "Increased complexity",
+          "Code duplication",
+          "Maintenance burden",
+          "Not true mobile experience"
+        ]
+      }
+    }
+  },
+
+  "file_verification": {
+    "config_files": {
+      "capacitor.config.ts": {
+        "exists": true,
+        "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/capacitor.config.ts",
+        "status": "VALID",
+        "app_id": "com.wundr.neolith",
+        "web_dir": "../web/out"
+      },
+      "package.json": {
+        "exists": true,
+        "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/package.json",
+        "status": "VALID",
+        "scripts_configured": true
+      },
+      "next.config.js": {
+        "exists": true,
+        "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/next.config.js",
+        "status": "INCOMPATIBLE",
+        "issue": "Missing output: 'export'"
+      }
+    },
+    "directories": {
+      "mobile_app": {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/",
+        "exists": true,
+        "status": "VALID"
+      },
+      "ios_platform": {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/ios/",
+        "exists": false,
+        "status": "NOT_INITIALIZED"
+      },
+      "android_platform": {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/android/",
+        "exists": false,
+        "status": "NOT_INITIALIZED"
+      },
+      "web_public": {
+        "path": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/public/",
+        "exists": false,
+        "notes": "Next.js 13+ may not have public/ directory by default"
+      }
+    },
+    "documentation": {
+      "mobile_readme": {
+        "exists": true,
+        "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/README.md",
+        "status": "COMPREHENSIVE",
+        "covers": ["iOS setup", "Android setup", "Development workflow", "Troubleshooting"]
+      },
+      "config_verification_report": {
+        "exists": true,
+        "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/mobile/MOBILE_CONFIG_VERIFICATION_REPORT.md",
+        "status": "UP_TO_DATE",
+        "identifies_critical_issues": true
+      }
+    }
+  },
+
+  "dependencies": {
+    "mobile_package": {
+      "capacitor_core": "^6.0.0",
+      "capacitor_ios": "^6.0.0",
+      "capacitor_android": "^6.0.0",
+      "capacitor_app": "^6.0.0",
+      "capacitor_splash_screen": "^6.0.0",
+      "capacitor_push_notifications": "^6.0.0",
+      "capacitor_preferences": "^6.0.0",
+      "capacitor_cli": "^6.0.0 (devDependencies)"
+    },
+    "missing_plugins": [
+      "@capacitor/keyboard",
+      "@capacitor/status-bar",
+      "@capacitor/network",
+      "@capacitor/haptics",
+      "@capacitor/assets"
+    ]
+  },
+
+  "recommendations": {
+    "immediate_actions": [
+      {
+        "priority": "CRITICAL",
+        "action": "Decide on static export vs hybrid architecture approach",
+        "impact": "Blocks all mobile development",
+        "estimated_time": "Strategic decision - 1-2 hours"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Update Next.js config to enable static export (if Option A chosen)",
+        "command": "Add 'output: export' to next.config.js",
+        "estimated_time": "5 minutes + testing"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Initialize iOS platform",
+        "command": "cd apps/mobile && npm run add:ios",
+        "estimated_time": "2-3 minutes"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Initialize Android platform",
+        "command": "cd apps/mobile && npm run add:android",
+        "estimated_time": "2-3 minutes"
+      }
+    ],
+    "short_term_actions": [
+      {
+        "priority": "MEDIUM",
+        "action": "Install missing Capacitor plugins",
+        "command": "npm install @capacitor/keyboard @capacitor/status-bar @capacitor/network @capacitor/haptics",
+        "estimated_time": "5 minutes"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Install @capacitor/assets for icon generation",
+        "command": "npm install -D @capacitor/assets",
+        "estimated_time": "2 minutes"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Create app icon source file",
+        "details": "1024x1024px PNG with transparency",
+        "estimated_time": "Design work - varies"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Create splash screen source file",
+        "details": "2732x2732px PNG (recommended)",
+        "estimated_time": "Design work - varies"
+      },
+      {
+        "priority": "LOW",
+        "action": "Add safe-area CSS variables",
+        "location": "apps/web/app/globals.css",
+        "estimated_time": "15 minutes"
+      },
+      {
+        "priority": "LOW",
+        "action": "Implement use-native.ts hook",
+        "location": "apps/web/hooks/use-native.ts",
+        "estimated_time": "30 minutes"
+      },
+      {
+        "priority": "LOW",
+        "action": "Create PWA manifest.json",
+        "location": "apps/web/app/manifest.json or apps/web/public/manifest.json",
+        "estimated_time": "20 minutes"
+      }
+    ],
+    "long_term_actions": [
+      {
+        "priority": "MEDIUM",
+        "action": "Refactor API routes to separate backend (if static export chosen)",
+        "estimated_time": "2-3 days"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Convert server components to client components",
+        "estimated_time": "1-2 days"
+      },
+      {
+        "priority": "LOW",
+        "action": "Set up iOS signing certificates",
+        "estimated_time": "1 hour"
+      },
+      {
+        "priority": "LOW",
+        "action": "Set up Android keystore",
+        "estimated_time": "30 minutes"
+      },
+      {
+        "priority": "LOW",
+        "action": "Configure push notifications",
+        "estimated_time": "2-3 hours"
+      }
+    ]
+  },
+
+  "blockers": [
+    {
+      "id": "BLOCKER-001",
+      "severity": "CRITICAL",
+      "title": "Next.js Static Export Not Enabled",
+      "description": "Capacitor requires static HTML files but Next.js is building in server mode",
+      "impact": "Mobile app cannot load properly without Node.js runtime",
+      "resolution": "Add 'output: export' to next.config.js and refactor server-side code"
+    },
+    {
+      "id": "BLOCKER-002",
+      "severity": "CRITICAL",
+      "title": "Native Platforms Not Initialized",
+      "description": "iOS and Android platform folders do not exist",
+      "impact": "Cannot build or run mobile apps",
+      "resolution": "Run 'npm run add:ios' and 'npm run add:android'"
+    }
+  ],
+
+  "warnings": [
+    {
+      "id": "WARNING-001",
+      "severity": "MEDIUM",
+      "title": "Missing Mobile Assets",
+      "description": "No app icons or splash screens configured",
+      "impact": "App will use default Capacitor branding",
+      "resolution": "Create and generate custom app assets"
+    },
+    {
+      "id": "WARNING-002",
+      "severity": "MEDIUM",
+      "title": "Missing Essential Capacitor Plugins",
+      "description": "Keyboard, Status Bar, Network, and Haptics plugins not installed",
+      "impact": "Limited mobile functionality and user experience",
+      "resolution": "Install missing Capacitor plugins"
+    },
+    {
+      "id": "WARNING-003",
+      "severity": "LOW",
+      "title": "No Safe Area CSS Support",
+      "description": "CSS does not account for iOS notch/Dynamic Island",
+      "impact": "Content may be obscured by device UI elements",
+      "resolution": "Add env(safe-area-inset-*) CSS variables"
+    }
+  ],
+
+  "testing_checklist": [
+    {
+      "category": "Build Pipeline",
+      "tests": [
+        "Web app builds successfully",
+        "Capacitor sync completes without errors",
+        "iOS project builds in Xcode",
+        "Android project builds in Android Studio"
+      ]
+    },
+    {
+      "category": "Functionality",
+      "tests": [
+        "App launches on iOS simulator",
+        "App launches on Android emulator",
+        "Navigation works correctly",
+        "API calls function properly",
+        "Authentication flows work",
+        "Push notifications can be registered"
+      ]
+    },
+    {
+      "category": "UI/UX",
+      "tests": [
+        "Safe areas respected on iOS",
+        "Status bar styled correctly",
+        "Keyboard behavior is appropriate",
+        "Haptic feedback works",
+        "Splash screen displays",
+        "App icon appears correctly"
+      ]
+    }
+  ],
+
+  "next_steps": {
+    "decision_required": "Choose architecture approach: Full static export (recommended) vs. Hybrid approach",
+    "if_static_export": [
+      "Refactor API routes to separate backend",
+      "Update Next.js config",
+      "Initialize native platforms",
+      "Install missing plugins",
+      "Create mobile assets",
+      "Test full pipeline"
+    ],
+    "if_hybrid": [
+      "Create conditional config",
+      "Initialize native platforms",
+      "Install missing plugins",
+      "Create mobile assets",
+      "Test full pipeline"
+    ],
+    "estimated_timeline": {
+      "static_export": "3-5 days for complete implementation",
+      "hybrid": "1-2 days for basic implementation"
+    }
+  }
+}

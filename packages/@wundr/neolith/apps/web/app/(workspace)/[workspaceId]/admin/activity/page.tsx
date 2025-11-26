@@ -36,7 +36,7 @@ export default function AdminActivityPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { activities, isLoading, hasMore, loadMore } = useAdminActivity(workspaceId, {
-    type: filterAction === 'all' ? undefined : filterAction,
+    type: filterAction === 'all' ? undefined : (filterAction as any),
     limit: 50,
   });
 
@@ -57,10 +57,10 @@ export default function AdminActivityPage() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (activity) =>
-          activity.actorName?.toLowerCase().includes(query) ||
-          activity.type.toLowerCase().includes(query) ||
+          activity.actor?.name?.toLowerCase().includes(query) ||
+          activity.action.toLowerCase().includes(query) ||
           activity.targetName?.toLowerCase().includes(query) ||
-          activity.details?.reason?.toLowerCase().includes(query),
+          (activity.metadata?.reason as string)?.toLowerCase().includes(query),
       );
     }
 
@@ -73,11 +73,11 @@ export default function AdminActivityPage() {
       ...filteredActivities.map((activity) =>
         [
           activity.createdAt instanceof Date ? activity.createdAt.toISOString() : activity.createdAt,
-          activity.type,
-          activity.actorName || 'Unknown',
+          activity.action,
+          activity.actor?.name || 'Unknown',
           activity.targetName || activity.targetType || '',
-          activity.details?.reason || '',
-          activity.details?.ipAddress || '',
+          (activity.metadata?.reason as string) || '',
+          activity.ipAddress || '',
         ].join(','),
       ),
     ].join('\n');
@@ -200,14 +200,14 @@ export default function AdminActivityPage() {
         <StatCard
           label="Member Changes"
           value={
-            filteredActivities.filter((a) => a.type.startsWith('member.')).length
+            filteredActivities.filter((a) => a.action.startsWith('member.')).length
           }
           icon={UsersIcon}
         />
         <StatCard
           label="Settings Updates"
           value={
-            filteredActivities.filter((a) => a.type === 'settings.updated').length
+            filteredActivities.filter((a) => a.action === 'settings.updated').length
           }
           icon={SettingsIcon}
         />
@@ -308,8 +308,10 @@ function ActivityRow({
   activity: AdminAction;
   showDate: boolean;
 }) {
-  const actionConfig = getActionConfig(activity.type);
+  const actionConfig = getActionConfig(activity.action);
   const timestamp = getTimestamp(activity);
+  const reason = activity.metadata?.reason;
+  const reasonText = typeof reason === 'string' ? reason : reason ? JSON.stringify(reason) : null;
 
   return (
     <>
@@ -329,7 +331,7 @@ function ActivityRow({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm text-foreground">
-                <span className="font-medium">{activity.actorName || 'Unknown'}</span>
+                <span className="font-medium">{activity.actor?.name || 'Unknown'}</span>
                 {' '}
                 {actionConfig.description}
                 {activity.targetName && (
@@ -339,8 +341,10 @@ function ActivityRow({
                   </>
                 )}
               </p>
-              {activity.details?.reason && (
-                <p className="mt-1 text-sm text-muted-foreground">{activity.details.reason}</p>
+              {reasonText && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {reasonText}
+                </p>
               )}
             </div>
             <span className="flex-shrink-0 text-xs text-muted-foreground">
@@ -358,9 +362,9 @@ function ActivityRow({
             >
               {actionConfig.label}
             </span>
-            {activity.details?.ipAddress && (
+            {activity.ipAddress && (
               <span className="text-xs text-muted-foreground">
-                IP: {activity.details.ipAddress}
+                IP: {activity.ipAddress}
               </span>
             )}
           </div>

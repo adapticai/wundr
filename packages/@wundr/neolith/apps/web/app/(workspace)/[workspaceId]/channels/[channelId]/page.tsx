@@ -1,8 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
-
+import { useState, useCallback, useMemo } from 'react';
 
 import {
   MessageList,
@@ -11,6 +10,7 @@ import {
   TypingIndicator,
 } from '@/components/chat';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useAuth } from '@/hooks/use-auth';
 import {
   useMessages,
   useSendMessage,
@@ -21,19 +21,24 @@ import {
 
 import type { Message, User } from '@/types/chat';
 
-// Mock current user - in production, this comes from auth
-const MOCK_CURRENT_USER: User = {
-  id: 'user-1',
-  name: 'Current User',
-  email: 'current@example.com',
-  status: 'online',
-};
-
 export default function ChannelPage() {
   const params = useParams();
   const channelId = params.channelId as string;
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+
+  // Convert auth user to chat User type
+  const currentUser = useMemo<User | null>(() => {
+    if (!authUser) return null;
+    return {
+      id: authUser.id,
+      name: authUser.name || 'Unknown User',
+      email: authUser.email || '',
+      image: authUser.image,
+      status: 'online',
+    };
+  }, [authUser]);
 
   // Fetch channel details
   const { channel, isLoading: isChannelLoading } = useChannel(channelId);
@@ -56,7 +61,7 @@ export default function ChannelPage() {
   // Typing indicator
   const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
     channelId,
-    MOCK_CURRENT_USER.id,
+    currentUser?.id || '',
   );
 
   // Thread state
@@ -69,17 +74,19 @@ export default function ChannelPage() {
   // Handle send message
   const handleSendMessage = useCallback(
     async (content: string, mentions: string[], attachments: File[]) => {
+      if (!currentUser) return;
+
       const { optimisticId, message } = await sendMessage(
         { content, channelId, mentions, attachments },
-        MOCK_CURRENT_USER,
+        currentUser,
       );
 
       // Add optimistic message
       addOptimisticMessage({
         id: optimisticId,
         content,
-        authorId: MOCK_CURRENT_USER.id,
-        author: MOCK_CURRENT_USER,
+        authorId: currentUser.id,
+        author: currentUser,
         channelId,
         parentId: null,
         createdAt: new Date(),
@@ -98,27 +105,27 @@ export default function ChannelPage() {
         removeOptimisticMessage(optimisticId);
       }
     },
-    [channelId, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
+    [channelId, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
   );
 
   // Handle send thread reply
   const handleSendThreadReply = useCallback(
     async (content: string, mentions: string[], attachments: File[]) => {
-      if (!activeThreadId) {
+      if (!activeThreadId || !currentUser) {
 return;
 }
 
       const { optimisticId } = await sendMessage(
         { content, channelId, parentId: activeThreadId, mentions, attachments },
-        MOCK_CURRENT_USER,
+        currentUser,
       );
 
       // Add optimistic reply
       addOptimisticReply({
         id: optimisticId,
         content,
-        authorId: MOCK_CURRENT_USER.id,
-        author: MOCK_CURRENT_USER,
+        authorId: currentUser.id,
+        author: currentUser,
         channelId,
         parentId: activeThreadId,
         createdAt: new Date(),
@@ -134,7 +141,7 @@ return;
         replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
       });
     },
-    [activeThreadId, channelId, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
+    [activeThreadId, channelId, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
   );
 
   // Handle edit message
@@ -162,6 +169,8 @@ return;
   // Handle reaction toggle
   const handleReaction = useCallback(
     async (messageId: string, emoji: string) => {
+      if (!currentUser) return;
+
       // Optimistic update
       const message = messages.find((m) => m.id === messageId);
       if (!message) {
@@ -183,7 +192,7 @@ return;
                     ...r,
                     count: r.count - 1,
                     hasReacted: false,
-                    users: r.users.filter((u) => u.id !== MOCK_CURRENT_USER.id),
+                    users: r.users.filter((u) => u.id !== currentUser.id),
                   }
                 : r,
             );
@@ -196,7 +205,7 @@ return;
                   ...r,
                   count: r.count + 1,
                   hasReacted: true,
-                  users: [...r.users, MOCK_CURRENT_USER],
+                  users: [...r.users, currentUser],
                 }
               : r,
           );
@@ -207,7 +216,7 @@ return;
           emoji,
           count: 1,
           hasReacted: true,
-          users: [MOCK_CURRENT_USER],
+          users: [currentUser],
         });
       }
 
@@ -225,7 +234,7 @@ return;
         updateOptimisticMessage(messageId, { reactions: message.reactions });
       }
     },
-    [messages, updateOptimisticMessage],
+    [currentUser, messages, updateOptimisticMessage],
   );
 
   // Handle reply (open thread)
@@ -243,12 +252,21 @@ return;
     setActiveThreadId(null);
   }, []);
 
-  const isLoading = isChannelLoading || isMessagesLoading;
+  const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;
 
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Require authentication
+  if (!currentUser) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <p className="text-muted-foreground">Please sign in to view this channel.</p>
       </div>
     );
   }
@@ -284,7 +302,7 @@ return;
         <div className="flex flex-1 flex-col">
           <MessageList
             messages={messages}
-            currentUser={MOCK_CURRENT_USER}
+            currentUser={currentUser}
             isLoadingMore={isLoadingMore}
             hasMore={hasMore}
             onLoadMore={loadMore}
@@ -301,7 +319,7 @@ return;
           {/* Message input */}
           <MessageInput
             channelId={channelId}
-            currentUser={MOCK_CURRENT_USER}
+            currentUser={currentUser}
             placeholder={`Message #${channel?.name || 'channel'}...`}
             onSend={handleSendMessage}
             onTyping={startTyping}
@@ -312,7 +330,7 @@ return;
         {/* Thread panel */}
         <ThreadPanel
           thread={thread}
-          currentUser={MOCK_CURRENT_USER}
+          currentUser={currentUser}
           channelId={channelId}
           isLoading={isThreadLoading}
           isOpen={!!activeThreadId}

@@ -4,12 +4,25 @@ import { auth } from '@/lib/auth';
 
 import { DashboardContent } from './dashboard-content';
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  params: Promise<{
+    workspaceId: string;
+  }>;
+}
+
+export default async function DashboardPage({ params }: DashboardPageProps) {
   const session = await auth();
 
   if (!session) {
     redirect('/login');
   }
 
-  return <DashboardContent userName={session.user?.name || 'User'} />;
+  const { workspaceId } = await params;
+
+  return (
+    <DashboardContent
+      userName={session.user?.name || 'User'}
+      workspaceId={workspaceId}
+    />
+  );
 }

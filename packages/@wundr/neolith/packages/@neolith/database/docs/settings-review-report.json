@@ -1,0 +1,689 @@
+{
+  "review_metadata": {
+    "review_date": "2025-11-26",
+    "reviewer": "Code Quality Analyzer",
+    "scope": "Settings-related files in Neolith web app",
+    "files_reviewed": 7,
+    "severity_levels": {
+      "critical": "Blocking functionality, broken features",
+      "high": "Missing API endpoints, non-functional UI",
+      "medium": "Incomplete features, missing states",
+      "low": "Code quality, TODO comments"
+    }
+  },
+  "executive_summary": {
+    "total_issues": 34,
+    "critical_issues": 5,
+    "high_priority_issues": 12,
+    "medium_priority_issues": 11,
+    "low_priority_issues": 6,
+    "overall_status": "INCOMPLETE - Major functionality missing",
+    "key_findings": [
+      "Missing main /settings/page.tsx (404 error)",
+      "Profile settings page has no backend integration",
+      "Multiple missing API endpoints for notifications",
+      "OAuth integration incomplete - wrong endpoint structure",
+      "Integrations using temporary JSON storage instead of database models",
+      "Webhook management missing several API endpoints"
+    ]
+  },
+  "files_analyzed": [
+    {
+      "file": "/app/(workspace)/[workspaceId]/settings/integrations/page.tsx",
+      "lines_of_code": 983,
+      "status": "PARTIALLY_FUNCTIONAL",
+      "completion_percentage": 65,
+      "issues": [
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "title": "OAuth initiation endpoint mismatch",
+          "description": "Hook calls POST /api/workspaces/${workspaceId}/integrations/oauth but API only has GET /api/workspaces/${workspaceId}/integrations/oauth/${provider}",
+          "location": "Line 337-341 in use-integrations.ts vs oauth route",
+          "impact": "OAuth flow cannot be initiated from UI",
+          "code_snippet": "const response = await fetch(`/api/workspaces/${workspaceId}/integrations/oauth`, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ provider }),\n});"
+        },
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "title": "Integration detail endpoints missing",
+          "description": "useIntegration hook calls /api/integrations/${integrationId} but this endpoint doesn't exist. Should be /api/workspaces/${workspaceId}/integrations/${integrationId}",
+          "location": "Lines 150, 175, 215, 240 in use-integrations.ts",
+          "impact": "Cannot view, test, sync, update, or delete individual integrations",
+          "code_snippet": "const response = await fetch(`/api/integrations/${integrationId}`);"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "title": "Disconnect integration not implemented",
+          "description": "IntegrationDetailModal has 'Disconnect' button but onUpdate callback doesn't actually disconnect",
+          "location": "Lines 713-728",
+          "impact": "Cannot disconnect integrations from UI",
+          "code_snippet": "<button onClick={onUpdate}>Disconnect</button>"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "title": "Delete webhook not implemented",
+          "description": "WebhookDetailModal has 'Delete Webhook' button but onUpdate doesn't perform deletion",
+          "location": "Lines 830-836",
+          "impact": "Cannot delete webhooks from UI"
+        },
+        {
+          "severity": "low",
+          "category": "temporary_implementation",
+          "title": "Integrations stored in workspace.settings JSON",
+          "description": "Integration data is stored in workspace settings JSON field instead of proper database models",
+          "location": "integration-service.ts lines 84-100",
+          "impact": "Limited query capabilities, no relational integrity"
+        }
+      ]
+    },
+    {
+      "file": "/app/(workspace)/[workspaceId]/settings/profile/page.tsx",
+      "lines_of_code": 120,
+      "status": "NON_FUNCTIONAL",
+      "completion_percentage": 15,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "non_interactive_elements",
+          "title": "No form submission handlers",
+          "description": "All input fields and buttons are completely non-functional - no state management, no API calls",
+          "location": "Lines 23-50",
+          "impact": "Users cannot save any profile changes",
+          "code_snippet": "<input type=\"text\" id=\"name\" />\n<button type=\"button\">Save Changes</button>"
+        },
+        {
+          "severity": "critical",
+          "category": "mock_data",
+          "title": "No data fetching",
+          "description": "Profile page doesn't load existing user data, all fields are empty placeholders",
+          "location": "Entire component",
+          "impact": "Cannot view or edit current profile information"
+        },
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "title": "No user profile API integration",
+          "description": "Missing API calls to GET and PUT user profile data",
+          "location": "Component lacks useEffect or data fetching",
+          "impact": "Profile settings completely disconnected from backend"
+        },
+        {
+          "severity": "medium",
+          "category": "non_interactive_elements",
+          "title": "Preference checkboxes non-functional",
+          "description": "Checkboxes for animations, compact sidebar, helpful hints have no state or handlers",
+          "location": "Lines 101-114",
+          "impact": "Cannot save UI preferences"
+        },
+        {
+          "severity": "low",
+          "category": "hardcoded_data",
+          "title": "Theme previews are static",
+          "description": "Theme preview boxes don't reflect actual theme colors from theme system",
+          "location": "Lines 66-90",
+          "impact": "Preview doesn't match actual theme appearance"
+        }
+      ]
+    },
+    {
+      "file": "/app/(workspace)/[workspaceId]/user-settings/notifications/page.tsx",
+      "lines_of_code": 481,
+      "status": "PARTIALLY_FUNCTIONAL",
+      "completion_percentage": 40,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "title": "Notification settings API doesn't exist",
+          "description": "/api/notifications/settings endpoint is missing",
+          "location": "use-notifications.ts line 767",
+          "impact": "Cannot load or save notification settings",
+          "code_snippet": "const response = await fetch('/api/notifications/settings');"
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "title": "Test notification API doesn't exist",
+          "description": "/api/notifications/test endpoint is missing",
+          "location": "use-notifications.ts line 846",
+          "impact": "Cannot test notification delivery",
+          "code_snippet": "await fetch('/api/notifications/test', { method: 'POST' });"
+        },
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "title": "VAPID key endpoint missing",
+          "description": "/api/notifications/vapid-key endpoint needed for push notifications doesn't exist",
+          "location": "use-notifications.ts line 377",
+          "impact": "Push notifications cannot be set up"
+        },
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "title": "Push subscription endpoints missing",
+          "description": "/api/notifications/subscribe and /api/notifications/unsubscribe endpoints don't exist",
+          "location": "use-notifications.ts lines 390, 414",
+          "impact": "Cannot enable/disable push notifications"
+        },
+        {
+          "severity": "medium",
+          "category": "missing_api_integration",
+          "title": "Sync API endpoints missing",
+          "description": "/api/sync and /api/sync/resolve endpoints for offline sync don't exist",
+          "location": "use-notifications.ts lines 599, 662",
+          "impact": "Offline functionality won't work"
+        },
+        {
+          "severity": "medium",
+          "category": "non_interactive_elements",
+          "title": "Unmute channel button non-functional",
+          "description": "Unmute button in muted channels section has no handler",
+          "location": "Lines 379-384",
+          "impact": "Cannot unmute channels from this page"
+        }
+      ]
+    },
+    {
+      "file": "/hooks/use-integrations.ts",
+      "lines_of_code": 795,
+      "status": "BROKEN_API_CALLS",
+      "completion_percentage": 50,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "title": "Wrong endpoint paths for single integrations",
+          "description": "All integration detail operations use /api/integrations/{id} instead of /api/workspaces/{workspaceId}/integrations/{id}",
+          "location": "Lines 150, 175, 215, 240",
+          "impact": "Test, sync, update, delete operations will all fail with 404",
+          "affected_methods": [
+            "testConnection()",
+            "syncIntegration()",
+            "updateIntegration()",
+            "deleteIntegration()"
+          ]
+        },
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "title": "Webhook endpoints using wrong workspace path",
+          "description": "Webhook operations use /api/webhooks/{id} instead of /api/workspaces/{workspaceId}/webhooks/{id}",
+          "location": "Lines 523, 558, 579, 602, 620",
+          "impact": "All webhook detail operations fail",
+          "affected_methods": [
+            "fetchWebhook()",
+            "testWebhook()",
+            "updateWebhook()",
+            "deleteWebhook()",
+            "rotateSecret()"
+          ]
+        },
+        {
+          "severity": "high",
+          "category": "missing_api_integration",
+          "title": "Webhook deliveries endpoints missing",
+          "description": "/api/webhooks/{id}/deliveries and retry endpoints don't exist in workspace context",
+          "location": "Lines 524, 717, 759",
+          "impact": "Cannot view webhook delivery history or retry failed deliveries"
+        }
+      ]
+    },
+    {
+      "file": "/hooks/use-notifications.ts",
+      "lines_of_code": 887,
+      "status": "PARTIALLY_IMPLEMENTED",
+      "completion_percentage": 45,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "missing_api_integration",
+          "title": "Multiple notification API endpoints missing",
+          "description": "Several critical notification endpoints don't exist",
+          "location": "Throughout file",
+          "impact": "Notification system is incomplete",
+          "missing_endpoints": [
+            "/api/notifications/settings (GET/PUT)",
+            "/api/notifications/test (POST)",
+            "/api/notifications/vapid-key (GET)",
+            "/api/notifications/subscribe (POST)",
+            "/api/notifications/unsubscribe (POST)",
+            "/api/sync (POST)",
+            "/api/sync/resolve (POST)"
+          ]
+        },
+        {
+          "severity": "high",
+          "category": "incomplete_functionality",
+          "title": "Offline sync not implemented",
+          "description": "useOfflineStatus hook has complete UI but backend sync endpoints missing",
+          "location": "Lines 498-697",
+          "impact": "Offline functionality advertised but non-functional"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "title": "Service worker integration missing",
+          "description": "Push notifications require service worker but no service worker file referenced",
+          "location": "Lines 374-387",
+          "impact": "Push notifications may not work even if endpoints are added"
+        }
+      ]
+    },
+    {
+      "file": "/api/workspaces/[workspaceId]/integrations/route.ts",
+      "lines_of_code": 249,
+      "status": "FUNCTIONAL",
+      "completion_percentage": 90,
+      "issues": [
+        {
+          "severity": "low",
+          "category": "code_quality",
+          "title": "Good implementation",
+          "description": "This file is well-implemented with proper error handling, validation, and documentation",
+          "location": "Entire file",
+          "impact": "Positive - serves as good example"
+        }
+      ]
+    },
+    {
+      "file": "/api/workspaces/[workspaceId]/integrations/oauth/[provider]/route.ts",
+      "lines_of_code": 150,
+      "status": "STRUCTURAL_MISMATCH",
+      "completion_percentage": 70,
+      "issues": [
+        {
+          "severity": "critical",
+          "category": "api_route_mismatch",
+          "title": "OAuth endpoint structure doesn't match frontend calls",
+          "description": "Frontend calls POST /oauth with provider in body, but API expects GET /oauth/{provider}",
+          "location": "Entire file vs use-integrations.ts",
+          "impact": "OAuth flow completely broken",
+          "fix_required": "Either change frontend to call correct endpoint or add new POST /oauth route"
+        },
+        {
+          "severity": "medium",
+          "category": "incomplete_functionality",
+          "title": "OAuth callback route exists but state validation unclear",
+          "description": "Callback route at oauth/[provider]/callback exists but state generation/validation implementation unclear",
+          "location": "Related callback route",
+          "impact": "OAuth flow may be incomplete"
+        }
+      ]
+    }
+  ],
+  "missing_components": {
+    "missing_pages": [
+      {
+        "path": "/app/(workspace)/[workspaceId]/settings/page.tsx",
+        "severity": "critical",
+        "impact": "Main settings page returns 404",
+        "description": "No landing page for /settings route - users see 404 when navigating to settings",
+        "required_content": "Settings overview with links to integrations, profile, notifications, etc."
+      }
+    ],
+    "missing_api_routes": [
+      {
+        "endpoint": "/api/notifications/settings",
+        "methods": ["GET", "PUT"],
+        "severity": "critical",
+        "used_by": ["use-notifications.ts", "notifications settings page"],
+        "impact": "Cannot load or save notification preferences"
+      },
+      {
+        "endpoint": "/api/notifications/test",
+        "methods": ["POST"],
+        "severity": "high",
+        "used_by": ["notifications settings page"],
+        "impact": "Cannot test notification delivery"
+      },
+      {
+        "endpoint": "/api/notifications/vapid-key",
+        "methods": ["GET"],
+        "severity": "high",
+        "used_by": ["use-notifications.ts push notifications"],
+        "impact": "Push notifications cannot be initialized"
+      },
+      {
+        "endpoint": "/api/notifications/subscribe",
+        "methods": ["POST"],
+        "severity": "high",
+        "used_by": ["use-notifications.ts"],
+        "impact": "Cannot subscribe to push notifications"
+      },
+      {
+        "endpoint": "/api/notifications/unsubscribe",
+        "methods": ["POST"],
+        "severity": "high",
+        "used_by": ["use-notifications.ts"],
+        "impact": "Cannot unsubscribe from push notifications"
+      },
+      {
+        "endpoint": "/api/sync",
+        "methods": ["POST"],
+        "severity": "medium",
+        "used_by": ["use-notifications.ts offline sync"],
+        "impact": "Offline sync won't work"
+      },
+      {
+        "endpoint": "/api/sync/resolve",
+        "methods": ["POST"],
+        "severity": "medium",
+        "used_by": ["use-notifications.ts conflict resolution"],
+        "impact": "Cannot resolve sync conflicts"
+      },
+      {
+        "endpoint": "/api/users/me/profile",
+        "methods": ["GET", "PUT"],
+        "severity": "critical",
+        "used_by": ["profile settings page (needs to be added)"],
+        "impact": "Cannot view or update user profile"
+      },
+      {
+        "endpoint": "/api/workspaces/[workspaceId]/integrations/oauth",
+        "methods": ["POST"],
+        "severity": "critical",
+        "used_by": ["use-integrations.ts initiateOAuth"],
+        "impact": "OAuth flow cannot be started",
+        "note": "Current implementation is GET /oauth/[provider], needs POST /oauth or frontend change"
+      },
+      {
+        "endpoint": "/api/integrations/[integrationId]",
+        "methods": ["GET", "PATCH", "DELETE"],
+        "severity": "critical",
+        "used_by": ["use-integrations.ts"],
+        "impact": "Cannot manage individual integrations",
+        "note": "Should be /api/workspaces/[workspaceId]/integrations/[integrationId]"
+      },
+      {
+        "endpoint": "/api/integrations/[integrationId]/test",
+        "methods": ["POST"],
+        "severity": "high",
+        "used_by": ["use-integrations.ts testConnection"],
+        "impact": "Cannot test integration connections"
+      },
+      {
+        "endpoint": "/api/integrations/[integrationId]/sync",
+        "methods": ["POST"],
+        "severity": "high",
+        "used_by": ["use-integrations.ts syncIntegration"],
+        "impact": "Cannot manually trigger integration sync"
+      },
+      {
+        "endpoint": "/api/webhooks/[webhookId]",
+        "methods": ["GET", "PATCH", "DELETE"],
+        "severity": "high",
+        "used_by": ["use-integrations.ts"],
+        "impact": "Cannot manage individual webhooks",
+        "note": "Should be /api/workspaces/[workspaceId]/webhooks/[webhookId]"
+      },
+      {
+        "endpoint": "/api/webhooks/[webhookId]/deliveries",
+        "methods": ["GET"],
+        "severity": "medium",
+        "used_by": ["use-integrations.ts"],
+        "impact": "Cannot view webhook delivery history"
+      },
+      {
+        "endpoint": "/api/webhooks/[webhookId]/deliveries/[deliveryId]/retry",
+        "methods": ["POST"],
+        "severity": "medium",
+        "used_by": ["use-integrations.ts retryDelivery"],
+        "impact": "Cannot retry failed webhook deliveries"
+      }
+    ],
+    "missing_hooks": [],
+    "missing_types": []
+  },
+  "ui_ux_issues": [
+    {
+      "severity": "high",
+      "category": "missing_states",
+      "title": "Profile page missing loading states",
+      "description": "No loading spinner while fetching user data",
+      "location": "profile/page.tsx",
+      "impact": "Poor UX during data fetch"
+    },
+    {
+      "severity": "medium",
+      "category": "missing_states",
+      "title": "Profile page missing error states",
+      "description": "No error handling or error display",
+      "location": "profile/page.tsx",
+      "impact": "Users won't know if profile load failed"
+    },
+    {
+      "severity": "medium",
+      "category": "missing_feedback",
+      "title": "No save confirmation on profile page",
+      "description": "No toast/success message after saving profile changes",
+      "location": "profile/page.tsx",
+      "impact": "Users don't know if save succeeded"
+    },
+    {
+      "severity": "low",
+      "category": "accessibility",
+      "title": "Muted channels list shows IDs instead of names",
+      "description": "In notification settings, muted channels show channelId instead of friendly name",
+      "location": "notifications/page.tsx line 378",
+      "impact": "Users can't identify which channels are muted"
+    }
+  ],
+  "technical_debt": [
+    {
+      "severity": "high",
+      "category": "temporary_implementation",
+      "title": "Integrations stored in JSON instead of database models",
+      "description": "Integration and webhook data is stored in workspace.settings JSON field",
+      "location": "integration-service.ts lines 84-100",
+      "impact": "No relational integrity, limited query capabilities, poor performance at scale",
+      "recommendation": "Create proper Prisma models for Integration and Webhook"
+    },
+    {
+      "severity": "medium",
+      "category": "code_duplication",
+      "title": "Duplicate webhook types",
+      "description": "Both WebhookConfig and legacy Webhook types exist with similar fields",
+      "location": "types/integration.ts lines 79-118",
+      "impact": "Confusion about which type to use, potential bugs",
+      "recommendation": "Deprecate legacy Webhook type"
+    },
+    {
+      "severity": "low",
+      "category": "hardcoded_values",
+      "title": "OAuth providers hardcoded in types",
+      "description": "Integration providers defined as const object instead of database-driven",
+      "location": "types/integration.ts lines 191-206",
+      "impact": "Cannot add new providers without code changes"
+    }
+  ],
+  "security_concerns": [
+    {
+      "severity": "high",
+      "category": "secret_exposure",
+      "title": "Webhook secrets returned to frontend",
+      "description": "WebhookConfig includes secret field that gets sent to browser",
+      "location": "integrations/page.tsx lines 779-780",
+      "impact": "Webhook signing secrets exposed in browser could be stolen",
+      "recommendation": "Never send secrets to frontend, only show masked version"
+    },
+    {
+      "severity": "medium",
+      "category": "permission_checking",
+      "title": "No workspace-level permission checks in hooks",
+      "description": "Frontend hooks don't verify user has permission before showing UI",
+      "location": "use-integrations.ts, use-notifications.ts",
+      "impact": "Users might see UI they can't use, confusing errors",
+      "recommendation": "Add permission context provider"
+    }
+  ],
+  "positive_findings": [
+    {
+      "category": "code_quality",
+      "title": "Well-structured integrations page",
+      "description": "Integrations page has good component separation, loading states, error handling",
+      "location": "integrations/page.tsx"
+    },
+    {
+      "category": "code_quality",
+      "title": "Comprehensive type definitions",
+      "description": "Integration and notification types are well-defined with TSDoc",
+      "location": "types/integration.ts, types/notification.ts"
+    },
+    {
+      "category": "code_quality",
+      "title": "Good API route structure",
+      "description": "Existing API routes have proper validation, error handling, and documentation",
+      "location": "api/workspaces/[workspaceId]/integrations/"
+    },
+    {
+      "category": "ux",
+      "title": "Notification settings has detailed preferences",
+      "description": "Granular control over notification types, quiet hours, digest frequency",
+      "location": "notifications/page.tsx"
+    },
+    {
+      "category": "ux",
+      "title": "Theme toggle integration",
+      "description": "Profile page properly integrates theme toggle component",
+      "location": "profile/page.tsx line 63"
+    }
+  ],
+  "recommendations": {
+    "immediate_actions": [
+      {
+        "priority": 1,
+        "action": "Create missing /settings/page.tsx",
+        "effort": "low",
+        "impact": "high",
+        "description": "Add main settings landing page to prevent 404"
+      },
+      {
+        "priority": 2,
+        "action": "Fix OAuth endpoint mismatch",
+        "effort": "low",
+        "impact": "critical",
+        "description": "Either add POST /oauth endpoint or update frontend to use GET /oauth/[provider]",
+        "recommendation": "Change frontend to match existing API structure"
+      },
+      {
+        "priority": 3,
+        "action": "Add profile data fetching and saving",
+        "effort": "medium",
+        "impact": "critical",
+        "description": "Implement user profile API and connect profile settings page"
+      },
+      {
+        "priority": 4,
+        "action": "Create notification settings API",
+        "effort": "medium",
+        "impact": "critical",
+        "description": "Implement GET/PUT /api/notifications/settings endpoint"
+      },
+      {
+        "priority": 5,
+        "action": "Fix integration detail endpoint paths",
+        "effort": "low",
+        "impact": "critical",
+        "description": "Update use-integrations.ts to use correct workspace-scoped paths"
+      }
+    ],
+    "short_term_improvements": [
+      {
+        "action": "Implement push notification endpoints",
+        "effort": "medium",
+        "impact": "high",
+        "description": "Add VAPID key, subscribe, unsubscribe endpoints"
+      },
+      {
+        "action": "Add missing integration management endpoints",
+        "effort": "medium",
+        "impact": "high",
+        "description": "Implement test, sync, update, delete for individual integrations"
+      },
+      {
+        "action": "Implement webhook detail operations",
+        "effort": "medium",
+        "impact": "medium",
+        "description": "Add delivery history, retry, rotate secret endpoints"
+      },
+      {
+        "action": "Add loading and error states to profile page",
+        "effort": "low",
+        "impact": "medium",
+        "description": "Improve UX with proper state management"
+      }
+    ],
+    "long_term_refactoring": [
+      {
+        "action": "Create proper database models for integrations",
+        "effort": "high",
+        "impact": "high",
+        "description": "Replace JSON storage with proper Prisma models"
+      },
+      {
+        "action": "Implement offline sync system",
+        "effort": "high",
+        "impact": "medium",
+        "description": "Complete the offline functionality with backend support"
+      },
+      {
+        "action": "Add service worker for push notifications",
+        "effort": "medium",
+        "impact": "medium",
+        "description": "Implement service worker for proper push notification handling"
+      },
+      {
+        "action": "Implement permission checking in frontend",
+        "effort": "medium",
+        "impact": "medium",
+        "description": "Add permission context to hide/disable features based on user role"
+      }
+    ]
+  },
+  "test_coverage": {
+    "files_with_tests": [
+      "/app/api/notifications/__tests__/notifications.test.ts",
+      "/app/api/workspaces/[workspaceId]/integrations/__tests__/integrations.test.ts"
+    ],
+    "files_without_tests": [
+      "/app/(workspace)/[workspaceId]/settings/integrations/page.tsx",
+      "/app/(workspace)/[workspaceId]/settings/profile/page.tsx",
+      "/app/(workspace)/[workspaceId]/user-settings/notifications/page.tsx",
+      "/hooks/use-integrations.ts",
+      "/hooks/use-notifications.ts"
+    ],
+    "test_coverage_estimate": "15%",
+    "recommendation": "Add comprehensive tests for hooks and UI components"
+  },
+  "package_integrations": {
+    "neolith_database": {
+      "status": "CONNECTED",
+      "usage": "Prisma client imported and used",
+      "issues": [
+        "Integration models don't exist in schema",
+        "Using workspace.settings JSON as temporary storage"
+      ]
+    },
+    "neolith_core": {
+      "status": "NOT_DETECTED",
+      "usage": "No imports found in reviewed files",
+      "recommendation": "Check if core services should be used"
+    }
+  },
+  "conclusion": {
+    "overall_assessment": "The settings functionality is approximately 35-40% complete. While the UI components are well-structured and visually polished, most lack backend integration. The integrations page is the most complete at ~65%, but has critical OAuth flow issues. The profile page is essentially a mockup with no functionality. Notification settings has comprehensive UI but is missing all backend endpoints.",
+    "blocking_issues": 5,
+    "critical_path": [
+      "Fix OAuth endpoint structure mismatch",
+      "Create /settings/page.tsx",
+      "Implement profile data loading and saving",
+      "Add notification settings API endpoints",
+      "Fix integration and webhook endpoint paths in hooks"
+    ],
+    "estimated_completion_time": "2-3 weeks with 1 developer",
+    "risk_level": "HIGH - Multiple critical features advertised in UI but non-functional"
+  }
+}

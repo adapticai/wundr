@@ -1,0 +1,631 @@
+{
+  "metadata": {
+    "reviewDate": "2025-11-26",
+    "reviewer": "Code Quality Analyzer Agent",
+    "scope": "Auth-related files in Neolith web app",
+    "filesReviewed": 6,
+    "overallScore": 6.5,
+    "maxScore": 10
+  },
+  "summary": {
+    "criticalIssues": 5,
+    "highPriorityIssues": 8,
+    "mediumPriorityIssues": 12,
+    "lowPriorityIssues": 6,
+    "totalIssues": 31
+  },
+  "fileReviews": [
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(auth)/login/page.tsx",
+      "qualityScore": 6,
+      "linesOfCode": 150,
+      "issues": [
+        {
+          "severity": "HIGH",
+          "category": "Missing API Integration",
+          "title": "Credentials Provider Not Fully Configured",
+          "description": "Email/password login attempts to use 'credentials' provider, but NextAuth config only has 'vp-credentials' provider. Regular email/password auth will fail.",
+          "location": "Line 46",
+          "impact": "Users cannot sign in with email/password",
+          "recommendation": "Either add a proper Credentials provider for email/password auth or remove the email/password form until implemented",
+          "codeSnippet": "await signIn('credentials', {\n  email,\n  password,\n  callbackUrl: '/dashboard',\n});"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "Missing Route",
+          "title": "Forgot Password Page Not Implemented",
+          "description": "Link to /forgot-password exists but the page/route doesn't exist",
+          "location": "Line 131",
+          "impact": "Users get 404 when clicking 'Forgot password' link",
+          "recommendation": "Create /app/(auth)/forgot-password/page.tsx or remove the link",
+          "codeSnippet": "<Link href='/forgot-password' ...>"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "Missing Error States",
+          "title": "No Error Display for Failed Login",
+          "description": "Login errors are silently caught without showing feedback to user",
+          "location": "Lines 32-35, 51-53",
+          "impact": "Users don't know why login failed",
+          "recommendation": "Add error state and display error message to user",
+          "codeSnippet": "catch {\n  // Error will be handled by NextAuth error page\n  setIsLoading(false);\n}"
+        },
+        {
+          "severity": "LOW",
+          "category": "UX Issue",
+          "title": "Missing Loading States for OAuth",
+          "description": "OAuth buttons show 'isLoading' state but no visual feedback that OAuth is in progress",
+          "location": "Lines 68-88",
+          "impact": "User experience could be improved",
+          "recommendation": "Add spinner or loading text to OAuth buttons when isLoading",
+          "codeSnippet": "disabled={isLoading}"
+        }
+      ],
+      "positiveFindings": [
+        "Good separation of OAuth and credential-based auth",
+        "Proper accessibility attributes (autoComplete)",
+        "Clean, responsive UI structure",
+        "Proper TypeScript typing"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(auth)/register/page.tsx",
+      "qualityScore": 6.5,
+      "linesOfCode": 195,
+      "issues": [
+        {
+          "severity": "CRITICAL",
+          "category": "Missing API Endpoint",
+          "title": "Registration API Endpoint Does Not Exist",
+          "description": "Form calls /api/auth/register which doesn't exist in the codebase",
+          "location": "Line 64",
+          "impact": "Registration will always fail with 404",
+          "recommendation": "Create /app/api/auth/register/route.ts endpoint to handle user registration",
+          "codeSnippet": "const response = await fetch('/api/auth/register', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ name, email, password }),\n});"
+        },
+        {
+          "severity": "HIGH",
+          "category": "Incomplete Functionality",
+          "title": "Same Credentials Provider Issue as Login",
+          "description": "Attempts to sign in with 'credentials' provider after registration, but only 'vp-credentials' exists",
+          "location": "Line 76",
+          "impact": "Even if registration succeeds, auto-login will fail",
+          "recommendation": "Add proper credentials provider or change flow",
+          "codeSnippet": "await signIn('credentials', {\n  email,\n  password,\n  callbackUrl: '/dashboard',\n});"
+        },
+        {
+          "severity": "HIGH",
+          "category": "Security Issue",
+          "title": "Weak Password Validation",
+          "description": "Only checks for 8 character minimum, no complexity requirements",
+          "location": "Lines 55-58",
+          "impact": "Users can create weak passwords like '12345678'",
+          "recommendation": "Add password complexity validation (uppercase, lowercase, numbers, special chars)",
+          "codeSnippet": "if (password.length < 8) {\n  setError('Password must be at least 8 characters');\n  return;\n}"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "Incomplete Functionality",
+          "title": "OAuth Registration Uses Same Flow as Login",
+          "description": "OAuth 'sign up' just calls signIn() - no different from login flow",
+          "location": "Lines 31-38",
+          "impact": "No actual difference between OAuth registration and login",
+          "recommendation": "Either rename buttons to 'Continue with' or implement different registration flow",
+          "codeSnippet": "const handleOAuthSignUp = async (provider: string) => {\n  setIsLoading(true);\n  try {\n    await signIn(provider, { callbackUrl: '/dashboard' });\n  ..."
+        },
+        {
+          "severity": "LOW",
+          "category": "Missing Validation",
+          "title": "No Email Format Validation",
+          "description": "Relies only on HTML5 email input validation",
+          "location": "Lines 154-162",
+          "impact": "Could allow invalid email formats",
+          "recommendation": "Add email regex validation before submission",
+          "codeSnippet": "type='email'"
+        }
+      ],
+      "positiveFindings": [
+        "Good error handling with user feedback",
+        "Password confirmation validation",
+        "Loading states properly managed",
+        "Clean form structure with proper accessibility"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(auth)/error/page.tsx",
+      "qualityScore": 8,
+      "linesOfCode": 181,
+      "issues": [
+        {
+          "severity": "MEDIUM",
+          "category": "Missing Route",
+          "title": "Support Page Doesn't Exist",
+          "description": "Links to /support but the page doesn't exist",
+          "location": "Line 144",
+          "impact": "Users get 404 when clicking 'Contact support'",
+          "recommendation": "Create /app/support/page.tsx or change to mailto: link",
+          "codeSnippet": "<Link href='/support' ...>"
+        },
+        {
+          "severity": "LOW",
+          "category": "UX Issue",
+          "title": "Suspense Fallback Could Be Better",
+          "description": "Fallback shows skeleton but could show error icon immediately",
+          "location": "Lines 166-176",
+          "impact": "Minor UX improvement opportunity",
+          "recommendation": "Consider showing error state immediately instead of skeleton",
+          "codeSnippet": "fallback={\n  <div className='space-y-6 text-center'>\n    <div className='flex justify-center'>\n      <div className='h-16 w-16 animate-pulse rounded-full bg-muted' />"
+        }
+      ],
+      "positiveFindings": [
+        "Comprehensive error message mapping for all NextAuth error types",
+        "Excellent error UX with clear messages and recovery options",
+        "Proper use of Suspense for useSearchParams",
+        "Good accessibility with semantic HTML"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(auth)/layout.tsx",
+      "qualityScore": 7,
+      "linesOfCode": 46,
+      "issues": [
+        {
+          "severity": "MEDIUM",
+          "category": "Missing Routes",
+          "title": "Terms and Privacy Pages Don't Exist",
+          "description": "Links to /terms and /privacy but pages don't exist",
+          "location": "Lines 33-38",
+          "impact": "Users get 404 when clicking legal links",
+          "recommendation": "Create /app/terms/page.tsx and /app/privacy/page.tsx or use external links",
+          "codeSnippet": "<a href='/terms' ...>\n  Terms of Service\n</a>\n...\n<a href='/privacy' ...>\n  Privacy Policy\n</a>"
+        },
+        {
+          "severity": "LOW",
+          "category": "UI Issue",
+          "title": "Hardcoded Dark Theme Colors",
+          "description": "Uses hardcoded stone colors instead of theme variables",
+          "location": "Lines 16, 25, 30-31",
+          "impact": "Won't adapt to theme changes if theme system is implemented",
+          "recommendation": "Use CSS variables or theme tokens",
+          "codeSnippet": "bg-gradient-to-b from-stone-950 to-stone-900"
+        }
+      ],
+      "positiveFindings": [
+        "Clean, minimal layout",
+        "Good visual hierarchy",
+        "Responsive design",
+        "Proper semantic structure"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/onboarding/page.tsx",
+      "qualityScore": 7.5,
+      "linesOfCode": 64,
+      "issues": [
+        {
+          "severity": "MEDIUM",
+          "category": "Missing Functionality",
+          "title": "No Check for Existing Organization",
+          "description": "Doesn't check if user already has an organization before showing onboarding",
+          "location": "Lines 20-26",
+          "impact": "Users might be forced through onboarding even if they already have an org",
+          "recommendation": "Query database for existing org membership and redirect if found",
+          "codeSnippet": "if (!session?.user?.id) {\n  redirect('/login');\n}\n// Missing: check for existing org"
+        },
+        {
+          "severity": "LOW",
+          "category": "UX Issue",
+          "title": "No Skip Option",
+          "description": "Users cannot skip onboarding to explore first",
+          "location": "N/A",
+          "impact": "Forces users to complete onboarding immediately",
+          "recommendation": "Consider adding 'Skip for now' option",
+          "codeSnippet": "N/A"
+        },
+        {
+          "severity": "LOW",
+          "category": "Hardcoded Data",
+          "title": "Support Email Hardcoded",
+          "description": "Support email is hardcoded in footer",
+          "location": "Line 59",
+          "impact": "Would need code change to update support contact",
+          "recommendation": "Move to environment variable or config",
+          "codeSnippet": "<p>Need help? Contact support@neolith.ai</p>"
+        }
+      ],
+      "positiveFindings": [
+        "Proper authentication check",
+        "Clean, welcoming UI",
+        "Good use of OrgGenesisWizard component",
+        "Proper server component with session handling"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/page.tsx",
+      "qualityScore": 6.5,
+      "linesOfCode": 56,
+      "issues": [
+        {
+          "severity": "HIGH",
+          "category": "Logic Error",
+          "title": "Redirects to Non-existent Default Workspace",
+          "description": "Falls back to /neolith/dashboard which likely doesn't exist for users without workspaces",
+          "location": "Lines 50, 54",
+          "impact": "Users without workspaces get redirected to 404 page",
+          "recommendation": "Redirect to /onboarding instead of default workspace",
+          "codeSnippet": "redirect(`/${DEFAULT_WORKSPACE}/dashboard`);"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "Missing Functionality",
+          "title": "No Onboarding Check",
+          "description": "Doesn't check if user needs onboarding before redirecting to workspace",
+          "location": "Lines 29-50",
+          "impact": "New users bypass onboarding and go straight to workspace",
+          "recommendation": "Check if user has completed onboarding and redirect appropriately",
+          "codeSnippet": "// Missing: check for onboarding completion"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "Error Handling",
+          "title": "Generic Error Handling",
+          "description": "All errors result in same default workspace redirect",
+          "location": "Lines 51-55",
+          "impact": "Database errors are hidden from users and admins",
+          "recommendation": "Log errors properly and show appropriate error page",
+          "codeSnippet": "console.error('Error fetching user workspaces:', error);\nredirect(`/${DEFAULT_WORKSPACE}/dashboard`);"
+        },
+        {
+          "severity": "LOW",
+          "category": "Missing Loading State",
+          "title": "No Loading UI",
+          "description": "Server component doesn't show loading state during async operations",
+          "location": "N/A",
+          "impact": "Users see blank page during database queries",
+          "recommendation": "Add loading.tsx in app directory",
+          "codeSnippet": "N/A"
+        }
+      ],
+      "positiveFindings": [
+        "Proper authentication handling",
+        "Database queries are optimized (take 1)",
+        "Good use of Prisma includes for related data",
+        "Clean separation of concerns"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/auth.ts (Supporting File)",
+      "qualityScore": 8,
+      "linesOfCode": 378,
+      "issues": [
+        {
+          "severity": "HIGH",
+          "category": "Security Issue",
+          "title": "VP API Key Validation Disabled in Development",
+          "description": "API key validation is completely bypassed in development mode",
+          "location": "Lines 157-164",
+          "impact": "Any VP can authenticate without proper credentials in dev",
+          "recommendation": "Still validate API keys in development, just use test keys",
+          "codeSnippet": "// For now, allow any VP to authenticate for development\n// TODO: Implement proper API key verification in production\nif (process.env.NODE_ENV !== 'development') {\n  return null;\n}"
+        },
+        {
+          "severity": "HIGH",
+          "category": "Incomplete Functionality",
+          "title": "Missing Standard Credentials Provider",
+          "description": "Only has 'vp-credentials' provider, no standard email/password auth",
+          "location": "Lines 123-180",
+          "impact": "Regular users cannot sign in with email/password as login/register forms expect",
+          "recommendation": "Add a standard Credentials provider for email/password authentication",
+          "codeSnippet": "Credentials({\n  id: 'vp-credentials',\n  name: 'VP Service Account',\n  ..."
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "TODO Comment",
+          "title": "Production API Key Verification Not Implemented",
+          "description": "TODO comment indicates critical security feature not implemented",
+          "location": "Line 160",
+          "impact": "Cannot deploy to production without implementing this",
+          "recommendation": "Implement secure API key hashing and verification before production deployment",
+          "codeSnippet": "// TODO: Implement proper API key verification in production"
+        },
+        {
+          "severity": "LOW",
+          "category": "Missing Error Handling",
+          "title": "Avatar Service Errors Only Logged",
+          "description": "Avatar upload failures don't block sign-in but could cause issues",
+          "location": "Lines 232-255",
+          "impact": "Users might sign in without avatars",
+          "recommendation": "Current approach is reasonable, but consider retry logic",
+          "codeSnippet": "console.error('Failed to upload OAuth avatar:', error);"
+        }
+      ],
+      "positiveFindings": [
+        "Comprehensive NextAuth v5 configuration",
+        "Excellent documentation and comments",
+        "Proper session management with JWT",
+        "Good OAuth provider configuration",
+        "Avatar service integration with fallbacks",
+        "Proper TypeScript type extensions",
+        "Security-conscious cookie configuration"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/org-genesis/org-genesis-wizard.tsx (Supporting File)",
+      "qualityScore": 7,
+      "linesOfCode": 590,
+      "issues": [
+        {
+          "severity": "MEDIUM",
+          "category": "API Integration",
+          "title": "Response Navigation Uses Wrong Path",
+          "description": "Navigates to /workspace/{id} but route structure uses /{workspaceId}/dashboard",
+          "location": "Line 149",
+          "impact": "Users will get 404 after successfully creating workspace",
+          "recommendation": "Change to router.push(`/${generatedOrg.workspaceId}/dashboard`)",
+          "codeSnippet": "router.push(`/workspace/${generatedOrg.workspaceId}`);"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "Missing Validation",
+          "title": "No Duplicate Asset Check",
+          "description": "Can add duplicate assets by typing same name with different casing",
+          "location": "Lines 397-402",
+          "impact": "UI shows duplicate assets",
+          "recommendation": "Normalize asset names before checking duplicates",
+          "codeSnippet": "if (assetInput.trim() && !assets.includes(assetInput.trim())) {"
+        },
+        {
+          "severity": "LOW",
+          "category": "UX Issue",
+          "title": "No Confirmation Before Leaving",
+          "description": "Users can accidentally navigate away from wizard without confirmation",
+          "location": "N/A",
+          "impact": "Loss of user input data",
+          "recommendation": "Add browser beforeunload warning or save draft to localStorage",
+          "codeSnippet": "N/A"
+        },
+        {
+          "severity": "LOW",
+          "category": "Missing Feature",
+          "title": "Customize Step Not Implemented",
+          "description": "Sets currentStep to 'customize' but no CustomizeStep component exists",
+          "location": "Lines 133-135",
+          "impact": "Users who click 'Customize' see nothing",
+          "recommendation": "Implement CustomizeStep component or remove the button",
+          "codeSnippet": "const handleCustomize = () => {\n  setCurrentStep('customize');\n};"
+        }
+      ],
+      "positiveFindings": [
+        "Excellent multi-step wizard UX",
+        "Comprehensive form validation with Zod",
+        "Good progress indicator",
+        "Proper error handling and display",
+        "Loading states well implemented",
+        "Clean component separation"
+      ]
+    },
+    {
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/workspaces/generate-org/route.ts (Supporting File)",
+      "qualityScore": 8.5,
+      "linesOfCode": 745,
+      "issues": [
+        {
+          "severity": "LOW",
+          "category": "Missing Response Field",
+          "title": "Response Doesn't Include workspaceId",
+          "description": "OrgGenesisWizard expects 'workspaceId' in response but API returns nested workspace object",
+          "location": "Lines 640-660",
+          "impact": "Frontend will fail to navigate after workspace creation",
+          "recommendation": "Add workspaceId: workspace?.id to response data",
+          "codeSnippet": "return NextResponse.json({\n  data: workspace,\n  genesis: { ... },\n  migration: { ... },\n  message: '...',\n  durationMs: duration,\n});"
+        },
+        {
+          "severity": "LOW",
+          "category": "Code Quality",
+          "title": "VP Email Generation Could Collide",
+          "description": "Simple name transformation could create duplicate emails",
+          "location": "Line 458",
+          "impact": "Potential unique constraint violation",
+          "recommendation": "Add unique suffix or check for existing emails",
+          "codeSnippet": "email: `${vp.name.toLowerCase().replace(/\\s+/g, '.')}@vp.${input.workspaceSlug}.local`"
+        }
+      ],
+      "positiveFindings": [
+        "Excellent error handling with proper error codes",
+        "Comprehensive validation and authorization",
+        "Proper database transactions for data integrity",
+        "Good logging throughout the flow",
+        "Dynamic imports for org-genesis packages",
+        "Well-structured code with clear sections",
+        "Proper timeout configuration for long operations"
+      ]
+    }
+  ],
+  "criticalIssues": [
+    {
+      "file": "register/page.tsx",
+      "issue": "Registration API endpoint /api/auth/register does not exist",
+      "severity": "CRITICAL",
+      "impact": "Registration completely non-functional"
+    }
+  ],
+  "highPriorityIssues": [
+    {
+      "file": "login/page.tsx",
+      "issue": "Credentials provider mismatch - forms use 'credentials' but only 'vp-credentials' exists",
+      "severity": "HIGH",
+      "impact": "Email/password authentication will fail"
+    },
+    {
+      "file": "register/page.tsx",
+      "issue": "Same credentials provider issue affects auto-login after registration",
+      "severity": "HIGH",
+      "impact": "Users cannot complete registration flow"
+    },
+    {
+      "file": "register/page.tsx",
+      "issue": "Weak password validation - only 8 character minimum",
+      "severity": "HIGH",
+      "impact": "Security vulnerability"
+    },
+    {
+      "file": "page.tsx",
+      "issue": "Redirects to non-existent default workspace instead of onboarding",
+      "severity": "HIGH",
+      "impact": "New users get 404 errors"
+    },
+    {
+      "file": "lib/auth.ts",
+      "issue": "VP API key validation completely disabled in development",
+      "severity": "HIGH",
+      "impact": "Security vulnerability in development"
+    },
+    {
+      "file": "lib/auth.ts",
+      "issue": "Missing standard Credentials provider for email/password auth",
+      "severity": "HIGH",
+      "impact": "Core authentication feature not working"
+    }
+  ],
+  "packageIntegrationIssues": [
+    {
+      "package": "@neolith/ui",
+      "usage": "Button, Input components",
+      "status": "CONNECTED",
+      "issues": []
+    },
+    {
+      "package": "@neolith/database",
+      "usage": "Prisma client, models",
+      "status": "CONNECTED",
+      "issues": []
+    },
+    {
+      "package": "@neolith/core/services",
+      "usage": "avatarService",
+      "status": "CONNECTED",
+      "issues": []
+    },
+    {
+      "package": "@wundr.io/org-genesis",
+      "usage": "Organization generation engine",
+      "status": "CONNECTED (Dynamic Import)",
+      "issues": []
+    },
+    {
+      "package": "@neolith/org-integration",
+      "usage": "Migration utilities",
+      "status": "CONNECTED (Dynamic Import)",
+      "issues": []
+    },
+    {
+      "package": "next-auth",
+      "usage": "Authentication",
+      "status": "PARTIAL",
+      "issues": [
+        "Credentials provider configuration incomplete",
+        "Missing standard email/password authentication"
+      ]
+    }
+  ],
+  "missingRoutes": [
+    "/api/auth/register",
+    "/forgot-password",
+    "/support",
+    "/terms",
+    "/privacy"
+  ],
+  "recommendations": {
+    "immediate": [
+      "Create /api/auth/register endpoint for user registration",
+      "Add standard Credentials provider to NextAuth config for email/password auth",
+      "Fix root page.tsx to redirect new users to /onboarding instead of non-existent workspace",
+      "Fix OrgGenesisWizard navigation to use correct path",
+      "Add error display to login form"
+    ],
+    "shortTerm": [
+      "Implement forgot-password flow",
+      "Create support, terms, and privacy pages",
+      "Strengthen password validation",
+      "Add proper API key verification for VP authentication",
+      "Implement customize step in org genesis wizard",
+      "Add workspaceId to generate-org API response"
+    ],
+    "longTerm": [
+      "Add comprehensive error tracking and monitoring",
+      "Implement email verification flow",
+      "Add two-factor authentication support",
+      "Create loading states throughout auth flows",
+      "Add telemetry for auth success/failure rates",
+      "Implement proper session management and token refresh"
+    ]
+  },
+  "technicalDebt": {
+    "todoComments": [
+      {
+        "file": "lib/auth.ts",
+        "line": 160,
+        "comment": "TODO: Implement proper API key verification in production"
+      }
+    ],
+    "placeholderCode": [
+      {
+        "file": "login/page.tsx",
+        "lines": "42-54",
+        "description": "Email/password sign-in marked as placeholder for future implementation"
+      },
+      {
+        "file": "register/page.tsx",
+        "lines": "62-84",
+        "description": "Registration API call to non-existent endpoint"
+      }
+    ],
+    "hardcodedData": [
+      {
+        "file": "page.tsx",
+        "line": 17,
+        "value": "DEFAULT_WORKSPACE = 'neolith'",
+        "recommendation": "Move to environment variable"
+      },
+      {
+        "file": "onboarding/page.tsx",
+        "line": 59,
+        "value": "support@neolith.ai",
+        "recommendation": "Move to config"
+      }
+    ]
+  },
+  "securityConcerns": [
+    {
+      "severity": "HIGH",
+      "issue": "VP API key validation disabled in development",
+      "file": "lib/auth.ts",
+      "recommendation": "Use test API keys instead of disabling validation"
+    },
+    {
+      "severity": "HIGH",
+      "issue": "Weak password validation",
+      "file": "register/page.tsx",
+      "recommendation": "Implement password complexity requirements"
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "API keys stored in plain text in database (mentioned in code)",
+      "file": "lib/auth.ts",
+      "recommendation": "Hash API keys before storage"
+    }
+  ],
+  "testCoverage": {
+    "estimatedCoverage": "0%",
+    "missingTests": [
+      "Login form submission with valid/invalid credentials",
+      "OAuth provider authentication flow",
+      "Registration form validation",
+      "Registration API endpoint (when created)",
+      "Error page rendering for different error types",
+      "Onboarding wizard flow",
+      "Root page routing logic",
+      "NextAuth callbacks"
+    ]
+  }
+}

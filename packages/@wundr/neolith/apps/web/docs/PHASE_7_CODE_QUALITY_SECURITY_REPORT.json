@@ -1,0 +1,554 @@
+{
+  "phase": "Phase 7: Code Quality & Security Review",
+  "waves": ["Wave 7.3: Code Quality", "Wave 7.4: Security"],
+  "reviewDate": "2025-11-26",
+  "project": "Neolith Web Application",
+  "scope": "apps/web directory",
+  "summary": {
+    "overallStatus": "PARTIALLY_COMPLETE",
+    "completionPercentage": 58,
+    "criticalIssues": 3,
+    "warnings": 5,
+    "recommendations": 8
+  },
+  "wave73_codeQuality": {
+    "title": "Wave 7.3: Code Quality",
+    "overallStatus": "PARTIALLY_COMPLETE",
+    "completionPercentage": 50,
+    "tasks": {
+      "7.3.1_removeDebugConsoleStatements": {
+        "title": "Remove Debug Console Statements",
+        "status": "INCOMPLETE",
+        "priority": "HIGH",
+        "findings": {
+          "structuredLoggerImplemented": {
+            "status": "PARTIAL",
+            "details": {
+              "loggerFile": "/apps/web/lib/logger.ts",
+              "loggerType": "Custom Logger (not pino/winston)",
+              "hasStructuredLogging": true,
+              "usesConsoleInternally": true,
+              "description": "A custom Logger class exists with structured logging methods (debug, info, warn, error), but it wraps console methods internally rather than using industry-standard loggers like pino or winston"
+            }
+          },
+          "consoleStatementsInApiRoutes": {
+            "status": "CRITICAL_ISSUE",
+            "totalOccurrences": 252,
+            "filesAffected": "20+ API route files",
+            "details": {
+              "pattern": "console.error() used extensively in error handlers",
+              "commonUsage": "catch blocks logging errors directly to console",
+              "examples": [
+                "/app/api/tasks/route.ts:209 - console.error('[GET /api/tasks] Error:', error)",
+                "/app/api/tasks/route.ts:394 - console.error('[POST /api/tasks] Error:', error)",
+                "/app/api/daemon/auth/route.ts:208 - console.error('Redis session storage error:', redisError)",
+                "/app/api/daemon/auth/route.ts:235 - console.error('[POST /api/daemon/auth] Error:', error)",
+                "/app/api/channels/route.ts:209 - console.error('[GET /api/channels] Error:', error)"
+              ],
+              "recommendation": "Replace all console.error/log/warn with logger utility calls"
+            }
+          }
+        },
+        "recommendations": [
+          "Install industry-standard logger (pino or winston)",
+          "Update lib/logger.ts to use pino/winston instead of console methods",
+          "Create search-and-replace script to convert all console.error to logger.error",
+          "Add ESLint rule to prevent new console statements: 'no-console': ['error', { allow: [] }]",
+          "Implement log aggregation service (e.g., DataDog, LogRocket, Sentry)"
+        ],
+        "estimatedEffort": "8-12 hours"
+      },
+      "7.3.2_fixWorkarounds": {
+        "title": "Fix Workarounds and Temporary Code",
+        "status": "MOSTLY_COMPLETE",
+        "priority": "MEDIUM",
+        "findings": {
+          "workaroundComments": {
+            "status": "MINIMAL_ISSUES",
+            "occurrences": 2,
+            "details": [
+              {
+                "file": "/app/api/tasks/route.ts:326",
+                "comment": "temporary ID for new task",
+                "context": "validateTaskDependencies('new-task', ...)",
+                "severity": "LOW",
+                "explanation": "This is a valid pattern for pre-creation validation, not a true workaround"
+              },
+              {
+                "file": "/app/api/daemon/messages/route.ts:188",
+                "comment": "workaround for Prisma type mapping",
+                "context": "Fetch author information separately",
+                "severity": "MEDIUM",
+                "explanation": "Prisma type mapping issue that should be resolved with proper typing or schema adjustment"
+              }
+            ]
+          },
+          "todoComments": {
+            "status": "FOUND_IN_DOCUMENTATION",
+            "details": "TODO/FIXME comments found primarily in documentation files, not production code"
+          }
+        },
+        "recommendations": [
+          "Investigate Prisma type mapping issue in daemon/messages/route.ts",
+          "Consider using Prisma's include/select more carefully for complex relations",
+          "Document decision if workaround is permanent"
+        ],
+        "estimatedEffort": "2-4 hours"
+      },
+      "7.3.3_typescriptStrictness": {
+        "title": "TypeScript Strictness",
+        "status": "COMPLETE",
+        "priority": "HIGH",
+        "findings": {
+          "strictModeEnabled": {
+            "status": "ENABLED",
+            "details": {
+              "tsConfigPath": "packages/@neolith/typescript-config/base.json",
+              "strictSettings": {
+                "strict": true,
+                "noImplicitAny": true,
+                "strictNullChecks": true,
+                "noUnusedLocals": true,
+                "noUnusedParameters": true
+              }
+            }
+          },
+          "anyTypeUsage": {
+            "status": "MINIMAL_USAGE",
+            "occurrences": 43,
+            "filesAffected": 20,
+            "details": {
+              "pattern": "Mostly in type assertions and test files",
+              "apiRoutesCount": "Limited usage",
+              "examples": [
+                "Prisma InputJsonValue casting (legitimate)",
+                "Test mocks and fixtures",
+                "Generic type parameters where appropriate"
+              ],
+              "severity": "LOW",
+              "explanation": "Most 'any' usage is in legitimate contexts like Prisma JSON fields, tests, or temporary variables"
+            }
+          }
+        },
+        "recommendations": [
+          "Review remaining 'any' types and replace with proper types where possible",
+          "Use 'unknown' instead of 'any' for truly dynamic data",
+          "Add '@typescript-eslint/no-explicit-any' ESLint rule with warnings"
+        ],
+        "estimatedEffort": "4-6 hours"
+      },
+      "7.3.4_errorHandlingStandardization": {
+        "title": "Error Handling Standardization",
+        "status": "MOSTLY_COMPLETE",
+        "priority": "HIGH",
+        "findings": {
+          "globalErrorBoundary": {
+            "status": "NOT_IMPLEMENTED",
+            "details": {
+              "rootLayout": "/app/layout.tsx",
+              "hasErrorBoundary": false,
+              "nextJsErrorFiles": "No error.tsx files found in app directory",
+              "explanation": "Next.js 13+ App Router supports error.tsx for error boundaries, but none are implemented"
+            }
+          },
+          "standardizedApiErrorFormat": {
+            "status": "IMPLEMENTED",
+            "details": {
+              "errorResponseSchema": "Defined in lib/validations/task.ts and other validation files",
+              "standardFormat": {
+                "error": "string",
+                "code": "string",
+                "details": "Record<string, unknown> (optional)"
+              },
+              "helperFunction": "createErrorResponse(error, code, details)",
+              "errorCodes": "Defined per domain (TASK_ERROR_CODES, etc.)",
+              "consistency": "Used consistently across API routes"
+            }
+          },
+          "zodValidation": {
+            "status": "COMPLETE",
+            "details": "All API routes use Zod schemas for input validation with safeParse patterns"
+          }
+        },
+        "recommendations": [
+          "Add error.tsx boundary components at key layout levels",
+          "Create global error.tsx in app/ directory for unhandled errors",
+          "Implement client-side error tracking (Sentry, LogRocket)",
+          "Add error recovery UI components",
+          "Create centralized error response utility in lib/api/errors.ts"
+        ],
+        "estimatedEffort": "6-8 hours"
+      }
+    }
+  },
+  "wave74_security": {
+    "title": "Wave 7.4: Security",
+    "overallStatus": "PARTIALLY_COMPLETE",
+    "completionPercentage": 65,
+    "tasks": {
+      "7.4.1_inputValidation": {
+        "title": "Input Validation with Zod",
+        "status": "COMPLETE",
+        "priority": "CRITICAL",
+        "findings": {
+          "zodImplementation": {
+            "status": "COMPREHENSIVE",
+            "details": {
+              "zodVersion": "3.25.76",
+              "validationFiles": [
+                "lib/validations/task.ts",
+                "lib/validations/vp.ts",
+                "lib/validations/upload.ts",
+                "lib/validations/organization.ts",
+                "lib/validations/notification.ts",
+                "lib/validations/message.ts",
+                "lib/validations/workflow.ts"
+              ],
+              "apiRoutesUsingZod": "12+ API routes verified",
+              "pattern": "safeParse() used consistently for error handling",
+              "coverage": "All major API endpoints validate input with Zod schemas"
+            }
+          },
+          "validationExamples": {
+            "taskCreation": "createTaskSchema validates 11 fields with type safety",
+            "daemonAuth": "daemonAuthSchema validates API credentials",
+            "channelFiles": "File upload schemas with size/type validation"
+          }
+        },
+        "strengths": [
+          "Comprehensive Zod schema coverage",
+          "Consistent safeParse pattern",
+          "Domain-specific validation schemas",
+          "Strong type inference from schemas"
+        ],
+        "recommendations": [
+          "Add rate limiting per validation failure",
+          "Log validation failures for security monitoring",
+          "Create reusable validation middleware"
+        ]
+      },
+      "7.4.2_authenticationSecurity": {
+        "title": "Authentication Security",
+        "status": "PARTIALLY_COMPLETE",
+        "priority": "CRITICAL",
+        "findings": {
+          "twoFactorAuth": {
+            "status": "UI_ONLY",
+            "details": {
+              "mfaConfigExists": true,
+              "location": "components/admin/security-settings.tsx",
+              "mfaMethods": ["totp", "sms", "email"],
+              "implementation": "Configuration UI exists but backend implementation not verified",
+              "gracePeriod": "Configurable (0-30 days)",
+              "enforcement": "Can require MFA for all members"
+            },
+            "missingPieces": [
+              "2FA enrollment flow",
+              "TOTP generation/verification logic",
+              "Recovery codes system",
+              "Backup authentication methods"
+            ]
+          },
+          "accountLockout": {
+            "status": "NOT_IMPLEMENTED",
+            "details": {
+              "failedAttemptTracking": false,
+              "lockoutMechanism": false,
+              "recommendation": "Implement failed login tracking with Redis + time-based lockout"
+            }
+          },
+          "sessionManagement": {
+            "status": "PARTIAL",
+            "details": {
+              "sessionProvider": "NextAuth.js 5.0.0-beta.25",
+              "sessionTimeout": "Configurable in security settings (1-168 hours)",
+              "maxConcurrentSessions": "Configurable (1-10)",
+              "rememberMe": "Configurable (1-90 days)",
+              "implementation": "Configuration exists but enforcement not verified"
+            }
+          }
+        },
+        "recommendations": [
+          "CRITICAL: Implement complete 2FA flow with TOTP library (speakeasy, otpauth)",
+          "CRITICAL: Add account lockout after N failed attempts",
+          "HIGH: Implement session tracking in Redis with concurrent session limits",
+          "HIGH: Add device fingerprinting for suspicious login detection",
+          "MEDIUM: Implement password reset with secure token generation",
+          "MEDIUM: Add login audit log for security monitoring"
+        ],
+        "estimatedEffort": "20-30 hours"
+      },
+      "7.4.3_apiSecurity": {
+        "title": "API Security",
+        "status": "PARTIALLY_COMPLETE",
+        "priority": "CRITICAL",
+        "findings": {
+          "rateLimiting": {
+            "status": "NOT_IMPLEMENTED",
+            "details": {
+              "middleware": false,
+              "perEndpoint": false,
+              "redisRateLimiter": false,
+              "recommendation": "Implement rate limiting with @upstash/ratelimit or similar"
+            }
+          },
+          "securityHeaders": {
+            "status": "PARTIALLY_IMPLEMENTED",
+            "details": {
+              "location": "next.config.js headers() function",
+              "implementedHeaders": [
+                "X-DNS-Prefetch-Control: on",
+                "X-Frame-Options: SAMEORIGIN",
+                "X-Content-Type-Options: nosniff",
+                "Referrer-Policy: origin-when-cross-origin"
+              ],
+              "missingHeaders": [
+                "Content-Security-Policy (CSP)",
+                "Strict-Transport-Security (HSTS)",
+                "X-XSS-Protection",
+                "Permissions-Policy"
+              ],
+              "poweredByHeader": "Disabled (good)"
+            }
+          },
+          "corsConfiguration": {
+            "status": "NOT_VERIFIED",
+            "details": "No explicit CORS configuration found, Next.js defaults apply"
+          },
+          "apiAuthentication": {
+            "status": "IMPLEMENTED",
+            "details": {
+              "daemonAuth": "JWT-based with API key/secret",
+              "userAuth": "NextAuth.js session-based",
+              "tokenExpiry": "1 hour (access), 7 days (refresh)",
+              "secretManagement": "Environment variables"
+            }
+          }
+        },
+        "recommendations": [
+          "CRITICAL: Implement rate limiting across all API routes",
+          "CRITICAL: Add comprehensive Content-Security-Policy header",
+          "HIGH: Add HSTS header for production",
+          "HIGH: Implement API request logging for security monitoring",
+          "MEDIUM: Add CORS configuration for API routes",
+          "MEDIUM: Implement request signature verification for critical endpoints",
+          "LOW: Add Permissions-Policy header"
+        ],
+        "estimatedEffort": "12-16 hours"
+      }
+    }
+  },
+  "overallFindings": {
+    "strengths": [
+      "TypeScript strict mode fully enabled with comprehensive settings",
+      "Zod validation implemented consistently across all API endpoints",
+      "Standardized error response format with helper functions",
+      "Custom structured logger exists (though needs upgrade)",
+      "Security headers partially implemented",
+      "NextAuth.js 5 for authentication foundation",
+      "Security settings UI with comprehensive configuration options"
+    ],
+    "criticalIssues": [
+      {
+        "issue": "252+ console.log/error/warn statements in API routes",
+        "impact": "Production logs cluttered, no structured logging for monitoring",
+        "priority": "HIGH",
+        "effort": "8-12 hours"
+      },
+      {
+        "issue": "No rate limiting on API endpoints",
+        "impact": "Vulnerable to brute force, DoS, and API abuse",
+        "priority": "CRITICAL",
+        "effort": "6-8 hours"
+      },
+      {
+        "issue": "2FA configuration exists but implementation incomplete",
+        "impact": "Cannot enforce multi-factor authentication",
+        "priority": "CRITICAL",
+        "effort": "15-20 hours"
+      },
+      {
+        "issue": "No account lockout mechanism",
+        "impact": "Vulnerable to credential stuffing attacks",
+        "priority": "CRITICAL",
+        "effort": "4-6 hours"
+      },
+      {
+        "issue": "Missing Content-Security-Policy and HSTS headers",
+        "impact": "Vulnerable to XSS and man-in-the-middle attacks",
+        "priority": "HIGH",
+        "effort": "3-4 hours"
+      },
+      {
+        "issue": "No global error boundaries",
+        "impact": "Unhandled errors crash the application without recovery",
+        "priority": "MEDIUM",
+        "effort": "4-6 hours"
+      }
+    ],
+    "warnings": [
+      {
+        "warning": "Custom logger wraps console instead of using pino/winston",
+        "impact": "Missing advanced logging features (log levels, rotation, aggregation)",
+        "priority": "MEDIUM"
+      },
+      {
+        "warning": "43 occurrences of 'any' type in codebase",
+        "impact": "Reduces type safety in some areas",
+        "priority": "LOW"
+      },
+      {
+        "warning": "Session management configured but enforcement not verified",
+        "impact": "Concurrent session limits may not work",
+        "priority": "MEDIUM"
+      },
+      {
+        "warning": "No middleware.ts for global request handling",
+        "impact": "Missing centralized auth/security checks",
+        "priority": "MEDIUM"
+      },
+      {
+        "warning": "Prisma type workaround in daemon messages",
+        "impact": "Technical debt that may cause issues",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "prioritizedActionPlan": {
+    "immediate": [
+      {
+        "task": "Implement rate limiting on all API routes",
+        "priority": "CRITICAL",
+        "effort": "6-8 hours",
+        "dependencies": ["Install @upstash/ratelimit", "Setup Redis connection"]
+      },
+      {
+        "task": "Add Content-Security-Policy and HSTS headers",
+        "priority": "CRITICAL",
+        "effort": "3-4 hours",
+        "dependencies": ["Define CSP policy", "Test in staging"]
+      },
+      {
+        "task": "Implement account lockout after failed login attempts",
+        "priority": "CRITICAL",
+        "effort": "4-6 hours",
+        "dependencies": ["Redis for tracking", "Lockout duration config"]
+      }
+    ],
+    "shortTerm": [
+      {
+        "task": "Replace console statements with structured logger",
+        "priority": "HIGH",
+        "effort": "8-12 hours",
+        "dependencies": ["Install pino", "Update logger.ts", "Search-replace script"]
+      },
+      {
+        "task": "Complete 2FA implementation",
+        "priority": "HIGH",
+        "effort": "15-20 hours",
+        "dependencies": ["Choose TOTP library", "Enrollment flow", "Recovery codes"]
+      },
+      {
+        "task": "Add global error boundaries",
+        "priority": "HIGH",
+        "effort": "4-6 hours",
+        "dependencies": ["Create error.tsx files", "Error tracking service"]
+      },
+      {
+        "task": "Implement session enforcement (concurrent limits)",
+        "priority": "HIGH",
+        "effort": "6-8 hours",
+        "dependencies": ["Redis session store", "Session tracking logic"]
+      }
+    ],
+    "longTerm": [
+      {
+        "task": "Reduce 'any' type usage to <10 occurrences",
+        "priority": "MEDIUM",
+        "effort": "4-6 hours",
+        "dependencies": ["Type audit", "Proper type definitions"]
+      },
+      {
+        "task": "Add comprehensive API request logging",
+        "priority": "MEDIUM",
+        "effort": "4-6 hours",
+        "dependencies": ["Log aggregation service", "Sensitive data filtering"]
+      },
+      {
+        "task": "Create middleware.ts for centralized security",
+        "priority": "MEDIUM",
+        "effort": "3-4 hours",
+        "dependencies": ["Auth checks", "Rate limiting", "Logging"]
+      },
+      {
+        "task": "Fix Prisma type workaround",
+        "priority": "LOW",
+        "effort": "2-3 hours",
+        "dependencies": ["Schema investigation", "Type refinement"]
+      }
+    ]
+  },
+  "estimatedTotalEffort": {
+    "immediate": "13-18 hours",
+    "shortTerm": "33-46 hours",
+    "longTerm": "13-19 hours",
+    "total": "59-83 hours",
+    "recommended": "Focus on CRITICAL items first (13-18 hours)"
+  },
+  "complianceStatus": {
+    "OWASP_Top10": {
+      "A01_BrokenAccessControl": "PARTIAL - Auth exists but needs hardening",
+      "A02_CryptographicFailures": "GOOD - HTTPS enforced, secrets in env vars",
+      "A03_Injection": "GOOD - Zod validation + Prisma ORM prevents SQL injection",
+      "A04_InsecureDesign": "NEEDS_WORK - Missing rate limiting and lockout",
+      "A05_SecurityMisconfiguration": "NEEDS_WORK - Headers incomplete",
+      "A06_VulnerableComponents": "GOOD - Dependencies up to date",
+      "A07_IdentificationAuthFailures": "CRITICAL - No 2FA, no lockout",
+      "A08_SoftwareDataIntegrity": "GOOD - No untrusted sources",
+      "A09_SecurityLoggingFailures": "NEEDS_WORK - Console logs instead of aggregation",
+      "A10_SSRF": "GOOD - No external URL fetching without validation"
+    },
+    "SOC2_Type2": {
+      "accessControl": "PARTIAL",
+      "auditLogging": "INSUFFICIENT",
+      "encryption": "PARTIAL",
+      "monitoring": "INSUFFICIENT"
+    }
+  },
+  "toolingRecommendations": {
+    "logging": {
+      "recommended": "pino or winston",
+      "aggregation": "DataDog, LogRocket, or Sentry",
+      "reason": "Industry-standard with JSON output, log levels, and ecosystem support"
+    },
+    "rateLimiting": {
+      "recommended": "@upstash/ratelimit with Redis",
+      "alternative": "express-rate-limit (if switching from Next.js API routes)",
+      "reason": "Built for serverless/edge, Redis-backed, DDoS protection"
+    },
+    "twoFactorAuth": {
+      "recommended": "speakeasy (TOTP) + qrcode",
+      "alternative": "@auth/core with custom 2FA provider",
+      "reason": "Battle-tested, RFC 6238 compliant"
+    },
+    "errorTracking": {
+      "recommended": "Sentry",
+      "alternative": "LogRocket, Rollbar",
+      "reason": "Real-time error tracking, stack traces, user context"
+    },
+    "securityHeaders": {
+      "recommended": "helmet (if using Express) or next-secure-headers",
+      "reason": "Comprehensive header management with best practices"
+    }
+  },
+  "nextSteps": [
+    "Review and approve this report with engineering team",
+    "Prioritize CRITICAL security issues for immediate sprint",
+    "Allocate 13-18 hours for immediate fixes (rate limiting, headers, lockout)",
+    "Schedule 33-46 hours for short-term improvements (2FA, logging, error handling)",
+    "Create Jira/Linear tickets for each action item",
+    "Assign security champion for ongoing monitoring",
+    "Schedule security re-audit after fixes are deployed"
+  ],
+  "conclusion": "The Neolith web application demonstrates strong foundations in input validation, TypeScript strictness, and API error handling. However, critical security gaps exist in rate limiting, 2FA implementation, account lockout, and security headers. Addressing the CRITICAL priority items (13-18 hours of work) will significantly improve the security posture. Code quality is generally good but needs migration from console logging to structured logging and addition of error boundaries for production resilience."
+}

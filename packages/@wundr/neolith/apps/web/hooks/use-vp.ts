@@ -109,8 +109,8 @@ export function useVP(id: string): UseVPReturn {
       if (!response.ok) {
         throw new Error('Failed to fetch VP');
       }
-      const data: VP = await response.json();
-      setVP(data);
+      const result: { data: VP } = await response.json();
+      setVP(result.data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
@@ -181,7 +181,7 @@ export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
     try {
       // Build query params
       const params = new URLSearchParams();
-      params.set('orgId', orgId);
+      params.set('organizationId', orgId);
       if (filters?.discipline) {
         params.set('discipline', filters.discipline);
       }
@@ -196,8 +196,8 @@ export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
       if (!response.ok) {
         throw new Error('Failed to fetch VPs');
       }
-      const data: { vps?: VP[] } = await response.json();
-      setVPs(data.vps || []);
+      const result: { data: VP[] } = await response.json();
+      setVPs(result.data || []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
@@ -299,8 +299,8 @@ export function useVPMutations(): UseVPMutationsReturn {
         throw new Error('Failed to create VP');
       }
 
-      const data: VP = await response.json();
-      return data;
+      const result: { data: VP } = await response.json();
+      return result.data;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       return null;
@@ -324,8 +324,8 @@ export function useVPMutations(): UseVPMutationsReturn {
         throw new Error('Failed to update VP');
       }
 
-      const data: VP = await response.json();
-      return data;
+      const result: { data: VP } = await response.json();
+      return result.data;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       return null;
@@ -366,7 +366,7 @@ export function useVPMutations(): UseVPMutationsReturn {
     setError(null);
 
     try {
-      const response = await fetch(`/api/vps/${id}/rotate-key`, {
+      const response = await fetch(`/api/vps/${id}/api-key`, {
         method: 'POST',
       });
 
@@ -374,8 +374,8 @@ export function useVPMutations(): UseVPMutationsReturn {
         throw new Error('Failed to rotate API key');
       }
 
-      const data: { apiKey: string } = await response.json();
-      return data;
+      const result: { data: { apiKey: string } } = await response.json();
+      return { apiKey: result.data.apiKey };
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       return null;

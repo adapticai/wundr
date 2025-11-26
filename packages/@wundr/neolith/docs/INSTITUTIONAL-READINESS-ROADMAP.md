@@ -18,15 +18,17 @@
 7. [Phase 4: Mobile & Desktop Apps](#phase-4-mobile--desktop-apps-weeks-7-9)
 8. [Phase 5: Integration & Testing](#phase-5-integration--testing-weeks-10-11)
 9. [Phase 6: Production Deployment](#phase-6-production-deployment-week-12)
-10. [Swarm Orchestration Strategy](#swarm-orchestration-strategy)
-11. [Testing & Validation Matrix](#testing--validation-matrix)
+10. [Phase 7: Production Hardening & Code Completion](#phase-7-production-hardening--code-completion-post-launch)
+11. [Phase 8: Web Application Backlog Completion](#phase-8-web-application-backlog-completion)
+12. [Swarm Orchestration Strategy](#swarm-orchestration-strategy)
+13. [Testing & Validation Matrix](#testing--validation-matrix)
 
 ---
 
 ## Executive Summary
 
 ### Current Status
-- **Web App:** 75% complete, production-ready foundation
+- **Web App:** 35-40% complete (revised after comprehensive code review - see [NEOLITH-WEB-BACKLOG.md](./NEOLITH-WEB-BACKLOG.md))
 - **Desktop App:** 70% complete, missing renderer integration
 - **Mobile App:** 65% complete, native projects not initialized
 - **VP Integration:** 40% complete, autonomous operation missing
@@ -149,16 +151,16 @@ Agent: "Test the workspace creation flow"
 **Agents:** backend-engineer (lead), software-engineer (2), system-architect
 
 **Tasks:**
-- [ ] 0.1.1 Create `packages/@wundr/vp-daemon` package structure
-- [ ] 0.1.2 Implement daemon core runtime (WebSocket server, session spawning)
-- [ ] 0.1.3 Add memory architecture (tiered: scratchpad/episodic/semantic)
-- [ ] 0.1.4 Implement integration orchestration (Slack, Neolith dual-connection)
-- [ ] 0.1.5 Create CLI interface for daemon management
-- [ ] 0.1.6 Add VP charter loading and enforcement
-- [ ] 0.1.7 Write comprehensive tests (unit + integration)
-- [ ] 0.1.8 Publish to npm as `@wundr.io/vp-daemon`
-- [ ] 0.1.9 Update CLI to import real package (remove stub)
-- [ ] 0.1.10 Document daemon architecture and API
+- [x] 0.1.1 Create `packages/@wundr/vp-daemon` package structure
+- [x] 0.1.2 Implement daemon core runtime (WebSocket server, session spawning)
+- [x] 0.1.3 Add memory architecture (tiered: scratchpad/episodic/semantic)
+- [ ] 0.1.4 Implement integration orchestration (Slack, Neolith dual-connection) ⚠️ PARTIAL
+- [x] 0.1.5 Create CLI interface for daemon management
+- [x] 0.1.6 Add VP charter loading and enforcement
+- [x] 0.1.7 Write comprehensive tests (unit + integration)
+- [ ] 0.1.8 Publish to npm as `@wundr.io/vp-daemon` ❌ NOT DONE
+- [x] 0.1.9 Update CLI to import real package (remove stub)
+- [x] 0.1.10 Document daemon architecture and API
 
 **Validation:**
 ```bash
@@ -175,12 +177,12 @@ Agent: "Test the workspace creation flow"
 **Execution:** PARALLEL with 0.1
 
 **Tasks:**
-- [ ] 0.2.1 Install Playwright MCP server: `claude mcp add playwright npx @playwright/mcp-server`
-- [ ] 0.2.2 Verify MCP connection: `claude mcp list`
-- [ ] 0.2.3 Start Neolith dev server on port 3000
-- [ ] 0.2.4 Test MCP navigation to localhost:3000
-- [ ] 0.2.5 Create test script template for reuse
-- [ ] 0.2.6 Document browser testing workflow
+- [x] 0.2.1 Install Playwright MCP server: `claude mcp add playwright npx @playwright/mcp-server`
+- [x] 0.2.2 Verify MCP connection: `claude mcp list`
+- [x] 0.2.3 Start Neolith dev server on port 3000
+- [x] 0.2.4 Test MCP navigation to localhost:3000
+- [x] 0.2.5 Create test script template for reuse
+- [x] 0.2.6 Document browser testing workflow
 
 **Validation:**
 ```bash
@@ -197,12 +199,12 @@ Agent: "Test the workspace creation flow"
 **Execution:** PARALLEL with 0.1, 0.2
 
 **Tasks:**
-- [ ] 0.3.1 Fix mobile Capacitor config (`webDir: '../web/out'` not `dist`)
-- [ ] 0.3.2 Configure Next.js static export for mobile: `output: 'export'`
-- [ ] 0.3.3 Fix desktop Electron renderer path
-- [ ] 0.3.4 Standardize branding (Genesis → Neolith everywhere)
-- [ ] 0.3.5 Update capacitor.config appId to `com.wundr.neolith`
-- [ ] 0.3.6 Align all package versions to 1.0.3
+- [x] 0.3.1 Fix mobile Capacitor config (`webDir: '../web/out'` not `dist`)
+- [ ] 0.3.2 Configure Next.js static export for mobile: `output: 'export'` ❌ NOT DONE
+- [x] 0.3.3 Fix desktop Electron renderer path
+- [x] 0.3.4 Standardize branding (Genesis → Neolith everywhere)
+- [x] 0.3.5 Update capacitor.config appId to `com.wundr.neolith`
+- [ ] 0.3.6 Align all package versions to 1.0.3 ⚠️ PARTIAL
 
 **Validation:**
 ```bash
@@ -226,32 +228,32 @@ Agent: "Test the workspace creation flow"
 
 #### Task Group 1.1.1: Backend Integration
 **Tasks:**
-- [ ] 1.1.1.1 Install `@wundr.io/org-genesis` in web app
-- [ ] 1.1.1.2 Create `/api/workspaces/generate-org` endpoint
-- [ ] 1.1.1.3 Wire up `createGenesisEngine()` in API route
-- [ ] 1.1.1.4 Implement `migrateOrgGenesisResult()` from `@neolith/org-integration`
-- [ ] 1.1.1.5 Add database transactions for org creation
-- [ ] 1.1.1.6 Create VPs with disciplines from manifest
-- [ ] 1.1.1.7 Create channels for disciplines
-- [ ] 1.1.1.8 Auto-assign VPs to discipline channels
-- [ ] 1.1.1.9 Generate org hierarchy relationships
-- [ ] 1.1.1.10 Add error handling and rollback logic
+- [x] 1.1.1.1 Install `@wundr.io/org-genesis` in web app
+- [x] 1.1.1.2 Create `/api/workspaces/generate-org` endpoint
+- [x] 1.1.1.3 Wire up `createGenesisEngine()` in API route
+- [x] 1.1.1.4 Implement `migrateOrgGenesisResult()` from `@neolith/org-integration`
+- [x] 1.1.1.5 Add database transactions for org creation
+- [x] 1.1.1.6 Create VPs with disciplines from manifest
+- [x] 1.1.1.7 Create channels for disciplines
+- [x] 1.1.1.8 Auto-assign VPs to discipline channels
+- [x] 1.1.1.9 Generate org hierarchy relationships
+- [x] 1.1.1.10 Add error handling and rollback logic
 
 #### Task Group 1.1.2: Frontend Workspace Creation Flow
 **Agents:** frontend-engineer (3), product-designer (2)
 **Dependencies:** 1.1.1 (API must exist)
 
 **Tasks:**
-- [ ] 1.1.2.1 Create conversational org-genesis UI component
-- [ ] 1.1.2.2 Add multi-step wizard for org configuration
-- [ ] 1.1.2.3 Display org preview before creation
-- [ ] 1.1.2.4 Show loading state during generation (use Skeleton)
-- [ ] 1.1.2.5 Display generated org chart visualization
-- [ ] 1.1.2.6 Add "Regenerate" and "Customize" options
-- [ ] 1.1.2.7 Merge "Create Workspace" with "Create Organization" concept
-- [ ] 1.1.2.8 Update onboarding flow
-- [ ] 1.1.2.9 Add tooltips explaining VP disciplines
-- [ ] 1.1.2.10 Implement form validation with Zod
+- [x] 1.1.2.1 Create conversational org-genesis UI component
+- [x] 1.1.2.2 Add multi-step wizard for org configuration
+- [x] 1.1.2.3 Display org preview before creation
+- [x] 1.1.2.4 Show loading state during generation (use Skeleton)
+- [ ] 1.1.2.5 Display generated org chart visualization ⚠️ PARTIAL
+- [ ] 1.1.2.6 Add "Regenerate" and "Customize" options ❌ NOT DONE
+- [x] 1.1.2.7 Merge "Create Workspace" with "Create Organization" concept
+- [x] 1.1.2.8 Update onboarding flow
+- [x] 1.1.2.9 Add tooltips explaining VP disciplines
+- [x] 1.1.2.10 Implement form validation with Zod
 
 #### Task Group 1.1.3: Org Hierarchy Display
 **Agents:** frontend-engineer (2), product-designer (1)
@@ -287,48 +289,48 @@ Agent: "Test the workspace creation flow"
 
 #### Task Group 1.2.1: Agent Backlog System
 **Tasks:**
-- [ ] 1.2.1.1 Add Prisma schema for Task model (see audit spec)
-- [ ] 1.2.1.2 Create task priority enum (CRITICAL, HIGH, MEDIUM, LOW)
-- [ ] 1.2.1.3 Create task status enum (TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED)
-- [ ] 1.2.1.4 Add task dependencies (array of task IDs)
-- [ ] 1.2.1.5 Add task scheduling (dueDate, estimatedHours)
-- [ ] 1.2.1.6 Create `/api/tasks` CRUD endpoints
-- [ ] 1.2.1.7 Create `/api/vps/[id]/backlog` endpoint (filtered tasks)
-- [ ] 1.2.1.8 Add task assignment endpoint (human→VP, VP→VP)
-- [ ] 1.2.1.9 Implement task polling mechanism for VPs
-- [ ] 1.2.1.10 Add task completion webhook
+- [x] 1.2.1.1 Add Prisma schema for Task model (see audit spec)
+- [x] 1.2.1.2 Create task priority enum (CRITICAL, HIGH, MEDIUM, LOW)
+- [x] 1.2.1.3 Create task status enum (TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED)
+- [x] 1.2.1.4 Add task dependencies (array of task IDs)
+- [x] 1.2.1.5 Add task scheduling (dueDate, estimatedHours)
+- [ ] 1.2.1.6 Create `/api/tasks` CRUD endpoints ⚠️ PARTIAL
+- [ ] 1.2.1.7 Create `/api/vps/[id]/backlog` endpoint (filtered tasks) ❌ NOT DONE
+- [ ] 1.2.1.8 Add task assignment endpoint (human→VP, VP→VP) ❌ NOT DONE
+- [ ] 1.2.1.9 Implement task polling mechanism for VPs ❌ NOT DONE
+- [ ] 1.2.1.10 Add task completion webhook ❌ NOT DONE
 
 #### Task Group 1.2.2: VP Memory Integration
 **Agents:** ml-engineer (2), backend-engineer (2)
 **Dependencies:** 1.2.1
 
 **Tasks:**
-- [ ] 1.2.2.1 Install `@wundr.io/agent-memory` package
-- [ ] 1.2.2.2 Create memory service wrapper
-- [ ] 1.2.2.3 Implement conversation history persistence per channel
-- [ ] 1.2.2.4 Add task completion history tracking
-- [ ] 1.2.2.5 Store learned patterns and preferences
-- [ ] 1.2.2.6 Implement cross-session memory retrieval
-- [ ] 1.2.2.7 Add memory search/query API
-- [ ] 1.2.2.8 Create memory pruning/archival strategy
-- [ ] 1.2.2.9 Add memory visualization for debugging
-- [ ] 1.2.2.10 Integrate with VP context in Claude sessions
+- [x] 1.2.2.1 Install `@wundr.io/agent-memory` package
+- [ ] 1.2.2.2 Create memory service wrapper ❌ NOT DONE
+- [ ] 1.2.2.3 Implement conversation history persistence per channel ❌ NOT DONE
+- [ ] 1.2.2.4 Add task completion history tracking ❌ NOT DONE
+- [ ] 1.2.2.5 Store learned patterns and preferences ❌ NOT DONE
+- [ ] 1.2.2.6 Implement cross-session memory retrieval ❌ NOT DONE
+- [ ] 1.2.2.7 Add memory search/query API ❌ NOT DONE
+- [ ] 1.2.2.8 Create memory pruning/archival strategy ❌ NOT DONE
+- [ ] 1.2.2.9 Add memory visualization for debugging ❌ NOT DONE
+- [ ] 1.2.2.10 Integrate with VP context in Claude sessions ❌ NOT DONE
 
 #### Task Group 1.2.3: VP Work Execution Engine
 **Agents:** backend-engineer (3), software-engineer (2)
 **Dependencies:** 1.2.1, 1.2.2, VP-Daemon (0.1)
 
 **Tasks:**
-- [ ] 1.2.3.1 Create VP work polling service (checks backlog every N minutes)
-- [ ] 1.2.3.2 Implement task selection algorithm (priority + deadline + dependencies)
-- [ ] 1.2.3.3 Spawn Claude Code session for selected task
-- [ ] 1.2.3.4 Pass task context + VP charter + memory to session
-- [ ] 1.2.3.5 Monitor session progress
-- [ ] 1.2.3.6 Capture session output and results
-- [ ] 1.2.3.7 Update task status based on completion
-- [ ] 1.2.3.8 Post status updates to assigned channel
-- [ ] 1.2.3.9 Handle errors and retry logic
-- [ ] 1.2.3.10 Store work artifacts in S3
+- [ ] 1.2.3.1 Create VP work polling service (checks backlog every N minutes) ❌ NOT DONE
+- [ ] 1.2.3.2 Implement task selection algorithm (priority + deadline + dependencies) ❌ NOT DONE
+- [ ] 1.2.3.3 Spawn Claude Code session for selected task ❌ NOT DONE
+- [ ] 1.2.3.4 Pass task context + VP charter + memory to session ❌ NOT DONE
+- [ ] 1.2.3.5 Monitor session progress ❌ NOT DONE
+- [ ] 1.2.3.6 Capture session output and results ❌ NOT DONE
+- [ ] 1.2.3.7 Update task status based on completion ❌ NOT DONE
+- [ ] 1.2.3.8 Post status updates to assigned channel ❌ NOT DONE
+- [ ] 1.2.3.9 Handle errors and retry logic ❌ NOT DONE
+- [ ] 1.2.3.10 Store work artifacts in S3 ❌ NOT DONE
 
 **Validation:**
 ```bash
@@ -348,16 +350,16 @@ Agent: "Test the workspace creation flow"
 **Execution:** PARALLEL with Wave 1.2
 
 **Tasks:**
-- [ ] 1.3.1 Create S3 bucket for user avatars (separate from general uploads)
-- [ ] 1.3.2 Implement avatar upload service
-- [ ] 1.3.3 Add image processing (resize to standard sizes: 32, 64, 128, 256px)
-- [ ] 1.3.4 Update OAuth callback to download provider avatar
-- [ ] 1.3.5 Upload to S3 on user creation/update
-- [ ] 1.3.6 Store S3 URL in User.image field
-- [ ] 1.3.7 Add avatar change endpoint `/api/users/[id]/avatar`
-- [ ] 1.3.8 Update UserAvatar component to use S3 URLs
-- [ ] 1.3.9 Add fallback for missing avatars (initials-based generated image)
-- [ ] 1.3.10 Implement CDN caching headers
+- [x] 1.3.1 Create S3 bucket for user avatars (separate from general uploads)
+- [x] 1.3.2 Implement avatar upload service
+- [x] 1.3.3 Add image processing (resize to standard sizes: 32, 64, 128, 256px)
+- [x] 1.3.4 Update OAuth callback to download provider avatar
+- [x] 1.3.5 Upload to S3 on user creation/update
+- [x] 1.3.6 Store S3 URL in User.image field
+- [x] 1.3.7 Add avatar change endpoint `/api/users/[id]/avatar`
+- [x] 1.3.8 Update UserAvatar component to use S3 URLs
+- [x] 1.3.9 Add fallback for missing avatars (initials-based generated image)
+- [ ] 1.3.10 Implement CDN caching headers ❌ NOT DONE
 
 **Validation:**
 ```bash
@@ -625,18 +627,18 @@ Agent: "Test the workspace creation flow"
 **Execution:** PARALLEL with Wave 3.2
 
 **Tasks:**
-- [ ] 3.3.1 Create ThemeToggle component (Light/Dark/System options)
-- [ ] 3.3.2 Add theme toggle to user menu dropdown
-- [ ] 3.3.3 Add theme toggle to user settings page
-- [ ] 3.3.4 Persist theme preference in Preferences API (Capacitor) for mobile
-- [ ] 3.3.5 Persist theme preference in localStorage for web
-- [ ] 3.3.6 Test theme switching with animations
-- [ ] 3.3.7 Verify all components support dark mode
-- [ ] 3.3.8 Fix any dark mode contrast issues
-- [ ] 3.3.9 Test on mobile (respect system theme)
-- [ ] 3.3.10 Add theme preview in settings
-- [ ] 3.3.11 Document theme customization for enterprises
-- [ ] 3.3.12 Test with browser MCP (toggle theme, verify styles)
+- [x] 3.3.1 Create ThemeToggle component (Light/Dark/System options)
+- [x] 3.3.2 Add theme toggle to user menu dropdown
+- [ ] 3.3.3 Add theme toggle to user settings page ❌ NOT DONE (settings 404)
+- [ ] 3.3.4 Persist theme preference in Preferences API (Capacitor) for mobile ❌ NOT DONE
+- [x] 3.3.5 Persist theme preference in localStorage for web
+- [x] 3.3.6 Test theme switching with animations
+- [x] 3.3.7 Verify all components support dark mode
+- [x] 3.3.8 Fix any dark mode contrast issues
+- [x] 3.3.9 Test on mobile (respect system theme)
+- [ ] 3.3.10 Add theme preview in settings ❌ NOT DONE
+- [ ] 3.3.11 Document theme customization for enterprises ❌ NOT DONE
+- [ ] 3.3.12 Test with browser MCP (toggle theme, verify styles) ❌ NOT DONE
 
 **Validation:**
 ```bash
@@ -1316,7 +1318,9 @@ Task({ subagent_type: "frontend-engineer", ... })
 | **Phase 4** | 3 weeks | 7-9 | 60 | Desktop builds, mobile apps, App Store submission |
 | **Phase 5** | 2 weeks | 10-11 | 40 | Browser testing, VP integration testing |
 | **Phase 6** | 1 week | 12 | 20 | Production deployment, app launches |
-| **TOTAL** | **12 weeks** | | **250 agent-weeks** | **Production-ready Neolith** |
+| **Phase 7** | 2-3 weeks | 13-15 | 60 | Production hardening, TODO removal, security audit |
+| **Phase 8** | 3-4 weeks | 16-19 | 80 | Web app backlog completion (see [NEOLITH-WEB-BACKLOG.md](./NEOLITH-WEB-BACKLOG.md)) |
+| **TOTAL** | **19 weeks** | | **390 agent-weeks** | **Institutional-grade Neolith** |
 
 ---
 
@@ -1418,6 +1422,697 @@ Task({ subagent_type: "frontend-engineer", ... })
 
 ---
 
-**Document Version:** 1.0.0
+---
+
+## Phase 7: Production Hardening & Code Completion (Post-Launch)
+
+**Duration:** 2-3 weeks
+**Agents Required:** 20 agents per wave (3 waves)
+**Priority:** Required before institutional deployment
+
+### Overview
+
+This phase addresses all TODO comments, placeholder code, mock data, and incomplete implementations discovered during the code audit. These items must be resolved to achieve true institutional-grade, production-ready code.
+
+---
+
+### Wave 7.1: Critical API Implementation Gaps
+
+**Priority:** CRITICAL
+**Dependencies:** Phase 6 complete (production deployed)
+**Agents:** backend-engineer (5), software-engineer (3), devops-engineer (2)
+
+#### Task Group 7.1.1: S3 File Operations
+
+**Files Affected:**
+- `apps/web/app/api/files/[id]/route.ts:41` - TODO: Implement AWS S3 DeleteObject call
+
+**Tasks:**
+- [ ] 7.1.1.1 Implement `deleteFileFromStorage()` using AWS SDK v3
+- [ ] 7.1.1.2 Add proper S3 credentials configuration
+- [ ] 7.1.1.3 Implement S3 error handling (bucket not found, access denied)
+- [ ] 7.1.1.4 Add CloudFront cache invalidation on delete
+- [ ] 7.1.1.5 Create unit tests for S3 operations
+- [ ] 7.1.1.6 Add retry logic for transient S3 failures
+
+**Implementation:**
+```typescript
+async function deleteFileFromStorage(s3Key: string, s3Bucket: string): Promise<void> {
+  const { S3Client, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+  const client = new S3Client({ region: process.env.AWS_REGION });
+
+  await client.send(new DeleteObjectCommand({
+    Bucket: s3Bucket,
+    Key: s3Key,
+  }));
+}
+```
+
+#### Task Group 7.1.2: LiveKit Recording Integration
+
+**Files Affected:**
+- `apps/web/app/api/calls/[callId]/recording/route.ts:277` - TODO: Start recording via LiveKit Egress API
+- `apps/web/app/api/calls/[callId]/recording/route.ts:433` - TODO: Stop recording via LiveKit Egress API
+- `apps/web/app/api/huddles/[huddleId]/route.ts:463` - TODO: Notify LiveKit to close the room
+
+**Tasks:**
+- [ ] 7.1.2.1 Install `livekit-server-sdk` package
+- [ ] 7.1.2.2 Implement `startRoomCompositeEgress()` for recording start
+- [ ] 7.1.2.3 Implement `stopEgress()` for recording stop
+- [ ] 7.1.2.4 Implement room close notification via LiveKit API
+- [ ] 7.1.2.5 Add recording storage to S3
+- [ ] 7.1.2.6 Create recording download endpoint
+- [ ] 7.1.2.7 Add recording metadata to database
+- [ ] 7.1.2.8 Test recording flow end-to-end
+
+#### Task Group 7.1.3: Audit Log Service
+
+**Files Affected:**
+- `apps/web/app/api/vps/[id]/actions/route.ts:219` - TODO: Log the action to audit log service
+
+**Tasks:**
+- [ ] 7.1.3.1 Create audit log service
+- [ ] 7.1.3.2 Implement `AuditLog` Prisma model
+- [ ] 7.1.3.3 Add audit logging to all VP actions
+- [ ] 7.1.3.4 Create audit log query API
+- [ ] 7.1.3.5 Add audit log viewer to admin dashboard
+- [ ] 7.1.3.6 Implement audit log retention policy
+
+#### Task Group 7.1.4: Daemon API Key Validation
+
+**Files Affected:**
+- `apps/web/app/api/daemon/register/route.ts:138` - TODO: Validate API key against VP's stored key hash
+- `apps/web/app/api/daemon/register/route.ts:147` - TODO: Verify VP exists and belongs to organization
+- `apps/web/app/api/daemon/register/route.ts:151` - TODO: Get Redis client and heartbeat service
+- `apps/web/app/api/daemon/unregister/route.ts:112` - TODO: Validate API key against VP's stored key hash
+- `apps/web/app/api/daemon/unregister/route.ts:120` - TODO: Get Redis client and heartbeat service
+
+**Tasks:**
+- [ ] 7.1.4.1 Implement API key hashing (bcrypt or argon2)
+- [ ] 7.1.4.2 Add VP API key validation in daemon register
+- [ ] 7.1.4.3 Add VP API key validation in daemon unregister
+- [ ] 7.1.4.4 Implement Redis heartbeat service
+- [ ] 7.1.4.5 Add VP organization membership verification
+- [ ] 7.1.4.6 Create API key rotation endpoint
+- [ ] 7.1.4.7 Add rate limiting on daemon endpoints
+
+#### Task Group 7.1.5: Call Invite Notifications
+
+**Files Affected:**
+- `apps/web/app/api/calls/[callId]/invite/route.ts:264` - TODO: Send notifications to invited users
+
+**Tasks:**
+- [ ] 7.1.5.1 Implement call invite notification service
+- [ ] 7.1.5.2 Send push notifications for call invites
+- [ ] 7.1.5.3 Send in-app notifications for call invites
+- [ ] 7.1.5.4 Add email notifications for offline users
+- [ ] 7.1.5.5 Implement notification preferences check
+- [ ] 7.1.5.6 Test notification delivery across platforms
+
+**Validation:**
+```bash
+✓ S3 file deletion works in production
+✓ LiveKit recording starts/stops correctly
+✓ Audit logs capture all VP actions
+✓ Daemon API key validation secure
+✓ Call invite notifications delivered
+```
+
+---
+
+### Wave 7.2: Mock Data & Placeholder Removal
+
+**Priority:** HIGH
+**Dependencies:** Wave 7.1 complete
+**Agents:** frontend-engineer (5), backend-engineer (3), qa-engineer (2)
+
+#### Task Group 7.2.1: Replace Mock Current User
+
+**Files Affected:**
+- `apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/page.tsx:25` - MOCK_CURRENT_USER
+- `apps/web/app/(workspace)/[workspaceId]/channels/[channelId]/settings/page.tsx:24` - MOCK_CURRENT_USER_ID
+
+**Tasks:**
+- [ ] 7.2.1.1 Create `useCurrentUser()` hook using auth session
+- [ ] 7.2.1.2 Replace all `MOCK_CURRENT_USER` with hook
+- [ ] 7.2.1.3 Replace all `MOCK_CURRENT_USER_ID` with session user ID
+- [ ] 7.2.1.4 Handle loading states while session loads
+- [ ] 7.2.1.5 Redirect to login if no session
+- [ ] 7.2.1.6 Test all affected pages with real auth
+
+**Implementation:**
+```typescript
+// hooks/use-current-user.ts
+export function useCurrentUser() {
+  const { data: session, status } = useSession();
+  return {
+    user: session?.user ?? null,
+    isLoading: status === 'loading',
+    isAuthenticated: status === 'authenticated',
+  };
+}
+```
+
+#### Task Group 7.2.2: Implement Channels Page Data Fetching
+
+**Files Affected:**
+- `apps/web/app/(workspace)/[workspaceId]/channels/page.tsx:9-10` - TODO: Replace with actual channel fetching logic
+- `apps/web/app/(workspace)/[workspaceId]/channels/page.tsx:82-99` - Placeholder create channel dialog
+
+**Tasks:**
+- [ ] 7.2.2.1 Create `useChannels()` hook with SWR/React Query
+- [ ] 7.2.2.2 Implement channel fetching from `/api/channels`
+- [ ] 7.2.2.3 Replace placeholder array with real data
+- [ ] 7.2.2.4 Implement proper loading states
+- [ ] 7.2.2.5 Implement proper error handling
+- [ ] 7.2.2.6 Create `CreateChannelDialog` component
+- [ ] 7.2.2.7 Wire dialog to `/api/channels` POST
+- [ ] 7.2.2.8 Add optimistic updates on channel create
+- [ ] 7.2.2.9 Test channel CRUD flow end-to-end
+
+#### Task Group 7.2.3: Implement VP Activity Log
+
+**Files Affected:**
+- `apps/web/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx:355` - "Activity log coming soon"
+
+**Tasks:**
+- [ ] 7.2.3.1 Create VP activity log Prisma model
+- [ ] 7.2.3.2 Create `/api/vps/[id]/activity` endpoint
+- [ ] 7.2.3.3 Track VP task assignments
+- [ ] 7.2.3.4 Track VP task completions
+- [ ] 7.2.3.5 Track VP status changes
+- [ ] 7.2.3.6 Track VP channel interactions
+- [ ] 7.2.3.7 Create ActivityTimeline component
+- [ ] 7.2.3.8 Replace placeholder with real activity log
+- [ ] 7.2.3.9 Add pagination for activity log
+- [ ] 7.2.3.10 Add filtering (by type, date range)
+
+#### Task Group 7.2.4: Implement VP Agent Management
+
+**Files Affected:**
+- `apps/web/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx:371` - "Agent management coming soon"
+
+**Tasks:**
+- [ ] 7.2.4.1 Create Agent management UI components
+- [ ] 7.2.4.2 Display agents assigned to VP
+- [ ] 7.2.4.3 Add agent assignment/unassignment
+- [ ] 7.2.4.4 Show agent status (active, idle, offline)
+- [ ] 7.2.4.5 Display agent capabilities
+- [ ] 7.2.4.6 Add agent configuration editor
+- [ ] 7.2.4.7 Implement agent spawn/terminate controls
+- [ ] 7.2.4.8 Replace placeholder with real agent list
+
+#### Task Group 7.2.5: Implement Credential-Based Auth
+
+**Files Affected:**
+- `apps/web/app/(auth)/login/page.tsx:40` - "Currently a placeholder for future credential-based auth"
+- `apps/web/app/(auth)/register/page.tsx:42` - "Currently a placeholder for future credential-based registration"
+
+**Tasks:**
+- [ ] 7.2.5.1 Add Credentials provider to NextAuth config
+- [ ] 7.2.5.2 Implement password hashing (bcrypt)
+- [ ] 7.2.5.3 Create user registration API endpoint
+- [ ] 7.2.5.4 Add email verification flow
+- [ ] 7.2.5.5 Implement password reset flow
+- [ ] 7.2.5.6 Wire up login form to credentials provider
+- [ ] 7.2.5.7 Wire up registration form to API
+- [ ] 7.2.5.8 Add CAPTCHA for registration
+- [ ] 7.2.5.9 Add rate limiting on auth endpoints
+- [ ] 7.2.5.10 Test full email/password auth flow
+
+**Validation:**
+```bash
+✓ All MOCK_CURRENT_USER references removed
+✓ Channels page fetches real data
+✓ VP activity log displays real activities
+✓ VP agent management functional
+✓ Email/password authentication works
+```
+
+---
+
+### Wave 7.3: Code Quality & Console Statement Removal
+
+**Priority:** MEDIUM
+**Dependencies:** Wave 7.2 complete
+**Agents:** software-engineer (4), code-analyzer (3), qa-engineer (3)
+
+#### Task Group 7.3.1: Remove Debug Console Statements
+
+**Scope:** 50+ files with console.log/warn/error statements in API routes
+
+**Tasks:**
+- [ ] 7.3.1.1 Create structured logger service (pino or winston)
+- [ ] 7.3.1.2 Replace all `console.error` with structured logger
+- [ ] 7.3.1.3 Replace all `console.warn` with structured logger
+- [ ] 7.3.1.4 Remove all debug `console.log` statements
+- [ ] 7.3.1.5 Add log levels (error, warn, info, debug)
+- [ ] 7.3.1.6 Add request ID correlation to logs
+- [ ] 7.3.1.7 Configure log output for production (JSON format)
+- [ ] 7.3.1.8 Add log sampling for high-volume endpoints
+- [ ] 7.3.1.9 Integrate with monitoring (Sentry, Datadog)
+- [ ] 7.3.1.10 Test log aggregation in production
+
+**Implementation:**
+```typescript
+// lib/logger.ts
+import pino from 'pino';
+
+export const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  formatters: {
+    level: (label) => ({ level: label }),
+  },
+  transport: process.env.NODE_ENV !== 'production'
+    ? { target: 'pino-pretty' }
+    : undefined,
+});
+
+// Usage in API routes:
+logger.error({ err: error, endpoint: '/api/channels' }, 'Channel creation failed');
+```
+
+#### Task Group 7.3.2: Fix Workarounds and Temporary Code
+
+**Files Affected:**
+- `apps/web/app/api/daemon/messages/route.ts:188` - Workaround for Prisma type mapping
+- `apps/web/app/api/tasks/route.ts:326` - temporary ID for new task
+
+**Tasks:**
+- [ ] 7.3.2.1 Fix Prisma type mapping for daemon messages
+- [ ] 7.3.2.2 Generate proper temporary task IDs with UUID
+- [ ] 7.3.2.3 Review all Prisma queries for type safety
+- [ ] 7.3.2.4 Add Prisma middleware for consistent error handling
+- [ ] 7.3.2.5 Run Prisma format and validate schema
+
+#### Task Group 7.3.3: TypeScript Strictness Improvements
+
+**Tasks:**
+- [ ] 7.3.3.1 Enable `strict: true` in all tsconfigs
+- [ ] 7.3.3.2 Fix all resulting type errors
+- [ ] 7.3.3.3 Remove all `any` type usages (replace with proper types)
+- [ ] 7.3.3.4 Add missing type definitions
+- [ ] 7.3.3.5 Enable `noUncheckedIndexedAccess`
+- [ ] 7.3.3.6 Run full TypeScript check: 0 errors
+
+#### Task Group 7.3.4: Error Handling Standardization
+
+**Tasks:**
+- [ ] 7.3.4.1 Create standardized API error response format
+- [ ] 7.3.4.2 Implement global error boundary for React
+- [ ] 7.3.4.3 Add Sentry error tracking to all API routes
+- [ ] 7.3.4.4 Create error code documentation
+- [ ] 7.3.4.5 Implement graceful degradation patterns
+- [ ] 7.3.4.6 Add user-friendly error messages
+- [ ] 7.3.4.7 Test error handling with intentional failures
+
+**Validation:**
+```bash
+✓ Zero console.* statements in production code
+✓ Structured logging operational
+✓ TypeScript strict mode passes
+✓ All workarounds replaced with proper solutions
+✓ Error handling standardized across all APIs
+```
+
+---
+
+### Wave 7.4: Security Hardening
+
+**Priority:** CRITICAL
+**Dependencies:** Wave 7.3 complete
+**Agents:** security-manager (2), backend-engineer (4), devops-engineer (4)
+
+#### Task Group 7.4.1: Input Validation Audit
+
+**Tasks:**
+- [ ] 7.4.1.1 Audit all API endpoints for input validation
+- [ ] 7.4.1.2 Add Zod validation to missing endpoints
+- [ ] 7.4.1.3 Sanitize all user inputs (XSS prevention)
+- [ ] 7.4.1.4 Add SQL injection protection (Prisma parameterized queries)
+- [ ] 7.4.1.5 Validate file upload types and sizes
+- [ ] 7.4.1.6 Add CSRF protection tokens
+- [ ] 7.4.1.7 Run OWASP ZAP security scan
+- [ ] 7.4.1.8 Fix all critical/high vulnerabilities
+
+#### Task Group 7.4.2: Authentication Security
+
+**Tasks:**
+- [ ] 7.4.2.1 Implement session rotation on login
+- [ ] 7.4.2.2 Add session timeout (configurable)
+- [ ] 7.4.2.3 Implement account lockout after failed attempts
+- [ ] 7.4.2.4 Add 2FA support (TOTP)
+- [ ] 7.4.2.5 Implement secure password requirements
+- [ ] 7.4.2.6 Add login attempt logging
+- [ ] 7.4.2.7 Implement device trust/remember me
+- [ ] 7.4.2.8 Add concurrent session management
+
+#### Task Group 7.4.3: API Security
+
+**Tasks:**
+- [ ] 7.4.3.1 Implement rate limiting on all endpoints
+- [ ] 7.4.3.2 Add API key authentication for daemon endpoints
+- [ ] 7.4.3.3 Implement request signing for VP operations
+- [ ] 7.4.3.4 Add IP allowlisting for admin endpoints
+- [ ] 7.4.3.5 Configure proper CORS policies
+- [ ] 7.4.3.6 Add security headers (CSP, HSTS, etc.)
+- [ ] 7.4.3.7 Implement request size limits
+- [ ] 7.4.3.8 Add abuse detection and blocking
+
+**Validation:**
+```bash
+✓ OWASP ZAP scan passes with no critical issues
+✓ All API endpoints have input validation
+✓ Rate limiting active on all endpoints
+✓ Session security hardened
+✓ Security headers properly configured
+```
+
+---
+
+### Phase 7 Summary
+
+| Wave | Focus | Files | Key Deliverables |
+|------|-------|-------|------------------|
+| **7.1** | Critical API Gaps | 8 files | S3 delete, LiveKit recording, audit logs, daemon auth |
+| **7.2** | Mock Data Removal | 6 files | Real user auth, channel fetching, VP activity/agents, credential auth |
+| **7.3** | Code Quality | 50+ files | Structured logging, TypeScript strict, error handling |
+| **7.4** | Security Hardening | All APIs | Input validation, auth security, API hardening |
+
+### Phase 7 Completion Criteria
+
+**Code Quality:**
+- [ ] Zero TODO/FIXME comments in production code
+- [ ] Zero MOCK_* or placeholder data
+- [ ] Zero `any` types in TypeScript
+- [ ] Zero `console.*` statements (use logger)
+- [ ] TypeScript strict mode: 0 errors
+
+**Security:**
+- [ ] OWASP Top 10 vulnerabilities addressed
+- [ ] All inputs validated with Zod
+- [ ] Rate limiting on all endpoints
+- [ ] Audit logging for sensitive operations
+- [ ] Security headers configured
+
+**Functionality:**
+- [ ] All "coming soon" features implemented
+- [ ] All placeholder dialogs replaced with real UI
+- [ ] All API endpoints fully functional
+- [ ] All integration points tested
+
+---
+
+## Phase 8: Web Application Backlog Completion
+
+**Duration:** 3-4 weeks
+**Agents Required:** 20 agents per wave (4 waves)
+**Priority:** Required for production-ready web application
+**Reference Document:** [NEOLITH-WEB-BACKLOG.md](./NEOLITH-WEB-BACKLOG.md)
+
+### Overview
+
+This phase addresses the comprehensive web application backlog discovered during the November 2025 code review. The full backlog contains **200+ issues** across 35 pages, 160+ API routes, and 17 hooks with an estimated **150-200 hours** of work.
+
+**Overall Application Readiness:** 35-40% complete
+
+---
+
+### Wave 8.1: Critical Fixes (P0)
+
+**Priority:** CRITICAL
+**Dependencies:** Phase 7 complete
+**Agents:** backend-engineer (4), frontend-engineer (3), software-engineer (3)
+
+#### Task Group 8.1.1: Authentication System Completion
+
+**Issue:** User registration broken - API endpoint doesn't exist.
+
+**Tasks:**
+- [ ] 8.1.1.1 Create `/api/auth/register` endpoint
+- [ ] 8.1.1.2 Implement password hashing (bcrypt/argon2)
+- [ ] 8.1.1.3 Add email verification flow
+- [ ] 8.1.1.4 Add to NextAuth credentials provider
+- [ ] 8.1.1.5 Create `/api/auth/forgot-password` endpoint
+- [ ] 8.1.1.6 Create `/api/auth/reset-password` endpoint
+- [ ] 8.1.1.7 Create `/forgot-password/page.tsx`
+- [ ] 8.1.1.8 Create `/reset-password/page.tsx`
+- [ ] 8.1.1.9 Wire registration form to API
+- [ ] 8.1.1.10 Add CAPTCHA to registration
+
+#### Task Group 8.1.2: Admin Pages API Path Fix
+
+**Issue:** ALL admin pages call hardcoded organization IDs instead of workspace-scoped routes.
+
+**Tasks:**
+- [ ] 8.1.2.1 Fix `/admin/page.tsx` - use `workspaceId` from params
+- [ ] 8.1.2.2 Fix `/admin/members/page.tsx` - replace `/api/organizations/1/members`
+- [ ] 8.1.2.3 Fix `/admin/roles/page.tsx` - replace `/api/organizations/1/roles`
+- [ ] 8.1.2.4 Fix `/admin/settings/page.tsx` - replace `/api/organizations/1/settings`
+- [ ] 8.1.2.5 Fix `/admin/billing/page.tsx` - replace `/api/organizations/1/billing`
+- [ ] 8.1.2.6 Fix `/admin/activity/page.tsx` - replace `/api/organizations/1/activity`
+- [ ] 8.1.2.7 Create `/api/workspaces/[id]/members` endpoint
+- [ ] 8.1.2.8 Create `/api/workspaces/[id]/roles` endpoint
+- [ ] 8.1.2.9 Create `/api/workspaces/[id]/activity` endpoint
+- [ ] 8.1.2.10 Create `/api/workspaces/[id]/billing` endpoint
+
+#### Task Group 8.1.3: Settings Page 404 Fix
+
+**Issue:** `/settings` route returns 404.
+
+**Tasks:**
+- [ ] 8.1.3.1 Create `/settings/page.tsx` with proper redirect or index
+- [ ] 8.1.3.2 Verify all settings sub-routes work
+- [ ] 8.1.3.3 Fix OAuth flows in security settings
+- [ ] 8.1.3.4 Implement notification preference persistence
+- [ ] 8.1.3.5 Implement avatar upload functionality
+
+#### Task Group 8.1.4: Mock User Removal
+
+**Issue:** Channel messages use hardcoded mock user.
+
+**Tasks:**
+- [ ] 8.1.4.1 Create `useCurrentUser()` hook
+- [ ] 8.1.4.2 Replace `MOCK_CURRENT_USER` in channel page
+- [ ] 8.1.4.3 Replace `MOCK_CURRENT_USER_ID` in channel settings
+- [ ] 8.1.4.4 Add loading states for session
+- [ ] 8.1.4.5 Test all affected pages with real auth
+
+**Validation:**
+```bash
+✓ User registration works end-to-end
+✓ All admin pages fetch correct workspace data
+✓ /settings route loads properly
+✓ Channel messages use authenticated user
+```
+
+---
+
+### Wave 8.2: Channel & Messaging Completion (P1)
+
+**Priority:** HIGH
+**Dependencies:** Wave 8.1 complete
+**Agents:** backend-engineer (4), frontend-engineer (4), api-engineer (2)
+
+#### Task Group 8.2.1: Channel API Endpoints
+
+**Issue:** 13 channel-related API endpoints missing.
+
+**Tasks:**
+- [ ] 8.2.1.1 Create `GET /api/channels` - list channels
+- [ ] 8.2.1.2 Create `POST /api/channels` - create channel
+- [ ] 8.2.1.3 Create `GET /api/channels/[id]/messages` - get messages
+- [ ] 8.2.1.4 Create `POST /api/channels/[id]/messages` - send message
+- [ ] 8.2.1.5 Create `DELETE /api/channels/[id]/messages/[msgId]` - delete message
+- [ ] 8.2.1.6 Create `POST /api/channels/[id]/messages/[msgId]/reactions` - add reaction
+- [ ] 8.2.1.7 Create `DELETE /api/channels/[id]/messages/[msgId]/reactions` - remove reaction
+- [ ] 8.2.1.8 Create `POST /api/channels/[id]/threads` - create thread
+- [ ] 8.2.1.9 Create `GET /api/channels/[id]/threads/[threadId]` - get thread
+- [ ] 8.2.1.10 Create `POST /api/channels/[id]/pins` - pin message
+
+#### Task Group 8.2.2: Channel UI Completion
+
+**Tasks:**
+- [ ] 8.2.2.1 Replace placeholder channel fetching with real API
+- [ ] 8.2.2.2 Create proper `CreateChannelDialog` component
+- [ ] 8.2.2.3 Add channel type selection (public/private)
+- [ ] 8.2.2.4 Add member selection in create dialog
+- [ ] 8.2.2.5 Implement real-time message updates (WebSocket)
+- [ ] 8.2.2.6 Implement message reactions UI
+- [ ] 8.2.2.7 Implement thread view
+- [ ] 8.2.2.8 Implement message pinning UI
+- [ ] 8.2.2.9 Add typing indicators
+- [ ] 8.2.2.10 Add read receipts
+
+**Validation:**
+```bash
+✓ Channel list fetches real data
+✓ Channel creation works
+✓ Messages send and receive in real-time
+✓ Reactions work
+✓ Threads work
+```
+
+---
+
+### Wave 8.3: VP & Workflow Features (P1)
+
+**Priority:** HIGH
+**Dependencies:** Wave 8.2 complete
+**Agents:** backend-engineer (4), frontend-engineer (3), ml-engineer (3)
+
+#### Task Group 8.3.1: VP Feature Completion
+
+**Issue:** "Activity log coming soon" and "Agent management coming soon" placeholders.
+
+**Tasks:**
+- [ ] 8.3.1.1 Create VP activity log Prisma model
+- [ ] 8.3.1.2 Create `/api/vps/[id]/activity` endpoint
+- [ ] 8.3.1.3 Track VP task assignments in activity log
+- [ ] 8.3.1.4 Track VP task completions in activity log
+- [ ] 8.3.1.5 Create ActivityTimeline component
+- [ ] 8.3.1.6 Replace "Activity log coming soon" with real log
+- [ ] 8.3.1.7 Create agent management UI components
+- [ ] 8.3.1.8 Display agents assigned to VP
+- [ ] 8.3.1.9 Add agent assignment/unassignment
+- [ ] 8.3.1.10 Replace "Agent management coming soon" with real UI
+
+#### Task Group 8.3.2: Workflow Execution Engine
+
+**Issue:** Workflow execution is 100% simulated with setTimeout.
+
+**Tasks:**
+- [ ] 8.3.2.1 Integrate with workflow execution engine
+- [ ] 8.3.2.2 Connect to VP daemon for task execution
+- [ ] 8.3.2.3 Add real step progress tracking
+- [ ] 8.3.2.4 Implement error handling in execution
+- [ ] 8.3.2.5 Add workflow execution history
+- [ ] 8.3.2.6 Create workflow logs viewer
+- [ ] 8.3.2.7 Implement workflow pause/resume
+- [ ] 8.3.2.8 Add workflow cancellation
+- [ ] 8.3.2.9 Store workflow results
+- [ ] 8.3.2.10 Add workflow retry logic
+
+**Validation:**
+```bash
+✓ VP activity log shows real activities
+✓ Agent management functional
+✓ Workflows execute real tasks
+✓ Workflow progress is real-time
+```
+
+---
+
+### Wave 8.4: Dashboard, Analytics & Stubs (P1-P2)
+
+**Priority:** MEDIUM
+**Dependencies:** Wave 8.3 complete
+**Agents:** frontend-engineer (5), backend-engineer (3), data-scientist (2)
+
+#### Task Group 8.4.1: Dashboard Real Data
+
+**Issue:** Mock workspaces, mock activity, mock stats.
+
+**Tasks:**
+- [ ] 8.4.1.1 Create `/api/workspaces/[id]/dashboard` endpoint
+- [ ] 8.4.1.2 Fetch real activity data
+- [ ] 8.4.1.3 Calculate real stats (VPs, agents, deployments, workflows)
+- [ ] 8.4.1.4 Make quick actions dynamic based on user state
+- [ ] 8.4.1.5 Replace mock workspaces with real data
+- [ ] 8.4.1.6 Add real recent activity
+- [ ] 8.4.1.7 Add workspace switching
+- [ ] 8.4.1.8 Add workspace creation from dashboard
+
+#### Task Group 8.4.2: Analytics Page Implementation
+
+**Issue:** Shows "Analytics coming soon..." placeholder.
+
+**Tasks:**
+- [ ] 8.4.2.1 Integrate with `@wundr.io/agent-observability`
+- [ ] 8.4.2.2 Create analytics dashboard layout
+- [ ] 8.4.2.3 Add VP performance charts
+- [ ] 8.4.2.4 Add task completion rates chart
+- [ ] 8.4.2.5 Add usage statistics
+- [ ] 8.4.2.6 Add time range selection
+- [ ] 8.4.2.7 Add export to CSV/PDF
+- [ ] 8.4.2.8 Add drill-down views
+
+#### Task Group 8.4.3: Stub Pages Implementation
+
+**Issue:** Agents and Deployments pages are 5% complete stubs.
+
+**Tasks:**
+- [ ] 8.4.3.1 Create agent CRUD API endpoints
+- [ ] 8.4.3.2 Create agent management UI
+- [ ] 8.4.3.3 Display agent status (running, idle, offline)
+- [ ] 8.4.3.4 Add agent configuration UI
+- [ ] 8.4.3.5 Create deployment management API
+- [ ] 8.4.3.6 Integrate with Railway/Netlify MCP
+- [ ] 8.4.3.7 Add deployment status tracking
+- [ ] 8.4.3.8 Add deployment history
+- [ ] 8.4.3.9 Add deployment logs viewer
+- [ ] 8.4.3.10 Add rollback functionality
+
+**Validation:**
+```bash
+✓ Dashboard shows real workspace data
+✓ Analytics displays real metrics
+✓ Agents page fully functional
+✓ Deployments page fully functional
+```
+
+---
+
+### Phase 8 Summary
+
+| Wave | Focus | Issues | Estimated Hours |
+|------|-------|--------|-----------------|
+| **8.1** | Critical Fixes (P0) | 5 | 40-50 |
+| **8.2** | Channels & Messaging | 23 | 35-45 |
+| **8.3** | VP & Workflows | 20 | 30-40 |
+| **8.4** | Dashboard, Analytics, Stubs | 26 | 35-45 |
+| **Total** | | **74** | **140-180** |
+
+### Phase 8 Completion Criteria
+
+**Authentication:**
+- [ ] Email/password registration works
+- [ ] Password reset flow complete
+- [ ] Email verification implemented
+
+**Admin:**
+- [ ] All admin pages use correct workspace-scoped APIs
+- [ ] Member management functional
+- [ ] Role management functional
+- [ ] Activity log functional
+- [ ] Billing page shows real data
+
+**Channels:**
+- [ ] Channel CRUD operations work
+- [ ] Real-time messaging functional
+- [ ] Threads work
+- [ ] Reactions work
+
+**VPs:**
+- [ ] Activity log shows real data
+- [ ] Agent management functional
+- [ ] API response parsing consistent
+
+**Workflows:**
+- [ ] Real workflow execution (not simulated)
+- [ ] Progress tracking real-time
+
+**Dashboard/Analytics:**
+- [ ] Real data throughout
+- [ ] No mock data anywhere
+
+**Stubs:**
+- [ ] Agents page complete
+- [ ] Deployments page complete
+- [ ] Analytics page complete
+
+---
+
+**Document Version:** 1.2.0
 **Last Updated:** November 26, 2025
-**Next Review:** After Phase 0 completion
+**Next Review:** After Phase 8 completion
