@@ -178,9 +178,10 @@ return;
           throw new Error('Failed to create workflow');
         }
 
-        const workflow = await response.json();
-        setWorkflows((prev) => [workflow, ...prev]);
-        return workflow;
+        const data = await response.json();
+        // API returns { workflow, message }
+        setWorkflows((prev) => [data.workflow, ...prev]);
+        return data.workflow;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;
@@ -236,6 +237,7 @@ export interface UseWorkflowReturn {
  * Provides methods to update, delete, activate, deactivate,
  * and execute a workflow.
  *
+ * @param workspaceId - The workspace ID containing the workflow
  * @param workflowId - The workflow ID to manage
  * @returns Workflow data and management methods
  *
@@ -250,7 +252,7 @@ export interface UseWorkflowReturn {
  *   deactivateWorkflow,
  *   executeWorkflow,
  *   testWorkflow
- * } = useWorkflow(workflowId);
+ * } = useWorkflow(workspaceId, workflowId);
  *
  * // Activate the workflow
  * await activateWorkflow();
@@ -259,13 +261,13 @@ export interface UseWorkflowReturn {
  * const execution = await testWorkflow();
  * ```
  */
-export function useWorkflow(workflowId: string): UseWorkflowReturn {
+export function useWorkflow(workspaceId: string, workflowId: string): UseWorkflowReturn {
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchWorkflow = useCallback(async () => {
-    if (!workflowId) {
+    if (!workspaceId || !workflowId) {
 return;
 }
 
@@ -273,7 +275,7 @@ return;
     setError(null);
 
     try {
-      const response = await fetch(`/api/workflows/${workflowId}`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`);
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Workflow not found');
@@ -282,17 +284,18 @@ return;
       }
 
       const data = await response.json();
+      // API returns { workflow, executions, statistics }
       setWorkflow({
-        ...data,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
+        ...data.workflow,
+        createdAt: data.workflow.createdAt,
+        updatedAt: data.workflow.updatedAt,
       });
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
     }
-  }, [workflowId]);
+  }, [workspaceId, workflowId]);
 
   useEffect(() => {
     fetchWorkflow();
@@ -301,7 +304,7 @@ return;
   const updateWorkflow = useCallback(
     async (input: UpdateWorkflowInput): Promise<Workflow | null> => {
       try {
-        const response = await fetch(`/api/workflows/${workflowId}`, {
+        const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(input),
@@ -311,20 +314,21 @@ return;
           throw new Error('Failed to update workflow');
         }
 
-        const updated = await response.json();
-        setWorkflow(updated);
-        return updated;
+        const data = await response.json();
+        // API returns { workflow, message }
+        setWorkflow(data.workflow);
+        return data.workflow;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;
       }
     },
-    [workflowId],
+    [workspaceId, workflowId],
   );
 
   const deleteWorkflow = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/workflows/${workflowId}`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}`, {
         method: 'DELETE',
       });
 
@@ -332,17 +336,18 @@ return;
         throw new Error('Failed to delete workflow');
       }
 
+      // API archives the workflow (soft delete)
       setWorkflow(null);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       return false;
     }
-  }, [workflowId]);
+  }, [workspaceId, workflowId]);
 
   const activateWorkflow = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/workflows/${workflowId}/activate`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}/activate`, {
         method: 'POST',
       });
 
@@ -350,18 +355,19 @@ return;
         throw new Error('Failed to activate workflow');
       }
 
-      const updated = await response.json();
-      setWorkflow(updated);
+      const data = await response.json();
+      // API returns { workflow, message }
+      setWorkflow(data.workflow);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       return false;
     }
-  }, [workflowId]);
+  }, [workspaceId, workflowId]);
 
   const deactivateWorkflow = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/workflows/${workflowId}/deactivate`, {
+      const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}/deactivate`, {
         method: 'POST',
       });
 
@@ -369,19 +375,20 @@ return;
         throw new Error('Failed to deactivate workflow');
       }
 
-      const updated = await response.json();
-      setWorkflow(updated);
+      const data = await response.json();
+      // API returns { workflow, message }
+      setWorkflow(data.workflow);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       return false;
     }
-  }, [workflowId]);
+  }, [workspaceId, workflowId]);
 
   const executeWorkflow = useCallback(
     async (testMode = false): Promise<WorkflowExecution | null> => {
       try {
-        const response = await fetch(`/api/workflows/${workflowId}/execute`, {
+        const response = await fetch(`/api/workspaces/${workspaceId}/workflows/${workflowId}/execute`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ testMode }),
@@ -391,13 +398,15 @@ return;
           throw new Error('Failed to execute workflow');
         }
 
-        return await response.json();
+        const data = await response.json();
+        // API returns { execution }
+        return data.execution;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;
       }
     },
-    [workflowId],
+    [workspaceId, workflowId],
   );
 
   const testWorkflow = useCallback(async (): Promise<WorkflowExecution | null> => {
@@ -458,6 +467,7 @@ export interface UseWorkflowExecutionsReturn {
  * Provides paginated execution logs with filtering and
  * the ability to cancel running executions.
  *
+ * @param workspaceId - The workspace ID containing the workflow
  * @param workflowId - The workflow ID to fetch executions for
  * @param options - Optional filtering and pagination options
  * @returns Execution list and management methods
@@ -471,7 +481,7 @@ export interface UseWorkflowExecutionsReturn {
  *   loadMore,
  *   cancelExecution,
  *   refetch
- * } = useWorkflowExecutions(workflowId, { status: 'running', limit: 20 });
+ * } = useWorkflowExecutions(workspaceId, workflowId, { status: 'running', limit: 20 });
  *
  * // Cancel a running execution
  * await cancelExecution(executionId);
@@ -481,6 +491,7 @@ export interface UseWorkflowExecutionsReturn {
  * ```
  */
 export function useWorkflowExecutions(
+  workspaceId: string,
   workflowId: string,
   options?: UseWorkflowExecutionsOptions,
 ): UseWorkflowExecutionsReturn {
@@ -488,11 +499,11 @@ export function useWorkflowExecutions(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [cursor, setCursor] = useState<string | null>(null);
+  const [offset, setOffset] = useState(0);
 
   const fetchExecutions = useCallback(
     async (loadMore = false) => {
-      if (!workflowId) {
+      if (!workspaceId || !workflowId) {
 return;
 }
 
@@ -504,20 +515,20 @@ return;
         if (options?.status) {
 params.set('status', options.status);
 }
-        if (options?.limit) {
-params.set('limit', String(options.limit));
-}
-        if (loadMore && cursor) {
-params.set('cursor', cursor);
-}
+        const limit = options?.limit ?? 20;
+        params.set('limit', String(limit));
 
-        const url = `/api/workflows/${workflowId}/executions?${params.toString()}`;
+        const currentOffset = loadMore ? offset : 0;
+        params.set('offset', String(currentOffset));
+
+        const url = `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions?${params.toString()}`;
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error('Failed to fetch executions');
         }
 
         const data = await response.json();
+        // API returns { executions, total }
         const newExecutions = data.executions.map((e: WorkflowExecution) => ({
           ...e,
           startedAt: e.startedAt,
@@ -526,24 +537,27 @@ params.set('cursor', cursor);
 
         if (loadMore) {
           setExecutions((prev) => [...prev, ...newExecutions]);
+          setOffset(currentOffset + newExecutions.length);
         } else {
           setExecutions(newExecutions);
+          setOffset(newExecutions.length);
         }
-        setHasMore(data.hasMore ?? false);
-        setCursor(data.nextCursor ?? null);
+
+        setHasMore((loadMore ? offset + newExecutions.length : newExecutions.length) < data.total);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
         setIsLoading(false);
       }
     },
-    [workflowId, options?.status, options?.limit, cursor],
+    [workspaceId, workflowId, options?.status, options?.limit, offset],
   );
 
   useEffect(() => {
+    setOffset(0);
     fetchExecutions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowId, options?.status, options?.limit]);
+  }, [workspaceId, workflowId, options?.status, options?.limit]);
 
   const loadMore = useCallback(() => {
     if (hasMore && !isLoading) {
@@ -555,7 +569,7 @@ params.set('cursor', cursor);
     async (executionId: string): Promise<boolean> => {
       try {
         const response = await fetch(
-          `/api/workflows/${workflowId}/executions/${executionId}/cancel`,
+          `/api/workspaces/${workspaceId}/workflows/${workflowId}/executions/${executionId}/cancel`,
           { method: 'POST' },
         );
 
@@ -574,7 +588,7 @@ params.set('cursor', cursor);
         return false;
       }
     },
-    [workflowId],
+    [workspaceId, workflowId],
   );
 
   return {

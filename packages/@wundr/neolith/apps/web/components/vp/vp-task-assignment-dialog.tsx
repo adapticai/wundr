@@ -100,8 +100,8 @@ export function VPTaskAssignmentDialog({
     }
   };
 
-  // Filter only active VPs
-  const activeVPs = vps.filter((vp) => vp.status === 'ACTIVE');
+  // Filter only online VPs
+  const activeVPs = vps.filter((vp) => vp.status === 'ONLINE');
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

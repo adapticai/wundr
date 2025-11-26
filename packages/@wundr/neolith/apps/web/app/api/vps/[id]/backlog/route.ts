@@ -6,22 +6,24 @@
  *
  * Routes:
  * - GET /api/vps/[id]/backlog - Get VP's task backlog
+ * - POST /api/vps/[id]/backlog - Add item to VP's backlog
  *
  * @module app/api/vps/[id]/backlog/route
  */
 
 import { prisma } from '@neolith/database';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
   vpBacklogFiltersSchema,
+  createBacklogItemSchema,
   createErrorResponse,
   TASK_ERROR_CODES,
 } from '@/lib/validations/task';
 
-import type { VPBacklogFiltersInput } from '@/lib/validations/task';
-import type { Prisma } from '@prisma/client';
+import type { VPBacklogFiltersInput, CreateBacklogItemInput } from '@/lib/validations/task';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -224,6 +226,205 @@ export async function GET(
     });
   } catch (error) {
     console.error('[GET /api/vps/[id]/backlog] Error:', error);
+    return NextResponse.json(
+      createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * POST /api/vps/[id]/backlog
+ *
+ * Add a new backlog item (task) to a VP's backlog.
+ * Requires authentication and access to the VP's workspace.
+ *
+ * Request body:
+ * {
+ *   "title": "Implement feature",
+ *   "description": "Detailed description",
+ *   "priority": "HIGH",
+ *   "status": "TODO",
+ *   "storyPoints": 5,
+ *   "dueDate": "2025-12-31T00:00:00Z",
+ *   "tags": ["feature", "backend"],
+ *   "assignedToId": "user_789"
+ * }
+ *
+ * @param request - Next.js request with backlog item creation data
+ * @param params - Route parameters (id = VP ID)
+ * @returns Created task object
+ *
+ * @example
+ * ```
+ * POST /api/vps/vp_123/backlog
+ * Content-Type: application/json
+ *
+ * {
+ *   "title": "Add authentication",
+ *   "priority": "HIGH",
+ *   "storyPoints": 8
+ * }
+ * ```
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse('Authentication required', TASK_ERROR_CODES.UNAUTHORIZED),
+        { status: 401 },
+      );
+    }
+
+    // Get VP ID from params
+    const resolvedParams = await params;
+    const vpId = resolvedParams.id;
+
+    // Validate VP ID format
+    if (!vpId || vpId.length === 0) {
+      return NextResponse.json(
+        createErrorResponse('Invalid VP ID', TASK_ERROR_CODES.VALIDATION_ERROR),
+        { status: 400 },
+      );
+    }
+
+    // Parse request body
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        createErrorResponse('Invalid JSON body', TASK_ERROR_CODES.VALIDATION_ERROR),
+        { status: 400 },
+      );
+    }
+
+    // Validate input
+    const parseResult = createBacklogItemSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Validation failed',
+          TASK_ERROR_CODES.VALIDATION_ERROR,
+          { errors: parseResult.error.flatten().fieldErrors },
+        ),
+        { status: 400 },
+      );
+    }
+
+    const input: CreateBacklogItemInput = parseResult.data;
+
+    // Verify VP exists and get workspace context
+    const vp = await prisma.vP.findUnique({
+      where: { id: vpId },
+      select: { id: true, workspaceId: true, userId: true },
+    });
+
+    if (!vp) {
+      return NextResponse.json(
+        createErrorResponse('VP not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    // Check user has access to VP's workspace
+    if (vp.workspaceId) {
+      const workspaceMember = await prisma.workspaceMember.findFirst({
+        where: {
+          workspaceId: vp.workspaceId,
+          userId: session.user.id,
+        },
+      });
+
+      if (!workspaceMember) {
+        return NextResponse.json(
+          createErrorResponse('Access denied', TASK_ERROR_CODES.FORBIDDEN),
+          { status: 403 },
+        );
+      }
+    }
+
+    // Verify assignee if provided
+    if (input.assignedToId) {
+      const assignee = await prisma.user.findUnique({
+        where: { id: input.assignedToId },
+        select: { id: true },
+      });
+
+      if (!assignee) {
+        return NextResponse.json(
+          createErrorResponse('Assignee not found', TASK_ERROR_CODES.ASSIGNEE_NOT_FOUND),
+          { status: 404 },
+        );
+      }
+    }
+
+    // Prepare metadata with story points if provided
+    const metadata: Record<string, unknown> = {};
+    if (input.storyPoints !== undefined && input.storyPoints !== null) {
+      metadata.storyPoints = input.storyPoints;
+    }
+
+    // Create backlog item (task)
+    const task = await prisma.task.create({
+      data: {
+        title: input.title,
+        description: input.description,
+        priority: input.priority,
+        status: input.status,
+        dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        tags: input.tags,
+        metadata: metadata as Prisma.InputJsonValue,
+        vpId,
+        workspaceId: vp.workspaceId!,
+        createdById: session.user.id,
+        assignedToId: input.assignedToId,
+      },
+      include: {
+        workspace: { select: { id: true, name: true } },
+        creator: { select: { id: true, name: true, email: true } },
+        assignedTo: { select: { id: true, name: true, email: true } },
+        vp: {
+          select: {
+            id: true,
+            role: true,
+            user: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(
+      {
+        data: task,
+        message: 'Backlog item created successfully',
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error('[POST /api/vps/[id]/backlog] Error:', error);
+
+    // Handle Prisma errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return NextResponse.json(
+          createErrorResponse('Required resource not found', TASK_ERROR_CODES.NOT_FOUND),
+          { status: 404 },
+        );
+      }
+      if (error.code === 'P2003') {
+        return NextResponse.json(
+          createErrorResponse('Invalid foreign key reference', TASK_ERROR_CODES.VALIDATION_ERROR),
+          { status: 400 },
+        );
+      }
+    }
+
     return NextResponse.json(
       createErrorResponse('An internal error occurred', TASK_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

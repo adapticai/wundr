@@ -33,11 +33,11 @@ export default function VPHealthDashboardPage() {
     switch (filter) {
       case 'online':
         return vpList.filter(
-          (vp) => vp.status === 'ACTIVE' && vp.connectionStatus === 'connected',
+          (vp) => vp.status === 'ONLINE' && vp.connectionStatus === 'connected',
         );
       case 'offline':
         return vpList.filter(
-          (vp) => vp.status !== 'ACTIVE' || vp.connectionStatus === 'disconnected',
+          (vp) => vp.status !== 'ONLINE' || vp.connectionStatus === 'disconnected',
         );
       case 'unhealthy':
         return vpList.filter(
@@ -195,7 +195,7 @@ export default function VPHealthDashboardPage() {
           label="Online"
           value={
             vpList.filter(
-              (vp) => vp.status === 'ACTIVE' && vp.connectionStatus === 'connected',
+              (vp) => vp.status === 'ONLINE' && vp.connectionStatus === 'connected',
             ).length
           }
           icon={CheckCircleIcon}

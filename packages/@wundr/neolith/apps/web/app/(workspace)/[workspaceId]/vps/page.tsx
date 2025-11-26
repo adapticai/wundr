@@ -22,8 +22,10 @@ export default function VPsPage() {
   const [filters, setFilters] = useState<VPFilters>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Hooks
-  const { vps, isLoading, error, refetch, totalCount, filteredCount } = useVPs(workspaceId, filters);
+  // Hooks - Use organizationId instead of workspaceId for fetching VPs
+  // TODO: Replace with actual organizationId from workspace/user context
+  const organizationId = workspaceId; // Temporary: using workspaceId as organizationId
+  const { vps, isLoading, error, refetch, totalCount, filteredCount } = useVPs(organizationId, filters);
   const { createVP, toggleVPStatus, isLoading: isMutating } = useVPMutations();
 
   // Handlers
@@ -76,17 +78,17 @@ count++;
 
   // Group VPs by status for stats
   const vpStats = useMemo(() => {
-    const stats = { active: 0, inactive: 0, provisioning: 0, error: 0 };
+    const stats = { online: 0, offline: 0, busy: 0, away: 0 };
     vps.forEach((vp) => {
-      if (vp.status === 'ACTIVE') {
-stats.active++;
-} else if (vp.status === 'INACTIVE' || vp.status === 'SUSPENDED') {
-stats.inactive++;
-} else if (vp.status === 'PROVISIONING') {
-stats.provisioning++;
-} else if (vp.status === 'ERROR') {
-stats.error++;
-}
+      if (vp.status === 'ONLINE') {
+        stats.online++;
+      } else if (vp.status === 'OFFLINE') {
+        stats.offline++;
+      } else if (vp.status === 'BUSY') {
+        stats.busy++;
+      } else if (vp.status === 'AWAY') {
+        stats.away++;
+      }
     });
     return stats;
   }, [vps]);
@@ -114,28 +116,28 @@ stats.error++;
       {/* Stats Overview */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard
-          label="Active"
-          value={vpStats.active}
+          label="Online"
+          value={vpStats.online}
           color="text-green-600"
           bgColor="bg-green-50"
         />
         <StatCard
-          label="Inactive"
-          value={vpStats.inactive}
+          label="Offline"
+          value={vpStats.offline}
           color="text-gray-600"
           bgColor="bg-gray-50"
         />
         <StatCard
-          label="Provisioning"
-          value={vpStats.provisioning}
-          color="text-stone-600"
-          bgColor="bg-stone-50"
+          label="Busy"
+          value={vpStats.busy}
+          color="text-yellow-600"
+          bgColor="bg-yellow-50"
         />
         <StatCard
-          label="Error"
-          value={vpStats.error}
-          color="text-red-600"
-          bgColor="bg-red-50"
+          label="Away"
+          value={vpStats.away}
+          color="text-orange-600"
+          bgColor="bg-orange-50"
         />
       </div>
 

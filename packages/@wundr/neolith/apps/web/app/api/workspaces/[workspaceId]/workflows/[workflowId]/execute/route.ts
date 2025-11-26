@@ -1,10 +1,11 @@
 /**
  * Workflow Execute API Route
  *
- * Handles manually executing a workflow.
+ * Handles manually executing a workflow and retrieving execution status.
  *
  * Routes:
  * - POST /api/workspaces/:workspaceId/workflows/:workflowId/execute - Execute workflow
+ * - GET /api/workspaces/:workspaceId/workflows/:workflowId/execute - Get latest execution status
  *
  * @module app/api/workspaces/[workspaceId]/workflows/[workflowId]/execute/route
  */
@@ -85,6 +86,135 @@ async function executeWorkflowActions(
   }
 
   return { steps, success, error };
+}
+
+/**
+ * GET /api/workspaces/:workspaceId/workflows/:workflowId/execute
+ *
+ * Get the latest execution status for a workflow.
+ *
+ * @param _request - Next.js request object
+ * @param context - Route context with workspaceId and workflowId
+ * @returns Latest workflow execution status
+ */
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext,
+): Promise<NextResponse> {
+  try {
+    // Authenticate user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        createErrorResponse('Authentication required', WORKFLOW_ERROR_CODES.UNAUTHORIZED),
+        { status: 401 },
+      );
+    }
+
+    // Get params
+    const params = await context.params;
+    const { workspaceId, workflowId } = params;
+
+    // Check workspace exists and user has access
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        createErrorResponse('Workspace not found', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    const orgMembership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: workspace.organizationId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    if (!orgMembership) {
+      return NextResponse.json(
+        createErrorResponse('Workspace not found or access denied', WORKFLOW_ERROR_CODES.WORKSPACE_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    // Get workflow
+    const workflow = await prisma.workflow.findUnique({
+      where: {
+        id: workflowId,
+        workspaceId,
+      },
+    });
+
+    if (!workflow) {
+      return NextResponse.json(
+        createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    // Get the latest execution
+    const latestExecution = await prisma.workflowExecution.findFirst({
+      where: {
+        workflowId,
+        workspaceId,
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    if (!latestExecution) {
+      return NextResponse.json({
+        execution: null,
+        message: 'No executions found for this workflow',
+      });
+    }
+
+    // Format response with execution details
+    const execution: WorkflowExecution = {
+      id: latestExecution.id,
+      workflowId: latestExecution.workflowId,
+      workspaceId: latestExecution.workspaceId,
+      status: latestExecution.status as WorkflowExecution['status'],
+      triggeredBy: latestExecution.triggeredBy,
+      triggerType: latestExecution.triggerType as WorkflowExecution['triggerType'],
+      triggerData: latestExecution.triggerData as Record<string, unknown>,
+      steps: latestExecution.steps as unknown as WorkflowStepResult[],
+      error: latestExecution.error ?? undefined,
+      startedAt: latestExecution.startedAt,
+      completedAt: latestExecution.completedAt ?? undefined,
+      durationMs: latestExecution.durationMs ?? undefined,
+      isSimulation: latestExecution.isSimulation,
+    };
+
+    // Calculate progress metrics
+    const steps = execution.steps || [];
+    const totalSteps = steps.length;
+    const completedSteps = steps.filter(s => s.status === 'success' || s.status === 'failed').length;
+    const failedSteps = steps.filter(s => s.status === 'failed').length;
+
+    return NextResponse.json({
+      execution,
+      progress: {
+        totalSteps,
+        completedSteps,
+        failedSteps,
+        percentage: totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0,
+      },
+    });
+  } catch (error) {
+    console.error('[GET /api/workspaces/:workspaceId/workflows/:workflowId/execute] Error:', error);
+    return NextResponse.json(
+      createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
+      { status: 500 },
+    );
+  }
 }
 
 /**

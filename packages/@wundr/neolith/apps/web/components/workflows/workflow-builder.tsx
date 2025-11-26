@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
+import { useWorkflowBuilder } from '@/hooks/use-workflows';
 
 import { ActionConfigPanel } from './action-config';
 import { TriggerConfigPanel } from './trigger-config';
@@ -32,68 +33,102 @@ export function WorkflowBuilder({
   isLoading = false,
   className,
 }: WorkflowBuilderProps) {
+  // Use the useWorkflowBuilder hook for state management
+  const {
+    trigger,
+    actions,
+    variables,
+    errors: builderErrors,
+    setTrigger,
+    addAction,
+    updateAction,
+    removeAction,
+    reorderActions,
+    validate,
+    reset,
+  } = useWorkflowBuilder(workflow);
+
   const [name, setName] = useState(workflow?.name || '');
   const [description, setDescription] = useState(workflow?.description || '');
-  const [trigger, setTrigger] = useState<TriggerConfig>(
-    workflow?.trigger || { type: 'message' },
-  );
-  const [actions, setActions] = useState<ActionConfig[]>(workflow?.actions || []);
-  const [variables] = useState<WorkflowVariable[]>(workflow?.variables || []);
   const [mode, setMode] = useState<BuilderMode>('edit');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [showVariableInserter, setShowVariableInserter] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Combine form errors and builder errors
+  const errors = { ...formErrors, ...builderErrors };
+
+  // Reset builder when workflow changes
+  useEffect(() => {
+    if (workflow) {
+      reset(workflow);
+      setName(workflow.name || '');
+      setDescription(workflow.description || '');
+    }
+  }, [workflow, reset]);
 
   // Get available variables from trigger
-  const availableVariables = getAvailableVariables(trigger, actions);
+  const availableVariables = getAvailableVariables(trigger || { type: 'message' }, actions);
 
   const handleAddAction = useCallback(() => {
-    const newAction: ActionConfig = {
-      id: `action-${Date.now()}`,
+    addAction({
       type: 'send_message',
-      order: actions.length,
       config: {},
-    };
-    setActions([...actions, newAction]);
-    setSelectedActionId(newAction.id);
-  }, [actions]);
+    });
+  }, [addAction]);
+
+  // Auto-select newly added action
+  useEffect(() => {
+    if (actions.length > 0 && !selectedActionId) {
+      const lastAction = actions[actions.length - 1];
+      setSelectedActionId(lastAction.id);
+    }
+  }, [actions.length]);
 
   const handleUpdateAction = useCallback((actionId: string, updates: Partial<ActionConfig>) => {
-    setActions((prev) =>
-      prev.map((action) =>
-        action.id === actionId ? { ...action, ...updates } : action,
-      ),
-    );
-  }, []);
+    updateAction(actionId, updates);
+  }, [updateAction]);
 
   const handleDeleteAction = useCallback((actionId: string) => {
-    setActions((prev) => prev.filter((action) => action.id !== actionId));
+    removeAction(actionId);
     if (selectedActionId === actionId) {
       setSelectedActionId(null);
     }
-  }, [selectedActionId]);
+  }, [removeAction, selectedActionId]);
 
   const handleReorderActions = useCallback((fromIndex: number, toIndex: number) => {
-    setActions((prev) => {
-      const newActions = [...prev];
-      const [moved] = newActions.splice(fromIndex, 1);
-      newActions.splice(toIndex, 0, moved);
-      return newActions.map((action, index) => ({ ...action, order: index }));
-    });
-  }, []);
+    const newActions = [...actions];
+    const [moved] = newActions.splice(fromIndex, 1);
+    newActions.splice(toIndex, 0, moved);
+    // Update order property for all actions
+    const reorderedActions = newActions.map((action, index) => ({
+      ...action,
+      order: index
+    }));
+    reorderActions(reorderedActions);
+  }, [actions, reorderActions]);
 
   const handleSave = useCallback(() => {
-    // Validate
+    // Validate workflow name
     const newErrors: Record<string, string> = {};
     if (!name.trim()) {
       newErrors.name = 'Name is required';
     }
-    if (actions.length === 0) {
-      newErrors.actions = 'At least one action is required';
+
+    setFormErrors(newErrors);
+
+    // Validate using the hook's validate method
+    if (!validate()) {
+      return;
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      return;
+    }
+
+    // Ensure trigger exists
+    if (!trigger) {
+      setFormErrors({ trigger: 'A trigger is required' });
       return;
     }
 
@@ -106,7 +141,7 @@ export function WorkflowBuilder({
       actions,
       variables: variables.length > 0 ? variables : undefined,
     });
-  }, [name, description, trigger, actions, variables, workflow, onSave]);
+  }, [name, description, trigger, actions, variables, workflow, onSave, validate]);
 
   const handleInsertVariable = useCallback((variableName: string) => {
     // This would be used when a text field is focused
@@ -183,7 +218,7 @@ export function WorkflowBuilder({
                     value={name}
                     onChange={(e) => {
                       setName(e.target.value);
-                      setErrors((prev) => ({ ...prev, name: '' }));
+                      setFormErrors((prev) => ({ ...prev, name: '' }));
                     }}
                     placeholder="Enter workflow name"
                     className={cn(
@@ -228,7 +263,7 @@ export function WorkflowBuilder({
                 </button>
               </div>
               <TriggerConfigPanel
-                trigger={trigger}
+                trigger={trigger || { type: 'message' }}
                 onChange={setTrigger}
               />
             </div>
@@ -330,7 +365,7 @@ export function WorkflowBuilder({
           <WorkflowPreview
             name={name}
             description={description}
-            trigger={trigger}
+            trigger={trigger || { type: 'message' }}
             actions={actions}
           />
         </div>
@@ -340,7 +375,7 @@ export function WorkflowBuilder({
         <div className="flex-1 overflow-auto p-6">
           <WorkflowTestMode
             name={name}
-            trigger={trigger}
+            trigger={trigger || { type: 'message' }}
             actions={actions}
           />
         </div>

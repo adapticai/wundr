@@ -23,6 +23,18 @@ export interface UseVPReturn {
 }
 
 /**
+ * Pagination metadata from API
+ */
+export interface PaginationMetadata {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+/**
  * Return type for the useVPs hook
  */
 export interface UseVPsReturn {
@@ -40,6 +52,8 @@ export interface UseVPsReturn {
   totalCount: number;
   /** Count of VPs after filtering */
   filteredCount: number;
+  /** Pagination metadata from server */
+  pagination: PaginationMetadata | null;
 }
 
 /**
@@ -109,8 +123,31 @@ export function useVP(id: string): UseVPReturn {
       if (!response.ok) {
         throw new Error('Failed to fetch VP');
       }
-      const result: { data: VP } = await response.json();
-      setVP(result.data);
+      const result: { data: any } = await response.json();
+
+      // Transform the API response to match the VP type structure
+      const apiVP = result.data;
+      const transformedVP: VP = {
+        id: apiVP.id,
+        userId: apiVP.userId,
+        title: apiVP.role || apiVP.title || 'Untitled VP',
+        description: apiVP.user?.bio || apiVP.description || null,
+        discipline: apiVP.discipline || null,
+        status: apiVP.status,
+        charter: apiVP.charter || null,
+        capabilities: Array.isArray(apiVP.capabilities) ? apiVP.capabilities : [],
+        modelConfig: apiVP.modelConfig || null,
+        systemPrompt: apiVP.systemPrompt || null,
+        organizationId: apiVP.organizationId || null,
+        avatarUrl: apiVP.user?.avatarUrl || apiVP.avatarUrl || null,
+        lastActivityAt: apiVP.lastActivityAt || apiVP.updatedAt || null,
+        messageCount: apiVP.messageCount || 0,
+        agentCount: apiVP.agentCount || 0,
+        createdAt: apiVP.createdAt,
+        updatedAt: apiVP.updatedAt,
+      };
+
+      setVP(transformedVP);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
@@ -167,6 +204,7 @@ export function useVP(id: string): UseVPReturn {
  */
 export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
   const [vps, setVPs] = useState<VP[]>([]);
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -191,19 +229,53 @@ export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
       if (filters?.search) {
         params.set('search', filters.search);
       }
+      // Add pagination params if provided
+      if (filters?.page !== undefined) {
+        params.set('page', String(filters.page));
+      }
+      if (filters?.limit !== undefined) {
+        params.set('limit', String(filters.limit));
+      }
 
       const response = await fetch(`/api/vps?${params.toString()}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch VPs');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || 'Failed to fetch VPs');
       }
-      const result: { data: VP[] } = await response.json();
-      setVPs(result.data || []);
+      const result: { data: any[]; pagination?: PaginationMetadata } = await response.json();
+
+      // Transform the API response to match the VP type structure
+      // The database schema has 'role' but the frontend expects 'title'
+      const transformedVPs: VP[] = (result.data || []).map((apiVP: any) => ({
+        id: apiVP.id,
+        userId: apiVP.userId,
+        title: apiVP.role || apiVP.title || 'Untitled VP',
+        description: apiVP.user?.bio || apiVP.description || null,
+        discipline: apiVP.discipline || null,
+        status: apiVP.status,
+        charter: apiVP.charter || null,
+        capabilities: Array.isArray(apiVP.capabilities) ? apiVP.capabilities : [],
+        modelConfig: apiVP.modelConfig || null,
+        systemPrompt: apiVP.systemPrompt || null,
+        organizationId: apiVP.organizationId || null,
+        avatarUrl: apiVP.user?.avatarUrl || apiVP.avatarUrl || null,
+        lastActivityAt: apiVP.lastActivityAt || apiVP.updatedAt || null,
+        messageCount: apiVP.messageCount || 0,
+        agentCount: apiVP.agentCount || 0,
+        createdAt: apiVP.createdAt,
+        updatedAt: apiVP.updatedAt,
+      }));
+
+      setVPs(transformedVPs);
+      setPagination(result.pagination || null);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
+      setVPs([]);
+      setPagination(null);
     } finally {
       setIsLoading(false);
     }
-  }, [orgId, filters?.discipline, filters?.status, filters?.search]);
+  }, [orgId, filters?.discipline, filters?.status, filters?.search, filters?.page, filters?.limit]);
 
   useEffect(() => {
     fetchVPs();
@@ -244,8 +316,9 @@ export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
     isLoading,
     error,
     refetch,
-    totalCount: vps.length,
+    totalCount: pagination?.totalCount ?? vps.length,
     filteredCount: filteredVPs.length,
+    pagination,
   };
 }
 
@@ -296,13 +369,15 @@ export function useVPMutations(): UseVPMutationsReturn {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create VP');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || 'Failed to create VP');
       }
 
       const result: { data: VP } = await response.json();
       return result.data;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
       return null;
     } finally {
       setIsLoading(false);
@@ -321,13 +396,15 @@ export function useVPMutations(): UseVPMutationsReturn {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update VP');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || 'Failed to update VP');
       }
 
       const result: { data: VP } = await response.json();
       return result.data;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
       return null;
     } finally {
       setIsLoading(false);
@@ -344,12 +421,14 @@ export function useVPMutations(): UseVPMutationsReturn {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete VP');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || 'Failed to delete VP');
       }
 
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
       return false;
     } finally {
       setIsLoading(false);
@@ -357,7 +436,8 @@ export function useVPMutations(): UseVPMutationsReturn {
   }, []);
 
   const toggleVPStatus = useCallback(async (id: string, currentStatus: VP['status']): Promise<VP | null> => {
-    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    // Toggle between ONLINE and OFFLINE states
+    const newStatus = currentStatus === 'ONLINE' ? 'OFFLINE' : 'ONLINE';
     return updateVP(id, { status: newStatus });
   }, [updateVP]);
 
@@ -371,13 +451,15 @@ export function useVPMutations(): UseVPMutationsReturn {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to rotate API key');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || 'Failed to rotate API key');
       }
 
       const result: { data: { apiKey: string } } = await response.json();
       return { apiKey: result.data.apiKey };
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
       return null;
     } finally {
       setIsLoading(false);

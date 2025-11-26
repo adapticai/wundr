@@ -2,7 +2,9 @@
  * VP (Virtual Person) types for the Genesis App
  */
 
-export type VPStatus = 'ACTIVE' | 'INACTIVE' | 'PROVISIONING' | 'ERROR' | 'SUSPENDED';
+// Database schema uses: ONLINE | OFFLINE | BUSY | AWAY
+// Map these to frontend-friendly display statuses
+export type VPStatus = 'ONLINE' | 'OFFLINE' | 'BUSY' | 'AWAY';
 
 export interface VP {
   id: string;
@@ -91,6 +93,8 @@ export interface VPFilters {
   discipline?: string;
   status?: VPStatus;
   search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export const VP_DISCIPLINES = [
@@ -111,11 +115,10 @@ export const VP_DISCIPLINES = [
 export type VPDiscipline = (typeof VP_DISCIPLINES)[number];
 
 export const VP_STATUS_CONFIG: Record<VPStatus, { label: string; color: string; bgColor: string }> = {
-  ACTIVE: { label: 'Active', color: 'text-green-700', bgColor: 'bg-green-100' },
-  INACTIVE: { label: 'Inactive', color: 'text-gray-700', bgColor: 'bg-gray-100' },
-  PROVISIONING: { label: 'Provisioning', color: 'text-blue-700', bgColor: 'bg-blue-100' },
-  ERROR: { label: 'Error', color: 'text-red-700', bgColor: 'bg-red-100' },
-  SUSPENDED: { label: 'Suspended', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
+  ONLINE: { label: 'Online', color: 'text-green-700', bgColor: 'bg-green-100' },
+  OFFLINE: { label: 'Offline', color: 'text-gray-700', bgColor: 'bg-gray-100' },
+  BUSY: { label: 'Busy', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
+  AWAY: { label: 'Away', color: 'text-orange-700', bgColor: 'bg-orange-100' },
 };
 
 export const PERSONALITY_TRAITS = [

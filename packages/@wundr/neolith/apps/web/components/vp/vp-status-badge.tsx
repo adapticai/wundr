@@ -43,24 +43,24 @@ export function VPStatusBadge({
       role="status"
       aria-label={`Status: ${config.label}`}
     >
-      {showPulse && status === 'ACTIVE' && (
+      {showPulse && status === 'ONLINE' && (
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
         </span>
       )}
-      {showPulse && status === 'PROVISIONING' && (
+      {showPulse && status === 'BUSY' && (
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-stone-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-stone-500" />
+          <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-yellow-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-500" />
         </span>
       )}
-      {showPulse && status === 'ERROR' && (
+      {showPulse && status === 'AWAY' && (
         <span className="relative flex h-2 w-2">
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
         </span>
       )}
-      {showPulse && (status === 'INACTIVE' || status === 'SUSPENDED') && (
+      {showPulse && status === 'OFFLINE' && (
         <span className="relative flex h-2 w-2">
           <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-400" />
         </span>
@@ -101,11 +101,10 @@ const dotSizeClasses = {
 };
 
 const statusDotColors: Record<VPStatus, string> = {
-  ACTIVE: 'bg-green-500',
-  INACTIVE: 'bg-gray-400',
-  PROVISIONING: 'bg-stone-500',
-  ERROR: 'bg-red-500',
-  SUSPENDED: 'bg-yellow-500',
+  ONLINE: 'bg-green-500',
+  OFFLINE: 'bg-gray-400',
+  BUSY: 'bg-yellow-500',
+  AWAY: 'bg-orange-500',
 };
 
 export function VPStatusDot({
@@ -114,7 +113,7 @@ export function VPStatusDot({
   showPulse = true,
   className,
 }: VPStatusDotProps) {
-  const isAnimated = showPulse && (status === 'ACTIVE' || status === 'PROVISIONING');
+  const isAnimated = showPulse && (status === 'ONLINE' || status === 'BUSY');
 
   return (
     <span
@@ -126,7 +125,7 @@ export function VPStatusDot({
         <span
           className={cn(
             'absolute inline-flex h-full w-full rounded-full opacity-75',
-            status === 'ACTIVE' ? 'animate-ping bg-green-400' : 'animate-pulse bg-stone-400',
+            status === 'ONLINE' ? 'animate-ping bg-green-400' : 'animate-pulse bg-yellow-400',
           )}
         />
       )}

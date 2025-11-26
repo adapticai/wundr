@@ -9,14 +9,16 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { VPConfigForm } from '@/components/vp/vp-config-form';
 import { VPStatusBadge } from '@/components/vp/vp-status-badge';
 import { useVP, useVPMutations } from '@/hooks/use-vp';
+import { useVPTasks } from '@/hooks/use-vp-tasks';
 import { cn } from '@/lib/utils';
 
 import type { UpdateVPInput } from '@/types/vp';
 
-type Tab = 'overview' | 'configuration' | 'activity' | 'agents';
+type Tab = 'overview' | 'tasks' | 'configuration' | 'activity' | 'agents';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'tasks', label: 'Tasks' },
   { id: 'configuration', label: 'Configuration' },
   { id: 'activity', label: 'Activity' },
   { id: 'agents', label: 'Agents' },
@@ -34,6 +36,10 @@ export default function VPDetailPage() {
 
   const { vp, isLoading, error, refetch } = useVP(vpId);
   const { updateVP, toggleVPStatus, rotateAPIKey, deleteVP, isLoading: isMutating } = useVPMutations();
+  const { tasks, metrics, isLoading: tasksLoading } = useVPTasks(vpId, {
+    includeCompleted: false,
+    limit: 10,
+  });
 
   const handleUpdateVP = useCallback(
     async (input: UpdateVPInput) => {
@@ -113,6 +119,8 @@ return;
     );
   }
 
+  const isOnline = vp.status === 'ONLINE';
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -165,12 +173,12 @@ return;
             disabled={isMutating}
             className={cn(
               'rounded-md border px-4 py-2 text-sm font-medium transition-colors',
-              vp.status === 'ACTIVE'
-                ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+              isOnline
+                ? 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
                 : 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100',
             )}
           >
-            {vp.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+            {isOnline ? 'Set Offline' : 'Set Online'}
           </button>
           <button
             type="button"
@@ -217,6 +225,14 @@ return;
               <div className="grid grid-cols-2 gap-4">
                 <StatItem label="Messages" value={vp.messageCount.toLocaleString()} />
                 <StatItem label="Agents" value={vp.agentCount.toString()} />
+                <StatItem
+                  label="Active Tasks"
+                  value={metrics ? (metrics.byStatus.todo + metrics.byStatus.inProgress).toString() : '0'}
+                />
+                <StatItem
+                  label="Completion Rate"
+                  value={metrics ? `${metrics.completionRate}%` : '0%'}
+                />
                 <StatItem
                   label="Last Activity"
                   value={
@@ -335,6 +351,87 @@ return;
           </div>
         )}
 
+        {/* Tasks Tab */}
+        {activeTab === 'tasks' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">Assigned Tasks</h3>
+              <Link
+                href={`/${workspaceId}/tasks?vpId=${vpId}`}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                View all tasks
+              </Link>
+            </div>
+
+            {metrics && (
+              <div className="grid grid-cols-4 gap-4">
+                <div className="rounded-lg border bg-card p-4">
+                  <p className="text-xs font-medium text-muted-foreground">To Do</p>
+                  <p className="mt-1 text-2xl font-bold text-foreground">{metrics.byStatus.todo}</p>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                  <p className="text-xs font-medium text-muted-foreground">In Progress</p>
+                  <p className="mt-1 text-2xl font-bold text-blue-600">{metrics.byStatus.inProgress}</p>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                  <p className="text-xs font-medium text-muted-foreground">Blocked</p>
+                  <p className="mt-1 text-2xl font-bold text-yellow-600">{metrics.byStatus.blocked}</p>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                  <p className="text-xs font-medium text-muted-foreground">Done</p>
+                  <p className="mt-1 text-2xl font-bold text-green-600">{metrics.byStatus.done}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-lg border bg-card">
+              {tasksLoading ? (
+                <div className="flex min-h-[200px] items-center justify-center">
+                  <LoadingSpinner size="md" />
+                </div>
+              ) : tasks.length === 0 ? (
+                <div className="py-12 text-center">
+                  <TaskIcon className="mx-auto mb-3 h-12 w-12 text-muted-foreground opacity-50" />
+                  <p className="text-sm text-muted-foreground">No tasks assigned yet</p>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {tasks.map((task) => (
+                    <div key={task.id} className="p-4 hover:bg-accent/50">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-foreground">{task.title}</h4>
+                            <TaskPriorityBadge priority={task.priority} />
+                          </div>
+                          {task.description && (
+                            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                              {task.description}
+                            </p>
+                          )}
+                          <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                            <TaskStatusBadge status={task.status} />
+                            {task.dueDate && (
+                              <span className="flex items-center gap-1">
+                                <CalendarIcon className="h-3 w-3" />
+                                {formatDate(new Date(task.dueDate))}
+                              </span>
+                            )}
+                            {task.assignedTo && (
+                              <span>Assigned to: {task.assignedTo.name || task.assignedTo.email}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Configuration Tab */}
         {activeTab === 'configuration' && (
           <div className="max-w-3xl">
@@ -384,6 +481,45 @@ function StatItem({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 text-lg font-semibold text-foreground">{value}</p>
     </div>
+  );
+}
+
+function TaskStatusBadge({ status }: { status: string }) {
+  const statusColors: Record<string, string> = {
+    TODO: 'bg-gray-100 text-gray-700',
+    IN_PROGRESS: 'bg-blue-100 text-blue-700',
+    BLOCKED: 'bg-yellow-100 text-yellow-700',
+    DONE: 'bg-green-100 text-green-700',
+    CANCELLED: 'bg-red-100 text-red-700',
+  };
+
+  const statusLabels: Record<string, string> = {
+    TODO: 'To Do',
+    IN_PROGRESS: 'In Progress',
+    BLOCKED: 'Blocked',
+    DONE: 'Done',
+    CANCELLED: 'Cancelled',
+  };
+
+  return (
+    <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', statusColors[status])}>
+      {statusLabels[status] || status}
+    </span>
+  );
+}
+
+function TaskPriorityBadge({ priority }: { priority: string }) {
+  const priorityColors: Record<string, string> = {
+    CRITICAL: 'bg-red-100 text-red-700',
+    HIGH: 'bg-orange-100 text-orange-700',
+    MEDIUM: 'bg-yellow-100 text-yellow-700',
+    LOW: 'bg-gray-100 text-gray-700',
+  };
+
+  return (
+    <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', priorityColors[priority])}>
+      {priority}
+    </span>
   );
 }
 
@@ -515,6 +651,44 @@ function AgentIcon({ className }: { className?: string }) {
       <path d="M20 14h2" />
       <path d="M15 13v2" />
       <path d="M9 13v2" />
+    </svg>
+  );
+}
+
+function TaskIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M9 11l3 3L22 4" />
+      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
   );
 }

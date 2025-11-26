@@ -248,11 +248,10 @@ interface VPStatusDotProps {
 
 function VPStatusDot({ status, className }: VPStatusDotProps) {
   const statusColors: Record<VPStatus, string> = {
-    ACTIVE: 'bg-emerald-500',
-    INACTIVE: 'bg-stone-400',
-    PROVISIONING: 'bg-stone-500',
-    ERROR: 'bg-rose-500',
-    SUSPENDED: 'bg-amber-500',
+    ONLINE: 'bg-emerald-500',
+    OFFLINE: 'bg-stone-400',
+    BUSY: 'bg-yellow-500',
+    AWAY: 'bg-orange-500',
   };
 
   return (

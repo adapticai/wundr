@@ -117,13 +117,13 @@ export function VPCard({
             onClick={() => onToggleStatus(vp)}
             className={cn(
               'rounded-md border border-border bg-background p-1.5 transition-colors hover:bg-accent',
-              vp.status === 'ACTIVE'
+              vp.status === 'ONLINE'
                 ? 'text-emerald-600 hover:text-rose-600 dark:text-emerald-400 dark:hover:text-rose-400'
                 : 'text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400',
             )}
-            aria-label={vp.status === 'ACTIVE' ? `Deactivate ${vp.title}` : `Activate ${vp.title}`}
+            aria-label={vp.status === 'ONLINE' ? `Set ${vp.title} Offline` : `Set ${vp.title} Online`}
           >
-            {vp.status === 'ACTIVE' ? (
+            {vp.status === 'ONLINE' ? (
               <PauseIcon className="h-4 w-4" />
             ) : (
               <PlayIcon className="h-4 w-4" />

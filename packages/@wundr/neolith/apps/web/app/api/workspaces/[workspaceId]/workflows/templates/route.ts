@@ -12,6 +12,7 @@
 
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import {
@@ -329,13 +330,60 @@ export async function GET(
 
     const filters: TemplateFiltersInput = parseResult.data;
 
-    // Filter templates by category if specified
-    let templates = BUILT_IN_TEMPLATES;
+    // Filter built-in templates by category if specified
+    let builtInTemplates = BUILT_IN_TEMPLATES;
     if (filters.category) {
-      templates = templates.filter((t) => t.category === filters.category);
+      builtInTemplates = builtInTemplates.filter((t) => t.category === filters.category);
     }
 
-    return NextResponse.json({ templates });
+    // Fetch custom templates from database
+    const customTemplateWorkflows = await prisma.workflow.findMany({
+      where: {
+        workspaceId,
+        metadata: {
+          path: ['isTemplate'],
+          equals: true,
+        },
+        ...(filters.category && {
+          metadata: {
+            path: ['category'],
+            equals: filters.category,
+          },
+        }),
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Convert custom template workflows to WorkflowTemplate format
+    const customTemplates: WorkflowTemplate[] = customTemplateWorkflows.map((workflow) => {
+      const metadata = workflow.metadata as { category?: string } | null;
+      const actions = workflow.actions as unknown as WorkflowTemplate['actions'];
+
+      return {
+        id: workflow.id,
+        name: workflow.name,
+        description: workflow.description ?? '',
+        category: (metadata?.category as WorkflowTemplate['category']) ?? 'custom',
+        trigger: workflow.trigger as unknown as WorkflowTemplate['trigger'],
+        actions,
+        tags: workflow.tags,
+        isBuiltIn: false,
+      };
+    });
+
+    // Combine built-in and custom templates
+    const allTemplates = [...builtInTemplates, ...customTemplates];
+
+    return NextResponse.json({
+      templates: allTemplates,
+      counts: {
+        builtIn: builtInTemplates.length,
+        custom: customTemplates.length,
+        total: allTemplates.length,
+      },
+    });
   } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
@@ -345,13 +393,34 @@ export async function GET(
 }
 
 /**
+ * Schema for saving a workflow as a template
+ */
+const saveAsTemplateSchema = z.object({
+  /** Source workflow ID to copy from */
+  workflowId: z.string().min(1, 'Workflow ID is required'),
+  /** Template name */
+  name: z.string().min(1, 'Template name is required').max(100),
+  /** Template description */
+  description: z.string().max(500).optional(),
+  /** Template category */
+  category: z.enum(['onboarding', 'notifications', 'automation', 'integration', 'moderation', 'scheduling', 'custom']).default('custom'),
+  /** Tags for organization */
+  tags: z.array(z.string().max(50)).max(10).optional().default([]),
+});
+
+type SaveAsTemplateInput = z.infer<typeof saveAsTemplateSchema>;
+
+/**
  * POST /api/workspaces/:workspaceId/workflows/templates
  *
- * Create a new workflow from a template.
+ * Create a new workflow from a template OR save existing workflow as template.
+ * Behavior is determined by the request body:
+ * - If `templateId` is provided: Creates workflow from template
+ * - If `workflowId` is provided: Saves workflow as custom template
  *
- * @param request - Next.js request with template ID and optional name
+ * @param request - Next.js request with template ID or workflow ID
  * @param context - Route context with workspaceId
- * @returns Created workflow
+ * @returns Created workflow or template
  */
 export async function POST(
   request: NextRequest,
@@ -427,59 +496,163 @@ export async function POST(
       );
     }
 
-    // Validate input
-    const parseResult = createFromTemplateSchema.safeParse(body);
-    if (!parseResult.success) {
-      return NextResponse.json(
-        createErrorResponse(
-          'Validation failed',
-          WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
-        ),
-        { status: 400 },
-      );
-    }
+    // Determine if this is creating from template or saving as template
+    const bodyObj = body as Record<string, unknown>;
 
-    const input: CreateFromTemplateInput = parseResult.data;
+    if ('workflowId' in bodyObj) {
+      // SAVE WORKFLOW AS TEMPLATE
+      const parseResult = saveAsTemplateSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          createErrorResponse(
+            'Validation failed',
+            WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+            { errors: parseResult.error.flatten().fieldErrors },
+          ),
+          { status: 400 },
+        );
+      }
 
-    // Find template
-    const template = BUILT_IN_TEMPLATES.find((t) => t.id === input.templateId);
-    if (!template) {
-      return NextResponse.json(
-        createErrorResponse('Template not found', WORKFLOW_ERROR_CODES.TEMPLATE_NOT_FOUND),
-        { status: 404 },
-      );
-    }
+      const input: SaveAsTemplateInput = parseResult.data;
 
-    // Create workflow from template
-    const workflow = await prisma.workflow.create({
-      data: {
-        name: input.name ?? template.name,
-        description: template.description,
-        trigger: template.trigger as unknown as Prisma.InputJsonValue,
-        actions: template.actions as unknown as Prisma.InputJsonValue,
-        status: 'DRAFT', // Start as draft so user can configure before activating
-        tags: template.tags,
-        metadata: {
-          createdFromTemplate: template.id,
-          templateName: template.name,
-        } as Prisma.InputJsonValue,
-        workspaceId,
-        createdBy: session.user.id,
-      },
-      include: {
-        _count: {
-          select: {
-            executions: true,
+      // Find source workflow
+      const sourceWorkflow = await prisma.workflow.findUnique({
+        where: {
+          id: input.workflowId,
+          workspaceId, // Ensure workflow belongs to this workspace
+        },
+      });
+
+      if (!sourceWorkflow) {
+        return NextResponse.json(
+          createErrorResponse('Source workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
+          { status: 404 },
+        );
+      }
+
+      // Create new workflow as template (marked with isTemplate metadata)
+      const template = await prisma.workflow.create({
+        data: {
+          name: input.name,
+          description: input.description ?? sourceWorkflow.description,
+          trigger: sourceWorkflow.trigger as Prisma.InputJsonValue,
+          actions: sourceWorkflow.actions as Prisma.InputJsonValue,
+          status: 'DRAFT',
+          tags: input.tags.length > 0 ? input.tags : sourceWorkflow.tags,
+          metadata: {
+            isTemplate: true,
+            category: input.category,
+            sourceWorkflowId: sourceWorkflow.id,
+            createdFromWorkflow: {
+              id: sourceWorkflow.id,
+              name: sourceWorkflow.name,
+            },
+          } as Prisma.InputJsonValue,
+          workspaceId,
+          createdBy: session.user.id,
+        },
+        include: {
+          _count: {
+            select: {
+              executions: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    return NextResponse.json(
-      { workflow, message: 'Workflow created from template successfully' },
-      { status: 201 },
-    );
+      return NextResponse.json(
+        {
+          template,
+          message: 'Workflow saved as template successfully'
+        },
+        { status: 201 },
+      );
+    } else {
+      // CREATE WORKFLOW FROM TEMPLATE
+      const parseResult = createFromTemplateSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          createErrorResponse(
+            'Validation failed',
+            WORKFLOW_ERROR_CODES.VALIDATION_ERROR,
+            { errors: parseResult.error.flatten().fieldErrors },
+          ),
+          { status: 400 },
+        );
+      }
+
+      const input: CreateFromTemplateInput = parseResult.data;
+
+      // Check if it's a built-in template
+      let template = BUILT_IN_TEMPLATES.find((t) => t.id === input.templateId);
+      let isBuiltIn = true;
+
+      // If not built-in, check custom templates
+      if (!template) {
+        const customTemplate = await prisma.workflow.findFirst({
+          where: {
+            id: input.templateId,
+            workspaceId,
+            metadata: {
+              path: ['isTemplate'],
+              equals: true,
+            },
+          },
+        });
+
+        if (!customTemplate) {
+          return NextResponse.json(
+            createErrorResponse('Template not found', WORKFLOW_ERROR_CODES.TEMPLATE_NOT_FOUND),
+            { status: 404 },
+          );
+        }
+
+        // Convert custom template to WorkflowTemplate format
+        const metadata = customTemplate.metadata as { category?: string } | null;
+        template = {
+          id: customTemplate.id,
+          name: customTemplate.name,
+          description: customTemplate.description ?? '',
+          category: (metadata?.category as WorkflowTemplate['category']) ?? 'custom',
+          trigger: customTemplate.trigger as unknown as WorkflowTemplate['trigger'],
+          actions: customTemplate.actions as unknown as WorkflowTemplate['actions'],
+          tags: customTemplate.tags,
+          isBuiltIn: false,
+        };
+        isBuiltIn = false;
+      }
+
+      // Create workflow from template
+      const workflow = await prisma.workflow.create({
+        data: {
+          name: input.name ?? template.name,
+          description: template.description,
+          trigger: template.trigger as unknown as Prisma.InputJsonValue,
+          actions: template.actions as unknown as Prisma.InputJsonValue,
+          status: 'DRAFT', // Start as draft so user can configure before activating
+          tags: template.tags,
+          metadata: {
+            createdFromTemplate: template.id,
+            templateName: template.name,
+            isBuiltInTemplate: isBuiltIn,
+          } as Prisma.InputJsonValue,
+          workspaceId,
+          createdBy: session.user.id,
+        },
+        include: {
+          _count: {
+            select: {
+              executions: true,
+            },
+          },
+        },
+      });
+
+      return NextResponse.json(
+        { workflow, message: 'Workflow created from template successfully' },
+        { status: 201 },
+      );
+    }
   } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),

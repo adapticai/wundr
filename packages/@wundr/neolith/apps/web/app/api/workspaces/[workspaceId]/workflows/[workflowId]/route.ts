@@ -99,11 +99,15 @@ return { error: 'workflow_not_found' };
 /**
  * GET /api/workspaces/:workspaceId/workflows/:workflowId
  *
- * Get details of a specific workflow.
+ * Get detailed information about a specific workflow including:
+ * - All workflow fields
+ * - Steps with ordering
+ * - Recent execution history (last 10 executions)
+ * - Statistics (total executions, success count, failure count, success rate)
  *
  * @param _request - Next.js request object
  * @param context - Route context with workspaceId and workflowId
- * @returns Workflow details
+ * @returns Workflow details with executions and statistics
  */
 export async function GET(
   _request: NextRequest,
@@ -141,7 +145,76 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({ workflow: result.workflow });
+    const { workflow } = result;
+
+    if (!workflow) {
+      return NextResponse.json(
+        createErrorResponse('Workflow not found', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
+        { status: 404 },
+      );
+    }
+
+    // Fetch execution history (last 10 executions)
+    const executions = await prisma.workflowExecution.findMany({
+      where: {
+        workflowId,
+        workspaceId,
+      },
+      take: 10,
+      orderBy: {
+        startedAt: 'desc',
+      },
+      select: {
+        id: true,
+        status: true,
+        triggeredBy: true,
+        triggerType: true,
+        triggerData: true,
+        steps: true,
+        error: true,
+        startedAt: true,
+        completedAt: true,
+        durationMs: true,
+        isSimulation: true,
+      },
+    });
+
+    // Parse actions to extract steps with ordering
+    const actions = workflow.actions as unknown as Array<{
+      id?: string;
+      type: string;
+      name?: string;
+      config?: Record<string, unknown>;
+      order?: number;
+    }>;
+
+    // Sort actions by order if available
+    const steps = actions
+      .map((action, index) => ({
+        ...action,
+        order: action.order ?? index,
+      }))
+      .sort((a, b) => a.order - b.order);
+
+    // Calculate statistics
+    const statistics = {
+      total: workflow.executionCount,
+      success: workflow.successCount,
+      failure: workflow.failureCount,
+      successRate: workflow.executionCount > 0
+        ? ((workflow.successCount / workflow.executionCount) * 100).toFixed(1)
+        : '0.0',
+    };
+
+    // Return enhanced response
+    return NextResponse.json({
+      workflow: {
+        ...workflow,
+        steps,
+      },
+      executions,
+      statistics,
+    });
   } catch (error) {
     console.error('[GET /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
     return NextResponse.json(
@@ -154,11 +227,28 @@ export async function GET(
 /**
  * PATCH /api/workspaces/:workspaceId/workflows/:workflowId
  *
- * Update a workflow.
+ * Update a workflow's configuration, including:
+ * - Name and description
+ * - Status (DRAFT, ACTIVE, INACTIVE, ARCHIVED)
+ * - Trigger configuration
+ * - Actions and steps
+ * - Tags and metadata
  *
  * @param request - Next.js request with update data
  * @param context - Route context with workspaceId and workflowId
  * @returns Updated workflow
+ *
+ * @example
+ * ```
+ * PATCH /api/workspaces/ws_123/workflows/wf_456
+ * Content-Type: application/json
+ *
+ * {
+ *   "name": "Updated Workflow Name",
+ *   "status": "ACTIVE",
+ *   "description": "Updated description"
+ * }
+ * ```
  */
 export async function PATCH(
   request: NextRequest,
@@ -281,7 +371,9 @@ updateData.metadata = input.metadata as Prisma.InputJsonValue;
 /**
  * DELETE /api/workspaces/:workspaceId/workflows/:workflowId
  *
- * Delete a workflow.
+ * Archive a workflow (soft delete). This sets the status to ARCHIVED
+ * rather than permanently deleting the workflow, preserving execution history
+ * and allowing potential restoration.
  *
  * @param _request - Next.js request object
  * @param context - Route context with workspaceId and workflowId
@@ -323,25 +415,40 @@ export async function DELETE(
       }
     }
 
-    // Must be workspace admin to delete workflows
-    if (!result.workspaceMembership || result.workspaceMembership.role !== 'ADMIN') {
+    // Must be workspace member to archive workflows
+    if (!result.workspaceMembership) {
       return NextResponse.json(
-        createErrorResponse('Admin role required to delete workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
+        createErrorResponse('You must be a workspace member to archive workflows', WORKFLOW_ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
 
-    // Delete workflow and its executions in a transaction
-    await prisma.$transaction([
-      prisma.workflowExecution.deleteMany({
-        where: { workflowId },
-      }),
-      prisma.workflow.delete({
-        where: { id: workflowId },
-      }),
-    ]);
+    const { workflow } = result;
 
-    return NextResponse.json({ success: true, message: 'Workflow deleted successfully' });
+    // Check if workflow is already archived
+    if (workflow.status === 'ARCHIVED') {
+      return NextResponse.json(
+        createErrorResponse('Workflow is already archived', WORKFLOW_ERROR_CODES.WORKFLOW_NOT_FOUND),
+        { status: 409 },
+      );
+    }
+
+    // Soft delete: update status to ARCHIVED
+    await prisma.workflow.update({
+      where: {
+        id: workflowId,
+      },
+      data: {
+        status: 'ARCHIVED',
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Workflow archived successfully',
+      workflowId,
+    });
   } catch (error) {
     console.error('[DELETE /api/workspaces/:workspaceId/workflows/:workflowId] Error:', error);
     return NextResponse.json(

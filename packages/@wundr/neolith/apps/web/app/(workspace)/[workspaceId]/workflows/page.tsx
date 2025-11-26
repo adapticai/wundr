@@ -751,8 +751,10 @@ interface ExecutionHistoryDrawerProps {
 }
 
 function ExecutionHistoryDrawer({ workflowId, onClose }: ExecutionHistoryDrawerProps) {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
   const { executions, isLoading, hasMore, loadMore, cancelExecution } =
-    useWorkflowExecutions(workflowId, { limit: 20 });
+    useWorkflowExecutions(workspaceId, workflowId, { limit: 20 });
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-background shadow-xl">

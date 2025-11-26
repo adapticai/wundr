@@ -182,8 +182,30 @@ export async function GET(
       prisma.workflow.count({ where }),
     ]);
 
+    // Enhance workflows with computed statistics
+    const enhancedWorkflows = workflows.map((workflow) => {
+      const actions = workflow.actions as unknown as Array<{ type: string }>;
+      const stepCount = Array.isArray(actions) ? actions.length : 0;
+
+      // Calculate success rate
+      const successRate = workflow.executionCount > 0
+        ? Math.round((workflow.successCount / workflow.executionCount) * 100)
+        : 0;
+
+      return {
+        ...workflow,
+        stepCount,
+        statistics: {
+          executionCount: workflow.executionCount,
+          successCount: workflow.successCount,
+          failureCount: workflow.failureCount,
+          successRate,
+        },
+      };
+    });
+
     return NextResponse.json({
-      workflows,
+      workflows: enhancedWorkflows,
       total: totalCount,
       page: filters.page,
       limit: filters.limit,
@@ -302,8 +324,23 @@ export async function POST(
       },
     });
 
+    // Enhance workflow with computed statistics
+    const actions = workflow.actions as unknown as Array<{ type: string }>;
+    const stepCount = Array.isArray(actions) ? actions.length : 0;
+
+    const enhancedWorkflow = {
+      ...workflow,
+      stepCount,
+      statistics: {
+        executionCount: workflow.executionCount,
+        successCount: workflow.successCount,
+        failureCount: workflow.failureCount,
+        successRate: 0, // New workflows have 0% success rate
+      },
+    };
+
     return NextResponse.json(
-      { workflow, message: 'Workflow created successfully' },
+      { workflow: enhancedWorkflow, message: 'Workflow created successfully' },
       { status: 201 },
     );
   } catch (_error) {
