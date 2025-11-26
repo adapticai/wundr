@@ -21,8 +21,8 @@ import {
   VP_ANALYTICS_ERROR_CODES,
 } from '@/lib/validations/vp-analytics';
 
-import type { NextRequest } from 'next/server';
 import type { VPComparisonQueryInput } from '@/lib/validations/vp-analytics';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter

@@ -253,8 +253,12 @@ export async function GET(
           bValue = b.lastActiveAt ?? '';
       }
 
-      if (aValue === null || aValue === '') return 1;
-      if (bValue === null || bValue === '') return -1;
+      if (aValue === null || aValue === '') {
+return 1;
+}
+      if (bValue === null || bValue === '') {
+return -1;
+}
 
       const comparison = aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
       return filters.sortOrder === 'asc' ? comparison : -comparison;

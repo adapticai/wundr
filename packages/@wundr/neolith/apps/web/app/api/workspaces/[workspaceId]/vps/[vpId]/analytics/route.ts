@@ -26,9 +26,9 @@ import {
   parseDateRange,
 } from '@/lib/validations/vp-analytics';
 
-import type { NextRequest } from 'next/server';
 import type { VPAnalyticsQueryInput } from '@/lib/validations/vp-analytics';
 import type { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace and VP ID parameters

@@ -14,13 +14,13 @@
 
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import {
   createCoordinationErrorResponse,
   VP_COORDINATION_ERROR_CODES,
 } from '@/lib/validations/vp-coordination';
-import { z } from 'zod';
 
 import type { NextRequest } from 'next/server';
 

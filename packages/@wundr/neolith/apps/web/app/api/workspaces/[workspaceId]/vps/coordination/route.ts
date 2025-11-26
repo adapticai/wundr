@@ -13,16 +13,16 @@
 
 import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import {
   createCoordinationErrorResponse,
   VP_COORDINATION_ERROR_CODES,
 } from '@/lib/validations/vp-coordination';
-import { z } from 'zod';
 
-import type { NextRequest } from 'next/server';
 import type { VPCoordinationMetadata } from '@/lib/services/vp-coordination-service';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -419,7 +419,9 @@ export async function POST(
     await Promise.all(
       requiredVpIds.map((vpId) => {
         const vp = vps.find((v) => v.id === vpId);
-        if (!vp) return Promise.resolve();
+        if (!vp) {
+return Promise.resolve();
+}
 
         return prisma.notification.create({
           data: {

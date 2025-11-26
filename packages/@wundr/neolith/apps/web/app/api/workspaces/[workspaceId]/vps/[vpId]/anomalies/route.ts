@@ -22,8 +22,8 @@ import {
   VP_ANALYTICS_ERROR_CODES,
 } from '@/lib/validations/vp-analytics';
 
-import type { NextRequest } from 'next/server';
 import type { AnomalyDetectionQueryInput } from '@/lib/validations/vp-analytics';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace and VP ID parameters

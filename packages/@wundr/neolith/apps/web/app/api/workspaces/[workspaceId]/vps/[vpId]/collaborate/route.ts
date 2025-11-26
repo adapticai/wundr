@@ -26,8 +26,8 @@ import {
   VP_COORDINATION_ERROR_CODES,
 } from '@/lib/validations/vp-coordination';
 
-import type { NextRequest } from 'next/server';
 import type { VPCoordinationMetadata } from '@/lib/services/vp-coordination-service';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace and VP ID parameters

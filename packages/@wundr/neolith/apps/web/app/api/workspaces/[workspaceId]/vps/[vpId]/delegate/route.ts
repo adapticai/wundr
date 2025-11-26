@@ -11,7 +11,6 @@
  */
 
 import { prisma } from '@neolith/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -22,6 +21,7 @@ import {
 } from '@/lib/validations/vp-conversation';
 
 import type { DelegateTaskInput } from '@/lib/validations/vp-conversation';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**

@@ -1027,7 +1027,9 @@ function calculateRoleMatch(
 
   const matchCount = roleKeywords.filter((keyword) => channelText.includes(keyword)).length;
 
-  if (roleKeywords.length === 0) return 0.5;
+  if (roleKeywords.length === 0) {
+return 0.5;
+}
 
   return matchCount / roleKeywords.length;
 }
@@ -1054,7 +1056,9 @@ function calculateMemberSimilarity(
   // Count members with VPs in the same discipline
   const similarMembers = channel.members.filter((member) => {
     const memberVP = member.user.vp;
-    if (!memberVP) return false;
+    if (!memberVP) {
+return false;
+}
 
     const memberDiscipline = (
       memberVP.disciplineRef?.name || memberVP.discipline
@@ -1063,7 +1067,9 @@ function calculateMemberSimilarity(
   });
 
   const totalMembers = channel.members.length;
-  if (totalMembers === 0) return 0.3; // Default for empty channels
+  if (totalMembers === 0) {
+return 0.3;
+} // Default for empty channels
 
   return Math.min(1.0, similarMembers.length / (totalMembers * 0.3)); // 30% similar = perfect score
 }
@@ -1094,8 +1100,12 @@ function calculateChannelAge(channel: { createdAt: Date }): number {
   // Channels 30-180 days old: score 0.7
   // Channels 180+ days old: score 0.5
 
-  if (ageInDays <= 30) return 1.0;
-  if (ageInDays <= 180) return 0.7;
+  if (ageInDays <= 30) {
+return 1.0;
+}
+  if (ageInDays <= 180) {
+return 0.7;
+}
   return 0.5;
 }
 
