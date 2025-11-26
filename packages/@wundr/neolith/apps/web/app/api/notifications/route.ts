@@ -1,46 +1,51 @@
 /**
- * Notifications API Routes - STUB IMPLEMENTATION
- *
- * ⚠️ WARNING: This is a STUB implementation with mock data.
- * Replace with real database queries and business logic.
+ * Notifications API Routes
  *
  * Routes:
  * - GET /api/notifications - List notifications with pagination/filters
- * - PATCH /api/notifications - Mark notifications as read (stub)
- * - DELETE /api/notifications - Dismiss notifications (stub)
+ * - PATCH /api/notifications - Mark notifications as read
+ * - DELETE /api/notifications - Delete notifications
  *
  * @module app/api/notifications/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 
 import type { NextRequest } from 'next/server';
 
 /**
- * Notification types
+ * Zod schemas for validation
  */
-enum NotificationType {
-  MENTION = 'mention',
-  TASK = 'task',
-  SYSTEM = 'system',
-}
+const markAsReadSchema = z.object({
+  ids: z.array(z.string()).optional(),
+  markAll: z.boolean().optional(),
+}).refine(data => data.ids || data.markAll, {
+  message: 'Either provide notification IDs or set markAll to true',
+});
+
+const deleteNotificationsSchema = z.object({
+  ids: z.array(z.string()).min(1, 'Provide at least one notification ID'),
+});
 
 /**
- * Notification interface
+ * Notification response type
  */
-interface Notification {
+interface NotificationResponse {
   id: string;
-  userId: string;
-  type: NotificationType;
+  type: string;
   title: string;
   body: string;
+  priority: string;
   read: boolean;
-  actionUrl?: string;
-  metadata?: Record<string, unknown>;
+  readAt: string | null;
+  actionUrl: string | null;
+  metadata: Record<string, unknown>;
   createdAt: string;
-  readAt?: string;
+  updatedAt: string;
 }
 
 /**
@@ -56,46 +61,7 @@ interface PaginationMeta {
 }
 
 /**
- * API response for notification list
- */
-interface NotificationListResponse {
-  data: Notification[];
-  pagination: PaginationMeta;
-}
-
-/**
- * STUB: Generate mock notifications for testing
- */
-function generateMockNotifications(userId: string, count: number = 20): Notification[] {
-  const notifications: Notification[] = [];
-  const types = Object.values(NotificationType);
-
-  for (let i = 0; i < count; i++) {
-    const type = types[i % types.length];
-    const read = Math.random() > 0.5;
-    const createdAt = new Date(Date.now() - i * 3600000).toISOString();
-
-    notifications.push({
-      id: `notif_${i + 1}`,
-      userId,
-      type,
-      title: `${type.charAt(0).toUpperCase() + type.slice(1)} Notification ${i + 1}`,
-      body: `This is a ${type} notification. Lorem ipsum dolor sit amet.`,
-      read,
-      actionUrl: type === NotificationType.TASK ? `/tasks/task_${i}` : undefined,
-      metadata: { priority: i % 3 === 0 ? 'high' : 'normal' },
-      createdAt,
-      readAt: read ? new Date(Date.now() - i * 1800000).toISOString() : undefined,
-    });
-  }
-
-  return notifications;
-}
-
-/**
  * GET /api/notifications
- *
- * ✅ IMPLEMENTED (with mock data)
  *
  * List notifications for the current user with optional filtering and pagination.
  * Requires authentication.
@@ -104,36 +70,20 @@ function generateMockNotifications(userId: string, count: number = 20): Notifica
  * - page (number): Page number (default: 1)
  * - limit (number): Items per page (default: 20, max: 100)
  * - read (boolean): Filter by read status
- * - type (string): Filter by notification type (mention, task, system)
+ * - type (string): Filter by notification type
  *
  * @param request - Next.js request object with query parameters
  * @returns Paginated list of notifications
- *
- * @example
- * ```
- * GET /api/notifications?page=1&limit=20&read=false&type=mention
- *
- * Response:
- * {
- *   "data": [...],
- *   "pagination": {
- *     "page": 1,
- *     "limit": 20,
- *     "totalCount": 45,
- *     "totalPages": 3,
- *     "hasNextPage": true,
- *     "hasPreviousPage": false
- *   }
- * }
- * ```
  */
-export async function GET(request: NextRequest): Promise<NextResponse<NotificationListResponse | { error: string }>> {
+export async function GET(
+  request: NextRequest
+): Promise<NextResponse<{ data: NotificationResponse[]; pagination: PaginationMeta } | { error: string }>> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 },
       );
     }
@@ -145,27 +95,55 @@ export async function GET(request: NextRequest): Promise<NextResponse<Notificati
     const readFilter = searchParams.get('read');
     const typeFilter = searchParams.get('type');
 
-    // ⚠️ STUB: Generate mock data (replace with real database query)
-    const allNotifications = generateMockNotifications(session.user.id, 50);
+    // Build where clause
+    const where = {
+      userId: session.user.id,
+      archived: false, // Don't show archived notifications
+      ...(readFilter !== null && { read: readFilter === 'true' }),
+      ...(typeFilter && { type: typeFilter.toUpperCase() as any }),
+    };
 
-    // Apply filters
-    let filteredNotifications = allNotifications;
+    // Get total count
+    const totalCount = await prisma.notification.count({ where });
 
-    if (readFilter !== null) {
-      const isRead = readFilter === 'true';
-      filteredNotifications = filteredNotifications.filter(n => n.read === isRead);
-    }
+    // Fetch notifications
+    const notifications = await prisma.notification.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        body: true,
+        priority: true,
+        read: true,
+        readAt: true,
+        actionUrl: true,
+        metadata: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-    if (typeFilter && Object.values(NotificationType).includes(typeFilter as NotificationType)) {
-      filteredNotifications = filteredNotifications.filter(n => n.type === typeFilter);
-    }
+    // Transform to response format
+    const data: NotificationResponse[] = notifications.map(notification => ({
+      id: notification.id,
+      type: notification.type,
+      title: notification.title,
+      body: notification.body,
+      priority: notification.priority,
+      read: notification.read,
+      readAt: notification.readAt?.toISOString() || null,
+      actionUrl: notification.actionUrl,
+      metadata: notification.metadata as Record<string, unknown>,
+      createdAt: notification.createdAt.toISOString(),
+      updatedAt: notification.updatedAt.toISOString(),
+    }));
 
     // Calculate pagination
-    const totalCount = filteredNotifications.length;
     const totalPages = Math.ceil(totalCount / limit);
-    const skip = (page - 1) * limit;
-    const paginatedNotifications = filteredNotifications.slice(skip, skip + limit);
-
     const pagination: PaginationMeta = {
       page,
       limit,
@@ -175,14 +153,11 @@ export async function GET(request: NextRequest): Promise<NextResponse<Notificati
       hasPreviousPage: page > 1,
     };
 
-    return NextResponse.json({
-      data: paginatedNotifications,
-      pagination,
-    });
+    return NextResponse.json({ data, pagination });
   } catch (error) {
     console.error('[GET /api/notifications] Error:', error);
     return NextResponse.json(
-      { error: 'An internal error occurred' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }
@@ -190,8 +165,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<Notificati
 
 /**
  * PATCH /api/notifications
- *
- * ⚠️ STUB IMPLEMENTATION
  *
  * Mark notifications as read. Can mark single notification or multiple by IDs.
  * Requires authentication.
@@ -202,39 +175,22 @@ export async function GET(request: NextRequest): Promise<NextResponse<Notificati
  *
  * @param request - Next.js request with notification IDs
  * @returns Updated notification count
- *
- * @example
- * ```
- * PATCH /api/notifications
- * Content-Type: application/json
- *
- * {
- *   "ids": ["notif_1", "notif_2", "notif_3"]
- * }
- *
- * Response:
- * {
- *   "success": true,
- *   "updatedCount": 3,
- *   "message": "Marked 3 notifications as read"
- * }
- * ```
  */
 export async function PATCH(
   request: NextRequest,
-): Promise<NextResponse<{ success: boolean; updatedCount: number; message: string } | { error: string }>> {
+): Promise<NextResponse<{ data: { updatedCount: number } } | { error: string }>> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 },
       );
     }
 
     // Parse request body
-    let body: { ids?: string[]; markAll?: boolean };
+    let body: unknown;
     try {
       body = await request.json();
     } catch {
@@ -244,41 +200,51 @@ export async function PATCH(
       );
     }
 
-    const { ids, markAll } = body;
+    // Validate with Zod
+    const validated = markAsReadSchema.parse(body);
+    const { ids, markAll } = validated;
 
-    // Validate input
-    if (!markAll && (!ids || !Array.isArray(ids) || ids.length === 0)) {
+    // Build where clause
+    const where: {
+      userId: string;
+      id?: { in: string[] };
+      read?: boolean;
+    } = {
+      userId: session.user.id,
+      read: false, // Only update unread notifications
+    };
+
+    if (!markAll && ids) {
+      where.id = { in: ids };
+    }
+
+    // Update notifications
+    const result = await prisma.notification.updateMany({
+      where,
+      data: {
+        read: true,
+        readAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      data: {
+        updatedCount: result.count,
+      },
+    });
+  } catch (error) {
+    console.error('[PATCH /api/notifications] Error:', error);
+
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Either provide notification IDs or set markAll to true' },
+        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
         { status: 400 },
       );
     }
 
-    // ⚠️ STUB: Mock implementation
-    // TODO: Replace with actual database update
-    // Example Prisma query:
-    // await prisma.notification.updateMany({
-    //   where: {
-    //     userId: session.user.id,
-    //     ...(markAll ? {} : { id: { in: ids } }),
-    //   },
-    //   data: {
-    //     read: true,
-    //     readAt: new Date(),
-    //   },
-    // });
-
-    const updatedCount = markAll ? 50 : (ids?.length || 0);
-
-    return NextResponse.json({
-      success: true,
-      updatedCount,
-      message: `Marked ${updatedCount} notification${updatedCount !== 1 ? 's' : ''} as read`,
-    });
-  } catch (error) {
-    console.error('[PATCH /api/notifications] Error:', error);
     return NextResponse.json(
-      { error: 'An internal error occurred' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }
@@ -287,49 +253,30 @@ export async function PATCH(
 /**
  * DELETE /api/notifications
  *
- * ⚠️ STUB IMPLEMENTATION
- *
- * Dismiss (delete) notifications. Can dismiss single or multiple notifications by IDs.
+ * Delete notifications. Can delete single or multiple notifications by IDs.
  * Requires authentication.
  *
  * Request Body:
- * - ids (string[]): Array of notification IDs to dismiss
+ * - ids (string[]): Array of notification IDs to delete
  *
  * @param request - Next.js request with notification IDs
  * @returns Deleted notification count
- *
- * @example
- * ```
- * DELETE /api/notifications
- * Content-Type: application/json
- *
- * {
- *   "ids": ["notif_1", "notif_2"]
- * }
- *
- * Response:
- * {
- *   "success": true,
- *   "deletedCount": 2,
- *   "message": "Dismissed 2 notifications"
- * }
- * ```
  */
 export async function DELETE(
   request: NextRequest,
-): Promise<NextResponse<{ success: boolean; deletedCount: number; message: string } | { error: string }>> {
+): Promise<NextResponse<{ data: { deletedCount: number } } | { error: string }>> {
   try {
     // Authenticate user
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 },
       );
     }
 
     // Parse request body
-    let body: { ids?: string[] };
+    let body: unknown;
     try {
       body = await request.json();
     } catch {
@@ -339,37 +286,36 @@ export async function DELETE(
       );
     }
 
-    const { ids } = body;
+    // Validate with Zod
+    const validated = deleteNotificationsSchema.parse(body);
+    const { ids } = validated;
 
-    // Validate input
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    // Delete notifications (only user's own notifications)
+    const result = await prisma.notification.deleteMany({
+      where: {
+        userId: session.user.id,
+        id: { in: ids },
+      },
+    });
+
+    return NextResponse.json({
+      data: {
+        deletedCount: result.count,
+      },
+    });
+  } catch (error) {
+    console.error('[DELETE /api/notifications] Error:', error);
+
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Provide at least one notification ID to dismiss' },
+        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
         { status: 400 },
       );
     }
 
-    // ⚠️ STUB: Mock implementation
-    // TODO: Replace with actual database deletion
-    // Example Prisma query:
-    // await prisma.notification.deleteMany({
-    //   where: {
-    //     userId: session.user.id,
-    //     id: { in: ids },
-    //   },
-    // });
-
-    const deletedCount = ids.length;
-
-    return NextResponse.json({
-      success: true,
-      deletedCount,
-      message: `Dismissed ${deletedCount} notification${deletedCount !== 1 ? 's' : ''}`,
-    });
-  } catch (error) {
-    console.error('[DELETE /api/notifications] Error:', error);
     return NextResponse.json(
-      { error: 'An internal error occurred' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }

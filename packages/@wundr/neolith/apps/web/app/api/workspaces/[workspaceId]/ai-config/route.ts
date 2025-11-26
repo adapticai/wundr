@@ -1,18 +1,19 @@
 /**
- * AI Configuration API Routes (STUB IMPLEMENTATION)
+ * AI Configuration API Routes
  *
  * Manages AI/ML configuration settings for a workspace.
- * This is a stub implementation with mock data for development purposes.
+ * Stores configuration in workspace.settings.aiConfig JSON field.
  *
  * Routes:
  * - GET /api/workspaces/:workspaceId/ai-config - Get AI configuration
  * - PATCH /api/workspaces/:workspaceId/ai-config - Update AI configuration
  *
  * @module app/api/workspaces/[workspaceId]/ai-config/route
- * @status STUB - Not connected to real AI services
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 
@@ -26,151 +27,120 @@ interface RouteContext {
 }
 
 /**
- * AI Configuration structure
- * STUB: This represents the expected shape of AI config data
+ * Zod schema for AI Configuration validation
  */
-interface AIConfig {
-  modelPreferences: {
-    primaryModel: string;
-    fallbackModel: string;
-    temperature: number;
-    maxTokens: number;
-  };
-  tokenLimits: {
-    perRequest: number;
-    dailyLimit: number;
-    monthlyLimit: number;
-    currentUsage: {
-      daily: number;
-      monthly: number;
-    };
-  };
-  features: {
-    summarization: boolean;
-    suggestions: boolean;
-    codeCompletion: boolean;
-    semanticSearch: boolean;
-    autoTagging: boolean;
-  };
-  customPrompts: {
-    systemPrompt: string;
-    summarizationPrompt: string;
-    suggestionPrompt: string;
-  };
-  providers: {
-    openai: {
-      enabled: boolean;
-      apiKeyConfigured: boolean;
-    };
-    anthropic: {
-      enabled: boolean;
-      apiKeyConfigured: boolean;
-    };
-    local: {
-      enabled: boolean;
-      endpoint: string | null;
-    };
-  };
-  lastUpdated: string;
+const aiConfigSchema = z.object({
+  defaultModel: z.string().default('claude-3-opus'),
+  temperature: z.number().min(0).max(2).default(0.7),
+  maxTokens: z.number().min(1).max(128000).default(4096),
+  systemPrompt: z.string().nullable().default(null),
+  customPrompts: z.record(z.string()).default({}),
+  enabledFeatures: z.array(z.string()).default([
+    'summarization',
+    'suggestions',
+    'codeCompletion',
+    'autoTagging'
+  ]),
+  rateLimits: z.object({
+    requestsPerMinute: z.number().default(60),
+    tokensPerDay: z.number().default(100000),
+  }).default({
+    requestsPerMinute: 60,
+    tokensPerDay: 100000,
+  }),
+});
+
+/**
+ * AI Configuration type
+ */
+type AIConfig = z.infer<typeof aiConfigSchema>;
+
+/**
+ * Response structure for AI configuration
+ */
+interface AIConfigResponse {
+  id: string;
+  workspaceId: string;
+  config: AIConfig;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
  * GET /api/workspaces/:workspaceId/ai-config
  *
- * STUB: Returns mock AI configuration data.
- * In production, this would fetch from database and validate against AI service availability.
+ * Fetches AI configuration from workspace settings.
  *
- * @param _request - Next.js request (unused in stub)
+ * @param _request - Next.js request (unused)
  * @param context - Route context containing workspace ID
  * @returns AI configuration object
  */
 export async function GET(
   _request: NextRequest,
   context: RouteContext,
-): Promise<NextResponse> {
+): Promise<NextResponse<{ data: AIConfigResponse } | { error: string }>> {
   try {
     // Verify authentication
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
+        { error: 'Unauthorized' },
         { status: 401 },
       );
     }
 
     const { workspaceId } = await context.params;
 
-    // STUB: In production, verify workspace access via database
-    // const hasAccess = await verifyWorkspaceAccess(workspaceId, session.user.id);
-    // if (!hasAccess) {
-    //   return NextResponse.json(
-    //     { error: 'Forbidden', code: 'FORBIDDEN' },
-    //     { status: 403 },
-    //   );
-    // }
-
-    // STUB: Mock AI configuration data
-    // In production, fetch from workspace settings or dedicated ai_config table
-    const mockConfig: AIConfig = {
-      modelPreferences: {
-        primaryModel: 'claude-3-opus',
-        fallbackModel: 'gpt-4-turbo',
-        temperature: 0.7,
-        maxTokens: 4096,
-      },
-      tokenLimits: {
-        perRequest: 8192,
-        dailyLimit: 100000,
-        monthlyLimit: 3000000,
-        currentUsage: {
-          daily: 12450,
-          monthly: 287650,
-        },
-      },
-      features: {
-        summarization: true,
-        suggestions: true,
-        codeCompletion: true,
-        semanticSearch: false,
-        autoTagging: true,
-      },
-      customPrompts: {
-        systemPrompt:
-          'You are a helpful AI assistant for the Neolith workspace. Be concise and professional.',
-        summarizationPrompt:
-          'Summarize the following content in 2-3 sentences, focusing on key points and actionable items.',
-        suggestionPrompt:
-          'Based on the context, provide 3 relevant suggestions for next steps or related topics.',
-      },
-      providers: {
-        openai: {
-          enabled: true,
-          apiKeyConfigured: true,
-        },
-        anthropic: {
-          enabled: true,
-          apiKeyConfigured: true,
-        },
-        local: {
-          enabled: false,
-          endpoint: null,
-        },
-      },
-      lastUpdated: new Date().toISOString(),
-    };
-
-    return NextResponse.json({
-      workspaceId,
-      config: mockConfig,
-      meta: {
-        stub: true,
-        message: 'This is a stub implementation with mock data',
+    // Verify workspace access
+    const membership = await prisma.workspaceMember.findFirst({
+      where: {
+        workspaceId,
+        userId: session.user.id,
       },
     });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: 'Workspace not found or access denied' },
+        { status: 404 },
+      );
+    }
+
+    // Fetch workspace settings
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        id: true,
+        settings: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        { error: 'Workspace not found' },
+        { status: 404 },
+      );
+    }
+
+    // Extract aiConfig from settings, apply defaults if not set
+    const settings = workspace.settings as { aiConfig?: Partial<AIConfig> } | null;
+    const aiConfig = aiConfigSchema.parse(settings?.aiConfig || {});
+
+    const response: AIConfigResponse = {
+      id: workspace.id,
+      workspaceId: workspace.id,
+      config: aiConfig,
+      createdAt: workspace.createdAt.toISOString(),
+      updatedAt: workspace.updatedAt.toISOString(),
+    };
+
+    return NextResponse.json({ data: response });
   } catch (error) {
     console.error('[GET /api/workspaces/:workspaceId/ai-config] Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', code: 'INTERNAL_ERROR' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }
@@ -179,8 +149,8 @@ export async function GET(
 /**
  * PATCH /api/workspaces/:workspaceId/ai-config
  *
- * STUB: Accepts and validates AI configuration updates but does not persist.
- * In production, this would update database and sync with AI service providers.
+ * Updates AI configuration in workspace settings.
+ * Only ADMIN and OWNER roles can update configuration.
  *
  * @param request - Next.js request with JSON body containing config updates
  * @param context - Route context containing workspace ID
@@ -189,100 +159,119 @@ export async function GET(
 export async function PATCH(
   request: NextRequest,
   context: RouteContext,
-): Promise<NextResponse> {
+): Promise<NextResponse<{ data: AIConfigResponse } | { error: string }>> {
   try {
     // Verify authentication
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Unauthorized', code: 'UNAUTHORIZED' },
+        { error: 'Unauthorized' },
         { status: 401 },
       );
     }
 
     const { workspaceId } = await context.params;
 
-    // STUB: In production, verify admin access
-    // const isAdmin = await verifyWorkspaceAdmin(workspaceId, session.user.id);
-    // if (!isAdmin) {
-    //   return NextResponse.json(
-    //     { error: 'Admin access required', code: 'FORBIDDEN' },
-    //     { status: 403 },
-    //   );
-    // }
+    // Verify workspace access and admin permissions
+    const membership = await prisma.workspaceMember.findFirst({
+      where: {
+        workspaceId,
+        userId: session.user.id,
+      },
+    });
 
-    // Parse request body
-    const body = await request.json();
-
-    // STUB: Basic validation
-    // In production, use Zod schema validation
-    if (!body || typeof body !== 'object') {
+    if (!membership) {
       return NextResponse.json(
-        { error: 'Invalid request body', code: 'VALIDATION_ERROR' },
+        { error: 'Workspace not found or access denied' },
+        { status: 404 },
+      );
+    }
+
+    // Only ADMIN and OWNER can update AI configuration
+    if (!['ADMIN', 'OWNER'].includes(membership.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden: Only workspace admins can update AI configuration' },
+        { status: 403 },
+      );
+    }
+
+    // Parse and validate request body
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON body' },
         { status: 400 },
       );
     }
 
-    // STUB: Validate specific fields if provided
-    if (body.modelPreferences) {
-      const { temperature, maxTokens } = body.modelPreferences;
-      if (temperature !== undefined && (temperature < 0 || temperature > 2)) {
-        return NextResponse.json(
-          {
-            error: 'Temperature must be between 0 and 2',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 },
-        );
-      }
-      if (maxTokens !== undefined && (maxTokens < 1 || maxTokens > 128000)) {
-        return NextResponse.json(
-          {
-            error: 'maxTokens must be between 1 and 128000',
-            code: 'VALIDATION_ERROR',
-          },
-          { status: 400 },
-        );
-      }
+    // Validate with Zod schema (partial update allowed)
+    const updateSchema = aiConfigSchema.partial();
+    const validatedConfig = updateSchema.parse(body);
+
+    // Get current workspace settings
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { settings: true },
+    });
+
+    if (!workspace) {
+      return NextResponse.json(
+        { error: 'Workspace not found' },
+        { status: 404 },
+      );
     }
 
-    // STUB: In production, persist to database
-    // await prisma.workspace.update({
-    //   where: { id: workspaceId },
-    //   data: {
-    //     aiConfig: body,
-    //     updatedAt: new Date(),
-    //   },
-    // });
+    // Merge with existing config
+    const currentSettings = workspace.settings as { aiConfig?: Partial<AIConfig> } | null;
+    const currentConfig = currentSettings?.aiConfig || {};
+    const mergedConfig = { ...currentConfig, ...validatedConfig };
 
-    // STUB: Return updated config (merge with existing mock data)
-    const updatedConfig = {
-      workspaceId,
-      config: {
-        ...body,
-        lastUpdated: new Date().toISOString(),
+    // Update workspace settings
+    const updatedWorkspace = await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: {
+        settings: {
+          ...(currentSettings || {}),
+          aiConfig: mergedConfig,
+        },
+        updatedAt: new Date(),
       },
-      meta: {
-        stub: true,
-        message: 'Update received but not persisted (stub implementation)',
-        receivedFields: Object.keys(body),
+      select: {
+        id: true,
+        settings: true,
+        createdAt: true,
+        updatedAt: true,
       },
+    });
+
+    // Parse final config with defaults
+    const finalSettings = updatedWorkspace.settings as { aiConfig?: Partial<AIConfig> } | null;
+    const finalConfig = aiConfigSchema.parse(finalSettings?.aiConfig || {});
+
+    const response: AIConfigResponse = {
+      id: updatedWorkspace.id,
+      workspaceId: updatedWorkspace.id,
+      config: finalConfig,
+      createdAt: updatedWorkspace.createdAt.toISOString(),
+      updatedAt: updatedWorkspace.updatedAt.toISOString(),
     };
 
-    return NextResponse.json(updatedConfig);
+    return NextResponse.json({ data: response });
   } catch (error) {
     console.error('[PATCH /api/workspaces/:workspaceId/ai-config] Error:', error);
 
-    // Handle JSON parse errors
-    if (error instanceof SyntaxError) {
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid JSON body', code: 'VALIDATION_ERROR' },
+        { error: `Validation error: ${error.errors.map(e => e.message).join(', ')}` },
         { status: 400 },
       );
     }
 
     return NextResponse.json(
-      { error: 'Internal server error', code: 'INTERNAL_ERROR' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }
