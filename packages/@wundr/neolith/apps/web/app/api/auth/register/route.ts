@@ -10,11 +10,21 @@
  * @module app/api/auth/register/route
  */
 
+import crypto from 'crypto';
+
 import { avatarService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
-import crypto from 'crypto';
 import { NextResponse } from 'next/server';
+
+import {
+  AUTH_ERROR_CODES,
+  createAuthErrorResponse,
+  registerSchema,
+} from '@/lib/validations/auth';
+
+import type { RegisterInput } from '@/lib/validations/auth';
+import type { NextRequest } from 'next/server';
 
 // Simple password hashing using Node.js crypto (no external dependency)
 async function hashPassword(password: string): Promise<string> {
@@ -26,15 +36,6 @@ async function hashPassword(password: string): Promise<string> {
     });
   });
 }
-
-import {
-  AUTH_ERROR_CODES,
-  createAuthErrorResponse,
-  registerSchema,
-} from '@/lib/validations/auth';
-
-import type { RegisterInput } from '@/lib/validations/auth';
-import type { NextRequest } from 'next/server';
 
 // Password hashing uses Node.js crypto with PBKDF2 (100,000 iterations, SHA-512)
 

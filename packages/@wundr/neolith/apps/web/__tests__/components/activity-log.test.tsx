@@ -12,6 +12,7 @@
  */
 
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+
 import { ActivityLog } from '@/components/admin/activity-log';
 
 // Mock fetch

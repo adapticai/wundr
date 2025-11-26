@@ -30,7 +30,9 @@ export default function ChannelPage() {
 
   // Convert auth user to chat User type
   const currentUser = useMemo<User | null>(() => {
-    if (!authUser) return null;
+    if (!authUser) {
+      return null;
+    }
     return {
       id: authUser.id,
       name: authUser.name || 'Unknown User',
@@ -74,7 +76,9 @@ export default function ChannelPage() {
   // Handle send message
   const handleSendMessage = useCallback(
     async (content: string, mentions: string[], attachments: File[]) => {
-      if (!currentUser) return;
+      if (!currentUser) {
+        return;
+      }
 
       const { optimisticId, message } = await sendMessage(
         { content, channelId, mentions, attachments },
@@ -169,13 +173,15 @@ return;
   // Handle reaction toggle
   const handleReaction = useCallback(
     async (messageId: string, emoji: string) => {
-      if (!currentUser) return;
+      if (!currentUser) {
+        return;
+      }
 
       // Optimistic update
       const message = messages.find((m) => m.id === messageId);
       if (!message) {
-return;
-}
+        return;
+      }
 
       const existingReaction = message.reactions.find((r) => r.emoji === emoji);
       let updatedReactions = [...message.reactions];

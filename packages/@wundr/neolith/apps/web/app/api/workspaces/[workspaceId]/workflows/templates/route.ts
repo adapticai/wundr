@@ -563,7 +563,7 @@ export async function POST(
       return NextResponse.json(
         {
           template,
-          message: 'Workflow saved as template successfully'
+          message: 'Workflow saved as template successfully',
         },
         { status: 201 },
       );

@@ -184,11 +184,9 @@ export async function GET(
     };
 
     // Build orderBy based on sortBy field
-    let orderBy: Prisma.VPOrderByWithRelationInput;
-
     // Map sortBy to the correct field
     // The schema only allows: 'createdAt', 'updatedAt', 'discipline', 'role', 'status'
-    orderBy = { [filters.sortBy]: filters.sortOrder };
+    const orderBy: Prisma.VPOrderByWithRelationInput = { [filters.sortBy]: filters.sortOrder };
 
     // Determine pagination approach
     let skip: number | undefined;

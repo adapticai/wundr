@@ -195,13 +195,21 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
     // Build update data object (only include fields that are provided)
     const updateData: Record<string, unknown> = {};
-    if (input.name !== undefined) updateData.name = input.name;
-    if (input.displayName !== undefined)
+    if (input.name !== undefined) {
+      updateData.name = input.name;
+    }
+    if (input.displayName !== undefined) {
       updateData.displayName = input.displayName;
-    if (input.bio !== undefined) updateData.bio = input.bio;
-    if (input.avatarUrl !== undefined) updateData.avatarUrl = input.avatarUrl;
-    if (input.preferences !== undefined)
+    }
+    if (input.bio !== undefined) {
+      updateData.bio = input.bio;
+    }
+    if (input.avatarUrl !== undefined) {
+      updateData.avatarUrl = input.avatarUrl;
+    }
+    if (input.preferences !== undefined) {
       updateData.preferences = input.preferences;
+    }
 
     // Update user profile
     const updatedUser = await prisma.user.update({

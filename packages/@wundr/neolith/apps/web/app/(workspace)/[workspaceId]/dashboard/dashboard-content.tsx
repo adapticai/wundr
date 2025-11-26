@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { DashboardSkeleton } from '@/components/skeletons/dashboard-skeleton';
 
@@ -55,7 +55,7 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
         console.error('Failed to fetch activities:', error);
         setErrors((prev) => ({
           ...prev,
-          activities: error instanceof Error ? error.message : 'Failed to load recent activity'
+          activities: error instanceof Error ? error.message : 'Failed to load recent activity',
         }));
         setActivities([]);
       } finally {
@@ -120,7 +120,7 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
         console.error('Failed to fetch stats:', error);
         setErrors((prev) => ({
           ...prev,
-          stats: error instanceof Error ? error.message : 'Failed to load workspace statistics'
+          stats: error instanceof Error ? error.message : 'Failed to load workspace statistics',
         }));
         // Set default stats on error
         setStats({
@@ -146,10 +146,18 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffMins < 1) {
+      return 'Just now';
+    }
+    if (diffMins < 60) {
+      return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    }
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    }
+    if (diffDays < 7) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    }
     return date.toLocaleDateString();
   };
 

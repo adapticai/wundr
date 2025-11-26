@@ -131,7 +131,9 @@ interface SearchResponse {
  * Highlight text matches in content
  */
 function highlightText(text: string, query: string): string {
-  if (!text || !query) return text;
+  if (!text || !query) {
+    return text;
+  }
 
   const terms = query
     .toLowerCase()
@@ -599,8 +601,12 @@ export async function GET(
           (b.type === 'channel' && b.name.toLowerCase().includes(query.toLowerCase())) ||
           (b.type === 'file' && b.originalName.toLowerCase().includes(query.toLowerCase()));
 
-        if (aExact && !bExact) return -1;
-        if (!aExact && bExact) return 1;
+        if (aExact && !bExact) {
+          return -1;
+        }
+        if (!aExact && bExact) {
+          return 1;
+        }
 
         // Then sort by date
         return b.createdAt.getTime() - a.createdAt.getTime();

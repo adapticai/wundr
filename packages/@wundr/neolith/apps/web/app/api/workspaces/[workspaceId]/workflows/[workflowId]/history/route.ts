@@ -320,7 +320,7 @@ export async function GET(
 
     // Format executions (without step details for list)
     const formattedExecutions = executions.map(exec =>
-      formatExecution(exec as ExecutionWithWorkflow, false)
+      formatExecution(exec as ExecutionWithWorkflow, false),
     );
 
     return NextResponse.json({

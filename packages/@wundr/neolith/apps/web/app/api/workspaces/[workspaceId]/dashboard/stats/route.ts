@@ -137,17 +137,20 @@ function getDateRange(timeRange: TimeRange): Date | null {
   const now = new Date();
 
   switch (timeRange) {
-    case 'today':
+    case 'today': {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       return today;
-    case 'week':
+    }
+    case 'week': {
       const weekAgo = new Date(now);
       weekAgo.setDate(weekAgo.getDate() - 7);
       return weekAgo;
-    case 'month':
+    }
+    case 'month': {
       const monthAgo = new Date(now);
       monthAgo.setMonth(monthAgo.getMonth() - 1);
       return monthAgo;
+    }
     case 'all':
       return null;
     default:
@@ -359,8 +362,11 @@ export async function GET(
     // Process channel statistics
     const channelStats = channelsData.reduce(
       (acc, curr) => {
-        if (curr.type === 'PUBLIC') acc.publicCount += curr._count;
-        else if (curr.type === 'PRIVATE') acc.privateCount += curr._count;
+        if (curr.type === 'PUBLIC') {
+          acc.publicCount += curr._count;
+        } else if (curr.type === 'PRIVATE') {
+          acc.privateCount += curr._count;
+        }
         acc.total += curr._count;
         return acc;
       },
@@ -370,10 +376,15 @@ export async function GET(
     // Process workflow statistics
     const workflowStats = workflowsData.reduce(
       (acc, curr) => {
-        if (curr.status === 'ACTIVE') acc.active += curr._count;
-        else if (curr.status === 'DRAFT') acc.draft += curr._count;
-        else if (curr.status === 'INACTIVE') acc.inactive += curr._count;
-        else if (curr.status === 'ARCHIVED') acc.archived += curr._count;
+        if (curr.status === 'ACTIVE') {
+          acc.active += curr._count;
+        } else if (curr.status === 'DRAFT') {
+          acc.draft += curr._count;
+        } else if (curr.status === 'INACTIVE') {
+          acc.inactive += curr._count;
+        } else if (curr.status === 'ARCHIVED') {
+          acc.archived += curr._count;
+        }
         acc.total += curr._count;
         return acc;
       },
@@ -383,9 +394,13 @@ export async function GET(
     // Process task statistics
     const taskStats = tasksData.reduce(
       (acc, curr) => {
-        if (curr.status === 'DONE') acc.completed += curr._count;
-        else if (curr.status === 'IN_PROGRESS') acc.inProgress += curr._count;
-        else if (curr.status === 'TODO') acc.todo += curr._count;
+        if (curr.status === 'DONE') {
+          acc.completed += curr._count;
+        } else if (curr.status === 'IN_PROGRESS') {
+          acc.inProgress += curr._count;
+        } else if (curr.status === 'TODO') {
+          acc.todo += curr._count;
+        }
         acc.total += curr._count;
         return acc;
       },

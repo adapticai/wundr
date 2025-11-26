@@ -13,8 +13,8 @@
  * @module app/api/workspaces/[workspaceId]/webhooks/route
  */
 
-import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
+import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
@@ -204,7 +204,7 @@ export async function GET(
 
     // STUB: Generate mock webhooks
     const mockWebhooks = Array.from({ length: 3 }, (_, i) =>
-      generateMockWebhook(workspaceId, session.user.id, i)
+      generateMockWebhook(workspaceId, session.user.id, i),
     );
 
     // STUB: Apply filters
@@ -223,7 +223,7 @@ export async function GET(
       filteredWebhooks = filteredWebhooks.filter(w =>
         w.name.toLowerCase().includes(searchLower) ||
         w.description?.toLowerCase().includes(searchLower) ||
-        w.url.toLowerCase().includes(searchLower)
+        w.url.toLowerCase().includes(searchLower),
       );
     }
 
@@ -249,7 +249,7 @@ export async function GET(
 
     // Remove secret from response
     const safeWebhooks = paginatedWebhooks.map(w => {
-      const { secret, ...webhook } = w;
+      const { secret: _secret, ...webhook } = w;
       return webhook;
     });
 

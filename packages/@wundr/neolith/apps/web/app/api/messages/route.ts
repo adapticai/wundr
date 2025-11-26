@@ -19,8 +19,8 @@ import {
   MESSAGE_ERROR_CODES,
 } from '@/lib/validations/message';
 
-import type { NextRequest } from 'next/server';
 import type { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 
 /**
  * Helper function to check if user is a member of the channel

@@ -98,14 +98,14 @@ interface ExportJobResponse {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: Promise<{ workspaceId: string }> },
 ): Promise<NextResponse<ExportJobResponse | { error: string }>> {
   try {
     const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -122,7 +122,7 @@ export async function POST(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -130,7 +130,7 @@ export async function POST(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can export data' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -143,7 +143,7 @@ export async function POST(
     if (!dataTypes || !Array.isArray(dataTypes) || dataTypes.length === 0) {
       return NextResponse.json(
         { error: 'Invalid request: dataTypes must be a non-empty array' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -159,7 +159,7 @@ export async function POST(
     ];
 
     const invalidTypes = dataTypes.filter(
-      (type) => !validDataTypes.includes(type)
+      (type) => !validDataTypes.includes(type),
     );
 
     if (invalidTypes.length > 0) {
@@ -167,7 +167,7 @@ export async function POST(
         {
           error: `Invalid data types: ${invalidTypes.join(', ')}. Valid types: ${validDataTypes.join(', ')}`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -178,7 +178,7 @@ export async function POST(
         {
           error: `Invalid format: ${format}. Valid formats: ${validFormats.join(', ')}`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -187,13 +187,13 @@ export async function POST(
       if (dateRange.from && isNaN(new Date(dateRange.from).getTime())) {
         return NextResponse.json(
           { error: 'Invalid date format for "from". Use ISO 8601 format.' },
-          { status: 400 }
+          { status: 400 },
         );
       }
       if (dateRange.to && isNaN(new Date(dateRange.to).getTime())) {
         return NextResponse.json(
           { error: 'Invalid date format for "to". Use ISO 8601 format.' },
-          { status: 400 }
+          { status: 400 },
         );
       }
       if (
@@ -203,7 +203,7 @@ export async function POST(
       ) {
         return NextResponse.json(
           { error: 'Invalid date range: "from" must be before "to"' },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -243,7 +243,7 @@ export async function POST(
         error: 'Failed to initiate workspace export',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -260,14 +260,14 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  { params }: { params: Promise<{ workspaceId: string }> },
 ): Promise<NextResponse<ExportJobResponse | { error: string }>> {
   try {
     const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -278,7 +278,7 @@ export async function GET(
     if (!jobId) {
       return NextResponse.json(
         { error: 'Missing required parameter: jobId' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -293,7 +293,7 @@ export async function GET(
     if (!membership) {
       return NextResponse.json(
         { error: 'Workspace not found or access denied' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -301,7 +301,7 @@ export async function GET(
     if (!['ADMIN', 'OWNER'].includes(membership.role)) {
       return NextResponse.json(
         { error: 'Forbidden: Only workspace admins can check export status' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -373,7 +373,7 @@ export async function GET(
         error: 'Failed to check export status',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

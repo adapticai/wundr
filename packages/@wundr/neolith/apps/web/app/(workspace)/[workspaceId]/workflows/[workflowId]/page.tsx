@@ -54,14 +54,20 @@ export default function WorkflowDetailPage() {
 
   // Handlers
   const handleToggleStatus = useCallback(async () => {
-    if (!workflow) return;
+    if (!workflow) {
+      return;
+    }
 
     if (workflow.status === 'active') {
       const success = await deactivateWorkflow();
-      if (success) refetch();
+      if (success) {
+        refetch();
+      }
     } else {
       const success = await activateWorkflow();
-      if (success) refetch();
+      if (success) {
+        refetch();
+      }
     }
   }, [workflow, activateWorkflow, deactivateWorkflow, refetch]);
 

@@ -16,8 +16,8 @@ import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 
-import type { NextRequest } from 'next/server';
 import type { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter

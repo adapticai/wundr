@@ -40,7 +40,7 @@ export default async function SettingsLayout({
   });
 
   if (!membership) {
-    redirect(`/dashboard`);
+    redirect('/dashboard');
   }
 
   const navItems = [

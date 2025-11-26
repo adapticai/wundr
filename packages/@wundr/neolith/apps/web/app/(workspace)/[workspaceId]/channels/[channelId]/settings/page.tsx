@@ -330,14 +330,14 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
               }}
               disabled={!canEdit || isLoading}
               className={cn(
-                "w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50",
+                'w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
                 errors.name
-                  ? "border-destructive focus:border-destructive focus:ring-destructive"
-                  : "border-input focus:border-primary focus:ring-primary"
+                  ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                  : 'border-input focus:border-primary focus:ring-primary',
               )}
               maxLength={80}
               aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? "name-error" : undefined}
+              aria-describedby={errors.name ? 'name-error' : undefined}
             />
           </div>
           {errors.name && (
@@ -368,14 +368,14 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
             placeholder="What is this channel about?"
             rows={3}
             className={cn(
-              "w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50",
+              'w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
               errors.description
-                ? "border-destructive focus:border-destructive focus:ring-destructive"
-                : "border-input focus:border-primary focus:ring-primary"
+                ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                : 'border-input focus:border-primary focus:ring-primary',
             )}
             maxLength={250}
             aria-invalid={!!errors.description}
-            aria-describedby={errors.description ? "description-error" : undefined}
+            aria-describedby={errors.description ? 'description-error' : undefined}
           />
           {errors.description && (
             <p id="description-error" className="mt-1 text-xs text-destructive">

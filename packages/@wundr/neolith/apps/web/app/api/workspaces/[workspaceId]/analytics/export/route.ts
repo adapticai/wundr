@@ -5,7 +5,7 @@ import {
   type AnalyticsRedisClient,
   type UsageMetrics,
 } from '@neolith/core';
-import { prisma, Prisma } from '@neolith/database';
+import { prisma, type Prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { getServerSession } from '@/lib/auth';
@@ -69,14 +69,14 @@ export async function GET(
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       return NextResponse.json(
         { error: 'Invalid date format. Use ISO 8601 format (YYYY-MM-DD)' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (startDate > endDate) {
       return NextResponse.json(
         { error: 'Start date must be before end date' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -142,9 +142,9 @@ export async function GET(
     return NextResponse.json(
       {
         error: 'Failed to export analytics',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -187,21 +187,21 @@ export async function POST(
     if (!frequency || !['daily', 'weekly', 'monthly'].includes(frequency)) {
       return NextResponse.json(
         { error: 'Invalid frequency. Must be: daily, weekly, or monthly' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!format || !['csv', 'json'].includes(format)) {
       return NextResponse.json(
         { error: 'Invalid format. Must be: csv or json' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json(
         { error: 'Recipients must be a non-empty array of email addresses' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -211,7 +211,7 @@ export async function POST(
     if (invalidEmails.length > 0) {
       return NextResponse.json(
         { error: `Invalid email addresses: ${invalidEmails.join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -264,9 +264,9 @@ export async function POST(
     return NextResponse.json(
       {
         error: 'Failed to create scheduled export',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -315,7 +315,7 @@ function convertMetricsToCSV(
 
   // Add metadata header
   if (startDate && endDate) {
-    lines.push(`# Analytics Export`);
+    lines.push('# Analytics Export');
     lines.push(`# Date Range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
     lines.push(`# Generated: ${new Date().toISOString()}`);
     lines.push('');

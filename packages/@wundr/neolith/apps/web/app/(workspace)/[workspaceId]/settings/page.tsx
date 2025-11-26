@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { ThemeToggleLarge } from '@/components/layout/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { ThemeToggleLarge } from '@/components/layout/theme-toggle';
 
 export default function SettingsPage() {
   const [isLoading] = useState(false);
@@ -57,7 +57,9 @@ export default function SettingsPage() {
   };
 
   const handleAccountToggle = (key: keyof typeof accountSettings) => {
-    if (key === 'sessionTimeout') return;
+    if (key === 'sessionTimeout') {
+      return;
+    }
     setAccountSettings((prev) => ({
       ...prev,
       [key]: !prev[key],

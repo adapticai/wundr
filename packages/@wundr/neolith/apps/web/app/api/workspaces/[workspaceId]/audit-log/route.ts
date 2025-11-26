@@ -167,12 +167,24 @@ function generateMockAuditEntries(
     const timestamp = new Date(now.getTime() - i * 3600000); // 1 hour intervals
 
     // Apply filters
-    if (filters.action && action !== filters.action) continue;
-    if (filters.actorId && actor.id !== filters.actorId) continue;
-    if (filters.actorType && actor.type !== filters.actorType) continue;
-    if (filters.severity && severity !== filters.severity) continue;
-    if (filters.startDate && timestamp < filters.startDate) continue;
-    if (filters.endDate && timestamp > filters.endDate) continue;
+    if (filters.action && action !== filters.action) {
+      continue;
+    }
+    if (filters.actorId && actor.id !== filters.actorId) {
+      continue;
+    }
+    if (filters.actorType && actor.type !== filters.actorType) {
+      continue;
+    }
+    if (filters.severity && severity !== filters.severity) {
+      continue;
+    }
+    if (filters.startDate && timestamp < filters.startDate) {
+      continue;
+    }
+    if (filters.endDate && timestamp > filters.endDate) {
+      continue;
+    }
 
     // Generate details based on action type
     let details: AuditLogDetails = {};
