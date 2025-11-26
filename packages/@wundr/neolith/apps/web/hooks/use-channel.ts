@@ -225,7 +225,8 @@ return;
         throw new Error('Failed to fetch channel');
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result;
       setChannel({
         ...data,
         createdAt: new Date(data.createdAt),
@@ -277,9 +278,10 @@ return;
         throw new Error('Failed to fetch members');
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      const members = result.data || result.members || [];
       setMembers(
-        data.members.map((m: ChannelMember) => ({
+        members.map((m: ChannelMember) => ({
           ...m,
           joinedAt: new Date(m.joinedAt),
         })),
@@ -328,17 +330,27 @@ export function useChannelMutations(): UseChannelMutationsReturn {
       setError(null);
 
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/channels`, {
+        // Transform type to uppercase for API
+        const apiInput = {
+          ...input,
+          type: input.type?.toUpperCase() as 'PUBLIC' | 'PRIVATE' | 'DM' | 'HUDDLE',
+          workspaceId,
+        };
+
+        const response = await fetch('/api/channels', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(input),
+          body: JSON.stringify(apiInput),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create channel');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to create channel');
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result;
+
         return {
           ...data,
           createdAt: new Date(data.createdAt),
@@ -346,7 +358,7 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         };
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
-        return null;
+        throw err;
       } finally {
         setIsLoading(false);
       }
@@ -367,10 +379,12 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to update channel');
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update channel');
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result;
         return {
           ...data,
           createdAt: new Date(data.createdAt),
@@ -413,12 +427,16 @@ export function useChannelMutations(): UseChannelMutationsReturn {
     setError(null);
 
     try {
-      const response = await fetch(`/api/channels/${channelId}/archive`, {
-        method: 'POST',
+      // Archive via PATCH to update isArchived field
+      const response = await fetch(`/api/channels/${channelId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: true }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to archive channel');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to archive channel');
       }
 
       return true;
@@ -483,14 +501,23 @@ export function useChannelMutations(): UseChannelMutationsReturn {
       setError(null);
 
       try {
-        const response = await fetch(`/api/channels/${channelId}/members`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userIds, role }),
-        });
+        // API expects single userId, so we need to make multiple requests
+        const promises = userIds.map((userId) =>
+          fetch(`/api/channels/${channelId}/members`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, role }),
+          }),
+        );
 
-        if (!response.ok) {
-          throw new Error('Failed to invite members');
+        const responses = await Promise.all(promises);
+
+        // Check if all succeeded
+        const allSucceeded = responses.every((r) => r.ok);
+        if (!allSucceeded) {
+          const failedResponses = responses.filter((r) => !r.ok);
+          const errors = await Promise.all(failedResponses.map((r) => r.json()));
+          throw new Error(errors[0]?.message || 'Failed to invite some members');
         }
 
         return true;
@@ -515,7 +542,8 @@ export function useChannelMutations(): UseChannelMutationsReturn {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to remove member');
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to remove member');
         }
 
         return true;
@@ -535,14 +563,18 @@ export function useChannelMutations(): UseChannelMutationsReturn {
       setError(null);
 
       try {
-        const response = await fetch(`/api/channels/${channelId}/members/${userId}/role`, {
+        // Convert lowercase role to uppercase for API
+        const apiRole = role.toUpperCase() as 'ADMIN' | 'MEMBER';
+
+        const response = await fetch(`/api/channels/${channelId}/members/${userId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role }),
+          body: JSON.stringify({ role: apiRole }),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to change member role');
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to change member role');
         }
 
         return true;

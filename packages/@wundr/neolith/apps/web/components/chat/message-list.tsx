@@ -71,11 +71,14 @@ export function MessageList({
   const lastMessageCountRef = useRef(messages.length);
   const isInitialLoadRef = useRef(true);
 
-  // Calculate visible items for virtualization
+  // Calculate visible items for virtualization with improved height estimation
   const ITEM_HEIGHT_ESTIMATE = 80;
-  const BUFFER_SIZE = 5;
+  const BUFFER_SIZE = 10; // Increased buffer for smoother scrolling
+  const LOAD_MORE_THRESHOLD = 200; // Load more when within 200px of top
 
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const loadingMoreRef = useRef(false);
 
   // Handle scroll for infinite loading and auto-scroll detection
   const handleScroll = useCallback(() => {
@@ -86,17 +89,30 @@ return;
 
     const { scrollTop, scrollHeight, clientHeight } = container;
 
-    // Load more when scrolling near top
-    if (scrollTop < 100 && hasMore && !isLoadingMore && onLoadMore) {
+    // Load more when scrolling near top with improved logic
+    if (
+      scrollTop < LOAD_MORE_THRESHOLD &&
+      hasMore &&
+      !isLoadingMore &&
+      !loadingMoreRef.current &&
+      onLoadMore
+    ) {
+      loadingMoreRef.current = true;
+      // Store scroll position for restoration
+      setLastScrollTop(scrollTop);
       onLoadMore();
+      // Reset loading ref after a delay to prevent rapid consecutive loads
+      setTimeout(() => {
+        loadingMoreRef.current = false;
+      }, 500);
     }
 
-    // Detect if user is at bottom for auto-scroll
-    const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+    // Detect if user is at bottom for auto-scroll (more precise threshold)
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 30;
     setAutoScroll(isAtBottom);
-    setShowScrollButton(!isAtBottom && scrollHeight - scrollTop - clientHeight > 200);
+    setShowScrollButton(!isAtBottom && scrollHeight - scrollTop - clientHeight > 150);
 
-    // Update visible range for virtualization
+    // Update visible range for virtualization with improved calculation
     const scrollOffset = Math.max(0, scrollTop - BUFFER_SIZE * ITEM_HEIGHT_ESTIMATE);
     const startIndex = Math.floor(scrollOffset / ITEM_HEIGHT_ESTIMATE);
     const visibleCount = Math.ceil(clientHeight / ITEM_HEIGHT_ESTIMATE) + BUFFER_SIZE * 2;
@@ -110,18 +126,34 @@ return;
     bottomRef.current?.scrollIntoView({ behavior });
   }, []);
 
-  // Auto-scroll on new messages
+  // Auto-scroll on new messages and restore scroll position after loading more
   useEffect(() => {
-    if (messages.length > lastMessageCountRef.current) {
-      if (autoScroll || isInitialLoadRef.current) {
-        // Use instant scroll on initial load, smooth for new messages
+    const container = containerRef.current;
+    if (!container) {
+return;
+}
+
+    const messageCountChanged = messages.length !== lastMessageCountRef.current;
+    const messagesAdded = messages.length > lastMessageCountRef.current;
+    const previouslyLoading = lastMessageCountRef.current > 0 && isLoadingMore;
+
+    if (messageCountChanged) {
+      if (messagesAdded && (autoScroll || isInitialLoadRef.current)) {
+        // New messages at bottom - scroll to bottom
         const behavior = isInitialLoadRef.current ? 'instant' : 'smooth';
         scrollToBottom(behavior as ScrollBehavior);
         isInitialLoadRef.current = false;
+      } else if (!isLoadingMore && previouslyLoading && lastScrollTop > 0) {
+        // Messages loaded at top - restore scroll position with offset
+        // This prevents the jarring jump when loading older messages
+        const newScrollTop = container.scrollHeight - (container.clientHeight + lastScrollTop);
+        container.scrollTop = newScrollTop;
+        setLastScrollTop(0);
       }
     }
+
     lastMessageCountRef.current = messages.length;
-  }, [messages.length, autoScroll, scrollToBottom]);
+  }, [messages.length, autoScroll, scrollToBottom, isLoadingMore, lastScrollTop]);
 
   // Initial scroll to bottom
   useEffect(() => {
@@ -163,18 +195,20 @@ return;
     });
   }, [messages, lastReadMessageId]);
 
-  // Get visible messages
+  // Get visible messages with improved virtualization threshold
+  const VIRTUALIZATION_THRESHOLD = 50; // Start virtualizing at 50+ messages for better performance
+
   const visibleMessages = useMemo(() => {
-    // For small lists, don't virtualize
-    if (messages.length < 100) {
+    // For small lists, don't virtualize to avoid complexity
+    if (messages.length < VIRTUALIZATION_THRESHOLD) {
       return messagesWithSeparators;
     }
     return messagesWithSeparators.slice(visibleRange.start, visibleRange.end);
   }, [messagesWithSeparators, visibleRange, messages.length]);
 
-  // Calculate spacer heights for virtualization
+  // Calculate spacer heights for virtualization with improved precision
   const spacerHeights = useMemo(() => {
-    if (messages.length < 100) {
+    if (messages.length < VIRTUALIZATION_THRESHOLD) {
       return { top: 0, bottom: 0 };
     }
     return {

@@ -154,23 +154,24 @@ return;
 
       try {
         const params = new URLSearchParams();
-        params.set('channelId', channelId);
         if (filters?.limit) {
 params.set('limit', String(filters.limit));
-}
-        if (filters?.before) {
-params.set('before', filters.before);
-}
-        if (filters?.after) {
-params.set('after', filters.after);
 }
         if (filters?.search) {
 params.set('search', filters.search);
 }
 
-        // If loading more, use the oldest message ID as cursor
+        // If loading more, use cursor-based pagination
         if (loadMore && messages.length > 0) {
-          params.set('before', messages[0].id);
+          // Use the oldest message ID as cursor and fetch before it
+          params.set('cursor', messages[0].id);
+          params.set('direction', 'before');
+        } else if (filters?.before) {
+          params.set('cursor', filters.before);
+          params.set('direction', 'before');
+        } else if (filters?.after) {
+          params.set('cursor', filters.after);
+          params.set('direction', 'after');
         }
 
         const response = await fetch(`/api/channels/${channelId}/messages?${params.toString()}`);
@@ -178,8 +179,8 @@ params.set('search', filters.search);
           throw new Error('Failed to fetch messages');
         }
 
-        const data = await response.json();
-        const newMessages: Message[] = data.messages.map((m: Message) => ({
+        const result = await response.json();
+        const newMessages: Message[] = result.data.map((m: Message) => ({
           ...m,
           createdAt: new Date(m.createdAt),
           updatedAt: new Date(m.updatedAt),
@@ -191,7 +192,7 @@ params.set('search', filters.search);
         } else {
           setMessages(newMessages);
         }
-        setHasMore(data.hasMore ?? newMessages.length === (filters?.limit ?? 50));
+        setHasMore(result.pagination?.hasMore ?? false);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
@@ -332,19 +333,19 @@ return;
         throw new Error('Failed to fetch thread');
       }
 
-      const data = await response.json();
+      const result = await response.json();
       setThread({
         parentMessage: {
-          ...data.parentMessage,
-          createdAt: new Date(data.parentMessage.createdAt),
-          updatedAt: new Date(data.parentMessage.updatedAt),
+          ...result.data.parentMessage,
+          createdAt: new Date(result.data.parentMessage.createdAt),
+          updatedAt: new Date(result.data.parentMessage.updatedAt),
         },
-        messages: data.messages.map((m: Message) => ({
+        messages: result.data.replies.map((m: Message) => ({
           ...m,
           createdAt: new Date(m.createdAt),
           updatedAt: new Date(m.updatedAt),
         })),
-        participants: data.participants,
+        participants: result.data.participants || [],
       });
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -400,35 +401,27 @@ export function useSendMessage(): UseSendMessageReturn {
       // This hook just provides the ID and handles the API call
 
       try {
-        const formData = new FormData();
-        formData.append('content', input.content);
-        formData.append('channelId', input.channelId);
-        if (input.parentId) {
-formData.append('parentId', input.parentId);
-}
-        if (input.mentions) {
-formData.append('mentions', JSON.stringify(input.mentions));
-}
-        if (input.attachments) {
-          input.attachments.forEach((file) => {
-            formData.append('attachments', file);
-          });
-        }
-
-        const response = await fetch('/api/messages', {
+        // Send as JSON to match API expectations
+        const response = await fetch(`/api/channels/${input.channelId}/messages`, {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: input.content,
+            type: input.type || 'TEXT',
+            parentId: input.parentId,
+            metadata: input.metadata || {},
+          }),
         });
 
         if (!response.ok) {
           throw new Error('Failed to send message');
         }
 
-        const data = await response.json();
+        const result = await response.json();
         const message: Message = {
-          ...data,
-          createdAt: new Date(data.createdAt),
-          updatedAt: new Date(data.updatedAt),
+          ...result.data,
+          createdAt: new Date(result.data.createdAt),
+          updatedAt: new Date(result.data.updatedAt),
         };
 
         return { optimisticId, message };
@@ -458,12 +451,12 @@ formData.append('mentions', JSON.stringify(input.mentions));
           throw new Error('Failed to edit message');
         }
 
-        const data = await response.json();
+        const result = await response.json();
         return {
-          ...data,
-          createdAt: new Date(data.createdAt),
-          updatedAt: new Date(data.updatedAt),
-          editedAt: new Date(data.editedAt),
+          ...result.data,
+          createdAt: new Date(result.data.createdAt),
+          updatedAt: new Date(result.data.updatedAt),
+          editedAt: new Date(result.data.editedAt),
         };
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -523,18 +516,44 @@ return null;
       setError(null);
 
       try {
-        const response = await fetch(`/api/messages/${messageId}/reactions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ emoji }),
-        });
+        // Check if reaction already exists by fetching current reactions
+        const getResponse = await fetch(`/api/messages/${messageId}/reactions`);
+        if (getResponse.ok) {
+          const getResult = await getResponse.json();
+          const existingReaction = getResult.data?.find(
+            (r: { emoji: string; hasReacted: boolean }) =>
+              r.emoji === emoji && r.hasReacted
+          );
 
-        if (!response.ok) {
-          throw new Error('Failed to toggle reaction');
+          // If exists, delete it; otherwise, add it
+          if (existingReaction) {
+            const deleteResponse = await fetch(
+              `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
+              { method: 'DELETE' }
+            );
+            if (!deleteResponse.ok) {
+              throw new Error('Failed to remove reaction');
+            }
+          } else {
+            const addResponse = await fetch(`/api/messages/${messageId}/reactions`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ emoji }),
+            });
+            if (!addResponse.ok) {
+              throw new Error('Failed to add reaction');
+            }
+          }
         }
 
-        const data = await response.json();
-        return data.reactions;
+        // Fetch updated reactions list
+        const finalResponse = await fetch(`/api/messages/${messageId}/reactions`);
+        if (!finalResponse.ok) {
+          throw new Error('Failed to fetch reactions');
+        }
+
+        const result = await finalResponse.json();
+        return result.data;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;

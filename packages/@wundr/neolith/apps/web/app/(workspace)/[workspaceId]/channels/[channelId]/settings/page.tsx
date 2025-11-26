@@ -238,23 +238,68 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
   const [name, setName] = useState(channel.name);
   const [description, setDescription] = useState(channel.description || '');
   const [hasChanges, setHasChanges] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     setName(channel.name);
     setDescription(channel.description || '');
     setHasChanges(false);
+    setSaveError(null);
+    setSaveSuccess(false);
   }, [channel.name, channel.description]);
 
   useEffect(() => {
     setHasChanges(name !== channel.name || description !== (channel.description || ''));
+    setSaveError(null);
+    setSaveSuccess(false);
   }, [name, description, channel.name, channel.description]);
 
+  const validateForm = (): boolean => {
+    const newErrors: { name?: string; description?: string } = {};
+
+    // Validate name
+    if (!name.trim()) {
+      newErrors.name = 'Channel name is required';
+    } else if (name.length < 1) {
+      newErrors.name = 'Channel name must be at least 1 character';
+    } else if (name.length > 80) {
+      newErrors.name = 'Channel name must be less than 80 characters';
+    } else if (!/^[a-z0-9-_]+$/.test(name)) {
+      newErrors.name = 'Channel name can only contain lowercase letters, numbers, hyphens, and underscores';
+    }
+
+    // Validate description
+    if (description.length > 250) {
+      newErrors.description = 'Description must be less than 250 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
-    await onUpdate({
-      name: name !== channel.name ? name : undefined,
-      description: description !== (channel.description || '') ? description : undefined,
-    });
-    setHasChanges(false);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await onUpdate({
+        name: name !== channel.name ? name : undefined,
+        description: description !== (channel.description || '') ? description : undefined,
+      });
+      setHasChanges(false);
+      setSaveSuccess(true);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Failed to update channel');
+    }
   };
 
   return (
@@ -279,12 +324,30 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
               id="channel-name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''));
+                setErrors({ ...errors, name: undefined });
+              }}
               disabled={!canEdit || isLoading}
-              className="w-full rounded-md border border-input bg-background py-2 pl-7 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className={cn(
+                "w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50",
+                errors.name
+                  ? "border-destructive focus:border-destructive focus:ring-destructive"
+                  : "border-input focus:border-primary focus:ring-primary"
+              )}
               maxLength={80}
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? "name-error" : undefined}
             />
           </div>
+          {errors.name && (
+            <p id="name-error" className="mt-1 text-xs text-destructive">
+              {errors.name}
+            </p>
+          )}
+          <p className="mt-1 text-xs text-muted-foreground">
+            {name.length}/80 characters
+          </p>
         </div>
 
         <div>
@@ -297,13 +360,31 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
           <textarea
             id="channel-description"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setErrors({ ...errors, description: undefined });
+            }}
             disabled={!canEdit || isLoading}
             placeholder="What is this channel about?"
             rows={3}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+            className={cn(
+              "w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50",
+              errors.description
+                ? "border-destructive focus:border-destructive focus:ring-destructive"
+                : "border-input focus:border-primary focus:ring-primary"
+            )}
             maxLength={250}
+            aria-invalid={!!errors.description}
+            aria-describedby={errors.description ? "description-error" : undefined}
           />
+          {errors.description && (
+            <p id="description-error" className="mt-1 text-xs text-destructive">
+              {errors.description}
+            </p>
+          )}
+          <p className="mt-1 text-xs text-muted-foreground">
+            {description.length}/250 characters
+          </p>
         </div>
 
         <div>
@@ -327,6 +408,18 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
         </div>
       </div>
 
+      {saveError && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3">
+          <p className="text-sm text-destructive">{saveError}</p>
+        </div>
+      )}
+
+      {saveSuccess && (
+        <div className="rounded-md border border-green-500/50 bg-green-500/10 px-4 py-3">
+          <p className="text-sm text-green-700 dark:text-green-400">Channel updated successfully!</p>
+        </div>
+      )}
+
       {canEdit && hasChanges && (
         <div className="flex gap-2">
           <button
@@ -334,6 +427,8 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
             onClick={() => {
               setName(channel.name);
               setDescription(channel.description || '');
+              setErrors({});
+              setSaveError(null);
             }}
             disabled={isLoading}
             className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
@@ -343,7 +438,7 @@ function OverviewTab({ channel, onUpdate, isLoading, canEdit }: OverviewTabProps
           <button
             type="button"
             onClick={handleSave}
-            disabled={isLoading}
+            disabled={isLoading || Object.keys(errors).length > 0}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {isLoading ? 'Saving...' : 'Save Changes'}
@@ -383,17 +478,39 @@ function MembersTab({
   isLoading,
 }: MembersTabProps) {
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleRemove = async (userId: string) => {
     setProcessingUserId(userId);
-    await onRemove(userId);
-    setProcessingUserId(null);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await onRemove(userId);
+      setSuccess('Member removed successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove member');
+    } finally {
+      setProcessingUserId(null);
+    }
   };
 
   const handleChangeRole = async (userId: string, role: 'admin' | 'member') => {
     setProcessingUserId(userId);
-    await onChangeRole(userId, role);
-    setProcessingUserId(null);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await onChangeRole(userId, role);
+      setSuccess(`Member role updated to ${role}`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update member role');
+    } finally {
+      setProcessingUserId(null);
+    }
   };
 
   if (isLoading) {
@@ -422,6 +539,18 @@ function MembersTab({
           </button>
         )}
       </div>
+
+      {error && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-md border border-green-500/50 bg-green-500/10 px-4 py-3">
+          <p className="text-sm text-green-700 dark:text-green-400">{success}</p>
+        </div>
+      )}
 
       {/* Online members */}
       {onlineMembers.length > 0 && (
@@ -681,8 +810,35 @@ function AdvancedTab({
 }: AdvancedTabProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [archiving, setArchiving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const canDelete = deleteConfirmText === channel.name;
+
+  const handleArchive = async () => {
+    setArchiving(true);
+    setError(null);
+
+    try {
+      await onArchive();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to archive channel');
+      setArchiving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError(null);
+
+    try {
+      await onDelete();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete channel');
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="max-w-xl space-y-8">
@@ -692,6 +848,12 @@ function AdvancedTab({
           Danger zone - these actions cannot be easily undone
         </p>
       </div>
+
+      {error && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
       {/* Archive section */}
       {permissions.canArchive && !channel.isArchived && (
@@ -703,11 +865,11 @@ function AdvancedTab({
           </p>
           <button
             type="button"
-            onClick={onArchive}
-            disabled={isLoading}
+            onClick={handleArchive}
+            disabled={isLoading || archiving}
             className="mt-4 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50"
           >
-            {isLoading ? 'Archiving...' : 'Archive Channel'}
+            {archiving ? 'Archiving...' : 'Archive Channel'}
           </button>
         </div>
       )}
@@ -755,11 +917,11 @@ function AdvancedTab({
                 </button>
                 <button
                   type="button"
-                  onClick={onDelete}
-                  disabled={!canDelete || isLoading}
+                  onClick={handleDelete}
+                  disabled={!canDelete || isLoading || deleting}
                   className="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50"
                 >
-                  {isLoading ? 'Deleting...' : 'Permanently Delete'}
+                  {deleting ? 'Deleting...' : 'Permanently Delete'}
                 </button>
               </div>
             </div>

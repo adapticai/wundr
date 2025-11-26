@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -19,7 +19,7 @@ interface ReactionDisplayProps {
   className?: string;
 }
 
-export function ReactionDisplay({
+export const ReactionDisplay = memo(function ReactionDisplay({
   reactions,
   onToggleReaction,
   className,
@@ -29,7 +29,7 @@ return null;
 }
 
   return (
-    <div className={cn('flex flex-wrap gap-1', className)}>
+    <div className={cn('flex flex-wrap gap-1', className)} role="group" aria-label="Message reactions">
       {reactions.map((reaction) => (
         <ReactionBadge
           key={reaction.emoji}
@@ -39,17 +39,17 @@ return null;
       ))}
     </div>
   );
-}
+});
 
 interface ReactionBadgeProps {
   reaction: Reaction;
   onClick: () => void;
 }
 
-function ReactionBadge({ reaction, onClick }: ReactionBadgeProps) {
+const ReactionBadge = memo(function ReactionBadge({ reaction, onClick }: ReactionBadgeProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const getUserNames = () => {
+  const getUserNames = useCallback(() => {
     if (reaction.users.length === 0) {
 return '';
 }
@@ -65,29 +65,36 @@ return reaction.users[0].name;
     }
     const names = reaction.users.slice(0, 3).map((u) => u.name).join(', ');
     return `${names}, and ${reaction.users.length - 3} others`;
-  };
+  }, [reaction.users]);
+
+  const handleMouseEnter = useCallback(() => setShowTooltip(true), []);
+  const handleMouseLeave = useCallback(() => setShowTooltip(false), []);
 
   return (
     <div className="relative">
       <button
         type="button"
         onClick={onClick}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={cn(
-          'flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-colors',
+          'flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
           reaction.hasReacted
             ? 'border-primary/50 bg-primary/10 text-primary hover:border-primary'
             : 'border-border bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted',
         )}
+        aria-label={`${reaction.emoji} reaction, ${reaction.count} ${reaction.count === 1 ? 'person' : 'people'}`}
       >
-        <span className="text-base">{reaction.emoji}</span>
-        <span className="min-w-[1ch] text-xs font-medium">{reaction.count}</span>
+        <span className="text-base leading-none" aria-hidden="true">{reaction.emoji}</span>
+        <span className="min-w-[1ch] text-xs font-medium tabular-nums">{reaction.count}</span>
       </button>
 
       {/* Tooltip */}
       {showTooltip && reaction.users.length > 0 && (
-        <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md">
+        <div
+          className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-lg ring-1 ring-border"
+          role="tooltip"
+        >
           {getUserNames()}
           <div className="absolute left-1/2 top-full -translate-x-1/2">
             <div className="h-0 w-0 border-x-4 border-t-4 border-x-transparent border-t-popover" />
@@ -96,4 +103,4 @@ return reaction.users[0].name;
       )}
     </div>
   );
-}
+});

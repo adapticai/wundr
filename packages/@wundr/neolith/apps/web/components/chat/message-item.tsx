@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -37,7 +37,7 @@ interface MessageItemProps {
   className?: string;
 }
 
-export function MessageItem({
+export const MessageItem = memo(function MessageItem({
   message,
   currentUser,
   onReply,
@@ -219,30 +219,41 @@ export function MessageItem({
               </div>
             )}
 
-            {/* Thread indicator */}
+            {/* Thread indicator - Enhanced with better visibility */}
             {!isThreadView && message.replyCount > 0 && (
               <button
                 type="button"
                 onClick={() => onOpenThread?.(message)}
-                className="mt-2 flex items-center gap-2 text-sm text-stone-600 hover:underline dark:text-stone-400"
+                className="mt-2 inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10 hover:text-primary"
               >
-                <ThreadIcon />
-                <span>
+                <ThreadIcon className="h-4 w-4" />
+                <span className="font-semibold">
                   {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
                 </span>
                 {message.replyPreview && message.replyPreview.length > 0 && (
-                  <div className="flex -space-x-1">
+                  <div className="flex -space-x-1.5">
                     {message.replyPreview.slice(0, 3).map((reply) => (
-                      <div
-                        key={reply.id}
-                        className="h-5 w-5 rounded-full border-2 border-background bg-primary text-[10px] font-medium text-primary-foreground"
-                        title={reply.author.name}
-                      >
-                        {reply.author.name.charAt(0).toUpperCase()}
-                      </div>
+                      reply.author.image ? (
+                        <img
+                          key={reply.id}
+                          src={reply.author.image}
+                          alt={reply.author.name}
+                          className="h-6 w-6 rounded-full border-2 border-background object-cover ring-1 ring-border"
+                          title={reply.author.name}
+                        />
+                      ) : (
+                        <div
+                          key={reply.id}
+                          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-primary text-[10px] font-medium text-primary-foreground ring-1 ring-border"
+                          title={reply.author.name}
+                        >
+                          {reply.author.name.charAt(0).toUpperCase()}
+                        </div>
+                      )
                     ))}
                   </div>
                 )}
+                <span className="text-xs text-muted-foreground">View thread →</span>
               </button>
             )}
           </div>
@@ -281,7 +292,7 @@ export function MessageItem({
       </div>
     </>
   );
-}
+});
 
 interface MessageContentProps {
   content: string;
@@ -512,9 +523,9 @@ function DeleteIcon() {
   );
 }
 
-function ThreadIcon() {
+function ThreadIcon({ className }: { className?: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   );

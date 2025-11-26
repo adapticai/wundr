@@ -25,6 +25,8 @@ interface ChannelListProps {
   starredChannels: Channel[];
   /** Loading state for the channel list */
   isLoading?: boolean;
+  /** Error state for the channel list */
+  error?: Error | null;
   /** Callback fired when creating a new channel */
   onCreateChannel?: (input: {
     name: string;
@@ -32,6 +34,8 @@ interface ChannelListProps {
     description?: string;
     memberIds?: string[];
   }) => Promise<void>;
+  /** Callback fired when retrying to load channels */
+  onRetry?: () => void;
   /** Additional CSS class names */
   className?: string;
 }
@@ -42,7 +46,9 @@ export function ChannelList({
   directMessages,
   starredChannels,
   isLoading = false,
+  error = null,
   onCreateChannel,
+  onRetry,
   className,
 }: ChannelListProps) {
   const pathname = usePathname();
@@ -103,14 +109,41 @@ return directMessages;
       description?: string;
       memberIds?: string[];
     }) => {
-      await onCreateChannel?.(input);
-      setIsCreateDialogOpen(false);
+      try {
+        await onCreateChannel?.(input);
+        setIsCreateDialogOpen(false);
+      } catch (error) {
+        console.error('Error creating channel:', error);
+        // Keep dialog open on error so user can retry
+      }
     },
     [onCreateChannel],
   );
 
   if (isLoading) {
     return <ChannelListSkeleton className={className} />;
+  }
+
+  // Show error state with retry option
+  if (error && channels.length === 0 && directMessages.length === 0) {
+    return (
+      <div className={cn('flex flex-col items-center justify-center p-6', className)}>
+        <AlertCircleIcon className="h-10 w-10 text-muted-foreground mb-3" />
+        <p className="text-sm font-medium text-foreground mb-1">Failed to load channels</p>
+        <p className="text-xs text-muted-foreground mb-4 text-center">
+          {error.message || 'An error occurred while loading your channels'}
+        </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Try Again
+          </button>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -166,7 +199,22 @@ return directMessages;
           }
         >
           {filteredChannels.length === 0 ? (
-            <p className="px-4 py-2 text-xs text-muted-foreground">No channels found</p>
+            <div className="px-4 py-3">
+              <p className="text-xs text-muted-foreground">
+                {searchQuery.trim()
+                  ? 'No channels match your search'
+                  : 'No channels yet'}
+              </p>
+              {!searchQuery.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="mt-2 text-xs text-primary hover:underline"
+                >
+                  Create your first channel
+                </button>
+              )}
+            </div>
           ) : (
             filteredChannels.map((channel) => (
               <ChannelItem
@@ -195,7 +243,18 @@ return directMessages;
           }
         >
           {filteredDMs.length === 0 ? (
-            <p className="px-4 py-2 text-xs text-muted-foreground">No conversations</p>
+            <div className="px-4 py-3">
+              <p className="text-xs text-muted-foreground">
+                {searchQuery.trim()
+                  ? 'No conversations match your search'
+                  : 'No direct messages yet'}
+              </p>
+              {!searchQuery.trim() && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Click + to start a conversation
+                </p>
+              )}
+            </div>
           ) : (
             filteredDMs.map((dm) => (
               <DirectMessageItem
@@ -268,7 +327,8 @@ interface ChannelItemProps {
 }
 
 function ChannelItem({ channel, workspaceId, isActive }: ChannelItemProps) {
-  const hasUnread = channel.unreadCount > 0;
+  const hasUnread = channel.unreadCount != null && channel.unreadCount > 0;
+  const unreadDisplay = channel.unreadCount > 99 ? '99+' : channel.unreadCount;
 
   return (
     <Link
@@ -278,14 +338,15 @@ function ChannelItem({ channel, workspaceId, isActive }: ChannelItemProps) {
         isActive
           ? 'bg-accent text-foreground'
           : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-        hasUnread && 'font-semibold text-foreground',
+        hasUnread && !isActive && 'font-semibold text-foreground',
       )}
+      title={`${channel.name}${channel.description ? ` - ${channel.description}` : ''}`}
     >
       <ChannelTypeIcon type={channel.type} className="h-4 w-4 shrink-0" />
       <span className="flex-1 truncate font-sans">{channel.name}</span>
-      {hasUnread && (
+      {hasUnread && !isActive && (
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
-          {channel.unreadCount > 99 ? '99+' : channel.unreadCount}
+          {unreadDisplay}
         </span>
       )}
     </Link>
@@ -299,9 +360,10 @@ interface DirectMessageItemProps {
 }
 
 function DirectMessageItem({ dm, workspaceId, isActive }: DirectMessageItemProps) {
-  const hasUnread = dm.unreadCount > 0;
+  const hasUnread = dm.unreadCount != null && dm.unreadCount > 0;
+  const unreadDisplay = dm.unreadCount > 99 ? '99+' : dm.unreadCount;
   const displayName = dm.participants
-    .map((p) => p.user.name.split(' ')[0])
+    .map((p) => p.user?.name?.split(' ')[0] || 'Unknown')
     .join(', ');
   const firstParticipant = dm.participants[0];
 
@@ -313,14 +375,15 @@ function DirectMessageItem({ dm, workspaceId, isActive }: DirectMessageItemProps
         isActive
           ? 'bg-accent text-foreground'
           : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-        hasUnread && 'font-semibold text-foreground',
+        hasUnread && !isActive && 'font-semibold text-foreground',
       )}
+      title={displayName}
     >
-      <div className="relative">
+      <div className="relative shrink-0">
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
-          {firstParticipant?.user.name.charAt(0).toUpperCase()}
+          {firstParticipant?.user?.name?.charAt(0).toUpperCase() || '?'}
         </div>
-        {firstParticipant?.user.status === 'online' && (
+        {firstParticipant?.user?.status === 'online' && (
           <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-emerald-500" />
         )}
         {firstParticipant?.isVP && (
@@ -330,9 +393,9 @@ function DirectMessageItem({ dm, workspaceId, isActive }: DirectMessageItemProps
         )}
       </div>
       <span className="flex-1 truncate">{displayName}</span>
-      {hasUnread && (
+      {hasUnread && !isActive && (
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
-          {dm.unreadCount > 99 ? '99+' : dm.unreadCount}
+          {unreadDisplay}
         </span>
       )}
     </Link>
@@ -442,6 +505,24 @@ function StarFilledIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
     >
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  );
+}
+
+function AlertCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
   );
 }

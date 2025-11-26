@@ -71,13 +71,16 @@ export interface TypingUser {
 export interface SendMessageInput {
   content: string;
   channelId: string;
+  type?: 'TEXT' | 'SYSTEM' | 'FILE' | 'COMMAND';
   parentId?: string;
+  metadata?: Record<string, unknown>;
   mentions?: string[];
   attachments?: File[];
 }
 
 export interface UpdateMessageInput {
   content: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MessageFilters {

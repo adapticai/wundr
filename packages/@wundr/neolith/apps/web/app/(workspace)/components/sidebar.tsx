@@ -39,9 +39,16 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
     privateChannels,
     starredChannels,
     isLoading: isChannelsLoading,
+    error: channelsError,
+    refetch: refetchChannels,
   } = useChannels(workspaceId);
 
-  const { directMessages, isLoading: isDMsLoading } = useDirectMessages(workspaceId);
+  const {
+    directMessages,
+    isLoading: isDMsLoading,
+    error: dmsError,
+    refetch: refetchDMs,
+  } = useDirectMessages(workspaceId);
   const { createChannel } = useChannelMutations();
 
   const handleCreateChannel = useCallback(
@@ -52,9 +59,15 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
       memberIds?: string[];
     }) => {
       await createChannel(workspaceId, input);
+      // Refetch channels after creation
+      await refetchChannels();
     },
-    [workspaceId, createChannel],
+    [workspaceId, createChannel, refetchChannels],
   );
+
+  const handleRetry = useCallback(async () => {
+    await Promise.all([refetchChannels(), refetchDMs()]);
+  }, [refetchChannels, refetchDMs]);
 
   const navItems = [
     { href: `/${workspaceId}/dashboard`, icon: <DashboardIcon />, label: 'Dashboard' },
@@ -165,7 +178,9 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
             directMessages={directMessages}
             starredChannels={starredChannels}
             isLoading={isChannelsLoading || isDMsLoading}
+            error={channelsError || dmsError}
             onCreateChannel={handleCreateChannel}
+            onRetry={handleRetry}
             className="h-full"
           />
         </div>

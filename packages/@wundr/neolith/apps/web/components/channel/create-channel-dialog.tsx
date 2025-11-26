@@ -76,13 +76,17 @@ return;
         name: name.trim().toLowerCase().replace(/\s+/g, '-'),
         type,
         description: description.trim() || undefined,
-        memberIds: selectedMembers.map((m) => m.id),
+        memberIds: type === 'private' ? selectedMembers.map((m) => m.id) : [],
       });
-      handleClose();
+      resetForm();
+      onClose();
+    } catch (error) {
+      console.error('Failed to create channel:', error);
+      // Error handling is done by parent component
     } finally {
       setIsSubmitting(false);
     }
-  }, [name, type, description, selectedMembers, isSubmitting, onCreate, handleClose]);
+  }, [name, type, description, selectedMembers, isSubmitting, onCreate, resetForm, onClose]);
 
   const handleAddMember = useCallback((user: User) => {
     setSelectedMembers((prev) => {
@@ -100,7 +104,12 @@ return prev;
 
   // Format channel name as user types
   const displayName = name.trim().toLowerCase().replace(/\s+/g, '-');
-  const isValid = name.trim().length > 0;
+
+  // Validation
+  const nameError = name.length > 0 && name.trim().length === 0 ? 'Channel name cannot be empty' :
+                    name.length > 80 ? 'Channel name must be less than 80 characters' : null;
+  const isValid = name.trim().length > 0 && !nameError &&
+                  (type === 'public' || selectedMembers.length > 0);
 
   if (!isOpen) {
 return null;
@@ -160,7 +169,10 @@ return null;
                 maxLength={80}
               />
             </div>
-            {name && (
+            {nameError && (
+              <p className="mt-1 text-xs text-destructive">{nameError}</p>
+            )}
+            {name && !nameError && (
               <p className="mt-1 text-xs text-muted-foreground">
                 Channel will be created as:{' '}
                 <span className="font-medium text-foreground">#{displayName}</span>
@@ -263,7 +275,11 @@ return null;
           <div>
             <label className="mb-1 block text-sm font-medium text-foreground">
               Add members{' '}
-              <span className="font-normal text-muted-foreground">(optional)</span>
+              {type === 'private' ? (
+                <span className="font-normal text-destructive">(required for private channels)</span>
+              ) : (
+                <span className="font-normal text-muted-foreground">(optional)</span>
+              )}
             </label>
 
             {/* Selected members */}
@@ -342,6 +358,13 @@ return null;
 
             {memberSearch && users.length === 0 && !isSearchingUsers && (
               <p className="mt-2 text-sm text-muted-foreground">No users found</p>
+            )}
+
+            {/* Validation message for private channels */}
+            {type === 'private' && selectedMembers.length === 0 && (
+              <p className="mt-2 text-xs text-destructive">
+                Private channels require at least one member
+              </p>
             )}
           </div>
         </div>

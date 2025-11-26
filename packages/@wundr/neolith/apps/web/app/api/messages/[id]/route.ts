@@ -4,9 +4,15 @@
  * Handles operations on individual message entities.
  *
  * Routes:
- * - GET /api/messages/:id - Get message details
- * - PATCH /api/messages/:id - Update message content
- * - DELETE /api/messages/:id - Delete message (soft delete)
+ * - GET /api/messages/:id - Get message details with thread replies
+ * - PATCH /api/messages/:id - Update message content (author only)
+ * - DELETE /api/messages/:id - Delete message (author or admin)
+ *
+ * Features:
+ * - Edit history tracking in message metadata
+ * - Channel membership access control
+ * - Soft delete with content replacement
+ * - Thread reply count
  *
  * @module app/api/messages/[id]/route
  */
@@ -269,6 +275,28 @@ export async function PATCH(
       );
     }
 
+    // Track edit history in metadata
+    const currentMetadata = result.metadata as Record<string, unknown> || {};
+    const editHistory = (currentMetadata.editHistory as Array<{
+      content: string;
+      editedAt: string;
+      editedBy: string;
+    }>) || [];
+
+    // Add current content to edit history
+    editHistory.push({
+      content: result.content,
+      editedAt: new Date().toISOString(),
+      editedBy: session.user.id,
+    });
+
+    // Merge metadata
+    const updatedMetadata = {
+      ...currentMetadata,
+      ...(input.metadata || {}),
+      editHistory,
+    };
+
     // Update the message
     const updatedMessage = await prisma.message.update({
       where: { id: params.id },
@@ -276,7 +304,7 @@ export async function PATCH(
         content: input.content,
         isEdited: true,
         editedAt: new Date(),
-        ...(input.metadata && { metadata: input.metadata as Prisma.InputJsonValue }),
+        metadata: updatedMetadata as Prisma.InputJsonValue,
       },
       include: {
         author: {
