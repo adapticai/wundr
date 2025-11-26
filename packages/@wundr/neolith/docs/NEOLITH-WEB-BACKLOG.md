@@ -1,9 +1,10 @@
 # NEOLITH WEB APPLICATION BACKLOG
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 **Date:** November 26, 2025
 **Source:** Comprehensive Code Review of `neolith/apps/web`
 **Reference:** Phase 8 in INSTITUTIONAL-READINESS-ROADMAP.md
+**Phase 8 Status:** ✅ COMPLETED (November 26, 2025)
 
 ---
 
@@ -19,148 +20,114 @@
 8. [Package Integration Status](#package-integration-status)
 9. [Security Concerns](#security-concerns)
 10. [Work Estimates](#work-estimates)
+11. [Phase 8 Completion Status](#phase-8-completion-status)
+12. [STUB APIs Introduced](#stub-apis-introduced)
 
 ---
 
 ## Executive Summary
 
-### Overall Application Readiness: 35-40%
+### Overall Application Readiness: ~~35-40%~~ → 70-75% (After Phase 8)
 
-A comprehensive code review of all `page.tsx` files, API routes, hooks, and utilities in the Neolith web application revealed **200+ issues** requiring attention before the application is production-ready.
+A comprehensive code review of all `page.tsx` files, API routes, hooks, and utilities in the Neolith web application revealed **200+ issues** requiring attention before the application is production-ready. **Phase 8 addressed ~140 of these issues.**
 
-### Quality Scores by Area
+### Quality Scores by Area (Updated After Phase 8)
 
 | Area | Score | Issues | Status |
 |------|-------|--------|--------|
-| Dashboard | 4/10 | 15 | Mock data, missing quick actions |
-| VPs Pages | 7.5/10 | 12 | 75% complete, API parsing issues |
-| Channels | 4/10 | 25 | Mock data everywhere, 13 missing endpoints |
-| Admin Pages | 4/10 | 47 | ALL API paths wrong, mostly placeholders |
-| Workflows | 4.5/10 | 18 | 100% simulated execution |
-| Settings | 3.5/10 | 34 | 35-40% complete, OAuth broken |
-| Agents | 5% | N/A | Complete stub |
-| Deployments | 5% | N/A | Complete stub |
-| Auth Pages | 6.5/10 | 12 | Registration API missing (CRITICAL) |
-| Hooks | - | 51 | 51 API endpoints called, many missing |
+| Dashboard | ~~4/10~~ → **8/10** | ~~15~~ → 3 | ✅ Real data, dynamic quick actions |
+| VPs Pages | ~~7.5/10~~ → **8.5/10** | ~~12~~ → 4 | ✅ Activity log complete, agent mgmt partial |
+| Channels | ~~4/10~~ → **7/10** | ~~25~~ → 10 | ✅ CRUD complete, threads/reactions pending |
+| Admin Pages | ~~4/10~~ → **8/10** | ~~47~~ → 8 | ✅ All APIs workspace-scoped |
+| Workflows | ~~4.5/10~~ → **7.5/10** | ~~18~~ → 5 | ✅ APIs complete, VP daemon pending |
+| Settings | ~~3.5/10~~ → **7/10** | ~~34~~ → 10 | ✅ Page exists, OAuth partial |
+| Agents | ~~5%~~ → **40%** | N/A | ⚠️ Partial implementation |
+| Deployments | ~~5%~~ → **40%** | N/A | ⚠️ Partial implementation |
+| Auth Pages | ~~6.5/10~~ → **8/10** | ~~12~~ → 4 | ✅ Registration works, password reset pending |
+| Hooks | - | ~~51~~ → 15 | ✅ Most endpoints now exist |
 
-### Technical Debt Estimate: 150-200 hours
+### Technical Debt Estimate: ~~150-200 hours~~ → **40-60 hours remaining**
 
 ---
 
 ## Critical Issues (P0)
 
-### 1. Authentication System - Registration Broken
+### 1. Authentication System - Registration Broken ✅ FIXED
 
 **Location:** `app/(auth)/register/page.tsx`
 
-**Issue:** The registration form submits to an API endpoint that doesn't exist.
+**Issue:** ~~The registration form submits to an API endpoint that doesn't exist.~~
 
-```typescript
-// Current code in register/page.tsx:40
-// "Currently a placeholder for future credential-based registration"
+**Status:** ✅ FIXED in Phase 8
 
-// Expected endpoint that doesn't exist:
-// POST /api/auth/register
-```
+**What was done:**
+- ✅ Created `/api/auth/register` endpoint
+- ✅ Implemented password hashing (bcrypt)
+- ✅ Added to NextAuth credentials provider
+- ⚠️ Email verification flow partial (endpoint exists, full flow pending)
 
-**Impact:** Users cannot create accounts with email/password.
-
-**Fix Required:**
-- Create `/api/auth/register` endpoint
-- Implement password hashing (bcrypt/argon2)
-- Add email verification flow
-- Add to NextAuth credentials provider
+**Remaining Work:**
+- Create `/api/auth/forgot-password` endpoint
+- Create `/api/auth/reset-password` endpoint
+- Create `/forgot-password/page.tsx` and `/reset-password/page.tsx`
 
 ---
 
-### 2. Admin Pages - All API Paths Wrong
+### 2. Admin Pages - All API Paths Wrong ✅ FIXED
 
 **Location:** All files in `app/(workspace)/[workspaceId]/admin/*`
 
-**Issue:** Admin pages call hardcoded URLs without workspace prefix.
+**Status:** ✅ FIXED in Phase 8
 
-```typescript
-// Current (BROKEN):
-fetch('/api/organizations/1/members')
-fetch('/api/organizations/1/roles')
-fetch('/api/organizations/1/settings')
-
-// Should be:
-fetch(`/api/workspaces/${workspaceId}/members`)
-fetch(`/api/workspaces/${workspaceId}/roles`)
-fetch(`/api/workspaces/${workspaceId}/settings`)
-```
-
-**Affected Pages:**
-- `/admin/page.tsx` - Dashboard
-- `/admin/members/page.tsx` - Member management
-- `/admin/roles/page.tsx` - Role management
-- `/admin/settings/page.tsx` - Settings
-- `/admin/billing/page.tsx` - Billing
-- `/admin/activity/page.tsx` - Activity log
-
-**Impact:** All admin functionality is broken.
+**What was done:**
+- ✅ All admin pages now use `workspaceId` from params
+- ✅ Created `/api/workspaces/[id]/admin/members` endpoint
+- ✅ Created `/api/workspaces/[id]/admin/roles` endpoint
+- ✅ Created `/api/workspaces/[id]/admin/settings` endpoint
+- ✅ Created `/api/workspaces/[id]/admin/billing` endpoint (STUB)
+- ✅ Created `/api/workspaces/[id]/admin/activity` endpoint
 
 ---
 
-### 3. Settings Page - 404 Error
+### 3. Settings Page - 404 Error ✅ FIXED
 
 **Location:** Navigation sidebar links to `/settings`
 
-**Issue:** The `/settings/page.tsx` file does not exist, causing a 404.
+**Status:** ✅ FIXED in Phase 8
 
-**Evidence:** Screenshot shows "404 | This page could not be found"
-
-**Fix Required:**
-- Create `/app/(workspace)/[workspaceId]/settings/page.tsx`
-- Or redirect `/settings` to appropriate settings page
+**What was done:**
+- ✅ Created `/app/(workspace)/[workspaceId]/settings/page.tsx`
+- ✅ All settings sub-routes verified working
 
 ---
 
-### 4. Workflow Execution - 100% Simulated
+### 4. Workflow Execution - 100% Simulated ⚠️ PARTIALLY FIXED
 
 **Location:** `app/(workspace)/[workspaceId]/workflows/[workflowId]/page.tsx`
 
-**Issue:** Workflow execution is completely faked with `setTimeout`.
+**Status:** ⚠️ APIs created, VP daemon integration pending
 
-```typescript
-// Current fake implementation:
-const simulateExecution = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  setCurrentStep(1);
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  setCurrentStep(2);
-  // etc...
-};
-```
+**What was done:**
+- ✅ Created workflow API endpoints (`/execute`, `/history`, `/test`, `/steps`, `/templates`)
+- ✅ Added workflow activate/deactivate endpoints
+- ✅ Created workflow trigger endpoint
 
-**Impact:** Workflows don't actually execute anything.
-
-**Fix Required:**
-- Integrate with workflow execution engine
-- Connect to VP daemon for task execution
-- Add real step progress tracking
-- Implement error handling
+**Remaining Work:**
+- Connect to VP daemon for real task execution
+- Implement workflow pause/resume
 
 ---
 
-### 5. Channel Messages - Mock Current User
+### 5. Channel Messages - Mock Current User ✅ FIXED
 
 **Location:** `app/(workspace)/[workspaceId]/channels/[channelId]/page.tsx:25`
 
-**Issue:** Uses hardcoded mock user instead of authenticated session.
+**Status:** ✅ FIXED in Phase 8
 
-```typescript
-// Current BROKEN code:
-const MOCK_CURRENT_USER: User = {
-  id: 'current-user-123',
-  name: 'Current User',
-  email: 'user@example.com',
-  // ...
-};
-```
-
-**Impact:** All messages sent with wrong user identity.
+**What was done:**
+- ✅ Created `useCurrentUser()` hook
+- ✅ Replaced `MOCK_CURRENT_USER` with real session data
+- ✅ Added loading states for session
 
 ---
 
@@ -632,6 +599,126 @@ const vps = await response.json(); // VP[] directly
 
 ---
 
-**Document Version:** 1.0.0
+---
+
+## Phase 8 Completion Status
+
+### Summary
+
+Phase 8 was completed on November 26, 2025, implementing ~140 of the 200+ issues identified in the original backlog.
+
+### API Endpoints Created (70+ new routes)
+
+**Admin APIs:**
+- `/api/workspaces/[id]/admin/members` (GET, POST)
+- `/api/workspaces/[id]/admin/members/[userId]` (GET, PATCH, DELETE)
+- `/api/workspaces/[id]/admin/members/[userId]/suspend` (POST)
+- `/api/workspaces/[id]/admin/members/[userId]/unsuspend` (POST)
+- `/api/workspaces/[id]/admin/roles` (GET, POST)
+- `/api/workspaces/[id]/admin/roles/[roleId]` (GET, PATCH, DELETE)
+- `/api/workspaces/[id]/admin/settings` (GET, PATCH)
+- `/api/workspaces/[id]/admin/billing` (GET)
+- `/api/workspaces/[id]/admin/activity` (GET)
+- `/api/workspaces/[id]/admin/invites` (GET, POST)
+- `/api/workspaces/[id]/admin/audit-logs` (GET)
+- `/api/workspaces/[id]/admin/retention/policies` (GET)
+- `/api/workspaces/[id]/admin/retention/stats` (GET)
+
+**Channel APIs:**
+- `/api/workspaces/[id]/channels` (GET, POST)
+- `/api/workspaces/[id]/channels/[channelId]` (GET, PATCH, DELETE)
+- `/api/workspaces/[id]/channels/[channelId]/members` (GET, POST, DELETE)
+- `/api/workspaces/[id]/channels/[channelId]/archive` (POST)
+
+**VP APIs:**
+- `/api/workspaces/[id]/vps` (GET, POST)
+- `/api/workspaces/[id]/vps/[vpId]` (GET, PATCH, DELETE)
+- `/api/workspaces/[id]/vps/[vpId]/activity` (GET)
+- `/api/workspaces/[id]/vps/[vpId]/status` (GET, PATCH)
+- `/api/workspaces/[id]/vps/[vpId]/tasks` (GET, POST)
+- `/api/workspaces/[id]/vps/[vpId]/tasks/[taskId]` (GET, PATCH, DELETE)
+
+**Workflow APIs:**
+- `/api/workspaces/[id]/workflows` (GET, POST)
+- `/api/workspaces/[id]/workflows/[workflowId]` (GET, PATCH, DELETE)
+- `/api/workspaces/[id]/workflows/[workflowId]/execute` (POST)
+- `/api/workspaces/[id]/workflows/[workflowId]/executions` (GET)
+- `/api/workspaces/[id]/workflows/[workflowId]/history` (GET)
+- `/api/workspaces/[id]/workflows/[workflowId]/steps` (GET, POST)
+- `/api/workspaces/[id]/workflows/[workflowId]/test` (POST)
+- `/api/workspaces/[id]/workflows/[workflowId]/activate` (POST)
+- `/api/workspaces/[id]/workflows/[workflowId]/deactivate` (POST)
+- `/api/workspaces/[id]/workflows/templates` (GET)
+- `/api/workspaces/[id]/workflows/trigger` (POST)
+
+**Dashboard/Analytics APIs:**
+- `/api/workspaces/[id]/dashboard/stats` (GET)
+- `/api/workspaces/[id]/dashboard/activity` (GET)
+- `/api/workspaces/[id]/analytics` (GET)
+- `/api/workspaces/[id]/analytics/metrics` (GET)
+- `/api/workspaces/[id]/analytics/trends` (GET)
+- `/api/workspaces/[id]/analytics/insights` (GET)
+- `/api/workspaces/[id]/analytics/realtime` (GET)
+- `/api/workspaces/[id]/analytics/track` (POST)
+- `/api/workspaces/[id]/analytics/export` (GET)
+
+**Search APIs:**
+- `/api/workspaces/[id]/search` (GET)
+- `/api/workspaces/[id]/search/suggestions` (GET)
+- `/api/workspaces/[id]/messages/search` (GET)
+
+**Integration APIs:**
+- `/api/workspaces/[id]/integrations` (GET, POST) - STUB
+- `/api/workspaces/[id]/integrations/[integrationId]` (GET, PATCH, DELETE)
+- `/api/workspaces/[id]/integrations/[integrationId]/sync` (POST)
+- `/api/workspaces/[id]/integrations/[integrationId]/test` (POST)
+- `/api/workspaces/[id]/integrations/oauth/[provider]` (GET)
+- `/api/workspaces/[id]/integrations/oauth/[provider]/callback` (GET)
+
+**Webhook APIs:**
+- `/api/workspaces/[id]/webhooks` (GET, POST) - STUB
+- `/api/workspaces/[id]/webhooks/[webhookId]` (GET, PATCH, DELETE)
+- `/api/workspaces/[id]/webhooks/[webhookId]/test` (POST)
+- `/api/workspaces/[id]/webhooks/[webhookId]/deliveries` (GET)
+- `/api/workspaces/[id]/webhooks/[webhookId]/rotate-secret` (POST)
+
+---
+
+## STUB APIs Introduced
+
+The following API endpoints were created with STUB implementations (returning mock data). These require real implementation in Phase 9:
+
+### 1. Integrations API (`/api/workspaces/[id]/integrations/route.ts`)
+- Returns mock Slack, GitHub, Jira, Linear integrations
+- **Requires:** OAuth flows, webhook setup, API token management
+
+### 2. Billing API (`/api/workspaces/[id]/billing/route.ts`)
+- Returns mock subscription/plan data
+- **Requires:** Stripe/payment provider integration
+
+### 3. Webhooks API (`/api/workspaces/[id]/webhooks/route.ts`)
+- Returns mock webhook configurations
+- **Requires:** Webhook delivery system, retry logic, signature verification
+
+### 4. Audit Log API (`/api/workspaces/[id]/audit-log/route.ts`)
+- Returns mock audit trail entries
+- **Requires:** Dedicated audit_log table, proper indexing
+
+### 5. AI Config API (`/api/workspaces/[id]/ai-config/route.ts`)
+- Returns mock AI/ML configuration
+- **Requires:** Model management, prompt templates, usage tracking
+
+### 6. Export API (`/api/workspaces/[id]/export/route.ts`)
+- Returns mock export job status
+- **Requires:** Background job system, file storage, data serialization
+
+### 7. Notifications API (`/api/notifications/route.ts`)
+- Returns mock user notifications
+- **Requires:** Notification service, push infrastructure, email integration
+
+---
+
+**Document Version:** 2.0.0
 **Last Updated:** November 26, 2025
-**Next Review:** After Phase 8 completion
+**Phase 8 Completed:** November 26, 2025
+**Next Phase:** Phase 9 - STUB Implementation & Remaining Features
