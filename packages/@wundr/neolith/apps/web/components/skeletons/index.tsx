@@ -7,3 +7,6 @@ export {
   AuditLogTableSkeleton,
   IntegrationTableSkeleton,
 } from './table-skeleton';
+export { AnalyticsSkeleton } from './analytics-skeleton';
+export { VPGridSkeleton } from './vp-grid-skeleton';
+export { WorkflowGridSkeleton } from './workflow-grid-skeleton';
