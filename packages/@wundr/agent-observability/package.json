@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/agent-observability",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Observability pipeline for AI agent monitoring - centralized logging, metrics collection, alerting, and sensitive data redaction",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/crew-orchestrator",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "CrewAI-style role-based multi-agent team orchestration for Wundr",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

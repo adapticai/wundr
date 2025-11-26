@@ -1,8 +1,7 @@
 {
   "name": "@wundr.io/environment",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Cross-platform development environment setup and management tools",
-  "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {

@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/structured-output",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Pydantic/Instructor-style LLM output validation with retry loops and grammar enforcement",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/mcp-registry",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "MCP Server registry and discovery with Super MCP aggregator pattern for unified tool routing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

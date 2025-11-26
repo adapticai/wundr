@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/agent-delegation",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Hub-and-spoke delegation pattern for AI agent coordination with audit logging and result synthesis",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

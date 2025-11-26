@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/ai-integration",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "AI Integration Hive Queen - Claude Code, Claude Flow, and MCP orchestration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

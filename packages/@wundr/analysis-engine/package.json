@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/analysis-engine",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Advanced code analysis engine with AST parsing, duplicate detection, complexity metrics, and AI integration",
   "keywords": [
     "code-analysis",

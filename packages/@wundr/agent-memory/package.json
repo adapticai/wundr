@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/agent-memory",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "MemGPT-inspired tiered memory architecture for AI agents - scratchpad, episodic, and semantic memory with forgetting curves",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/prompt-security",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Prompt injection defense patterns for AI-powered applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

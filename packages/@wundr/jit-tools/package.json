@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/jit-tools",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Just-In-Time (JIT) tool loading for AI agents to prevent context pollution",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

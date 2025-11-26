@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/rag-utils",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "RAG (Retrieval-Augmented Generation) utilities for Wundr platform - embeddings, chunking, and vector operations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

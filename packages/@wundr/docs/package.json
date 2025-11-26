@@ -1,8 +1,7 @@
 {
   "name": "@wundr.io/docs",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Comprehensive documentation site for Wundr platform",
-  "private": true,
   "scripts": {
     "build": "docusaurus build",
     "clear": "docusaurus clear",

@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/computer-setup",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Engineering team computer provisioning and setup tool - configure new developer machines with all required tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

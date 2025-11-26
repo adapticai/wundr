@@ -1,7 +1,6 @@
 {
   "name": "@wundr.io/dashboard",
-  "version": "1.0.3",
-  "private": true,
+  "version": "1.0.6",
   "description": "Next.js 15 Web Dashboard for Wundr Platform with Real-time Visualizations",
   "author": "Wundr, by Adaptic.ai",
   "license": "MIT",

@@ -1,8 +1,7 @@
 {
   "name": "@wundr.io/hydra-config",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Hydra-style hierarchical configuration composition with YAML support",
-  "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

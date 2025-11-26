@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/token-budget",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Token budget management for AI agents - cost calculation, usage tracking, and optimization suggestions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

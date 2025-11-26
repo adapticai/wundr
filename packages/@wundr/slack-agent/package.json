@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/slack-agent",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Slack agent capabilities for VP (Virtual Principal) agents operating as full users in Slack workspaces",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

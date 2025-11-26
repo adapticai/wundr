@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/agent-eval",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Agent evaluation framework with LLM-based grading for AI agent quality assessment",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

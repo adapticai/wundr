@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/config",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Configuration management and validation for the Wundr platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

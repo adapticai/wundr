@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/vp-daemon",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "Virtual Principal (VP) Daemon for agent orchestration and session management",
   "keywords": [
     "wundr",
