@@ -4,11 +4,40 @@
  * Service for managing user avatars with S3 storage, image processing,
  * and OAuth provider integration.
  *
+ * Sharp is loaded dynamically to avoid Turbopack bundling issues with native modules.
+ *
  * @packageDocumentation
  */
 
-import sharp from 'sharp';
 import { createId } from '@paralleldrive/cuid2';
+
+// Sharp types - use 'any' for dynamic import since sharp types are complex
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SharpFunction = (input?: Buffer | string, options?: object) => any;
+
+// Lazy-loaded sharp module to avoid Turbopack bundling issues with native modules
+let _sharp: SharpFunction | null = null;
+
+/**
+ * Dynamically loads the sharp module.
+ * @throws Error if sharp cannot be loaded
+ */
+async function getSharp(): Promise<SharpFunction> {
+  if (_sharp) {
+    return _sharp;
+  }
+
+  try {
+    const sharpModule = await import('sharp');
+    _sharp = sharpModule.default || sharpModule;
+    return _sharp;
+  } catch (error) {
+    throw new Error(
+      `Failed to load sharp module. Ensure sharp is installed with correct platform binaries.\n` +
+        `Original error: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
 import { prisma } from '@neolith/database';
 import type { User } from '@neolith/database';
 
@@ -381,6 +410,7 @@ export class AvatarServiceImpl implements AvatarService {
    */
   private async validateImage(buffer: Buffer): Promise<void> {
     try {
+      const sharp = await getSharp();
       const metadata = await sharp(buffer).metadata();
 
       if (!metadata.format) {
@@ -413,6 +443,7 @@ export class AvatarServiceImpl implements AvatarService {
     userId: string,
     buffer: Buffer,
   ): Promise<AvatarUploadResult> {
+    const sharp = await getSharp();
     const variants: Record<AvatarSize, string> = {} as Record<AvatarSize, string>;
     const variantKeys: Record<AvatarSize, string> = {} as Record<AvatarSize, string>;
 
@@ -492,6 +523,7 @@ export class AvatarServiceImpl implements AvatarService {
     `;
 
     // Convert SVG to PNG
+    const sharp = await getSharp();
     return await sharp(Buffer.from(svg)).png().toBuffer();
   }
 
