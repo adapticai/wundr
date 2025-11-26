@@ -281,9 +281,15 @@ export async function GET(
     if (channelId || taskId) {
       items = items.filter((activity) => {
         const metadata = activity.metadata as Record<string, unknown> | null;
-        if (!metadata) return false;
-        if (channelId && metadata.channelId !== channelId) return false;
-        if (taskId && metadata.taskId !== taskId) return false;
+        if (!metadata) {
+return false;
+}
+        if (channelId && metadata.channelId !== channelId) {
+return false;
+}
+        if (taskId && metadata.taskId !== taskId) {
+return false;
+}
         return true;
       });
     }
@@ -481,12 +487,12 @@ export async function POST(
       ...(input.channelId && {
         channelId: input.channelId,
         relatedResourceId: input.channelId,
-        relatedResourceType: 'channel'
+        relatedResourceType: 'channel',
       }),
       ...(input.taskId && {
         taskId: input.taskId,
         relatedResourceId: input.taskId,
-        relatedResourceType: 'task'
+        relatedResourceType: 'task',
       }),
     };
 

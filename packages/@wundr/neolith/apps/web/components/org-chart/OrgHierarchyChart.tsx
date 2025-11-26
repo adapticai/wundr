@@ -1,10 +1,13 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { AlertCircle } from 'lucide-react';
 import React from 'react';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+
 import { OrgNode, OrgNodeSkeleton } from './OrgNode';
+
 import type { OrgChartProps } from './types';
 
 /**

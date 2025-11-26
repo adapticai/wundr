@@ -13,11 +13,11 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { canTransitionToStatus } from '@/lib/services/task-service';
 import {
   recordTaskFailure,
   blockTaskAfterMaxRetries,
 } from '@/lib/services/task-retry-service';
+import { canTransitionToStatus } from '@/lib/services/task-service';
 import {
   updateTaskStatusSchema,
   createErrorResponse,

@@ -164,7 +164,7 @@ export const storeConversationSchema = z.object({
         content: z.string().min(1),
         timestamp: z.string().datetime(),
         metadata: z.record(z.unknown()).optional(),
-      })
+      }),
     )
     .min(1, 'At least one message is required'),
 
@@ -284,7 +284,7 @@ export type ErrorResponse = z.infer<typeof errorResponseSchema>;
 export function createErrorResponse(
   error: string,
   code: string,
-  details?: Record<string, unknown>
+  details?: Record<string, unknown>,
 ): ErrorResponse {
   return {
     error,

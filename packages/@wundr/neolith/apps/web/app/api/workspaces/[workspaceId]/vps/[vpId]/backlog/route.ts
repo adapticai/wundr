@@ -15,8 +15,7 @@ import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { getTaskMetrics } from '@/lib/services/task-service';
-import { validateTaskDependencies } from '@/lib/services/task-service';
+import { getTaskMetrics , validateTaskDependencies } from '@/lib/services/task-service';
 import { createErrorResponse, TASK_ERROR_CODES } from '@/lib/validations/task';
 import {
   vpBacklogFiltersSchema,

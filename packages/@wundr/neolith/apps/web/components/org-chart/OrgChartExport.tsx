@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { Download, FileImage, FileText } from 'lucide-react';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,8 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { cn } from '@/lib/utils';
 
 interface OrgChartExportProps {
@@ -92,7 +93,7 @@ export function OrgChartExport({ chartElementId, orgName, className }: OrgChartE
         10,
         25,
         imgWidth * ratio * 0.26458, // Convert px to mm
-        imgHeight * ratio * 0.26458
+        imgHeight * ratio * 0.26458,
       );
 
       pdf.save(`${orgName}-org-chart-${new Date().toISOString().split('T')[0]}.pdf`);

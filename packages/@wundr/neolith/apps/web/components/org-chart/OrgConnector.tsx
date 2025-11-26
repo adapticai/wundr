@@ -13,14 +13,16 @@ interface OrgConnectorProps {
  * Renders visual connection lines between org hierarchy nodes
  */
 export function OrgConnector({ depth, isLast = false, hasChildren = false, className }: OrgConnectorProps) {
-  if (depth === 0) return null;
+  if (depth === 0) {
+return null;
+}
 
   return (
     <div className={cn('absolute left-0 top-0 h-full w-px', className)}>
       {/* Vertical line from parent */}
       <div className={cn(
         'absolute left-8 top-0 h-1/2 w-px bg-border',
-        isLast && 'h-10'
+        isLast && 'h-10',
       )} />
 
       {/* Horizontal line to node */}

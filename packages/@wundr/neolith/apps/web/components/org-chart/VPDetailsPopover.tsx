@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { VPStatusBadge } from '@/components/vp/vp-status-badge';
+
 import { DISCIPLINE_COLORS, type VPDetailsPopoverProps } from './types';
 
 /**

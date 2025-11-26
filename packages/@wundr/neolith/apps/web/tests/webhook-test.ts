@@ -86,7 +86,7 @@ async function testWebhookOperations() {
     await prisma.webhook.delete({
       where: { id: webhook.id },
     });
-    console.log(`✅ Deleted webhook\n`);
+    console.log('✅ Deleted webhook\n');
 
     // Verify cascade delete
     const remainingDeliveries = await prisma.webhookDelivery.findMany({

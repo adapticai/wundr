@@ -76,6 +76,13 @@ export type {
   UseVPMutationsReturn,
 } from './use-vp';
 
+export { useVPPresence, useMultipleVPPresence } from './use-vp-presence';
+export type {
+  VPPresenceData,
+  UseVPPresenceOptions,
+  UseVPPresenceReturn,
+} from './use-vp-presence';
+
 // =============================================================================
 // Chat Hooks
 // =============================================================================

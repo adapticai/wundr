@@ -45,7 +45,7 @@ async function verifyMemoryAccess(
   workspaceId: string,
   vpId: string,
   memoryId: string,
-  userId: string
+  userId: string,
 ): Promise<{ allowed: boolean; memory?: any }> {
   // Check user has access to workspace
   const workspaceMember = await prisma.workspaceMember.findFirst({

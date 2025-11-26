@@ -1,6 +1,8 @@
 'use client';
 
+import { Building2, ChevronDown, ChevronRight, Folder, User } from 'lucide-react';
 import React from 'react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VPStatusDot } from '@/components/vp/vp-status-badge';
 import { cn } from '@/lib/utils';
-import { Building2, ChevronDown, ChevronRight, Folder, User } from 'lucide-react';
+
 import { DISCIPLINE_COLORS, type OrgNodeProps, type OrgHierarchyNode } from './types';
 import { VPDetailsPopover } from './VPDetailsPopover';
 
@@ -198,7 +200,7 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
         <Card
           className={cn(
             'cursor-pointer transition-all hover:shadow-md hover:border-primary/50 relative overflow-hidden',
-            disciplineColor && `border-l-4`,
+            disciplineColor && 'border-l-4',
           )}
           style={
             node.data.discipline

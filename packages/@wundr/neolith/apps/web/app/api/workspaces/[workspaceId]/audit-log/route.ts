@@ -10,10 +10,10 @@
  * @module app/api/workspaces/[workspaceId]/audit-log/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { prisma } from '@neolith/database';
 
 import type { NextRequest } from 'next/server';
 
@@ -102,7 +102,9 @@ function getSeverity(action: string): 'info' | 'warning' | 'critical' {
  * Determine actor type from user data
  */
 function getActorType(user: { isVP: boolean } | null): 'user' | 'vp' | 'system' {
-  if (!user) return 'system';
+  if (!user) {
+return 'system';
+}
   return user.isVP ? 'vp' : 'user';
 }
 
@@ -112,11 +114,15 @@ function getActorType(user: { isVP: boolean } | null): 'user' | 'vp' | 'system' 
 function formatChanges(
   changes: unknown,
 ): Array<{ field: string; oldValue: unknown; newValue: unknown }> | undefined {
-  if (!changes || typeof changes !== 'object') return undefined;
+  if (!changes || typeof changes !== 'object') {
+return undefined;
+}
 
   const changesObj = changes as { before?: Record<string, unknown>; after?: Record<string, unknown> };
 
-  if (!changesObj.before || !changesObj.after) return undefined;
+  if (!changesObj.before || !changesObj.after) {
+return undefined;
+}
 
   const formattedChanges: Array<{ field: string; oldValue: unknown; newValue: unknown }> = [];
 

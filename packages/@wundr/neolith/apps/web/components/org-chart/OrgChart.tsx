@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { OrgChartToolbar } from './OrgChartToolbar';
-import { OrgChartNode } from './OrgChartNode';
-import { OrgChartEmptyState } from './OrgChartEmptyState';
+
 import { cn } from '@/lib/utils';
+
+import { OrgChartEmptyState } from './OrgChartEmptyState';
+import { OrgChartNode } from './OrgChartNode';
+import { OrgChartToolbar } from './OrgChartToolbar';
+
+
 import type { OrgNode } from './types';
 
 interface OrgChartProps {
@@ -55,7 +59,7 @@ export function OrgChart({ workspaceId, orgName, vps, className }: OrgChartProps
           vp.name.toLowerCase().includes(query) ||
           vp.title.toLowerCase().includes(query) ||
           vp.discipline.toLowerCase().includes(query) ||
-          vp.status.toLowerCase().includes(query)
+          vp.status.toLowerCase().includes(query),
       );
     }
 
@@ -64,19 +68,21 @@ export function OrgChart({ workspaceId, orgName, vps, className }: OrgChartProps
 
   // Calculate match highlighting
   const highlightedVPs = useMemo(() => {
-    if (!searchQuery.trim()) return new Set<string>();
+    if (!searchQuery.trim()) {
+return new Set<string>();
+}
     return new Set(filteredVPs.map((vp) => vp.id));
   }, [filteredVPs, searchQuery]);
 
   const handleDisciplineToggle = (discipline: string) => {
     setSelectedDisciplines((prev) =>
-      prev.includes(discipline) ? prev.filter((d) => d !== discipline) : [...prev, discipline]
+      prev.includes(discipline) ? prev.filter((d) => d !== discipline) : [...prev, discipline],
     );
   };
 
   const handleStatusToggle = (status: string) => {
     setSelectedStatuses((prev) =>
-      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
     );
   };
 
@@ -120,7 +126,7 @@ export function OrgChart({ workspaceId, orgName, vps, className }: OrgChartProps
         className={cn(
           'rounded-lg border border-stone-800 bg-stone-950 p-6',
           isMobile && 'overflow-x-auto',
-          isMobile && 'snap-x snap-mandatory'
+          isMobile && 'snap-x snap-mandatory',
         )}
       >
         {filteredVPs.length === 0 ? (

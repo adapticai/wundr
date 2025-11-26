@@ -8,3 +8,20 @@ export {
   VPPresenceCard,
   VPTypingIndicator,
 } from './vp-presence-indicator';
+export { VPPresenceTooltip } from './VPPresenceTooltip';
+export {
+  VPMessageIndicator,
+  VPMessageWrapper,
+  VPMessageBadge,
+} from './VPMessageIndicator';
+export { VPWorkSummary } from './VPWorkSummary';
+export {
+  VPThinkingIndicator,
+  InlineThinkingIndicator,
+  TypingIndicator,
+  ProcessingBanner,
+} from './VPThinkingIndicator';
+export {
+  VPEscalationCard,
+  VPEscalationListItem,
+} from './VPEscalationCard';

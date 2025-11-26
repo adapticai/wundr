@@ -10,7 +10,6 @@
  */
 
 import { prisma } from '@neolith/database';
-import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
@@ -21,6 +20,7 @@ import {
 } from '@/lib/validations/vp-memory';
 
 import type { MemorySearchInput } from '@/lib/validations/vp-memory';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -39,7 +39,7 @@ interface RouteContext {
 async function verifyVPAccess(
   workspaceId: string,
   vpId: string,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   // Check user has access to workspace
   const workspaceMember = await prisma.workspaceMember.findFirst({

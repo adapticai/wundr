@@ -150,11 +150,21 @@ export function useActivity(
         type,
       });
 
-      if (cursor) params.set('cursor', cursor);
-      if (dateFrom) params.set('dateFrom', dateFrom);
-      if (dateTo) params.set('dateTo', dateTo);
-      if (channelId) params.set('channelId', channelId);
-      if (userId) params.set('userId', userId);
+      if (cursor) {
+params.set('cursor', cursor);
+}
+      if (dateFrom) {
+params.set('dateFrom', dateFrom);
+}
+      if (dateTo) {
+params.set('dateTo', dateTo);
+}
+      if (channelId) {
+params.set('channelId', channelId);
+}
+      if (userId) {
+params.set('userId', userId);
+}
 
       return `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`;
     },
@@ -166,7 +176,9 @@ export function useActivity(
    */
   const fetchActivities = useCallback(
     async (cursor?: string | null, append = false) => {
-      if (!enabled) return;
+      if (!enabled) {
+return;
+}
 
       if (!append) {
         setIsLoading(true);
@@ -209,7 +221,9 @@ export function useActivity(
    * Load more activities (pagination)
    */
   const loadMore = useCallback(async () => {
-    if (!pagination?.hasMore || isLoadingMore) return;
+    if (!pagination?.hasMore || isLoadingMore) {
+return;
+}
 
     await fetchActivities(pagination.nextCursor, true);
   }, [pagination, isLoadingMore, fetchActivities]);

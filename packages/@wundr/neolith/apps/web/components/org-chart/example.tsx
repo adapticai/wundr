@@ -6,7 +6,9 @@
 'use client';
 
 import { useState } from 'react';
+
 import { OrgHierarchyChart, OrgHierarchyChartSkeleton, OrgHierarchyChartEmpty } from './OrgHierarchyChart';
+
 import type { OrgHierarchyNode } from './types';
 
 /**

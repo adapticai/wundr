@@ -1,11 +1,13 @@
 'use client';
 
+import { AlertCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+
 import { OrgChart } from '@/components/org-chart';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+
 import type { OrgNode } from '@/components/org-chart/types';
 
 interface Workspace {

@@ -43,7 +43,7 @@ interface RouteContext {
 async function verifyVPAccess(
   workspaceId: string,
   vpId: string,
-  userId: string
+  userId: string,
 ): Promise<{ allowed: boolean; vp?: { id: string; organizationId: string } }> {
   // Check user has access to workspace
   const workspaceMember = await prisma.workspaceMember.findFirst({
