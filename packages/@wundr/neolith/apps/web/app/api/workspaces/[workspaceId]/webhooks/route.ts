@@ -1,22 +1,30 @@
 /**
- * Workspace Webhooks API Routes - STUB IMPLEMENTATION
- *
- * ⚠️ WARNING: This is a STUB implementation for frontend integration testing.
- * Real webhook functionality is not yet implemented.
+ * Workspace Webhooks API Routes - REAL IMPLEMENTATION
  *
  * Handles listing and creating webhooks for a workspace.
+ * Uses Prisma database models for persistence.
  *
  * Routes:
- * - GET /api/workspaces/:workspaceId/webhooks - List webhooks (mock data)
- * - POST /api/workspaces/:workspaceId/webhooks - Create webhook (stub)
+ * - GET /api/workspaces/:workspaceId/webhooks - List webhooks
+ * - POST /api/workspaces/:workspaceId/webhooks - Create webhook
  *
  * @module app/api/workspaces/[workspaceId]/webhooks/route
  */
 
-import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { checkWorkspaceAccess } from '@/lib/services/integration-service';
+import {
+  listWebhooks,
+  createWebhook,
+} from '@/lib/services/webhook-service';
+import {
+  createWebhookSchema,
+  webhookFiltersSchema,
+  INTEGRATION_ERROR_CODES,
+} from '@/lib/validations/integration';
+import { createErrorResponse } from '@/lib/validations/organization';
 
 import type { NextRequest } from 'next/server';
 
@@ -28,128 +36,12 @@ interface RouteContext {
 }
 
 /**
- * Webhook event types (STUB - for reference only)
- */
-type WebhookEventType =
-  | 'workspace.created'
-  | 'workspace.updated'
-  | 'workspace.deleted'
-  | 'member.joined'
-  | 'member.left'
-  | 'member.updated'
-  | 'channel.created'
-  | 'channel.updated'
-  | 'channel.deleted'
-  | 'message.created'
-  | 'message.updated'
-  | 'message.deleted';
-
-/**
- * Webhook status (STUB)
- */
-type WebhookStatus = 'ACTIVE' | 'INACTIVE' | 'FAILED';
-
-/**
- * Webhook interface (STUB)
- */
-interface Webhook {
-  id: string;
-  workspaceId: string;
-  name: string;
-  description?: string;
-  url: string;
-  events: WebhookEventType[];
-  status: WebhookStatus;
-  secret?: string; // Only returned on creation
-  retryCount: number;
-  timeoutMs: number;
-  headers?: Record<string, string>;
-  metadata?: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  lastDeliveryAt?: string;
-  successCount: number;
-  failureCount: number;
-}
-
-/**
- * Create webhook request body (STUB)
- */
-interface CreateWebhookRequest {
-  name: string;
-  description?: string;
-  url: string;
-  events: WebhookEventType[];
-  retryCount?: number;
-  timeoutMs?: number;
-  headers?: Record<string, string>;
-  metadata?: Record<string, unknown>;
-}
-
-/**
- * STUB: Mock webhook data generator
- */
-function generateMockWebhook(
-  workspaceId: string,
-  userId: string,
-  index: number,
-): Webhook {
-  const webhookIds = [
-    'wh_1a2b3c4d5e6f',
-    'wh_7g8h9i0j1k2l',
-    'wh_3m4n5o6p7q8r',
-  ];
-
-  const now = new Date();
-  const createdAt = new Date(now.getTime() - (index * 86400000)); // Each webhook is 1 day older
-
-  return {
-    id: webhookIds[index] || `wh_${randomBytes(6).toString('hex')}`,
-    workspaceId,
-    name: `Webhook ${index + 1}`,
-    description: index === 0
-      ? 'Production webhook for member events'
-      : index === 1
-      ? 'Development webhook for testing'
-      : undefined,
-    url: index === 0
-      ? 'https://api.example.com/webhooks/production'
-      : index === 1
-      ? 'https://webhook.site/test-endpoint'
-      : 'https://internal.company.com/webhooks',
-    events: index === 0
-      ? ['member.joined', 'member.left', 'member.updated']
-      : index === 1
-      ? ['workspace.created', 'workspace.updated']
-      : ['message.created', 'message.updated', 'message.deleted'],
-    status: index === 2 ? 'FAILED' : 'ACTIVE',
-    retryCount: 3,
-    timeoutMs: 10000,
-    headers: index === 0
-      ? { 'X-Custom-Header': 'production-value' }
-      : undefined,
-    metadata: index === 1
-      ? { environment: 'development', team: 'engineering' }
-      : undefined,
-    createdAt: createdAt.toISOString(),
-    updatedAt: new Date(createdAt.getTime() + 3600000).toISOString(),
-    createdBy: userId,
-    lastDeliveryAt: index === 2
-      ? undefined
-      : new Date(now.getTime() - 3600000).toISOString(),
-    successCount: index === 0 ? 245 : index === 1 ? 12 : 0,
-    failureCount: index === 0 ? 3 : index === 1 ? 1 : 5,
-  };
-}
-
-/**
  * GET /api/workspaces/:workspaceId/webhooks
  *
- * ⚠️ STUB: Returns mock webhook data for frontend integration testing.
+ * List webhooks for a workspace with filters.
  *
  * Query parameters:
- * - status: Filter by status (ACTIVE, INACTIVE, FAILED)
+ * - status: Filter by status (ACTIVE, PAUSED, FAILED)
  * - event: Filter by subscribed event type
  * - search: Search by name, description, or URL
  * - page: Page number (default: 1)
@@ -159,7 +51,7 @@ function generateMockWebhook(
  *
  * @param request - Next.js request object
  * @param context - Route context containing workspace ID
- * @returns List of webhooks with pagination (MOCK DATA)
+ * @returns List of webhooks with pagination
  */
 export async function GET(
   request: NextRequest,
@@ -170,10 +62,7 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        {
-          error: 'Authentication required',
-          code: 'UNAUTHORIZED',
-        },
+        createErrorResponse('Authentication required', INTEGRATION_ERROR_CODES.UNAUTHORIZED),
         { status: 401 },
       );
     }
@@ -184,72 +73,51 @@ export async function GET(
 
     if (!workspaceId) {
       return NextResponse.json(
-        {
-          error: 'Workspace ID is required',
-          code: 'VALIDATION_ERROR',
-        },
+        createErrorResponse(
+          'Workspace ID is required',
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+        ),
         { status: 400 },
       );
     }
 
-    // Parse query parameters
-    const { searchParams } = request.nextUrl;
-    const status = searchParams.get('status') as WebhookStatus | null;
-    const event = searchParams.get('event') as WebhookEventType | null;
-    const search = searchParams.get('search');
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '20', 10);
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
-
-    // STUB: Generate mock webhooks
-    const mockWebhooks = Array.from({ length: 3 }, (_, i) =>
-      generateMockWebhook(workspaceId, session.user.id, i),
-    );
-
-    // STUB: Apply filters
-    let filteredWebhooks = [...mockWebhooks];
-
-    if (status) {
-      filteredWebhooks = filteredWebhooks.filter(w => w.status === status);
-    }
-
-    if (event) {
-      filteredWebhooks = filteredWebhooks.filter(w => w.events.includes(event));
-    }
-
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredWebhooks = filteredWebhooks.filter(w =>
-        w.name.toLowerCase().includes(searchLower) ||
-        w.description?.toLowerCase().includes(searchLower) ||
-        w.url.toLowerCase().includes(searchLower),
+    // Check workspace access
+    const access = await checkWorkspaceAccess(workspaceId, session.user.id);
+    if (!access) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Workspace not found or access denied',
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+        ),
+        { status: 404 },
       );
     }
 
-    // STUB: Apply sorting
-    filteredWebhooks.sort((a, b) => {
-      const aValue = a[sortBy as keyof Webhook];
-      const bValue = b[sortBy as keyof Webhook];
+    // Parse and validate query parameters
+    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
+    const filterResult = webhookFiltersSchema.safeParse(searchParams);
 
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortOrder === 'asc'
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
+    if (!filterResult.success) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Invalid query parameters',
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          { errors: filterResult.error.flatten().fieldErrors },
+        ),
+        { status: 400 },
+      );
+    }
 
-      return 0;
-    });
+    // Fetch webhooks
+    const { webhooks, total } = await listWebhooks(workspaceId, filterResult.data);
 
-    // STUB: Apply pagination
-    const total = filteredWebhooks.length;
+    // Calculate pagination metadata
+    const { page, limit } = filterResult.data;
     const totalPages = Math.ceil(total / limit);
-    const offset = (page - 1) * limit;
-    const paginatedWebhooks = filteredWebhooks.slice(offset, offset + limit);
 
-    // Remove secret from response
-    const safeWebhooks = paginatedWebhooks.map(w => {
-      const { secret: _secret, ...webhook } = w;
+    // Remove secret hash from response
+    const safeWebhooks = webhooks.map((w) => {
+      const { secretHash: _secret, ...webhook } = w;
       return webhook;
     });
 
@@ -264,16 +132,11 @@ export async function GET(
         hasNextPage: page < totalPages,
         hasPreviousPage: page > 1,
       },
-      _stub: true, // Flag indicating this is stub data
-      _message: 'This is mock data from a stub implementation',
     });
   } catch (error) {
-    console.error('Webhooks GET error:', error);
+    console.error('[GET /api/workspaces/:workspaceId/webhooks] Error:', error);
     return NextResponse.json(
-      {
-        error: 'An internal error occurred',
-        code: 'INTERNAL_ERROR',
-      },
+      createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
     );
   }
@@ -282,8 +145,8 @@ export async function GET(
 /**
  * POST /api/workspaces/:workspaceId/webhooks
  *
- * ⚠️ STUB: Creates a mock webhook for frontend integration testing.
- * Does not persist data to database.
+ * Create a new webhook for the workspace.
+ * Returns the webhook configuration and secret (shown only once).
  *
  * Request body:
  * - name: Display name for the webhook (required)
@@ -297,7 +160,7 @@ export async function GET(
  *
  * @param request - Next.js request with webhook data
  * @param context - Route context containing workspace ID
- * @returns Created webhook and secret (MOCK DATA - shown only once)
+ * @returns Created webhook and secret (shown only once)
  */
 export async function POST(
   request: NextRequest,
@@ -308,10 +171,7 @@ export async function POST(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        {
-          error: 'Authentication required',
-          code: 'UNAUTHORIZED',
-        },
+        createErrorResponse('Authentication required', INTEGRATION_ERROR_CODES.UNAUTHORIZED),
         { status: 401 },
       );
     }
@@ -322,106 +182,83 @@ export async function POST(
 
     if (!workspaceId) {
       return NextResponse.json(
-        {
-          error: 'Workspace ID is required',
-          code: 'VALIDATION_ERROR',
-        },
+        createErrorResponse(
+          'Workspace ID is required',
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+        ),
         { status: 400 },
+      );
+    }
+
+    // Check workspace access and admin permission
+    const access = await checkWorkspaceAccess(workspaceId, session.user.id);
+    if (!access) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Workspace not found or access denied',
+          INTEGRATION_ERROR_CODES.WORKSPACE_NOT_FOUND,
+        ),
+        { status: 404 },
+      );
+    }
+
+    if (!access.isAdmin) {
+      return NextResponse.json(
+        createErrorResponse(
+          'Admin permission required to create webhooks',
+          INTEGRATION_ERROR_CODES.FORBIDDEN,
+        ),
+        { status: 403 },
       );
     }
 
     // Parse request body
-    let body: CreateWebhookRequest;
+    let body: unknown;
     try {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        {
-          error: 'Invalid JSON body',
-          code: 'VALIDATION_ERROR',
-        },
+        createErrorResponse('Invalid JSON body', INTEGRATION_ERROR_CODES.VALIDATION_ERROR),
         { status: 400 },
       );
     }
 
-    // STUB: Basic validation
-    if (!body.name || !body.url || !body.events || body.events.length === 0) {
+    // Validate input
+    const parseResult = createWebhookSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
-        {
-          error: 'Validation failed: name, url, and events are required',
-          code: 'VALIDATION_ERROR',
-          details: {
-            name: !body.name ? ['Name is required'] : undefined,
-            url: !body.url ? ['URL is required'] : undefined,
-            events: !body.events || body.events.length === 0
-              ? ['At least one event is required']
-              : undefined,
-          },
-        },
+        createErrorResponse(
+          'Validation failed',
+          INTEGRATION_ERROR_CODES.VALIDATION_ERROR,
+          { errors: parseResult.error.flatten().fieldErrors },
+        ),
         { status: 400 },
       );
     }
 
-    // STUB: Validate URL format
-    try {
-      new URL(body.url);
-    } catch {
-      return NextResponse.json(
-        {
-          error: 'Validation failed: invalid URL format',
-          code: 'VALIDATION_ERROR',
-          details: {
-            url: ['Must be a valid URL'],
-          },
-        },
-        { status: 400 },
-      );
-    }
-
-    // STUB: Generate webhook secret (would be securely stored in real implementation)
-    const secret = `whsec_${randomBytes(24).toString('hex')}`;
-
-    // STUB: Create mock webhook
-    const now = new Date();
-    const webhook: Webhook = {
-      id: `wh_${randomBytes(6).toString('hex')}`,
+    // Create webhook
+    const { webhook, secret } = await createWebhook(
       workspaceId,
-      name: body.name,
-      description: body.description,
-      url: body.url,
-      events: body.events,
-      status: 'ACTIVE',
-      retryCount: body.retryCount ?? 3,
-      timeoutMs: body.timeoutMs ?? 10000,
-      headers: body.headers,
-      metadata: body.metadata,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-      createdBy: session.user.id,
-      successCount: 0,
-      failureCount: 0,
-    };
+      parseResult.data,
+      session.user.id,
+    );
 
-    // Remove secret from webhook object (it's returned separately)
-    const { secret: _omitSecret, ...safeWebhook } = webhook;
+    // Remove secret hash from webhook object (it's returned separately)
+    const { secretHash: _omitSecret, ...safeWebhook } = webhook;
 
     return NextResponse.json(
       {
         webhook: safeWebhook,
         secret, // Only shown once on creation
-        message: 'Webhook created successfully. Store the secret securely - it will not be shown again.',
-        _stub: true, // Flag indicating this is stub data
-        _message: 'This webhook was not persisted to the database (stub implementation)',
+        message:
+          'Webhook created successfully. Store the secret securely - it will not be shown again.',
       },
       { status: 201 },
     );
   } catch (error) {
-    console.error('Webhooks POST error:', error);
+    console.error('[POST /api/workspaces/:workspaceId/webhooks] Error:', error);
     return NextResponse.json(
-      {
-        error: 'An internal error occurred',
-        code: 'INTERNAL_ERROR',
-      },
+      createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
     );
   }

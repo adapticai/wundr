@@ -31,7 +31,9 @@ async function hashPassword(password: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const salt = crypto.randomBytes(16).toString('hex');
     crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, derivedKey) => {
-      if (err) reject(err);
+      if (err) {
+reject(err);
+}
       resolve(`${salt}:${derivedKey.toString('hex')}`);
     });
   });
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: RegisterInput = parseResult.data;
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email: input.email },
     });
 
@@ -128,7 +130,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create user and credentials account in a transaction
     const newUser = await prisma.$transaction(async (tx) => {
       // Create the user
-      const user = await tx.user.create({
+      const user = await tx.users.create({
         data: {
           email: input.email,
           name: input.name,
@@ -139,7 +141,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       // Create credentials account for password authentication
-      await tx.account.create({
+      await tx.accounts.create({
         data: {
           userId: user.id,
           type: 'credentials',
@@ -162,7 +164,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       // Fetch updated user with avatar
-      const userWithAvatar = await prisma.user.findUnique({
+      const userWithAvatar = await prisma.users.findUnique({
         where: { id: newUser.id },
         select: {
           id: true,

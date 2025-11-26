@@ -35,7 +35,7 @@ interface RouteContext {
  * Helper function to check workspace membership
  */
 async function checkWorkspaceMembership(workspaceId: string, userId: string) {
-  const membership = await prisma.workspaceMember.findUnique({
+  const membership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,

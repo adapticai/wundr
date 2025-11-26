@@ -84,7 +84,7 @@ export async function GET(
     }
 
     // Check user has access to workspace
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -358,7 +358,7 @@ export async function POST(
     const input: CreateTaskInput = parseResult.data;
 
     // Check user has access to workspace
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -452,7 +452,7 @@ export async function POST(
       }
 
       // Check if assignee has access to workspace
-      const assigneeAccess = await prisma.workspaceMember.findFirst({
+      const assigneeAccess = await prisma.workspace_members.findFirst({
         where: {
           workspaceId,
           userId: input.assignedToId,

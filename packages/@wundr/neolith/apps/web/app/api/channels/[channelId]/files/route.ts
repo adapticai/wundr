@@ -136,7 +136,7 @@ export async function GET(
     const filters: WorkspaceFilesInput = queryResult.data;
 
     // Check channel membership
-    const membership = await prisma.channelMember.findUnique({
+    const membership = await prisma.channel_members.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,

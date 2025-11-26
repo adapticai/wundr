@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
-import { cn } from '@/lib/utils';
 import { useWorkflowBuilder } from '@/hooks/use-workflows';
+import { cn } from '@/lib/utils';
 
 import { ActionConfigPanel } from './action-config';
 import { TriggerConfigPanel } from './trigger-config';
@@ -103,7 +103,7 @@ export function WorkflowBuilder({
     // Update order property for all actions
     const reorderedActions = newActions.map((action, index) => ({
       ...action,
-      order: index
+      order: index,
     }));
     reorderActions(reorderedActions);
   }, [actions, reorderActions]);

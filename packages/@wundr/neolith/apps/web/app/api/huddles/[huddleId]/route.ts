@@ -90,7 +90,7 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
       const huddle = huddles[0];
 
       // Check workspace access
-      const workspace = await prisma.workspace.findUnique({
+      const workspace = await prisma.workspaces.findUnique({
         where: { id: huddle.workspace_id },
       });
 
@@ -98,7 +98,7 @@ async function getHuddleWithAccess(huddleId: string, userId: string) {
 return null;
 }
 
-      const orgMembership = await prisma.organizationMember.findUnique({
+      const orgMembership = await prisma.organization_members.findUnique({
         where: {
           organizationId_userId: {
             organizationId: workspace.organizationId,
@@ -133,7 +133,7 @@ return null;
   }
 
   // Fall back to workspace settings
-  const workspaces = await prisma.workspace.findMany({
+  const workspaces = await prisma.workspaces.findMany({
     select: { id: true, settings: true, organizationId: true },
   });
 
@@ -143,7 +143,7 @@ return null;
 
     if (huddle) {
       // Check access
-      const orgMembership = await prisma.organizationMember.findUnique({
+      const orgMembership = await prisma.organization_members.findUnique({
         where: {
           organizationId_userId: {
             organizationId: workspace.organizationId,
@@ -156,7 +156,7 @@ return null;
 return null;
 }
 
-      const fullWorkspace = await prisma.workspace.findUnique({
+      const fullWorkspace = await prisma.workspaces.findUnique({
         where: { id: workspace.id },
       });
 
@@ -242,7 +242,7 @@ export async function GET(
     }
 
     // Get creator info
-    const creator = await prisma.user.findUnique({
+    const creator = await prisma.users.findUnique({
       where: { id: result.huddle.createdById },
       select: { id: true, name: true, displayName: true },
     });
@@ -394,7 +394,7 @@ export async function DELETE(
 
     // Check workspace admin
     let isWorkspaceAdmin = false;
-    const workspaceMembership = await prisma.workspaceMember.findUnique({
+    const workspaceMembership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: result.workspace.id,
@@ -421,7 +421,7 @@ export async function DELETE(
     // End the huddle
     if ('fromSettings' in result && result.fromSettings) {
       // Update workspace settings
-      const workspace = await prisma.workspace.findUnique({
+      const workspace = await prisma.workspaces.findUnique({
         where: { id: result.workspace.id },
         select: { settings: true },
       });
@@ -438,7 +438,7 @@ export async function DELETE(
         huddles: updatedHuddles,
       });
 
-      await prisma.workspace.update({
+      await prisma.workspaces.update({
         where: { id: result.workspace.id },
         data: {
           settings: updatedSettings,

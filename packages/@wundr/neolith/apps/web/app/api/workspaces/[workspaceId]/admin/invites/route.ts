@@ -67,7 +67,7 @@ export async function GET(
     const { workspaceId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -154,7 +154,7 @@ export async function POST(
     const { workspaceId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
       include: {
         user: { select: { id: true, name: true, email: true } },
@@ -194,7 +194,7 @@ export async function POST(
     }
 
     // Check if any email is already a member
-    const existingMembers = await prisma.workspaceMember.findMany({
+    const existingMembers = await prisma.workspace_members.findMany({
       where: {
         workspaceId,
         user: {

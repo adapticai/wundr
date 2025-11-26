@@ -1,0 +1,1130 @@
+// Genesis App Database Schema
+// Wave 2 (Phase 0.5) - Complete Schema Extensions
+// This is the source of truth for the database structure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+/// User account status
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  SUSPENDED
+}
+
+/// VP (Virtual Person) online status
+enum VPStatus {
+  ONLINE
+  OFFLINE
+  BUSY
+  AWAY
+}
+
+/// Workspace visibility level
+enum WorkspaceVisibility {
+  PUBLIC
+  PRIVATE
+  INTERNAL
+}
+
+/// Channel type enumeration
+enum ChannelType {
+  PUBLIC
+  PRIVATE
+  DM
+  HUDDLE
+}
+
+/// Message type enumeration
+enum MessageType {
+  TEXT
+  FILE
+  SYSTEM
+  COMMAND
+}
+
+/// File processing status
+enum FileStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+/// Organization member role
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+/// Workspace member role
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+/// Channel member role
+enum ChannelRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// =============================================================================
+// Core Models
+// =============================================================================
+
+/// Organization - Top-level entity containing workspaces
+model Organization {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  avatarUrl   String? @map("avatar_url")
+  description String?
+  settings    Json    @default("{}")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspaces  Workspace[]
+  members     OrganizationMember[]
+  vps         VP[]
+  disciplines Discipline[]
+
+  @@index([slug])
+  @@map("organizations")
+}
+
+/// Workspace - Main collaboration space within an organization
+model Workspace {
+  id          String              @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  avatarUrl   String?             @map("avatar_url")
+  visibility  WorkspaceVisibility @default(PRIVATE)
+  settings    Json                @default("{}")
+
+  // Foreign keys
+  organizationId String @map("organization_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  channels          Channel[]
+  members           WorkspaceMember[]
+  files             File[]
+  daemonCredentials DaemonCredential[]
+  workflows         Workflow[]
+  tasks             Task[]
+  backlogs          Backlog[]
+  vpMemories        VPMemory[]
+  subscription      Subscription?
+  integrations      Integration[]
+  auditLogs         AuditLog[]
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([slug])
+  @@map("workspaces")
+}
+
+/// User - Human or VP account
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  emailVerified DateTime?  @map("email_verified")
+  name          String?
+  displayName   String?    @map("display_name")
+  avatarUrl     String?    @map("avatar_url")
+  bio           String?
+  status        UserStatus @default(PENDING)
+  isVP          Boolean    @default(false) @map("is_vp")
+  vpConfig      Json?      @map("vp_config")
+  preferences   Json       @default("{}")
+
+  // Timestamps
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastActiveAt DateTime? @map("last_active_at")
+
+  // Relations
+  organizationMemberships OrganizationMember[]
+  workspaceMemberships    WorkspaceMember[]
+  channelMemberships      ChannelMember[]
+  messages                Message[]
+  files                   File[]
+  sessions                Session[]
+  accounts                Account[]
+  reactions               Reaction[]
+  createdChannels         Channel[]            @relation("ChannelCreator")
+  vp                      VP?
+  notifications           Notification[]
+  pushSubscriptions       PushSubscription[]
+  createdTasks            Task[]               @relation("TaskCreator")
+  assignedTasks           Task[]               @relation("TaskAssignee")
+
+  @@index([email])
+  @@index([status])
+  @@map("users")
+}
+
+/// Discipline - VP discipline/department category
+model Discipline {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  color       String? // Hex color for UI display (e.g., "#3B82F6")
+  icon        String? // Icon identifier for UI display
+
+  // Foreign keys
+  organizationId String @map("organization_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vps          VP[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([name])
+  @@map("disciplines")
+}
+
+/// VP (Virtual Person) - AI agent metadata
+model VP {
+  id             String   @id @default(cuid())
+  discipline     String
+  role           String
+  capabilities   Json     @default("[]")
+  daemonEndpoint String?  @map("daemon_endpoint")
+  status         VPStatus @default(OFFLINE)
+
+  // Foreign keys
+  userId         String  @unique @map("user_id")
+  organizationId String  @map("organization_id")
+  workspaceId    String? @map("workspace_id")
+  disciplineId   String? @map("discipline_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  disciplineRelation Discipline?        @relation(fields: [disciplineId], references: [id], onDelete: SetNull)
+  daemonCredentials  DaemonCredential[]
+  tasks              Task[]
+  backlogs           Backlog[]
+  memories           VPMemory[]
+
+  @@index([organizationId])
+  @@index([workspaceId])
+  @@index([disciplineId])
+  @@index([discipline])
+  @@index([status])
+  @@map("vps")
+}
+
+/// Channel - Communication channel within a workspace
+model Channel {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  topic       String?
+  type        ChannelType @default(PUBLIC)
+  isArchived  Boolean     @default(false) @map("is_archived")
+  settings    Json        @default("{}")
+
+  // Foreign keys
+  workspaceId String  @map("workspace_id")
+  createdById String? @map("created_by_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User?           @relation("ChannelCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  messages  Message[]
+  members   ChannelMember[]
+  tasks     Task[]
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId])
+  @@index([type])
+  @@index([isArchived])
+  @@map("channels")
+}
+
+/// Message - Chat message within a channel
+model Message {
+  id       String      @id @default(cuid())
+  content  String
+  type     MessageType @default(TEXT)
+  metadata Json        @default("{}")
+
+  // Edit/delete tracking
+  isEdited  Boolean   @default(false) @map("is_edited")
+  isDeleted Boolean   @default(false) @map("is_deleted")
+  editedAt  DateTime? @map("edited_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Foreign keys
+  channelId String  @map("channel_id")
+  authorId  String  @map("author_id")
+  parentId  String? @map("parent_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  channel     Channel             @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author      User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent      Message?            @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     Message[]           @relation("MessageThread")
+  reactions   Reaction[]
+  attachments MessageAttachment[]
+
+  @@index([channelId])
+  @@index([authorId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([type])
+  @@index([deletedAt])
+  @@map("messages")
+}
+
+/// File - Uploaded file metadata
+model File {
+  id           String     @id @default(cuid())
+  filename     String
+  originalName String     @map("original_name")
+  mimeType     String     @map("mime_type")
+  size         BigInt
+  s3Key        String     @map("s3_key")
+  s3Bucket     String     @map("s3_bucket")
+  thumbnailUrl String?    @map("thumbnail_url")
+  status       FileStatus @default(PENDING)
+  metadata     Json       @default("{}")
+
+  // Foreign keys
+  workspaceId  String @map("workspace_id")
+  uploadedById String @map("uploaded_by_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploader    User                @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  attachments MessageAttachment[]
+
+  @@index([workspaceId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([mimeType])
+  @@map("files")
+}
+
+// =============================================================================
+// Membership/Junction Models
+// =============================================================================
+
+/// OrganizationMember - User membership in an organization
+model OrganizationMember {
+  id   String           @id @default(cuid())
+  role OrganizationRole @default(MEMBER)
+
+  // Foreign keys
+  organizationId String @map("organization_id")
+  userId         String @map("user_id")
+
+  // Timestamps
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("organization_members")
+}
+
+/// WorkspaceMember - User membership in a workspace
+model WorkspaceMember {
+  id   String        @id @default(cuid())
+  role WorkspaceRole @default(MEMBER)
+
+  // Foreign keys
+  workspaceId String @map("workspace_id")
+  userId      String @map("user_id")
+
+  // Timestamps
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("workspace_members")
+}
+
+/// ChannelMember - User membership in a channel
+model ChannelMember {
+  id   String      @id @default(cuid())
+  role ChannelRole @default(MEMBER)
+
+  // Foreign keys
+  channelId String @map("channel_id")
+  userId    String @map("user_id")
+
+  // Timestamps
+  joinedAt   DateTime  @default(now()) @map("joined_at")
+  lastReadAt DateTime? @map("last_read_at")
+  leftAt     DateTime? @map("left_at")
+
+  // Relations
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@index([channelId])
+  @@index([userId])
+  @@index([leftAt])
+  @@map("channel_members")
+}
+
+// =============================================================================
+// Supporting Models
+// =============================================================================
+
+/// Reaction - Message reaction (emoji)
+model Reaction {
+  id    String @id @default(cuid())
+  emoji String
+
+  // Foreign keys
+  messageId String @map("message_id")
+  userId    String @map("user_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+  @@map("reactions")
+}
+
+/// MessageAttachment - Junction table for messages and files
+model MessageAttachment {
+  id String @id @default(cuid())
+
+  // Foreign keys
+  messageId String @map("message_id")
+  fileId    String @map("file_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    File    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, fileId])
+  @@index([messageId])
+  @@index([fileId])
+  @@map("message_attachments")
+}
+
+/// Session - User session for authentication
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("sessions")
+}
+
+/// Account - OAuth account information (NextAuth requirement)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// VerificationToken - Email verification tokens (NextAuth requirement)
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// =============================================================================
+// Notification Models
+// =============================================================================
+
+/// Notification type enumeration
+enum NotificationType {
+  MESSAGE
+  MENTION
+  THREAD_REPLY
+  CALL
+  CHANNEL_INVITE
+  ORGANIZATION_UPDATE
+  SYSTEM
+}
+
+/// Notification priority enumeration
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+/// Push platform enumeration
+enum PushPlatform {
+  web
+  ios
+  android
+}
+
+/// Task priority enumeration
+enum TaskPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+/// Task status enumeration
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
+// =============================================================================
+// Task & Backlog Models (VP Autonomous Operation)
+// =============================================================================
+
+/// Task - Individual work item for VP autonomous operation
+model Task {
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  priority       TaskPriority @default(MEDIUM)
+  status         TaskStatus   @default(TODO)
+  dueDate        DateTime?    @map("due_date")
+  estimatedHours Int?         @map("estimated_hours")
+
+  // Metadata
+  tags     String[] @default([])
+  metadata Json     @default("{}")
+
+  // Task dependencies (array of Task IDs)
+  dependsOn String[] @default([]) @map("depends_on")
+
+  // Foreign keys
+  vpId         String  @map("vp_id")
+  workspaceId  String  @map("workspace_id")
+  channelId    String? @map("channel_id")
+  createdById  String  @map("created_by_id")
+  assignedToId String? @map("assigned_to_id")
+
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
+
+  // Relations
+  vp           VP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  channel      Channel?      @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  creator      User          @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  assignedTo   User?         @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  backlogItems BacklogItem[]
+
+  @@index([vpId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([channelId])
+  @@index([dueDate])
+  @@index([createdAt])
+  @@map("tasks")
+}
+
+/// Backlog - Collection of tasks for VP management
+model Backlog {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  status      String  @default("active") // active, archived, draft
+
+  // Ordering
+  priority Int @default(0) // Lower number = higher priority
+
+  // Metadata
+  metadata Json @default("{}")
+
+  // Foreign keys
+  vpId        String @map("vp_id")
+  workspaceId String @map("workspace_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  vp        VP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  items     BacklogItem[]
+
+  @@unique([vpId, name])
+  @@index([vpId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([priority])
+  @@map("backlogs")
+}
+
+/// BacklogItem - Junction model between Backlog and Task
+model BacklogItem {
+  id String @id @default(cuid())
+
+  // Ordering within backlog
+  position Int @default(0)
+
+  // Foreign keys
+  backlogId String @map("backlog_id")
+  taskId    String @map("task_id")
+
+  // Timestamps
+  addedAt DateTime @default(now()) @map("added_at")
+
+  // Relations
+  backlog Backlog @relation(fields: [backlogId], references: [id], onDelete: Cascade)
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([backlogId, taskId])
+  @@index([backlogId])
+  @@index([taskId])
+  @@index([position])
+  @@map("backlog_items")
+}
+
+/// Notification - User notification
+model Notification {
+  id           String               @id @default(cuid())
+  title        String
+  body         String
+  type         NotificationType
+  priority     NotificationPriority @default(NORMAL)
+  resourceId   String?              @map("resource_id")
+  resourceType String?              @map("resource_type")
+  actionUrl    String?              @map("action_url")
+  metadata     Json                 @default("{}")
+  read         Boolean              @default(false)
+  readAt       DateTime?            @map("read_at")
+  archived     Boolean              @default(false)
+  expiresAt    DateTime?            @map("expires_at")
+
+  // Foreign keys
+  userId String @map("user_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+/// PushSubscription - Device push notification subscription
+model PushSubscription {
+  id                 String       @id @default(cuid())
+  token              String       @unique
+  platform           PushPlatform
+  userAgent          String?      @map("user_agent")
+  deviceName         String?      @map("device_name")
+  deviceModel        String?      @map("device_model")
+  appVersion         String?      @map("app_version")
+  active             Boolean      @default(true)
+  deactivatedAt      DateTime?    @map("deactivated_at")
+  deactivationReason String?      @map("deactivation_reason")
+  failureCount       Int          @default(0) @map("failure_count")
+  lastFailureAt      DateTime?    @map("last_failure_at")
+  lastFailureReason  String?      @map("last_failure_reason")
+
+  // Foreign keys
+  userId String @map("user_id")
+
+  // Timestamps
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastActiveAt DateTime? @map("last_active_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([platform])
+  @@index([active])
+  @@map("push_subscriptions")
+}
+
+// =============================================================================
+// Daemon Models
+// =============================================================================
+
+/// DaemonCredential - Credentials for VP daemon authentication
+model DaemonCredential {
+  id            String   @id @default(cuid())
+  apiKey        String   @unique @map("api_key")
+  apiSecretHash String   @map("api_secret_hash")
+  hostname      String?
+  version       String?
+  capabilities  String[]
+  metadata      Json?
+  isActive      Boolean  @default(true) @map("is_active")
+
+  // Foreign keys
+  vpId        String @map("vp_id")
+  workspaceId String @map("workspace_id")
+
+  // Timestamps
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  expiresAt  DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  // Relations
+  vp        VP        @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([vpId])
+  @@index([workspaceId])
+  @@index([apiKey])
+  @@index([isActive])
+  @@map("daemon_credentials")
+}
+
+// =============================================================================
+// Workflow Automation Models (Wave 16 / Phase 11)
+// =============================================================================
+
+/// Workflow status enumeration
+enum WorkflowStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+/// Workflow execution status enumeration
+enum WorkflowExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  TIMEOUT
+}
+
+/// Workflow - Automation workflow definition
+model Workflow {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  trigger     Json // WorkflowTrigger object
+  actions     Json // Array of WorkflowAction objects
+  status      WorkflowStatus @default(DRAFT)
+  tags        String[]       @default([])
+  metadata    Json?
+
+  // Statistics
+  executionCount Int @default(0) @map("execution_count")
+  successCount   Int @default(0) @map("success_count")
+  failureCount   Int @default(0) @map("failure_count")
+
+  // Foreign keys
+  workspaceId String @map("workspace_id")
+  createdBy   String @map("created_by")
+
+  // Timestamps
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastExecutedAt DateTime? @map("last_executed_at")
+
+  // Relations
+  workspace  Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  executions WorkflowExecution[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("workflows")
+}
+
+/// WorkflowExecution - Record of a workflow execution
+model WorkflowExecution {
+  id          String                  @id @default(cuid())
+  status      WorkflowExecutionStatus @default(PENDING)
+  triggeredBy String                  @map("triggered_by")
+  triggerType String                  @map("trigger_type")
+  triggerData Json?                   @map("trigger_data")
+  steps       Json                    @default("[]") // Array of WorkflowStepResult
+  error       String?
+
+  // Timing
+  startedAt   DateTime  @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  durationMs  Int?      @map("duration_ms")
+
+  // Flags
+  isSimulation Boolean @default(false) @map("is_simulation")
+
+  // Foreign keys
+  workflowId  String @map("workflow_id")
+  workspaceId String @map("workspace_id")
+
+  // Relations
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([triggeredBy])
+  @@index([startedAt])
+  @@index([isSimulation])
+  @@map("workflow_executions")
+}
+
+// =============================================================================
+// VP Memory Models (Phase 1 - VP Autonomous Operation)
+// =============================================================================
+
+/// Memory type enumeration
+enum MemoryType {
+  CONVERSATION
+  TASK
+  LEARNING
+  CONTEXT
+  DECISION
+}
+
+/// VPMemory - VP memory storage for conversations, tasks, and learnings
+model VPMemory {
+  id       String     @id @default(cuid())
+  type     MemoryType
+  content  String     @db.Text
+  summary  String?    @db.Text
+  metadata Json       @default("{}")
+
+  // Memory context
+  channelId String? @map("channel_id")
+  taskId    String? @map("task_id")
+
+  // Embeddings and search
+  embedding String?  @db.Text // Vector embedding for semantic search
+  keywords  String[] @default([])
+
+  // Memory importance and retention
+  importance  Int @default(5) // 1-10 scale
+  accessCount Int @default(0) @map("access_count")
+
+  // Foreign keys
+  vpId        String @map("vp_id")
+  workspaceId String @map("workspace_id")
+
+  // Timestamps
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastAccessedAt DateTime? @map("last_accessed_at")
+  expiresAt      DateTime? @map("expires_at")
+
+  // Relations
+  vp        VP        @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([vpId])
+  @@index([workspaceId])
+  @@index([type])
+  @@index([channelId])
+  @@index([taskId])
+  @@index([importance])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@index([keywords])
+  @@map("vp_memories")
+}
+
+// =============================================================================
+// Billing Models (Agent 15 Implementation)
+// =============================================================================
+
+/// Subscription status enumeration
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  TRIALING
+}
+
+/// Billing plan enumeration
+enum BillingPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+/// Billing history status enumeration
+enum BillingHistoryStatus {
+  PAID
+  PENDING
+  FAILED
+  REFUNDED
+}
+
+/// Subscription - Workspace billing subscription
+model Subscription {
+  id            String             @id @default(cuid())
+  plan          BillingPlan        @default(FREE)
+  status        SubscriptionStatus @default(ACTIVE)
+
+  // Billing period
+  currentPeriodStart DateTime @map("current_period_start")
+  currentPeriodEnd   DateTime @map("current_period_end")
+
+  // Stripe integration (optional for Stripe-connected accounts)
+  stripeCustomerId     String? @unique @map("stripe_customer_id")
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+
+  // Foreign keys
+  workspaceId String @unique @map("workspace_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  workspace       Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  billingHistory  BillingHistory[]
+
+  @@index([workspaceId])
+  @@index([plan])
+  @@index([status])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@map("subscriptions")
+}
+
+/// BillingHistory - Invoice and payment history
+model BillingHistory {
+  id          String               @id @default(cuid())
+  amount      Int                  // Amount in cents
+  currency    String               @default("usd")
+  status      BillingHistoryStatus @default(PENDING)
+  description String
+  invoiceUrl  String?              @map("invoice_url")
+
+  // Stripe integration
+  stripeInvoiceId String? @unique @map("stripe_invoice_id")
+
+  // Foreign keys
+  workspaceId    String @map("workspace_id")
+  subscriptionId String @map("subscription_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([stripeInvoiceId])
+  @@map("billing_history")
+}
+
+// =============================================================================
+// Integration Models (Phase 8 - Workspace Integrations)
+// =============================================================================
+
+/// Integration status enumeration
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  ERROR
+  REVOKED
+}
+
+/// Integration provider enumeration
+enum IntegrationProvider {
+  SLACK
+  GITHUB
+  GITLAB
+  JIRA
+  LINEAR
+  NOTION
+  GOOGLE_DRIVE
+  MICROSOFT_365
+  ZAPIER
+  CUSTOM
+}
+
+/// Integration - Third-party service integration configuration
+model Integration {
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  provider    IntegrationProvider
+  status      IntegrationStatus   @default(PENDING)
+
+  // OAuth credentials (encrypted)
+  accessToken  String?   @db.Text @map("access_token")
+  refreshToken String?   @db.Text @map("refresh_token")
+  expiresAt    DateTime? @map("expires_at")
+
+  // Provider-specific configuration
+  config Json @default("{}") // Provider-specific settings
+
+  // Sync settings
+  syncEnabled Boolean   @default(false) @map("sync_enabled")
+  lastSyncAt  DateTime? @map("last_sync_at")
+  syncError   String?   @map("sync_error")
+
+  // Foreign keys
+  workspaceId String @map("workspace_id")
+  connectedBy String @map("connected_by")
+
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  connectedAt DateTime? @map("connected_at")
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([provider])
+  @@index([status])
+  @@index([connectedBy])
+  @@index([createdAt])
+  @@map("integrations")
+}
+
+// =============================================================================
+// Audit Log Models (Agent 17 Implementation)
+// =============================================================================
+
+/// AuditLog - System audit trail for compliance and security
+model AuditLog {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  userId      String?  @map("user_id")
+  action      String   // create, update, delete, login, logout, etc.
+  entityType  String   @map("entity_type") // workspace, channel, workflow, member, etc.
+  entityId    String?  @map("entity_id")
+  changes     Json?    // { before: {}, after: {} }
+  metadata    Json?    // additional context
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@map("audit_logs")
+}

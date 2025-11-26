@@ -26,7 +26,7 @@ import type { NextRequest } from 'next/server';
  * Helper function to check if user is a member of the channel
  */
 async function checkChannelMembership(channelId: string, userId: string) {
-  const membership = await prisma.channelMember.findUnique({
+  const membership = await prisma.channel_members.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -68,7 +68,7 @@ async function uploadFile(file: File, userId: string, workspaceId: string) {
   const s3Bucket = process.env.S3_BUCKET_NAME || 'neolith-files';
 
   // Create file record
-  const fileRecord = await prisma.file.create({
+  const fileRecord = await prisma.files.create({
     data: {
       filename,
       originalName: file.name,
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // If parentId provided, verify parent message exists and belongs to same channel
     if (parentId) {
-      const parentMessage = await prisma.message.findUnique({
+      const parentMessage = await prisma.messages.findUnique({
         where: { id: parentId },
         select: { channelId: true, isDeleted: true, parentId: true },
       });
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create the message with attachments
-    const message = await prisma.message.create({
+    const message = await prisma.messages.create({
       data: {
         content: content.trim(),
         type: 'TEXT',
@@ -321,7 +321,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }));
 
       if (mentionNotifications.length > 0) {
-        await prisma.notification.createMany({
+        await prisma.notifications.createMany({
           data: mentionNotifications,
         });
       }

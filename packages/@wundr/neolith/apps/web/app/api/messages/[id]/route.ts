@@ -44,7 +44,7 @@ interface RouteContext {
  * Returns the message if the user has access via channel membership
  */
 async function getMessageWithAccessCheck(messageId: string, userId: string) {
-  const message = await prisma.message.findUnique({
+  const message = await prisma.messages.findUnique({
     where: { id: messageId },
     include: {
       author: {
@@ -298,7 +298,7 @@ export async function PATCH(
     };
 
     // Update the message
-    const updatedMessage = await prisma.message.update({
+    const updatedMessage = await prisma.messages.update({
       where: { id: params.id },
       data: {
         content: input.content,
@@ -430,7 +430,7 @@ export async function DELETE(
     }
 
     // Soft delete the message
-    await prisma.message.update({
+    await prisma.messages.update({
       where: { id: params.id },
       data: {
         isDeleted: true,

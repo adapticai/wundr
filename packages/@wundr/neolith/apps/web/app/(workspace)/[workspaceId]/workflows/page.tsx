@@ -49,7 +49,7 @@ export default function WorkflowsPage() {
   const { workflows, isLoading, error, createWorkflow, mutate } = useWorkflows(workspaceId, {
     status: statusFilter === 'all' ? undefined : statusFilter,
   });
-  const { templates, isLoading: templatesLoading } = useWorkflowTemplates();
+  const { templates, isLoading: templatesLoading } = useWorkflowTemplates(workspaceId);
 
   // Stats
   const workflowStats = useMemo(() => {

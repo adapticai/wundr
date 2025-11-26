@@ -141,7 +141,7 @@ export async function GET(
     const { workspaceId } = await context.params;
 
     // Verify workspace membership (any role)
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
       include: {
         workspace: {
@@ -194,7 +194,7 @@ export async function GET(
     const activities: ActivityEntry[] = [];
 
     // 1. Workspace member activities
-    const memberActivities = await prisma.workspaceMember.findMany({
+    const memberActivities = await prisma.workspace_members.findMany({
       where: {
         workspaceId,
         ...(userId && { userId }),

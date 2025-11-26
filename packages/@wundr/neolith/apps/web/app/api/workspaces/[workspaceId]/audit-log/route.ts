@@ -1,9 +1,7 @@
 /**
- * STUB IMPLEMENTATION - Audit Log API Routes
+ * Audit Log API Routes
  *
- * This is a STUB implementation that returns mock data.
- * In production, this should query a dedicated audit_log table with proper indexing.
- *
+ * Real implementation for audit log retrieval with proper database queries.
  * Handles audit log retrieval for compliance and security views.
  *
  * Routes:
@@ -15,6 +13,7 @@
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { prisma } from '@neolith/database';
 
 import type { NextRequest } from 'next/server';
 
@@ -26,12 +25,12 @@ interface RouteContext {
 }
 
 /**
- * Audit log entry structure
+ * Audit log entry structure (frontend format)
  */
 interface AuditLogEntry {
   id: string;
   timestamp: string;
-  action: AuditActionType;
+  action: string;
   actorId: string;
   actorName: string | null;
   actorEmail: string | null;
@@ -46,43 +45,6 @@ interface AuditLogEntry {
   workspaceId: string;
   severity: 'info' | 'warning' | 'critical';
 }
-
-/**
- * Audit action types for compliance tracking
- */
-type AuditActionType =
-  | 'user.login'
-  | 'user.logout'
-  | 'user.created'
-  | 'user.updated'
-  | 'user.deleted'
-  | 'user.password_changed'
-  | 'user.mfa_enabled'
-  | 'user.mfa_disabled'
-  | 'workspace.created'
-  | 'workspace.updated'
-  | 'workspace.deleted'
-  | 'workspace.settings_changed'
-  | 'member.invited'
-  | 'member.joined'
-  | 'member.removed'
-  | 'member.role_changed'
-  | 'role.created'
-  | 'role.updated'
-  | 'role.deleted'
-  | 'permission.granted'
-  | 'permission.revoked'
-  | 'file.uploaded'
-  | 'file.downloaded'
-  | 'file.deleted'
-  | 'file.shared'
-  | 'api_key.created'
-  | 'api_key.revoked'
-  | 'integration.connected'
-  | 'integration.disconnected'
-  | 'data.exported'
-  | 'security.breach_detected'
-  | 'security.suspicious_activity';
 
 /**
  * Detailed change information for audit entries
@@ -110,7 +72,7 @@ interface AuditLogResponse {
     totalPages: number;
   };
   filters: {
-    action?: AuditActionType;
+    action?: string;
     actorId?: string;
     actorType?: 'user' | 'vp' | 'system';
     startDate?: string;
@@ -120,162 +82,63 @@ interface AuditLogResponse {
 }
 
 /**
- * STUB: Generate mock audit log entries
- * TODO: Replace with actual database queries
+ * Determine severity level based on action type
  */
-function generateMockAuditEntries(
-  workspaceId: string,
-  count: number,
-  filters: {
-    action?: string;
-    actorId?: string;
-    actorType?: string;
-    startDate?: Date;
-    endDate?: Date;
-    severity?: string;
-  } = {},
-): AuditLogEntry[] {
-  const mockActions: AuditActionType[] = [
-    'user.login',
-    'user.logout',
-    'workspace.settings_changed',
-    'member.invited',
-    'member.role_changed',
-    'file.uploaded',
-    'file.downloaded',
-    'api_key.created',
-    'permission.granted',
-    'data.exported',
-  ];
+function getSeverity(action: string): 'info' | 'warning' | 'critical' {
+  if (action.includes('delete') || action.includes('breach') || action.includes('suspicious')) {
+    return 'critical';
+  }
+  if (
+    action.includes('role_changed') ||
+    action.includes('permission') ||
+    action.includes('settings_changed')
+  ) {
+    return 'warning';
+  }
+  return 'info';
+}
 
-  const mockActors = [
-    { id: 'user_1', name: 'John Doe', email: 'john@example.com', type: 'user' as const },
-    { id: 'user_2', name: 'Jane Smith', email: 'jane@example.com', type: 'user' as const },
-    { id: 'vp_1', name: 'AI Assistant', email: 'ai@system.local', type: 'vp' as const },
-    { id: 'system', name: 'System', email: null, type: 'system' as const },
-  ];
+/**
+ * Determine actor type from user data
+ */
+function getActorType(user: { isVP: boolean } | null): 'user' | 'vp' | 'system' {
+  if (!user) return 'system';
+  return user.isVP ? 'vp' : 'user';
+}
 
-  const mockSeverities: ('info' | 'warning' | 'critical')[] = ['info', 'info', 'info', 'warning', 'critical'];
+/**
+ * Format changes from JSON to frontend structure
+ */
+function formatChanges(
+  changes: unknown,
+): Array<{ field: string; oldValue: unknown; newValue: unknown }> | undefined {
+  if (!changes || typeof changes !== 'object') return undefined;
 
-  const entries: AuditLogEntry[] = [];
-  const now = new Date();
+  const changesObj = changes as { before?: Record<string, unknown>; after?: Record<string, unknown> };
 
-  for (let i = 0; i < count; i++) {
-    const action = mockActions[i % mockActions.length];
-    const actor = mockActors[i % mockActors.length];
-    const severity = mockSeverities[i % mockSeverities.length];
-    const timestamp = new Date(now.getTime() - i * 3600000); // 1 hour intervals
+  if (!changesObj.before || !changesObj.after) return undefined;
 
-    // Apply filters
-    if (filters.action && action !== filters.action) {
-      continue;
+  const formattedChanges: Array<{ field: string; oldValue: unknown; newValue: unknown }> = [];
+
+  // Find all fields that changed
+  const allFields = new Set([...Object.keys(changesObj.before), ...Object.keys(changesObj.after)]);
+
+  for (const field of allFields) {
+    const oldValue = changesObj.before[field];
+    const newValue = changesObj.after[field];
+
+    if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+      formattedChanges.push({ field, oldValue, newValue });
     }
-    if (filters.actorId && actor.id !== filters.actorId) {
-      continue;
-    }
-    if (filters.actorType && actor.type !== filters.actorType) {
-      continue;
-    }
-    if (filters.severity && severity !== filters.severity) {
-      continue;
-    }
-    if (filters.startDate && timestamp < filters.startDate) {
-      continue;
-    }
-    if (filters.endDate && timestamp > filters.endDate) {
-      continue;
-    }
-
-    // Generate details based on action type
-    let details: AuditLogDetails = {};
-
-    if (action === 'member.role_changed') {
-      details = {
-        changes: [
-          {
-            field: 'role',
-            oldValue: 'member',
-            newValue: 'admin',
-          },
-        ],
-        metadata: {
-          reason: 'Promoted for project leadership',
-        },
-      };
-    } else if (action === 'workspace.settings_changed') {
-      details = {
-        changes: [
-          {
-            field: 'visibility',
-            oldValue: 'private',
-            newValue: 'public',
-          },
-          {
-            field: 'allowInvites',
-            oldValue: false,
-            newValue: true,
-          },
-        ],
-      };
-    } else if (action === 'file.uploaded') {
-      details = {
-        metadata: {
-          fileName: `document_${i}.pdf`,
-          fileSize: Math.floor(Math.random() * 10000000),
-          mimeType: 'application/pdf',
-        },
-      };
-    } else if (action === 'api_key.created') {
-      details = {
-        metadata: {
-          keyName: `API Key ${i}`,
-          scopes: ['read:workspace', 'write:files'],
-          expiresAt: new Date(now.getTime() + 90 * 24 * 3600000).toISOString(),
-        },
-      };
-    } else if (action === 'permission.granted') {
-      details = {
-        changes: [
-          {
-            field: 'permissions',
-            oldValue: ['read'],
-            newValue: ['read', 'write', 'admin'],
-          },
-        ],
-        metadata: {
-          resourceType: 'channel',
-          resourceId: `channel_${i}`,
-        },
-      };
-    }
-
-    entries.push({
-      id: `audit_${workspaceId}_${i}`,
-      timestamp: timestamp.toISOString(),
-      action,
-      actorId: actor.id,
-      actorName: actor.name,
-      actorEmail: actor.email,
-      actorType: actor.type,
-      targetType: action.includes('workspace') ? 'workspace' : action.includes('member') ? 'user' : 'resource',
-      targetId: `target_${i}`,
-      targetName: `Target ${i}`,
-      details,
-      ipAddress: `192.168.1.${(i % 255) + 1}`,
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-      sessionId: `session_${i % 10}`,
-      workspaceId,
-      severity,
-    });
   }
 
-  return entries;
+  return formattedChanges.length > 0 ? formattedChanges : undefined;
 }
 
 /**
  * GET /api/workspaces/:workspaceId/audit-log
  *
- * STUB: Get audit log entries with filtering and pagination.
+ * Get audit log entries with filtering and pagination.
  * Requires authenticated user with workspace access.
  *
  * Query Parameters:
@@ -297,7 +160,7 @@ export async function GET(
   context: RouteContext,
 ): Promise<NextResponse<AuditLogResponse | { error: string; code?: string }>> {
   try {
-    // STUB: Authentication check
+    // Authentication check
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -308,17 +171,20 @@ export async function GET(
 
     const { workspaceId } = await context.params;
 
-    // STUB: Verify workspace access
-    // TODO: Replace with actual workspace membership check
-    // const membership = await prisma.workspaceMember.findFirst({
-    //   where: { workspaceId, userId: session.user.id },
-    // });
-    // if (!membership) {
-    //   return NextResponse.json(
-    //     { error: 'Workspace not found or access denied', code: 'FORBIDDEN' },
-    //     { status: 403 },
-    //   );
-    // }
+    // Verify workspace access
+    const membership = await prisma.workspace_members.findFirst({
+      where: {
+        workspaceId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: 'Workspace not found or access denied', code: 'FORBIDDEN' },
+        { status: 403 },
+      );
+    }
 
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
@@ -327,7 +193,6 @@ export async function GET(
     const action = searchParams.get('action') || undefined;
     const actorId = searchParams.get('actorId') || undefined;
     const actorType = searchParams.get('actorType') || undefined;
-    const severity = searchParams.get('severity') || undefined;
     const startDateStr = searchParams.get('startDate') || undefined;
     const endDateStr = searchParams.get('endDate') || undefined;
 
@@ -355,44 +220,89 @@ export async function GET(
       }
     }
 
-    // STUB: Generate mock data
-    // TODO: Replace with actual database query
-    // const entries = await prisma.auditLog.findMany({
-    //   where: {
-    //     workspaceId,
-    //     action: action ? action : undefined,
-    //     actorId: actorId ? actorId : undefined,
-    //     actorType: actorType ? actorType : undefined,
-    //     severity: severity ? severity : undefined,
-    //     timestamp: {
-    //       gte: startDate,
-    //       lte: endDate,
-    //     },
-    //   },
-    //   orderBy: { timestamp: 'desc' },
-    //   skip: (page - 1) * pageSize,
-    //   take: pageSize,
-    //   include: {
-    //     actor: {
-    //       select: { id: true, name: true, email: true },
-    //     },
-    //   },
-    // });
+    // Build where clause for database query
+    const where: {
+      workspaceId: string;
+      action?: string;
+      userId?: string | null;
+      createdAt?: { gte?: Date; lte?: Date };
+    } = {
+      workspaceId,
+    };
 
-    const allEntries = generateMockAuditEntries(workspaceId, 200, {
-      action,
-      actorId,
-      actorType,
-      startDate,
-      endDate,
-      severity,
+    if (action) {
+      where.action = action;
+    }
+
+    if (actorId) {
+      where.userId = actorId;
+    } else if (actorType === 'system') {
+      where.userId = null;
+    }
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = startDate;
+      }
+      if (endDate) {
+        where.createdAt.lte = endDate;
+      }
+    }
+
+    // Get total count for pagination
+    const total = await prisma.auditLog.count({ where });
+
+    // Fetch audit log entries with user data
+    const logs = await prisma.auditLog.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            isVP: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
 
-    const total = allEntries.length;
+    // Transform database entries to frontend format
+    const entries: AuditLogEntry[] = logs.map((log) => {
+      const severity = getSeverity(log.action);
+      const actorTypeValue = getActorType(log.user);
+      const changes = formatChanges(log.changes);
+
+      const details: AuditLogDetails = {
+        changes,
+        metadata: (log.metadata as Record<string, unknown>) || undefined,
+      };
+
+      return {
+        id: log.id,
+        timestamp: log.createdAt.toISOString(),
+        action: log.action,
+        actorId: log.userId || 'system',
+        actorName: log.user?.name || 'System',
+        actorEmail: log.user?.email || null,
+        actorType: actorTypeValue,
+        targetType: log.entityType,
+        targetId: log.entityId,
+        targetName: null, // Could be enriched by joining with entity tables
+        details,
+        ipAddress: log.ipAddress,
+        userAgent: log.userAgent,
+        sessionId: null, // Not currently tracked
+        workspaceId: log.workspaceId,
+        severity,
+      };
+    });
+
     const totalPages = Math.ceil(total / pageSize);
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const entries = allEntries.slice(startIndex, endIndex);
 
     const response: AuditLogResponse = {
       entries,
@@ -403,12 +313,11 @@ export async function GET(
         totalPages,
       },
       filters: {
-        action: action as AuditActionType | undefined,
+        action,
         actorId,
         actorType: actorType as 'user' | 'vp' | 'system' | undefined,
         startDate: startDateStr,
         endDate: endDateStr,
-        severity: severity as 'info' | 'warning' | 'critical' | undefined,
       },
     };
 

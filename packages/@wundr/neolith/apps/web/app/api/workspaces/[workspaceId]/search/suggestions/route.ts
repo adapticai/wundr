@@ -56,7 +56,7 @@ export async function GET(
     const query = searchParams.get('q') || '';
 
     // Verify workspace membership
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 

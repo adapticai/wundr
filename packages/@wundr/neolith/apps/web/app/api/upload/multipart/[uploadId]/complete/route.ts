@@ -108,7 +108,7 @@ function generateThumbnailUrl(s3Key: string, mimeType: string): string | null {
  * @returns Workspace membership or null
  */
 async function checkWorkspaceMembership(workspaceId: string, userId: string) {
-  const membership = await prisma.workspaceMember.findUnique({
+  const membership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,

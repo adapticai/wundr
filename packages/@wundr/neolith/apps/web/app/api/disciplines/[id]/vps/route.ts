@@ -67,7 +67,7 @@ export async function GET(
     }
 
     // Get discipline
-    const discipline = await prisma.discipline.findUnique({
+    const discipline = await prisma.disciplines.findUnique({
       where: { id: params.id },
     });
 
@@ -82,7 +82,7 @@ export async function GET(
     }
 
     // Check organization membership
-    const membership = await prisma.organizationMember.findUnique({
+    const membership = await prisma.organization_members.findUnique({
       where: {
         organizationId_userId: {
           organizationId: discipline.organizationId,
@@ -102,7 +102,7 @@ export async function GET(
     }
 
     // Fetch VPs in this discipline
-    const vps = await prisma.vP.findMany({
+    const vps = await prisma.vps.findMany({
       where: { disciplineId: params.id },
       include: {
         user: {

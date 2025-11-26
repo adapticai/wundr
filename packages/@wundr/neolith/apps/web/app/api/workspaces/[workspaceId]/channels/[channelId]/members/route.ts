@@ -91,7 +91,7 @@ async function checkChannelManagementAccess(
   }
 
   // Check workspace membership
-  const workspaceMembership = await prisma.workspaceMember.findUnique({
+  const workspaceMembership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -347,7 +347,7 @@ export async function POST(
     const validationResults = await Promise.all(
       input.userIds.map(async (userId) => {
         // Check if user is a workspace member
-        const workspaceMembership = await prisma.workspaceMember.findUnique({
+        const workspaceMembership = await prisma.workspace_members.findUnique({
           where: {
             workspaceId_userId: {
               workspaceId: params.workspaceId,

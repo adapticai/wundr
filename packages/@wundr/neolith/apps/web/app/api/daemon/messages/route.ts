@@ -84,7 +84,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
  * Check if VP has access to a channel
  */
 async function checkChannelAccess(vpId: string, channelId: string): Promise<boolean> {
-  const vp = await prisma.vP.findUnique({
+  const vp = await prisma.vps.findUnique({
     where: { id: vpId },
     select: { userId: true },
   });
@@ -93,7 +93,7 @@ async function checkChannelAccess(vpId: string, channelId: string): Promise<bool
     return false;
   }
 
-  const membership = await prisma.channelMember.findFirst({
+  const membership = await prisma.channels_members.findFirst({
     where: {
       channelId,
       userId: vp.userId,
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Build cursor conditions
     const cursorConditions: { createdAt?: { lt?: Date; gt?: Date } } = {};
     if (before) {
-      const beforeMsg = await prisma.message.findUnique({
+      const beforeMsg = await prisma.messages.findUnique({
         where: { id: before },
         select: { createdAt: true },
       });
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }
     }
     if (after) {
-      const afterMsg = await prisma.message.findUnique({
+      const afterMsg = await prisma.messages.findUnique({
         where: { id: after },
         select: { createdAt: true },
       });
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Fetch messages
-    const rawMessages = await prisma.message.findMany({
+    const rawMessages = await prisma.messages.findMany({
       where: {
         channelId,
         ...cursorConditions,
@@ -189,7 +189,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     type MessageWithAuthorId = typeof rawMessages[0] & { authorId: string };
     const messagesTyped = rawMessages as unknown as MessageWithAuthorId[];
     const authorIds = Array.from(new Set(messagesTyped.map((m) => m.authorId)));
-    const authors = await prisma.user.findMany({
+    const authors = await prisma.users.findMany({
       where: { id: { in: authorIds } },
       select: {
         id: true,
@@ -301,7 +301,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get VP user ID
-    const vp = await prisma.vP.findUnique({
+    const vp = await prisma.vps.findUnique({
       where: { id: token.vpId },
       select: { userId: true },
     });
@@ -355,12 +355,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create message using Prisma
-    const message = await prisma.message.create({
-      data: messageData as unknown as Parameters<typeof prisma.message.create>[0]['data'],
+    const message = await prisma.messages.create({
+      data: messageData as unknown as Parameters<typeof prisma.messages.create>[0]['data'],
     });
 
     // Update channel last activity
-    await prisma.channel.update({
+    await prisma.channels.update({
       where: { id: channelId },
       data: { updatedAt: new Date() },
     });

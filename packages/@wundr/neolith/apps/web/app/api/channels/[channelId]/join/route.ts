@@ -67,7 +67,7 @@ export async function POST(
     }
 
     // Get channel with workspace info
-    const channel = await prisma.channel.findUnique({
+    const channel = await prisma.channels.findUnique({
       where: { id: params.channelId },
       include: {
         workspace: true,
@@ -107,7 +107,7 @@ export async function POST(
     }
 
     // Check if user is a workspace member
-    const workspaceMembership = await prisma.workspaceMember.findUnique({
+    const workspaceMembership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: channel.workspaceId,
@@ -127,7 +127,7 @@ export async function POST(
     }
 
     // Check if user is already a member
-    const existingMembership = await prisma.channelMember.findUnique({
+    const existingMembership = await prisma.channel_members.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -147,7 +147,7 @@ export async function POST(
     }
 
     // Join channel
-    const membership = await prisma.channelMember.create({
+    const membership = await prisma.channel_members.create({
       data: {
         channelId: params.channelId,
         userId: session.user.id,

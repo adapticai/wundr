@@ -112,7 +112,7 @@ async function uploadToS3(
  * @returns Workspace membership or null
  */
 async function checkWorkspaceMembership(workspaceId: string, userId: string) {
-  const membership = await prisma.workspaceMember.findUnique({
+  const membership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -332,7 +332,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     // Create file record in database
-    const fileRecord = await prisma.file.create({
+    const fileRecord = await prisma.files.create({
       data: {
         filename: s3Key.split('/').pop() ?? file.name,
         originalName: file.name,

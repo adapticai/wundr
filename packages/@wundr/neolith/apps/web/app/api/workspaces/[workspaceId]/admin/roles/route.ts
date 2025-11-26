@@ -103,7 +103,7 @@ export async function GET(
     const { workspaceId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -115,7 +115,7 @@ export async function GET(
     }
 
     // Get member counts per role
-    const memberCounts = await prisma.workspaceMember.groupBy({
+    const memberCounts = await prisma.workspace_members.groupBy({
       by: ['role'],
       where: { workspaceId },
       _count: { role: true },
@@ -167,7 +167,7 @@ export async function POST(
     const { workspaceId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 

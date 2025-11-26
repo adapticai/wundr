@@ -40,7 +40,33 @@ export default async function SettingsLayout({
   });
 
   if (!membership) {
-    redirect('/dashboard');
+    // User doesn't have access to this workspace
+    // Find their first workspace and redirect to its settings
+    const userWorkspaces = await prisma.workspaceMember.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      include: {
+        workspace: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      orderBy: {
+        joinedAt: 'desc',
+      },
+      take: 1,
+    });
+
+    // If user has a workspace, redirect to its settings
+    if (userWorkspaces.length > 0) {
+      const firstWorkspaceId = userWorkspaces[0].workspace.id;
+      redirect(`/${firstWorkspaceId}/settings`);
+    }
+
+    // No workspaces - redirect to onboarding
+    redirect('/onboarding');
   }
 
   const navItems = [

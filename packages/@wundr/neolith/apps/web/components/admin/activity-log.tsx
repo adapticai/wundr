@@ -182,12 +182,24 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
   // Infer action type from action string
   const inferActionType = (action: string): AdminActivity['actionType'] => {
     const lowerAction = action.toLowerCase();
-    if (lowerAction.includes('create') || lowerAction.includes('add')) return 'create';
-    if (lowerAction.includes('update') || lowerAction.includes('edit') || lowerAction.includes('modify')) return 'update';
-    if (lowerAction.includes('delete') || lowerAction.includes('remove')) return 'delete';
-    if (lowerAction.includes('view') || lowerAction.includes('access')) return 'access';
-    if (lowerAction.includes('security') || lowerAction.includes('auth') || lowerAction.includes('permission')) return 'security';
-    if (lowerAction.includes('billing') || lowerAction.includes('payment') || lowerAction.includes('subscription')) return 'billing';
+    if (lowerAction.includes('create') || lowerAction.includes('add')) {
+return 'create';
+}
+    if (lowerAction.includes('update') || lowerAction.includes('edit') || lowerAction.includes('modify')) {
+return 'update';
+}
+    if (lowerAction.includes('delete') || lowerAction.includes('remove')) {
+return 'delete';
+}
+    if (lowerAction.includes('view') || lowerAction.includes('access')) {
+return 'access';
+}
+    if (lowerAction.includes('security') || lowerAction.includes('auth') || lowerAction.includes('permission')) {
+return 'security';
+}
+    if (lowerAction.includes('billing') || lowerAction.includes('payment') || lowerAction.includes('subscription')) {
+return 'billing';
+}
     return 'access';
   };
 

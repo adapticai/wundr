@@ -21,7 +21,7 @@ export async function GET(
 
     const { workspaceId } = await params;
 
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 

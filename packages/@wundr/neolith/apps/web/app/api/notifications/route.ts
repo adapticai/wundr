@@ -257,7 +257,7 @@ export async function PATCH(
     // ⚠️ STUB: Mock implementation
     // TODO: Replace with actual database update
     // Example Prisma query:
-    // await prisma.notification.updateMany({
+    // await prisma.notifications.updateMany({
     //   where: {
     //     userId: session.user.id,
     //     ...(markAll ? {} : { id: { in: ids } }),
@@ -352,7 +352,7 @@ export async function DELETE(
     // ⚠️ STUB: Mock implementation
     // TODO: Replace with actual database deletion
     // Example Prisma query:
-    // await prisma.notification.deleteMany({
+    // await prisma.notifications.deleteMany({
     //   where: {
     //     userId: session.user.id,
     //     id: { in: ids },

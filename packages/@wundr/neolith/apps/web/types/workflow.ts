@@ -162,9 +162,10 @@ export interface WorkflowTemplate {
 export type WorkflowTemplateCategory =
   | 'onboarding'
   | 'notifications'
-  | 'moderation'
-  | 'productivity'
+  | 'automation'
   | 'integration'
+  | 'moderation'
+  | 'scheduling'
   | 'custom';
 
 // Status configuration for UI
@@ -318,20 +319,25 @@ export const TEMPLATE_CATEGORY_CONFIG: Record<
     description: 'Send alerts and notifications',
     icon: 'bell',
   },
-  moderation: {
-    label: 'Moderation',
-    description: 'Moderate content and users',
-    icon: 'shield',
-  },
-  productivity: {
-    label: 'Productivity',
-    description: 'Automate repetitive tasks',
+  automation: {
+    label: 'Automation',
+    description: 'Automate repetitive tasks and processes',
     icon: 'zap',
   },
   integration: {
     label: 'Integration',
     description: 'Connect with external services',
     icon: 'plug',
+  },
+  moderation: {
+    label: 'Moderation',
+    description: 'Moderate content and users',
+    icon: 'shield',
+  },
+  scheduling: {
+    label: 'Scheduling',
+    description: 'Time-based and scheduled workflows',
+    icon: 'clock',
   },
   custom: {
     label: 'Custom',

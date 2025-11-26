@@ -29,7 +29,7 @@ import type { NextRequest } from 'next/server';
  * Helper to check workspace access
  */
 async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
+  const workspace = await prisma.workspaces.findUnique({
     where: { id: workspaceId },
   });
 
@@ -37,7 +37,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
 return null;
 }
 
-  const orgMembership = await prisma.organizationMember.findUnique({
+  const orgMembership = await prisma.organization_members.findUnique({
     where: {
       organizationId_userId: {
         organizationId: workspace.organizationId,
@@ -50,7 +50,7 @@ return null;
 return null;
 }
 
-  const workspaceMembership = await prisma.workspaceMember.findUnique({
+  const workspaceMembership = await prisma.workspaces_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Build where clause
     // User sees: public channels + private channels they are a member of
-    const channelMemberships = await prisma.channelMember.findMany({
+    const channelMemberships = await prisma.channels_members.findMany({
       where: {
         userId: session.user.id,
         channel: { workspaceId: filters.workspaceId },
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Fetch channels and total count in parallel
     const [channels, totalCount] = await Promise.all([
-      prisma.channel.findMany({
+      prisma.channels.findMany({
         where,
         skip,
         take,
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
         },
       }),
-      prisma.channel.count({ where }),
+      prisma.channels.count({ where }),
     ]);
 
     // Add membership status to each channel
@@ -333,7 +333,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const memberIdsToAdd = input.memberIds.filter((id) => id !== session.user.id);
       if (memberIdsToAdd.length > 0) {
         // Verify all members are workspace members
-        const workspaceMembers = await tx.workspaceMember.findMany({
+        const workspaceMembers = await tx.workspace_members.findMany({
           where: {
             workspaceId: input.workspaceId,
             userId: { in: memberIdsToAdd },

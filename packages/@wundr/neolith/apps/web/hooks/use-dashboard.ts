@@ -287,7 +287,7 @@ export interface UseDashboardReturn {
  */
 export function useDashboardStats(
   workspaceId: string,
-  options: DashboardStatsOptions = {}
+  options: DashboardStatsOptions = {},
 ): UseDashboardStatsReturn {
   const {
     timeRange: initialTimeRange = 'all',
@@ -325,7 +325,7 @@ export function useDashboardStats(
         });
 
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/stats?${params.toString()}`
+          `/api/workspaces/${workspaceId}/dashboard/stats?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -355,7 +355,7 @@ export function useDashboardStats(
         setIsRefreshing(false);
       }
     },
-    [workspaceId, timeRange, includeActivity, activityLimit, enabled]
+    [workspaceId, timeRange, includeActivity, activityLimit, enabled],
   );
 
   // Initial fetch and refetch on dependencies change
@@ -439,7 +439,7 @@ export function useDashboardStats(
  */
 export function useDashboardActivity(
   workspaceId: string,
-  options: DashboardActivityOptions = {}
+  options: DashboardActivityOptions = {},
 ): UseDashboardActivityReturn {
   const {
     limit = 20,
@@ -499,7 +499,7 @@ export function useDashboardActivity(
         }
 
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`
+          `/api/workspaces/${workspaceId}/dashboard/activity?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -537,7 +537,7 @@ export function useDashboardActivity(
         setIsLoadingMore(false);
       }
     },
-    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId, enabled]
+    [workspaceId, limit, type, dateFrom, dateTo, channelId, userId, enabled],
   );
 
   // Initial fetch and refetch on dependencies change
@@ -640,7 +640,7 @@ export function useDashboardActivity(
 export function useDashboard(
   workspaceId: string,
   statsOptions: DashboardStatsOptions = {},
-  activityOptions: DashboardActivityOptions = {}
+  activityOptions: DashboardActivityOptions = {},
 ): UseDashboardReturn {
   const stats = useDashboardStats(workspaceId, statsOptions);
   const activity = useDashboardActivity(workspaceId, activityOptions);

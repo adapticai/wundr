@@ -522,14 +522,14 @@ return null;
           const getResult = await getResponse.json();
           const existingReaction = getResult.data?.find(
             (r: { emoji: string; hasReacted: boolean }) =>
-              r.emoji === emoji && r.hasReacted
+              r.emoji === emoji && r.hasReacted,
           );
 
           // If exists, delete it; otherwise, add it
           if (existingReaction) {
             const deleteResponse = await fetch(
               `/api/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`,
-              { method: 'DELETE' }
+              { method: 'DELETE' },
             );
             if (!deleteResponse.ok) {
               throw new Error('Failed to remove reaction');

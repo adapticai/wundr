@@ -61,7 +61,7 @@ return { error: 'workspace_not_found' };
 return { error: 'workspace_not_found' };
 }
 
-  const workspaceMembership = await prisma.workspaceMember.findUnique({
+  const workspaceMembership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,

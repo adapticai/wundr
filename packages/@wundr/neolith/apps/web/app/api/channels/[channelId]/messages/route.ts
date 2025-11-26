@@ -37,7 +37,7 @@ interface RouteContext {
  * Helper function to check if user is a member of the channel
  */
 async function checkChannelMembership(channelId: string, userId: string) {
-  const membership = await prisma.channelMember.findUnique({
+  const membership = await prisma.channel_members.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -140,7 +140,7 @@ export async function GET(
     // Add cursor condition for pagination
     let cursorCondition: Prisma.MessageWhereInput = {};
     if (filters.cursor) {
-      const cursorMessage = await prisma.message.findUnique({
+      const cursorMessage = await prisma.messages.findUnique({
         where: { id: filters.cursor },
         select: { createdAt: true },
       });
@@ -155,7 +155,7 @@ export async function GET(
     }
 
     // Fetch messages
-    const messages = await prisma.message.findMany({
+    const messages = await prisma.messages.findMany({
       where: {
         ...where,
         ...cursorCondition,
@@ -225,7 +225,7 @@ export async function GET(
     const prevCursor = resultMessages[0]?.id ?? null;
 
     // Update last read timestamp for the user
-    await prisma.channelMember.update({
+    await prisma.channel_members.update({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -343,7 +343,7 @@ export async function POST(
 
     // If parentId provided, verify parent message exists and belongs to same channel
     if (input.parentId) {
-      const parentMessage = await prisma.message.findUnique({
+      const parentMessage = await prisma.messages.findUnique({
         where: { id: input.parentId },
         select: { channelId: true, isDeleted: true, parentId: true },
       });
@@ -381,7 +381,7 @@ export async function POST(
     }
 
     // Create the message
-    const message = await prisma.message.create({
+    const message = await prisma.messages.create({
       data: {
         content: input.content,
         type: input.type,

@@ -143,7 +143,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check workspace membership
-    const membership = await prisma.workspaceMember.findUnique({
+    const membership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: file.workspaceId,
@@ -281,7 +281,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: JobListInput = parseResult.data;
 
     // Get workspaces the user is a member of
-    const userWorkspaces = await prisma.workspaceMember.findMany({
+    const userWorkspaces = await prisma.workspace_members.findMany({
       where: { userId: session.user.id },
       select: { workspaceId: true },
     });

@@ -36,7 +36,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -172,7 +172,7 @@ export async function POST(
     const { workspaceId } = await params;
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -276,7 +276,7 @@ export async function POST(
  */
 function filterMetrics(
   metrics: UsageMetrics,
-  filter?: string[]
+  filter?: string[],
 ): Partial<UsageMetrics> {
   if (!filter || filter.length === 0) {
     return metrics;
@@ -309,7 +309,7 @@ function filterMetrics(
 function convertMetricsToCSV(
   metrics: Partial<UsageMetrics>,
   startDate?: Date,
-  endDate?: Date
+  endDate?: Date,
 ): string {
   const lines: string[] = [];
 

@@ -81,7 +81,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: TaskFiltersInput = parseResult.data;
 
     // Get workspaces the user has access to
-    const userWorkspaces = await prisma.workspaceMember.findMany({
+    const userWorkspaces = await prisma.workspace_members.findMany({
       where: { userId: session.user.id },
       select: { workspaceId: true },
     });
@@ -289,7 +289,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: CreateTaskInput = parseResult.data;
 
     // Check user has access to workspace
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId: input.workspaceId,
         userId: session.user.id,

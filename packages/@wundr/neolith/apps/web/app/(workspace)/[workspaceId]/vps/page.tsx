@@ -22,10 +22,8 @@ export default function VPsPage() {
   const [filters, setFilters] = useState<VPFilters>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Hooks - Use organizationId instead of workspaceId for fetching VPs
-  // TODO: Replace with actual organizationId from workspace/user context
-  const organizationId = workspaceId; // Temporary: using workspaceId as organizationId
-  const { vps, isLoading, error, refetch, totalCount, filteredCount } = useVPs(organizationId, filters);
+  // Hooks
+  const { vps, isLoading, error, refetch, totalCount, filteredCount } = useVPs(workspaceId, filters);
   const { createVP, toggleVPStatus, isLoading: isMutating } = useVPMutations();
 
   // Handlers

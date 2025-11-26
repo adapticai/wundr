@@ -454,9 +454,15 @@ export function useWorkspaceAnalytics(
 
     try {
       const queryParams = new URLSearchParams();
-      if (params.startDate) queryParams.set('startDate', params.startDate);
-      if (params.endDate) queryParams.set('endDate', params.endDate);
-      if (params.granularity) queryParams.set('granularity', params.granularity);
+      if (params.startDate) {
+queryParams.set('startDate', params.startDate);
+}
+      if (params.endDate) {
+queryParams.set('endDate', params.endDate);
+}
+      if (params.granularity) {
+queryParams.set('granularity', params.granularity);
+}
 
       const queryString = queryParams.toString();
       const url = `/api/workspaces/${workspaceId}/analytics${queryString ? `?${queryString}` : ''}`;
@@ -486,10 +492,18 @@ export function useWorkspaceAnalytics(
       try {
         const queryParams = new URLSearchParams();
         queryParams.set('format', options.format);
-        if (params.startDate) queryParams.set('from', params.startDate);
-        if (params.endDate) queryParams.set('to', params.endDate);
-        if (options.metrics) queryParams.set('metrics', options.metrics.join(','));
-        if (options.stream) queryParams.set('stream', 'true');
+        if (params.startDate) {
+queryParams.set('from', params.startDate);
+}
+        if (params.endDate) {
+queryParams.set('to', params.endDate);
+}
+        if (options.metrics) {
+queryParams.set('metrics', options.metrics.join(','));
+}
+        if (options.stream) {
+queryParams.set('stream', 'true');
+}
 
         const url = `/api/workspaces/${workspaceId}/analytics/export?${queryParams.toString()}`;
         const response = await fetch(url);

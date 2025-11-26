@@ -12,8 +12,8 @@
  */
 
 import { prisma } from '@neolith/database';
-import { z } from 'zod';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import {
@@ -23,8 +23,8 @@ import {
   WORKFLOW_ERROR_CODES,
 } from '@/lib/validations/workflow';
 
-import type { NextRequest } from 'next/server';
 import type { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspaceId and workflowId parameters
@@ -142,7 +142,7 @@ async function getWorkflowWithAccess(
     return { error: 'workspace_not_found' };
   }
 
-  const workspaceMembership = await prisma.workspaceMember.findUnique({
+  const workspaceMembership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,

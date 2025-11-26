@@ -101,7 +101,7 @@ export async function POST(
       }
     } catch {
       // Try workspace settings
-      const workspaces = await prisma.workspace.findMany({
+      const workspaces = await prisma.workspaces.findMany({
         select: { id: true, settings: true },
       });
 
@@ -185,7 +185,7 @@ export async function POST(
         huddleEnded = true;
       } catch {
         // Try workspace settings
-        const workspace = await prisma.workspace.findUnique({
+        const workspace = await prisma.workspaces.findUnique({
           where: { id: huddle.workspaceId },
           select: { settings: true },
         });
@@ -198,7 +198,7 @@ export async function POST(
               : h,
           );
 
-          await prisma.workspace.update({
+          await prisma.workspaces.update({
             where: { id: huddle.workspaceId },
             data: {
               settings: toJsonValue({

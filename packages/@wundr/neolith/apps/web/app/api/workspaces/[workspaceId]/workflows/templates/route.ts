@@ -469,7 +469,7 @@ export async function POST(
     }
 
     // Check workspace membership
-    const workspaceMembership = await prisma.workspaceMember.findUnique({
+    const workspaceMembership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId,

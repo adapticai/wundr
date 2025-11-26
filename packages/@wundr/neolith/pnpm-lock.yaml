@@ -221,6 +221,9 @@ importers:
       '@react-email/components':
         specifier: ^1.0.1
         version: 1.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@wundr.io/org-genesis':
+        specifier: link:../../../org-genesis
+        version: link:../../../org-genesis
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -404,8 +407,8 @@ importers:
         specifier: ^2.9.1
         version: 2.14.2
       sharp:
-        specifier: ^0.33.2
-        version: 0.33.5
+        specifier: ^0.34.5
+        version: 0.34.5
       web-push:
         specifier: ^3.6.7
         version: 3.6.7

@@ -67,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: DisciplineFiltersInput = parseResult.data;
 
     // Get organizations the user is a member of
-    const userOrganizations = await prisma.organizationMember.findMany({
+    const userOrganizations = await prisma.organization_members.findMany({
       where: { userId: session.user.id },
       select: { organizationId: true },
     });
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Fetch disciplines and total count in parallel
     const [disciplines, totalCount] = await Promise.all([
-      prisma.discipline.findMany({
+      prisma.disciplines.findMany({
         where,
         skip,
         take,
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
         },
       }),
-      prisma.discipline.count({ where }),
+      prisma.disciplines.count({ where }),
     ]);
 
     // Calculate pagination metadata
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: CreateDisciplineInput = parseResult.data;
 
     // Check organization membership and permission
-    const membership = await prisma.organizationMember.findUnique({
+    const membership = await prisma.organization_members.findUnique({
       where: {
         organizationId_userId: {
           organizationId: input.organizationId,
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if discipline name already exists in the organization
-    const existingDiscipline = await prisma.discipline.findFirst({
+    const existingDiscipline = await prisma.disciplines.findFirst({
       where: {
         organizationId: input.organizationId,
         name: { equals: input.name, mode: 'insensitive' },
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create discipline
-    const discipline = await prisma.discipline.create({
+    const discipline = await prisma.disciplines.create({
       data: {
         name: input.name,
         description: input.description,

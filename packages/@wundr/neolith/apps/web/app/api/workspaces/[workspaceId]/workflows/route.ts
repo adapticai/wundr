@@ -60,7 +60,7 @@ return null;
 return null;
 }
 
-  const workspaceMembership = await prisma.workspaceMember.findUnique({
+  const workspaceMembership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -182,25 +182,36 @@ export async function GET(
       prisma.workflow.count({ where }),
     ]);
 
-    // Enhance workflows with computed statistics
+    // Enhance workflows with computed statistics and map to frontend types
     const enhancedWorkflows = workflows.map((workflow) => {
       const actions = workflow.actions as unknown as Array<{ type: string }>;
-      const stepCount = Array.isArray(actions) ? actions.length : 0;
 
-      // Calculate success rate
-      const successRate = workflow.executionCount > 0
-        ? Math.round((workflow.successCount / workflow.executionCount) * 100)
-        : 0;
+      // Map database status to frontend status
+      const mapStatus = (dbStatus: string): 'active' | 'inactive' | 'draft' | 'error' => {
+        const statusMap: Record<string, 'active' | 'inactive' | 'draft' | 'error'> = {
+          'ACTIVE': 'active',
+          'INACTIVE': 'inactive',
+          'DRAFT': 'draft',
+          'ARCHIVED': 'inactive',
+        };
+        return statusMap[dbStatus] || 'draft';
+      };
 
       return {
-        ...workflow,
-        stepCount,
-        statistics: {
-          executionCount: workflow.executionCount,
-          successCount: workflow.successCount,
-          failureCount: workflow.failureCount,
-          successRate,
-        },
+        id: workflow.id,
+        name: workflow.name,
+        description: workflow.description,
+        status: mapStatus(workflow.status),
+        workspaceId: workflow.workspaceId,
+        trigger: workflow.trigger,
+        actions: actions,
+        variables: [],
+        createdAt: workflow.createdAt.toISOString(),
+        updatedAt: workflow.updatedAt.toISOString(),
+        createdBy: workflow.createdBy,
+        lastRunAt: workflow.lastExecutedAt?.toISOString(),
+        runCount: workflow.executionCount,
+        errorCount: workflow.failureCount,
       };
     });
 
@@ -324,19 +335,35 @@ export async function POST(
       },
     });
 
-    // Enhance workflow with computed statistics
+    // Map to frontend type format
     const actions = workflow.actions as unknown as Array<{ type: string }>;
-    const stepCount = Array.isArray(actions) ? actions.length : 0;
+
+    // Map database status to frontend status
+    const mapStatus = (dbStatus: string): 'active' | 'inactive' | 'draft' | 'error' => {
+      const statusMap: Record<string, 'active' | 'inactive' | 'draft' | 'error'> = {
+        'ACTIVE': 'active',
+        'INACTIVE': 'inactive',
+        'DRAFT': 'draft',
+        'ARCHIVED': 'inactive',
+      };
+      return statusMap[dbStatus] || 'draft';
+    };
 
     const enhancedWorkflow = {
-      ...workflow,
-      stepCount,
-      statistics: {
-        executionCount: workflow.executionCount,
-        successCount: workflow.successCount,
-        failureCount: workflow.failureCount,
-        successRate: 0, // New workflows have 0% success rate
-      },
+      id: workflow.id,
+      name: workflow.name,
+      description: workflow.description,
+      status: mapStatus(workflow.status),
+      workspaceId: workflow.workspaceId,
+      trigger: workflow.trigger,
+      actions: actions,
+      variables: [],
+      createdAt: workflow.createdAt.toISOString(),
+      updatedAt: workflow.updatedAt.toISOString(),
+      createdBy: workflow.createdBy,
+      lastRunAt: workflow.lastExecutedAt?.toISOString(),
+      runCount: workflow.executionCount,
+      errorCount: workflow.failureCount,
     };
 
     return NextResponse.json(

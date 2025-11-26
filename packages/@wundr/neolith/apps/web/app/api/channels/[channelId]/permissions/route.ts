@@ -62,7 +62,7 @@ export async function GET(
     }
 
     // Fetch channel with workspace info
-    const channel = await prisma.channel.findUnique({
+    const channel = await prisma.channels.findUnique({
       where: { id: params.channelId },
       include: {
         workspace: true,
@@ -80,7 +80,7 @@ export async function GET(
     }
 
     // Get organization membership
-    const orgMembership = await prisma.organizationMember.findUnique({
+    const orgMembership = await prisma.organization_members.findUnique({
       where: {
         organizationId_userId: {
           organizationId: channel.workspace.organizationId,
@@ -100,7 +100,7 @@ export async function GET(
     }
 
     // Get channel membership
-    const channelMembership = await prisma.channelMember.findUnique({
+    const channelMembership = await prisma.channel_members.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,

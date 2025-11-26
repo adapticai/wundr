@@ -178,10 +178,10 @@ export function useVP(id: string): UseVPReturn {
 /**
  * Hook for fetching a list of VPs with filtering
  *
- * Fetches VPs for an organization with optional filtering by discipline,
+ * Fetches VPs for a workspace with optional filtering by discipline,
  * status, and search query.
  *
- * @param orgId - The organization ID to fetch VPs for
+ * @param workspaceId - The workspace ID to fetch VPs for
  * @param filters - Optional filters to apply
  * @returns VPs list, loading state, and counts
  *
@@ -189,7 +189,7 @@ export function useVP(id: string): UseVPReturn {
  * ```tsx
  * function VPList() {
  *   const { vps, isLoading, totalCount, filteredCount } = useVPs(
- *     'org-123',
+ *     'ws-123',
  *     { status: 'ACTIVE', discipline: 'engineering' }
  *   );
  *
@@ -202,14 +202,14 @@ export function useVP(id: string): UseVPReturn {
  * }
  * ```
  */
-export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
+export function useVPs(workspaceId: string, filters?: VPFilters): UseVPsReturn {
   const [vps, setVPs] = useState<VP[]>([]);
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchVPs = useCallback(async (): Promise<void> => {
-    if (!orgId) {
+    if (!workspaceId) {
       return;
     }
 
@@ -219,7 +219,6 @@ export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
     try {
       // Build query params
       const params = new URLSearchParams();
-      params.set('organizationId', orgId);
       if (filters?.discipline) {
         params.set('discipline', filters.discipline);
       }
@@ -237,7 +236,12 @@ export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
         params.set('limit', String(filters.limit));
       }
 
-      const response = await fetch(`/api/vps?${params.toString()}`);
+      const queryString = params.toString();
+      const url = queryString
+        ? `/api/workspaces/${workspaceId}/vps?${queryString}`
+        : `/api/workspaces/${workspaceId}/vps`;
+
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error?.message || 'Failed to fetch VPs');
@@ -275,7 +279,7 @@ export function useVPs(orgId: string, filters?: VPFilters): UseVPsReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [orgId, filters?.discipline, filters?.status, filters?.search, filters?.page, filters?.limit]);
+  }, [workspaceId, filters?.discipline, filters?.status, filters?.search, filters?.page, filters?.limit]);
 
   useEffect(() => {
     fetchVPs();

@@ -36,7 +36,7 @@ interface RouteContext {
  * Helper to check channel access
  */
 async function checkChannelAccess(channelId: string, userId: string) {
-  const channel = await prisma.channel.findUnique({
+  const channel = await prisma.channels.findUnique({
     where: { id: channelId },
     include: {
       workspace: true,
@@ -47,7 +47,7 @@ async function checkChannelAccess(channelId: string, userId: string) {
 return null;
 }
 
-  const orgMembership = await prisma.organizationMember.findUnique({
+  const orgMembership = await prisma.organization_members.findUnique({
     where: {
       organizationId_userId: {
         organizationId: channel.workspace.organizationId,
@@ -60,7 +60,7 @@ return null;
 return null;
 }
 
-  const channelMembership = await prisma.channelMember.findUnique({
+  const channelMembership = await prisma.channel_members.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -133,7 +133,7 @@ export async function GET(
     }
 
     // Fetch channel with details
-    const channel = await prisma.channel.findUnique({
+    const channel = await prisma.channels.findUnique({
       where: { id: params.channelId },
       include: {
         workspace: {
@@ -259,7 +259,7 @@ export async function PATCH(
     const input: UpdateChannelInput = parseResult.data;
 
     // Update channel
-    const channel = await prisma.channel.update({
+    const channel = await prisma.channels.update({
       where: { id: params.channelId },
       data: {
         ...(input.name && { name: input.name }),
@@ -357,7 +357,7 @@ export async function DELETE(
     }
 
     // Delete channel (cascades to members, messages, etc.)
-    await prisma.channel.delete({
+    await prisma.channels.delete({
       where: { id: params.channelId },
     });
 

@@ -94,7 +94,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // If specific filters requested, just return the count
     if (typeFilter || priorityFilter) {
-      const count = await prisma.notification.count({
+      const count = await prisma.notifications.count({
         where: {
           ...baseWhere,
           ...(typeFilter && { type: typeFilter as NotificationType }),
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get total unread count
-    const unreadCount = await prisma.notification.count({
+    const unreadCount = await prisma.notifications.count({
       where: baseWhere,
     });
 
@@ -121,12 +121,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Get counts by type and priority in parallel
     const [byTypeRaw, byPriorityRaw] = await Promise.all([
-      prisma.notification.groupBy({
+      prisma.notifications.groupBy({
         by: ['type'],
         where: baseWhere,
         _count: { type: true },
       }),
-      prisma.notification.groupBy({
+      prisma.notifications.groupBy({
         by: ['priority'],
         where: baseWhere,
         _count: { priority: true },

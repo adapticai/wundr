@@ -88,7 +88,7 @@ export async function GET(
     }
 
     // Check workspace membership
-    const membership = await prisma.workspaceMember.findUnique({
+    const membership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: job.workspaceId,
@@ -216,7 +216,7 @@ export async function DELETE(
     }
 
     // Check workspace membership
-    const membership = await prisma.workspaceMember.findUnique({
+    const membership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: job.workspaceId,

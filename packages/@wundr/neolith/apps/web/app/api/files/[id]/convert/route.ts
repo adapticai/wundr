@@ -116,7 +116,7 @@ export async function POST(
     const conversionOptions = optionsResult.data;
 
     // Fetch the file
-    const file = await prisma.file.findUnique({
+    const file = await prisma.files.findUnique({
       where: { id: params.id },
       include: {
         workspace: {
@@ -139,7 +139,7 @@ export async function POST(
     }
 
     // Check workspace membership
-    const membership = await prisma.workspaceMember.findUnique({
+    const membership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: file.workspaceId,

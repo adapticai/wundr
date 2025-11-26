@@ -96,7 +96,7 @@ interface ActivityEntry {
  * Helper function to check workspace membership
  */
 async function checkWorkspaceMembership(workspaceId: string, userId: string) {
-  const membership = await prisma.workspaceMember.findUnique({
+  const membership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -417,7 +417,7 @@ async function fetchMemberActivities(
     ...(dateTo && { joinedAt: { lte: dateTo } }),
   };
 
-  const members = await prisma.workspaceMember.findMany({
+  const members = await prisma.workspace_members.findMany({
     where,
     take: limit,
     orderBy: { joinedAt: 'desc' },

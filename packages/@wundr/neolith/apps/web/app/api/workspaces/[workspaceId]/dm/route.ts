@@ -56,7 +56,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const workspaceMembership = await prisma.workspaceMember.findUnique({
+  const workspaceMembership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -386,7 +386,7 @@ export async function POST(
     }
 
     // Check if target user is a workspace member
-    const targetMembership = await prisma.workspaceMember.findUnique({
+    const targetMembership = await prisma.workspace_members.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: params.workspaceId,

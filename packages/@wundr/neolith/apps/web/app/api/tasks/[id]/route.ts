@@ -93,7 +93,7 @@ export async function GET(
     }
 
     // Check user has access to task's workspace
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId: task.workspaceId,
         userId: session.user.id,
@@ -197,7 +197,7 @@ export async function PATCH(
     }
 
     // Check user has access to task's workspace
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId: currentTask.workspaceId,
         userId: session.user.id,
@@ -392,7 +392,7 @@ export async function DELETE(
     }
 
     // Check user has access to task's workspace
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId: task.workspaceId,
         userId: session.user.id,

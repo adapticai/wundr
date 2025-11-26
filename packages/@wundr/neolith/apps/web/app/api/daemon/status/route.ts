@@ -134,7 +134,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { status, message } = parseResult.data;
 
     // Get VP info
-    const vp = await prisma.vP.findUnique({
+    const vp = await prisma.vps.findUnique({
       where: { id: token.vpId },
       select: {
         id: true,
@@ -155,7 +155,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
     // Update VP with operational status
     const currentCapabilities = (vp.capabilities as Record<string, unknown>) || {};
-    await prisma.vP.update({
+    await prisma.vps.update({
       where: { id: token.vpId },
       data: {
         status: vpDbStatus,

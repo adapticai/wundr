@@ -90,7 +90,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if workspace exists and user has access
-    const workspace = await prisma.workspace.findUnique({
+    const workspace = await prisma.workspaces.findUnique({
       where: { id: input.workspaceId },
     });
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check if both users are workspace members
     const [requesterMembership, targetMembership] = await Promise.all([
-      prisma.workspaceMember.findUnique({
+      prisma.workspaces_members.findUnique({
         where: {
           workspaceId_userId: {
             workspaceId: input.workspaceId,
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           },
         },
       }),
-      prisma.workspaceMember.findUnique({
+      prisma.workspaces_members.findUnique({
         where: {
           workspaceId_userId: {
             workspaceId: input.workspaceId,
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const dmIdentifier = `dm:${sortedIds[0]}:${sortedIds[1]}`;
 
     // Check if DM channel already exists
-    const existingDM = await prisma.channel.findFirst({
+    const existingDM = await prisma.channels.findFirst({
       where: {
         workspaceId: input.workspaceId,
         type: 'DM',
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       // Add both users as members
-      await tx.channelMember.createMany({
+      await tx.channel_members.createMany({
         data: [
           {
             channelId: newChannel.id,

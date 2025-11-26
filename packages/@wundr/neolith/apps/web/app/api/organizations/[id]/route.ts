@@ -37,7 +37,7 @@ interface RouteContext {
  * Helper to check organization membership and role
  */
 async function checkOrganizationAccess(orgId: string, userId: string) {
-  const membership = await prisma.organizationMember.findUnique({
+  const membership = await prisma.organizations_members.findUnique({
     where: {
       organizationId_userId: {
         organizationId: orgId,
@@ -207,7 +207,7 @@ export async function PATCH(
     const input: UpdateOrganizationInput = parseResult.data;
 
     // Update organization
-    const organization = await prisma.organization.update({
+    const organization = await prisma.organizations.update({
       where: { id: params.id },
       data: {
         ...(input.name && { name: input.name }),
@@ -298,7 +298,7 @@ export async function DELETE(
     }
 
     // Delete organization (cascades to members, workspaces, etc.)
-    await prisma.organization.delete({
+    await prisma.organizations.delete({
       where: { id: params.id },
     });
 

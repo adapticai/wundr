@@ -630,6 +630,7 @@ export interface UseWorkflowTemplatesReturn {
  * Provides pre-built workflow templates that can be used as
  * starting points for new workflows.
  *
+ * @param workspaceId - Workspace ID to fetch templates for
  * @param category - Optional category to filter templates
  * @returns Template list and creation method
  *
@@ -639,7 +640,7 @@ export interface UseWorkflowTemplatesReturn {
  *   templates,
  *   isLoading,
  *   createFromTemplate
- * } = useWorkflowTemplates('notifications');
+ * } = useWorkflowTemplates(workspaceId, 'notifications');
  *
  * // Create a workflow from a template
  * const workflow = await createFromTemplate(
@@ -650,6 +651,7 @@ export interface UseWorkflowTemplatesReturn {
  * ```
  */
 export function useWorkflowTemplates(
+  workspaceId?: string,
   category?: WorkflowTemplateCategory,
 ): UseWorkflowTemplatesReturn {
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
@@ -657,29 +659,35 @@ export function useWorkflowTemplates(
   const [error, setError] = useState<Error | null>(null);
 
   const fetchTemplates = useCallback(async () => {
+    if (!workspaceId) {
+      setTemplates([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams();
       if (category) {
-params.set('category', category);
-}
+        params.set('category', category);
+      }
 
-      const url = `/api/workflow-templates?${params.toString()}`;
+      const url = `/api/workspaces/${workspaceId}/workflows/templates?${params.toString()}`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch templates');
       }
 
       const data = await response.json();
-      setTemplates(data.templates);
+      setTemplates(data.templates || []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
     }
-  }, [category]);
+  }, [workspaceId, category]);
 
   useEffect(() => {
     fetchTemplates();

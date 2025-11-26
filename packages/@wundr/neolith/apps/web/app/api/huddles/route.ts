@@ -99,7 +99,7 @@ function generateHuddleRoomName(workspaceId: string): string {
  * Helper to verify user has access to workspace
  */
 async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspace.findUnique({
+  const workspace = await prisma.workspaces.findUnique({
     where: { id: workspaceId },
   });
 
@@ -108,7 +108,7 @@ return null;
 }
 
   // Check organization membership
-  const orgMembership = await prisma.organizationMember.findUnique({
+  const orgMembership = await prisma.organization_members.findUnique({
     where: {
       organizationId_userId: {
         organizationId: workspace.organizationId,
@@ -122,7 +122,7 @@ return null;
 }
 
   // Check workspace membership (optional for public workspaces)
-  const workspaceMembership = await prisma.workspaceMember.findUnique({
+  const workspaceMembership = await prisma.workspace_members.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const roomName = generateHuddleRoomName(workspaceId);
 
     // Get user info
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: session.user.id },
       select: { id: true, name: true, displayName: true },
     });
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       `;
     } catch {
       // If table doesn't exist, store in workspace settings
-      const workspace = await prisma.workspace.findUnique({
+      const workspace = await prisma.workspaces.findUnique({
         where: { id: workspaceId },
         select: { settings: true },
       });
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         huddles: [...existingHuddles, newHuddle],
       });
 
-      await prisma.workspace.update({
+      await prisma.workspaces.update({
         where: { id: workspaceId },
         data: {
           settings: updatedSettings,
@@ -333,14 +333,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }
     } else {
       // Get all workspaces user has access to
-      const orgMemberships = await prisma.organizationMember.findMany({
+      const orgMemberships = await prisma.organization_members.findMany({
         where: { userId: session.user.id },
         select: { organizationId: true },
       });
 
       const orgIds = orgMemberships.map((m) => m.organizationId);
 
-      const workspaces = await prisma.workspace.findMany({
+      const workspaces = await prisma.workspaces.findMany({
         where: { organizationId: { in: orgIds } },
         select: { id: true },
       });
@@ -429,7 +429,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       totalCount = Number(countResult[0]?.count ?? 0);
     } catch {
       // Fall back to workspace settings
-      const workspaces = await prisma.workspace.findMany({
+      const workspaces = await prisma.workspaces.findMany({
         where: { id: { in: workspaceIds } },
         select: { id: true, settings: true },
       });

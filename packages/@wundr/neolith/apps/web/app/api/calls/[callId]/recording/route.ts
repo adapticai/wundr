@@ -69,7 +69,7 @@ async function getCallWithAccess(callId: string, userId: string) {
     }
   } catch {
     // Try channel settings
-    const channels = await prisma.channel.findMany({
+    const channels = await prisma.channels.findMany({
       where: {
         settings: {
           path: ['activeCall', 'id'],
@@ -105,7 +105,7 @@ return null;
 }
 
   // Verify channel access
-  const channel = await prisma.channel.findUnique({
+  const channel = await prisma.channels.findUnique({
     where: { id: call.channelId },
     include: { workspace: true },
   });
@@ -114,7 +114,7 @@ return null;
 return null;
 }
 
-  const orgMembership = await prisma.organizationMember.findUnique({
+  const orgMembership = await prisma.organization_members.findUnique({
     where: {
       organizationId_userId: {
         organizationId: channel.workspace.organizationId,
@@ -129,7 +129,7 @@ return null;
 
   // For private channels, check membership
   if (channel.type === 'PRIVATE') {
-    const channelMembership = await prisma.channelMember.findUnique({
+    const channelMembership = await prisma.channel_members.findUnique({
       where: {
         channelId_userId: {
           channelId: channel.id,
@@ -146,7 +146,7 @@ return null;
   const isCreator = call.createdById === userId;
   const isOrgAdmin = ['OWNER', 'ADMIN'].includes(orgMembership.role);
 
-  const channelMembership = await prisma.channelMember.findUnique({
+  const channelMembership = await prisma.channel_members.findUnique({
     where: {
       channelId_userId: {
         channelId: channel.id,

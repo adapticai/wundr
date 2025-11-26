@@ -92,7 +92,7 @@ export async function GET(
     const { workspaceId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
       include: { workspace: true },
     });
@@ -114,7 +114,7 @@ export async function GET(
 
     // Calculate usage
     const [memberCount, channelCount, storageUsage] = await Promise.all([
-      prisma.workspaceMember.count({ where: { workspaceId } }),
+      prisma.workspace_members.count({ where: { workspaceId } }),
       prisma.channel.count({ where: { workspaceId } }),
       prisma.file.aggregate({
         where: { workspaceId },

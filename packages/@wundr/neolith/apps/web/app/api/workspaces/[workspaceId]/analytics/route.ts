@@ -302,7 +302,7 @@ export async function GET(
         },
       }),
       // Total members
-      prisma.workspaceMember.count({
+      prisma.workspace_members.count({
         where: {
           workspaceId: params.workspaceId,
         },

@@ -4,10 +4,10 @@ import { clsx } from 'clsx';
 import { useState, useEffect, useCallback } from 'react';
 
 import { BarChart } from './bar-chart';
+import { DateRangePicker } from './date-range-picker';
 import { Leaderboard } from './leaderboard';
 import { LineChart } from './line-chart';
 import { MetricCard } from './metric-card';
-import { DateRangePicker } from './date-range-picker';
 
 /**
  * Props for the AnalyticsDashboard component.
@@ -379,7 +379,7 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
                 title="Messages Over Time"
                 data={metrics?.timeSeries.messageVolume.map(d => ({
                   date: formatTimestamp(d.timestamp),
-                  value: d.value
+                  value: d.value,
                 })) || []}
                 height={200}
               />
@@ -389,7 +389,7 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
                 title="Task Completion"
                 data={metrics?.timeSeries.taskCompletion.map(d => ({
                   date: formatTimestamp(d.timestamp),
-                  value: d.value
+                  value: d.value,
                 })) || []}
                 color="#57534e"
                 height={200}

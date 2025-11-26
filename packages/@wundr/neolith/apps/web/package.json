@@ -50,7 +50,7 @@
     "@radix-ui/react-toast": "^1.2.15",
     "@radix-ui/react-tooltip": "^1.1.3",
     "@react-email/components": "^1.0.1",
-    "@wundr.io/org-genesis": "^1.0.0",
+    "@wundr.io/org-genesis": "link:../../../org-genesis",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cmdk": "^1.1.1",

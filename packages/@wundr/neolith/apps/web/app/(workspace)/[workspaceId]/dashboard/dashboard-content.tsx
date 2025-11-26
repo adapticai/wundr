@@ -23,10 +23,10 @@ interface ActivityEntry {
 }
 
 interface WorkspaceStats {
-  membersCount: number;
-  channelsCount: number;
-  workflowsCount: number;
-  vpsCount: number;
+  teamMembers: number;
+  channels: number;
+  workflows: number;
+  orchestrators: number; // formerly VPs
 }
 
 interface DashboardErrors {
@@ -44,12 +44,26 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/activity?limit=5`);
+        const response = await fetch(`/api/workspaces/${workspaceId}/dashboard/activity?limit=5&type=all`);
         if (!response.ok) {
           throw new Error(`Failed to fetch activities: ${response.status} ${response.statusText}`);
         }
-        const data = await response.json();
-        setActivities(data.activities || []);
+        const result = await response.json();
+
+        // Transform dashboard activity API response to match ActivityEntry interface
+        const transformedActivities: ActivityEntry[] = (result.data || []).map((activity: any) => ({
+          id: activity.id,
+          type: activity.type,
+          user: {
+            name: activity.actor.name,
+            displayName: activity.actor.displayName,
+          },
+          resourceType: activity.target?.type || null,
+          resourceName: activity.target?.name || activity.content?.substring(0, 50) || null,
+          createdAt: activity.timestamp,
+        }));
+
+        setActivities(transformedActivities);
         setErrors((prev) => ({ ...prev, activities: undefined }));
       } catch (error) {
         console.error('Failed to fetch activities:', error);
@@ -65,55 +79,20 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
 
     const fetchStats = async () => {
       try {
-        const [membersRes, workflowsRes, vpsRes, workspaceRes] = await Promise.all([
-          fetch(`/api/workspaces/${workspaceId}/members`),
-          fetch(`/api/workspaces/${workspaceId}/workflows`),
-          fetch(`/api/workspaces/${workspaceId}/vps`),
-          fetch(`/api/workspaces/${workspaceId}`),
-        ]);
+        const response = await fetch(`/api/workspaces/${workspaceId}/dashboard/stats?includeActivity=false`);
 
-        let membersCount = 0;
-        let channelsCount = 0;
-        let workflowsCount = 0;
-        let vpsCount = 0;
-
-        // Parse members response
-        if (membersRes.ok) {
-          const membersData = await membersRes.json();
-          membersCount = membersData.pagination?.totalCount || 0;
-        } else {
-          console.warn('Failed to fetch members count:', membersRes.status);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch stats: ${response.status} ${response.statusText}`);
         }
 
-        // Parse workflows response - API returns { workflows, total }
-        if (workflowsRes.ok) {
-          const workflowsData = await workflowsRes.json();
-          workflowsCount = workflowsData.total || 0;
-        } else {
-          console.warn('Failed to fetch workflows count:', workflowsRes.status);
-        }
-
-        // Parse VPs response
-        if (vpsRes.ok) {
-          const vpsData = await vpsRes.json();
-          vpsCount = vpsData.pagination?.totalCount || 0;
-        } else {
-          console.warn('Failed to fetch VPs count:', vpsRes.status);
-        }
-
-        // Parse workspace response for channels count
-        if (workspaceRes.ok) {
-          const workspaceData = await workspaceRes.json();
-          channelsCount = workspaceData.data?._count?.channels || 0;
-        } else {
-          console.warn('Failed to fetch workspace details:', workspaceRes.status);
-        }
+        const result = await response.json();
+        const statsData = result.data;
 
         setStats({
-          membersCount,
-          channelsCount,
-          workflowsCount,
-          vpsCount,
+          teamMembers: statsData.members.total || 0,
+          channels: statsData.channels.total || 0,
+          workflows: statsData.workflows.total || 0,
+          orchestrators: statsData.members.vpCount || 0,
         });
         setErrors((prev) => ({ ...prev, stats: undefined }));
       } catch (error) {
@@ -124,10 +103,10 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
         }));
         // Set default stats on error
         setStats({
-          membersCount: 0,
-          channelsCount: 0,
-          workflowsCount: 0,
-          vpsCount: 0,
+          teamMembers: 0,
+          channels: 0,
+          workflows: 0,
+          orchestrators: 0,
         });
       } finally {
         setIsLoadingStats(false);
@@ -229,10 +208,10 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
               </div>
             ) : (
               <div className="space-y-4">
-                <StatItem label="Team Members" value={stats?.membersCount.toString() || '0'} />
-                <StatItem label="Channels" value={stats?.channelsCount.toString() || '0'} />
-                <StatItem label="Workflows" value={stats?.workflowsCount.toString() || '0'} />
-                <StatItem label="Virtual Persons" value={stats?.vpsCount.toString() || '0'} />
+                <StatItem label="Team Members" value={stats?.teamMembers.toString() || '0'} />
+                <StatItem label="Channels" value={stats?.channels.toString() || '0'} />
+                <StatItem label="Workflows" value={stats?.workflows.toString() || '0'} />
+                <StatItem label="Virtual Persons" value={stats?.orchestrators.toString() || '0'} />
               </div>
             )}
           </div>

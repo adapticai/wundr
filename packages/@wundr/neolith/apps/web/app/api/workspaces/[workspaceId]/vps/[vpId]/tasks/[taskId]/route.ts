@@ -132,7 +132,7 @@ export async function GET(
     }
 
     // Verify workspace access
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -334,7 +334,7 @@ export async function PATCH(
     }
 
     // Verify workspace access
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -576,7 +576,7 @@ export async function DELETE(
     const reason = searchParams.get('reason') || undefined;
 
     // Verify workspace access (must be ADMIN or OWNER to delete)
-    const workspaceMember = await prisma.workspaceMember.findFirst({
+    const workspaceMember = await prisma.workspace_members.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,

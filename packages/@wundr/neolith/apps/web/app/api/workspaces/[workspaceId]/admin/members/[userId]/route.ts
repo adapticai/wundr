@@ -54,7 +54,7 @@ export async function GET(
     const { workspaceId, userId } = await context.params;
 
     // Verify admin access
-    const adminMembership = await prisma.workspaceMember.findFirst({
+    const adminMembership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -66,7 +66,7 @@ export async function GET(
     }
 
     // Fetch member
-    const member = await prisma.workspaceMember.findFirst({
+    const member = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId },
       include: {
         user: {
@@ -157,7 +157,7 @@ export async function PATCH(
     const { workspaceId, userId } = await context.params;
 
     // Verify admin access
-    const adminMembership = await prisma.workspaceMember.findFirst({
+    const adminMembership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -169,7 +169,7 @@ export async function PATCH(
     }
 
     // Fetch target member
-    const member = await prisma.workspaceMember.findFirst({
+    const member = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId },
     });
 
@@ -228,7 +228,7 @@ export async function PATCH(
     }
 
     // Update member
-    const updatedMember = await prisma.workspaceMember.update({
+    const updatedMember = await prisma.workspace_members.update({
       where: { id: member.id },
       data: { role: newRole as 'OWNER' | 'ADMIN' | 'MEMBER' | 'GUEST' },
       include: {
@@ -319,7 +319,7 @@ export async function DELETE(
     }
 
     // Verify admin access
-    const adminMembership = await prisma.workspaceMember.findFirst({
+    const adminMembership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -331,7 +331,7 @@ export async function DELETE(
     }
 
     // Fetch target member
-    const member = await prisma.workspaceMember.findFirst({
+    const member = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId },
       include: { user: { select: { name: true, email: true } } },
     });
@@ -352,7 +352,7 @@ export async function DELETE(
     }
 
     // Remove member
-    await prisma.workspaceMember.delete({
+    await prisma.workspace_members.delete({
       where: { id: member.id },
     });
 

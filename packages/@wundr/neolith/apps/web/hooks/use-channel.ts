@@ -162,7 +162,7 @@ return;
 
       const data = await response.json();
       setChannels(
-        data.channels.map((c: Channel) => ({
+        (data.data || []).map((c: Channel) => ({
           ...c,
           createdAt: new Date(c.createdAt),
           updatedAt: new Date(c.updatedAt),
@@ -675,13 +675,13 @@ return;
     setError(null);
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/direct-messages`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/dm`);
       if (!response.ok) {
         throw new Error('Failed to fetch direct messages');
       }
 
       const data = await response.json();
-      setDirectMessages(data.directMessages);
+      setDirectMessages(data.data || []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
@@ -696,19 +696,20 @@ return;
   const createDirectMessage = useCallback(
     async (userIds: string[]): Promise<DirectMessageChannel | null> => {
       try {
-        const response = await fetch(`/api/workspaces/${workspaceId}/direct-messages`, {
+        const response = await fetch(`/api/workspaces/${workspaceId}/dm`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userIds }),
+          body: JSON.stringify({ userId: userIds[0] }),
         });
 
         if (!response.ok) {
           throw new Error('Failed to create direct message');
         }
 
-        const data = await response.json();
-        setDirectMessages((prev) => [data, ...prev]);
-        return data;
+        const result = await response.json();
+        const dmChannel = result.data;
+        setDirectMessages((prev) => [dmChannel, ...prev]);
+        return dmChannel;
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
         return null;

@@ -46,7 +46,7 @@ interface ChannelSettings {
  * Helper function to check channel membership and get role
  */
 async function checkChannelMembershipWithRole(channelId: string, userId: string) {
-  const membership = await prisma.channelMember.findUnique({
+  const membership = await prisma.channels_members.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -125,7 +125,7 @@ export async function GET(
     }
 
     // Fetch pinned messages
-    const pinnedMessages = await prisma.message.findMany({
+    const pinnedMessages = await prisma.messages.findMany({
       where: {
         id: { in: pinnedMessageIds },
         channelId: params.channelId,
@@ -273,7 +273,7 @@ export async function POST(
     }
 
     // Verify message exists and belongs to this channel
-    const message = await prisma.message.findUnique({
+    const message = await prisma.messages.findUnique({
       where: { id: input.messageId },
       select: { id: true, channelId: true, isDeleted: true },
     });
@@ -314,7 +314,7 @@ export async function POST(
     const updatedPins = [input.messageId, ...pinnedMessageIds];
 
     // Update channel settings
-    await prisma.channel.update({
+    await prisma.channels.update({
       where: { id: params.channelId },
       data: {
         settings: {
@@ -325,7 +325,7 @@ export async function POST(
     });
 
     // Fetch the pinned message to return
-    const pinnedMessage = await prisma.message.findUnique({
+    const pinnedMessage = await prisma.messages.findUnique({
       where: { id: input.messageId },
       include: {
         author: {
@@ -449,7 +449,7 @@ export async function DELETE(
     const updatedPins = pinnedMessageIds.filter((id) => id !== messageId);
 
     // Update channel settings
-    await prisma.channel.update({
+    await prisma.channels.update({
       where: { id: params.channelId },
       data: {
         settings: {

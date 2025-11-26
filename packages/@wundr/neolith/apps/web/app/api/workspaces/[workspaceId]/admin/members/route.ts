@@ -54,7 +54,7 @@ export async function GET(
     const { workspaceId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspaceMember.findFirst({
+    const membership = await prisma.workspace_members.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -118,7 +118,7 @@ export async function GET(
 
     // Fetch members
     const [members, total] = await Promise.all([
-      prisma.workspaceMember.findMany({
+      prisma.workspace_members.findMany({
         where,
         include: {
           user: {
@@ -140,7 +140,7 @@ export async function GET(
         skip: offset,
         take: limit,
       }),
-      prisma.workspaceMember.count({ where }),
+      prisma.workspace_members.count({ where }),
     ]);
 
     // Map members to response format

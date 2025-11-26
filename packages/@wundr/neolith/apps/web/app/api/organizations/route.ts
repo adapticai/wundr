@@ -67,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: OrganizationFiltersInput = parseResult.data;
 
     // Get organizations the user is a member of
-    const userMemberships = await prisma.organizationMember.findMany({
+    const userMemberships = await prisma.organizations_members.findMany({
       where: { userId: session.user.id },
       select: { organizationId: true },
     });
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Fetch organizations and total count in parallel
     const [organizations, totalCount] = await Promise.all([
-      prisma.organization.findMany({
+      prisma.organizations.findMany({
         where,
         skip,
         take,
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
         },
       }),
-      prisma.organization.count({ where }),
+      prisma.organizations.count({ where }),
     ]);
 
     // Calculate pagination metadata
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: CreateOrganizationInput = parseResult.data;
 
     // Check if slug already exists
-    const existingOrg = await prisma.organization.findUnique({
+    const existingOrg = await prisma.organizations.findUnique({
       where: { slug: input.slug },
     });
 
