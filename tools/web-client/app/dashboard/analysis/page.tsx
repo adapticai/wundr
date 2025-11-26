@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   Code,
   Copy,
@@ -19,6 +20,7 @@ import {
   Database,
   Activity,
   Target,
+  Microscope,
 } from 'lucide-react';
 import { SummaryCard } from '@/components/dashboard/summary-card';
 import type { ApiResponse } from '@/types/data';
@@ -196,19 +198,15 @@ export default function AnalysisOverviewPage() {
 
   if (!summary) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <Database className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">No Analysis Data Available</h2>
-          <p className="text-muted-foreground max-w-md">
-            Run the analysis first to see detailed insights about your codebase
-          </p>
-          <Button onClick={loadAnalysisSummary}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Load Analysis Data
-          </Button>
-        </div>
-      </div>
+      <EmptyState
+        icon={Microscope}
+        title='No Analysis Data Available'
+        description='Run the analysis first to see detailed insights about your codebase'
+        action={{
+          label: 'Load Analysis Data',
+          onClick: loadAnalysisSummary,
+        }}
+      />
     );
   }
 

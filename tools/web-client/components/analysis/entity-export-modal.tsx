@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 // import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ResponsiveModal } from '@/components/ui/responsive-modal';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -331,16 +331,19 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Export Entity Data
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6">
+    <ResponsiveModal
+      open={true}
+      onOpenChange={onClose}
+      title={
+        <div className="flex items-center gap-2">
+          <Download className="h-5 w-5" />
+          Export Entity Data
+        </div>
+      }
+      contentClassName="space-y-6 md:max-h-[60vh] md:overflow-y-auto"
+      className="md:max-w-4xl"
+    >
+      <div className="space-y-6">
           {/* Export Format */}
           <Card>
             <CardHeader>
@@ -508,36 +511,35 @@ export function EntityExportModal({ entities, onClose }: EntityExportModalProps)
           </Card>
         </div>
 
-        <DialogFooter>
-          <div className="flex items-center gap-2 w-full justify-between">
-            <Button variant="outline" onClick={onClose} disabled={isExporting}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleExport} 
-              disabled={isExporting || filteredEntities.length === 0}
-              className="min-w-32"
-            >
-              {isExporting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Exporting...
-                </>
-              ) : exportComplete ? (
-                <>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Exported!
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export ({filteredEntities.length} entities)
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      footer={
+        <div className="flex items-center gap-2 w-full justify-between md:justify-end">
+          <Button variant="outline" onClick={onClose} disabled={isExporting}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleExport}
+            disabled={isExporting || filteredEntities.length === 0}
+            className="min-w-32"
+          >
+            {isExporting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                Exporting...
+              </>
+            ) : exportComplete ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Exported!
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Export ({filteredEntities.length} entities)
+              </>
+            )}
+          </Button>
+        </div>
+      }
+    </ResponsiveModal>
   );
 }

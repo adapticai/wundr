@@ -3,6 +3,8 @@
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 
+import { ThemeToggle } from './theme-toggle';
+
 interface AppHeaderProps {
   user?: {
     name?: string | null;
@@ -41,6 +43,9 @@ export function AppHeader({ user }: AppHeaderProps) {
           <BellIcon />
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
         </button>
+
+        {/* Theme Toggle */}
+        <ThemeToggle variant="compact" />
 
         {/* User Menu */}
         <div className="relative">

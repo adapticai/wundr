@@ -1,9 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.wundr.genesis',
-  appName: 'Genesis',
-  webDir: '../web/dist',
+  appId: 'com.wundr.neolith',
+  appName: 'Neolith',
+  webDir: '../web/out',
   server: {
     // For development, uncomment the following to connect to local dev server
     // url: 'http://localhost:5173',
@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
-    scheme: 'Genesis',
+    scheme: 'Neolith',
     backgroundColor: '#ffffff',
     allowsLinkPreview: true,
   },

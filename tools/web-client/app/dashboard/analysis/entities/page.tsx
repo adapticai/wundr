@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
 // import { Skeleton } from '@/components/ui/skeleton'; // Unused import
 import {
   Search,
@@ -19,6 +20,7 @@ import {
   Database,
   Eye,
   AlertTriangle,
+  Code2,
 } from 'lucide-react';
 import type { 
   EntityData, 
@@ -196,19 +198,15 @@ export default function EntitiesAnalysisPage() {
 
   if (!entityStats) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <Database className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">No Analysis Data Available</h2>
-          <p className="text-muted-foreground max-w-md">
-            No entity analysis data found. Please run the analysis first.
-          </p>
-          <Button onClick={() => loadEntitiesData(true)}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh Analysis
-          </Button>
-        </div>
-      </div>
+      <EmptyState
+        icon={Code2}
+        title='No Entity Analysis Data'
+        description='No entity analysis data found. Please run the analysis first to see detailed insights about your code entities.'
+        action={{
+          label: 'Refresh Analysis',
+          onClick: () => loadEntitiesData(true),
+        }}
+      />
     );
   }
 

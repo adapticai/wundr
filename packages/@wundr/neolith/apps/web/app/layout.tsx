@@ -34,6 +34,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Neolith' }],
   creator: 'Neolith',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
   icons: {
     icon: '/favicon.ico',
   },
@@ -63,9 +70,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en' suppressHydrationWarning>
-      <body className={`${outfit.variable} ${inter.variable} font-sans antialiased bg-stone-900`}>
+      <body className={`${outfit.variable} ${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <Providers>
-          <main className='min-h-screen bg-stone-900'>{children}</main>
+          <main className='min-h-screen bg-background'>{children}</main>
         </Providers>
       </body>
     </html>

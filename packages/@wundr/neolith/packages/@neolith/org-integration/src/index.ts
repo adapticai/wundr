@@ -1,7 +1,7 @@
 /**
- * @genesis/org-integration
+ * @neolith/org-integration
  *
- * Integration layer between Genesis App and @wundr/org-genesis package.
+ * Integration layer between Neolith App and @wundr/org-genesis package.
  * Provides utilities for migrating org-genesis results to Slack workspace resources.
  *
  * @packageDocumentation
@@ -12,18 +12,18 @@
 // ============================================================================
 
 export type {
-  // Genesis Configuration
-  GenesisConfig,
-  GenesisConfigOptions,
+  // Neolith Configuration
+  NeolithConfig,
+  NeolithConfigOptions,
 
-  // Genesis Results
-  GenesisResult,
+  // Neolith Results
+  NeolithResult,
   OrganizationManifest,
   VPDefinition,
   VPPersona,
   DisciplineDefinition,
   AgentDefinition,
-  GenesisMetadata,
+  NeolithMetadata,
 
   // VP Mapping
   VPMapping,

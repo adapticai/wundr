@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
 // Alert components not used in current implementation
 // import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +28,7 @@ import {
   XCircle,
   AlertCircle,
   Info,
+  Network,
 } from 'lucide-react';
 import * as d3 from 'd3';
 
@@ -388,6 +390,20 @@ export default function CircularDependencyAnalysis() {
           </Button>
         </div>
       </div>
+    );
+  }
+
+  if (circularDeps.length === 0 && !loading) {
+    return (
+      <EmptyState
+        icon={Network}
+        title='No Circular Dependencies Found'
+        description='Great news! Your codebase has no circular dependencies detected. Run the analysis periodically to maintain healthy architecture.'
+        action={{
+          label: 'Run Analysis Again',
+          onClick: () => loadData(true),
+        }}
+      />
     );
   }
 

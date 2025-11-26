@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   FileCode,
   Code,
@@ -26,6 +27,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
@@ -101,25 +103,20 @@ export default function DashboardPage() {
 
   if (!data) {
     return (
-      <div className='flex flex-1 items-center justify-center p-4'>
-        <div className='text-center space-y-4'>
-          <Database className='mx-auto h-12 w-12 text-muted-foreground' />
-          <h2 className='text-xl font-semibold'>No Analysis Data Available</h2>
-          <p className='text-muted-foreground max-w-md'>
-            Trigger a new analysis to get started with real-time insights
-          </p>
-          <div className='flex gap-2 justify-center'>
-            <Button onClick={triggerAnalysis}>
-              <Activity className='mr-2 h-4 w-4' />
-              Start Analysis
-            </Button>
-            <Button variant='outline' onClick={refresh}>
-              <Upload className='mr-2 h-4 w-4' />
-              Check for Data
-            </Button>
-          </div>
-        </div>
-      </div>
+      <EmptyState
+        icon={Sparkles}
+        title='No Analysis Data Available'
+        description='Trigger a new analysis to get started with real-time insights into your codebase'
+        action={{
+          label: 'Start Analysis',
+          onClick: triggerAnalysis,
+        }}
+        secondaryAction={{
+          label: 'Check for Data',
+          onClick: refresh,
+          variant: 'outline',
+        }}
+      />
     );
   }
 

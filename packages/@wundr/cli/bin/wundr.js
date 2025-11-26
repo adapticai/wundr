@@ -32,7 +32,11 @@ if (isDevelopment && existsSync(srcPath)) {
   }
 } else if (existsSync(distPath)) {
   // Production: use compiled JavaScript
-  require(distPath);
+  const cli = require(distPath);
+  // Call main() since require.main check in index.js won't trigger
+  if (typeof cli.main === 'function') {
+    cli.main();
+  }
 } else {
   console.error('Wundr CLI not properly installed. Please reinstall the package.');
   process.exit(1);

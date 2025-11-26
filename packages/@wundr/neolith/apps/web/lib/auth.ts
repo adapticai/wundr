@@ -12,6 +12,7 @@
 
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@neolith/database';
+import { avatarService } from '@neolith/core/services';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
@@ -217,9 +218,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * SignIn callback - called when user signs in
      * Can be used to control who can sign in
      */
-    async signIn({ user, account }) {
-      // Allow all OAuth sign-ins
+    async signIn({ user, account, profile }) {
+      // Handle OAuth sign-ins
       if (account?.provider === 'github' || account?.provider === 'google') {
+        // If user has an avatar from OAuth provider, download and store it
+        if (user.id && user.image) {
+          try {
+            await avatarService.uploadOAuthAvatar({
+              userId: user.id,
+              providerAvatarUrl: user.image,
+              provider: account.provider as 'google' | 'github',
+            });
+          } catch (error) {
+            // Log error but don't block sign-in
+            console.error('Failed to upload OAuth avatar:', error);
+
+            // Generate fallback avatar with initials
+            try {
+              await avatarService.generateFallbackAvatar({
+                name: user.name || user.email || 'User',
+                userId: user.id,
+              });
+            } catch (fallbackError) {
+              console.error('Failed to generate fallback avatar:', fallbackError);
+            }
+          }
+        } else if (user.id && (user.name || user.email)) {
+          // No avatar provided, generate fallback
+          try {
+            await avatarService.generateFallbackAvatar({
+              name: user.name || user.email || 'User',
+              userId: user.id,
+            });
+          } catch (error) {
+            console.error('Failed to generate fallback avatar:', error);
+          }
+        }
+
         return true;
       }
 

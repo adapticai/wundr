@@ -7,12 +7,14 @@ copyright: Copyright (c) 2024 Adaptic.ai
 
 # Directories
 directories:
-  output: out
+  output: dist/out
   buildResources: build
 
 # Files to include in the build
 files:
-  - dist/**/*
+  - dist/preload.js
+  - dist/main.js
+  - out/**/*
   - package.json
 
 # Additional resources
@@ -169,12 +171,11 @@ fileAssociations:
     description: Neolith organization configuration file
     mimeType: application/x-neolith
     role: Editor
-    icon: build/file-icon.icns
 
 # ============================================
 # Build Hooks
 # ============================================
-afterSign: scripts/notarize.js
+# afterSign: scripts/notarize.js (notarization requires Apple Developer certificate)
 
 # ============================================
 # Snap Configuration (Linux)

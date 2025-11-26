@@ -7,15 +7,17 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Package, 
-  AlertTriangle, 
-  FileText, 
+import { EmptyState } from "@/components/ui/empty-state"
+import {
+  Package,
+  AlertTriangle,
+  FileText,
   Download,
   RefreshCw,
   GitBranch,
   Clock,
-  HardDrive
+  HardDrive,
+  Network
 } from "lucide-react"
 import { DependencyGraph } from "@/components/analysis/dependency-graph"
 import { PackageVersionChart } from "@/components/analysis/package-version-chart"
@@ -191,6 +193,20 @@ export default function DependenciesAnalysisPage() {
           </Button>
         </div>
       </div>
+    )
+  }
+
+  if (stats.total === 0) {
+    return (
+      <EmptyState
+        icon={Network}
+        title='No Dependency Data'
+        description='No dependency data available. Run the analysis to examine your project dependencies and identify security vulnerabilities.'
+        action={{
+          label: 'Run Analysis',
+          onClick: () => loadDependencyData(true),
+        }}
+      />
     )
   }
 

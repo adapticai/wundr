@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Build output directory for both web and desktop apps
+  // The desktop app will use this directory for static files
+  // API routes are served by the Next.js server in web mode
+  distDir: 'out',
+
   // Turborepo transpilePackages - shared packages from the monorepo
   transpilePackages: [
     '@neolith/ui',
@@ -70,9 +75,13 @@ const nextConfig = {
   // Compression
   compress: true,
 
+  // Standalone mode for Electron/desktop app bundling
+  // This creates a minimal standalone server that can be bundled with Electron
+  standalone: true,
+
   // Environment variables exposed to the browser
   env: {
-    NEXT_PUBLIC_APP_NAME: 'Genesis',
+    NEXT_PUBLIC_APP_NAME: 'Neolith',
     NEXT_PUBLIC_APP_VERSION: '0.1.0',
   },
 

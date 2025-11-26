@@ -46,6 +46,7 @@ const store = new Store<NeolithConfig>({
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
+let nextServer: any = null;
 
 // Constants
 const isDev = !app.isPackaged;
@@ -113,7 +114,63 @@ function createWindow(): void {
     mainWindow.loadURL(devUrl);
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    // In production, start the Next.js production server
+    const webAppDir = path.join(__dirname, '..');
+    console.log('Production mode - starting Next.js server');
+    console.log('Web app directory:', webAppDir);
+
+    try {
+      // Start the Next.js production server using next-server
+      const { spawn } = require('child_process');
+
+      // Use next start command which requires next to be installed in the web app
+      // Or directly run the server via Node
+      nextServer = spawn('next', ['start', '-p', '3000'], {
+        env: {
+          ...process.env,
+          NODE_ENV: 'production',
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+        cwd: webAppDir,
+      });
+
+      let serverReady = false;
+
+      nextServer.stdout?.on('data', (data: Buffer) => {
+        const output = data.toString();
+        console.log('[Next.js Server]', output);
+        if (output.includes('ready - started server') && !serverReady) {
+          serverReady = true;
+          mainWindow?.loadURL('http://localhost:3000');
+        }
+      });
+
+      nextServer.stderr?.on('data', (data: Buffer) => {
+        console.error('[Next.js Server Error]', data.toString());
+      });
+
+      nextServer.on('error', (error: Error) => {
+        console.error('Failed to start Next.js server:', error);
+        // Fallback: try to load from file if server fails
+        const indexPath = path.join(webAppDir, 'out', 'index.html');
+        console.log('Server failed, attempting to load static file:', indexPath);
+        mainWindow?.loadFile(indexPath);
+      });
+
+      // Timeout to ensure window loads even if server is slow
+      setTimeout(() => {
+        if (!serverReady) {
+          console.log('Server timeout, attempting to connect anyway');
+          mainWindow?.loadURL('http://localhost:3000');
+        }
+      }, 5000);
+    } catch (error) {
+      console.error('Failed to spawn Next.js server:', error);
+      // Fallback: try to load from static files
+      const indexPath = path.join(webAppDir, 'out', 'index.html');
+      console.log('Fallback: attempting to load static file:', indexPath);
+      mainWindow?.loadFile(indexPath);
+    }
   }
 
   // Show window when ready
@@ -656,6 +713,15 @@ if (!gotTheLock) {
 
   app.on('before-quit', () => {
     isQuitting = true;
+    // Kill Next.js server process if running
+    if (nextServer) {
+      try {
+        process.kill(-nextServer.pid!);
+        console.log('Next.js server process terminated');
+      } catch (error) {
+        console.error('Failed to kill server process:', error);
+      }
+    }
   });
 
   app.on('window-all-closed', () => {

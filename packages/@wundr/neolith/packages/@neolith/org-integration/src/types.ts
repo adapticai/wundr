@@ -1,18 +1,18 @@
 /**
- * @genesis/org-integration - Type Definitions
+ * @neolith/org-integration - Type Definitions
  *
  * Mirrors and extends types from @wundr/org-genesis for integration purposes.
  */
 
 // ============================================================================
-// Genesis Configuration Types (mirrors org-genesis input)
+// Neolith Configuration Types (mirrors org-genesis input)
 // ============================================================================
 
 /**
- * Input configuration for Genesis organization generation.
+ * Input configuration for Neolith organization generation.
  * This mirrors the input structure expected by @wundr/org-genesis.
  */
-export interface GenesisConfig {
+export interface NeolithConfig {
   /** Organization name */
   organizationName: string;
 
@@ -38,13 +38,13 @@ export interface GenesisConfig {
   seed?: string;
 
   /** Additional configuration options */
-  options?: GenesisConfigOptions;
+  options?: NeolithConfigOptions;
 }
 
 /**
- * Additional options for Genesis configuration.
+ * Additional options for Neolith configuration.
  */
-export interface GenesisConfigOptions {
+export interface NeolithConfigOptions {
   /** Enable verbose logging during generation */
   verbose?: boolean;
 
@@ -59,13 +59,13 @@ export interface GenesisConfigOptions {
 }
 
 // ============================================================================
-// Genesis Result Types
+// Neolith Result Types
 // ============================================================================
 
 /**
  * Complete result from org-genesis generation.
  */
-export interface GenesisResult {
+export interface NeolithResult {
   /** Generated organization manifest */
   manifest: OrganizationManifest;
 
@@ -79,7 +79,7 @@ export interface GenesisResult {
   agents: AgentDefinition[];
 
   /** Generation metadata */
-  metadata: GenesisMetadata;
+  metadata: NeolithMetadata;
 }
 
 /**
@@ -212,7 +212,7 @@ export interface AgentDefinition {
 /**
  * Metadata about the generation process.
  */
-export interface GenesisMetadata {
+export interface NeolithMetadata {
   /** Generation timestamp */
   generatedAt: string;
 

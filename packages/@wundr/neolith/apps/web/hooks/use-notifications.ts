@@ -459,7 +459,7 @@ export interface UseOfflineStatusReturn {
   queueAction: (action: Omit<QueuedAction, 'id' | 'createdAt' | 'retryCount'>) => void;
 }
 
-const QUEUED_ACTIONS_KEY = 'genesis-queued-actions';
+const QUEUED_ACTIONS_KEY = 'neolith-queued-actions';
 
 /**
  * Hook for managing offline status and action queuing.

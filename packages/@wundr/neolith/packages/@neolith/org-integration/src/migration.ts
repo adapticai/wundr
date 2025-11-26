@@ -1,5 +1,5 @@
 /**
- * @genesis/org-integration - Migration Functions
+ * @neolith/org-integration - Migration Functions
  *
  * Functions for migrating org-genesis results to Slack workspace resources.
  */
@@ -13,7 +13,7 @@ import {
 } from './utils';
 
 import type {
-  GenesisResult,
+  NeolithResult,
   VPDefinition,
   DisciplineDefinition,
   VPMapping,
@@ -34,34 +34,34 @@ import type {
  * This is the main entry point for converting org-genesis output into
  * Slack users (for VPs) and channels (for disciplines).
  *
- * @param genesisResult - The result from org-genesis generation
+ * @param neolithResult - The result from org-genesis generation
  * @param options - Migration options
  * @returns Migration result with all mappings
  *
  * @example
  * ```ts
- * const genesisResult = await runOrgGenesis(config);
- * const migrationResult = await migrateOrgGenesisResult(genesisResult, {
+ * const neolithResult = await runOrgGenesis(config);
+ * const migrationResult = await migrateOrgGenesisResult(neolithResult, {
  *   workspaceId: 'T12345678',
- *   channelPrefix: 'genesis',
+ *   channelPrefix: 'neolith',
  *   dryRun: true,
  * });
  * ```
  */
 export async function migrateOrgGenesisResult(
-  genesisResult: GenesisResult,
+  neolithResult: NeolithResult,
   options: MigrationOptions
 ): Promise<MigrationResult> {
   const warnings: string[] = [];
   const startTime = Date.now();
 
   // Validate input
-  if (!genesisResult.manifest) {
-    throw new Error('Invalid genesis result: missing manifest');
+  if (!neolithResult.manifest) {
+    throw new Error('Invalid Neolith result: missing manifest');
   }
 
   if (options.verbose) {
-    logMigrationStart(genesisResult, options);
+    logMigrationStart(neolithResult, options);
   }
 
   // Create VP mappings
@@ -71,8 +71,8 @@ export async function migrateOrgGenesisResult(
     warnings.push('VP creation skipped by option');
   } else {
     vpMappings = await createVPUsersFromManifest(
-      genesisResult.vps,
-      genesisResult.manifest.id,
+      neolithResult.vps,
+      neolithResult.manifest.id,
       options
     );
   }
@@ -84,7 +84,7 @@ export async function migrateOrgGenesisResult(
     warnings.push('Channel creation skipped by option');
   } else {
     disciplineMappings = await createChannelsFromDisciplines(
-      genesisResult.disciplines,
+      neolithResult.disciplines,
       options
     );
   }
@@ -397,17 +397,17 @@ function generatePlaceholderId(baseId: string): string {
  * Log migration start information (for verbose mode).
  */
 function logMigrationStart(
-  genesisResult: GenesisResult,
+  neolithResult: NeolithResult,
   options: MigrationOptions
 ): void {
   // eslint-disable-next-line no-console
-  console.log('Starting org-genesis migration...');
+  console.log('Starting org-genesis migration to Neolith...');
   // eslint-disable-next-line no-console
-  console.log(`  Organization: ${genesisResult.manifest.name}`);
+  console.log(`  Organization: ${neolithResult.manifest.name}`);
   // eslint-disable-next-line no-console
-  console.log(`  VPs to create: ${genesisResult.vps.length}`);
+  console.log(`  VPs to create: ${neolithResult.vps.length}`);
   // eslint-disable-next-line no-console
-  console.log(`  Disciplines to create: ${genesisResult.disciplines.length}`);
+  console.log(`  Disciplines to create: ${neolithResult.disciplines.length}`);
   // eslint-disable-next-line no-console
   console.log(`  Dry run: ${options.dryRun ? 'yes' : 'no'}`);
 }

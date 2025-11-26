@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/ui/empty-state"
 // import { Skeleton } from "@/components/ui/skeleton" // Unused import
 import {
   Select,
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Code, Brain, Download, RefreshCw, AlertTriangle } from "lucide-react"
+import { Code, Brain, Download, RefreshCw, AlertTriangle, Copy } from "lucide-react"
 import type { 
   DuplicateCluster, 
   DuplicateStats,
@@ -123,9 +124,15 @@ export default function DuplicatesPage() {
 
   if (!stats) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4">
-        <p className="text-muted-foreground">No analysis data available</p>
-      </div>
+      <EmptyState
+        icon={Copy}
+        title='No Duplicate Analysis Data'
+        description='No duplicate code analysis data available. Run the analysis to identify duplicate code patterns in your codebase.'
+        action={{
+          label: 'Run Analysis',
+          onClick: () => loadDuplicatesData(true),
+        }}
+      />
     )
   }
 

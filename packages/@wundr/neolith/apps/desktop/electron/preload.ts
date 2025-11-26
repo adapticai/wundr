@@ -1,11 +1,11 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
 /**
- * Type definitions for the Genesis Desktop API
+ * Type definitions for the Neolith Desktop API
  */
 
 // Configuration types
-export interface GenesisConfig {
+export interface NeolithConfig {
   windowState: WindowState;
   theme: 'light' | 'dark' | 'system';
   autoUpdate: boolean;
@@ -60,24 +60,24 @@ export interface UpdateProgress {
 type EventCallback<T = void> = T extends void ? () => void : (data: T) => void;
 
 /**
- * Genesis Desktop API
+ * Neolith Desktop API
  * Exposed to the renderer process via contextBridge
  */
-const genesisAPI = {
+const neolithAPI = {
   // ============================================
   // Configuration
   // ============================================
   config: {
-    get: <K extends keyof GenesisConfig>(key: K): Promise<GenesisConfig[K]> => {
+    get: <K extends keyof NeolithConfig>(key: K): Promise<NeolithConfig[K]> => {
       return ipcRenderer.invoke('config:get', key);
     },
-    set: <K extends keyof GenesisConfig>(
+    set: <K extends keyof NeolithConfig>(
       key: K,
-      value: GenesisConfig[K],
+      value: NeolithConfig[K],
     ): Promise<boolean> => {
       return ipcRenderer.invoke('config:set', key, value);
     },
-    getAll: (): Promise<GenesisConfig> => {
+    getAll: (): Promise<NeolithConfig> => {
       return ipcRenderer.invoke('config:getAll');
     },
   },
@@ -247,14 +247,14 @@ const genesisAPI = {
 };
 
 // Expose the API to the renderer process
-contextBridge.exposeInMainWorld('genesis', genesisAPI);
+contextBridge.exposeInMainWorld('neolith', neolithAPI);
 
 // Type declaration for the renderer process
-export type GenesisAPI = typeof genesisAPI;
+export type NeolithAPI = typeof neolithAPI;
 
 // Declare the global type for TypeScript
 declare global {
   interface Window {
-    genesis: GenesisAPI;
+    neolith: NeolithAPI;
   }
 }

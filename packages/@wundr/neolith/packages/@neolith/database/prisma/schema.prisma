@@ -135,6 +135,8 @@ model Workspace {
   files             File[]
   daemonCredentials DaemonCredential[]
   workflows         Workflow[]
+  tasks             Task[]
+  backlogs          Backlog[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -174,6 +176,8 @@ model User {
   vp                      VP?
   notifications           Notification[]
   pushSubscriptions       PushSubscription[]
+  createdTasks            Task[]               @relation("TaskCreator")
+  assignedTasks           Task[]               @relation("TaskAssignee")
 
   @@index([email])
   @@index([status])
@@ -229,6 +233,8 @@ model VP {
   organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   disciplineRelation Discipline?        @relation(fields: [disciplineId], references: [id], onDelete: SetNull)
   daemonCredentials  DaemonCredential[]
+  tasks              Task[]
+  backlogs           Backlog[]
 
   @@index([organizationId])
   @@index([workspaceId])
@@ -262,6 +268,7 @@ model Channel {
   creator   User?           @relation("ChannelCreator", fields: [createdById], references: [id], onDelete: SetNull)
   messages  Message[]
   members   ChannelMember[]
+  tasks     Task[]
 
   @@unique([workspaceId, slug])
   @@index([workspaceId])
@@ -542,6 +549,135 @@ enum PushPlatform {
   web
   ios
   android
+}
+
+/// Task priority enumeration
+enum TaskPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+/// Task status enumeration
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
+// =============================================================================
+// Task & Backlog Models (VP Autonomous Operation)
+// =============================================================================
+
+/// Task - Individual work item for VP autonomous operation
+model Task {
+  id              String       @id @default(cuid())
+  title           String
+  description     String?
+  priority        TaskPriority @default(MEDIUM)
+  status          TaskStatus   @default(TODO)
+  dueDate         DateTime?    @map("due_date")
+  estimatedHours  Int?         @map("estimated_hours")
+
+  // Metadata
+  tags            String[]     @default([])
+  metadata        Json         @default("{}")
+
+  // Task dependencies (array of Task IDs)
+  dependsOn       String[]     @default([]) @map("depends_on")
+
+  // Foreign keys
+  vpId            String       @map("vp_id")
+  workspaceId     String       @map("workspace_id")
+  channelId       String?      @map("channel_id")
+  createdById     String       @map("created_by_id")
+  assignedToId    String?      @map("assigned_to_id")
+
+  // Timestamps
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  completedAt     DateTime?    @map("completed_at")
+
+  // Relations
+  vp              VP           @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace       Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  channel         Channel?     @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  creator         User         @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  assignedTo      User?        @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  backlogItems    BacklogItem[]
+
+  @@index([vpId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([channelId])
+  @@index([dueDate])
+  @@index([createdAt])
+  @@map("tasks")
+}
+
+/// Backlog - Collection of tasks for VP management
+model Backlog {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  status          String    @default("active") // active, archived, draft
+
+  // Ordering
+  priority        Int       @default(0) // Lower number = higher priority
+
+  // Metadata
+  metadata        Json      @default("{}")
+
+  // Foreign keys
+  vpId            String    @map("vp_id")
+  workspaceId     String    @map("workspace_id")
+
+  // Timestamps
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  vp              VP        @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  items           BacklogItem[]
+
+  @@unique([vpId, name])
+  @@index([vpId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([priority])
+  @@map("backlogs")
+}
+
+/// BacklogItem - Junction model between Backlog and Task
+model BacklogItem {
+  id              String    @id @default(cuid())
+
+  // Ordering within backlog
+  position        Int       @default(0)
+
+  // Foreign keys
+  backlogId       String    @map("backlog_id")
+  taskId          String    @map("task_id")
+
+  // Timestamps
+  addedAt         DateTime  @default(now()) @map("added_at")
+
+  // Relations
+  backlog         Backlog   @relation(fields: [backlogId], references: [id], onDelete: Cascade)
+  task            Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([backlogId, taskId])
+  @@index([backlogId])
+  @@index([taskId])
+  @@index([position])
+  @@map("backlog_items")
 }
 
 /// Notification - User notification

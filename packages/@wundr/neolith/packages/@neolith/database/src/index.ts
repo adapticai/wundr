@@ -43,6 +43,9 @@ export type {
   Reaction,
   Session,
   MessageAttachment,
+  Task,
+  Backlog,
+  BacklogItem,
 } from '@prisma/client';
 
 // =============================================================================
@@ -60,6 +63,8 @@ export {
   OrganizationRole,
   WorkspaceRole,
   ChannelRole,
+  TaskPriority,
+  TaskStatus,
 } from '@prisma/client';
 
 // =============================================================================
@@ -69,6 +74,12 @@ export {
 // Currently active create input types:
 export type CreateUserInput = Prisma.UserCreateInput;
 export type CreateUserManyInput = Prisma.UserCreateManyInput;
+export type CreateTaskInput = Prisma.TaskCreateInput;
+export type CreateTaskManyInput = Prisma.TaskCreateManyInput;
+export type CreateBacklogInput = Prisma.BacklogCreateInput;
+export type CreateBacklogManyInput = Prisma.BacklogCreateManyInput;
+export type CreateBacklogItemInput = Prisma.BacklogItemCreateInput;
+export type CreateBacklogItemManyInput = Prisma.BacklogItemCreateManyInput;
 
 // Future create input types (uncomment after adding models):
 // export type CreateOrganizationInput = Prisma.OrganizationCreateInput;
@@ -92,6 +103,12 @@ export type CreateUserManyInput = Prisma.UserCreateManyInput;
 // Currently active update types:
 export type UpdateUserInput = Prisma.UserUpdateInput;
 export type UpdateUserManyInput = Prisma.UserUpdateManyMutationInput;
+export type UpdateTaskInput = Prisma.TaskUpdateInput;
+export type UpdateTaskManyInput = Prisma.TaskUpdateManyMutationInput;
+export type UpdateBacklogInput = Prisma.BacklogUpdateInput;
+export type UpdateBacklogManyInput = Prisma.BacklogUpdateManyMutationInput;
+export type UpdateBacklogItemInput = Prisma.BacklogItemUpdateInput;
+export type UpdateBacklogItemManyInput = Prisma.BacklogItemUpdateManyMutationInput;
 
 // Future update types (uncomment after adding models):
 // export type UpdateOrganizationInput = Prisma.OrganizationUpdateInput;
@@ -115,6 +132,12 @@ export type UpdateUserManyInput = Prisma.UserUpdateManyMutationInput;
 // Currently active where types:
 export type UserWhereInput = Prisma.UserWhereInput;
 export type UserWhereUniqueInput = Prisma.UserWhereUniqueInput;
+export type TaskWhereInput = Prisma.TaskWhereInput;
+export type TaskWhereUniqueInput = Prisma.TaskWhereUniqueInput;
+export type BacklogWhereInput = Prisma.BacklogWhereInput;
+export type BacklogWhereUniqueInput = Prisma.BacklogWhereUniqueInput;
+export type BacklogItemWhereInput = Prisma.BacklogItemWhereInput;
+export type BacklogItemWhereUniqueInput = Prisma.BacklogItemWhereUniqueInput;
 
 // Future where types (uncomment after adding models):
 // export type OrganizationWhereInput = Prisma.OrganizationWhereInput;
@@ -180,6 +203,9 @@ export type UserSelect = Prisma.UserSelect;
 // =============================================================================
 
 export type UserOrderByInput = Prisma.UserOrderByWithRelationInput;
+export type TaskOrderByInput = Prisma.TaskOrderByWithRelationInput;
+export type BacklogOrderByInput = Prisma.BacklogOrderByWithRelationInput;
+export type BacklogItemOrderByInput = Prisma.BacklogItemOrderByWithRelationInput;
 
 // Future orderBy types (uncomment after adding models):
 // export type OrganizationOrderByInput = Prisma.OrganizationOrderByWithRelationInput;

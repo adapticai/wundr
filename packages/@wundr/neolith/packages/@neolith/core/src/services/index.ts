@@ -684,3 +684,32 @@ export {
   PerformanceService,
   performanceService,
 } from './performance-service';
+
+// =============================================================================
+// Avatar Service
+// =============================================================================
+
+export {
+  // Service implementation
+  AvatarServiceImpl,
+  createAvatarService,
+  getAvatarService,
+  avatarService,
+
+  // Interfaces and types
+  type AvatarService,
+  type AvatarUploadResult,
+  type AvatarUploadOptions,
+  type OAuthAvatarDownloadOptions,
+  type GenerateFallbackAvatarOptions,
+  type AvatarSize,
+
+  // Constants
+  AVATAR_SIZES,
+
+  // Errors
+  AvatarServiceError,
+  InvalidAvatarError,
+  AvatarProcessingError,
+  AvatarDownloadError,
+} from './avatar-service';
