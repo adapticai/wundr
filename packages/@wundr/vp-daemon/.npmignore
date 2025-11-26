@@ -1,0 +1,12 @@
+src/
+tests/
+*.test.ts
+*.test.js
+tsconfig.json
+jest.config.js
+.DS_Store
+.vscode
+.idea
+node_modules/
+coverage/
+*.log

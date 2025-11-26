@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+import { MemberTableSkeleton } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 export interface WorkspaceMember {
@@ -243,43 +244,40 @@ return `${diffDays}d ago`;
       )}
 
       {/* Member table */}
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full">
-          <thead className="bg-muted">
-            <tr>
-              <th className="px-4 py-3 text-left">
-                <input
-                  type="checkbox"
-                  checked={members.length > 0 && selectedIds.size === members.length}
-                  onChange={handleSelectAll}
-                  className="w-4 h-4 rounded border-border"
-                />
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                Member
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                Role
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                Last Active
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {isLoading ? (
+      {isLoading ? (
+        <MemberTableSkeleton />
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full">
+            <thead className="bg-muted">
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading...
-                </td>
+                <th className="px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={members.length > 0 && selectedIds.size === members.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded border-border"
+                  />
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  Member
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  Role
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  Last Active
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
+                  Actions
+                </th>
               </tr>
-            ) : members.length === 0 ? (
+            </thead>
+            <tbody className="divide-y divide-border">
+              {members.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                   No members found
@@ -351,10 +349,11 @@ return `${diffDays}d ago`;
                   </td>
                 </tr>
               ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination */}
       {total > pageSize && (

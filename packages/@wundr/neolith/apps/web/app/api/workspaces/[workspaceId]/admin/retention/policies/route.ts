@@ -76,7 +76,7 @@ export async function GET(
     const policies = await retentionService.getPolicies(workspaceId);
 
     return NextResponse.json({ policies });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch policies' },
       { status: 500 },
@@ -166,7 +166,7 @@ export async function POST(
     });
 
     return NextResponse.json(policy);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create policy' },
       { status: 500 },

@@ -121,6 +121,7 @@ function createWindow(): void {
 
     try {
       // Start the Next.js production server using next-server
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { spawn } = require('child_process');
 
       // Use next start command which requires next to be installed in the web app
@@ -446,7 +447,7 @@ function registerIpcHandlers(): void {
     'config:get',
     (_event: IpcMainInvokeEvent, key: keyof NeolithConfig) => {
       return store.get(key);
-    }
+    },
   );
 
   ipcMain.handle(
@@ -454,7 +455,7 @@ function registerIpcHandlers(): void {
     (_event: IpcMainInvokeEvent, key: keyof NeolithConfig, value: unknown) => {
       store.set(key, value as NeolithConfig[keyof NeolithConfig]);
       return true;
-    }
+    },
   );
 
   ipcMain.handle('config:getAll', () => {
@@ -477,7 +478,7 @@ function registerIpcHandlers(): void {
         filters: filters || [{ name: 'All Files', extensions: ['*'] }],
       });
       return result.canceled ? null : result.filePaths[0];
-    }
+    },
   );
 
   ipcMain.handle(
@@ -485,14 +486,14 @@ function registerIpcHandlers(): void {
     async (
       _event: IpcMainInvokeEvent,
       defaultPath?: string,
-      filters?: Electron.FileFilter[]
+      filters?: Electron.FileFilter[],
     ) => {
       const result = await dialog.showSaveDialog(mainWindow!, {
         defaultPath,
         filters: filters || [{ name: 'All Files', extensions: ['*'] }],
       });
       return result.canceled ? null : result.filePath;
-    }
+    },
   );
 
   ipcMain.handle(
@@ -500,7 +501,7 @@ function registerIpcHandlers(): void {
     async (_event: IpcMainInvokeEvent, options: Electron.MessageBoxOptions) => {
       const result = await dialog.showMessageBox(mainWindow!, options);
       return result.response;
-    }
+    },
   );
 
   // Shell operations
@@ -508,14 +509,14 @@ function registerIpcHandlers(): void {
     'shell:openExternal',
     (_event: IpcMainInvokeEvent, url: string) => {
       return shell.openExternal(url);
-    }
+    },
   );
 
   ipcMain.handle(
     'shell:openPath',
     (_event: IpcMainInvokeEvent, path: string) => {
       return shell.openPath(path);
-    }
+    },
   );
 
   ipcMain.handle(
@@ -523,7 +524,7 @@ function registerIpcHandlers(): void {
     (_event: IpcMainInvokeEvent, path: string) => {
       shell.showItemInFolder(path);
       return true;
-    }
+    },
   );
 
   // App info
@@ -535,10 +536,10 @@ function registerIpcHandlers(): void {
     'app:getPath',
     (
       _event: IpcMainInvokeEvent,
-      name: 'home' | 'appData' | 'userData' | 'temp' | 'desktop' | 'documents'
+      name: 'home' | 'appData' | 'userData' | 'temp' | 'desktop' | 'documents',
     ) => {
       return app.getPath(name);
-    }
+    },
   );
 
   ipcMain.handle('app:getPlatform', () => {

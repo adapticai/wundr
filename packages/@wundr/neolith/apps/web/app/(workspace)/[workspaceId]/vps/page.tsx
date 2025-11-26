@@ -1,8 +1,10 @@
 'use client';
 
+import { Users } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useMemo } from 'react';
 
+import { EmptyState } from '@/components/ui/empty-state';
 import { CreateVPDialog } from '@/components/vp/create-vp-dialog';
 import { VPCard, VPCardSkeleton } from '@/components/vp/vp-card';
 import { useVPs, useVPMutations } from '@/hooks/use-vp';
@@ -234,35 +236,27 @@ stats.error++;
 
       {/* Empty State */}
       {!isLoading && !error && vps.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card py-16">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-stone">
-            <VPIcon className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="mb-1 text-lg font-semibold text-foreground">No VPs found</h3>
-          <p className="mb-4 text-center text-sm text-muted-foreground">
-            {activeFiltersCount > 0
-              ? 'Try adjusting your filters to find what you\'re looking for.'
-              : 'Get started by creating your first Virtual Person.'}
-          </p>
-          {activeFiltersCount > 0 ? (
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
-            >
-              Clear Filters
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsCreateDialogOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Create VP
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon={Users}
+          title={activeFiltersCount > 0 ? 'No VPs Found' : 'No Virtual Persons Yet'}
+          description={
+            activeFiltersCount > 0
+              ? 'Try adjusting your filters to find what you\'re looking for. No VPs match your current criteria.'
+              : 'Get started by creating your first Virtual Person. VPs are AI-powered team members that can help automate tasks and workflows.'
+          }
+          action={
+            activeFiltersCount > 0
+              ? {
+                  label: 'Clear Filters',
+                  onClick: handleClearFilters,
+                  variant: 'outline' as const,
+                }
+              : {
+                  label: 'Create Your First VP',
+                  onClick: () => setIsCreateDialogOpen(true),
+                }
+          }
+        />
       )}
 
       {/* VP Grid */}
@@ -384,22 +378,3 @@ function AlertIcon({ className }: { className?: string }) {
   );
 }
 
-function VPIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}

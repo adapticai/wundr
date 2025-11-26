@@ -51,6 +51,9 @@ importers:
       ora:
         specifier: ^5.4.1
         version: 5.4.1
+      sharp:
+        specifier: 0.33.5
+        version: 0.33.5
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
@@ -1671,6 +1674,9 @@ importers:
         specifier: ^6.1.7
         version: 6.6.2
     devDependencies:
+      '@electron/notarize':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.25
@@ -1683,6 +1689,9 @@ importers:
       electron-builder:
         specifier: ^24.9.1
         version: 24.13.3(electron-builder-squirrel-windows@24.13.3)
+      png-to-ico:
+        specifier: ^3.0.1
+        version: 3.0.1
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -1823,8 +1832,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@wundr.io/org-genesis':
-        specifier: workspace:*
-        version: link:../../../org-genesis
+        specifier: ^1.0.0
+        version: 1.0.0(@anthropic-ai/sdk@0.24.3(encoding@0.1.13))(@types/node@20.19.25)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -1876,6 +1885,9 @@ importers:
       resend:
         specifier: ^6.5.2
         version: 6.5.2(@react-email/render@2.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+      sharp:
+        specifier: 0.33.5
+        version: 0.33.5
       swr:
         specifier: ^2.3.6
         version: 2.3.6(react@18.3.1)
@@ -5132,6 +5144,10 @@ packages:
   '@electron/notarize@2.2.1':
     resolution: {integrity: sha512-aL+bFMIkpR0cmmj5Zgy0LMKEpgy43/hw5zadEArgmAMWWlKc5buwFvFT9G/o/YJkvXAJm5q3iuTuLaiaXW39sg==}
     engines: {node: '>= 10.0.0'}
+
+  '@electron/notarize@3.1.1':
+    resolution: {integrity: sha512-uQQSlOiJnqRkTL1wlEBAxe90nVN/Fc/hEmk0bqpKk8nKjV1if/tXLHKUPePtv9Xsx90PtZU8aidx5lAiOpjkQQ==}
+    engines: {node: '>= 22.12.0'}
 
   '@electron/osx-sign@1.0.5':
     resolution: {integrity: sha512-k9ZzUQtamSoweGQDV2jILiRIHUu7lYlJ3c6IEmjv1hC17rclE+eb9U+f6UFlOOETo0JzY1HNlXy4YOlCvl+Lww==}
@@ -9386,6 +9402,14 @@ packages:
       '@wundr.io/ai-integration': ^1.0.0
     peerDependenciesMeta:
       '@wundr.io/ai-integration':
+        optional: true
+
+  '@wundr.io/org-genesis@1.0.0':
+    resolution: {integrity: sha512-gn6AQH+PqC7q8PbcayeDif2CHQBviThEakPY8z0Las0XcZ7oBRFIPuRfvh8tqfxPUB+71cT9yIoJAeeHdWuCeA==}
+    peerDependencies:
+      '@anthropic-ai/sdk': '>=0.20.0'
+    peerDependenciesMeta:
+      '@anthropic-ai/sdk':
         optional: true
 
   '@wundr.io/setup-toolkit-simple@1.0.0':
@@ -15646,9 +15670,18 @@ packages:
   png-js@0.1.1:
     resolution: {integrity: sha512-NTtk2SyfjBm+xYl2/VZJBhFnTQ4kU5qWC7VC4/iGbrgiU4FuB4xC+74erxADYJIqZICOR1HCvRA7EBHkpjTg9g==}
 
+  png-to-ico@3.0.1:
+    resolution: {integrity: sha512-S8BOAoaGd9gT5uaemQ62arIY3Jzco7Uc7LwUTqRyqJDTsKqOAiyfyN4dSdT0D+Zf8XvgztgpRbM5wnQd7EgYwg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   pngjs@6.0.0:
     resolution: {integrity: sha512-TRzzuFRRmEoSW/p1KVAmiOgPco2Irlah+bGFCeNfJXxxYGwSw7YwAOAcd7X28K/m5bjBWKsC29KyoMfHbypayg==}
     engines: {node: '>=12.13.0'}
+
+  pngjs@7.0.0:
+    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
+    engines: {node: '>=14.19.0'}
 
   polished@4.3.1:
     resolution: {integrity: sha512-OBatVyC/N7SCW/FaDHrSd+vn0o5cS855TOmYi4OkdWUMSJCET/xip//ch8xGUvtr3i44X9LVyWwQlRMTN3pwSA==}
@@ -22210,6 +22243,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@electron/notarize@3.1.1':
+    dependencies:
+      debug: 4.4.3(supports-color@8.1.1)
+      promise-retry: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+
   '@electron/osx-sign@1.0.5':
     dependencies:
       compare-version: 0.1.2
@@ -27714,6 +27754,18 @@ snapshots:
       - typeorm
       - utf-8-validate
       - ws
+
+  '@wundr.io/org-genesis@1.0.0(@anthropic-ai/sdk@0.24.3(encoding@0.1.13))(@types/node@20.19.25)':
+    dependencies:
+      chalk: 5.6.2
+      handlebars: 4.7.8
+      inquirer: 9.3.8(@types/node@20.19.25)
+      uuid: 9.0.1
+      zod: 3.25.76
+    optionalDependencies:
+      '@anthropic-ai/sdk': 0.24.3(encoding@0.1.13)
+    transitivePeerDependencies:
+      - '@types/node'
 
   '@wundr.io/setup-toolkit-simple@1.0.0(@types/node@22.19.1)':
     dependencies:
@@ -35614,7 +35666,15 @@ snapshots:
 
   png-js@0.1.1: {}
 
+  png-to-ico@3.0.1:
+    dependencies:
+      '@types/node': 22.19.1
+      minimist: 1.2.8
+      pngjs: 7.0.0
+
   pngjs@6.0.0: {}
+
+  pngjs@7.0.0: {}
 
   polished@4.3.1:
     dependencies:

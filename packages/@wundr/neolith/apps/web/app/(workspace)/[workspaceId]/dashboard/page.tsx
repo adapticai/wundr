@@ -1,5 +1,7 @@
+import { LayoutDashboard } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
+import { EmptyState } from '@/components/ui/empty-state';
 import { CreateWorkspaceCard } from '@/components/workspace/create-workspace-card';
 import { WorkspaceCardSkeleton } from '@/components/workspace/workspace-card';
 import { auth } from '@/lib/auth';
@@ -11,6 +13,10 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
+  // TODO: Replace with actual workspace fetching logic
+  const workspaces: any[] = []; // This should fetch user's workspaces
+  const isLoading = false; // This should come from data fetching state
+
   return (
     <div className="py-2">
       <h1 className="text-3xl font-bold mb-8">
@@ -21,12 +27,39 @@ export default async function DashboardPage() {
         {/* Workspaces Section */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Your Workspaces</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Workspace cards will be rendered here */}
-            <WorkspaceCardSkeleton />
-            <WorkspaceCardSkeleton />
-            <CreateWorkspaceCard />
-          </div>
+
+          {/* Empty State for New Users */}
+          {!isLoading && workspaces.length === 0 ? (
+            <EmptyState
+              icon={LayoutDashboard}
+              title="Welcome to Your Dashboard"
+              description="Get started by creating your first workspace. Workspaces help you organize your projects, teams, and AI-powered virtual persons."
+              action={{
+                label: 'Create Your First Workspace',
+                onClick: () => {
+                  // TODO: Implement workspace creation navigation
+                  window.location.href = '/workspaces/new';
+                },
+              }}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Workspace cards will be rendered here */}
+              {isLoading ? (
+                <>
+                  <WorkspaceCardSkeleton />
+                  <WorkspaceCardSkeleton />
+                </>
+              ) : (
+                workspaces.map((workspace: any) => (
+                  <div key={workspace.id}>
+                    {/* Workspace card component */}
+                  </div>
+                ))
+              )}
+              <CreateWorkspaceCard />
+            </div>
+          )}
         </section>
 
         {/* Dashboard Grid */}

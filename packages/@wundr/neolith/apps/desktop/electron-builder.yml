@@ -175,7 +175,8 @@ fileAssociations:
 # ============================================
 # Build Hooks
 # ============================================
-# afterSign: scripts/notarize.js (notarization requires Apple Developer certificate)
+# Uncomment to enable notarization (requires Apple Developer certificate)
+afterSign: scripts/notarize.js
 
 # ============================================
 # Snap Configuration (Linux)

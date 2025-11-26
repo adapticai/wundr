@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { MessageListSkeleton, MessageLoadingIndicator } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 import { MessageItem } from './message-item';
@@ -184,11 +184,7 @@ return;
   }, [messages.length, visibleRange]);
 
   if (isLoading) {
-    return (
-      <div className={cn('flex flex-1 items-center justify-center', className)}>
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <MessageListSkeleton className={className} messageCount={8} />;
   }
 
   if (messages.length === 0) {
@@ -215,11 +211,7 @@ return;
         aria-label="Message list"
       >
         {/* Loading more indicator */}
-        {isLoadingMore && (
-          <div className="flex justify-center py-4">
-            <LoadingSpinner size="sm" />
-          </div>
-        )}
+        {isLoadingMore && <MessageLoadingIndicator />}
 
         {/* Top spacer for virtualization */}
         {spacerHeights.top > 0 && <div style={{ height: spacerHeights.top }} />}

@@ -189,7 +189,7 @@ export async function GET(
       limit: filters.limit,
       totalPages: Math.ceil(totalCount / filters.limit),
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
@@ -306,11 +306,11 @@ export async function POST(
       { workflow, message: 'Workflow created successfully' },
       { status: 201 },
     );
-  } catch (error) {
+  } catch (_error) {
     // Handle Prisma unique constraint errors
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
+      _error instanceof Prisma.PrismaClientKnownRequestError &&
+      _error.code === 'P2002'
     ) {
       return NextResponse.json(
         createErrorResponse(

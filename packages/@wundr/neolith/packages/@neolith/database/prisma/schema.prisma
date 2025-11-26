@@ -137,6 +137,7 @@ model Workspace {
   workflows         Workflow[]
   tasks             Task[]
   backlogs          Backlog[]
+  vpMemories        VPMemory[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -219,10 +220,10 @@ model VP {
   status         VPStatus @default(OFFLINE)
 
   // Foreign keys
-  userId         String   @unique @map("user_id")
-  organizationId String   @map("organization_id")
-  workspaceId    String?  @map("workspace_id")
-  disciplineId   String?  @map("discipline_id")
+  userId         String  @unique @map("user_id")
+  organizationId String  @map("organization_id")
+  workspaceId    String? @map("workspace_id")
+  disciplineId   String? @map("discipline_id")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -235,6 +236,7 @@ model VP {
   daemonCredentials  DaemonCredential[]
   tasks              Task[]
   backlogs           Backlog[]
+  memories           VPMemory[]
 
   @@index([organizationId])
   @@index([workspaceId])
@@ -574,40 +576,40 @@ enum TaskStatus {
 
 /// Task - Individual work item for VP autonomous operation
 model Task {
-  id              String       @id @default(cuid())
-  title           String
-  description     String?
-  priority        TaskPriority @default(MEDIUM)
-  status          TaskStatus   @default(TODO)
-  dueDate         DateTime?    @map("due_date")
-  estimatedHours  Int?         @map("estimated_hours")
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  priority       TaskPriority @default(MEDIUM)
+  status         TaskStatus   @default(TODO)
+  dueDate        DateTime?    @map("due_date")
+  estimatedHours Int?         @map("estimated_hours")
 
   // Metadata
-  tags            String[]     @default([])
-  metadata        Json         @default("{}")
+  tags     String[] @default([])
+  metadata Json     @default("{}")
 
   // Task dependencies (array of Task IDs)
-  dependsOn       String[]     @default([]) @map("depends_on")
+  dependsOn String[] @default([]) @map("depends_on")
 
   // Foreign keys
-  vpId            String       @map("vp_id")
-  workspaceId     String       @map("workspace_id")
-  channelId       String?      @map("channel_id")
-  createdById     String       @map("created_by_id")
-  assignedToId    String?      @map("assigned_to_id")
+  vpId         String  @map("vp_id")
+  workspaceId  String  @map("workspace_id")
+  channelId    String? @map("channel_id")
+  createdById  String  @map("created_by_id")
+  assignedToId String? @map("assigned_to_id")
 
   // Timestamps
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
-  completedAt     DateTime?    @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
 
   // Relations
-  vp              VP           @relation(fields: [vpId], references: [id], onDelete: Cascade)
-  workspace       Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  channel         Channel?     @relation(fields: [channelId], references: [id], onDelete: SetNull)
-  creator         User         @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  assignedTo      User?        @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
-  backlogItems    BacklogItem[]
+  vp           VP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  channel      Channel?      @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  creator      User          @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  assignedTo   User?         @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  backlogItems BacklogItem[]
 
   @@index([vpId])
   @@index([workspaceId])
@@ -623,29 +625,29 @@ model Task {
 
 /// Backlog - Collection of tasks for VP management
 model Backlog {
-  id              String    @id @default(cuid())
-  name            String
-  description     String?
-  status          String    @default("active") // active, archived, draft
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  status      String  @default("active") // active, archived, draft
 
   // Ordering
-  priority        Int       @default(0) // Lower number = higher priority
+  priority Int @default(0) // Lower number = higher priority
 
   // Metadata
-  metadata        Json      @default("{}")
+  metadata Json @default("{}")
 
   // Foreign keys
-  vpId            String    @map("vp_id")
-  workspaceId     String    @map("workspace_id")
+  vpId        String @map("vp_id")
+  workspaceId String @map("workspace_id")
 
   // Timestamps
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  vp              VP        @relation(fields: [vpId], references: [id], onDelete: Cascade)
-  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  items           BacklogItem[]
+  vp        VP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  items     BacklogItem[]
 
   @@unique([vpId, name])
   @@index([vpId])
@@ -657,21 +659,21 @@ model Backlog {
 
 /// BacklogItem - Junction model between Backlog and Task
 model BacklogItem {
-  id              String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Ordering within backlog
-  position        Int       @default(0)
+  position Int @default(0)
 
   // Foreign keys
-  backlogId       String    @map("backlog_id")
-  taskId          String    @map("task_id")
+  backlogId String @map("backlog_id")
+  taskId    String @map("task_id")
 
   // Timestamps
-  addedAt         DateTime  @default(now()) @map("added_at")
+  addedAt DateTime @default(now()) @map("added_at")
 
   // Relations
-  backlog         Backlog   @relation(fields: [backlogId], references: [id], onDelete: Cascade)
-  task            Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  backlog Backlog @relation(fields: [backlogId], references: [id], onDelete: Cascade)
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@unique([backlogId, taskId])
   @@index([backlogId])
@@ -875,4 +877,63 @@ model WorkflowExecution {
   @@index([startedAt])
   @@index([isSimulation])
   @@map("workflow_executions")
+}
+
+// =============================================================================
+// VP Memory Models (Phase 1 - VP Autonomous Operation)
+// =============================================================================
+
+/// Memory type enumeration
+enum MemoryType {
+  CONVERSATION
+  TASK
+  LEARNING
+  CONTEXT
+  DECISION
+}
+
+/// VPMemory - VP memory storage for conversations, tasks, and learnings
+model VPMemory {
+  id       String     @id @default(cuid())
+  type     MemoryType
+  content  String     @db.Text
+  summary  String?    @db.Text
+  metadata Json       @default("{}")
+
+  // Memory context
+  channelId String? @map("channel_id")
+  taskId    String? @map("task_id")
+
+  // Embeddings and search
+  embedding String?  @db.Text // Vector embedding for semantic search
+  keywords  String[] @default([])
+
+  // Memory importance and retention
+  importance  Int @default(5) // 1-10 scale
+  accessCount Int @default(0) @map("access_count")
+
+  // Foreign keys
+  vpId        String @map("vp_id")
+  workspaceId String @map("workspace_id")
+
+  // Timestamps
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastAccessedAt DateTime? @map("last_accessed_at")
+  expiresAt      DateTime? @map("expires_at")
+
+  // Relations
+  vp        VP        @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([vpId])
+  @@index([workspaceId])
+  @@index([type])
+  @@index([channelId])
+  @@index([taskId])
+  @@index([importance])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@index([keywords])
+  @@map("vp_memories")
 }

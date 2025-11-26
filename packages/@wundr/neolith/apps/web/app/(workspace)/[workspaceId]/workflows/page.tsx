@@ -1,8 +1,10 @@
 'use client';
 
+import { Workflow as WorkflowLucideIcon } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useState, useCallback, useMemo } from 'react';
 
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   useWorkflows,
   useWorkflowTemplates,
@@ -203,15 +205,26 @@ export default function WorkflowsPage() {
       {/* Empty State */}
       {!isLoading && !error && workflows.length === 0 && (
         <EmptyState
-          title={statusFilter === 'all' ? 'No workflows yet' : `No ${statusFilter} workflows`}
+          icon={WorkflowLucideIcon}
+          title={statusFilter === 'all' ? 'No Workflows Yet' : `No ${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Workflows`}
           description={
             statusFilter === 'all'
-              ? 'Get started by creating your first workflow or using a template.'
-              : 'Workflows with this status will appear here.'
+              ? 'Automate your processes by creating custom workflows. Start from scratch or choose from our templates.'
+              : 'No workflows match this status. Try changing filters or create a new workflow.'
           }
-          onCreateClick={() => setShowBuilder(true)}
-          onTemplateClick={() => setShowTemplates(true)}
-          showTemplateButton={statusFilter === 'all'}
+          action={{
+            label: 'Create Workflow',
+            onClick: () => setShowBuilder(true),
+          }}
+          secondaryAction={
+            statusFilter === 'all'
+              ? {
+                  label: 'Browse Templates',
+                  onClick: () => setShowTemplates(true),
+                  variant: 'outline' as const,
+                }
+              : undefined
+          }
         />
       )}
 
@@ -351,55 +364,6 @@ function WorkflowCardSkeleton() {
       <div className="mt-3 flex justify-between border-t border-border pt-3">
         <div className="h-3 w-16 rounded bg-muted" />
         <div className="h-3 w-12 rounded bg-muted" />
-      </div>
-    </div>
-  );
-}
-
-// =============================================================================
-// Empty State Component
-// =============================================================================
-
-interface EmptyStateProps {
-  title: string;
-  description: string;
-  onCreateClick: () => void;
-  onTemplateClick: () => void;
-  showTemplateButton: boolean;
-}
-
-function EmptyState({
-  title,
-  description,
-  onCreateClick,
-  onTemplateClick,
-  showTemplateButton,
-}: EmptyStateProps) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card py-16">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <WorkflowIcon className="h-8 w-8 text-muted-foreground" />
-      </div>
-      <h3 className="mb-1 text-lg font-semibold text-foreground">{title}</h3>
-      <p className="mb-4 text-center text-sm text-muted-foreground">{description}</p>
-      <div className="flex gap-2">
-        {showTemplateButton && (
-          <button
-            type="button"
-            onClick={onTemplateClick}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            Browse Templates
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onCreateClick}
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Create Workflow
-        </button>
       </div>
     </div>
   );
@@ -899,18 +863,6 @@ function AlertIcon({ className }: { className?: string }) {
       <circle cx="12" cy="12" r="10" />
       <line x1="12" x2="12" y1="8" y2="12" />
       <line x1="12" x2="12.01" y1="16" y2="16" />
-    </svg>
-  );
-}
-
-function WorkflowIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 3v18M3 12h18" />
-      <circle cx="12" cy="6" r="2" />
-      <circle cx="6" cy="12" r="2" />
-      <circle cx="18" cy="12" r="2" />
-      <circle cx="12" cy="18" r="2" />
     </svg>
   );
 }

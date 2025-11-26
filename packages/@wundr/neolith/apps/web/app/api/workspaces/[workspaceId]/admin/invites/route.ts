@@ -121,7 +121,7 @@ export async function GET(
     }
 
     return NextResponse.json({ invites });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createAdminErrorResponse('Failed to fetch invites', ADMIN_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
@@ -271,7 +271,7 @@ export async function POST(
     });
 
     return NextResponse.json({ invites: newInvites }, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createAdminErrorResponse('Failed to create invites', ADMIN_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

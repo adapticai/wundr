@@ -185,7 +185,7 @@ export async function GET(
       limit,
       offset,
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createAdminErrorResponse('Failed to fetch members', ADMIN_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

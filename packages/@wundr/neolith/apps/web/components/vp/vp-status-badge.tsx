@@ -1,5 +1,6 @@
 'use client';
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { VP_STATUS_CONFIG } from '@/types/vp';
 
@@ -10,6 +11,8 @@ interface VPStatusBadgeProps {
   size?: 'sm' | 'md' | 'lg';
   showPulse?: boolean;
   className?: string;
+  currentTask?: string;
+  showTooltip?: boolean;
 }
 
 const sizeClasses = {
@@ -23,10 +26,12 @@ export function VPStatusBadge({
   size = 'md',
   showPulse = true,
   className,
+  currentTask,
+  showTooltip = false,
 }: VPStatusBadgeProps) {
   const config = VP_STATUS_CONFIG[status];
 
-  return (
+  const badge = (
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full font-medium',
@@ -63,6 +68,23 @@ export function VPStatusBadge({
       {config.label}
     </span>
   );
+
+  if (showTooltip && currentTask) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>{badge}</TooltipTrigger>
+          <TooltipContent>
+            <p className="text-sm">
+              <span className="font-medium">Current task:</span> {currentTask}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return badge;
 }
 
 interface VPStatusDotProps {

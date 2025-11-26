@@ -11,10 +11,14 @@ const nextConfig = {
     '@neolith/shared',
     '@neolith/config',
     '@neolith/api-client',
+    '@neolith/org-integration',
   ],
 
   // Image optimization configuration
   images: {
+    // Disable image optimization to avoid sharp dependency issues in build
+    // Re-enable once sharp is properly installed in production environment
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -43,6 +47,12 @@ const nextConfig = {
     'camelcase-keys',
     'map-obj',
     'quick-lru',
+    // Org-genesis package (required for API routes)
+    '@wundr.io/org-genesis',
+    'handlebars',
+    'uuid',
+    // Image optimization
+    'sharp',
   ],
 
   // Experimental features
@@ -55,9 +65,8 @@ const nextConfig = {
     optimizePackageImports: ['@apollo/client', 'lucide-react'],
   },
 
-  // Turbopack configuration
+  // Turbopack configuration - required for Next.js 16+ with webpack config
   turbopack: {
-    // Set workspace root to avoid lockfile warning
     root: '../../../..',
   },
 
@@ -75,9 +84,10 @@ const nextConfig = {
   // Compression
   compress: true,
 
-  // Standalone mode for Electron/desktop app bundling
-  // This creates a minimal standalone server that can be bundled with Electron
-  standalone: true,
+  // Standalone output mode for Electron/desktop app bundling
+  // Disabled due to sharp dependency issues in pnpm workspace
+  // TODO: Re-enable for production desktop builds
+  // output: 'standalone',
 
   // Environment variables exposed to the browser
   env: {
@@ -86,13 +96,21 @@ const nextConfig = {
   },
 
   // Webpack configuration
-  webpack: (config, { isServer: _isServer }) => {
+  webpack: (config, { isServer }) => {
     // GraphQL file handling
     config.module.rules.push({
       test: /\.(graphql|gql)$/,
       exclude: /node_modules/,
       loader: 'graphql-tag/loader',
     });
+
+    // Externalize sharp for server-side builds to avoid native module bundling issues
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push({
+        sharp: 'commonjs sharp',
+      });
+    }
 
     return config;
   },

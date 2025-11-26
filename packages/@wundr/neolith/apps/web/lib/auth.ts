@@ -11,8 +11,8 @@
  */
 
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from '@neolith/database';
 import { avatarService } from '@neolith/core/services';
+import { prisma } from '@neolith/database';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
@@ -218,7 +218,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * SignIn callback - called when user signs in
      * Can be used to control who can sign in
      */
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile: _profile }) {
       // Handle OAuth sign-ins
       if (account?.provider === 'github' || account?.provider === 'google') {
         // If user has an avatar from OAuth provider, download and store it

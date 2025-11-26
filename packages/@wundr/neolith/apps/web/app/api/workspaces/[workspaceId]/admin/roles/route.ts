@@ -134,7 +134,7 @@ export async function GET(
     }));
 
     return NextResponse.json({ roles });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createAdminErrorResponse('Failed to fetch roles', ADMIN_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
@@ -254,7 +254,7 @@ export async function POST(
     });
 
     return NextResponse.json({ role: newRole }, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createAdminErrorResponse('Failed to create role', ADMIN_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

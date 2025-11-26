@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useCallback, useMemo } from 'react';
 
+import { ChannelListSkeleton } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 import { CreateChannelDialog } from './create-channel-dialog';
@@ -109,16 +110,7 @@ return directMessages;
   );
 
   if (isLoading) {
-    return (
-      <div className={cn('flex flex-col space-y-2 p-4', className)}>
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="h-8 animate-pulse rounded-md bg-muted"
-          />
-        ))}
-      </div>
-    );
+    return <ChannelListSkeleton className={className} />;
   }
 
   return (

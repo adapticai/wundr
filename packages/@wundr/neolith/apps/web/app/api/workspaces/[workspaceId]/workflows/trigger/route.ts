@@ -377,7 +377,7 @@ export async function POST(
       executions,
       message: `Triggered ${executions.length} workflow(s)`,
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

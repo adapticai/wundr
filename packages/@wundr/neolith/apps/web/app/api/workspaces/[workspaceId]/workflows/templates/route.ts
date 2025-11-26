@@ -336,7 +336,7 @@ export async function GET(
     }
 
     return NextResponse.json({ templates });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
@@ -480,7 +480,7 @@ export async function POST(
       { workflow, message: 'Workflow created from template successfully' },
       { status: 201 },
     );
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', WORKFLOW_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },

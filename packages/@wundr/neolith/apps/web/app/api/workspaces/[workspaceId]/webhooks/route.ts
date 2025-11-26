@@ -129,7 +129,7 @@ export async function GET(
         hasPreviousPage: page > 1,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
@@ -249,7 +249,7 @@ export async function POST(
       },
       { status: 201 },
     );
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       createErrorResponse('An internal error occurred', INTEGRATION_ERROR_CODES.INTERNAL_ERROR),
       { status: 500 },
