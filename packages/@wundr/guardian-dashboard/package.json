@@ -1,6 +1,6 @@
 {
   "name": "@wundr/guardian-dashboard",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Guardian Dashboard for alignment drift monitoring and debt calculation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

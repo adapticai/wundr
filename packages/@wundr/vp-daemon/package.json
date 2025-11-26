@@ -1,0 +1,66 @@
+{
+  "name": "@wundr.io/vp-daemon",
+  "version": "1.0.3",
+  "description": "Virtual Principal (VP) Daemon for agent orchestration and session management",
+  "keywords": [
+    "wundr",
+    "vp",
+    "daemon",
+    "agent-orchestration",
+    "session-manager",
+    "websocket",
+    "claude-code",
+    "claude-flow"
+  ],
+  "homepage": "https://wundr.io",
+  "bugs": {
+    "url": "https://github.com/adapticai/wundr/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adapticai/wundr.git",
+    "directory": "packages/@wundr/vp-daemon"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "author": "Wundr, by Adaptic.ai",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "vp-daemon": "./bin/vp-daemon.js"
+  },
+  "files": ["dist", "bin", "src", "README.md"],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,md}'",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx,js,jsx,json,md}'",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "eventemitter3": "^5.0.1",
+    "ws": "^8.16.0",
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.5.10",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

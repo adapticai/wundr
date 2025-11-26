@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/org-genesis",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Organizational Genesis - Dynamic context compilation and fleet generation for AI agent hierarchies",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -53,9 +53,7 @@
       "import": "./dist/cli/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "keywords": [
     "wundr",
     "org-genesis",

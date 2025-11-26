@@ -1,6 +1,6 @@
 {
   "name": "@wundr.io/risk-twin",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Risk Twin validation environment for governance change simulation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
