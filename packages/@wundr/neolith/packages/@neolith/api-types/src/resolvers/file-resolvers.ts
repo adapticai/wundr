@@ -12,7 +12,7 @@ import { GraphQLError } from 'graphql';
 
 import type {
   PrismaClient,
-  File as PrismaFile,
+  file as PrismaFile,
   FileStatus,
   Prisma,
 } from '@prisma/client';
@@ -695,7 +695,7 @@ export const fileQueries = {
     }
 
     // Build where clause
-    const where: Prisma.FileWhereInput = {
+    const where: Prisma.fileWhereInput = {
       workspaceId,
       status: { not: 'FAILED' },
       ...(mimeType && { mimeType }),
@@ -771,7 +771,7 @@ export const fileQueries = {
     }
 
     // Build where clause
-    const where: Prisma.FileWhereInput = {
+    const where: Prisma.fileWhereInput = {
       workspaceId,
     };
 

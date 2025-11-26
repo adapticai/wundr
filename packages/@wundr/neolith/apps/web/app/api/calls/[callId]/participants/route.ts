@@ -79,7 +79,7 @@ export async function GET(
       }
     } catch {
       // Try channel settings
-      const channels = await prisma.channels.findMany({
+      const channels = await prisma.channel.findMany({
         where: {
           settings: {
             path: ['activeCall', 'id'],
@@ -102,7 +102,7 @@ export async function GET(
     }
 
     // Verify channel access
-    const channel = await prisma.channels.findUnique({
+    const channel = await prisma.channel.findUnique({
       where: { id: callChannelId },
       include: { workspace: true },
     });
@@ -114,7 +114,7 @@ export async function GET(
       );
     }
 
-    const orgMembership = await prisma.organization_members.findUnique({
+    const orgMembership = await prisma.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: channel.workspace.organizationId,
@@ -132,7 +132,7 @@ export async function GET(
 
     // For private channels, check membership
     if (channel.type === 'PRIVATE') {
-      const channelMembership = await prisma.channel_members.findUnique({
+      const channelMembership = await prisma.channelMember.findUnique({
         where: {
           channelId_userId: {
             channelId: channel.id,

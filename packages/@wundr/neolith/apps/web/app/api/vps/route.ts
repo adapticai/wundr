@@ -87,7 +87,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Build where clause
-    const where: Prisma.VPWhereInput = {
+    const where: Prisma.vPWhereInput = {
       organizationId: filters.organizationId
         ? filters.organizationId
         : { in: accessibleOrgIds },
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = filters.limit;
 
     // Build orderBy
-    const orderBy: Prisma.VPOrderByWithRelationInput =
+    const orderBy: Prisma.vPOrderByWithRelationInput =
       filters.sortBy === 'createdAt' || filters.sortBy === 'updatedAt'
         ? { [filters.sortBy]: filters.sortOrder }
         : { [filters.sortBy]: filters.sortOrder };

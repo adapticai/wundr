@@ -21,7 +21,7 @@ import type {
   ChannelType,
   WorkspaceVisibility,
   VP,
-} from '@genesis/database';
+} from '@neolith/database';
 
 // =============================================================================
 // Organization Types
@@ -32,7 +32,7 @@ import type {
  */
 export interface OrganizationWithMembers extends Organization {
   /** Organization members with user data */
-  members: OrganizationMemberWithUser[];
+  organizationMembers: OrganizationMemberWithUser[];
 }
 
 /**
@@ -40,7 +40,7 @@ export interface OrganizationWithMembers extends Organization {
  */
 export interface OrganizationWithRelations extends Organization {
   /** Organization members with user data */
-  members: OrganizationMemberWithUser[];
+  organizationMembers: OrganizationMemberWithUser[];
   /** Workspaces in the organization */
   workspaces: Workspace[];
   /** VPs in the organization */
@@ -128,7 +128,7 @@ export interface PaginatedOrgResult {
  */
 export interface WorkspaceWithMembers extends Workspace {
   /** Workspace members with user data */
-  members: WorkspaceMemberWithUser[];
+  workspaceMembers: WorkspaceMemberWithUser[];
 }
 
 /**
@@ -136,7 +136,7 @@ export interface WorkspaceWithMembers extends Workspace {
  */
 export interface WorkspaceWithRelations extends Workspace {
   /** Workspace members with user data */
-  members: WorkspaceMemberWithUser[];
+  workspaceMembers: WorkspaceMemberWithUser[];
   /** Channels in the workspace */
   channels: Channel[];
   /** Parent organization */

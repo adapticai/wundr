@@ -44,7 +44,7 @@ interface RouteContext {
  * Returns the message if the user has access via channel membership
  */
 async function getMessageWithAccessCheck(messageId: string, userId: string) {
-  const message = await prisma.messages.findUnique({
+  const message = await prisma.message.findUnique({
     where: { id: messageId },
     include: {
       author: {
@@ -58,7 +58,7 @@ async function getMessageWithAccessCheck(messageId: string, userId: string) {
       },
       channel: {
         include: {
-          members: {
+          channelMembers: {
             where: { userId },
             select: { userId: true, role: true },
           },
@@ -77,7 +77,7 @@ async function getMessageWithAccessCheck(messageId: string, userId: string) {
           },
         },
       },
-      attachments: {
+      messageAttachments: {
         include: {
           file: {
             select: {
@@ -104,20 +104,20 @@ async function getMessageWithAccessCheck(messageId: string, userId: string) {
   }
 
   // Check if user is a member of the channel
-  const isMember = message.channel.members.length > 0;
+  const isMember = message.channel.channelMembers.length > 0;
   if (!isMember) {
     return null;
   }
 
-  // Remove channel.members from response
+  // Remove channel.channelMembers from response
   const { channel, ...rest } = message;
-  const { members: _members, ...channelData } = channel;
+  const { channelMembers: _channelMembers, ...channelData } = channel;
 
   return {
     ...rest,
     channel: channelData,
     isOwner: message.authorId === userId,
-    memberRole: message.channel.members[0]?.role ?? null,
+    memberRole: message.channel.channelMembers[0]?.role ?? null,
   };
 }
 
@@ -298,7 +298,7 @@ export async function PATCH(
     };
 
     // Update the message
-    const updatedMessage = await prisma.messages.update({
+    const updatedMessage = await prisma.message.update({
       where: { id: params.id },
       data: {
         content: input.content,
@@ -329,7 +329,7 @@ export async function PATCH(
             },
           },
         },
-        attachments: {
+        messageAttachments: {
           include: {
             file: {
               select: {
@@ -430,7 +430,7 @@ export async function DELETE(
     }
 
     // Soft delete the message
-    await prisma.messages.update({
+    await prisma.message.update({
       where: { id: params.id },
       data: {
         isDeleted: true,

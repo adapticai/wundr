@@ -78,7 +78,7 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Send Channel Creation Notification',
         config: {
           targetChannel: 'general',
-          message: 'A new channel "{{trigger.channel.name}}" was created by {{trigger.creator.name}}',
+          message: 'A new channel "{{trigger.channel.name}}" was created by {{trigger.createdBy.name}}',
         },
         conditions: [],
         onError: 'continue',
@@ -469,7 +469,7 @@ export async function POST(
     }
 
     // Check workspace membership
-    const workspaceMembership = await prisma.workspace_members.findUnique({
+    const workspaceMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId,
@@ -554,7 +554,7 @@ export async function POST(
         include: {
           _count: {
             select: {
-              executions: true,
+              workflowExecutions: true,
             },
           },
         },
@@ -642,7 +642,7 @@ export async function POST(
         include: {
           _count: {
             select: {
-              executions: true,
+              workflowExecutions: true,
             },
           },
         },

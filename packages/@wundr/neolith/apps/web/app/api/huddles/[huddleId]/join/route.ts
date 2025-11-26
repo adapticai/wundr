@@ -180,7 +180,7 @@ export async function POST(
       }
     } catch {
       // Try workspace settings
-      const workspaces = await prisma.workspaces.findMany({
+      const workspaces = await prisma.workspace.findMany({
         select: { id: true, settings: true, organizationId: true },
       });
 
@@ -218,7 +218,7 @@ export async function POST(
     }
 
     // Check workspace access
-    const workspace = await prisma.workspaces.findUnique({
+    const workspace = await prisma.workspace.findUnique({
       where: { id: huddle.workspaceId },
     });
 
@@ -229,7 +229,7 @@ export async function POST(
       );
     }
 
-    const orgMembership = await prisma.organization_members.findUnique({
+    const orgMembership = await prisma.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: workspace.organizationId,
@@ -277,7 +277,7 @@ export async function POST(
     }
 
     // Get user info
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { id: true, name: true, displayName: true },
     });

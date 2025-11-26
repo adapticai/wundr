@@ -13,7 +13,7 @@ import type {
   OrganizationRole,
   WorkspaceRole,
   ChannelRole,
-} from '@genesis/database';
+} from '@neolith/database';
 
 
 // =============================================================================

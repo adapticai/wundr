@@ -12,7 +12,7 @@ import { GraphQLError } from 'graphql';
 
 import type {
   PrismaClient,
-  Organization as PrismaOrganization,
+  organization as PrismaOrganization,
   OrganizationRole as PrismaOrgRole,
   Prisma,
 } from '@prisma/client';
@@ -609,7 +609,7 @@ export const organizationQueries = {
     }
 
     // Build where clause
-    const where: Prisma.OrganizationMemberWhereInput = {
+    const where: Prisma.organizationMemberWhereInput = {
       organizationId: orgId,
     };
 
@@ -739,7 +739,7 @@ export const organizationMutations = {
           description: input.description ?? null,
           avatarUrl: input.avatarUrl ?? null,
           settings: {},
-          members: {
+          organizationMembers: {
             create: {
               userId: context.user.id,
               role: 'OWNER',
@@ -828,7 +828,7 @@ export const organizationMutations = {
     }
 
     // Build update data
-    const updateData: Prisma.OrganizationUpdateInput = {};
+    const updateData: Prisma.organizationUpdateInput = {};
 
     if (input.name !== undefined && input.name !== null) {
       updateData.name = input.name;

@@ -36,7 +36,7 @@ interface RouteContext {
  * Helper to check channel access
  */
 async function checkChannelAccess(channelId: string, userId: string) {
-  const channel = await prisma.channels.findUnique({
+  const channel = await prisma.channel.findUnique({
     where: { id: channelId },
     include: {
       workspace: true,
@@ -47,7 +47,7 @@ async function checkChannelAccess(channelId: string, userId: string) {
 return null;
 }
 
-  const orgMembership = await prisma.organization_members.findUnique({
+  const orgMembership = await prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: channel.workspace.organizationId,
@@ -60,7 +60,7 @@ return null;
 return null;
 }
 
-  const channelMembership = await prisma.channel_members.findUnique({
+  const channelMembership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -137,7 +137,7 @@ export async function PATCH(
     }
 
     // Get target member
-    const targetMembership = await prisma.channel_members.findUnique({
+    const targetMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -183,7 +183,7 @@ export async function PATCH(
     const input: UpdateChannelMemberRoleInput = parseResult.data;
 
     // Update member role
-    const updatedMembership = await prisma.channel_members.update({
+    const updatedMembership = await prisma.channelMember.update({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -286,7 +286,7 @@ export async function DELETE(
     }
 
     // Get target member
-    const targetMembership = await prisma.channel_members.findUnique({
+    const targetMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -307,7 +307,7 @@ export async function DELETE(
 
     // Check if this is the last admin
     if (targetMembership.role === 'ADMIN') {
-      const adminCount = await prisma.channel_members.count({
+      const adminCount = await prisma.channelMember.count({
         where: {
           channelId: params.channelId,
           role: 'ADMIN',
@@ -326,7 +326,7 @@ export async function DELETE(
     }
 
     // Remove member
-    await prisma.channel_members.delete({
+    await prisma.channelMember.delete({
       where: {
         channelId_userId: {
           channelId: params.channelId,

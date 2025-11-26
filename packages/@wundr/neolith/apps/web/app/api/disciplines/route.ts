@@ -67,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: DisciplineFiltersInput = parseResult.data;
 
     // Get organizations the user is a member of
-    const userOrganizations = await prisma.organization_members.findMany({
+    const userOrganizations = await prisma.organizationMember.findMany({
       where: { userId: session.user.id },
       select: { organizationId: true },
     });
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Build where clause
-    const where: Prisma.DisciplineWhereInput = {
+    const where: Prisma.disciplineWhereInput = {
       organizationId: filters.organizationId
         ? filters.organizationId
         : { in: accessibleOrgIds },
@@ -100,13 +100,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = filters.limit;
 
     // Build orderBy
-    const orderBy: Prisma.DisciplineOrderByWithRelationInput = {
+    const orderBy: Prisma.disciplineOrderByWithRelationInput = {
       [filters.sortBy]: filters.sortOrder,
     };
 
     // Fetch disciplines and total count in parallel
     const [disciplines, totalCount] = await Promise.all([
-      prisma.disciplines.findMany({
+      prisma.discipline.findMany({
         where,
         skip,
         take,
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
         },
       }),
-      prisma.disciplines.count({ where }),
+      prisma.discipline.count({ where }),
     ]);
 
     // Calculate pagination metadata
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: CreateDisciplineInput = parseResult.data;
 
     // Check organization membership and permission
-    const membership = await prisma.organization_members.findUnique({
+    const membership = await prisma.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: input.organizationId,
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if discipline name already exists in the organization
-    const existingDiscipline = await prisma.disciplines.findFirst({
+    const existingDiscipline = await prisma.discipline.findFirst({
       where: {
         organizationId: input.organizationId,
         name: { equals: input.name, mode: 'insensitive' },
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create discipline
-    const discipline = await prisma.disciplines.create({
+    const discipline = await prisma.discipline.create({
       data: {
         name: input.name,
         description: input.description,

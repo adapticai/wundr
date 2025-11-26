@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import {
   GenesisError,
@@ -30,7 +30,7 @@ import type {
   PaginatedWorkspaceResult,
   WorkspaceMemberRole,
 } from '../types/organization';
-import type { PrismaClient, Prisma, WorkspaceRole, WorkspaceVisibility , Workspace, WorkspaceMember } from '@genesis/database';
+import type { PrismaClient, Prisma, WorkspaceRole, WorkspaceVisibility , Workspace, WorkspaceMember } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -302,7 +302,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     const workspace = await this.db.workspace.findUnique({
       where: { id },
       include: {
-        members: {
+        workspaceMembers: {
           include: { user: true },
         },
         channels: true,
@@ -329,7 +329,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
         },
       },
       include: {
-        members: {
+        workspaceMembers: {
           include: { user: true },
         },
         channels: true,
@@ -347,7 +347,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     const workspaces = await this.db.workspace.findMany({
       where: { organizationId: orgId },
       include: {
-        members: {
+        workspaceMembers: {
           include: { user: true },
         },
       },
@@ -380,11 +380,11 @@ export class WorkspaceServiceImpl implements WorkspaceService {
     } = options;
 
     // Build where clause
-    const where: Prisma.WorkspaceWhereInput = {
+    const where: Prisma.workspaceWhereInput = {
       organizationId: orgId,
       ...(visibility && { visibility }),
       ...(userId && {
-        members: {
+        workspaceMembers: {
           some: { userId },
         },
       }),
@@ -395,7 +395,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
       this.db.workspace.findMany({
         where,
         include: {
-          members: {
+          workspaceMembers: {
             include: { user: true },
           },
         },
@@ -427,7 +427,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
       throw new WorkspaceNotFoundError(id);
     }
 
-    const updateData: Prisma.WorkspaceUpdateInput = {};
+    const updateData: Prisma.workspaceUpdateInput = {};
 
     if (data.name !== undefined) {
       updateData.name = data.name;
@@ -453,7 +453,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
       where: { id },
       data: updateData,
       include: {
-        members: {
+        workspaceMembers: {
           include: { user: true },
         },
       },
@@ -489,7 +489,7 @@ export class WorkspaceServiceImpl implements WorkspaceService {
         } as Prisma.InputJsonValue,
       },
       include: {
-        members: {
+        workspaceMembers: {
           include: { user: true },
         },
       },

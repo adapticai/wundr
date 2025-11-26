@@ -121,7 +121,7 @@ export async function POST(
       }
     } catch {
       // Try channel settings
-      const channels = await prisma.channels.findMany({
+      const channels = await prisma.channel.findMany({
         where: {
           settings: {
             path: ['activeCall', 'id'],
@@ -162,7 +162,7 @@ export async function POST(
     }
 
     // Verify inviter has access to the channel
-    const channel = await prisma.channels.findUnique({
+    const channel = await prisma.channel.findUnique({
       where: { id: call.channelId },
       include: { workspace: true },
     });
@@ -174,7 +174,7 @@ export async function POST(
       );
     }
 
-    const orgMembership = await prisma.organization_members.findUnique({
+    const orgMembership = await prisma.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: channel.workspace.organizationId,
@@ -191,7 +191,7 @@ export async function POST(
     }
 
     // Validate that all invited users exist and have access
-    const users = await prisma.users.findMany({
+    const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, name: true, email: true },
     });
@@ -216,7 +216,7 @@ export async function POST(
 
     for (const user of users) {
       // Check org membership
-      const userOrgMembership = await prisma.organization_members.findUnique({
+      const userOrgMembership = await prisma.organizationMember.findUnique({
         where: {
           organizationId_userId: {
             organizationId: channel.workspace.organizationId,
@@ -232,7 +232,7 @@ export async function POST(
 
       // For private channels, check channel membership
       if (channel.type === 'PRIVATE') {
-        const userChannelMembership = await prisma.channel_members.findUnique({
+        const userChannelMembership = await prisma.channelMember.findUnique({
           where: {
             channelId_userId: {
               channelId: channel.id,

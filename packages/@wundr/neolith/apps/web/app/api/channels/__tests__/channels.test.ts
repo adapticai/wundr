@@ -216,7 +216,7 @@ describe('Channel API Routes', () => {
         creatorId: session.user.id,
       });
 
-      expect(result._count.members).toBe(3); // Creator + 2 members
+      expect(result._count.channelMembers).toBe(3); // Creator + 2 members
     });
 
     it('returns 401 without authentication', async () => {

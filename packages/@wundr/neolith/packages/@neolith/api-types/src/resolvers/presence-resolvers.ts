@@ -509,7 +509,7 @@ export const presenceQueries = {
     const channel = await context.prisma.channel.findUnique({
       where: { id: args.channelId },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -529,7 +529,7 @@ export const presenceQueries = {
     }
 
     // Check if user is a member of the channel
-    const isMember = channel.members.some(
+    const isMember = channel.channelMembers.some(
       (m) => m.userId === context.user.id
     );
 
@@ -541,7 +541,7 @@ export const presenceQueries = {
     }
 
     // Get online users
-    const onlineUsers = channel.members
+    const onlineUsers = channel.channelMembers
       .map((m) => buildUserPresence(m.user))
       .filter((p) => p.isOnline);
 
@@ -934,7 +934,7 @@ export const presenceMutations = {
     const channel = await context.prisma.channel.findUnique({
       where: { id: args.channelId },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -956,7 +956,7 @@ export const presenceMutations = {
       };
     }
 
-    const onlineUsers = channel.members
+    const onlineUsers = channel.channelMembers
       .map((m) => buildUserPresence(m.user))
       .filter((p) => p.isOnline);
 
@@ -1019,7 +1019,7 @@ export const presenceMutations = {
     const channel = await context.prisma.channel.findUnique({
       where: { id: args.channelId },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -1042,7 +1042,7 @@ export const presenceMutations = {
     }
 
     // Filter out the current user from online users
-    const onlineUsers = channel.members
+    const onlineUsers = channel.channelMembers
       .map((m) => buildUserPresence(m.user))
       .filter((p) => p.isOnline && p.userId !== context.user.id);
 

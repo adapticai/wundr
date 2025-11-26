@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import {
   GenesisError,
@@ -27,7 +27,7 @@ import type {
   ChannelListOptions,
   ChannelMemberRole,
 } from '../types/organization';
-import type { PrismaClient, Prisma, ChannelRole , Channel, ChannelMember } from '@genesis/database';
+import type { PrismaClient, Prisma, ChannelRole , Channel, ChannelMember } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -344,11 +344,11 @@ export class ChannelServiceImpl implements ChannelService {
     const channel = await this.db.channel.findUnique({
       where: { id },
       include: {
-        members: {
+        channelMembers: {
           include: { user: true },
         },
         workspace: true,
-        creator: true,
+        createdBy: true,
       },
     });
 
@@ -373,12 +373,12 @@ export class ChannelServiceImpl implements ChannelService {
     } = options;
 
     // Build where clause
-    const where: Prisma.ChannelWhereInput = {
+    const where: Prisma.channelWhereInput = {
       workspaceId,
       ...(type && { type }),
       ...(!includeArchived && { isArchived: false }),
       ...(userId && {
-        members: {
+        channelMembers: {
           some: { userId },
         },
       }),
@@ -387,7 +387,7 @@ export class ChannelServiceImpl implements ChannelService {
     const channels = await this.db.channel.findMany({
       where,
       include: {
-        members: {
+        channelMembers: {
           include: { user: true },
         },
       },
@@ -412,7 +412,7 @@ export class ChannelServiceImpl implements ChannelService {
       throw new ChannelNotFoundError(id);
     }
 
-    const updateData: Prisma.ChannelUpdateInput = {};
+    const updateData: Prisma.channelUpdateInput = {};
 
     if (data.name !== undefined) {
       updateData.name = data.name;
@@ -434,7 +434,7 @@ export class ChannelServiceImpl implements ChannelService {
       where: { id },
       data: updateData,
       include: {
-        members: {
+        channelMembers: {
           include: { user: true },
         },
       },
@@ -456,7 +456,7 @@ export class ChannelServiceImpl implements ChannelService {
       where: { id },
       data: { isArchived: true },
       include: {
-        members: {
+        channelMembers: {
           include: { user: true },
         },
       },

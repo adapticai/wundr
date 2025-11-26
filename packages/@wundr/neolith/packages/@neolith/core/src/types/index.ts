@@ -556,7 +556,7 @@ export type {
   MessageType,
   ChannelType,
   WorkspaceVisibility,
-} from '@genesis/database';
+} from '@neolith/database';
 
 // =============================================================================
 // Offline Types

@@ -35,7 +35,7 @@ interface RouteContext {
  * Helper function to check workspace membership
  */
 async function checkWorkspaceMembership(workspaceId: string, userId: string) {
-  const membership = await prisma.workspace_members.findUnique({
+  const membership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -162,7 +162,7 @@ export async function GET(
     }
 
     // Build where clause for search
-    const where: Prisma.MessageWhereInput = {
+    const where: Prisma.messageWhereInput = {
       channelId: filters.channelId
         ? filters.channelId
         : { in: accessibleChannelIds },

@@ -148,7 +148,7 @@ export async function GET(
     }
 
     // Fetch the file
-    const file = await prisma.files.findUnique({
+    const file = await prisma.file.findUnique({
       where: { id: params.id },
       select: {
         id: true,
@@ -193,7 +193,7 @@ export async function GET(
     }
 
     // Check workspace membership
-    const membership = await prisma.workspace_members.findUnique({
+    const membership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: file.workspaceId,

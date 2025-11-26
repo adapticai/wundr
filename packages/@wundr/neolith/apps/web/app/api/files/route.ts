@@ -90,7 +90,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: FileListInput = parseResult.data;
 
     // Get workspaces the user is a member of
-    const userWorkspaces = await prisma.workspace_members.findMany({
+    const userWorkspaces = await prisma.workspaceMember.findMany({
       where: { userId: session.user.id },
       select: { workspaceId: true },
     });
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Build where clause
-    const where: Prisma.FileWhereInput = {
+    const where: Prisma.fileWhereInput = {
       workspaceId: filters.workspaceId
         ? filters.workspaceId
         : { in: accessibleWorkspaceIds },
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Add cursor condition
     if (filters.cursor) {
-      const cursorFile = await prisma.files.findUnique({
+      const cursorFile = await prisma.file.findUnique({
         where: { id: filters.cursor },
         select: { createdAt: true, size: true, filename: true },
       });
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Fetch files
-    const files = await prisma.files.findMany({
+    const files = await prisma.file.findMany({
       where,
       take: filters.limit + 1,
       orderBy: {
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         uploadedById: true,
         workspaceId: true,
         createdAt: true,
-        uploader: {
+        uploadedBy: {
           select: {
             id: true,
             name: true,
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check workspace membership
-    const membership = await prisma.workspace_members.findUnique({
+    const membership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId,
@@ -343,7 +343,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       : null;
 
     // Create file record
-    const fileRecord = await prisma.files.create({
+    const fileRecord = await prisma.file.create({
       data: {
         filename: s3Key.split('/').pop() ?? file.name,
         originalName: file.name,

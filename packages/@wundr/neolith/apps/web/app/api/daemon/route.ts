@@ -182,7 +182,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { vpId, organizationId, apiKey, daemonInfo } = parseResult.data;
 
     // Verify VP exists and belongs to organization
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: vpId },
       select: {
         id: true,
@@ -256,7 +256,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update VP status to indicate daemon is registered
-    await prisma.vps.update({
+    await prisma.vP.update({
       where: { id: vpId },
       data: {
         status: 'ONLINE',
@@ -423,7 +423,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update VP status
-    await prisma.vps.update({
+    await prisma.vP.update({
       where: { id: token.vpId },
       data: {
         status: 'OFFLINE',

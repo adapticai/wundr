@@ -13,7 +13,7 @@
 
 import { EventEmitter } from 'events';
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 import { createId } from '@paralleldrive/cuid2';
 import * as admin from 'firebase-admin';
 import * as webpush from 'web-push';
@@ -50,7 +50,7 @@ import type {
   OnNotificationReadCallback,
   OnPushSentCallback,
 } from '../types/notification';
-import type { PrismaClient } from '@genesis/database';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors

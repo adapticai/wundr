@@ -98,7 +98,7 @@ export async function POST(
     const { channelId } = await params;
 
     // Get VP user info
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         userId: true,
@@ -114,7 +114,7 @@ export async function POST(
     }
 
     // Check if channel exists
-    const channel = await prisma.channels.findUnique({
+    const channel = await prisma.channel.findUnique({
       where: { id: channelId },
       include: {
         workspace: {
@@ -149,7 +149,7 @@ export async function POST(
     }
 
     // Check if already a member
-    const existingMembership = await prisma.channel_members.findFirst({
+    const existingMembership = await prisma.channelMember.findFirst({
       where: {
         channelId,
         userId: vp.userId,
@@ -164,7 +164,7 @@ export async function POST(
     }
 
     // Create membership
-    await prisma.channel_members.create({
+    await prisma.channelMember.create({
       data: {
         channelId,
         userId: vp.userId,
@@ -216,7 +216,7 @@ export async function DELETE(
     const { channelId } = await params;
 
     // Get VP user info
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: { userId: true },
     });
@@ -229,7 +229,7 @@ export async function DELETE(
     }
 
     // Check if member
-    const membership = await prisma.channel_members.findFirst({
+    const membership = await prisma.channelMember.findFirst({
       where: {
         channelId,
         userId: vp.userId,
@@ -244,7 +244,7 @@ export async function DELETE(
     }
 
     // Remove membership
-    await prisma.channel_members.delete({
+    await prisma.channelMember.delete({
       where: { id: membership.id },
     });
 

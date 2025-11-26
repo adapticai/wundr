@@ -122,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const workspaceIds = [...new Set(tasks.map((t) => t.workspaceId))];
 
     // Check user has access to all workspaces
-    const membershipCount = await prisma.workspace_members.count({
+    const membershipCount = await prisma.workspaceMember.count({
       where: {
         userId: session.user.id,
         workspaceId: { in: workspaceIds },

@@ -173,7 +173,7 @@ return;
       `;
     } catch {
       // Try channel settings
-      const channels = await prisma.channels.findMany({
+      const channels = await prisma.channel.findMany({
         where: {
           settings: {
             path: ['activeCall', 'roomName'],
@@ -183,7 +183,7 @@ return;
       });
 
       for (const channel of channels) {
-        await prisma.channels.update({
+        await prisma.channel.update({
           where: { id: channel.id },
           data: {
             settings: {
@@ -212,7 +212,7 @@ return;
       `;
     } catch {
       // Try workspace settings
-      const workspaces = await prisma.workspaces.findMany({
+      const workspaces = await prisma.workspace.findMany({
         select: { id: true, settings: true },
       });
 
@@ -225,7 +225,7 @@ return;
               : h,
           );
 
-          await prisma.workspaces.update({
+          await prisma.workspace.update({
             where: { id: workspace.id },
             data: {
               settings: JSON.parse(JSON.stringify({

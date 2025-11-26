@@ -12,7 +12,7 @@ import { GraphQLError } from 'graphql';
 
 import type {
   PrismaClient,
-  Message as PrismaMessage,
+  message as PrismaMessage,
   MessageType as PrismaMessageType,
   Prisma,
 } from '@prisma/client';
@@ -837,7 +837,7 @@ export const messageQueries = {
 
     // Build where clause - exclude soft-deleted messages
     // Use parentId (not parentMessageId) as per Prisma schema
-    const where: Prisma.MessageWhereInput = {
+    const where: Prisma.messageWhereInput = {
       channelId,
       isDeleted: false,
       parentId: null, // Only top-level messages, not thread replies
@@ -960,7 +960,7 @@ export const messageQueries = {
     }
 
     // Build where clause - use parentId as per Prisma schema
-    const where: Prisma.MessageWhereInput = {
+    const where: Prisma.messageWhereInput = {
       parentId: parentMessageId,
       isDeleted: false,
     };
@@ -1058,7 +1058,7 @@ export const messageQueries = {
     const accessibleChannelIds = accessibleChannels.map((cm) => cm.channelId);
 
     // Build search query
-    const where: Prisma.MessageWhereInput = {
+    const where: Prisma.messageWhereInput = {
       channelId: { in: accessibleChannelIds },
       isDeleted: false,
       content: { contains: query, mode: 'insensitive' },

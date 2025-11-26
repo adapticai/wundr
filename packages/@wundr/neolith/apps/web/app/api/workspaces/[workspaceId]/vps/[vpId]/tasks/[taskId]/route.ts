@@ -55,7 +55,7 @@ interface TaskDetails {
     id: string;
     name: string;
   } | null;
-  creator: {
+  createdBy: {
     id: string;
     name: string | null;
     email: string | null;
@@ -132,7 +132,7 @@ export async function GET(
     }
 
     // Verify workspace access
-    const workspaceMember = await prisma.workspace_members.findFirst({
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -169,7 +169,7 @@ export async function GET(
             name: true,
           },
         },
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -334,7 +334,7 @@ export async function PATCH(
     }
 
     // Verify workspace access
-    const workspaceMember = await prisma.workspace_members.findFirst({
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -463,7 +463,7 @@ export async function PATCH(
     }
 
     // Build update object
-    const updateData: Prisma.TaskUpdateInput = {
+    const updateData: Prisma.taskUpdateInput = {
       ...parseResult.data,
       metadata: updatedMetadata as Prisma.InputJsonValue,
       // Set completedAt if transitioning to DONE
@@ -494,7 +494,7 @@ export async function PATCH(
             name: true,
           },
         },
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -576,7 +576,7 @@ export async function DELETE(
     const reason = searchParams.get('reason') || undefined;
 
     // Verify workspace access (must be ADMIN or OWNER to delete)
-    const workspaceMember = await prisma.workspace_members.findFirst({
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,

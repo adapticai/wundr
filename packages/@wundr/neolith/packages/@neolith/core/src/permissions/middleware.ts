@@ -18,7 +18,7 @@ import { permissionChecker, validatePermissionContext } from './permission-check
 import { Permission } from './permissions';
 
 import type { PermissionContext, MembershipInfo } from './permission-checker';
-import type { Session } from '@genesis/database';
+import type { Session } from '@neolith/database';
 
 
 // =============================================================================

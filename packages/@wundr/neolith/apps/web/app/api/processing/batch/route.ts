@@ -118,7 +118,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: BatchProcessingInput = parseResult.data;
 
     // Get user's accessible workspaces
-    const userWorkspaces = await prisma.workspace_members.findMany({
+    const userWorkspaces = await prisma.workspaceMember.findMany({
       where: { userId: session.user.id },
       select: { workspaceId: true },
     });

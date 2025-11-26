@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import { createHeartbeatService } from './heartbeat-service';
 import {
@@ -22,7 +22,7 @@ import type {
   OnVPUnhealthyCallback,
   OnVPRecoveredCallback,
 } from '../types/heartbeat';
-import type { PrismaClient } from '@genesis/database';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Heartbeat Monitor Interface

@@ -36,7 +36,7 @@ interface RouteContext {
  * Helper to check channel access
  */
 async function checkChannelAccess(channelId: string, userId: string) {
-  const channel = await prisma.channels.findUnique({
+  const channel = await prisma.channel.findUnique({
     where: { id: channelId },
     include: {
       workspace: true,
@@ -47,7 +47,7 @@ async function checkChannelAccess(channelId: string, userId: string) {
 return null;
 }
 
-  const orgMembership = await prisma.organization_members.findUnique({
+  const orgMembership = await prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: channel.workspace.organizationId,
@@ -60,7 +60,7 @@ return null;
 return null;
 }
 
-  const channelMembership = await prisma.channel_members.findUnique({
+  const channelMembership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -133,7 +133,7 @@ export async function GET(
     }
 
     // Fetch channel with details
-    const channel = await prisma.channels.findUnique({
+    const channel = await prisma.channel.findUnique({
       where: { id: params.channelId },
       include: {
         workspace: {
@@ -145,7 +145,7 @@ export async function GET(
         },
         _count: {
           select: {
-            members: true,
+            channelMembers: true,
             messages: true,
           },
         },
@@ -259,7 +259,7 @@ export async function PATCH(
     const input: UpdateChannelInput = parseResult.data;
 
     // Update channel
-    const channel = await prisma.channels.update({
+    const channel = await prisma.channel.update({
       where: { id: params.channelId },
       data: {
         ...(input.name && { name: input.name }),
@@ -277,7 +277,7 @@ export async function PATCH(
         },
         _count: {
           select: {
-            members: true,
+            channelMembers: true,
             messages: true,
           },
         },
@@ -357,7 +357,7 @@ export async function DELETE(
     }
 
     // Delete channel (cascades to members, messages, etc.)
-    await prisma.channels.delete({
+    await prisma.channel.delete({
       where: { id: params.channelId },
     });
 

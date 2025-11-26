@@ -26,7 +26,7 @@ import type { NextRequest } from 'next/server';
  * Helper function to check if user is a member of the channel
  */
 async function checkChannelMembership(channelId: string, userId: string) {
-  const membership = await prisma.channel_members.findUnique({
+  const membership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -68,7 +68,7 @@ async function uploadFile(file: File, userId: string, workspaceId: string) {
   const s3Bucket = process.env.S3_BUCKET_NAME || 'neolith-files';
 
   // Create file record
-  const fileRecord = await prisma.files.create({
+  const fileRecord = await prisma.file.create({
     data: {
       filename,
       originalName: file.name,
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // If parentId provided, verify parent message exists and belongs to same channel
     if (parentId) {
-      const parentMessage = await prisma.messages.findUnique({
+      const parentMessage = await prisma.message.findUnique({
         where: { id: parentId },
         select: { channelId: true, isDeleted: true, parentId: true },
       });
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Create the message with attachments
-    const message = await prisma.messages.create({
+    const message = await prisma.message.create({
       data: {
         content: content.trim(),
         type: 'TEXT',
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         metadata: {
           mentions,
         } as Prisma.InputJsonValue,
-        attachments: uploadedFiles.length > 0 ? {
+        messageAttachments: uploadedFiles.length > 0 ? {
           create: uploadedFiles.map((file) => ({
             fileId: file.id,
           })),
@@ -282,7 +282,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
           },
         },
-        attachments: {
+        messageAttachments: {
           include: {
             file: {
               select: {
@@ -321,7 +321,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }));
 
       if (mentionNotifications.length > 0) {
-        await prisma.notifications.createMany({
+        await prisma.notification.createMany({
           data: mentionNotifications,
         });
       }

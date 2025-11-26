@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import {
   GenesisError,
@@ -25,7 +25,7 @@ import type {
   ListDisciplinesOptions,
   PaginatedDisciplineResult,
 } from '../types/organization';
-import type { PrismaClient, Prisma , VP } from '@genesis/database';
+import type { PrismaClient, Prisma , VP } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors

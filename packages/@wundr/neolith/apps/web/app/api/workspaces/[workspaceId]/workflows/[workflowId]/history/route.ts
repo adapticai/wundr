@@ -27,7 +27,7 @@ import {
 } from '@/lib/validations/workflow';
 
 import type { ExecutionFiltersInput, WorkflowStepResult } from '@/lib/validations/workflow';
-import type { Prisma, WorkflowExecution as PrismaWorkflowExecution } from '@prisma/client';
+import type { Prisma, workflowExecution as PrismaworkflowExecution } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -40,7 +40,7 @@ interface RouteContext {
 /**
  * Extended execution data with workflow details
  */
-interface ExecutionWithWorkflow extends PrismaWorkflowExecution {
+interface ExecutionWithWorkflow extends PrismaworkflowExecution {
   workflow: {
     id: string;
     name: string;
@@ -288,7 +288,7 @@ export async function GET(
     const filters: ExecutionFiltersInput = parseResult.data;
 
     // Build where clause
-    const where: Prisma.WorkflowExecutionWhereInput = {
+    const where: Prisma.workflowExecutionWhereInput = {
       workflowId,
       workspaceId,
       ...(filters.status && { status: filters.status }),

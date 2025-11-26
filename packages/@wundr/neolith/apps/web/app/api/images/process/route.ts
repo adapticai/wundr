@@ -157,7 +157,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: ImageProcessInput = parseResult.data;
 
     // Fetch the source file
-    const file = await prisma.files.findUnique({
+    const file = await prisma.file.findUnique({
       where: { id: input.fileId },
       select: {
         id: true,
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check workspace membership
-    const membership = await prisma.workspace_members.findUnique({
+    const membership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: file.workspaceId,
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       variants: [...existingVariants, variant] as unknown as Prisma.JsonArray,
     };
 
-    await prisma.files.update({
+    await prisma.file.update({
       where: { id: file.id },
       data: {
         metadata: updatedMetadata,

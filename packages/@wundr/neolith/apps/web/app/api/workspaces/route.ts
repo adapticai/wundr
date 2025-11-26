@@ -86,7 +86,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Build where clause
-    const where: Prisma.WorkspaceWhereInput = {
+    const where: Prisma.workspaceWhereInput = {
       organizationId: filters.organizationId
         ? filters.organizationId
         : { in: accessibleOrgIds },
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = filters.limit;
 
     // Build orderBy
-    const orderBy: Prisma.WorkspaceOrderByWithRelationInput = {
+    const orderBy: Prisma.workspaceOrderByWithRelationInput = {
       [filters.sortBy]: filters.sortOrder,
     };
 
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
           _count: {
             select: {
-              members: true,
+              workspaceMembers: true,
               channels: true,
             },
           },
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           },
           _count: {
             select: {
-              members: true,
+              workspaceMembers: true,
               channels: true,
             },
           },

@@ -9,7 +9,7 @@
 
 import { EventEmitter } from 'events';
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import {
   GenesisError,
@@ -36,7 +36,7 @@ import type {
   OnReactionAddedCallback,
   OnReactionRemovedCallback,
 } from '../types/message';
-import type { PrismaClient, Prisma, Reaction, MessageType } from '@genesis/database';
+import type { PrismaClient, Prisma, Reaction, MessageType } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -431,7 +431,7 @@ export class MessageServiceImpl
     const effectiveLimit = Math.min(limit, MAX_MESSAGE_LIMIT);
 
     // Build where clause
-    const where: Prisma.MessageWhereInput = {
+    const where: Prisma.messageWhereInput = {
       channelId,
       parentId: null, // Only top-level messages
       ...(!includeDeleted && { isDeleted: false }),
@@ -460,7 +460,7 @@ export class MessageServiceImpl
     }
 
     // Build include clause
-    const include: Prisma.MessageInclude = {
+    const include: Prisma.messageInclude = {
       ...(includeAuthor && { author: true }),
       ...(includeReactions && { reactions: true }),
       parent: true,
@@ -653,7 +653,7 @@ export class MessageServiceImpl
     const effectiveLimit = Math.min(limit, MAX_MESSAGE_LIMIT);
 
     // Build where clause
-    const where: Prisma.MessageWhereInput = {
+    const where: Prisma.messageWhereInput = {
       parentId,
       ...(!includeDeleted && { isDeleted: false }),
     };
@@ -680,7 +680,7 @@ export class MessageServiceImpl
     }
 
     // Build include clause
-    const include: Prisma.MessageInclude = {
+    const include: Prisma.messageInclude = {
       ...(includeAuthor && { author: true }),
       ...(includeReactions && { reactions: true }),
     };

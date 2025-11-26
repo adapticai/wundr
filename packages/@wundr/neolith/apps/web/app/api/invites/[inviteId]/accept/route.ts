@@ -82,7 +82,7 @@ export async function POST(
     const { token } = parseResult.data;
 
     // Search for the invite across all workspaces
-    const workspaces = await prisma.workspaces.findMany({
+    const workspaces = await prisma.workspace.findMany({
       select: { id: true, settings: true, organizationId: true },
     });
 
@@ -139,7 +139,7 @@ export async function POST(
     }
 
     // Verify email matches (optional, for extra security)
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { email: true },
     });
@@ -155,7 +155,7 @@ export async function POST(
     }
 
     // Check if already a member
-    const existingMembership = await prisma.workspaces_members.findFirst({
+    const existingMembership = await prisma.workspaceMember.findFirst({
       where: { workspaceId: foundWorkspace.id, userId: session.user.id },
     });
 
@@ -167,13 +167,13 @@ export async function POST(
     }
 
     // Ensure user is a member of the organization
-    const orgMembership = await prisma.organization_members.findFirst({
+    const orgMembership = await prisma.organizationMember.findFirst({
       where: { organizationId: foundWorkspace.organizationId, userId: session.user.id },
     });
 
     if (!orgMembership) {
       // Add user to organization first
-      await prisma.organization_members.create({
+      await prisma.organizationMember.create({
         data: {
           organizationId: foundWorkspace.organizationId,
           userId: session.user.id,
@@ -183,7 +183,7 @@ export async function POST(
     }
 
     // Add user to workspace
-    const membership = await prisma.workspaces_members.create({
+    const membership = await prisma.workspaceMember.create({
       data: {
         workspaceId: foundWorkspace.id,
         userId: session.user.id,
@@ -204,7 +204,7 @@ export async function POST(
       return i;
     });
 
-    await prisma.workspaces.update({
+    await prisma.workspace.update({
       where: { id: foundWorkspace.id },
       data: {
         settings: {

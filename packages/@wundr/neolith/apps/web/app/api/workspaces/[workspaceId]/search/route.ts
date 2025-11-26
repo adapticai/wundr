@@ -170,7 +170,7 @@ async function getAccessibleChannels(
   userId: string,
 ): Promise<string[]> {
   // Check workspace membership
-  const membership = await prisma.workspace_members.findUnique({
+  const membership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -222,7 +222,7 @@ async function searchChannels(
   offset?: number,
   includeHighlight: boolean = true,
 ): Promise<{ results: ChannelResult[]; totalCount: number }> {
-  const whereClause: Prisma.ChannelWhereInput = {
+  const whereClause: Prisma.channelWhereInput = {
     workspaceId,
     id: { in: accessibleChannelIds },
     isArchived: false,
@@ -243,7 +243,7 @@ async function searchChannels(
       include: {
         _count: {
           select: {
-            members: true,
+            channelMembers: true,
             messages: true,
           },
         },
@@ -259,7 +259,7 @@ async function searchChannels(
     description: channel.description,
     topic: channel.topic,
     type_value: channel.type,
-    memberCount: channel._count.members,
+    memberCount: channel._count.channelMembers,
     messageCount: channel._count.messages,
     createdAt: channel.createdAt,
     ...(includeHighlight && {
@@ -288,7 +288,7 @@ async function searchMessages(
   offset?: number,
   includeHighlight: boolean = true,
 ): Promise<{ results: MessageResult[]; totalCount: number }> {
-  const whereClause: Prisma.MessageWhereInput = {
+  const whereClause: Prisma.messageWhereInput = {
     channel: { workspaceId },
     channelId: channelId
       ? channelId
@@ -363,7 +363,7 @@ async function searchFiles(
   includeHighlight: boolean = true,
 ): Promise<{ results: FileResult[]; totalCount: number }> {
   // Find files attached to messages in accessible channels
-  const whereClause: Prisma.FileWhereInput = {
+  const whereClause: Prisma.fileWhereInput = {
     workspaceId,
     OR: [
       { filename: { contains: query, mode: 'insensitive' } },
@@ -378,13 +378,13 @@ async function searchFiles(
       skip: offset,
       orderBy: [{ createdAt: 'desc' }],
       include: {
-        uploader: {
+        uploadedBy: {
           select: {
             id: true,
             name: true,
           },
         },
-        attachments: {
+        messageAttachments: {
           take: 1,
           include: {
             message: {
@@ -407,8 +407,8 @@ async function searchFiles(
   const results: FileResult[] = files
     .filter((file) => {
       // Filter by channelId if provided
-      if (channelId && file.attachments.length > 0) {
-        return file.attachments[0].message.channelId === channelId;
+      if (channelId && file.messageAttachments.length > 0) {
+        return file.messageAttachments[0].message.channelId === channelId;
       }
       return true;
     })
@@ -421,9 +421,9 @@ async function searchFiles(
       size: file.size,
       thumbnailUrl: file.thumbnailUrl,
       uploadedById: file.uploadedById,
-      uploaderName: file.uploader.name,
-      channelId: file.attachments[0]?.message?.channel?.id,
-      channelName: file.attachments[0]?.message?.channel?.name,
+      uploaderName: file.uploadedBy.name,
+      channelId: file.messageAttachments[0]?.message?.channel?.id,
+      channelName: file.messageAttachments[0]?.message?.channel?.name,
       createdAt: file.createdAt,
       ...(includeHighlight && {
         highlighted: {

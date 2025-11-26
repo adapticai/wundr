@@ -81,7 +81,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: TaskFiltersInput = parseResult.data;
 
     // Get workspaces the user has access to
-    const userWorkspaces = await prisma.workspace_members.findMany({
+    const userWorkspaces = await prisma.workspaceMember.findMany({
       where: { userId: session.user.id },
       select: { workspaceId: true },
     });
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       : undefined;
 
     // Build where clause with priority-based sorting
-    const where: Prisma.TaskWhereInput = {
+    const where: Prisma.taskWhereInput = {
       workspaceId: filters.workspaceId
         ? filters.workspaceId
         : { in: accessibleWorkspaceIds },
@@ -150,7 +150,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = filters.limit;
 
     // Build orderBy with priority-aware sorting
-    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.taskOrderByWithRelationInput[] = [];
 
     // Always sort by priority first (unless sorting by priority)
     if (filters.sortBy !== 'priority') {
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             },
           },
           workspace: { select: { id: true, name: true } },
-          creator: { select: { id: true, name: true, email: true } },
+          createdBy: { select: { id: true, name: true, email: true } },
           assignedTo: { select: { id: true, name: true, email: true } },
         },
       }),
@@ -289,7 +289,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: CreateTaskInput = parseResult.data;
 
     // Check user has access to workspace
-    const workspaceMember = await prisma.workspace_members.findFirst({
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId: input.workspaceId,
         userId: session.user.id,
@@ -384,7 +384,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           },
         },
         workspace: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true } },
       },
     });

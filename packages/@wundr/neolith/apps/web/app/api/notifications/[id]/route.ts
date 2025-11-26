@@ -85,7 +85,7 @@ export async function GET(
     }
 
     // Fetch notification
-    const notification = await prisma.notifications.findUnique({
+    const notification = await prisma.notification.findUnique({
       where: { id },
       include: {
         user: {
@@ -207,7 +207,7 @@ export async function PATCH(
     const input: UpdateNotificationInput = parseResult.data;
 
     // Verify notification exists and user owns it
-    const existing = await prisma.notifications.findUnique({
+    const existing = await prisma.notification.findUnique({
       where: { id },
       select: { id: true, userId: true },
     });
@@ -227,7 +227,7 @@ export async function PATCH(
     }
 
     // Update notification
-    const notification = await prisma.notifications.update({
+    const notification = await prisma.notification.update({
       where: { id },
       data: {
         ...(input.read !== undefined && { read: input.read, readAt: input.read ? new Date() : null }),
@@ -309,7 +309,7 @@ export async function DELETE(
     }
 
     // Verify notification exists and user owns it
-    const existing = await prisma.notifications.findUnique({
+    const existing = await prisma.notification.findUnique({
       where: { id },
       select: { id: true, userId: true },
     });
@@ -329,7 +329,7 @@ export async function DELETE(
     }
 
     // Delete notification
-    await prisma.notifications.delete({
+    await prisma.notification.delete({
       where: { id },
     });
 

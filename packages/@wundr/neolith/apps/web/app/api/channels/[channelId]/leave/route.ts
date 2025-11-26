@@ -67,7 +67,7 @@ export async function POST(
     }
 
     // Check if channel exists
-    const channel = await prisma.channels.findUnique({
+    const channel = await prisma.channel.findUnique({
       where: { id: params.channelId },
     });
 
@@ -82,7 +82,7 @@ export async function POST(
     }
 
     // Check if user is a member
-    const membership = await prisma.channel_members.findUnique({
+    const membership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -103,7 +103,7 @@ export async function POST(
 
     // Cannot leave if you are the last admin
     if (membership.role === 'ADMIN') {
-      const adminCount = await prisma.channel_members.count({
+      const adminCount = await prisma.channelMember.count({
         where: {
           channelId: params.channelId,
           role: 'ADMIN',
@@ -122,7 +122,7 @@ export async function POST(
     }
 
     // Leave channel
-    await prisma.channel_members.delete({
+    await prisma.channelMember.delete({
       where: {
         channelId_userId: {
           channelId: params.channelId,

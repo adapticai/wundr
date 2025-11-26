@@ -88,7 +88,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: ForgotPasswordInput = parseResult.data;
 
     // Check if user exists
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: input.email },
     });
 
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Store reset token in the Account table (using access_token field for reset tokens)
       // Check if there's already a credentials account for this user
-      const existingAccount = await prisma.accounts.findFirst({
+      const existingAccount = await prisma.account.findFirst({
         where: {
           userId: user.id,
           provider: 'credentials',
@@ -109,25 +109,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       if (existingAccount) {
         // Update existing account with reset token
-        await prisma.accounts.update({
+        await prisma.account.update({
           where: { id: existingAccount.id },
           data: {
             // Store hashed token in access_token field
-            access_token: hashedToken,
+            accessToken: hashedToken,
             // Store expiration in expires_at field (convert to Unix timestamp)
-            expires_at: Math.floor(expiresAt.getTime() / 1000),
+            expiresAt: Math.floor(expiresAt.getTime() / 1000),
           },
         });
       } else {
         // Create new account entry for credentials with reset token
-        await prisma.accounts.create({
+        await prisma.account.create({
           data: {
             userId: user.id,
             type: 'credentials',
             provider: 'credentials',
             providerAccountId: user.id,
-            access_token: hashedToken,
-            expires_at: Math.floor(expiresAt.getTime() / 1000),
+            accessToken: hashedToken,
+            expiresAt: Math.floor(expiresAt.getTime() / 1000),
           },
         });
       }

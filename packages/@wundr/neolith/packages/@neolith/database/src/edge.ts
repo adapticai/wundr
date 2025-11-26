@@ -29,20 +29,21 @@ export { PrismaClient, Prisma } from '@prisma/client';
 // =============================================================================
 
 // Export all Prisma generated model types
+// Note: Prisma generates lowercase model types based on schema model names
 export type {
-  User,
-  Organization,
-  Workspace,
-  VP,
-  Channel,
-  Message,
-  File,
-  WorkspaceMember,
-  OrganizationMember,
-  ChannelMember,
-  Reaction,
-  Session,
-  MessageAttachment,
+  user as User,
+  organization as Organization,
+  workspace as Workspace,
+  vP as VP,
+  channel as Channel,
+  message as Message,
+  file as File,
+  workspaceMember as WorkspaceMember,
+  organizationMember as OrganizationMember,
+  channelMember as ChannelMember,
+  reaction as Reaction,
+  session as Session,
+  messageAttachment as MessageAttachment,
 } from '@prisma/client';
 
 // =============================================================================
@@ -66,34 +67,34 @@ export {
 // Input Types for Creating Entities
 // =============================================================================
 
-export type CreateUserInput = Prisma.UserCreateInput;
-export type CreateUserManyInput = Prisma.UserCreateManyInput;
+export type CreateUserInput = Prisma.userCreateInput;
+export type CreateUserManyInput = Prisma.userCreateManyInput;
 
 // =============================================================================
 // Update Types
 // =============================================================================
 
-export type UpdateUserInput = Prisma.UserUpdateInput;
-export type UpdateUserManyInput = Prisma.UserUpdateManyMutationInput;
+export type UpdateUserInput = Prisma.userUpdateInput;
+export type UpdateUserManyInput = Prisma.userUpdateManyMutationInput;
 
 // =============================================================================
 // Where Types (for filtering)
 // =============================================================================
 
-export type UserWhereInput = Prisma.UserWhereInput;
-export type UserWhereUniqueInput = Prisma.UserWhereUniqueInput;
+export type UserWhereInput = Prisma.userWhereInput;
+export type UserWhereUniqueInput = Prisma.userWhereUniqueInput;
 
 // =============================================================================
 // Select Types (for partial selections)
 // =============================================================================
 
-export type UserSelect = Prisma.UserSelect;
+export type UserSelect = Prisma.userSelect;
 
 // =============================================================================
 // OrderBy Types
 // =============================================================================
 
-export type UserOrderByInput = Prisma.UserOrderByWithRelationInput;
+export type UserOrderByInput = Prisma.userOrderByWithRelationInput;
 
 // =============================================================================
 // Utility Types

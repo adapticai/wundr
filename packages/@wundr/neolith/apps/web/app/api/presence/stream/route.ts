@@ -241,7 +241,7 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
           const channels = await prisma.channel.findMany({
             where: { id: { in: channelIds } },
             include: {
-              members: {
+              channelMembers: {
                 include: {
                   user: {
                     select: {
@@ -257,7 +257,7 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
           });
 
           for (const channel of channels) {
-            const onlineUsers = channel.members
+            const onlineUsers = channel.channelMembers
               .map((m) => buildPresenceResponse(m.user))
               .filter((p) => p.isOnline);
 
@@ -272,7 +272,7 @@ export async function GET(request: NextRequest): Promise<NextResponse | Response
             );
 
             // Store member presence for change detection
-            for (const member of channel.members) {
+            for (const member of channel.channelMembers) {
               if (!previousPresence.has(member.user.id)) {
                 previousPresence.set(member.user.id, buildPresenceResponse(member.user));
               }

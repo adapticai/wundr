@@ -25,7 +25,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
 
     // Verify membership
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 

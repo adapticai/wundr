@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import {
   VPNotFoundError,
@@ -42,7 +42,7 @@ import type {
   APIKeyValidationResult,
   VPServiceAccountConfig,
 } from '../types/vp';
-import type { PrismaClient, Prisma } from '@genesis/database';
+import type { PrismaClient, Prisma } from '@neolith/database';
 
 // =============================================================================
 // VP Service Interface
@@ -322,7 +322,7 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
     } = options;
 
     // Build where clause
-    const where: Prisma.VPWhereInput = {
+    const where: Prisma.vPWhereInput = {
       organizationId: orgId,
       ...(status && { status }),
       ...(discipline && { discipline }),
@@ -354,7 +354,7 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
    * Lists VPs by discipline.
    */
   async listVPsByDiscipline(discipline: string, organizationId?: string): Promise<VPWithUser[]> {
-    const where: Prisma.VPWhereInput = {
+    const where: Prisma.vPWhereInput = {
       discipline,
       ...(organizationId && { organizationId }),
     };
@@ -382,7 +382,7 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
       const result = await this.db.$transaction(async (tx) => {
         // Update User if name or bio changed
         if (data.name || data.bio || data.avatarUrl || data.charter) {
-          const userUpdate: Prisma.UserUpdateInput = {};
+          const userUpdate: Prisma.userUpdateInput = {};
 
           if (data.name) {
             userUpdate.name = data.name;
@@ -419,7 +419,7 @@ export class VPServiceImpl implements VPService, ServiceAccountService {
         }
 
         // Update VP
-        const vpUpdate: Prisma.VPUpdateInput = {};
+        const vpUpdate: Prisma.vPUpdateInput = {};
 
         if (data.discipline !== undefined) {
           vpUpdate.discipline = data.discipline;

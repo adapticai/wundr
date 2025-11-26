@@ -12,7 +12,7 @@ import { GraphQLError } from 'graphql';
 
 import type {
   PrismaClient,
-  File as PrismaFile,
+  file as PrismaFile,
   Prisma,
 } from '@prisma/client';
 

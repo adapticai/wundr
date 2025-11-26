@@ -57,7 +57,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -228,7 +228,7 @@ export async function GET(
     const channels = await prisma.channel.findMany({
       where,
       include: {
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -239,7 +239,7 @@ export async function GET(
         },
         _count: {
           select: {
-            members: {
+            channelMembers: {
               where: {
                 leftAt: null, // Only count active members
               },
@@ -271,7 +271,7 @@ export async function GET(
             },
           },
         },
-        members: {
+        channelMembers: {
           where: {
             userId: session.user.id,
             leftAt: null,
@@ -302,8 +302,8 @@ export async function GET(
       isArchived: channel.isArchived,
       createdAt: channel.createdAt,
       updatedAt: channel.updatedAt,
-      creator: channel.creator,
-      memberCount: channel._count.members,
+      creator: channel.createdBy,
+      memberCount: channel._count.channelMembers,
       messageCount: channel._count.messages,
       lastMessage: channel.messages[0] ? {
         id: channel.messages[0].id,
@@ -312,13 +312,13 @@ export async function GET(
         createdAt: channel.messages[0].createdAt,
         author: channel.messages[0].author,
       } : null,
-      userMembership: channel.members[0] ? {
-        role: channel.members[0].role,
-        joinedAt: channel.members[0].joinedAt,
-        lastReadAt: channel.members[0].lastReadAt,
+      userMembership: channel.channelMembers[0] ? {
+        role: channel.channelMembers[0].role,
+        joinedAt: channel.channelMembers[0].joinedAt,
+        lastReadAt: channel.channelMembers[0].lastReadAt,
         hasUnread: channel.messages[0]
-          ? !channel.members[0].lastReadAt ||
-            channel.messages[0].createdAt > channel.members[0].lastReadAt
+          ? !channel.channelMembers[0].lastReadAt ||
+            channel.messages[0].createdAt > channel.channelMembers[0].lastReadAt
           : false,
       } : null,
     }));
@@ -471,7 +471,7 @@ export async function POST(
         where: {
           workspaceId: params.workspaceId,
           type: 'DM',
-          members: {
+          channelMembers: {
             every: {
               userId: {
                 in: [session.user.id, input.memberIds[0]],
@@ -480,11 +480,11 @@ export async function POST(
           },
         },
         include: {
-          members: true,
+          channelMembers: true,
         },
       });
 
-      if (existingDM && existingDM.members.length === 2) {
+      if (existingDM && existingDM.channelMembers.length === 2) {
         // Return existing DM channel
         return NextResponse.json(
           createErrorResponse(
@@ -511,7 +511,7 @@ export async function POST(
     if (input.memberIds && input.memberIds.length > 0) {
       const memberIds = Array.from(new Set(input.memberIds)); // Remove duplicates
 
-      const workspaceMembers = await prisma.workspace_members.findMany({
+      const workspaceMembers = await prisma.workspaceMember.findMany({
         where: {
           workspaceId: params.workspaceId,
           userId: {
@@ -568,7 +568,7 @@ export async function POST(
           createdById: session.user.id,
         },
         include: {
-          creator: {
+          createdBy: {
             select: {
               id: true,
               name: true,
@@ -614,7 +614,7 @@ export async function POST(
     const completeChannel = await prisma.channel.findUnique({
       where: { id: channel.id },
       include: {
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -625,7 +625,7 @@ export async function POST(
         },
         _count: {
           select: {
-            members: {
+            channelMembers: {
               where: {
                 leftAt: null,
               },

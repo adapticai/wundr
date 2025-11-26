@@ -142,7 +142,7 @@ async function getWorkflowWithAccess(
     return { error: 'workspace_not_found' };
   }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,

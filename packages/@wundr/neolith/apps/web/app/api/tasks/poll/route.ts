@@ -107,7 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Build where clause
-    const where: Prisma.TaskWhereInput = {
+    const where: Prisma.taskWhereInput = {
       vpId: input.vpId,
       workspaceId: input.workspaceId,
     };
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ],
       include: {
         workspace: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true, isVP: true } },
       },
     });

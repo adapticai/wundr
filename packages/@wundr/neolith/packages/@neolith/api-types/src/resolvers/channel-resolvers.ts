@@ -12,7 +12,7 @@ import { GraphQLError } from 'graphql';
 
 import type {
   PrismaClient,
-  Channel as PrismaChannel,
+  channel as PrismaChannel,
   ChannelType as PrismaChannelType,
   ChannelRole as PrismaChannelRole,
   Prisma,
@@ -656,7 +656,7 @@ export const channelQueries = {
     }
 
     // Build where clause
-    const where: Prisma.ChannelWhereInput = {
+    const where: Prisma.channelWhereInput = {
       workspaceId,
       isArchived: false,
     };
@@ -669,7 +669,7 @@ export const channelQueries = {
     if (!isSystemAdmin(context)) {
       where.OR = [
         { type: 'PUBLIC' },
-        { members: { some: { userId: context.user.id } } },
+        { channelMembers: { some: { userId: context.user.id } } },
       ];
     }
 
@@ -678,7 +678,7 @@ export const channelQueries = {
       const parsed = parseCursor(args.after);
       if (parsed) {
         const existingAnd = where.AND;
-        const cursorCondition: Prisma.ChannelWhereInput = {
+        const cursorCondition: Prisma.channelWhereInput = {
           OR: [
             { createdAt: { lt: parsed.timestamp } },
             { createdAt: parsed.timestamp, id: { lt: parsed.id } },
@@ -788,7 +788,7 @@ export const channelQueries = {
     }
 
     // Build where clause
-    const where: Prisma.ChannelMemberWhereInput = {
+    const where: Prisma.channelMemberWhereInput = {
       channelId,
     };
 
@@ -947,7 +947,7 @@ export const channelQueries = {
         type: 'DM',
         workspaceId: commonWorkspaceId,
         createdById: context.user.id,
-        members: {
+        channelMembers: {
           create: allUserIds.map((userId, index) => ({
             userId,
             role: index === 0 ? 'OWNER' : 'MEMBER',
@@ -1048,7 +1048,7 @@ export const channelMutations = {
           type: (input.type as PrismaChannelType) ?? 'PUBLIC',
           workspaceId: input.workspaceId,
           createdById: context.user.id,
-          members: {
+          channelMembers: {
             create: {
               userId: context.user.id,
               role: 'OWNER',
@@ -1144,7 +1144,7 @@ export const channelMutations = {
     }
 
     // Build update data
-    const updateData: Prisma.ChannelUpdateInput = {};
+    const updateData: Prisma.channelUpdateInput = {};
 
     if (input.name !== undefined && input.name !== null) {
       updateData.name = input.name;

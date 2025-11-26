@@ -159,7 +159,7 @@ export async function GET(
     const channel = await prisma.channel.findUnique({
       where: { id: params.channelId },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -182,7 +182,7 @@ export async function GET(
     }
 
     // Check if user is a member of the channel
-    const isMember = channel.members.some((m) => m.userId === session.user.id);
+    const isMember = channel.channelMembers.some((m) => m.userId === session.user.id);
 
     // For private channels, only members can see presence
     if (channel.type === 'PRIVATE' && !isMember) {
@@ -193,7 +193,7 @@ export async function GET(
     }
 
     // Build presence responses for online users
-    const onlineUsers = channel.members
+    const onlineUsers = channel.channelMembers
       .map((m) => buildPresenceResponse(m.user))
       .filter((p) => p.isOnline);
 

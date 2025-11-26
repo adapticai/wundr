@@ -123,7 +123,7 @@ export async function GET(
     const filters: ExecutionFiltersInput = parseResult.data;
 
     // Build where clause
-    const where: Prisma.WorkflowExecutionWhereInput = {
+    const where: Prisma.workflowExecutionWhereInput = {
       workflowId,
       workspaceId,
       ...(filters.status && { status: filters.status }),

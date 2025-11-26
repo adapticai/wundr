@@ -92,7 +92,7 @@ export async function GET(
     // Check user has access to VP's workspace
     let workspaceMember = null;
     if (vp.workspaceId) {
-      workspaceMember = await prisma.workspace_members.findFirst({
+      workspaceMember = await prisma.workspaceMember.findFirst({
         where: {
           workspaceId: vp.workspaceId,
           userId: session.user.id,
@@ -138,7 +138,7 @@ export async function GET(
       : undefined;
 
     // Build where clause
-    const where: Prisma.TaskWhereInput = {
+    const where: Prisma.taskWhereInput = {
       vpId,
       ...(statusArray && { status: { in: statusArray as any[] } }),
       ...(priorityArray && { priority: { in: priorityArray as any[] } }),
@@ -152,7 +152,7 @@ export async function GET(
     const take = filters.limit;
 
     // Build orderBy with intelligent sorting
-    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [];
+    const orderBy: Prisma.taskOrderByWithRelationInput[] = [];
 
     if (filters.sortBy === 'priority') {
       orderBy.push({ priority: filters.sortOrder });
@@ -177,7 +177,7 @@ export async function GET(
         orderBy,
         include: {
           workspace: { select: { id: true, name: true } },
-          creator: { select: { id: true, name: true, email: true } },
+          createdBy: { select: { id: true, name: true, email: true } },
           assignedTo: { select: { id: true, name: true, email: true } },
         },
       }),
@@ -190,7 +190,7 @@ export async function GET(
     const hasPreviousPage = filters.page > 1;
 
     // Calculate metrics for this backlog
-    const metricsWhere: Prisma.TaskWhereInput = { vpId };
+    const metricsWhere: Prisma.taskWhereInput = { vpId };
     const [totalTasks, todoCount, inProgressCount, blockedCount, doneCount] = await Promise.all([
       prisma.task.count({ where: metricsWhere }),
       prisma.task.count({ where: { ...metricsWhere, status: 'TODO' } }),
@@ -334,7 +334,7 @@ export async function POST(
 
     // Check user has access to VP's workspace
     if (vp.workspaceId) {
-      const workspaceMember = await prisma.workspace_members.findFirst({
+      const workspaceMember = await prisma.workspaceMember.findFirst({
         where: {
           workspaceId: vp.workspaceId,
           userId: session.user.id,
@@ -387,7 +387,7 @@ export async function POST(
       },
       include: {
         workspace: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true } },
         vp: {
           select: {

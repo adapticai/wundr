@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import type { VP, User, VPStatus } from '@genesis/database';
+import type { VP, User, VPStatus } from '@neolith/database';
 
 // =============================================================================
 // VP Core Types
@@ -18,7 +18,10 @@ import type { VP, User, VPStatus } from '@genesis/database';
  * Represents the complete VP profile including the linked User record.
  */
 export interface VPWithUser extends VP {
+  /** The associated user record */
   user: User;
+  /** The user ID (foreign key) */
+  userId: string;
 }
 
 /**

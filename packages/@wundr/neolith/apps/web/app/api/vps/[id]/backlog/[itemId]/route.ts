@@ -93,7 +93,7 @@ export async function GET(
     // Check user has access to VP's workspace
     let workspaceMember = null;
     if (vp.workspaceId) {
-      workspaceMember = await prisma.workspace_members.findFirst({
+      workspaceMember = await prisma.workspaceMember.findFirst({
         where: {
           workspaceId: vp.workspaceId,
           userId: session.user.id,
@@ -132,7 +132,7 @@ export async function GET(
               },
             },
             workspace: { select: { id: true, name: true } },
-            creator: { select: { id: true, name: true, email: true } },
+            createdBy: { select: { id: true, name: true, email: true } },
             assignedTo: { select: { id: true, name: true, email: true } },
             channel: { select: { id: true, name: true } },
           },
@@ -268,7 +268,7 @@ export async function PATCH(
     // Check user has access to VP's workspace
     let workspaceMember = null;
     if (vp.workspaceId) {
-      workspaceMember = await prisma.workspace_members.findFirst({
+      workspaceMember = await prisma.workspaceMember.findFirst({
         where: {
           workspaceId: vp.workspaceId,
           userId: session.user.id,
@@ -435,7 +435,7 @@ export async function PATCH(
           },
         },
         workspace: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true } },
         channel: { select: { id: true, name: true } },
       },
@@ -551,7 +551,7 @@ export async function DELETE(
     // Check user has access to VP's workspace
     let workspaceMember = null;
     if (vp.workspaceId) {
-      workspaceMember = await prisma.workspace_members.findFirst({
+      workspaceMember = await prisma.workspaceMember.findFirst({
         where: {
           workspaceId: vp.workspaceId,
           userId: session.user.id,

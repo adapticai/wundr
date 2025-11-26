@@ -175,7 +175,7 @@ export async function DELETE(
     }
 
     // Check workspace membership
-    const workspaceMembership = await prisma.workspace_members.findUnique({
+    const workspaceMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId,

@@ -19,7 +19,7 @@ import {
 
 import type { PermissionContext, MembershipInfo } from './permission-checker';
 import type { Permission } from './permissions';
-import type { Session } from '@genesis/database';
+import type { Session } from '@neolith/database';
 
 
 // =============================================================================

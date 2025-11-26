@@ -35,7 +35,7 @@ interface RouteContext {
  * Helper to check channel access
  */
 async function checkChannelAccess(channelId: string, userId: string) {
-  const channel = await prisma.channels.findUnique({
+  const channel = await prisma.channel.findUnique({
     where: { id: channelId },
     include: {
       workspace: true,
@@ -46,7 +46,7 @@ async function checkChannelAccess(channelId: string, userId: string) {
 return null;
 }
 
-  const orgMembership = await prisma.organization_members.findUnique({
+  const orgMembership = await prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: channel.workspace.organizationId,
@@ -59,7 +59,7 @@ return null;
 return null;
 }
 
-  const channelMembership = await prisma.channel_members.findUnique({
+  const channelMembership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -132,7 +132,7 @@ export async function GET(
     }
 
     // Fetch all members
-    const members = await prisma.channel_members.findMany({
+    const members = await prisma.channelMember.findMany({
       where: { channelId: params.channelId },
       include: {
         user: {
@@ -255,7 +255,7 @@ export async function POST(
     const input: AddChannelMemberInput = parseResult.data;
 
     // Check if user is a workspace member
-    const workspaceMembership = await prisma.workspace_members.findUnique({
+    const workspaceMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: access.channel.workspaceId,
@@ -278,7 +278,7 @@ export async function POST(
     }
 
     // Check if user is already a channel member
-    const existingMembership = await prisma.channel_members.findUnique({
+    const existingMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -298,7 +298,7 @@ export async function POST(
     }
 
     // Add member
-    const newMembership = await prisma.channel_members.create({
+    const newMembership = await prisma.channelMember.create({
       data: {
         channelId: params.channelId,
         userId: input.userId,

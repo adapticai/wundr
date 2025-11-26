@@ -116,7 +116,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const since = sinceParam ? new Date(sinceParam) : new Date(Date.now() - 5 * 60 * 1000); // Default: last 5 minutes
 
     // Get VP info
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         userId: true,
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get channels the VP is a member of
-    const memberships = await prisma.channels_members.findMany({
+    const memberships = await prisma.channelMember.findMany({
       where: { userId: vp.userId },
       select: { channelId: true },
     });
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Fetch new messages in VP's channels (using type assertion for Prisma column mapping)
     type MessageWithAuthorId = { id: string; content: string; createdAt: Date; channelId: string; authorId: string };
-    const rawNewMessages = await prisma.messages.findMany({
+    const rawNewMessages = await prisma.message.findMany({
       where: {
         channelId: { in: channelIds },
         createdAt: { gt: since },
@@ -155,13 +155,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Filter out own messages and get author/channel info
     const filteredMessages = newMessagesTyped.filter((m) => m.authorId !== vp.userId);
     const authorIds = Array.from(new Set(filteredMessages.map((m) => m.authorId)));
-    const authors = await prisma.users.findMany({
+    const authors = await prisma.user.findMany({
       where: { id: { in: authorIds } },
       select: { id: true, name: true, avatarUrl: true, isVP: true },
     });
     const authorMap = new Map(authors.map((a) => [a.id, a]));
 
-    const channels = await prisma.channels.findMany({
+    const channels = await prisma.channel.findMany({
       where: { id: { in: channelIds } },
       select: { id: true, name: true },
     });
@@ -188,7 +188,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check for mentions (messages containing @vpname)
-    const rawMentionMessages = await prisma.messages.findMany({
+    const rawMentionMessages = await prisma.message.findMany({
       where: {
         channelId: { in: channelIds },
         createdAt: { gt: since },
@@ -204,7 +204,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       (id) => !authorMap.has(id),
     );
     if (mentionAuthorIds.length > 0) {
-      const mentionAuthors = await prisma.users.findMany({
+      const mentionAuthors = await prisma.user.findMany({
         where: { id: { in: mentionAuthorIds } },
         select: { id: true, name: true, avatarUrl: true, isVP: true },
       });

@@ -96,7 +96,7 @@ interface ActivityEntry {
  * Helper function to check workspace membership
  */
 async function checkWorkspaceMembership(workspaceId: string, userId: string) {
-  const membership = await prisma.workspace_members.findUnique({
+  const membership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -128,7 +128,7 @@ async function fetchMessageActivities(
   userId: string | undefined,
   limit: number,
 ): Promise<ActivityEntry[]> {
-  const where: Prisma.MessageWhereInput = {
+  const where: Prisma.messageWhereInput = {
     channel: {
       workspaceId,
       ...(channelId && { id: channelId }),
@@ -212,7 +212,7 @@ async function fetchTaskActivities(
   dateTo: Date | undefined,
   limit: number,
 ): Promise<ActivityEntry[]> {
-  const where: Prisma.TaskWhereInput = {
+  const where: Prisma.taskWhereInput = {
     workspaceId,
     ...(userId && {
       OR: [
@@ -229,7 +229,7 @@ async function fetchTaskActivities(
     take: limit,
     orderBy: { updatedAt: 'desc' },
     include: {
-      creator: {
+      createdBy: {
         select: {
           id: true,
           name: true,
@@ -282,12 +282,12 @@ async function fetchTaskActivities(
       type: 'task' as ActivityType,
       action,
       actor: {
-        id: task.creator.id,
-        name: task.creator.name,
-        displayName: task.creator.displayName,
-        avatarUrl: task.creator.avatarUrl,
-        isVP: task.creator.isVP,
-        email: task.creator.email,
+        id: task.createdBy.id,
+        name: task.createdBy.name,
+        displayName: task.createdBy.displayName,
+        avatarUrl: task.createdBy.avatarUrl,
+        isVP: task.createdBy.isVP,
+        email: task.createdBy.email,
       },
       target: {
         type: 'task' as const,
@@ -410,14 +410,14 @@ async function fetchMemberActivities(
   dateTo: Date | undefined,
   limit: number,
 ): Promise<ActivityEntry[]> {
-  const where: Prisma.WorkspaceMemberWhereInput = {
+  const where: Prisma.workspaceMemberWhereInput = {
     workspaceId,
     ...(userId && { userId }),
     ...(dateFrom && { joinedAt: { gte: dateFrom } }),
     ...(dateTo && { joinedAt: { lte: dateTo } }),
   };
 
-  const members = await prisma.workspace_members.findMany({
+  const members = await prisma.workspaceMember.findMany({
     where,
     take: limit,
     orderBy: { joinedAt: 'desc' },
@@ -475,7 +475,7 @@ async function fetchFileActivities(
   dateTo: Date | undefined,
   limit: number,
 ): Promise<ActivityEntry[]> {
-  const where: Prisma.FileWhereInput = {
+  const where: Prisma.fileWhereInput = {
     workspaceId,
     ...(userId && { uploadedById: userId }),
     ...(dateFrom && { createdAt: { gte: dateFrom } }),
@@ -487,7 +487,7 @@ async function fetchFileActivities(
     take: limit,
     orderBy: { createdAt: 'desc' },
     include: {
-      uploader: {
+      uploadedBy: {
         select: {
           id: true,
           name: true,
@@ -505,12 +505,12 @@ async function fetchFileActivities(
     type: 'file' as ActivityType,
     action: 'uploaded',
     actor: {
-      id: file.uploader.id,
-      name: file.uploader.name,
-      displayName: file.uploader.displayName,
-      avatarUrl: file.uploader.avatarUrl,
-      isVP: file.uploader.isVP,
-      email: file.uploader.email,
+      id: file.uploadedBy.id,
+      name: file.uploadedBy.name,
+      displayName: file.uploadedBy.displayName,
+      avatarUrl: file.uploadedBy.avatarUrl,
+      isVP: file.uploadedBy.isVP,
+      email: file.uploadedBy.email,
     },
     target: {
       type: 'file' as const,
@@ -539,7 +539,7 @@ async function fetchChannelActivities(
   dateTo: Date | undefined,
   limit: number,
 ): Promise<ActivityEntry[]> {
-  const where: Prisma.ChannelWhereInput = {
+  const where: Prisma.channelWhereInput = {
     workspaceId,
     ...(userId && { createdById: userId }),
     ...(dateFrom && { createdAt: { gte: dateFrom } }),
@@ -551,7 +551,7 @@ async function fetchChannelActivities(
     take: limit,
     orderBy: { createdAt: 'desc' },
     include: {
-      creator: {
+      createdBy: {
         select: {
           id: true,
           name: true,
@@ -565,18 +565,18 @@ async function fetchChannelActivities(
   });
 
   return channels
-    .filter((ch) => ch.creator)
+    .filter((ch) => ch.createdBy)
     .map((channel) => ({
       id: `channel_${channel.id}`,
       type: 'channel' as ActivityType,
       action: channel.isArchived ? 'archived' : 'created',
       actor: {
-        id: channel.creator!.id,
-        name: channel.creator!.name,
-        displayName: channel.creator!.displayName,
-        avatarUrl: channel.creator!.avatarUrl,
-        isVP: channel.creator!.isVP,
-        email: channel.creator!.email,
+        id: channel.createdBy!.id,
+        name: channel.createdBy!.name,
+        displayName: channel.createdBy!.displayName,
+        avatarUrl: channel.createdBy!.avatarUrl,
+        isVP: channel.createdBy!.isVP,
+        email: channel.createdBy!.email,
       },
       target: {
         type: 'channel' as const,

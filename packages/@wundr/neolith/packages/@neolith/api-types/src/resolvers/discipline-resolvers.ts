@@ -14,7 +14,7 @@
 
 import { GraphQLError } from 'graphql';
 
-import type { PrismaClient, VP as PrismaVP } from '@prisma/client';
+import type { PrismaClient, vP as PrismaVP } from '@prisma/client';
 
 // =============================================================================
 // TYPE DEFINITIONS

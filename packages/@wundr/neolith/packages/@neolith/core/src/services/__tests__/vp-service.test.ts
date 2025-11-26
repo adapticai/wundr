@@ -172,7 +172,7 @@ function createMockPrismaClient() {
 // =============================================================================
 
 // Mock the database module before importing the service
-vi.mock('@genesis/database', () => ({
+vi.mock('@neolith/database', () => ({
   prisma: null,
 }));
 

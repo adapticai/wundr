@@ -93,7 +93,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const membership = await prisma.workspace_members.findUnique({
+  const membership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -169,7 +169,7 @@ export async function GET(
     }
 
     // Get member counts per role
-    const memberCounts = await prisma.workspace_members.groupBy({
+    const memberCounts = await prisma.workspaceMember.groupBy({
       by: ['role'],
       where: { workspaceId },
       _count: { role: true },

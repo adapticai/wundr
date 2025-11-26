@@ -182,16 +182,8 @@ export async function GET(
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       include: {
-        members: {
+        workspaceMembers: {
           where: { userId: session.user.id },
-        },
-        subscription: {
-          include: {
-            billingHistory: {
-              orderBy: { createdAt: 'desc' },
-              take: 10,
-            },
-          },
         },
       },
     });
@@ -206,7 +198,7 @@ export async function GET(
       );
     }
 
-    if (workspace.members.length === 0) {
+    if (workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         {
           error: 'Access denied',
@@ -216,27 +208,19 @@ export async function GET(
       );
     }
 
-    // Get or create subscription
-    let subscription = workspace.subscription;
-    if (!subscription) {
-      // Create default FREE subscription for workspace
-      const now = new Date();
-      const nextMonth = new Date(now);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-
-      subscription = await prisma.subscription.create({
-        data: {
-          workspaceId: workspace.id,
-          plan: 'FREE',
-          status: 'ACTIVE',
-          currentPeriodStart: now,
-          currentPeriodEnd: nextMonth,
-        },
-        include: {
-          billingHistory: true,
-        },
-      });
-    }
+    // STUB: subscription and billingHistory models don't exist yet
+    // For now, return mock subscription data
+    const subscription = {
+      plan: 'FREE' as const,
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      billingHistory: [] as Array<{
+        id: string;
+        createdAt: Date;
+        amount: number;
+        status: string;
+        invoiceUrl: string | null;
+      }>,
+    };
 
     // Calculate usage statistics
     const [storageUsed, activeUsers, apiCallsThisMonth] = await Promise.all([
@@ -249,7 +233,7 @@ export async function GET(
         .then((result) => Number(result._sum.size || 0) / (1024 * 1024 * 1024)), // Convert to GB
 
       // Active users: count workspace members
-      prisma.workspace_members.count({
+      prisma.workspaceMember.count({
         where: { workspaceId: workspace.id },
       }),
 
@@ -374,13 +358,12 @@ export async function POST(
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       include: {
-        members: {
+        workspaceMembers: {
           where: {
             userId: session.user.id,
             role: { in: ['OWNER', 'ADMIN'] },
           },
         },
-        subscription: true,
       },
     });
 
@@ -394,7 +377,7 @@ export async function POST(
       );
     }
 
-    if (workspace.members.length === 0) {
+    if (workspace.workspaceMembers.length === 0) {
       return NextResponse.json(
         {
           error: 'Only workspace owners/admins can change billing plans',
@@ -454,64 +437,19 @@ export async function POST(
       nextPeriodEnd.setMonth(nextPeriodEnd.getMonth() + 1);
     }
 
-    // Update or create subscription
-    const subscription = workspace.subscription
-      ? await prisma.subscription.update({
-          where: { id: workspace.subscription.id },
-          data: {
-            plan: changeRequest.plan,
-            currentPeriodStart: now,
-            currentPeriodEnd: nextPeriodEnd,
-          },
-          include: {
-            billingHistory: {
-              orderBy: { createdAt: 'desc' },
-              take: 10,
-            },
-          },
-        })
-      : await prisma.subscription.create({
-          data: {
-            workspaceId: workspace.id,
-            plan: changeRequest.plan,
-            status: 'ACTIVE',
-            currentPeriodStart: now,
-            currentPeriodEnd: nextPeriodEnd,
-          },
-          include: {
-            billingHistory: true,
-          },
-        });
-
-    // Create billing history entry if upgrading to paid plan
-    if (changeRequest.plan !== 'FREE') {
-      const planPrices = {
-        PRO: 4900, // $49.00 in cents
-        ENTERPRISE: 29900, // $299.00 in cents
-      };
-
-      await prisma.billingHistory.create({
-        data: {
-          workspaceId: workspace.id,
-          subscriptionId: subscription.id,
-          amount: planPrices[changeRequest.plan as 'PRO' | 'ENTERPRISE'],
-          currency: 'usd',
-          status: 'PAID',
-          description: `${changeRequest.plan} plan - ${changeRequest.interval || 'monthly'} billing`,
-        },
-      });
-    }
-
-    // Re-fetch updated subscription with billing history
-    const updatedSubscription = await prisma.subscription.findUnique({
-      where: { id: subscription.id },
-      include: {
-        billingHistory: {
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-        },
-      },
-    });
+    // STUB: subscription and billingHistory models don't exist yet
+    // For now, mock the subscription update
+    const updatedSubscription = {
+      plan: changeRequest.plan,
+      currentPeriodEnd: nextPeriodEnd,
+      billingHistory: [] as Array<{
+        id: string;
+        createdAt: Date;
+        amount: number;
+        status: string;
+        invoiceUrl: string | null;
+      }>,
+    };
 
     // Calculate usage statistics (same as GET)
     const [storageUsed, activeUsers, apiCallsThisMonth] = await Promise.all([
@@ -522,7 +460,7 @@ export async function POST(
         })
         .then((result) => Number(result._sum.size || 0) / (1024 * 1024 * 1024)),
 
-      prisma.workspace_members.count({
+      prisma.workspaceMember.count({
         where: { workspaceId: workspace.id },
       }),
 
@@ -544,10 +482,10 @@ export async function POST(
       ENTERPRISE: { storage: 1000, users: -1, apiCalls: -1, price: 299 },
     };
 
-    const limits = planLimits[updatedSubscription!.plan];
+    const limits = planLimits[updatedSubscription.plan];
 
     const billingInfo = {
-      currentPlan: updatedSubscription!.plan,
+      currentPlan: updatedSubscription.plan,
       usage: {
         storage: {
           used: Math.round(storageUsed * 100) / 100,
@@ -565,12 +503,12 @@ export async function POST(
         },
       },
       billing: {
-        nextBillingDate: updatedSubscription!.plan !== 'FREE' ? updatedSubscription!.currentPeriodEnd.toISOString() : null,
+        nextBillingDate: updatedSubscription.plan !== 'FREE' ? updatedSubscription.currentPeriodEnd.toISOString() : null,
         amount: limits.price,
         currency: 'USD' as const,
-        interval: (updatedSubscription!.plan !== 'FREE' ? (changeRequest.interval || 'monthly') : null) as 'monthly' | 'annual' | null,
+        interval: (updatedSubscription.plan !== 'FREE' ? (changeRequest.interval || 'monthly') : null) as 'monthly' | 'annual' | null,
       },
-      invoiceHistory: updatedSubscription!.billingHistory.map((invoice) => ({
+      invoiceHistory: updatedSubscription.billingHistory.map((invoice) => ({
         id: invoice.id,
         date: invoice.createdAt.toISOString(),
         amount: invoice.amount / 100,

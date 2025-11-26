@@ -110,7 +110,7 @@ export async function GET(
     const { workspaceId, roleId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -164,7 +164,7 @@ export async function PATCH(
     const { workspaceId, roleId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -291,7 +291,7 @@ export async function DELETE(
     const { workspaceId, roleId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 

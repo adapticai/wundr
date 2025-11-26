@@ -36,7 +36,7 @@ interface RouteContext {
  * Helper to check discipline access
  */
 async function checkDisciplineAccess(disciplineId: string, userId: string) {
-  const discipline = await prisma.disciplines.findUnique({
+  const discipline = await prisma.discipline.findUnique({
     where: { id: disciplineId },
   });
 
@@ -44,7 +44,7 @@ async function checkDisciplineAccess(disciplineId: string, userId: string) {
 return null;
 }
 
-  const orgMembership = await prisma.organization_members.findUnique({
+  const orgMembership = await prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: discipline.organizationId,
@@ -109,7 +109,7 @@ export async function GET(
     }
 
     // Fetch discipline with details
-    const discipline = await prisma.disciplines.findUnique({
+    const discipline = await prisma.discipline.findUnique({
       where: { id: params.id },
       include: {
         organization: {
@@ -225,7 +225,7 @@ export async function PATCH(
 
     // If updating name, check for duplicates
     if (input.name) {
-      const existingDiscipline = await prisma.disciplines.findFirst({
+      const existingDiscipline = await prisma.discipline.findFirst({
         where: {
           organizationId: access.discipline.organizationId,
           name: { equals: input.name, mode: 'insensitive' },
@@ -245,7 +245,7 @@ export async function PATCH(
     }
 
     // Update discipline
-    const discipline = await prisma.disciplines.update({
+    const discipline = await prisma.discipline.update({
       where: { id: params.id },
       data: {
         ...(input.name && { name: input.name }),
@@ -341,7 +341,7 @@ export async function DELETE(
     }
 
     // Delete discipline
-    await prisma.disciplines.delete({
+    await prisma.discipline.delete({
       where: { id: params.id },
     });
 

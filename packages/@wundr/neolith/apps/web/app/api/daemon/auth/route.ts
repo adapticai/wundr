@@ -135,7 +135,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const vpId = keyParts[1];
 
     // Look up VP and verify API key
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: vpId },
       include: {
         user: {
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update VP status
-    await prisma.vps.update({
+    await prisma.vP.update({
       where: { id: vpId },
       data: {
         status: 'ONLINE',

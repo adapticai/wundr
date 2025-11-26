@@ -81,10 +81,10 @@ export async function GET(
     }
 
     // Fetch file with related data
-    const file = await prisma.files.findUnique({
+    const file = await prisma.file.findUnique({
       where: { id: params.id },
       include: {
-        uploader: {
+        uploadedBy: {
           select: {
             id: true,
             name: true,
@@ -110,7 +110,7 @@ export async function GET(
     }
 
     // Check workspace membership
-    const membership = await prisma.workspace_members.findUnique({
+    const membership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: file.workspaceId,
@@ -191,7 +191,7 @@ export async function DELETE(
     }
 
     // Fetch file
-    const file = await prisma.files.findUnique({
+    const file = await prisma.file.findUnique({
       where: { id: params.id },
       include: {
         workspace: {
@@ -215,7 +215,7 @@ export async function DELETE(
 
     if (!isUploader) {
       // Check if user is workspace admin
-      const membership = await prisma.workspace_members.findUnique({
+      const membership = await prisma.workspaceMember.findUnique({
         where: {
           workspaceId_userId: {
             workspaceId: file.workspaceId,
@@ -242,7 +242,7 @@ export async function DELETE(
     await deleteFileFromStorage(file.s3Key, file.s3Bucket);
 
     // Delete file record from database
-    await prisma.files.delete({
+    await prisma.file.delete({
       where: { id: params.id },
     });
 

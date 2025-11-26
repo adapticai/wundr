@@ -179,7 +179,7 @@ export async function POST(
     const channel = await prisma.channel.findUnique({
       where: { id: params.channelId },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -202,7 +202,7 @@ export async function POST(
     }
 
     // Build presence responses for online users
-    const onlineUsers = channel.members
+    const onlineUsers = channel.channelMembers
       .map((m) => buildPresenceResponse(m.user))
       .filter((p) => p.isOnline);
 

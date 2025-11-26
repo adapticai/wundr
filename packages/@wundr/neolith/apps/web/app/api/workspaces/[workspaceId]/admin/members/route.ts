@@ -54,7 +54,7 @@ export async function GET(
     const { workspaceId } = await context.params;
 
     // Verify admin access
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -91,11 +91,11 @@ export async function GET(
     const { status, roleId, search, limit, offset } = parseResult.data;
 
     // Build where clause using Prisma's WorkspaceMemberWhereInput type
-    const where: Prisma.WorkspaceMemberWhereInput = { workspaceId };
+    const where: Prisma.workspaceMemberWhereInput = { workspaceId };
 
     if (roleId) {
       // Map role ID to role name (simplified for now)
-      const roleMap: Record<string, Prisma.WorkspaceMemberWhereInput['role']> = {
+      const roleMap: Record<string, Prisma.workspaceMemberWhereInput['role']> = {
         'system-role-0': 'OWNER',
         'system-role-1': 'ADMIN',
         'system-role-2': 'MEMBER',
@@ -118,7 +118,7 @@ export async function GET(
 
     // Fetch members
     const [members, total] = await Promise.all([
-      prisma.workspace_members.findMany({
+      prisma.workspaceMember.findMany({
         where,
         include: {
           user: {
@@ -140,7 +140,7 @@ export async function GET(
         skip: offset,
         take: limit,
       }),
-      prisma.workspace_members.count({ where }),
+      prisma.workspaceMember.count({ where }),
     ]);
 
     // Map members to response format

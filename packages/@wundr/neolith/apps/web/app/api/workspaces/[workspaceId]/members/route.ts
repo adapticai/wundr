@@ -56,7 +56,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -131,12 +131,12 @@ export async function GET(
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
 
     // Get total count for pagination metadata
-    const totalCount = await prisma.workspace_members.count({
+    const totalCount = await prisma.workspaceMember.count({
       where: { workspaceId: params.workspaceId },
     });
 
     // Fetch paginated members
-    const members = await prisma.workspace_members.findMany({
+    const members = await prisma.workspaceMember.findMany({
       where: { workspaceId: params.workspaceId },
       include: {
         user: {
@@ -288,7 +288,7 @@ export async function POST(
     }
 
     // Check if user is already a workspace member
-    const existingMembership = await prisma.workspace_members.findUnique({
+    const existingMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: params.workspaceId,
@@ -308,7 +308,7 @@ export async function POST(
     }
 
     // Add member
-    const newMembership = await prisma.workspace_members.create({
+    const newMembership = await prisma.workspaceMember.create({
       data: {
         workspaceId: params.workspaceId,
         userId: input.userId,

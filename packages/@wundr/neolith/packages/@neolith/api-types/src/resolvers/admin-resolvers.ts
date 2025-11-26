@@ -1027,7 +1027,7 @@ export const adminQueries = {
   ): Promise<MemberInfo[]> => {
     await requireAdmin(context, args.workspaceId);
 
-    const where: Prisma.WorkspaceMemberWhereInput = {
+    const where: Prisma.workspaceMemberWhereInput = {
       workspaceId: args.workspaceId,
     };
 

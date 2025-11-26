@@ -83,7 +83,7 @@ export async function POST(
     }
 
     // Check workspace membership
-    const workspaceMembership = await prisma.workspace_members.findUnique({
+    const workspaceMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId,
@@ -134,7 +134,7 @@ export async function POST(
       include: {
         _count: {
           select: {
-            executions: true,
+            workflowExecutions: true,
           },
         },
       },

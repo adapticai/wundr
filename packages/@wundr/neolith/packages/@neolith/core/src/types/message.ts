@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import type { Message, Reaction, User, MessageType } from '@genesis/database';
+import type { Message, Reaction, User, MessageType } from '@neolith/database';
 
 // =============================================================================
 // Core Message Types
@@ -33,6 +33,10 @@ export interface MessageWithRelations extends Message {
   replies?: Message[];
   /** Parent message (if this is a thread reply) */
   parent?: Message | null;
+  /** Whether the message is soft-deleted */
+  isDeleted: boolean;
+  /** Channel ID the message belongs to */
+  channelId: string;
 }
 
 /**

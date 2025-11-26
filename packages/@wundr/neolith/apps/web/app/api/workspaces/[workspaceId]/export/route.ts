@@ -112,7 +112,7 @@ export async function POST(
     const { workspaceId } = await params;
 
     // Verify workspace access and admin permissions
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -283,7 +283,7 @@ export async function GET(
     }
 
     // Verify workspace access
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,

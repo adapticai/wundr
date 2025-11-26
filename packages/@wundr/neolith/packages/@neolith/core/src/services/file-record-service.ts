@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import { GenesisError, TransactionError } from '../errors';
 
@@ -18,7 +18,7 @@ import type {
   FileRecordListOptions,
   PaginatedFileRecordResult,
 } from '../types/storage';
-import type { PrismaClient, Prisma, FileStatus } from '@genesis/database';
+import type { PrismaClient, Prisma, FileStatus } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -395,8 +395,8 @@ export class FileRecordServiceImpl implements FileRecordService {
     } = options;
 
     // Build where clause for files in channel messages
-    const where: Prisma.FileWhereInput = {
-      attachments: {
+    const where: Prisma.fileWhereInput = {
+      messageAttachments: {
         some: {
           message: {
             channelId,
@@ -443,7 +443,7 @@ export class FileRecordServiceImpl implements FileRecordService {
       includeUploader = DEFAULT_FILE_RECORD_LIST_OPTIONS.includeUploader,
     } = options;
 
-    const where: Prisma.FileWhereInput = {
+    const where: Prisma.fileWhereInput = {
       workspaceId,
       ...(status && { status }),
       ...(mimeType && { mimeType: { startsWith: mimeType } }),
@@ -485,7 +485,7 @@ export class FileRecordServiceImpl implements FileRecordService {
       includeUploader = DEFAULT_FILE_RECORD_LIST_OPTIONS.includeUploader,
     } = options;
 
-    const where: Prisma.FileWhereInput = {
+    const where: Prisma.fileWhereInput = {
       uploadedById: userId,
       ...(status && { status }),
       ...(mimeType && { mimeType: { startsWith: mimeType } }),
@@ -526,7 +526,7 @@ export class FileRecordServiceImpl implements FileRecordService {
       throw new FileRecordNotFoundError(id);
     }
 
-    const updateData: Prisma.FileUpdateInput = {};
+    const updateData: Prisma.fileUpdateInput = {};
 
     if (data.filename !== undefined) {
       updateData.filename = data.filename;
@@ -771,7 +771,7 @@ export class FileRecordServiceImpl implements FileRecordService {
   private getIncludeOptions(
     includeWorkspace: boolean,
     includeUploader: boolean,
-  ): Prisma.FileInclude {
+  ): Prisma.fileInclude {
     return {
       ...(includeWorkspace && {
         workspace: {

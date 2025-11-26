@@ -89,7 +89,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get VP with full details
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: token.vpId },
       include: {
         user: {

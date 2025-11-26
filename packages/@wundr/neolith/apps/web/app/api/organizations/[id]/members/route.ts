@@ -35,7 +35,7 @@ interface RouteContext {
  * Helper to check organization membership and role
  */
 async function checkOrganizationAccess(orgId: string, userId: string) {
-  return prisma.organization_members.findUnique({
+  return prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: orgId,
@@ -91,7 +91,7 @@ export async function GET(
     }
 
     // Fetch all members
-    const members = await prisma.organization_members.findMany({
+    const members = await prisma.organizationMember.findMany({
       where: { organizationId: params.id },
       include: {
         user: {
@@ -209,7 +209,7 @@ export async function POST(
     const input: AddOrganizationMemberInput = parseResult.data;
 
     // Check if user exists
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: input.userId },
     });
 
@@ -224,7 +224,7 @@ export async function POST(
     }
 
     // Check if user is already a member
-    const existingMembership = await prisma.organization_members.findUnique({
+    const existingMembership = await prisma.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: params.id,
@@ -247,7 +247,7 @@ export async function POST(
     const roleToAssign = input.role === 'OWNER' ? 'ADMIN' : input.role;
 
     // Add member
-    const newMembership = await prisma.organization_members.create({
+    const newMembership = await prisma.organizationMember.create({
       data: {
         organizationId: params.id,
         userId: input.userId,

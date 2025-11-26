@@ -93,7 +93,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const platformFilter = searchParams.get('platform');
 
     // Build where clause with proper typing
-    const where: Prisma.PushSubscriptionWhereInput = {
+    const where: Prisma.pushSubscriptionWhereInput = {
       userId: session.user.id,
     };
 

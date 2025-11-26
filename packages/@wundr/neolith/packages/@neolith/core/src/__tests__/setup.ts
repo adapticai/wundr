@@ -13,7 +13,7 @@ import { vi, beforeAll, afterAll, afterEach } from 'vitest';
 process.env.NODE_ENV = 'test';
 
 // Mock the database module
-vi.mock('@genesis/database', () => {
+vi.mock('@neolith/database', () => {
   const mockPrismaClient = {
     vP: {
       findUnique: vi.fn(),

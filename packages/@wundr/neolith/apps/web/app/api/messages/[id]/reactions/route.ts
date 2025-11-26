@@ -37,12 +37,12 @@ interface RouteContext {
  * Helper function to check message access
  */
 async function checkMessageAccess(messageId: string, userId: string) {
-  const message = await prisma.messages.findUnique({
+  const message = await prisma.message.findUnique({
     where: { id: messageId },
     include: {
       channel: {
         include: {
-          members: {
+          channelMembers: {
             where: { userId },
             select: { userId: true },
           },
@@ -55,7 +55,7 @@ async function checkMessageAccess(messageId: string, userId: string) {
     return { message: null, hasAccess: false };
   }
 
-  const hasAccess = message.channel.members.length > 0;
+  const hasAccess = message.channel.channelMembers.length > 0;
   return { message, hasAccess };
 }
 
@@ -114,7 +114,7 @@ export async function GET(
     }
 
     // Get all reactions for the message
-    const reactions = await prisma.reactions.findMany({
+    const reactions = await prisma.reaction.findMany({
       where: { messageId: params.id },
       include: {
         user: {
@@ -283,7 +283,7 @@ export async function POST(
     }
 
     // Check if user already reacted with this emoji
-    const existingReaction = await prisma.reactions.findUnique({
+    const existingReaction = await prisma.reaction.findUnique({
       where: {
         messageId_userId_emoji: {
           messageId: params.id,
@@ -304,7 +304,7 @@ export async function POST(
     }
 
     // Create the reaction
-    const reaction = await prisma.reactions.create({
+    const reaction = await prisma.reaction.create({
       data: {
         emoji: input.emoji,
         messageId: params.id,
@@ -426,7 +426,7 @@ export async function DELETE(
     }
 
     // Find and delete the reaction
-    const reaction = await prisma.reactions.findUnique({
+    const reaction = await prisma.reaction.findUnique({
       where: {
         messageId_userId_emoji: {
           messageId: params.id,
@@ -447,7 +447,7 @@ export async function DELETE(
     }
 
     // Delete the reaction
-    await prisma.reactions.delete({
+    await prisma.reaction.delete({
       where: { id: reaction.id },
     });
 

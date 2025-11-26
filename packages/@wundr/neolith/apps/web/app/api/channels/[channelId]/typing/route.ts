@@ -89,7 +89,7 @@ return [];
  * Helper function to check channel membership
  */
 async function checkChannelMembership(channelId: string, userId: string) {
-  const membership = await prisma.channel_members.findUnique({
+  const membership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,

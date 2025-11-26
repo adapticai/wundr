@@ -90,7 +90,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if workspace exists and user has access
-    const workspace = await prisma.workspaces.findUnique({
+    const workspace = await prisma.workspace.findUnique({
       where: { id: input.workspaceId },
     });
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check if both users are workspace members
     const [requesterMembership, targetMembership] = await Promise.all([
-      prisma.workspaces_members.findUnique({
+      prisma.workspaceMember.findUnique({
         where: {
           workspaceId_userId: {
             workspaceId: input.workspaceId,
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           },
         },
       }),
-      prisma.workspaces_members.findUnique({
+      prisma.workspaceMember.findUnique({
         where: {
           workspaceId_userId: {
             workspaceId: input.workspaceId,
@@ -159,14 +159,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const dmIdentifier = `dm:${sortedIds[0]}:${sortedIds[1]}`;
 
     // Check if DM channel already exists
-    const existingDM = await prisma.channels.findFirst({
+    const existingDM = await prisma.channel.findFirst({
       where: {
         workspaceId: input.workspaceId,
         type: 'DM',
         name: dmIdentifier,
       },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (existingDM) {
       // Filter out the current user to get the "other" participant
-      const otherParticipant = existingDM.members.find(
+      const otherParticipant = existingDM.channelMembers.find(
         (m: { userId: string }) => m.userId !== session.user.id,
       );
 
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       // Add both users as members
-      await tx.channel_members.createMany({
+      await tx.channelMember.createMany({
         data: [
           {
             channelId: newChannel.id,
@@ -230,7 +230,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return tx.channel.findUnique({
         where: { id: newChannel.id },
         include: {
-          members: {
+          channelMembers: {
             include: {
               user: {
                 select: {
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     // Get the other participant
-    const otherParticipant = dmChannel?.members.find(
+    const otherParticipant = dmChannel?.channelMembers.find(
       (m: { userId: string }) => m.userId !== session.user.id,
     );
 

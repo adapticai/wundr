@@ -17,7 +17,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createErrorResponse, VP_ERROR_CODES } from '@/lib/validations/vp';
 
-import type { MemoryType, Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -55,6 +55,10 @@ type ActivityType = (typeof ACTIVITY_TYPES)[keyof typeof ACTIVITY_TYPES];
 interface ActivityDetails {
   type: ActivityType;
   description: string;
+  summary?: string;
+  keywords?: string[];
+  channelId?: string;
+  taskId?: string;
   metadata?: Record<string, unknown>;
   relatedResourceId?: string;
   relatedResourceType?: string;
@@ -122,7 +126,7 @@ async function getVPWithWorkspaceAccess(
 /**
  * Map activity type to memory type for storage
  */
-function getMemoryTypeForActivity(activityType: ActivityType): MemoryType {
+function getMemoryTypeForActivity(activityType: ActivityType): string {
   switch (activityType) {
     case 'TASK_STARTED':
     case 'TASK_COMPLETED':
@@ -220,12 +224,11 @@ export async function GET(
     const taskId = searchParams.get('taskId') || undefined;
 
     // Build where clause
-    const where: Prisma.VPMemoryWhereInput = {
+    const where: Prisma.vPMemoryWhereInput = {
       vpId,
-      workspaceId,
     };
 
-    // Filter by activity types (stored in metadata)
+    // Filter by activity types (stored in memoryType field)
     if (activityTypes && activityTypes.length > 0) {
       // Map activity types to memory types
       const memoryTypes = new Set(
@@ -233,7 +236,7 @@ export async function GET(
           getMemoryTypeForActivity(type as ActivityType),
         ),
       );
-      where.type = { in: Array.from(memoryTypes) };
+      where.memoryType = { in: Array.from(memoryTypes) };
     }
 
     // Filter by date range
@@ -247,15 +250,8 @@ export async function GET(
       }
     }
 
-    // Filter by channel context
-    if (channelId) {
-      where.channelId = channelId;
-    }
-
-    // Filter by task context
-    if (taskId) {
-      where.taskId = taskId;
-    }
+    // Note: channelId and taskId are stored in metadata, not as separate fields
+    // Filtering by these would require filtering in memory after fetching
 
     // Fetch activities with cursor pagination
     const activities = await prisma.vPMemory.findMany({
@@ -268,14 +264,10 @@ export async function GET(
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
-        type: true,
+        memoryType: true,
         content: true,
-        summary: true,
         metadata: true,
-        channelId: true,
-        taskId: true,
         importance: true,
-        keywords: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -283,7 +275,19 @@ export async function GET(
 
     // Determine if there are more results
     const hasMore = activities.length > limit;
-    const items = hasMore ? activities.slice(0, -1) : activities;
+    let items = hasMore ? activities.slice(0, -1) : activities;
+
+    // Filter by channelId or taskId if provided (from metadata)
+    if (channelId || taskId) {
+      items = items.filter((activity) => {
+        const metadata = activity.metadata as Record<string, unknown> | null;
+        if (!metadata) return false;
+        if (channelId && metadata.channelId !== channelId) return false;
+        if (taskId && metadata.taskId !== taskId) return false;
+        return true;
+      });
+    }
+
     const nextCursor = hasMore ? items[items.length - 1]?.id : null;
 
     // Transform activities to include activity type from metadata
@@ -295,12 +299,20 @@ export async function GET(
         type: (metadata && typeof metadata === 'object' && 'type' in metadata)
           ? metadata.type
           : 'SYSTEM_EVENT',
-        description: activity.summary || activity.content,
+        description: metadata && typeof metadata === 'object' && 'summary' in metadata
+          ? String(metadata.summary)
+          : activity.content,
         details: metadata || {},
-        channelId: activity.channelId,
-        taskId: activity.taskId,
+        channelId: metadata && typeof metadata === 'object' && 'channelId' in metadata
+          ? String(metadata.channelId)
+          : undefined,
+        taskId: metadata && typeof metadata === 'object' && 'taskId' in metadata
+          ? String(metadata.taskId)
+          : undefined,
         importance: activity.importance,
-        keywords: activity.keywords,
+        keywords: metadata && typeof metadata === 'object' && 'keywords' in metadata
+          ? (metadata.keywords as string[])
+          : [],
         timestamp: activity.createdAt,
         updatedAt: activity.updatedAt,
       };
@@ -463,36 +475,37 @@ export async function POST(
     const activityMetadata: ActivityDetails = {
       type: input.type,
       description: input.description,
+      summary: input.description,
       metadata: input.details || {},
-      ...(input.channelId && { relatedResourceId: input.channelId, relatedResourceType: 'channel' }),
-      ...(input.taskId && { relatedResourceId: input.taskId, relatedResourceType: 'task' }),
+      keywords,
+      ...(input.channelId && {
+        channelId: input.channelId,
+        relatedResourceId: input.channelId,
+        relatedResourceType: 'channel'
+      }),
+      ...(input.taskId && {
+        taskId: input.taskId,
+        relatedResourceId: input.taskId,
+        relatedResourceType: 'task'
+      }),
     };
 
     // Create activity record as VPMemory
     const activity = await prisma.vPMemory.create({
       data: {
         vpId,
-        workspaceId,
-        type: memoryType,
+        memoryType,
         content: input.description,
-        summary: input.description,
         metadata: activityMetadata as unknown as Prisma.InputJsonValue,
-        channelId: input.channelId || null,
-        taskId: input.taskId || null,
         importance: input.importance || 5,
-        keywords,
         createdAt: input.timestamp ? new Date(input.timestamp) : undefined,
       },
       select: {
         id: true,
-        type: true,
+        memoryType: true,
         content: true,
-        summary: true,
         metadata: true,
-        channelId: true,
-        taskId: true,
         importance: true,
-        keywords: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -505,12 +518,20 @@ export async function POST(
       type: (metadata && typeof metadata === 'object' && 'type' in metadata)
         ? metadata.type
         : input.type,
-      description: activity.summary || activity.content,
+      description: metadata && typeof metadata === 'object' && 'summary' in metadata
+        ? String(metadata.summary)
+        : activity.content,
       details: metadata || {},
-      channelId: activity.channelId,
-      taskId: activity.taskId,
+      channelId: metadata && typeof metadata === 'object' && 'channelId' in metadata
+        ? String(metadata.channelId)
+        : undefined,
+      taskId: metadata && typeof metadata === 'object' && 'taskId' in metadata
+        ? String(metadata.taskId)
+        : undefined,
       importance: activity.importance,
-      keywords: activity.keywords,
+      keywords: metadata && typeof metadata === 'object' && 'keywords' in metadata
+        ? (metadata.keywords as string[])
+        : keywords,
       timestamp: activity.createdAt,
       updatedAt: activity.updatedAt,
     };

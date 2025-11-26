@@ -605,12 +605,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               include: {
                 _count: {
                   select: {
-                    members: true,
+                    channelMembers: true,
                   },
                 },
               },
             },
-            members: {
+            workspaceMembers: {
               include: {
                 user: {
                   select: {
@@ -625,7 +625,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
             _count: {
               select: {
-                members: true,
+                workspaceMembers: true,
                 channels: true,
               },
             },
@@ -647,7 +647,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       duration,
       vpCount: genesisResult.stats.vpCount,
       disciplineCount: genesisResult.stats.disciplineCount,
-      channelCount: workspace?.channels.length,
+      channelCount: workspace?.channels?.length ?? 0,
     });
 
     return NextResponse.json(

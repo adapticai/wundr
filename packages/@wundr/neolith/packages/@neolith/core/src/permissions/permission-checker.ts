@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma as defaultPrisma } from '@genesis/database';
+import { prisma as defaultPrisma } from '@neolith/database';
 
 import {
   PermissionDeniedError,
@@ -28,7 +28,7 @@ import type {
   OrganizationRole,
   WorkspaceRole,
   ChannelRole,
-} from '@genesis/database';
+} from '@neolith/database';
 
 // =============================================================================
 // Types

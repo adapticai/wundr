@@ -87,7 +87,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get VP user ID
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         userId: true,
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get channels where VP is a member
-    const memberships = await prisma.channel_members.findMany({
+    const memberships = await prisma.channelMember.findMany({
       where: {
         userId: vp.userId,
       },
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             },
             _count: {
               select: {
-                members: true,
+                channelMembers: true,
                 messages: true,
               },
             },
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       type: membership.channel.type,
       isPrivate: membership.channel.type === 'PRIVATE' || membership.channel.type === 'DM',
       workspace: membership.channel.workspace,
-      memberCount: membership.channel._count.members,
+      memberCount: membership.channel._count.channelMembers,
       messageCount: membership.channel._count.messages,
       membership: {
         role: membership.role,

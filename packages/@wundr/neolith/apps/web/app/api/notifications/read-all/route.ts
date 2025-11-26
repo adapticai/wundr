@@ -94,7 +94,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     };
 
     // Update all matching notifications
-    const result = await prisma.notifications.updateMany({
+    const result = await prisma.notification.updateMany({
       where,
       data: {
         read: true,

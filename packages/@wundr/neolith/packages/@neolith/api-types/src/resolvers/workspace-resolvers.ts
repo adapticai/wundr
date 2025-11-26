@@ -12,7 +12,7 @@ import { GraphQLError } from 'graphql';
 
 import type {
   PrismaClient,
-  Workspace as PrismaWorkspace,
+  workspace as PrismaWorkspace,
   WorkspaceRole as PrismaWorkspaceRole,
   WorkspaceVisibility as PrismaWorkspaceVisibility,
   Prisma,
@@ -633,14 +633,14 @@ export const workspaceQueries = {
     }
 
     // Build where clause - for non-admin users, filter by visibility
-    const where: Prisma.WorkspaceWhereInput = {
+    const where: Prisma.workspaceWhereInput = {
       organizationId,
     };
 
     // If not system admin, include user's workspace memberships or public/internal workspaces
     if (!isSystemAdmin(context)) {
       where.OR = [
-        { members: { some: { userId: context.user.id } } },
+        { workspaceMembers: { some: { userId: context.user.id } } },
         { visibility: { in: ['PUBLIC', 'INTERNAL'] } },
       ];
     }
@@ -650,7 +650,7 @@ export const workspaceQueries = {
       const parsed = parseCursor(args.after);
       if (parsed) {
         const existingAnd = where.AND;
-        const cursorCondition: Prisma.WorkspaceWhereInput = {
+        const cursorCondition: Prisma.workspaceWhereInput = {
           OR: [
             { createdAt: { lt: parsed.timestamp } },
             { createdAt: parsed.timestamp, id: { lt: parsed.id } },
@@ -745,7 +745,7 @@ export const workspaceQueries = {
     }
 
     // Build where clause
-    const where: Prisma.WorkspaceMemberWhereInput = {
+    const where: Prisma.workspaceMemberWhereInput = {
       workspaceId,
     };
 
@@ -889,7 +889,7 @@ export const workspaceMutations = {
           visibility: (input.visibility as PrismaWorkspaceVisibility) ?? 'PRIVATE',
           settings: {},
           organizationId: input.organizationId,
-          members: {
+          workspaceMembers: {
             create: {
               userId: context.user.id,
               role: 'OWNER',
@@ -978,7 +978,7 @@ export const workspaceMutations = {
     }
 
     // Build update data
-    const updateData: Prisma.WorkspaceUpdateInput = {};
+    const updateData: Prisma.workspaceUpdateInput = {};
 
     if (input.name !== undefined && input.name !== null) {
       updateData.name = input.name;

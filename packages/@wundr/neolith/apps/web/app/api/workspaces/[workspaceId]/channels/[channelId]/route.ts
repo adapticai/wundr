@@ -172,7 +172,7 @@ export async function GET(
             organizationId: true,
           },
         },
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -190,7 +190,7 @@ export async function GET(
         },
         _count: {
           select: {
-            members: true,
+            channelMembers: true,
             messages: true,
           },
         },
@@ -201,7 +201,7 @@ export async function GET(
       data: {
         ...channel,
         // Transform members for cleaner response
-        members: channel?.members.map((m) => ({
+        members: channel?.channelMembers.map((m) => ({
           userId: m.user.id,
           role: m.role,
           joinedAt: m.joinedAt,
@@ -338,7 +338,7 @@ export async function PATCH(
         },
         _count: {
           select: {
-            members: true,
+            channelMembers: true,
             messages: true,
           },
         },

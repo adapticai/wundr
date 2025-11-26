@@ -35,7 +35,7 @@
  * Custom database instance:
  * ```typescript
  * import { createVPService } from '@genesis/core';
- * import { PrismaClient } from '@genesis/database';
+ * import { PrismaClient } from '@neolith/database';
  *
  * const customPrisma = new PrismaClient();
  * const service = createVPService(customPrisma);

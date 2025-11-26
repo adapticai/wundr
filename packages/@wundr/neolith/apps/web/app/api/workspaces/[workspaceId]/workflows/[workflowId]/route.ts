@@ -61,7 +61,7 @@ return { error: 'workspace_not_found' };
 return { error: 'workspace_not_found' };
 }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -78,7 +78,7 @@ return { error: 'workspace_not_found' };
     include: {
       _count: {
         select: {
-          executions: true,
+          workflowExecutions: true,
         },
       },
     },
@@ -321,7 +321,7 @@ export async function PATCH(
     const input: UpdateWorkflowInput = parseResult.data;
 
     // Build update data
-    const updateData: Prisma.WorkflowUpdateInput = {};
+    const updateData: Prisma.workflowUpdateInput = {};
 
     if (input.name !== undefined) {
 updateData.name = input.name;
@@ -352,7 +352,7 @@ updateData.metadata = input.metadata as Prisma.InputJsonValue;
       include: {
         _count: {
           select: {
-            executions: true,
+            workflowExecutions: true,
           },
         },
       },

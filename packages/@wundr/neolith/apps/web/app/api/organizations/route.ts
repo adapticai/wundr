@@ -67,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const filters: OrganizationFiltersInput = parseResult.data;
 
     // Get organizations the user is a member of
-    const userMemberships = await prisma.organizations_members.findMany({
+    const userMemberships = await prisma.organizationMember.findMany({
       where: { userId: session.user.id },
       select: { organizationId: true },
     });
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const accessibleOrgIds = userMemberships.map((m) => m.organizationId);
 
     // Build where clause
-    const where: Prisma.OrganizationWhereInput = {
+    const where: Prisma.organizationWhereInput = {
       id: { in: accessibleOrgIds },
       ...(filters.search && {
         OR: [
@@ -90,13 +90,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = filters.limit;
 
     // Build orderBy
-    const orderBy: Prisma.OrganizationOrderByWithRelationInput = {
+    const orderBy: Prisma.organizationOrderByWithRelationInput = {
       [filters.sortBy]: filters.sortOrder,
     };
 
     // Fetch organizations and total count in parallel
     const [organizations, totalCount] = await Promise.all([
-      prisma.organizations.findMany({
+      prisma.organization.findMany({
         where,
         skip,
         take,
@@ -104,13 +104,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         include: {
           _count: {
             select: {
-              members: true,
+              organizationMembers: true,
               workspaces: true,
             },
           },
         },
       }),
-      prisma.organizations.count({ where }),
+      prisma.organization.count({ where }),
     ]);
 
     // Calculate pagination metadata
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: CreateOrganizationInput = parseResult.data;
 
     // Check if slug already exists
-    const existingOrg = await prisma.organizations.findUnique({
+    const existingOrg = await prisma.organization.findUnique({
       where: { slug: input.slug },
     });
 
@@ -241,7 +241,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         include: {
           _count: {
             select: {
-              members: true,
+              organizationMembers: true,
               workspaces: true,
             },
           },

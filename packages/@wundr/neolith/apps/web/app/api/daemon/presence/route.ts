@@ -129,7 +129,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { status, statusText } = parseResult.data;
 
     // Get VP info
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         id: true,
@@ -149,7 +149,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const vpStatus = status === 'offline' ? 'OFFLINE' : status === 'busy' ? 'BUSY' : 'ONLINE';
 
     // Update VP status in database
-    await prisma.vps.update({
+    await prisma.vP.update({
       where: { id: token.vpId },
       data: {
         status: vpStatus,
@@ -157,7 +157,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     });
 
     // Update user status
-    await prisma.users.update({
+    await prisma.user.update({
       where: { id: vp.userId },
       data: {
         status: vpStatus === 'OFFLINE' ? 'INACTIVE' : 'ACTIVE',

@@ -199,7 +199,7 @@ export async function POST(
       }
     } catch {
       // Try channel settings
-      const channels = await prisma.channels.findMany({
+      const channels = await prisma.channel.findMany({
         where: {
           settings: {
             path: ['activeCall', 'id'],
@@ -238,7 +238,7 @@ export async function POST(
     }
 
     // Check channel access
-    const channel = await prisma.channels.findUnique({
+    const channel = await prisma.channel.findUnique({
       where: { id: call.channelId },
       include: { workspace: true },
     });
@@ -250,7 +250,7 @@ export async function POST(
       );
     }
 
-    const orgMembership = await prisma.organization_members.findUnique({
+    const orgMembership = await prisma.organizationMember.findUnique({
       where: {
         organizationId_userId: {
           organizationId: channel.workspace.organizationId,
@@ -268,7 +268,7 @@ export async function POST(
 
     // For private channels, check membership
     if (channel.type === 'PRIVATE') {
-      const channelMembership = await prisma.channel_members.findUnique({
+      const channelMembership = await prisma.channelMember.findUnique({
         where: {
           channelId_userId: {
             channelId: channel.id,
@@ -285,7 +285,7 @@ export async function POST(
     }
 
     // Get user info
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { id: true, name: true, displayName: true },
     });
@@ -351,7 +351,7 @@ export async function POST(
         // Try channel settings
         const currentSettings = channel.settings as { activeCall?: { status: string } } | null;
         if (currentSettings?.activeCall?.status === 'pending') {
-          await prisma.channels.update({
+          await prisma.channel.update({
             where: { id: channel.id },
             data: {
               settings: {

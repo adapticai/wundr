@@ -56,7 +56,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -177,14 +177,14 @@ export async function GET(
       where: {
         workspaceId: params.workspaceId,
         type: 'DM',
-        members: {
+        channelMembers: {
           some: {
             userId: session.user.id,
           },
         },
       },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -227,7 +227,7 @@ export async function GET(
     const formattedChannels = await Promise.all(
       dmChannels.map(async (channel) => {
         // Get the other participant (not the current user)
-        const otherParticipant = channel.members.find((m) => m.userId !== session.user.id);
+        const otherParticipant = channel.channelMembers.find((m) => m.userId !== session.user.id);
 
         if (!otherParticipant) {
           return null;
@@ -386,7 +386,7 @@ export async function POST(
     }
 
     // Check if target user is a workspace member
-    const targetMembership = await prisma.workspace_members.findUnique({
+    const targetMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: params.workspaceId,
@@ -429,7 +429,7 @@ export async function POST(
         name: dmIdentifier,
       },
       include: {
-        members: {
+        channelMembers: {
           include: {
             user: {
               select: {
@@ -470,7 +470,7 @@ export async function POST(
       const unreadCount = await getUnreadCount(existingDM.id, session.user.id);
 
       // Get the other participant
-      const otherParticipant = existingDM.members.find((m) => m.userId !== session.user.id);
+      const otherParticipant = existingDM.channelMembers.find((m) => m.userId !== session.user.id);
 
       // Get last message
       const lastMessage = existingDM.messages[0]
@@ -542,7 +542,7 @@ export async function POST(
       return tx.channel.findUnique({
         where: { id: newChannel.id },
         include: {
-          members: {
+          channelMembers: {
             include: {
               user: {
                 select: {
@@ -568,7 +568,7 @@ export async function POST(
     }
 
     // Get the other participant
-    const otherParticipant = dmChannel.members.find((m) => m.userId !== session.user.id);
+    const otherParticipant = dmChannel.channelMembers.find((m) => m.userId !== session.user.id);
 
     return NextResponse.json(
       {

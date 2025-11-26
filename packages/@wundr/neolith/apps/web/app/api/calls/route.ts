@@ -57,7 +57,7 @@ async function sendCallInviteNotifications(params: SendCallInviteParams): Promis
   } = params;
 
   // Get channel name for notification body
-  const channel = await prisma.channels.findUnique({
+  const channel = await prisma.channel.findUnique({
     where: { id: channelId },
     select: { name: true },
   });
@@ -136,7 +136,7 @@ function generateRoomName(channelId: string): string {
  * Helper to verify user has access to channel
  */
 async function verifyChannelAccess(channelId: string, userId: string) {
-  const channel = await prisma.channels.findUnique({
+  const channel = await prisma.channel.findUnique({
     where: { id: channelId },
     include: {
       workspace: true,
@@ -148,7 +148,7 @@ return null;
 }
 
   // Check organization membership
-  const orgMembership = await prisma.organization_members.findUnique({
+  const orgMembership = await prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: channel.workspace.organizationId,
@@ -163,7 +163,7 @@ return null;
 
   // For private channels, check channel membership
   if (channel.type === 'PRIVATE') {
-    const channelMembership = await prisma.channel_members.findUnique({
+    const channelMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId,
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const roomName = generateRoomName(channelId);
 
     // Get user info
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { id: true, name: true, displayName: true },
     });
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       VALUES (${callId}, ${channelId}, ${type}, 'pending', ${roomName}, ${session.user.id}, ${now}, ${now})
     `.catch(async () => {
       // If calls table doesn't exist, store in channel settings temporarily
-      await prisma.channels.update({
+      await prisma.channel.update({
         where: { id: channelId },
         data: {
           settings: {
@@ -395,7 +395,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get user's accessible channels
-    const userChannels = await prisma.channel_members.findMany({
+    const userChannels = await prisma.channelMember.findMany({
       where: { userId: session.user.id },
       select: { channelId: true },
     });
@@ -481,7 +481,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       totalCount = Number(countResult[0]?.count ?? 0);
     } catch {
       // Fall back to checking channel settings for active calls
-      const channels = await prisma.channels.findMany({
+      const channels = await prisma.channel.findMany({
         where: {
           id: { in: channelIds },
         },

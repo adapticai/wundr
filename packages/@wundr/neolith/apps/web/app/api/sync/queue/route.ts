@@ -215,7 +215,7 @@ async function processChannelOperation(
     case 'CREATE': {
       // Verify user has access to workspace
       const workspaceId = payload.workspaceId as string;
-      const membership = await prisma.workspace_members.findFirst({
+      const membership = await prisma.workspaceMember.findFirst({
         where: { workspaceId, userId },
       });
 
@@ -238,7 +238,7 @@ async function processChannelOperation(
           type: (payload.type as 'PUBLIC' | 'PRIVATE') ?? 'PUBLIC',
           workspaceId,
           createdById: userId,
-          members: {
+          channelMembers: {
             create: {
               userId,
               role: 'OWNER',

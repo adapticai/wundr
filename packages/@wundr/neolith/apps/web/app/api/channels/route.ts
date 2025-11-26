@@ -29,7 +29,7 @@ import type { NextRequest } from 'next/server';
  * Helper to check workspace access
  */
 async function checkWorkspaceAccess(workspaceId: string, userId: string) {
-  const workspace = await prisma.workspaces.findUnique({
+  const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
   });
 
@@ -37,7 +37,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
 return null;
 }
 
-  const orgMembership = await prisma.organization_members.findUnique({
+  const orgMembership = await prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: workspace.organizationId,
@@ -50,7 +50,7 @@ return null;
 return null;
 }
 
-  const workspaceMembership = await prisma.workspaces_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Build where clause
     // User sees: public channels + private channels they are a member of
-    const channelMemberships = await prisma.channels_members.findMany({
+    const channelMemberships = await prisma.channelMember.findMany({
       where: {
         userId: session.user.id,
         channel: { workspaceId: filters.workspaceId },
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const memberChannelIds = channelMemberships.map((m) => m.channelId);
 
-    const where: Prisma.ChannelWhereInput = {
+    const where: Prisma.channelWhereInput = {
       workspaceId: filters.workspaceId,
       OR: [
         { type: 'PUBLIC' },
@@ -160,13 +160,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = filters.limit;
 
     // Build orderBy
-    const orderBy: Prisma.ChannelOrderByWithRelationInput = {
+    const orderBy: Prisma.channelOrderByWithRelationInput = {
       [filters.sortBy]: filters.sortOrder,
     };
 
     // Fetch channels and total count in parallel
     const [channels, totalCount] = await Promise.all([
-      prisma.channels.findMany({
+      prisma.channel.findMany({
         where,
         skip,
         take,
@@ -174,13 +174,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         include: {
           _count: {
             select: {
-              members: true,
+              channelMembers: true,
               messages: true,
             },
           },
         },
       }),
-      prisma.channels.count({ where }),
+      prisma.channel.count({ where }),
     ]);
 
     // Add membership status to each channel
@@ -333,7 +333,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const memberIdsToAdd = input.memberIds.filter((id) => id !== session.user.id);
       if (memberIdsToAdd.length > 0) {
         // Verify all members are workspace members
-        const workspaceMembers = await tx.workspace_members.findMany({
+        const workspaceMembers = await tx.workspaceMember.findMany({
           where: {
             workspaceId: input.workspaceId,
             userId: { in: memberIdsToAdd },
@@ -361,7 +361,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         include: {
           _count: {
             select: {
-              members: true,
+              channelMembers: true,
               messages: true,
             },
           },

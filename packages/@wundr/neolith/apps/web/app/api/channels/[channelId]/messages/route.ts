@@ -37,7 +37,7 @@ interface RouteContext {
  * Helper function to check if user is a member of the channel
  */
 async function checkChannelMembership(channelId: string, userId: string) {
-  const membership = await prisma.channel_members.findUnique({
+  const membership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -130,7 +130,7 @@ export async function GET(
     }
 
     // Build where clause
-    const where: Prisma.MessageWhereInput = {
+    const where: Prisma.messageWhereInput = {
       channelId: params.channelId,
       isDeleted: false,
       // Only fetch top-level messages unless includeReplies is true
@@ -138,9 +138,9 @@ export async function GET(
     };
 
     // Add cursor condition for pagination
-    let cursorCondition: Prisma.MessageWhereInput = {};
+    let cursorCondition: Prisma.messageWhereInput = {};
     if (filters.cursor) {
-      const cursorMessage = await prisma.messages.findUnique({
+      const cursorMessage = await prisma.message.findUnique({
         where: { id: filters.cursor },
         select: { createdAt: true },
       });
@@ -155,7 +155,7 @@ export async function GET(
     }
 
     // Fetch messages
-    const messages = await prisma.messages.findMany({
+    const messages = await prisma.message.findMany({
       where: {
         ...where,
         ...cursorCondition,
@@ -187,7 +187,7 @@ export async function GET(
             },
           },
         },
-        attachments: {
+        messageAttachments: {
           include: {
             file: {
               select: {
@@ -225,7 +225,7 @@ export async function GET(
     const prevCursor = resultMessages[0]?.id ?? null;
 
     // Update last read timestamp for the user
-    await prisma.channel_members.update({
+    await prisma.channelMember.update({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -343,7 +343,7 @@ export async function POST(
 
     // If parentId provided, verify parent message exists and belongs to same channel
     if (input.parentId) {
-      const parentMessage = await prisma.messages.findUnique({
+      const parentMessage = await prisma.message.findUnique({
         where: { id: input.parentId },
         select: { channelId: true, isDeleted: true, parentId: true },
       });
@@ -381,7 +381,7 @@ export async function POST(
     }
 
     // Create the message
-    const message = await prisma.messages.create({
+    const message = await prisma.message.create({
       data: {
         content: input.content,
         type: input.type,
@@ -401,7 +401,7 @@ export async function POST(
           },
         },
         reactions: true,
-        attachments: {
+        messageAttachments: {
           include: {
             file: {
               select: {

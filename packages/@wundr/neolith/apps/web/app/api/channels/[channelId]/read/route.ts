@@ -44,7 +44,7 @@ type MarkAsReadInput = z.infer<typeof markAsReadSchema>;
  * Helper function to check if user is a member of the channel
  */
 async function checkChannelMembership(channelId: string, userId: string) {
-  const membership = await prisma.channel_members.findUnique({
+  const membership = await prisma.channelMember.findUnique({
     where: {
       channelId_userId: {
         channelId,
@@ -151,7 +151,7 @@ export async function POST(
 
     // If messageId provided, verify it exists and belongs to this channel
     if (input.messageId) {
-      const message = await prisma.messages.findUnique({
+      const message = await prisma.message.findUnique({
         where: { id: input.messageId },
         select: { channelId: true, createdAt: true, isDeleted: true },
       });
@@ -177,7 +177,7 @@ export async function POST(
       }
 
       // Update lastReadAt to the message's timestamp
-      const updatedMembership = await prisma.channel_members.update({
+      const updatedMembership = await prisma.channelMember.update({
         where: {
           channelId_userId: {
             channelId: params.channelId,
@@ -201,7 +201,7 @@ export async function POST(
       });
     } else {
       // No messageId provided - mark as read at current time
-      const updatedMembership = await prisma.channel_members.update({
+      const updatedMembership = await prisma.channelMember.update({
         where: {
           channelId_userId: {
             channelId: params.channelId,
@@ -300,7 +300,7 @@ export async function GET(
     // 1. They were created after lastReadAt
     // 2. They are not deleted
     // 3. They were not sent by the current user
-    const unreadCount = await prisma.messages.count({
+    const unreadCount = await prisma.message.count({
       where: {
         channelId: params.channelId,
         isDeleted: false,
@@ -316,7 +316,7 @@ export async function GET(
     });
 
     // Get the most recent message for additional context
-    const latestMessage = await prisma.messages.findFirst({
+    const latestMessage = await prisma.message.findFirst({
       where: {
         channelId: params.channelId,
         isDeleted: false,

@@ -7,517 +7,544 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model accounts {
-  id                  String   @id
-  user_id             String
+model account {
+  id                  String    @id @default(cuid())
+  userId              String   @map("user_id")
   type                String
   provider            String
-  provider_account_id String
-  refresh_token       String?
-  access_token        String?
-  expires_at          Int?
-  token_type          String?
+  providerAccountId   String   @map("provider_account_id")
+  refreshToken        String?  @map("refresh_token")
+  accessToken         String?  @map("access_token")
+  expiresAt           Int?     @map("expires_at")
+  tokenType           String?  @map("token_type")
   scope               String?
-  id_token            String?
-  session_state       String?
-  created_at          DateTime @default(now())
-  updated_at          DateTime
-  users               users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  idToken             String?  @map("id_token")
+  sessionState        String?  @map("session_state")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  user                user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, provider_account_id])
-  @@index([user_id])
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
 }
 
-model backlog_items {
-  id         String   @id
-  position   Int      @default(0)
-  backlog_id String
-  task_id    String
-  added_at   DateTime @default(now())
-  backlogs   backlogs @relation(fields: [backlog_id], references: [id], onDelete: Cascade)
-  tasks      tasks    @relation(fields: [task_id], references: [id], onDelete: Cascade)
+model backlogItem {
+  id        String    @id @default(cuid())
+  position  Int      @default(0)
+  backlogId String   @map("backlog_id")
+  taskId    String   @map("task_id")
+  addedAt   DateTime @default(now()) @map("added_at")
+  backlog   backlog  @relation(fields: [backlogId], references: [id], onDelete: Cascade)
+  task      task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
-  @@unique([backlog_id, task_id])
-  @@index([backlog_id])
+  @@unique([backlogId, taskId])
+  @@index([backlogId])
   @@index([position])
-  @@index([task_id])
+  @@index([taskId])
+  @@map("backlog_items")
 }
 
-model backlogs {
-  id            String          @id
-  name          String
-  description   String?
-  status        String          @default("active")
-  priority      Int             @default(0)
-  metadata      Json            @default("{}")
-  vp_id         String
-  workspace_id  String
-  created_at    DateTime        @default(now())
-  updated_at    DateTime
-  backlog_items backlog_items[]
-  vps           vps             @relation(fields: [vp_id], references: [id], onDelete: Cascade)
-  workspaces    workspaces      @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+model backlog {
+  id           String         @id @default(cuid())
+  name         String
+  description  String?
+  status       String        @default("active")
+  priority     Int           @default(0)
+  metadata     Json          @default("{}")
+  vpId         String        @map("vp_id")
+  workspaceId  String        @map("workspace_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  backlogItems backlogItem[]
+  vp           vP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace    workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([vp_id, name])
+  @@unique([vpId, name])
   @@index([priority])
   @@index([status])
-  @@index([vp_id])
-  @@index([workspace_id])
+  @@index([vpId])
+  @@index([workspaceId])
+  @@map("backlogs")
 }
 
-model channel_members {
-  id           String      @id
-  role         ChannelRole @default(MEMBER)
-  channel_id   String
-  user_id      String
-  joined_at    DateTime    @default(now())
-  last_read_at DateTime?
-  left_at      DateTime?
-  channels     channels    @relation(fields: [channel_id], references: [id], onDelete: Cascade)
-  users        users       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model channelMember {
+  id         String       @id @default(cuid())
+  role       ChannelRole @default(MEMBER)
+  channelId  String      @map("channel_id")
+  userId     String      @map("user_id")
+  joinedAt   DateTime    @default(now()) @map("joined_at")
+  lastReadAt DateTime?   @map("last_read_at")
+  leftAt     DateTime?   @map("left_at")
+  channel    channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user       user        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([channel_id, user_id])
-  @@index([channel_id])
-  @@index([left_at])
-  @@index([user_id])
+  @@unique([channelId, userId])
+  @@index([channelId])
+  @@index([leftAt])
+  @@index([userId])
+  @@map("channel_members")
 }
 
-model channels {
-  id              String            @id
-  name            String
-  slug            String
-  description     String?
-  topic           String?
-  type            ChannelType       @default(PUBLIC)
-  is_archived     Boolean           @default(false)
-  settings        Json              @default("{}")
-  workspace_id    String
-  created_by_id   String?
-  created_at      DateTime          @default(now())
-  updated_at      DateTime
-  channel_members channel_members[]
-  users           users?            @relation(fields: [created_by_id], references: [id])
-  workspaces      workspaces        @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  messages        messages[]
-  tasks           tasks[]
+model channel {
+  id             String           @id @default(cuid())
+  name           String
+  slug           String
+  description    String?
+  topic          String?
+  type           ChannelType     @default(PUBLIC)
+  isArchived     Boolean         @default(false) @map("is_archived")
+  settings       Json            @default("{}")
+  workspaceId    String          @map("workspace_id")
+  createdById    String?         @map("created_by_id")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  channelMembers channelMember[]
+  createdBy      user?           @relation(fields: [createdById], references: [id])
+  workspace      workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messages       message[]
+  tasks          task[]
 
-  @@unique([workspace_id, slug])
-  @@index([is_archived])
+  @@unique([workspaceId, slug])
+  @@index([isArchived])
   @@index([type])
-  @@index([workspace_id])
+  @@index([workspaceId])
+  @@map("channels")
 }
 
-model daemon_credentials {
-  id              String     @id
-  api_key         String     @unique
-  api_secret_hash String
-  hostname        String?
-  version         String?
-  capabilities    String[]
-  metadata        Json?
-  is_active       Boolean    @default(true)
-  vp_id           String
-  workspace_id    String
-  created_at      DateTime   @default(now())
-  updated_at      DateTime
-  expires_at      DateTime?
-  last_used_at    DateTime?
-  vps             vps        @relation(fields: [vp_id], references: [id], onDelete: Cascade)
-  workspaces      workspaces @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+model daemonCredential {
+  id            String      @id @default(cuid())
+  apiKey        String     @unique @map("api_key")
+  apiSecretHash String     @map("api_secret_hash")
+  hostname      String?
+  version       String?
+  capabilities  String[]
+  metadata      Json?
+  isActive      Boolean    @default(true) @map("is_active")
+  vpId          String     @map("vp_id")
+  workspaceId   String     @map("workspace_id")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  expiresAt     DateTime?  @map("expires_at")
+  lastUsedAt    DateTime?  @map("last_used_at")
+  vp            vP         @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace     workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@index([api_key])
-  @@index([is_active])
-  @@index([vp_id])
-  @@index([workspace_id])
+  @@index([apiKey])
+  @@index([isActive])
+  @@index([vpId])
+  @@index([workspaceId])
+  @@map("daemon_credentials")
 }
 
-model disciplines {
-  id              String        @id
-  name            String
-  description     String?
-  color           String?
-  icon            String?
-  organization_id String
-  created_at      DateTime      @default(now())
-  updated_at      DateTime
-  organizations   organizations @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  vps             vps[]
+model discipline {
+  id             String        @id @default(cuid())
+  name           String
+  description    String?
+  color          String?
+  icon           String?
+  organizationId String       @map("organization_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  organization   organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vps            vP[]
 
-  @@unique([organization_id, name])
+  @@unique([organizationId, name])
   @@index([name])
-  @@index([organization_id])
+  @@index([organizationId])
+  @@map("disciplines")
 }
 
-model files {
-  id                  String                @id
-  filename            String
-  original_name       String
-  mime_type           String
-  size                BigInt
-  s3_key              String
-  s3_bucket           String
-  thumbnail_url       String?
-  status              FileStatus            @default(PENDING)
-  metadata            Json                  @default("{}")
-  workspace_id        String
-  uploaded_by_id      String
-  created_at          DateTime              @default(now())
-  updated_at          DateTime
-  users               users                 @relation(fields: [uploaded_by_id], references: [id], onDelete: Cascade)
-  workspaces          workspaces            @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  message_attachments message_attachments[]
+model file {
+  id                 String               @id @default(cuid())
+  filename           String
+  originalName       String              @map("original_name")
+  mimeType           String              @map("mime_type")
+  size               BigInt
+  s3Key              String              @map("s3_key")
+  s3Bucket           String              @map("s3_bucket")
+  thumbnailUrl       String?             @map("thumbnail_url")
+  status             FileStatus          @default(PENDING)
+  metadata           Json                @default("{}")
+  workspaceId        String              @map("workspace_id")
+  uploadedById       String              @map("uploaded_by_id")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  uploadedBy         user                @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  workspace          workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messageAttachments messageAttachment[]
 
-  @@index([mime_type])
+  @@index([mimeType])
   @@index([status])
-  @@index([uploaded_by_id])
-  @@index([workspace_id])
+  @@index([uploadedById])
+  @@index([workspaceId])
+  @@map("files")
 }
 
-model message_attachments {
-  id         String   @id
-  message_id String
-  file_id    String
-  created_at DateTime @default(now())
-  files      files    @relation(fields: [file_id], references: [id], onDelete: Cascade)
-  messages   messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
+model messageAttachment {
+  id        String    @id @default(cuid())
+  messageId String   @map("message_id")
+  fileId    String   @map("file_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  file      file     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  message   message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
-  @@unique([message_id, file_id])
-  @@index([file_id])
-  @@index([message_id])
+  @@unique([messageId, fileId])
+  @@index([fileId])
+  @@index([messageId])
+  @@map("message_attachments")
 }
 
-model messages {
-  id                  String                @id
-  content             String
-  type                MessageType           @default(TEXT)
-  metadata            Json                  @default("{}")
-  is_edited           Boolean               @default(false)
-  is_deleted          Boolean               @default(false)
-  edited_at           DateTime?
-  deleted_at          DateTime?
-  channel_id          String
-  author_id           String
-  parent_id           String?
-  created_at          DateTime              @default(now())
-  updated_at          DateTime
-  message_attachments message_attachments[]
-  users               users                 @relation(fields: [author_id], references: [id], onDelete: Cascade)
-  channels            channels              @relation(fields: [channel_id], references: [id], onDelete: Cascade)
-  messages            messages?             @relation("messagesTomessages", fields: [parent_id], references: [id])
-  other_messages      messages[]            @relation("messagesTomessages")
-  reactions           reactions[]
+model message {
+  id                 String               @id @default(cuid())
+  content            String
+  type               MessageType         @default(TEXT)
+  metadata           Json                @default("{}")
+  isEdited           Boolean             @default(false) @map("is_edited")
+  isDeleted          Boolean             @default(false) @map("is_deleted")
+  editedAt           DateTime?           @map("edited_at")
+  deletedAt          DateTime?           @map("deleted_at")
+  channelId          String              @map("channel_id")
+  authorId           String              @map("author_id")
+  parentId           String?             @map("parent_id")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  messageAttachments messageAttachment[]
+  author             user                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  channel            channel             @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  parent             message?            @relation("messageToMessage", fields: [parentId], references: [id])
+  replies            message[]           @relation("messageToMessage")
+  reactions          reaction[]
 
-  @@index([author_id])
-  @@index([channel_id])
-  @@index([created_at])
-  @@index([deleted_at])
-  @@index([parent_id])
+  @@index([authorId])
+  @@index([channelId])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@index([parentId])
   @@index([type])
+  @@map("messages")
 }
 
-model notifications {
-  id            String               @id
-  title         String
-  body          String
-  type          NotificationType
-  priority      NotificationPriority @default(NORMAL)
-  resource_id   String?
-  resource_type String?
-  action_url    String?
-  metadata      Json                 @default("{}")
-  read          Boolean              @default(false)
-  read_at       DateTime?
-  archived      Boolean              @default(false)
-  expires_at    DateTime?
-  user_id       String
-  created_at    DateTime             @default(now())
-  updated_at    DateTime
-  users         users                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model notification {
+  id           String                @id @default(cuid())
+  title        String
+  body         String
+  type         NotificationType
+  priority     NotificationPriority @default(NORMAL)
+  resourceId   String?              @map("resource_id")
+  resourceType String?              @map("resource_type")
+  actionUrl    String?              @map("action_url")
+  metadata     Json                 @default("{}")
+  read         Boolean              @default(false)
+  readAt       DateTime?            @map("read_at")
+  archived     Boolean              @default(false)
+  expiresAt    DateTime?            @map("expires_at")
+  userId       String               @map("user_id")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  user         user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([created_at])
+  @@index([createdAt])
   @@index([priority])
   @@index([read])
   @@index([type])
-  @@index([user_id])
+  @@index([userId])
+  @@map("notifications")
 }
 
-model organization_members {
-  id              String           @id
-  role            OrganizationRole @default(MEMBER)
-  organization_id String
-  user_id         String
-  joined_at       DateTime         @default(now())
-  organizations   organizations    @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  users           users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model organizationMember {
+  id             String            @id @default(cuid())
+  role           OrganizationRole @default(MEMBER)
+  organizationId String           @map("organization_id")
+  userId         String           @map("user_id")
+  joinedAt       DateTime         @default(now()) @map("joined_at")
+  organization   organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           user             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([organization_id, user_id])
-  @@index([organization_id])
-  @@index([user_id])
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("organization_members")
 }
 
-model organizations {
-  id                   String                 @id
-  name                 String
-  slug                 String                 @unique
-  avatar_url           String?
-  description          String?
-  settings             Json                   @default("{}")
-  created_at           DateTime               @default(now())
-  updated_at           DateTime
-  disciplines          disciplines[]
-  organization_members organization_members[]
-  vps                  vps[]
-  workspaces           workspaces[]
+model organization {
+  id                  String                @id @default(cuid())
+  name                String
+  slug                String               @unique
+  avatarUrl           String?              @map("avatar_url")
+  description         String?
+  settings            Json                 @default("{}")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  disciplines         discipline[]
+  organizationMembers organizationMember[]
+  vps                 vP[]
+  workspaces          workspace[]
 
   @@index([slug])
+  @@map("organizations")
 }
 
-model push_subscriptions {
-  id                  String       @id
+model pushSubscription {
+  id                  String        @id @default(cuid())
   token               String       @unique
   platform            PushPlatform
-  user_agent          String?
-  device_name         String?
-  device_model        String?
-  app_version         String?
+  userAgent           String?      @map("user_agent")
+  deviceName          String?      @map("device_name")
+  deviceModel         String?      @map("device_model")
+  appVersion          String?      @map("app_version")
   active              Boolean      @default(true)
-  deactivated_at      DateTime?
-  deactivation_reason String?
-  failure_count       Int          @default(0)
-  last_failure_at     DateTime?
-  last_failure_reason String?
-  user_id             String
-  created_at          DateTime     @default(now())
-  updated_at          DateTime
-  last_active_at      DateTime?
-  users               users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  deactivatedAt       DateTime?    @map("deactivated_at")
+  deactivationReason  String?      @map("deactivation_reason")
+  failureCount        Int          @default(0) @map("failure_count")
+  lastFailureAt       DateTime?    @map("last_failure_at")
+  lastFailureReason   String?      @map("last_failure_reason")
+  userId              String       @map("user_id")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+  lastActiveAt        DateTime?    @map("last_active_at")
+  user                user         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([active])
   @@index([platform])
   @@index([token])
-  @@index([user_id])
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
-model reactions {
-  id         String   @id
-  emoji      String
-  message_id String
-  user_id    String
-  created_at DateTime @default(now())
-  messages   messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model reaction {
+  id        String    @id @default(cuid())
+  emoji     String
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  message   message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([message_id, user_id, emoji])
-  @@index([message_id])
-  @@index([user_id])
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+  @@map("reactions")
 }
 
-model sessions {
-  id            String   @id
-  session_token String   @unique
-  expires       DateTime
-  user_id       String
-  users         users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model session {
+  id           String    @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  expires      DateTime
+  userId       String   @map("user_id")
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([session_token])
-  @@index([user_id])
+  @@index([sessionToken])
+  @@index([userId])
+  @@map("sessions")
 }
 
-model tasks {
-  id                                String          @id
-  title                             String
-  description                       String?
-  priority                          TaskPriority    @default(MEDIUM)
-  status                            TaskStatus      @default(TODO)
-  due_date                          DateTime?
-  estimated_hours                   Int?
-  tags                              String[]        @default([])
-  metadata                          Json            @default("{}")
-  depends_on                        String[]        @default([])
-  vp_id                             String
-  workspace_id                      String
-  channel_id                        String?
-  created_by_id                     String
-  assigned_to_id                    String?
-  created_at                        DateTime        @default(now())
-  updated_at                        DateTime
-  completed_at                      DateTime?
-  backlog_items                     backlog_items[]
-  users_tasks_assigned_to_idTousers users?          @relation("tasks_assigned_to_idTousers", fields: [assigned_to_id], references: [id])
-  channels                          channels?       @relation(fields: [channel_id], references: [id])
-  users_tasks_created_by_idTousers  users           @relation("tasks_created_by_idTousers", fields: [created_by_id], references: [id])
-  vps                               vps             @relation(fields: [vp_id], references: [id], onDelete: Cascade)
-  workspaces                        workspaces      @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+model task {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  priority     TaskPriority  @default(MEDIUM)
+  status       TaskStatus    @default(TODO)
+  dueDate      DateTime?     @map("due_date")
+  estimatedHours Int?        @map("estimated_hours")
+  tags         String[]      @default([])
+  metadata     Json          @default("{}")
+  dependsOn    String[]      @default([]) @map("depends_on")
+  vpId         String        @map("vp_id")
+  workspaceId  String        @map("workspace_id")
+  channelId    String?       @map("channel_id")
+  createdById  String        @map("created_by_id")
+  assignedToId String?       @map("assigned_to_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  completedAt  DateTime?     @map("completed_at")
+  backlogItems backlogItem[]
+  assignedTo   user?         @relation("taskAssignedTo", fields: [assignedToId], references: [id])
+  channel      channel?      @relation(fields: [channelId], references: [id])
+  createdBy    user          @relation("taskCreatedBy", fields: [createdById], references: [id])
+  vp           vP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  workspace    workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@index([assigned_to_id])
-  @@index([channel_id])
-  @@index([created_at])
-  @@index([created_by_id])
-  @@index([due_date])
+  @@index([assignedToId])
+  @@index([channelId])
+  @@index([createdAt])
+  @@index([createdById])
+  @@index([dueDate])
   @@index([priority])
   @@index([status])
-  @@index([vp_id])
-  @@index([workspace_id])
+  @@index([vpId])
+  @@index([workspaceId])
+  @@map("tasks")
 }
 
-model users {
-  id                                String                 @id
-  email                             String                 @unique
-  name                              String?
-  display_name                      String?
-  avatar_url                        String?
-  bio                               String?
-  status                            UserStatus             @default(PENDING)
-  is_vp                             Boolean                @default(false)
-  vp_config                         Json?
-  preferences                       Json                   @default("{}")
-  created_at                        DateTime               @default(now())
-  updated_at                        DateTime
-  last_active_at                    DateTime?
-  email_verified                    DateTime?
-  accounts                          accounts[]
-  channel_members                   channel_members[]
-  channels                          channels[]
-  files                             files[]
-  messages                          messages[]
-  notifications                     notifications[]
-  organization_members              organization_members[]
-  push_subscriptions                push_subscriptions[]
-  reactions                         reactions[]
-  sessions                          sessions[]
-  tasks_tasks_assigned_to_idTousers tasks[]                @relation("tasks_assigned_to_idTousers")
-  tasks_tasks_created_by_idTousers  tasks[]                @relation("tasks_created_by_idTousers")
-  vps                               vps?
-  workspace_members                 workspace_members[]
+model user {
+  id                  String                @id @default(cuid())
+  email               String               @unique
+  name                String?
+  displayName         String?              @map("display_name")
+  avatarUrl           String?              @map("avatar_url")
+  bio                 String?
+  status              UserStatus           @default(PENDING)
+  isVP                Boolean              @default(false) @map("is_vp")
+  vpConfig            Json?                @map("vp_config")
+  preferences         Json                 @default("{}")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  lastActiveAt        DateTime?            @map("last_active_at")
+  emailVerified       DateTime?            @map("email_verified")
+  accounts            account[]
+  channelMembers      channelMember[]
+  channels            channel[]
+  files               file[]
+  messages            message[]
+  notifications       notification[]
+  organizationMembers organizationMember[]
+  pushSubscriptions   pushSubscription[]
+  reactions           reaction[]
+  sessions            session[]
+  tasksAssignedTo     task[]               @relation("taskAssignedTo")
+  tasksCreatedBy      task[]               @relation("taskCreatedBy")
+  vp                  vP?
+  workspaceMembers    workspaceMember[]
 
   @@index([email])
   @@index([status])
+  webhooks            webhook[]
+  @@map("users")
 }
 
-model verification_tokens {
+model verificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
-model vps {
-  id                 String               @id
-  discipline         String
-  role               String
-  capabilities       Json                 @default("[]")
-  daemon_endpoint    String?
-  status             VPStatus             @default(OFFLINE)
-  user_id            String               @unique
-  organization_id    String
-  workspace_id       String?
-  discipline_id      String?
-  created_at         DateTime             @default(now())
-  updated_at         DateTime
-  backlogs           backlogs[]
-  daemon_credentials daemon_credentials[]
-  tasks              tasks[]
-  disciplines        disciplines?         @relation(fields: [discipline_id], references: [id])
-  organizations      organizations        @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  users              users                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model vP {
+  id                String              @id @default(cuid())
+  discipline        String
+  role              String
+  capabilities      Json               @default("[]")
+  daemonEndpoint    String?            @map("daemon_endpoint")
+  status            VPStatus           @default(OFFLINE)
+  userId            String             @unique @map("user_id")
+  organizationId    String             @map("organization_id")
+  workspaceId       String?            @map("workspace_id")
+  disciplineId      String?            @map("discipline_id")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  backlogs          backlog[]
+  daemonCredentials daemonCredential[]
+  tasks             task[]
+  disciplineRef     discipline?        @relation(fields: [disciplineId], references: [id])
+  organization      organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user              user               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([discipline_id])
+  @@index([disciplineId])
   @@index([discipline])
-  @@index([organization_id])
+  @@index([organizationId])
   @@index([status])
-  @@index([workspace_id])
+  @@index([workspaceId])
+  vPMemories          vPMemory[]
+  @@map("vps")
 }
 
-model workflow_executions {
-  id            String                  @id
-  status        WorkflowExecutionStatus @default(PENDING)
-  triggered_by  String
-  trigger_type  String
-  trigger_data  Json?
-  steps         Json                    @default("[]")
-  error         String?
-  started_at    DateTime                @default(now())
-  completed_at  DateTime?
-  duration_ms   Int?
-  is_simulation Boolean                 @default(false)
-  workflow_id   String
-  workspace_id  String
-  workflows     workflows               @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+model workflowExecution {
+  id           String                   @id @default(cuid())
+  status       WorkflowExecutionStatus @default(PENDING)
+  triggeredBy  String                  @map("triggered_by")
+  triggerType  String                  @map("trigger_type")
+  triggerData  Json?                   @map("trigger_data")
+  steps        Json                    @default("[]")
+  error        String?
+  startedAt    DateTime                @default(now()) @map("started_at")
+  completedAt  DateTime?               @map("completed_at")
+  durationMs   Int?                    @map("duration_ms")
+  isSimulation Boolean                 @default(false) @map("is_simulation")
+  workflowId   String                  @map("workflow_id")
+  workspaceId  String                  @map("workspace_id")
+  workflow     workflow                @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
-  @@index([is_simulation])
-  @@index([started_at])
+  @@index([isSimulation])
+  @@index([startedAt])
   @@index([status])
-  @@index([triggered_by])
-  @@index([workflow_id])
-  @@index([workspace_id])
+  @@index([triggeredBy])
+  @@index([workflowId])
+  @@index([workspaceId])
+  @@map("workflow_executions")
 }
 
-model workflows {
-  id                  String                @id
-  name                String
-  description         String?
-  trigger             Json
-  actions             Json
-  status              WorkflowStatus        @default(DRAFT)
-  tags                String[]              @default([])
-  metadata            Json?
-  execution_count     Int                   @default(0)
-  success_count       Int                   @default(0)
-  failure_count       Int                   @default(0)
-  workspace_id        String
-  created_by          String
-  created_at          DateTime              @default(now())
-  updated_at          DateTime
-  last_executed_at    DateTime?
-  workflow_executions workflow_executions[]
-  workspaces          workspaces            @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-
-  @@unique([workspace_id, name])
-  @@index([created_at])
-  @@index([created_by])
-  @@index([status])
-  @@index([workspace_id])
-}
-
-model workspace_members {
-  id           String        @id
-  role         WorkspaceRole @default(MEMBER)
-  workspace_id String
-  user_id      String
-  joined_at    DateTime      @default(now())
-  users        users         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  workspaces   workspaces    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-
-  @@unique([workspace_id, user_id])
-  @@index([user_id])
-  @@index([workspace_id])
-}
-
-model workspaces {
-  id                 String               @id
+model workflow {
+  id                 String               @id @default(cuid())
   name               String
-  slug               String
   description        String?
-  avatar_url         String?
-  visibility         WorkspaceVisibility  @default(PRIVATE)
-  settings           Json                 @default("{}")
-  organization_id    String
-  created_at         DateTime             @default(now())
-  updated_at         DateTime
-  backlogs           backlogs[]
-  channels           channels[]
-  daemon_credentials daemon_credentials[]
-  files              files[]
-  tasks              tasks[]
-  workflows          workflows[]
-  workspace_members  workspace_members[]
-  integrations       integrations[]
-  organizations      organizations        @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  trigger            Json
+  actions            Json
+  status             WorkflowStatus      @default(DRAFT)
+  tags               String[]            @default([])
+  metadata           Json?
+  executionCount     Int                 @default(0) @map("execution_count")
+  successCount       Int                 @default(0) @map("success_count")
+  failureCount       Int                 @default(0) @map("failure_count")
+  workspaceId        String              @map("workspace_id")
+  createdBy          String              @map("created_by")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  lastExecutedAt     DateTime?           @map("last_executed_at")
+  workflowExecutions workflowExecution[]
+  workspace          workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([organization_id, slug])
-  @@index([organization_id])
+  @@unique([workspaceId, name])
+  @@index([createdAt])
+  @@index([createdBy])
+  @@index([status])
+  @@index([workspaceId])
+  @@map("workflows")
+}
+
+model workspaceMember {
+  id          String         @id @default(cuid())
+  role        WorkspaceRole @default(MEMBER)
+  workspaceId String        @map("workspace_id")
+  userId      String        @map("user_id")
+  joinedAt    DateTime      @default(now()) @map("joined_at")
+  user        user          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("workspace_members")
+}
+
+model workspace {
+  id                String              @id @default(cuid())
+  name              String
+  slug              String
+  description       String?
+  avatarUrl         String?            @map("avatar_url")
+  visibility        WorkspaceVisibility @default(PRIVATE)
+  settings          Json               @default("{}")
+  organizationId    String             @map("organization_id")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  backlogs          backlog[]
+  channels          channel[]
+  daemonCredentials daemonCredential[]
+  files             file[]
+  tasks             task[]
+  workflows         workflow[]
+  workspaceMembers  workspaceMember[]
+  integrations      integration[]
+  organization      organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
   @@index([slug])
+  webhooks            webhook[]
+  @@map("workspaces")
 }
 
 enum ChannelRole {
@@ -662,29 +689,113 @@ enum IntegrationProvider {
 }
 
 /// Integration - Third-party service integration configuration
-model integrations {
-  id            String              @id
-  name          String
-  description   String?
-  provider      IntegrationProvider
-  status        IntegrationStatus   @default(PENDING)
-  access_token  String?             @db.Text
-  refresh_token String?             @db.Text
-  expires_at    DateTime?
-  config        Json                @default("{}")
-  sync_enabled  Boolean             @default(false)
-  last_sync_at  DateTime?
-  sync_error    String?
-  workspace_id  String
-  connected_by  String
-  created_at    DateTime            @default(now())
-  updated_at    DateTime
-  connected_at  DateTime?
-  workspaces    workspaces          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+model integration {
+  id           String               @id @default(cuid())
+  name         String
+  description  String?
+  provider     IntegrationProvider
+  status       IntegrationStatus   @default(PENDING)
+  accessToken  String?             @map("access_token") @db.Text
+  refreshToken String?             @map("refresh_token") @db.Text
+  expiresAt    DateTime?           @map("expires_at")
+  config       Json                @default("{}")
+  syncEnabled  Boolean             @default(false) @map("sync_enabled")
+  lastSyncAt   DateTime?           @map("last_sync_at")
+  syncError    String?             @map("sync_error")
+  workspaceId  String              @map("workspace_id")
+  connectedBy  String              @map("connected_by")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  connectedAt  DateTime?           @map("connected_at")
+  workspace    workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@index([workspace_id])
+  @@index([workspaceId])
   @@index([provider])
   @@index([status])
-  @@index([connected_by])
-  @@index([created_at])
+  @@index([connectedBy])
+  @@index([createdAt])
+  @@map("integrations")
+}
+
+/// Webhook status
+enum WebhookStatus {
+  ACTIVE
+  INACTIVE
+  FAILED
+}
+
+/// Webhook delivery status
+enum WebhookDeliveryStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  RETRYING
+}
+
+/// Webhook - Outgoing webhook configuration
+model webhook {
+  id             String            @id @default(cuid())
+  name           String
+  url            String
+  secret         String?
+  events         String[]
+  status         WebhookStatus     @default(ACTIVE)
+  headers        Json              @default("{}")
+  retryAttempts  Int               @default(3) @map("retry_attempts")
+  timeout        Int               @default(30000)
+  workspaceId    String            @map("workspace_id")
+  createdById    String            @map("created_by_id")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  workspace      workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy      user              @relation(fields: [createdById], references: [id])
+  deliveries     webhookDelivery[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([createdById])
+  @@map("webhooks")
+}
+
+/// WebhookDelivery - Webhook delivery attempt record
+model webhookDelivery {
+  id              String                @id @default(cuid())
+  webhookId       String                @map("webhook_id")
+  event           String
+  payload         Json
+  status          WebhookDeliveryStatus @default(PENDING)
+  responseStatus  Int?                  @map("response_status")
+  responseBody    String?               @map("response_body") @db.Text
+  error           String?               @db.Text
+  attemptCount    Int                   @default(0) @map("attempt_count")
+  nextRetryAt     DateTime?             @map("next_retry_at")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  completedAt     DateTime?             @map("completed_at")
+  webhook         webhook               @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("webhook_deliveries")
+}
+
+/// VPMemory - VP memory entries for conversation context
+model vPMemory {
+  id          String   @id @default(cuid())
+  vpId        String   @map("vp_id")
+  memoryType  String   @map("memory_type")
+  content     String   @db.Text
+  embedding   Json?    
+  metadata    Json     @default("{}")
+  importance  Float    @default(0.5)
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  vp          vP       @relation(fields: [vpId], references: [id], onDelete: Cascade)
+
+  @@index([vpId])
+  @@index([memoryType])
+  @@index([importance])
+  @@index([createdAt])
+  @@map("vp_memories")
 }

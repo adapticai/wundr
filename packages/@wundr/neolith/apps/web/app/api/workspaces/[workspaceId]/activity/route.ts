@@ -141,7 +141,7 @@ export async function GET(
     const { workspaceId } = await context.params;
 
     // Verify workspace membership (any role)
-    const membership = await prisma.workspace_members.findFirst({
+    const membership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
       include: {
         workspace: {
@@ -194,7 +194,7 @@ export async function GET(
     const activities: ActivityEntry[] = [];
 
     // 1. Workspace member activities
-    const memberActivities = await prisma.workspace_members.findMany({
+    const memberActivities = await prisma.workspaceMember.findMany({
       where: {
         workspaceId,
         ...(userId && { userId }),
@@ -244,7 +244,7 @@ export async function GET(
           ...(dateTo && { createdAt: { lte: new Date(dateTo) } }),
         },
         include: {
-          creator: {
+          createdBy: {
             select: {
               id: true,
               name: true,
@@ -261,12 +261,12 @@ export async function GET(
 
       activities.push(
         ...channelActivities
-          .filter(c => c.creator)
+          .filter(c => c.createdBy)
           .map(c => ({
             id: `channel-${c.id}`,
             type: 'channel.created' as ActivityType,
             userId: c.createdById!,
-            user: c.creator!,
+            user: c.createdBy!,
             resourceType: 'channel',
             resourceId: c.id,
             resourceName: c.name,
@@ -289,7 +289,7 @@ export async function GET(
           ...(dateTo && { createdAt: { lte: new Date(dateTo) } }),
         },
         include: {
-          uploader: {
+          uploadedBy: {
             select: {
               id: true,
               name: true,
@@ -309,7 +309,7 @@ export async function GET(
           id: `file-${f.id}`,
           type: 'file.uploaded' as ActivityType,
           userId: f.uploadedById,
-          user: f.uploader,
+          user: f.uploadedBy,
           resourceType: 'file',
           resourceId: f.id,
           resourceName: f.originalName,
@@ -333,7 +333,7 @@ export async function GET(
           ...(dateTo && { createdAt: { lte: new Date(dateTo) } }),
         },
         include: {
-          creator: {
+          createdBy: {
             select: {
               id: true,
               name: true,
@@ -353,7 +353,7 @@ export async function GET(
           id: `task-${t.id}`,
           type: (t.completedAt ? 'task.completed' : 'task.created') as ActivityType,
           userId: t.createdById,
-          user: t.creator,
+          user: t.createdBy,
           resourceType: 'task',
           resourceId: t.id,
           resourceName: t.title,

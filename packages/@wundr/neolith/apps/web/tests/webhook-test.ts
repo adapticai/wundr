@@ -19,18 +19,27 @@ async function testWebhookOperations() {
 
     console.log(`Using workspace: ${workspace.name} (${workspace.id})\n`);
 
+    // Find a user to use as creator
+    const user = await prisma.user.findFirst();
+    if (!user) {
+      console.error('No user found. Please create a user first.');
+      return;
+    }
+
     // Test: Create a webhook
     console.log('1. Creating webhook...');
     const webhook = await prisma.webhook.create({
       data: {
         workspaceId: workspace.id,
         name: 'Test Webhook',
-        description: 'Test webhook for verification',
         url: 'https://webhook.site/test',
         secret: 'whsec_test123',
         events: ['message.created', 'channel.created'],
         status: 'ACTIVE',
-        createdBy: 'test-user',
+        retryAttempts: 3,
+        timeout: 10000,
+        headers: {},
+        createdById: user.id,
       },
     });
     console.log(`✅ Created webhook: ${webhook.id}\n`);
@@ -57,15 +66,10 @@ async function testWebhookOperations() {
         webhookId: webhook.id,
         event: 'message.created',
         status: 'SUCCESS',
-        requestUrl: webhook.url,
-        requestHeaders: { 'Content-Type': 'application/json' },
-        requestBody: JSON.stringify({ test: 'data' }),
+        payload: { test: 'data' },
         responseStatus: 200,
-        responseHeaders: { 'Content-Type': 'application/json' },
         responseBody: JSON.stringify({ success: true }),
-        latencyMs: 123,
-        attemptNumber: 1,
-        deliveredAt: new Date(),
+        attemptCount: 1,
       },
     });
     console.log(`✅ Created delivery: ${delivery.id}\n`);

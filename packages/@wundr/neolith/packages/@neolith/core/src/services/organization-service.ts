@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import {
   GenesisError,
@@ -30,7 +30,7 @@ import type {
   PaginatedOrgResult,
   OrganizationMemberRole,
 } from '../types/organization';
-import type { PrismaClient, Prisma, OrganizationRole , Organization, OrganizationMember } from '@genesis/database';
+import type { PrismaClient, Prisma, OrganizationRole , Organization, OrganizationMember } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -273,7 +273,7 @@ export class OrganizationServiceImpl implements OrganizationService {
     const organization = await this.db.organization.findUnique({
       where: { id },
       include: {
-        members: {
+        organizationMembers: {
           include: { user: true },
         },
         workspaces: true,
@@ -296,7 +296,7 @@ export class OrganizationServiceImpl implements OrganizationService {
     const organization = await this.db.organization.findUnique({
       where: { slug },
       include: {
-        members: {
+        organizationMembers: {
           include: { user: true },
         },
         workspaces: true,
@@ -325,9 +325,9 @@ export class OrganizationServiceImpl implements OrganizationService {
     } = options;
 
     // Build where clause
-    const where: Prisma.OrganizationWhereInput = {
+    const where: Prisma.organizationWhereInput = {
       ...(userId && {
-        members: {
+        organizationMembers: {
           some: { userId },
         },
       }),
@@ -338,7 +338,7 @@ export class OrganizationServiceImpl implements OrganizationService {
       this.db.organization.findMany({
         where,
         include: {
-          members: {
+          organizationMembers: {
             include: { user: true },
           },
         },
@@ -370,7 +370,7 @@ export class OrganizationServiceImpl implements OrganizationService {
       throw new OrganizationNotFoundError(id);
     }
 
-    const updateData: Prisma.OrganizationUpdateInput = {};
+    const updateData: Prisma.organizationUpdateInput = {};
 
     if (data.name !== undefined) {
       updateData.name = data.name;
@@ -392,7 +392,7 @@ export class OrganizationServiceImpl implements OrganizationService {
       where: { id },
       data: updateData,
       include: {
-        members: {
+        organizationMembers: {
           include: { user: true },
         },
       },

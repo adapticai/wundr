@@ -344,7 +344,7 @@ export class DaemonApiService {
       include: {
         channel: {
           include: {
-            _count: { select: { members: true } },
+            _count: { select: { channelMembers: true } },
           },
         },
       },
@@ -355,7 +355,7 @@ export class DaemonApiService {
       name: m.channel.name,
       description: m.channel.description ?? undefined,
       type: mapChannelType(m.channel.type),
-      memberCount: m.channel._count.members,
+      memberCount: m.channel._count.channelMembers,
       vpCanAccess: true,
     }));
   }

@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import {
   ImageValidationError,
@@ -30,7 +30,7 @@ import type {
   VariantConfig,
   ImageFormat,
 } from '../types/image';
-import type { PrismaClient } from '@genesis/database';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // S3 Client Interface (to be implemented by consumer)

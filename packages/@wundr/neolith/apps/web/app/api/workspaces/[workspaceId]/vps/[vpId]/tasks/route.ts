@@ -84,7 +84,7 @@ export async function GET(
     }
 
     // Check user has access to workspace
-    const workspaceMember = await prisma.workspace_members.findFirst({
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -182,7 +182,7 @@ export async function GET(
     }
 
     // Build where clause
-    const where: Prisma.TaskWhereInput = {
+    const where: Prisma.taskWhereInput = {
       vpId,
       workspaceId,
       ...(statusFilter && { status: { in: statusFilter as any[] } }),
@@ -194,7 +194,7 @@ export async function GET(
     };
 
     // Build cursor-based pagination
-    const findManyArgs: Prisma.TaskFindManyArgs = {
+    const findManyArgs: Prisma.taskFindManyArgs = {
       where,
       take: limit + 1, // Fetch one extra to determine if there are more results
       orderBy: [
@@ -212,7 +212,7 @@ export async function GET(
         },
         workspace: { select: { id: true, name: true } },
         channel: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true } },
       },
     };
@@ -358,7 +358,7 @@ export async function POST(
     const input: CreateTaskInput = parseResult.data;
 
     // Check user has access to workspace
-    const workspaceMember = await prisma.workspace_members.findFirst({
+    const workspaceMember = await prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId: session.user.id,
@@ -452,7 +452,7 @@ export async function POST(
       }
 
       // Check if assignee has access to workspace
-      const assigneeAccess = await prisma.workspace_members.findFirst({
+      const assigneeAccess = await prisma.workspaceMember.findFirst({
         where: {
           workspaceId,
           userId: input.assignedToId,
@@ -499,7 +499,7 @@ export async function POST(
         },
         workspace: { select: { id: true, name: true } },
         channel: { select: { id: true, name: true } },
-        creator: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true } },
       },
     });

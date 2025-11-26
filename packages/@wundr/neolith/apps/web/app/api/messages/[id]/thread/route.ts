@@ -37,12 +37,12 @@ interface RouteContext {
  * Helper function to get parent message and check access
  */
 async function getParentMessageWithAccess(messageId: string, userId: string) {
-  const message = await prisma.messages.findUnique({
+  const message = await prisma.message.findUnique({
     where: { id: messageId },
     include: {
       channel: {
         include: {
-          members: {
+          channelMembers: {
             where: { userId },
             select: { userId: true },
           },
@@ -55,7 +55,7 @@ async function getParentMessageWithAccess(messageId: string, userId: string) {
     return { message: null, hasAccess: false };
   }
 
-  const hasAccess = message.channel.members.length > 0;
+  const hasAccess = message.channel.channelMembers.length > 0;
   return { message, hasAccess };
 }
 
@@ -158,9 +158,9 @@ export async function GET(
     }
 
     // Build cursor condition
-    let cursorCondition: Prisma.MessageWhereInput = {};
+    let cursorCondition: Prisma.messageWhereInput = {};
     if (filters.cursor) {
-      const cursorMessage = await prisma.messages.findUnique({
+      const cursorMessage = await prisma.message.findUnique({
         where: { id: filters.cursor },
         select: { createdAt: true },
       });
@@ -173,7 +173,7 @@ export async function GET(
     }
 
     // Fetch thread replies
-    const replies = await prisma.messages.findMany({
+    const replies = await prisma.message.findMany({
       where: {
         parentId: params.id,
         isDeleted: false,
@@ -206,7 +206,7 @@ export async function GET(
             },
           },
         },
-        attachments: {
+        messageAttachments: {
           include: {
             file: {
               select: {
@@ -228,7 +228,7 @@ export async function GET(
     const resultReplies = hasMore ? replies.slice(0, filters.limit) : replies;
 
     // Get total reply count
-    const totalCount = await prisma.messages.count({
+    const totalCount = await prisma.message.count({
       where: {
         parentId: params.id,
         isDeleted: false,
@@ -381,7 +381,7 @@ export async function POST(
     }
 
     // Create the reply
-    const reply = await prisma.messages.create({
+    const reply = await prisma.message.create({
       data: {
         content: input.content,
         type: input.type,
@@ -401,7 +401,7 @@ export async function POST(
           },
         },
         reactions: true,
-        attachments: {
+        messageAttachments: {
           include: {
             file: {
               select: {

@@ -120,13 +120,13 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       prisma.message.count({
         where: {
           channel: {
-            members: { some: { userId: session.user.id } },
+            channelMembers: { some: { userId: session.user.id } },
           },
         },
       }),
       prisma.channel.count({
         where: {
-          members: { some: { userId: session.user.id } },
+          channelMembers: { some: { userId: session.user.id } },
         },
       }),
       prisma.notification.count({
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               where: {
                 ...dateFilter,
                 channel: {
-                  members: { some: { userId: session.user.id } },
+                  channelMembers: { some: { userId: session.user.id } },
                   ...(input.workspaceId && { workspaceId: input.workspaceId }),
                 },
                 deletedAt: null,
@@ -281,7 +281,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                   where: {
                     ...dateFilter,
                     channel: {
-                      members: { some: { userId: session.user.id } },
+                      channelMembers: { some: { userId: session.user.id } },
                     },
                     deletedAt: { not: null },
                   },
@@ -312,13 +312,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           const channels = await prisma.channel.findMany({
             where: {
               ...dateFilter,
-              members: { some: { userId: session.user.id } },
+              channelMembers: { some: { userId: session.user.id } },
               ...(input.workspaceId && { workspaceId: input.workspaceId }),
             },
             take: limit,
             orderBy: { updatedAt: 'desc' },
             include: {
-              _count: { select: { members: true } },
+              _count: { select: { channelMembers: true } },
             },
           });
 
@@ -343,10 +343,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           const users = await prisma.user.findMany({
             where: {
               ...dateFilter,
-              channelMemberships: {
+              channelMembers: {
                 some: {
                   channel: {
-                    members: { some: { userId: session.user.id } },
+                    channelMembers: { some: { userId: session.user.id } },
                   },
                 },
               },
@@ -402,7 +402,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           const workspaces = await prisma.workspace.findMany({
             where: {
               ...dateFilter,
-              members: { some: { userId: session.user.id } },
+              workspaceMembers: { some: { userId: session.user.id } },
             },
             take: limit,
             orderBy: { updatedAt: 'desc' },

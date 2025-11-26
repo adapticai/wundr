@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import { prisma } from '@genesis/database';
+import { prisma } from '@neolith/database';
 
 import { GenesisError, VPNotFoundError } from '../errors';
 import {
@@ -26,7 +26,7 @@ import type {
   HealthStatusType,
   HeartbeatConfig,
 } from '../types/heartbeat';
-import type { PrismaClient } from '@genesis/database';
+import type { PrismaClient } from '@neolith/database';
 
 // =============================================================================
 // Redis Client Interface

@@ -57,7 +57,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -134,7 +134,7 @@ export async function PATCH(
     }
 
     // Get target member
-    const targetMembership = await prisma.workspace_members.findUnique({
+    const targetMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: params.workspaceId,
@@ -180,7 +180,7 @@ export async function PATCH(
     const input: UpdateWorkspaceMemberRoleInput = parseResult.data;
 
     // Update member role
-    const updatedMembership = await prisma.workspace_members.update({
+    const updatedMembership = await prisma.workspaceMember.update({
       where: {
         workspaceId_userId: {
           workspaceId: params.workspaceId,
@@ -282,7 +282,7 @@ export async function DELETE(
     }
 
     // Get target member
-    const targetMembership = await prisma.workspace_members.findUnique({
+    const targetMembership = await prisma.workspaceMember.findUnique({
       where: {
         workspaceId_userId: {
           workspaceId: params.workspaceId,
@@ -303,7 +303,7 @@ export async function DELETE(
 
     // Check if this is the last admin
     if (targetMembership.role === 'ADMIN') {
-      const adminCount = await prisma.workspace_members.count({
+      const adminCount = await prisma.workspaceMember.count({
         where: {
           workspaceId: params.workspaceId,
           role: 'ADMIN',

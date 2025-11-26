@@ -50,7 +50,7 @@ export async function POST(
     const { workspaceId, userId } = await context.params;
 
     // Verify admin access
-    const adminMembership = await prisma.workspace_members.findFirst({
+    const adminMembership = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId: session.user.id },
     });
 
@@ -62,7 +62,7 @@ export async function POST(
     }
 
     // Fetch target member
-    const member = await prisma.workspace_members.findFirst({
+    const member = await prisma.workspaceMember.findFirst({
       where: { workspaceId, userId },
       include: { user: { select: { id: true, name: true, email: true, status: true } } },
     });

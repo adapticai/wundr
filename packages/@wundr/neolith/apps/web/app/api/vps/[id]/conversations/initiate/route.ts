@@ -225,7 +225,7 @@ export async function POST(
         where: {
           workspaceId: workspace.id,
           type: 'DM',
-          members: {
+          channelMembers: {
             every: {
               userId: {
                 in: [vp.user.id, targetUser.id],
@@ -234,16 +234,16 @@ export async function POST(
           },
         },
         include: {
-          members: true,
+          channelMembers: true,
         },
       });
 
       // Find DM channel with exactly these two users
       let dmChannel = dmChannels.find(
         (ch) =>
-          ch.members.length === 2 &&
-          ch.members.some((m) => m.userId === vp.user.id) &&
-          ch.members.some((m) => m.userId === targetUser.id),
+          ch.channelMembers.length === 2 &&
+          ch.channelMembers.some((m) => m.userId === vp.user.id) &&
+          ch.channelMembers.some((m) => m.userId === targetUser.id),
       );
 
       if (!dmChannel) {
@@ -255,7 +255,7 @@ export async function POST(
             type: 'DM',
             workspaceId: workspace.id,
             createdById: vp.user.id,
-            members: {
+            channelMembers: {
               create: [
                 { userId: vp.user.id, role: 'MEMBER' },
                 { userId: targetUser.id, role: 'MEMBER' },
@@ -263,7 +263,7 @@ export async function POST(
             },
           },
           include: {
-            members: true,
+            channelMembers: true,
           },
         });
       }

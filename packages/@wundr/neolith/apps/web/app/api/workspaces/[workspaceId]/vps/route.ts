@@ -68,7 +68,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
   }
 
   // Check workspace membership
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -169,7 +169,7 @@ export async function GET(
     const cursor = request.nextUrl.searchParams.get('cursor');
 
     // Build where clause - filter VPs by workspace's organization
-    const where: Prisma.VPWhereInput = {
+    const where: Prisma.vPWhereInput = {
       organizationId: access.workspace.organizationId,
       ...(filters.discipline && { discipline: filters.discipline }),
       ...(filters.status && { status: filters.status }),
@@ -186,7 +186,7 @@ export async function GET(
     // Build orderBy based on sortBy field
     // Map sortBy to the correct field
     // The schema only allows: 'createdAt', 'updatedAt', 'discipline', 'role', 'status'
-    const orderBy: Prisma.VPOrderByWithRelationInput = { [filters.sortBy]: filters.sortOrder };
+    const orderBy: Prisma.vPOrderByWithRelationInput = { [filters.sortBy]: filters.sortOrder };
 
     // Determine pagination approach
     let skip: number | undefined;
@@ -230,7 +230,7 @@ export async function GET(
               slug: true,
             },
           },
-          disciplineRelation: {
+          disciplineRef: {
             select: {
               id: true,
               name: true,
@@ -521,7 +521,7 @@ export async function POST(
               slug: true,
             },
           },
-          disciplineRelation: {
+          disciplineRef: {
             select: {
               id: true,
               name: true,

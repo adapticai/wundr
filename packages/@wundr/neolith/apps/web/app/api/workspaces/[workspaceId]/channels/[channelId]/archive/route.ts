@@ -43,7 +43,7 @@ async function checkAdminAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -146,7 +146,7 @@ export async function POST(
         workspaceId: params.workspaceId,
       },
       include: {
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -192,7 +192,7 @@ export async function POST(
         updatedAt: new Date(),
       },
       include: {
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -203,7 +203,7 @@ export async function POST(
         },
         _count: {
           select: {
-            members: {
+            channelMembers: {
               where: {
                 leftAt: null,
               },
@@ -229,8 +229,8 @@ export async function POST(
         isArchived: updatedChannel.isArchived,
         createdAt: updatedChannel.createdAt,
         updatedAt: updatedChannel.updatedAt,
-        creator: updatedChannel.creator,
-        memberCount: updatedChannel._count.members,
+        creator: updatedChannel.createdBy,
+        memberCount: updatedChannel._count.channelMembers,
         messageCount: updatedChannel._count.messages,
       },
       message: 'Channel archived successfully',
@@ -326,7 +326,7 @@ export async function DELETE(
         workspaceId: params.workspaceId,
       },
       include: {
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -361,7 +361,7 @@ export async function DELETE(
         updatedAt: new Date(),
       },
       include: {
-        creator: {
+        createdBy: {
           select: {
             id: true,
             name: true,
@@ -372,7 +372,7 @@ export async function DELETE(
         },
         _count: {
           select: {
-            members: {
+            channelMembers: {
               where: {
                 leftAt: null,
               },
@@ -398,8 +398,8 @@ export async function DELETE(
         isArchived: updatedChannel.isArchived,
         createdAt: updatedChannel.createdAt,
         updatedAt: updatedChannel.updatedAt,
-        creator: updatedChannel.creator,
-        memberCount: updatedChannel._count.members,
+        creator: updatedChannel.createdBy,
+        memberCount: updatedChannel._count.channelMembers,
         messageCount: updatedChannel._count.messages,
       },
       message: 'Channel unarchived successfully',

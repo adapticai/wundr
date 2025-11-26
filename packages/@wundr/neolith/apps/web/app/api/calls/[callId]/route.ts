@@ -81,7 +81,7 @@ async function getCallWithAccess(callId: string, userId: string) {
       const call = calls[0];
 
       // Check channel access
-      const channel = await prisma.channels.findUnique({
+      const channel = await prisma.channel.findUnique({
         where: { id: call.channel_id },
         include: { workspace: true },
       });
@@ -90,7 +90,7 @@ async function getCallWithAccess(callId: string, userId: string) {
 return null;
 }
 
-      const orgMembership = await prisma.organization_members.findUnique({
+      const orgMembership = await prisma.organizationMember.findUnique({
         where: {
           organizationId_userId: {
             organizationId: channel.workspace.organizationId,
@@ -105,7 +105,7 @@ return null;
 
       // For private channels, check membership
       if (channel.type === 'PRIVATE') {
-        const channelMembership = await prisma.channel_members.findUnique({
+        const channelMembership = await prisma.channelMember.findUnique({
           where: {
             channelId_userId: {
               channelId: channel.id,
@@ -139,7 +139,7 @@ return null;
   }
 
   // Fall back to channel settings
-  const channels = await prisma.channels.findMany({
+  const channels = await prisma.channel.findMany({
     where: {
       settings: {
         path: ['activeCall', 'id'],
@@ -160,7 +160,7 @@ return null;
 }
 
   // Check access
-  const orgMembership = await prisma.organization_members.findUnique({
+  const orgMembership = await prisma.organizationMember.findUnique({
     where: {
       organizationId_userId: {
         organizationId: channel.workspace.organizationId,
@@ -174,7 +174,7 @@ return null;
 }
 
   if (channel.type === 'PRIVATE') {
-    const channelMembership = await prisma.channel_members.findUnique({
+    const channelMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId: channel.id,
@@ -242,7 +242,7 @@ export async function GET(
     }
 
     // Get creator info
-    const creator = await prisma.users.findUnique({
+    const creator = await prisma.user.findUnique({
       where: { id: result.call.createdById },
       select: { id: true, name: true, displayName: true },
     });
@@ -391,7 +391,7 @@ export async function DELETE(
 
     // Check channel admin
     let isChannelAdmin = false;
-    const channelMembership = await prisma.channel_members.findUnique({
+    const channelMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId: result.channel.id,
@@ -418,7 +418,7 @@ export async function DELETE(
     // End the call
     if ('fromSettings' in result && result.fromSettings) {
       // Update channel settings
-      await prisma.channels.update({
+      await prisma.channel.update({
         where: { id: result.channel.id },
         data: {
           settings: {

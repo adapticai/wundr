@@ -136,7 +136,7 @@ export async function GET(
     const filters: WorkspaceFilesInput = queryResult.data;
 
     // Check channel membership
-    const membership = await prisma.channel_members.findUnique({
+    const membership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
           channelId: params.channelId,
@@ -184,7 +184,7 @@ export async function GET(
     // Include files either:
     // 1. Attached to messages in this channel
     // 2. Have this channel referenced in metadata
-    const where: Prisma.FileWhereInput = {
+    const where: Prisma.fileWhereInput = {
       OR: [
         { id: { in: attachedFileIds } },
         {
@@ -230,7 +230,7 @@ export async function GET(
         status: true,
         metadata: true,
         createdAt: true,
-        uploader: {
+        uploadedBy: {
           select: {
             id: true,
             name: true,

@@ -60,7 +60,7 @@ return null;
 return null;
 }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -135,7 +135,7 @@ export async function GET(
     const filters: WorkflowFiltersInput = parseResult.data;
 
     // Build where clause
-    const where: Prisma.WorkflowWhereInput = {
+    const where: Prisma.workflowWhereInput = {
       workspaceId,
       ...(filters.status && { status: filters.status }),
       ...(filters.trigger && {
@@ -160,7 +160,7 @@ export async function GET(
     const take = filters.limit;
 
     // Build orderBy
-    const orderBy: Prisma.WorkflowOrderByWithRelationInput = {
+    const orderBy: Prisma.workflowOrderByWithRelationInput = {
       [filters.sortBy]: filters.sortOrder,
     };
 
@@ -174,7 +174,7 @@ export async function GET(
         include: {
           _count: {
             select: {
-              executions: true,
+              workflowExecutions: true,
             },
           },
         },
@@ -329,7 +329,7 @@ export async function POST(
       include: {
         _count: {
           select: {
-            executions: true,
+            workflowExecutions: true,
           },
         },
       },

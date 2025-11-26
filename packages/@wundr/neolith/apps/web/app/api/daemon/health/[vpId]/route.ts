@@ -184,7 +184,7 @@ export async function GET(
     const { vpId } = await params;
 
     // Get VP to verify it exists and get organization
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: vpId },
       include: {
         user: {
@@ -213,7 +213,7 @@ export async function GET(
     }
 
     // Check user has access to the organization
-    const membership = await prisma.organization_members.findFirst({
+    const membership = await prisma.organizationMember.findFirst({
       where: {
         userId: session.user.id,
         organizationId: vp.organizationId,

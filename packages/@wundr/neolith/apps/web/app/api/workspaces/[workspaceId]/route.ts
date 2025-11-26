@@ -61,7 +61,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
     return null;
   }
 
-  const workspaceMembership = await prisma.workspace_members.findUnique({
+  const workspaceMembership = await prisma.workspaceMember.findUnique({
     where: {
       workspaceId_userId: {
         workspaceId,
@@ -135,7 +135,7 @@ export async function GET(
         },
         _count: {
           select: {
-            members: true,
+            workspaceMembers: true,
             channels: true,
           },
         },
@@ -267,7 +267,7 @@ export async function PATCH(
         },
         _count: {
           select: {
-            members: true,
+            workspaceMembers: true,
             channels: true,
           },
         },

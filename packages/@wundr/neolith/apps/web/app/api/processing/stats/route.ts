@@ -61,7 +61,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
     const isAdmin = !!adminMembership;
 
     // Get user's accessible workspaces for filtering
-    const userWorkspaces = await prisma.workspace_members.findMany({
+    const userWorkspaces = await prisma.workspaceMember.findMany({
       where: { userId: session.user.id },
       select: { workspaceId: true },
     });

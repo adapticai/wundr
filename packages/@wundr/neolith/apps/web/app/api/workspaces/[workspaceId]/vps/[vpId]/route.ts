@@ -88,6 +88,7 @@ async function getVPWithWorkspaceAccess(
           status: true,
           createdAt: true,
           lastActiveAt: true,
+          isVP: true,
         },
       },
       organization: {
@@ -97,7 +98,7 @@ async function getVPWithWorkspaceAccess(
           slug: true,
         },
       },
-      disciplineRelation: {
+      disciplineRef: {
         select: {
           id: true,
           name: true,
@@ -431,7 +432,7 @@ export async function PATCH(
               slug: true,
             },
           },
-          disciplineRelation: {
+          disciplineRef: {
             select: {
               id: true,
               name: true,

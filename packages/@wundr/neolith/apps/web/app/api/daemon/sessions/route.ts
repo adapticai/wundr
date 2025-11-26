@@ -298,7 +298,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verify VP exists
-    const vp = await prisma.vps.findUnique({
+    const vp = await prisma.vP.findUnique({
       where: { id: sessionData.vpId },
       select: { id: true, status: true },
     });

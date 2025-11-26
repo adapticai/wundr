@@ -302,7 +302,7 @@ export async function GET(
         },
       }),
       // Total members
-      prisma.workspace_members.count({
+      prisma.workspaceMember.count({
         where: {
           workspaceId: params.workspaceId,
         },
@@ -514,7 +514,7 @@ export async function GET(
                 isDeleted: false,
               },
             },
-            members: true,
+            channelMembers: true,
           },
         },
       },
@@ -524,7 +524,7 @@ export async function GET(
       channelId: channel.id,
       channelName: channel.name,
       messageCount: channel._count.messages,
-      memberCount: channel._count.members,
+      memberCount: channel._count.channelMembers,
       type: channel.type,
     }));
 
@@ -597,7 +597,7 @@ export async function GET(
       _count: true,
     });
 
-    const completedWorkflowExecutions = await prisma.workflowExecution.findMany({
+    const completedworkflowExecutions = await prisma.workflowExecution.findMany({
       where: {
         workspaceId: params.workspaceId,
         status: 'COMPLETED',
@@ -615,17 +615,17 @@ export async function GET(
     });
 
     let averageDurationMs: number | undefined;
-    if (completedWorkflowExecutions.length > 0) {
-      const totalDuration = completedWorkflowExecutions.reduce(
+    if (completedworkflowExecutions.length > 0) {
+      const totalDuration = completedworkflowExecutions.reduce(
         (sum, exec) => sum + (exec.durationMs || 0),
         0,
       );
-      averageDurationMs = totalDuration / completedWorkflowExecutions.length;
+      averageDurationMs = totalDuration / completedworkflowExecutions.length;
     }
 
-    const totalWorkflowExecutions = workflowsByStatus.reduce((sum, group) => sum + group._count, 0);
-    const successRate = totalWorkflowExecutions > 0
-      ? (successfulWorkflows / totalWorkflowExecutions) * 100
+    const totalworkflowExecutions = workflowsByStatus.reduce((sum, group) => sum + group._count, 0);
+    const successRate = totalworkflowExecutions > 0
+      ? (successfulWorkflows / totalworkflowExecutions) * 100
       : 0;
 
     // Build response
