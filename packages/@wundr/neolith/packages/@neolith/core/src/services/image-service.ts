@@ -5,11 +5,43 @@
  * format conversion, thumbnail generation, and metadata extraction.
  *
  * Uses sharp for high-performance image processing.
+ * Sharp is loaded dynamically to avoid issues with Next.js Turbopack bundling.
  *
  * @packageDocumentation
  */
 
-import sharp from 'sharp';
+// Sharp types - we use 'any' for the dynamic import since sharp types are complex
+// and the module is loaded dynamically at runtime
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SharpFunction = (input?: Buffer | string, options?: object) => any;
+
+// Lazy-loaded sharp module to avoid Turbopack bundling issues with native modules
+let _sharp: SharpFunction | null = null;
+
+/**
+ * Dynamically loads the sharp module.
+ * This is necessary because sharp is a native module that cannot be bundled by Turbopack.
+ * @throws Error if sharp cannot be loaded (e.g., not installed or wrong platform)
+ */
+async function getSharp(): Promise<SharpFunction> {
+  if (_sharp) {
+    return _sharp;
+  }
+
+  try {
+    // Dynamic import to avoid static analysis by bundlers
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const sharpModule = await import('sharp');
+    _sharp = sharpModule.default || sharpModule;
+    return _sharp;
+  } catch (error) {
+    throw new Error(
+      `Failed to load sharp module. Ensure sharp is installed with the correct platform binaries. ` +
+        `Try: npm install --include=optional sharp\n` +
+        `Original error: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
 
 import {
   THUMBNAIL_SIZES,
@@ -233,13 +265,14 @@ export class ImageServiceImpl implements ImageService {
 
     // Generate primary thumbnail (medium)
     const thumbnailBuffer = await this.generateThumbnail(oriented, 'md');
-    const thumbnailMeta = await sharp(thumbnailBuffer).metadata();
+    const sharpInstance = await getSharp();
+    const thumbnailMeta = await sharpInstance(thumbnailBuffer).metadata();
 
     // Generate all default variants
     const variants = await this.generateVariants(oriented, DEFAULT_VARIANTS);
 
     // Build original variant info
-    const optimizedMeta = await sharp(optimizedBuffer).metadata();
+    const optimizedMeta = await sharpInstance(optimizedBuffer).metadata();
     const original: ImageVariant = {
       buffer: optimizedBuffer,
       width: optimizedMeta.width ?? metadata.width,
@@ -272,9 +305,10 @@ export class ImageServiceImpl implements ImageService {
    */
   async resizeImage(input: Buffer, options: ResizeOptions): Promise<Buffer> {
     try {
+      const sharp = await getSharp();
       let pipeline = sharp(input).rotate(); // Auto-orient
 
-      const resizeOptions: sharp.ResizeOptions = {
+      const resizeOptions: Record<string, unknown> = {
         width: options.width,
         height: options.height,
         fit: this.mapFit(options.fit),
@@ -300,6 +334,7 @@ export class ImageServiceImpl implements ImageService {
    */
   async generateThumbnail(input: Buffer, size: ThumbnailSize): Promise<Buffer> {
     const dimensions = THUMBNAIL_SIZES[size];
+    const sharp = await getSharp();
     const metadata = await sharp(input).metadata();
 
     try {
@@ -331,6 +366,7 @@ export class ImageServiceImpl implements ImageService {
    */
   async optimizeImage(input: Buffer, options?: OptimizeOptions): Promise<Buffer> {
     const opts = { ...DEFAULT_OPTIMIZE_OPTIONS, ...options };
+    const sharp = await getSharp();
     const metadata = await sharp(input).metadata();
     const format = opts.format ?? this.mapSharpFormat(metadata.format);
 
@@ -399,6 +435,7 @@ export class ImageServiceImpl implements ImageService {
    */
   async cropImage(input: Buffer, crop: CropOptions): Promise<Buffer> {
     try {
+      const sharp = await getSharp();
       const metadata = await sharp(input).metadata();
       const width = metadata.width ?? 0;
       const height = metadata.height ?? 0;
@@ -433,6 +470,7 @@ throw error;
    */
   async rotateImage(input: Buffer, degrees: number): Promise<Buffer> {
     try {
+      const sharp = await getSharp();
       // Normalize degrees to 0-360
       const normalizedDegrees = ((degrees % 360) + 360) % 360;
 
@@ -449,6 +487,7 @@ throw error;
    */
   async convertFormat(input: Buffer, format: ImageFormat): Promise<Buffer> {
     try {
+      const sharp = await getSharp();
       let pipeline = sharp(input).rotate(); // Auto-orient
 
       const quality = DEFAULT_QUALITY[format];
@@ -487,6 +526,7 @@ throw error;
    */
   async getImageMetadata(input: Buffer): Promise<ImageMetadata> {
     try {
+      const sharp = await getSharp();
       const metadata = await sharp(input).metadata();
 
       return {
@@ -512,6 +552,7 @@ throw error;
    */
   async extractExif(input: Buffer): Promise<ExifData> {
     try {
+      const sharp = await getSharp();
       const metadata = await sharp(input).metadata();
       const exif = metadata.exif;
 
@@ -540,6 +581,7 @@ throw error;
    */
   async stripExif(input: Buffer): Promise<Buffer> {
     try {
+      const sharp = await getSharp();
       // Rotate auto-orients based on EXIF, then we don't preserve metadata
       return await sharp(input).rotate().toBuffer();
     } catch (error) {
@@ -551,6 +593,7 @@ throw error;
    * Generates multiple size variants of an image.
    */
   async generateVariants(input: Buffer, sizes: VariantConfig[]): Promise<ImageVariant[]> {
+    const sharp = await getSharp();
     const metadata = await sharp(input).metadata();
     const isAnimated = (metadata.pages ?? 1) > 1;
 
@@ -596,7 +639,7 @@ throw error;
         }
 
         const buffer = await pipeline.toBuffer();
-        const variantMeta = await sharp(buffer).metadata();
+        const variantMeta = await sharp(buffer).metadata(); // sharp is already loaded from outer scope
 
         return {
           buffer,
@@ -629,6 +672,7 @@ throw error;
     const warnings: string[] = [];
 
     try {
+      const sharp = await getSharp();
       const metadata = await sharp(input).metadata();
       const format = this.mapSharpFormat(metadata.format);
       const width = metadata.width ?? 0;
@@ -697,6 +741,7 @@ throw error;
    * Auto-orients image based on EXIF data.
    */
   private async autoOrient(input: Buffer): Promise<Buffer> {
+    const sharp = await getSharp();
     return sharp(input).rotate().toBuffer();
   }
 
@@ -737,7 +782,7 @@ throw error;
   /**
    * Maps ResizeFit to sharp fit option.
    */
-  private mapFit(fit?: string): keyof sharp.FitEnum {
+  private mapFit(fit?: string): 'cover' | 'contain' | 'fill' | 'inside' | 'outside' {
     switch (fit) {
       case 'cover':
         return 'cover';
