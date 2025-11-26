@@ -1,0 +1,239 @@
+/**
+ * Tablet Breakpoint Utilities
+ *
+ * Custom CSS utilities for tablet-specific responsive design (768px - 1024px).
+ * These utilities complement Tailwind's responsive system with tablet-only variants.
+ *
+ * Usage:
+ * - tablet:grid-cols-2 - 2-column grid on tablet
+ * - tablet:flex-row - Horizontal flex on tablet
+ * - tablet:sidebar-visible - Show sidebar on tablet
+ * - tablet:text-base - Base text size on tablet
+ * - tablet:gap-6 - Larger gaps on tablet
+ */
+
+/* Tablet-only breakpoint (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+
+  /* Grid Utilities */
+  .tablet\:grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .tablet\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tablet\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Flex Utilities */
+  .tablet\:flex-row {
+    flex-direction: row;
+  }
+
+  .tablet\:flex-col {
+    flex-direction: column;
+  }
+
+  .tablet\:flex-wrap {
+    flex-wrap: wrap;
+  }
+
+  /* Display Utilities */
+  .tablet\:block {
+    display: block;
+  }
+
+  .tablet\:inline-block {
+    display: inline-block;
+  }
+
+  .tablet\:flex {
+    display: flex;
+  }
+
+  .tablet\:grid {
+    display: grid;
+  }
+
+  .tablet\:hidden {
+    display: none;
+  }
+
+  /* Sidebar Utilities */
+  .tablet\:sidebar-visible {
+    display: block;
+    width: 18rem; /* 288px / w-72 */
+  }
+
+  .tablet\:sidebar-hidden {
+    display: none;
+  }
+
+  /* Spacing Utilities */
+  .tablet\:gap-4 {
+    gap: 1rem;
+  }
+
+  .tablet\:gap-6 {
+    gap: 1.5rem;
+  }
+
+  .tablet\:gap-8 {
+    gap: 2rem;
+  }
+
+  .tablet\:p-4 {
+    padding: 1rem;
+  }
+
+  .tablet\:p-6 {
+    padding: 1.5rem;
+  }
+
+  .tablet\:px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .tablet\:px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .tablet\:py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .tablet\:py-6 {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  /* Typography Utilities */
+  .tablet\:text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .tablet\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  .tablet\:text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+
+  .tablet\:text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  /* Width Utilities */
+  .tablet\:w-auto {
+    width: auto;
+  }
+
+  .tablet\:w-full {
+    width: 100%;
+  }
+
+  .tablet\:w-1\/2 {
+    width: 50%;
+  }
+
+  .tablet\:w-1\/3 {
+    width: 33.333333%;
+  }
+
+  .tablet\:w-2\/3 {
+    width: 66.666667%;
+  }
+
+  /* Height Utilities */
+  .tablet\:h-auto {
+    height: auto;
+  }
+
+  .tablet\:h-full {
+    height: 100%;
+  }
+
+  /* Touch Target Utilities - Ensures minimum 44x44px for touch */
+  .tablet\:touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Chart/Content Sizing */
+  .tablet\:chart-sm {
+    height: 200px;
+  }
+
+  .tablet\:chart-md {
+    height: 280px;
+  }
+
+  .tablet\:chart-lg {
+    height: 360px;
+  }
+
+  /* Card Layout */
+  .tablet\:card-compact {
+    padding: 1rem;
+  }
+
+  .tablet\:card-normal {
+    padding: 1.5rem;
+  }
+}
+
+/* Tablet Landscape (wider tablets in landscape mode) */
+@media (min-width: 900px) and (max-width: 1023px) and (orientation: landscape) {
+  .tablet-landscape\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tablet-landscape\:flex-row {
+    flex-direction: row;
+  }
+
+  .tablet-landscape\:w-1\/3 {
+    width: 33.333333%;
+  }
+}
+
+/* Tablet Portrait */
+@media (min-width: 768px) and (max-width: 900px) and (orientation: portrait) {
+  .tablet-portrait\:grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .tablet-portrait\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tablet-portrait\:flex-col {
+    flex-direction: column;
+  }
+}
+
+/* Utilities for all touch devices (including tablets) */
+@media (hover: none) and (pointer: coarse) {
+  .touch\:min-h-11 {
+    min-height: 44px; /* Minimum touch target size */
+  }
+
+  .touch\:min-w-11 {
+    min-width: 44px;
+  }
+
+  .touch\:p-3 {
+    padding: 0.75rem; /* Extra padding for touch targets */
+  }
+}

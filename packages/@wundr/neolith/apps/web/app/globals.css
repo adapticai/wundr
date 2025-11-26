@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tablet-specific breakpoint utilities */
+@import '../styles/tablet-breakpoints.css';
+
 @layer base {
   :root {
     --background: 60 9.1% 97.8%;

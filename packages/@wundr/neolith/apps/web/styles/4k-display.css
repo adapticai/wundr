@@ -1,0 +1,315 @@
+/**
+ * 4K Display Optimizations
+ * CSS optimizations for ultra-high resolution displays (>1920px)
+ * @module styles/4k-display
+ */
+
+/* Base 4K breakpoint */
+@media (min-width: 1921px) {
+  /* Typography scale for 4K */
+  .ultra-hd\:text-xs {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem;
+  }
+
+  .ultra-hd\:text-sm {
+    font-size: 1rem; /* 16px */
+    line-height: 1.5rem;
+  }
+
+  .ultra-hd\:text-base {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem;
+  }
+
+  .ultra-hd\:text-lg {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem;
+  }
+
+  .ultra-hd\:text-xl {
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem;
+  }
+
+  .ultra-hd\:text-2xl {
+    font-size: 1.75rem; /* 28px */
+    line-height: 2.25rem;
+  }
+
+  .ultra-hd\:text-3xl {
+    font-size: 2rem; /* 32px */
+    line-height: 2.5rem;
+  }
+
+  .ultra-hd\:text-4xl {
+    font-size: 2.5rem; /* 40px */
+    line-height: 3rem;
+  }
+
+  /* Spacing adjustments */
+  .ultra-hd\:p-2 {
+    padding: 0.625rem; /* 10px */
+  }
+
+  .ultra-hd\:p-3 {
+    padding: 0.875rem; /* 14px */
+  }
+
+  .ultra-hd\:p-4 {
+    padding: 1.125rem; /* 18px */
+  }
+
+  .ultra-hd\:p-6 {
+    padding: 1.75rem; /* 28px */
+  }
+
+  .ultra-hd\:p-8 {
+    padding: 2.25rem; /* 36px */
+  }
+
+  /* Margin utilities */
+  .ultra-hd\:m-2 {
+    margin: 0.625rem;
+  }
+
+  .ultra-hd\:m-4 {
+    margin: 1.125rem;
+  }
+
+  .ultra-hd\:m-6 {
+    margin: 1.75rem;
+  }
+
+  /* Gap utilities */
+  .ultra-hd\:gap-2 {
+    gap: 0.625rem;
+  }
+
+  .ultra-hd\:gap-4 {
+    gap: 1.125rem;
+  }
+
+  .ultra-hd\:gap-6 {
+    gap: 1.75rem;
+  }
+
+  /* Width utilities */
+  .ultra-hd\:w-96 {
+    width: 28rem; /* 448px */
+  }
+
+  .ultra-hd\:max-w-2xl {
+    max-width: 50rem; /* 800px */
+  }
+
+  .ultra-hd\:max-w-4xl {
+    max-width: 64rem; /* 1024px */
+  }
+
+  .ultra-hd\:max-w-6xl {
+    max-width: 80rem; /* 1280px */
+  }
+
+  /* Icon sizes */
+  .ultra-hd\:icon-sm {
+    width: 1.25rem; /* 20px */
+    height: 1.25rem;
+  }
+
+  .ultra-hd\:icon-md {
+    width: 1.5rem; /* 24px */
+    height: 1.5rem;
+  }
+
+  .ultra-hd\:icon-lg {
+    width: 2rem; /* 32px */
+    height: 2rem;
+  }
+
+  /* Border radius adjustments */
+  .ultra-hd\:rounded-lg {
+    border-radius: 0.625rem; /* 10px */
+  }
+
+  .ultra-hd\:rounded-xl {
+    border-radius: 0.875rem; /* 14px */
+  }
+
+  /* Shadow adjustments - more prominent on large screens */
+  .ultra-hd\:shadow-lg {
+    box-shadow: 0 12px 24px -6px rgb(0 0 0 / 0.1), 0 6px 12px -3px rgb(0 0 0 / 0.1);
+  }
+
+  .ultra-hd\:shadow-xl {
+    box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.15), 0 12px 24px -6px rgb(0 0 0 / 0.1);
+  }
+
+  /* Button sizes */
+  .ultra-hd\:btn-sm {
+    padding: 0.625rem 1rem;
+    font-size: 1rem;
+  }
+
+  .ultra-hd\:btn-md {
+    padding: 0.75rem 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .ultra-hd\:btn-lg {
+    padding: 0.875rem 1.5rem;
+    font-size: 1.25rem;
+  }
+
+  /* Input sizes */
+  .ultra-hd\:input-md {
+    height: 3rem; /* 48px */
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 1.125rem;
+  }
+
+  .ultra-hd\:input-lg {
+    height: 3.5rem; /* 56px */
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 1.25rem;
+  }
+}
+
+/* Extra large 4K (2560px+) */
+@media (min-width: 2560px) {
+  .ultra-hd-xl\:text-base {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.875rem;
+  }
+
+  .ultra-hd-xl\:text-lg {
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem;
+  }
+
+  .ultra-hd-xl\:text-xl {
+    font-size: 1.75rem; /* 28px */
+    line-height: 2.25rem;
+  }
+
+  .ultra-hd-xl\:text-2xl {
+    font-size: 2rem; /* 32px */
+    line-height: 2.5rem;
+  }
+
+  .ultra-hd-xl\:p-4 {
+    padding: 1.25rem; /* 20px */
+  }
+
+  .ultra-hd-xl\:p-6 {
+    padding: 2rem; /* 32px */
+  }
+
+  .ultra-hd-xl\:p-8 {
+    padding: 2.5rem; /* 40px */
+  }
+
+  .ultra-hd-xl\:gap-4 {
+    gap: 1.25rem;
+  }
+
+  .ultra-hd-xl\:gap-6 {
+    gap: 2rem;
+  }
+}
+
+/* Container max widths for 4K */
+@media (min-width: 1921px) {
+  .container-4k {
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 2560px) {
+  .container-4k {
+    max-width: 2000px;
+  }
+}
+
+/* Grid layout adjustments for 4K */
+@media (min-width: 1921px) {
+  .ultra-hd\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ultra-hd\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ultra-hd\:grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .ultra-hd\:grid-cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* High DPI optimizations */
+@media (min-width: 1921px) and (min-resolution: 2dppx) {
+  /* Sharper borders for high DPI */
+  .ultra-hd\:border {
+    border-width: 0.5px;
+  }
+
+  /* Crisper shadows */
+  .ultra-hd\:shadow {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+}
+
+/* Performance optimizations for large screens */
+@media (min-width: 1921px) {
+  /* Optimize animations on 4K */
+  .ultra-hd\:will-change-transform {
+    will-change: transform;
+  }
+
+  .ultra-hd\:gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+}
+
+/* Hover states - more generous on large screens */
+@media (min-width: 1921px) {
+  .ultra-hd\:hover-scale:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .ultra-hd\:hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -6px rgb(0 0 0 / 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+}
+
+/* Utility for centering content on ultra-wide displays */
+@media (min-width: 1921px) {
+  .ultra-hd\:center-content {
+    max-width: 1800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 2560px) {
+  .ultra-hd\:center-content {
+    max-width: 2200px;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}

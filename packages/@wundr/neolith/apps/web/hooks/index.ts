@@ -313,6 +313,20 @@ export { I18nProvider, useI18n, useTranslation } from './use-i18n';
 export type { UseI18nReturn, UseTranslationReturn } from './use-i18n';
 
 // =============================================================================
+// Desktop Notifications Hooks
+// =============================================================================
+export {
+  useDesktopNotifications,
+  useNotificationOnCondition,
+  useNotificationBadge,
+} from './use-desktop-notifications';
+export type {
+  NotificationPermission,
+  DesktopNotificationOptions,
+  UseDesktopNotificationsReturn,
+} from './use-desktop-notifications';
+
+// =============================================================================
 // Re-exports from next-auth/react for convenience
 // =============================================================================
 export { signIn, signOut, useSession } from 'next-auth/react';
