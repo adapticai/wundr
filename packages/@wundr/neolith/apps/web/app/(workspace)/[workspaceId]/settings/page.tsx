@@ -18,7 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { ThemeToggleLarge } from '@/components/layout/theme-toggle';
 
 export default function SettingsPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form state

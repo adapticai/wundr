@@ -13,8 +13,19 @@
 import { avatarService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { NextResponse } from 'next/server';
+
+// Simple password hashing using Node.js crypto (no external dependency)
+async function hashPassword(password: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const salt = crypto.randomBytes(16).toString('hex');
+    crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(`${salt}:${derivedKey.toString('hex')}`);
+    });
+  });
+}
 
 import {
   AUTH_ERROR_CODES,
@@ -25,12 +36,7 @@ import {
 import type { RegisterInput } from '@/lib/validations/auth';
 import type { NextRequest } from 'next/server';
 
-/**
- * Number of salt rounds for bcrypt hashing
- * Higher values = more secure but slower
- * 10 rounds is a good balance for production
- */
-const BCRYPT_SALT_ROUNDS = 10;
+// Password hashing uses Node.js crypto with PBKDF2 (100,000 iterations, SHA-512)
 
 /**
  * POST /api/auth/register
@@ -115,8 +121,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(input.password, BCRYPT_SALT_ROUNDS);
+    // Hash password using PBKDF2
+    const hashedPassword = await hashPassword(input.password);
 
     // Create user and credentials account in a transaction
     const newUser = await prisma.$transaction(async (tx) => {
