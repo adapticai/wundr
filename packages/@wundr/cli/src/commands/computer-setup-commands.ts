@@ -13,19 +13,16 @@ import ora from 'ora';
 
 import {
   RealSetupOrchestrator,
-} from '../../../computer-setup/dist';
+} from '@wundr.io/computer-setup';
 import { BackupRollbackManager } from '../utils/backup-rollback-manager';
 import { ClaudeConfigInstaller } from '../utils/claude-config-installer';
 import { logger } from '../utils/logger';
 
-
-// Note: Using relative path import due to workspace resolution issues in this monorepo setup
-// The computer-setup package must be built first before building this CLI package
 import type {
   SetupPlatform,
   SetupProgress,
   SetupResult,
-  DeveloperProfile} from '../../../computer-setup/dist';
+  DeveloperProfile} from '@wundr.io/computer-setup';
 import type { PluginManager } from '../plugins/plugin-manager';
 import type { ConfigManager } from '../utils/config-manager';
 import type { Command } from 'commander';

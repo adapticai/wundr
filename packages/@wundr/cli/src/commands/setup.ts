@@ -9,18 +9,16 @@ import ora from 'ora';
 
 import {
   RealSetupOrchestrator,
-} from '../../../computer-setup/dist';
+} from '@wundr.io/computer-setup';
 import { logger } from '../utils/logger';
 
 import type {
   SetupPlatform,
   SetupProgress,
-  SetupResult} from '../../../computer-setup/dist';
+  SetupResult} from '@wundr.io/computer-setup';
 import type { PluginManager } from '../plugins/plugin-manager';
 import type { ConfigManager } from '../utils/config-manager';
 
-// Note: Using relative path import due to workspace resolution issues in this monorepo setup
-// The computer-setup package must be built first before building this CLI package
 import type { Command } from 'commander';
 
 export class SetupCommands {
