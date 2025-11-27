@@ -1,3 +1,10 @@
+---
+name: evaluators-readme
+description: >
+  Documentation for evaluator agents providing automated governance monitoring. This is a reference
+  document, not an active agent.
+---
+
 # Evaluator Agents (Tier 0)
 
 ## Overview

@@ -1,5 +1,8 @@
 ---
 name: session-hr-ops-director
+description: >
+  HR operations session manager for talent and workforce management. Use for hiring, employee
+  lifecycle, policy administration, and workforce planning.
 type: session-manager
 tier: 2
 archetype: hr-operations

@@ -1,3 +1,10 @@
+---
+name: legal-subagents-readme
+description: >
+  Documentation for legal domain sub-agents for contract analysis and compliance. This is a
+  reference document, not an active agent.
+---
+
 # Legal Domain Sub-Agents
 
 This directory contains specialized sub-agents for legal document analysis, compliance monitoring,

@@ -388,14 +388,21 @@ export class WorktreeWriter {
       await this.createDirectoryStructure(worktreePath);
 
       // Generate and write CLAUDE.md
-      const claudeMdContent = this.generateClaudeMdContent(discipline, vpCharter);
+      const claudeMdContent = this.generateClaudeMdContent(
+        discipline,
+        vpCharter
+      );
       const claudeMdPath = path.join(worktreePath, 'CLAUDE.md');
       await this.writeClaudeMd(worktreePath, claudeMdContent);
       filesWritten.push(claudeMdPath);
 
       // Generate and write claude.config.json
       const claudeConfig = this.generateClaudeConfig(discipline, vpCharter);
-      const claudeConfigPath = path.join(worktreePath, CLAUDE_DIR, 'claude.config.json');
+      const claudeConfigPath = path.join(
+        worktreePath,
+        CLAUDE_DIR,
+        'claude.config.json'
+      );
       await this.writeClaudeConfig(worktreePath, claudeConfig);
       filesWritten.push(claudeConfigPath);
 
@@ -407,7 +414,10 @@ export class WorktreeWriter {
 
       // Write agent definitions
       if (agents.length > 0) {
-        const agentPaths = await this.writeAgentDefinitions(worktreePath, agents);
+        const agentPaths = await this.writeAgentDefinitions(
+          worktreePath,
+          agents
+        );
         filesWritten.push(...agentPaths);
       }
 
@@ -415,7 +425,10 @@ export class WorktreeWriter {
       let memoryBankPath: string | undefined;
       if (memoryBank) {
         memoryBankPath = path.join(worktreePath, CONTEXT_DIR);
-        const memoryPaths = await this.initializeMemoryBank(worktreePath, memoryBank);
+        const memoryPaths = await this.initializeMemoryBank(
+          worktreePath,
+          memoryBank
+        );
         filesWritten.push(...memoryPaths);
       } else {
         // Initialize with defaults
@@ -425,7 +438,7 @@ export class WorktreeWriter {
           path.join(memoryBankPath, 'activeContext.md'),
           path.join(memoryBankPath, 'progress.md'),
           path.join(memoryBankPath, 'productContext.md'),
-          path.join(memoryBankPath, 'decisionLog.md'),
+          path.join(memoryBankPath, 'decisionLog.md')
         );
       }
 
@@ -476,7 +489,11 @@ export class WorktreeWriter {
    * ```
    */
   async writeClaudeConfig(worktreePath: string, config: object): Promise<void> {
-    const configPath = path.join(worktreePath, CLAUDE_DIR, 'claude.config.json');
+    const configPath = path.join(
+      worktreePath,
+      CLAUDE_DIR,
+      'claude.config.json'
+    );
     await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
   }
 
@@ -494,9 +511,16 @@ export class WorktreeWriter {
    * });
    * ```
    */
-  async writeSettingsJson(worktreePath: string, settings: object): Promise<void> {
+  async writeSettingsJson(
+    worktreePath: string,
+    settings: object
+  ): Promise<void> {
     const settingsPath = path.join(worktreePath, CLAUDE_DIR, 'settings.json');
-    await fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+    await fs.writeFile(
+      settingsPath,
+      JSON.stringify(settings, null, 2),
+      'utf-8'
+    );
   }
 
   /**
@@ -521,7 +545,7 @@ export class WorktreeWriter {
    */
   async writeAgentDefinitions(
     worktreePath: string,
-    agents: AgentDefinition[],
+    agents: AgentDefinition[]
   ): Promise<string[]> {
     const agentsDir = path.join(worktreePath, CLAUDE_DIR, AGENTS_DIR);
     await fs.mkdir(agentsDir, { recursive: true });
@@ -538,7 +562,11 @@ export class WorktreeWriter {
     // Write an index file for agent discovery
     const indexContent = this.generateAgentsIndex(agents);
     const indexPath = path.join(agentsDir, 'index.json');
-    await fs.writeFile(indexPath, JSON.stringify(indexContent, null, 2), 'utf-8');
+    await fs.writeFile(
+      indexPath,
+      JSON.stringify(indexContent, null, 2),
+      'utf-8'
+    );
     writtenPaths.push(indexPath);
 
     return writtenPaths;
@@ -565,7 +593,7 @@ export class WorktreeWriter {
    */
   async initializeMemoryBank(
     worktreePath: string,
-    context?: MemoryBankInit,
+    context?: MemoryBankInit
   ): Promise<string[]> {
     const contextDir = path.join(worktreePath, CONTEXT_DIR);
     await fs.mkdir(contextDir, { recursive: true });
@@ -573,21 +601,24 @@ export class WorktreeWriter {
     const writtenPaths: string[] = [];
 
     // Write activeContext.md
-    const activeContextContent = context?.activeContext ??
+    const activeContextContent =
+      context?.activeContext ??
       '# Active Context\n\n_Compiled by Org Genesis_\n';
     const activeContextPath = path.join(contextDir, 'activeContext.md');
     await fs.writeFile(activeContextPath, activeContextContent, 'utf-8');
     writtenPaths.push(activeContextPath);
 
     // Write progress.md
-    const progressContent = context?.progress ??
+    const progressContent =
+      context?.progress ??
       '# Progress\n\n## Milestones\n\n_No milestones yet_\n';
     const progressPath = path.join(contextDir, 'progress.md');
     await fs.writeFile(progressPath, progressContent, 'utf-8');
     writtenPaths.push(progressPath);
 
     // Write productContext.md
-    const productContextContent = context?.productContext ??
+    const productContextContent =
+      context?.productContext ??
       '# Product Context\n\n_Injected during compilation_\n';
     const productContextPath = path.join(contextDir, 'productContext.md');
     await fs.writeFile(productContextPath, productContextContent, 'utf-8');
@@ -598,7 +629,7 @@ export class WorktreeWriter {
     await fs.writeFile(
       decisionLogPath,
       '# Decision Log\n\n_Decisions will be logged here_\n',
-      'utf-8',
+      'utf-8'
     );
     writtenPaths.push(decisionLogPath);
 
@@ -633,7 +664,9 @@ export class WorktreeWriter {
    */
   private async createDirectoryStructure(worktreePath: string): Promise<void> {
     await fs.mkdir(path.join(worktreePath, CLAUDE_DIR), { recursive: true });
-    await fs.mkdir(path.join(worktreePath, CLAUDE_DIR, AGENTS_DIR), { recursive: true });
+    await fs.mkdir(path.join(worktreePath, CLAUDE_DIR, AGENTS_DIR), {
+      recursive: true,
+    });
     await fs.mkdir(path.join(worktreePath, CONTEXT_DIR), { recursive: true });
   }
 
@@ -642,7 +675,7 @@ export class WorktreeWriter {
    */
   private generateClaudeMdContent(
     discipline: DisciplinePack,
-    vpCharter?: VPCharter,
+    vpCharter?: VPCharter
   ): string {
     const sections: string[] = [];
 
@@ -745,7 +778,7 @@ export class WorktreeWriter {
    */
   private generateClaudeConfig(
     discipline: DisciplinePack,
-    vpCharter?: VPCharter,
+    vpCharter?: VPCharter
   ): Record<string, unknown> {
     const mcpServers: Record<string, unknown> = {};
 
@@ -795,7 +828,9 @@ export class WorktreeWriter {
   /**
    * Generates settings.json content.
    */
-  private generateSettingsJson(discipline: DisciplinePack): Record<string, unknown> {
+  private generateSettingsJson(
+    discipline: DisciplinePack
+  ): Record<string, unknown> {
     return {
       $schema: 'https://claude.ai/schema/settings.json',
       formatting: {
@@ -826,20 +861,34 @@ export class WorktreeWriter {
 
   /**
    * Generates markdown content for an agent definition.
+   * Uses proper YAML frontmatter with required `name` and `description` fields.
    */
   private generateAgentMarkdown(agent: AgentDefinition): string {
     const sections: string[] = [];
 
-    // Header with metadata
-    sections.push(`# ${agent.name}`);
-    sections.push('');
+    // YAML frontmatter with required fields for Claude Code subagents
     sections.push('---');
-    sections.push(`id: ${agent.id}`);
-    sections.push(`slug: ${agent.slug}`);
+    sections.push(`name: ${agent.slug}`);
+    sections.push('description: >');
+    sections.push(
+      `  ${agent.description.slice(0, 145)}${agent.description.length > 145 ? '...' : ''}`
+    );
+
+    // Tools list
+    if (agent.tools.length > 0) {
+      sections.push(`tools: ${agent.tools.map(t => t.name).join(', ')}`);
+    } else {
+      sections.push('tools: Read, Write, Edit, Bash, Glob, Grep');
+    }
+
+    sections.push(`model: ${agent.model || 'sonnet'}`);
     sections.push(`tier: ${agent.tier}`);
     sections.push(`scope: ${agent.scope}`);
-    sections.push(`model: ${agent.model}`);
     sections.push('---');
+    sections.push('');
+
+    // Title
+    sections.push(`# ${agent.name}`);
     sections.push('');
 
     // Description
@@ -857,13 +906,28 @@ export class WorktreeWriter {
     // Capabilities
     sections.push('## Capabilities');
     sections.push('');
-    sections.push(`- Read Files: ${agent.capabilities.canReadFiles ? 'Yes' : 'No'}`);
-    sections.push(`- Write Files: ${agent.capabilities.canWriteFiles ? 'Yes' : 'No'}`);
-    sections.push(`- Execute Commands: ${agent.capabilities.canExecuteCommands ? 'Yes' : 'No'}`);
-    sections.push(`- Network Access: ${agent.capabilities.canAccessNetwork ? 'Yes' : 'No'}`);
-    sections.push(`- Spawn Sub-Agents: ${agent.capabilities.canSpawnSubAgents ? 'Yes' : 'No'}`);
-    if (agent.capabilities.customCapabilities && agent.capabilities.customCapabilities.length > 0) {
-      sections.push(`- Custom: ${agent.capabilities.customCapabilities.join(', ')}`);
+    sections.push(
+      `- Read Files: ${agent.capabilities.canReadFiles ? 'Yes' : 'No'}`
+    );
+    sections.push(
+      `- Write Files: ${agent.capabilities.canWriteFiles ? 'Yes' : 'No'}`
+    );
+    sections.push(
+      `- Execute Commands: ${agent.capabilities.canExecuteCommands ? 'Yes' : 'No'}`
+    );
+    sections.push(
+      `- Network Access: ${agent.capabilities.canAccessNetwork ? 'Yes' : 'No'}`
+    );
+    sections.push(
+      `- Spawn Sub-Agents: ${agent.capabilities.canSpawnSubAgents ? 'Yes' : 'No'}`
+    );
+    if (
+      agent.capabilities.customCapabilities &&
+      agent.capabilities.customCapabilities.length > 0
+    ) {
+      sections.push(
+        `- Custom: ${agent.capabilities.customCapabilities.join(', ')}`
+      );
     }
     sections.push('');
 
@@ -881,7 +945,7 @@ export class WorktreeWriter {
     if (agent.tags.length > 0) {
       sections.push('## Tags');
       sections.push('');
-      sections.push(agent.tags.map((tag) => `\`${tag}\``).join(', '));
+      sections.push(agent.tags.map(tag => `\`${tag}\``).join(', '));
       sections.push('');
     }
 
@@ -891,13 +955,15 @@ export class WorktreeWriter {
   /**
    * Generates an index of all agents for discovery.
    */
-  private generateAgentsIndex(agents: AgentDefinition[]): Record<string, unknown> {
+  private generateAgentsIndex(
+    agents: AgentDefinition[]
+  ): Record<string, unknown> {
     return {
       $schema: 'https://wundr.ai/schema/agents-index.json',
       version: '1.0.0',
       generatedAt: new Date().toISOString(),
       count: agents.length,
-      agents: agents.map((agent) => ({
+      agents: agents.map(agent => ({
         id: agent.id,
         name: agent.name,
         slug: agent.slug,
@@ -936,6 +1002,8 @@ export class WorktreeWriter {
  * });
  * ```
  */
-export function createWorktreeWriter(config?: WorktreeWriterConfig): WorktreeWriter {
+export function createWorktreeWriter(
+  config?: WorktreeWriterConfig
+): WorktreeWriter {
   return new WorktreeWriter(config);
 }

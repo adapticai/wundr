@@ -57,7 +57,12 @@ export class ClaudeConfigInstaller {
    * Install all Claude Code configurations
    */
   async install(options: ClaudeConfigOptions = {}): Promise<InstallResult> {
-    const { dryRun = false, skipBackup = false, overwrite = false, verbose = false } = options;
+    const {
+      dryRun = false,
+      skipBackup = false,
+      overwrite = false,
+      verbose = false,
+    } = options;
 
     const result: InstallResult = {
       success: false,
@@ -73,10 +78,12 @@ export class ClaudeConfigInstaller {
       if (!skipBackup && !dryRun) {
         const existingFiles = await this.getExistingConfigFiles();
         if (existingFiles.length > 0) {
-          const spinner = ora('Creating backup of existing configurations...').start();
+          const spinner = ora(
+            'Creating backup of existing configurations...'
+          ).start();
           const backup = await this.backupManager.createBackup(
             existingFiles,
-            'Pre-installation backup',
+            'Pre-installation backup'
           );
           result.backupId = backup.backupId;
           spinner.succeed(`Backup created: ${backup.backupId}`);
@@ -96,10 +103,18 @@ export class ClaudeConfigInstaller {
       await this.installAgentTemplates(result, { dryRun, overwrite, verbose });
 
       // Install git-worktree workflows
-      await this.installGitWorktreeWorkflows(result, { dryRun, overwrite, verbose });
+      await this.installGitWorktreeWorkflows(result, {
+        dryRun,
+        overwrite,
+        verbose,
+      });
 
       // Install validation scripts
-      await this.installValidationScripts(result, { dryRun, overwrite, verbose });
+      await this.installValidationScripts(result, {
+        dryRun,
+        overwrite,
+        verbose,
+      });
 
       result.success = result.errors.length === 0;
 
@@ -122,7 +137,7 @@ export class ClaudeConfigInstaller {
    */
   private async installClaudeMd(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
   ): Promise<void> {
     const spinner = ora('Installing CLAUDE.md...').start();
 
@@ -170,7 +185,7 @@ export class ClaudeConfigInstaller {
    */
   private async installHooks(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
   ): Promise<void> {
     const spinner = ora('Installing hooks...').start();
 
@@ -215,7 +230,7 @@ export class ClaudeConfigInstaller {
    */
   private async installConventions(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
   ): Promise<void> {
     const spinner = ora('Installing conventions...').start();
 
@@ -255,7 +270,7 @@ export class ClaudeConfigInstaller {
    */
   private async installAgentTemplates(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
   ): Promise<void> {
     const spinner = ora('Installing agent templates...').start();
 
@@ -266,24 +281,34 @@ export class ClaudeConfigInstaller {
       const templates = this.generateAgentTemplates();
 
       for (const [agentName, agentConfig] of Object.entries(templates)) {
-        const agentPath = path.join(agentsDir, `${agentName}.json`);
+        // Generate .md files with proper YAML frontmatter (not .json)
+        const agentPath = path.join(agentsDir, `${agentName}.md`);
 
         if (existsSync(agentPath) && !options.overwrite) {
-          result.skipped.push(`agents/${agentName}.json`);
+          result.skipped.push(`agents/${agentName}.md`);
           continue;
         }
 
         if (options.dryRun) {
-          result.installed.push(`agents/${agentName}.json (dry-run)`);
+          result.installed.push(`agents/${agentName}.md (dry-run)`);
           continue;
         }
 
-        await fs.writeFile(agentPath, JSON.stringify(agentConfig, null, 2));
-        result.installed.push(`agents/${agentName}.json`);
+        // Generate markdown with YAML frontmatter
+        const mdContent = this.generateAgentMarkdownContent(
+          agentName,
+          agentConfig
+        );
+        await fs.writeFile(agentPath, mdContent);
+        result.installed.push(`agents/${agentName}.md`);
       }
 
-      spinner.succeed(`Agent templates installed (${Object.keys(templates).length} templates)`);
-      logger.info('Agent templates installed', { count: Object.keys(templates).length });
+      spinner.succeed(
+        `Agent templates installed (${Object.keys(templates).length} templates)`
+      );
+      logger.info('Agent templates installed', {
+        count: Object.keys(templates).length,
+      });
     } catch (error) {
       spinner.fail('Failed to install agent templates');
       result.errors.push({
@@ -295,11 +320,57 @@ export class ClaudeConfigInstaller {
   }
 
   /**
+   * Generate markdown content with proper YAML frontmatter for agent files
+   */
+  private generateAgentMarkdownContent(
+    agentName: string,
+    config: {
+      name: string;
+      role: string;
+      responsibilities: string[];
+      tools: string[];
+      patterns: string[];
+    }
+  ): string {
+    const firstResponsibility =
+      config.responsibilities[0] ?? 'software development';
+    const description = `${config.name} specialist for ${firstResponsibility.toLowerCase()}.`;
+    const toolsList = 'Read, Write, Edit, Bash, Glob, Grep';
+    const useFor =
+      config.responsibilities.slice(0, 2).join(', ').toLowerCase() ||
+      'development tasks';
+
+    return `---
+name: ${agentName}
+description: >
+  ${description}
+  Use for ${useFor}.
+tools: ${toolsList}
+model: sonnet
+---
+
+# ${config.name}
+
+## Role
+${config.role}
+
+## Responsibilities
+${config.responsibilities.map(r => `- ${r}`).join('\n')}
+
+## Tools & Technologies
+${config.tools.map(t => `- ${t}`).join('\n')}
+
+## Patterns
+${config.patterns.map(p => `- ${p}`).join('\n')}
+`;
+  }
+
+  /**
    * Install git-worktree workflows
    */
   private async installGitWorktreeWorkflows(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
   ): Promise<void> {
     const spinner = ora('Installing git-worktree workflows...').start();
 
@@ -322,12 +393,19 @@ export class ClaudeConfigInstaller {
           continue;
         }
 
-        await fs.writeFile(workflowPath, JSON.stringify(workflowContent, null, 2));
+        await fs.writeFile(
+          workflowPath,
+          JSON.stringify(workflowContent, null, 2)
+        );
         result.installed.push(`workflows/${workflowName}.json`);
       }
 
-      spinner.succeed(`Git-worktree workflows installed (${Object.keys(workflows).length} workflows)`);
-      logger.info('Git-worktree workflows installed', { count: Object.keys(workflows).length });
+      spinner.succeed(
+        `Git-worktree workflows installed (${Object.keys(workflows).length} workflows)`
+      );
+      logger.info('Git-worktree workflows installed', {
+        count: Object.keys(workflows).length,
+      });
     } catch (error) {
       spinner.fail('Failed to install git-worktree workflows');
       result.errors.push({
@@ -343,7 +421,7 @@ export class ClaudeConfigInstaller {
    */
   private async installValidationScripts(
     result: InstallResult,
-    options: { dryRun: boolean; overwrite: boolean; verbose: boolean },
+    options: { dryRun: boolean; overwrite: boolean; verbose: boolean }
   ): Promise<void> {
     const spinner = ora('Installing validation scripts...').start();
 
@@ -371,8 +449,12 @@ export class ClaudeConfigInstaller {
         result.installed.push(`scripts/${scriptName}`);
       }
 
-      spinner.succeed(`Validation scripts installed (${Object.keys(scripts).length} scripts)`);
-      logger.info('Validation scripts installed', { count: Object.keys(scripts).length });
+      spinner.succeed(
+        `Validation scripts installed (${Object.keys(scripts).length} scripts)`
+      );
+      logger.info('Validation scripts installed', {
+        count: Object.keys(scripts).length,
+      });
     } catch (error) {
       spinner.fail('Failed to install validation scripts');
       result.errors.push({
@@ -573,7 +655,8 @@ echo "✅ Post-checkout completed"
       },
       'bug-fix': {
         name: 'Bug Fix Workflow',
-        description: 'Workflow for fixing bugs without affecting main development',
+        description:
+          'Workflow for fixing bugs without affecting main development',
         steps: [
           {
             name: 'Create worktree',
@@ -721,13 +804,19 @@ echo "✅ Configuration check complete"
       console.log(chalk.green('✅ Installation completed successfully!\n'));
       console.log(chalk.cyan('Next steps:'));
       console.log(chalk.white('  1. Review installed configurations'));
-      console.log(chalk.white('  2. Run validation: ~/.claude/scripts/validate-setup.sh'));
+      console.log(
+        chalk.white('  2. Run validation: ~/.claude/scripts/validate-setup.sh')
+      );
       console.log(chalk.white('  3. Customize agent templates as needed'));
     } else {
       console.log(chalk.red('❌ Installation completed with errors\n'));
       if (result.backupId) {
         console.log(chalk.cyan('To rollback:'));
-        console.log(chalk.white(`  wundr computer-setup rollback --backup ${result.backupId}`));
+        console.log(
+          chalk.white(
+            `  wundr computer-setup rollback --backup ${result.backupId}`
+          )
+        );
       }
     }
   }

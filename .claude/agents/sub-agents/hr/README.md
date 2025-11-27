@@ -1,3 +1,10 @@
+---
+name: hr-subagents-readme
+description: >
+  Documentation for HR and people operations sub-agents. This is a reference document, not an active
+  agent.
+---
+
 # HR & People Ops Sub-Agents
 
 ## Overview

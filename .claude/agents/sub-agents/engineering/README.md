@@ -1,3 +1,10 @@
+---
+name: engineering-subagents-readme
+description: >
+  Documentation for engineering domain sub-agents including code modification and testing. This is a
+  reference document, not an active agent.
+---
+
 # Engineering Domain Sub-Agents
 
 Sub-agents specialized for engineering tasks including code modification, test debugging, and

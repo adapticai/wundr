@@ -1,3 +1,10 @@
+---
+name: session-managers-readme
+description: >
+  Documentation for session manager archetypes in the three-tier architecture. This is a reference
+  document, not an active agent.
+---
+
 # Session Manager Archetypes (Tier 2)
 
 ## Overview

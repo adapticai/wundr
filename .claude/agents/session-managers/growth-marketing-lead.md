@@ -1,5 +1,8 @@
 ---
 name: session-growth-marketing-lead
+description: >
+  Marketing session manager for customer acquisition and growth strategies. Use for campaign
+  management, analytics, content creation, and experimentation.
 type: session-manager
 tier: 2
 archetype: marketing

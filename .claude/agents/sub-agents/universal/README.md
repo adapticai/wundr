@@ -1,3 +1,10 @@
+---
+name: universal-subagents-readme
+description: >
+  Documentation for universal sub-agents available to all session managers. This is a reference
+  document, not an active agent.
+---
+
 # Universal Sub-Agents
 
 Universal sub-agents are **Tier 3 workers** available to all Session Managers regardless of their

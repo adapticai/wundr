@@ -1,5 +1,8 @@
 ---
 name: session-legal-audit-lead
+description: >
+  Legal operations session manager for contract review, compliance monitoring, and risk assessment.
+  Use for regulatory adherence and legal workflow coordination.
 type: session-manager
 tier: 2
 archetype: legal

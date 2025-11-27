@@ -1,5 +1,8 @@
 ---
 name: session-engineering-manager
+description: >
+  Engineering session manager overseeing software development lifecycle. Use for code quality,
+  architectural integrity, and deployment coordination.
 type: session-manager
 tier: 2
 archetype: engineering

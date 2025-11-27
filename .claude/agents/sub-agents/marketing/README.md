@@ -1,3 +1,10 @@
+---
+name: marketing-subagents-readme
+description: >
+  Documentation for growth marketing sub-agents for trends, content, and analytics. This is a
+  reference document, not an active agent.
+---
+
 # Growth Marketing Sub-Agents
 
 This directory contains specialized sub-agents for growth marketing operations within the Wundr
