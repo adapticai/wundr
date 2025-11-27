@@ -28,7 +28,7 @@ import {
   type AggregatedDriftReport,
   type SessionDriftData,
   type HealthStatus,
-} from '@wundr/guardian-dashboard';
+} from '@wundr.io/guardian-dashboard';
 
 // ============================================================================
 // Constants

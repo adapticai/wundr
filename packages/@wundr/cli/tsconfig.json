@@ -25,8 +25,8 @@
     "paths": {
       "@wundr.io/governance": ["../governance/dist/index"],
       "@wundr.io/governance/*": ["../governance/dist/*"],
-      "@wundr/guardian-dashboard": ["../guardian-dashboard/dist/index"],
-      "@wundr/guardian-dashboard/*": ["../guardian-dashboard/dist/*"]
+      "@wundr.io/guardian-dashboard": ["../guardian-dashboard/dist/index"],
+      "@wundr.io/guardian-dashboard/*": ["../guardian-dashboard/dist/*"]
     }
   },
   "include": ["src/**/*"],

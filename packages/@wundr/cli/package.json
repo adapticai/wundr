@@ -47,7 +47,7 @@
     "@wundr.io/core": "workspace:*",
     "@wundr.io/governance": "workspace:*",
     "@wundr.io/vp-daemon": "workspace:*",
-    "@wundr/guardian-dashboard": "workspace:*",
+    "@wundr.io/guardian-dashboard": "workspace:*",
     "axios": "^1.11.0",
     "blessed": "^0.1.81",
     "blessed-contrib": "^4.11.0",
