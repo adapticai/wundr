@@ -1,8 +1,15 @@
 {
   "name": "@wundr.io/cli",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "Unified CLI framework for the Wundr platform",
-  "keywords": ["wundr", "cli", "commander", "interactive", "tui", "automation"],
+  "keywords": [
+    "wundr",
+    "cli",
+    "commander",
+    "interactive",
+    "tui",
+    "automation"
+  ],
   "homepage": "https://wundr.io",
   "bugs": {
     "url": "https://github.com/adapticai/wundr/issues"
@@ -23,7 +30,14 @@
   "bin": {
     "wundr": "./bin/wundr.js"
   },
-  "files": ["dist", "bin", "src", "templates", "test-suites", "README.md"],
+  "files": [
+    "dist",
+    "bin",
+    "src",
+    "templates",
+    "test-suites",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -93,7 +107,10 @@
     "bin": "wundr",
     "dirname": "wundr",
     "commands": "./dist/commands",
-    "plugins": ["@oclif/plugin-help", "@oclif/plugin-plugins"],
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ],
     "topicSeparator": ":",
     "topics": {
       "init": {
