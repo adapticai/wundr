@@ -1,6 +1,6 @@
 /**
  * @packageDocumentation
- * Discipline Generator - Generates Discipline Packs (Tier 2) from VP specifications.
+ * Discipline Generator - Generates Discipline Packs (Tier 2) from Orchestrator specifications.
  *
  * This module provides the DisciplineGenerator class for creating discipline-level
  * configurations in the organizational hierarchy. Disciplines represent domains of
@@ -8,7 +8,7 @@
  * Finance, Operations, etc.
  *
  * The generator uses LLM prompts to create contextually appropriate discipline
- * configurations based on the parent VP's charter, industry context, and
+ * configurations based on the parent Orchestrator's charter, industry context, and
  * organizational requirements.
  *
  * @module @wundr/org-genesis/generator/discipline-generator
@@ -22,15 +22,15 @@
  *
  * // Create generator with configuration
  * const generator = createDisciplineGenerator({
- *   maxDisciplinesPerVP: 5,
+ *   maxDisciplinesPerOrchestrator: 5,
  *   useDefaults: true,
  * });
  *
- * // Generate disciplines for a VP
+ * // Generate disciplines for a Orchestrator
  * const context: DisciplineGenerationContext = {
  *   orgName: 'TechCorp',
- *   vpName: 'VP of Engineering',
- *   vpSlug: 'vp-engineering',
+ *   vpName: 'Orchestrator of Engineering',
+ *   vpSlug: 'orchestrator-engineering',
  *   industry: 'SaaS Technology',
  *   vpResponsibilities: ['Software Development', 'Infrastructure', 'DevOps'],
  * };
@@ -40,29 +40,29 @@
  * ```
  */
 
-import {
-  buildDisciplineGenerationPrompt,
-  buildDisciplineRefinementPrompt,
-  parseDisciplineGenerationResponse,
-  parseDisciplineRefinementResponse,
-  convertToDisciplinePack,
-  generateDisciplineSlug,
-  DISCIPLINE_GENERATION_SYSTEM_PROMPT,
-  DISCIPLINE_REFINEMENT_SYSTEM_PROMPT,
-} from './prompts/discipline-prompts.js';
+import type {
+    ClaudeMdConfig,
+    DisciplineCategory,
+    DisciplinePack,
+    DisciplineValidationError,
+    DisciplineValidationWarning,
+    HookConfig,
+    MCPServerConfig,
+    OrchestratorCharter,
+} from '../types/index.js';
 import { generateDisciplineId, generateSlug } from '../utils/slug.js';
 
 import type { DisciplineGenerationContext } from './prompts/discipline-prompts.js';
-import type {
-  DisciplinePack,
-  DisciplineCategory,
-  DisciplineValidationError,
-  DisciplineValidationWarning,
-  ClaudeMdConfig,
-  MCPServerConfig,
-  HookConfig,
-  VPCharter,
-} from '../types/index.js';
+import {
+    buildDisciplineGenerationPrompt,
+    buildDisciplineRefinementPrompt,
+    convertToDisciplinePack,
+    DISCIPLINE_GENERATION_SYSTEM_PROMPT,
+    DISCIPLINE_REFINEMENT_SYSTEM_PROMPT,
+    generateDisciplineSlug,
+    parseDisciplineGenerationResponse,
+    parseDisciplineRefinementResponse,
+} from './prompts/discipline-prompts.js';
 
 // ============================================================================
 // Configuration Types
@@ -78,19 +78,19 @@ import type {
  * @example
  * ```typescript
  * const config: DisciplineGeneratorConfig = {
- *   maxDisciplinesPerVP: 8,
+ *   maxDisciplinesPerOrchestrator: 8,
  *   useDefaults: true,
  * };
  * ```
  */
 export interface DisciplineGeneratorConfig {
   /**
-   * Maximum number of disciplines to generate per VP.
+   * Maximum number of disciplines to generate per Orchestrator.
    * The generator will produce at most this many disciplines in a single call.
    *
    * @default 10
    */
-  maxDisciplinesPerVP?: number;
+  maxDisciplinesPerOrchestrator?: number;
 
   /**
    * Whether to use default values for missing fields.
@@ -559,7 +559,7 @@ export interface DisciplinePackValidationResult {
  * @description
  * The DisciplineGenerator creates discipline-level configurations in the
  * organizational hierarchy. It uses LLM prompts to generate contextually
- * appropriate disciplines based on VP specifications and industry context.
+ * appropriate disciplines based on Orchestrator specifications and industry context.
  *
  * Disciplines represent domains of expertise that Session Managers embody.
  * Each discipline includes:
@@ -571,7 +571,7 @@ export interface DisciplinePackValidationResult {
  * @example
  * ```typescript
  * const generator = new DisciplineGenerator({
- *   maxDisciplinesPerVP: 5,
+ *   maxDisciplinesPerOrchestrator: 5,
  *   useDefaults: true,
  * });
  *
@@ -602,25 +602,25 @@ export class DisciplineGenerator {
    * @example
    * ```typescript
    * const generator = new DisciplineGenerator({
-   *   maxDisciplinesPerVP: 8,
+   *   maxDisciplinesPerOrchestrator: 8,
    *   useDefaults: true,
    * });
    * ```
    */
   constructor(config: DisciplineGeneratorConfig = {}) {
     this.config = {
-      maxDisciplinesPerVP: config.maxDisciplinesPerVP ?? 10,
+      maxDisciplinesPerOrchestrator: config.maxDisciplinesPerOrchestrator ?? 10,
       useDefaults: config.useDefaults ?? true,
       llmCallback: config.llmCallback,
     };
   }
 
   /**
-   * Generates discipline packs for a given VP context.
+   * Generates discipline packs for a given Orchestrator context.
    *
    * @description
    * This method generates a set of disciplines appropriate for the given
-   * organizational and VP context. If an LLM callback is configured, it
+   * organizational and Orchestrator context. If an LLM callback is configured, it
    * will use that to generate the disciplines. Otherwise, it returns
    * disciplines built from default templates.
    *
@@ -632,8 +632,8 @@ export class DisciplineGenerator {
    * ```typescript
    * const context: DisciplineGenerationContext = {
    *   orgName: 'TechCorp',
-   *   vpName: 'VP of Engineering',
-   *   vpSlug: 'vp-engineering',
+   *   vpName: 'Orchestrator of Engineering',
+   *   vpSlug: 'orchestrator-engineering',
    *   industry: 'SaaS Technology',
    *   vpResponsibilities: ['Software Development', 'Infrastructure'],
    * };
@@ -664,17 +664,17 @@ export class DisciplineGenerator {
         // Limit to max disciplines
         const limitedData = parsedData.slice(
           0,
-          this.config.maxDisciplinesPerVP,
+          this.config.maxDisciplinesPerOrchestrator,
         );
-        if (parsedData.length > this.config.maxDisciplinesPerVP) {
+        if (parsedData.length > this.config.maxDisciplinesPerOrchestrator) {
           warnings.push(
-            `Generated ${parsedData.length} disciplines, limited to ${this.config.maxDisciplinesPerVP}`,
+            `Generated ${parsedData.length} disciplines, limited to ${this.config.maxDisciplinesPerOrchestrator}`,
           );
         }
 
         // Convert to full discipline packs
         const disciplines = limitedData.map(parsed => {
-          const partialPack = convertToDisciplinePack(parsed, context.vpSlug);
+          const partialPack = convertToDisciplinePack(parsed, context.orchestratorSlug);
           return this.enrichWithDefaults({
             ...partialPack,
             id: generateDisciplineId(),
@@ -695,7 +695,7 @@ export class DisciplineGenerator {
       }
     }
 
-    // Without LLM callback, generate default disciplines based on VP responsibilities
+    // Without LLM callback, generate default disciplines based on Orchestrator responsibilities
     const disciplines = this.generateDefaultDisciplines(context);
     return {
       disciplines,
@@ -1023,13 +1023,13 @@ export class DisciplineGenerator {
   }
 
   /**
-   * Convenience method to generate disciplines for a VP charter.
+   * Convenience method to generate disciplines for a Orchestrator charter.
    *
    * @description
-   * A simplified method that extracts the necessary context from a VP charter
-   * and generates appropriate disciplines for that VP.
+   * A simplified method that extracts the necessary context from a Orchestrator charter
+   * and generates appropriate disciplines for that Orchestrator.
    *
-   * @param vpCharter - The VP charter to generate disciplines for
+   * @param vpCharter - The Orchestrator charter to generate disciplines for
    * @param industry - The industry/domain context
    * @returns Promise resolving to array of generated discipline packs
    *
@@ -1040,7 +1040,7 @@ export class DisciplineGenerator {
    * ```
    */
   async generateForVP(
-    vpCharter: VPCharter,
+    vpCharter: OrchestratorCharter,
     industry: string,
   ): Promise<DisciplinePack[]> {
     const context: DisciplineGenerationContext = {
@@ -1092,7 +1092,7 @@ export class DisciplineGenerator {
    * discipline packs, enriching them with defaults as needed.
    *
    * @param response - Raw LLM response containing discipline JSON
-   * @param parentVpId - Optional parent VP ID to associate with disciplines
+   * @param parentVpId - Optional parent Orchestrator ID to associate with disciplines
    * @returns Array of parsed and enriched discipline packs
    * @throws Error if the response cannot be parsed
    *
@@ -1100,7 +1100,7 @@ export class DisciplineGenerator {
    * ```typescript
    * const prompts = generator.buildPrompt(context);
    * const response = await myLLM.chat(prompts.system, prompts.user);
-   * const disciplines = generator.parseResponse(response, 'vp-engineering');
+   * const disciplines = generator.parseResponse(response, 'orchestrator-engineering');
    * ```
    */
   parseResponse(response: string, parentVpId?: string): DisciplinePack[] {
@@ -1119,11 +1119,11 @@ export class DisciplineGenerator {
   }
 
   /**
-   * Generates default disciplines based on VP responsibilities.
+   * Generates default disciplines based on Orchestrator responsibilities.
    *
    * @description
    * Creates a set of default discipline packs based on common patterns
-   * for the given VP context. Used when no LLM callback is configured.
+   * for the given Orchestrator context. Used when no LLM callback is configured.
    *
    * @param context - The generation context
    * @returns Array of default discipline packs
@@ -1134,8 +1134,8 @@ export class DisciplineGenerator {
     const disciplines: DisciplinePack[] = [];
     const now = new Date();
 
-    // Determine category from VP name/slug
-    const vpNameLower = context.vpName.toLowerCase();
+    // Determine category from Orchestrator name/slug
+    const vpNameLower = context.orchestratorName.toLowerCase();
     let primaryCategory: DisciplineCategory = 'custom';
 
     if (vpNameLower.includes('engineer') || vpNameLower.includes('tech')) {
@@ -1186,8 +1186,8 @@ export class DisciplineGenerator {
         name: primaryName,
         slug: generateSlug(primaryName),
         category: primaryCategory,
-        description: `${primaryName} discipline under ${context.vpName}`,
-        parentVpId: context.vpSlug,
+        description: `${primaryName} discipline under ${context.orchestratorName}`,
+        parentVpId: context.orchestratorSlug,
         agentIds: [],
         createdAt: now,
         updatedAt: now,
@@ -1195,8 +1195,8 @@ export class DisciplineGenerator {
     );
 
     // Add additional disciplines based on responsibilities
-    if (context.vpResponsibilities) {
-      for (const responsibility of context.vpResponsibilities.slice(0, 4)) {
+    if (context.orchestratorResponsibilities) {
+      for (const responsibility of context.orchestratorResponsibilities.slice(0, 4)) {
         const disciplineName = responsibility;
         const slug = generateSlug(disciplineName);
 
@@ -1212,7 +1212,7 @@ export class DisciplineGenerator {
             slug,
             category: primaryCategory,
             description: `${disciplineName} discipline focusing on ${responsibility.toLowerCase()}`,
-            parentVpId: context.vpSlug,
+            parentVpId: context.orchestratorSlug,
             agentIds: [],
             createdAt: now,
             updatedAt: now,
@@ -1221,7 +1221,7 @@ export class DisciplineGenerator {
       }
     }
 
-    return disciplines.slice(0, this.config.maxDisciplinesPerVP);
+    return disciplines.slice(0, this.config.maxDisciplinesPerOrchestrator);
   }
 
   /**
@@ -1270,7 +1270,7 @@ export class DisciplineGenerator {
  *
  * // Create with custom configuration
  * const customGenerator = createDisciplineGenerator({
- *   maxDisciplinesPerVP: 5,
+ *   maxDisciplinesPerOrchestrator: 5,
  *   useDefaults: false,
  *   llmCallback: async (system, user) => anthropic.messages.create({...}),
  * });

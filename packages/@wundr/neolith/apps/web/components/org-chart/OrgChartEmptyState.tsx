@@ -28,7 +28,7 @@ export function OrgChartEmptyState({ workspaceId, className }: OrgChartEmptyStat
       </h3>
       <p className="text-sm text-stone-400 text-center max-w-md mb-6">
         Your workspace doesn&apos;t have an organization structure yet. Generate one to visualize
-        your Virtual Persons hierarchy and team structure.
+        your Orchestrators hierarchy and team structure.
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
         <Button asChild className="bg-stone-100 text-stone-950 hover:bg-stone-200">
@@ -42,7 +42,7 @@ export function OrgChartEmptyState({ workspaceId, className }: OrgChartEmptyStat
           variant="outline"
           className="border-stone-700 text-stone-300 hover:bg-stone-800"
         >
-          <Link href={`/${workspaceId}/vps`}>View Virtual Persons</Link>
+          <Link href={`/${workspaceId}/orchestrators`}>View Orchestrators</Link>
         </Button>
       </div>
     </Card>

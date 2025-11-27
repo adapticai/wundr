@@ -46,9 +46,9 @@ interface DaemonMetrics {
 export interface DaemonManagerProps {
   /** The workspace ID for daemon management */
   workspaceId: string;
-  /** The Virtual Persona ID to manage daemons for */
+  /** The Orchestratora ID to manage daemons for */
   vpId: string;
-  /** Display name of the Virtual Persona */
+  /** Display name of the Orchestratora */
   vpName: string;
   /** Additional CSS classes to apply */
   className?: string;

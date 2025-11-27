@@ -3,7 +3,7 @@
  *
  * Provides comprehensive analytics data for workspace activity including:
  * - Time-series message volume
- * - VP activity metrics
+ * - Orchestrator activity metrics
  * - Task completion trends
  * - Workflow execution statistics
  * - Channel engagement metrics
@@ -15,16 +15,14 @@
  */
 
 import { prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
 import {
-  workspaceIdParamSchema,
   createErrorResponse,
   ORG_ERROR_CODES,
+  workspaceIdParamSchema,
 } from '@/lib/validations/organization';
-
-import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace ID parameter
@@ -430,8 +428,8 @@ export async function GET(
       }),
     );
 
-    // Fetch VP activity metrics
-    const vps = await prisma.vP.findMany({
+    // Fetch Orchestrator activity metrics
+    const orchestrators = await prisma.vP.findMany({
       where: {
         workspaceId: params.workspaceId,
       },
@@ -458,7 +456,7 @@ export async function GET(
     });
 
     const vpActivity = await Promise.all(
-      vps.map(async (vp) => {
+      orchestrators.map(async (vp) => {
         const [messageCount, completedTaskCount] = await Promise.all([
           prisma.message.count({
             where: {

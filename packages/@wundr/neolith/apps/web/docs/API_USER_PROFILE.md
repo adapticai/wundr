@@ -250,7 +250,7 @@ The User model includes:
 - `avatarUrl`: Avatar image URL
 - `bio`: User biography
 - `status`: Account status (ACTIVE, INACTIVE, PENDING, SUSPENDED)
-- `isVP`: Virtual Person flag
+- `isVP`: Orchestrator flag
 - `preferences`: JSON preferences object
 - `createdAt`: Creation timestamp
 - `updatedAt`: Last update timestamp

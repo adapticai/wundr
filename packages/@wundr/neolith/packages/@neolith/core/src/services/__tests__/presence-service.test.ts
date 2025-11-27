@@ -5,14 +5,14 @@
  * - User presence management (online/offline)
  * - Custom status handling
  * - Channel presence tracking
- * - VP presence management
+ * - Orchestrator presence management
  * - Pub/Sub event publishing
  * - TTL and expiration handling
  *
  * @module @genesis/core/services/__tests__/presence-service.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createMockRedis,
@@ -23,8 +23,8 @@ import {
   generatePresenceTestId,
   resetPresenceIdCounter,
   type UserPresence,
-  type VPPresence,
   type UserPresenceStatus,
+  type VPPresence,
   type VPPresenceStatus,
 } from '../../test-utils/presence-factories';
 
@@ -191,7 +191,7 @@ return null;
     await this.redis.srem(key, userId);
   }
 
-  // VP presence methods
+  // Orchestrator presence methods
   async setVPOnline(
     vpId: string,
     daemonInfo: { daemonId: string; endpoint: string; version: string },
@@ -243,7 +243,7 @@ return null;
     await this.redis.del(key);
   }
 
-  async getVPPresence(vpId: string): Promise<VPPresence | null> {
+  async getVPPresence(vpId: string): Promise<OrchestratorPresence | null> {
     const key = `${VP_PRESENCE_KEY_PREFIX}${vpId}`;
     const data = await this.redis.hgetall(key);
 
@@ -252,7 +252,7 @@ return null;
 }
 
     return {
-      vpId: data.vpId,
+      vpId: data.orchestratorId,
       userId: data.userId || '',
       status: data.status as VPPresenceStatus,
       lastHeartbeat: data.lastHeartbeat,
@@ -648,11 +648,11 @@ describe('PresenceService', () => {
   });
 
   // ===========================================================================
-  // VP Presence Tests
+  // OrchestratorPresence Tests
   // ===========================================================================
 
   describe('VP presence', () => {
-    it('sets VP online with daemon info', async () => {
+    it('sets Orchestrator online with daemon info', async () => {
       const vpId = generatePresenceTestId('vp');
       const daemonInfo = {
         daemonId: generatePresenceTestId('daemon'),
@@ -665,14 +665,14 @@ describe('PresenceService', () => {
       const presence = await presenceService.getVPPresence(vpId);
 
       expect(presence).not.toBeNull();
-      expect(presence?.vpId).toBe(vpId);
+      expect(presence?.orchestratorId).toBe(vpId);
       expect(presence?.status).toBe('online');
       expect(presence?.daemonInfo.daemonId).toBe(daemonInfo.daemonId);
       expect(presence?.daemonInfo.endpoint).toBe(daemonInfo.endpoint);
       expect(presence?.daemonInfo.version).toBe(daemonInfo.version);
     });
 
-    it('tracks VP heartbeats', async () => {
+    it('tracks Orchestrator heartbeats', async () => {
       const vpId = generatePresenceTestId('vp');
       const daemonInfo = createMockDaemonInfo();
 
@@ -692,7 +692,7 @@ describe('PresenceService', () => {
       expect(updatedPresence?.lastHeartbeat).not.toBe(initialHeartbeat);
     });
 
-    it('marks VP offline on timeout', async () => {
+    it('marks Orchestrator offline on timeout', async () => {
       const vpId = generatePresenceTestId('vp');
       const daemonInfo = createMockDaemonInfo();
 
@@ -703,7 +703,7 @@ describe('PresenceService', () => {
       expect(await presenceService.getVPPresence(vpId)).toBeNull();
     });
 
-    it('publishes VP online event', async () => {
+    it('publishes Orchestrator online event', async () => {
       const vpId = generatePresenceTestId('vp');
       const daemonInfo = createMockDaemonInfo();
 
@@ -716,10 +716,10 @@ describe('PresenceService', () => {
 
       const event = JSON.parse(redis._publishedMessages[0].message);
       expect(event.type).toBe('vp_online');
-      expect(event.vpId).toBe(vpId);
+      expect(event.orchestratorId).toBe(vpId);
     });
 
-    it('publishes VP offline event', async () => {
+    it('publishes Orchestrator offline event', async () => {
       const vpId = generatePresenceTestId('vp');
       const daemonInfo = createMockDaemonInfo();
 
@@ -735,7 +735,7 @@ describe('PresenceService', () => {
 
       const event = JSON.parse(redis._publishedMessages[0].message);
       expect(event.type).toBe('vp_offline');
-      expect(event.vpId).toBe(vpId);
+      expect(event.orchestratorId).toBe(vpId);
     });
 
     it('returns null for unknown VP', async () => {
@@ -744,18 +744,18 @@ describe('PresenceService', () => {
     });
 
     it('handles multiple VPs online simultaneously', async () => {
-      const vps = Array.from({ length: 3 }, () => ({
+      const orchestrators = Array.from({ length: 3 }, () => ({
         vpId: generatePresenceTestId('vp'),
         daemonInfo: createMockDaemonInfo(),
       }));
 
       await Promise.all(
-        vps.map(({ vpId, daemonInfo }) =>
+        orchestrators.map(({ vpId, daemonInfo }) =>
           presenceService.setVPOnline(vpId, daemonInfo),
         ),
       );
 
-      for (const { vpId } of vps) {
+      for (const { vpId } of orchestrators) {
         const presence = await presenceService.getVPPresence(vpId);
         expect(presence?.status).toBe('online');
       }
@@ -834,7 +834,7 @@ describe('PresenceService', () => {
       );
     });
 
-    it('sets appropriate TTL on VP presence', async () => {
+    it('sets appropriate TTL on Orchestrator presence', async () => {
       const vpId = generatePresenceTestId('vp');
       const daemonInfo = createMockDaemonInfo();
 
@@ -862,3 +862,4 @@ describe('PresenceService', () => {
     });
   });
 });
+

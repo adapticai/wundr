@@ -1,7 +1,7 @@
 /**
  * Daemon Heartbeat API Route
  *
- * Handles heartbeat signals and metrics reporting for VP daemon services.
+ * Handles heartbeat signals and metrics reporting for Orchestrator daemon services.
  *
  * Routes:
  * - POST /api/daemon/heartbeat - Send heartbeat with optional metrics
@@ -12,10 +12,9 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Schema for heartbeat request body
@@ -160,8 +159,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const serverTime = now.toISOString();
     const nextHeartbeat = new Date(now.getTime() + HEARTBEAT_INTERVAL_MS).toISOString();
 
-    // Get VP info
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator info
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         id: true,
@@ -177,7 +176,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Update VP status
+    // Update Orchestrator status
     const vpStatus = status === 'idle' ? 'AWAY' : status === 'busy' ? 'BUSY' : 'ONLINE';
     await prisma.vP.update({
       where: { id: token.vpId },

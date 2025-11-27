@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - Profile Management Capability
  *
- * Provides comprehensive profile management for VP (Virtual Principal) agents
+ * Provides comprehensive profile management for Orchestrator (Virtual Principal) agents
  * operating as full users in Slack workspaces. Handles profile CRUD operations,
  * custom fields, photos, and workspace-specific configurations.
  *
@@ -312,7 +312,7 @@ async function createSlackClient(token: string): Promise<SlackWebClient> {
 // =============================================================================
 
 /**
- * Manages Slack user profile operations for VP agents.
+ * Manages Slack user profile operations for Orchestrator agents.
  *
  * This class provides comprehensive profile management capabilities including:
  * - Profile retrieval (own or other users)
@@ -329,7 +329,7 @@ async function createSlackClient(token: string): Promise<SlackWebClient> {
  *   token: process.env.SLACK_USER_TOKEN!, // xoxp-...
  * });
  *
- * // Update VP agent's profile
+ * // Update Orchestrator agent's profile
  * await manager.setRealName('Ada', 'Lovelace');
  * await manager.setTitle('Virtual Principal - Engineering');
  * await manager.setProfilePhoto('./avatar.png');

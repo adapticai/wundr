@@ -85,7 +85,7 @@
           "status": "TEMPLATE_EXISTS",
           "evidence": [
             ".env.production.template is comprehensive (187 lines)",
-            "Covers: App, Database, Redis, OAuth, AI/LLM, S3, LiveKit, Email, Push, VP Daemon",
+            "Covers: App, Database, Redis, OAuth, AI/LLM, S3, LiveKit, Email, Push, Orchestrator Daemon",
             "Security headers and CORS configured",
             "Feature flags defined",
             "No actual .env.production file (correctly excluded from git)"
@@ -374,19 +374,19 @@
         "vp_daemon_package": {
           "status": "IMPLEMENTED",
           "evidence": [
-            "VP Daemon package exists at @wundr/vp-daemon",
+            "VP Daemon package exists at @wundr/orchestrator-daemon",
             "Comprehensive README with API documentation",
             "WebSocket server for real-time communication",
             "Session management for agent orchestration",
             "Memory architecture (scratchpad/episodic/semantic)",
             "VP Charter loading and enforcement",
-            "CLI support via 'vp-daemon' command",
+            "CLI support via 'orchestrator-daemon' command",
             "Package appears production-ready"
           ],
           "files": [
-            "/packages/@wundr/vp-daemon/README.md",
-            "/packages/@wundr/vp-daemon/src/",
-            "/scripts/vp-daemon/"
+            "/packages/@wundr/orchestrator-daemon/README.md",
+            "/packages/@wundr/orchestrator-daemon/src/",
+            "/scripts/orchestrator-daemon/"
           ],
           "features": [
             "WebSocket server (default port 8787)",
@@ -402,13 +402,13 @@
           "status": "NOT_DEPLOYED",
           "evidence": [
             "No deployment scripts found for multi-machine setup",
-            "No evidence of distributed VP Daemon deployment",
+            "No evidence of distributed Orchestrator Daemon deployment",
             "No configuration for 16-machine architecture",
             "No load balancing or service discovery configured",
             "Documentation shows single-instance usage"
           ],
           "files": [],
-          "target_architecture": "16 machines running VP Daemon instances",
+          "target_architecture": "16 machines running Orchestrator Daemon instances",
           "missing_components": [
             "Deployment automation scripts",
             "Load balancer configuration",
@@ -427,7 +427,7 @@
             "VP_DAEMON_WS_URL: wss://api.neolith.ai/ws",
             "VP_DAEMON_AUTH_KEY placeholder",
             "No evidence of initialized VPs",
-            "No VP Charter files found in production locations"
+            "No Orchestrator Charter files found in production locations"
           ],
           "files": [
             "/packages/@wundr/neolith/.env.production.template"
@@ -680,7 +680,7 @@
         "Design 16-machine architecture",
         "Create deployment automation scripts",
         "Set up load balancing and service discovery",
-        "Deploy VP Daemon to production machines",
+        "Deploy Orchestrator Daemon to production machines",
         "Initialize production VPs with charters",
         "Configure monitoring and health checks",
         "Test distributed session management"
@@ -739,10 +739,10 @@
     "Deploy to staging environment first and validate all integrations",
     "Generate and test database migrations before production deployment",
     "Complete mobile Capacitor setup and test on actual devices",
-    "Design VP Daemon distributed architecture before scaling to 16 machines",
+    "Design Orchestrator Daemon distributed architecture before scaling to 16 machines",
     "Set up monitoring and alerting before production deployment",
     "Create comprehensive deployment runbook with rollback procedures"
   ],
 
-  "conclusion": "Phase 6 infrastructure is well-configured with comprehensive deployment options (Railway, Netlify, Kubernetes) and strong CI/CD pipelines. However, no actual production deployments have been made, and critical external services (database, Redis, S3, LiveKit, OAuth apps) are not yet provisioned. Mobile and desktop apps have build configurations but platforms are not yet added. VP Daemon is production-ready as a single instance but lacks distributed deployment architecture for 16 machines. Estimated 55% complete - configuration is excellent, but execution and external service provisioning are pending."
+  "conclusion": "Phase 6 infrastructure is well-configured with comprehensive deployment options (Railway, Netlify, Kubernetes) and strong CI/CD pipelines. However, no actual production deployments have been made, and critical external services (database, Redis, S3, LiveKit, OAuth apps) are not yet provisioned. Mobile and desktop apps have build configurations but platforms are not yet added. Orchestrator Daemon is production-ready as a single instance but lacks distributed deployment architecture for 16 machines. Estimated 55% complete - configuration is excellent, but execution and external service provisioning are pending."
 }

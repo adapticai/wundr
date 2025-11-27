@@ -12,7 +12,7 @@
 // =============================================================================
 
 /**
- * Presence status indicating user or VP availability.
+ * Presence status indicating user or Orchestrator availability.
  */
 export type PresenceStatus = 'ONLINE' | 'AWAY' | 'BUSY' | 'OFFLINE';
 
@@ -70,10 +70,10 @@ export interface PresenceMetadata {
 // =============================================================================
 
 /**
- * VP (Virtual Person) presence information.
+ * Orchestrator (Virtual Person) presence information.
  */
 export interface VPPresence {
-  /** Unique VP identifier */
+  /** Unique Orchestrator identifier */
   vpId: string;
 
   /** Current presence status */
@@ -87,7 +87,7 @@ export interface VPPresence {
 }
 
 /**
- * Information about the VP daemon process.
+ * Information about the Orchestrator daemon process.
  */
 export interface DaemonInfo {
   /** Daemon version string */
@@ -199,12 +199,12 @@ export interface UserPresenceEvent extends BasePresenceEvent {
 }
 
 /**
- * VP presence change event.
+ * Orchestrator presence change event.
  */
 export interface VPPresenceEvent extends BasePresenceEvent {
   type: 'vp.online' | 'vp.offline' | 'vp.heartbeat';
 
-  /** VP ID associated with the event */
+  /** OrchestratorID associated with the event */
   vpId: string;
 
   /** Previous presence state */
@@ -248,7 +248,7 @@ export type PresenceEvent = UserPresenceEvent | VPPresenceEvent | ChannelPresenc
 export type PresenceCallback = (event: UserPresenceEvent) => void;
 
 /**
- * Callback for VP presence changes.
+ * Callback for Orchestrator presence changes.
  */
 export type VPPresenceCallback = (event: VPPresenceEvent) => void;
 
@@ -274,7 +274,7 @@ export const PRESENCE_KEY_PATTERNS = {
   /** User presence hash: presence:user:{userId} */
   USER_PRESENCE: 'presence:user:',
 
-  /** VP presence hash: presence:vp:{vpId} */
+  /** Orchestrator presence hash: presence:vp:{vpId} */
   VP_PRESENCE: 'presence:vp:',
 
   /** Channel members set: presence:channel:{channelId}:members */
@@ -290,7 +290,7 @@ export const PRESENCE_KEY_PATTERNS = {
   /** Pub/sub channel for channel presence: presence:events:channel:{channelId} */
   CHANNEL_EVENTS: 'presence:events:channel:',
 
-  /** Pub/sub channel for VP presence: presence:events:vp:{vpId} */
+  /** Pub/sub channel for Orchestrator presence: presence:events:vp:{vpId} */
   VP_EVENTS: 'presence:events:vp:',
 
   /** Global presence events channel */
@@ -365,7 +365,7 @@ export function isVPPresence(value: unknown): value is VPPresence {
 
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.vpId === 'string' &&
+    typeof obj.orchestratorId === 'string' &&
     isPresenceStatus(obj.status) &&
     obj.lastHeartbeat instanceof Date &&
     typeof obj.daemonInfo === 'object'

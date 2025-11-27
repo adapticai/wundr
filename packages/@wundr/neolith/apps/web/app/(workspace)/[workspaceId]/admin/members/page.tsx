@@ -2,7 +2,9 @@
 
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { useMembers, useInvites, useRoles } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
@@ -21,6 +23,12 @@ export default function AdminMembersPage() {
   const searchParams = useSearchParams();
   const workspaceId = params.workspaceId as string;
   const showInviteOnLoad = searchParams.get('invite') === 'true';
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Members', 'Manage workspace members and invitations');
+  }, [setPageHeader]);
 
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,14 +110,11 @@ export default function AdminMembersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with member count and action */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Members</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {total} member{total !== 1 ? 's' : ''} in this workspace
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {total} member{total !== 1 ? 's' : ''} in this workspace
+        </p>
         <button
           type="button"
           onClick={() => setShowInviteModal(true)}

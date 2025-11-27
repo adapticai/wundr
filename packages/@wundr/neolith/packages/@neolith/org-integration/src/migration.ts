@@ -4,25 +4,25 @@
  * Functions for migrating org-genesis results to Slack workspace resources.
  */
 
-import {
-  generateChannelName,
-  generateDisplayName,
-  createVPMapper,
-  createDisciplineMapper,
-  IDMapper,
-} from './utils';
 
 import type {
-  NeolithResult,
-  VPDefinition,
   DisciplineDefinition,
-  VPMapping,
-  VPMappingResult,
   DisciplineMapping,
   DisciplineMappingResult,
-  MigrationResult,
   MigrationOptions,
+  MigrationResult,
+  NeolithResult,
+  OrchestratorDefinition,
+  OrchestratorMapping,
+  OrchestratorMappingResult,
 } from './types';
+import {
+  createDisciplineMapper,
+  createOrchestratorMapper,
+  generateChannelName,
+  generateDisplayName,
+  IDMapper,
+} from './utils';
 
 // ============================================================================
 // Main Migration Function
@@ -32,7 +32,7 @@ import type {
  * Migrate an org-genesis result to Slack workspace resources.
  *
  * This is the main entry point for converting org-genesis output into
- * Slack users (for VPs) and channels (for disciplines).
+ * Slack users (for Orchestrators) and channels (for disciplines).
  *
  * @param neolithResult - The result from org-genesis generation
  * @param options - Migration options
@@ -64,14 +64,14 @@ export async function migrateOrgGenesisResult(
     logMigrationStart(neolithResult, options);
   }
 
-  // Create VP mappings
-  let vpMappings: VPMappingResult;
-  if (options.skipVPs) {
-    vpMappings = createEmptyVPMappingResult();
-    warnings.push('VP creation skipped by option');
+  // Create Orchestrator mappings
+  let orchestratorMappings: OrchestratorMappingResult;
+  if (options.skipOrchestrators) {
+    orchestratorMappings = createEmptyOrchestratorMappingResult();
+    warnings.push('Orchestrator creation skipped by option');
   } else {
-    vpMappings = await createVPUsersFromManifest(
-      neolithResult.vps,
+    orchestratorMappings = await createOrchestratorUsersFromManifest(
+      neolithResult.orchestrators,
       neolithResult.manifest.id,
       options
     );
@@ -90,18 +90,18 @@ export async function migrateOrgGenesisResult(
   }
 
   // Determine overall status
-  const status = determineOverallStatus(vpMappings, disciplineMappings);
+  const status = determineOverallStatus(orchestratorMappings, disciplineMappings);
 
   if (options.verbose) {
     logMigrationComplete(
-      vpMappings,
+      orchestratorMappings,
       disciplineMappings,
       Date.now() - startTime
     );
   }
 
   return {
-    vpMappings,
+    orchestratorMappings,
     disciplineMappings,
     status,
     migratedAt: new Date().toISOString(),
@@ -110,31 +110,31 @@ export async function migrateOrgGenesisResult(
 }
 
 // ============================================================================
-// VP User Creation
+// OrchestratorUser Creation
 // ============================================================================
 
 /**
- * Create Slack users from VP definitions in the manifest.
+ * Create Slack users from Orchestrator definitions in the manifest.
  *
- * @param vps - Array of VP definitions from org-genesis
+ * @param orchestrators - Array of Orchestrator definitions from org-genesis
  * @param organizationId - ID of the organization
  * @param options - Migration options
- * @returns VP mapping result
+ * @returns Orchestrator mapping result
  */
-export async function createVPUsersFromManifest(
-  vps: VPDefinition[],
+export async function createOrchestratorUsersFromManifest(
+  orchestrators: OrchestratorDefinition[],
   organizationId: string,
   options: MigrationOptions
-): Promise<VPMappingResult> {
-  const mappings: VPMapping[] = [];
-  const vpMapper = createVPMapper();
+): Promise<OrchestratorMappingResult> {
+  const mappings: OrchestratorMapping[] = [];
+  const orchestratorMapper = createOrchestratorMapper();
 
-  for (const vp of vps) {
-    const mapping = await createSingleVPUser(vp, organizationId, options);
+  for (const orchestrator of orchestrators) {
+    const mapping = await createSingleOrchestratorUser(orchestrator, organizationId, options);
     mappings.push(mapping);
 
     if (mapping.status === 'success' && mapping.slackUserId) {
-      vpMapper.addMapping(vp.id, mapping.slackUserId);
+      orchestratorMapper.addMapping(orchestrator.id, mapping.slackUserId);
     }
   }
 
@@ -143,7 +143,7 @@ export async function createVPUsersFromManifest(
 
   return {
     mappings,
-    total: vps.length,
+    total: orchestrators.length,
     successful,
     failed,
     mappedAt: new Date().toISOString(),
@@ -151,25 +151,25 @@ export async function createVPUsersFromManifest(
 }
 
 /**
- * Create a single VP user in Slack.
+ * Create a single Orchestrator user in Slack.
  *
- * @param vp - VP definition
+ * @param orchestrator - Orchestrator definition
  * @param organizationId - Organization ID
  * @param options - Migration options
- * @returns VP mapping
+ * @returns Orchestrator mapping
  */
-async function createSingleVPUser(
-  vp: VPDefinition,
+async function createSingleOrchestratorUser(
+  orchestrator: OrchestratorDefinition,
   _organizationId: string,
   options: MigrationOptions
-): Promise<VPMapping> {
-  const displayName = generateDisplayName(vp.name);
+): Promise<OrchestratorMapping> {
+  const displayName = generateDisplayName(orchestrator.name);
 
   // In dry run mode, return a pending mapping
   if (options.dryRun) {
     return {
-      vp,
-      slackUserId: `dry-run-${vp.id}`,
+      orchestrator,
+      slackUserId: `dry-run-${orchestrator.id}`,
       slackDisplayName: displayName,
       status: 'pending',
     };
@@ -178,28 +178,28 @@ async function createSingleVPUser(
   try {
     // SKELETON: Actual Slack API integration will be implemented here
     // This will use the Slack API to create a bot user or app user
-    // representing the VP in the workspace
+    // representing the Orchestrator in the workspace
 
     // TODO: Implement actual Slack user creation
     // const slackUser = await slackClient.createBotUser({
     //   workspaceId: options.workspaceId,
     //   displayName: displayName,
-    //   realName: vp.title,
+    //   realName: orchestrator.title,
     //   // ... other user properties
     // });
 
     // For now, return a placeholder successful mapping
-    const slackUserId = `U${generatePlaceholderId(vp.id)}`;
+    const slackUserId = `U${generatePlaceholderId(orchestrator.id)}`;
 
     return {
-      vp,
+      orchestrator,
       slackUserId,
       slackDisplayName: displayName,
       status: 'success',
     };
   } catch (error) {
     return {
-      vp,
+      orchestrator,
       slackUserId: '',
       slackDisplayName: displayName,
       status: 'failed',
@@ -327,9 +327,9 @@ async function createSingleChannel(
 // ============================================================================
 
 /**
- * Create an empty VP mapping result (for when VP creation is skipped).
+ * Create an empty Orchestrator mapping result (for when Orchestrator creation is skipped).
  */
-function createEmptyVPMappingResult(): VPMappingResult {
+function createEmptyOrchestratorMappingResult(): OrchestratorMappingResult {
   return {
     mappings: [],
     total: 0,
@@ -356,12 +356,12 @@ function createEmptyDisciplineMappingResult(): DisciplineMappingResult {
  * Determine the overall migration status based on mapping results.
  */
 function determineOverallStatus(
-  vpMappings: VPMappingResult,
+  orchestratorMappings: OrchestratorMappingResult,
   disciplineMappings: DisciplineMappingResult
 ): 'complete' | 'partial' | 'failed' {
-  const totalOperations = vpMappings.total + disciplineMappings.total;
-  const totalSuccessful = vpMappings.successful + disciplineMappings.successful;
-  const totalFailed = vpMappings.failed + disciplineMappings.failed;
+  const totalOperations = orchestratorMappings.total + disciplineMappings.total;
+  const totalSuccessful = orchestratorMappings.successful + disciplineMappings.successful;
+  const totalFailed = orchestratorMappings.failed + disciplineMappings.failed;
 
   if (totalOperations === 0) {
     return 'complete'; // Nothing to do
@@ -405,7 +405,7 @@ function logMigrationStart(
   // eslint-disable-next-line no-console
   console.log(`  Organization: ${neolithResult.manifest.name}`);
   // eslint-disable-next-line no-console
-  console.log(`  VPs to create: ${neolithResult.vps.length}`);
+  console.log(`  Orchestrators to create: ${neolithResult.orchestrators.length}`);
   // eslint-disable-next-line no-console
   console.log(`  Disciplines to create: ${neolithResult.disciplines.length}`);
   // eslint-disable-next-line no-console
@@ -416,14 +416,14 @@ function logMigrationStart(
  * Log migration completion information (for verbose mode).
  */
 function logMigrationComplete(
-  vpMappings: VPMappingResult,
+  orchestratorMappings: OrchestratorMappingResult,
   disciplineMappings: DisciplineMappingResult,
   durationMs: number
 ): void {
   // eslint-disable-next-line no-console
   console.log('Migration complete!');
   // eslint-disable-next-line no-console
-  console.log(`  VPs: ${vpMappings.successful}/${vpMappings.total} successful`);
+  console.log(`  Orchestrators: ${orchestratorMappings.successful}/${orchestratorMappings.total} successful`);
   // eslint-disable-next-line no-console
   console.log(
     `  Channels: ${disciplineMappings.successful}/${disciplineMappings.total} successful`
@@ -436,4 +436,4 @@ function logMigrationComplete(
 // Export ID Mappers for External Use
 // ============================================================================
 
-export { createVPMapper, createDisciplineMapper, IDMapper };
+export { createOrchestratorMapper, createDisciplineMapper, IDMapper };

@@ -52,7 +52,7 @@ export interface Task {
 }
 
 export interface UseTasksOptions {
-  vpId?: string;
+  orchestratorId?: string;
   channelId?: string;
   status?: TaskStatusType | TaskStatusType[];
   priority?: TaskPriorityType | TaskPriorityType[];
@@ -118,8 +118,8 @@ export function useTasks(workspaceId: string, options?: UseTasksOptions): UseTas
       params.set('workspaceId', workspaceId);
 
       // Optional filters
-      if (options?.vpId) {
-        params.set('vpId', options.vpId);
+      if (options?.orchestratorId) {
+        params.set('orchestratorId', options.orchestratorId);
       }
 
       if (options?.channelId) {
@@ -186,7 +186,7 @@ export function useTasks(workspaceId: string, options?: UseTasksOptions): UseTas
     }
   }, [
     workspaceId,
-    options?.vpId,
+    options?.orchestratorId,
     options?.channelId,
     options?.status,
     options?.priority,

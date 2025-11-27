@@ -2,18 +2,16 @@
  * @fileoverview Tests for AnalyticsService
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AnalyticsPeriod } from '../../types/analytics';
+import type { AnalyticsDatabaseClient, AnalyticsRedisClient } from '../analytics-service';
 import {
-  AnalyticsServiceImpl,
   AnalyticsFlushError,
+  AnalyticsServiceImpl,
   createAnalyticsService,
   getAnalyticsService,
   resetAnalyticsService,
 } from '../analytics-service';
-
-import type { AnalyticsPeriod } from '../../types/analytics';
-import type { AnalyticsDatabaseClient, AnalyticsRedisClient } from '../analytics-service';
 
 // =============================================================================
 // MOCK FACTORIES
@@ -201,14 +199,14 @@ describe('AnalyticsService', () => {
       expect(metadata.ipAddress).toBe('192.168.1.1');
     });
 
-    it('should track VP events with vpId', async () => {
+    it('should track Orchestrator events with vpId', async () => {
       (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
         count: 1,
       });
 
       await analyticsService.track({
         workspaceId: 'ws-1',
-        vpId: 'vp-1',
+        vpId: 'orchestrator-1',
         eventType: 'vp.message.sent',
         eventData: { channelId: 'ch-1' },
       });
@@ -217,7 +215,7 @@ describe('AnalyticsService', () => {
 
       const createCall = (mockPrisma.analyticsEvent?.createMany as ReturnType<typeof vi.fn>).mock
         .calls[0][0];
-      expect(createCall.data[0].vpId).toBe('vp-1');
+      expect(createCall.data[0].orchestratorId).toBe('orchestrator-1');
       expect(createCall.data[0].eventType).toBe('vp.message.sent');
     });
   });
@@ -338,7 +336,7 @@ describe('AnalyticsService', () => {
       expect(metrics.channels).toBeDefined();
       expect(metrics.files).toBeDefined();
       expect(metrics.calls).toBeDefined();
-      expect(metrics.vp).toBeDefined();
+      expect(metrics.orchestrator).toBeDefined();
     });
 
     it('should calculate message metrics correctly', async () => {
@@ -447,7 +445,7 @@ describe('AnalyticsService', () => {
       expect(metrics.files.averageSizeBytes).toBe(40960);
     });
 
-    it('should calculate VP metrics correctly', async () => {
+    it('should calculate Orchestrator metrics correctly', async () => {
       (mockPrisma.vP.count as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce(5) // total VPs
         .mockResolvedValueOnce(3); // active VPs
@@ -462,7 +460,7 @@ describe('AnalyticsService', () => {
         .mockResolvedValueOnce([]) // files byType
         .mockResolvedValueOnce([]) // top uploaders
         .mockResolvedValueOnce([
-          { vpId: 'vp-1', vpName: 'Sales VP', discipline: 'sales', messagesSent: BigInt(100) },
+          { vpId: 'orchestrator-1', vpName: 'Sales VP', discipline: 'sales', messagesSent: BigInt(100) },
         ])
         .mockResolvedValue([]);
 
@@ -471,9 +469,9 @@ describe('AnalyticsService', () => {
         period: 'week',
       });
 
-      expect(metrics.vp.totalVPs).toBe(5);
-      expect(metrics.vp.activeVPs).toBe(3);
-      expect(metrics.vp.messagesSent).toBe(100);
+      expect(metrics.orchestrator.totalVPs).toBe(5);
+      expect(metrics.orchestrator.activeVPs).toBe(3);
+      expect(metrics.orchestrator.messagesSent).toBe(100);
     });
 
     it('should return placeholder call metrics', async () => {
@@ -960,7 +958,7 @@ describe('AnalyticsService', () => {
         { type: 'file.uploaded', data: { fileSize: 1024 } },
         { type: 'channel.joined', data: { channelId: 'ch-2' } },
         { type: 'user.login', data: { device: 'web' } },
-        { type: 'vp.message.sent', data: { vpId: 'vp-1' } },
+        { type: 'vp.message.sent', data: { vpId: 'orchestrator-1' } },
         { type: 'search.performed', data: { query: 'test' } },
         { type: 'reaction.added', data: { emoji: ':thumbsup:' } },
         { type: 'thread.created', data: { parentId: 'msg-1' } },

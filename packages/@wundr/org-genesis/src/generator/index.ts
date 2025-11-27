@@ -21,7 +21,7 @@
  * ## Module Components
  *
  * - **Prompts**: LLM prompt templates for each tier generation
- * - **VP Generator**: Creates VP-level agents for node orchestration
+ * - **Orchestrator Generator**: Creates Orchestrator-level agents for node orchestration
  * - **Discipline Generator**: Creates discipline packs for session managers
  * - **Agent Generator**: Creates specialized worker agents
  * - **Manifest Generator**: Creates deployment manifests for fleets
@@ -41,7 +41,7 @@
  * const genesis = createGenesisEngine();
  * const result = await genesis.generate('Create an AI-managed hedge fund');
  *
- * console.log(`Generated ${result.stats.vpCount} VPs`);
+ * console.log(`Generated ${result.stats.orchestratorCount} VPs`);
  * console.log(`Generated ${result.stats.disciplineCount} disciplines`);
  * console.log(`Generated ${result.stats.agentCount} agents`);
  * ```
@@ -52,18 +52,18 @@
  *
  * ```typescript
  * import {
- *   VPGenerator,
+ *   OrchestratorGenerator,
  *   DisciplineGenerator,
  *   AgentGenerator,
  * } from '@wundr/org-genesis/generator';
  *
  * // Generate VPs first
- * const vpGenerator = new VPGenerator(llmClient);
- * const vps = await vpGenerator.generate(orgContext);
+ * const vpGenerator = new OrchestratorGenerator(llmClient);
+ * const orchestrators = await vpGenerator.generate(orgContext);
  *
- * // Then disciplines for each VP
+ * // Then disciplines for each Orchestrator
  * const disciplineGenerator = new DisciplineGenerator(llmClient);
- * for (const vp of vps) {
+ * for (const orchestrator of orchestrators) {
  *   const disciplines = await disciplineGenerator.generate(vp);
  * }
  * ```
@@ -74,17 +74,17 @@
  *
  * ```typescript
  * import {
- *   buildVPGenerationPrompt,
- *   parseVPGenerationResponse,
- *   VP_GENERATION_SYSTEM_PROMPT,
+ *   buildOrchestratorGenerationPrompt,
+ *   parseOrchestratorGenerationResponse,
+ *   ORCHESTRATOR_GENERATION_SYSTEM_PROMPT,
  * } from '@wundr/org-genesis/generator/prompts';
  *
- * const userPrompt = buildVPGenerationPrompt(context);
+ * const userPrompt = buildOrchestratorGenerationPrompt(context);
  * const response = await llm.complete({
- *   system: VP_GENERATION_SYSTEM_PROMPT,
+ *   system: ORCHESTRATOR_GENERATION_SYSTEM_PROMPT,
  *   user: userPrompt,
  * });
- * const vps = parseVPGenerationResponse(response);
+ * const orchestrators = parseOrchestratorGenerationResponse(response);
  * ```
  *
  * @module generator
@@ -98,7 +98,7 @@
  * Re-export all prompt templates and utilities.
  *
  * Includes:
- * - VP generation prompts (Tier 1)
+ * - Orchestrator generation prompts (Tier 1)
  * - Discipline generation prompts (Tier 2)
  * - Agent generation prompts (Tier 3)
  */
@@ -109,7 +109,7 @@ export * from './prompts/index.js';
 // ============================================================================
 
 /**
- * VP Generator for creating Tier 1 node orchestrator agents.
+ * Orchestrator Generator for creating Tier 1 node orchestrator agents.
  *
  * VPs are responsible for:
  * - Context compilation for their node
@@ -117,7 +117,7 @@ export * from './prompts/index.js';
  * - Resource management
  * - Performance monitoring
  */
-export * from './vp-generator.js';
+export * from './orchestrator-generator.js';
 
 /**
  * Discipline Generator for creating Tier 2 session manager archetypes.
@@ -151,7 +151,7 @@ export * from './agent-generator.js';
  * Manifest Generator for creating deployment manifests.
  *
  * Generates configuration files for deploying organizational fleets:
- * - VP configuration manifests
+ * - Orchestrator configuration manifests
  * - Discipline pack definitions
  * - Agent deployment specifications
  */

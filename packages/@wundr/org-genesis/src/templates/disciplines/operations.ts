@@ -227,10 +227,10 @@ export const OPERATIONS_AGENT_IDS: string[] = [
  * // Register with discipline registry
  * registry.register(OPERATIONS_DISCIPLINE);
  *
- * // Assign to VP
+ * // Assign to Orchestrator
  * await engine.assignDisciplineToVp({
  *   disciplineId: OPERATIONS_DISCIPLINE.id,
- *   vpId: 'vp-operations-001',
+ *   vpId: 'orchestrator-operations-001',
  * });
  * ```
  */

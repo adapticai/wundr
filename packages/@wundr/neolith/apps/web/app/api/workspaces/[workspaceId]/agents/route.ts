@@ -11,6 +11,7 @@
  * @module app/api/workspaces/[workspaceId]/agents/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -23,6 +24,7 @@ import type {
   AgentModelConfig,
 } from '@/types/agent';
 import { DEFAULT_MODEL_CONFIGS } from '@/types/agent';
+import type { Prisma } from '@prisma/client';
 
 import type { NextRequest } from 'next/server';
 
@@ -65,24 +67,6 @@ const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(),
 });
 
-// In-memory storage for agents (temporary until Prisma schema is updated)
-// In production, this would be stored in workspace settings or a dedicated table
-const agentsStore = new Map<string, Agent[]>();
-
-/**
- * Helper function to get agents for a workspace
- */
-function getWorkspaceAgents(workspaceId: string): Agent[] {
-  return agentsStore.get(workspaceId) || [];
-}
-
-/**
- * Helper function to save agents for a workspace
- */
-function saveWorkspaceAgents(workspaceId: string, agents: Agent[]): void {
-  agentsStore.set(workspaceId, agents);
-}
-
 /**
  * GET /api/workspaces/:workspaceId/agents
  *
@@ -122,26 +106,61 @@ export async function GET(
 
     const { type, status, search } = queryResult.data;
 
-    // Get agents from storage
-    let agents = getWorkspaceAgents(workspaceId);
+    // Build where clause for filters
+    const where: Prisma.agentWhereInput = {
+      workspaceId,
+    };
 
-    // Apply filters
     if (type) {
-      agents = agents.filter((agent) => agent.type === type);
+      where.type = type.toUpperCase() as 'TASK' | 'RESEARCH' | 'CODING' | 'DATA' | 'QA' | 'SUPPORT' | 'CUSTOM';
     }
 
     if (status) {
-      agents = agents.filter((agent) => agent.status === status);
+      where.status = status.toUpperCase() as 'ACTIVE' | 'PAUSED' | 'INACTIVE';
     }
 
     if (search) {
-      const searchLower = search.toLowerCase();
-      agents = agents.filter(
-        (agent) =>
-          agent.name.toLowerCase().includes(searchLower) ||
-          (agent.description && agent.description.toLowerCase().includes(searchLower)),
-      );
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
     }
+
+    // Fetch agents from database
+    const dbAgents = await prisma.agent.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Transform to API format
+    const agents: Agent[] = dbAgents.map((dbAgent) => ({
+      id: dbAgent.id,
+      workspaceId: dbAgent.workspaceId,
+      name: dbAgent.name,
+      type: dbAgent.type.toLowerCase() as AgentType,
+      description: dbAgent.description || '',
+      status: dbAgent.status.toLowerCase() as AgentStatus,
+      config: {
+        model: dbAgent.model,
+        temperature: dbAgent.temperature,
+        maxTokens: dbAgent.maxTokens,
+        topP: dbAgent.topP || undefined,
+        frequencyPenalty: dbAgent.frequencyPenalty || undefined,
+        presencePenalty: dbAgent.presencePenalty || undefined,
+      },
+      systemPrompt: dbAgent.systemPrompt || '',
+      tools: dbAgent.tools,
+      stats: {
+        tasksCompleted: dbAgent.tasksCompleted,
+        successRate: dbAgent.successRate,
+        avgResponseTime: dbAgent.avgResponseTime,
+        lastActive: dbAgent.lastActiveAt,
+        tokensUsed: dbAgent.tokensUsed,
+        totalCost: dbAgent.totalCost,
+      },
+      createdAt: dbAgent.createdAt,
+      updatedAt: dbAgent.updatedAt,
+    }));
 
     return NextResponse.json({ data: agents });
   } catch (error) {
@@ -215,33 +234,57 @@ export async function POST(
       ...input.config,
     };
 
-    // Create new agent
-    const newAgent: Agent = {
-      id: `agent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      workspaceId,
-      name: input.name,
-      type: input.type as AgentType,
-      description: input.description || '',
-      status: 'active' as AgentStatus,
-      config,
-      systemPrompt: input.systemPrompt || `You are a ${input.type} agent. Help users with ${input.type}-related tasks.`,
-      tools: input.tools || [],
-      stats: {
-        tasksCompleted: 0,
-        successRate: 0,
-        avgResponseTime: 0,
-        lastActive: null,
-        tokensUsed: 0,
-        totalCost: 0,
+    // Create agent in database
+    const dbAgent = await prisma.agent.create({
+      data: {
+        workspaceId,
+        name: input.name,
+        type: input.type.toUpperCase() as 'TASK' | 'RESEARCH' | 'CODING' | 'DATA' | 'QA' | 'SUPPORT' | 'CUSTOM',
+        description: input.description || null,
+        status: 'ACTIVE',
+        model: config.model,
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+        topP: config.topP || null,
+        frequencyPenalty: config.frequencyPenalty || null,
+        presencePenalty: config.presencePenalty || null,
+        tools: input.tools || [],
+        systemPrompt:
+          input.systemPrompt ||
+          `You are a ${input.type} agent. Help users with ${input.type}-related tasks.`,
+        createdById: session.user.id,
       },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
-    // Save to storage
-    const agents = getWorkspaceAgents(workspaceId);
-    agents.push(newAgent);
-    saveWorkspaceAgents(workspaceId, agents);
+    // Transform to API format
+    const newAgent: Agent = {
+      id: dbAgent.id,
+      workspaceId: dbAgent.workspaceId,
+      name: dbAgent.name,
+      type: dbAgent.type.toLowerCase() as AgentType,
+      description: dbAgent.description || '',
+      status: dbAgent.status.toLowerCase() as AgentStatus,
+      config: {
+        model: dbAgent.model,
+        temperature: dbAgent.temperature,
+        maxTokens: dbAgent.maxTokens,
+        topP: dbAgent.topP || undefined,
+        frequencyPenalty: dbAgent.frequencyPenalty || undefined,
+        presencePenalty: dbAgent.presencePenalty || undefined,
+      },
+      systemPrompt: dbAgent.systemPrompt || '',
+      tools: dbAgent.tools,
+      stats: {
+        tasksCompleted: dbAgent.tasksCompleted,
+        successRate: dbAgent.successRate,
+        avgResponseTime: dbAgent.avgResponseTime,
+        lastActive: dbAgent.lastActiveAt,
+        tokensUsed: dbAgent.tokensUsed,
+        totalCost: dbAgent.totalCost,
+      },
+      createdAt: dbAgent.createdAt,
+      updatedAt: dbAgent.updatedAt,
+    };
 
     return NextResponse.json(
       {

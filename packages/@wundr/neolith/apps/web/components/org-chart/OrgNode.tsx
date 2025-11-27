@@ -2,21 +2,20 @@
 
 import { Building2, ChevronDown, ChevronRight, Folder, User } from 'lucide-react';
 import React from 'react';
-
+import { VPStatusDot } from '@/components/orchestrator/orchestrator-status-badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { VPStatusDot } from '@/components/vp/vp-status-badge';
 import { cn } from '@/lib/utils';
 
-import { DISCIPLINE_COLORS, type OrgNodeProps, type OrgHierarchyNode } from './types';
+import { DISCIPLINE_COLORS, type OrgHierarchyNode, type OrgNodeProps } from './types';
 import { VPDetailsPopover } from './VPDetailsPopover';
 
 /**
  * Individual node component in the org hierarchy tree
- * Supports: Organization, Workspace, and VP nodes with appropriate styling
+ * Supports: Organization, Workspace, and Orchestrator nodes with appropriate styling
  */
 export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }: OrgNodeProps) {
   const hasChildren = node.children && node.children.length > 0;
@@ -129,12 +128,12 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
                 {getNodeIcon()}
                 <div className="flex-1">
                   <h3 className="font-semibold text-base">{node.name}</h3>
-                  {(node.data?.vpCount !== undefined || node.data?.onlineVPCount !== undefined) && (
+                  {(node.data?.orchestratorCount !== undefined || node.data?.onlineVPCount !== undefined) && (
                     <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                      {node.data.vpCount !== undefined && (
+                      {node.data.orchestratorCount !== undefined && (
                         <span className="flex items-center gap-1">
                           <User className="h-3 w-3" />
-                          {node.data.vpCount} VPs
+                          {node.data.orchestratorCount} VPs
                         </span>
                       )}
                       {node.data.onlineVPCount !== undefined && (
@@ -163,7 +162,7 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
         {isExpanded && hasChildren && (
           <div className="ml-6 space-y-2 border-l-2 border-border pl-4">
             {/* Group VPs by discipline */}
-            {groupByDiscipline(node.children || []).map(([discipline, vps]) => (
+            {groupByDiscipline(node.children || []).map(([discipline, orchestrators]) => (
               <div key={discipline} className="space-y-2">
                 <div className="flex items-center gap-2 px-2 py-1">
                   <span className={cn('text-xs font-semibold px-2 py-1 rounded-md', disciplineColor)}>
@@ -296,7 +295,7 @@ function OrgNodeRenderer({
 }
 
 /**
- * Groups VP nodes by discipline for better organization
+ * Groups Orchestrator nodes by discipline for better organization
  */
 function groupByDiscipline(nodes: OrgNodeProps['node'][]): [string, OrgNodeProps['node'][]][] {
   const grouped = nodes.reduce((acc, node) => {

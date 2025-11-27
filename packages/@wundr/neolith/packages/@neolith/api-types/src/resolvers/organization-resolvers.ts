@@ -8,14 +8,14 @@
  * @module @genesis/api-types/resolvers/organization-resolvers
  */
 
-import { GraphQLError } from 'graphql';
 
 import type {
+  Prisma,
   PrismaClient,
   organization as PrismaOrganization,
   OrganizationRole as PrismaOrgRole,
-  Prisma,
 } from '@prisma/client';
+import { GraphQLError } from 'graphql';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -1301,7 +1301,7 @@ export const OrganizationFieldResolvers = {
    * @param context - GraphQL context
    * @returns Array of VPs in the organization
    */
-  vps: async (
+  orchestrators: async (
     parent: Organization,
     _args: unknown,
     context: GraphQLContext

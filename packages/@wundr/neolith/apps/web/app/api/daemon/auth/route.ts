@@ -1,7 +1,7 @@
 /**
  * Daemon Authentication API Route
  *
- * Handles authentication for VP daemon services.
+ * Handles authentication for Orchestrator daemon services.
  *
  * Routes:
  * - POST /api/daemon/auth - Authenticate daemon with API credentials
@@ -12,10 +12,9 @@
 import { redis, hashAPIKey } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Schema for daemon authentication request body
@@ -82,7 +81,7 @@ function generateTokens(vpId: string, daemonId: string, scopes: string[]): {
 /**
  * POST /api/daemon/auth - Authenticate daemon
  *
- * Authenticates a VP daemon using API key and secret.
+ * Authenticates a Orchestrator daemon using API key and secret.
  *
  * @param request - Next.js request with authentication credentials
  * @returns JWT tokens for authenticated session
@@ -123,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { apiKey, apiSecret: _apiSecret, scopes } = parseResult.data;
 
-    // Extract VP ID from API key prefix (format: vp_<vpId>_<random>)
+    // Extract OrchestratorID from API key prefix (format: vp_<vpId>_<random>)
     const keyParts = apiKey.split('_');
     if (keyParts.length < 3 || keyParts[0] !== 'vp') {
       return NextResponse.json(
@@ -134,8 +133,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const vpId = keyParts[1];
 
-    // Look up VP and verify API key
-    const vp = await prisma.vP.findUnique({
+    // Look up Orchestrator and verify API key
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: vpId },
       include: {
         user: {
@@ -163,7 +162,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Check if VP is active
+    // Check if Orchestrator is active
     if (vp.status === 'OFFLINE') {
       return NextResponse.json(
         { error: 'Daemon is disabled', code: AUTH_ERROR_CODES.DAEMON_DISABLED },
@@ -209,7 +208,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Continue without session storage - tokens are still valid
     }
 
-    // Update VP status
+    // Update Orchestrator status
     await prisma.vP.update({
       where: { id: vpId },
       data: {

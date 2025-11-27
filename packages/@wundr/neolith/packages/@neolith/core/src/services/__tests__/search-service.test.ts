@@ -290,7 +290,7 @@ describe('SearchService', () => {
       mockRedis.get.mockResolvedValue(null);
       mockPrisma.$queryRawUnsafe.mockResolvedValue([
         {
-          id: 'vp-1',
+          id: 'orchestrator-1',
           name: 'AI Assistant',
           discipline: 'Engineering',
           status: 'ACTIVE',

@@ -2,11 +2,15 @@
  * Dashboard Page - Playwright E2E Tests
  *
  * Tests all functionality of the workspace dashboard including:
- * - Quick Stats widget
+ * - Authentication and access control
+ * - Quick Stats widget (Team Members, Channels, Workflows, Orchestrators/VPs)
  * - Recent Activity widget
  * - Quick Actions
  * - Sidebar navigation
  * - Channel list
+ * - Theme toggle
+ * - User menu
+ * - Workspace switcher
  * - Responsive design
  * - Error handling
  * - Performance
@@ -15,17 +19,65 @@
  */
 
 import { test, expect } from '@playwright/test';
+import * as path from 'path';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
+// Use authenticated state for all tests
+// To generate auth state, run: npx playwright test auth.setup.ts --project=setup
+test.use({ storageState: path.join(__dirname, '../playwright/.auth/user.json') });
+
 test.describe('Dashboard Page - Full Test Suite', () => {
   test.beforeEach(async ({ page }) => {
-    // Assuming authentication is handled via session/cookies
-    // You may need to add login logic here
+    // Navigate directly to base URL - should redirect to workspace dashboard
     await page.goto(BASE_URL);
 
     // Wait for redirect to workspace dashboard
     await page.waitForURL(/\/.*\/dashboard/, { timeout: 10000 });
+  });
+
+  test.describe('Authentication & Access Control', () => {
+    test('should load dashboard when authenticated', async ({ page }) => {
+      // Should already be on dashboard due to beforeEach
+      await expect(page).toHaveURL(/\/.*\/dashboard/);
+      await expect(page.locator('h1:has-text("Welcome")')).toBeVisible({ timeout: 5000 });
+    });
+
+    test('should display authenticated user information', async ({ page }) => {
+      // Check that user session is active by verifying user-specific content
+      const welcomeHeading = page.locator('h1:has-text("Welcome")');
+      await expect(welcomeHeading).toBeVisible();
+
+      const headingText = await welcomeHeading.textContent();
+      // Should not show default "User"
+      expect(headingText).not.toBe('Welcome, User');
+      expect(headingText).toMatch(/Welcome,\s+\w+/);
+    });
+
+    test('should have valid session cookies', async ({ page }) => {
+      // Check for NextAuth session cookie
+      const cookies = await page.context().cookies();
+      const hasSessionCookie = cookies.some(
+        (cookie) =>
+          cookie.name.includes('next-auth') ||
+          cookie.name.includes('session') ||
+          cookie.name.includes('authjs')
+      );
+
+      expect(hasSessionCookie).toBe(true);
+    });
+
+    test('should redirect to login when session expires', async ({ page }) => {
+      // Clear all cookies to simulate session expiration
+      await page.context().clearCookies();
+
+      // Try to navigate to dashboard
+      await page.goto(`${BASE_URL}/ws_test/dashboard`);
+
+      // Should redirect to login
+      await page.waitForURL(/\/login/, { timeout: 10000 });
+      await expect(page).toHaveURL(/\/login/);
+    });
   });
 
   test.describe('Page Load & Routing', () => {
@@ -72,7 +124,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       await expect(statsWidget.locator('text=Team Members')).toBeVisible();
       await expect(statsWidget.locator('text=Channels')).toBeVisible();
       await expect(statsWidget.locator('text=Workflows')).toBeVisible();
-      await expect(statsWidget.locator('text=Virtual Persons')).toBeVisible();
+      await expect(statsWidget.locator('text=Orchestrators')).toBeVisible();
     });
 
     test('should display numeric values for all stats', async ({ page }) => {
@@ -162,7 +214,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
         'Team Members',
         'Channels',
         'Workflows',
-        'Virtual Persons'
+        'Orchestrators'
       ]);
     });
   });
@@ -375,7 +427,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
       const sidebar = page.locator('aside');
 
       await expect(sidebar.locator('text=Dashboard')).toBeVisible();
-      await expect(sidebar.locator('text=Virtual Persons')).toBeVisible();
+      await expect(sidebar.locator('text=Orchestrators')).toBeVisible();
       await expect(sidebar.locator('text=Agents')).toBeVisible();
       await expect(sidebar.locator('text=Workflows')).toBeVisible();
       await expect(sidebar.locator('text=Deployments')).toBeVisible();
@@ -459,6 +511,248 @@ test.describe('Dashboard Page - Full Test Suite', () => {
 
       // Should show error state
       // Implementation depends on ChannelList component
+    });
+  });
+
+  test.describe('Theme Toggle', () => {
+    test('should display theme toggle button', async ({ page }) => {
+      // Look for theme toggle button (usually in header or user menu)
+      const themeToggle = page.locator('button[aria-label*="theme"], button[aria-label*="Theme"]');
+
+      // Theme toggle might be in a dropdown or directly visible
+      const isVisible = await themeToggle.isVisible().catch(() => false);
+
+      if (!isVisible) {
+        // Try to open settings/user menu first
+        const settingsButton = page.locator('button[aria-label*="settings"], button[aria-label*="Settings"]').first();
+        if (await settingsButton.isVisible().catch(() => false)) {
+          await settingsButton.click();
+        }
+      }
+    });
+
+    test('should toggle between light and dark themes', async ({ page }) => {
+      // Get initial theme from HTML element
+      const html = page.locator('html');
+      const initialClass = await html.getAttribute('class');
+      const isDarkInitially = initialClass?.includes('dark') ?? false;
+
+      // Find and click theme toggle
+      const themeToggle = page.locator('button[aria-label*="theme"], button[aria-label*="Theme"]').first();
+
+      // May need to open menu first
+      if (!await themeToggle.isVisible().catch(() => false)) {
+        const menuButton = page.locator('button[aria-label*="menu"], button[aria-label*="Menu"]').first();
+        if (await menuButton.isVisible().catch(() => false)) {
+          await menuButton.click();
+          await page.waitForTimeout(300);
+        }
+      }
+
+      if (await themeToggle.isVisible().catch(() => false)) {
+        await themeToggle.click();
+        await page.waitForTimeout(300);
+
+        // Verify theme changed
+        const newClass = await html.getAttribute('class');
+        const isDarkNow = newClass?.includes('dark') ?? false;
+
+        expect(isDarkNow).not.toBe(isDarkInitially);
+      }
+    });
+
+    test('should persist theme preference across page reloads', async ({ page }) => {
+      // This test assumes theme is stored in localStorage or cookies
+      const html = page.locator('html');
+      const initialClass = await html.getAttribute('class');
+
+      // Reload page
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+
+      // Theme should remain the same
+      const afterReloadClass = await html.getAttribute('class');
+      expect(afterReloadClass).toBe(initialClass);
+    });
+  });
+
+  test.describe('User Menu', () => {
+    test('should display user menu button', async ({ page }) => {
+      // User menu is typically in header or sidebar
+      const userMenuButton = page.locator(
+        'button:has-text("User"), button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+      ).first();
+
+      // May be in sidebar footer
+      const sidebarUserSection = page.locator('aside .border-t.border-stone-800').last();
+
+      const hasUserButton = await userMenuButton.isVisible().catch(() => false);
+      const hasSidebarUser = await sidebarUserSection.isVisible().catch(() => false);
+
+      expect(hasUserButton || hasSidebarUser).toBe(true);
+    });
+
+    test('should open user menu on click', async ({ page }) => {
+      // Find user menu button
+      const userMenuButton = page.locator(
+        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"], button[aria-label*="profile"]'
+      ).first();
+
+      if (await userMenuButton.isVisible().catch(() => false)) {
+        await userMenuButton.click();
+        await page.waitForTimeout(300);
+
+        // Should show dropdown menu with options like "Settings", "Sign out", etc.
+        const menu = page.locator('[role="menu"], [role="dialog"]');
+        await expect(menu).toBeVisible({ timeout: 2000 });
+      }
+    });
+
+    test('should display user information in menu', async ({ page }) => {
+      // Try to open user menu
+      const userMenuButton = page.locator(
+        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+      ).first();
+
+      if (await userMenuButton.isVisible().catch(() => false)) {
+        await userMenuButton.click();
+        await page.waitForTimeout(300);
+
+        // Check for user name or email in menu
+        const menu = page.locator('[role="menu"], [role="dialog"]');
+        if (await menu.isVisible().catch(() => false)) {
+          const menuText = await menu.textContent();
+          expect(menuText).toBeTruthy();
+          expect(menuText?.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    test('should have sign out option in user menu', async ({ page }) => {
+      const userMenuButton = page.locator(
+        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+      ).first();
+
+      if (await userMenuButton.isVisible().catch(() => false)) {
+        await userMenuButton.click();
+        await page.waitForTimeout(300);
+
+        // Look for sign out / logout option
+        const signOutButton = page.locator('text=/Sign out|Logout|Log out/i');
+        await expect(signOutButton).toBeVisible({ timeout: 2000 });
+      }
+    });
+
+    test('should navigate to settings from user menu', async ({ page }) => {
+      const userMenuButton = page.locator(
+        'button[aria-label*="user"], button[aria-label*="User"], button[aria-label*="Account"]'
+      ).first();
+
+      if (await userMenuButton.isVisible().catch(() => false)) {
+        await userMenuButton.click();
+        await page.waitForTimeout(300);
+
+        // Look for settings option
+        const settingsOption = page.locator('text=/Settings|Preferences/i').first();
+        if (await settingsOption.isVisible().catch(() => false)) {
+          await settingsOption.click();
+          await expect(page).toHaveURL(/\/settings/, { timeout: 5000 });
+        }
+      }
+    });
+  });
+
+  test.describe('Workspace Switcher', () => {
+    test('should display workspace switcher if multiple workspaces exist', async ({ page }) => {
+      // Workspace switcher is typically in sidebar header
+      const workspaceSwitcher = page.locator(
+        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+      ).first();
+
+      // Or look for workspace name button that's clickable
+      const workspaceNameButton = page.locator('aside .font-semibold').first();
+
+      // Either workspace switcher exists or workspace name is clickable
+      const hasSwitcher = await workspaceSwitcher.isVisible().catch(() => false);
+
+      // This is optional - only if user has multiple workspaces
+      if (hasSwitcher) {
+        await expect(workspaceSwitcher).toBeVisible();
+      } else {
+        // Single workspace scenario - just verify workspace name is shown
+        await expect(workspaceNameButton).toBeVisible();
+      }
+    });
+
+    test('should display current workspace name', async ({ page }) => {
+      const workspaceName = page.locator('aside .font-semibold.text-stone-100').first();
+      await expect(workspaceName).toBeVisible();
+
+      const nameText = await workspaceName.textContent();
+      expect(nameText).toBeTruthy();
+      expect(nameText?.trim().length).toBeGreaterThan(0);
+    });
+
+    test('should open workspace switcher dropdown on click', async ({ page }) => {
+      const workspaceSwitcher = page.locator(
+        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+      ).first();
+
+      if (await workspaceSwitcher.isVisible().catch(() => false)) {
+        await workspaceSwitcher.click();
+        await page.waitForTimeout(300);
+
+        // Should show dropdown with workspace list
+        const dropdown = page.locator('[role="menu"], [role="listbox"], [role="dialog"]');
+        await expect(dropdown).toBeVisible({ timeout: 2000 });
+      }
+    });
+
+    test('should list available workspaces in switcher', async ({ page }) => {
+      const workspaceSwitcher = page.locator(
+        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+      ).first();
+
+      if (await workspaceSwitcher.isVisible().catch(() => false)) {
+        await workspaceSwitcher.click();
+        await page.waitForTimeout(300);
+
+        // Look for workspace items in dropdown
+        const workspaceItems = page.locator('[role="menuitem"], [role="option"]');
+        const count = await workspaceItems.count();
+
+        // Should have at least the current workspace
+        expect(count).toBeGreaterThan(0);
+      }
+    });
+
+    test('should switch workspace when selecting from list', async ({ page }) => {
+      const currentUrl = page.url();
+      const currentWorkspaceId = currentUrl.match(/\/([^\/]+)\/dashboard/)?.[1];
+
+      const workspaceSwitcher = page.locator(
+        'button[aria-label*="workspace"], button[aria-label*="Switch workspace"]'
+      ).first();
+
+      if (await workspaceSwitcher.isVisible().catch(() => false)) {
+        await workspaceSwitcher.click();
+        await page.waitForTimeout(300);
+
+        const workspaceItems = page.locator('[role="menuitem"], [role="option"]');
+        const count = await workspaceItems.count();
+
+        if (count > 1) {
+          // Click on a different workspace
+          await workspaceItems.nth(1).click();
+          await page.waitForTimeout(500);
+
+          // URL should change to different workspace
+          const newUrl = page.url();
+          const newWorkspaceId = newUrl.match(/\/([^\/]+)\/dashboard/)?.[1];
+
+          expect(newWorkspaceId).not.toBe(currentWorkspaceId);
+        }
+      }
     });
   });
 

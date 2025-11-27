@@ -17,7 +17,7 @@ export function EmptyDashboard({ onGetStarted }: EmptyDashboardProps) {
     <EmptyState
       icon={LayoutDashboard}
       title="Welcome to Neolith"
-      description="Get started by creating your first channel or virtual person to begin exploring the platform."
+      description="Get started by creating your first channel or orchestrator to begin exploring the platform."
       action={
         onGetStarted
           ? {

@@ -14,7 +14,7 @@ import { CreateCommands } from './commands/create';
 import { createGuardianCommand } from './commands/guardian';
 import { createRAGCommand } from './commands/rag';
 import { createSessionCommand } from './commands/session';
-import { createVPCommand } from './commands/vp';
+import { createOrchestratorCommand } from './commands/orchestrator';
 import { createWorktreeCommand } from './commands/worktree';
 import { DashboardCommands } from './commands/dashboard';
 import { GovernCommands } from './commands/govern';
@@ -120,8 +120,8 @@ The Unified Developer Platform
     // Session Management
     this.program.addCommand(createSessionCommand());
 
-    // VP Daemon Management
-    this.program.addCommand(createVPCommand());
+    // Orchestrator Daemon Management
+    this.program.addCommand(createOrchestratorCommand());
 
     // Guardian Dashboard
     this.program.addCommand(createGuardianCommand());

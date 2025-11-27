@@ -1,7 +1,7 @@
 /**
  * @genesis/core - Error Classes
  *
- * Custom error classes for VP service operations.
+ * Custom error classes for Orchestrator service operations.
  * Provides structured error handling with error codes and metadata.
  *
  * @packageDocumentation
@@ -56,16 +56,16 @@ export class GenesisError extends Error {
 }
 
 // =============================================================================
-// VP Errors
+// OrchestratorErrors
 // =============================================================================
 
 /**
- * Error thrown when a VP is not found.
+ * Error thrown when a Orchestrator is not found.
  */
-export class VPNotFoundError extends GenesisError {
+export class OrchestratorNotFoundError extends GenesisError {
   constructor(identifier: string, identifierType: 'id' | 'slug' | 'email' = 'id') {
     super(
-      `VP not found with ${identifierType}: ${identifier}`,
+      `Orchestrator not found with ${identifierType}: ${identifier}`,
       'VP_NOT_FOUND',
       404,
       { identifier, identifierType },
@@ -75,12 +75,12 @@ export class VPNotFoundError extends GenesisError {
 }
 
 /**
- * Error thrown when a VP with the given identifier already exists.
+ * Error thrown when a Orchestrator with the given identifier already exists.
  */
-export class VPAlreadyExistsError extends GenesisError {
+export class OrchestratorAlreadyExistsError extends GenesisError {
   constructor(identifier: string, identifierType: 'email' | 'slug' = 'email') {
     super(
-      `VP already exists with ${identifierType}: ${identifier}`,
+      `Orchestrator already exists with ${identifierType}: ${identifier}`,
       'VP_ALREADY_EXISTS',
       409,
       { identifier, identifierType },
@@ -90,9 +90,9 @@ export class VPAlreadyExistsError extends GenesisError {
 }
 
 /**
- * Error thrown when VP validation fails.
+ * Error thrown when Orchestrator validation fails.
  */
-export class VPValidationError extends GenesisError {
+export class OrchestratorValidationError extends GenesisError {
   /** Validation errors by field */
   public readonly errors: Record<string, string[]>;
 
@@ -104,12 +104,12 @@ export class VPValidationError extends GenesisError {
 }
 
 /**
- * Error thrown when VP operation is not permitted.
+ * Error thrown when Orchestrator operation is not permitted.
  */
-export class VPOperationNotPermittedError extends GenesisError {
+export class OrchestratorOperationNotPermittedError extends GenesisError {
   constructor(operation: string, reason: string) {
     super(
-      `VP operation '${operation}' not permitted: ${reason}`,
+      `Orchestrator operation '${operation}' not permitted: ${reason}`,
       'VP_OPERATION_NOT_PERMITTED',
       403,
       { operation, reason },
@@ -119,12 +119,12 @@ export class VPOperationNotPermittedError extends GenesisError {
 }
 
 /**
- * Error thrown when VP is in an invalid state for the requested operation.
+ * Error thrown when Orchestrator is in an invalid state for the requested operation.
  */
-export class VPInvalidStateError extends GenesisError {
+export class OrchestratorInvalidStateError extends GenesisError {
   constructor(vpId: string, currentState: string, requiredState: string) {
     super(
-      `VP ${vpId} is in state '${currentState}', but '${requiredState}' is required`,
+      `Orchestrator ${vpId} is in state '${currentState}', but '${requiredState}' is required`,
       'VP_INVALID_STATE',
       409,
       { vpId, currentState, requiredState },
@@ -170,7 +170,7 @@ export class InvalidAPIKeyError extends GenesisError {
 export class APIKeyGenerationError extends GenesisError {
   constructor(vpId: string, reason: string) {
     super(
-      `Failed to generate API key for VP ${vpId}: ${reason}`,
+      `Failed to generate API key for Orchestrator ${vpId}: ${reason}`,
       'API_KEY_GENERATION_FAILED',
       500,
       { vpId, reason },
@@ -244,7 +244,7 @@ export function isGenesisError(error: unknown): error is GenesisError {
 }
 
 /**
- * Type guard to check if an error is a VP-related error.
+ * Type guard to check if an error is a Orchestrator-related error.
  */
 export function isVPError(error: unknown): error is GenesisError {
   if (!isGenesisError(error)) {

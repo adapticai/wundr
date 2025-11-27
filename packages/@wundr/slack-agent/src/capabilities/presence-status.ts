@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - Presence and Status Management
  *
- * Implements Slack presence and status management for VP (Virtual Principal) agents.
+ * Implements Slack presence and status management for Orchestrator (Virtual Principal) agents.
  * Enables authentic presence behavior - appearing online, setting status messages,
  * and monitoring presence changes of other users.
  *
@@ -187,7 +187,7 @@ export const PresetStatuses = {
 // =============================================================================
 
 /**
- * Manages Slack presence and status for a VP agent.
+ * Manages Slack presence and status for a Orchestrator agent.
  *
  * This class provides methods for:
  * - Setting and getting presence (active/away)
@@ -235,7 +235,7 @@ export class PresenceStatusManager {
   // ===========================================================================
 
   /**
-   * Sets the VP agent's presence state.
+   * Sets the Orchestrator agent's presence state.
    *
    * @param presence - 'auto' to appear active when using Slack, 'away' to force away status
    * @throws {PresenceStatusError} If the API call fails
@@ -330,7 +330,7 @@ export class PresenceStatusManager {
   // ===========================================================================
 
   /**
-   * Sets a custom status for the VP agent.
+   * Sets a custom status for the Orchestrator agent.
    *
    * @param text - Status text to display
    * @param emoji - Optional emoji (e.g., ':computer:' or just 'computer')

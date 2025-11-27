@@ -1,5 +1,5 @@
 /**
- * @fileoverview WebSocket Upgrade Route for VP Daemon Connections
+ * @fileoverview WebSocket Upgrade Route for OrchestratorDaemon Connections
  * Handles WebSocket upgrade requests and delegates to the WebSocket server.
  *
  * This route provides the HTTP → WebSocket upgrade endpoint.
@@ -8,9 +8,9 @@
  * @module app/api/daemon/ws/route
  */
 
-import { NextResponse } from 'next/server';
 
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/daemon/ws - WebSocket Upgrade Endpoint

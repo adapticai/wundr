@@ -14,7 +14,7 @@
  *
  * const compiler = createContextCompiler();
  * const result = await compiler.compile({
- *   vpId: 'vp-engineering',
+ *   vpId: 'orchestrator-engineering',
  *   disciplineIds: ['engineering', 'testing'],
  *   taskDescription: 'Implement new feature'
  * });

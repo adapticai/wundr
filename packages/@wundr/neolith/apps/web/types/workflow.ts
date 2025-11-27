@@ -1,6 +1,6 @@
 // Workflow types for Genesis-App
 
-export type WorkflowStatus = 'active' | 'inactive' | 'draft' | 'error';
+export type WorkflowStatus = 'active' | 'inactive' | 'draft' | 'archived';
 
 export type TriggerType =
   | 'schedule'
@@ -188,10 +188,10 @@ export const WORKFLOW_STATUS_CONFIG: Record<
     color: 'text-yellow-700 dark:text-yellow-400',
     bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
   },
-  error: {
-    label: 'Error',
-    color: 'text-red-700 dark:text-red-400',
-    bgColor: 'bg-red-100 dark:bg-red-900/30',
+  archived: {
+    label: 'Archived',
+    color: 'text-gray-600 dark:text-gray-500',
+    bgColor: 'bg-gray-100 dark:bg-gray-800/30',
   },
 };
 
@@ -299,7 +299,7 @@ export const ACTION_TYPE_CONFIG: Record<
   },
   notify_vp: {
     label: 'Notify VP',
-    description: 'Trigger a VP agent to respond',
+    description: 'Trigger a Orchestrator agent to respond',
     icon: 'bot',
   },
 };
@@ -348,6 +348,56 @@ export const TEMPLATE_CATEGORY_CONFIG: Record<
 
 // Execution status type
 export type ExecutionStatus = WorkflowExecution['status'];
+
+// Default action configurations for each action type
+export const DEFAULT_ACTION_CONFIGS: Record<ActionType, Partial<ActionConfig['config']>> = {
+  send_message: {
+    channelId: '',
+    message: 'Hello! This is an automated message.',
+  },
+  send_dm: {
+    userId: '',
+    message: 'Hello! This is a direct message.',
+  },
+  create_channel: {
+    channelName: 'new-channel',
+    channelType: 'public',
+  },
+  invite_to_channel: {
+    channelId: '',
+    userId: '',
+  },
+  assign_role: {
+    roleId: '',
+    userId: '',
+  },
+  add_reaction: {
+    emoji: '👍',
+  },
+  http_request: {
+    url: 'https://api.example.com/webhook',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: '{"data": "{{trigger.message.content}}"}',
+  },
+  wait: {
+    duration: 5,
+    unit: 'minutes',
+  },
+  condition: {
+    condition: {
+      field: 'trigger.message.content',
+      operator: 'contains',
+      value: '',
+    },
+  },
+  notify_vp: {
+    vpId: '',
+    message: 'Action required for: {{trigger.message.content}}',
+  },
+};
 
 // Execution status configuration for UI
 export const EXECUTION_STATUS_CONFIG: Record<

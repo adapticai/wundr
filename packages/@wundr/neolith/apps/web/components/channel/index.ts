@@ -7,6 +7,7 @@
 export { ChannelList } from './channel-list';
 export { ChannelHeader } from './channel-header';
 export { CreateChannelDialog } from './create-channel-dialog';
+export { CreateConversationDialog } from './create-conversation-dialog';
 export { MemberList } from './member-list';
 export { InviteDialog } from './invite-dialog';
 export { DMSelector } from './dm-selector';

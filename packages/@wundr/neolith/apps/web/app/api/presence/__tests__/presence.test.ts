@@ -6,7 +6,7 @@
  * - GET /api/presence/users/:userId - Get user presence
  * - POST /api/presence/channels/:id/join - Join channel presence
  * - POST /api/presence/channels/:id/leave - Leave channel presence
- * - POST /api/daemon/heartbeat - VP daemon heartbeat
+ * - POST /api/daemon/heartbeat - Orchestrator daemon heartbeat
  *
  * Tests cover authentication, authorization, validation, and error handling.
  *
@@ -14,7 +14,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // =============================================================================
 // MOCKS
@@ -52,7 +52,7 @@ const mockHeartbeatService = {
   unregisterVP: vi.fn(),
 };
 
-// Mock VP service for API key validation
+// Mock Orchestrator service for API key validation
 const mockVPService = {
   validateAPIKey: vi.fn(),
 };
@@ -475,19 +475,19 @@ describe('Presence API', () => {
   });
 
   // ===========================================================================
-  // POST /api/daemon/heartbeat - VP Daemon Heartbeat
+  // POST /api/daemon/heartbeat - OrchestratorDaemon Heartbeat
   // ===========================================================================
 
   describe('POST /api/daemon/heartbeat', () => {
-    it('updates VP heartbeat', async () => {
+    it('updates Orchestrator heartbeat', async () => {
       const apiKey = 'gns_valid_api_key_123';
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
       const daemonId = 'daemon-456';
 
       // Mock valid API key
       mockVPService.validateAPIKey.mockResolvedValue({
         valid: true,
-        vp: { id: vpId, userId: 'user-vp-123' },
+        vp: { id: vpId, userId: 'user-orchestrator-123' },
       });
 
       mockHeartbeatService.sendHeartbeat.mockResolvedValue(undefined);
@@ -536,7 +536,7 @@ describe('Presence API', () => {
     it('stores metrics', async () => {
       // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
       const daemonId = 'daemon-456';
       const metrics = {
         responseTimeMs: 200,
@@ -603,7 +603,7 @@ describe('Presence API', () => {
     it('returns health status in response', async () => {
       // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
       const daemonId = 'daemon-456';
 
       mockVPService.validateAPIKey.mockResolvedValue({
@@ -631,14 +631,14 @@ describe('Presence API', () => {
   });
 
   // ===========================================================================
-  // GET /api/daemon/health - Get VP Health Status
+  // GET /api/daemon/health - Get OrchestratorHealth Status
   // ===========================================================================
 
   describe('GET /api/daemon/health', () => {
-    it('returns VP health status', async () => {
+    it('returns Orchestrator health status', async () => {
       // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
 
       mockVPService.validateAPIKey.mockResolvedValue({
         valid: true,
@@ -662,7 +662,7 @@ describe('Presence API', () => {
     });
 
     it('returns degraded status for missed heartbeats', async () => {
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
 
       mockHeartbeatService.getVPHealthStatus.mockResolvedValue({
         vpId,
@@ -681,7 +681,7 @@ describe('Presence API', () => {
     });
 
     it('returns unhealthy status for unresponsive VP', async () => {
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
 
       mockHeartbeatService.getVPHealthStatus.mockResolvedValue({
         vpId,
@@ -701,15 +701,15 @@ describe('Presence API', () => {
   });
 
   // ===========================================================================
-  // GET /api/presence/vps/:vpId - Get VP Presence
+  // GET /api/presence/orchestrators/:vpId - Get OrchestratorPresence
   // ===========================================================================
 
-  describe('GET /api/presence/vps/:vpId', () => {
-    it('returns VP presence when online', async () => {
+  describe('GET /api/presence/orchestrators/:vpId', () => {
+    it('returns Orchestrator presence when online', async () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
       const mockPresence = createMockVPPresence(vpId);
 
       mockPresenceService.getVPPresence.mockResolvedValue(mockPresence);
@@ -738,7 +738,7 @@ describe('Presence API', () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const vpId = 'vp-123';
+      const vpId = 'orchestrator-123';
       const mockPresence = createMockVPPresence(vpId);
 
       mockPresenceService.getVPPresence.mockResolvedValue(mockPresence);
@@ -770,13 +770,13 @@ describe('Presence API', () => {
 
       const unhealthyVPs = [
         {
-          vpId: 'vp-1',
+          vpId: 'orchestrator-1',
           status: 'unhealthy',
           missedHeartbeats: 5,
           lastHeartbeat: new Date(Date.now() - 150000).toISOString(),
         },
         {
-          vpId: 'vp-2',
+          vpId: 'orchestrator-2',
           status: 'unhealthy',
           missedHeartbeats: 4,
           lastHeartbeat: new Date(Date.now() - 120000).toISOString(),
@@ -825,7 +825,7 @@ describe('Presence API', () => {
       const orgId = 'org-123';
 
       mockHeartbeatService.getUnhealthyVPs.mockResolvedValue([
-        { vpId: 'vp-1', organizationId: orgId, status: 'unhealthy' },
+        { vpId: 'orchestrator-1', organizationId: orgId, status: 'unhealthy' },
       ]);
 
       const result = await mockHeartbeatService.getUnhealthyVPs(orgId);

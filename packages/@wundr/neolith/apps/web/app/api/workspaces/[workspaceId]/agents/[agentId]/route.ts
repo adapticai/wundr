@@ -11,11 +11,13 @@
  * @module app/api/workspaces/[workspaceId]/agents/[agentId]/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
-import type { Agent, UpdateAgentInput } from '@/types/agent';
+import type { Agent, UpdateAgentInput, AgentType, AgentStatus } from '@/types/agent';
+import type { Prisma } from '@prisma/client';
 
 import type { NextRequest } from 'next/server';
 
@@ -48,23 +50,6 @@ const updateAgentSchema = z.object({
   tools: z.array(z.string()).optional(),
 });
 
-// In-memory storage (same as in route.ts)
-const agentsStore = new Map<string, Agent[]>();
-
-/**
- * Helper function to get agents for a workspace
- */
-function getWorkspaceAgents(workspaceId: string): Agent[] {
-  return agentsStore.get(workspaceId) || [];
-}
-
-/**
- * Helper function to save agents for a workspace
- */
-function saveWorkspaceAgents(workspaceId: string, agents: Agent[]): void {
-  agentsStore.set(workspaceId, agents);
-}
-
 /**
  * GET /api/workspaces/:workspaceId/agents/:agentId
  *
@@ -91,16 +76,50 @@ export async function GET(
     const params = await context.params;
     const { workspaceId, agentId } = params;
 
-    // Find agent
-    const agents = getWorkspaceAgents(workspaceId);
-    const agent = agents.find((a) => a.id === agentId);
+    // Find agent in database
+    const dbAgent = await prisma.agent.findFirst({
+      where: {
+        id: agentId,
+        workspaceId,
+      },
+    });
 
-    if (!agent) {
+    if (!dbAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
         { status: 404 },
       );
     }
+
+    // Transform to API format
+    const agent: Agent = {
+      id: dbAgent.id,
+      workspaceId: dbAgent.workspaceId,
+      name: dbAgent.name,
+      type: dbAgent.type.toLowerCase() as AgentType,
+      description: dbAgent.description || '',
+      status: dbAgent.status.toLowerCase() as AgentStatus,
+      config: {
+        model: dbAgent.model,
+        temperature: dbAgent.temperature,
+        maxTokens: dbAgent.maxTokens,
+        topP: dbAgent.topP || undefined,
+        frequencyPenalty: dbAgent.frequencyPenalty || undefined,
+        presencePenalty: dbAgent.presencePenalty || undefined,
+      },
+      systemPrompt: dbAgent.systemPrompt || '',
+      tools: dbAgent.tools,
+      stats: {
+        tasksCompleted: dbAgent.tasksCompleted,
+        successRate: dbAgent.successRate,
+        avgResponseTime: dbAgent.avgResponseTime,
+        lastActive: dbAgent.lastActiveAt,
+        tokensUsed: dbAgent.tokensUsed,
+        totalCost: dbAgent.totalCost,
+      },
+      createdAt: dbAgent.createdAt,
+      updatedAt: dbAgent.updatedAt,
+    };
 
     return NextResponse.json({ data: agent });
   } catch (error) {
@@ -165,36 +184,89 @@ export async function PATCH(
 
     const input: UpdateAgentInput = parseResult.data;
 
-    // Find and update agent
-    const agents = getWorkspaceAgents(workspaceId);
-    const agentIndex = agents.findIndex((a) => a.id === agentId);
+    // Check if agent exists
+    const existingAgent = await prisma.agent.findFirst({
+      where: {
+        id: agentId,
+        workspaceId,
+      },
+    });
 
-    if (agentIndex === -1) {
+    if (!existingAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
         { status: 404 },
       );
     }
 
-    const existingAgent = agents[agentIndex];
+    // Prepare update data
+    const updateData: Prisma.agentUpdateInput = {};
 
-    // Update agent
+    if (input.name !== undefined) {
+      updateData.name = input.name;
+    }
+    if (input.type !== undefined) {
+      updateData.type = input.type.toUpperCase() as 'TASK' | 'RESEARCH' | 'CODING' | 'DATA' | 'QA' | 'SUPPORT' | 'CUSTOM';
+    }
+    if (input.description !== undefined) {
+      updateData.description = input.description || null;
+    }
+    if (input.status !== undefined) {
+      updateData.status = input.status.toUpperCase() as 'ACTIVE' | 'PAUSED' | 'INACTIVE';
+    }
+    if (input.systemPrompt !== undefined) {
+      updateData.systemPrompt = input.systemPrompt || null;
+    }
+    if (input.tools !== undefined) {
+      updateData.tools = input.tools;
+    }
+    if (input.config) {
+      if (input.config.model !== undefined) updateData.model = input.config.model;
+      if (input.config.temperature !== undefined)
+        updateData.temperature = input.config.temperature;
+      if (input.config.maxTokens !== undefined) updateData.maxTokens = input.config.maxTokens;
+      if (input.config.topP !== undefined) updateData.topP = input.config.topP;
+      if (input.config.frequencyPenalty !== undefined)
+        updateData.frequencyPenalty = input.config.frequencyPenalty;
+      if (input.config.presencePenalty !== undefined)
+        updateData.presencePenalty = input.config.presencePenalty;
+    }
+
+    // Update agent in database
+    const dbAgent = await prisma.agent.update({
+      where: { id: agentId },
+      data: updateData,
+    });
+
+    // Transform to API format
     const updatedAgent: Agent = {
-      ...existingAgent,
-      ...(input.name !== undefined && { name: input.name }),
-      ...(input.type !== undefined && { type: input.type }),
-      ...(input.description !== undefined && { description: input.description }),
-      ...(input.status !== undefined && { status: input.status }),
-      ...(input.config !== undefined && {
-        config: { ...existingAgent.config, ...input.config },
-      }),
-      ...(input.systemPrompt !== undefined && { systemPrompt: input.systemPrompt }),
-      ...(input.tools !== undefined && { tools: input.tools }),
-      updatedAt: new Date(),
+      id: dbAgent.id,
+      workspaceId: dbAgent.workspaceId,
+      name: dbAgent.name,
+      type: dbAgent.type.toLowerCase() as AgentType,
+      description: dbAgent.description || '',
+      status: dbAgent.status.toLowerCase() as AgentStatus,
+      config: {
+        model: dbAgent.model,
+        temperature: dbAgent.temperature,
+        maxTokens: dbAgent.maxTokens,
+        topP: dbAgent.topP || undefined,
+        frequencyPenalty: dbAgent.frequencyPenalty || undefined,
+        presencePenalty: dbAgent.presencePenalty || undefined,
+      },
+      systemPrompt: dbAgent.systemPrompt || '',
+      tools: dbAgent.tools,
+      stats: {
+        tasksCompleted: dbAgent.tasksCompleted,
+        successRate: dbAgent.successRate,
+        avgResponseTime: dbAgent.avgResponseTime,
+        lastActive: dbAgent.lastActiveAt,
+        tokensUsed: dbAgent.tokensUsed,
+        totalCost: dbAgent.totalCost,
+      },
+      createdAt: dbAgent.createdAt,
+      updatedAt: dbAgent.updatedAt,
     };
-
-    agents[agentIndex] = updatedAgent;
-    saveWorkspaceAgents(workspaceId, agents);
 
     return NextResponse.json({
       data: updatedAgent,
@@ -235,19 +307,25 @@ export async function DELETE(
     const params = await context.params;
     const { workspaceId, agentId } = params;
 
-    // Find and delete agent
-    const agents = getWorkspaceAgents(workspaceId);
-    const agentIndex = agents.findIndex((a) => a.id === agentId);
+    // Check if agent exists
+    const existingAgent = await prisma.agent.findFirst({
+      where: {
+        id: agentId,
+        workspaceId,
+      },
+    });
 
-    if (agentIndex === -1) {
+    if (!existingAgent) {
       return NextResponse.json(
         { error: { message: 'Agent not found' } },
         { status: 404 },
       );
     }
 
-    agents.splice(agentIndex, 1);
-    saveWorkspaceAgents(workspaceId, agents);
+    // Delete agent from database
+    await prisma.agent.delete({
+      where: { id: agentId },
+    });
 
     return NextResponse.json({
       message: 'Agent deleted successfully',

@@ -5,24 +5,24 @@
  * Provides a singleton client optimized for serverless environments
  */
 
-import type { PrismaClient as PrismaClientType, Prisma } from '@prisma/client';
+import type { Prisma, PrismaClient as PrismaClientType } from '@prisma/client';
 
 // =============================================================================
 // Client Exports
 // =============================================================================
 
-// Export the singleton client and utilities
-export {
-  prisma,
-  connect,
-  disconnect,
-  healthCheck,
-  createPrismaClient,
-  type PrismaClientOptions,
-} from './client';
 
 // Re-export Prisma types and namespace
-export { PrismaClient, Prisma } from '@prisma/client';
+export { Prisma, PrismaClient } from '@prisma/client';
+// Export the singleton client and utilities
+export {
+  connect,
+  createPrismaClient,
+  disconnect,
+  healthCheck,
+  type PrismaClientOptions,
+  prisma,
+} from './client';
 
 // =============================================================================
 // Model Type Exports
@@ -31,22 +31,22 @@ export { PrismaClient, Prisma } from '@prisma/client';
 // Export all Prisma generated model types
 // Note: Prisma generates lowercase model types based on schema model names
 export type {
-  user as User,
-  organization as Organization,
-  workspace as Workspace,
-  vP as VP,
-  channel as Channel,
-  message as Message,
-  file as File,
-  workspaceMember as WorkspaceMember,
-  organizationMember as OrganizationMember,
-  channelMember as ChannelMember,
-  reaction as Reaction,
-  session as Session,
-  messageAttachment as MessageAttachment,
-  task as Task,
   backlog as Backlog,
   backlogItem as BacklogItem,
+  channel as Channel,
+  channelMember as ChannelMember,
+  file as File,
+  message as Message,
+  messageAttachment as MessageAttachment,
+  organization as Organization,
+  organizationMember as OrganizationMember,
+  reaction as Reaction,
+  session as Session,
+  task as Task,
+  user as User,
+  vP as VP,
+  workspace as Workspace,
+  workspaceMember as WorkspaceMember,
 } from '@prisma/client';
 
 // =============================================================================
@@ -55,17 +55,17 @@ export type {
 
 // Export all enums
 export {
-  UserStatus,
-  VPStatus,
-  WorkspaceVisibility,
-  ChannelType,
-  MessageType,
-  FileStatus,
-  OrganizationRole,
-  WorkspaceRole,
   ChannelRole,
+  ChannelType,
+  FileStatus,
+  MessageType,
+  OrganizationRole,
   TaskPriority,
   TaskStatus,
+  UserStatus,
+  VPStatus,
+  WorkspaceRole,
+  WorkspaceVisibility,
 } from '@prisma/client';
 
 // =============================================================================
@@ -183,7 +183,7 @@ export type BacklogItemWhereUniqueInput = Prisma.backlogItemWhereUniqueInput;
 // }>;
 
 // export type DisciplineWithVPs = Prisma.DisciplineGetPayload<{
-//   include: { vps: { include: { agents: true } } };
+//   include: { orchestrators: { include: { agents: true } } };
 // }>;
 
 // =============================================================================
@@ -268,18 +268,18 @@ export interface PaginatedResult<T> {
 
 // Export migration service utilities
 export {
-  runMigrations,
-  resetDatabase,
-  seedDatabase,
-  getMigrationStatus,
-  pushSchema,
-  generateClient,
-  validateSchema,
-  formatSchema,
   createMigration,
+  formatSchema,
+  generateClient,
+  getMigrationStatus,
   hasPendingSchemaChanges,
   MigrationError,
   type MigrationStatus,
+  pushSchema,
+  resetDatabase,
+  runMigrations,
+  seedDatabase,
+  validateSchema,
 } from './migration';
 
 // =============================================================================

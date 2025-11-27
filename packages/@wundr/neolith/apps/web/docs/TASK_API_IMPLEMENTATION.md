@@ -2,10 +2,10 @@
 
 ## Completed Deliverables
 
-This document summarizes the complete Task Management API implementation for VP (Virtual Person) task management.
+This document summarizes the complete Task Management API implementation for Orchestrator (Orchestrator) task management.
 
 **Project:** Wundr - AI-managed tokenized hedge funds
-**Component:** Task Management System for VP Autonomous Operations
+**Component:** Task Management System for Orchestrator Autonomous Operations
 **Date Completed:** 2025-01-10
 **Status:** COMPLETE
 
@@ -24,7 +24,7 @@ This document summarizes the complete Task Management API implementation for VP 
 
 1. **`createTaskSchema`** - Create new task
    - Validates title, description, priority, status
-   - Validates VP ID and workspace ID
+   - Validates Orchestrator ID and workspace ID
    - Supports estimated hours, due date, tags, dependencies
    - Validates dependency format
 
@@ -45,13 +45,13 @@ This document summarizes the complete Task Management API implementation for VP 
    - Validates assignee ID
    - Supports assignment reason and metadata
 
-5. **`taskPollingSchema`** - VP daemon polling
-   - Filter by VP and workspace
+5. **`taskPollingSchema`** - Orchestrator daemon polling
+   - Filter by Orchestrator and workspace
    - Status and priority filters
    - Delta updates using `since` timestamp
    - Configurable limit (max 1000)
 
-6. **`vpBacklogFiltersSchema`** - VP backlog retrieval
+6. **`vpBacklogFiltersSchema`** - Orchestrator backlog retrieval
    - Status and priority filtering
    - Include/exclude completed tasks
    - Pagination and sorting
@@ -104,7 +104,7 @@ TASK_ERROR_CODES = {
 - Calculates task statistics
 - Returns counts by status and priority
 - Computes completion rate
-- Supports VP and workspace filtering
+- Supports Orchestrator and workspace filtering
 
 #### 5. `getTasksWithFilters()`
 - Intelligent task retrieval with multiple filters
@@ -130,7 +130,7 @@ TASK_ERROR_CODES = {
 **POST /api/tasks**
 - Create new task with validation
 - Validates dependency graph (circular dependency detection)
-- Verifies VP exists in workspace
+- Verifies Orchestrator exists in workspace
 - Verifies assignee exists (if provided)
 - Returns: Created task object with relationships
 
@@ -169,7 +169,7 @@ TASK_ERROR_CODES = {
 **File:** `/app/api/tasks/assign/route.ts`
 
 **POST /api/tasks/assign**
-- Assign tasks (human → VP or VP → VP)
+- Assign tasks (human → Orchestrator or Orchestrator → VP)
 - Bulk assignment up to 100 tasks
 - Validates assignee exists
 - Validates workspace access for all tasks
@@ -210,8 +210,8 @@ TASK_ERROR_CODES = {
 
 **POST /api/tasks/poll**
 - Poll for tasks assigned to VP
-- Used by VP daemon services (no authentication required)
-- Validates VP exists in workspace
+- Used by Orchestrator daemon services (no authentication required)
+- Validates Orchestrator exists in workspace
 - Supports delta updates using `since` timestamp
 - Status filtering (TODO, IN_PROGRESS, etc.)
 - Priority filtering (CRITICAL, HIGH, etc.)
@@ -243,11 +243,11 @@ TASK_ERROR_CODES = {
 
 ---
 
-### Route 5: VP Backlog
+### Route 5: Orchestrator Backlog
 
-**File:** `/app/api/vps/[id]/backlog/route.ts`
+**File:** `/app/api/orchestrators/[id]/backlog/route.ts`
 
-**GET /api/vps/[id]/backlog**
+**GET /api/orchestrators/[id]/backlog**
 - Retrieve VP's task backlog
 - Priority-sorted by default (CRITICAL first)
 - Filters: status, priority, includeCompleted
@@ -295,7 +295,7 @@ TASK_ERROR_CODES = {
 
 #### Task Retrieval (7 tests)
 - ✅ Retrieve task by ID
-- ✅ Retrieve tasks by VP ID
+- ✅ Retrieve tasks by Orchestrator ID
 - ✅ Retrieve tasks by workspace ID
 - ✅ Retrieve tasks by status
 - ✅ Retrieve tasks by priority
@@ -362,8 +362,8 @@ TASK_ERROR_CODES = {
    - Example 1: Create task with dependencies
    - Example 2: Update task status with validation
    - Example 3: Assign multiple tasks
-   - Example 4: VP daemon polling
-   - Example 5: Get VP backlog
+   - Example 4: Orchestrator daemon polling
+   - Example 5: Get Orchestrator backlog
 
 8. **Additional Features**
    - Rate limiting information
@@ -381,8 +381,8 @@ TASK_ERROR_CODES = {
 - ✅ Delete tasks permanently
 
 ### Task Assignment
-- ✅ Human → VP assignment
-- ✅ VP → VP reassignment
+- ✅ Human → Orchestrator assignment
+- ✅ Orchestrator → Orchestrator reassignment
 - ✅ Bulk assignment (up to 100 tasks)
 - ✅ Assignment tracking with metadata
 
@@ -401,8 +401,8 @@ TASK_ERROR_CODES = {
 - ✅ Priority-aware sorting
 - ✅ Configurable pagination
 
-### VP Integration
-- ✅ VP daemon polling endpoint
+### Orchestrator Integration
+- ✅ Orchestrator daemon polling endpoint
 - ✅ Delta updates using timestamps
 - ✅ Priority and status filtering for polling
 - ✅ Efficient task retrieval for daemons
@@ -425,7 +425,7 @@ TASK_ERROR_CODES = {
 
 ### Prisma Models Used:
 - `Task` - Core task entity
-- `VP` - Virtual Person entity
+- `VP` - Orchestrator entity
 - `User` - Task creator and assignee
 - `Workspace` - Task workspace context
 - `Channel` - Optional task channel context
@@ -433,13 +433,13 @@ TASK_ERROR_CODES = {
 - `BacklogItem` - Junction table
 
 ### Key Relationships:
-- Task → VP (assigned to VP)
+- Task → Orchestrator (assigned to VP)
 - Task → User (creator, assignee)
 - Task → Workspace (organizational context)
 - Task → Channel (optional communication context)
 
 ### Indexes Utilized:
-- `tasks.vpId` - Fast VP task lookups
+- `tasks.orchestratorId` - Fast Orchestrator task lookups
 - `tasks.workspaceId` - Fast workspace queries
 - `tasks.status` - Status filtering
 - `tasks.priority` - Priority filtering
@@ -503,7 +503,7 @@ TASK_ERROR_CODES = {
 | DELETE | /api/tasks/[id] | Delete task | Required |
 | POST | /api/tasks/assign | Assign tasks | Required |
 | POST | /api/tasks/poll | Poll for tasks | None |
-| GET | /api/vps/[id]/backlog | Get VP backlog | Required |
+| GET | /api/orchestrators/[id]/backlog | Get Orchestrator backlog | Required |
 
 **Total Endpoints:** 8
 
@@ -511,11 +511,11 @@ TASK_ERROR_CODES = {
 
 ## 11. Integration Points
 
-### With VP System
+### With Orchestrator System
 - Tasks can be assigned to VPs
 - VPs can poll for assigned tasks
-- VP backlog provides task overview
-- Task completion affects VP workload
+- Orchestrator backlog provides task overview
+- Task completion affects Orchestrator workload
 
 ### With Workspace System
 - Tasks scoped to workspaces
@@ -567,7 +567,7 @@ curl -X POST /api/tasks/assign \
   }'
 ```
 
-### Poll for VP Tasks
+### Poll for Orchestrator Tasks
 ```bash
 curl -X POST /api/tasks/poll \
   -H "Content-Type: application/json" \
@@ -592,7 +592,7 @@ curl -X POST /api/tasks/poll \
 │       ├── /assign/
 │       │   └── route.ts                # Task Assignment
 │       └── /poll/
-│           └── route.ts                # VP Daemon Polling
+│           └── route.ts                # Orchestrator Daemon Polling
 ├── /lib/
 │   ├── /validations/
 │   │   └── task.ts                     # Zod Schemas
@@ -657,9 +657,9 @@ The Task Management API provides a robust, scalable system for managing VP-assig
 **All 10 deliverables completed successfully:**
 1. ✅ /api/tasks route (list, create)
 2. ✅ /api/tasks/[id] route (get, update, delete)
-3. ✅ /api/vps/[id]/backlog (VP's filtered tasks)
+3. ✅ /api/orchestrators/[id]/backlog (VP's filtered tasks)
 4. ✅ /api/tasks/assign endpoint (human→VP, VP→VP)
-5. ✅ Task polling endpoint for VP daemon
+5. ✅ Task polling endpoint for Orchestrator daemon
 6. ✅ Task dependency validation
 7. ✅ Priority-based sorting
 8. ✅ API tests (27 comprehensive tests)

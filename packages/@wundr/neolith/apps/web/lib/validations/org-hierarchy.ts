@@ -20,7 +20,7 @@ export const orgHierarchyNodeTypeEnum = z.enum(['workspace', 'discipline', 'vp']
 export type OrgHierarchyNodeType = z.infer<typeof orgHierarchyNodeTypeEnum>;
 
 /**
- * VP status enum (matches Prisma VPStatus)
+ * Orchestrator status enum (matches Prisma VPStatus)
  */
 export const vpStatusEnum = z.enum(['ONLINE', 'OFFLINE', 'BUSY', 'AWAY']);
 export type VPStatusType = z.infer<typeof vpStatusEnum>;
@@ -30,22 +30,22 @@ export type VPStatusType = z.infer<typeof vpStatusEnum>;
 // =============================================================================
 
 /**
- * Schema for VP node data within the hierarchy
+ * Schema for Orchestrator node data within the hierarchy
  */
 export const vpNodeDataSchema = z.object({
-  /** VP avatar URL */
+  /** Orchestrator avatar URL */
   avatarUrl: z.string().url().optional().nullable(),
 
-  /** VP current status */
+  /** Orchestrator current status */
   status: vpStatusEnum,
 
-  /** VP discipline name */
+  /** Orchestrator discipline name */
   discipline: z.string().optional().nullable(),
 
-  /** VP role */
+  /** Orchestrator role */
   role: z.string().optional().nullable(),
 
-  /** VP current task (if any) */
+  /** Orchestrator current task (if any) */
   currentTask: z
     .object({
       id: z.string(),
@@ -54,7 +54,7 @@ export const vpNodeDataSchema = z.object({
     .nullable()
     .optional(),
 
-  /** VP email */
+  /** Orchestrator email */
   email: z.string().email().optional().nullable(),
 });
 

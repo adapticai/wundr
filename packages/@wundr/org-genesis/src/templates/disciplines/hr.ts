@@ -224,10 +224,10 @@ export const HR_AGENT_IDS: string[] = [
  * // Register with discipline registry
  * registry.register(HR_DISCIPLINE);
  *
- * // Assign to VP
+ * // Assign to Orchestrator
  * await engine.assignDisciplineToVp({
  *   disciplineId: HR_DISCIPLINE.id,
- *   vpId: 'vp-people-001',
+ *   vpId: 'orchestrator-people-001',
  * });
  * ```
  */

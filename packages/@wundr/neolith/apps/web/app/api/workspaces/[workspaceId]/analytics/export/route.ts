@@ -6,11 +6,9 @@ import {
   type UsageMetrics,
 } from '@neolith/core';
 import { prisma, type Prisma } from '@neolith/database';
-import { NextResponse } from 'next/server';
-
-import { getServerSession } from '@/lib/auth';
-
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { getServerSession } from '@/lib/auth';
 
 /**
  * Export analytics data in various formats
@@ -296,8 +294,8 @@ function filterMetrics(
   if (filter.includes('files') && metrics.files) {
     filtered.files = metrics.files;
   }
-  if (filter.includes('vp') && metrics.vp) {
-    filtered.vp = metrics.vp;
+  if (filter.includes('vp') && metrics.orchestrator) {
+    filtered.orchestrator = metrics.orchestrator;
   }
 
   return filtered;
@@ -354,10 +352,10 @@ function convertMetricsToCSV(
   }
 
   // VPs
-  if (metrics.vp) {
-    lines.push(`VPs,Total,${metrics.vp.totalVPs}`);
-    lines.push(`VPs,Active,${metrics.vp.activeVPs}`);
-    lines.push(`VPs,Messages Sent,${metrics.vp.messagesSent}`);
+  if (metrics.orchestrator) {
+    lines.push(`VPs,Total,${metrics.orchestrator.totalVPs}`);
+    lines.push(`VPs,Active,${metrics.orchestrator.activeVPs}`);
+    lines.push(`VPs,Messages Sent,${metrics.orchestrator.messagesSent}`);
   }
 
   return lines.join('\n');

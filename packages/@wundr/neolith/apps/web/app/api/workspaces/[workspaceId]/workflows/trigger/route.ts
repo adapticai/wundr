@@ -10,18 +10,16 @@
  */
 
 import { prisma } from '@neolith/database';
-import { NextResponse } from 'next/server';
-
-import { auth } from '@/lib/auth';
-import {
-  triggerWorkflowsSchema,
-  createErrorResponse,
-  WORKFLOW_ERROR_CODES,
-} from '@/lib/validations/workflow';
-
-import type { TriggerWorkflowsInput, WorkflowTrigger, WorkflowAction, WorkflowStepResult } from '@/lib/validations/workflow';
 import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import type { TriggerWorkflowsInput, WorkflowAction, WorkflowStepResult, WorkflowTrigger } from '@/lib/validations/workflow';
+import {
+  createErrorResponse,
+  triggerWorkflowsSchema,
+  WORKFLOW_ERROR_CODES,
+} from '@/lib/validations/workflow';
 
 /**
  * Route context with workspaceId parameter
@@ -144,7 +142,7 @@ function checkTriggerFilters(
     }
   }
 
-  // Check VP filter
+  // Check Orchestrator filter
   if (vpIds && vpIds.length > 0) {
     const eventVpId = eventData.vpId as string | undefined;
     if (!eventVpId || !vpIds.includes(eventVpId)) {

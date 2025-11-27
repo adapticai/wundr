@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import type { AdminActivityApiResponse } from '@/types/api';
 
 /**
  * Represents metadata details for an admin activity entry.
@@ -144,7 +145,7 @@ export function ActivityLog({ workspaceId, className }: ActivityLogProps) {
       const data = await response.json();
 
       // Map API response to component format
-      const mappedActivities: AdminActivity[] = (data.actions || []).map((action: any) => ({
+      const mappedActivities: AdminActivity[] = (data.actions || []).map((action: AdminActivityApiResponse) => ({
         id: action.id,
         action: action.action,
         actionType: inferActionType(action.action),
@@ -311,7 +312,7 @@ return 'billing';
             <SelectItem value="member">Members</SelectItem>
             <SelectItem value="role">Roles</SelectItem>
             <SelectItem value="channel">Channels</SelectItem>
-            <SelectItem value="vp">Virtual Personas</SelectItem>
+            <SelectItem value="vp">Orchestratoras</SelectItem>
             <SelectItem value="integration">Integrations</SelectItem>
             <SelectItem value="settings">Settings</SelectItem>
           </SelectContent>

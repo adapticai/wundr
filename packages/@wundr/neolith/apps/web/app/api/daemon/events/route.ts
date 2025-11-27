@@ -1,7 +1,7 @@
 /**
  * Daemon Events API Route
  *
- * Handles event retrieval and acknowledgment for VP daemon services.
+ * Handles event retrieval and acknowledgment for Orchestrator daemon services.
  *
  * Routes:
  * - GET /api/daemon/events - Get pending events
@@ -13,10 +13,9 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Schema for event acknowledgment request body
@@ -85,7 +84,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 /**
  * GET /api/daemon/events - Get pending events
  *
- * Retrieves pending events for the VP daemon since a given timestamp.
+ * Retrieves pending events for the Orchestrator daemon since a given timestamp.
  * Events include new messages, mentions, reactions, etc.
  *
  * @param request - Next.js request with authentication and since param
@@ -115,8 +114,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const sinceParam = searchParams.get('since');
     const since = sinceParam ? new Date(sinceParam) : new Date(Date.now() - 5 * 60 * 1000); // Default: last 5 minutes
 
-    // Get VP info
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator info
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         userId: true,
@@ -131,7 +130,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get channels the VP is a member of
+    // Get channels the Orchestrator is a member of
     const memberships = await prisma.channelMember.findMany({
       where: { userId: vp.userId },
       select: { channelId: true },

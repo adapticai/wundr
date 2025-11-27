@@ -1,6 +1,6 @@
 {
   "report_metadata": {
-    "title": "Phase 2 Wave 2.2 - Advanced VP Features Status Report",
+    "title": "Phase 2 Wave 2.2 - Advanced Orchestrator Features Status Report",
     "generated_at": "2025-11-26",
     "version": "1.0.0",
     "scope": "Cross-VP Coordination, Work Rhythm & Scheduling, Analytics & Observability"
@@ -32,7 +32,7 @@
           "status": "COMPLETE",
           "files": [
             "/apps/web/app/api/vps/[id]/delegate/route.ts",
-            "/apps/web/lib/services/vp-coordination-service.ts (delegateTask function)"
+            "/apps/web/lib/services/orchestrator-coordination-service.ts (delegateTask function)"
           ],
           "features": [
             "POST /api/vps/:id/delegate endpoint",
@@ -49,7 +49,7 @@
           "status": "COMPLETE",
           "files": [
             "/apps/web/app/api/vps/[id]/collaborate/route.ts",
-            "/apps/web/lib/services/vp-coordination-service.ts (requestCollaboration function)"
+            "/apps/web/lib/services/orchestrator-coordination-service.ts (requestCollaboration function)"
           ],
           "features": [
             "POST /api/vps/:id/collaborate endpoint",
@@ -72,14 +72,14 @@
             "No approval workflow APIs",
             "No consensus state tracking in database"
           ],
-          "notes": "This is a CRITICAL gap. The validation schema in vp-coordination.ts mentions 'approval' in conflict types, but there's no actual approval/voting mechanism implemented."
+          "notes": "This is a CRITICAL gap. The validation schema in orchestrator-coordination.ts mentions 'approval' in conflict types, but there's no actual approval/voting mechanism implemented."
         },
         {
           "component": "Task Handoff",
           "status": "COMPLETE",
           "files": [
             "/apps/web/app/api/vps/[id]/handoff/route.ts",
-            "/apps/web/lib/services/vp-coordination-service.ts (handoffTask function)"
+            "/apps/web/lib/services/orchestrator-coordination-service.ts (handoffTask function)"
           ],
           "features": [
             "Context transfer between VPs",
@@ -93,7 +93,7 @@
           "status": "PARTIAL",
           "files": [
             "/apps/web/app/api/vps/conflicts/route.ts",
-            "/apps/web/lib/services/vp-coordination-service.ts (resolveConflict function)"
+            "/apps/web/lib/services/orchestrator-coordination-service.ts (resolveConflict function)"
           ],
           "features": [
             "Conflict resolution API",
@@ -131,7 +131,7 @@
             "No auto-response during offline hours",
             "Work hours not stored in database schema (only in JSON vpConfig)"
           ],
-          "notes": "The VP schema has no dedicated workHours columns. Configuration would be stored in User.vpConfig JSON field but is never used."
+          "notes": "The Orchestrator schema has no dedicated workHours columns. Configuration would be stored in User.orchestratorConfig JSON field but is never used."
         },
         {
           "component": "Batch Processing Schedules",
@@ -180,8 +180,8 @@
           ],
           "missing": [
             "NOT installed in /apps/web/package.json",
-            "NOT integrated with VP services",
-            "NOT used for VP performance tracking"
+            "NOT integrated with Orchestrator services",
+            "NOT used for Orchestrator performance tracking"
           ],
           "action_required": "Install @wundr.io/agent-observability as dependency in web app"
         },
@@ -189,7 +189,7 @@
           "component": "VP Performance Metrics Tracking",
           "status": "PARTIAL",
           "files": [
-            "/apps/web/lib/services/vp-analytics-service.ts",
+            "/apps/web/lib/services/orchestrator-analytics-service.ts",
             "/apps/web/app/api/vps/[id]/analytics/route.ts"
           ],
           "features": [
@@ -224,15 +224,15 @@
             "User activity metrics",
             "Channel metrics",
             "File metrics",
-            "Basic VP metrics (count only)"
+            "Basic Orchestrator metrics (count only)"
           ],
           "missing": [
-            "No dedicated VP analytics dashboard",
+            "No dedicated Orchestrator analytics dashboard",
             "No per-VP performance visualization",
             "No delegation/collaboration metrics visualization",
             "Current dashboard is workspace-wide, not VP-specific"
           ],
-          "notes": "Existing dashboard shows workspace-level metrics. A dedicated VP dashboard showing delegation patterns, collaboration metrics, and performance trends is needed."
+          "notes": "Existing dashboard shows workspace-level metrics. A dedicated Orchestrator dashboard showing delegation patterns, collaboration metrics, and performance trends is needed."
         }
       ]
     }
@@ -255,19 +255,19 @@
         "updatedAt (DateTime)"
       ],
       "missing_fields_for_wave_2.2": [
-        "workHoursConfig (Json) - currently stored in User.vpConfig",
+        "workHoursConfig (Json) - currently stored in User.orchestratorConfig",
         "batchScheduleConfig (Json)",
         "capacityConfig (Json)",
         "consensusWeight (Int) - for weighted voting",
         "performanceMetricsCached (Json) - for pre-aggregated analytics"
       ],
-      "notes": "VP schema is minimal. Advanced features rely on JSON fields in User.vpConfig which makes querying difficult."
+      "notes": "VP schema is minimal. Advanced features rely on JSON fields in User.orchestratorConfig which makes querying difficult."
     },
     "task_model": {
       "metadata_usage": "Task.metadata (Json) is heavily used for coordination",
       "coordination_metadata": {
         "delegations": "Array of delegation history",
-        "collaborators": "Array of VP collaborators with roles",
+        "collaborators": "Array of Orchestrator collaborators with roles",
         "handoffs": "Array of handoff events",
         "conflicts": "Array of conflict resolutions"
       },
@@ -286,7 +286,7 @@
       "POST /api/vps/:id/collaborate - Request collaboration from VPs",
       "POST /api/vps/:id/handoff - Handoff task with context",
       "POST /api/vps/conflicts - Resolve conflicts between VPs",
-      "GET /api/vps/[id]/analytics - Get VP performance metrics",
+      "GET /api/vps/[id]/analytics - Get Orchestrator performance metrics",
       "POST /api/vps/bulk - Bulk activate/deactivate VPs"
     ],
     "missing": [
@@ -314,7 +314,7 @@
         "action": "Install and integrate @wundr.io/agent-observability",
         "effort": "MEDIUM",
         "impact": "HIGH",
-        "description": "Add package to web app dependencies, integrate with VP analytics service"
+        "description": "Add package to web app dependencies, integrate with Orchestrator analytics service"
       },
       {
         "priority": "HIGH",
@@ -335,7 +335,7 @@
         "action": "Create VP-specific analytics dashboard",
         "effort": "MEDIUM",
         "impact": "MEDIUM",
-        "description": "Build dedicated dashboard showing VP performance, delegation patterns, collaboration metrics"
+        "description": "Build dedicated dashboard showing Orchestrator performance, delegation patterns, collaboration metrics"
       }
     ],
     "future_enhancements": [
@@ -344,7 +344,7 @@
       "Add real-time performance monitoring with WebSocket streaming",
       "Add automated conflict detection and prevention",
       "Implement load balancing across VPs based on capacity",
-      "Add predictive analytics for VP workload forecasting"
+      "Add predictive analytics for Orchestrator workload forecasting"
     ]
   },
   "files_analyzed": {
@@ -358,11 +358,11 @@
       "/apps/web/app/api/vps/conflicts/route.ts"
     ],
     "services": [
-      "/apps/web/lib/services/vp-coordination-service.ts",
-      "/apps/web/lib/services/vp-analytics-service.ts"
+      "/apps/web/lib/services/orchestrator-coordination-service.ts",
+      "/apps/web/lib/services/orchestrator-analytics-service.ts"
     ],
     "validations": [
-      "/apps/web/lib/validations/vp-coordination.ts"
+      "/apps/web/lib/validations/orchestrator-coordination.ts"
     ],
     "types": [
       "/packages/@neolith/core/src/types/vp.ts"

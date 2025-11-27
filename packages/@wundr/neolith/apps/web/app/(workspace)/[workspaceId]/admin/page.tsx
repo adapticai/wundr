@@ -2,14 +2,22 @@
 
 import { clsx } from 'clsx';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 type AdminTab = 'settings' | 'members' | 'roles' | 'billing' | 'activity';
 
 export default function AdminPage() {
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
+  const { setPageHeader } = usePageHeader();
   const [activeTab, setActiveTab] = useState<AdminTab>('settings');
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Admin Console', 'Manage workspace administration settings');
+  }, [setPageHeader]);
 
   const tabs: { id: AdminTab; label: string; icon: JSX.Element }[] = [
     { id: 'settings', label: 'Settings', icon: <SettingsIcon /> },
@@ -22,8 +30,6 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Admin Console</h1>
-        
         <div className="flex gap-6">
           {/* Sidebar */}
           <nav className="w-48 flex-shrink-0">

@@ -17,7 +17,7 @@ AI governance and alignment monitoring for the Wundr platform, implementing the 
   - [PolicyEngine](#policyengine)
   - [RewardCalculator](#rewardcalculator)
   - [EvaluatorAgent](#evaluatoragent)
-- [VP Daemon Integration](#vp-daemon-integration)
+- [VP Daemon Integration](#orchestrator-daemon-integration)
 - [Configuration](#configuration)
 - [Examples](#examples)
 
@@ -480,15 +480,15 @@ new EvaluatorAgent(config: EvaluatorConfig)
 | getAction() | ViolationAction | Get configured action |
 | getName() | string | Get evaluator name |
 
-## VP Daemon Integration
+## Orchestrator Daemon Integration
 
-The governance package is designed to integrate with the **VP (Virtual Processor) Daemon** for real-time policy enforcement. The VP Daemon acts as a middleware layer that intercepts AI agent actions and enforces governance policies.
+The governance package is designed to integrate with the **VP (Virtual Processor) Daemon** for real-time policy enforcement. The Orchestrator Daemon acts as a middleware layer that intercepts AI agent actions and enforces governance policies.
 
 ### Integration Architecture
 
 ```
 +-------------------+     +------------+     +------------------+
-|    AI Agent       | --> | VP Daemon  | --> | Target System    |
+|    AI Agent       | --> | Orchestrator Daemon  | --> | Target System    |
 |  (Coder, etc.)    |     | (Enforcer) |     | (Git, Deploy)    |
 +-------------------+     +------------+     +------------------+
                                |
@@ -501,7 +501,7 @@ The governance package is designed to integrate with the **VP (Virtual Processor
                     +-------------------+
 ```
 
-### VP Daemon Integration Example
+### Orchestrator Daemon Integration Example
 
 ```typescript
 import { PolicyEngine, createEvaluatorSuite } from '@wundr.io/governance';

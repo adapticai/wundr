@@ -293,7 +293,7 @@ Future improvements that could be made:
 
 1. Add skeletons for workflow pages
 2. Add skeletons for integration pages
-3. Add skeletons for VP (Virtual Personnel) components
+3. Add skeletons for Orchestrator (Orchestratornel) components
 4. Add skeletons for analytics dashboard
 5. Create Storybook stories for visual testing
 6. Add skeleton for org-genesis flow

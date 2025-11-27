@@ -91,22 +91,22 @@ export enum Permission {
   MESSAGE_DELETE_ANY = 'message:delete_any',
 
   // ---------------------------------------------------------------------------
-  // VP (Virtual Person) Permissions
+  // Orchestrator (Virtual Person) Permissions
   // ---------------------------------------------------------------------------
 
   /** Create new VPs in the organization */
   VP_CREATE = 'vp:create',
 
-  /** View VP details and configuration */
+  /** View Orchestrator details and configuration */
   VP_VIEW = 'vp:view',
 
-  /** Edit VP settings and configuration */
+  /** Edit Orchestrator settings and configuration */
   VP_EDIT = 'vp:edit',
 
-  /** Delete a VP */
+  /** Delete a Orchestrator */
   VP_DELETE = 'vp:delete',
 
-  /** Manage VP API keys (create, rotate, revoke) */
+  /** Manage OrchestratorAPI keys (create, rotate, revoke) */
   VP_MANAGE_API_KEYS = 'vp:manage_api_keys',
 
   // ---------------------------------------------------------------------------

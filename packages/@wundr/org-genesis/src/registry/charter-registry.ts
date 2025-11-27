@@ -1,14 +1,14 @@
 /**
- * @fileoverview Charter Registry - Manages VP and Session Manager charters
+ * @fileoverview Charter Registry - Manages Orchestrator and Session Manager charters
  *
- * This module provides a centralized registry for managing Virtual Persona (VP) and
+ * This module provides a centralized registry for managing Orchestrator and
  * Session Manager charters in the Wundr organizational hierarchy. It supports both
  * file-based and in-memory storage backends for flexible deployment scenarios.
  *
  * Key Features:
- * - Register, retrieve, list, and remove VP charters (Tier 1)
+ * - Register, retrieve, list, and remove Orchestrator charters (Tier 1)
  * - Register, retrieve, list, and remove Session Manager charters (Tier 2)
- * - Query Session Managers by parent VP
+ * - Query Session Managers by parent Orchestrator
  * - Pluggable storage backends (file or memory)
  * - Full TypeScript type safety
  *
@@ -23,21 +23,21 @@
  *   basePath: './.wundr/charters',
  * });
  *
- * // Register a VP charter
+ * // Register a Orchestrator charter
  * await registry.registerVP(vpCharter);
  *
  * // List all VPs
- * const vps = await registry.listVPs();
+ * const orchestrators = await registry.listVPs();
  *
- * // Get Session Managers for a specific VP
- * const sessionManagers = await registry.getSessionManagersByVP('vp-001');
+ * // Get Session Managers for a specific Orchestrator
+ * const sessionManagers = await registry.getSessionManagersByVP('orchestrator-001');
  * ```
  */
 
 import { promises as fs } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 
-import type { VPCharter, SessionManagerCharter } from '../types/index.js';
+import type { OrchestratorCharter, SessionManagerCharter } from '../types/index.js';
 
 // ============================================================================
 // Storage Interface
@@ -54,8 +54,8 @@ import type { VPCharter, SessionManagerCharter } from '../types/index.js';
  *
  * @example
  * ```typescript
- * class CustomStorage implements IRegistryStorage<VPCharter> {
- *   async set(id: string, entity: VPCharter): Promise<void> {
+ * class CustomStorage implements IRegistryStorage<OrchestratorCharter> {
+ *   async set(id: string, entity: OrchestratorCharter): Promise<void> {
  *     // Custom storage logic
  *   }
  *   // ... other methods
@@ -137,9 +137,9 @@ export interface IRegistryStorage<T extends { id: string }> {
  *
  * @example
  * ```typescript
- * const storage = new MemoryStorage<VPCharter>();
- * await storage.set('vp-001', vpCharter);
- * const charter = await storage.get('vp-001');
+ * const storage = new MemoryStorage<OrchestratorCharter>();
+ * await storage.set('orchestrator-001', vpCharter);
+ * const charter = await storage.get('orchestrator-001');
  * ```
  */
 export class MemoryStorage<T extends { id: string }> implements IRegistryStorage<T> {
@@ -232,9 +232,9 @@ export class MemoryStorage<T extends { id: string }> implements IRegistryStorage
  *
  * @example
  * ```typescript
- * const storage = new FileStorage<VPCharter>('./.wundr/charters/vp');
- * await storage.set('vp-001', vpCharter);
- * const charter = await storage.get('vp-001');
+ * const storage = new FileStorage<OrchestratorCharter>('./.wundr/charters/vp');
+ * await storage.set('orchestrator-001', vpCharter);
+ * const charter = await storage.get('orchestrator-001');
  * ```
  */
 export class FileStorage<T extends { id: string }> implements IRegistryStorage<T> {
@@ -472,7 +472,7 @@ export interface CharterRegistryConfig {
   /**
    * Base directory path for file storage.
    * Only applicable when storageType is 'file'.
-   * VP charters stored in `{basePath}/vp/`
+   * Orchestrator charters stored in `{basePath}/vp/`
    * Session Manager charters stored in `{basePath}/session-manager/`
    *
    * @default './.wundr/registry/charters'
@@ -493,16 +493,16 @@ const DEFAULT_CONFIG: CharterRegistryConfig = {
 // ============================================================================
 
 /**
- * CharterRegistry - Centralized management of VP and Session Manager charters.
+ * CharterRegistry - Centralized management of Orchestrator and Session Manager charters.
  *
  * The CharterRegistry provides a unified interface for storing, retrieving,
- * and managing organizational charters. It supports both VP (Tier 1) and
+ * and managing organizational charters. It supports both Orchestrator (Tier 1) and
  * Session Manager (Tier 2) charters with relationship tracking.
  *
  * Key Capabilities:
- * - **VP Management**: Register, retrieve, list, and remove VP charters
+ * - **Orchestrator Management**: Register, retrieve, list, and remove Orchestrator charters
  * - **Session Manager Management**: Full CRUD operations for Session Manager charters
- * - **Relationship Queries**: Get Session Managers by their parent VP
+ * - **Relationship Queries**: Get Session Managers by their parent Orchestrator
  * - **Pluggable Storage**: Switch between file and memory backends
  * - **Type Safety**: Full TypeScript support with discriminated unions
  *
@@ -514,9 +514,9 @@ const DEFAULT_CONFIG: CharterRegistryConfig = {
  *   basePath: './.wundr/charters',
  * });
  *
- * // Register a VP
+ * // Register a Orchestrator
  * await registry.registerVP({
- *   id: 'vp-engineering-001',
+ *   id: 'orchestrator-engineering-001',
  *   tier: 1,
  *   identity: { name: 'Engineering VP', slug: 'eng-vp', persona: 'Technical leader' },
  *   coreDirective: 'Ensure code quality',
@@ -530,13 +530,13 @@ const DEFAULT_CONFIG: CharterRegistryConfig = {
  *   updatedAt: new Date(),
  * });
  *
- * // Query Session Managers for a VP
- * const sessionManagers = await registry.getSessionManagersByVP('vp-engineering-001');
+ * // Query Session Managers for a Orchestrator
+ * const sessionManagers = await registry.getSessionManagersByVP('orchestrator-engineering-001');
  * ```
  */
 export class CharterRegistry {
-  /** Storage backend for VP charters */
-  private readonly vpStorage: IRegistryStorage<VPCharter>;
+  /** Storage backend for Orchestrator charters */
+  private readonly vpStorage: IRegistryStorage<OrchestratorCharter>;
 
   /** Storage backend for Session Manager charters */
   private readonly sessionManagerStorage: IRegistryStorage<SessionManagerCharter>;
@@ -562,34 +562,34 @@ export class CharterRegistry {
 
     if (this.config.storageType === 'file') {
       const basePath = this.config.basePath ?? DEFAULT_CONFIG.basePath!;
-      this.vpStorage = new FileStorage<VPCharter>(join(basePath, 'vp'));
+      this.orchestratorStorage = new FileStorage<OrchestratorCharter>(join(basePath, 'vp'));
       this.sessionManagerStorage = new FileStorage<SessionManagerCharter>(
         join(basePath, 'session-manager'),
       );
     } else {
-      this.vpStorage = new MemoryStorage<VPCharter>();
+      this.orchestratorStorage = new MemoryStorage<OrchestratorCharter>();
       this.sessionManagerStorage = new MemoryStorage<SessionManagerCharter>();
     }
   }
 
   // ==========================================================================
-  // VP Charter Operations
+  // Orchestrator Charter Operations
   // ==========================================================================
 
   /**
-   * Register a new VP charter.
+   * Register a new Orchestrator charter.
    *
-   * Stores the VP charter in the registry. If a charter with the same ID
+   * Stores the Orchestrator charter in the registry. If a charter with the same ID
    * already exists, it will be overwritten.
    *
-   * @param charter - The VP charter to register
+   * @param charter - The Orchestrator charter to register
    * @returns Promise that resolves when registration is complete
    * @throws Error if the charter is invalid (missing required fields)
    *
    * @example
    * ```typescript
    * await registry.registerVP({
-   *   id: 'vp-engineering-001',
+   *   id: 'orchestrator-engineering-001',
    *   tier: 1,
    *   identity: { name: 'Engineering VP', slug: 'eng-vp', persona: 'Technical leader' },
    *   // ... other required fields
@@ -598,86 +598,86 @@ export class CharterRegistry {
    * });
    * ```
    */
-  async registerVP(charter: VPCharter): Promise<void> {
-    this.validateVPCharter(charter);
-    await this.vpStorage.set(charter.id, charter);
+  async registerVP(charter: OrchestratorCharter): Promise<void> {
+    this.validateOrchestratorCharter(charter);
+    await this.orchestratorStorage.set(charter.id, charter);
   }
 
   /**
-   * Retrieve a VP charter by ID.
+   * Retrieve a Orchestrator charter by ID.
    *
-   * @param id - Unique identifier of the VP charter
-   * @returns The VP charter or null if not found
+   * @param id - Unique identifier of the Orchestrator charter
+   * @returns The Orchestrator charter or null if not found
    *
    * @example
    * ```typescript
-   * const vp = await registry.getVP('vp-engineering-001');
+   * const orchestrator = await registry.getVP('orchestrator-engineering-001');
    * if (vp) {
    *   console.log(`Found VP: ${vp.identity.name}`);
    * }
    * ```
    */
-  async getVP(id: string): Promise<VPCharter | null> {
-    return this.vpStorage.get(id);
+  async getVP(id: string): Promise<OrchestratorCharter | null> {
+    return this.orchestratorStorage.get(id);
   }
 
   /**
-   * List all registered VP charters.
+   * List all registered Orchestrator charters.
    *
-   * @returns Array of all VP charters
+   * @returns Array of all Orchestrator charters
    *
    * @example
    * ```typescript
-   * const vps = await registry.listVPs();
+   * const orchestrators = await registry.listVPs();
    * console.log(`Total VPs: ${vps.length}`);
-   * vps.forEach(vp => console.log(`- ${vp.identity.name}`));
+   * orchestrators.forEach(vp => console.log(`- ${vp.identity.name}`));
    * ```
    */
-  async listVPs(): Promise<VPCharter[]> {
-    return this.vpStorage.getAll();
+  async listVPs(): Promise<OrchestratorCharter[]> {
+    return this.orchestratorStorage.getAll();
   }
 
   /**
-   * Remove a VP charter by ID.
+   * Remove a Orchestrator charter by ID.
    *
-   * @param id - Unique identifier of the VP charter to remove
+   * @param id - Unique identifier of the Orchestrator charter to remove
    * @returns True if the charter was removed, false if not found
    *
    * @remarks
    * This does NOT cascade delete Session Managers. You should
-   * remove or reassign Session Managers before removing their parent VP.
+   * remove or reassign Session Managers before removing their parent Orchestrator.
    *
    * @example
    * ```typescript
-   * const removed = await registry.removeVP('vp-engineering-001');
-   * console.log(removed ? 'VP removed' : 'VP not found');
+   * const removed = await registry.removeVP('orchestrator-engineering-001');
+   * console.log(removed ? 'Orchestrator removed' : 'Orchestrator not found');
    * ```
    */
   async removeVP(id: string): Promise<boolean> {
-    return this.vpStorage.delete(id);
+    return this.orchestratorStorage.delete(id);
   }
 
   /**
-   * Check if a VP charter exists.
+   * Check if a Orchestrator charter exists.
    *
    * @param id - Unique identifier to check
-   * @returns True if the VP charter exists
+   * @returns True if the Orchestrator charter exists
    *
    * @example
    * ```typescript
-   * if (await registry.hasVP('vp-engineering-001')) {
-   *   console.log('VP exists');
+   * if (await registry.hasVP('orchestrator-engineering-001')) {
+   *   console.log('Orchestrator exists');
    * }
    * ```
    */
   async hasVP(id: string): Promise<boolean> {
-    return this.vpStorage.has(id);
+    return this.orchestratorStorage.has(id);
   }
 
   /**
-   * Get the count of registered VP charters.
+   * Get the count of registered Orchestrator charters.
    *
-   * @returns The number of registered VP charters
+   * @returns The number of registered Orchestrator charters
    *
    * @example
    * ```typescript
@@ -686,7 +686,7 @@ export class CharterRegistry {
    * ```
    */
   async countVPs(): Promise<number> {
-    return this.vpStorage.count();
+    return this.orchestratorStorage.count();
   }
 
   // ==========================================================================
@@ -711,7 +711,7 @@ export class CharterRegistry {
    *   identity: { name: 'Frontend SM', slug: 'frontend-sm', persona: 'React specialist' },
    *   coreDirective: 'Coordinate frontend tasks',
    *   disciplineId: 'frontend',
-   *   parentVpId: 'vp-engineering-001',
+   *   parentVpId: 'orchestrator-engineering-001',
    *   mcpTools: ['code_review'],
    *   agentIds: [],
    *   objectives: { responseTimeTarget: 5, taskCompletionRate: 95, qualityScore: 90 },
@@ -761,26 +761,26 @@ export class CharterRegistry {
   }
 
   /**
-   * Get all Session Managers belonging to a specific VP.
+   * Get all Session Managers belonging to a specific Orchestrator.
    *
    * Filters Session Managers by their `parentVpId` field to return
-   * only those managed by the specified VP.
+   * only those managed by the specified Orchestrator.
    *
-   * @param vpId - The ID of the parent VP
-   * @returns Array of Session Manager charters belonging to the VP
+   * @param orchestratorId - The ID of the parent Orchestrator
+   * @returns Array of Session Manager charters belonging to the Orchestrator
    *
    * @example
    * ```typescript
-   * const sessionManagers = await registry.getSessionManagersByVP('vp-engineering-001');
-   * console.log(`Engineering VP has ${sessionManagers.length} session managers`);
+   * const sessionManagers = await registry.getSessionManagersByVP('orchestrator-engineering-001');
+   * console.log(`Engineering Orchestrator has ${sessionManagers.length} session managers`);
    * sessionManagers.forEach(sm => {
    *   console.log(`- ${sm.identity.name} (${sm.disciplineId})`);
    * });
    * ```
    */
-  async getSessionManagersByVP(vpId: string): Promise<SessionManagerCharter[]> {
+  async getSessionManagersByVP(orchestratorId: string): Promise<SessionManagerCharter[]> {
     const allSessionManagers = await this.sessionManagerStorage.getAll();
-    return allSessionManagers.filter((sm) => sm.parentVpId === vpId);
+    return allSessionManagers.filter((sm) => sm.parentVpId === orchestratorId);
   }
 
   /**
@@ -860,7 +860,7 @@ export class CharterRegistry {
   /**
    * Clear all charters from the registry.
    *
-   * Removes both VP and Session Manager charters from storage.
+   * Removes both Orchestrator and Session Manager charters from storage.
    * Use with caution in production environments.
    *
    * @returns Promise that resolves when all charters are cleared
@@ -872,7 +872,7 @@ export class CharterRegistry {
    * ```
    */
   async clear(): Promise<void> {
-    await Promise.all([this.vpStorage.clear(), this.sessionManagerStorage.clear()]);
+    await Promise.all([this.orchestratorStorage.clear(), this.sessionManagerStorage.clear()]);
   }
 
   /**
@@ -883,16 +883,16 @@ export class CharterRegistry {
    * @example
    * ```typescript
    * const stats = await registry.getStats();
-   * console.log(`VPs: ${stats.vpCount}, Session Managers: ${stats.sessionManagerCount}`);
+   * console.log(`VPs: ${stats.orchestratorCount}, Session Managers: ${stats.sessionManagerCount}`);
    * ```
    */
-  async getStats(): Promise<{ vpCount: number; sessionManagerCount: number }> {
-    const [vpCount, sessionManagerCount] = await Promise.all([
-      this.vpStorage.count(),
+  async getStats(): Promise<{ orchestratorCount: number; sessionManagerCount: number }> {
+    const [orchestratorCount, sessionManagerCount] = await Promise.all([
+      this.orchestratorStorage.count(),
       this.sessionManagerStorage.count(),
     ]);
 
-    return { vpCount, sessionManagerCount };
+    return { orchestratorCount, sessionManagerCount };
   }
 
   // ==========================================================================
@@ -900,35 +900,35 @@ export class CharterRegistry {
   // ==========================================================================
 
   /**
-   * Validate a VP charter for required fields and constraints.
+   * Validate a Orchestrator charter for required fields and constraints.
    *
-   * @param charter - The VP charter to validate
+   * @param charter - The Orchestrator charter to validate
    * @throws Error if validation fails
    */
-  private validateVPCharter(charter: VPCharter): void {
+  private validateOrchestratorCharter(charter: OrchestratorCharter): void {
     if (!charter.id || typeof charter.id !== 'string') {
-      throw new Error('VP charter must have a valid id');
+      throw new Error('Orchestrator charter must have a valid id');
     }
     if (charter.tier !== 1) {
-      throw new Error('VP charter must have tier = 1');
+      throw new Error('Orchestrator charter must have tier = 1');
     }
     if (!charter.identity || !charter.identity.name || !charter.identity.slug) {
-      throw new Error('VP charter must have a valid identity with name and slug');
+      throw new Error('Orchestrator charter must have a valid identity with name and slug');
     }
     if (!charter.coreDirective || typeof charter.coreDirective !== 'string') {
-      throw new Error('VP charter must have a valid coreDirective');
+      throw new Error('Orchestrator charter must have a valid coreDirective');
     }
     if (!Array.isArray(charter.capabilities)) {
-      throw new Error('VP charter must have capabilities array');
+      throw new Error('Orchestrator charter must have capabilities array');
     }
     if (!charter.resourceLimits) {
-      throw new Error('VP charter must have resourceLimits');
+      throw new Error('Orchestrator charter must have resourceLimits');
     }
     if (!charter.objectives) {
-      throw new Error('VP charter must have objectives');
+      throw new Error('Orchestrator charter must have objectives');
     }
     if (!charter.constraints) {
-      throw new Error('VP charter must have constraints');
+      throw new Error('Orchestrator charter must have constraints');
     }
   }
 
@@ -1017,4 +1017,4 @@ export function createCharterRegistry(
 // Re-exports for Convenience
 // ============================================================================
 
-export type { VPCharter, SessionManagerCharter };
+export type { OrchestratorCharter, SessionManagerCharter };

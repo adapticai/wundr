@@ -227,10 +227,10 @@ export const FINANCE_AGENT_IDS: string[] = [
  * // Register with discipline registry
  * registry.register(FINANCE_DISCIPLINE);
  *
- * // Assign to VP
+ * // Assign to Orchestrator
  * await engine.assignDisciplineToVp({
  *   disciplineId: FINANCE_DISCIPLINE.id,
- *   vpId: 'vp-finance-001',
+ *   vpId: 'orchestrator-finance-001',
  * });
  * ```
  */

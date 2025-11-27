@@ -9,7 +9,7 @@ import { LinuxInstaller } from './linux-installer';
 import { MacInstaller } from './mac-installer';
 import { NodeInstaller } from './node-installer';
 import { PythonInstaller } from './python-installer';
-import { VPDaemonInstaller } from './vp-daemon-installer';
+import { OrchestratorDaemonInstaller } from './orchestrator-daemon-installer';
 import { WindowsInstaller } from './windows-installer';
 
 import type {
@@ -63,9 +63,9 @@ export class InstallerRegistry {
     this.register('docker', new DockerInstaller());
     this.register('claude', claudeInstallerInstance);
 
-    // VP Daemon (global supervisor)
+    // Orchestrator Daemon (global supervisor)
     if (['darwin', 'linux'].includes(this.platform.os)) {
-      this.register('vp-daemon', new VPDaemonInstaller());
+      this.register('orchestrator-daemon', new OrchestratorDaemonInstaller());
     }
   }
 
@@ -398,5 +398,5 @@ export * from './git-installer';
 export * from './mac-installer';
 export * from './linux-installer';
 export * from './windows-installer';
-export * from './vp-daemon-installer';
+export * from './orchestrator-daemon-installer';
 export { default as RealSetupOrchestrator } from './real-setup-orchestrator';

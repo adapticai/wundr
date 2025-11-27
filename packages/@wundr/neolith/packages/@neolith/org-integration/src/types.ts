@@ -69,8 +69,8 @@ export interface NeolithResult {
   /** Generated organization manifest */
   manifest: OrganizationManifest;
 
-  /** List of generated VP definitions */
-  vps: VPDefinition[];
+  /** List of generated Orchestrator definitions */
+  orchestrators: OrchestratorDefinition[];
 
   /** List of generated discipline definitions */
   disciplines: DisciplineDefinition[];
@@ -115,35 +115,35 @@ export interface OrganizationManifest {
 }
 
 /**
- * VP (Vice President) definition from org-genesis.
+ * Orchestrator definition from org-genesis.
  */
-export interface VPDefinition {
-  /** VP unique identifier */
+export interface OrchestratorDefinition {
+  /** Orchestrator unique identifier */
   id: string;
 
-  /** VP role name */
+  /** Orchestrator role name */
   name: string;
 
-  /** VP title */
+  /** Orchestrator title */
   title: string;
 
-  /** VP responsibilities */
+  /** Orchestrator responsibilities */
   responsibilities: string[];
 
-  /** Disciplines this VP oversees */
+  /** Disciplines this Orchestrator oversees */
   disciplines: string[];
 
-  /** VP persona/character definition */
-  persona: VPPersona;
+  /** Orchestrator persona/character definition */
+  persona: OrchestratorPersona;
 
-  /** KPIs for this VP */
+  /** KPIs for this Orchestrator */
   kpis: string[];
 }
 
 /**
- * VP persona definition.
+ * Orchestrator persona definition.
  */
-export interface VPPersona {
+export interface OrchestratorPersona {
   /** Communication style */
   communicationStyle: string;
 
@@ -170,8 +170,8 @@ export interface DisciplineDefinition {
   /** Discipline description */
   description: string;
 
-  /** Parent VP ID */
-  vpId: string;
+  /** Parent OrchestratorID */
+  orchestratorId: string;
 
   /** Slug for channel naming */
   slug: string;
@@ -227,15 +227,15 @@ export interface NeolithMetadata {
 }
 
 // ============================================================================
-// VP Mapping Types
+// OrchestratorMapping Types
 // ============================================================================
 
 /**
- * Mapping between VP definition and Slack user.
+ * Mapping between Orchestrator definition and Slack user.
  */
-export interface VPMapping {
-  /** Original VP definition */
-  vp: VPDefinition;
+export interface OrchestratorMapping {
+  /** Original Orchestrator definition */
+  orchestrator: OrchestratorDefinition;
 
   /** Generated Slack user ID */
   slackUserId: string;
@@ -257,13 +257,13 @@ export interface VPMapping {
 }
 
 /**
- * Collection of VP mappings with summary.
+ * Collection of Orchestrator mappings with summary.
  */
-export interface VPMappingResult {
-  /** Individual VP mappings */
-  mappings: VPMapping[];
+export interface OrchestratorMappingResult {
+  /** Individual Orchestrator mappings */
+  mappings: OrchestratorMapping[];
 
-  /** Total VPs processed */
+  /** Total Orchestrators processed */
   total: number;
 
   /** Successfully mapped count */
@@ -342,8 +342,8 @@ export type MappingStatus = 'pending' | 'success' | 'failed' | 'skipped';
  * Combined migration result.
  */
 export interface MigrationResult {
-  /** VP mapping results */
-  vpMappings: VPMappingResult;
+  /** Orchestrator mapping results */
+  orchestratorMappings: OrchestratorMappingResult;
 
   /** Discipline mapping results */
   disciplineMappings: DisciplineMappingResult;
@@ -368,8 +368,8 @@ export interface MigrationOptions {
   /** Dry run mode - don't create actual resources */
   dryRun?: boolean;
 
-  /** Skip VP creation */
-  skipVPs?: boolean;
+  /** Skip Orchestrator creation */
+  skipOrchestrators?: boolean;
 
   /** Skip channel creation */
   skipChannels?: boolean;

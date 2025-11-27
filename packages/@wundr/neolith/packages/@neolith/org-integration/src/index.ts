@@ -12,22 +12,8 @@
 // ============================================================================
 
 export type {
-  // Neolith Configuration
-  NeolithConfig,
-  NeolithConfigOptions,
-
-  // Neolith Results
-  NeolithResult,
-  OrganizationManifest,
-  VPDefinition,
-  VPPersona,
-  DisciplineDefinition,
   AgentDefinition,
-  NeolithMetadata,
-
-  // VP Mapping
-  VPMapping,
-  VPMappingResult,
+  DisciplineDefinition,
 
   // Discipline Mapping
   DisciplineMapping,
@@ -35,8 +21,22 @@ export type {
 
   // Common Types
   MappingStatus,
-  MigrationResult,
   MigrationOptions,
+  MigrationResult,
+  // Neolith Configuration
+  NeolithConfig,
+  NeolithConfigOptions,
+  NeolithMetadata,
+
+  // Neolith Results
+  NeolithResult,
+  OrganizationManifest,
+  OrchestratorDefinition,
+
+  // OrchestratorMapping
+  OrchestratorMapping,
+  OrchestratorMappingResult,
+  OrchestratorPersona,
 } from './types';
 
 // ============================================================================
@@ -44,12 +44,12 @@ export type {
 // ============================================================================
 
 export {
-  migrateOrgGenesisResult,
-  createVPUsersFromManifest,
   createChannelsFromDisciplines,
-  createVPMapper,
   createDisciplineMapper,
+  createOrchestratorMapper,
+  createOrchestratorUsersFromManifest,
   IDMapper,
+  migrateOrgGenesisResult,
 } from './migration';
 
 // ============================================================================
@@ -57,24 +57,24 @@ export {
 // ============================================================================
 
 export {
-  // Slug generation
-  generateSlug,
+  deepClone,
+  deepMerge,
   generateChannelName,
   generateDisplayName,
-  type SlugOptions,
+  // Slug generation
+  generateSlug,
+  generateUniqueId,
 
   // Validation
   isValidChannelName,
   isValidDisplayName,
-
-  // Hash utilities
-  simpleHash,
-  generateUniqueId,
+  type SlugOptions,
 
   // Data transformation
   safeGet,
-  deepClone,
-  deepMerge,
+
+  // Hash utilities
+  simpleHash,
 } from './utils';
 
 // ============================================================================

@@ -601,9 +601,9 @@ monitor.on('monitor:stopped', () => {
 });
 ```
 
-## Integration with VP Daemon
+## Integration with Orchestrator Daemon
 
-The mcp-registry integrates with the VP (Virtual Process) daemon for centralized MCP server management in production environments.
+The mcp-registry integrates with the Orchestrator (Virtual Process) daemon for centralized MCP server management in production environments.
 
 ### Daemon Integration Pattern
 

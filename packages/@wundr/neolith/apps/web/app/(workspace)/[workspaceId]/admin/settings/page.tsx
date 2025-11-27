@@ -1,7 +1,9 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { useWorkspaceSettings } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
@@ -17,6 +19,12 @@ type SettingsTab = 'general' | 'security' | 'notifications' | 'advanced';
 export default function AdminSettingsPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Workspace Settings', 'Configure your workspace preferences and security settings');
+  }, [setPageHeader]);
 
   const { settings, isLoading, updateSettings, error } = useWorkspaceSettings(workspaceId);
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
@@ -50,13 +58,6 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Workspace Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Configure your workspace preferences and security settings
-        </p>
-      </div>
 
       {/* Success/Error Messages */}
       {successMessage && (

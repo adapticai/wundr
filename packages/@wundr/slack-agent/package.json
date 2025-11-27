@@ -1,7 +1,7 @@
 {
   "name": "@wundr.io/slack-agent",
   "version": "1.0.6",
-  "description": "Slack agent capabilities for VP (Virtual Principal) agents operating as full users in Slack workspaces",
+  "description": "Slack agent capabilities for Orchestrator agents operating as full users in Slack workspaces",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist", "src"],
@@ -42,8 +42,7 @@
     "wundr",
     "slack",
     "agent",
-    "virtual-principal",
-    "vp",
+    "orchestrator",
     "profile",
     "bot",
     "workspace"

@@ -7,13 +7,13 @@
  * @packageDocumentation
  */
 
-import { Permission } from './permissions';
 
 import type {
+  ChannelRole,
   OrganizationRole,
   WorkspaceRole,
-  ChannelRole,
 } from '@neolith/database';
+import { Permission } from './permissions';
 
 
 // =============================================================================
@@ -84,7 +84,7 @@ export const ORGANIZATION_ROLES: Record<OrganizationRole, RoleDefinition> = {
       Permission.WORKSPACE_DELETE,
       Permission.WORKSPACE_MANAGE_MEMBERS,
 
-      // VP management
+      // Orchestrator management
       Permission.VP_CREATE,
       Permission.VP_VIEW,
       Permission.VP_EDIT,

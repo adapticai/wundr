@@ -4,26 +4,25 @@
  * Handles assigning tasks to VPs or users.
  *
  * Routes:
- * - POST /api/workspaces/[workspaceId]/tasks/[taskId]/assign - Assign task to VP or user
+ * - POST /api/workspaces/[workspaceId]/tasks/[taskId]/assign - Assign task to Orchestrator or user
  *
  * @module app/api/workspaces/[workspaceId]/tasks/[taskId]/assign/route
  */
 
 import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
 import { createErrorResponse, TASK_ERROR_CODES } from '@/lib/validations/task';
-import { assignTaskSchema, BACKLOG_ERROR_CODES } from '@/lib/validations/task-backlog';
 
 import type { AssignTaskInput } from '@/lib/validations/task-backlog';
-import type { NextRequest } from 'next/server';
+import { assignTaskSchema, BACKLOG_ERROR_CODES } from '@/lib/validations/task-backlog';
 
 /**
  * POST /api/workspaces/[workspaceId]/tasks/[taskId]/assign
  *
- * Assign a task to a VP or user. Validates that the assignee exists and
+ * Assign a task to a Orchestrator or user. Validates that the assignee exists and
  * is accessible within the workspace. Logs the assignment change.
  *
  * Request body:
@@ -151,8 +150,8 @@ export async function POST(
     let assigneeUserId: string;
 
     if (input.assigneeType === 'VP') {
-      // Lookup VP and get their user ID
-      const vp = await prisma.vP.findFirst({
+      // Lookup Orchestrator and get their user ID
+      const orchestrator = await prisma.vP.findFirst({
         where: {
           id: input.assigneeId,
         },
@@ -171,7 +170,7 @@ export async function POST(
         );
       }
 
-      // VP can be workspace-specific or organization-wide
+      // Orchestrator can be workspace-specific or organization-wide
       if (vp.workspaceId && vp.workspaceId !== workspaceId) {
         return NextResponse.json(
           createErrorResponse('VP not found in this workspace', BACKLOG_ERROR_CODES.VP_NOT_FOUND),

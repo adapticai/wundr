@@ -1,7 +1,9 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { useBilling } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
@@ -17,6 +19,12 @@ type BillingInterval = 'monthly' | 'yearly';
 export default function AdminBillingPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Billing & Plans', 'Manage your subscription and billing information');
+  }, [setPageHeader]);
 
   const { billing, isLoading, updatePlan } = useBilling(workspaceId);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -109,13 +117,6 @@ export default function AdminBillingPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Billing & Plans</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage your subscription and billing information
-        </p>
-      </div>
 
       {/* Current Plan Overview */}
       {isLoading ? (

@@ -184,7 +184,7 @@ export async function runSettingsPageTests(page: any) {
       '#push-notifications',
       '#weekly-digest',
       '#mention-alerts',
-      '#vp-updates',
+      '#orchestrator-updates',
     ];
 
     let switchesFound = 0;

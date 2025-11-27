@@ -13,7 +13,7 @@ export function EmptyActivity() {
     <EmptyState
       icon={Activity}
       title="No activity yet"
-      description="Activity from your team and Virtual Persons will appear here once you start working."
+      description="Activity from your team and Orchestrators will appear here once you start working."
     />
   );
 }

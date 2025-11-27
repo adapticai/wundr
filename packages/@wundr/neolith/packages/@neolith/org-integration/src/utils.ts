@@ -18,7 +18,7 @@
  * @example
  * ```ts
  * generateSlug('Risk Management') // 'risk-management'
- * generateSlug('VP of Engineering', { prefix: 'vp' }) // 'vp-engineering'
+ * generateSlug('Orchestrator of Engineering', { prefix: 'orch' }) // 'orch-engineering'
  * ```
  */
 export function generateSlug(input: string, options: SlugOptions = {}): string {
@@ -26,7 +26,7 @@ export function generateSlug(input: string, options: SlugOptions = {}): string {
 
   let slug = input
     // Remove common title prefixes if specified
-    .replace(/^(VP of|Director of|Head of|Chief)\s+/i, '')
+    .replace(/^(Orchestrator of|Director of|Head of|Chief)\s+/i, '')
     // Replace special characters with spaces
     .replace(/[^\w\s-]/g, '')
     // Replace whitespace with hyphens
@@ -93,15 +93,15 @@ export function generateChannelName(
 }
 
 /**
- * Generate a display name for a VP user.
+ * Generate a display name for an Orchestrator user.
  *
- * @param vpName - VP name or title
+ * @param orchestratorName - Orchestrator name or title
  * @returns Display name suitable for Slack
  */
-export function generateDisplayName(vpName: string): string {
-  // Remove VP prefix variations
-  const cleaned = vpName
-    .replace(/^(VP of|VP -|VP:|Vice President of)\s*/i, '')
+export function generateDisplayName(orchestratorName: string): string {
+  // Remove Orchestrator prefix variations
+  const cleaned = orchestratorName
+    .replace(/^(Orchestrator of|Orchestrator -|Orchestrator:)\s*/i, '')
     .trim();
 
   // Capitalize first letter of each word
@@ -222,13 +222,13 @@ export class IDMapper<
 }
 
 // ============================================================================
-// VP Mapping Utilities
+// OrchestratorMapping Utilities
 // ============================================================================
 
 /**
- * Create a VP ID mapper from genesis VPs to Slack user IDs.
+ * Create an OrchestratorID mapper from genesis Orchestrators to Slack user IDs.
  */
-export function createVPMapper(): IDMapper<string, string> {
+export function createOrchestratorMapper(): IDMapper<string, string> {
   return new IDMapper<string, string>();
 }
 

@@ -23,16 +23,16 @@ Comprehensive integration tests were created and executed for all critical user 
 
 ## Test Flows Covered
 
-### 1. Login → Dashboard → Create VP → View VP
-**Purpose:** Test Virtual Person creation end-to-end flow
+### 1. Login → Dashboard → Create Orchestrator → View VP
+**Purpose:** Test Orchestrator creation end-to-end flow
 **Status:** ❌ BLOCKED - Authentication Required
 **Steps Defined:**
 1. Navigate to dashboard
-2. Click Virtual Persons in sidebar
-3. Open Create VP dialog
-4. Fill VP creation form
+2. Click Orchestrators in sidebar
+3. Open Create Orchestrator dialog
+4. Fill Orchestrator creation form
 5. Submit form
-6. Verify VP appears in list
+6. Verify Orchestrator appears in list
 
 **Finding:** Application redirects to `/login` page instead of dashboard
 
@@ -366,7 +366,7 @@ export async function authenticateTestUser(page: Page) {
 | Feature | Unit Tests | Integration Tests | E2E Tests | Status |
 |---------|-----------|-------------------|-----------|--------|
 | Dashboard | ✅ | ✅ | 🔶 | Auth Blocked |
-| Virtual Persons | ❌ | 🔶 | 🔶 | Needs Tests |
+| Orchestrators | ❌ | 🔶 | 🔶 | Needs Tests |
 | Channels | ❌ | ✅ | 🔶 | Auth Blocked |
 | Workflows | ❌ | 🔶 | 🔶 | Auth Blocked |
 | Agents | ❌ | 🔶 | 🔶 | Auth Blocked |
@@ -464,7 +464,7 @@ $ npx playwright test tests/full-flow-integration.spec.ts --reporter=list
 
 Running 7 tests using 6 workers
 
-✘ Flow 1: Login → Dashboard → Create VP → View VP
+✘ Flow 1: Login → Dashboard → Create Orchestrator → View VP
    TimeoutError: page.waitForURL: Timeout 15000ms exceeded
    Current URL: http://localhost:3000/login
 

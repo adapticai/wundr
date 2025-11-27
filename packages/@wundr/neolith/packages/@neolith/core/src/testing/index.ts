@@ -4,15 +4,15 @@
  */
 
 import type {
+  FactoryFunction,
+  Fixture,
+  MockCall,
   MockConfig,
   MockInstance,
-  MockCall,
-  Fixture,
-  FactoryFunction,
+  MockResponse,
+  MockServer,
   Seeder,
   TestDatabase,
-  MockServer,
-  MockResponse,
 } from '../types/testing';
 
 /** Create a mock function */
@@ -230,7 +230,7 @@ export const messageFactory = createFactory({
   updatedAt: new Date(),
 });
 
-/** Test VP factory */
+/** Test Orchestrator factory */
 export const vpFactory = createFactory({
   id: 'vp_' + Date.now().toString(36),
   name: 'Test VP',

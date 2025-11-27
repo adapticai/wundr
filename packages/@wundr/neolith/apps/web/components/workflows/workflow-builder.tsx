@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 import { useWorkflowBuilder } from '@/hooks/use-workflows';
 import { cn } from '@/lib/utils';
+import { DEFAULT_ACTION_CONFIGS } from '@/types/workflow';
 
 import { ActionConfigPanel } from './action-config';
 import { TriggerConfigPanel } from './trigger-config';
@@ -71,9 +72,10 @@ export function WorkflowBuilder({
   const availableVariables = getAvailableVariables(trigger || { type: 'message' }, actions);
 
   const handleAddAction = useCallback(() => {
+    const defaultType = 'send_message';
     addAction({
-      type: 'send_message',
-      config: {},
+      type: defaultType,
+      config: DEFAULT_ACTION_CONFIGS[defaultType],
     });
   }, [addAction]);
 

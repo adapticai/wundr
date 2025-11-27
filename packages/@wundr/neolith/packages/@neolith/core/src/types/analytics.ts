@@ -17,7 +17,7 @@ export interface AnalyticsEventData {
   fileId?: string;
   /** Call ID for call-related events */
   callId?: string;
-  /** VP ID for VP-related events */
+  /** OrchestratorID for VP-related events */
   vpId?: string;
   /** Search query for search events */
   query?: string;
@@ -71,7 +71,7 @@ export interface AnalyticsEvent {
   workspaceId: string;
   /** User who triggered the event (if applicable) */
   userId?: string;
-  /** VP that triggered the event (if applicable) */
+  /** Orchestrator that triggered the event (if applicable) */
   vpId?: string;
   /** Type of analytics event */
   eventType: AnalyticsEventType;
@@ -226,7 +226,7 @@ export interface WidgetFilters {
   channelIds?: string[];
   /** Filter by user IDs */
   userIds?: string[];
-  /** Filter by VP IDs */
+  /** Filter by OrchestratorIDs */
   vpIds?: string[];
   /** Filter by event types */
   eventTypes?: AnalyticsEventType[];

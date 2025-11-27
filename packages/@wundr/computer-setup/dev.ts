@@ -14,7 +14,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { ProfileManager } from './src/profiles';
-import { InstallerRegistry, VPDaemonInstaller } from './src/installers';
+import { InstallerRegistry, OrchestratorDaemonInstaller } from './src/installers';
 import { ConfiguratorService } from './src/configurators';
 import { SetupValidator } from './src/validators';
 import { SetupOrchestrator } from './src/orchestrator';
@@ -908,11 +908,11 @@ async function main() {
       }
     });
 
-  // Global setup command - installs VP daemon and global wundr resources
+  // Global setup command - installs Orchestrator daemon and global wundr resources
   program
     .command('global-setup')
-    .description('Install VP Daemon and global wundr resources at ~/vp-daemon and ~/.wundr')
-    .option('--vp-daemon-dir <dir>', 'VP daemon directory', path.join(os.homedir(), 'vp-daemon'))
+    .description('Install Orchestrator Daemon and global wundr resources at ~/orchestrator-daemon and ~/.wundr')
+    .option('--orchestrator-daemon-dir <dir>', 'Orchestrator daemon directory', path.join(os.homedir(), 'orchestrator-daemon'))
     .option('--wundr-config-dir <dir>', 'Wundr config directory', path.join(os.homedir(), '.wundr'))
     .option('--enable-slack', 'Enable Slack integration')
     .option('--enable-gmail', 'Enable Gmail integration')
@@ -921,20 +921,20 @@ async function main() {
     .option('--dry-run', 'Show what would be installed without making changes')
     .action(async (options) => {
       try {
-        logger.info(chalk.cyan.bold('\n🌐 Installing VP Daemon and Global Wundr Resources\n'));
+        logger.info(chalk.cyan.bold('\n🌐 Installing Orchestrator Daemon and Global Wundr Resources\n'));
 
-        const vpDaemonDir = options.vpDaemonDir;
+        const orchestratorDaemonDir = options.orchestratorDaemonDir;
         const wundrConfigDir = options.wundrConfigDir;
 
-        logger.info(chalk.gray(`VP Daemon directory: ${vpDaemonDir}`));
+        logger.info(chalk.gray(`Orchestrator Daemon directory: ${orchestratorDaemonDir}`));
         logger.info(chalk.gray(`Wundr config directory: ${wundrConfigDir}`));
         logger.info('');
 
         if (options.dryRun) {
           logger.info(chalk.yellow('DRY RUN - No changes will be made\n'));
           logger.info(chalk.cyan('Would create:'));
-          logger.info(`  • ${vpDaemonDir}/`);
-          logger.info(`    ├── vp-charter.yaml`);
+          logger.info(`  • ${orchestratorDaemonDir}/`);
+          logger.info(`    ├── orchestrator-charter.yaml`);
           logger.info(`    ├── sessions/`);
           logger.info(`    ├── logs/`);
           logger.info(`    └── integrations/`);
@@ -956,10 +956,10 @@ async function main() {
           return;
         }
 
-        const spinner = ora('Installing VP Daemon...').start();
+        const spinner = ora('Installing Orchestrator Daemon...').start();
 
-        const vpDaemonInstaller = new VPDaemonInstaller({
-          vpDaemonDir,
+        const orchestratorDaemonInstaller = new OrchestratorDaemonInstaller({
+          orchestratorDaemonDir,
           wundrConfigDir,
           enableSlack: options.enableSlack,
           enableGmail: options.enableGmail,
@@ -968,19 +968,19 @@ async function main() {
         });
 
         // Subscribe to progress events
-        vpDaemonInstaller.on('progress', (progress: { step: string; percentage: number }) => {
+        orchestratorDaemonInstaller.on('progress', (progress: { step: string; percentage: number }) => {
           spinner.text = `[${progress.percentage}%] ${progress.step}`;
         });
 
-        const result = await vpDaemonInstaller.installWithResult();
+        const result = await orchestratorDaemonInstaller.installWithResult();
 
         if (result.success) {
-          spinner.succeed('VP Daemon installed successfully!');
+          spinner.succeed('Orchestrator Daemon installed successfully!');
           logger.info('');
           logger.info(chalk.green.bold('✅ Global setup completed!'));
           logger.info('');
           logger.info(chalk.cyan('Installed locations:'));
-          logger.info(`  VP Daemon: ${result.vpDaemonPath}`);
+          logger.info(`  Orchestrator Daemon: ${result.vpDaemonPath}`);
           logger.info(`  Wundr Config: ${result.wundrConfigPath}`);
           logger.info('');
           logger.info(chalk.cyan('Installed resources:'));
@@ -998,13 +998,13 @@ async function main() {
           }
 
           logger.info(chalk.cyan('Next steps:'));
-          logger.info('  1. Configure integrations in ~/vp-daemon/integrations/');
-          logger.info('  2. Review VP charter at ~/vp-daemon/vp-charter.yaml');
+          logger.info('  1. Configure integrations in ~/orchestrator-daemon/integrations/');
+          logger.info('  2. Review Orchestrator charter at ~/orchestrator-daemon/orchestrator-charter.yaml');
           logger.info('  3. Customize session archetypes in ~/.wundr/archetypes/');
-          logger.info('  4. Run "npx tsx dev.ts vp-status" to check VP daemon status');
+          logger.info('  4. Run "npx tsx dev.ts orchestrator-status" to check Orchestrator daemon status');
           logger.info('');
         } else {
-          spinner.fail('VP Daemon installation failed');
+          spinner.fail('Orchestrator Daemon installation failed');
           logger.info('');
           logger.error('Errors:');
           result.errors.forEach(error => {
@@ -1018,33 +1018,33 @@ async function main() {
       }
     });
 
-  // VP Status command - check VP daemon installation status
+  // Orchestrator Status command - check Orchestrator daemon installation status
   program
-    .command('vp-status')
-    .description('Check VP Daemon installation status')
+    .command('orchestrator-status')
+    .description('Check Orchestrator Daemon installation status')
     .action(async () => {
       try {
-        logger.info(chalk.cyan.bold('\n🔍 VP Daemon Status\n'));
+        logger.info(chalk.cyan.bold('\n🔍 Orchestrator Daemon Status\n'));
 
-        const vpDaemonDir = path.join(os.homedir(), 'vp-daemon');
+        const orchestratorDaemonDir = path.join(os.homedir(), 'orchestrator-daemon');
         const wundrConfigDir = path.join(os.homedir(), '.wundr');
 
-        const vpDaemonInstaller = new VPDaemonInstaller({
-          vpDaemonDir,
+        const orchestratorDaemonInstaller = new OrchestratorDaemonInstaller({
+          orchestratorDaemonDir,
           wundrConfigDir,
         });
 
-        const isInstalled = await vpDaemonInstaller.isInstalled();
-        const version = await vpDaemonInstaller.getVersion();
-        const isValid = await vpDaemonInstaller.validate();
+        const isInstalled = await orchestratorDaemonInstaller.isInstalled();
+        const version = await orchestratorDaemonInstaller.getVersion();
+        const isValid = await orchestratorDaemonInstaller.validate();
 
         if (isInstalled) {
-          logger.info(chalk.green('✅ VP Daemon is installed'));
+          logger.info(chalk.green('✅ Orchestrator Daemon is installed'));
           logger.info(`   Version: ${version || 'unknown'}`);
-          logger.info(`   Location: ${vpDaemonDir}`);
+          logger.info(`   Location: ${orchestratorDaemonDir}`);
           logger.info(`   Valid: ${isValid ? 'Yes' : 'No (missing components)'}`);
         } else {
-          logger.info(chalk.yellow('⚠️ VP Daemon is not installed'));
+          logger.info(chalk.yellow('⚠️ Orchestrator Daemon is not installed'));
           logger.info('   Run "npx tsx dev.ts global-setup" to install');
         }
 
@@ -1066,7 +1066,7 @@ async function main() {
         logger.info('');
 
         // Check for active sessions
-        const sessionsDir = path.join(vpDaemonDir, 'sessions');
+        const sessionsDir = path.join(orchestratorDaemonDir, 'sessions');
         const sessionsExist = await fs.pathExists(sessionsDir);
         if (sessionsExist) {
           const sessionIndex = path.join(sessionsDir, 'index.json');

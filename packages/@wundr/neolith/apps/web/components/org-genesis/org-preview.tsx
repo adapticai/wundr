@@ -6,10 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import { OrgChartVisualization } from './org-chart-visualization';
-
 import type { OrgGenerationResponse } from '@/lib/validations/org-genesis';
+import { OrgChartVisualization } from './org-chart-visualization';
 
 /**
  * Organization Preview Component
@@ -17,7 +15,7 @@ import type { OrgGenerationResponse } from '@/lib/validations/org-genesis';
  * Displays the generated organization with multiple view modes:
  * - Visual org chart
  * - Mission, vision, values
- * - Detailed VP and discipline breakdown
+ * - Detailed Orchestrator and discipline breakdown
  */
 interface OrgPreviewProps {
   orgData: OrgGenerationResponse;
@@ -35,7 +33,7 @@ export function OrgPreview({
   isRegenerating = false,
 }: OrgPreviewProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'structure' | 'details'>('overview');
-  const { manifest, vps, disciplines, agents } = orgData;
+  const { manifest, orchestrators, disciplines, agents } = orgData;
 
   return (
     <div className="space-y-6">
@@ -141,7 +139,7 @@ export function OrgPreview({
         {/* Details Tab */}
         <TabsContent value="details" className="space-y-4 mt-6">
           {vps.map((vp) => {
-            const vpDisciplines = disciplines.filter((d) => d.vpId === vp.id);
+            const vpDisciplines = disciplines.filter((d) => d.orchestratorId === vp.id);
 
             return (
               <Card key={vp.id}>

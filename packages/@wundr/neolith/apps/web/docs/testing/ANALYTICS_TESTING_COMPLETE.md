@@ -125,7 +125,7 @@ URL: http://localhost:3000/{workspaceId}/analytics
 3. `/components/analytics/metric-card.tsx` - Metric display cards
 4. `/components/analytics/line-chart.tsx` - Time series charts
 5. `/components/analytics/bar-chart.tsx` - Bar chart visualization
-6. `/components/analytics/leaderboard.tsx` - VP leaderboard
+6. `/components/analytics/leaderboard.tsx` - Orchestrator leaderboard
 7. `/components/analytics/date-range-picker.tsx` - Date filtering
 
 ### API Integration

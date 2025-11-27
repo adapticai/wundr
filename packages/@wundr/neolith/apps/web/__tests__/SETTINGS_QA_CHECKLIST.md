@@ -59,8 +59,8 @@
 - [ ] Weekly Digest switch toggles
 - [ ] Mention Alerts switch present (#mention-alerts)
 - [ ] Mention Alerts switch toggles
-- [ ] VP Updates switch present (#vp-updates)
-- [ ] VP Updates switch toggles
+- [ ] Orchestrator Updates switch present (#orchestrator-updates)
+- [ ] Orchestrator Updates switch toggles
 
 ### Form Inputs - Account Settings
 - [ ] Two-Factor Auth switch present (#two-factor)

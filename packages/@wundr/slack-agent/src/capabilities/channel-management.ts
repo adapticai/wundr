@@ -1,8 +1,8 @@
 /**
  * @wundr.io/slack-agent - Channel Management Capability
  *
- * Provides comprehensive Slack channel management capabilities for the VP agent.
- * The VP agent operates as a full user in Slack workspaces, enabling it to
+ * Provides comprehensive Slack channel management capabilities for the Orchestrator agent.
+ * The Orchestrator agent operates as a full user in Slack workspaces, enabling it to
  * create, archive, rename, and manage channels with appropriate permissions.
  *
  * @packageDocumentation
@@ -36,7 +36,7 @@ export interface Channel {
   readonly creator?: string;
   /** Creation timestamp (Unix epoch seconds) */
   readonly created?: number;
-  /** Whether the VP agent is a member */
+  /** Whether the Orchestrator agent is a member */
   readonly isMember?: boolean;
   /** Last activity timestamp */
   readonly lastActivity?: number;
@@ -68,7 +68,7 @@ export interface ListChannelsOptions {
   cursor?: string;
   /** Team ID for Enterprise Grid organizations */
   teamId?: string;
-  /** Filter to only channels the VP is a member of */
+  /** Filter to only channels the Orchestrator is a member of */
   memberOnly?: boolean;
   /** Filter channels by name pattern (substring match) */
   namePattern?: string;
@@ -151,7 +151,7 @@ export interface ChannelManagerConfig {
 // =============================================================================
 
 /**
- * ChannelManager - Manages Slack channel operations for the VP agent
+ * ChannelManager - Manages Slack channel operations for the Orchestrator agent
  *
  * Provides methods to create, archive, rename, and query channels.
  * Handles permission errors gracefully and provides clear error messages.
@@ -618,7 +618,7 @@ export class ChannelManager {
   }
 
   /**
-   * List private channels the VP is a member of
+   * List private channels the Orchestrator is a member of
    *
    * @returns List of private channels
    *

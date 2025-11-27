@@ -8,6 +8,7 @@ import { ChannelListSkeleton } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 import { CreateChannelDialog } from './create-channel-dialog';
+import { CreateConversationDialog } from './create-conversation-dialog';
 
 import type { Channel, DirectMessageChannel } from '@/types/channel';
 
@@ -34,6 +35,8 @@ interface ChannelListProps {
     description?: string;
     memberIds?: string[];
   }) => Promise<void>;
+  /** Callback fired when creating a new DM */
+  onCreateDM?: () => Promise<void>;
   /** Callback fired when retrying to load channels */
   onRetry?: () => void;
   /** Additional CSS class names */
@@ -48,6 +51,7 @@ export function ChannelList({
   isLoading = false,
   error = null,
   onCreateChannel,
+  onCreateDM,
   onRetry,
   className,
 }: ChannelListProps) {
@@ -59,6 +63,7 @@ export function ChannelList({
     directMessages: true,
   });
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isCreateDMDialogOpen, setIsCreateDMDialogOpen] = useState(false);
 
   const toggleSection = useCallback((section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
@@ -118,6 +123,17 @@ return directMessages;
       }
     },
     [onCreateChannel],
+  );
+
+  const handleCreateDM = useCallback(
+    async () => {
+      try {
+        await onCreateDM?.();
+      } catch (error) {
+        console.error('Error creating DM:', error);
+      }
+    },
+    [onCreateDM],
   );
 
   if (isLoading) {
@@ -235,6 +251,7 @@ return directMessages;
           action={
             <button
               type="button"
+              onClick={() => setIsCreateDMDialogOpen(true)}
               className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
               title="New direct message"
             >
@@ -273,6 +290,14 @@ return directMessages;
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
         onCreate={handleCreateChannel}
+        workspaceId={workspaceId}
+      />
+
+      {/* Create DM Dialog */}
+      <CreateConversationDialog
+        isOpen={isCreateDMDialogOpen}
+        onClose={() => setIsCreateDMDialogOpen(false)}
+        onCreateDM={handleCreateDM}
         workspaceId={workspaceId}
       />
     </div>

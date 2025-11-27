@@ -10,23 +10,21 @@
  */
 
 import { prisma } from '@neolith/database';
+import type { Prisma, TaskStatus } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
 import {
-  recordTaskFailure,
   blockTaskAfterMaxRetries,
+  recordTaskFailure,
 } from '@/lib/services/task-retry-service';
 import { canTransitionToStatus } from '@/lib/services/task-service';
 import {
-  updateTaskStatusSchema,
   createErrorResponse,
-  WORK_SESSION_ERROR_CODES,
   isValidStatusTransition,
+  updateTaskStatusSchema,
+  WORK_SESSION_ERROR_CODES,
 } from '@/lib/validations/work-session';
-
-import type { Prisma, TaskStatus } from '@prisma/client';
-import type { NextRequest } from 'next/server';
 
 /**
  * Route context with path parameters
@@ -53,7 +51,7 @@ export async function PATCH(
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
-    // Authenticate user (or VP daemon)
+    // Authenticate user (or Orchestrator daemon)
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(

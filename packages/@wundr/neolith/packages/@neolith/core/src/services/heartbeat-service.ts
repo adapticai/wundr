@@ -1,7 +1,7 @@
 /**
  * @genesis/core - Heartbeat Service
  *
- * Service for managing VP daemon heartbeats, registration, and health monitoring.
+ * Service for managing Orchestrator daemon heartbeats, registration, and health monitoring.
  * Uses Redis for storage with automatic TTL management.
  *
  * @packageDocumentation
@@ -9,7 +9,7 @@
 
 import { prisma } from '@neolith/database';
 
-import { GenesisError, VPNotFoundError } from '../errors';
+import { GenesisError, OrchestratorNotFoundError } from '../errors';
 import {
   DEFAULT_HEARTBEAT_CONFIG,
   DEFAULT_HEARTBEAT_METRICS,
@@ -75,7 +75,7 @@ export class HeartbeatError extends GenesisError {
 export class DaemonNotRegisteredError extends HeartbeatError {
   constructor(vpId: string) {
     super(
-      `Daemon not registered for VP: ${vpId}`,
+      `Daemon not registered for Orchestrator: ${vpId}`,
       'DAEMON_NOT_REGISTERED',
       404,
       { vpId },
@@ -90,7 +90,7 @@ export class DaemonNotRegisteredError extends HeartbeatError {
 export class DaemonAlreadyRegisteredError extends HeartbeatError {
   constructor(vpId: string) {
     super(
-      `Daemon already registered for VP: ${vpId}`,
+      `Daemon already registered for Orchestrator: ${vpId}`,
       'DAEMON_ALREADY_REGISTERED',
       409,
       { vpId },
@@ -121,82 +121,82 @@ export class HeartbeatValidationError extends HeartbeatError {
  */
 export interface HeartbeatService {
   /**
-   * Registers a daemon for a VP.
+   * Registers a daemon for a Orchestrator.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @param daemonInfo - Information about the daemon
-   * @throws {VPNotFoundError} If the VP doesn't exist
+   * @throws {VPNotFoundError} If the Orchestrator doesn't exist
    * @throws {DaemonAlreadyRegisteredError} If a daemon is already registered
    */
   registerDaemon(vpId: string, daemonInfo: HeartbeatDaemonInfo): Promise<void>;
 
   /**
-   * Unregisters a daemon for a VP.
+   * Unregisters a daemon for a Orchestrator.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @throws {DaemonNotRegisteredError} If no daemon is registered
    */
   unregisterDaemon(vpId: string): Promise<void>;
 
   /**
-   * Sends a heartbeat for a VP.
+   * Sends a heartbeat for a Orchestrator.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @param metrics - Optional metrics to include
    * @throws {DaemonNotRegisteredError} If no daemon is registered
    */
   sendHeartbeat(vpId: string, metrics?: HeartbeatMetrics): Promise<void>;
 
   /**
-   * Gets the last heartbeat record for a VP.
+   * Gets the last heartbeat record for a Orchestrator.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @returns The last heartbeat record, or null if none exists
    */
   getLastHeartbeat(vpId: string): Promise<HeartbeatRecord | null>;
 
   /**
-   * Checks the health status of a VP.
+   * Checks the health status of a Orchestrator.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @returns The current health status
    */
   checkHealth(vpId: string): Promise<HealthStatus>;
 
   /**
-   * Gets all unhealthy VPs for an organization.
+   * Gets all unhealthy Orchestrators for an organization.
    *
    * @param orgId - The organization ID
-   * @returns Array of unhealthy VP IDs
+   * @returns Array of unhealthy OrchestratorIDs
    */
   getUnhealthyVPs(orgId: string): Promise<string[]>;
 
   /**
-   * Marks a VP as recovering.
+   * Marks a Orchestrator as recovering.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    */
   markRecovering(vpId: string): Promise<void>;
 
   /**
-   * Marks a VP as recovered.
+   * Marks a Orchestrator as recovered.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    */
   markRecovered(vpId: string): Promise<void>;
 
   /**
-   * Gets daemon info for a VP.
+   * Gets daemon info for a Orchestrator.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @returns Daemon info or null if not registered
    */
   getDaemonInfo(vpId: string): Promise<HeartbeatDaemonInfo | null>;
 
   /**
-   * Gets heartbeat history for a VP.
+   * Gets heartbeat history for a Orchestrator.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @param limit - Maximum number of records to return
    * @returns Array of heartbeat records
    */
@@ -238,17 +238,17 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   // ===========================================================================
 
   /**
-   * Registers a daemon for a VP.
+   * Registers a daemon for a Orchestrator.
    */
   async registerDaemon(vpId: string, daemonInfo: HeartbeatDaemonInfo): Promise<void> {
-    // Validate VP exists
-    const vp = await this.db.vP.findUnique({
+    // Validate Orchestrator exists
+    const orchestrator = await this.db.vP.findUnique({
       where: { id: vpId },
       include: { organization: true },
     });
 
     if (!vp) {
-      throw new VPNotFoundError(vpId);
+      throw new OrchestratorNotFoundError(vpId);
     }
 
     // Validate daemon info
@@ -277,7 +277,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
       { EX: this.config.heartbeatTTLSeconds * 10 }, // Longer TTL for daemon info
     );
 
-    // Add to registered VPs set
+    // Add to registered Orchestrators set
     await this.redis.sadd(HEARTBEAT_REDIS_KEYS.registeredVPs(), vpId);
     await this.redis.sadd(HEARTBEAT_REDIS_KEYS.orgVPs(vp.organizationId), vpId);
 
@@ -296,7 +296,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     // Initialize sequence counter
     this.sequenceCounters.set(vpId, 0);
 
-    // Update VP status to ONLINE
+    // Update Orchestrator status to ONLINE
     await this.db.vP.update({
       where: { id: vpId },
       data: { status: 'ONLINE' },
@@ -304,7 +304,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   }
 
   /**
-   * Unregisters a daemon for a VP.
+   * Unregisters a daemon for a Orchestrator.
    */
   async unregisterDaemon(vpId: string): Promise<void> {
     // Check if registered
@@ -313,8 +313,8 @@ export class HeartbeatServiceImpl implements HeartbeatService {
       throw new DaemonNotRegisteredError(vpId);
     }
 
-    // Get VP to find org ID
-    const vp = await this.db.vP.findUnique({
+    // Get Orchestrator to find org ID
+    const orchestrator = await this.db.vP.findUnique({
       where: { id: vpId },
     });
 
@@ -324,13 +324,13 @@ export class HeartbeatServiceImpl implements HeartbeatService {
       this.redis.del(HEARTBEAT_REDIS_KEYS.heartbeat(vpId)),
       this.redis.del(HEARTBEAT_REDIS_KEYS.health(vpId)),
       this.redis.srem(HEARTBEAT_REDIS_KEYS.registeredVPs(), vpId),
-      vp ? this.redis.srem(HEARTBEAT_REDIS_KEYS.orgVPs(vp.organizationId), vpId) : Promise.resolve(),
+      orchestrator ? this.redis.srem(HEARTBEAT_REDIS_KEYS.orgVPs(vp.organizationId), vpId) : Promise.resolve(),
     ]);
 
     // Remove sequence counter
     this.sequenceCounters.delete(vpId);
 
-    // Update VP status to OFFLINE
+    // Update Orchestrator status to OFFLINE
     if (vp) {
       await this.db.vP.update({
         where: { id: vpId },
@@ -344,7 +344,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   // ===========================================================================
 
   /**
-   * Sends a heartbeat for a VP.
+   * Sends a heartbeat for a Orchestrator.
    */
   async sendHeartbeat(vpId: string, metrics?: HeartbeatMetrics): Promise<void> {
     // Get daemon info to verify registration
@@ -355,13 +355,13 @@ export class HeartbeatServiceImpl implements HeartbeatService {
 
     const daemonInfo = JSON.parse(daemonInfoStr);
 
-    // Get VP for org ID
-    const vp = await this.db.vP.findUnique({
+    // Get Orchestrator for org ID
+    const orchestrator = await this.db.vP.findUnique({
       where: { id: vpId },
     });
 
     if (!vp) {
-      throw new VPNotFoundError(vpId);
+      throw new OrchestratorNotFoundError(vpId);
     }
 
     // Increment sequence number
@@ -436,7 +436,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   }
 
   /**
-   * Gets the last heartbeat record for a VP.
+   * Gets the last heartbeat record for a Orchestrator.
    */
   async getLastHeartbeat(vpId: string): Promise<HeartbeatRecord | null> {
     const heartbeatStr = await this.redis.get(HEARTBEAT_REDIS_KEYS.heartbeat(vpId));
@@ -466,7 +466,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   // ===========================================================================
 
   /**
-   * Checks the health status of a VP.
+   * Checks the health status of a Orchestrator.
    */
   async checkHealth(vpId: string): Promise<HealthStatus> {
     // Get stored health status
@@ -536,14 +536,14 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   }
 
   /**
-   * Gets all unhealthy VPs for an organization.
+   * Gets all unhealthy Orchestrators for an organization.
    */
   async getUnhealthyVPs(orgId: string): Promise<string[]> {
-    // Get all VPs for the organization
+    // Get all Orchestrators for the organization
     const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.orgVPs(orgId));
     const unhealthyVPs: string[] = [];
 
-    // Check health of each VP
+    // Check health of each Orchestrator
     for (const vpId of vpIds) {
       const health = await this.checkHealth(vpId);
       if (!health.healthy) {
@@ -559,7 +559,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   // ===========================================================================
 
   /**
-   * Marks a VP as recovering.
+   * Marks a Orchestrator as recovering.
    */
   async markRecovering(vpId: string): Promise<void> {
     const healthStr = await this.redis.get(HEARTBEAT_REDIS_KEYS.health(vpId));
@@ -579,7 +579,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   }
 
   /**
-   * Marks a VP as recovered.
+   * Marks a Orchestrator as recovered.
    */
   async markRecovered(vpId: string): Promise<void> {
     const healthStr = await this.redis.get(HEARTBEAT_REDIS_KEYS.health(vpId));
@@ -599,7 +599,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
       { EX: this.config.heartbeatTTLSeconds },
     );
 
-    // Update VP status to ONLINE
+    // Update Orchestrator status to ONLINE
     await this.db.vP.update({
       where: { id: vpId },
       data: { status: 'ONLINE' },
@@ -611,7 +611,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   // ===========================================================================
 
   /**
-   * Gets daemon info for a VP.
+   * Gets daemon info for a Orchestrator.
    */
   async getDaemonInfo(vpId: string): Promise<HeartbeatDaemonInfo | null> {
     const daemonStr = await this.redis.get(HEARTBEAT_REDIS_KEYS.daemon(vpId));
@@ -627,7 +627,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   }
 
   /**
-   * Gets heartbeat history for a VP.
+   * Gets heartbeat history for a Orchestrator.
    */
   async getHeartbeatHistory(vpId: string, limit: number = 50): Promise<HeartbeatRecord[]> {
     const historyStrs = await this.redis.zrange(
@@ -730,7 +730,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
   ): string {
     switch (status) {
       case 'healthy':
-        return 'VP daemon is operating normally';
+        return 'Orchestrator daemon is operating normally';
       case 'degraded': {
         const issues: string[] = [];
         if (missedHeartbeats > 0) {
@@ -747,15 +747,15 @@ issues.push('high memory usage');
 issues.push('large message queue');
 }
         }
-        return `VP daemon is degraded: ${issues.join(', ')}`;
+        return `Orchestrator daemon is degraded: ${issues.join(', ')}`;
       }
       case 'unhealthy':
-        return `VP daemon is unhealthy: ${missedHeartbeats} consecutive missed heartbeats`;
+        return `Orchestrator daemon is unhealthy: ${missedHeartbeats} consecutive missed heartbeats`;
       case 'recovering':
-        return 'VP daemon is recovering from unhealthy state';
+        return 'Orchestrator daemon is recovering from unhealthy state';
       case 'unknown':
       default:
-        return 'VP daemon status is unknown';
+        return 'Orchestrator daemon status is unknown';
     }
   }
 }

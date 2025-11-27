@@ -1,7 +1,7 @@
 /**
  * Task CRUD API Routes
  *
- * Handles listing and creating tasks for VP management.
+ * Handles listing and creating tasks for Orchestrator management.
  *
  * Routes:
  * - GET /api/tasks - List tasks with optional filters and sorting
@@ -11,20 +11,19 @@
  */
 
 import { prisma } from '@neolith/database';
+import type { TaskPriority, TaskStatus } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
 import { validateTaskDependencies } from '@/lib/services/task-service';
-import {
-  createTaskSchema,
-  taskFiltersSchema,
-  createErrorResponse,
-  TASK_ERROR_CODES,
-} from '@/lib/validations/task';
-
 import type { CreateTaskInput, TaskFiltersInput } from '@/lib/validations/task';
-import type { NextRequest } from 'next/server';
+import {
+  createErrorResponse,
+  createTaskSchema,
+  TASK_ERROR_CODES,
+  taskFiltersSchema,
+} from '@/lib/validations/task';
 
 /**
  * GET /api/tasks
@@ -33,7 +32,7 @@ import type { NextRequest } from 'next/server';
  * Requires authentication. Users can only see tasks from workspaces they belong to.
  *
  * Query Parameters:
- * - vpId: Filter by VP ID
+ * - vpId: Filter by OrchestratorID
  * - workspaceId: Filter by workspace ID
  * - status: Filter by status (TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED)
  * - priority: Filter by priority (CRITICAL, HIGH, MEDIUM, LOW)
@@ -131,8 +130,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ...(filters.vpId && { vpId: filters.vpId }),
       ...(filters.channelId && { channelId: filters.channelId }),
       ...(filters.assignedToId && { assignedToId: filters.assignedToId }),
-      ...(statusArray && { status: { in: statusArray as any[] } }),
-      ...(priorityArray && { priority: { in: priorityArray as any[] } }),
+      ...(statusArray && { status: { in: statusArray as TaskStatus[] } }),
+      ...(priorityArray && { priority: { in: priorityArray as TaskPriority[] } }),
       ...(filters.search && {
         OR: [
           { title: { contains: filters.search, mode: 'insensitive' } },
@@ -306,8 +305,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Verify VP exists and belongs to the same workspace
-    const vp = await prisma.vP.findFirst({
+    // Verify Orchestrator exists and belongs to the same workspace
+    const orchestrator = await prisma.vP.findFirst({
       where: {
         id: input.vpId,
       },

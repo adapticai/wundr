@@ -3,7 +3,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mocks
 vi.mock('@/lib/prisma', () => ({
@@ -56,14 +56,14 @@ vi.mock('@neolith/core', () => ({
       tokenType: 'Bearer',
       scopes: ['messages:read', 'messages:write'],
       daemonId: 'daemon-1',
-      vpId: 'vp-1',
+      vpId: 'orchestrator-1',
     }),
     verifyAccessToken: vi.fn().mockResolvedValue({
       token: 'test-token',
       type: 'access',
       expiresAt: new Date(Date.now() + 3600000),
       daemonId: 'daemon-1',
-      vpId: 'vp-1',
+      vpId: 'orchestrator-1',
       workspaceId: 'ws-1',
       scopes: ['messages:read', 'messages:write', 'presence:write', 'vp:status', 'vp:config'],
     }),
@@ -86,7 +86,7 @@ vi.mock('@neolith/core', () => ({
     updatePresence: vi.fn(),
     updateVPStatus: vi.fn(),
     getConfig: vi.fn().mockResolvedValue({
-      vpId: 'vp-1',
+      vpId: 'orchestrator-1',
       workspaceId: 'ws-1',
       settings: { heartbeatIntervalMs: 30000 },
       features: { messaging: true },
@@ -236,7 +236,7 @@ describe('Daemon API Routes', () => {
   });
 
   describe('GET /api/daemon/config', () => {
-    it('should get VP configuration', async () => {
+    it('should get Orchestrator configuration', async () => {
       const { GET } = await import('../config/route');
 
       const request = new NextRequest('http://localhost/api/daemon/config', {
@@ -264,7 +264,7 @@ describe('Daemon API Routes', () => {
           authorization: 'Bearer test-token',
         },
         body: JSON.stringify({
-          vpId: 'vp-1',
+          vpId: 'orchestrator-1',
           apiKey: 'gns_test123',
           metrics: {
             cpuUsage: 45,

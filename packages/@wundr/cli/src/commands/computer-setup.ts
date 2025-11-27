@@ -486,11 +486,11 @@ interface DeveloperProfile {
 
 /**
  * Sets up Fleet-Scale Autonomous Engineering mode
- * Installs VP Daemon scripts, Memory Bank templates, and IPRE governance defaults
+ * Installs Orchestrator Daemon scripts, Memory Bank templates, and IPRE governance defaults
  */
 async function setupFleetMode(profile: DeveloperProfile): Promise<void> {
   const wundrDir = path.join(os.homedir(), '.wundr');
-  const vpDaemonDir = path.join(wundrDir, 'vp-daemon');
+  const orchestratorDaemonDir = path.join(wundrDir, 'orchestrator-daemon');
   const governanceDir = path.join(wundrDir, 'governance');
   const templatesDir = path.join(wundrDir, 'templates');
 
@@ -499,23 +499,23 @@ async function setupFleetMode(profile: DeveloperProfile): Promise<void> {
   );
 
   // Create directory structure
-  await fs.mkdir(vpDaemonDir, { recursive: true });
+  await fs.mkdir(orchestratorDaemonDir, { recursive: true });
   await fs.mkdir(governanceDir, { recursive: true });
   await fs.mkdir(path.join(templatesDir, 'memory-bank'), { recursive: true });
   await fs.mkdir(path.join(templatesDir, 'sub-agents'), { recursive: true });
 
-  // 1. Install VP Daemon configuration
-  const vpConfig = {
+  // 1. Install Orchestrator Daemon configuration
+  const orchestratorConfig = {
     version: '1.0.0',
     identity: {
       name: profile.name,
       email: profile.email,
-      role: 'VP-Supervisor',
+      role: 'Orchestrator-Supervisor',
     },
     resourceLimits: {
       maxSessions: 10,
       tokenBudget: {
-        subscription: 0.8, // 80% for VP & Session Managers
+        subscription: 0.8, // 80% for Orchestrator & Session Managers
         api: 0.2, // 20% for sub-agent swarms
       },
     },
@@ -537,20 +537,20 @@ async function setupFleetMode(profile: DeveloperProfile): Promise<void> {
   };
 
   await fs.writeFile(
-    path.join(vpDaemonDir, 'config.yaml'),
-    generateYamlContent(vpConfig),
+    path.join(orchestratorDaemonDir, 'config.yaml'),
+    generateYamlContent(orchestratorConfig),
     'utf-8',
   );
-  console.log(chalk.green('  ✓ VP Daemon configuration installed'));
+  console.log(chalk.green('  ✓ Orchestrator Daemon configuration installed'));
 
-  // 2. Copy VP Charter template
-  const vpCharter = `---
-name: vp-supervisor
-role: Tier1-VP
+  // 2. Copy Orchestrator Charter template
+  const orchestratorCharter = `---
+name: orchestrator-supervisor
+role: Tier1-Orchestrator
 identity:
   name: '${profile.name}'
   email: '${profile.email}'
-  slackHandle: '@vp-supervisor'
+  slackHandle: '@orchestrator-supervisor'
 
 responsibilities:
   - triage_requests
@@ -578,11 +578,11 @@ hardConstraints:
 `;
 
   await fs.writeFile(
-    path.join(vpDaemonDir, 'vp-charter.md'),
-    vpCharter,
+    path.join(orchestratorDaemonDir, 'orchestrator-charter.md'),
+    orchestratorCharter,
     'utf-8',
   );
-  console.log(chalk.green('  ✓ VP Charter template deployed'));
+  console.log(chalk.green('  ✓ Orchestrator Charter template deployed'));
 
   // 3. Set up token budgeting configuration
   const tokenBudgetConfig = {
@@ -617,12 +617,12 @@ hardConstraints:
     },
     throttlingPolicy: {
       onWarning: ['pause_non_critical_sessions', 'queue_new_requests'],
-      onCritical: ['pause_all_except_critical', 'notify_vp_human'],
+      onCritical: ['pause_all_except_critical', 'notify_orchestrator_human'],
     },
   };
 
   await fs.writeFile(
-    path.join(vpDaemonDir, 'token-budget.yaml'),
+    path.join(orchestratorDaemonDir, 'token-budget.yaml'),
     generateYamlContent(tokenBudgetConfig),
     'utf-8',
   );
@@ -845,9 +845,9 @@ git worktree list
     chalk.cyan('\n✅ Fleet-Scale Autonomous Engineering mode setup complete!\n'),
   );
   console.log(chalk.white('Files created:'));
-  console.log(chalk.gray('  ~/.wundr/vp-daemon/config.yaml'));
-  console.log(chalk.gray('  ~/.wundr/vp-daemon/vp-charter.md'));
-  console.log(chalk.gray('  ~/.wundr/vp-daemon/token-budget.yaml'));
+  console.log(chalk.gray('  ~/.wundr/orchestrator-daemon/config.yaml'));
+  console.log(chalk.gray('  ~/.wundr/orchestrator-daemon/orchestrator-charter.md'));
+  console.log(chalk.gray('  ~/.wundr/orchestrator-daemon/token-budget.yaml'));
   console.log(chalk.gray('  ~/.wundr/templates/memory-bank/'));
   console.log(chalk.gray('  ~/.wundr/governance/ipre-defaults.yaml'));
   console.log(chalk.gray('  ~/.wundr/RESOURCE_LIMITS.md'));

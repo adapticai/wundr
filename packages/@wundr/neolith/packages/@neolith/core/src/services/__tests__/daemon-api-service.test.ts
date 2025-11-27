@@ -2,14 +2,13 @@
  * @fileoverview Tests for DaemonApiService
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockRedis, type MockRedis } from '../../test-utils/mock-redis';
-import { createMockPrismaClient } from '../../test-utils/vp-factories';
+import { createMockPrismaClient } from '../../test-utils/orchestrator-factories';
+import type { DaemonScope, DaemonToken } from '../../types/daemon';
 import { DaemonApiService } from '../daemon-api-service';
 import { DaemonAuthService } from '../daemon-auth-service';
-
-import type { DaemonToken, DaemonScope } from '../../types/daemon';
 
 // =============================================================================
 // Extended Mock Redis with List Operations
@@ -95,7 +94,7 @@ describe('DaemonApiService', () => {
     type: 'access',
     expiresAt: new Date(Date.now() + 3600000),
     daemonId: 'daemon-1',
-    vpId: 'vp-1',
+    vpId: 'orchestrator-1',
     workspaceId: 'ws-1',
     scopes: allScopes,
   };
@@ -123,10 +122,10 @@ describe('DaemonApiService', () => {
 
   describe('sendMessage', () => {
     beforeEach(() => {
-      // Setup VP lookup
+      // Setup Orchestrator lookup
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
-        userId: 'user-vp-1',
+        id: 'orchestrator-1',
+        userId: 'user-orchestrator-1',
       });
     });
 
@@ -136,7 +135,7 @@ describe('DaemonApiService', () => {
         id: 'msg-1',
         channelId: 'ch-1',
         content: 'Hello',
-        authorId: 'user-vp-1',
+        authorId: 'user-orchestrator-1',
         createdAt: new Date(),
       });
 
@@ -150,7 +149,7 @@ describe('DaemonApiService', () => {
         data: expect.objectContaining({
           channel: { connect: { id: 'ch-1' } },
           content: 'Hello',
-          author: { connect: { id: 'user-vp-1' } },
+          author: { connect: { id: 'user-orchestrator-1' } },
         }),
       });
       expect(mockRedis.publish).toHaveBeenCalled();
@@ -162,7 +161,7 @@ describe('DaemonApiService', () => {
         id: 'msg-1',
         channelId: 'ch-1',
         content: 'Hello with attachment',
-        authorId: 'user-vp-1',
+        authorId: 'user-orchestrator-1',
         createdAt: new Date(),
       });
       mockPrisma.messageAttachment.createMany.mockResolvedValue({ count: 1 });
@@ -218,8 +217,8 @@ describe('DaemonApiService', () => {
   describe('getMessages', () => {
     beforeEach(() => {
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
-        userId: 'user-vp-1',
+        id: 'orchestrator-1',
+        userId: 'user-orchestrator-1',
       });
     });
 
@@ -297,12 +296,12 @@ describe('DaemonApiService', () => {
   describe('getChannels', () => {
     beforeEach(() => {
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
-        userId: 'user-vp-1',
+        id: 'orchestrator-1',
+        userId: 'user-orchestrator-1',
       });
     });
 
-    it('should return channels VP is member of', async () => {
+    it('should return channels Orchestrator is member of', async () => {
       mockPrisma.channelMember.findMany.mockResolvedValue([
         {
           channel: {
@@ -353,8 +352,8 @@ describe('DaemonApiService', () => {
   describe('joinChannel', () => {
     beforeEach(() => {
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
-        userId: 'user-vp-1',
+        id: 'orchestrator-1',
+        userId: 'user-orchestrator-1',
       });
     });
 
@@ -367,18 +366,18 @@ describe('DaemonApiService', () => {
       mockPrisma.channelMember.upsert.mockResolvedValue({
         id: 'mem-1',
         channelId: 'ch-1',
-        userId: 'user-vp-1',
+        userId: 'user-orchestrator-1',
       });
 
       await apiService.joinChannel(mockToken, 'ch-1');
 
       expect(mockPrisma.channelMember.upsert).toHaveBeenCalledWith({
         where: {
-          channelId_userId: { channelId: 'ch-1', userId: 'user-vp-1' },
+          channelId_userId: { channelId: 'ch-1', userId: 'user-orchestrator-1' },
         },
         create: {
           channelId: 'ch-1',
-          userId: 'user-vp-1',
+          userId: 'user-orchestrator-1',
           role: 'MEMBER',
         },
         update: {},
@@ -412,8 +411,8 @@ describe('DaemonApiService', () => {
   describe('leaveChannel', () => {
     beforeEach(() => {
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
-        userId: 'user-vp-1',
+        id: 'orchestrator-1',
+        userId: 'user-orchestrator-1',
       });
     });
 
@@ -423,7 +422,7 @@ describe('DaemonApiService', () => {
       await apiService.leaveChannel(mockToken, 'ch-1');
 
       expect(mockPrisma.channelMember.deleteMany).toHaveBeenCalledWith({
-        where: { channelId: 'ch-1', userId: 'user-vp-1' },
+        where: { channelId: 'ch-1', userId: 'user-orchestrator-1' },
       });
     });
   });
@@ -477,7 +476,7 @@ describe('DaemonApiService', () => {
   // ===========================================================================
 
   describe('updatePresence', () => {
-    it('should update VP presence to online', async () => {
+    it('should update Orchestrator presence to online', async () => {
       await apiService.updatePresence(mockToken, 'online', 'Working');
 
       expect(mockRedis.setex).toHaveBeenCalled();
@@ -505,28 +504,28 @@ describe('DaemonApiService', () => {
   // ===========================================================================
 
   describe('getConfig', () => {
-    it('should return VP configuration', async () => {
+    it('should return Orchestrator configuration', async () => {
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
+        id: 'orchestrator-1',
         capabilities: ['messaging', 'calls'],
       });
 
       const config = await apiService.getConfig(mockToken);
 
-      expect(config.vpId).toBe('vp-1');
+      expect(config.orchestratorId).toBe('orchestrator-1');
       expect(config.features.messaging).toBe(true);
       expect(config.features.calls).toBe(true);
     });
 
-    it('should throw if VP not found', async () => {
+    it('should throw if Orchestrator not found', async () => {
       mockPrisma.vP.findUnique.mockResolvedValue(null);
 
       await expect(apiService.getConfig(mockToken)).rejects.toThrow('VP not found');
     });
 
-    it('should handle VP without capabilities', async () => {
+    it('should handle Orchestrator without capabilities', async () => {
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
+        id: 'orchestrator-1',
         capabilities: null,
       });
 
@@ -542,16 +541,16 @@ describe('DaemonApiService', () => {
   // ===========================================================================
 
   describe('updateVPStatus', () => {
-    it('should update VP status', async () => {
+    it('should update Orchestrator status', async () => {
       mockPrisma.vP.update.mockResolvedValue({
-        id: 'vp-1',
+        id: 'orchestrator-1',
         status: 'ONLINE',
       });
 
       await apiService.updateVPStatus(mockToken, 'active', 'Ready');
 
       expect(mockPrisma.vP.update).toHaveBeenCalledWith({
-        where: { id: 'vp-1' },
+        where: { id: 'orchestrator-1' },
         data: {
           status: 'ONLINE',
         },
@@ -598,8 +597,8 @@ describe('DaemonApiService', () => {
   describe('event handling', () => {
     beforeEach(() => {
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
-        userId: 'user-vp-1',
+        id: 'orchestrator-1',
+        userId: 'user-orchestrator-1',
       });
     });
 
@@ -629,7 +628,7 @@ describe('DaemonApiService', () => {
         id: 'evt-1',
         type: 'message.received',
         daemonId: 'daemon-1',
-        vpId: 'vp-1',
+        vpId: 'orchestrator-1',
         payload: { messageId: 'msg-1' },
         timestamp: new Date().toISOString(),
       };
@@ -703,8 +702,8 @@ describe('DaemonApiService', () => {
         scopes: ['channels:read'] as DaemonScope[],
       };
       mockPrisma.vP.findUnique.mockResolvedValue({
-        id: 'vp-1',
-        userId: 'user-vp-1',
+        id: 'orchestrator-1',
+        userId: 'user-orchestrator-1',
       });
       mockPrisma.channelMember.findMany.mockResolvedValue([]);
 

@@ -243,7 +243,7 @@ const response = await fetch(`/api/calls/${callId}`);
 
 | Package | Expected Usage | Current Status | Impact |
 |---------|---------------|----------------|--------|
-| `@wundr/vp-daemon` | Agent management | Not integrated | Agents page has no backend |
+| `@wundr/orchestrator-daemon` | Agent management | Not integrated | Agents page has no backend |
 | Railway MCP | Deployment monitoring | Not integrated | Missing Railway deploys |
 | Netlify MCP | Deployment monitoring | Not integrated | Missing Netlify deploys |
 | `@neolith/core` | Analytics | ✅ Properly used | Working |
@@ -306,7 +306,7 @@ try {
 
 | Task | Effort | Impact |
 |------|--------|--------|
-| Integrate @wundr/vp-daemon with agents | 6-8h | Connects to actual infrastructure |
+| Integrate @wundr/orchestrator-daemon with agents | 6-8h | Connects to actual infrastructure |
 | Add Railway/Netlify MCP to deployments | 8-12h | Platform monitoring |
 | Add error boundaries to all pages | 2h | Prevents crashes |
 | Add workspace membership checks | 2h | Security |
@@ -411,7 +411,7 @@ try {
 1. Analytics dashboard is 75% complete - easy to finish
 2. Call components are production-ready - just need API fixes
 3. Railway/Netlify MCP integration mentioned in CLAUDE.md but not used
-4. @wundr/vp-daemon exists but not integrated with agents page
+4. @wundr/orchestrator-daemon exists but not integrated with agents page
 
 **Estimated Total Effort to Complete:**
 - P0 Critical fixes: 16-24 hours

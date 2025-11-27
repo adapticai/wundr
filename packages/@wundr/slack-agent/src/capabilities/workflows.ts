@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - Slack Workflow Capability
  *
- * Enables VP (Virtual Principal) agents to trigger and interact with Slack workflows
+ * Enables Orchestrator (Virtual Principal) agents to trigger and interact with Slack workflows
  * just like human users. Supports Workflow Builder webhook triggers, workflow step
  * interactions, and custom workflow automation.
  *
@@ -267,7 +267,7 @@ function calculateBackoffDelay(
 // =============================================================================
 
 /**
- * SlackWorkflowCapability enables VP agents to trigger and interact with
+ * SlackWorkflowCapability enables Orchestrator agents to trigger and interact with
  * Slack workflows programmatically.
  *
  * @example
@@ -290,7 +290,7 @@ function calculateBackoffDelay(
  * // Complete a workflow step (in a step handler)
  * await workflow.completeWorkflowStep('workflow_step_execute_id', {
  *   result: 'approved',
- *   processed_by: 'vp-agent'
+ *   processed_by: 'orchestrator-agent'
  * });
  * ```
  */
@@ -481,7 +481,7 @@ export class SlackWorkflowCapability {
    * // With payload
    * await workflow.triggerWorkflow('https://hooks.slack.com/workflows/...', {
    *   event: 'user_signup',
-   *   source: 'vp-agent'
+   *   source: 'orchestrator-agent'
    * });
    * ```
    */

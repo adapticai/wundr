@@ -5,16 +5,16 @@
  * Disciplines represent functional categories for Virtual Persons (VPs) within
  * an organization (e.g., Engineering, Product, Design, Data Science).
  *
- * Note: Disciplines are stored as denormalized strings in the VP model's
+ * Note: Disciplines are stored as denormalized strings in the Orchestrator model's
  * discipline field. This resolver provides a virtual aggregation layer
- * for discipline management and VP assignment.
+ * for discipline management and Orchestrator assignment.
  *
  * @module @genesis/api-types/resolvers/discipline-resolvers
  */
 
-import { GraphQLError } from 'graphql';
 
-import type { PrismaClient, vP as PrismaVP } from '@prisma/client';
+import type { PrismaClient, vP as PrismaOrchestrator } from '@prisma/client';
+import { GraphQLError } from 'graphql';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -60,7 +60,7 @@ export interface GraphQLContext {
 /**
  * Discipline entity type for resolvers
  *
- * Since disciplines are stored as strings in the VP model,
+ * Since disciplines are stored as strings in the Orchestrator model,
  * this represents an aggregated view of disciplines.
  */
 interface Discipline {
@@ -79,9 +79,9 @@ interface Discipline {
 }
 
 /**
- * VP entity type
+ * Orchestrator entity type
  */
-interface VP {
+interface Orchestrator {
   id: string;
   userId: string;
   organizationId: string;
@@ -145,7 +145,7 @@ interface DeleteDisciplineArgs {
 }
 
 interface AssignVPToDisciplineArgs {
-  vpId: string;
+  orchestratorId: string;
   disciplineId: string;
 }
 
@@ -165,7 +165,7 @@ interface DeletePayload {
 }
 
 interface VPPayload {
-  vp: VP | null;
+  vp: Orchestrator | null;
   errors: Array<{ code: string; message: string; path?: string[] }>;
 }
 
@@ -342,20 +342,20 @@ function createErrorPayload(
 }
 
 /**
- * Convert Prisma VP to resolver VP type
+ * Convert Prisma Orchestrator t Orchestrator solver Orchestrator type
  */
-function toVP(prismaVP: PrismaVP): VP {
+function toVP(prismaOrchestrator: PrismaOrchestrator): Orchestrator {
   return {
-    id: prismaVP.id,
-    userId: prismaVP.userId,
-    organizationId: prismaVP.organizationId,
-    discipline: prismaVP.discipline,
-    role: prismaVP.role,
-    capabilities: prismaVP.capabilities,
-    daemonEndpoint: prismaVP.daemonEndpoint,
-    status: prismaVP.status,
-    createdAt: prismaVP.createdAt,
-    updatedAt: prismaVP.updatedAt,
+    id: prismaOrchestrator.id,
+    userId: prismaOrchestrator.userId,
+    organizationId: prismaOrchestrator.organizationId,
+    discipline: prismaOrchestrator.discipline,
+    role: prismaOrchestrator.role,
+    capabilities: prismaOrchestrator.capabilities,
+    daemonEndpoint: prismaOrchestrator.daemonEndpoint,
+    status: prismaOrchestrator.status,
+    createdAt: prismaOrchestrator.createdAt,
+    updatedAt: prismaOrchestrator.updatedAt,
   };
 }
 
@@ -500,7 +500,7 @@ export const disciplineQueries = {
     }
 
     // Find VPs with this discipline (case-insensitive match on slug)
-    const vps = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.vP.findMany({
       where: {
         organizationId: orgId,
         discipline: {
@@ -516,7 +516,7 @@ export const disciplineQueries = {
     }
 
     // Get discipline metadata
-    const disciplineName = vps[0]!.discipline;
+    const disciplineName = orchestrators[0]!.discipline;
     const metadata = await getDisciplineMetadata(context.prisma, orgId, disciplineName);
 
     return {
@@ -524,8 +524,8 @@ export const disciplineQueries = {
       name: disciplineName,
       description: metadata?.description ?? null,
       organizationId: orgId,
-      vpCount: vps.length,
-      createdAt: vps[0]!.createdAt,
+      vpCount: orchestrators.length,
+      createdAt: orchestrators[0]!.createdAt,
     };
   },
 
@@ -571,7 +571,7 @@ export const disciplineQueries = {
     }
 
     // Get all VPs in the organization
-    const vps = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.vP.findMany({
       where: { organizationId },
       orderBy: { createdAt: 'asc' },
     });
@@ -579,21 +579,21 @@ export const disciplineQueries = {
     // Group VPs by discipline (case-insensitive)
     const disciplineMap = new Map<
       string,
-      { name: string; vps: typeof vps; earliest: Date }
+      { name: string; orchestrators: typeof orchestrators; earliest: Date }
     >();
 
-    for (const vp of vps) {
+    for (const vp of orchestrators) {
       const normalizedName = vp.discipline.toLowerCase();
 
       if (!disciplineMap.has(normalizedName)) {
         disciplineMap.set(normalizedName, {
           name: vp.discipline,
-          vps: [vp],
+          orchestrators: [vp],
           earliest: vp.createdAt,
         });
       } else {
         const entry = disciplineMap.get(normalizedName)!;
-        entry.vps.push(vp);
+        entry.orchestrators.push(vp);
         if (vp.createdAt < entry.earliest) {
           entry.earliest = vp.createdAt;
         }
@@ -622,7 +622,7 @@ export const disciplineQueries = {
         name: entry.name,
         description: metadata?.description ?? null,
         organizationId,
-        vpCount: entry.vps.length,
+        vpCount: entry.orchestrators.length,
         createdAt: entry.earliest,
       });
     });
@@ -645,8 +645,8 @@ export const disciplineMutations = {
   /**
    * Create a new discipline
    *
-   * Note: This creates a placeholder VP to establish the discipline,
-   * or just stores metadata if a VP with this discipline already exists.
+   * Note: This creates a placeholder Orchestrator to establish the discipline,
+   * or just stores metadata if a Orchestrator with this discipline already exists.
    *
    * @param _parent - Parent resolver result (unused)
    * @param args - Mutation arguments with discipline input
@@ -751,7 +751,7 @@ export const disciplineMutations = {
     }
 
     // Discipline doesn't have VPs yet - store just the metadata
-    // The discipline will be fully realized when a VP is assigned to it
+    // The discipline will be fully realized when a Orchestrator is assigned to it
     return createSuccessPayload({
       id: disciplineId,
       name: input.name,
@@ -816,7 +816,7 @@ export const disciplineMutations = {
     }
 
     // Find VPs with this discipline
-    const vps = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.vP.findMany({
       where: {
         organizationId: orgId,
         discipline: {
@@ -831,7 +831,7 @@ export const disciplineMutations = {
       return createErrorPayload('NOT_FOUND', 'Discipline not found');
     }
 
-    const currentName = vps[0]!.discipline;
+    const currentName = orchestrators[0]!.discipline;
     let newName = currentName;
 
     // Validate and update name if provided
@@ -876,8 +876,8 @@ export const disciplineMutations = {
       name: newName,
       description: metadata?.description ?? null,
       organizationId: orgId,
-      vpCount: vps.length,
-      createdAt: vps[0]!.createdAt,
+      vpCount: orchestrators.length,
+      createdAt: orchestrators[0]!.createdAt,
     });
   },
 
@@ -935,7 +935,7 @@ export const disciplineMutations = {
     }
 
     // Find VPs with this discipline to get the actual name
-    const vps = await context.prisma.vP.findFirst({
+    const orchestrators = await context.prisma.vP.findFirst({
       where: {
         organizationId: orgId,
         discipline: {
@@ -956,7 +956,7 @@ export const disciplineMutations = {
       const disciplines = (settings.disciplines as Record<string, unknown>) ?? {};
 
       // Remove the discipline entry
-      const normalizedName = vps?.discipline.toLowerCase() ?? slug;
+      const normalizedName = orchestrators?.discipline.toLowerCase() ?? slug;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [normalizedName]: _, ...remainingDisciplines } = disciplines;
 
@@ -979,19 +979,19 @@ export const disciplineMutations = {
   },
 
   /**
-   * Assign a VP to a discipline
+   * Assign a Orchestrator to a discipline
    *
    * @param _parent - Parent resolver result (unused)
-   * @param args - Mutation arguments with vpId and disciplineId
+   * @param args - Mutation arguments with orchestratorId and disciplineId
    * @param context - GraphQL context
-   * @returns VP payload with updated VP or errors
+   * @returns Orchestrator payload wi Orchestrator pdated Orchestrator or errors
    * @throws GraphQLError if not authenticated or access denied
    *
    * @example
    * ```graphql
    * mutation {
    *   assignVPToDiscipline(
-   *     vpId: "vp_123",
+   *     orchestratorId: "vp_123",
    *     disciplineId: "disc_org123_engineering"
    *   ) {
    *     vp {
@@ -1007,18 +1007,18 @@ export const disciplineMutations = {
     _parent: unknown,
     args: AssignVPToDisciplineArgs,
     context: GraphQLContext
-  ): Promise<VPPayload> => {
+  ): Promise<OrchestratorPayload> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
       });
     }
 
-    const { vpId, disciplineId } = args;
+    const { orchestratorId, disciplineId } = args;
 
     // Find the VP
     const vp = await context.prisma.vP.findUnique({
-      where: { id: vpId },
+      where: { id: orchestratorId },
     });
 
     if (!vp) {
@@ -1053,7 +1053,7 @@ export const disciplineMutations = {
       };
     }
 
-    // Find an existing VP with this discipline to get the proper casing
+    // Find an existing Orchestrator with this discipline to get the proper casing
     const existingVPWithDiscipline = await context.prisma.vP.findFirst({
       where: {
         organizationId: vp.organizationId,
@@ -1064,7 +1064,7 @@ export const disciplineMutations = {
       },
     });
 
-    // Get discipline name from existing VP or from metadata
+    // Get discipline name from existing Orchestrator or from metadata
     let disciplineName: string;
     if (existingVPWithDiscipline) {
       disciplineName = existingVPWithDiscipline.discipline;
@@ -1092,9 +1092,9 @@ export const disciplineMutations = {
       }
     }
 
-    // Update VP with new discipline
+    // Update Orchestrator with new discipline
     const updatedVP = await context.prisma.vP.update({
-      where: { id: vpId },
+      where: { id: orchestratorId },
       data: { discipline: disciplineName },
     });
 
@@ -1139,12 +1139,12 @@ export const DisciplineFieldResolvers = {
    * @param context - GraphQL context
    * @returns Array of VPs in the discipline
    */
-  vps: async (
+  orchestrators: async (
     parent: Discipline,
     _args: unknown,
     context: GraphQLContext
   ) => {
-    const vps = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.vP.findMany({
       where: {
         organizationId: parent.organizationId,
         discipline: {
@@ -1155,7 +1155,7 @@ export const DisciplineFieldResolvers = {
       orderBy: { createdAt: 'desc' },
     });
 
-    return vps.map(toVP);
+    return orchestrators.map(toVP);
   },
 };
 

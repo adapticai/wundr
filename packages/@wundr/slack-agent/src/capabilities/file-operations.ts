@@ -1,5 +1,5 @@
 /**
- * Slack File Operations for VP Agent
+ * Slack File Operations for Orchestrator Agent
  *
  * Provides comprehensive file management capabilities for a Virtual Principal
  * agent operating as a full user in Slack workspaces.
@@ -7,13 +7,11 @@
  * @module @wundr/slack-agent/capabilities/file-operations
  */
 
-import { createReadStream, statSync } from 'fs';
-import * as path from 'path';
-
-
-import { WebClient } from '@slack/web-api';
 
 import type { FilesUploadV2Arguments } from '@slack/web-api';
+import { WebClient } from '@slack/web-api';
+import { createReadStream, statSync } from 'fs';
+import * as path from 'path';
 import type { Readable } from 'stream';
 
 // =============================================================================
@@ -436,7 +434,7 @@ function detectFileType(filename: string): string | undefined {
 // =============================================================================
 
 /**
- * Handles file operations for a VP agent in Slack.
+ * Handles file operations for a Orchestrator agent in Slack.
  *
  * Provides methods for uploading, downloading, sharing, and managing files
  * using the Slack Web API.

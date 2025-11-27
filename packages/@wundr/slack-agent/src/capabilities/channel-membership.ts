@@ -1,7 +1,7 @@
 /**
- * Channel Membership Operations for Slack VP Agent
+ * Channel Membership Operations for Slack Orchestrator Agent
  *
- * Implements channel membership management capabilities allowing the VP agent
+ * Implements channel membership management capabilities allowing the Orchestrator agent
  * to join/leave channels and manage membership like any human user.
  */
 
@@ -23,7 +23,7 @@ export interface Channel {
   isPrivate: boolean;
   /** Whether the channel is archived */
   isArchived: boolean;
-  /** Whether the VP agent is a member of this channel */
+  /** Whether the Orchestrator agent is a member of this channel */
   isMember: boolean;
   /** Number of members in the channel */
   memberCount?: number;
@@ -75,7 +75,7 @@ export interface ChannelMember {
 export interface ListChannelsOptions {
   /** Include archived channels */
   includeArchived?: boolean;
-  /** Only return channels where VP is a member */
+  /** Only return channels where Orchestrator is a member */
   memberOnly?: boolean;
   /** Maximum number of channels to return */
   limit?: number;
@@ -149,9 +149,9 @@ interface SlackChannelResponse {
 // =============================================================================
 
 /**
- * Manages channel membership operations for the Slack VP agent.
+ * Manages channel membership operations for the Slack Orchestrator agent.
  *
- * This class provides methods for the VP agent to:
+ * This class provides methods for the Orchestrator agent to:
  * - Join and leave channels
  * - Invite and kick users from channels
  * - List channel members and the VP's channels
@@ -257,7 +257,7 @@ export class ChannelMembershipManager {
    *
    * @param channelId - The ID of the channel to join (e.g., C1234567890)
    * @throws {ChannelNotFoundError} If the channel does not exist
-   * @throws {SlackPermissionError} If the VP lacks permission to join
+   * @throws {SlackPermissionError} If the Orchestrator lacks permission to join
    *
    * @example
    * ```typescript
@@ -311,7 +311,7 @@ export class ChannelMembershipManager {
    * @param userId - The ID of the user to invite
    * @throws {ChannelNotFoundError} If the channel does not exist
    * @throws {UserNotFoundError} If the user does not exist
-   * @throws {SlackPermissionError} If the VP lacks permission to invite
+   * @throws {SlackPermissionError} If the Orchestrator lacks permission to invite
    *
    * @example
    * ```typescript
@@ -401,14 +401,14 @@ export class ChannelMembershipManager {
   /**
    * Removes a user from a channel (kick)
    *
-   * Note: This requires appropriate permissions. The VP must be a channel admin
+   * Note: This requires appropriate permissions. The Orchestrator must be a channel admin
    * or workspace admin to kick users from channels.
    *
    * @param channelId - The ID of the channel
    * @param userId - The ID of the user to remove
    * @throws {ChannelNotFoundError} If the channel does not exist
    * @throws {UserNotFoundError} If the user does not exist
-   * @throws {SlackPermissionError} If the VP lacks permission to kick
+   * @throws {SlackPermissionError} If the Orchestrator lacks permission to kick
    *
    * @example
    * ```typescript
@@ -442,7 +442,7 @@ export class ChannelMembershipManager {
    * @param channelId - The ID of the channel
    * @returns Array of user IDs who are members of the channel
    * @throws {ChannelNotFoundError} If the channel does not exist
-   * @throws {SlackPermissionError} If the VP lacks permission to view members
+   * @throws {SlackPermissionError} If the Orchestrator lacks permission to view members
    *
    * @example
    * ```typescript
@@ -522,14 +522,14 @@ export class ChannelMembershipManager {
   }
 
   /**
-   * Gets all channels the VP agent is a member of
+   * Gets all channels the Orchestrator agent is a member of
    *
    * @param options - Optional filtering and pagination options
    * @returns Array of Channel objects
    *
    * @example
    * ```typescript
-   * // Get all channels VP is a member of
+   * // Get all channels Orchestrator is a member of
    * const channels = await membership.getMyChannels();
    *
    * // Get only public channels
@@ -564,7 +564,7 @@ export class ChannelMembershipManager {
 
         if (response.channels) {
           for (const channel of response.channels) {
-            // Filter to only channels where VP is a member
+            // Filter to only channels where Orchestrator is a member
             if (channel.is_member) {
               allChannels.push(this.mapChannelResponse(channel as SlackChannelResponse));
             }
@@ -649,15 +649,15 @@ export class ChannelMembershipManager {
   }
 
   /**
-   * Checks if a user (or the VP itself) is a member of a channel
+   * Checks if a user (or the Orchestrator itself) is a member of a channel
    *
    * @param channelId - The ID of the channel
-   * @param userId - Optional user ID to check. If not provided, checks the VP itself.
+   * @param userId - Optional user ID to check. If not provided, checks the Orchestrator itself.
    * @returns True if the user is a member of the channel
    *
    * @example
    * ```typescript
-   * // Check if VP is in channel
+   * // Check if Orchestrator is in channel
    * const vpInChannel = await membership.isChannelMember('C1234567890');
    *
    * // Check if specific user is in channel
@@ -666,7 +666,7 @@ export class ChannelMembershipManager {
    */
   async isChannelMember(channelId: string, userId?: string): Promise<boolean> {
     try {
-      // If no userId provided, check the VP itself
+      // If no userId provided, check the Orchestrator itself
       const targetUserId = userId || (await this.getBotUserId());
 
       // Get channel members and check if target is in the list

@@ -5,13 +5,10 @@
  */
 
 import { prisma } from '@neolith/database';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-import { auth } from '@/lib/auth';
-
-import { POST } from '../route';
-
 import type { Session } from 'next-auth';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { auth } from '@/lib/auth';
+import { POST } from '../route';
 
 // Mock dependencies
 vi.mock('@/lib/auth', () => ({
@@ -328,7 +325,7 @@ describe('POST /api/workspaces/generate-org', () => {
           vision: 'Test vision',
           values: ['value1'],
         },
-        vps: [],
+        orchestrators: [],
         disciplines: [],
         agents: [],
         stats: {
@@ -388,7 +385,7 @@ describe('POST /api/workspaces/generate-org', () => {
           vision: 'Test vision',
           values: ['Innovation', 'Excellence'],
         },
-        vps: [
+        orchestrators: [
           {
             id: 'vp_1',
             name: 'VP of Engineering',

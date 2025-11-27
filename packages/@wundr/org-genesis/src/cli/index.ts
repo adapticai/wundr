@@ -20,7 +20,7 @@
  * // Use interactive prompts directly
  * import {
  *   promptOrgConfig,
- *   promptVPConfig,
+ *   promptOrchestratorConfig,
  *   promptConfirm,
  * } from '@wundr/org-genesis/cli';
  *
@@ -53,7 +53,7 @@
 // For now, they export placeholder stubs.
 
 export * from './commands/create-org.js';
-export * from './commands/add-vp.js';
+export * from './commands/add-orchestrator.js';
 export * from './commands/add-discipline.js';
 export * from './commands/add-agent.js';
 export * from './commands/list.js';

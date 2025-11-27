@@ -71,7 +71,7 @@ Both pages use the `useAuth()` hook from `@/hooks/use-auth` which provides:
 - `user: AuthUser | undefined` - The authenticated user session
 - `isAuthenticated: boolean` - Auth status
 - `isLoading: boolean` - Loading state
-- `isVP: boolean` - Whether user is a Virtual Person
+- `isVP: boolean` - Whether user is a Orchestrator
 - `role: 'ADMIN' | 'MEMBER' | 'VIEWER' | undefined` - User role
 
 ## Session User Type

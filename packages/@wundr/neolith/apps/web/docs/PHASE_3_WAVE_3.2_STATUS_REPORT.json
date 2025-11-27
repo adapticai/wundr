@@ -59,9 +59,9 @@
         },
         "vps_page": {
           "status": "COMPLETE",
-          "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/vps/page.tsx",
+          "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/orchestrators/page.tsx",
           "icon": "Users",
-          "title": "No Virtual Persons Yet / No VPs Found",
+          "title": "No Orchestrators Yet / No VPs Found",
           "description": "Dynamic based on filter state",
           "has_primary_action": true,
           "has_secondary_action": false,
@@ -110,7 +110,7 @@
       "components": {
         "vp_card_skeleton": {
           "status": "COMPLETE",
-          "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-card.tsx",
+          "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-card.tsx",
           "lines": 37,
           "exported_from": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/index.ts",
           "features": [
@@ -122,7 +122,7 @@
             "Action buttons placeholders (3 items)",
             "Smooth animate-pulse animation"
           ],
-          "usage": "Used in /vps/page.tsx loading state"
+          "usage": "Used in /orchestrators/page.tsx loading state"
         },
         "workflow_card_skeleton": {
           "status": "COMPLETE",
@@ -332,7 +332,7 @@
         "IMPLEMENTATION_SUMMARY.md (NEW)"
       ],
       "vp": [
-        "vp-card.tsx (MODIFIED - added VPCardSkeleton)"
+        "orchestrator-card.tsx (MODIFIED - added VPCardSkeleton)"
       ],
       "channel": [
         "channel-list.tsx (MODIFIED - integrated ChannelListSkeleton)"
@@ -398,7 +398,7 @@
     "future_enhancements": [
       "Extract WorkflowCardSkeleton to separate file in components/workflows/",
       "Add empty states to admin sub-pages if they will display data lists",
-      "Add skeletons for VP analytics components",
+      "Add skeletons for Orchestrator analytics components",
       "Add skeletons for workflow builder interface",
       "Consider adding subtle fade-in animations to empty states",
       "Add Storybook stories for visual testing of all skeletons",

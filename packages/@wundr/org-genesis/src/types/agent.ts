@@ -202,7 +202,7 @@ export interface AgentCapabilities {
  *
  * @remarks
  * The tier is always 3 for sub-agents, distinguishing them from:
- * - Tier 1: VP-level coordinators
+ * - Tier 1: Orchestrator-level coordinators
  * - Tier 2: Discipline managers
  * - Tier 3: Sub-agents (this type)
  *
@@ -234,7 +234,7 @@ export interface AgentCapabilities {
  *     canSpawnSubAgents: false
  *   },
  *   usedByDisciplines: ['engineering', 'quality-assurance'],
- *   usedByVps: ['vp-engineering'],
+ *   usedByVps: ['orchestrator-engineering'],
  *   tags: ['code-quality', 'security', 'review'],
  *   createdAt: new Date('2024-01-15'),
  *   updatedAt: new Date('2024-06-20')
@@ -312,7 +312,7 @@ export interface AgentDefinition {
   usedByDisciplines: string[];
 
   /**
-   * Optional list of VP slugs that can directly invoke this agent.
+   * Optional list of Orchestrator slugs that can directly invoke this agent.
    * Typically used for universal agents or special-purpose agents.
    */
   usedByVps?: string[];
@@ -486,7 +486,7 @@ export interface AgentAssignment {
 /**
  * Universal agents available to all disciplines.
  *
- * These are the core agents that every discipline and VP can access
+ * These are the core agents that every discipline and Orchestrator can access
  * regardless of their specialization. They provide common functionality
  * needed across all organizational units.
  *

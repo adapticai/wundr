@@ -2,8 +2,8 @@
 
 ## Task Requirements
 1. ✅ Create lib/services/channel-intelligence-service.ts
-2. ✅ Create lib/services/vp-channel-assignment-service.ts
-3. ✅ Check existing channel and VP models in Prisma schema
+2. ✅ Create lib/services/orchestrator-channel-assignment-service.ts
+3. ✅ Check existing channel and Orchestrator models in Prisma schema
 4. ✅ Create services with proper TypeScript types
 5. ✅ Use Prisma client for database operations
 6. ✅ Export from lib/services/index.ts if exists (no index file exists)
@@ -25,7 +25,7 @@
 - `ChannelTopics`
 - `AutoJoinResult`
 
-### File 2: vp-channel-assignment-service.ts (664 lines)
+### File 2: orchestrator-channel-assignment-service.ts (664 lines)
 
 **Exported Functions:**
 - `assignVPToChannels(vpId, disciplineIds?): Promise<AssignmentResult>`
@@ -60,7 +60,7 @@
 - [x] Channel relevance scoring algorithm (0-100)
 - [x] Intelligent notification filtering with priorities
 - [x] Topic extraction from channel messages
-- [x] VP channel assignment on creation
+- [x] Orchestrator channel assignment on creation
 - [x] Activity-based membership updates
 - [x] Channel recommendations with confidence levels
 - [x] Bulk operations support
@@ -102,7 +102,7 @@ Base path: `/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/`
 ```
 lib/services/
 ├── channel-intelligence-service.ts (NEW)
-├── vp-channel-assignment-service.ts (NEW)
+├── orchestrator-channel-assignment-service.ts (NEW)
 └── __tests__/
     └── channel-intelligence.test.md (NEW)
 ```
@@ -110,7 +110,7 @@ lib/services/
 ## Integration Ready
 
 These services are ready to be integrated with:
-1. VP creation API endpoint
+1. Orchestrator creation API endpoint
 2. Channel management API endpoints
 3. Notification system
 4. Background job scheduler for membership updates
@@ -119,23 +119,23 @@ These services are ready to be integrated with:
 ## Sample Usage in API Routes
 
 ```typescript
-// app/api/vps/[id]/channels/assign/route.ts
-import { assignVPToChannels } from '@/lib/services/vp-channel-assignment-service';
+// app/api/orchestrators/[id]/channels/assign/route.ts
+import { assignVPToChannels } from '@/lib/services/orchestrator-channel-assignment-service';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const result = await assignVPToChannels(params.id);
   return Response.json(result);
 }
 
-// app/api/vps/[id]/channels/recommendations/route.ts
-import { getVPChannelRecommendations } from '@/lib/services/vp-channel-assignment-service';
+// app/api/orchestrators/[id]/channels/recommendations/route.ts
+import { getVPChannelRecommendations } from '@/lib/services/orchestrator-channel-assignment-service';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const recommendations = await getVPChannelRecommendations(params.id, 10, 'medium');
   return Response.json({ recommendations });
 }
 
-// app/api/vps/[id]/notifications/check/route.ts
+// app/api/orchestrators/[id]/notifications/check/route.ts
 import { shouldNotifyVP } from '@/lib/services/channel-intelligence-service';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
@@ -154,7 +154,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
 2. **Caching Opportunities**:
    - Channel topics (extracted data can be cached)
-   - VP capabilities (rarely change)
+   - Orchestrator capabilities (rarely change)
    - Discipline information (static)
 
 3. **Async Operations**: All functions are async for non-blocking execution
@@ -171,7 +171,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
 **Deliverables**:
 1. ✅ channel-intelligence-service.ts - 649 lines, 4 functions, 4 types
-2. ✅ vp-channel-assignment-service.ts - 664 lines, 5+ functions, 4+ types
+2. ✅ orchestrator-channel-assignment-service.ts - 664 lines, 5+ functions, 4+ types
 3. ✅ Test plan document
 4. ✅ Implementation summary
 5. ✅ Zero TypeScript errors

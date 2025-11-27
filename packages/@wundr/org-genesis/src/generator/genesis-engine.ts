@@ -8,8 +8,8 @@
  * defined in the architectural framework.
  *
  * The generation process follows a three-phase approach:
- * 1. **Phase 1 - VP Generation**: Generate Virtual Persona (Tier 1) charters
- * 2. **Phase 2 - Discipline Generation**: Generate discipline packs for each VP
+ * 1. **Phase 1 - Orchestrator Generation**: Generate Orchestrator (Tier 1) charters
+ * 2. **Phase 2 - Discipline Generation**: Generate discipline packs for each Orchestrator
  * 3. **Phase 3 - Agent Generation**: Generate specialized agents for each discipline
  *
  * Key Features:
@@ -46,26 +46,25 @@
  * ```
  */
 
+import type {
+    RegistryManager,
+    RegistryManagerConfig,
+} from '../registry/index.js';
+import { createRegistryManager } from '../registry/index.js';
+import type {
+    AgentDefinition,
+    CreateOrgConfig,
+    DisciplinePack,
+    OrchestratorCharter,
+    OrganizationManifest,
+    OrgIndustry,
+    OrgSize,
+} from '../types/index.js';
 import { AgentGenerator } from './agent-generator.js';
 import { DisciplineGenerator } from './discipline-generator.js';
 import { ManifestGenerator } from './manifest-generator.js';
-import { VPGenerator } from './vp-generator.js';
-import { createRegistryManager } from '../registry/index.js';
-
-import type { VPGenerationContext } from './prompts/vp-prompts.js';
-import type {
-  RegistryManager,
-  RegistryManagerConfig,
-} from '../registry/index.js';
-import type {
-  OrganizationManifest,
-  OrgSize,
-  OrgIndustry,
-  CreateOrgConfig,
-  VPCharter,
-  DisciplinePack,
-  AgentDefinition,
-} from '../types/index.js';
+import { OrchestratorGenerator } from './orchestrator-generator.js';
+import type { OrchestratorGenerationContext } from './prompts/orchestrator-prompts.js';
 
 // ============================================================================
 // Configuration Types
@@ -106,10 +105,10 @@ export interface GenesisOptions {
    * Size tier for the organization.
    *
    * Determines the number of VPs, disciplines, and agents generated:
-   * - `small`: 1-3 VPs, 2-4 disciplines per VP
-   * - `medium`: 3-5 VPs, 3-6 disciplines per VP
-   * - `large`: 5-10 VPs, 4-8 disciplines per VP
-   * - `enterprise`: 10+ VPs, 6-12 disciplines per VP
+   * - `small`: 1-3 VPs, 2-4 disciplines per Orchestrator
+   * - `medium`: 3-5 VPs, 3-6 disciplines per Orchestrator
+   * - `large`: 5-10 VPs, 4-8 disciplines per Orchestrator
+   * - `enterprise`: 10+ VPs, 6-12 disciplines per Orchestrator
    *
    * @default 'medium'
    */
@@ -178,7 +177,7 @@ export interface GenesisOptions {
  *
  * @description
  * Contains all generated artifacts including the organization manifest,
- * VP charters, discipline packs, and agent definitions, along with
+ * Orchestrator charters, discipline packs, and agent definitions, along with
  * statistics about the generation.
  *
  * @example
@@ -186,7 +185,7 @@ export interface GenesisOptions {
  * const result: GenesisResult = await engine.generate(prompt);
  *
  * console.log(`Generated organization: ${result.manifest.name}`);
- * console.log(`VPs: ${result.stats.vpCount}`);
+ * console.log(`VPs: ${result.stats.orchestratorCount}`);
  * console.log(`Disciplines: ${result.stats.disciplineCount}`);
  * console.log(`Agents: ${result.stats.agentCount}`);
  * ```
@@ -201,12 +200,12 @@ export interface GenesisResult {
   manifest: OrganizationManifest;
 
   /**
-   * Generated VP (Tier 1) charters.
+   * Generated Orchestrator (Tier 1) charters.
    *
-   * Array of Virtual Persona charters representing the top-level
+   * Array of Orchestrator charters representing the top-level
    * supervisory agents in the organization hierarchy.
    */
-  vps: VPCharter[];
+  orchestrators: OrchestratorCharter[];
 
   /**
    * Generated discipline packs.
@@ -241,9 +240,9 @@ export interface GenesisResult {
  */
 export interface GenesisStats {
   /**
-   * Total number of VP charters generated.
+   * Total number of Orchestrator charters generated.
    */
-  vpCount: number;
+  orchestratorCount: number;
 
   /**
    * Total number of discipline packs generated.
@@ -289,8 +288,8 @@ export interface GenesisStats {
  * ```typescript
  * const config: GenesisEngineConfig = {
  *   registry: existingRegistry,
- *   maxVPs: 10,
- *   maxDisciplinesPerVP: 8,
+ *   maxOrchestrators: 10,
+ *   maxDisciplinesPerOrchestrator: 8,
  *   maxAgentsPerDiscipline: 20,
  * };
  *
@@ -323,16 +322,16 @@ export interface GenesisEngineConfig {
    *
    * @default 20
    */
-  maxVPs?: number;
+  maxOrchestrators?: number;
 
   /**
-   * Maximum number of disciplines per VP.
+   * Maximum number of disciplines per Orchestrator.
    *
-   * Limits the discipline count generated for each VP.
+   * Limits the discipline count generated for each Orchestrator.
    *
    * @default 12
    */
-  maxDisciplinesPerVP?: number;
+  maxDisciplinesPerOrchestrator?: number;
 
   /**
    * Maximum number of agents per discipline.
@@ -362,14 +361,14 @@ export interface GenesisEngineConfig {
 const DEFAULT_ENGINE_CONFIG: Required<
   Omit<GenesisEngineConfig, 'registry' | 'registryConfig'>
 > = {
-  maxVPs: 20,
-  maxDisciplinesPerVP: 12,
+  maxOrchestrators: 20,
+  maxDisciplinesPerOrchestrator: 12,
   maxAgentsPerDiscipline: 25,
   verbose: false,
 };
 
 /**
- * Default VP counts by organization size.
+ * Default Orchestrator counts by organization size.
  * @internal
  */
 const VP_COUNT_BY_SIZE: Record<OrgSize, { min: number; max: number }> = {
@@ -391,8 +390,8 @@ const VP_COUNT_BY_SIZE: Record<OrgSize, { min: number; max: number }> = {
  * structures from high-level prompts or configuration objects. It implements
  * the recursive generation protocol:
  *
- * 1. **Phase 1**: Generate VP charters based on organization requirements
- * 2. **Phase 2**: Generate discipline packs for each VP
+ * 1. **Phase 1**: Generate Orchestrator charters based on organization requirements
+ * 2. **Phase 2**: Generate discipline packs for each Orchestrator
  * 3. **Phase 3**: Generate specialized agents for each discipline
  *
  * The engine can operate in various modes:
@@ -425,10 +424,10 @@ const VP_COUNT_BY_SIZE: Record<OrgSize, { min: number; max: number }> = {
  */
 export class GenesisEngine {
   /**
-   * VP generator for Phase 1 generation.
+   * Orchestrator generator for Phase 1 generation.
    * @internal
    */
-  private readonly vpGenerator: VPGenerator;
+  private readonly vpGenerator: OrchestratorGenerator;
 
   /**
    * Discipline generator for Phase 2 generation.
@@ -479,7 +478,7 @@ export class GenesisEngine {
    * // Create with custom registry
    * const customEngine = new GenesisEngine({
    *   registry: existingRegistry,
-   *   maxVPs: 10,
+   *   maxOrchestrators: 10,
    *   verbose: true,
    * });
    *
@@ -504,7 +503,7 @@ export class GenesisEngine {
       config?.registry ?? createRegistryManager(config?.registryConfig);
 
     // Initialize sub-generators
-    this.vpGenerator = new VPGenerator();
+    this.orchestratorGenerator = new OrchestratorGenerator();
     this.disciplineGenerator = new DisciplineGenerator();
     this.agentGenerator = new AgentGenerator();
     this.manifestGenerator = new ManifestGenerator();
@@ -520,8 +519,8 @@ export class GenesisEngine {
    *
    * The generation process:
    * 1. Parses the prompt to extract organization requirements
-   * 2. Generates VP charters based on inferred structure
-   * 3. Generates discipline packs for each VP
+   * 2. Generates Orchestrator charters based on inferred structure
+   * 3. Generates discipline packs for each Orchestrator
    * 4. Generates specialized agents for each discipline
    * 5. Creates the organization manifest
    *
@@ -618,7 +617,7 @@ export class GenesisEngine {
 
     // Phase 1: Generate VPs
     this.reportProgress(options?.onProgress, 'Phase 1: Generating VPs', 15);
-    const vps = await this.generatePhase1(config, options);
+    const orchestrators = await this.generatePhase1(config, options);
     this.reportProgress(options?.onProgress, 'Phase 1: VPs generated', 35);
 
     // Phase 2: Generate disciplines
@@ -628,7 +627,7 @@ export class GenesisEngine {
       40,
     );
     const disciplines = await this.generatePhase2(
-      vps,
+      orchestrators,
       config.industry,
       options,
     );
@@ -649,18 +648,18 @@ export class GenesisEngine {
       'Creating organization manifest',
       95,
     );
-    const manifest = await this.createManifest(config, vps, disciplines);
+    const manifest = await this.createManifest(config, orchestrators, disciplines);
 
     const completedAt = new Date();
 
     // Build result
     const result: GenesisResult = {
       manifest,
-      vps,
+      orchestrators,
       disciplines,
       agents,
       stats: {
-        vpCount: vps.length,
+        orchestratorCount: orchestrators.length,
         disciplineCount: disciplines.length,
         agentCount: agents.length,
         totalTokensUsed: totalTokensUsed > 0 ? totalTokensUsed : undefined,
@@ -676,62 +675,62 @@ export class GenesisEngine {
   }
 
   /**
-   * Generate VP charters (Phase 1).
+   * Generate Orchestrator charters (Phase 1).
    *
    * @description
    * First phase of the recursive generation protocol. Generates
-   * Virtual Persona (Tier 1) charters based on the organization
+   * Orchestrator (Tier 1) charters based on the organization
    * configuration.
    *
    * @param config - Organization creation configuration
    * @param options - Optional generation options
-   * @returns Promise resolving to array of VP charters
+   * @returns Promise resolving to array of Orchestrator charters
    *
    * @example
    * ```typescript
-   * const vps = await engine.generatePhase1(config);
-   * console.log(`Generated ${vps.length} VP charters`);
+   * const orchestrators = await engine.generatePhase1(config);
+   * console.log(`Generated ${vps.length} Orchestrator charters`);
    * ```
    */
   async generatePhase1(
     config: CreateOrgConfig,
     options?: GenesisOptions,
-  ): Promise<VPCharter[]> {
+  ): Promise<OrchestratorCharter[]> {
     const size = config.size;
     const vpRange = VP_COUNT_BY_SIZE[size];
 
-    // Determine VP count based on config or size defaults
+    // Determine Orchestrator count based on config or size defaults
     const targetVpCount =
-      config.vpCount ?? Math.floor((vpRange.min + vpRange.max) / 2);
-    const vpCount = Math.min(targetVpCount, this.config.maxVPs);
+      config.orchestratorCount ?? Math.floor((vpRange.min + vpRange.max) / 2);
+    const orchestratorCount = Math.min(targetVpCount, this.config.maxOrchestrators);
 
-    this.log(`Generating ${vpCount} VPs for ${size} organization`);
+    this.log(`Generating ${orchestratorCount} VPs for ${size} organization`);
 
-    // Build the VP generation context
-    const vpContext: VPGenerationContext = {
+    // Build the Orchestrator generation context
+    const vpContext: OrchestratorGenerationContext = {
       orgName: config.name,
       industry: config.industry,
       mission: config.mission,
       size: config.size,
       nodeCount: options?.nodeCount ?? this.getDefaultNodeCount(config.size),
-      vpCount,
+      orchestratorCount,
       disciplineNames: config.initialDisciplines,
     };
 
-    // Generate all VPs at once using the VPGenerator
-    const result = await this.vpGenerator.generate(vpContext);
+    // Generate all VPs at once using the OrchestratorGenerator
+    const result = await this.orchestratorGenerator.generate(vpContext);
 
     // Log any warnings from generation
     if (result.warnings.length > 0) {
       for (const warning of result.warnings) {
-        this.log(`VP Generation Warning: ${warning}`);
+        this.log(`Orchestrator Generation Warning: ${warning}`);
       }
     }
 
-    // Report incremental progress for each generated VP
-    for (let i = 0; i < result.vps.length; i++) {
-      const vp = result.vps[i];
-      const progress = 15 + Math.floor(((i + 1) / result.vps.length) * 20);
+    // Report incremental progress for each generated Orchestrator
+    for (let i = 0; i < result.orchestrators.length; i++) {
+      const orchestrator = result.orchestrators[i];
+      const progress = 15 + Math.floor(((i + 1) / result.orchestrators.length) * 20);
       this.reportProgress(
         options?.onProgress,
         `Generated VP: ${vp.identity.name}`,
@@ -739,7 +738,7 @@ export class GenesisEngine {
       );
     }
 
-    return result.vps;
+    return result.orchestrators;
   }
 
   /**
@@ -747,10 +746,10 @@ export class GenesisEngine {
    *
    * @description
    * Second phase of the recursive generation protocol. Generates
-   * discipline packs for each VP based on their responsibilities
+   * discipline packs for each Orchestrator based on their responsibilities
    * and the organization's industry.
    *
-   * @param vps - Array of VP charters from Phase 1
+   * @param orchestrators - Array of Orchestrator charters from Phase 1
    * @param industry - Organization industry
    * @param options - Optional generation options
    * @returns Promise resolving to array of discipline packs
@@ -762,7 +761,7 @@ export class GenesisEngine {
    * ```
    */
   async generatePhase2(
-    vps: VPCharter[],
+    orchestrators: OrchestratorCharter[],
     industry: OrgIndustry,
     options?: GenesisOptions,
   ): Promise<DisciplinePack[]> {
@@ -771,19 +770,19 @@ export class GenesisEngine {
 
     this.log(`Generating disciplines for ${vps.length} VPs`);
 
-    for (let vpIndex = 0; vpIndex < vps.length; vpIndex++) {
-      const vp = vps[vpIndex];
+    for (let vpIndex = 0; vpIndex < orchestrators.length; vpIndex++) {
+      const orchestrator = orchestrators[vpIndex];
 
-      // Use the convenience method to generate disciplines for this VP
+      // Use the convenience method to generate disciplines for this Orchestrator
       const disciplines = await this.disciplineGenerator.generateForVP(
         vp,
         industry,
       );
 
-      // Limit disciplines per VP
+      // Limit disciplines per Orchestrator
       const limitedDisciplines = disciplines.slice(
         0,
-        this.config.maxDisciplinesPerVP,
+        this.config.maxDisciplinesPerOrchestrator,
       );
 
       for (let i = 0; i < limitedDisciplines.length; i++) {
@@ -798,7 +797,7 @@ export class GenesisEngine {
         existingDisciplineSlugs.push(discipline.slug);
         allDisciplines.push(discipline);
 
-        // Update VP with discipline ID
+        // Update Orchestrator with discipline ID
         if (!vp.disciplineIds.includes(discipline.id)) {
           vp.disciplineIds.push(discipline.id);
         }
@@ -937,10 +936,10 @@ export class GenesisEngine {
     await this.registry.initialize();
 
     // Save VPs
-    for (const vp of result.vps) {
+    for (const orchestrator of result.orchestrators) {
       await this.registry.charters.registerVP(vp);
     }
-    this.log(`Saved ${result.vps.length} VP charters`);
+    this.log(`Saved ${result.orchestrators.length} Orchestrator charters`);
 
     // Save disciplines
     for (const discipline of result.disciplines) {
@@ -967,8 +966,8 @@ export class GenesisEngine {
    * ```
    * {path}/
    *   manifest.json
-   *   vps/
-   *     {vp-slug}.json
+   *   orchestrators/
+   *     {orchestrator-slug}.json
    *   disciplines/
    *     {discipline-slug}.json
    *   agents/
@@ -1005,13 +1004,13 @@ export class GenesisEngine {
     this.log(`Wrote manifest to ${manifestPath}`);
 
     // Create and write VPs
-    const vpsDir = pathModule.join(path, 'vps');
+    const orchestratorsDir = pathModule.join(path, 'vps');
     await fs.mkdir(vpsDir, { recursive: true });
-    for (const vp of result.vps) {
+    for (const orchestrator of result.orchestrators) {
       const vpPath = pathModule.join(vpsDir, `${vp.identity.slug}.json`);
       await fs.writeFile(vpPath, JSON.stringify(this.serializeVP(vp), null, 2));
     }
-    this.log(`Wrote ${result.vps.length} VP charters to ${vpsDir}`);
+    this.log(`Wrote ${result.orchestrators.length} Orchestrator charters to ${vpsDir}`);
 
     // Create and write disciplines
     const disciplinesDir = pathModule.join(path, 'disciplines');
@@ -1226,14 +1225,14 @@ export class GenesisEngine {
    */
   private async createManifest(
     config: CreateOrgConfig,
-    vps: VPCharter[],
+    orchestrators: OrchestratorCharter[],
     disciplines: DisciplinePack[],
   ): Promise<OrganizationManifest> {
     // Generate the manifest
     const result = await this.manifestGenerator.generate({
       ...config,
-      // Include VP count from actual generated VPs
-      vpCount: vps.length,
+      // Include Orchestrator count from actual generated VPs
+      orchestratorCount: orchestrators.length,
       // Include discipline names from generated disciplines
       initialDisciplines: disciplines.map(d => d.slug),
     });
@@ -1245,11 +1244,11 @@ export class GenesisEngine {
       }
     }
 
-    // Add VP registry entries (for now, just create mappings without node assignments)
+    // Add Orchestrator registry entries (for now, just create mappings without node assignments)
     let manifest = result.manifest;
-    for (const vp of vps) {
+    for (const orchestrator of orchestrators) {
       manifest = this.manifestGenerator.addVP(manifest, {
-        vpId: vp.id,
+        orchestratorId: vp.id,
         nodeId: vp.nodeId ?? `node-${vp.identity.slug}`,
         hostname: `${vp.identity.slug}.cluster.internal`,
         status: 'provisioning',
@@ -1317,12 +1316,12 @@ export class GenesisEngine {
   }
 
   /**
-   * Serialize VP charter for JSON export.
+   * Serialize Orchestrator charter for JSON export.
    * @internal
    */
-  private serializeVP(vp: VPCharter): Record<string, unknown> {
+  private serializeVP(vp: OrchestratorCharter): Record<string, unknown> {
     return {
-      ...vp,
+      ...orchestrator,
       createdAt: vp.createdAt.toISOString(),
       updatedAt: vp.updatedAt.toISOString(),
     };

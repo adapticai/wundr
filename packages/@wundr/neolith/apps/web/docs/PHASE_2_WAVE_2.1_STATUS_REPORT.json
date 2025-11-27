@@ -1,6 +1,6 @@
 {
-  "phase": "Phase 2: VP Autonomous Operation",
-  "wave": "Wave 2.1: VP Communication Features",
+  "phase": "Phase 2: Orchestrator Autonomous Operation",
+  "wave": "Wave 2.1: Orchestrator Communication Features",
   "reportDate": "2025-11-26",
   "overallStatus": "PARTIALLY_COMPLETE",
   "completionPercentage": 75,
@@ -20,7 +20,7 @@
       "tasksTotal": 10
     },
     "taskGroup_2.1.3": {
-      "name": "UI for VP Interaction",
+      "name": "UI for Orchestrator Interaction",
       "status": "PARTIALLY_COMPLETE",
       "completionPercentage": 50,
       "tasksCompleted": 5,
@@ -34,10 +34,10 @@
       "tasks": [
         {
           "id": "2.1.1.1",
-          "name": "/api/vps/[id]/conversations/initiate endpoint",
+          "name": "/api/orchestrators/[id]/conversations/initiate endpoint",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/conversations/initiate/route.ts",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[id]/conversations/initiate/route.ts",
             "lineCount": 348,
             "features": [
               "VP-initiated conversations to channels or users",
@@ -57,11 +57,11 @@
           "name": "VP status update posting",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/status/route.ts",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[id]/status/route.ts",
             "lineCount": 263,
             "features": [
               "VP posts status updates to channels",
-              "Auto-joins VP to channel if not member",
+              "Auto-joins Orchestrator to channel if not member",
               "System message type for status updates",
               "Status metadata (statusType, isStatusUpdate)",
               "Full permission validation",
@@ -77,7 +77,7 @@
           "name": "VP task delegation",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/delegate/route.ts",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[id]/delegate/route.ts",
             "lineCount": 169,
             "features": [
               "VP-to-VP task delegation",
@@ -95,17 +95,17 @@
       ],
       "additionalEndpoints": [
         {
-          "endpoint": "/api/vps/[id]/collaborate/route.ts",
+          "endpoint": "/api/orchestrators/[id]/collaborate/route.ts",
           "purpose": "VP collaboration coordination",
           "status": "Exists"
         },
         {
-          "endpoint": "/api/vps/[id]/handoff/route.ts",
+          "endpoint": "/api/orchestrators/[id]/handoff/route.ts",
           "purpose": "Task handoff between VPs",
           "status": "Exists"
         },
         {
-          "endpoint": "/api/vps/[id]/escalate/route.ts",
+          "endpoint": "/api/orchestrators/[id]/escalate/route.ts",
           "purpose": "Escalate tasks to humans",
           "status": "Exists"
         }
@@ -137,7 +137,7 @@
             },
             {
               "name": "getRelevantChannels",
-              "purpose": "Finds channels matching VP expertise using scoring algorithm",
+              "purpose": "Finds channels matching Orchestrator expertise using scoring algorithm",
               "scoringAlgorithm": {
                 "disciplineMatch": 20,
                 "disciplineNameMatch": 15,
@@ -179,13 +179,13 @@
           ]
         },
         {
-          "name": "vp-channel-assignment-service.ts",
-          "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/services/vp-channel-assignment-service.ts",
+          "name": "orchestrator-channel-assignment-service.ts",
+          "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/services/orchestrator-channel-assignment-service.ts",
           "lineCount": 664,
           "functions": [
             {
               "name": "assignVPToChannels",
-              "purpose": "Assigns VP to discipline-specific channels on creation",
+              "purpose": "Assigns Orchestrator to discipline-specific channels on creation",
               "features": [
                 "Auto-joins to general channels (welcome, announcements, vp)",
                 "Matches channels by discipline name patterns",
@@ -200,7 +200,7 @@
               "options": {
                 "daysInactive": "threshold for leaving channels (default: 30)",
                 "autoJoinRecommended": "join high-confidence channels",
-                "leaveInactive": "remove VP from inactive channels"
+                "leaveInactive": "remove Orchestrator from inactive channels"
               },
               "status": "COMPLETE"
             },
@@ -274,7 +274,7 @@
           "name": "VP status badges",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-status-badge.tsx",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-status-badge.tsx",
             "lineCount": 143,
             "components": [
               {
@@ -304,7 +304,7 @@
           "name": "Task assignment dialog",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-task-assignment-dialog.tsx",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-task-assignment-dialog.tsx",
             "lineCount": 308,
             "components": [
               {
@@ -317,7 +317,7 @@
                   "Controlled/uncontrolled dialog state",
                   "Loading states during submission",
                   "VP avatar display in selector",
-                  "Discipline badge in VP list"
+                  "Discipline badge in Orchestrator list"
                 ]
               },
               {
@@ -336,7 +336,7 @@
           "name": "VP presence indicator",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-presence-indicator.tsx",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-presence-indicator.tsx",
             "lineCount": 301,
             "components": [
               {
@@ -375,7 +375,7 @@
           "name": "VP Analytics Card",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-analytics-card.tsx",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-analytics-card.tsx",
             "features": [
               "Performance metrics display",
               "Activity statistics",
@@ -388,7 +388,7 @@
           "name": "VP Card",
           "status": "COMPLETE",
           "implementation": {
-            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-card.tsx",
+            "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-card.tsx",
             "features": [
               "VP profile display",
               "Status and presence integration",
@@ -403,14 +403,14 @@
           "id": "2.1.3.1",
           "name": "VP conversation UI",
           "status": "MISSING",
-          "description": "Dedicated VP conversation UI to distinguish VP vs human messages",
+          "description": "Dedicated Orchestrator conversation UI to distinguish Orchestrator vs human messages",
           "notes": "Message components exist but lack VP-specific differentiation",
           "relatedFiles": [
             "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/chat/message-item.tsx",
             "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/chat/message-list.tsx"
           ],
           "requirements": [
-            "Visual indicator for VP messages (badge, icon, or border)",
+            "Visual indicator for Orchestrator messages (badge, icon, or border)",
             "VP avatar styling differentiation",
             "VP action indicators (thinking, processing)",
             "VP-initiated conversation threading"
@@ -426,13 +426,13 @@
           "id": "2.1.3.6",
           "name": "VP decision rationale display",
           "status": "MISSING",
-          "description": "UI to show why VP chose specific tasks or actions"
+          "description": "UI to show why Orchestrator chose specific tasks or actions"
         },
         {
           "id": "2.1.3.7",
           "name": "VP approval requests UI",
           "status": "MISSING",
-          "description": "Interface for VP to request approval from humans for critical decisions"
+          "description": "Interface for Orchestrator to request approval from humans for critical decisions"
         },
         {
           "id": "2.1.3.8",
@@ -450,7 +450,7 @@
           "id": "2.1.3.10",
           "name": "VP thinking indicator",
           "status": "PARTIALLY_COMPLETE",
-          "description": "Visual indicator when VP is actively processing",
+          "description": "Visual indicator when Orchestrator is actively processing",
           "notes": "VPTypingIndicator exists but may need enhancement for 'thinking' vs 'typing'"
         }
       ],
@@ -463,50 +463,50 @@
   },
   "recommendations": {
     "immediate": [
-      "Implement VP conversation UI differentiation in message components",
+      "Implement Orchestrator conversation UI differentiation in message components",
       "Add VP-specific badges/icons to message-item.tsx",
-      "Create VP work summary dashboard page"
+      "Create Orchestrator work summary dashboard page"
     ],
     "shortTerm": [
-      "Build VP decision rationale display component",
-      "Implement VP approval requests workflow and UI",
-      "Create VP interaction history timeline"
+      "Build Orchestrator decision rationale display component",
+      "Implement Orchestrator approval requests workflow and UI",
+      "Create Orchestrator interaction history timeline"
     ],
     "longTerm": [
-      "Enhance VP learning/improvements tracking and visualization",
-      "Add advanced VP thinking indicators with state machine",
-      "Build comprehensive VP analytics and insights dashboard"
+      "Enhance Orchestrator learning/improvements tracking and visualization",
+      "Add advanced Orchestrator thinking indicators with state machine",
+      "Build comprehensive Orchestrator analytics and insights dashboard"
     ]
   },
   "blockers": [
     {
       "severity": "MEDIUM",
       "issue": "VP conversation UI lacks visual differentiation",
-      "impact": "Users may not easily distinguish VP messages from human messages",
+      "impact": "Users may not easily distinguish Orchestrator messages from human messages",
       "resolution": "Enhance message-item.tsx with VP-specific styling and indicators"
     },
     {
       "severity": "LOW",
-      "issue": "Missing VP work summary dashboard",
+      "issue": "Missing Orchestrator work summary dashboard",
       "impact": "No centralized view of VP's work and performance",
       "resolution": "Create new dashboard page using existing analytics components"
     }
   ],
   "nextSteps": [
-    "Complete Task 2.1.3.1: VP conversation UI differentiation",
-    "Complete Task 2.1.3.5: VP work summary dashboard",
-    "Complete Task 2.1.3.6-2.1.3.10: Advanced VP interaction UI features",
-    "Proceed to Wave 2.2: Advanced VP Features (Cross-VP Coordination)"
+    "Complete Task 2.1.3.1: Orchestrator conversation UI differentiation",
+    "Complete Task 2.1.3.5: Orchestrator work summary dashboard",
+    "Complete Task 2.1.3.6-2.1.3.10: Advanced Orchestrator interaction UI features",
+    "Proceed to Wave 2.2: Advanced Orchestrator Features (Cross-VP Coordination)"
   ],
   "filesAnalyzed": [
-    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/conversations/initiate/route.ts",
-    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/status/route.ts",
-    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/vps/[id]/delegate/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[id]/conversations/initiate/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[id]/status/route.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/api/orchestrators/[id]/delegate/route.ts",
     "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/services/channel-intelligence-service.ts",
-    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/services/vp-channel-assignment-service.ts",
-    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-status-badge.tsx",
-    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-task-assignment-dialog.tsx",
-    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/vp-presence-indicator.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/lib/services/orchestrator-channel-assignment-service.ts",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-status-badge.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-task-assignment-dialog.tsx",
+    "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/vp/orchestrator-presence-indicator.tsx",
     "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/components/chat/message-item.tsx"
   ],
   "documentation": [

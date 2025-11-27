@@ -1,7 +1,7 @@
 /**
- * Task Polling Route for VP Daemon
+ * Task Polling Route for OrchestratorDaemon
  *
- * Provides task polling endpoint for VP daemons to fetch assigned tasks.
+ * Provides task polling endpoint for Orchestrator daemons to fetch assigned tasks.
  * Supports delta updates based on last poll timestamp.
  *
  * Routes:
@@ -11,26 +11,24 @@
  */
 
 import { prisma } from '@neolith/database';
+import type { Prisma, TaskPriority, TaskStatus } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
+import type { TaskPollingInput } from '@/lib/validations/task';
 import {
-  taskPollingSchema,
   createErrorResponse,
   TASK_ERROR_CODES,
+  taskPollingSchema,
 } from '@/lib/validations/task';
-
-import type { TaskPollingInput } from '@/lib/validations/task';
-import type { Prisma } from '@prisma/client';
-import type { NextRequest } from 'next/server';
 
 /**
  * POST /api/tasks/poll
  *
- * Poll for tasks assigned to a VP daemon.
+ * Poll for tasks assigned to a Orchestrator daemon.
  * Supports filtering by status and priority, and delta updates using since parameter.
  *
- * This endpoint does NOT require user authentication as it's called by VP daemon services.
- * Instead, it validates the VP ID against daemon credentials.
+ * This endpoint does NOT require user authentication as it's called by Orchestrator daemon services.
+ * Instead, it validates the OrchestratorID against daemon credentials.
  *
  * Request body:
  * {
@@ -87,8 +85,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const input: TaskPollingInput = parseResult.data;
 
-    // Verify VP exists and belongs to the workspace
-    const vp = await prisma.vP.findFirst({
+    // Verify Orchestrator exists and belongs to the workspace
+    const orchestrator = await prisma.vP.findFirst({
       where: {
         id: input.vpId,
         workspaceId: input.workspaceId,
@@ -114,7 +112,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Add status filter if provided
     if (input.status && input.status.length > 0) {
-      where.status = { in: input.status as any[] };
+      where.status = { in: input.status as TaskStatus[] };
     }
 
     // Add priority filter if provided (minPriority = CRITICAL > HIGH > MEDIUM > LOW)
@@ -131,7 +129,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         (p) => (priorityOrder[p as keyof typeof priorityOrder] || 0) <= minValue,
       );
 
-      where.priority = { in: includedPriorities as any[] };
+      where.priority = { in: includedPriorities as TaskPriority[] };
     }
 
     // Add timestamp filter for delta updates

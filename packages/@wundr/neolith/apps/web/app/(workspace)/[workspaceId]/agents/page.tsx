@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { useParams } from 'next/navigation';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { AgentCard } from '@/components/agents/agent-card';
 import { AgentDetailPanel } from '@/components/agents/agent-detail-panel';
@@ -25,6 +27,12 @@ export default function AgentsPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
   const { toast } = useToast();
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Agents', 'Manage your AI agents and their configurations');
+  }, [setPageHeader]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<AgentStatus | 'all'>('all');
@@ -155,10 +163,6 @@ export default function AgentsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-100">Agents</h1>
-          <p className="mt-1 text-stone-400">Manage your AI agents and their configurations.</p>
-        </div>
         <div className="rounded-lg border border-red-800 bg-red-900/20 p-4">
           <p className="text-sm text-red-400">Error: {error.message}</p>
         </div>
@@ -168,14 +172,8 @@ export default function AgentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-100">Agents</h1>
-          <p className="mt-1 text-stone-400">
-            Manage your AI agents and their configurations.
-          </p>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <PlusIcon className="mr-2 h-4 w-4" />
           Create Agent

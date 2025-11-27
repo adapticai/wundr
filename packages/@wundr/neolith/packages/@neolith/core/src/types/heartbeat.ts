@@ -1,7 +1,7 @@
 /**
  * @genesis/core - Heartbeat Type Definitions
  *
- * Type definitions for VP daemon heartbeat system including
+ * Type definitions for Orchestrator daemon heartbeat system including
  * registration, health monitoring, and recovery.
  *
  * @packageDocumentation
@@ -43,7 +43,7 @@ export interface HeartbeatDaemonInfo {
 
 /**
  * Metrics sent with each heartbeat.
- * Provides real-time operational data about the VP daemon.
+ * Provides real-time operational data about the Orchestrator daemon.
  */
 export interface HeartbeatMetrics {
   /** CPU usage percentage (0-100) */
@@ -70,7 +70,7 @@ export interface HeartbeatMetrics {
   /** Number of errors since daemon start */
   errorCount?: number;
 
-  /** Custom metrics specific to the VP */
+  /** Custom metrics specific to the Orchestrator */
   custom?: Record<string, number | string>;
 }
 
@@ -79,10 +79,10 @@ export interface HeartbeatMetrics {
  * Stored in Redis for health tracking.
  */
 export interface HeartbeatRecord {
-  /** VP ID this heartbeat belongs to */
+  /** OrchestratorID this heartbeat belongs to */
   vpId: string;
 
-  /** Organization ID the VP belongs to */
+  /** Organization ID the Orchestrator belongs to */
   organizationId: string;
 
   /** Timestamp when the heartbeat was received */
@@ -99,10 +99,10 @@ export interface HeartbeatRecord {
 }
 
 /**
- * Health status of a VP daemon.
+ * Health status of a Orchestrator daemon.
  */
 export interface HealthStatus {
-  /** Whether the VP is considered healthy */
+  /** Whether the Orchestrator is considered healthy */
   healthy: boolean;
 
   /** Detailed status classification */
@@ -117,10 +117,10 @@ export interface HealthStatus {
   /** Human-readable description of the status */
   details?: string;
 
-  /** Timestamp when the VP became unhealthy (if applicable) */
+  /** Timestamp when the Orchestrator became unhealthy (if applicable) */
   unhealthySince?: Date;
 
-  /** Whether the VP is currently in recovery mode */
+  /** Whether the Orchestrator is currently in recovery mode */
   recovering?: boolean;
 
   /** Latest metrics from the last heartbeat */
@@ -145,7 +145,7 @@ export type HealthStatusType =
  * Input for registering a daemon.
  */
 export interface RegisterDaemonInput {
-  /** VP ID the daemon is serving */
+  /** OrchestratorID the daemon is serving */
   vpId: string;
 
   /** Information about the daemon */
@@ -159,7 +159,7 @@ export interface RegisterDaemonInput {
  * Input for sending a heartbeat.
  */
 export interface SendHeartbeatInput {
-  /** VP ID sending the heartbeat */
+  /** OrchestratorID sending the heartbeat */
   vpId: string;
 
   /** Optional metrics to include */
@@ -173,7 +173,7 @@ export interface SendHeartbeatInput {
  * Input for unregistering a daemon.
  */
 export interface UnregisterDaemonInput {
-  /** VP ID to unregister */
+  /** OrchestratorID to unregister */
   vpId: string;
 
   /** Reason for unregistering */
@@ -203,7 +203,7 @@ export interface HeartbeatConfig {
   /** Time-to-live for heartbeat records in seconds */
   heartbeatTTLSeconds: number;
 
-  /** Maximum history entries to keep per VP */
+  /** Maximum history entries to keep per Orchestrator */
   maxHistoryEntries: number;
 
   /** Interval for health check monitoring in milliseconds */
@@ -251,7 +251,7 @@ export interface HeartbeatEvent {
   /** Event type */
   type: HeartbeatEventType;
 
-  /** VP ID the event relates to */
+  /** OrchestratorID the event relates to */
   vpId: string;
 
   /** Organization ID */
@@ -286,7 +286,7 @@ export interface DaemonUnregisteredEvent extends HeartbeatEvent {
 }
 
 /**
- * Event emitted when VP becomes unhealthy.
+ * Event emitted when Orchestrator becomes unhealthy.
  */
 export interface VPUnhealthyEvent extends HeartbeatEvent {
   type: 'vp.unhealthy';
@@ -298,7 +298,7 @@ export interface VPUnhealthyEvent extends HeartbeatEvent {
 }
 
 /**
- * Event emitted when VP recovers.
+ * Event emitted when Orchestrator recovers.
  */
 export interface VPRecoveredEvent extends HeartbeatEvent {
   type: 'vp.recovered';
@@ -313,12 +313,12 @@ export interface VPRecoveredEvent extends HeartbeatEvent {
 // =============================================================================
 
 /**
- * Callback for VP unhealthy events.
+ * Callback for Orchestrator unhealthy events.
  */
 export type OnVPUnhealthyCallback = (vpId: string, status: HealthStatus) => void | Promise<void>;
 
 /**
- * Callback for VP recovered events.
+ * Callback for Orchestrator recovered events.
  */
 export type OnVPRecoveredCallback = (vpId: string) => void | Promise<void>;
 
@@ -352,7 +352,7 @@ export const HEARTBEAT_REDIS_KEYS = {
   /** Health status for a VP: health:{vpId} */
   health: (vpId: string) => `health:${vpId}`,
 
-  /** Set of all registered VP IDs: registered:vps */
+  /** Set of all registered OrchestratorIDs: registered:vps */
   registeredVPs: () => 'registered:vps',
 
   /** Set of VPs by organization: org:{orgId}:vps */

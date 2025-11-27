@@ -24,7 +24,7 @@
           "severity": "HIGH",
           "category": "Missing API Integration",
           "title": "Credentials Provider Not Fully Configured",
-          "description": "Email/password login attempts to use 'credentials' provider, but NextAuth config only has 'vp-credentials' provider. Regular email/password auth will fail.",
+          "description": "Email/password login attempts to use 'credentials' provider, but NextAuth config only has 'orchestrator-credentials' provider. Regular email/password auth will fail.",
           "location": "Line 46",
           "impact": "Users cannot sign in with email/password",
           "recommendation": "Either add a proper Credentials provider for email/password auth or remove the email/password form until implemented",
@@ -87,7 +87,7 @@
           "severity": "HIGH",
           "category": "Incomplete Functionality",
           "title": "Same Credentials Provider Issue as Login",
-          "description": "Attempts to sign in with 'credentials' provider after registration, but only 'vp-credentials' exists",
+          "description": "Attempts to sign in with 'credentials' provider after registration, but only 'orchestrator-credentials' exists",
           "location": "Line 76",
           "impact": "Even if registration succeeds, auto-login will fail",
           "recommendation": "Add proper credentials provider or change flow",
@@ -304,19 +304,19 @@
           "title": "VP API Key Validation Disabled in Development",
           "description": "API key validation is completely bypassed in development mode",
           "location": "Lines 157-164",
-          "impact": "Any VP can authenticate without proper credentials in dev",
+          "impact": "Any Orchestrator can authenticate without proper credentials in dev",
           "recommendation": "Still validate API keys in development, just use test keys",
-          "codeSnippet": "// For now, allow any VP to authenticate for development\n// TODO: Implement proper API key verification in production\nif (process.env.NODE_ENV !== 'development') {\n  return null;\n}"
+          "codeSnippet": "// For now, allow any Orchestrator to authenticate for development\n// TODO: Implement proper API key verification in production\nif (process.env.NODE_ENV !== 'development') {\n  return null;\n}"
         },
         {
           "severity": "HIGH",
           "category": "Incomplete Functionality",
           "title": "Missing Standard Credentials Provider",
-          "description": "Only has 'vp-credentials' provider, no standard email/password auth",
+          "description": "Only has 'orchestrator-credentials' provider, no standard email/password auth",
           "location": "Lines 123-180",
           "impact": "Regular users cannot sign in with email/password as login/register forms expect",
           "recommendation": "Add a standard Credentials provider for email/password authentication",
-          "codeSnippet": "Credentials({\n  id: 'vp-credentials',\n  name: 'VP Service Account',\n  ..."
+          "codeSnippet": "Credentials({\n  id: 'orchestrator-credentials',\n  name: 'VP Service Account',\n  ..."
         },
         {
           "severity": "MEDIUM",
@@ -452,7 +452,7 @@
   "highPriorityIssues": [
     {
       "file": "login/page.tsx",
-      "issue": "Credentials provider mismatch - forms use 'credentials' but only 'vp-credentials' exists",
+      "issue": "Credentials provider mismatch - forms use 'credentials' but only 'orchestrator-credentials' exists",
       "severity": "HIGH",
       "impact": "Email/password authentication will fail"
     },
@@ -547,7 +547,7 @@
       "Implement forgot-password flow",
       "Create support, terms, and privacy pages",
       "Strengthen password validation",
-      "Add proper API key verification for VP authentication",
+      "Add proper API key verification for Orchestrator authentication",
       "Implement customize step in org genesis wizard",
       "Add workspaceId to generate-org API response"
     ],

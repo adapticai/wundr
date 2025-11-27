@@ -56,7 +56,7 @@ const PERMISSION_RESOURCES: PermissionResource[] = [
   },
   {
     id: 'vps',
-    name: 'Virtual Personas',
+    name: 'Orchestratoras',
     actions: ['create', 'read', 'update', 'delete', 'manage'],
   },
 ];

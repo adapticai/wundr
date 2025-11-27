@@ -2,11 +2,11 @@
 
 ## Endpoints Overview
 
-### 1. VP Backlog Management
+### 1. Orchestrator Backlog Management
 
 #### Get VP's Task Backlog
 ```
-GET /api/workspaces/{workspaceId}/vps/{vpId}/backlog
+GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 ```
 
 **Query Parameters:**
@@ -47,7 +47,7 @@ GET /api/workspaces/{workspaceId}/vps/{vpId}/backlog
 
 #### Add Task to VP's Backlog
 ```
-POST /api/workspaces/{workspaceId}/vps/{vpId}/backlog
+POST /api/workspaces/{workspaceId}/orchestrators/{vpId}/backlog
 ```
 
 **Request Body:**
@@ -71,7 +71,7 @@ POST /api/workspaces/{workspaceId}/vps/{vpId}/backlog
 ```json
 {
   "data": {...task},
-  "message": "Task added to VP backlog successfully"
+  "message": "Task added to Orchestrator backlog successfully"
 }
 ```
 
@@ -81,7 +81,7 @@ POST /api/workspaces/{workspaceId}/vps/{vpId}/backlog
 
 #### Get Next Available Task for VP
 ```
-GET /api/workspaces/{workspaceId}/vps/{vpId}/next-task
+GET /api/workspaces/{workspaceId}/orchestrators/{vpId}/next-task
 ```
 
 **Query Parameters:**
@@ -127,7 +127,7 @@ GET /api/workspaces/{workspaceId}/vps/{vpId}/next-task
 
 ### 3. Task Assignment
 
-#### Assign Task to VP or User
+#### Assign Task to Orchestrator or User
 ```
 POST /api/workspaces/{workspaceId}/tasks/{taskId}/assign
 ```
@@ -222,7 +222,7 @@ BLOCKED  CANCELLED
 
 | Code | Description |
 |------|-------------|
-| `VP_NOT_FOUND` | VP does not exist or is not in workspace |
+| `VP_NOT_FOUND` | Orchestrator does not exist or is not in workspace |
 | `WORKSPACE_NOT_FOUND` | Workspace does not exist |
 | `TASK_NOT_FOUND` | Task does not exist in workspace |
 | `UNAUTHORIZED` | Authentication required |
@@ -230,7 +230,7 @@ BLOCKED  CANCELLED
 | `VALIDATION_ERROR` | Invalid request data |
 | `ALREADY_COMPLETED` | Task is already marked as complete |
 | `INVALID_STATE` | Task cannot transition to requested state |
-| `NO_AVAILABLE_TASKS` | No tasks available for VP |
+| `NO_AVAILABLE_TASKS` | No tasks available for Orchestrator |
 | `INTERNAL_ERROR` | Server error occurred |
 
 ---
@@ -241,22 +241,22 @@ All endpoints require authentication via NextAuth session:
 
 ```typescript
 // Automatic via session cookie
-// Or via VP service account credentials
+// Or via Orchestrator service account credentials
 ```
 
 ---
 
 ## Usage Examples
 
-### Example 1: VP Polling for Work
+### Example 1: Orchestrator Polling for Work
 
 ```bash
-# 1. VP daemon polls for next task
+# 1. Orchestrator daemon polls for next task
 curl -X GET \
-  "https://api.example.com/api/workspaces/ws_123/vps/vp_456/next-task?status=TODO&minPriority=MEDIUM" \
+  "https://api.example.com/api/workspaces/ws_123/orchestrators/vp_456/next-task?status=TODO&minPriority=MEDIUM" \
   -H "Cookie: next-auth.session-token=..."
 
-# 2. VP self-assigns the task
+# 2. Orchestrator self-assigns the task
 curl -X POST \
   "https://api.example.com/api/workspaces/ws_123/tasks/task_789/assign" \
   -H "Content-Type: application/json" \
@@ -267,7 +267,7 @@ curl -X POST \
     "notes": "Auto-assigned via polling"
   }'
 
-# 3. VP completes the task
+# 3. Orchestrator completes the task
 curl -X POST \
   "https://api.example.com/api/workspaces/ws_123/tasks/task_789/complete" \
   -H "Content-Type: application/json" \
@@ -283,12 +283,12 @@ curl -X POST \
 ```bash
 # 1. Get VP's current backlog
 curl -X GET \
-  "https://api.example.com/api/workspaces/ws_123/vps/vp_456/backlog?includeStats=true" \
+  "https://api.example.com/api/workspaces/ws_123/orchestrators/vp_456/backlog?includeStats=true" \
   -H "Cookie: next-auth.session-token=..."
 
 # 2. Add new task to VP's backlog
 curl -X POST \
-  "https://api.example.com/api/workspaces/ws_123/vps/vp_456/backlog" \
+  "https://api.example.com/api/workspaces/ws_123/orchestrators/vp_456/backlog" \
   -H "Content-Type: application/json" \
   -H "Cookie: next-auth.session-token=..." \
   -d '{
@@ -310,12 +310,12 @@ curl -X POST \
   }'
 ```
 
-### Example 3: Monitoring VP Progress
+### Example 3: Monitoring Orchestrator Progress
 
 ```bash
 # Get VP's backlog with statistics
 curl -X GET \
-  "https://api.example.com/api/workspaces/ws_123/vps/vp_456/backlog?includeCompleted=true&includeStats=true&sortBy=dueDate" \
+  "https://api.example.com/api/workspaces/ws_123/orchestrators/vp_456/backlog?includeCompleted=true&includeStats=true&sortBy=dueDate" \
   -H "Cookie: next-auth.session-token=..."
 
 # Response includes:
@@ -361,7 +361,7 @@ POST /api/workspaces/{workspaceId}/webhooks
 
 ## Rate Limits
 
-Recommended rate limits for VP daemons:
+Recommended rate limits for Orchestrator daemons:
 - **Next task polling:** 1 request per 5 seconds
 - **Backlog queries:** 1 request per 10 seconds
 - **Task operations:** 10 requests per minute
@@ -370,7 +370,7 @@ Recommended rate limits for VP daemons:
 
 ## Best Practices
 
-### For VP Daemons:
+### For Orchestrator Daemons:
 1. Poll for next task at regular intervals (5-10 seconds)
 2. Self-assign task before starting work
 3. Update task status to IN_PROGRESS immediately
@@ -378,7 +378,7 @@ Recommended rate limits for VP daemons:
 5. Handle NO_AVAILABLE_TASKS gracefully
 
 ### For Human Users:
-1. Use `includeStats=true` to monitor VP performance
+1. Use `includeStats=true` to monitor Orchestrator performance
 2. Set appropriate priorities for urgent tasks
 3. Add comprehensive task descriptions
 4. Tag tasks for better organization

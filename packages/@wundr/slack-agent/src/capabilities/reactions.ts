@@ -1,7 +1,7 @@
 /**
  * Slack Reactions Capability
  *
- * Provides emoji reaction functionality for the VP (Virtual Principal) agent
+ * Provides emoji reaction functionality for the Orchestrator (Virtual Principal) agent
  * to interact with messages in Slack workspaces like a human user.
  */
 
@@ -214,7 +214,7 @@ function normalizeEmoji(emoji: string): string {
 /**
  * SlackReactions - Manages emoji reactions on Slack messages
  *
- * Provides functionality for the VP agent to react to messages,
+ * Provides functionality for the Orchestrator agent to react to messages,
  * expressing acknowledgment, approval, humor, and other sentiments.
  */
 export class SlackReactions {
@@ -431,7 +431,7 @@ export class SlackReactions {
 
   /**
    * Acknowledge a message with eyes emoji
-   * Indicates the VP has seen and is reviewing the message
+   * Indicates the Orchestrator has seen and is reviewing the message
    * @param channel - Channel ID
    * @param timestamp - Message timestamp
    */

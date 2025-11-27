@@ -195,7 +195,7 @@ All components are fully typed with:
 
 1. Add skeleton variants for other admin components (audit logs, settings)
 2. Create skeletons for workflow and integration pages
-3. Add skeleton for VP (Virtual Personnel) components
+3. Add skeleton for Orchestrator (Orchestratornel) components
 4. Implement skeleton for analytics dashboard
 5. Add storybook stories for visual testing
 

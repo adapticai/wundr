@@ -1,7 +1,7 @@
 /**
  * Task Assignment Route
  *
- * Handles assigning tasks from humans to VPs or from VP to VP.
+ * Handles assigning tasks from humans to VPs or from Orchestrator to VP.
  *
  * Routes:
  * - POST /api/tasks/assign - Assign one or more tasks to a user
@@ -11,17 +11,16 @@
 
 import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
-import {
-  taskAssignmentSchema,
-  createErrorResponse,
-  TASK_ERROR_CODES,
-} from '@/lib/validations/task';
 
 import type { TaskAssignmentInput } from '@/lib/validations/task';
-import type { NextRequest } from 'next/server';
+import {
+  createErrorResponse,
+  TASK_ERROR_CODES,
+  taskAssignmentSchema,
+} from '@/lib/validations/task';
 
 /**
  * POST /api/tasks/assign

@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 /**
  * @packageDocumentation
- * Add Discipline Command - Adds a discipline pack under a VP.
+ * Add Discipline Command - Adds a discipline pack under a Orchestrator.
  *
  * This command creates a new discipline pack and associates it with
- * a Virtual Persona (VP). Disciplines define domain-specific configurations
+ * a Orchestrator. Disciplines define domain-specific configurations
  * including CLAUDE.md settings, MCP servers, hooks, and agent mappings.
  *
  * @module cli/commands/add-discipline
@@ -16,12 +16,12 @@ import {
 } from '../../registry/index.js';
 
 import type {
-  DisciplinePack,
-  DisciplineCategory,
   ClaudeMdConfig,
-  MCPServerConfig,
+  DisciplineCategory,
+  DisciplinePack,
   HookConfig,
-  VPCharter,
+  MCPServerConfig,
+  OrchestratorCharter,
 } from '../../types/index.js';
 
 // =============================================================================
@@ -511,26 +511,26 @@ function formatJsonOutput(result: AddDisciplineResult): void {
 // =============================================================================
 
 /**
- * Adds a discipline pack under a VP.
+ * Adds a discipline pack under a Orchestrator.
  *
  * Creates a new discipline with CLAUDE.md configuration, MCP servers,
- * and hooks. The discipline is associated with the specified VP and
+ * and hooks. The discipline is associated with the specified Orchestrator and
  * optionally persisted to the registry.
  *
- * @param vpId - The VP ID to add the discipline under
+ * @param orchestratorId - The Orchestrator ID to add the discipline under
  * @param options - Configuration options for the new discipline
  * @returns Promise resolving to the operation result
  *
  * @example
  * ```typescript
  * // Basic discipline creation
- * const result = await addDisciplineCommand('vp-engineering', {
+ * const result = await addDisciplineCommand('orchestrator-engineering', {
  *   name: 'Frontend Development',
  *   category: 'engineering',
  * });
  *
  * // With custom configuration
- * const result = await addDisciplineCommand('vp-engineering', {
+ * const result = await addDisciplineCommand('orchestrator-engineering', {
  *   name: 'Backend Services',
  *   category: 'engineering',
  *   description: 'API and microservices development',
@@ -545,7 +545,7 @@ function formatJsonOutput(result: AddDisciplineResult): void {
  * ```
  */
 export async function addDisciplineCommand(
-  vpId: string,
+  orchestratorId: string,
   options: AddDisciplineOptions
 ): Promise<AddDisciplineResult> {
   const warnings: string[] = [];
@@ -570,12 +570,12 @@ export async function addDisciplineCommand(
       });
       await registryManager.initialize();
 
-      // Verify VP exists
-      const vp = await registryManager.charters.getVP(vpId);
+      // Verify Orchestrator exists
+      const orchestrator = await registryManager.charters.getVP(orchestratorId);
       if (!vp) {
         return {
           success: false,
-          error: `VP not found: ${vpId}`,
+          error: `Orchestrator not found: ${orchestratorId}`,
           warnings,
         };
       }
@@ -609,7 +609,7 @@ export async function addDisciplineCommand(
       mcpServers,
       hooks,
       agentIds: options.agentIds ?? [],
-      parentVpId: vpId,
+      parentVpId: orchestratorId,
       createdAt: now,
       updatedAt: now,
     };
@@ -618,13 +618,13 @@ export async function addDisciplineCommand(
     if (!options.dryRun && registryManager) {
       await registryManager.disciplines.register(discipline);
 
-      // Update VP to include this discipline
-      const vp = await registryManager.charters.getVP(vpId);
+      // Update Orchestrator to include this discipline
+      const orchestrator = await registryManager.charters.getVP(orchestratorId);
       if (vp && !vp.disciplineIds.includes(id)) {
         // Update VP's discipline list and re-register
-        const updatedVp: VPCharter = {
-          ...vp,
-          disciplineIds: [...vp.disciplineIds, id],
+        const updatedVp: OrchestratorCharter = {
+          ...orchestrator,
+          disciplineIds: [...orchestrator.disciplineIds, id],
           updatedAt: new Date(),
         };
         await registryManager.charters.registerVP(updatedVp);
@@ -657,10 +657,10 @@ export async function addDisciplineCommand(
  * @example
  * ```bash
  * # Basic usage
- * wundr discipline add vp-engineering --name "Frontend" --category engineering
+ * wundr discipline add orchestrator-engineering --name "Frontend" --category engineering
  *
  * # With all options
- * wundr discipline add vp-engineering \
+ * wundr discipline add orchestrator-engineering \
  *   --name "Backend Services" \
  *   --category engineering \
  *   --description "API development" \
@@ -669,11 +669,11 @@ export async function addDisciplineCommand(
  */
 export async function runAddDisciplineCommand(args: string[]): Promise<void> {
   // Parse arguments
-  const vpId = args[0];
-  if (!vpId) {
-    console.error('Error: VP ID is required');
+  const orchestratorId = args[0];
+  if (!orchestratorId) {
+    console.error('Error: Orchestrator ID is required');
     console.error(
-      'Usage: wundr discipline add <vp-id> --name <name> --category <category> [options]'
+      'Usage: wundr discipline add <orchestrator-id> --name <name> --category <category> [options]'
     );
     process.exitCode = 1;
     return;
@@ -732,7 +732,7 @@ export async function runAddDisciplineCommand(args: string[]): Promise<void> {
   }
 
   // Execute command
-  const result = await addDisciplineCommand(vpId, options);
+  const result = await addDisciplineCommand(orchestratorId, options);
 
   // Output result
   if (options.outputFormat === 'json') {

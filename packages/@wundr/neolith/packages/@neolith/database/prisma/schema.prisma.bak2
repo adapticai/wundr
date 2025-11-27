@@ -23,7 +23,7 @@ enum UserStatus {
   SUSPENDED
 }
 
-/// VP (Virtual Person) online status
+/// Orchestrator (Virtual Person) online status
 enum VPStatus {
   ONLINE
   OFFLINE
@@ -104,7 +104,7 @@ model Organization {
   // Relations
   workspaces  Workspace[]
   members     OrganizationMember[]
-  vps         VP[]
+  orchestrators         VP[]
   disciplines Discipline[]
 
   @@index([slug])
@@ -147,7 +147,7 @@ model Workspace {
   @@map("workspaces")
 }
 
-/// User - Human or VP account
+/// User - Human or Orchestrator account
 model User {
   id            String     @id @default(cuid())
   email         String     @unique
@@ -176,7 +176,7 @@ model User {
   accounts                Account[]
   reactions               Reaction[]
   createdChannels         Channel[]            @relation("ChannelCreator")
-  vp                      VP?
+  orchestrator                      VP?
   notifications           Notification[]
   pushSubscriptions       PushSubscription[]
   createdTasks            Task[]               @relation("TaskCreator")
@@ -187,7 +187,7 @@ model User {
   @@map("users")
 }
 
-/// Discipline - VP discipline/department category
+/// Discipline - Orchestrator discipline/department category
 model Discipline {
   id          String  @id @default(cuid())
   name        String
@@ -204,7 +204,7 @@ model Discipline {
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  vps          VP[]
+  orchestrators          VP[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -212,8 +212,8 @@ model Discipline {
   @@map("disciplines")
 }
 
-/// VP (Virtual Person) - AI agent metadata
-model VP {
+/// Orchestrator (Virtual Person) - AI agent metadata
+model Orchestrator {
   id             String   @id @default(cuid())
   discipline     String
   role           String
@@ -576,7 +576,7 @@ enum TaskStatus {
 // Task & Backlog Models (VP Autonomous Operation)
 // =============================================================================
 
-/// Task - Individual work item for VP autonomous operation
+/// Task - Individual work item for Orchestrator autonomous operation
 model Task {
   id             String       @id @default(cuid())
   title          String
@@ -606,7 +606,7 @@ model Task {
   completedAt DateTime? @map("completed_at")
 
   // Relations
-  vp           VP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  orchestrator           Orchestrator            @relation(fields: [vpId], references: [id], onDelete: Cascade)
   workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   channel      Channel?      @relation(fields: [channelId], references: [id], onDelete: SetNull)
   creator      User          @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
@@ -625,7 +625,7 @@ model Task {
   @@map("tasks")
 }
 
-/// Backlog - Collection of tasks for VP management
+/// Backlog - Collection of tasks for Orchestrator management
 model Backlog {
   id          String  @id @default(cuid())
   name        String
@@ -647,7 +647,7 @@ model Backlog {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  vp        VP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  orchestrator        Orchestrator            @relation(fields: [vpId], references: [id], onDelete: Cascade)
   workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   items     BacklogItem[]
 
@@ -756,7 +756,7 @@ model PushSubscription {
 // Daemon Models
 // =============================================================================
 
-/// DaemonCredential - Credentials for VP daemon authentication
+/// DaemonCredential - Credentials for Orchestrator daemon authentication
 model DaemonCredential {
   id            String   @id @default(cuid())
   apiKey        String   @unique @map("api_key")
@@ -778,7 +778,7 @@ model DaemonCredential {
   lastUsedAt DateTime? @map("last_used_at")
 
   // Relations
-  vp        VP        @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  orchestrator        Orchestrator        @relation(fields: [vpId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([vpId])
@@ -882,7 +882,7 @@ model WorkflowExecution {
 }
 
 // =============================================================================
-// VP Memory Models (Phase 1 - VP Autonomous Operation)
+// Orchestrator Memory Models (Phase 1 - Orchestrator Autonomous Operation)
 // =============================================================================
 
 /// Memory type enumeration
@@ -894,7 +894,7 @@ enum MemoryType {
   DECISION
 }
 
-/// VPMemory - VP memory storage for conversations, tasks, and learnings
+/// VPMemory - Orchestrator memory storage for conversations, tasks, and learnings
 model VPMemory {
   id       String     @id @default(cuid())
   type     MemoryType
@@ -925,7 +925,7 @@ model VPMemory {
   expiresAt      DateTime? @map("expires_at")
 
   // Relations
-  vp        VP        @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  orchestrator        Orchestrator        @relation(fields: [vpId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([vpId])

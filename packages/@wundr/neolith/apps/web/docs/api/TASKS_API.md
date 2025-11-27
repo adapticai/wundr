@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Task Management API provides comprehensive CRUD operations for managing tasks in VP (Virtual Person) autonomous systems. It supports task creation, assignment, dependency validation, status tracking, and efficient polling for VP daemons.
+The Task Management API provides comprehensive CRUD operations for managing tasks in Orchestrator (Orchestrator) autonomous systems. It supports task creation, assignment, dependency validation, status tracking, and efficient polling for Orchestrator daemons.
 
 **Base URL:** `/api/tasks`
 
@@ -38,7 +38,7 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| vpId | string | No | - | Filter by VP ID |
+| vpId | string | No | - | Filter by Orchestrator ID |
 | workspaceId | string | No | - | Filter by workspace ID |
 | status | string\|string[] | No | - | Filter by status(es) |
 | priority | string\|string[] | No | - | Filter by priority(ies) |
@@ -162,7 +162,7 @@ The Task Management API provides comprehensive CRUD operations for managing task
 - 400: Validation error (invalid input)
 - 401: Unauthorized (not authenticated)
 - 403: Forbidden (no workspace access)
-- 404: VP not found in workspace
+- 404: Orchestrator not found in workspace
 
 ---
 
@@ -352,7 +352,7 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 **Endpoint:** `POST /api/tasks/poll`
 
-**Description:** Poll for tasks assigned to a VP. Used by VP daemon services.
+**Description:** Poll for tasks assigned to a VP. Used by Orchestrator daemon services.
 
 **Authentication:** Not required (service-to-service)
 
@@ -410,9 +410,9 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 ---
 
-### 8. Get VP Backlog
+### 8. Get Orchestrator Backlog
 
-**Endpoint:** `GET /api/vps/[id]/backlog`
+**Endpoint:** `GET /api/orchestrators/[id]/backlog`
 
 **Description:** Retrieve a VP's task backlog with priority-based sorting.
 
@@ -422,7 +422,7 @@ The Task Management API provides comprehensive CRUD operations for managing task
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| id | string | Yes | VP ID |
+| id | string | Yes | Orchestrator ID |
 
 **Query Parameters:**
 
@@ -488,7 +488,7 @@ interface Task {
   description: string | null;    // Detailed description
   priority: TaskPriority;        // CRITICAL | HIGH | MEDIUM | LOW
   status: TaskStatus;            // TODO | IN_PROGRESS | BLOCKED | DONE | CANCELLED
-  vpId: string;                  // Assigned VP ID
+  vpId: string;                  // Assigned Orchestrator ID
   workspaceId: string;           // Workspace ID
   channelId: string | null;      // Optional channel context
   createdById: string;           // Creator user ID
@@ -579,7 +579,7 @@ POST /api/tasks
 | FORBIDDEN | 403 | User lacks permission |
 | VALIDATION_ERROR | 400 | Input validation failed |
 | NOT_FOUND | 404 | Task not found |
-| VP_NOT_FOUND | 404 | VP not found in workspace |
+| VP_NOT_FOUND | 404 | Orchestrator not found in workspace |
 | WORKSPACE_NOT_FOUND | 404 | Workspace not found |
 | ASSIGNEE_NOT_FOUND | 404 | Assignee user not found |
 | DEPENDENCY_VIOLATION | 400 | Invalid task dependencies |
@@ -732,7 +732,7 @@ curl -X POST https://api.example.com/api/tasks/assign \
 }
 ```
 
-### Example 4: VP Daemon Polling
+### Example 4: Orchestrator Daemon Polling
 
 ```bash
 curl -X POST https://api.example.com/api/tasks/poll \
@@ -775,10 +775,10 @@ curl -X POST https://api.example.com/api/tasks/poll \
 }
 ```
 
-### Example 5: Get VP Backlog
+### Example 5: Get Orchestrator Backlog
 
 ```bash
-curl -X GET "https://api.example.com/api/vps/vp_123/backlog?status=TODO,IN_PROGRESS&priority=CRITICAL,HIGH&sortBy=priority" \
+curl -X GET "https://api.example.com/api/orchestrators/vp_123/backlog?status=TODO,IN_PROGRESS&priority=CRITICAL,HIGH&sortBy=priority" \
   -H "Authorization: Bearer token"
 ```
 

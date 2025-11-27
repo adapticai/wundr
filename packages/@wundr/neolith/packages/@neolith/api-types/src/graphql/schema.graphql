@@ -1,6 +1,6 @@
 # Genesis App GraphQL Schema
 # This is the root schema definition for the Genesis application
-# Wave 2 (Phase 0.5) - Extended Schema with Organization, Channel, Message, VP support
+# Wave 2 (Phase 0.5) - Extended Schema with Organization, Channel, Message, Orchestrator support
 
 # =============================================================================
 # CUSTOM SCALARS
@@ -359,7 +359,7 @@ type User implements Node & Timestamped {
   isVP: Boolean!
 
   """
-  VP metadata if this user is a virtual person
+  Orchestrator metadata if this user is a virtual person
   """
   vp: VP
 
@@ -410,7 +410,7 @@ type UserEdge implements Edge {
 """
 VP - Virtual Person metadata for AI agents
 """
-type VP implements Node & Timestamped {
+type Orchestrator implements Node & Timestamped {
   id: ID!
 
   """
@@ -439,7 +439,7 @@ type VP implements Node & Timestamped {
   status: VPStatus!
 
   """
-  VP charter/configuration as JSON
+  Orchestrator charter/configuration as JSON
   """
   charter: JSON
 
@@ -1335,14 +1335,14 @@ type Query {
   ): MessageConnection!
 
   """
-  Get a VP by ID
+  Get a Orchestrator by ID
   """
   vp(id: ID!): VP
 
   """
   List VPs in an organization
   """
-  vps(organizationId: ID!, first: Int, after: String): VPConnection!
+  orchestrators(organizationId: ID!, first: Int, after: String): VPConnection!
 
   """
   Search across messages, channels, and users
@@ -1427,7 +1427,7 @@ type Mutation {
   """
   updatePresence(status: PresenceStatus!): UserPayload!
 
-  # VP mutations
+  # Orchestrator mutations
   """
   Create a new Virtual Person
   """

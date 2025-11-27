@@ -229,10 +229,10 @@ export const MARKETING_AGENT_IDS: string[] = [
  * // Register with discipline registry
  * registry.register(MARKETING_DISCIPLINE);
  *
- * // Assign to VP
+ * // Assign to Orchestrator
  * await engine.assignDisciplineToVp({
  *   disciplineId: MARKETING_DISCIPLINE.id,
- *   vpId: 'vp-marketing-001',
+ *   vpId: 'orchestrator-marketing-001',
  * });
  * ```
  */

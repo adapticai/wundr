@@ -18,7 +18,7 @@
                       │
                       └──► 7 Test Flows
                            │
-                           ├─ Flow 1: VP Creation
+                           ├─ Flow 1: Orchestrator Creation
                            ├─ Flow 2: Channel Creation
                            ├─ Flow 3: Workflow Creation
                            ├─ Flow 4: Agent Creation
@@ -29,7 +29,7 @@
 
 ---
 
-## Flow 1: VP Creation Flow
+## Flow 1: Orchestrator Creation Flow
 
 ```
 ┌──────────┐     ┌───────────┐     ┌─────────┐     ┌───────────┐
@@ -42,7 +42,7 @@
      ▼
 ┌────────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
 │  Fill Form │───▶│  Submit  │───▶│   Wait   │───▶│  Verify  │
-│  - Name    │    │  Click   │    │ Response │    │  VP List │
+│  - Name    │    │  Click   │    │ Response │    │  Orchestrator List │
 │  - Disc.   │    │  Button  │    │          │    │          │
 └────────────┘    └──────────┘    └──────────┘    └──────────┘
 
@@ -329,7 +329,7 @@ test-results/
        │
        ▼
 ┌──────────────┐     Example Values:
-│ Create Test  │     ├─ VP: "Test VP 1732737890123"
+│ Create Test  │     ├─ VP: "Test Orchestrator 1732737890123"
 │    Names     │     ├─ Channel: "test-channel-1732737890123"
 └──────┬───────┘     ├─ Workflow: "Test Workflow 1732737890123"
        │             ├─ Agent: "Test Agent 1732737890123"
@@ -398,7 +398,7 @@ Application Routes         Test Coverage
 
 /:workspaceId/dashboard    🔶 Test exists (blocked)
 /:workspaceId/vps          🔶 Test exists (blocked)
-/:workspaceId/vps/:id      ❌ Untested
+/:workspaceId/orchestrators/:id      ❌ Untested
 /:workspaceId/channels     🔶 Test exists (blocked)
 /:workspaceId/channels/:id ❌ Untested
 /:workspaceId/workflows    🔶 Test exists (blocked)
@@ -420,13 +420,13 @@ Legend:
 ```
 For Each Flow to PASS:
 
-Flow 1: VP Creation
+Flow 1: Orchestrator Creation
 ├─ ✓ Navigate to VPs page
 ├─ ✓ Open create dialog
 ├─ ✓ Form fields visible
 ├─ ✓ Form submits successfully
 ├─ ✓ No console errors
-└─ ✓ VP appears in list
+└─ ✓ Orchestrator appears in list
 
 Flow 2: Channel Creation
 ├─ ✓ Navigate to channels page

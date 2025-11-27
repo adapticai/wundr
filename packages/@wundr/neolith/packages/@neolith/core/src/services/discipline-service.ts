@@ -2,30 +2,29 @@
  * @genesis/core - Discipline Service
  *
  * Service layer for discipline management. Disciplines are functional areas
- * derived from VP discipline fields. This service provides virtual discipline
+ * derived from Orchestrator discipline fields. This service provides virtual discipline
  * entities for organizational structure.
  *
  * @packageDocumentation
  */
 
+import type { Orchestrator, Prisma , PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
-
 import {
   GenesisError,
   OrganizationNotFoundError,
 } from '../errors';
-import { generateSlug } from '../utils';
 
 import type {
+  CreateDisciplineInput,
   Discipline,
   DisciplineWithVPs,
-  VPBasic,
-  CreateDisciplineInput,
-  UpdateDisciplineInput,
   ListDisciplinesOptions,
+  OrchestratorBasic,
   PaginatedDisciplineResult,
+  UpdateDisciplineInput,
 } from '../types/organization';
-import type { PrismaClient, Prisma , VP } from '@neolith/database';
+import { generateSlug } from '../utils';
 
 // =============================================================================
 // Custom Errors
@@ -75,12 +74,12 @@ export class DisciplineValidationError extends GenesisError {
 }
 
 /**
- * Error thrown when a VP is not found.
+ * Error thrown when a Orchestrator is not found.
  */
-export class VPNotFoundError extends GenesisError {
+export class OrchestratorNotFoundError extends GenesisError {
   constructor(vpId: string) {
     super(
-      `VP not found: ${vpId}`,
+      `Orchestrator not found: ${vpId}`,
       'VP_NOT_FOUND',
       404,
       { vpId },
@@ -97,7 +96,7 @@ export class VPNotFoundError extends GenesisError {
  * Interface for discipline operations.
  *
  * Note: Disciplines are not stored as separate database entities.
- * They are derived from the VP.discipline field and managed virtually.
+ * They are derived from the Orchestrator.discipline field and managed virtually.
  * Discipline metadata (description, etc.) is stored in organization settings.
  */
 export interface DisciplineService {
@@ -139,39 +138,39 @@ export interface DisciplineService {
   updateDiscipline(id: string, data: UpdateDisciplineInput): Promise<Discipline>;
 
   /**
-   * Deletes a discipline (removes metadata, does not delete VPs).
+   * Deletes a discipline (removes metadata, does not delete Orchestrators).
    *
    * @param id - The discipline ID
    * @throws {DisciplineNotFoundError} If the discipline doesn't exist
    */
   deleteDiscipline(id: string): Promise<void>;
 
-  // VP mapping
+  // Orchestrator mapping
 
   /**
-   * Assigns a VP to a discipline.
+   * Assigns a Orchestrator to a discipline.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @param disciplineId - The discipline ID (name)
-   * @throws {VPNotFoundError} If the VP doesn't exist
+   * @throws {VPNotFoundError} If the Orchestrator doesn't exist
    */
   assignVPToDiscipline(vpId: string, disciplineId: string): Promise<void>;
 
   /**
-   * Removes a VP from its discipline (sets discipline to empty).
+   * Removes a Orchestrator from its discipline (sets discipline to empty).
    *
-   * @param vpId - The VP ID
-   * @throws {VPNotFoundError} If the VP doesn't exist
+   * @param vpId - The OrchestratorID
+   * @throws {VPNotFoundError} If the Orchestrator doesn't exist
    */
   removeVPFromDiscipline(vpId: string): Promise<void>;
 
   /**
-   * Gets all VPs in a discipline.
+   * Gets all Orchestrators in a discipline.
    *
    * @param disciplineId - The discipline ID (name)
-   * @returns Array of VPs
+   * @returns Array of Orchestrators
    */
-  getVPsInDiscipline(disciplineId: string): Promise<VP[]>;
+  getVPsInDiscipline(disciplineId: string): Promise<Orchestrator []>;
 }
 
 // =============================================================================
@@ -203,7 +202,7 @@ interface OrganizationDisciplineSettings {
 /**
  * Discipline service implementation.
  *
- * Disciplines are derived from VP.discipline fields and managed through
+ * Disciplines are derived from Orchestrator.discipline fields and managed through
  * organization settings for metadata storage.
  */
 export class DisciplineServiceImpl implements DisciplineService {
@@ -272,7 +271,7 @@ export class DisciplineServiceImpl implements DisciplineService {
       },
     });
 
-    // Get VP count for this discipline
+    // Get Orchestrator count for this discipline
     const vpCount = await this.db.vP.count({
       where: {
         organizationId: data.organizationId,
@@ -388,7 +387,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     const settings = (organization.settings as OrganizationDisciplineSettings) || {};
     const disciplineMetadata = settings.disciplines || {};
 
-    // Also get disciplines from VPs that may not have metadata
+    // Also get disciplines from Orchestrators that may not have metadata
     const vpDisciplines = await this.db.vP.findMany({
       where: { organizationId: orgId },
       select: {
@@ -420,7 +419,7 @@ export class DisciplineServiceImpl implements DisciplineService {
       });
     }
 
-    // Add disciplines from VPs that don't have metadata
+    // Add disciplines from Orchestrators that don't have metadata
     for (const vp of vpDisciplines) {
       if (!disciplineMap.has(vp.discipline)) {
         const id = generateSlug(vp.discipline);
@@ -470,7 +469,7 @@ export class DisciplineServiceImpl implements DisciplineService {
 
     // Filter empty disciplines if needed
     if (!includeEmpty) {
-      disciplines = disciplines.filter((d) => d.vpCount > 0);
+      disciplines = disciplines.filter((d) => d.orchestratorCount > 0);
     }
 
     // Sort
@@ -481,7 +480,7 @@ export class DisciplineServiceImpl implements DisciplineService {
           comparison = a.name.localeCompare(b.name);
           break;
         case 'vpCount':
-          comparison = a.vpCount - b.vpCount;
+          comparison = a.orchestratorCount - b.orchestratorCount;
           break;
         case 'createdAt':
           comparison = a.createdAt.getTime() - b.createdAt.getTime();
@@ -557,7 +556,7 @@ export class DisciplineServiceImpl implements DisciplineService {
       },
     });
 
-    // If name changed, update all VPs with this discipline
+    // If name changed, update all Orchestrators with this discipline
     if (data.name && data.name !== oldName) {
       await this.db.vP.updateMany({
         where: {
@@ -570,7 +569,7 @@ export class DisciplineServiceImpl implements DisciplineService {
       });
     }
 
-    // Get updated VP count
+    // Get updated Orchestrator count
     const vpCount = await this.db.vP.count({
       where: {
         organizationId: discipline.organizationId,
@@ -624,27 +623,27 @@ export class DisciplineServiceImpl implements DisciplineService {
   }
 
   // ===========================================================================
-  // VP Mapping Operations
+  // OrchestratorMapping Operations
   // ===========================================================================
 
   /**
-   * Assigns a VP to a discipline.
+   * Assigns a Orchestrator to a discipline.
    */
   async assignVPToDiscipline(vpId: string, disciplineId: string): Promise<void> {
-    // Verify VP exists
+    // Verify Orchestrator exists
     const vp = await this.db.vP.findUnique({
       where: { id: vpId },
     });
 
     if (!vp) {
-      throw new VPNotFoundError(vpId);
+      throw new OrchestratorNotFoundError(vpId);
     }
 
     // Get discipline name from ID or use ID as name
     const discipline = await this.getDisciplineInOrg(disciplineId, vp.organizationId);
     const disciplineName = discipline?.name || disciplineId;
 
-    // Update VP discipline
+    // Update Orchestrator discipline
     await this.db.vP.update({
       where: { id: vpId },
       data: { discipline: disciplineName },
@@ -652,16 +651,16 @@ export class DisciplineServiceImpl implements DisciplineService {
   }
 
   /**
-   * Removes a VP from its discipline.
+   * Removes a Orchestrator from its discipline.
    */
   async removeVPFromDiscipline(vpId: string): Promise<void> {
-    // Verify VP exists
+    // Verify Orchestrator exists
     const vp = await this.db.vP.findUnique({
       where: { id: vpId },
     });
 
     if (!vp) {
-      throw new VPNotFoundError(vpId);
+      throw new OrchestratorNotFoundError(vpId);
     }
 
     // Set discipline to empty string (unassigned)
@@ -672,34 +671,34 @@ export class DisciplineServiceImpl implements DisciplineService {
   }
 
   /**
-   * Gets all VPs in a discipline.
+   * Gets all Orchestrators in a discipline.
    */
-  async getVPsInDiscipline(disciplineId: string): Promise<VP[]> {
+  async getVPsInDiscipline(disciplineId: string): Promise<Orchestrator []> {
     // First try to find discipline metadata to get the name
     const discipline = await this.getDiscipline(disciplineId);
     const disciplineName = discipline?.name || disciplineId;
 
-    const vps = await this.db.vP.findMany({
+    const orchestrators = await this.db.vP.findMany({
       where: { discipline: disciplineName },
       include: { user: true },
       orderBy: { createdAt: 'desc' },
     });
 
-    return vps;
+    return orchestrators;
   }
 
   /**
-   * Gets all VPs in a discipline within a specific organization.
+   * Gets all Orchestrators in a discipline within a specific organization.
    *
    * @param disciplineId - The discipline ID
    * @param organizationId - The organization ID
-   * @returns Array of VPs with user data
+   * @returns Array of Orchestrators with user data
    */
-  async getVPsInDisciplineInOrg(disciplineId: string, organizationId: string): Promise<VP[]> {
+  async getVPsInDisciplineInOrg(disciplineId: string, organizationId: string): Promise<Orchestrator []> {
     const discipline = await this.getDisciplineInOrg(disciplineId, organizationId);
     const disciplineName = discipline?.name || disciplineId;
 
-    const vps = await this.db.vP.findMany({
+    const orchestrators = await this.db.vP.findMany({
       where: {
         discipline: disciplineName,
         organizationId,
@@ -708,15 +707,15 @@ export class DisciplineServiceImpl implements DisciplineService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return vps;
+    return orchestrators;
   }
 
   /**
-   * Gets a discipline with its VPs.
+   * Gets a discipline with its Orchestrators.
    *
    * @param id - The discipline ID
    * @param organizationId - The organization ID
-   * @returns Discipline with VPs, or null if not found
+   * @returns Discipline with Orchestrators, or null if not found
    */
   async getDisciplineWithVPs(id: string, organizationId: string): Promise<DisciplineWithVPs | null> {
     const discipline = await this.getDisciplineInOrg(id, organizationId);
@@ -724,23 +723,23 @@ export class DisciplineServiceImpl implements DisciplineService {
       return null;
     }
 
-    const vps = await this.getVPsInDisciplineInOrg(id, organizationId);
+    const orchestrators = await this.getVPsInDisciplineInOrg(id, organizationId);
 
-    const vpBasics: VPBasic[] = vps.map((vp) => ({
+    const vpBasics: OrchestratorBasic[] = orchestrators.map((vp) => ({
       id: vp.id,
       role: vp.role,
       status: vp.status,
       user: {
-        id: (vp as VP & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.id,
-        name: (vp as VP & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.name,
-        email: (vp as VP & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.email,
-        avatarUrl: (vp as VP & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.avatarUrl,
+        id: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.id,
+        name: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.name,
+        email: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.email,
+        avatarUrl: (vp as Orchestrator & { user: { id: string; name: string | null; email: string; avatarUrl: string | null } }).user.avatarUrl,
       },
     }));
 
     return {
       ...discipline,
-      vps: vpBasics,
+      orchestrators: vpBasics,
     };
   }
 
@@ -818,11 +817,11 @@ export class DisciplineServiceImpl implements DisciplineService {
  *   organizationId: 'org_123',
  * });
  *
- * // Assign a VP to the discipline
+ * // Assign a Orchestrator to the discipline
  * await disciplineService.assignVPToDiscipline('vp_456', discipline.id);
  *
- * // List VPs in the discipline
- * const vps = await disciplineService.getVPsInDiscipline(discipline.id);
+ * // List Orchestrators in the discipline
+ * const orchestrators = await disciplineService.getVPsInDiscipline(discipline.id);
  * ```
  */
 export function createDisciplineService(database?: PrismaClient): DisciplineServiceImpl {

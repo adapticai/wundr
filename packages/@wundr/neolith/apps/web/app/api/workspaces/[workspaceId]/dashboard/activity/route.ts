@@ -11,13 +11,11 @@
  */
 
 import { prisma } from '@neolith/database';
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-
-import { auth } from '@/lib/auth';
-
 import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { auth } from '@/lib/auth';
 
 /**
  * Route context with workspace ID parameter
@@ -308,10 +306,10 @@ async function fetchTaskActivities(
           name: task.assignedTo.name || task.assignedTo.displayName,
           isVP: task.assignedTo.isVP,
         } : null,
-        vp: task.vp ? {
-          id: task.vp.id,
-          role: task.vp.role,
-          discipline: task.vp.discipline,
+        vp: task.orchestrator ? {
+          id: task.orchestrator.id,
+          role: task.orchestrator.role,
+          discipline: task.orchestrator.discipline,
         } : null,
       },
       timestamp: actorId,

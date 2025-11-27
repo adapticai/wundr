@@ -1,7 +1,7 @@
 /**
  * @genesis/core - Daemon Type Definitions
  *
- * Type definitions for VP daemon authentication, authorization,
+ * Type definitions for Orchestrator daemon authentication, authorization,
  * and communication with the Genesis platform.
  *
  * This module defines the type system for daemon-based authentication,
@@ -30,8 +30,8 @@ export type DaemonScope =
   | 'files:write'       // Upload files
   | 'calls:join'        // Join voice/video calls
   | 'calls:manage'      // Create/manage calls
-  | 'vp:status'         // Update VP status
-  | 'vp:config'         // Read VP configuration
+  | 'vp:status'         // Update Orchestrator status
+  | 'vp:config'         // Read Orchestrator configuration
   | 'admin:read'        // Admin read operations
   | 'admin:write';      // Admin write operations
 
@@ -50,7 +50,7 @@ export const DAEMON_SCOPE_SETS = {
     'presence:read',
     'presence:write',
   ] as DaemonScope[],
-  /** All standard VP capabilities */
+  /** All standard Orchestrator capabilities */
   standard: [
     'messages:read',
     'messages:write',
@@ -107,7 +107,7 @@ export interface DaemonToken {
   /** The daemon instance ID this token was issued to */
   daemonId: string;
 
-  /** The VP ID this token authenticates */
+  /** The OrchestratorID this token authenticates */
   vpId: string;
 
   /** The workspace ID context */
@@ -138,7 +138,7 @@ export interface DaemonTokenPair {
  * JWT payload for daemon tokens.
  */
 export interface DaemonTokenPayload {
-  /** Subject - VP ID */
+  /** Subject - OrchestratorID */
   sub: string;
 
   /** Issuer - Genesis platform */
@@ -234,7 +234,7 @@ export interface DaemonAuthResult {
   /** Token pair for API access */
   tokens: DaemonTokenPair;
 
-  /** VP information */
+  /** Orchestrator information */
   vp: {
     id: string;
     name: string;
@@ -283,7 +283,7 @@ export interface DaemonSession {
   /** Daemon instance ID */
   daemonId: string;
 
-  /** VP ID */
+  /** OrchestratorID */
   vpId: string;
 
   /** Workspace ID */
@@ -349,7 +349,7 @@ export type DaemonEventType =
   | 'call.ended'
   | 'call.participant_joined'
   | 'call.participant_left'
-  // VP events
+  // Orchestrator events
   | 'vp.status_changed'
   | 'vp.config_updated'
   | 'vp.mentioned'
@@ -399,7 +399,7 @@ export interface DaemonEvent {
   /** Daemon ID that should receive this event */
   daemonId: string;
 
-  /** VP ID the event is for */
+  /** OrchestratorID the event is for */
   vpId: string;
 
   /** Event payload with structured data */
@@ -429,7 +429,7 @@ export interface DaemonEvent {
  * Runtime configuration for a daemon.
  */
 export interface DaemonConfig {
-  /** VP ID this config is for */
+  /** OrchestratorID this config is for */
   vpId: string;
 
   /** Workspace ID */
@@ -546,7 +546,7 @@ return false;
     (token.type === 'access' || token.type === 'refresh') &&
     token.expiresAt instanceof Date &&
     typeof token.daemonId === 'string' &&
-    typeof token.vpId === 'string' &&
+    typeof token.orchestratorId === 'string' &&
     typeof token.workspaceId === 'string' &&
     Array.isArray(token.scopes)
   );
@@ -563,7 +563,7 @@ return false;
   return (
     typeof session.id === 'string' &&
     typeof session.daemonId === 'string' &&
-    typeof session.vpId === 'string' &&
+    typeof session.orchestratorId === 'string' &&
     typeof session.workspaceId === 'string' &&
     typeof session.status === 'string'
   );
@@ -581,7 +581,7 @@ return false;
     typeof event.id === 'string' &&
     typeof event.type === 'string' &&
     typeof event.daemonId === 'string' &&
-    typeof event.vpId === 'string' &&
+    typeof event.orchestratorId === 'string' &&
     typeof event.payload === 'object'
   );
 }
@@ -611,7 +611,7 @@ export const DAEMON_REDIS_KEYS = {
   /** Session key pattern */
   session: (sessionId: string) => `daemon:session:${sessionId}`,
 
-  /** Sessions by VP */
+  /** Sessions by Orchestrator */
   vpSessions: (vpId: string) => `daemon:vp:${vpId}:sessions`,
 
   /** Sessions by daemon */
@@ -660,10 +660,10 @@ export interface DaemonRegistrationMetadata {
 
 /**
  * Input for registering a new daemon.
- * Used when a VP daemon first connects to the Genesis platform.
+ * Used when a Orchestrator daemon first connects to the Genesis platform.
  */
 export interface DaemonRegistration {
-  /** VP to associate with daemon */
+  /** Orchestrator to associate with daemon */
   vpId: string;
 
   /** Workspace to associate with daemon */
@@ -699,7 +699,7 @@ export interface DaemonRegistrationCredentials {
   /** Associated workspace identifier */
   workspaceId: string;
 
-  /** Associated VP identifier */
+  /** Associated Orchestrator identifier */
   vpId: string;
 
   /** Credential creation timestamp */
@@ -752,7 +752,7 @@ export interface DaemonAuthResponse {
   /** Daemon identifier */
   daemonId: string;
 
-  /** VP identifier */
+  /** Orchestrator identifier */
   vpId: string;
 }
 

@@ -1,8 +1,8 @@
 /**
  * @wundr.io/slack-agent - Channel Bookmarks Capability
  *
- * Provides comprehensive Slack channel bookmark management capabilities for the VP agent.
- * The VP agent operates as a full user in Slack workspaces, enabling it to
+ * Provides comprehensive Slack channel bookmark management capabilities for the Orchestrator agent.
+ * The Orchestrator agent operates as a full user in Slack workspaces, enabling it to
  * create, edit, remove, and list channel bookmarks (the links at the top of channels).
  *
  * @packageDocumentation
@@ -147,7 +147,7 @@ export interface BookmarkManagerConfig {
 // =============================================================================
 
 /**
- * BookmarkManager - Manages Slack channel bookmarks for the VP agent
+ * BookmarkManager - Manages Slack channel bookmarks for the Orchestrator agent
  *
  * Provides methods to add, edit, remove, and list channel bookmarks.
  * Handles permission errors gracefully and provides clear error messages.

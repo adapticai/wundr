@@ -10,12 +10,9 @@
  */
 
 import { prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
-import { ORG_HIERARCHY_ERROR_CODES } from '@/lib/validations/org-hierarchy';
-import { createErrorResponse, ORG_ERROR_CODES } from '@/lib/validations/organization';
-
 import type {
   OrgHierarchyNode,
   OrgHierarchyResponse,
@@ -23,7 +20,8 @@ import type {
   VPNodeData,
   WorkspaceNodeData,
 } from '@/lib/validations/org-hierarchy';
-import type { NextRequest } from 'next/server';
+import { ORG_HIERARCHY_ERROR_CODES } from '@/lib/validations/org-hierarchy';
+import { createErrorResponse, ORG_ERROR_CODES } from '@/lib/validations/organization';
 
 /**
  * Route context with workspace ID parameter
@@ -151,7 +149,7 @@ export async function GET(
     }
 
     // Fetch all VPs for the organization (both workspace-specific and org-wide)
-    const vps = await prisma.vP.findMany({
+    const orchestrators = await prisma.vP.findMany({
       where: {
         organizationId,
       },
@@ -178,7 +176,7 @@ export async function GET(
     });
 
     // Fetch current tasks for all VPs in parallel
-    const vpTasksPromises = vps.map(async (vp) => {
+    const vpTasksPromises = orchestrators.map(async (vp) => {
       const currentTask = await prisma.task.findFirst({
         where: {
           vpId: vp.id,
@@ -200,10 +198,10 @@ export async function GET(
     const hierarchy: OrgHierarchyNode[] = [];
 
     // Group VPs by workspace and discipline
-    const workspaceVPsMap = new Map<string, typeof vps>();
-    const orgWideVPs: typeof vps = [];
+    const workspaceVPsMap = new Map<string, typeof orchestrators>();
+    const orgWideVPs: typeof orchestrators = [];
 
-    for (const vp of vps) {
+    for (const vp of orchestrators) {
       if (vp.workspaceId) {
         const existing = workspaceVPsMap.get(vp.workspaceId) || [];
         existing.push(vp);
@@ -218,8 +216,8 @@ export async function GET(
       const workspaceVPs = workspaceVPsMap.get(ws.id) || [];
 
       // Group VPs by discipline
-      const disciplineMap = new Map<string, typeof vps>();
-      const noDisciplineVPs: typeof vps = [];
+      const disciplineMap = new Map<string, typeof orchestrators>();
+      const noDisciplineVPs: typeof orchestrators = [];
 
       for (const vp of workspaceVPs) {
         if (vp.disciplineRef) {
@@ -239,7 +237,7 @@ export async function GET(
         const firstVP = disciplineVPs[0];
         const disciplineName = firstVP?.disciplineRef?.name || 'Unknown';
 
-        // Build VP nodes for this discipline
+        // Build Orchestrator nodes for this discipline
         const vpNodes: OrgHierarchyNode[] = disciplineVPs.map((vp) => {
           const currentTask = vpTasksMap.get(vp.id);
           const vpData: VPNodeData = {
@@ -306,8 +304,8 @@ export async function GET(
     }
 
     // Calculate statistics
-    const totalVPs = vps.length;
-    const onlineVPs = vps.filter((vp) => vp.status === 'ONLINE').length;
+    const totalVPs = orchestrators.length;
+    const onlineVPs = orchestrators.filter((vp) => vp.status === 'ONLINE').length;
     const totalWorkspaces = organization.workspaces.length;
     const totalChannels = organization.workspaces.reduce(
       (sum, ws) => sum + ws._count.channels,

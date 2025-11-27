@@ -22,13 +22,13 @@ files=(
   "components/notifications/notification-toast.tsx"
   "components/performance/index.tsx"
   "components/presence/online-users-list.tsx"
-  "components/presence/vp-status-card.tsx"
+  "components/presence/orchestrator-status-card.tsx"
   "components/search/search-results.tsx"
   "components/upload/file-attachment.tsx"
   "components/upload/image-gallery.tsx"
   "components/upload/image-preview.tsx"
   "components/upload/lightbox.tsx"
-  "components/vp/vp-card.tsx"
+  "components/vp/orchestrator-card.tsx"
 )
 
 for file in "${files[@]}"; do

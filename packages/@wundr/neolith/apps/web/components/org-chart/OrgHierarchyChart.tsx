@@ -16,10 +16,10 @@ import type { OrgChartProps } from './types';
  * Features:
  * - Expandable/collapsible nodes
  * - Discipline-based color coding
- * - VP status indicators
+ * - Orchestrator status indicators
  * - Reporting line visualization
  * - Responsive grid layout
- * - Drill-down to VP details
+ * - Drill-down to Orchestrator details
  */
 export function OrgHierarchyChart({ hierarchy, onNodeClick, className }: OrgChartProps) {
   return (
@@ -28,7 +28,7 @@ export function OrgHierarchyChart({ hierarchy, onNodeClick, className }: OrgChar
         <CardHeader>
           <CardTitle>Organization Hierarchy</CardTitle>
           <CardDescription>
-            View your organization structure, workspaces, and virtual persons
+            View your organization structure, workspaces, and orchestrators
           </CardDescription>
         </CardHeader>
         <CardContent>

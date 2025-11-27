@@ -6,7 +6,7 @@
  * that make up an AI-powered organizational structure. It serves as the central
  * repository for:
  *
- * - **VP and Session Manager Charters**: High-level organizational leadership definitions
+ * - **Orchestrator and Session Manager Charters**: High-level organizational leadership definitions
  * - **Discipline Packs**: Domain-specific agent configurations and behaviors
  * - **Sub-agent Definitions**: Individual agent specifications and capabilities
  * - **MCP Tool Configurations**: Tool definitions and access policies
@@ -17,7 +17,7 @@
  * allowing for both persistent (file-based) and ephemeral (in-memory) storage strategies.
  *
  * Key features:
- * - Hierarchical charter management (VP -> Session Manager -> Sub-agents)
+ * - Hierarchical charter management (Orchestrator -> Session Manager -> Sub-agents)
  * - Discipline pack versioning and composition
  * - Universal vs. discipline-specific agent registration
  * - Tool capability indexing and discovery
@@ -39,7 +39,7 @@
  * // List all universal agents
  * const agents = await registry.agents.listUniversal();
  *
- * // Get VP charter
+ * // Get Orchestrator charter
  * const vpCharter = await registry.charters.getVP('engineering-vp');
  *
  * // Register MCP tools

@@ -1,17 +1,17 @@
 /**
  * @wundr/slack-agent - Threading Capabilities
  *
- * Implements Slack threading functionality for the VP (Virtual Principal) agent.
+ * Implements Slack threading functionality for the Orchestrator (Virtual Principal) agent.
  * Enables natural participation in threaded conversations as a full Slack user.
  *
  * @packageDocumentation
  */
 
 import type {
-  WebClient,
   ChatPostMessageArguments,
   ChatPostMessageResponse,
   ConversationsRepliesResponse,
+  WebClient,
 } from '@slack/web-api';
 
 // =============================================================================
@@ -135,9 +135,9 @@ function isBlockKit(content: string | BlockKit): content is BlockKit {
 // =============================================================================
 
 /**
- * Provides threading capabilities for the Slack VP agent.
+ * Provides threading capabilities for the Slack Orchestrator agent.
  *
- * This class enables the VP agent to participate in threaded conversations
+ * This class enables the Orchestrator agent to participate in threaded conversations
  * naturally, including replying to threads, starting new threads, and
  * managing thread subscriptions.
  *

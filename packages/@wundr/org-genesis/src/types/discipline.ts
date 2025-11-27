@@ -344,7 +344,7 @@ export interface DisciplinePack {
 
   /**
    * Optional ID of the parent Virtual Principal (VP).
-   * If set, this discipline operates under the VP's authority and policies.
+   * If set, this discipline operates under the Orchestrator's authority and policies.
    */
   parentVpId?: string;
 
@@ -456,8 +456,8 @@ export interface UpdateDisciplineConfig {
   description?: string;
 
   /**
-   * Updated parent VP ID.
-   * Set to `null` to remove the parent VP association.
+   * Updated parent Orchestrator ID.
+   * Set to `null` to remove the parent Orchestrator association.
    */
   parentVpId?: string | null;
 
@@ -525,7 +525,7 @@ export interface DisciplinePackSummary {
   agentCount: number;
 
   /**
-   * Optional parent VP ID.
+   * Optional parent Orchestrator ID.
    */
   parentVpId?: string;
 
@@ -614,7 +614,7 @@ export interface DisciplineQueryOptions {
   category?: DisciplineCategory;
 
   /**
-   * Filter by parent VP ID.
+   * Filter by parent Orchestrator ID.
    */
   parentVpId?: string;
 

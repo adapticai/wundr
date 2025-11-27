@@ -5,7 +5,7 @@
  * This module aggregates and re-exports all prompt templates used for generating
  * organizational structures at each tier of the hierarchy:
  *
- * - **VP Prompts** (Tier 1): Templates for generating Vice President / Virtual Persona
+ * - **Orchestrator Prompts** (Tier 1): Templates for generating Orchestrator / Orchestrator
  *   agents responsible for node orchestration and resource management.
  *
  * - **Discipline Prompts** (Tier 2): Templates for generating Discipline Packs
@@ -19,11 +19,11 @@
  * @example
  * ```typescript
  * import {
- *   // VP-level prompts
- *   buildVPGenerationPrompt,
- *   parseVPGenerationResponse,
- *   VP_GENERATION_SYSTEM_PROMPT,
- *   type VPGenerationContext,
+ *   // Orchestrator-level prompts
+ *   buildOrchestratorGenerationPrompt,
+ *   parseOrchestratorGenerationResponse,
+ *   ORCHESTRATOR_GENERATION_SYSTEM_PROMPT,
+ *   type OrchestratorGenerationContext,
  *
  *   // Discipline-level prompts
  *   buildDisciplineGenerationPrompt,
@@ -39,6 +39,6 @@
  * ```
  */
 
-export * from './vp-prompts.js';
+export * from './orchestrator-prompts.js';
 export * from './discipline-prompts.js';
 export * from './agent-prompts.js';

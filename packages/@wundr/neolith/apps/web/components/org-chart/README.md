@@ -8,11 +8,11 @@ This directory contains components for displaying organization hierarchy with ex
 Main component for displaying the organization hierarchy as a tree structure.
 
 **Features:**
-- Expandable/collapsible nodes (Organization, Workspace, VP levels)
+- Expandable/collapsible nodes (Organization, Workspace, Orchestrator levels)
 - Discipline-based color coding for VPs
-- VP status indicators (Online, Offline, Busy, Away)
+- Orchestrator status indicators (Online, Offline, Busy, Away)
 - Authority level badges (Owner, Admin, Member)
-- Drill-down to VP details via popover
+- Drill-down to Orchestrator details via popover
 - Responsive grid layouts
 - Team statistics and grouping
 
@@ -38,7 +38,7 @@ const hierarchy: OrgHierarchyNode = {
       },
       children: [
         {
-          id: 'vp-1',
+          id: 'orchestrator-1',
           type: 'vp',
           name: 'John Doe',
           data: {
@@ -63,17 +63,17 @@ const hierarchy: OrgHierarchyNode = {
 ```
 
 ### OrgNode
-Individual node component for rendering Organization, Workspace, or VP nodes.
+Individual node component for rendering Organization, Workspace, or Orchestrator nodes.
 
 **Features:**
 - Auto-expand first 2 levels
 - Click to expand/collapse
 - Visual hierarchy with connecting lines
-- Grouped VP display by discipline
+- Grouped Orchestrator display by discipline
 - Status dots and badges
 
 ### VPDetailsPopover
-Popover component showing quick VP details on click.
+Popover component showing quick Orchestrator details on click.
 
 **Features:**
 - Avatar and name
@@ -156,21 +156,21 @@ Colors are automatically applied based on the VP's discipline field.
 ## Tasks Implemented
 
 ### 1.1.3.1 - Org Chart Visualization
-- ✅ Tree/hierarchy view with Organization > Workspace > VP structure
+- ✅ Tree/hierarchy view with Organization > Workspace > Orchestrator structure
 - ✅ CSS Grid/Flexbox layouts
 - ✅ Expandable/collapsible nodes
 
-### 1.1.3.2 - VP Reporting Lines
+### 1.1.3.2 - Orchestrator Reporting Lines
 - ✅ Supervisor/subordinate relationship display
 - ✅ Visual connection lines (OrgConnector component)
 - ✅ Discipline hierarchy grouping
 
 ### 1.1.3.3 - Authority Levels & Permissions
 - ✅ Role badges (OWNER, ADMIN, MEMBER)
-- ✅ VP status indicators (ONLINE, OFFLINE, BUSY, AWAY)
+- ✅ Orchestrator status indicators (ONLINE, OFFLINE, BUSY, AWAY)
 - ✅ Visual permission level indicators
 
-### 1.1.3.4 - Drill-down to VP Details
+### 1.1.3.4 - Drill-down to Orchestrator Details
 - ✅ VPDetailsPopover component
 - ✅ Click to view details
 - ✅ Quick actions (View Details, Start Chat)

@@ -19,8 +19,8 @@
  *
  * const context: DisciplineGenerationContext = {
  *   orgName: 'Acme Corp',
- *   vpName: 'VP of Engineering',
- *   vpSlug: 'vp-engineering',
+ *   vpName: 'Orchestrator of Engineering',
+ *   vpSlug: 'orchestrator-engineering',
  *   industry: 'SaaS Technology',
  *   vpResponsibilities: ['Software Development', 'Infrastructure', 'DevOps'],
  * };
@@ -32,11 +32,11 @@
  */
 
 import type {
-  DisciplinePack,
-  DisciplineCategory,
-  MCPServerConfig,
-  HookConfig,
   ClaudeMdConfig,
+  DisciplineCategory,
+  DisciplinePack,
+  HookConfig,
+  MCPServerConfig,
 } from '../../types/index.js';
 
 // ============================================================================
@@ -44,7 +44,7 @@ import type {
 // ============================================================================
 
 /**
- * Context required for generating disciplines under a VP.
+ * Context required for generating disciplines under a Orchestrator.
  *
  * @description
  * This interface defines the contextual information needed to generate
@@ -55,8 +55,8 @@ import type {
  * ```typescript
  * const context: DisciplineGenerationContext = {
  *   orgName: 'TechCorp',
- *   vpName: 'VP of Engineering',
- *   vpSlug: 'vp-engineering',
+ *   vpName: 'Orchestrator of Engineering',
+ *   vpSlug: 'orchestrator-engineering',
  *   industry: 'Financial Technology',
  *   vpResponsibilities: [
  *     'Software development and architecture',
@@ -78,17 +78,17 @@ export interface DisciplineGenerationContext {
 
   /**
    * Name of the parent Virtual Principal (VP).
-   * The VP oversees this discipline in the hierarchy.
+   * The Orchestrator oversees this discipline in the hierarchy.
    *
-   * @example 'VP of Engineering', 'Chief Legal Officer'
+   * @example 'Orchestrator of Engineering', 'Chief Legal Officer'
    */
   vpName: string;
 
   /**
-   * URL-safe slug of the parent VP.
+   * URL-safe slug of the parent Orchestrator.
    * Used for path generation and references.
    *
-   * @example 'vp-engineering', 'chief-legal-officer'
+   * @example 'orchestrator-engineering', 'chief-legal-officer'
    */
   vpSlug: string;
 
@@ -101,8 +101,8 @@ export interface DisciplineGenerationContext {
   industry: string;
 
   /**
-   * Optional list of responsibilities assigned to the parent VP.
-   * Helps identify what disciplines should be created under this VP.
+   * Optional list of responsibilities assigned to the parent Orchestrator.
+   * Helps identify what disciplines should be created under this Orchestrator.
    */
   vpResponsibilities?: string[];
 
@@ -254,15 +254,15 @@ Each discipline pack includes:
  *
  * @description
  * This template provides the specific context for generating disciplines
- * under a particular VP. It uses Handlebars-style placeholders that are
+ * under a particular Orchestrator. It uses Handlebars-style placeholders that are
  * replaced with actual values at runtime.
  *
  * Placeholders:
  * - {{orgName}}: Organization name
- * - {{vpName}}: VP name
- * - {{vpSlug}}: VP slug for references
+ * - {{vpName}}: Orchestrator name
+ * - {{vpSlug}}: Orchestrator slug for references
  * - {{industry}}: Industry/domain
- * - {{vpResponsibilities}}: List of VP responsibilities
+ * - {{vpResponsibilities}}: List of Orchestrator responsibilities
  * - {{existingDisciplines}}: Already defined disciplines to avoid duplicates
  * - {{techStack}}: Technology stack information
  */
@@ -271,7 +271,7 @@ Organization: {{orgName}}
 VP: {{vpName}} ({{vpSlug}})
 Industry: {{industry}}
 {{#if vpResponsibilities}}
-VP Responsibilities:
+Orchestrator Responsibilities:
 {{#each vpResponsibilities}}
 - {{this}}
 {{/each}}
@@ -289,8 +289,8 @@ Existing Disciplines (avoid duplicates):
 {{/each}}
 {{/if}}
 
-Generate disciplines for this VP. Consider:
-1. The VP's responsibilities and domain coverage
+Generate disciplines for this Orchestrator. Consider:
+1. The Orchestrator's responsibilities and domain coverage
 2. The industry context and specific requirements
 3. Common workflows and tasks in this domain
 4. Tools and integrations typically needed
@@ -411,8 +411,8 @@ Return the updated discipline as a JSON object with all required fields.
  * ```typescript
  * const context: DisciplineGenerationContext = {
  *   orgName: 'TechCorp',
- *   vpName: 'VP of Engineering',
- *   vpSlug: 'vp-engineering',
+ *   vpName: 'Orchestrator of Engineering',
+ *   vpSlug: 'orchestrator-engineering',
  *   industry: 'SaaS Technology',
  *   vpResponsibilities: ['Software Development', 'Infrastructure'],
  * };
@@ -428,15 +428,15 @@ export function buildDisciplineGenerationPrompt(
 
   // Replace simple placeholders
   prompt = prompt.replace(/\{\{orgName\}\}/g, context.orgName);
-  prompt = prompt.replace(/\{\{vpName\}\}/g, context.vpName);
-  prompt = prompt.replace(/\{\{vpSlug\}\}/g, context.vpSlug);
+  prompt = prompt.replace(/\{\{vpName\}\}/g, context.orchestratorName);
+  prompt = prompt.replace(/\{\{vpSlug\}\}/g, context.orchestratorSlug);
   prompt = prompt.replace(/\{\{industry\}\}/g, context.industry);
 
   // Handle vpResponsibilities conditional block
-  if (context.vpResponsibilities && context.vpResponsibilities.length > 0) {
+  if (context.orchestratorResponsibilities && context.orchestratorResponsibilities.length > 0) {
     const responsibilitiesBlock =
-      'VP Responsibilities:\n' +
-      context.vpResponsibilities.map((r) => `- ${r}`).join('\n');
+      'Orchestrator Responsibilities:\n' +
+      context.orchestratorResponsibilities.map((r) => `- ${r}`).join('\n');
     prompt = prompt.replace(
       /\{\{#if vpResponsibilities\}\}[\s\S]*?\{\{\/if\}\}/,
       responsibilitiesBlock,
@@ -1047,7 +1047,7 @@ function validateAgentTypes(agentTypes: unknown, index: number): string[] {
  * timestamps, and other system-managed fields.
  *
  * @param parsed - Parsed discipline data from LLM response
- * @param parentVpId - Optional parent VP ID to associate with the discipline
+ * @param parentVpId - Optional parent Orchestrator ID to associate with the discipline
  * @returns Partial DisciplinePack ready for registry creation
  *
  * @example

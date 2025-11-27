@@ -6,16 +6,16 @@
  * @example
  * ```typescript
  * import {
- *   createMockVP,
- *   createMockVPWithUser,
+ *   createMockOrchestrator,
+ *   createMockOrchestratorWithUser,
  *   createMockPrismaClient,
- *   VPFactories,
+ *   OrchestratorFactories,
  *   createMockMessage,
  *   createMockReaction,
  *   MessageFactories,
  *   createMockRedis,
  *   createMockUserPresence,
- *   createMockVPPresence,
+ *   createMockOrchestratorPresence,
  *   createMockHeartbeatRecord,
  *   createMockHealthStatus,
  *   PresenceFactories,
@@ -35,7 +35,7 @@
  * @module @genesis/core/test-utils
  */
 
-export * from './vp-factories';
+export * from './orchestrator-factories';
 export * from './message-factories';
 export * from './mock-redis';
 export * from './presence-factories';

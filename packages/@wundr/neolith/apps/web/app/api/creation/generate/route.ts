@@ -10,23 +10,21 @@
 
 import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
+import type { ChannelSpec, OrchestratorSpec, SessionManagerSpec, SubagentSpec, WorkflowSpec, WorkspaceSpec } from '@/lib/validations/creation';
 import {
+  CREATION_ERROR_CODES,
+  channelSpecSchema,
+  createCreationErrorResponse,
   generateRequestSchema,
   orchestratorSpecSchema,
-  workflowSpecSchema,
-  channelSpecSchema,
-  workspaceSpecSchema,
   sessionManagerFullSpecSchema,
   subagentFullSpecSchema,
-  createCreationErrorResponse,
-  CREATION_ERROR_CODES,
+  workflowSpecSchema,
+  workspaceSpecSchema,
 } from '@/lib/validations/creation';
-
-import type { NextRequest } from 'next/server';
-import type { OrchestratorSpec, WorkflowSpec, ChannelSpec, WorkspaceSpec, SessionManagerSpec, SubagentSpec } from '@/lib/validations/creation';
 
 /**
  * Create an orchestrator from spec
@@ -52,8 +50,8 @@ async function createOrchestrator(spec: OrchestratorSpec, workspaceId: string) {
     },
   });
 
-  // Create the VP (Orchestrator)
-  const vp = await prisma.vP.create({
+  // Create the Orchestrator (Orchestrator)
+  const orchestrator = await prisma.vP.create({
     data: {
       userId: vpUser.id,
       workspaceId,
@@ -210,11 +208,11 @@ async function createWorkspace(spec: WorkspaceSpec, userId: string, organization
 
 /**
  * Create a session manager from spec
- * Note: Session managers are not yet in the schema, so we store them in VP capabilities
+ * Note: Session managers are not yet in the schema, so we store them in Orchestrator capabilities
  */
 async function createSessionManager(spec: SessionManagerSpec) {
-  // Get the parent VP and update its capabilities
-  const vp = await prisma.vP.findUnique({
+  // Get the parent Orchestrator and update its capabilities
+  const orchestrator = await prisma.vP.findUnique({
     where: { id: spec.orchestratorId },
   });
 
@@ -250,11 +248,11 @@ async function createSessionManager(spec: SessionManagerSpec) {
 
 /**
  * Create a subagent from spec
- * Note: Subagents are not yet in the schema, so we store them in VP capabilities
+ * Note: Subagents are not yet in the schema, so we store them in Orchestrator capabilities
  */
 async function createSubagent(spec: SubagentSpec) {
   // Get the parent and update its capabilities
-  const vp = await prisma.vP.findUnique({
+  const orchestrator = await prisma.vP.findUnique({
     where: { id: spec.parentId },
   });
 

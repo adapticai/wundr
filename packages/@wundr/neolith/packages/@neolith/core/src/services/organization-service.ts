@@ -7,30 +7,28 @@
  * @packageDocumentation
  */
 
+import type { Organization, OrganizationMember, OrganizationRole , Prisma, PrismaClient } from '@neolith/database';
 import { prisma } from '@neolith/database';
-
 import {
   GenesisError,
-  TransactionError,
   OrganizationNotFoundError,
+  TransactionError,
 } from '../errors';
+import type {
+  CreateOrgInput,
+  ListOrgsOptions,
+  OrganizationMemberRole,
+  OrganizationWithMembers,
+  PaginatedOrgResult,
+  UpdateOrgInput,
+} from '../types/organization';
 import {
   DEFAULT_ORG_LIST_OPTIONS,
-  MAX_NAME_LENGTH,
   MAX_DESCRIPTION_LENGTH,
+  MAX_NAME_LENGTH,
   MAX_SLUG_LENGTH,
 } from '../types/organization';
 import { generateSlug } from '../utils';
-
-import type {
-  OrganizationWithMembers,
-  CreateOrgInput,
-  UpdateOrgInput,
-  ListOrgsOptions,
-  PaginatedOrgResult,
-  OrganizationMemberRole,
-} from '../types/organization';
-import type { PrismaClient, Prisma, OrganizationRole , Organization, OrganizationMember } from '@neolith/database';
 
 // =============================================================================
 // Custom Errors
@@ -277,7 +275,7 @@ export class OrganizationServiceImpl implements OrganizationService {
           include: { user: true },
         },
         workspaces: true,
-        vps: {
+        orchestrators: {
           include: { user: true },
         },
       },
@@ -300,7 +298,7 @@ export class OrganizationServiceImpl implements OrganizationService {
           include: { user: true },
         },
         workspaces: true,
-        vps: {
+        orchestrators: {
           include: { user: true },
         },
       },

@@ -13,8 +13,8 @@
  * Registry entry types representing all supported entity categories.
  *
  * - `organization`: Top-level organizational unit
- * - `vp`: Vice President domain (e.g., VP of Engineering, VP of Product)
- * - `discipline`: Specialized discipline within a VP domain
+ * - `vp`: Orchestrator domain (e.g., Orchestrator of Engineering, Orchestrator of Product)
+ * - `discipline`: Specialized discipline within a Orchestrator domain
  * - `session-manager`: Session management entity for agent coordination
  * - `agent`: Individual AI agent instance
  * - `tool`: MCP tool or capability
@@ -229,7 +229,7 @@ export interface RegistryQueryResult<T> {
  * ```typescript
  * const stats: RegistryStats = {
  *   organizationCount: 3,
- *   vpCount: 12,
+ *   orchestratorCount: 12,
  *   disciplineCount: 48,
  *   agentCount: 156,
  *   toolCount: 89,
@@ -245,9 +245,9 @@ export interface RegistryStats {
   organizationCount: number;
 
   /**
-   * Total number of registered VP domains.
+   * Total number of registered Orchestrator domains.
    */
-  vpCount: number;
+  orchestratorCount: number;
 
   /**
    * Total number of registered disciplines.

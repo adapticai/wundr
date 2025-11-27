@@ -2,7 +2,7 @@
  * Full Flow Integration Tests
  *
  * Comprehensive end-to-end tests for critical user flows:
- * 1. Login → Dashboard → Create VP → View VP
+ * 1. Login → Dashboard → Create Orchestrator → View VP
  * 2. Dashboard → Channels → Create Channel → Send Message
  * 3. Dashboard → Workflows → Create Workflow → View Workflow
  * 4. Dashboard → Agents → Create Agent → View Agent
@@ -13,7 +13,7 @@
  * and takes screenshots at key points.
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import * as path from 'path';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
@@ -55,7 +55,7 @@ function getErrorReport(): string {
   return `Errors found (${criticalErrors.length}):\n${criticalErrors.map((e, i) => `  ${i + 1}. ${e}`).join('\n')}`;
 }
 
-test.describe('Flow 1: Login → Dashboard → Create VP → View VP', () => {
+test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View VP', () => {
   // workspaceId will be extracted from URL after login
   let workspaceId: string = 'pending-auth';
 
@@ -64,7 +64,7 @@ test.describe('Flow 1: Login → Dashboard → Create VP → View VP', () => {
     await page.goto(BASE_URL);
   });
 
-  test('should complete full VP creation flow', async ({ page }) => {
+  test('should complete full Orchestrator creation flow', async ({ page }) => {
     // Step 1: Navigate to Dashboard
     await page.goto(BASE_URL);
     await page.waitForURL(/\/.*\/dashboard/, { timeout: 15000 });
@@ -78,9 +78,9 @@ test.describe('Flow 1: Login → Dashboard → Create VP → View VP', () => {
     console.log(`Step 1: Dashboard loaded for workspace: ${workspaceId}`);
     expect(page.url()).toContain('/dashboard');
 
-    // Step 2: Navigate to Virtual Persons page
-    await page.click('aside a:has-text("Virtual Persons"), a:has-text("VPs")');
-    await page.waitForURL(/\/vps/, { timeout: 10000 });
+    // Step 2: Navigate to Orchestrators page
+    await page.click('aside a:has-text("Orchestrators"), a:has-text("VPs")');
+    await page.waitForURL(/\/orchestrators/, { timeout: 10000 });
 
     await page.screenshot({
       path: path.join(SCREENSHOTS_DIR, 'flow1-step2-vps-page.png'),
@@ -89,7 +89,7 @@ test.describe('Flow 1: Login → Dashboard → Create VP → View VP', () => {
 
     console.log('Step 2: VPs page loaded');
 
-    // Step 3: Click Create VP button
+    // Step 3: Click Create Orchestrator button
     const createVPButton = page.locator('button:has-text("Create VP")').first();
     await expect(createVPButton).toBeVisible({ timeout: 5000 });
     await createVPButton.click();
@@ -100,14 +100,14 @@ test.describe('Flow 1: Login → Dashboard → Create VP → View VP', () => {
       fullPage: true,
     });
 
-    console.log('Step 3: Create VP dialog opened');
+    console.log('Step 3: Create Orchestrator dialog opened');
 
-    // Step 4: Fill out VP creation form
+    // Step 4: Fill out Orchestrator creation form
     const timestamp = Date.now();
-    const vpName = `Test VP ${timestamp}`;
+    const vpName = `Test Orchestrator ${timestamp}`;
 
     // Find and fill name field
-    const nameInput = page.locator('input[name="name"], input[id="vp-name"], input[placeholder*="name" i]').first();
+    const nameInput = page.locator('input[name="name"], input[id="orchestrator-name"], input[placeholder*="name" i]').first();
     await nameInput.fill(vpName);
 
     // Select discipline if available
@@ -616,7 +616,7 @@ test.describe('Integration Test Summary Report', () => {
 
     // Test all flows quickly to generate summary
     const flows = [
-      { name: 'VP Creation Flow', route: '/vps', button: 'Create VP' },
+      { name: 'VP Creation Flow', route: '/orchestrators', button: 'Create VP' },
       { name: 'Channel Creation Flow', route: '/channels', button: 'Create Channel' },
       { name: 'Workflow Creation Flow', route: '/workflows', button: 'Create Workflow' },
       { name: 'Agent Creation Flow', route: '/agents', button: 'Create Agent' },

@@ -31,7 +31,7 @@ export * from './types/index.js';
 // Utilities - export only what doesn't conflict with types
 export {
   generateOrgId,
-  generateVpId,
+  generateOrchestratorId,
   generateDisciplineId,
   generateSlug,
   isValidSlug,
@@ -85,10 +85,10 @@ export {
 // Organizational Generator - selective exports to avoid type conflicts
 export {
   // Prompts
-  VP_GENERATION_SYSTEM_PROMPT,
-  VP_GENERATION_USER_PROMPT,
-  buildVPGenerationPrompt,
-  parseVPGenerationResponse,
+  ORCHESTRATOR_GENERATION_SYSTEM_PROMPT,
+  ORCHESTRATOR_GENERATION_USER_PROMPT,
+  buildOrchestratorGenerationPrompt,
+  parseOrchestratorGenerationResponse,
   DISCIPLINE_GENERATION_SYSTEM_PROMPT,
   DISCIPLINE_GENERATION_USER_PROMPT,
   buildDisciplineGenerationPrompt,
@@ -98,8 +98,8 @@ export {
   buildAgentGenerationPrompt,
   parseAgentGenerationResponse,
   // Generators
-  VPGenerator,
-  createVPGenerator,
+  OrchestratorGenerator,
+  createOrchestratorGenerator,
   DisciplineGenerator,
   createDisciplineGenerator,
   AgentGenerator,
@@ -112,11 +112,11 @@ export {
 } from './generator/index.js';
 
 export type {
-  VPGenerationContext,
+  OrchestratorGenerationContext,
   DisciplineGenerationContext,
   AgentGenerationContext,
   GeneratedAgentPartial,
-  VPGeneratorConfig,
+  OrchestratorGeneratorConfig,
   DisciplineGeneratorConfig,
   AgentGeneratorConfig,
   GenesisEngineConfig,
@@ -135,7 +135,7 @@ export {
   OPERATIONS_DISCIPLINE_ID,
 } from './templates/disciplines/index.js';
 export {
-  VP_CHARTER_TEMPLATE_VERSION,
+  ORCHESTRATOR_CHARTER_TEMPLATE_VERSION,
   CHARTER_TEMPLATE_TYPES,
 } from './templates/charters/index.js';
 export {

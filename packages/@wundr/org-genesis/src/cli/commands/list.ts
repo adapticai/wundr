@@ -15,7 +15,7 @@ import { createRegistryManager } from '../../registry/index.js';
 import type {
   RegistryQuery,
   OrganizationManifest,
-  VPCharter,
+  OrchestratorCharter,
   DisciplinePack,
   AgentDefinition,
 } from '../../types/index.js';
@@ -35,7 +35,7 @@ export type ListEntityType = 'orgs' | 'vps' | 'disciplines' | 'agents' | 'all';
  * @example
  * ```typescript
  * const options: ListOptions = {
- *   parentId: 'vp-engineering',
+ *   parentId: 'orchestrator-engineering',
  *   category: 'engineering',
  *   outputFormat: 'tree',
  *   verbose: true,
@@ -46,7 +46,7 @@ export interface ListOptions {
   /**
    * Filter by parent entity ID.
    * For VPs: organization ID
-   * For disciplines: VP ID
+   * For disciplines: Orchestrator ID
    * For agents: discipline ID
    */
   parentId?: string;
@@ -126,7 +126,7 @@ export interface ListResult {
   /**
    * List of VPs found.
    */
-  vps?: VPCharter[];
+  orchestrators?: OrchestratorCharter[];
 
   /**
    * List of disciplines found.
@@ -232,17 +232,17 @@ function formatOrgsTable(orgs: OrganizationManifest[], verbose: boolean): void {
 /**
  * Formats VPs as a table.
  *
- * @param vps - VPs to format
+ * @param orchestrators - VPs to format
  * @param verbose - Whether to show verbose output
  */
-function formatVPsTable(vps: VPCharter[], verbose: boolean): void {
+function formatVPsTable(vps: OrchestratorCharter[], verbose: boolean): void {
   if (vps.length === 0) {
     console.log('  No VPs found.');
     return;
   }
 
   console.log('');
-  console.log('  Vice Presidents (Tier 1)');
+  console.log('  Orchestrators (Tier 1)');
   console.log('  ' + '='.repeat(76));
 
   if (verbose) {
@@ -256,7 +256,7 @@ function formatVPsTable(vps: VPCharter[], verbose: boolean): void {
   }
   console.log('  ' + '-'.repeat(76));
 
-  for (const vp of vps) {
+  for (const orchestrator of orchestrators) {
     if (verbose) {
       console.log(
         `  ${pad(truncate(vp.id, 29), 30)} ${pad(truncate(vp.identity.name, 24), 25)} ${pad(String(vp.disciplineIds.length), 12)} ${formatDate(vp.createdAt)}`
@@ -376,7 +376,7 @@ function formatTreeOutput(result: ListResult): void {
         const orgVps = result.vps.filter(vp =>
           org.vpRegistry.some(mapping => mapping.vpId === vp.id)
         );
-        for (const vp of orgVps) {
+        for (const orchestrator of orgVps) {
           console.log(`    +-- [VP] ${vp.identity.name}`);
 
           if (result.disciplines) {
@@ -402,7 +402,7 @@ function formatTreeOutput(result: ListResult): void {
       }
     }
   } else if (result.vps && result.vps.length > 0) {
-    for (const vp of result.vps) {
+    for (const orchestrator of result.vps) {
       console.log(`  [VP] ${vp.identity.name} (${vp.id})`);
 
       if (result.disciplines) {
@@ -456,7 +456,7 @@ function formatJsonOutput(result: ListResult): void {
       createdAt: org.createdAt.toISOString(),
       updatedAt: org.updatedAt.toISOString(),
     })),
-    vps: result.vps?.map(vp => ({
+    orchestrators: result.vps?.map(vp => ({
       ...vp,
       createdAt: vp.createdAt.toISOString(),
       updatedAt: vp.updatedAt.toISOString(),
@@ -494,9 +494,9 @@ function formatJsonOutput(result: ListResult): void {
  * // List all VPs
  * const result = await listCommand('vps', {});
  *
- * // List disciplines under a VP
+ * // List disciplines under a Orchestrator
  * const result = await listCommand('disciplines', {
- *   parentId: 'vp-engineering',
+ *   parentId: 'orchestrator-engineering',
  * });
  *
  * // List all entities as tree
@@ -551,14 +551,14 @@ export async function listCommand(
     }
 
     if (type === 'vps' || type === 'all') {
-      const vps = await registryManager.charters.listVPs();
-      result.vps = vps;
-      result.total += vps.length;
+      const orchestrators = await registryManager.charters.listVPs();
+      result.vps = orchestrators;
+      result.total += orchestrators.length;
     }
 
     if (type === 'disciplines' || type === 'all') {
       let disciplines: DisciplinePack[];
-      // Note: listByVP is not yet implemented in DisciplineRegistry
+      // Note: listByOrchestrator is not yet implemented in DisciplineRegistry
       // For now, filter locally if parentId is provided
       if (options.category) {
         disciplines = await registryManager.disciplines.listByCategory(
@@ -567,7 +567,7 @@ export async function listCommand(
       } else {
         disciplines = await registryManager.disciplines.list();
       }
-      // Filter by VP if parentId is provided (local filtering)
+      // Filter by Orchestrator if parentId is provided (local filtering)
       if (options.parentId) {
         disciplines = disciplines.filter(
           d => d.parentVpId === options.parentId
@@ -610,10 +610,10 @@ export async function listCommand(
  * @example
  * ```bash
  * # List all VPs
- * wundr list vps
+ * wundr list orchestrators
  *
- * # List disciplines under a VP
- * wundr list disciplines --parent vp-engineering
+ * # List disciplines under a Orchestrator
+ * wundr list disciplines --parent orchestrator-engineering
  *
  * # List all entities as tree
  * wundr list all --format tree

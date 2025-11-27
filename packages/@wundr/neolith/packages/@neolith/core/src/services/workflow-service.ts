@@ -8,47 +8,46 @@
  */
 
 import { GenesisError } from '../errors';
-import {
-  DEFAULT_WORKFLOW_LIST_OPTIONS,
-  DEFAULT_EXECUTION_LIST_OPTIONS,
-  MAX_WORKFLOW_NAME_LENGTH,
-  MAX_ACTIONS_PER_WORKFLOW,
-  DEFAULT_MAX_LOOP_ITERATIONS,
-  MAX_WEBHOOK_TIMEOUT_MS,
-} from '../types/workflow';
-import { generateCUID } from '../utils';
-
 import type {
-  Workflow,
-  WorkflowTrigger,
-  WorkflowAction,
-  WorkflowVariable,
-  WorkflowVariableValue,
-  WorkflowExecution,
   ActionResult,
-  WorkflowTemplate,
-  TemplateCategory,
+  BuiltInActionResult,
+  ConditionConfig,
   CreateWorkflowInput,
-  UpdateWorkflowInput,
-  ListWorkflowsOptions,
-  ListExecutionsOptions,
-  PaginatedWorkflowResult,
-  PaginatedExecutionResult,
+  DelayConfig,
   ExecutionContext,
   ExecutionStatus,
-  WorkflowCondition,
-  DelayConfig,
-  ConditionConfig,
-  LoopConfig,
-  SetVariableConfig,
-  SetVariableActionResult,
-  SendMessageConfig,
-  SendDMConfig,
-  WebhookActionConfig,
   InvokeVPConfig,
-  BuiltInActionResult,
+  ListExecutionsOptions,
+  ListWorkflowsOptions,
   LoopActionResult,
+  LoopConfig,
+  PaginatedExecutionResult,
+  PaginatedWorkflowResult,
+  SendDMConfig,
+  SendMessageConfig,
+  SetVariableActionResult,
+  SetVariableConfig,
+  TemplateCategory,
+  UpdateWorkflowInput,
+  WebhookActionConfig,
+  Workflow,
+  WorkflowAction,
+  WorkflowCondition,
+  WorkflowExecution,
+  WorkflowTemplate,
+  WorkflowTrigger,
+  WorkflowVariable,
+  WorkflowVariableValue,
 } from '../types/workflow';
+import {
+  DEFAULT_EXECUTION_LIST_OPTIONS,
+  DEFAULT_MAX_LOOP_ITERATIONS,
+  DEFAULT_WORKFLOW_LIST_OPTIONS,
+  MAX_ACTIONS_PER_WORKFLOW,
+  MAX_WEBHOOK_TIMEOUT_MS,
+  MAX_WORKFLOW_NAME_LENGTH,
+} from '../types/workflow';
+import { generateCUID } from '../utils';
 
 // =============================================================================
 // Error Classes
@@ -446,7 +445,7 @@ export const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
   {
     id: 'template_vp_assistance',
     name: 'VP Assistance Request',
-    description: 'Route messages to a VP for automated assistance',
+    description: 'Route messages to a Orchestrator for automated assistance',
     category: 'integration',
     trigger: {
       type: 'message_keyword',
@@ -463,7 +462,7 @@ export const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Ask VP',
         config: {
           type: 'invoke_vp',
-          vpId: '{{config.vpId}}',
+          vpId: '{{config.orchestratorId}}',
           prompt: '{{trigger.message.content}}',
           waitForResponse: true,
         } as InvokeVPConfig,
@@ -471,7 +470,7 @@ export const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
       },
       {
         type: 'send_message',
-        name: 'Reply with VP Response',
+        name: 'Reply with OrchestratorResponse',
         config: {
           type: 'send_message',
           channelId: '{{trigger.channelId}}',
@@ -1367,15 +1366,15 @@ export class WorkflowServiceImpl implements WorkflowService {
     config: InvokeVPConfig,
     context: ExecutionContext,
   ): Promise<{ vpId: string; prompt: string; response?: string }> {
-    const vpId = this.interpolateTemplate(config.vpId, context);
+    const vpId = this.interpolateTemplate(config.orchestratorId, context);
     const prompt = this.interpolateTemplate(config.prompt, context);
 
-    // In real implementation, this would call the VP service
+    // In real implementation, this would call the Orchestrator service
     // For now, return a mock response
     return {
       vpId,
       prompt,
-      response: config.waitForResponse ? 'Mock VP response' : undefined,
+      response: config.waitForResponse ? 'Mock Orchestrator response' : undefined,
     };
   }
 

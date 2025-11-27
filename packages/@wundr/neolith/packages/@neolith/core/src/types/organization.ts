@@ -8,19 +8,19 @@
  */
 
 import type {
-  Organization,
-  Workspace,
   Channel,
-  User,
-  OrganizationMember,
-  WorkspaceMember,
   ChannelMember,
-  OrganizationRole,
-  WorkspaceRole,
   ChannelRole,
   ChannelType,
-  WorkspaceVisibility,
+  Organization,
+  OrganizationMember,
+  OrganizationRole,
+  User,
   VP,
+  Workspace,
+  WorkspaceMember,
+  WorkspaceRole,
+  WorkspaceVisibility,
 } from '@neolith/database';
 
 // =============================================================================
@@ -44,7 +44,7 @@ export interface OrganizationWithRelations extends Organization {
   /** Workspaces in the organization */
   workspaces: Workspace[];
   /** VPs in the organization */
-  vps: VP[];
+  orchestrators: VP[];
 }
 
 /**
@@ -342,7 +342,7 @@ export interface Discipline {
   organizationId: string;
   /** Number of VPs in this discipline */
   vpCount: number;
-  /** When this discipline was first created (first VP with this discipline) */
+  /** When this discipline was first created (first Orchestrator with this discipline) */
   createdAt: Date;
 }
 
@@ -351,18 +351,18 @@ export interface Discipline {
  */
 export interface DisciplineWithVPs extends Discipline {
   /** VPs in this discipline */
-  vps: VPBasic[];
+  orchestrators: VPBasic[];
 }
 
 /**
- * Basic VP info for discipline listing.
+ * Basic Orchestrator info for discipline listing.
  */
 export interface VPBasic {
-  /** VP ID */
+  /** OrchestratorID */
   id: string;
-  /** VP role */
+  /** Orchestrator role */
   role: string;
-  /** VP status */
+  /** Orchestrator status */
   status: string;
   /** User info */
   user: {

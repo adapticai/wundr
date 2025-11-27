@@ -58,18 +58,18 @@ export function generateId(prefix?: string): string {
 }
 
 /**
- * Generate a Virtual Person (VP) ID.
+ * Generate a Orchestrator (VP) ID.
  *
- * Creates a unique identifier for a Virtual Person entity with the 'vp' prefix.
+ * Creates a unique identifier for a Orchestrator entity with the 'vp' prefix.
  *
- * @returns A VP-prefixed unique identifier (e.g., 'vp_a1b2c3d4-...')
+ * @returns A Orchestrator-prefixed unique identifier (e.g., 'vp_a1b2c3d4-...')
  *
  * @example
  * ```typescript
- * const vpId = generateVpId(); // 'vp_a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+ * const vpId = generateOrchestratorId(); // 'vp_a1b2c3d4-e5f6-7890-abcd-ef1234567890'
  * ```
  */
-export function generateVpId(): string {
+export function generateOrchestratorId(): string {
   return generateId('vp');
 }
 

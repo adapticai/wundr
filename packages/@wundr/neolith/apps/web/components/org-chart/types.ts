@@ -82,7 +82,7 @@ export interface OrgHierarchy {
   id: string;
   name: string;
   root?: OrgNode;
-  vps: OrgNode[];
+  orchestrators: OrgNode[];
   createdAt: Date;
   updatedAt: Date;
 }

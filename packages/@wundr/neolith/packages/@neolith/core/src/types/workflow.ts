@@ -166,11 +166,11 @@ export interface ReactionTriggerConfig {
 }
 
 /**
- * VP response trigger configuration.
+ * Orchestrator response trigger configuration.
  */
 export interface VPResponseTriggerConfig {
   type: 'vp_response';
-  /** VP ID to watch */
+  /** OrchestratorID to watch */
   vpId?: string;
   /** Response type filter */
   responseType?: string;
@@ -334,17 +334,17 @@ export interface WebhookActionConfig {
 }
 
 /**
- * VP invocation action configuration.
+ * Orchestrator invocation action configuration.
  */
 export interface InvokeVPConfig {
   type: 'invoke_vp';
-  /** VP ID to invoke */
+  /** OrchestratorID to invoke */
   vpId: string;
-  /** Prompt for the VP */
+  /** Prompt for the Orchestrator */
   prompt: string;
   /** Additional context data */
   context?: Record<string, unknown>;
-  /** Wait for VP response before continuing */
+  /** Wait for Orchestrator response before continuing */
   waitForResponse?: boolean;
 }
 
@@ -1095,14 +1095,14 @@ export interface WebhookActionResult {
 }
 
 /**
- * Result of an invoke VP action.
+ * Result of an invoke Orchestrator action.
  */
 export interface InvokeVPActionResult {
-  /** VP ID that was invoked */
+  /** OrchestratorID that was invoked */
   vpId: string;
-  /** Prompt sent to VP */
+  /** Prompt sent to Orchestrator */
   prompt: string;
-  /** Response from VP if waited for */
+  /** Response from Orchestrator if waited for */
   response?: string;
 }
 

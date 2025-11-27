@@ -2,25 +2,25 @@
  * Slack Message Management Capabilities
  *
  * Provides message editing, deletion, pinning, and history management
- * for the VP (Virtual Principal) agent operating as a full Slack user.
+ * for the Orchestrator (Virtual Principal) agent operating as a full Slack user.
  *
  * @module @wundr/slack-agent/capabilities/message-management
  */
 
 import type {
-  WebClient,
-  ChatUpdateResponse,
+  Block,
   ChatDeleteResponse,
-  PinsAddResponse,
-  PinsRemoveResponse,
-  PinsListResponse,
+  ChatGetPermalinkResponse,
+  ChatUpdateResponse,
   ConversationsHistoryResponse,
   ConversationsRepliesResponse,
-  ChatGetPermalinkResponse,
   KnownBlock,
-  Block,
   MessageAttachment,
   MessageMetadata,
+  PinsAddResponse,
+  PinsListResponse,
+  PinsRemoveResponse,
+  WebClient,
 } from '@slack/web-api';
 import type { MessageElement } from '@slack/web-api/dist/types/response/ConversationsHistoryResponse';
 
@@ -204,7 +204,7 @@ export class SlackMessageError extends Error {
 // ============================================================================
 
 /**
- * Manages Slack message operations for the VP agent.
+ * Manages Slack message operations for the Orchestrator agent.
  *
  * Provides capabilities to edit, delete, pin, and retrieve messages
  * with proper permission handling (can only modify own messages unless admin).

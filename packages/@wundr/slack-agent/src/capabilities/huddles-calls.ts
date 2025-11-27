@@ -1,8 +1,8 @@
 /**
  * @wundr/slack-agent - Huddles and Calls Capability
  *
- * Implements Slack Huddles (audio/video calls) management for VP (Virtual Principal) agents.
- * Enables the VP agent to initiate, join, leave, and manage huddles like any human user.
+ * Implements Slack Huddles (audio/video calls) management for Orchestrator (Virtual Principal) agents.
+ * Enables the Orchestrator agent to initiate, join, leave, and manage huddles like any human user.
  *
  * **IMPORTANT LIMITATIONS:**
  * Slack does not provide a public API for programmatically starting or joining huddles.
@@ -39,10 +39,10 @@
  * @packageDocumentation
  */
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
 import type { WebClient } from '@slack/web-api';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
@@ -82,7 +82,7 @@ export interface HuddleInfo {
   readonly callId?: string;
   /** Huddle title/topic (if set) */
   readonly title?: string;
-  /** Whether this VP agent is in the huddle */
+  /** Whether this Orchestrator agent is in the huddle */
   readonly isSelfInHuddle?: boolean;
 }
 
@@ -192,7 +192,7 @@ export interface HuddleCallsManagerConfig {
 // =============================================================================
 
 /**
- * HuddleCallsManager - Manages Slack Huddles and Calls for the VP agent
+ * HuddleCallsManager - Manages Slack Huddles and Calls for the Orchestrator agent
  *
  * Provides methods to interact with Slack Huddles (native audio/video calls)
  * and Slack Calls API. Due to API limitations, some operations require

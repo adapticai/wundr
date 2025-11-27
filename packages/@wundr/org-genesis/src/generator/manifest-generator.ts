@@ -10,22 +10,22 @@
  * @version 1.0.0
  */
 
-import { generateOrgId, generateSlug, isValidSlug } from '../utils/slug.js';
 
 import type {
   CreateOrgConfig,
-  OrganizationManifest,
-  OrgSize,
-  OrgGovernanceConfig,
-  OrgSecurityConfig,
-  OrgCommunicationConfig,
-  OrgLifecycleState,
-  VPNodeMapping,
-  ManifestValidationResult,
   ManifestValidationError,
+  ManifestValidationResult,
   ManifestValidationWarning,
+  OrganizationManifest,
+  OrgCommunicationConfig,
+  OrgGovernanceConfig,
+  OrgLifecycleState,
+  OrgSecurityConfig,
+  OrgSize,
   SerializedOrganizationManifest,
+  VPNodeMapping,
 } from '../types/index.js';
+import { generateOrgId, generateSlug, isValidSlug } from '../utils/slug.js';
 
 // =============================================================================
 // CONFIGURATION INTERFACES
@@ -149,7 +149,7 @@ const DEFAULT_COMMUNICATION: OrgCommunicationConfig = {
 };
 
 /**
- * VP count recommendations by organization size.
+ * Orchestrator count recommendations by organization size.
  */
 const VP_COUNT_BY_SIZE: Record<
   OrgSize,
@@ -172,7 +172,7 @@ const VP_COUNT_BY_SIZE: Record<
  * - Generating new organization manifests from configuration
  * - Updating existing manifests with new values
  * - Validating manifest structure and content
- * - Managing VP registrations within manifests
+ * - Managing Orchestrator registrations within manifests
  * - Importing/exporting manifests as JSON
  *
  * @example
@@ -255,7 +255,7 @@ export class ManifestGenerator {
    *   mission: 'Democratizing AI for small businesses',
    *   industry: 'technology',
    *   size: 'small',
-   *   vpCount: 3,
+   *   orchestratorCount: 3,
    *   generateDisciplines: true,
    * });
    *
@@ -281,20 +281,20 @@ export class ManifestGenerator {
     // Generate unique organization ID
     const id = generateOrgId();
 
-    // Determine VP count based on size if not specified
+    // Determine Orchestrator count based on size if not specified
     const sizeConfig = VP_COUNT_BY_SIZE[config.size];
-    let vpCount = config.vpCount ?? sizeConfig.recommended;
+    let orchestratorCount = config.orchestratorCount ?? sizeConfig.recommended;
 
-    // Validate VP count against size recommendations
-    if (vpCount < sizeConfig.min) {
+    // Validate Orchestrator count against size recommendations
+    if (orchestratorCount < sizeConfig.min) {
       warnings.push(
-        `VP count ${vpCount} is below recommended minimum ${sizeConfig.min} for ${config.size} organizations.`,
+        `Orchestrator count ${orchestratorCount} is below recommended minimum ${sizeConfig.min} for ${config.size} organizations.`,
       );
-    } else if (vpCount > sizeConfig.max) {
+    } else if (orchestratorCount > sizeConfig.max) {
       warnings.push(
-        `VP count ${vpCount} exceeds recommended maximum ${sizeConfig.max} for ${config.size} organizations.`,
+        `Orchestrator count ${orchestratorCount} exceeds recommended maximum ${sizeConfig.max} for ${config.size} organizations.`,
       );
-      vpCount = sizeConfig.max;
+      orchestratorCount = sizeConfig.max;
     }
 
     // Build governance configuration with overrides
@@ -426,7 +426,7 @@ export class ManifestGenerator {
    * Performs comprehensive validation including:
    * - Required field presence
    * - Field format validation (slugs, IDs)
-   * - Referential integrity (VP IDs in registry)
+   * - Referential integrity (Orchestrator IDs in registry)
    * - Governance and security configuration validation
    *
    * @param manifest - The manifest to validate
@@ -553,38 +553,38 @@ export class ManifestGenerator {
       });
     }
 
-    // VP Registry validation
-    if (!Array.isArray(manifest.vpRegistry)) {
+    // Orchestrator Registry validation
+    if (!Array.isArray(manifest.orchestratorRegistry)) {
       errors.push({
         code: 'INVALID_VP_REGISTRY',
-        message: 'VP registry must be an array',
+        message: 'Orchestrator registry must be an array',
         path: 'vpRegistry',
       });
     } else {
-      // Validate each VP in registry
-      const vpIds = new Set<string>();
-      manifest.vpRegistry.forEach((vp, index) => {
-        if (!vp.vpId) {
+      // Validate each Orchestrator in registry
+      const orchestratorIds = new Set<string>();
+      manifest.orchestratorRegistry.forEach((vp, index) => {
+        if (!vp.orchestratorId) {
           errors.push({
             code: 'MISSING_VP_ID',
-            message: `VP at index ${index} is missing vpId`,
-            path: `vpRegistry[${index}].vpId`,
+            message: `Orchestrator at index ${index} is missing orchestratorId`,
+            path: `vpRegistry[${index}].orchestratorId`,
           });
-        } else if (vpIds.has(vp.vpId)) {
+        } else if (orchestratorIds.has(vp.orchestratorId)) {
           errors.push({
             code: 'DUPLICATE_VP_ID',
-            message: `Duplicate VP ID "${vp.vpId}"`,
-            path: `vpRegistry[${index}].vpId`,
-            value: vp.vpId,
+            message: `Duplicate Orchestrator ID "${vp.orchestratorId}"`,
+            path: `vpRegistry[${index}].orchestratorId`,
+            value: vp.orchestratorId,
           });
         } else {
-          vpIds.add(vp.vpId);
+          orchestratorIds.add(vp.orchestratorId);
         }
 
         if (!vp.nodeId) {
           errors.push({
             code: 'MISSING_NODE_ID',
-            message: `VP at index ${index} is missing nodeId`,
+            message: `Orchestrator at index ${index} is missing nodeId`,
             path: `vpRegistry[${index}].nodeId`,
           });
         }
@@ -592,7 +592,7 @@ export class ManifestGenerator {
         if (!vp.hostname) {
           errors.push({
             code: 'MISSING_HOSTNAME',
-            message: `VP at index ${index} is missing hostname`,
+            message: `Orchestrator at index ${index} is missing hostname`,
             path: `vpRegistry[${index}].hostname`,
           });
         }
@@ -607,27 +607,27 @@ export class ManifestGenerator {
         if (!validStatuses.includes(vp.status)) {
           errors.push({
             code: 'INVALID_VP_STATUS',
-            message: `Invalid VP status "${vp.status}" at index ${index}`,
+            message: `Invalid Orchestrator status "${vp.status}" at index ${index}`,
             path: `vpRegistry[${index}].status`,
             value: vp.status,
           });
         }
       });
 
-      // Check VP count against size recommendations
+      // Check Orchestrator count against size recommendations
       const sizeConfig = VP_COUNT_BY_SIZE[manifest.size];
       if (sizeConfig) {
-        if (manifest.vpRegistry.length < sizeConfig.min) {
+        if (manifest.orchestratorRegistry.length < sizeConfig.min) {
           warnings.push({
             code: 'LOW_VP_COUNT',
-            message: `VP count ${manifest.vpRegistry.length} is below recommended minimum ${sizeConfig.min} for ${manifest.size} organizations`,
+            message: `Orchestrator count ${manifest.orchestratorRegistry.length} is below recommended minimum ${sizeConfig.min} for ${manifest.size} organizations`,
             path: 'vpRegistry',
             suggestion: `Consider adding more VPs (recommended: ${sizeConfig.recommended})`,
           });
-        } else if (manifest.vpRegistry.length > sizeConfig.max) {
+        } else if (manifest.orchestratorRegistry.length > sizeConfig.max) {
           warnings.push({
             code: 'HIGH_VP_COUNT',
-            message: `VP count ${manifest.vpRegistry.length} exceeds recommended maximum ${sizeConfig.max} for ${manifest.size} organizations`,
+            message: `Orchestrator count ${manifest.orchestratorRegistry.length} exceeds recommended maximum ${sizeConfig.max} for ${manifest.size} organizations`,
             path: 'vpRegistry',
           });
         }
@@ -766,69 +766,69 @@ export class ManifestGenerator {
   }
 
   /**
-   * Adds a VP to the manifest's VP registry.
+   * Adds a Orchestrator to the manifest's Orchestrator registry.
    *
-   * @param manifest - The manifest to add the VP to
-   * @param vp - The VP node mapping to add
-   * @returns A new manifest with the VP added
-   * @throws Error if a VP with the same ID already exists
+   * @param manifest - The manifest to add the Orchestrator to
+   * @param orchestrator - The Orchestrator node mapping to add
+   * @returns A new manifest with the Orchestrator added
+   * @throws Error if a Orchestrator with the same ID already exists
    *
    * @example
    * ```typescript
    * const vp: VPNodeMapping = {
-   *   vpId: 'vp_abc123',
+   *   orchestratorId: 'vp_abc123',
    *   nodeId: 'node-us-east-1a',
-   *   hostname: 'vp-eng.cluster.internal',
+   *   hostname: 'orchestrator-eng.cluster.internal',
    *   status: 'provisioning',
    * };
    *
    * const updated = generator.addVP(manifest, vp);
-   * console.log(`VPs: ${updated.vpRegistry.length}`);
+   * console.log(`VPs: ${updated.orchestratorRegistry.length}`);
    * ```
    */
   addVP(
     manifest: OrganizationManifest,
     vp: VPNodeMapping,
   ): OrganizationManifest {
-    // Check for duplicate VP ID
-    const existingVp = manifest.vpRegistry.find(v => v.vpId === vp.vpId);
+    // Check for duplicate Orchestrator ID
+    const existingVp = manifest.orchestratorRegistry.find(v => v.orchestratorId === vp.orchestratorId);
     if (existingVp) {
-      throw new Error(`VP with ID "${vp.vpId}" already exists in the registry`);
+      throw new Error(`Orchestrator with ID "${vp.orchestratorId}" already exists in the registry`);
     }
 
     return this.update(manifest, {
-      vpRegistry: [...manifest.vpRegistry, vp],
+      vpRegistry: [...manifest.orchestratorRegistry, vp],
     });
   }
 
   /**
-   * Removes a VP from the manifest's VP registry.
+   * Removes a Orchestrator from the manifest's Orchestrator registry.
    *
-   * @param manifest - The manifest to remove the VP from
-   * @param vpId - The ID of the VP to remove
-   * @returns A new manifest with the VP removed
-   * @throws Error if no VP with the given ID exists
+   * @param manifest - The manifest to remove the Orchestrator from
+   * @param orchestratorId - The ID of the Orchestrator to remove
+   * @returns A new manifest with the Orchestrator removed
+   * @throws Error if no Orchestrator with the given ID exists
    *
    * @example
    * ```typescript
    * const updated = generator.removeVP(manifest, 'vp_abc123');
-   * console.log(`Remaining VPs: ${updated.vpRegistry.length}`);
+   * console.log(`Remaining VPs: ${updated.orchestratorRegistry.length}`);
    * ```
    */
-  removeVP(manifest: OrganizationManifest, vpId: string): OrganizationManifest {
-    const vpIndex = manifest.vpRegistry.findIndex(v => v.vpId === vpId);
+  removeVP(manifest: OrganizationManifest, orchestratorId: string): OrganizationManifest {
+    const vpIndex = manifest.orchestratorRegistry.findIndex(v => v.orchestratorId === orchestratorId);
     if (vpIndex === -1) {
-      throw new Error(`VP with ID "${vpId}" not found in the registry`);
+      throw new Error(`Orchestrator with ID "${orchestratorId}" not found in the registry`);
     }
 
-    const vpRegistry = manifest.vpRegistry.filter(v => v.vpId !== vpId);
+    const vpRegistry = manifest.orchestratorRegistry.filter(v => v.orchestratorId !== orchestratorId);
 
-    // Also remove from executive VP IDs in governance if present
+    // Also remove from executive Orchestrator IDs in governance if present
     let governance = manifest.governance;
-    if (governance?.executiveVpIds.includes(vpId)) {
+    if (governance?.executiveVpIds.includes(orchestratorId)) {
       governance = {
         ...governance,
-        executiveVpIds: governance.executiveVpIds.filter(id => id !== vpId),
+        executiveVpIds: governance.executiveVpIds.filter(id => id !== orchestratorId),
       };
     }
 
@@ -862,13 +862,13 @@ export class ManifestGenerator {
       ...manifest,
       createdAt: manifest.createdAt.toISOString(),
       updatedAt: manifest.updatedAt.toISOString(),
-      vpRegistry: manifest.vpRegistry.map(vp => ({
-        ...vp,
+      vpRegistry: manifest.orchestratorRegistry.map(vp => ({
+        ...orchestrator,
         provisionedAt: vp.provisionedAt?.toISOString() as unknown as Date,
         lastStatusChange: vp.lastStatusChange?.toISOString() as unknown as Date,
         healthMetrics: vp.healthMetrics
           ? {
-              ...vp.healthMetrics,
+              ...orchestrator.healthMetrics,
               lastHealthCheck:
                 vp.healthMetrics.lastHealthCheck.toISOString() as unknown as Date,
             }
@@ -934,8 +934,8 @@ export class ManifestGenerator {
       ...parsed,
       createdAt: new Date(parsed.createdAt),
       updatedAt: new Date(parsed.updatedAt),
-      vpRegistry: (parsed.vpRegistry ?? []).map(vp => ({
-        ...vp,
+      vpRegistry: (parsed.orchestratorRegistry ?? []).map(vp => ({
+        ...orchestrator,
         provisionedAt: vp.provisionedAt
           ? new Date(vp.provisionedAt as unknown as string)
           : undefined,
@@ -944,7 +944,7 @@ export class ManifestGenerator {
           : undefined,
         healthMetrics: vp.healthMetrics
           ? {
-              ...vp.healthMetrics,
+              ...orchestrator.healthMetrics,
               lastHealthCheck: new Date(
                 vp.healthMetrics.lastHealthCheck as unknown as string,
               ),
@@ -1011,7 +1011,7 @@ export class ManifestGenerator {
       name,
       slug,
       lifecycleState: 'draft',
-      vpRegistry: [], // Don't copy VP registrations
+      vpRegistry: [], // Don't copy Orchestrator registrations
       createdAt: now,
       updatedAt: now,
     };
@@ -1051,16 +1051,16 @@ export class ManifestGenerator {
       );
     }
 
-    // Must have at least one VP
-    if (manifest.vpRegistry.length === 0) {
-      blockers.push('Organization must have at least one VP to activate.');
+    // Must have at least one Orchestrator
+    if (manifest.orchestratorRegistry.length === 0) {
+      blockers.push('Organization must have at least one Orchestrator to activate.');
     }
 
     // All VPs must be in valid state (not error)
-    const errorVps = manifest.vpRegistry.filter(vp => vp.status === 'error');
+    const errorVps = manifest.orchestratorRegistry.filter(vp => vp.status === 'error');
     if (errorVps.length > 0) {
       blockers.push(
-        `${errorVps.length} VP(s) are in error state: ${errorVps.map(v => v.vpId).join(', ')}`,
+        `${errorVps.length} VP(s) are in error state: ${errorVps.map(v => v.orchestratorId).join(', ')}`,
       );
     }
 

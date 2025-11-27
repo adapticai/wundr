@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - Slack Agent Capabilities
  *
- * Provides comprehensive Slack integration capabilities for VP (Virtual Principal)
+ * Provides comprehensive Slack integration capabilities for Orchestrator (Virtual Principal)
  * agents operating as full users in Slack workspaces.
  *
  * @packageDocumentation
@@ -11,240 +11,229 @@
 // Unified Slack User Agent (Primary Interface)
 // =============================================================================
 
+// Default export for convenience
 export {
-  // Main class
-  SlackUserAgent,
   // Factory functions
   createSlackUserAgent,
-  createSlackUserAgentFromEnv,
-  // Types
-  type VPIdentity,
-  type SlackUserAgentConfig,
-  type HealthCheckResult,
-  type SlackEventType,
-  type SlackEvent,
+  createSlackUserAgentFromEnv,default, 
   type EventHandler,
+  type HealthCheckResult,
+  type SlackEvent,
+  type SlackEventType,
+  // Main class
+  SlackUserAgent,
+  type SlackUserAgentConfig,
+  // Types
+  type VPIdentity
 } from './slack-user-agent.js';
-
-// Default export for convenience
-export { default } from './slack-user-agent.js';
 
 // =============================================================================
 // Individual Capability Modules
 // =============================================================================
 
-// Profile Management
-export {
-  ProfileManager,
-  createProfileManager,
-  ProfileError,
-  type ProfileManagerConfig,
-  type UserProfile,
-  type ProfileUpdate,
-  type ProfileFieldValue,
-  type CustomField,
-} from './capabilities/profile-management.js';
 
-// Threading Capabilities
+// Canvas Capabilities
 export {
-  SlackThreadingCapability,
-  createThreadingCapability,
-  type BlockKitElement,
-  type BlockKit,
-  type MessageResult,
-  type SlackMessage,
-  type ThreadInfo,
-  type GetThreadRepliesOptions,
-  type PostMessageOptions,
-} from './capabilities/threading.js';
-
-// File Operations
-export {
-  SlackFileOperations,
-  createFileOperations,
-  type FileType,
-  type FileSource,
-  type UploadOptions,
-  type FileResult,
-  type ListFilesOptions,
-  type SlackFile,
-  type FileComment,
-  type FileReaction,
-  type FileShares,
-  type FileOperationsConfig,
-} from './capabilities/file-operations.js';
-
-// Proactive Messaging
-export {
-  ProactiveMessenger,
-  createProactiveMessenger,
-  createProactiveMessengerFromEnv,
-  ProactiveMessagingError,
-  ProactiveMessagingErrorCode,
-  type TokenType,
-  type BlockKitElement as ProactiveBlockKitElement,
-  type BlockKit as ProactiveBlockKit,
-  type PostOptions,
-  type MessageResult as ProactiveMessageResult,
-  type ScheduledMessageResult,
-  type ScheduledMessage,
-  type ProactiveMessengerConfig,
-} from './capabilities/proactive-messaging.js';
-
+  type Canvas,
+  type CanvasAccessLevel,
+  type CanvasCapabilityConfig,
+  type CanvasChange,
+  type CanvasContent,
+  CanvasError,
+  // Errors
+  CanvasNotSupportedError,
+  // Types
+  type CanvasOperation,
+  type CanvasSection,
+  type CanvasSectionType,
+  createCanvasCapability,
+  createCanvasCapabilityFromClient,
+  type DocumentContent,
+  type SectionLookupCriteria,
+  SlackCanvasCapability,
+} from './capabilities/canvas.js';
 // Channel Membership Operations
 export {
-  ChannelMembershipManager,
   // Types
   type Channel,
-  type InviteResult,
   type ChannelMember,
+  ChannelMembershipManager,
+  ChannelNotFoundError,
+  type InviteResult,
   type ListChannelsOptions,
   type PaginatedChannelResponse,
   // Errors
   SlackPermissionError,
-  ChannelNotFoundError,
   UserNotFoundError,
 } from './capabilities/channel-membership.js';
-
-// Search Capabilities
-export {
-  SlackSearchCapability,
-  createSlackSearchCapability,
-  // Errors
-  SlackSearchError,
-  SearchResultParseError,
-  SearchRateLimitError,
-  // Types
-  type SortDirection,
-  type MessageSortField,
-  type FileSortField,
-  type SearchOptions,
-  type PaginationInfo,
-  type SearchResult,
-  type Message,
-  type MessageChannel,
-  type MessageAttachment,
-  type MessageBlock,
-  type Reaction,
-  type ThreadInfo as SearchThreadInfo,
-  type File,
-  type User,
-  type UserProfile as SearchUserProfile,
-  type CombinedSearchResult,
-  type SearchModifiers,
-} from './capabilities/search.js';
-
 // DND (Do Not Disturb) Controls
 export {
-  DndControlsManager,
   createDndControlsManager,
   createDndControlsManagerFromToken,
-  // Types
-  type DndInfo,
-  type SnoozeDuration,
   type DndControlsConfig,
+  DndControlsManager,
   // Errors
   DndError,
-  SnoozeNotActiveError,
-  DndUserNotFoundError,
-} from './capabilities/dnd-controls.js';
-
-// Canvas Capabilities
-export {
-  SlackCanvasCapability,
-  createCanvasCapability,
-  createCanvasCapabilityFromClient,
   // Types
-  type CanvasOperation,
-  type CanvasSectionType,
-  type CanvasAccessLevel,
-  type DocumentContent,
-  type CanvasContent,
-  type Canvas,
-  type CanvasSection,
-  type SectionLookupCriteria,
-  type CanvasChange,
-  type CanvasCapabilityConfig,
-  // Errors
-  CanvasNotSupportedError,
-  CanvasError,
-} from './capabilities/canvas.js';
-
+  type DndInfo,
+  DndUserNotFoundError,
+  type SnoozeDuration,
+  SnoozeNotActiveError,
+} from './capabilities/dnd-controls.js';
+// File Operations
+export {
+  createFileOperations,
+  type FileComment,
+  type FileOperationsConfig,
+  type FileReaction,
+  type FileResult,
+  type FileShares,
+  type FileSource,
+  type FileType,
+  type ListFilesOptions,
+  type SlackFile,
+  SlackFileOperations,
+  type UploadOptions,
+} from './capabilities/file-operations.js';
+// Proactive Messaging
+export {
+  type BlockKit as ProactiveBlockKit,
+  type BlockKitElement as ProactiveBlockKitElement,
+  createProactiveMessenger,
+  createProactiveMessengerFromEnv,
+  type MessageResult as ProactiveMessageResult,
+  type PostOptions,
+  ProactiveMessagingError,
+  ProactiveMessagingErrorCode,
+  ProactiveMessenger,
+  type ProactiveMessengerConfig,
+  type ScheduledMessage,
+  type ScheduledMessageResult,
+  type TokenType,
+} from './capabilities/proactive-messaging.js';
+// Profile Management
+export {
+  type CustomField,
+  createProfileManager,
+  ProfileError,
+  type ProfileFieldValue,
+  ProfileManager,
+  type ProfileManagerConfig,
+  type ProfileUpdate,
+  type UserProfile,
+} from './capabilities/profile-management.js';
 // Reminders Capability
 export {
-  ReminderManager,
   createReminderManager,
   createReminderManagerFromToken,
+  InvalidReminderTimeError,
   // Types
   type Reminder,
+  ReminderChannelNotFoundError,
   type ReminderDuration,
-  type ReminderManagerConfig,
   // Errors
   ReminderError,
+  ReminderManager,
+  type ReminderManagerConfig,
   ReminderNotFoundError,
   ReminderUserNotFoundError,
-  ReminderChannelNotFoundError,
-  InvalidReminderTimeError,
 } from './capabilities/reminders.js';
-
-// Usergroups Management
-export {
-  UsergroupManager,
-  createUsergroupManager,
-  UsergroupManagementError,
-  UsergroupErrorCode,
-  isUsergroupManagementError,
-  isPermissionError as isUsergroupPermissionError,
-  isRateLimitError as isUsergroupRateLimitError,
-  isNotFoundError as isUsergroupNotFoundError,
-  isNameConflictError,
-  // Types
-  type Usergroup,
-  type CreateUsergroupOptions,
-  type UsergroupUpdate,
-  type ListUsergroupsOptions,
-  type UsergroupManagerConfig,
-} from './capabilities/usergroups.js';
-
 // Scheduled Messages
 export {
-  ScheduledMessagesManager,
-  createScheduledMessagesManager,
-  createScheduledMessagesManagerFromEnv,
+  type BatchScheduleResult,
   // Types
   type Block as ScheduledMessageBlock,
-  type ScheduledMessage as VPScheduledMessage,
-  type ScheduleMessageOptions,
+  createScheduledMessagesManager,
+  createScheduledMessagesManagerFromEnv,
+  InvalidScheduleTimeError,
   type ListScheduledMessagesOptions,
   type PaginatedScheduledMessages,
-  type BatchScheduleResult,
-  type TimeSpec,
-  type ScheduledMessagesConfig,
+  type ScheduledMessage as VPScheduledMessage,
   // Errors
   ScheduledMessageError,
-  InvalidScheduleTimeError,
   ScheduledMessageNotFoundError,
+  type ScheduledMessagesConfig,
+  ScheduledMessagesManager,
+  type ScheduleMessageOptions,
+  type TimeSpec,
 } from './capabilities/scheduled-messages.js';
+// Search Capabilities
+export {
+  type CombinedSearchResult,
+  createSlackSearchCapability,
+  type File,
+  type FileSortField,
+  type Message,
+  type MessageAttachment,
+  type MessageBlock,
+  type MessageChannel,
+  type MessageSortField,
+  type PaginationInfo,
+  type Reaction,
+  type SearchModifiers,
+  type SearchOptions,
+  SearchRateLimitError,
+  type SearchResult,
+  SearchResultParseError,
+  SlackSearchCapability,
+  // Errors
+  SlackSearchError,
+  // Types
+  type SortDirection,
+  type ThreadInfo as SearchThreadInfo,
+  type User,
+  type UserProfile as SearchUserProfile,
+} from './capabilities/search.js';
+// Threading Capabilities
+export {
+  type BlockKit,
+  type BlockKitElement,
+  createThreadingCapability,
+  type GetThreadRepliesOptions,
+  type MessageResult,
+  type PostMessageOptions,
+  type SlackMessage,
+  SlackThreadingCapability,
+  type ThreadInfo,
+} from './capabilities/threading.js';
+// Usergroups Management
+export {
+  type CreateUsergroupOptions,
+  createUsergroupManager,
+  isNameConflictError,
+  isNotFoundError as isUsergroupNotFoundError,
+  isPermissionError as isUsergroupPermissionError,
+  isRateLimitError as isUsergroupRateLimitError,
+  isUsergroupManagementError,
+  type ListUsergroupsOptions,
+  // Types
+  type Usergroup,
+  UsergroupErrorCode,
+  UsergroupManagementError,
+  UsergroupManager,
+  type UsergroupManagerConfig,
+  type UsergroupUpdate,
+} from './capabilities/usergroups.js';
 
 // Workflow Capabilities
 export {
-  SlackWorkflowCapability,
   createWorkflowCapability,
   createWorkflowCapabilityFromEnv,
+  SlackWorkflowCapability,
+  type WebhookTriggerConfig,
+  type WebhookTriggerResponse,
+  type WorkflowCapabilityConfig,
   // Errors
   WorkflowError,
   WorkflowErrorCode,
   // Types
   type WorkflowPayload,
-  type WorkflowVariables,
-  type WorkflowStepPayload,
-  type WorkflowStepResult,
   type WorkflowStepConfig,
   type WorkflowStepInput,
   type WorkflowStepOutput,
-  type WebhookTriggerConfig,
-  type WebhookTriggerResponse,
-  type WorkflowCapabilityConfig,
+  type WorkflowStepPayload,
+  type WorkflowStepResult,
+  type WorkflowVariables,
 } from './capabilities/workflows.js';
 
 // Package info

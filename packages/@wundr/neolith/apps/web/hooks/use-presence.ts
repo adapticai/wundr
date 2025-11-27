@@ -5,9 +5,9 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { PresenceStatus } from '@/components/presence/presence-indicator';
 import type {
   DaemonHealthStatus,
-  VPHealthMetrics,
-  VPStatusData,
-} from '@/components/presence/vp-status-card';
+  OrchestratorHealthMetrics,
+  OrchestratorStatusData,
+} from '@/components/presence/orchestrator-status-card';
 
 // Types
 export interface UserPresence {
@@ -18,7 +18,7 @@ export interface UserPresence {
   updatedAt: Date;
 }
 
-export interface VPHealthStatus extends VPStatusData {
+export interface OrchestratorHealthStatus extends OrchestratorStatusData {
   organizationId: string;
 }
 
@@ -54,19 +54,19 @@ export interface UseSetStatusReturn {
 }
 
 /**
- * Return type for useVPHealth hook
+ * Return type for useOrchestratorHealth hook
  */
-export type UseVPHealthReturn = VPHealthStatus | null;
+export type UseOrchestratorHealthReturn = OrchestratorHealthStatus | null;
 
 /**
- * Return type for useVPHealthList hook
+ * Return type for useOrchestratorHealthList hook
  */
-export interface UseVPHealthListReturn {
-  /** List of VP health statuses */
-  vpList: VPHealthStatus[];
+export interface UseOrchestratorHealthListReturn {
+  /** List of Orchestrator health statuses */
+  orchestratorList: OrchestratorHealthStatus[];
   /** Whether the list is loading */
   isLoading: boolean;
-  /** Refetch the VP health list */
+  /** Refetch the Orchestrator health list */
   refetch: () => Promise<void>;
 }
 
@@ -83,7 +83,7 @@ export interface UsePresenceSubscriptionReturn {
 // Configuration
 const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 const PRESENCE_POLL_INTERVAL = 10000; // 10 seconds
-const VP_HEALTH_POLL_INTERVAL = 15000; // 15 seconds
+const ORCHESTRATOR_HEALTH_POLL_INTERVAL = 15000; // 15 seconds
 
 /**
  * Hook for fetching a single user's presence
@@ -257,21 +257,21 @@ export function useSetStatus(): UseSetStatusReturn {
 }
 
 /**
- * Hook for VP health status
- * @param vpId - The ID of the VP to fetch health for
- * @returns The VP health status or null if not available
+ * Hook for Orchestrator health status
+ * @param orchestratorId - The ID of the Orchestrator to fetch health for
+ * @returns The Orchestrator health status or null if not available
  */
-export function useVPHealth(vpId: string): UseVPHealthReturn {
-  const [health, setHealth] = useState<VPHealthStatus | null>(null);
+export function useOrchestratorHealth(orchestratorId: string): UseOrchestratorHealthReturn {
+  const [health, setHealth] = useState<OrchestratorHealthStatus | null>(null);
 
   useEffect(() => {
-    if (!vpId) {
+    if (!orchestratorId) {
 return;
 }
 
     const fetchHealth = async () => {
       try {
-        const response = await fetch(`/api/vps/${vpId}/health`);
+        const response = await fetch(`/api/orchestrators/${orchestratorId}/health`);
         if (response.ok) {
           const data = await response.json();
           setHealth({
@@ -285,21 +285,21 @@ return;
     };
 
     fetchHealth();
-    const interval = setInterval(fetchHealth, VP_HEALTH_POLL_INTERVAL);
+    const interval = setInterval(fetchHealth, ORCHESTRATOR_HEALTH_POLL_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [vpId]);
+  }, [orchestratorId]);
 
   return health;
 }
 
 /**
- * Hook for listing all VP health statuses in a workspace
- * @param workspaceId - The ID of the workspace to fetch VP health for
- * @returns List of VP health statuses with loading state and refetch method
+ * Hook for listing all Orchestrator health statuses in a workspace
+ * @param workspaceId - The ID of the workspace to fetch Orchestrator health for
+ * @returns List of Orchestrator health statuses with loading state and refetch method
  */
-export function useVPHealthList(workspaceId: string): UseVPHealthListReturn {
-  const [vpList, setVpList] = useState<VPHealthStatus[]>([]);
+export function useOrchestratorHealthList(workspaceId: string): UseOrchestratorHealthListReturn {
+  const [orchestratorList, setOrchestratorList] = useState<OrchestratorHealthStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchHealth = useCallback(async () => {
@@ -308,13 +308,13 @@ return;
 }
 
     try {
-      const response = await fetch(`/api/workspaces/${workspaceId}/vps/health`);
+      const response = await fetch(`/api/workspaces/${workspaceId}/orchestrators/health`);
       if (response.ok) {
         const data = await response.json();
-        setVpList(
-          data.vps.map((vp: VPHealthStatus & { lastHeartbeat: string | null }) => ({
-            ...vp,
-            lastHeartbeat: vp.lastHeartbeat ? new Date(vp.lastHeartbeat) : null,
+        setOrchestratorList(
+          data.orchestrators.map((orchestrator: OrchestratorHealthStatus & { lastHeartbeat: string | null }) => ({
+            ...orchestrator,
+            lastHeartbeat: orchestrator.lastHeartbeat ? new Date(orchestrator.lastHeartbeat) : null,
           })),
         );
       }
@@ -327,11 +327,11 @@ return;
 
   useEffect(() => {
     fetchHealth();
-    const interval = setInterval(fetchHealth, VP_HEALTH_POLL_INTERVAL);
+    const interval = setInterval(fetchHealth, ORCHESTRATOR_HEALTH_POLL_INTERVAL);
     return () => clearInterval(interval);
   }, [fetchHealth]);
 
-  return { vpList, isLoading, refetch: fetchHealth };
+  return { orchestratorList, isLoading, refetch: fetchHealth };
 }
 
 /**
@@ -451,4 +451,4 @@ return;
 }
 
 // Type exports
-export type { PresenceStatus, DaemonHealthStatus, VPHealthMetrics };
+export type { PresenceStatus, DaemonHealthStatus, OrchestratorHealthMetrics };

@@ -68,7 +68,7 @@ Architecture:
    - Create workspace
    - Add creator as admin
    - Create disciplines with colors/icons
-   - Create VP users with profiles
+   - Create Orchestrator users with profiles
    - Create channels for disciplines
    - Auto-assign VPs to channels
    - Create default #general channel
@@ -126,12 +126,12 @@ All database operations are wrapped in a Prisma transaction with:
 - 60-second timeout
 - Automatic rollback on error
 
-### VP User Creation
-Each VP is created as a full user with:
-- Email: `{vp-name}@vp.{workspace-slug}.local`
-- Display name from VP title
+### Orchestrator User Creation
+Each Orchestrator is created as a full user with:
+- Email: `{orchestrator-name}@vp.{workspace-slug}.local`
+- Display name from Orchestrator title
 - isVP flag set to true
-- VP config with persona, responsibilities, KPIs
+- Orchestrator config with persona, responsibilities, KPIs
 - ACTIVE status by default
 
 ### Channel Management
@@ -140,7 +140,7 @@ Channels are created with:
 - Discipline metadata in settings
 - Topic and purpose from discipline definition
 - Creator as ADMIN role
-- VP auto-assigned as MEMBER
+- Orchestrator auto-assigned as MEMBER
 - Default #general channel with all VPs
 
 ### Discipline Organization
@@ -148,7 +148,7 @@ Disciplines include:
 - Automatic color assignment based on name
 - Icon selection based on type
 - Organization linkage
-- VP association
+- Orchestrator association
 
 ### Error Handling
 Comprehensive error handling for:
@@ -198,7 +198,7 @@ packages/@wundr/neolith/apps/web/
 ### Prisma Database
 - Workspace creation
 - Discipline management
-- VP user management
+- Orchestrator user management
 - Channel creation
 - Membership assignments
 - Transaction support
@@ -243,7 +243,7 @@ curl -X POST http://localhost:3000/api/workspaces/generate-org \
 1. **Async Processing**: Move to queue for large orgs
 2. **Progress Streaming**: Server-Sent Events for real-time updates
 3. **Webhook Support**: Completion notifications
-4. **Custom Templates**: User-defined VP and discipline templates
+4. **Custom Templates**: User-defined Orchestrator and discipline templates
 5. **Bulk Operations**: Import/export organizational structures
 6. **Integration APIs**: Connect with external org charts
 7. **Real User Assignment**: Map VPs to actual user accounts
@@ -258,7 +258,7 @@ To verify the implementation:
 1. ✅ Dependencies installed in package.json
 2. ✅ Validation schema created with comprehensive rules
 3. ✅ API route implemented with full transaction support
-4. ✅ VP user creation with proper configuration
+4. ✅ Orchestrator user creation with proper configuration
 5. ✅ Channel creation with discipline mapping
 6. ✅ Auto-assignment of VPs to channels
 7. ✅ Error handling and rollback
@@ -295,7 +295,7 @@ All tasks completed:
 1. ✅ Working API endpoint at `/api/workspaces/generate-org`
 2. ✅ Full integration with @wundr/org-genesis
 3. ✅ Complete database transaction implementation
-4. ✅ VP and channel creation with auto-assignment
+4. ✅ Orchestrator and channel creation with auto-assignment
 5. ✅ Comprehensive error handling
 6. ✅ Test suite with 12+ test cases
 7. ✅ Complete API documentation

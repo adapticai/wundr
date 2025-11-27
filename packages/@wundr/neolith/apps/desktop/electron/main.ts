@@ -68,11 +68,17 @@ function isAllowedUrl(url: string): boolean {
   try {
     const parsedUrl = new URL(url);
     // Allow localhost
-    if (parsedUrl.hostname === 'localhost') return true;
+    if (parsedUrl.hostname === 'localhost') {
+return true;
+}
     // Allow file:// URLs
-    if (parsedUrl.protocol === 'file:') return true;
+    if (parsedUrl.protocol === 'file:') {
+return true;
+}
     // Allow OAuth providers
-    if (ALLOWED_OAUTH_HOSTS.some(host => parsedUrl.hostname.endsWith(host))) return true;
+    if (ALLOWED_OAUTH_HOSTS.some(host => parsedUrl.hostname.endsWith(host))) {
+return true;
+}
     return false;
   } catch {
     return false;

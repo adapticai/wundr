@@ -221,10 +221,10 @@ export const LEGAL_AGENT_IDS: string[] = [
  * // Register with discipline registry
  * registry.register(LEGAL_DISCIPLINE);
  *
- * // Assign to VP
+ * // Assign to Orchestrator
  * await engine.assignDisciplineToVp({
  *   disciplineId: LEGAL_DISCIPLINE.id,
- *   vpId: 'vp-legal-001',
+ *   vpId: 'orchestrator-legal-001',
  * });
  * ```
  */

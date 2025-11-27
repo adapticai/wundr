@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - Reminders Capability
  *
- * Provides comprehensive reminder management for VP (Virtual Principal) agents
+ * Provides comprehensive reminder management for Orchestrator (Virtual Principal) agents
  * operating as full users in Slack workspaces. Enables creating, listing,
  * completing, and deleting reminders just like any human user using /remind.
  *
@@ -205,9 +205,9 @@ export class InvalidReminderTimeError extends ReminderError {
 // =============================================================================
 
 /**
- * Manages reminders for the Slack VP agent.
+ * Manages reminders for the Slack Orchestrator agent.
  *
- * This class provides methods for the VP agent to:
+ * This class provides methods for the Orchestrator agent to:
  * - Create reminders for self, other users, or channels
  * - List all pending reminders
  * - Mark reminders as complete

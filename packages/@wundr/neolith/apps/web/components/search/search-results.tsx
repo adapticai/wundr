@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -55,10 +55,10 @@ export interface UserResultData {
 }
 
 /**
- * Typed data for VP (Virtual Person) search results
+ * Typed data for Orchestrator (Orchestrator) search results
  */
 export interface VPResultData {
-  vpId: string;
+  orchestratorId: string;
   name: string;
   discipline: string;
   status: string;
@@ -305,7 +305,7 @@ function VPResult({ result, workspaceId }: ResultRendererProps) {
 
   return (
     <Link
-      href={`/${workspaceId}/vp/${data.vpId}`}
+      href={`/${workspaceId}/vp/${data.orchestratorId}`}
       className={cn(
         'flex items-center gap-4 p-4 rounded-lg',
         'hover:bg-accent transition-colors',
@@ -461,7 +461,7 @@ export function SearchResults({
             case 'user':
               return <UserResult key={result.id} result={result} workspaceId={workspaceId} />;
             case 'vp':
-              return <VPResult key={result.id} result={result} workspaceId={workspaceId} />;
+              return <OrchestratorResult key={result.id} result={result} workspaceId={workspaceId} />;
             default:
               return null;
           }

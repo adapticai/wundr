@@ -187,7 +187,7 @@ mcp__playwright__playwright_screenshot {
 
 ### Phase 5: Leaderboard & Bar Charts
 
-#### Test 5.1: Check VP Leaderboard
+#### Test 5.1: Check Orchestrator Leaderboard
 ```bash
 mcp__playwright__playwright_get_visible_text {
   "selector": "text=Top VPs by Messages"

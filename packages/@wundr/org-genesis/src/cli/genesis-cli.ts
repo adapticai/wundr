@@ -266,11 +266,11 @@ USAGE:
 
 COMMANDS:
   create              Create a new organization
-  add-vp              Add a VP (Virtual Persona) to an organization
-  add-discipline      Add a discipline pack to a VP
+  add-vp              Add a Orchestrator (Orchestrator) to an organization
+  add-discipline      Add a discipline pack to a Orchestrator
   add-agent           Add an agent to a discipline
   list                List organizations, VPs, disciplines, or agents
-  compile             Compile context for an organization or VP
+  compile             Compile context for an organization or Orchestrator
   export              Export organization configuration
 
 OPTIONS:
@@ -290,17 +290,17 @@ EXAMPLES:
   # Create an organization with options
   ${CLI_NAME} create --name "MyOrg" --industry technology --size medium
 
-  # Add a VP to an organization
+  # Add a Orchestrator to an organization
   ${CLI_NAME} add-vp org-123 --name "Engineering VP" --persona "Technical leader"
 
   # List all organizations
   ${CLI_NAME} list orgs
 
   # List VPs in an organization
-  ${CLI_NAME} list vps org-123
+  ${CLI_NAME} list orchestrators org-123
 
-  # Compile context for a VP
-  ${CLI_NAME} compile vp-456 --output ./context
+  # Compile context for a Orchestrator
+  ${CLI_NAME} compile orchestrator-456 --output ./context
 
   # Export organization as JSON
   ${CLI_NAME} export org-123 --format json --output ./org-config.json
@@ -445,15 +445,15 @@ function initializeDefaultCommands(): void {
 
   registerCommand({
     name: 'add-vp',
-    description: 'Add a VP to an organization',
+    description: 'Add a Orchestrator to an organization',
     usage: `${CLI_NAME} add-vp <org-id> [options]`,
     handler: createPlaceholderHandler('add-vp'),
   });
 
   registerCommand({
     name: 'add-discipline',
-    description: 'Add a discipline pack to a VP',
-    usage: `${CLI_NAME} add-discipline <vp-id> [options]`,
+    description: 'Add a discipline pack to an Orchestrator',
+    usage: `${CLI_NAME} add-discipline <orchestrator-id> [options]`,
     handler: createPlaceholderHandler('add-discipline'),
   });
 
@@ -466,7 +466,7 @@ function initializeDefaultCommands(): void {
 
   registerCommand({
     name: 'list',
-    description: 'List resources (orgs, vps, disciplines, agents)',
+    description: 'List resources (orgs, orchestrators, disciplines, agents)',
     usage: `${CLI_NAME} list <resource> [parent-id]`,
     handler: createPlaceholderHandler('list'),
     aliases: ['ls'],

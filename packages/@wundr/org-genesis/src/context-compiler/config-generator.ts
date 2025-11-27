@@ -11,7 +11,7 @@
 
 import type {
   DisciplinePack,
-  VPCharter,
+  OrchestratorCharter,
   MCPServerConfig,
   HookConfig,
 } from '../types/index.js';
@@ -25,7 +25,7 @@ import type {
  *
  * @description
  * Contains all the information needed to generate a discipline-specific
- * CLAUDE.md file, including the discipline pack, optional VP charter,
+ * CLAUDE.md file, including the discipline pack, optional Orchestrator charter,
  * custom instructions, and memory bank configuration.
  *
  * @example
@@ -45,10 +45,10 @@ export interface GenerateClaudeMdContext {
   discipline: DisciplinePack;
 
   /**
-   * Optional VP charter for additional context and constraints.
-   * When provided, VP-level directives will be included in the generated file.
+   * Optional Orchestrator charter for additional context and constraints.
+   * When provided, Orchestrator-level directives will be included in the generated file.
    */
-  vpCharter?: VPCharter;
+  vpCharter?: OrchestratorCharter;
 
   /**
    * Optional custom instructions to append to the generated CLAUDE.md.
@@ -215,9 +215,9 @@ export interface GenerateAllContext {
   discipline: DisciplinePack;
 
   /**
-   * Optional VP charter for additional context.
+   * Optional Orchestrator charter for additional context.
    */
-  vpCharter?: VPCharter;
+  vpCharter?: OrchestratorCharter;
 
   /**
    * Optional custom instructions for CLAUDE.md.
@@ -290,7 +290,7 @@ const DEFAULT_CLAUDE_MD_TEMPLATE = `# Claude Code Configuration
 {{constraints}}
 
 {{#if vpDirective}}
-## VP Directive
+## Orchestrator Directive
 {{vpDirective}}
 
 {{/if}}
@@ -375,7 +375,7 @@ export class ConfigGenerator {
    *
    * @description
    * Creates a CLAUDE.md file content string by combining discipline configuration,
-   * VP charter directives, custom instructions, and memory bank settings.
+   * Orchestrator charter directives, custom instructions, and memory bank settings.
    *
    * @param context - The context containing discipline and optional VP/custom settings.
    * @returns The generated CLAUDE.md content as a string.
@@ -427,15 +427,15 @@ export class ConfigGenerator {
     sections.push(this.formatList(claudeMd.constraints));
     sections.push('');
 
-    // VP Directive Section (if VP charter provided)
+    // Orchestrator Directive Section (if Orchestrator charter provided)
     if (vpCharter) {
-      sections.push('## VP Directive');
+      sections.push('## Orchestrator Directive');
       sections.push(vpCharter.coreDirective);
       sections.push('');
 
-      // VP Constraints
+      // Orchestrator Constraints
       if (vpCharter.constraints) {
-        sections.push('### VP-Level Constraints');
+        sections.push('### Orchestrator-Level Constraints');
         sections.push('');
         sections.push('**Forbidden Commands:**');
         sections.push(this.formatList(vpCharter.constraints.forbiddenCommands));

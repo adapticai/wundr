@@ -24,7 +24,7 @@
 ### `/docs/VP_ANALYTICS_IMPLEMENTATION.md`
 **Line 193**: Example fetch call with placeholder
 ```javascript
-const res = await fetch('/api/vps/vp_123/analytics');
+const res = await fetch('/api/orchestrators/vp_123/analytics');
 ```
 **Status**: ✅ Documentation example - not executable code
 **Action**: None required
@@ -41,12 +41,12 @@ const res = await fetch('/api/vps/vp_123/analytics');
 
 ## 2. Test Files (Expected Mock Data)
 
-### `/app/api/vps/__tests__/vps.test.ts`
-**Lines 80, 112, 119, 162, 279**: Mock organization and VP IDs
+### `/app/api/orchestrators/__tests__/vps.test.ts`
+**Lines 80, 112, 119, 162, 279**: Mock organization and Orchestrator IDs
 ```typescript
 organizationId: 'org-123'
-id: 'vp-123'
-userId: 'user-vp-123'
+id: 'orchestrator-123'
+userId: 'user-orchestrator-123'
 ```
 **Status**: ✅ Test mocks - expected behavior
 **Action**: None required
@@ -70,9 +70,9 @@ The following files contain example IDs in JSDoc comments only:
 * GET /api/disciplines?organizationId=org_123&page=1&limit=50
 ```
 
-### `/app/api/vps/route.ts`
+### `/app/api/orchestrators/route.ts`
 ```typescript
-* GET /api/vps?organizationId=org_123&status=ONLINE&page=1&limit=20
+* GET /api/orchestrators?organizationId=org_123&status=ONLINE&page=1&limit=20
 ```
 
 ### `/app/api/workspaces/route.ts`
@@ -80,7 +80,7 @@ The following files contain example IDs in JSDoc comments only:
 * GET /api/workspaces?organizationId=org_123&page=1&limit=20
 ```
 
-### `/app/api/presence/vps/route.ts`
+### `/app/api/presence/orchestrators/route.ts`
 ```typescript
 * GET /api/presence/vps?organizationId=org_123
 ```
@@ -100,23 +100,23 @@ The following files contain example IDs in JSDoc comments only:
 ### `/hooks/use-vp.ts`
 All API calls use dynamic parameters:
 ```typescript
-// Line 108 - Dynamic VP ID
-fetch(`/api/vps/${id}`)
+// Line 108 - Dynamic Orchestrator ID
+fetch(`/api/orchestrators/${id}`)
 
 // Line 195 - Query string with dynamic params
-fetch(`/api/vps?${params.toString()}`)
+fetch(`/api/orchestrators?${params.toString()}`)
 
 // Line 292 - POST with dynamic data
-fetch('/api/vps', { method: 'POST', body: JSON.stringify(input) })
+fetch('/api/orchestrators', { method: 'POST', body: JSON.stringify(input) })
 
 // Line 317 - Dynamic update
-fetch(`/api/vps/${id}`, { method: 'PATCH' })
+fetch(`/api/orchestrators/${id}`, { method: 'PATCH' })
 
 // Line 342 - Dynamic delete
-fetch(`/api/vps/${id}`, { method: 'DELETE' })
+fetch(`/api/orchestrators/${id}`, { method: 'DELETE' })
 
 // Line 369 - Dynamic API key rotation
-fetch(`/api/vps/${id}/rotate-key`, { method: 'POST' })
+fetch(`/api/orchestrators/${id}/rotate-key`, { method: 'POST' })
 ```
 **Status**: ✅ All dynamic - no hardcoded IDs
 **Action**: None required
@@ -197,24 +197,24 @@ fetch('/api/presence/heartbeat', { method: 'POST' })
 
 ## 5. Page Components - All Using Dynamic Routes
 
-### `/app/(workspace)/[workspaceId]/vps/page.tsx`
+### `/app/(workspace)/[workspaceId]/orchestrators/page.tsx`
 ```typescript
 // Line 19 - Gets workspaceId from URL params
 const workspaceId = params.workspaceId as string;
 
 // Line 26 - Passes dynamic ID to hook
-const { vps, isLoading, error } = useVPs(workspaceId, filters);
+const { orchestrators, isLoading, error } = useVPs(workspaceId, filters);
 ```
 **Status**: ✅ Fully dynamic
 **Action**: None required
 
-### `/app/(workspace)/[workspaceId]/vps/[vpId]/page.tsx`
+### `/app/(workspace)/[workspaceId]/orchestrators/[orchestratorId]/page.tsx`
 ```typescript
 // Line 28-29 - Gets IDs from URL params
-const vpId = params.vpId as string;
+const vpId = params.orchestratorId as string;
 const workspaceId = params.workspaceId as string;
 
-// Line 35 - Uses dynamic VP ID
+// Line 35 - Uses dynamic Orchestrator ID
 const { vp, isLoading, error } = useVP(vpId);
 ```
 **Status**: ✅ Fully dynamic
@@ -268,14 +268,14 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 - Line 84-89: Gets accessible workspaces from user's memberships
 - Line 106: Validates workspace access dynamically
 - Line 292-297: Checks workspace membership dynamically
-- Line 310-317: Validates VP belongs to workspace
+- Line 310-317: Validates Orchestrator belongs to workspace
 - No hardcoded IDs found
 
 **Status**: ✅ Fully dynamic
 **Action**: None required
 
 ### `/app/api/tasks/poll/route.ts`
-- Line 90-97: Validates VP against workspace dynamically
+- Line 90-97: Validates Orchestrator against workspace dynamically
 - Line 110-113: Builds where clause from request input
 - No hardcoded IDs found
 

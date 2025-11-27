@@ -6,14 +6,14 @@
  * - Task updates with state transition validation
  * - Task deletion
  * - Task assignment
- * - Task polling for VP daemon
- * - VP backlog retrieval
+ * - Task polling for Orchestrator daemon
+ * - Orchestrator backlog retrieval
  *
  * @module __tests__/api/tasks.test
  */
 
 import { prisma } from '@neolith/database';
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 describe('Task API', () => {
   let testUserId: string;
@@ -62,14 +62,14 @@ describe('Task API', () => {
     // Create test VP
     const vpUser = await prisma.user.create({
       data: {
-        email: `vp-${Date.now()}@test.local`,
+        email: `orchestrator-${Date.now()}@test.local`,
         name: 'Test VP',
         isVP: true,
         status: 'ACTIVE',
       },
     });
 
-    const vp = await prisma.vP.create({
+    const orchestrator = await prisma.vP.create({
       data: {
         discipline: 'Engineering',
         role: 'Backend Engineer',
@@ -254,7 +254,7 @@ describe('Task API', () => {
       expect(task?.id).toBe(testTaskId);
     });
 
-    it('should retrieve tasks by VP ID', async () => {
+    it('should retrieve tasks by OrchestratorID', async () => {
       const tasks = await prisma.task.findMany({
         where: { vpId: testVpId },
       });

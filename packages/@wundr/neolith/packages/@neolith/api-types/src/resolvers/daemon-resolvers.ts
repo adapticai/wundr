@@ -7,8 +7,8 @@
  * @module @genesis/api-types/resolvers/daemon-resolvers
  */
 
-import { GraphQLError } from 'graphql';
 import * as crypto from 'crypto';
+import { GraphQLError } from 'graphql';
 
 import type { Redis } from 'ioredis';
 
@@ -52,7 +52,7 @@ export type DaemonStatusType = (typeof DaemonStatus)[keyof typeof DaemonStatus];
  */
 interface DaemonCredential {
   id: string;
-  vpId: string;
+  orchestratorId: string;
   workspaceId: string;
   apiKey: string;
   apiSecretHash: string;
@@ -73,7 +73,7 @@ interface DaemonCredential {
 interface DaemonSession {
   id: string;
   daemonId: string;
-  vpId: string;
+  orchestratorId: string;
   workspaceId: string;
   status: DaemonStatusType;
   connectedAt: Date;
@@ -104,14 +104,14 @@ interface DaemonRegistrationResult {
   apiKey: string;
   apiSecret: string;
   workspaceId: string;
-  vpId: string;
+  orchestratorId: string;
 }
 
 /**
  * Register daemon input
  */
 interface RegisterDaemonInput {
-  vpId: string;
+  orchestratorId: string;
   workspaceId: string;
   hostname: string;
   version: string;
@@ -140,7 +140,7 @@ interface UpdateDaemonInput {
 export const daemonTypeDefs = `#graphql
   type DaemonCredential {
     id: ID!
-    vpId: ID!
+    orchestratorId: ID!
     workspaceId: ID!
     apiKey: String!
     hostname: String
@@ -155,7 +155,7 @@ export const daemonTypeDefs = `#graphql
   type DaemonSession {
     id: ID!
     daemonId: ID!
-    vpId: ID!
+    orchestratorId: ID!
     workspaceId: ID!
     status: DaemonStatus!
     connectedAt: DateTime!
@@ -190,11 +190,11 @@ export const daemonTypeDefs = `#graphql
     apiKey: String!
     apiSecret: String!
     workspaceId: ID!
-    vpId: ID!
+    orchestratorId: ID!
   }
 
   input RegisterDaemonInput {
-    vpId: ID!
+    orchestratorId: ID!
     workspaceId: ID!
     hostname: String!
     version: String!
@@ -211,7 +211,7 @@ export const daemonTypeDefs = `#graphql
   }
 
   extend type Query {
-    daemonCredentials(vpId: ID!): [DaemonCredential!]!
+    daemonCredentials(orchestratorId: ID!): [DaemonCredential!]!
     daemonCredential(id: ID!): DaemonCredential
     daemonSessions(daemonId: ID!): [DaemonSession!]!
     daemonMetrics(daemonId: ID!): DaemonMetrics
@@ -305,7 +305,7 @@ function getMetricsKey(daemonId: string): string {
 
 /**
  * Inline DaemonAuthService for resolver use
- * This provides authentication and session management for VP daemons
+ * This provides authentication and session management for Orchestrator daemons
  */
 class DaemonAuthService {
   private prisma: PrismaClientWithDaemon;
@@ -333,7 +333,7 @@ class DaemonAuthService {
 
     const credential = await this.prisma.daemonCredential.create({
       data: {
-        vpId: input.vpId,
+        orchestratorId: input.orchestratorId,
         workspaceId: input.workspaceId,
         apiKey,
         apiSecretHash,
@@ -351,7 +351,7 @@ class DaemonAuthService {
       86400, // 24 hours
       JSON.stringify({
         id: credential.id,
-        vpId: credential.vpId,
+        orchestratorId: credential.orchestratorId,
         workspaceId: credential.workspaceId,
         apiSecretHash,
         isActive: true,
@@ -363,7 +363,7 @@ class DaemonAuthService {
       apiKey,
       apiSecret, // Only returned once at registration
       workspaceId: credential.workspaceId,
-      vpId: credential.vpId,
+      orchestratorId: credential.orchestratorId,
     };
   }
 
@@ -416,7 +416,7 @@ class DaemonAuthService {
         sessions.push({
           id: sessionId,
           daemonId,
-          vpId: sessionData.vpId || '',
+          orchestratorId: sessionData.orchestratorId || '',
           workspaceId: sessionData.workspaceId || '',
           status: (sessionData.status as DaemonStatusType) || DaemonStatus.Disconnected,
           connectedAt: new Date(sessionData.connectedAt || Date.now()),
@@ -474,9 +474,9 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
       /**
        * Get all daemon credentials for a VP
        */
-      daemonCredentials: async (_: unknown, { vpId }: { vpId: string }) => {
+      daemonCredentials: async (_: unknown, { orchestratorId }: { orchestratorId: string }) => {
         const credentials = await context.prisma.daemonCredential.findMany({
-          where: { vpId },
+          where: { orchestratorId },
           orderBy: { createdAt: 'desc' },
         });
 
@@ -551,11 +551,11 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
        * Register a new daemon for a VP
        */
       registerDaemon: async (_: unknown, { input }: { input: RegisterDaemonInput }) => {
-        // Verify user has access to VP - check by vpId and organizationId
-        // VP may not have workspaceId directly, so we check organization membership
-        const vp = await context.prisma.vP.findFirst({
+        // Verify user has access to Orchestrator - check by orchestratorId and organizationId
+        // Orchestrator may not have workspaceId directly, so we check organization membership
+        const orchestrator = await context.prisma.vP.findFirst({
           where: {
-            id: input.vpId,
+            id: input.orchestratorId,
           },
         });
 
@@ -566,7 +566,7 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
         }
 
         const credentials = await authService.registerDaemon({
-          vpId: input.vpId,
+          orchestratorId: input.orchestratorId,
           workspaceId: input.workspaceId,
           hostname: input.hostname,
           version: input.version,
@@ -579,7 +579,7 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
           apiKey: credentials.apiKey,
           apiSecret: credentials.apiSecret,
           workspaceId: credentials.workspaceId,
-          vpId: credentials.vpId,
+          orchestratorId: credentials.orchestratorId,
         };
       },
 
@@ -653,7 +653,7 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
 
         // Create new credentials
         const newCredentials = await authService.registerDaemon({
-          vpId: existing.vpId,
+          orchestratorId: existing.orchestratorId,
           workspaceId: existing.workspaceId,
           hostname: existing.hostname || 'unknown',
           version: existing.version || '1.0.0',
@@ -668,7 +668,7 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
           apiKey: newCredentials.apiKey,
           apiSecret: newCredentials.apiSecret,
           workspaceId: newCredentials.workspaceId,
-          vpId: newCredentials.vpId,
+          orchestratorId: newCredentials.orchestratorId,
         };
       },
 
@@ -735,7 +735,7 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
 export const daemonQueries = {
   daemonCredentials: async (
     _parent: unknown,
-    args: { vpId: string },
+    args: { orchestratorId: string },
     context: DaemonResolverContext
   ) => {
     const resolvers = createDaemonResolvers(context);
@@ -775,7 +775,7 @@ export const daemonQueries = {
     context: DaemonResolverContext
   ) => {
     const resolvers = createDaemonResolvers(context);
-    return resolvers.Query.vpDaemons(undefined, args);
+    return resolvers.Query.orchestratorDaemons(undefined, args);
   },
 };
 
@@ -862,7 +862,7 @@ export const daemonSubscriptions = {
  */
 export const DaemonCredentialFieldResolvers = {
   /**
-   * Resolve the associated VP for a daemon credential
+   * Resolve the associated Orchestrator for a daemon credential
    */
   vp: async (
     parent: DaemonCredential,
@@ -870,7 +870,7 @@ export const DaemonCredentialFieldResolvers = {
     context: DaemonResolverContext
   ) => {
     return context.prisma.vP.findUnique({
-      where: { id: parent.vpId },
+      where: { id: parent.orchestratorId },
     });
   },
 

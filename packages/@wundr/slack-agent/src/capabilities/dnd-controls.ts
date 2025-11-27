@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - DND (Do Not Disturb) Controls Capability
  *
- * Provides comprehensive Do Not Disturb management for VP (Virtual Principal) agents
+ * Provides comprehensive Do Not Disturb management for Orchestrator (Virtual Principal) agents
  * operating as full users in Slack workspaces. Handles snooze activation, deactivation,
  * status queries, and team-wide DND information.
  *
@@ -159,9 +159,9 @@ export class DndUserNotFoundError extends DndError {
 // =============================================================================
 
 /**
- * Manages Do Not Disturb (DND) operations for the Slack VP agent.
+ * Manages Do Not Disturb (DND) operations for the Slack Orchestrator agent.
  *
- * This class provides methods for the VP agent to:
+ * This class provides methods for the Orchestrator agent to:
  * - Enable/disable snooze mode
  * - Check own DND status
  * - Query team members' DND status
@@ -374,7 +374,7 @@ export class DndControlsManager {
   }
 
   /**
-   * Get DND status information for the VP agent or another user
+   * Get DND status information for the Orchestrator agent or another user
    *
    * @param userId - Optional user ID. If not provided, returns the VP's own status.
    * @returns DND information for the specified user
@@ -554,7 +554,7 @@ export class DndControlsManager {
   }
 
   /**
-   * Check if DND is currently active for the VP agent or another user
+   * Check if DND is currently active for the Orchestrator agent or another user
    *
    * This checks both scheduled DND periods and manual snooze mode.
    *

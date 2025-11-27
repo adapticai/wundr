@@ -1,8 +1,10 @@
 'use client';
 
 import { Workflow as WorkflowLucideIcon } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { useState, useCallback, useMemo } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { EmptyState } from '@/components/ui/empty-state';
 import {
@@ -18,6 +20,7 @@ import {
   ACTION_TYPE_CONFIG,
   EXECUTION_STATUS_CONFIG,
   TEMPLATE_CATEGORY_CONFIG,
+  DEFAULT_ACTION_CONFIGS,
 } from '@/types/workflow';
 
 import type {
@@ -36,7 +39,14 @@ import type {
 
 export default function WorkflowsPage() {
   const params = useParams();
+  const router = useRouter();
   const workspaceId = params?.workspaceId as string;
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Workflows', 'Automate tasks and processes');
+  }, [setPageHeader]);
 
   // State
   const [statusFilter, setStatusFilter] = useState<WorkflowStatus | 'all'>('all');
@@ -54,7 +64,7 @@ export default function WorkflowsPage() {
 
   // Stats
   const workflowStats = useMemo(() => {
-    const stats = { all: 0, active: 0, inactive: 0, draft: 0, error: 0 };
+    const stats = { all: 0, active: 0, inactive: 0, draft: 0, archived: 0 };
     workflows.forEach((wf) => {
       stats.all++;
       stats[wf.status]++;
@@ -119,32 +129,24 @@ export default function WorkflowsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Workflows</h1>
-          <p className="text-sm text-muted-foreground">
-            Automate tasks and processes with custom workflows
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setShowTemplates(true)}
-            className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            <TemplateIcon className="h-4 w-4" />
-            Templates
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowBuilder(true)}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Create Workflow
-          </button>
-        </div>
+      {/* Actions */}
+      <div className="flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => setShowTemplates(true)}
+          className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+        >
+          <TemplateIcon className="h-4 w-4" />
+          Templates
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push(`/${workspaceId}/workflows/new`)}
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          <PlusIcon className="h-4 w-4" />
+          Create Workflow
+        </button>
       </div>
 
       {/* Tab Navigation */}
@@ -217,7 +219,7 @@ export default function WorkflowsPage() {
           }
           action={{
             label: 'Create Workflow',
-            onClick: () => setShowBuilder(true),
+            onClick: () => router.push(`/${workspaceId}/workflows/new`),
           }}
           secondaryAction={
             statusFilter === 'all'
@@ -598,12 +600,13 @@ function ActionList({ actions, onUpdate, onRemove }: ActionListProps) {
           <div className="flex-1">
             <select
               value={action.type}
-              onChange={(e) =>
+              onChange={(e) => {
+                const newType = e.target.value as ActionConfig['type'];
                 onUpdate(action.id, {
-                  type: e.target.value as ActionConfig['type'],
-                  config: {},
-                })
-              }
+                  type: newType,
+                  config: DEFAULT_ACTION_CONFIGS[newType] || {},
+                });
+              }}
               className="rounded-md border border-input bg-background px-2 py-1 text-sm"
             >
               {Object.entries(ACTION_TYPE_CONFIG).map(([key, cfg]) => (

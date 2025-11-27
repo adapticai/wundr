@@ -1,7 +1,7 @@
 /**
  * @wundr.io/slack-agent - Search Capabilities
  *
- * Implements comprehensive Slack search functionality for the VP (Virtual Principal)
+ * Implements comprehensive Slack search functionality for the Orchestrator (Virtual Principal)
  * agent, enabling search across messages, files, and users with full support for
  * Slack's advanced search query syntax.
  *
@@ -685,7 +685,7 @@ function transformUser(member: Record<string, unknown>): User {
 // =============================================================================
 
 /**
- * Slack search capability implementation for VP agents.
+ * Slack search capability implementation for Orchestrator agents.
  *
  * Provides comprehensive search functionality across Slack workspaces,
  * including messages, files, and users with support for advanced search

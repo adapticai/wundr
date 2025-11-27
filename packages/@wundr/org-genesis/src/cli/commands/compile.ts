@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /**
  * @packageDocumentation
- * Compile Command - Compiles session context for a VP and discipline.
+ * Compile Command - Compiles session context for a Orchestrator and discipline.
  *
  * This command uses the Context Compiler to generate a complete session
  * configuration including CLAUDE.md, claude_config.json, settings.json,
@@ -294,13 +294,13 @@ function formatJsonOutput(result: CompileCommandResult): void {
 // =============================================================================
 
 /**
- * Compiles a session configuration for a VP and discipline.
+ * Compiles a session configuration for a Orchestrator and discipline.
  *
  * Uses the Context Compiler to generate CLAUDE.md, configuration files,
  * and agent definitions. Optionally writes the compiled files to a git
  * worktree for immediate use.
  *
- * @param vpId - The VP ID for the session
+ * @param vpId - The Orchestrator ID for the session
  * @param disciplineId - The discipline ID for the session
  * @param options - Compilation options
  * @returns Promise resolving to the compilation result
@@ -308,12 +308,12 @@ function formatJsonOutput(result: CompileCommandResult): void {
  * @example
  * ```typescript
  * // Basic compilation
- * const result = await compileCommand('vp-engineering', 'disc-frontend', {
+ * const result = await compileCommand('orchestrator-engineering', 'disc-frontend', {
  *   taskDescription: 'Implement login page',
  * });
  *
  * // Compile and write to worktree
- * const result = await compileCommand('vp-engineering', 'disc-backend', {
+ * const result = await compileCommand('orchestrator-engineering', 'disc-backend', {
  *   taskDescription: 'Build REST API endpoints',
  *   worktreePath: './worktrees/api-feature',
  *   writeFiles: true,
@@ -321,7 +321,7 @@ function formatJsonOutput(result: CompileCommandResult): void {
  * });
  *
  * // Warm-start from previous session
- * const result = await compileCommand('vp-engineering', 'disc-frontend', {
+ * const result = await compileCommand('orchestrator-engineering', 'disc-frontend', {
  *   taskDescription: 'Continue implementing dashboard',
  *   warmStartContext: previousSessionContext,
  * });
@@ -343,12 +343,12 @@ export async function compileCommand(
     });
     await registryManager.initialize();
 
-    // Verify VP exists
-    const vp = await registryManager.charters.getVP(vpId);
+    // Verify Orchestrator exists
+    const orchestrator = await registryManager.charters.getVP(vpId);
     if (!vp) {
       return {
         success: false,
-        error: `VP not found: ${vpId}`,
+        error: `Orchestrator not found: ${vpId}`,
         warnings,
       };
     }
@@ -363,10 +363,10 @@ export async function compileCommand(
       };
     }
 
-    // Verify discipline belongs to VP
+    // Verify discipline belongs to Orchestrator
     if (discipline.parentVpId && discipline.parentVpId !== vpId) {
       warnings.push(
-        `Discipline ${disciplineId} is not directly under VP ${vpId}`
+        `Discipline ${disciplineId} is not directly under Orchestrator ${vpId}`
       );
     }
 
@@ -546,17 +546,17 @@ export async function compileCommand(
  * @example
  * ```bash
  * # Basic compilation
- * wundr compile vp-engineering disc-frontend --task "Implement login"
+ * wundr compile orchestrator-engineering disc-frontend --task "Implement login"
  *
  * # Compile and write files
- * wundr compile vp-engineering disc-backend \
+ * wundr compile orchestrator-engineering disc-backend \
  *   --task "Build API" \
  *   --worktree ./worktrees/api \
  *   --write \
  *   --agents api-designer,security-reviewer
  *
  * # JSON output
- * wundr compile vp-engineering disc-frontend \
+ * wundr compile orchestrator-engineering disc-frontend \
  *   --task "Dashboard" \
  *   --format json
  * ```
@@ -567,9 +567,9 @@ export async function runCompileCommand(args: string[]): Promise<void> {
   const disciplineId = args[1];
 
   if (!vpId || !disciplineId) {
-    console.error('Error: VP ID and Discipline ID are required');
+    console.error('Error: Orchestrator ID and Discipline ID are required');
     console.error(
-      'Usage: wundr compile <vp-id> <discipline-id> --task <description> [options]'
+      'Usage: wundr compile <orchestrator-id> <discipline-id> --task <description> [options]'
     );
     process.exitCode = 1;
     return;

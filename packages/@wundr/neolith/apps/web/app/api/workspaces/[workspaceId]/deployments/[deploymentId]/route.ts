@@ -11,12 +11,13 @@
  * @module app/api/workspaces/[workspaceId]/deployments/[deploymentId]/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
 import type { NextRequest } from 'next/server';
-import type { Deployment, UpdateDeploymentInput } from '@/types/deployment';
+import type { UpdateDeploymentInput } from '@/types/deployment';
 
 /**
  * Route context with workspaceId and deploymentId parameters
@@ -46,46 +47,79 @@ export async function GET(
     const params = await context.params;
     const { workspaceId, deploymentId } = params;
 
-    // TODO: Replace with actual database query
-    const mockDeployment: Deployment = {
-      id: deploymentId,
-      workspaceId,
-      name: 'Main API Service',
-      description: 'Core API backend service',
-      type: 'service',
-      status: 'running',
-      environment: 'production',
-      version: 'v1.2.3',
-      url: 'https://api.example.com',
-      config: {
-        region: 'us-east-1',
-        replicas: 3,
-        resources: {
-          cpu: '1000m',
-          memory: '2Gi',
-        },
-        env: {
-          NODE_ENV: 'production',
-          LOG_LEVEL: 'info',
-        },
+    // Get deployment from database
+    const deployment = await prisma.deployment.findUnique({
+      where: {
+        id: deploymentId,
       },
-      health: {
-        status: 'healthy',
-        lastCheck: new Date(),
-        uptime: 86400,
+    });
+
+    if (!deployment || deployment.workspaceId !== workspaceId) {
+      return NextResponse.json({ error: 'Deployment not found' }, { status: 404 });
+    }
+
+    // Transform to frontend format
+    const transformedDeployment = {
+      id: deployment.id,
+      workspaceId: deployment.workspaceId,
+      name: deployment.name,
+      description: deployment.description,
+      type: deployment.type.toLowerCase() as
+        | 'service'
+        | 'agent'
+        | 'workflow'
+        | 'integration',
+      status: (() => {
+        const statusMap: Record<string, string> = {
+          PENDING: 'deploying',
+          BUILDING: 'updating',
+          DEPLOYING: 'deploying',
+          ACTIVE: 'running',
+          FAILED: 'failed',
+          STOPPED: 'stopped',
+        };
+        return (
+          statusMap[deployment.status] || deployment.status.toLowerCase()
+        ) as 'deploying' | 'running' | 'stopped' | 'failed' | 'updating';
+      })(),
+      environment: deployment.environment.toLowerCase() as
+        | 'production'
+        | 'staging'
+        | 'development',
+      version: deployment.version || 'v1.0.0',
+      url: deployment.url,
+      config: deployment.config as {
+        region: string;
+        replicas: number;
+        resources: { cpu: string; memory: string };
+        env: Record<string, string>;
       },
-      stats: {
-        requests: 1250000,
-        errors: 42,
-        latencyP50: 125,
-        latencyP99: 480,
+      health: ((deployment.health as unknown) || {
+        status: 'unknown',
+        lastCheck: null,
+        uptime: 0,
+      }) as {
+        status: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
+        lastCheck: Date | null;
+        uptime: number;
       },
-      createdAt: new Date('2024-01-01'),
-      updatedAt: new Date(),
-      deployedAt: new Date(),
+      stats: ((deployment.stats as unknown) || {
+        requests: 0,
+        errors: 0,
+        latencyP50: 0,
+        latencyP99: 0,
+      }) as {
+        requests: number;
+        errors: number;
+        latencyP50: number;
+        latencyP99: number;
+      },
+      createdAt: deployment.createdAt,
+      updatedAt: deployment.updatedAt,
+      deployedAt: deployment.deployedAt,
     };
 
-    return NextResponse.json({ deployment: mockDeployment });
+    return NextResponse.json({ deployment: transformedDeployment });
   } catch (error) {
     console.error('Error fetching deployment:', error);
     return NextResponse.json(
@@ -126,44 +160,96 @@ export async function PATCH(
       );
     }
 
-    // TODO: Replace with actual database update
-    const updatedDeployment: Deployment = {
-      id: deploymentId,
-      workspaceId,
-      name: body.name ?? 'Main API Service',
-      description: body.description ?? 'Core API backend service',
-      type: 'service',
-      status: 'updating',
-      environment: 'production',
-      version: 'v1.2.4',
-      url: 'https://api.example.com',
-      config: {
-        region: 'us-east-1',
-        replicas: body.config?.replicas ?? 3,
-        resources: body.config?.resources ?? {
-          cpu: '1000m',
-          memory: '2Gi',
-        },
-        env: body.config?.env ?? {},
+    // Check if deployment exists and belongs to workspace
+    const existingDeployment = await prisma.deployment.findUnique({
+      where: { id: deploymentId },
+    });
+
+    if (!existingDeployment || existingDeployment.workspaceId !== workspaceId) {
+      return NextResponse.json({ error: 'Deployment not found' }, { status: 404 });
+    }
+
+    // Prepare update data
+    const updateData: Record<string, unknown> = {};
+
+    if (body.name !== undefined) {
+      updateData.name = body.name;
+    }
+
+    if (body.description !== undefined) {
+      updateData.description = body.description;
+    }
+
+    if (body.config) {
+      // Merge config with existing config
+      const existingConfig =
+        (existingDeployment.config as Record<string, unknown>) || {};
+      updateData.config = {
+        ...existingConfig,
+        ...body.config,
+      };
+    }
+
+    // Set status to BUILDING when updating
+    updateData.status = 'BUILDING';
+
+    // Update deployment in database
+    const deployment = await prisma.deployment.update({
+      where: { id: deploymentId },
+      data: updateData,
+    });
+
+    // Transform to frontend format
+    const transformedDeployment = {
+      id: deployment.id,
+      workspaceId: deployment.workspaceId,
+      name: deployment.name,
+      description: deployment.description,
+      type: deployment.type.toLowerCase() as
+        | 'service'
+        | 'agent'
+        | 'workflow'
+        | 'integration',
+      status: 'updating' as const,
+      environment: deployment.environment.toLowerCase() as
+        | 'production'
+        | 'staging'
+        | 'development',
+      version: deployment.version || 'v1.0.0',
+      url: deployment.url,
+      config: deployment.config as {
+        region: string;
+        replicas: number;
+        resources: { cpu: string; memory: string };
+        env: Record<string, string>;
       },
-      health: {
-        status: 'healthy',
-        lastCheck: new Date(),
-        uptime: 86400,
+      health: ((deployment.health as unknown) || {
+        status: 'unknown',
+        lastCheck: null,
+        uptime: 0,
+      }) as {
+        status: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
+        lastCheck: Date | null;
+        uptime: number;
       },
-      stats: {
-        requests: 1250000,
-        errors: 42,
-        latencyP50: 125,
-        latencyP99: 480,
+      stats: ((deployment.stats as unknown) || {
+        requests: 0,
+        errors: 0,
+        latencyP50: 0,
+        latencyP99: 0,
+      }) as {
+        requests: number;
+        errors: number;
+        latencyP50: number;
+        latencyP99: number;
       },
-      createdAt: new Date('2024-01-01'),
-      updatedAt: new Date(),
-      deployedAt: new Date(),
+      createdAt: deployment.createdAt,
+      updatedAt: deployment.updatedAt,
+      deployedAt: deployment.deployedAt,
     };
 
     return NextResponse.json({
-      deployment: updatedDeployment,
+      deployment: transformedDeployment,
       message: 'Deployment updated successfully',
     });
   } catch (error) {
@@ -194,10 +280,21 @@ export async function DELETE(
     }
 
     const params = await context.params;
-    const { deploymentId } = params;
+    const { workspaceId, deploymentId } = params;
 
-    // TODO: Replace with actual database deletion
-    // In production, this would stop the deployment and clean up resources
+    // Check if deployment exists and belongs to workspace
+    const existingDeployment = await prisma.deployment.findUnique({
+      where: { id: deploymentId },
+    });
+
+    if (!existingDeployment || existingDeployment.workspaceId !== workspaceId) {
+      return NextResponse.json({ error: 'Deployment not found' }, { status: 404 });
+    }
+
+    // Delete deployment from database (logs will be cascade deleted)
+    await prisma.deployment.delete({
+      where: { id: deploymentId },
+    });
 
     return NextResponse.json({
       message: 'Deployment deleted successfully',

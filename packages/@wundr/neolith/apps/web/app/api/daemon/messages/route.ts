@@ -1,7 +1,7 @@
 /**
  * Daemon Messages API Route
  *
- * Handles message operations for VP daemon services.
+ * Handles message operations for Orchestrator daemon services.
  *
  * Routes:
  * - GET /api/daemon/messages - Get messages from a channel
@@ -12,10 +12,9 @@
 
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Schema for sending a message
@@ -81,10 +80,10 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 }
 
 /**
- * Check if VP has access to a channel
+ * Check if Orchestrator has access to a channel
  */
 async function checkChannelAccess(vpId: string, channelId: string): Promise<boolean> {
-  const vp = await prisma.vP.findUnique({
+  const orchestrator = await prisma.vP.findUnique({
     where: { id: vpId },
     select: { userId: true },
   });
@@ -106,7 +105,7 @@ async function checkChannelAccess(vpId: string, channelId: string): Promise<bool
 /**
  * GET /api/daemon/messages - Get messages from a channel
  *
- * Retrieves messages from a channel the VP daemon has access to.
+ * Retrieves messages from a channel the Orchestrator daemon has access to.
  *
  * @param request - Next.js request with channel ID and pagination params
  * @returns List of messages
@@ -228,7 +227,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 /**
  * POST /api/daemon/messages - Send a message to a channel
  *
- * Sends a message to a channel on behalf of the VP daemon.
+ * Sends a message to a channel on behalf of the Orchestrator daemon.
  *
  * @param request - Next.js request with message data
  * @returns Created message ID
@@ -300,8 +299,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get VP user ID
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator user ID
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: { userId: true },
     });

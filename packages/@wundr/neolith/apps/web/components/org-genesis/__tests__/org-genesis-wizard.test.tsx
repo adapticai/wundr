@@ -1,8 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OrgGenesisWizard } from '../org-genesis-wizard';
 
@@ -195,7 +195,7 @@ describe('OrgGenesisWizard', () => {
               createdAt: new Date().toISOString(),
               schemaVersion: '1.0.0',
             },
-            vps: [],
+            orchestrators: [],
             disciplines: [],
             agents: [],
             metadata: {

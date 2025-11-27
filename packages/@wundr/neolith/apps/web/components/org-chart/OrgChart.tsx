@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -14,11 +14,11 @@ import type { OrgNode } from './types';
 interface OrgChartProps {
   workspaceId: string;
   orgName: string;
-  vps: OrgNode[];
+  orchestrators: OrgNode[];
   className?: string;
 }
 
-export function OrgChart({ workspaceId, orgName, vps, className }: OrgChartProps) {
+export function OrgChart({ workspaceId, orgName, orchestrators, className }: OrgChartProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -39,7 +39,7 @@ export function OrgChart({ workspaceId, orgName, vps, className }: OrgChartProps
 
   // Filter and search logic
   const filteredVPs = useMemo(() => {
-    let filtered = vps;
+    let filtered = orchestrators;
 
     // Apply discipline filter
     if (selectedDisciplines.length > 0) {
@@ -97,7 +97,7 @@ return new Set<string>();
   }
 
   // Group VPs by discipline for tablet/desktop view
-  const vpsByDiscipline = useMemo(() => {
+  const orchestratorsByDiscipline = useMemo(() => {
     const grouped = new Map<string, OrgNode[]>();
     filteredVPs.forEach((vp) => {
       const existing = grouped.get(vp.discipline) || [];
@@ -132,7 +132,7 @@ return new Set<string>();
         {filteredVPs.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-stone-400">
-              No Virtual Persons match your search and filter criteria.
+              No Orchestrators match your search and filter criteria.
             </p>
           </div>
         ) : isMobile ? (

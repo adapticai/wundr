@@ -10,9 +10,9 @@
  */
 
 import type {
-  VPCharter,
-  DisciplinePack,
   AgentDefinition,
+  DisciplinePack,
+  OrchestratorCharter,
 } from '../../types/index.js';
 
 // ============================================================================
@@ -327,22 +327,22 @@ function renderTable(
 }
 
 // ============================================================================
-// VP Table Formatter
+// Orchestrator Table Formatter
 // ============================================================================
 
 /**
  * Formats a list of VPs as an ASCII table.
  *
- * Displays VP information in a tabular format with columns for:
- * - Name: The VP's display name
+ * Displays Orchestrator information in a tabular format with columns for:
+ * - Name: The Orchestrator's display name
  * - ID: Unique identifier
  * - Disciplines: Number of assigned disciplines
  * - Capabilities: Number of granted capabilities
  * - Status: Current node status (if available)
  *
- * @param vps - Array of VP charters to display
+ * @param orchestrators - Array of Orchestrator charters to display
  * @param options - Optional table formatting configuration
- * @returns Multi-line string representing the VP table
+ * @returns Multi-line string representing the Orchestrator table
  *
  * @example
  * ```typescript
@@ -356,13 +356,13 @@ function renderTable(
  * // +---------------------------+----------------+-------------+--------+
  * // | Name                      | ID             | Disciplines | Caps   |
  * // +---------------------------+----------------+-------------+--------+
- * // | Engineering VP            | vp-eng-001     | 3           | 5      |
- * // | Finance VP                | vp-fin-001     | 2           | 4      |
+ * // | Engineering Orchestrator            | orchestrator-eng-001     | 3           | 5      |
+ * // | Finance Orchestrator                | orchestrator-fin-001     | 2           | 4      |
  * // +---------------------------+----------------+-------------+--------+
  * ```
  */
 export function formatVPsAsTable(
-  vps: VPCharter[],
+  orchestrators: OrchestratorCharter[],
   options: TableFormatOptions = {}
 ): string {
   if (vps.length === 0) {
@@ -378,7 +378,7 @@ export function formatVPsAsTable(
     'left',
   ];
 
-  const rows = vps.map(vp => [
+  const rows = orchestrators.map(vp => [
     vp.identity.name,
     vp.id,
     String(vp.disciplineIds.length),
@@ -392,12 +392,12 @@ export function formatVPsAsTable(
 /**
  * Formats a single VP's details as a vertical key-value table.
  *
- * Displays detailed VP information in a two-column format
+ * Displays detailed Orchestrator information in a two-column format
  * suitable for single-entity inspection.
  *
- * @param vp - The VP charter to display
+ * @param orchestrator - The Orchestrator charter to display
  * @param options - Optional table formatting configuration
- * @returns Multi-line string representing the VP details
+ * @returns Multi-line string representing the Orchestrator details
  *
  * @example
  * ```typescript
@@ -406,7 +406,7 @@ export function formatVPsAsTable(
  * ```
  */
 export function formatVPDetailsAsTable(
-  vp: VPCharter,
+  vp: OrchestratorCharter,
   options: TableFormatOptions = {}
 ): string {
   const headers = ['Property', 'Value'];
@@ -444,7 +444,7 @@ export function formatVPDetailsAsTable(
  * - ID: Unique identifier
  * - Category: Discipline category
  * - Agents: Number of assigned agents
- * - Parent VP: ID of the parent VP (if any)
+ * - Parent VP: ID of the parent Orchestrator (if any)
  *
  * @param disciplines - Array of discipline packs to display
  * @param options - Optional table formatting configuration
@@ -459,10 +459,10 @@ export function formatVPDetailsAsTable(
  *
  * // Output:
  * // +----------------------+---------------+-------------+--------+------------+
- * // | Name                 | ID            | Category    | Agents | Parent VP  |
+ * // | Name                 | ID            | Category    | Agents | Parent Orchestrator  |
  * // +----------------------+---------------+-------------+--------+------------+
- * // | Frontend Development | disc-fe-001   | engineering | 4      | vp-eng-001 |
- * // | Backend Development  | disc-be-001   | engineering | 3      | vp-eng-001 |
+ * // | Frontend Development | disc-fe-001   | engineering | 4      | orchestrator-eng-001 |
+ * // | Backend Development  | disc-be-001   | engineering | 3      | orchestrator-eng-001 |
  * // +----------------------+---------------+-------------+--------+------------+
  * ```
  */
@@ -680,7 +680,7 @@ export function formatAgentDetailsAsTable(
  * Creates a summary view showing counts and key metrics
  * for the entire organization structure.
  *
- * @param vpCount - Number of VPs
+ * @param orchestratorCount - Number of VPs
  * @param disciplineCount - Number of disciplines
  * @param agentCount - Number of agents
  * @param orgName - Organization name
@@ -694,7 +694,7 @@ export function formatAgentDetailsAsTable(
  * ```
  */
 export function formatOrgSummaryTable(
-  vpCount: number,
+  orchestratorCount: number,
   disciplineCount: number,
   agentCount: number,
   orgName: string,
@@ -705,10 +705,10 @@ export function formatOrgSummaryTable(
 
   const rows: string[][] = [
     ['Organization', orgName],
-    ['VPs (Tier 1)', String(vpCount)],
+    ['VPs (Tier 1)', String(orchestratorCount)],
     ['Disciplines (Tier 2)', String(disciplineCount)],
     ['Agents (Tier 3)', String(agentCount)],
-    ['Total Entities', String(vpCount + disciplineCount + agentCount)],
+    ['Total Entities', String(orchestratorCount + disciplineCount + agentCount)],
   ];
 
   return renderTable(headers, rows, alignments, options);
@@ -726,8 +726,8 @@ export function formatOrgSummaryTable(
  * @example
  * ```typescript
  * const comparison = formatOrgComparisonTable([
- *   { name: 'Org A', vps: 3, disciplines: 8, agents: 24 },
- *   { name: 'Org B', vps: 5, disciplines: 12, agents: 36 },
+ *   { name: 'Org A', orchestrators: 3, disciplines: 8, agents: 24 },
+ *   { name: 'Org B', orchestrators: 5, disciplines: 12, agents: 36 },
  * ]);
  * console.log(comparison);
  * ```
@@ -735,7 +735,7 @@ export function formatOrgSummaryTable(
 export function formatOrgComparisonTable(
   orgs: Array<{
     name: string;
-    vps: number;
+    orchestrators: number;
     disciplines: number;
     agents: number;
   }>,
@@ -756,10 +756,10 @@ export function formatOrgComparisonTable(
 
   const rows = orgs.map(org => [
     org.name,
-    String(org.vps),
+    String(org.orchestrators),
     String(org.disciplines),
     String(org.agents),
-    String(org.vps + org.disciplines + org.agents),
+    String(org.orchestrators + org.disciplines + org.agents),
   ]);
 
   return renderTable(headers, rows, alignments, options);

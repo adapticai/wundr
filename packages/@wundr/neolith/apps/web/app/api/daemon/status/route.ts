@@ -1,10 +1,10 @@
 /**
- * Daemon VP Status API Route
+ * Daemon OrchestratorStatus API Route
  *
- * Handles VP operational status updates for daemon services.
+ * Handles Orchestrator operational status updates for daemon services.
  *
  * Routes:
- * - PUT /api/daemon/status - Update VP operational status
+ * - PUT /api/daemon/status - Update Orchestrator operational status
  *
  * @module app/api/daemon/status/route
  */
@@ -12,10 +12,9 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -75,9 +74,9 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 }
 
 /**
- * PUT /api/daemon/status - Update VP operational status
+ * PUT /api/daemon/status - Update Orchestrator operational status
  *
- * Updates the operational status of the VP (active, paused, error).
+ * Updates the operational status of the Orchestrator (active, paused, error).
  * This is different from presence - it indicates the VP's operational state.
  *
  * @param request - Next.js request with status data
@@ -133,8 +132,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
     const { status, message } = parseResult.data;
 
-    // Get VP info
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator info
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         id: true,
@@ -150,10 +149,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Map operational status to VP status enum (ERROR maps to OFFLINE as ERROR is not in enum)
+    // Map operational status to Orchestrator status enum (ERROR maps to OFFLINE as ERROR is not in enum)
     const vpDbStatus = status === 'error' ? 'OFFLINE' : status === 'paused' ? 'BUSY' : 'ONLINE';
 
-    // Update VP with operational status
+    // Update Orchestrator with operational status
     const currentCapabilities = (vp.capabilities as Record<string, unknown>) || {};
     await prisma.vP.update({
       where: { id: token.vpId },

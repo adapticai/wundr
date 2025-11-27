@@ -1,7 +1,7 @@
 /**
  * Daemon Presence API Route
  *
- * Handles presence status updates for VP daemon services.
+ * Handles presence status updates for Orchestrator daemon services.
  *
  * Routes:
  * - PUT /api/daemon/presence - Update daemon presence status
@@ -12,10 +12,9 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * JWT configuration
@@ -73,7 +72,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 /**
  * PUT /api/daemon/presence - Update presence status
  *
- * Updates the presence status of the VP daemon.
+ * Updates the presence status of the Orchestrator daemon.
  *
  * @param request - Next.js request with presence data
  * @returns Success status
@@ -128,8 +127,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
     const { status, statusText } = parseResult.data;
 
-    // Get VP info
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator info
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         id: true,
@@ -145,10 +144,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Map presence status to VP status
+    // Map presence status to Orchestrator status
     const vpStatus = status === 'offline' ? 'OFFLINE' : status === 'busy' ? 'BUSY' : 'ONLINE';
 
-    // Update VP status in database
+    // Update Orchestrator status in database
     await prisma.vP.update({
       where: { id: token.vpId },
       data: {

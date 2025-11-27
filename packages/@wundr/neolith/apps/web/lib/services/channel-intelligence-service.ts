@@ -9,7 +9,7 @@
 
 import { prisma } from '@neolith/database';
 
-import type { MessageType, ChannelType } from '@prisma/client';
+import type { ChannelType, MessageType } from '@prisma/client';
 
 // =============================================================================
 // TYPES
@@ -58,7 +58,7 @@ export interface RecommendedChannel {
  * Activity tracking event
  */
 export interface ActivityEvent {
-  vpId: string;
+  orchestratorId: string;
   channelId: string;
   eventType: string;
   metadata?: Record<string, unknown>;
@@ -90,24 +90,24 @@ export interface AutoJoinResult {
 }
 
 // =============================================================================
-// AUTO-JOIN VP TO CHANNEL
+// AUTO-JOIN ORCHESTRATOR TO CHANNEL
 // =============================================================================
 
 /**
- * Automatically join a VP to a channel based on discipline and capabilities
+ * Automatically join an Orchestrator to a channel based on discipline and capabilities
  *
- * @param vpId - The VP ID to join
+ * @param orchestratorId - The OrchestratorID to join
  * @param channelId - The channel ID to join
  * @returns Result of the auto-join operation
  */
-export async function autoJoinVPToChannel(
-  vpId: string,
+export async function autoJoinOrchestratorToChannel(
+  orchestratorId: string,
   channelId: string,
 ): Promise<AutoJoinResult> {
   try {
-    // Fetch VP details
-    const vp = await prisma.vP.findUnique({
-      where: { id: vpId },
+    // Fetch Orchestrator details
+    const orchestrator = await prisma.vP.findUnique({
+      where: { id: orchestratorId },
       include: {
         user: {
           select: {
@@ -125,7 +125,7 @@ export async function autoJoinVPToChannel(
         channelId,
         channelName: '',
         alreadyMember: false,
-        error: 'VP not found',
+        error: 'Orchestrator not found',
       };
     }
 
@@ -150,7 +150,7 @@ export async function autoJoinVPToChannel(
       };
     }
 
-    // Check if VP is already a member
+    // Check if Orchestrator is already a member
     const existingMembership = await prisma.channelMember.findUnique({
       where: {
         channelId_userId: {
@@ -190,16 +190,16 @@ export async function autoJoinVPToChannel(
       },
     });
 
-    // Create system message announcing VP joining
+    // Create system message announcing Orchestrator joining
     await prisma.message.create({
       data: {
         channelId,
         authorId: vp.userId,
-        content: `VP ${vp.user.name || vp.role} has joined the channel`,
+        content: `Orchestrator ${vp.user.name || vp.role} has joined the channel`,
         type: 'SYSTEM',
         metadata: {
-          eventType: 'vp_auto_join',
-          vpId,
+          eventType: 'orchestrator_auto_join',
+          orchestratorId,
           discipline: vp.discipline,
         },
       },
@@ -223,23 +223,23 @@ export async function autoJoinVPToChannel(
 }
 
 // =============================================================================
-// GET RELEVANT CHANNELS FOR VP
+// GET RELEVANT CHANNELS FOR ORCHESTRATOR
 // =============================================================================
 
 /**
- * Find channels that are relevant to a VP based on discipline and capabilities
+ * Find channels that are relevant to an Orchestrator based on discipline and capabilities
  *
- * @param vpId - The VP ID
+ * @param orchestratorId - The OrchestratorID
  * @param limit - Maximum number of channels to return (default: 10)
  * @returns Array of relevant channels with relevance scores
  */
 export async function getRelevantChannels(
-  vpId: string,
+  orchestratorId: string,
   limit: number = 10,
 ): Promise<ChannelRelevance[]> {
-  // Fetch VP details with discipline
-  const vp = await prisma.vP.findUnique({
-    where: { id: vpId },
+  // Fetch Orchestrator details with discipline
+  const orchestrator = await prisma.vP.findUnique({
+    where: { id: orchestratorId },
     include: {
       disciplineRef: {
         select: {
@@ -263,15 +263,15 @@ export async function getRelevantChannels(
     return [];
   }
 
-  // Get VP capabilities as array of strings
+  // Get Orchestrator capabilities as array of strings
   const capabilities = Array.isArray(vp.capabilities)
     ? (vp.capabilities as string[])
     : [];
 
-  // Get channels VP is not already a member of
+  // Get channels Orchestrator is not already a member of
   const memberChannelIds = vp.user.channelMembers.map(m => m.channelId);
 
-  // Fetch all public channels in the VP's organization
+  // Fetch all public channels in the Orchestrator's organization
   const channels = await prisma.channel.findMany({
     where: {
       workspace: {
@@ -332,8 +332,8 @@ export async function getRelevantChannels(
 }
 
 /**
- * Calculate relevance score for a channel based on VP attributes (legacy version)
- * @deprecated Use the new calculateChannelRelevance(vpId, channelId) instead
+ * Calculate relevance score for a channel based on Orchestrator attributes (legacy version)
+ * @deprecated Use the new calculateChannelRelevance(orchestratorId, channelId) instead
  */
 async function calculateChannelRelevanceLegacy(
   channel: { id: string; name: string; description: string | null; topic: string | null },
@@ -412,30 +412,30 @@ async function calculateChannelRelevanceLegacy(
 }
 
 // =============================================================================
-// SHOULD NOTIFY VP
+// SHOULD NOTIFY ORCHESTRATOR
 // =============================================================================
 
 /**
- * Determine if a VP should be notified about a message
+ * Determine if an Orchestrator should be notified about a message
  *
- * @param vpId - The VP ID
+ * @param orchestratorId - The OrchestratorID
  * @param message - The message object
  * @returns Notification decision with reason and priority
  */
-export async function shouldNotifyVP(
-  vpId: string,
+export async function shouldNotifyOrchestrator(
+  orchestratorId: string,
   message: {
     id: string;
     content: string;
     channelId: string;
     authorId: string;
     type: MessageType;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   },
 ): Promise<NotificationDecision> {
-  // Fetch VP details
-  const vp = await prisma.vP.findUnique({
-    where: { id: vpId },
+  // Fetch Orchestrator details
+  const orchestrator = await prisma.vP.findUnique({
+    where: { id: orchestratorId },
     include: {
       user: true,
       disciplineRef: {
@@ -449,7 +449,7 @@ export async function shouldNotifyVP(
   if (!vp) {
     return {
       shouldNotify: false,
-      reason: 'VP not found',
+      reason: 'Orchestrator not found',
       priority: 'low',
       keywords: [],
     };
@@ -541,7 +541,7 @@ export async function shouldNotifyVP(
     }
   }
 
-  // Check for question patterns directed at VP's expertise (MEDIUM)
+  // Check for question patterns directed at Orchestrator's expertise (MEDIUM)
   const questionPatterns = [
     'how to',
     'can you',
@@ -553,7 +553,7 @@ export async function shouldNotifyVP(
 
   for (const pattern of questionPatterns) {
     if (contentLower.includes(pattern)) {
-      // Check if it's related to VP's discipline or capabilities
+      // Check if it's related to Orchestrator's discipline or capabilities
       for (const capability of capabilities) {
         if (contentLower.includes(capability.toLowerCase())) {
           shouldNotify = true;
@@ -705,20 +705,20 @@ export async function extractChannelTopics(
 // =============================================================================
 
 /**
- * Calculate relevance score between a VP and a channel
+ * Calculate relevance score between an Orchestrator and a channel
  * Enhanced version with detailed factor breakdown
  *
- * @param vpId - VP identifier
+ * @param orchestratorId - Orchestrator identifier
  * @param channelId - Channel identifier
  * @returns Relevance score (0-1) and explanation
  */
 export async function calculateChannelRelevance(
-  vpId: string,
+  orchestratorId: string,
   channelId: string,
 ): Promise<ChannelRelevance> {
-  // Fetch VP details
-  const vp = await prisma.vP.findUnique({
-    where: { id: vpId },
+  // Fetch Orchestrator details
+  const orchestrator = await prisma.vP.findUnique({
+    where: { id: orchestratorId },
     include: {
       user: {
         select: {
@@ -736,7 +736,7 @@ export async function calculateChannelRelevance(
   });
 
   if (!vp) {
-    throw new Error(`VP not found: ${vpId}`);
+    throw new Error(`VP not found: ${orchestratorId}`);
   }
 
   // Fetch channel details with members
@@ -824,14 +824,14 @@ export async function calculateChannelRelevance(
 }
 
 /**
- * Get recommended channels for a VP
+ * Get recommended channels for an Orchestrator
  *
- * @param vpId - VP identifier
+ * @param orchestratorId - Orchestrator identifier
  * @param options - Filtering options
  * @returns Sorted list of recommended channels
  */
 export async function getRecommendedChannels(
-  vpId: string,
+  orchestratorId: string,
   options: {
     minScore?: number;
     limit?: number;
@@ -841,9 +841,9 @@ export async function getRecommendedChannels(
 ): Promise<RecommendedChannel[]> {
   const { minScore = 0.5, limit = 10, excludeJoined = true, channelType } = options;
 
-  // Get VP with workspace context
-  const vp = await prisma.vP.findUnique({
-    where: { id: vpId },
+  // Get Orchestrator with workspace context
+  const orchestrator = await prisma.vP.findUnique({
+    where: { id: orchestratorId },
     include: {
       user: {
         select: {
@@ -857,7 +857,7 @@ export async function getRecommendedChannels(
   });
 
   if (!vp) {
-    throw new Error(`VP not found: ${vpId}`);
+    throw new Error(`VP not found: ${orchestratorId}`);
   }
 
   // Get all channels in the workspace
@@ -900,7 +900,7 @@ export async function getRecommendedChannels(
   // Calculate relevance for each channel
   const channelsWithRelevance = await Promise.all(
     channels.map(async (channel) => {
-      const relevance = await calculateChannelRelevance(vpId, channel.id);
+      const relevance = await calculateChannelRelevance(orchestratorId, channel.id);
       const stats = statsMap.get(channel.id) || { memberCount: 0, messageCount: 0 };
 
       return {
@@ -926,14 +926,14 @@ export async function getRecommendedChannels(
 }
 
 /**
- * Determine if a VP should auto-join a channel
+ * Determine if an Orchestrator should auto-join a channel
  *
- * @param vpId - VP identifier
+ * @param orchestratorId - Orchestrator identifier
  * @param channelId - Channel identifier
- * @returns true if VP should auto-join
+ * @returns true if Orchestrator should auto-join
  */
-export async function shouldAutoJoin(vpId: string, channelId: string): Promise<boolean> {
-  const relevance = await calculateChannelRelevance(vpId, channelId);
+export async function shouldAutoJoin(orchestratorId: string, channelId: string): Promise<boolean> {
+  const relevance = await calculateChannelRelevance(orchestratorId, channelId);
 
   // Auto-join threshold: 0.7 or higher relevance score
   const AUTO_JOIN_THRESHOLD = 0.7;
@@ -942,17 +942,17 @@ export async function shouldAutoJoin(vpId: string, channelId: string): Promise<b
 }
 
 /**
- * Track VP channel activity event
+ * Track Orchestrator channel activity event
  *
  * @param event - Activity event details
  */
 export async function trackChannelActivity(event: ActivityEvent): Promise<void> {
-  const { vpId, channelId, eventType, metadata, timestamp = new Date() } = event;
+  const { orchestratorId, channelId, eventType, metadata, timestamp = new Date() } = event;
 
-  // Verify VP and channel exist
+  // Verify Orchestrator and channel exist
   const [vp, channel] = await Promise.all([
     prisma.vP.findUnique({
-      where: { id: vpId },
+      where: { id: orchestratorId },
       select: { id: true, userId: true },
     }),
     prisma.channel.findUnique({
@@ -962,7 +962,7 @@ export async function trackChannelActivity(event: ActivityEvent): Promise<void> 
   ]);
 
   if (!vp || !channel) {
-    throw new Error('VP or channel not found');
+    throw new Error('Orchestrator or channel not found');
   }
 
   // Store activity in metadata or create a log entry
@@ -982,7 +982,7 @@ export async function trackChannelActivity(event: ActivityEvent): Promise<void> 
   }
 
   // Log to console for debugging (replace with proper logging service)
-  console.log(`[Channel Activity] VP:${vpId} Channel:${channelId} Event:${eventType}`, {
+  console.log(`[Channel Activity] VP:${orchestratorId} Channel:${channelId} Event:${eventType}`, {
     metadata,
     timestamp,
   });
@@ -1055,7 +1055,7 @@ function calculateMemberSimilarity(
 
   // Count members with VPs in the same discipline
   const similarMembers = channel.members.filter((member) => {
-    const memberVP = member.user.vp;
+    const memberVP = member.user.orchestrator;
     if (!memberVP) {
 return false;
 }

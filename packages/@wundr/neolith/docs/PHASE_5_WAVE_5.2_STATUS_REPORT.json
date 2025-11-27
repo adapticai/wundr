@@ -9,7 +9,7 @@
     "priority": "CRITICAL"
   },
   "executive_summary": {
-    "overview": "Phase 5 Wave 5.2 VP Integration Testing is PARTIALLY COMPLETE with foundational infrastructure in place but end-to-end integration tests missing.",
+    "overview": "Phase 5 Wave 5.2 Orchestrator Integration Testing is PARTIALLY COMPLETE with foundational infrastructure in place but end-to-end integration tests missing.",
     "status_color": "YELLOW",
     "blocking_issues": [
       "No end-to-end workflow tests implemented (Task Group 5.2.1)",
@@ -27,7 +27,7 @@
   },
   "task_group_status": {
     "5.2.1": {
-      "name": "End-to-End VP Workflows",
+      "name": "End-to-End Orchestrator Workflows",
       "completion": "20%",
       "status": "IN_PROGRESS",
       "tasks_total": 15,
@@ -48,12 +48,12 @@
         },
         {
           "id": "5.2.1.2",
-          "description": "Test VP auto-joins discipline channel",
+          "description": "Test Orchestrator auto-joins discipline channel",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
             "No test found for auto-join behavior",
-            "Channel system exists but VP integration tests missing"
+            "Channel system exists but Orchestrator integration tests missing"
           ],
           "blocking": true
         },
@@ -65,14 +65,14 @@
           "evidence": [
             "Task assignment logic exists in Task model",
             "API endpoint tested in /api/tasks.test.ts",
-            "Missing: E2E test with real VP assignment flow"
+            "Missing: E2E test with real Orchestrator assignment flow"
           ],
           "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/api/tasks.test.ts",
           "blocking": false
         },
         {
           "id": "5.2.1.4",
-          "description": "Test VP polls backlog and selects task",
+          "description": "Test Orchestrator polls backlog and selects task",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
@@ -84,19 +84,19 @@
         },
         {
           "id": "5.2.1.5",
-          "description": "Test VP spawns Claude Code session",
+          "description": "Test Orchestrator spawns Claude Code session",
           "status": "UNIT_TESTS_ONLY",
           "completion": 40,
           "evidence": [
-            "ClaudeSessionSpawner tested in /tests/vp-daemon/session-spawner.test.ts",
-            "Missing: Integration with VP daemon and Neolith backend"
+            "ClaudeSessionSpawner tested in /tests/orchestrator-daemon/session-spawner.test.ts",
+            "Missing: Integration with Orchestrator daemon and Neolith backend"
           ],
-          "location": "/Users/iroselli/wundr/tests/vp-daemon/session-spawner.test.ts",
+          "location": "/Users/iroselli/wundr/tests/orchestrator-daemon/session-spawner.test.ts",
           "blocking": false
         },
         {
           "id": "5.2.1.6",
-          "description": "Test VP executes work autonomously",
+          "description": "Test Orchestrator executes work autonomously",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
@@ -107,29 +107,29 @@
         },
         {
           "id": "5.2.1.7",
-          "description": "Test VP posts status updates to channel",
+          "description": "Test Orchestrator posts status updates to channel",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
             "Channel message API exists",
-            "No test verifying VP status posting"
+            "No test verifying Orchestrator status posting"
           ],
           "blocking": false
         },
         {
           "id": "5.2.1.8",
-          "description": "Test VP completes task",
+          "description": "Test Orchestrator completes task",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
             "Task completion logic exists",
-            "No E2E test for VP task completion"
+            "No E2E test for Orchestrator task completion"
           ],
           "blocking": false
         },
         {
           "id": "5.2.1.9",
-          "description": "Test VP memory persistence across sessions",
+          "description": "Test Orchestrator memory persistence across sessions",
           "status": "UNIT_TESTS_ONLY",
           "completion": 30,
           "evidence": [
@@ -140,7 +140,7 @@
         },
         {
           "id": "5.2.1.10",
-          "description": "Test VP escalates blocked task to human",
+          "description": "Test Orchestrator escalates blocked task to human",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
@@ -173,7 +173,7 @@
         },
         {
           "id": "5.2.1.13",
-          "description": "Test VP work hours enforcement",
+          "description": "Test Orchestrator work hours enforcement",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
@@ -183,7 +183,7 @@
         },
         {
           "id": "5.2.1.14",
-          "description": "Test VP capacity management",
+          "description": "Test Orchestrator capacity management",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
@@ -193,7 +193,7 @@
         },
         {
           "id": "5.2.1.15",
-          "description": "Test VP analytics tracking",
+          "description": "Test Orchestrator analytics tracking",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
@@ -204,12 +204,12 @@
         }
       ],
       "blockers": [
-        "No Playwright E2E test suite for VP workflows",
+        "No Playwright E2E test suite for Orchestrator workflows",
         "VP work engine not integrated with test environment"
       ],
       "recommendations": [
-        "Create Playwright test suite for complete VP workflow",
-        "Implement E2E tests for VP task lifecycle",
+        "Create Playwright test suite for complete Orchestrator workflow",
+        "Implement E2E tests for Orchestrator task lifecycle",
         "Add integration tests for VP-channel interactions"
       ]
     },
@@ -227,7 +227,7 @@
           "completion": 0,
           "evidence": [
             "VP-Daemon package built and published to npm",
-            "Binary available: vp-daemon",
+            "Binary available: orchestrator-daemon",
             "No deployment configuration found"
           ],
           "blocking": true,
@@ -258,7 +258,7 @@
             "Session spawner unit tests passing (13 tests)",
             "No integration test with actual Claude Code"
           ],
-          "location": "/Users/iroselli/wundr/tests/vp-daemon/session-spawner.test.ts",
+          "location": "/Users/iroselli/wundr/tests/orchestrator-daemon/session-spawner.test.ts",
           "blocking": false
         },
         {
@@ -355,18 +355,18 @@
         },
         {
           "id": "5.2.3.2",
-          "description": "Test VP connects to Slack workspace",
+          "description": "Test Orchestrator connects to Slack workspace",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
             "Slack user agent implementation exists",
-            "No integration test with VP system"
+            "No integration test with Orchestrator system"
           ],
           "blocking": true
         },
         {
           "id": "5.2.3.3",
-          "description": "Test VP dual presence (Slack + Neolith)",
+          "description": "Test Orchestrator dual presence (Slack + Neolith)",
           "status": "NOT_STARTED",
           "completion": 0,
           "evidence": [
@@ -378,21 +378,21 @@
         },
         {
           "id": "5.2.3.4",
-          "description": "Test VP responds to Slack mentions",
+          "description": "Test Orchestrator responds to Slack mentions",
           "status": "NOT_STARTED",
           "completion": 0,
           "blocking": false
         },
         {
           "id": "5.2.3.5",
-          "description": "Test VP posts updates to Slack channels",
+          "description": "Test Orchestrator posts updates to Slack channels",
           "status": "NOT_STARTED",
           "completion": 0,
           "blocking": false
         },
         {
           "id": "5.2.3.6",
-          "description": "Test VP receives tasks from Slack",
+          "description": "Test Orchestrator receives tasks from Slack",
           "status": "NOT_STARTED",
           "completion": 0,
           "blocking": false
@@ -407,7 +407,7 @@
         },
         {
           "id": "5.2.3.8",
-          "description": "Test VP memory shared across platforms",
+          "description": "Test Orchestrator memory shared across platforms",
           "status": "NOT_STARTED",
           "completion": 0,
           "blocking": false
@@ -430,7 +430,7 @@
       "blockers": [
         "Slack-agent not installed in Neolith",
         "No Slack workspace configured for testing",
-        "No integration layer between Slack-agent and VP system"
+        "No integration layer between Slack-agent and Orchestrator system"
       ],
       "recommendations": [
         "Install @wundr.io/slack-agent in Neolith package.json",
@@ -443,14 +443,14 @@
   "test_coverage": {
     "unit_tests": {
       "vp_daemon": {
-        "location": "/Users/iroselli/wundr/packages/@wundr/vp-daemon/tests",
+        "location": "/Users/iroselli/wundr/packages/@wundr/orchestrator-daemon/tests",
         "status": "PASSING",
         "test_count": 17,
         "files": 2,
         "coverage": "Good"
       },
       "session_spawner": {
-        "location": "/Users/iroselli/wundr/tests/vp-daemon/session-spawner.test.ts",
+        "location": "/Users/iroselli/wundr/tests/orchestrator-daemon/session-spawner.test.ts",
         "status": "PASSING",
         "test_count": 13,
         "coverage": "Good"
@@ -477,13 +477,13 @@
     "integration_tests": {
       "status": "MISSING",
       "count": 0,
-      "note": "No E2E integration tests found for VP workflows"
+      "note": "No E2E integration tests found for Orchestrator workflows"
     },
     "e2e_tests": {
       "playwright": {
         "status": "TEMPLATE_ONLY",
         "location": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/__tests__/playwright-mcp-test-template.ts",
-        "note": "Template exists but no VP workflow tests implemented"
+        "note": "Template exists but no Orchestrator workflow tests implemented"
       }
     },
     "total_test_files": 3,
@@ -546,14 +546,14 @@
   "risk_assessment": {
     "high_risks": [
       {
-        "risk": "No E2E tests for VP workflows",
-        "impact": "Cannot verify complete VP lifecycle",
+        "risk": "No E2E tests for Orchestrator workflows",
+        "impact": "Cannot verify complete Orchestrator lifecycle",
         "likelihood": "CERTAIN",
         "mitigation": "Implement Playwright test suite immediately"
       },
       {
         "risk": "VP-Daemon not deployed",
-        "impact": "Cannot test real-world VP operations",
+        "impact": "Cannot test real-world Orchestrator operations",
         "likelihood": "CERTAIN",
         "mitigation": "Create deployment scripts and infrastructure"
       },
@@ -590,7 +590,7 @@
       },
       {
         "priority": "P0",
-        "action": "Create Playwright E2E test suite for VP workflow (5.2.1.1-5.2.1.8)",
+        "action": "Create Playwright E2E test suite for Orchestrator workflow (5.2.1.1-5.2.1.8)",
         "estimated_hours": 24,
         "owner": "qa-engineer"
       },
@@ -630,7 +630,7 @@
       },
       {
         "priority": "P2",
-        "action": "Create VP collaboration workflow tests",
+        "action": "Create Orchestrator collaboration workflow tests",
         "estimated_hours": 16,
         "owner": "qa-engineer"
       },
@@ -651,9 +651,9 @@
   },
   "next_steps": [
     "1. Install @wundr.io/slack-agent in Neolith package.json",
-    "2. Create Playwright test suite template for VP workflows",
+    "2. Create Playwright test suite template for Orchestrator workflows",
     "3. Implement test: workspace creation → org-genesis → VPs created",
-    "4. Implement test: VP auto-joins discipline channel",
+    "4. Implement test: Orchestrator auto-joins discipline channel",
     "5. Create VP-daemon deployment scripts",
     "6. Set up staging environment with 4 VP-daemon instances",
     "7. Implement daemon-to-backend WebSocket integration test",
@@ -663,11 +663,11 @@
   ],
   "validation_criteria": {
     "wave_complete_when": [
-      "All 15 VP workflow tests passing (Task Group 5.2.1)",
+      "All 15 Orchestrator workflow tests passing (Task Group 5.2.1)",
       "VP-Daemon deployed to 16 machines (Task Group 5.2.2)",
       "Slack integration working with dual presence (Task Group 5.2.3)",
       "Load test passes with 16 concurrent VPs",
-      "E2E test coverage > 80% for VP features"
+      "E2E test coverage > 80% for Orchestrator features"
     ],
     "current_met": 0,
     "total_required": 5,
@@ -677,7 +677,7 @@
     "/Users/iroselli/wundr/packages/@wundr/neolith/docs/PHASE_5_VP_INTEGRATION_REPORT.md",
     "/Users/iroselli/wundr/packages/@wundr/neolith/docs/INSTITUTIONAL-READINESS-ROADMAP.md",
     "/Users/iroselli/wundr/packages/@wundr/neolith/docs/NEOLITH-WEB-BACKLOG.md",
-    "/Users/iroselli/wundr/packages/@wundr/vp-daemon/README.md",
+    "/Users/iroselli/wundr/packages/@wundr/orchestrator-daemon/README.md",
     "/Users/iroselli/wundr/packages/@wundr/slack-agent/README.md"
   ]
 }

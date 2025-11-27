@@ -448,7 +448,7 @@ POST   /api/presence/heartbeat
 SSE    /api/channels/:channelId/presence/subscribe
 ```
 
-### Priority 2 - Workflow & VP Endpoints (20 endpoints)
+### Priority 2 - Workflow & Orchestrator Endpoints (20 endpoints)
 
 ```
 GET    /api/workspaces/:workspaceId/workflows

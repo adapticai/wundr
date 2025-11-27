@@ -11,7 +11,7 @@
 
 import type {
   OrganizationManifest,
-  VPCharter,
+  OrchestratorCharter,
   DisciplinePack,
   AgentDefinition,
 } from '../../types/index.js';
@@ -30,7 +30,7 @@ import type {
  * ```typescript
  * const orgTree: OrgTree = {
  *   manifest: myOrgManifest,
- *   vps: [engineeringVP, financeVP],
+ *   orchestrators: [engineeringVP, financeVP],
  *   disciplines: [frontendDiscipline, backendDiscipline],
  *   agents: [coderAgent, reviewerAgent],
  * };
@@ -43,8 +43,8 @@ export interface OrgTree {
   /** The organization manifest containing core metadata */
   manifest: OrganizationManifest;
 
-  /** List of all VP charters in the organization */
-  vps: VPCharter[];
+  /** List of all Orchestrator charters in the organization */
+  orchestrators: OrchestratorCharter[];
 
   /** List of all discipline packs in the organization */
   disciplines: DisciplinePack[];
@@ -178,15 +178,15 @@ function getChildPrefix(
 }
 
 /**
- * Formats a VP node for display.
+ * Formats a Orchestrator node for display.
  *
- * @param vp - The VP charter to format
+ * @param orchestrator - The Orchestrator charter to format
  * @param options - Formatting options
- * @returns Formatted VP string
+ * @returns Formatted Orchestrator string
  *
  * @internal
  */
-function formatVPNode(vp: VPCharter, options: TreeFormatOptions): string {
+function formatVPNode(vp: OrchestratorCharter, options: TreeFormatOptions): string {
   const name = truncate(vp.identity.name, 40);
   const id = options.showIds ? ` (${vp.id})` : '';
   const count = options.showCounts
@@ -245,7 +245,7 @@ function formatAgentNode(
  * Creates a hierarchical ASCII representation of the organization showing:
  * - Organization root with name and industry
  * - VPs (Tier 1) as primary branches
- * - Disciplines (Tier 2) under their parent VPs
+ * - Disciplines (Tier 2) under their parent Orchestrators
  * - Agents (Tier 3) under their parent disciplines
  *
  * @param org - The complete organization tree data
@@ -256,7 +256,7 @@ function formatAgentNode(
  * ```typescript
  * const tree = formatAsTree({
  *   manifest: myOrg,
- *   vps: [engineeringVP],
+ *   orchestrators: [engineeringVP],
  *   disciplines: [frontendDiscipline],
  *   agents: [reactDev, cssSpecialist],
  * });
@@ -264,7 +264,7 @@ function formatAgentNode(
  * console.log(tree);
  * // Output:
  * // [ORG] My Organization (technology, medium)
- * // `-- [VP] Engineering VP
+ * // `-- [VP] Engineering Orchestrator
  * //     `-- [DISC] Frontend Development [2 agents]
  * //         |-- [AGENT] React Developer [sonnet]
  * //         `-- [AGENT] CSS Specialist [haiku]
@@ -275,13 +275,13 @@ export function formatAsTree(
   options: TreeFormatOptions = {}
 ): string {
   const lines: string[] = [];
-  const { manifest, vps, disciplines, agents } = org;
+  const { manifest, orchestrators, disciplines, agents } = org;
 
   // Create lookup maps for efficient access
   const disciplinesByVpId = new Map<string, DisciplinePack[]>();
   const agentsByDisciplineId = new Map<string, AgentDefinition[]>();
 
-  // Group disciplines by parent VP
+  // Group disciplines by parent Orchestrator
   for (const discipline of disciplines) {
     if (discipline.parentVpId) {
       const existing = disciplinesByVpId.get(discipline.parentVpId) || [];
@@ -320,10 +320,10 @@ export function formatAsTree(
   }
 
   // Render VPs
-  for (let vpIdx = 0; vpIdx < vps.length; vpIdx++) {
-    const vp = vps[vpIdx];
-    const isLastVP = vpIdx === vps.length - 1;
-    const vpLine = buildTreeLine('', isLastVP, formatVPNode(vp, options));
+  for (let vpIdx = 0; vpIdx < orchestrators.length; vpIdx++) {
+    const orchestrator = orchestrators[vpIdx];
+    const isLastOrchestrator = vpIdx === orchestrators.length - 1;
+    const vpLine = buildTreeLine('', isLastOrchestrator, formatVPNode(vp, options));
     lines.push(vpLine);
 
     // Check max depth for disciplines
@@ -331,9 +331,9 @@ export function formatAsTree(
       continue;
     }
 
-    // Get disciplines for this VP
+    // Get disciplines for this Orchestrator
     const vpDisciplines = disciplinesByVpId.get(vp.id) || [];
-    const vpPrefix = getChildPrefix('', isLastVP);
+    const vpPrefix = getChildPrefix('', isLastOrchestrator);
 
     for (let discIdx = 0; discIdx < vpDisciplines.length; discIdx++) {
       const discipline = vpDisciplines[discIdx];
@@ -367,7 +367,7 @@ export function formatAsTree(
     }
   }
 
-  // Handle orphan disciplines (no parent VP)
+  // Handle orphan disciplines (no parent Orchestrator)
   const orphanDisciplines = disciplines.filter(d => !d.parentVpId);
   if (
     orphanDisciplines.length > 0 &&
@@ -412,16 +412,16 @@ export function formatAsTree(
 }
 
 /**
- * Formats a single VP and its descendants as an ASCII tree.
+ * Formats a single Orchestrator and its descendants as an ASCII tree.
  *
  * Creates a focused tree view starting from a specific VP, showing
- * only the disciplines and agents under that VP.
+ * only the disciplines and agents under that Orchestrator.
  *
- * @param vp - The VP charter to display
- * @param disciplines - Disciplines belonging to this VP
+ * @param orchestrator - The Orchestrator charter to display
+ * @param disciplines - Disciplines belonging to this Orchestrator
  * @param agents - All agents (will be filtered to matching disciplines)
  * @param options - Optional formatting configuration
- * @returns Multi-line string representing the VP tree
+ * @returns Multi-line string representing the Orchestrator tree
  *
  * @example
  * ```typescript
@@ -435,7 +435,7 @@ export function formatAsTree(
  * ```
  */
 export function formatVPTree(
-  vp: VPCharter,
+  vp: OrchestratorCharter,
   disciplines: DisciplinePack[],
   agents: AgentDefinition[],
   options: TreeFormatOptions = {}
@@ -449,14 +449,14 @@ export function formatVPTree(
     agentBySlug.set(agent.id, agent);
   }
 
-  // Filter disciplines to those belonging to this VP
+  // Filter disciplines to those belonging to this Orchestrator
   const vpDisciplines = disciplines.filter(d => d.parentVpId === vp.id);
 
-  // Root node - VP
-  const vpCount = options.showCounts
+  // Root node - Orchestrator
+  const orchestratorCount = options.showCounts
     ? ` [${vpDisciplines.length} disciplines]`
     : '';
-  lines.push(`${ICONS.VP} ${vp.identity.name}${vpCount}`);
+  lines.push(`${ICONS.VP} ${vp.identity.name}${orchestratorCount}`);
 
   if (options.maxDepth !== undefined && options.maxDepth < 1) {
     return lines.join('\n');

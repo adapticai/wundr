@@ -14,7 +14,7 @@
 
 | # | Flow | Status | Blocking Issue |
 |---|------|--------|----------------|
-| 1 | Login → Dashboard → Create VP → View VP | ❌ | Auth Required |
+| 1 | Login → Dashboard → Create Orchestrator → View Orchestrator | ❌ | Auth Required |
 | 2 | Dashboard → Channels → Create Channel → Send Message | ❌ | Auth Required |
 | 3 | Dashboard → Workflows → Create Workflow → View Workflow | ❌ | Auth Required |
 | 4 | Dashboard → Agents → Create Agent → View Agent | ❌ | Auth Required |

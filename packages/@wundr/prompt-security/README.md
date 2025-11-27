@@ -14,7 +14,7 @@ Prompt injection defense patterns for AI-powered applications. This package prov
   - [ActionInterceptor](#actioninterceptor)
   - [ContextMinimizer](#contextminimizer)
 - [Configuration](#configuration)
-- [Integration with VP Daemon and Session Managers](#integration-with-vp-daemon-and-session-managers)
+- [Integration with Orchestrator Daemon and Session Managers](#integration-with-orchestrator-daemon-and-session-managers)
 - [API Reference](#api-reference)
 - [License](#license)
 
@@ -807,15 +807,15 @@ interface AuditConfig {
 
 ---
 
-## Integration with VP Daemon and Session Managers
+## Integration with Orchestrator Daemon and Session Managers
 
-The `@wundr.io/prompt-security` package is designed to integrate seamlessly with VP (Virtual Persona) daemons and session managers in the Wundr ecosystem.
+The `@wundr.io/prompt-security` package is designed to integrate seamlessly with Orchestrator (Virtual Persona) daemons and session managers in the Wundr ecosystem.
 
-### VP Daemon Integration
+### Orchestrator Daemon Integration
 
 ```typescript
 import { PromptSecurityManager, ActionInterceptor } from '@wundr.io/prompt-security';
-import type { VPDaemon } from '@wundr.io/vp-daemon';
+import type { VPDaemon } from '@wundr.io/orchestrator-daemon';
 
 class SecureVPDaemon implements VPDaemon {
   private security: PromptSecurityManager;

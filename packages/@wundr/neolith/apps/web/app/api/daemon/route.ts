@@ -1,5 +1,5 @@
 /**
- * VP Daemon Main API Route
+ * OrchestratorDaemon Main API Route
  *
  * Primary daemon management endpoint for registration and lifecycle operations.
  * Consolidates daemon registration, status checks, and management operations.
@@ -15,15 +15,14 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
 import type {
+  DaemonErrorResponse,
   DaemonRegistrationResponse,
   DaemonStatus,
-  DaemonErrorResponse,
 } from '@/types/daemon';
-import type { NextRequest } from 'next/server';
 
 // =============================================================================
 // Configuration
@@ -181,8 +180,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { vpId, organizationId, apiKey, daemonInfo } = parseResult.data;
 
-    // Verify VP exists and belongs to organization
-    const vp = await prisma.vP.findUnique({
+    // Verify Orchestrator exists and belongs to organization
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: vpId },
       select: {
         id: true,
@@ -255,7 +254,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Continue - registration can succeed without Redis
     }
 
-    // Update VP status to indicate daemon is registered
+    // Update Orchestrator status to indicate daemon is registered
     await prisma.vP.update({
       where: { id: vpId },
       data: {
@@ -422,7 +421,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       // Continue with unregistration
     }
 
-    // Update VP status
+    // Update Orchestrator status
     await prisma.vP.update({
       where: { id: token.vpId },
       data: {

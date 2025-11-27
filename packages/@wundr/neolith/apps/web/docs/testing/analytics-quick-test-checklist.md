@@ -91,7 +91,7 @@
 
 ### Leaderboard & Bar Charts
 - [ ] "Top VPs by Messages" list displays
-- [ ] VP names and counts visible
+- [ ] Orchestrator names and counts visible
 - [ ] "Most Active Channels" bars render
 - [ ] "Tasks by Status" bars render
 - [ ] Bar heights proportional to values

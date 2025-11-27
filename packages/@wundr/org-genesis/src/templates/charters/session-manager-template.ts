@@ -5,7 +5,7 @@
  * Session Manager charters. Session Managers are Tier 2 coordination agents
  * responsible for managing specialized agents within a discipline domain.
  *
- * Session Managers act as the operational bridge between VP-level strategy
+ * Session Managers act as the operational bridge between Orchestrator-level strategy
  * and Tier 3 agent execution. They coordinate task distribution, maintain
  * discipline-specific context, and ensure quality within their domain.
  *
@@ -72,7 +72,7 @@ export const DEFAULT_SM_MCP_TOOLS: string[] = [
 /**
  * Default resource limits for Session Manager agents.
  *
- * These limits are lower than VP limits, appropriate for discipline-scoped coordination:
+ * These limits are lower than Orchestrator limits, appropriate for discipline-scoped coordination:
  * - `maxConcurrentSessions`: Maximum Tier 3 agents that can be active
  * - `tokenBudgetPerHour`: LLM tokens available per hour
  * - `maxMemoryMB`: Memory allocation in megabytes
@@ -80,7 +80,7 @@ export const DEFAULT_SM_MCP_TOOLS: string[] = [
  *
  * @remarks
  * Session Managers operate within a single discipline, so resource
- * requirements are proportionally lower than VP agents.
+ * requirements are proportionally lower than Orchestrator agents.
  */
 export const SM_DEFAULT_RESOURCE_LIMITS: ResourceLimits = {
   maxConcurrentSessions: 5,
@@ -114,7 +114,7 @@ export const SM_DEFAULT_OBJECTIVES: MeasurableObjectives = {
     agentUtilization: 80, // Percentage of agent time productively used
     taskRoutingAccuracy: 95, // Percentage of tasks routed to correct agent
     contextRetentionScore: 90, // Quality of maintained discipline context
-    escalationRate: 5, // Percentage of tasks requiring VP escalation
+    escalationRate: 5, // Percentage of tasks requiring Orchestrator escalation
   },
 };
 
@@ -125,16 +125,16 @@ export const SM_DEFAULT_OBJECTIVES: MeasurableObjectives = {
 /**
  * Default hard constraints for Session Manager agents.
  *
- * These constraints are similar to VP constraints but may include
+ * These constraints are similar to Orchestrator constraints but may include
  * discipline-specific restrictions:
  * - `forbiddenCommands`: Shell commands that must never be executed
  * - `forbiddenPaths`: File paths that must not be accessed
  * - `forbiddenActions`: High-level actions that are prohibited
- * - `requireApprovalFor`: Actions requiring human or VP approval
+ * - `requireApprovalFor`: Actions requiring human or Orchestrator approval
  *
  * @remarks
  * Session Managers have constraints focused on their operational domain.
- * They should escalate cross-discipline concerns to their parent VP.
+ * They should escalate cross-discipline concerns to their parent Orchestrator.
  */
 export const SM_DEFAULT_CONSTRAINTS: HardConstraints = {
   forbiddenCommands: [
@@ -202,7 +202,7 @@ export const SM_DEFAULT_CONSTRAINTS: HardConstraints = {
  * to each instance.
  *
  * Session Managers coordinate within a single discipline domain and
- * report to their parent VP for cross-discipline concerns.
+ * report to their parent Orchestrator for cross-discipline concerns.
  *
  * @example
  * ```typescript
@@ -227,7 +227,7 @@ export const DEFAULT_SESSION_MANAGER_CHARTER: Omit<
   coreDirective:
     'Coordinate specialized agents within your discipline to deliver high-quality outcomes. ' +
     'Maintain discipline-specific context, distribute tasks efficiently, and ensure ' +
-    'quality standards are met. Escalate cross-discipline concerns to your parent VP.',
+    'quality standards are met. Escalate cross-discipline concerns to your parent Orchestrator.',
   mcpTools: DEFAULT_SM_MCP_TOOLS,
   agentIds: [],
   objectives: SM_DEFAULT_OBJECTIVES,
@@ -249,7 +249,7 @@ export const DEFAULT_SESSION_MANAGER_CHARTER: Omit<
  *
  * @property name - Required: Human-readable name for the Session Manager
  * @property disciplineId - Required: ID of the discipline this SM coordinates
- * @property parentVpId - Required: ID of the parent VP this SM reports to
+ * @property parentVpId - Required: ID of the parent Orchestrator this SM reports to
  * @property persona - Optional: Description of personality and communication style
  * @property slackHandle - Optional: Slack handle for notifications
  * @property email - Optional: Email for external communications
@@ -268,7 +268,7 @@ export interface CreateSessionManagerCharterOptions {
   /** ID of the discipline this Session Manager coordinates (required) */
   disciplineId: string;
 
-  /** ID of the parent VP this Session Manager reports to (required) */
+  /** ID of the parent Orchestrator this Session Manager reports to (required) */
   parentVpId: string;
 
   /** Description of the SM's personality and communication style */
@@ -504,7 +504,7 @@ export function createSessionManagerCharterFromPartial(
 /**
  * Create a Frontend Session Manager charter with frontend-focused defaults.
  *
- * @param parentVpId - ID of the parent VP
+ * @param parentVpId - ID of the parent Orchestrator
  * @param options - Additional configuration options
  * @returns A Frontend Session Manager charter
  *
@@ -534,7 +534,7 @@ export function createFrontendSessionManagerCharter(
 /**
  * Create a Backend Session Manager charter with backend-focused defaults.
  *
- * @param parentVpId - ID of the parent VP
+ * @param parentVpId - ID of the parent Orchestrator
  * @param options - Additional configuration options
  * @returns A Backend Session Manager charter
  *
@@ -572,7 +572,7 @@ export function createBackendSessionManagerCharter(
 /**
  * Create a DevOps Session Manager charter with DevOps-focused defaults.
  *
- * @param parentVpId - ID of the parent VP
+ * @param parentVpId - ID of the parent Orchestrator
  * @param options - Additional configuration options
  * @returns A DevOps Session Manager charter
  *
@@ -617,7 +617,7 @@ export function createDevOpsSessionManagerCharter(
 /**
  * Create a QA Session Manager charter with QA-focused defaults.
  *
- * @param parentVpId - ID of the parent VP
+ * @param parentVpId - ID of the parent Orchestrator
  * @param options - Additional configuration options
  * @returns A QA Session Manager charter
  *
@@ -662,7 +662,7 @@ export function createQASessionManagerCharter(
 /**
  * Create a Data Session Manager charter with data engineering focused defaults.
  *
- * @param parentVpId - ID of the parent VP
+ * @param parentVpId - ID of the parent Orchestrator
  * @param options - Additional configuration options
  * @returns A Data Session Manager charter
  *
@@ -711,7 +711,7 @@ export function createDataSessionManagerCharter(
 /**
  * Create a Security Session Manager charter with security-focused defaults.
  *
- * @param parentVpId - ID of the parent VP
+ * @param parentVpId - ID of the parent Orchestrator
  * @param options - Additional configuration options
  * @returns A Security Session Manager charter
  *

@@ -87,7 +87,7 @@ POST /api/workspaces/generate-org
 {
   data: {
     manifest: OrganizationManifest;
-    vps: VPDefinition[];
+    orchestrators: VPDefinition[];
     disciplines: DisciplineDefinition[];
     agents: AgentDefinition[];
     metadata: GenerationMetadata;

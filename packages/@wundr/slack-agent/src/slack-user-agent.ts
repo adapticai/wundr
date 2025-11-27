@@ -1,8 +1,8 @@
 /**
  * @wundr/slack-agent - Unified Slack User Agent
  *
- * The SlackUserAgent class integrates ALL Slack capabilities for a VP (Virtual Principal)
- * agent. The VP runs on its own dedicated machine with its own Slack user account,
+ * The SlackUserAgent class integrates ALL Slack capabilities for a Orchestrator (Virtual Principal)
+ * agent. The Orchestrator runs on its own dedicated machine with its own Slack user account,
  * appearing and behaving exactly like a human Slack user.
  *
  * This class provides a single, unified interface to:
@@ -22,25 +22,24 @@
  * @packageDocumentation
  */
 
+import { LogLevel, SocketModeClient } from '@slack/socket-mode';
 import { WebClient } from '@slack/web-api';
-import { SocketModeClient, LogLevel } from '@slack/socket-mode';
 import { EventEmitter } from 'events';
-
-// Import all capability modules
-import { SlackReactions, CommonEmojis } from './capabilities/reactions.js';
-import { ProfileManager } from './capabilities/profile-management.js';
-import { SlackSearchCapability } from './capabilities/search.js';
-import { PresenceStatusManager, PresetStatuses } from './capabilities/presence-status.js';
+import { BookmarkManager } from './capabilities/bookmarks.js';
 import { ChannelManager } from './capabilities/channel-management.js';
 import { ChannelMembershipManager } from './capabilities/channel-membership.js';
 import { DndControlsManager } from './capabilities/dnd-controls.js';
 import { SlackFileOperations } from './capabilities/file-operations.js';
-import { SlackThreadingCapability } from './capabilities/threading.js';
 import { MessageManager } from './capabilities/message-management.js';
-import { ReminderManager } from './capabilities/reminders.js';
-import { StarredItemsManager } from './capabilities/starred-items.js';
+import { PresenceStatusManager, PresetStatuses } from './capabilities/presence-status.js';
 import { ProactiveMessenger } from './capabilities/proactive-messaging.js';
-import { BookmarkManager } from './capabilities/bookmarks.js';
+import { ProfileManager } from './capabilities/profile-management.js';
+// Import all capability modules
+import { CommonEmojis, SlackReactions } from './capabilities/reactions.js';
+import { ReminderManager } from './capabilities/reminders.js';
+import { SlackSearchCapability } from './capabilities/search.js';
+import { StarredItemsManager } from './capabilities/starred-items.js';
+import { SlackThreadingCapability } from './capabilities/threading.js';
 import { UsergroupManager } from './capabilities/usergroups.js';
 
 // =============================================================================
@@ -48,7 +47,7 @@ import { UsergroupManager } from './capabilities/usergroups.js';
 // =============================================================================
 
 /**
- * VP Identity information for the agent
+ * Orchestrator Identity information for the agent
  */
 export interface VPIdentity {
   /** Full display name */
@@ -81,7 +80,7 @@ export interface SlackUserAgentConfig {
   appToken: string;
   /** Signing secret for request verification */
   signingSecret: string;
-  /** VP identity information */
+  /** Orchestrator identity information */
   vpIdentity: VPIdentity;
   /** Enable debug logging */
   debug?: boolean;
@@ -159,7 +158,7 @@ export type EventHandler<T = SlackEvent> = (event: T) => void | Promise<void>;
 /**
  * Unified Slack User Agent that integrates ALL Slack capabilities.
  *
- * The VP (Virtual Principal) agent operates as a full user in Slack workspaces,
+ * The Orchestrator (Virtual Principal) agent operates as a full user in Slack workspaces,
  * with its own user account, tokens, and identity. This class provides a single
  * interface to all Slack functionality.
  *
@@ -319,7 +318,7 @@ export class SlackUserAgent extends EventEmitter {
       await this.socketModeClient.start();
       this.isConnected = true;
 
-      // Set up VP profile
+      // Set up Orchestrator profile
       await this.setupVPProfile();
 
       this.log('SlackUserAgent started successfully');
@@ -1366,7 +1365,7 @@ export class SlackUserAgent extends EventEmitter {
   // ===========================================================================
 
   /**
-   * Set up VP profile based on configuration
+   * Set up Orchestrator profile based on configuration
    */
   private async setupVPProfile(): Promise<void> {
     const { vpIdentity } = this.config;
@@ -1398,7 +1397,7 @@ export class SlackUserAgent extends EventEmitter {
 
       this.log('VP profile configured successfully');
     } catch (error) {
-      this.log('Error setting up VP profile (non-fatal)', error);
+      this.log('Error setting up Orchestrator profile (non-fatal)', error);
       // Don't throw - profile setup failure shouldn't prevent agent from working
     }
   }
@@ -1489,7 +1488,7 @@ export function createSlackUserAgent(config: SlackUserAgentConfig): SlackUserAge
  * Create a SlackUserAgent from environment variables
  *
  * This factory function reads all configuration from environment variables,
- * making it easy to deploy VP agents in containerized environments.
+ * making it easy to deploy Orchestrator agents in containerized environments.
  *
  * Required environment variables:
  * - `SLACK_USER_TOKEN` - User token (xoxp-*) for user-level operations

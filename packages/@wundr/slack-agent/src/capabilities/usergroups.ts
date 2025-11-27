@@ -2,7 +2,7 @@
  * @wundr/slack-agent - Usergroups Management Capability
  *
  * Provides comprehensive Slack usergroup (user groups / @mentions) management
- * capabilities for the VP agent. The VP agent operates as a full user in
+ * capabilities for the Orchestrator agent. The Orchestrator agent operates as a full user in
  * Slack workspaces, enabling it to create, update, enable/disable usergroups
  * and manage group membership with appropriate permissions.
  *
@@ -193,7 +193,7 @@ interface SlackUsergroupResponse {
 // =============================================================================
 
 /**
- * UsergroupManager - Manages Slack usergroup operations for the VP agent
+ * UsergroupManager - Manages Slack usergroup operations for the Orchestrator agent
  *
  * Provides methods to create, update, enable/disable, and query usergroups.
  * Handles permission errors gracefully and provides clear error messages.

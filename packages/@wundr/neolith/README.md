@@ -37,7 +37,7 @@ Genesis-App is a dual-purpose platform designed to:
 
 - **Seamless Org Provisioning**: Transform the conversational org-genesis experience into workspace
   creation
-- **Agent-First Architecture**: VP agents operate as indistinguishable users within the platform
+- **Agent-First Architecture**: Orchestrator agents operate as indistinguishable users within the platform
 - **Dual-Channel Support**: VP-Daemons can connect to both real Slack AND genesis-app simultaneously
 - **Package Reusability**: Extract common interfaces for cross-platform communication clients
 
@@ -90,7 +90,7 @@ Genesis-App is a dual-purpose platform designed to:
 |  | - Users        |       | - Presence     |       | - Huddles      |        |
 |  | - Workspaces   |       | - Events       |       | - Screen Share |        |
 |  | - Messages     |       | - Cache        |       |                |        |
-|  | - VP Mapping   |       |                |       |                |        |
+|  | - Orchestrator Mapping   |       |                |       |                |        |
 |  +----------------+       +----------------+       +----------------+        |
 |                                                                              |
 |  +------------------------------------------------------------------------+  |
@@ -120,7 +120,7 @@ Genesis-App is a dual-purpose platform designed to:
 |                                    |                                         |
 |                                    v                                         |
 |  +------------------------------------------------------------------------+  |
-|  |              VP Daemon Core (Session Manager)                           |  |
+|  |              Orchestrator Daemon Core (Session Manager)                           |  |
 |  |  - Session Spawning (Claude Code / Claude Flow)                        |  |
 |  |  - Memory Architecture (Scratchpad -> Episodic -> Semantic)            |  |
 |  |  - Integration Orchestration                                           |  |
@@ -481,7 +481,7 @@ Will provide:
 Will provide:
 
 - Workspace provisioning from org-genesis manifests
-- VP user creation and management
+- Orchestrator user creation and management
 - Discipline-to-channel mapping
 - Charter synchronization
 

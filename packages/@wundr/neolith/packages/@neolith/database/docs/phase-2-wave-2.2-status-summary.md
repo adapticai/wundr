@@ -1,4 +1,4 @@
-# Phase 2 Wave 2.2 - Advanced VP Features Status Summary
+# Phase 2 Wave 2.2 - Advanced Orchestrator Features Status Summary
 
 **Generated:** 2025-11-26
 **Overall Completion:** 55%
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Phase 2 Wave 2.2 (Advanced VP Features) implementation is approximately **55% complete**. The Cross-VP Coordination components (delegation, collaboration) are substantially implemented, but critical gaps exist in consensus mechanisms, work rhythm enforcement, and observability integration.
+Phase 2 Wave 2.2 (Advanced Orchestrator Features) implementation is approximately **55% complete**. The Cross-VP Coordination components (delegation, collaboration) are substantially implemented, but critical gaps exist in consensus mechanisms, work rhythm enforcement, and observability integration.
 
 ### Critical Findings
 
@@ -122,15 +122,15 @@ Phase 2 Wave 2.2 (Advanced VP Features) implementation is approximately **55% co
 **@wundr.io/agent-observability v1.0.6**
 - Exists in monorepo: `/packages/@wundr/agent-observability`
 - NOT installed in web app
-- NOT integrated with VP services
+- NOT integrated with Orchestrator services
 - Provides: logging, metrics, alerting, data redaction
 
 **Action Required:** Add to `/apps/web/package.json`
 
-#### ✅ PARTIAL: VP Performance Metrics
+#### ✅ PARTIAL: Orchestrator Performance Metrics
 
 **VP Analytics Service**
-- File: `/apps/web/lib/services/vp-analytics-service.ts`
+- File: `/apps/web/lib/services/orchestrator-analytics-service.ts`
 - API: `GET /api/vps/[id]/analytics`
 - Features:
   - Task completion metrics
@@ -150,13 +150,13 @@ Phase 2 Wave 2.2 (Advanced VP Features) implementation is approximately **55% co
 **Current Dashboard**
 - File: `/apps/web/components/analytics/analytics-dashboard.tsx`
 - Shows: workspace-wide metrics, not VP-specific
-- Missing: delegation patterns, collaboration metrics, VP performance trends
+- Missing: delegation patterns, collaboration metrics, Orchestrator performance trends
 
 ---
 
 ## Database Schema Analysis
 
-### VP Model (`vps` table)
+### Orchestrator Model (`vps` table)
 
 **Current Fields:**
 - id, discipline, role, capabilities
@@ -192,7 +192,7 @@ Phase 2 Wave 2.2 (Advanced VP Features) implementation is approximately **55% co
 
 2. **Install & Integrate Agent Observability** (3-5 days)
    - Add `@wundr.io/agent-observability` to package.json
-   - Integrate with VP analytics service
+   - Integrate with Orchestrator analytics service
    - Add real-time monitoring
    - Impact: HIGH | Effort: MEDIUM
 
@@ -236,7 +236,7 @@ Phase 2 Wave 2.2 (Advanced VP Features) implementation is approximately **55% co
 1. No consensus mechanism (required for multi-VP decisions)
 2. Observability package not integrated (monitoring blind spots)
 3. Work hours not enforced (VPs work outside configured hours)
-4. No capacity limits (risk of VP overload)
+4. No capacity limits (risk of Orchestrator overload)
 
 ---
 
@@ -252,11 +252,11 @@ Phase 2 Wave 2.2 (Advanced VP Features) implementation is approximately **55% co
 - `/apps/web/app/api/vps/conflicts/route.ts`
 
 **Services (2 files):**
-- `/apps/web/lib/services/vp-coordination-service.ts`
-- `/apps/web/lib/services/vp-analytics-service.ts`
+- `/apps/web/lib/services/orchestrator-coordination-service.ts`
+- `/apps/web/lib/services/orchestrator-analytics-service.ts`
 
 **Validations (1 file):**
-- `/apps/web/lib/validations/vp-coordination.ts`
+- `/apps/web/lib/validations/orchestrator-coordination.ts`
 
 **Types (1 file):**
 - `/packages/@neolith/core/src/types/vp.ts`
@@ -271,7 +271,7 @@ Phase 2 Wave 2.2 (Advanced VP Features) implementation is approximately **55% co
 1. **Week 1-2:** Implement consensus/voting mechanism
 2. **Week 1:** Install and integrate agent-observability
 3. **Week 2-3:** Implement work hours & capacity management
-4. **Week 3-4:** Build VP analytics dashboard
+4. **Week 3-4:** Build Orchestrator analytics dashboard
 5. **Week 4:** Add database optimizations and missing tables
 
 **Total Estimated Time:** 4-6 weeks to production readiness

@@ -13,7 +13,7 @@ export function EmptyAnalytics() {
     <EmptyState
       icon={BarChart3}
       title="No analytics data yet"
-      description="Analytics and insights will be available once your Virtual Persons and workflows are active."
+      description="Analytics and insights will be available once your Orchestrators and workflows are active."
     />
   );
 }

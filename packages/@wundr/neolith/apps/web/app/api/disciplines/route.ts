@@ -11,19 +11,17 @@
  */
 
 import { prisma } from '@neolith/database';
-import { NextResponse } from 'next/server';
-
-import { auth } from '@/lib/auth';
-import {
-  createDisciplineSchema,
-  disciplineFiltersSchema,
-  createErrorResponse,
-  ORG_ERROR_CODES,
-} from '@/lib/validations/organization';
-
-import type { CreateDisciplineInput, DisciplineFiltersInput } from '@/lib/validations/organization';
 import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import type { CreateDisciplineInput, DisciplineFiltersInput } from '@/lib/validations/organization';
+import {
+  createDisciplineSchema,
+  createErrorResponse,
+  disciplineFiltersSchema,
+  ORG_ERROR_CODES,
+} from '@/lib/validations/organization';
 
 /**
  * GET /api/disciplines
@@ -121,7 +119,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
           _count: {
             select: {
-              vps: true,
+              orchestrators: true,
             },
           },
         },
@@ -282,7 +280,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
         _count: {
           select: {
-            vps: true,
+            orchestrators: true,
           },
         },
       },

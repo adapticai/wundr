@@ -12,14 +12,13 @@
 
 import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
 import { createErrorResponse } from '@/lib/validations/task';
-import { completeTaskSchema, BACKLOG_ERROR_CODES } from '@/lib/validations/task-backlog';
 
 import type { CompleteTaskInput } from '@/lib/validations/task-backlog';
-import type { NextRequest } from 'next/server';
+import { BACKLOG_ERROR_CODES, completeTaskSchema } from '@/lib/validations/task-backlog';
 
 /**
  * POST /api/workspaces/[workspaceId]/tasks/[taskId]/complete
@@ -56,7 +55,7 @@ export async function POST(
   { params }: { params: Promise<{ workspaceId: string; taskId: string }> },
 ): Promise<NextResponse> {
   try {
-    // Authenticate user (can be VP or human)
+    // Authenticate user (can be Orchestrator or human)
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -233,7 +232,7 @@ export async function POST(
       `[Task Completion] Task ${taskId} "${task.title}" completed by ${session.user.name || session.user.email}`,
     );
 
-    // If VP completed the task and there's a channel, post status message
+    // If Orchestrator completed the task and there's a channel, post status message
     if (task.assignedTo?.isVP && task.channelId) {
       try {
         await prisma.message.create({

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ export interface BillingPlan {
   limits: {
     seats: number;
     storage: number;
-    vps: number;
+    orchestrators: number;
     integrations: number;
   };
 }
@@ -25,7 +25,7 @@ export interface BillingPlan {
 export interface BillingUsage {
   seats: { used: number; limit: number };
   storage: { used: number; limit: number; unit: string };
-  vps: { used: number; limit: number };
+  orchestrators: { used: number; limit: number };
   integrations: { used: number; limit: number };
 }
 
@@ -54,24 +54,24 @@ const AVAILABLE_PLANS: BillingPlan[] = [
     name: 'Free',
     price: 0,
     interval: 'monthly',
-    features: ['Up to 5 members', '1 GB storage', '1 Virtual Persona', 'Basic integrations'],
-    limits: { seats: 5, storage: 1, vps: 1, integrations: 2 },
+    features: ['Up to 5 members', '1 GB storage', '1 Orchestratora', 'Basic integrations'],
+    limits: { seats: 5, storage: 1, orchestrators: 1, integrations: 2 },
   },
   {
     id: 'pro',
     name: 'Pro',
     price: 12,
     interval: 'monthly',
-    features: ['Up to 50 members', '50 GB storage', '10 Virtual Personas', 'Advanced integrations', 'Priority support'],
-    limits: { seats: 50, storage: 50, vps: 10, integrations: 10 },
+    features: ['Up to 50 members', '50 GB storage', '10 Orchestratoras', 'Advanced integrations', 'Priority support'],
+    limits: { seats: 50, storage: 50, orchestrators: 10, integrations: 10 },
   },
   {
     id: 'business',
     name: 'Business',
     price: 30,
     interval: 'monthly',
-    features: ['Unlimited members', '500 GB storage', 'Unlimited Virtual Personas', 'All integrations', 'SSO', '24/7 support'],
-    limits: { seats: -1, storage: 500, vps: -1, integrations: -1 },
+    features: ['Unlimited members', '500 GB storage', 'Unlimited Orchestratoras', 'All integrations', 'SSO', '24/7 support'],
+    limits: { seats: -1, storage: 500, orchestrators: -1, integrations: -1 },
   },
 ];
 
@@ -193,7 +193,7 @@ return `${Math.round(gb * 1024)} MB`;
             formatValue={formatStorage}
           />
           <UsageMeter
-            label="Virtual Personas"
+            label="Orchestratoras"
             used={usage.vps.used}
             limit={usage.vps.limit}
             formatValue={(v) => v.toString()}

@@ -1,17 +1,17 @@
 # @wundr.io/slack-agent
 
-Complete Slack user agent capabilities for VP (Virtual Principal) agents operating as full Slack workspace members.
+Complete Slack user agent capabilities for Orchestrator (Virtual Principal) agents operating as full Slack workspace members.
 
 ## Overview
 
-The `@wundr.io/slack-agent` package enables VP agents to operate as real Slack users within workspaces. Unlike traditional bots, VP agents:
+The `@wundr.io/slack-agent` package enables Orchestrator agents to operate as real Slack users within workspaces. Unlike traditional bots, Orchestrator agents:
 
 - Appear as full workspace members with their own user accounts
 - Send messages that look like they come from a real user
 - Have their own profile, status, and presence
 - Can perform all user-level operations (DMs, reactions, file sharing, etc.)
 
-This package provides a unified `SlackUserAgent` class that integrates 19 capability modules, giving VP agents comprehensive Slack functionality through a single interface.
+This package provides a unified `SlackUserAgent` class that integrates 19 capability modules, giving Orchestrator agents comprehensive Slack functionality through a single interface.
 
 ## Installation
 
@@ -89,7 +89,7 @@ const agentFromEnv = createSlackUserAgentFromEnv();
 | `botToken` | `string` | Yes | Bot token (xoxb-) for bot operations |
 | `appToken` | `string` | Yes | App token (xapp-) for Socket Mode real-time events |
 | `signingSecret` | `string` | Yes | Slack App signing secret for request verification |
-| `vpIdentity` | `VPIdentity` | Yes | VP agent identity configuration |
+| `vpIdentity` | `VPIdentity` | Yes | Orchestrator agent identity configuration |
 | `debug` | `boolean` | No | Enable debug logging (default: `false`) |
 | `autoConnect` | `boolean` | No | Auto-connect on start (default: `true`) |
 | `defaultTeamId` | `string` | No | Default team ID for Enterprise Grid |
@@ -118,7 +118,7 @@ SLACK_BOT_TOKEN=xoxb-...
 SLACK_APP_TOKEN=xapp-...
 SLACK_SIGNING_SECRET=...
 
-# VP Identity
+# Orchestrator Identity
 VP_NAME=Ada VP
 VP_FIRST_NAME=Ada
 VP_LAST_NAME=VP

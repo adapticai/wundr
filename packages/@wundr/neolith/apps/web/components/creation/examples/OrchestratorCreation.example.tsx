@@ -82,7 +82,7 @@ export function OrchestratorCreationExample() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl rounded-lg bg-background p-6">
             <h2 className="mb-4 text-2xl font-bold">
-              Review Orchestrator Configuration
+              Review OrchestratorConfiguration
             </h2>
 
             {/* This would be replaced with your actual form component */}

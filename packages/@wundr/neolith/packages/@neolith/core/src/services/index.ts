@@ -7,19 +7,19 @@
  */
 
 // =============================================================================
-// VP Service
+// OrchestratorService
 // =============================================================================
 
 export {
   // Service implementation
-  VPServiceImpl,
-  createVPService,
-  vpService,
+  OrchestratorServiceImpl,
+  createOrchestratorService,
+  orchestratorService,
 
   // Interfaces
-  type VPService,
+  type OrchestratorService,
   type ServiceAccountService,
-} from './vp-service';
+} from './orchestrator-service';
 
 // =============================================================================
 // Message Service
@@ -124,7 +124,7 @@ export {
   DisciplineNotFoundError,
   DisciplineAlreadyExistsError,
   DisciplineValidationError,
-  VPNotFoundError as DisciplineVPNotFoundError,
+  OrchestratorNotFoundError as DisciplineVPNotFoundError,
 } from './discipline-service';
 
 // =============================================================================

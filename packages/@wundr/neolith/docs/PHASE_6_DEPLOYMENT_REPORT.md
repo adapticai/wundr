@@ -145,7 +145,7 @@ Created comprehensive deployment guide at `docs/VP_DAEMON_PRODUCTION_DEPLOYMENT.
 
 4. **Deploy VP-Daemons**
    ```bash
-   ./deploy-vp-daemon.sh
+   ./deploy-orchestrator-daemon.sh
    ```
 
 5. **Initialize Production VPs**
@@ -235,7 +235,7 @@ pnpm --filter @neolith/web lint
 | Error rate | > 1% | > 5% |
 | P99 latency | > 2s | > 5s |
 | Memory usage | > 75% | > 90% |
-| VP idle time | > 1h | > 4h |
+| Orchestrator idle time | > 1h | > 4h |
 
 ## Recommendations
 
@@ -252,7 +252,7 @@ pnpm --filter @neolith/web lint
 1. Monitor error rates and latency
 2. Tune database connection pool
 3. Adjust rate limits if needed
-4. Review VP task completion metrics
+4. Review Orchestrator task completion metrics
 
 ### Ongoing
 

@@ -83,7 +83,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
     {
       icon: Users,
       label: 'Virtual People',
-      path: `${basePath}/vps`,
+      path: `${basePath}/orchestrators`,
       keywords: ['vp', 'agents', 'bots', 'people'],
     },
     {
@@ -149,8 +149,8 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
     {
       icon: Users,
       label: 'Create VP',
-      path: `${basePath}/vps/new`,
-      keywords: ['create virtual person', 'new agent'],
+      path: `${basePath}/orchestrators/new`,
+      keywords: ['create orchestrator', 'new agent'],
     },
     {
       icon: Workflow,

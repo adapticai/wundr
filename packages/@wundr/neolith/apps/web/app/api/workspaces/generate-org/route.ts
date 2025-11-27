@@ -8,7 +8,7 @@
  * 1. Validates user permissions
  * 2. Generates org structure using org-genesis
  * 3. Creates workspace in database transaction
- * 4. Creates VP users for each discipline
+ * 4. Creates Orchestrator users for each discipline
  * 5. Creates channels for each discipline
  * 6. Auto-assigns VPs to their discipline channels
  *
@@ -17,17 +17,16 @@
 
 import { prisma } from '@neolith/database';
 import { Prisma } from '@prisma/client';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
 import {
-  generateOrgSchema,
   createGenesisErrorResponse,
   GENESIS_ERROR_CODES,
   type GenerateOrgInput,
+  generateOrgSchema,
 } from '@/lib/validations/workspace-genesis';
-
-import type { NextRequest } from 'next/server';
+import type { AgentApiResponse, DisciplineApiResponse, VPApiResponse } from '@/types/api';
 
 // Dynamic imports for org-genesis packages to avoid build-time resolution issues
 // These packages are loaded at runtime when the API is called
@@ -49,7 +48,7 @@ type GenesisResult = any;
 // @ts-expect-error Reserved for future strict typing
 type _GenesisResultDetailed = {
   manifest: { id: string; name: string; description?: string; mission?: string };
-  vps: Array<{
+  orchestrators: Array<{
     id: string;
     identity: { name: string; persona?: string };
     coreDirective: string;
@@ -98,7 +97,7 @@ type _NeolithResultDetailed = {
     createdAt: string;
     schemaVersion: string;
   };
-  vps: Array<{
+  orchestrators: Array<{
     id: string;
     name: string;
     title: string;
@@ -324,35 +323,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createdAt: new Date().toISOString(),
         schemaVersion: '1.0.0',
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vps: genesisResult.vps.map((vp: any) => ({
+      orchestrators: genesisResult.orchestrators.map((vp: VPApiResponse) => ({
         id: vp.id,
-        name: vp.identity.name,
+        name: vp.identity?.name || vp.title || 'Unnamed VP',
         title: vp.coreDirective,
         responsibilities: vp.capabilities || [],
         disciplines: vp.disciplineIds || [],
         persona: {
           communicationStyle: 'professional',
           decisionMakingStyle: 'data-driven',
-          background: vp.identity.persona || '',
+          background: vp.identity?.persona || '',
           traits: [],
         },
         kpis: [],
       })),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      disciplines: genesisResult.disciplines.map((discipline: any) => ({
+      disciplines: genesisResult.disciplines.map((discipline: DisciplineApiResponse) => ({
         id: discipline.id,
         name: discipline.name,
         description: discipline.description,
         vpId: discipline.parentVpId || '',
         slug: discipline.slug,
         purpose: discipline.claudeMd?.objectives?.[0] || discipline.description,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        activities: discipline.hooks?.map((h: any) => h.description) || [],
+        activities: discipline.hooks?.map((h) => h.description) || [],
         capabilities: discipline.agentIds || [],
       })),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      agents: genesisResult.agents.map((agent: any) => ({
+      agents: genesisResult.agents.map((agent: AgentApiResponse) => ({
         id: agent.id,
         name: agent.name,
         role: agent.description,
@@ -453,12 +448,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           disciplineMap.set(discipline.id, dbDiscipline.id);
         }
 
-        // 8.4. Create VP Users
+        // 8.4. Create OrchestratorUsers
         const vpMap = new Map<string, string>();
-        for (const vp of neolithResult.vps) {
+        for (const vp of neolithResult.orchestrators) {
           // Find discipline ID for this VP
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const vpDisciplines = neolithResult.disciplines.filter((d: any) =>
+          const vpDisciplines = neolithResult.disciplines.filter((d: DisciplineApiResponse) =>
             vp.disciplines.includes(d.id),
           );
           const primaryDisciplineId = vpDisciplines[0]
@@ -486,7 +480,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
           });
 
-          // Create VP Record
+          // Create OrchestratorRecord
           await tx.vP.create({
             data: {
               userId: vpUser.id,
@@ -500,7 +494,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
           });
 
-          // Add VP to workspace as member
+          // Add Orchestrator to workspace as member
           await tx.workspaceMember.create({
             data: {
               workspaceId: newWorkspace.id,
@@ -546,7 +540,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             },
           });
 
-          // 8.6. Auto-assign VP to Discipline Channel
+          // 8.6. Auto-assign Orchestrator to Discipline Channel
           const vpUserId = vpMap.get(discipline.vpId);
           if (vpUserId) {
             await tx.channelMember.create({

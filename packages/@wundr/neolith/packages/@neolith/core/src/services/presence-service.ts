@@ -8,34 +8,34 @@
  * @packageDocumentation
  */
 
+import type Redis from 'ioredis';
 import { GenesisError } from '../errors';
 import {
   createRedisClient,
   createSubscriberClient,
   isRedisAvailable,
 } from '../redis/client';
-import {
-  PRESENCE_KEY_PATTERNS,
-  DEFAULT_PRESENCE_CONFIG,
-} from '../types/presence';
 
 import type {
-  PresenceStatus,
-  UserPresence,
-  VPPresence,
-  PresenceMetadata,
-  DaemonInfo,
-  PresenceConfig,
-  PresenceCallback,
   ChannelPresenceCallback,
-  VPPresenceCallback,
-  UnsubscribeFunction,
-  UserPresenceEvent,
-  VPPresenceEvent,
   ChannelPresenceEvent,
+  DaemonInfo,
+  PresenceCallback,
+  PresenceConfig,
   PresenceEvent,
+  PresenceMetadata,
+  PresenceStatus,
+  UnsubscribeFunction,
+  UserPresence,
+  UserPresenceEvent,
+  VPPresence,
+  VPPresenceCallback,
+  VPPresenceEvent,
 } from '../types/presence';
-import type Redis from 'ioredis';
+import {
+  DEFAULT_PRESENCE_CONFIG,
+  PRESENCE_KEY_PATTERNS,
+} from '../types/presence';
 
 /**
  * Union type for all presence event callback functions.
@@ -164,32 +164,32 @@ export interface PresenceService {
   // ==========================================================================
 
   /**
-   * Sets a VP as online with daemon information.
+   * Sets a Orchestrator as online with daemon information.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @param daemonInfo - Information about the daemon process
    */
   setVPOnline(vpId: string, daemonInfo: DaemonInfo): Promise<void>;
 
   /**
-   * Sets a VP as offline.
+   * Sets a Orchestrator as offline.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    */
   setVPOffline(vpId: string): Promise<void>;
 
   /**
    * Gets a VP's current presence.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @returns The VP's presence or null if not found
    */
-  getVPPresence(vpId: string): Promise<VPPresence | null>;
+  getVPPresence(vpId: string): Promise<OrchestratorPresence | null>;
 
   /**
-   * Sends a heartbeat for a VP to keep it online.
+   * Sends a heartbeat for a Orchestrator to keep it online.
    *
-   * @param vpId - The VP ID
+   * @param vpId - The OrchestratorID
    * @param metrics - Optional daemon metrics to update
    */
   vpHeartbeat(vpId: string, metrics?: DaemonInfo['metrics']): Promise<void>;
@@ -219,7 +219,7 @@ export interface PresenceService {
   /**
    * Subscribes to presence changes for a VP.
    *
-   * @param vpId - The VP ID to watch
+   * @param vpId - The OrchestratorID to watch
    * @param callback - Function called on presence changes
    * @returns Unsubscribe function
    */
@@ -613,7 +613,7 @@ export class PresenceServiceImpl implements PresenceService {
   // ===========================================================================
 
   /**
-   * Sets a VP as online with daemon information.
+   * Sets a Orchestrator as online with daemon information.
    */
   async setVPOnline(vpId: string, daemonInfo: DaemonInfo): Promise<void> {
     if (!this.isAvailable()) {
@@ -638,7 +638,7 @@ export class PresenceServiceImpl implements PresenceService {
 
       await pipeline.exec();
 
-      // Publish VP event
+      // Publish Orchestrator event
       await this.publishVPEvent({
         type: 'vp.online',
         timestamp: now,
@@ -647,7 +647,7 @@ export class PresenceServiceImpl implements PresenceService {
         daemonInfo,
       });
     } catch (error) {
-      throw new PresenceError('Failed to set VP online', {
+      throw new PresenceError('Failed to set Orchestrator online', {
         vpId,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
@@ -655,7 +655,7 @@ export class PresenceServiceImpl implements PresenceService {
   }
 
   /**
-   * Sets a VP as offline.
+   * Sets a Orchestrator as offline.
    */
   async setVPOffline(vpId: string): Promise<void> {
     if (!this.isAvailable()) {
@@ -680,7 +680,7 @@ export class PresenceServiceImpl implements PresenceService {
 
       await pipeline.exec();
 
-      // Publish VP event
+      // Publish Orchestrator event
       await this.publishVPEvent({
         type: 'vp.offline',
         timestamp: now,
@@ -689,14 +689,14 @@ export class PresenceServiceImpl implements PresenceService {
         currentStatus: 'OFFLINE',
       });
     } catch (error) {
-      this.logError('Failed to set VP offline', error);
+      this.logError('Failed to set Orchestrator offline', error);
     }
   }
 
   /**
    * Gets a VP's current presence.
    */
-  async getVPPresence(vpId: string): Promise<VPPresence | null> {
+  async getVPPresence(vpId: string): Promise<OrchestratorPresence | null> {
     if (!this.isAvailable()) {
       return null;
     }
@@ -710,14 +710,14 @@ export class PresenceServiceImpl implements PresenceService {
         this.redis.exists(heartbeatKey),
       ]);
 
-      if (!data || Object.keys(data).length === 0 || !data.vpId || !data.lastHeartbeat) {
+      if (!data || Object.keys(data).length === 0 || !data.orchestratorId || !data.lastHeartbeat) {
         return null;
       }
 
       const status: PresenceStatus = heartbeatExists ? (data.status as PresenceStatus) : 'OFFLINE';
 
       return {
-        vpId: data.vpId,
+        vpId: data.orchestratorId,
         status,
         lastHeartbeat: new Date(data.lastHeartbeat),
         daemonInfo: data.daemonInfo ? JSON.parse(data.daemonInfo) : {
@@ -728,7 +728,7 @@ export class PresenceServiceImpl implements PresenceService {
         },
       };
     } catch (error) {
-      this.logError('Failed to get VP presence', error);
+      this.logError('Failed to get Orchestrator presence', error);
       return null;
     }
   }
@@ -776,7 +776,7 @@ export class PresenceServiceImpl implements PresenceService {
         currentStatus: 'ONLINE',
       });
     } catch (error) {
-      this.logError('Failed to send VP heartbeat', error);
+      this.logError('Failed to send Orchestrator heartbeat', error);
     }
   }
 
@@ -819,7 +819,7 @@ export class PresenceServiceImpl implements PresenceService {
   /**
    * Subscribes to presence changes for a VP.
    *
-   * @param vpId - The VP ID to watch
+   * @param vpId - The OrchestratorID to watch
    * @param callback - Function called when the VP's presence changes
    * @returns Unsubscribe function to remove the subscription
    */
@@ -864,7 +864,7 @@ export class PresenceServiceImpl implements PresenceService {
         this.redis.keys(`${PRESENCE_KEY_PATTERNS.CHANNEL_MEMBERS}*`),
       ]);
 
-      // Filter user keys (exclude VP keys)
+      // Filter user keys (exclude Orchestrator keys)
       const userOnlyKeys = userKeys.filter((k) => !k.includes(':vp:'));
 
       return {
@@ -943,7 +943,7 @@ export class PresenceServiceImpl implements PresenceService {
   }
 
   /**
-   * Gets the Redis key for VP presence.
+   * Gets the Redis key for Orchestrator presence.
    */
   private getVPPresenceKey(vpId: string): string {
     return `${PRESENCE_KEY_PATTERNS.VP_PRESENCE}${vpId}`;
@@ -1059,7 +1059,7 @@ export class PresenceServiceImpl implements PresenceService {
   }
 
   /**
-   * Publishes a VP presence event.
+   * Publishes a Orchestrator presence event.
    */
   private async publishVPEvent(event: VPPresenceEvent): Promise<void> {
     if (!this.config.enablePubSub || !this.isAvailable()) {
@@ -1067,11 +1067,11 @@ export class PresenceServiceImpl implements PresenceService {
     }
 
     try {
-      const channel = `${PRESENCE_KEY_PATTERNS.VP_EVENTS}${event.vpId}`;
+      const channel = `${PRESENCE_KEY_PATTERNS.VP_EVENTS}${event.orchestratorId}`;
       await this.redis.publish(channel, JSON.stringify(event));
       await this.redis.publish(PRESENCE_KEY_PATTERNS.GLOBAL_EVENTS, JSON.stringify(event));
     } catch (error) {
-      this.logError('Failed to publish VP event', error);
+      this.logError('Failed to publish Orchestrator event', error);
     }
   }
 

@@ -124,7 +124,7 @@ Loading states with skeletons:
 21. `/[workspaceId]/admin/roles`
 22. `/[workspaceId]/admin/billing`
 23. `/[workspaceId]/admin/activity`
-24. `/[workspaceId]/admin/vp-health`
+24. `/[workspaceId]/admin/orchestrator-health`
 25. `/` (root page)
 
 ## Recommendations

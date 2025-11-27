@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - Scheduled Messages Capability
  *
- * Provides scheduled message functionality for VP (Virtual Principal) agents
+ * Provides scheduled message functionality for Orchestrator (Virtual Principal) agents
  * operating as full users in Slack workspaces. Enables scheduling messages
  * for future delivery, just like the native Slack "schedule send" feature.
  *
@@ -401,7 +401,7 @@ function transformScheduledMessage(raw: SlackScheduledMessage): ScheduledMessage
 // =============================================================================
 
 /**
- * Manages scheduled message operations for VP agents in Slack.
+ * Manages scheduled message operations for Orchestrator agents in Slack.
  *
  * This class provides comprehensive scheduled messaging capabilities including:
  * - Scheduling messages for future delivery

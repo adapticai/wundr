@@ -1,23 +1,23 @@
 /**
  * @wundr/slack-agent - Proactive Messaging Capability
  *
- * Enables VP (Virtual Principal) agents to initiate conversations in Slack
+ * Enables Orchestrator (Virtual Principal) agents to initiate conversations in Slack
  * just like human users. Supports DMs, group DMs, channel posts, and scheduled
  * messages using both user tokens (xoxp-) and bot tokens (xoxb-).
  *
  * @packageDocumentation
  */
 
-import { WebClient } from '@slack/web-api';
 
 import type {
-  WebAPICallResult,
-  ConversationsOpenResponse,
-  ChatPostMessageResponse,
   ChatPostMessageArguments,
-  ChatScheduleMessageResponse,
+  ChatPostMessageResponse,
   ChatScheduledMessagesListResponse,
+  ChatScheduleMessageResponse,
+  ConversationsOpenResponse,
+  WebAPICallResult,
 } from '@slack/web-api';
+import { WebClient } from '@slack/web-api';
 
 // =============================================================================
 // Types and Interfaces
@@ -249,7 +249,7 @@ export class ProactiveMessagingError extends Error {
 // =============================================================================
 
 /**
- * ProactiveMessenger enables VP agents to initiate conversations in Slack
+ * ProactiveMessenger enables Orchestrator agents to initiate conversations in Slack
  * using user tokens (xoxp-) for authentic user-like messaging or bot tokens (xoxb-).
  *
  * @example

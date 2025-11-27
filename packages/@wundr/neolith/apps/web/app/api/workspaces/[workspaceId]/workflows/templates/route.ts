@@ -11,20 +11,18 @@
  */
 
 import { prisma } from '@neolith/database';
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-
-import { auth } from '@/lib/auth';
-import {
-  templateFiltersSchema,
-  createFromTemplateSchema,
-  createErrorResponse,
-  WORKFLOW_ERROR_CODES,
-} from '@/lib/validations/workflow';
-
-import type { TemplateFiltersInput, CreateFromTemplateInput, WorkflowTemplate } from '@/lib/validations/workflow';
 import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { auth } from '@/lib/auth';
+import type { CreateFromTemplateInput, TemplateFiltersInput, WorkflowTemplate } from '@/lib/validations/workflow';
+import {
+  createErrorResponse,
+  createFromTemplateSchema,
+  templateFiltersSchema,
+  WORKFLOW_ERROR_CODES,
+} from '@/lib/validations/workflow';
 
 /**
  * Route context with workspaceId parameter
@@ -88,9 +86,9 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
     isBuiltIn: true,
   },
   {
-    id: 'template-vp-status-monitor',
+    id: 'template-orchestrator-status-monitor',
     name: 'VP Status Monitor',
-    description: 'Notify admins when a VP goes offline unexpectedly',
+    description: 'Notify admins when a Orchestrator goes offline unexpectedly',
     category: 'automation',
     trigger: {
       type: 'vp.status_changed',
@@ -105,7 +103,7 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Notify Admins',
         config: {
           targetRole: 'ADMIN',
-          message: 'VP "{{trigger.vp.name}}" has gone offline',
+          message: 'VP "{{trigger.orchestrator.name}}" has gone offline',
           priority: 'high',
         },
         conditions: [],

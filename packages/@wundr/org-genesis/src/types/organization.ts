@@ -3,7 +3,7 @@
  * Based on: Architectural Framework for Autonomous High-Density Agentic Clusters
  *
  * This module defines the core type system for organizational manifests,
- * VP (Virtual Persona) node mappings, and configuration structures used
+ * Orchestrator (Orchestrator) node mappings, and configuration structures used
  * throughout the org-genesis package.
  *
  * @packageDocumentation
@@ -16,7 +16,7 @@
 /**
  * Organization size presets that determine default configurations.
  *
- * Each size tier comes with recommended defaults for VP count,
+ * Each size tier comes with recommended defaults for Orchestrator count,
  * discipline structure, and agent allocation:
  *
  * - `small`: 1-5 VPs, 2-4 disciplines, suited for startups/small teams
@@ -50,7 +50,7 @@ export type OrgIndustry =
   | 'custom';
 
 /**
- * Status of a VP (Virtual Persona) node within the organization cluster.
+ * Status of a Orchestrator (Orchestrator) node within the organization cluster.
  *
  * - `active`: Node is fully operational and accepting tasks
  * - `inactive`: Node exists but is not currently processing
@@ -58,7 +58,7 @@ export type OrgIndustry =
  * - `error`: Node encountered an error and requires attention
  * - `maintenance`: Node is undergoing scheduled maintenance
  */
-export type VPNodeStatus =
+export type OrchestratorNodeStatus =
   | 'active'
   | 'inactive'
   | 'provisioning'
@@ -76,23 +76,23 @@ export type VPNodeStatus =
 export type OrgLifecycleState = 'draft' | 'active' | 'suspended' | 'archived';
 
 // =============================================================================
-// VP NODE TYPES
+// Orchestrator NODE TYPES
 // =============================================================================
 
 /**
- * Resource allocation configuration for a VP node.
+ * Resource allocation configuration for a Orchestrator node.
  *
- * Defines computational resources available to a Virtual Persona.
+ * Defines computational resources available to a Orchestrator.
  */
-export interface VPResourceAllocation {
+export interface OrchestratorResourceAllocation {
   /**
-   * Maximum CPU cores allocated to this VP.
+   * Maximum CPU cores allocated to this Orchestrator.
    * @default 2
    */
   cpuCores: number;
 
   /**
-   * Maximum memory in megabytes allocated to this VP.
+   * Maximum memory in megabytes allocated to this Orchestrator.
    * @default 4096
    */
   memoryMb: number;
@@ -111,13 +111,13 @@ export interface VPResourceAllocation {
 }
 
 /**
- * Health metrics for a VP node.
+ * Health metrics for a Orchestrator node.
  *
- * Used for monitoring and alerting on VP performance.
+ * Used for monitoring and alerting on Orchestrator performance.
  */
-export interface VPHealthMetrics {
+export interface OrchestratorHealthMetrics {
   /**
-   * Percentage of time the VP has been operational (0-100).
+   * Percentage of time the Orchestrator has been operational (0-100).
    */
   uptime: number;
 
@@ -148,18 +148,18 @@ export interface VPHealthMetrics {
 }
 
 /**
- * VP-to-Node mapping configuration.
+ * Orchestrator-to-Node mapping configuration.
  *
- * Maps a Virtual Persona (VP) to a specific compute node
+ * Maps a Orchestrator to a specific compute node
  * within the organization's infrastructure. This is the core
  * building block for distributed agentic clusters.
  *
  * @example
  * ```typescript
  * const vpMapping: VPNodeMapping = {
- *   vpId: 'vp-cto-001',
+ *   vpId: 'orchestrator-cto-001',
  *   nodeId: 'node-us-east-1a',
- *   hostname: 'vp-cto.cluster.internal',
+ *   hostname: 'orchestrator-cto.cluster.internal',
  *   status: 'active',
  *   assignedDisciplineId: 'disc-engineering',
  *   resources: {
@@ -173,13 +173,13 @@ export interface VPHealthMetrics {
  */
 export interface VPNodeMapping {
   /**
-   * Unique identifier for the Virtual Persona.
-   * Format: `vp-{role}-{sequence}`
+   * Unique identifier for the Orchestrator.
+   * Format: `orchestrator-{role}-{sequence}`
    */
   vpId: string;
 
   /**
-   * Identifier of the compute node hosting this VP.
+   * Identifier of the compute node hosting this Orchestrator.
    * Format: `node-{region}-{zone}`
    */
   nodeId: string;
@@ -190,30 +190,30 @@ export interface VPNodeMapping {
   hostname: string;
 
   /**
-   * Current operational status of the VP node.
+   * Current operational status of the Orchestrator node.
    */
-  status: VPNodeStatus;
+  status: OrchestratorNodeStatus;
 
   /**
-   * ID of the discipline this VP belongs to.
+   * ID of the discipline this Orchestrator belongs to.
    * @optional
    */
   assignedDisciplineId?: string;
 
   /**
-   * Resource allocation for this VP.
+   * Resource allocation for this Orchestrator.
    * @optional - Uses defaults if not specified
    */
-  resources?: VPResourceAllocation;
+  resources?: OrchestratorResourceAllocation;
 
   /**
    * Current health metrics for monitoring.
    * @optional - Populated by monitoring systems
    */
-  healthMetrics?: VPHealthMetrics;
+  healthMetrics?: OrchestratorHealthMetrics;
 
   /**
-   * Port number for inter-VP communication.
+   * Port number for inter-Orchestrator communication.
    * @default 8080
    */
   port?: number;
@@ -224,7 +224,7 @@ export interface VPNodeMapping {
   tags?: string[];
 
   /**
-   * Timestamp when this VP was provisioned.
+   * Timestamp when this Orchestrator was provisioned.
    */
   provisionedAt?: Date;
 
@@ -433,7 +433,7 @@ export interface OrganizationManifest {
   lifecycleState: OrgLifecycleState;
 
   /**
-   * Registry of all VP-to-node mappings.
+   * Registry of all Orchestrator-to-node mappings.
    * Defines the compute infrastructure for the organization.
    */
   vpRegistry: VPNodeMapping[];
@@ -491,28 +491,28 @@ export interface OrganizationManifest {
 // =============================================================================
 
 /**
- * Default values for VP resource allocation by organization size.
+ * Default values for Orchestrator resource allocation by organization size.
  */
 export interface VPResourceDefaults {
   /**
    * Defaults for small organizations.
    */
-  small: VPResourceAllocation;
+  small: OrchestratorResourceAllocation;
 
   /**
    * Defaults for medium organizations.
    */
-  medium: VPResourceAllocation;
+  medium: OrchestratorResourceAllocation;
 
   /**
    * Defaults for large organizations.
    */
-  large: VPResourceAllocation;
+  large: OrchestratorResourceAllocation;
 
   /**
    * Defaults for enterprise organizations.
    */
-  enterprise: VPResourceAllocation;
+  enterprise: OrchestratorResourceAllocation;
 }
 
 /**
@@ -528,7 +528,7 @@ export interface VPResourceDefaults {
  *   mission: 'Democratize AI for small businesses',
  *   industry: 'technology',
  *   size: 'small',
- *   vpCount: 3,
+ *   orchestratorCount: 3,
  *   generateDisciplines: true,
  *   generateAgents: true,
  *   initialDisciplines: ['engineering', 'product'],
@@ -578,7 +578,7 @@ export interface CreateOrgConfig {
    * If not specified, uses size-based defaults.
    * @optional
    */
-  vpCount?: number;
+  orchestratorCount?: number;
 
   /**
    * Whether to auto-generate discipline structures.
@@ -696,7 +696,7 @@ export interface UpdateOrgConfig {
  * @example
  * ```typescript
  * const stats: OrgStats = {
- *   vpCount: 12,
+ *   orchestratorCount: 12,
  *   activeVpCount: 10,
  *   disciplineCount: 5,
  *   agentCount: 45,
@@ -711,7 +711,7 @@ export interface OrgStats {
   /**
    * Total number of VPs registered in the organization.
    */
-  vpCount: number;
+  orchestratorCount: number;
 
   /**
    * Number of VPs currently in 'active' status.
@@ -804,7 +804,7 @@ export interface OrgMetricsHistory {
   tasksFailed: number;
 
   /**
-   * Average VP utilization percentage.
+   * Average Orchestrator utilization percentage.
    */
   avgVpUtilization: number;
 
@@ -881,7 +881,7 @@ export interface OrgEvent {
   timestamp: Date;
 
   /**
-   * ID of the actor (VP, agent, or user) that triggered the event.
+   * ID of the actor (Orchestrator, agent, or user) that triggered the event.
    */
   actorId: string;
 
@@ -1036,20 +1036,20 @@ export function isOrgIndustry(value: unknown): value is OrgIndustry {
 }
 
 /**
- * Type guard to check if a value is a valid VPNodeStatus.
+ * Type guard to check if a value is a valid OrchestratorNodeStatus.
  *
  * @param value - The value to check
- * @returns True if the value is a valid VPNodeStatus
+ * @returns True if the value is a valid OrchestratorNodeStatus
  */
-export function isVPNodeStatus(value: unknown): value is VPNodeStatus {
-  const validStatuses: VPNodeStatus[] = [
+export function isOrchestratorNodeStatus(value: unknown): value is OrchestratorNodeStatus {
+  const validStatuses: OrchestratorNodeStatus[] = [
     'active',
     'inactive',
     'provisioning',
     'error',
     'maintenance',
   ];
-  return typeof value === 'string' && validStatuses.includes(value as VPNodeStatus);
+  return typeof value === 'string' && validStatuses.includes(value as OrchestratorNodeStatus);
 }
 
 /**
@@ -1064,10 +1064,10 @@ export function isVPNodeMapping(value: unknown): value is VPNodeMapping {
   }
   const obj = value as Record<string, unknown>;
   return (
-    typeof obj.vpId === 'string' &&
+    typeof obj.orchestratorId === 'string' &&
     typeof obj.nodeId === 'string' &&
     typeof obj.hostname === 'string' &&
-    isVPNodeStatus(obj.status)
+    isOrchestratorNodeStatus(obj.status)
   );
 }
 

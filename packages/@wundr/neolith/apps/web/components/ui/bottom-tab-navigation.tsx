@@ -40,7 +40,7 @@ const DEFAULT_TABS: TabItem[] = [
     icon: Hash,
   },
   {
-    href: '/vps',
+    href: '/orchestrators',
     label: 'VPs',
     icon: Users,
   },

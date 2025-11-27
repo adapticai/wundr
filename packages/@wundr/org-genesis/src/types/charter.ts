@@ -1,9 +1,9 @@
 /**
- * @fileoverview Charter Types for VP and Session Manager agents
+ * @fileoverview Charter Types for Orchestrator and Session Manager agents
  *
  * This module defines the comprehensive TypeScript types for supervisory agent charters
  * in the Wundr organizational hierarchy. Charters serve as the foundational identity
- * and capability definitions for Tier 1 (VP) and Tier 2 (Session Manager) agents.
+ * and capability definitions for Tier 1 (Orchestrator) and Tier 2 (Session Manager) agents.
  *
  * @module @wundr/org-genesis/types/charter
  * @version 1.0.0
@@ -17,7 +17,7 @@
  * Agent tier in the organizational hierarchy.
  *
  * The hierarchy follows a three-tier structure:
- * - **Tier 1 (VP)**: Virtual Persona - Top-level supervisory agent responsible for
+ * - **Tier 1 (Orchestrator)**: Orchestrator - Top-level supervisory agent responsible for
  *   context compilation, resource management, and session spawning
  * - **Tier 2 (Session Manager)**: Discipline-specific coordinator managing
  *   specialized agents within a domain
@@ -33,13 +33,13 @@
 export type AgentTier = 1 | 2 | 3;
 
 // ============================================================================
-// VP Capabilities
+// Orchestrator Capabilities
 // ============================================================================
 
 /**
- * Enumeration of capabilities available to Virtual Persona (VP) agents.
+ * Enumeration of capabilities available to Orchestrator agents.
  *
- * Each capability grants the VP specific operational permissions:
+ * Each capability grants the Orchestrator specific operational permissions:
  *
  * - `context_compilation`: Ability to gather and synthesize context from multiple sources
  * - `resource_management`: Authority to allocate and manage computational resources
@@ -50,14 +50,14 @@ export type AgentTier = 1 | 2 | 3;
  *
  * @example
  * ```typescript
- * const vpCapabilities: VPCapability[] = [
+ * const vpCapabilities: OrchestratorCapability[] = [
  *   'context_compilation',
  *   'session_spawning',
  *   'task_triage',
  * ];
  * ```
  */
-export type VPCapability =
+export type OrchestratorCapability =
   | 'context_compilation'
   | 'resource_management'
   | 'slack_operations'
@@ -75,7 +75,7 @@ export type VPCapability =
  * Defines the human-readable and machine-readable identifiers for an agent,
  * along with optional communication and display properties.
  *
- * @property name - Human-readable display name (e.g., "Engineering VP")
+ * @property name - Human-readable display name (e.g., "Engineering Orchestrator")
  * @property slug - URL-safe identifier (e.g., "engineering-vp")
  * @property persona - Description of the agent's personality and communication style
  * @property slackHandle - Optional Slack username for notifications (without @)
@@ -85,10 +85,10 @@ export type VPCapability =
  * @example
  * ```typescript
  * const identity: AgentIdentity = {
- *   name: 'Engineering VP',
+ *   name: 'Engineering Orchestrator',
  *   slug: 'engineering-vp',
  *   persona: 'A methodical and detail-oriented technical leader focused on code quality',
- *   slackHandle: 'eng-vp-bot',
+ *   slackHandle: 'eng-orchestrator-bot',
  *   avatarUrl: 'https://example.com/avatars/eng-vp.png',
  * };
  * ```
@@ -154,10 +154,10 @@ export interface ResourceLimits {
 }
 
 /**
- * Default resource limits for VP agents.
+ * Default resource limits for Orchestrator agents.
  *
  * @remarks
- * These defaults are suitable for production VP agents managing
+ * These defaults are suitable for production Orchestrator agents managing
  * multiple disciplines and session managers.
  */
 export const DEFAULT_VP_RESOURCE_LIMITS: ResourceLimits = {
@@ -225,7 +225,7 @@ export interface MeasurableObjectives {
 }
 
 /**
- * Default measurable objectives for VP agents.
+ * Default measurable objectives for Orchestrator agents.
  */
 export const DEFAULT_VP_OBJECTIVES: MeasurableObjectives = {
   responseTimeTarget: 10,
@@ -326,13 +326,13 @@ export const DEFAULT_HARD_CONSTRAINTS: HardConstraints = {
 };
 
 // ============================================================================
-// VP Charter (Tier 1)
+// Orchestrator Charter (Tier 1)
 // ============================================================================
 
 /**
- * Virtual Persona (VP) Charter - Tier 1 Supervisory Agent.
+ * Orchestrator Charter - Tier 1 Supervisory Agent.
  *
- * A VP Charter defines the complete identity, capabilities, and operational
+ * A Orchestrator Charter defines the complete identity, capabilities, and operational
  * parameters for a top-level supervisory agent. VPs are responsible for:
  *
  * - Compiling context from multiple sources (codebase, docs, user requests)
@@ -343,11 +343,11 @@ export const DEFAULT_HARD_CONSTRAINTS: HardConstraints = {
  *
  * @example
  * ```typescript
- * const vpCharter: VPCharter = {
- *   id: 'vp-engineering-001',
+ * const vpCharter: OrchestratorCharter = {
+ *   id: 'orchestrator-engineering-001',
  *   tier: 1,
  *   identity: {
- *     name: 'Engineering VP',
+ *     name: 'Engineering Orchestrator',
  *     slug: 'engineering-vp',
  *     persona: 'A methodical technical leader focused on code quality and best practices',
  *   },
@@ -363,23 +363,23 @@ export const DEFAULT_HARD_CONSTRAINTS: HardConstraints = {
  * };
  * ```
  */
-export interface VPCharter {
-  /** Unique identifier for this VP charter */
+export interface OrchestratorCharter {
+  /** Unique identifier for this Orchestrator charter */
   id: string;
 
-  /** Tier level - always 1 for VP agents */
+  /** Tier level - always 1 for Orchestrator agents */
   tier: 1;
 
   /** Identity configuration including name, persona, and contact info */
   identity: AgentIdentity;
 
-  /** Core directive summarizing the VP's primary mission and purpose */
+  /** Core directive summarizing the Orchestrator's primary mission and purpose */
   coreDirective: string;
 
-  /** List of capabilities granted to this VP */
-  capabilities: VPCapability[];
+  /** List of capabilities granted to this Orchestrator */
+  capabilities: OrchestratorCapability[];
 
-  /** List of MCP tools this VP is authorized to use */
+  /** List of MCP tools this Orchestrator is authorized to use */
   mcpTools: string[];
 
   /** Resource consumption limits */
@@ -391,7 +391,7 @@ export interface VPCharter {
   /** Hard constraints on forbidden actions */
   constraints: HardConstraints;
 
-  /** IDs of disciplines this VP oversees */
+  /** IDs of disciplines this Orchestrator oversees */
   disciplineIds: string[];
 
   /** Optional node ID for distributed deployment */
@@ -417,7 +417,7 @@ export interface VPCharter {
  * - Coordinating specialized agents within their discipline domain
  * - Managing task distribution and agent workloads
  * - Maintaining discipline-specific memory and context
- * - Reporting status and metrics to their parent VP
+ * - Reporting status and metrics to their parent Orchestrator
  * - Ensuring quality and consistency within their domain
  *
  * @example
@@ -432,7 +432,7 @@ export interface VPCharter {
  *   },
  *   coreDirective: 'Coordinate frontend development tasks with focus on UX quality',
  *   disciplineId: 'frontend',
- *   parentVpId: 'vp-engineering-001',
+ *   parentVpId: 'orchestrator-engineering-001',
  *   mcpTools: ['code_review', 'agent_spawn', 'task_orchestrate'],
  *   agentIds: ['react-dev-001', 'css-specialist-001', 'a11y-expert-001'],
  *   objectives: DEFAULT_SESSION_MANAGER_OBJECTIVES,
@@ -459,7 +459,7 @@ export interface SessionManagerCharter {
   /** ID of the discipline this Session Manager coordinates */
   disciplineId: string;
 
-  /** ID of the parent VP this Session Manager reports to */
+  /** ID of the parent Orchestrator this Session Manager reports to */
   parentVpId: string;
 
   /** List of MCP tools this Session Manager is authorized to use */
@@ -489,42 +489,42 @@ export interface SessionManagerCharter {
 // ============================================================================
 
 /**
- * Union type representing any valid charter (VP or Session Manager).
+ * Union type representing any valid charter (Orchestrator or Session Manager).
  *
  * Use type guards to narrow the type when working with charters:
  *
  * @example
  * ```typescript
  * function processCharter(charter: Charter): void {
- *   if (isVPCharter(charter)) {
- *     console.log(`VP ${charter.identity.name} has ${charter.capabilities.length} capabilities`);
+ *   if (isOrchestratorCharter(charter)) {
+ *     console.log(`Orchestrator ${charter.identity.name} has ${charter.capabilities.length} capabilities`);
  *   } else {
  *     console.log(`SM ${charter.identity.name} manages ${charter.agentIds.length} agents`);
  *   }
  * }
  * ```
  */
-export type Charter = VPCharter | SessionManagerCharter;
+export type Charter = OrchestratorCharter | SessionManagerCharter;
 
 // ============================================================================
 // Type Guards
 // ============================================================================
 
 /**
- * Type guard to check if a charter is a VP Charter.
+ * Type guard to check if a charter is a Orchestrator Charter.
  *
  * @param charter - The charter to check
- * @returns True if the charter is a VPCharter
+ * @returns True if the charter is a OrchestratorCharter
  *
  * @example
  * ```typescript
- * if (isVPCharter(charter)) {
- *   // charter is narrowed to VPCharter
+ * if (isOrchestratorCharter(charter)) {
+ *   // charter is narrowed to OrchestratorCharter
  *   console.log(charter.capabilities);
  * }
  * ```
  */
-export function isVPCharter(charter: Charter): charter is VPCharter {
+export function isOrchestratorCharter(charter: Charter): charter is OrchestratorCharter {
   return charter.tier === 1;
 }
 
@@ -551,39 +551,39 @@ export function isSessionManagerCharter(charter: Charter): charter is SessionMan
 // ============================================================================
 
 /**
- * Configuration options for creating a new VP.
+ * Configuration options for creating a new Orchestrator.
  *
- * This interface provides a simplified configuration surface for VP creation,
+ * This interface provides a simplified configuration surface for Orchestrator creation,
  * with sensible defaults applied for omitted properties.
  *
- * @property name - Human-readable name for the VP
- * @property persona - Description of the VP's personality and communication style
+ * @property name - Human-readable name for the Orchestrator
+ * @property persona - Description of the Orchestrator's personality and communication style
  * @property slackHandle - Optional Slack handle for notifications
  * @property capabilities - Optional list of capabilities (defaults to all)
  * @property resourceLimits - Optional resource limits (defaults applied)
  *
  * @example
  * ```typescript
- * const config: CreateVPConfig = {
- *   name: 'Engineering VP',
+ * const config: CreateOrchestratorConfig = {
+ *   name: 'Engineering Orchestrator',
  *   persona: 'A methodical leader focused on code quality',
  *   slackHandle: 'eng-vp',
  *   capabilities: ['context_compilation', 'session_spawning'],
  * };
  * ```
  */
-export interface CreateVPConfig {
-  /** Human-readable name for the VP */
+export interface CreateOrchestratorConfig {
+  /** Human-readable name for the Orchestrator */
   name: string;
 
-  /** Description of the VP's personality and communication style */
+  /** Description of the Orchestrator's personality and communication style */
   persona: string;
 
   /** Optional Slack handle for workspace integration */
   slackHandle?: string;
 
   /** Optional list of capabilities (defaults to all capabilities) */
-  capabilities?: VPCapability[];
+  capabilities?: OrchestratorCapability[];
 
   /** Optional resource limits (defaults applied for omitted properties) */
   resourceLimits?: Partial<ResourceLimits>;
@@ -597,7 +597,7 @@ export interface CreateVPConfig {
   /** Optional additional constraints */
   constraints?: Partial<HardConstraints>;
 
-  /** Optional discipline IDs this VP will oversee */
+  /** Optional discipline IDs this Orchestrator will oversee */
   disciplineIds?: string[];
 }
 
@@ -609,7 +609,7 @@ export interface CreateVPConfig {
  *
  * @property name - Human-readable name for the Session Manager
  * @property disciplineId - ID of the discipline this Session Manager will coordinate
- * @property parentVpId - ID of the parent VP
+ * @property parentVpId - ID of the parent Orchestrator
  * @property persona - Optional custom persona (defaults based on discipline)
  *
  * @example
@@ -617,7 +617,7 @@ export interface CreateVPConfig {
  * const config: CreateSessionManagerConfig = {
  *   name: 'Frontend Session Manager',
  *   disciplineId: 'frontend',
- *   parentVpId: 'vp-engineering-001',
+ *   parentVpId: 'orchestrator-engineering-001',
  *   persona: 'A detail-oriented React specialist',
  * };
  * ```
@@ -629,7 +629,7 @@ export interface CreateSessionManagerConfig {
   /** ID of the discipline this Session Manager will coordinate */
   disciplineId: string;
 
-  /** ID of the parent VP this Session Manager reports to */
+  /** ID of the parent Orchestrator this Session Manager reports to */
   parentVpId: string;
 
   /** Optional custom persona (defaults based on discipline if omitted) */
@@ -656,11 +656,11 @@ export interface CreateSessionManagerConfig {
 // ============================================================================
 
 /**
- * Partial update configuration for VP charters.
+ * Partial update configuration for Orchestrator charters.
  *
  * All fields are optional, allowing selective updates to charter properties.
  */
-export interface UpdateVPCharterConfig {
+export interface UpdateOrchestratorCharterConfig {
   /** Updated identity properties */
   identity?: Partial<AgentIdentity>;
 
@@ -668,7 +668,7 @@ export interface UpdateVPCharterConfig {
   coreDirective?: string;
 
   /** Updated capabilities list */
-  capabilities?: VPCapability[];
+  capabilities?: OrchestratorCapability[];
 
   /** Updated MCP tools list */
   mcpTools?: string[];

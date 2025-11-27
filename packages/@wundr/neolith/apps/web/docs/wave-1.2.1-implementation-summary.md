@@ -42,7 +42,7 @@ Successfully implemented Wave 1.2.1 (tasks 1.2.1.6 through 1.2.1.10) - Agent Bac
 - Marks task as DONE
 - Sets completedAt timestamp
 - Records completion result, notes, and artifacts
-- Posts status message to assigned channel (if VP completed)
+- Posts status message to assigned channel (if Orchestrator completed)
 - Triggers workflow webhooks for task.completed events
 - Queues webhook deliveries asynchronously
 - Validates task isn't already completed or cancelled
@@ -61,11 +61,11 @@ Successfully implemented Wave 1.2.1 (tasks 1.2.1.6 through 1.2.1.10) - Agent Bac
 
 ---
 
-### 3. VP Backlog Endpoint (1.2.1.7)
-**Endpoint:** `GET /api/workspaces/[workspaceId]/vps/[vpId]/backlog`
+### 3. Orchestrator Backlog Endpoint (1.2.1.7)
+**Endpoint:** `GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/backlog`
 
 **Features:**
-- Returns tasks assigned to VP in priority order
+- Returns tasks assigned to Orchestrator in priority order
 - Priority ordering: CRITICAL > HIGH > MEDIUM > LOW
 - Filters by status (TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED)
 - Filters by priority levels
@@ -78,7 +78,7 @@ Successfully implemented Wave 1.2.1 (tasks 1.2.1.6 through 1.2.1.10) - Agent Bac
 ?status=TODO&priority=HIGH&includeStats=true&page=1&limit=50
 ```
 
-**Endpoint:** `POST /api/workspaces/[workspaceId]/vps/[vpId]/backlog`
+**Endpoint:** `POST /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/backlog`
 
 **Features:**
 - Add new task to VP's backlog
@@ -86,19 +86,19 @@ Successfully implemented Wave 1.2.1 (tasks 1.2.1.6 through 1.2.1.10) - Agent Bac
 - Validates assignee exists
 - Auto-assigns to workspace
 
-**File:** `/apps/web/app/api/workspaces/[workspaceId]/vps/[vpId]/backlog/route.ts`
+**File:** `/apps/web/app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/backlog/route.ts`
 
 ---
 
 ### 4. Task Polling Mechanism (1.2.1.9)
-**Endpoint:** `GET /api/workspaces/[workspaceId]/vps/[vpId]/next-task`
+**Endpoint:** `GET /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/next-task`
 
 **Features:**
 - Intelligent task selection algorithm
 - Priority-based selection (CRITICAL first, then HIGH, etc.)
 - Filters tasks with unmet dependencies
 - Considers approaching deadlines
-- Matches VP capabilities with task requirements
+- Matches Orchestrator capabilities with task requirements
 - Returns metadata about selection criteria
 - Handles no available tasks gracefully
 
@@ -108,7 +108,7 @@ Successfully implemented Wave 1.2.1 (tasks 1.2.1.6 through 1.2.1.10) - Agent Bac
 3. Filter by deadline if specified
 4. Sort by: priority → due date → creation date
 5. Exclude tasks with unmet dependencies
-6. Match VP capabilities if provided
+6. Match Orchestrator capabilities if provided
 7. Return highest priority available task
 
 **Query Parameters:**
@@ -116,7 +116,7 @@ Successfully implemented Wave 1.2.1 (tasks 1.2.1.6 through 1.2.1.10) - Agent Bac
 ?status=TODO&minPriority=HIGH&deadlineWithinHours=24
 ```
 
-**File:** `/apps/web/app/api/workspaces/[workspaceId]/vps/[vpId]/next-task/route.ts`
+**File:** `/apps/web/app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/next-task/route.ts`
 
 ---
 
@@ -145,7 +145,7 @@ No changes needed - endpoint already meets requirements.
 1. `assignTaskSchema` - Task assignment validation
 2. `completeTaskSchema` - Task completion validation
 3. `nextTaskFiltersSchema` - Next task polling filters
-4. `vpBacklogFiltersSchema` - VP backlog filters
+4. `vpBacklogFiltersSchema` - Orchestrator backlog filters
 5. `addBacklogTaskSchema` - Add task to backlog validation
 
 ### Error Codes:
@@ -167,8 +167,8 @@ No changes needed - endpoint already meets requirements.
 ### Authentication & Authorization
 - All endpoints use `auth()` from NextAuth
 - Workspace membership verification
-- VP ownership verification
-- Support for both human users and VP service accounts
+- Orchestrator ownership verification
+- Support for both human users and Orchestrator service accounts
 
 ### Data Validation
 - Zod schemas for all request bodies and query parameters
@@ -189,7 +189,7 @@ No changes needed - endpoint already meets requirements.
 
 ### Channel Integration
 - Posts completion messages to assigned channels
-- Only when VP completes a task
+- Only when Orchestrator completes a task
 - Includes completion notes and artifacts
 - System message type for clear identification
 
@@ -212,8 +212,8 @@ No changes needed - endpoint already meets requirements.
 ```
 ├ ƒ /api/workspaces/[workspaceId]/tasks/[taskId]/assign
 ├ ƒ /api/workspaces/[workspaceId]/tasks/[taskId]/complete
-├ ƒ /api/workspaces/[workspaceId]/vps/[vpId]/backlog
-├ ƒ /api/workspaces/[workspaceId]/vps/[vpId]/next-task
+├ ƒ /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/backlog
+├ ƒ /api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/next-task
 ```
 
 ---
@@ -253,17 +253,17 @@ Content-Type: application/json
 
 ### 3. Get VP's Backlog
 ```bash
-GET /api/workspaces/ws_123/vps/vp_789/backlog?status=TODO&status=IN_PROGRESS&priority=HIGH&includeStats=true&limit=25
+GET /api/workspaces/ws_123/orchestrators/vp_789/backlog?status=TODO&status=IN_PROGRESS&priority=HIGH&includeStats=true&limit=25
 ```
 
 ### 4. Poll for Next Task
 ```bash
-GET /api/workspaces/ws_123/vps/vp_789/next-task?status=TODO&minPriority=MEDIUM&deadlineWithinHours=48
+GET /api/workspaces/ws_123/orchestrators/vp_789/next-task?status=TODO&minPriority=MEDIUM&deadlineWithinHours=48
 ```
 
-### 5. Add Task to VP Backlog
+### 5. Add Task to Orchestrator Backlog
 ```bash
-POST /api/workspaces/ws_123/vps/vp_789/backlog
+POST /api/workspaces/ws_123/orchestrators/vp_789/backlog
 Content-Type: application/json
 
 {
@@ -287,9 +287,9 @@ Used workspace-scoped routes (`/api/workspaces/[workspaceId]/...`) for better:
 - Route clarity and organization
 - Future scalability
 
-### 2. VP Capabilities Matching
+### 2. Orchestrator Capabilities Matching
 Implemented flexible capability matching in next-task endpoint:
-- Reads VP capabilities from VP record
+- Reads Orchestrator capabilities from Orchestrator record
 - Compares with task metadata `requiredCapabilities`
 - Falls back to first available task if no match
 - Allows for future skill-based routing
@@ -314,8 +314,8 @@ Maintains full audit trail in task metadata:
 ## Files Created
 
 ### API Routes
-1. `/apps/web/app/api/workspaces/[workspaceId]/vps/[vpId]/backlog/route.ts` (482 lines)
-2. `/apps/web/app/api/workspaces/[workspaceId]/vps/[vpId]/next-task/route.ts` (298 lines)
+1. `/apps/web/app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/backlog/route.ts` (482 lines)
+2. `/apps/web/app/api/workspaces/[workspaceId]/orchestrators/[orchestratorId]/next-task/route.ts` (298 lines)
 3. `/apps/web/app/api/workspaces/[workspaceId]/tasks/[taskId]/assign/route.ts` (288 lines)
 4. `/apps/web/app/api/workspaces/[workspaceId]/tasks/[taskId]/complete/route.ts` (402 lines)
 
@@ -339,7 +339,7 @@ Maintains full audit trail in task metadata:
 
 ### Database Models Used
 - `task` - Task records
-- `vP` - Virtual Person records
+- `vP` - Orchestrator records
 - `workspace` - Workspace records
 - `workspaceMember` - Membership verification
 - `user` - User records
@@ -353,12 +353,12 @@ Maintains full audit trail in task metadata:
 
 ### Authentication
 - All endpoints require valid session
-- VP service account authentication supported
+- Orchestrator service account authentication supported
 - Token-based auth via NextAuth JWT
 
 ### Authorization
 - Workspace membership verified
-- VP ownership validated
+- Orchestrator ownership validated
 - Task access control enforced
 - Assignee workspace membership checked
 
@@ -381,7 +381,7 @@ Maintains full audit trail in task metadata:
 1. Add rate limiting to polling endpoint
 2. Implement webhook delivery background worker
 3. Add task analytics dashboard
-4. Create VP performance metrics
+4. Create Orchestrator performance metrics
 5. Add real-time updates via WebSocket
 6. Implement task locking mechanism for concurrent polling
 
@@ -400,7 +400,7 @@ Maintains full audit trail in task metadata:
 Wave 1.2.1 (Agent Backlog System API) has been successfully implemented with all required features:
 
 ✅ **1.2.1.6** - Enhanced `/api/tasks` CRUD (already complete)
-✅ **1.2.1.7** - VP backlog endpoint (GET & POST)
+✅ **1.2.1.7** - Orchestrator backlog endpoint (GET & POST)
 ✅ **1.2.1.8** - Task assignment endpoint
 ✅ **1.2.1.9** - Task polling mechanism for VPs
 ✅ **1.2.1.10** - Task completion webhook

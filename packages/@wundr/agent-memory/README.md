@@ -21,7 +21,7 @@ MemGPT-inspired tiered memory architecture for AI agents. Provides intelligent c
 - [Retrieval Strategies](#retrieval-strategies)
 - [Session Management](#session-management)
 - [Cross-Session Memory Sharing](#cross-session-memory-sharing)
-- [Integration with VP Daemon](#integration-with-vp-daemon)
+- [Integration with Orchestrator Daemon](#integration-with-orchestrator-daemon)
 - [Events](#events)
 - [Configuration Reference](#configuration-reference)
 - [Types](#types)
@@ -536,18 +536,18 @@ const loaded = JSON.parse(await fs.readFile('memory-state.json'));
 manager.restore(loaded);
 ```
 
-## Integration with VP Daemon
+## Integration with Orchestrator Daemon
 
-The agent-memory package integrates with VP (Virtual Process) daemon for multi-agent orchestration:
+The agent-memory package integrates with Orchestrator (Virtual Process) daemon for multi-agent orchestration:
 
 ```typescript
 import { createMemoryManager } from '@wundr.io/agent-memory';
 
-// Create shared memory manager for VP daemon
+// Create shared memory manager for Orchestrator daemon
 const sharedMemory = await createMemoryManager({
   config: {
     persistenceEnabled: true,
-    persistencePath: '/var/vp-daemon/memory',
+    persistencePath: '/var/orchestrator-daemon/memory',
     autoConsolidation: true,
     consolidationIntervalMs: 300000,  // 5 minutes
   },
@@ -563,7 +563,7 @@ class VPAgent {
   async initialize() {
     await this.memory.startSession({
       agentIds: [this.agentId],
-      metadata: { type: 'vp-agent' },
+      metadata: { type: 'orchestrator-agent' },
     });
   }
 
@@ -588,7 +588,7 @@ class VPAgent {
   }
 }
 
-// VP daemon coordinates multiple agents
+// Orchestrator daemon coordinates multiple agents
 class VPDaemon {
   private agents = new Map<string, VPAgent>();
 

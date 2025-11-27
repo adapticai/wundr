@@ -12,7 +12,7 @@ const response = await fetch(`/api/workspaces/${workspaceId}/dashboard/stats?inc
 
 // Fix: Only request needed fields
 const response = await fetch(
-  `/api/workspaces/${workspaceId}/dashboard/stats?fields=members.total,channels.total,workflows.total,members.vpCount&includeActivity=false`
+  `/api/workspaces/${workspaceId}/dashboard/stats?fields=members.total,channels.total,workflows.total,members.orchestratorCount&includeActivity=false`
 );
 ```
 **Impact:** Unnecessary 85% data transfer, slower API response

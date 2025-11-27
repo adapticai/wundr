@@ -2,12 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useParams, usePathname } from 'next/navigation';
+import { useCallback, useState } from 'react';
 
 import { ChannelList } from '@/components/channel';
 import { Logo } from '@/components/ui/Logo';
-import { useChannels, useDirectMessages, useChannelMutations } from '@/hooks/use-channel';
+import { useChannelMutations, useChannels, useDirectMessages } from '@/hooks/use-channel';
 import { cn } from '@/lib/utils';
 
 interface Workspace {
@@ -71,7 +71,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
 
   const navItems = [
     { href: `/${workspaceId}/dashboard`, icon: <DashboardIcon />, label: 'Dashboard' },
-    { href: `/${workspaceId}/vps`, icon: <VPsIcon />, label: 'Virtual Persons' },
+    { href: `/${workspaceId}/orchestrators`, icon: <Orchestrator sIcon />, label: 'Orchestrators' },
     { href: `/${workspaceId}/agents`, icon: <AgentsIcon />, label: 'Agents' },
     { href: `/${workspaceId}/workflows`, icon: <WorkflowsIcon />, label: 'Workflows' },
     { href: `/${workspaceId}/deployments`, icon: <DeploymentsIcon />, label: 'Deployments' },

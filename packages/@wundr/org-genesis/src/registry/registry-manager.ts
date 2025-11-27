@@ -42,34 +42,34 @@
  *
  * // Get aggregate statistics
  * const stats = await manager.getStats();
- * console.log(`Total VPs: ${stats.vpCount}, Agents: ${stats.agentCount}`);
+ * console.log(`Total VPs: ${stats.orchestratorCount}, Agents: ${stats.agentCount}`);
  * ```
  */
 
-import { AgentRegistry, createAgentRegistry } from './agent-registry.js';
-import { CharterRegistry, createCharterRegistry } from './charter-registry.js';
-import { DisciplineRegistry, createDisciplineRegistry } from './discipline-registry.js';
-import {
-  HooksRegistry,
-  createHooksRegistry,
-  type HookRegistryEntry,
-} from './hooks-registry.js';
-import {
-  ToolsRegistry,
-  createToolsRegistry,
-  type ToolRegistryEntry,
-} from './tools-registry.js';
 
 import type {
-  VPCharter,
-  SessionManagerCharter,
-  DisciplinePack,
   AgentDefinition,
-  RegistryQuery,
-  RegistryQueryResult,
+  DisciplinePack,
+  OrchestratorCharter,
   RegistryEntry,
   RegistryEntryType,
+  RegistryQuery,
+  RegistryQueryResult,
+  SessionManagerCharter,
 } from '../types/index.js';
+import { AgentRegistry, createAgentRegistry } from './agent-registry.js';
+import { CharterRegistry, createCharterRegistry } from './charter-registry.js';
+import { createDisciplineRegistry, DisciplineRegistry } from './discipline-registry.js';
+import {
+  createHooksRegistry,
+  type HookRegistryEntry,
+  HooksRegistry,
+} from './hooks-registry.js';
+import {
+  createToolsRegistry,
+  type ToolRegistryEntry,
+  ToolsRegistry,
+} from './tools-registry.js';
 
 // ============================================================================
 // Configuration Types
@@ -156,7 +156,7 @@ const DEFAULT_CONFIG: Required<RegistryManagerConfig> = {
  *   version: '1.0.0',
  *   exportedAt: '2024-06-20T14:30:00Z',
  *   charters: {
- *     vps: [...vpCharters],
+ *     orchestrators: [...vpCharters],
  *     sessionManagers: [...sessionManagerCharters],
  *   },
  *   disciplines: [...disciplinePacks],
@@ -183,9 +183,9 @@ export interface RegistryExport {
    */
   charters: {
     /**
-     * All exported VP charters (Tier 1).
+     * All exported Orchestrator charters (Tier 1).
      */
-    vps: VPCharter[];
+    orchestrators: OrchestratorCharter[];
 
     /**
      * All exported Session Manager charters (Tier 2).
@@ -228,7 +228,7 @@ export interface RegistryExport {
  * @example
  * ```typescript
  * const stats: RegistryStats = {
- *   vpCount: 5,
+ *   orchestratorCount: 5,
  *   sessionManagerCount: 15,
  *   disciplineCount: 25,
  *   agentCount: 100,
@@ -237,7 +237,7 @@ export interface RegistryExport {
  * };
  *
  * console.log(`Total entities: ${
- *   stats.vpCount +
+ *   stats.orchestratorCount +
  *   stats.sessionManagerCount +
  *   stats.disciplineCount +
  *   stats.agentCount
@@ -246,9 +246,9 @@ export interface RegistryExport {
  */
 export interface RegistryStats {
   /**
-   * Total number of registered VP charters (Tier 1).
+   * Total number of registered Orchestrator charters (Tier 1).
    */
-  vpCount: number;
+  orchestratorCount: number;
 
   /**
    * Total number of registered Session Manager charters (Tier 2).
@@ -316,7 +316,7 @@ export interface RegistryStats {
  */
 export class RegistryManager {
   /**
-   * Charter registry managing VP and Session Manager charters.
+   * Charter registry managing Orchestrator and Session Manager charters.
    * Provides CRUD operations for Tier 1 (VP) and Tier 2 (Session Manager) entities.
    */
   public readonly charters: CharterRegistry;
@@ -585,7 +585,7 @@ export class RegistryManager {
    * );
    *
    * // Access specific data
-   * console.log(`Exported ${backup.charters.vps.length} VPs`);
+   * console.log(`Exported ${backup.charters.orchestrators.length} VPs`);
    * console.log(`Exported ${backup.agents.length} agents`);
    * ```
    */
@@ -604,7 +604,7 @@ export class RegistryManager {
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
       charters: {
-        vps,
+        orchestrators,
         sessionManagers,
       },
       disciplines,
@@ -647,8 +647,8 @@ export class RegistryManager {
 
     // Import charters
     if (data.charters) {
-      if (data.charters.vps) {
-        for (const vp of data.charters.vps) {
+      if (data.charters.orchestrators) {
+        for (const orchestrator of data.charters.orchestrators) {
           await this.charters.registerVP(vp);
         }
       }
@@ -732,14 +732,14 @@ export class RegistryManager {
    * const stats = await manager.getStats();
    *
    * console.log('Registry Statistics:');
-   * console.log(`- VPs: ${stats.vpCount}`);
+   * console.log(`- VPs: ${stats.orchestratorCount}`);
    * console.log(`- Session Managers: ${stats.sessionManagerCount}`);
    * console.log(`- Disciplines: ${stats.disciplineCount}`);
    * console.log(`- Agents: ${stats.agentCount}`);
    * console.log(`- Tools: ${stats.toolCount}`);
    * console.log(`- Hooks: ${stats.hookCount}`);
    *
-   * const total = stats.vpCount + stats.sessionManagerCount +
+   * const total = stats.orchestratorCount + stats.sessionManagerCount +
    *   stats.disciplineCount + stats.agentCount +
    *   stats.toolCount + stats.hookCount;
    * console.log(`Total: ${total} entities`);
@@ -755,7 +755,7 @@ export class RegistryManager {
     ]);
 
     return {
-      vpCount: charterStats.vpCount,
+      orchestratorCount: charterStats.orchestratorCount,
       sessionManagerCount: charterStats.sessionManagerCount,
       disciplineCount: disciplines.length,
       agentCount: agents.length,
@@ -774,8 +774,8 @@ export class RegistryManager {
   private async getItemsByType(type: RegistryEntryType): Promise<RegistryEntry[]> {
     switch (type) {
       case 'vp': {
-        const vps = await this.charters.listVPs();
-        return vps.map((vp) => this.vpToRegistryEntry(vp));
+        const orchestrators = await this.charters.listVPs();
+        return orchestrators.map((vp) => this.vpToRegistryEntry(vp));
       }
       case 'session-manager': {
         const sms = await this.charters.listSessionManagers();
@@ -804,10 +804,10 @@ export class RegistryManager {
   }
 
   /**
-   * Convert a VP charter to a registry entry.
+   * Convert a Orchestrator charter to a registry entry.
    * @internal
    */
-  private vpToRegistryEntry(vp: VPCharter): RegistryEntry {
+  private vpToRegistryEntry(vp: OrchestratorCharter): RegistryEntry {
     return {
       id: vp.id,
       type: 'vp',

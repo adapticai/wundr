@@ -201,7 +201,7 @@ npm run add:android # Creates android/ folder
    - `/api/auth/[...nextauth]` - Authentication
    - `/api/graphql` - GraphQL endpoint
    - `/api/workspaces/*` - Workspace management
-   - `/api/vps/*` - VP management
+   - `/api/vps/*` - Orchestrator management
    - `/api/tasks/*` - Task management
 
 2. Server Components:

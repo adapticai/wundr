@@ -3,9 +3,8 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { ACTION_TYPE_CONFIG } from '@/types/workflow';
-
 import type { ActionConfig, ActionType, WorkflowVariable } from '@/types/workflow';
+import { ACTION_TYPE_CONFIG, DEFAULT_ACTION_CONFIGS } from '@/types/workflow';
 
 export interface ActionConfigPanelProps {
   action: ActionConfig;
@@ -25,7 +24,9 @@ export function ActionConfigPanel({
   const [showVariables, setShowVariables] = useState(false);
 
   const handleTypeChange = (type: ActionType) => {
-    onChange({ type, config: {} });
+    // Use default config for the selected action type
+    const defaultConfig = DEFAULT_ACTION_CONFIGS[type] || {};
+    onChange({ type, config: defaultConfig });
   };
 
   const handleConfigChange = (updates: Partial<ActionConfig['config']>) => {
@@ -677,7 +678,7 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
   );
 }
 
-// Notify VP Configuration
+// Notify OrchestratorConfiguration
 interface NotifyVPConfigProps {
   config: ActionConfig['config'];
   onChange: (updates: Partial<ActionConfig['config']>) => void;
@@ -687,28 +688,28 @@ function NotifyVPConfig({ config, onChange }: NotifyVPConfigProps) {
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="vp-id" className="mb-1.5 block text-sm font-medium text-foreground">
-          VP ID
+        <label htmlFor="orchestrator-id" className="mb-1.5 block text-sm font-medium text-foreground">
+          OrchestratorID
         </label>
         <input
-          id="vp-id"
+          id="orchestrator-id"
           type="text"
-          value={config.vpId || ''}
-          onChange={(e) => onChange({ vpId: e.target.value })}
-          placeholder="Enter VP ID"
+          value={config.orchestratorId || ''}
+          onChange={(e) => onChange({ orchestratorId: e.target.value })}
+          placeholder="Enter OrchestratorID"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
         <p className="mt-1.5 text-xs text-muted-foreground">
-          The VP agent will be notified and can respond to the trigger.
+          The Orchestrator agent will be notified and can respond to the trigger.
         </p>
       </div>
 
       <div>
-        <label htmlFor="vp-message" className="mb-1.5 block text-sm font-medium text-foreground">
+        <label htmlFor="orchestrator-message" className="mb-1.5 block text-sm font-medium text-foreground">
           Context Message (optional)
         </label>
         <textarea
-          id="vp-message"
+          id="orchestrator-message"
           value={config.message || ''}
           onChange={(e) => onChange({ message: e.target.value })}
           placeholder="Additional context for the VP"

@@ -13,15 +13,15 @@ interface OrgChartVisualizationProps {
 }
 
 export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
-  const { manifest, vps, disciplines, agents } = orgData;
+  const { manifest, orchestrators, disciplines, agents } = orgData;
 
   // Group disciplines by VP
   const disciplinesByVP = disciplines.reduce(
     (acc, discipline) => {
-      if (!acc[discipline.vpId]) {
-        acc[discipline.vpId] = [];
+      if (!acc[discipline.orchestratorId]) {
+        acc[discipline.orchestratorId] = [];
       }
-      acc[discipline.vpId].push(discipline);
+      acc[discipline.orchestratorId].push(discipline);
       return acc;
     },
     {} as Record<string, typeof disciplines>,
@@ -56,7 +56,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
 
           return (
             <div key={vp.id} className="relative">
-              {/* VP Node */}
+              {/* OrchestratorNode */}
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
@@ -68,7 +68,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
                   <h4 className="font-semibold">{vp.title}</h4>
                   <p className="text-sm text-muted-foreground">{vp.name}</p>
 
-                  {/* Disciplines under this VP */}
+                  {/* Disciplines under this Orchestrator */}
                   {vpDisciplines.length > 0 && (
                     <div className="mt-4 space-y-3">
                       <div className="text-xs font-medium text-muted-foreground">
@@ -146,8 +146,8 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
                 </div>
               </div>
 
-              {/* Connecting line to next VP */}
-              {vpIndex < vps.length - 1 && (
+              {/* Connecting line to next Orchestrator */}
+              {vpIndex < orchestrators.length - 1 && (
                 <div className="ml-5 h-6 w-0.5 bg-border" />
               )}
             </div>

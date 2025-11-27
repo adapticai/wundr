@@ -1,7 +1,7 @@
 /**
  * Daemon Registration API Route
  *
- * Handles daemon registration for VP presence.
+ * Handles daemon registration for Orchestrator presence.
  *
  * Routes:
  * - POST /api/daemon/register - Register a daemon
@@ -9,10 +9,10 @@
  * @module app/api/daemon/register/route
  */
 
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 // =============================================================================
 // Validation Schemas
@@ -144,8 +144,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // TODO: Verify VP exists and belongs to the organization
-    // const vp = await vpService.getVP(vpId);
+    // TODO: Verify Orchestrator exists and belongs to the organization
+    // const orchestrator = await vpService.getVP(vpId);
     // if (!vp || vp.organizationId !== organizationId) {...}
 
     // TODO: Get Redis client and heartbeat service

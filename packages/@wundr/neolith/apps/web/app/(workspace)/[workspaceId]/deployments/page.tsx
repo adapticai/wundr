@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { DeploymentCard, DeploymentCardSkeleton } from '@/components/deployments/deployment-card';
 import { CreateDeploymentModal } from '@/components/deployments/create-deployment-modal';
@@ -13,6 +15,12 @@ import type { DeploymentEnvironment, CreateDeploymentInput } from '@/types/deplo
 export default function DeploymentsPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Deployments', 'Monitor and manage your deployed services and agents');
+  }, [setPageHeader]);
 
   const [environment, setEnvironment] = useState<DeploymentEnvironment | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,14 +100,8 @@ export default function DeploymentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Deployments</h1>
-          <p className="mt-1 text-muted-foreground">
-            Monitor and manage your deployed services and agents.
-          </p>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}

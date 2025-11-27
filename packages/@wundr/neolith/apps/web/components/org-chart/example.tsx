@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 
-import { OrgHierarchyChart, OrgHierarchyChartSkeleton, OrgHierarchyChartEmpty } from './OrgHierarchyChart';
+import { OrgHierarchyChart, OrgHierarchyChartEmpty, OrgHierarchyChartSkeleton } from './OrgHierarchyChart';
 
 import type { OrgHierarchyNode } from './types';
 
@@ -32,7 +32,7 @@ const exampleHierarchy: OrgHierarchyNode = {
       },
       children: [
         {
-          id: 'vp-1',
+          id: 'orchestrator-1',
           type: 'vp',
           name: 'Alice Johnson',
           data: {
@@ -44,7 +44,7 @@ const exampleHierarchy: OrgHierarchyNode = {
           },
         },
         {
-          id: 'vp-2',
+          id: 'orchestrator-2',
           type: 'vp',
           name: 'Bob Smith',
           data: {
@@ -55,7 +55,7 @@ const exampleHierarchy: OrgHierarchyNode = {
           },
         },
         {
-          id: 'vp-3',
+          id: 'orchestrator-3',
           type: 'vp',
           name: 'Charlie Brown',
           data: {
@@ -77,7 +77,7 @@ const exampleHierarchy: OrgHierarchyNode = {
       },
       children: [
         {
-          id: 'vp-4',
+          id: 'orchestrator-4',
           type: 'vp',
           name: 'Diana Prince',
           data: {
@@ -88,7 +88,7 @@ const exampleHierarchy: OrgHierarchyNode = {
           },
         },
         {
-          id: 'vp-5',
+          id: 'orchestrator-5',
           type: 'vp',
           name: 'Eve Torres',
           data: {
@@ -99,7 +99,7 @@ const exampleHierarchy: OrgHierarchyNode = {
           },
         },
         {
-          id: 'vp-6',
+          id: 'orchestrator-6',
           type: 'vp',
           name: 'Frank Castle',
           data: {
@@ -110,7 +110,7 @@ const exampleHierarchy: OrgHierarchyNode = {
           },
         },
         {
-          id: 'vp-7',
+          id: 'orchestrator-7',
           type: 'vp',
           name: 'Grace Hopper',
           data: {
@@ -131,7 +131,7 @@ const exampleHierarchy: OrgHierarchyNode = {
       },
       children: [
         {
-          id: 'vp-8',
+          id: 'orchestrator-8',
           type: 'vp',
           name: 'Henry Ford',
           data: {
@@ -142,7 +142,7 @@ const exampleHierarchy: OrgHierarchyNode = {
           },
         },
         {
-          id: 'vp-9',
+          id: 'orchestrator-9',
           type: 'vp',
           name: 'Irene Curie',
           data: {
@@ -153,7 +153,7 @@ const exampleHierarchy: OrgHierarchyNode = {
           },
         },
         {
-          id: 'vp-10',
+          id: 'orchestrator-10',
           type: 'vp',
           name: 'Jack Sparrow',
           data: {
@@ -179,7 +179,7 @@ export function OrgChartExample() {
     console.log('Clicked node:', node);
     // You can navigate to a detail page, show a modal, etc.
     if (node.type === 'vp') {
-      // Navigate to VP detail page
+      // Navigate to Orchestrator detail page
       // router.push(`/vp/${node.id}`);
     } else if (node.type === 'workspace') {
       // Navigate to workspace page

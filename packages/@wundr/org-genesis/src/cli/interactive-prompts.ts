@@ -12,19 +12,19 @@
  * ```typescript
  * import {
  *   promptOrgConfig,
- *   promptVPConfig,
+ *   promptOrchestratorConfig,
  *   promptConfirm,
  * } from '@wundr/org-genesis/cli';
  *
  * const orgConfig = await promptOrgConfig();
- * const vpConfig = await promptVPConfig();
+ * const vpConfig = await promptOrchestratorConfig();
  * const confirmed = await promptConfirm('Proceed with creation?');
  * ```
  */
 
 import * as readline from 'node:readline';
 
-import type { CreateVPConfig, VPCapability } from '../types/charter.js';
+import type { CreateOrchestratorConfig, OrchestratorCapability } from '../types/charter.js';
 import type { DisciplinePack } from '../types/discipline.js';
 import type {
   CreateOrgConfig,
@@ -348,8 +348,8 @@ export async function promptSelect<T>(
  *
  * @example
  * ```typescript
- * const capabilities = await promptMultiSelect<VPCapability>(
- *   'Select VP capabilities',
+ * const capabilities = await promptMultiSelect<OrchestratorCapability>(
+ *   'Select Orchestrator capabilities',
  *   [
  *     { name: 'Context Compilation', value: 'context_compilation' },
  *     { name: 'Resource Management', value: 'resource_management' },
@@ -476,9 +476,9 @@ const SIZE_CHOICES: PromptChoice<OrgSize>[] = [
 ];
 
 /**
- * Available VP capabilities with display names.
+ * Available Orchestrator capabilities with display names.
  */
-const VP_CAPABILITY_CHOICES: PromptChoice<VPCapability>[] = [
+const VP_CAPABILITY_CHOICES: PromptChoice<OrchestratorCapability>[] = [
   {
     name: 'Context Compilation',
     value: 'context_compilation',
@@ -610,25 +610,25 @@ export async function promptOrgConfig(): Promise<CreateOrgConfig> {
 }
 
 /**
- * Prompts for VP (Virtual Persona) configuration.
+ * Prompts for Orchestrator (Orchestrator) configuration.
  *
  * Walks the user through all required fields for creating a new VP,
  * including name, persona, capabilities, and optional settings.
  *
- * @returns Promise resolving to a complete CreateVPConfig object
+ * @returns Promise resolving to a complete CreateOrchestratorConfig object
  *
  * @example
  * ```typescript
- * const vpConfig = await promptVPConfig();
+ * const vpConfig = await promptOrchestratorConfig();
  * console.log(`Creating VP: ${vpConfig.name}`);
  * console.log(`Capabilities: ${vpConfig.capabilities?.join(', ')}`);
  * ```
  */
-export async function promptVPConfig(): Promise<CreateVPConfig> {
-  console.log('\n=== VP (Virtual Persona) Configuration ===\n');
+export async function promptOrchestratorConfig(): Promise<CreateOrchestratorConfig> {
+  console.log('\n=== Orchestrator (Orchestrator) Configuration ===\n');
 
   // Required fields
-  const name = await promptTextAdvanced('VP name', {
+  const name = await promptTextAdvanced('Orchestrator name', {
     validate: s =>
       s.length < 2 ? 'Name must be at least 2 characters' : undefined,
   });
@@ -644,10 +644,10 @@ export async function promptVPConfig(): Promise<CreateVPConfig> {
     false,
   );
 
-  let capabilities: VPCapability[] | undefined;
+  let capabilities: OrchestratorCapability[] | undefined;
   if (selectCapabilities) {
-    capabilities = await promptMultiSelect<VPCapability>(
-      'Select VP capabilities',
+    capabilities = await promptMultiSelect<OrchestratorCapability>(
+      'Select Orchestrator capabilities',
       VP_CAPABILITY_CHOICES,
     );
     if (capabilities.length === 0) {
@@ -733,7 +733,7 @@ export async function promptDisciplineSelection(
  *
  * @example
  * ```typescript
- * const vpCount = await promptNumber('Number of VPs to create', 1, 50, 5);
+ * const orchestratorCount = await promptNumber('Number of VPs to create', 1, 50, 5);
  * ```
  */
 export async function promptNumber(
@@ -822,6 +822,6 @@ export { INDUSTRY_CHOICES };
 export { SIZE_CHOICES };
 
 /**
- * Pre-defined VP capability choices for external use.
+ * Pre-defined Orchestrator capability choices for external use.
  */
 export { VP_CAPABILITY_CHOICES };

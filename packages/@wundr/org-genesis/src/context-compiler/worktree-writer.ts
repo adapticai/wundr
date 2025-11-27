@@ -19,7 +19,7 @@
  *   sessionId: 'session-123',
  *   discipline: engineeringDiscipline,
  *   agents: [codeReviewerAgent],
- *   vpCharter: vpEngineering,
+ *   orchestratorCharter: orchestratorEngineering,
  *   memoryBank: {
  *     productContext: '# Product Context\n...',
  *     activeContext: '# Active Context\n...',
@@ -40,7 +40,7 @@ import {
 } from '../utils/git-worktree.js';
 
 import type { AgentDefinition } from '../types/agent.js';
-import type { VPCharter } from '../types/charter.js';
+import type { OrchestratorCharter } from '../types/charter.js';
 import type { DisciplinePack } from '../types/discipline.js';
 
 // ============================================================================
@@ -61,7 +61,7 @@ import type { DisciplinePack } from '../types/discipline.js';
  *   sessionId: 'feature-auth-2024',
  *   discipline: backendEngineeringDiscipline,
  *   agents: [apiDesignerAgent, securityReviewerAgent],
- *   vpCharter: engineeringVP,
+ *   orchestratorCharter: engineeringOrchestrator,
  *   memoryBank: {
  *     productContext: '# Product Context\n\nBuilding auth system...',
  *     activeContext: '# Active Context\n\nWorking on OAuth2 integration...',
@@ -98,10 +98,10 @@ export interface WriteSessionOptions {
   agents?: AgentDefinition[];
 
   /**
-   * Optional VP charter to include in the session context.
-   * Used for generating VP-specific configurations and constraints.
+   * Optional Orchestrator charter to include in the session context.
+   * Used for generating Orchestrator-specific configurations and constraints.
    */
-  vpCharter?: VPCharter;
+  orchestratorCharter?: OrchestratorCharter;
 
   /**
    * Optional memory bank initialization content.
@@ -365,7 +365,7 @@ export class WorktreeWriter {
       sessionId,
       discipline,
       agents = [],
-      vpCharter,
+      orchestratorCharter,
       memoryBank,
     } = options;
 
@@ -390,14 +390,14 @@ export class WorktreeWriter {
       // Generate and write CLAUDE.md
       const claudeMdContent = this.generateClaudeMdContent(
         discipline,
-        vpCharter
+        orchestratorCharter
       );
       const claudeMdPath = path.join(worktreePath, 'CLAUDE.md');
       await this.writeClaudeMd(worktreePath, claudeMdContent);
       filesWritten.push(claudeMdPath);
 
       // Generate and write claude.config.json
-      const claudeConfig = this.generateClaudeConfig(discipline, vpCharter);
+      const claudeConfig = this.generateClaudeConfig(discipline, orchestratorCharter);
       const claudeConfigPath = path.join(
         worktreePath,
         CLAUDE_DIR,
@@ -671,11 +671,11 @@ export class WorktreeWriter {
   }
 
   /**
-   * Generates CLAUDE.md content from discipline and VP charter.
+   * Generates CLAUDE.md content from discipline and Orchestrator charter.
    */
   private generateClaudeMdContent(
     discipline: DisciplinePack,
-    vpCharter?: VPCharter
+    orchestratorCharter?: OrchestratorCharter
   ): string {
     const sections: string[] = [];
 
@@ -689,11 +689,11 @@ export class WorktreeWriter {
     sections.push(discipline.claudeMd.context);
     sections.push('');
 
-    // VP-specific context if provided
-    if (vpCharter) {
-      sections.push(`**Reporting to:** ${vpCharter.identity.name}`);
+    // Orchestrator-specific context if provided
+    if (orchestratorCharter) {
+      sections.push(`**Reporting to:** ${orchestratorCharter.identity.name}`);
       sections.push('');
-      sections.push(`**Core Directive:** ${vpCharter.coreDirective}`);
+      sections.push(`**Core Directive:** ${orchestratorCharter.coreDirective}`);
       sections.push('');
     }
 
@@ -721,22 +721,22 @@ export class WorktreeWriter {
     }
     sections.push('');
 
-    // VP constraints if provided
-    if (vpCharter) {
-      sections.push('### VP-Level Constraints');
+    // Orchestrator constraints if provided
+    if (orchestratorCharter) {
+      sections.push('### Orchestrator-Level Constraints');
       sections.push('');
       sections.push('**Forbidden Commands:**');
-      for (const cmd of vpCharter.constraints.forbiddenCommands) {
+      for (const cmd of orchestratorCharter.constraints.forbiddenCommands) {
         sections.push(`- \`${cmd}\``);
       }
       sections.push('');
       sections.push('**Forbidden Paths:**');
-      for (const pathItem of vpCharter.constraints.forbiddenPaths) {
+      for (const pathItem of orchestratorCharter.constraints.forbiddenPaths) {
         sections.push(`- \`${pathItem}\``);
       }
       sections.push('');
       sections.push('**Requires Approval:**');
-      for (const action of vpCharter.constraints.requireApprovalFor) {
+      for (const action of orchestratorCharter.constraints.requireApprovalFor) {
         sections.push(`- ${action}`);
       }
       sections.push('');
@@ -778,7 +778,7 @@ export class WorktreeWriter {
    */
   private generateClaudeConfig(
     discipline: DisciplinePack,
-    vpCharter?: VPCharter
+    orchestratorCharter?: OrchestratorCharter,
   ): Record<string, unknown> {
     const mcpServers: Record<string, unknown> = {};
 
@@ -808,7 +808,7 @@ export class WorktreeWriter {
       hooks,
       permissions: {
         allowedPaths: ['**/*'],
-        deniedPaths: vpCharter?.constraints.forbiddenPaths ?? [],
+        deniedPaths: orchestratorCharter?.constraints.forbiddenPaths ?? [],
         allowNetworkAccess: true,
       },
       metadata: {
@@ -817,7 +817,7 @@ export class WorktreeWriter {
           name: discipline.name,
           category: discipline.category,
         },
-        vpId: vpCharter?.id,
+        orchestratorId: orchestratorCharter?.id,
         generatedAt: new Date().toISOString(),
       },
     };

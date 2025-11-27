@@ -12,9 +12,9 @@
 
 import type {
   CreateOrgConfig,
-  OrgSize,
-  OrgIndustry,
   OrganizationManifest,
+  OrgIndustry,
+  OrgSize,
 } from '../../types/index.js';
 
 // Note: GenesisEngine will be imported once fully implemented
@@ -58,12 +58,12 @@ export interface CreateOrgOptions {
 
   /**
    * Size tier of the organization.
-   * Determines default VP count and resource allocations.
+   * Determines default Orchestrator count and resource allocations.
    */
   size?: OrgSize;
 
   /**
-   * Number of VP nodes to provision.
+   * Number of Orchestrator nodes to provision.
    * Overrides the size-based default if provided.
    */
   nodeCount?: number;
@@ -153,7 +153,7 @@ export interface GenesisStats {
   /**
    * Total number of VPs generated.
    */
-  vpCount: number;
+  orchestratorCount: number;
 
   /**
    * Total number of disciplines generated.
@@ -195,7 +195,7 @@ export type GenerationPhase =
 // =============================================================================
 
 /**
- * Default VP count by organization size.
+ * Default Orchestrator count by organization size.
  */
 const DEFAULT_VP_COUNTS: Record<OrgSize, number> = {
   small: 2,
@@ -304,7 +304,7 @@ export async function promptForOrgConfig(
     industry,
     size,
     mission,
-    vpCount: existingOptions.nodeCount ?? DEFAULT_VP_COUNTS[size],
+    orchestratorCount: existingOptions.nodeCount ?? DEFAULT_VP_COUNTS[size],
     generateDisciplines: existingOptions.generateDisciplines ?? true,
     generateAgents: existingOptions.generateAgents ?? true,
     dryRun: existingOptions.dryRun ?? false,
@@ -399,7 +399,7 @@ export function displayResult(result: GenesisResult): void {
   // Statistics
   console.log('  Generation Statistics');
   console.log('  ' + '-'.repeat(40));
-  console.log(`  VPs:         ${stats.vpCount}`);
+  console.log(`  VPs:         ${stats.orchestratorCount}`);
   console.log(`  Disciplines: ${stats.disciplineCount}`);
   console.log(`  Agents:      ${stats.agentCount}`);
   console.log(`  Tools:       ${stats.toolCount}`);
@@ -552,7 +552,7 @@ export async function createOrgCommand(
         size: options.size ?? 'medium',
         mission:
           options.mission ?? `${options.name} - An AI-powered organization`,
-        vpCount:
+        orchestratorCount:
           options.nodeCount ?? DEFAULT_VP_COUNTS[options.size ?? 'medium'],
         generateDisciplines: options.generateDisciplines ?? true,
         generateAgents: options.generateAgents ?? true,
@@ -580,7 +580,7 @@ export async function createOrgCommand(
 
     // Calculate statistics
     const stats: GenesisStats = {
-      vpCount: manifest.vpRegistry.length,
+      orchestratorCount: manifest.orchestratorRegistry.length,
       disciplineCount: manifest.disciplineIds.length,
       agentCount: manifest.disciplineIds.length * 5, // Estimate: ~5 agents per discipline
       toolCount: manifest.disciplineIds.length * 3, // Estimate: ~3 tools per discipline
@@ -661,8 +661,8 @@ async function generateMockOrganization(
 
   // Generate VPs
   onProgress('generating-vps', 15);
-  const vpCount = config.vpCount ?? DEFAULT_VP_COUNTS[config.size];
-  const vpRegistry = generateMockVPs(vpCount, id);
+  const orchestratorCount = config.orchestratorCount ?? DEFAULT_VP_COUNTS[config.size];
+  const vpRegistry = generateMockVPs(orchestratorCount, id);
   await delay(300);
   onProgress('generating-vps', 30);
 
@@ -746,11 +746,11 @@ async function generateMockOrganization(
 }
 
 /**
- * Generates mock VP node mappings.
+ * Generates mock Orchestrator node mappings.
  *
  * @param count - Number of VPs to generate
  * @param orgId - Organization ID
- * @returns Array of VP node mappings
+ * @returns Array of Orchestrator node mappings
  */
 function generateMockVPs(
   count: number,
@@ -772,9 +772,9 @@ function generateMockVPs(
   return Array.from({ length: count }, (_, i) => {
     const role = vpRoles[i % vpRoles.length];
     return {
-      vpId: `vp-${role}-${String(i + 1).padStart(3, '0')}`,
+      vpId: `orchestrator-${role}-${String(i + 1).padStart(3, '0')}`,
       nodeId: `node-${orgId}-${String(i + 1).padStart(3, '0')}`,
-      hostname: `vp-${role}.cluster.internal`,
+      hostname: `orchestrator-${role}.cluster.internal`,
       status: 'provisioning' as const,
       assignedDisciplineId: `disc-${role}`,
       port: 8080 + i,

@@ -1,0 +1,12 @@
+# Playwright auth state - contains session cookies
+.auth/
+*.json
+
+# Playwright test results
+test-results/
+playwright-report/
+blob-report/
+downloads/
+
+# Traces
+trace.zip

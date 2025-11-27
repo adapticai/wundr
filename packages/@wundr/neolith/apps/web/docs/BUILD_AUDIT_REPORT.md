@@ -215,7 +215,7 @@ export default {
 | API Routes | 185 | `/api/workspaces/[workspaceId]/*` |
 | Workspace Pages | 30 | `/[workspaceId]/dashboard` |
 | Admin Pages | 11 | `/[workspaceId]/admin/*` |
-| VP Management | 25 | `/api/workspaces/[workspaceId]/vps/*` |
+| Orchestrator Management | 25 | `/api/workspaces/[workspaceId]/orchestrators/*` |
 | Channel/Messaging | 35 | `/[workspaceId]/channels/*` |
 | Auth Pages | 4 | `/login`, `/register`, etc. |
 | Workflows | 12 | `/[workspaceId]/workflows/*` |

@@ -1,7 +1,7 @@
 /**
  * @wundr/slack-agent - Starred Items Capability
  *
- * Provides starred items management for VP (Virtual Principal) agents
+ * Provides starred items management for Orchestrator (Virtual Principal) agents
  * operating as full users in Slack workspaces. Enables starring/unstarring
  * of messages, files, and channels for quick reference and bookmarking.
  *
@@ -328,7 +328,7 @@ export interface StarredItemsConfig {
 // =============================================================================
 
 /**
- * Manages starred items in Slack for VP agents.
+ * Manages starred items in Slack for Orchestrator agents.
  *
  * This class provides comprehensive starred items management including:
  * - Starring messages for quick reference

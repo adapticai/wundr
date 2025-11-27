@@ -1,7 +1,7 @@
 /**
  * Task Backlog API Validation Schemas
  *
- * Zod validation schemas for VP backlog-related API operations.
+ * Zod validation schemas for Orchestrator backlog-related API operations.
  * These schemas ensure type safety for backlog management endpoints.
  *
  * @module lib/validations/task-backlog
@@ -15,7 +15,7 @@ import { taskPriorityEnum, taskStatusEnum } from './task';
  * Schema for task assignment
  */
 export const assignTaskSchema = z.object({
-  /** ID of user being assigned (can be VP user) */
+  /** ID of user being assigned (can be Orchestrator user) */
   assigneeId: z.string().cuid('Invalid assignee ID format'),
 
   /** Type of assignee */
@@ -61,7 +61,7 @@ export const nextTaskFiltersSchema = z.object({
   /** Minimum priority to consider */
   minPriority: taskPriorityEnum.optional(),
 
-  /** VP capabilities to match against task requirements */
+  /** Orchestrator capabilities to match against task requirements */
   capabilities: z.array(z.string()).optional(),
 
   /** Consider tasks with deadline within X hours */
@@ -71,7 +71,7 @@ export const nextTaskFiltersSchema = z.object({
 export type NextTaskFiltersInput = z.infer<typeof nextTaskFiltersSchema>;
 
 /**
- * Schema for VP backlog filters
+ * Schema for Orchestrator backlog filters
  */
 export const vpBacklogFiltersSchema = z.object({
   /** Filter by status */
@@ -118,7 +118,7 @@ export const vpBacklogFiltersSchema = z.object({
 export type VPBacklogFiltersInput = z.infer<typeof vpBacklogFiltersSchema>;
 
 /**
- * Schema for adding task to VP backlog
+ * Schema for adding task to Orchestrator backlog
  */
 export const addBacklogTaskSchema = z.object({
   /** Task title/heading */

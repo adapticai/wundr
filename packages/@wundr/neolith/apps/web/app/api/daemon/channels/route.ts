@@ -1,7 +1,7 @@
 /**
  * Daemon Channels API Route
  *
- * Handles channel listing for VP daemon services.
+ * Handles channel listing for Orchestrator daemon services.
  *
  * Routes:
  * - GET /api/daemon/channels - Get channels accessible by the daemon
@@ -11,9 +11,8 @@
 
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import { NextResponse } from 'next/server';
-
 import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * JWT configuration
@@ -62,7 +61,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 /**
  * GET /api/daemon/channels - Get channels accessible by the daemon
  *
- * Retrieves all channels the VP daemon has membership in.
+ * Retrieves all channels the Orchestrator daemon has membership in.
  *
  * @param request - Next.js request with authentication
  * @returns List of channels with membership info
@@ -86,8 +85,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get VP user ID
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator user ID
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         userId: true,
@@ -102,7 +101,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get channels where VP is a member
+    // Get channels where Orchestrator is a member
     const memberships = await prisma.channelMember.findMany({
       where: {
         userId: vp.userId,

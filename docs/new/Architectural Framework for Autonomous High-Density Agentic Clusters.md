@@ -128,7 +128,7 @@ We utilize a conversational interface (CLI or Web) to generate the entire fleet 
 
 * Build a Node.js tool using the **Claude Agent SDK** or API.  
 * Input: Org Description.  
-* Output: A directory structure containing vps/, disciplines/, and agents/ JSON/Markdown definitions.
+* Output: A directory structure containing orchestrators/, disciplines/, and agents/ JSON/Markdown definitions.
 
 ### **6.2 Phase 2: The Context Compiler**
 

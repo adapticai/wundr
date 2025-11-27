@@ -51,7 +51,7 @@ According to `layout.tsx`, the following navigation items should be present:
   - Push Notifications (#push-notifications)
   - Weekly Digest (#weekly-digest)
   - Mention Alerts (#mention-alerts)
-  - VP Updates (#vp-updates)
+  - Orchestrator Updates (#orchestrator-updates)
 - Account toggles:
   - Two-Factor Authentication (#two-factor)
   - Show Online Status (#online-status)

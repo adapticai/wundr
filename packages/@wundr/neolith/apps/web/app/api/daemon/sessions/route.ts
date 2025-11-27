@@ -1,7 +1,7 @@
 /**
  * Daemon Session Management API Route
  *
- * Manages VP daemon session lifecycle including creation, updates, and termination.
+ * Manages Orchestrator daemon session lifecycle including creation, updates, and termination.
  * Sessions track daemon connection state and activity.
  *
  * Routes:
@@ -16,20 +16,19 @@
 import { redis } from '@neolith/core';
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
 import type {
+  DaemonErrorResponse,
   Session,
   SessionCreate,
-  SessionUpdate,
   SessionCreateResponse,
-  SessionUpdateResponse,
   SessionDeleteResponse,
   SessionListResponse,
-  DaemonErrorResponse,
+  SessionUpdate,
+  SessionUpdateResponse,
 } from '@/types/daemon';
-import type { NextRequest } from 'next/server';
 
 // =============================================================================
 // Configuration
@@ -190,7 +189,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get all sessions for this VP from Redis
+    // Get all sessions for this Orchestrator from Redis
     const sessions: Session[] = [];
 
     try {
@@ -289,7 +288,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const sessionData: SessionCreate = parseResult.data;
 
-    // Verify VP ownership
+    // Verify Orchestrator ownership
     if (sessionData.vpId !== token.vpId) {
       return NextResponse.json(
         createErrorResponse('Cannot create session for different VP', ERROR_CODES.FORBIDDEN),
@@ -297,8 +296,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Verify VP exists
-    const vp = await prisma.vP.findUnique({
+    // Verify Orchestrator exists
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: sessionData.vpId },
       select: { id: true, status: true },
     });

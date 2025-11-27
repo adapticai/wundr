@@ -2,13 +2,13 @@
 
 import { AlertCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { OrgChart } from '@/components/org-chart';
+import type { OrgNode } from '@/components/org-chart/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-
-import type { OrgNode } from '@/components/org-chart/types';
+import type { VPApiResponse } from '@/types/api';
 
 interface Workspace {
   id: string;
@@ -39,17 +39,17 @@ export default function OrgChartPage() {
         setWorkspace(workspaceData);
 
         // Fetch VPs for this workspace
-        const vpsRes = await fetch(`/api/workspaces/${workspaceId}/vps`);
+        const orchestratorsRes = await fetch(`/api/workspaces/${workspaceId}/orchestrators`);
         if (!vpsRes.ok) {
-          throw new Error('Failed to fetch Virtual Persons');
+          throw new Error('Failed to fetch Orchestrators');
         }
-        const vpsData = await vpsRes.json();
+        const orchestratorsData = await orchestratorsRes.json();
 
-        // Transform VP data to OrgNode format
-        const orgNodes: OrgNode[] = vpsData.vps?.map((vp: any) => ({
+        // Transform Orchestrator data to OrgNode format
+        const orgNodes: OrgNode[] = orchestratorsData.orchestrators?.map((vp: VPApiResponse) => ({
           id: vp.id,
           name: vp.title,
-          title: vp.description || 'Virtual Person',
+          title: vp.description || 'Orchestrator',
           discipline: vp.discipline || 'General',
           status: vp.status || 'OFFLINE',
           avatarUrl: vp.avatarUrl,
@@ -94,14 +94,14 @@ export default function OrgChartPage() {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Organization Chart</h1>
           <p className="text-stone-400 mt-2">
-            Visualize and manage your organization&apos;s Virtual Person hierarchy
+            Visualize and manage your organization&apos;s Orchestrator hierarchy
           </p>
         </div>
 
         <OrgChart
           workspaceId={workspaceId}
           orgName={workspace?.name || 'Organization'}
-          vps={vps}
+          orchestrators={vps}
         />
       </div>
     </div>

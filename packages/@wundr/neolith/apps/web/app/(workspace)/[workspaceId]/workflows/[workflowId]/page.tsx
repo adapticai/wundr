@@ -3,7 +3,9 @@
 import { ArrowLeft, Play, Pause, Trash2, Edit, RefreshCw, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { useWorkflow, useWorkflowExecutions } from '@/hooks/use-workflows';
 import { cn } from '@/lib/utils';
@@ -25,6 +27,7 @@ export default function WorkflowDetailPage() {
   const router = useRouter();
   const workspaceId = params?.workspaceId as string;
   const workflowId = params?.workflowId as string;
+  const { setPageHeader } = usePageHeader();
 
   // State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -51,6 +54,13 @@ export default function WorkflowDetailPage() {
     cancelExecution,
     refetch: refetchExecutions,
   } = useWorkflowExecutions(workspaceId, workflowId);
+
+  // Set page header
+  useEffect(() => {
+    if (workflow) {
+      setPageHeader(workflow.name, workflow.description);
+    }
+  }, [workflow, setPageHeader]);
 
   // Handlers
   const handleToggleStatus = useCallback(async () => {
@@ -152,33 +162,23 @@ export default function WorkflowDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-4">
-            <Link
-              href={`/${workspaceId}/workflows`}
-              className="rounded-md p-2 hover:bg-accent"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-foreground">{workflow.name}</h1>
-                <span
-                  className={cn(
-                    'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
-                    statusConfig.bgColor,
-                    statusConfig.color,
-                  )}
-                >
-                  {statusConfig.label}
-                </span>
-              </div>
-              {workflow.description && (
-                <p className="mt-1 text-sm text-muted-foreground">{workflow.description}</p>
-              )}
-            </div>
-          </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/${workspaceId}/workflows`}
+            className="rounded-md p-2 hover:bg-accent"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <span
+            className={cn(
+              'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
+              statusConfig.bgColor,
+              statusConfig.color,
+            )}
+          >
+            {statusConfig.label}
+          </span>
         </div>
 
         {/* Actions */}
@@ -186,7 +186,7 @@ export default function WorkflowDetailPage() {
           <button
             type="button"
             onClick={handleExecute}
-            disabled={isExecuting || workflow.status === 'error'}
+            disabled={isExecuting || workflow.status === 'archived' || workflow.status === 'inactive'}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {isExecuting ? (

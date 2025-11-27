@@ -1,7 +1,7 @@
 /**
  * Daemon Unregistration API Route
  *
- * Handles daemon unregistration for VP presence.
+ * Handles daemon unregistration for Orchestrator presence.
  *
  * Routes:
  * - POST /api/daemon/unregister - Unregister a daemon
@@ -9,10 +9,10 @@
  * @module app/api/daemon/unregister/route
  */
 
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 // =============================================================================
 // Validation Schemas

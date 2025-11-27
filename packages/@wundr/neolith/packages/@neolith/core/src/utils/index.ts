@@ -21,8 +21,8 @@ import * as crypto from 'crypto';
  *
  * @example
  * ```typescript
- * generateSlug('John Doe - VP Engineering');
- * // Returns: 'john-doe-vp-engineering'
+ * generateSlug('John Doe - OrchestratorEngineering');
+ * // Returns: 'john-doe-orchestrator-engineering'
  *
  * generateSlug('Test User', { appendUniqueSuffix: true });
  * // Returns: 'test-user-a1b2c3'
@@ -64,9 +64,9 @@ export function generateSlug(
 }
 
 /**
- * Generates a unique email address for a VP.
+ * Generates a unique email address for a Orchestrator.
  *
- * @param name - The VP's name
+ * @param name - The Orchestrator's name
  * @param organizationSlug - The organization's slug
  * @param domain - The email domain (default: 'vp.genesis.local')
  * @returns A unique email address

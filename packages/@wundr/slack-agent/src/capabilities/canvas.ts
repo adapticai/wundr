@@ -1,7 +1,7 @@
 /**
  * Slack Canvas Capability
  *
- * Provides canvas (collaborative document) functionality for the VP (Virtual Principal) agent
+ * Provides canvas (collaborative document) functionality for the Orchestrator (Virtual Principal) agent
  * to work with Slack canvases in workspaces like a human user.
  *
  * @module @wundr/slack-agent/capabilities/canvas
@@ -194,7 +194,7 @@ function buildChange(change: CanvasChange): Record<string, unknown> {
 /**
  * SlackCanvasCapability - Manages Slack canvases
  *
- * Provides functionality for the VP agent to create, edit, delete, and share
+ * Provides functionality for the Orchestrator agent to create, edit, delete, and share
  * canvases in Slack workspaces.
  *
  * @example

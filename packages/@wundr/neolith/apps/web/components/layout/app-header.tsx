@@ -11,10 +11,32 @@ interface AppHeaderProps {
     email?: string | null;
     image?: string | null;
   } | null;
+  /** Compact mode for use inside SidebarInset header */
+  compact?: boolean;
 }
 
-export function AppHeader({ user }: AppHeaderProps) {
+export function AppHeader({ user, compact = false }: AppHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Compact mode: render only the action buttons without the header wrapper
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2">
+        {/* Notifications */}
+        <button
+          type="button"
+          className="relative flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent"
+          aria-label="Notifications"
+        >
+          <BellIcon />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
+        </button>
+
+        {/* Theme Toggle */}
+        <ThemeToggle variant="compact" />
+      </div>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -25,15 +47,6 @@ export function AppHeader({ user }: AppHeaderProps) {
 
       {/* Right Side Actions */}
       <div className="flex items-center gap-4">
-        {/* Search */}
-        <button
-          type="button"
-          className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent"
-          aria-label="Search"
-        >
-          <SearchIcon />
-        </button>
-
         {/* Notifications */}
         <button
           type="button"
@@ -130,25 +143,6 @@ function MenuItem({ href, label, icon }: MenuItemProps) {
 }
 
 // Icons
-function SearchIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
 function BellIcon() {
   return (
     <svg

@@ -1,7 +1,7 @@
 /**
  * Channel Intelligence Validation Schemas
  *
- * Zod validation schemas for VP channel intelligence operations.
+ * Zod validation schemas for Orchestrator channel intelligence operations.
  * These schemas ensure type safety for channel recommendations,
  * activity tracking, and relevance scoring.
  *
@@ -26,7 +26,7 @@ export const channelActivityEventEnum = z.enum([
 export type ChannelActivityEventType = z.infer<typeof channelActivityEventEnum>;
 
 /**
- * Schema for tracking VP channel activity
+ * Schema for tracking Orchestrator channel activity
  */
 export const trackChannelActivitySchema = z.object({
   /** Type of activity event */
@@ -42,7 +42,7 @@ export const trackChannelActivitySchema = z.object({
 export type TrackChannelActivityInput = z.infer<typeof trackChannelActivitySchema>;
 
 /**
- * Schema for VP channel membership filters
+ * Schema for Orchestrator channel membership filters
  */
 export const vpChannelFiltersSchema = z.object({
   /** Include archived channels */
@@ -64,7 +64,7 @@ export const vpChannelFiltersSchema = z.object({
 export type VPChannelFiltersInput = z.infer<typeof vpChannelFiltersSchema>;
 
 /**
- * Schema for auto-joining VP to channels
+ * Schema for auto-joining Orchestrator to channels
  */
 export const autoJoinChannelsSchema = z.object({
   /** Minimum relevance score (0-1) to auto-join */
@@ -108,7 +108,7 @@ export const channelRecommendationFiltersSchema = z.object({
   /** Maximum number of recommendations */
   limit: z.coerce.number().int().positive().max(50).default(10),
 
-  /** Include channels VP previously left */
+  /** Include channels Orchestrator previously left */
   includePreviouslyLeft: z.coerce.boolean().optional().default(false),
 
   /** Filter by channel type */
@@ -132,7 +132,7 @@ export const activityMetricsFiltersSchema = z.object({
   /** End date for activity range */
   endDate: z.string().datetime().optional(),
 
-  /** Include channels VP has left */
+  /** Include channels Orchestrator has left */
   includeLeftChannels: z.coerce.boolean().optional().default(false),
 
   /** Minimum message count to include channel */
@@ -159,10 +159,10 @@ export type ActivityMetricsFiltersInput = z.infer<typeof activityMetricsFiltersS
  * Schema for channel relevance calculation
  */
 export const calculateRelevanceSchema = z.object({
-  /** VP ID to calculate relevance for */
-  vpId: z.string().cuid('Invalid VP ID'),
+  /** OrchestratorID to calculate relevance for */
+  vpId: z.string().cuid('Invalid OrchestratorID'),
 
-  /** Optional: Override VP discipline for calculation */
+  /** Optional: Override Orchestrator discipline for calculation */
   disciplineOverride: z.string().max(100).optional(),
 
   /** Include explanation of score calculation */
@@ -237,7 +237,7 @@ export const channelWithRelevanceSchema = z.object({
 export type ChannelWithRelevance = z.infer<typeof channelWithRelevanceSchema>;
 
 /**
- * Response schema for VP channel activity metrics
+ * Response schema for Orchestrator channel activity metrics
  */
 export const channelActivityMetricsSchema = z.object({
   channelId: z.string(),

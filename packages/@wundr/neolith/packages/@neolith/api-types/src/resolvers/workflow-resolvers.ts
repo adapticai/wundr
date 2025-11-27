@@ -908,7 +908,7 @@ function getBuiltInTemplates(): WorkflowTemplate[] {
     {
       id: 'template_vp_autorespond',
       name: 'VP Auto-Response',
-      description: 'Automatically invoke VP when certain conditions are met',
+      description: 'Automatically invoke Orchestrator when certain conditions are met',
       category: 'CUSTOM',
       trigger: { type: 'MESSAGE_KEYWORD', config: { keywords: ['@vp', 'help'] } },
       actions: [

@@ -26,28 +26,28 @@
  * ```
  */
 
-import {
-  DEFAULT_ANALYTICS_BATCH_SIZE,
-  DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS,
-  ANALYTICS_REDIS_KEYS,
-  ANALYTICS_REDIS_TTL_SECONDS,
-} from '../types/analytics';
 
 import type {
   AnalyticsEvent,
+  AnalyticsPeriod,
   AnalyticsQuery,
-  UsageMetrics,
-  MessageMetrics,
-  UserMetrics,
+  CallMetrics,
   ChannelMetrics,
   FileMetrics,
-  CallMetrics,
-  VPMetrics,
-  TrendData,
-  AnalyticsPeriod,
-  InsightReport,
   InsightHighlight,
   InsightRecommendation,
+  InsightReport,
+  MessageMetrics,
+  TrendData,
+  UsageMetrics,
+  UserMetrics,
+  VPMetrics,
+} from '../types/analytics';
+import {
+  ANALYTICS_REDIS_KEYS,
+  ANALYTICS_REDIS_TTL_SECONDS,
+  DEFAULT_ANALYTICS_BATCH_SIZE,
+  DEFAULT_ANALYTICS_FLUSH_INTERVAL_MS,
 } from '../types/analytics';
 
 // =============================================================================
@@ -213,7 +213,7 @@ export interface AnalyticsDatabaseClient {
       _avg?: { fileSize: boolean };
     }): Promise<AttachmentAggregateResult>;
   };
-  /** VP count operations */
+  /** Orchestrator count operations */
   vP: {
     count(args: { where: VPWhereInput }): Promise<number>;
   };
@@ -370,7 +370,7 @@ return;
           data: events.map((e) => ({
             workspaceId: e.workspaceId,
             userId: e.userId,
-            vpId: e.vpId,
+            vpId: e.orchestratorId,
             eventType: e.eventType,
             eventData: JSON.stringify(e.eventData),
             sessionId: e.sessionId,
@@ -725,13 +725,13 @@ return;
   }
 
   /**
-   * Get VP metrics
+   * Get Orchestrator metrics
    */
   private async getVPMetrics(
     workspaceId: string,
     startDate: Date,
     endDate: Date,
-  ): Promise<VPMetrics> {
+  ): Promise<OrchestratorMetrics> {
     const [totalVPs, activeVPs, vpMessages] = await Promise.all([
       this.prisma.vP.count({ where: { workspaceId } }),
       this.prisma.vP.count({ where: { workspaceId, status: 'active' } }),
@@ -761,8 +761,8 @@ return;
       tasksCompleted: 0,
       averageResponseTime: 0,
       byVP: vpMessages.map((v) => ({
-        vpId: v.vpId,
-        vpName: v.vpName,
+        vpId: v.orchestratorId,
+        vpName: v.orchestratorName,
         discipline: v.discipline,
         messagesSent: Number(v.messagesSent),
         tasksCompleted: 0,
@@ -879,12 +879,12 @@ return;
       }
     }
 
-    // VP utilization
-    if (metrics.vp.totalVPs > 0 && metrics.vp.activeVPs < metrics.vp.totalVPs) {
+    // Orchestrator utilization
+    if (metrics.orchestrator.totalVPs > 0 && metrics.orchestrator.activeVPs < metrics.orchestrator.totalVPs) {
       recommendations.push({
         priority: 'low',
         title: 'Activate VPs',
-        description: `${metrics.vp.totalVPs - metrics.vp.activeVPs} VPs are not currently active. Review their configuration.`,
+        description: `${metrics.orchestrator.totalVPs - metrics.orchestrator.activeVPs} VPs are not currently active. Review their configuration.`,
       });
     }
 

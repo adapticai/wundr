@@ -1,7 +1,9 @@
 'use client';
 
 import { useParams, useSearchParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { useRoles } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
@@ -17,6 +19,12 @@ export default function AdminRolesPage() {
   const searchParams = useSearchParams();
   const workspaceId = params.workspaceId as string;
   const showCreateOnLoad = searchParams.get('create') === 'true';
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Roles & Permissions', 'Define custom roles and permissions for your team');
+  }, [setPageHeader]);
 
   const { roles, isLoading, createRole, updateRole, deleteRole } = useRoles(workspaceId);
   const [showCreateModal, setShowCreateModal] = useState(showCreateOnLoad);
@@ -58,7 +66,7 @@ export default function AdminRolesPage() {
     { id: 'messages.delete', name: 'Delete Messages', description: 'Delete any message in the workspace' },
     { id: 'messages.pin', name: 'Pin Messages', description: 'Pin messages in channels' },
     { id: 'files.delete', name: 'Delete Files', description: 'Delete any file in the workspace' },
-    { id: 'vps.manage', name: 'Manage VPs', description: 'Create, edit, and manage Virtual Persons' },
+    { id: 'vps.manage', name: 'Manage VPs', description: 'Create, edit, and manage Orchestrators' },
     { id: 'workflows.manage', name: 'Manage Workflows', description: 'Create and edit automation workflows' },
     { id: 'settings.view', name: 'View Settings', description: 'View workspace settings' },
     { id: 'settings.edit', name: 'Edit Settings', description: 'Modify workspace settings' },
@@ -68,14 +76,8 @@ export default function AdminRolesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Roles & Permissions</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Define custom roles and permissions for your team
-          </p>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => setShowCreateModal(true)}

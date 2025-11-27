@@ -167,12 +167,12 @@ export async function isTaskReadyForRetry(taskId: string): Promise<boolean> {
 /**
  * Get tasks ready for retry
  *
- * @param vpId - Optional VP filter
+ * @param orchestratorId - Optional Orchestrator filter
  * @param workspaceId - Optional workspace filter
  * @returns Tasks ready to be retried
  */
-export async function getTasksReadyForRetry(vpId?: string, workspaceId?: string) {
-  const where: any = {
+export async function getTasksReadyForRetry(orchestratorId?: string, workspaceId?: string) {
+  const where: Prisma.taskWhereInput = {
     status: 'TODO',
     metadata: {
       path: ['retryCount'],
@@ -180,8 +180,8 @@ export async function getTasksReadyForRetry(vpId?: string, workspaceId?: string)
     },
   };
 
-  if (vpId) {
-    where.vpId = vpId;
+  if (orchestratorId) {
+    where.orchestratorIdestorchestratorIdrId = orchestratorId;
   }
   if (workspaceId) {
     where.workspaceId = workspaceId;
@@ -193,7 +193,7 @@ export async function getTasksReadyForRetry(vpId?: string, workspaceId?: string)
       id: true,
       title: true,
       metadata: true,
-      vpId: true,
+      orchestratorId: true,
       workspaceId: true,
     },
   });

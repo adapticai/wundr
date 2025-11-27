@@ -1,7 +1,7 @@
 /**
  * @genesis/core
  *
- * Core service layer for Genesis App providing VP management,
+ * Core service layer for Genesis App providing Orchestrator management,
  * organization, workspace, channel, discipline services,
  * service account operations, and business logic.
  *
@@ -10,35 +10,35 @@
  * @example
  * Basic usage:
  * ```typescript
- * import { vpService, createVPService } from '@genesis/core';
+ * import { orchestratorService, createOrchestratorService } from '@genesis/core';
  *
  * // Use the default service instance
- * const vp = await vpService.createVP({
+ * const orchestrator = await orchestratorService.createOrchestrator({
  *   name: 'Alex Chen',
  *   discipline: 'Engineering',
  *   role: 'VP of Engineering',
  *   organizationId: 'org_123',
  * });
  *
- * // Generate API key for the VP
- * const { key } = await vpService.generateAPIKey(vp.id);
+ * // Generate API key for the Orchestrator
+ * const { key } = await orchestratorService.generateAPIKey(orchestrator.id);
  * console.log('API Key (save this!):', key);
  *
  * // Validate an API key
- * const result = await vpService.validateAPIKey(key);
+ * const result = await orchestratorService.validateAPIKey(key);
  * if (result.valid) {
- *   console.log('VP:', result.vp?.user.name);
+ *   console.log('Orchestrator:', result.orchestrator?.user.name);
  * }
  * ```
  *
  * @example
  * Custom database instance:
  * ```typescript
- * import { createVPService } from '@genesis/core';
+ * import { createOrchestratorService } from '@genesis/core';
  * import { PrismaClient } from '@neolith/database';
  *
  * const customPrisma = new PrismaClient();
- * const service = createVPService(customPrisma);
+ * const service = createOrchestratorService(customPrisma);
  * ```
  */
 
@@ -47,10 +47,10 @@
 // =============================================================================
 
 export {
-  // VP Service
-  VPServiceImpl,
-  createVPService,
-  vpService,
+  // OrchestratorService
+  OrchestratorServiceImpl,
+  createOrchestratorService,
+  orchestratorService,
 
   // Message Service
   MessageServiceImpl,
@@ -84,7 +84,7 @@ export {
   presenceService,
 
   // Interfaces
-  type VPService,
+  type OrchestratorService,
   type ServiceAccountService,
   type MessageService,
   type ThreadService,
@@ -486,16 +486,16 @@ export {
 // =============================================================================
 
 export type {
-  // Core VP types
-  VPWithUser,
-  VPCharter,
-  VPPersonality,
-  VPCommunicationPreferences,
-  VPOperationalConfig,
-  VPWorkHours,
-  VPEscalationConfig,
+  // Core Orchestrator types
+  OrchestratorWithUser,
+  OrchestratorCharter,
+  OrchestratorPersonality,
+  OrchestratorCommunicationPreferences,
+  OrchestratorOperationalConfig,
+  OrchestratorWorkHours,
+  OrchestratorEscalationConfig,
 
-  // VP Input types
+  // OrchestratorInput types
   CreateVPInput,
   UpdateVPInput,
 
@@ -504,15 +504,15 @@ export type {
   APIKeyGenerationResult,
   APIKeyRotationResult,
   APIKeyValidationResult,
-  VPServiceAccountConfig,
+  OrchestratorServiceAccountConfig,
 
-  // VP Query types
+  // OrchestratorQuery types
   ListVPsOptions,
   PaginatedVPResult,
 
-  // VP Event types
-  VPEventType,
-  VPEvent,
+  // OrchestratorEvent types
+  OrchestratorEventType,
+  OrchestratorEvent,
 
   // Utility types
   SlugOptions,
@@ -576,7 +576,7 @@ export type {
   // Discipline types
   Discipline,
   DisciplineWithVPs,
-  VPBasic,
+  OrchestratorBasic,
   CreateDisciplineInput,
   UpdateDisciplineInput,
   ListDisciplinesOptions,
@@ -587,18 +587,18 @@ export type {
   DeviceType,
   UserPresence,
   PresenceMetadata,
-  VPPresence,
+  OrchestratorPresence,
   DaemonInfo,
   DaemonMetrics,
   ChannelPresence,
   PresenceEventType,
   BasePresenceEvent,
   UserPresenceEvent,
-  VPPresenceEvent,
+  OrchestratorPresenceEvent,
   ChannelPresenceEvent,
   PresenceEvent,
   PresenceCallback,
-  VPPresenceCallback,
+  OrchestratorPresenceCallback,
   ChannelPresenceCallback,
   UnsubscribeFunction,
   PresenceConfig,
@@ -617,8 +617,8 @@ export type {
   HeartbeatEvent,
   DaemonRegisteredEvent,
   DaemonUnregisteredEvent,
-  VPUnhealthyEvent,
-  VPRecoveredEvent,
+  OrchestratorUnhealthyEvent,
+  OrchestratorRecoveredEvent,
   OnVPUnhealthyCallback,
   OnVPRecoveredCallback,
   OnDaemonRegisteredCallback,
@@ -667,7 +667,7 @@ export type {
   KeyGenerationOptions,
 
   // Re-exported database types
-  VP,
+  Orchestrator,
   User,
   Organization,
   Workspace,
@@ -680,7 +680,7 @@ export type {
   OrganizationMember,
   WorkspaceMember,
   ChannelMember,
-  VPStatus,
+  OrchestratorStatus,
   UserStatus,
   OrganizationRole,
   WorkspaceRole,
@@ -790,7 +790,7 @@ export type {
   ChannelMetrics,
   FileMetrics,
   CallMetrics,
-  VPMetrics,
+  OrchestratorMetrics,
   TrendData,
   InsightReport,
   InsightHighlight,
@@ -981,7 +981,7 @@ export type {
   MemberTriggerConfig,
   FileUploadTriggerConfig,
   ReactionTriggerConfig,
-  VPResponseTriggerConfig,
+  OrchestratorResponseTriggerConfig,
   ManualTriggerConfig,
   TriggerConfig,
   WorkflowTrigger,
@@ -1140,11 +1140,11 @@ export type {
 } from './types';
 
 export {
-  // VP Type guards
+  // OrchestratorType guards
   isVPCharter,
-  isVPServiceAccountConfig,
+  isOrchestratorServiceAccountConfig,
 
-  // VP Constants
+  // OrchestratorConstants
   DEFAULT_VP_CHARTER,
 
   // Message Type guards
@@ -1433,12 +1433,12 @@ export {
   // Base error
   GenesisError,
 
-  // VP errors
-  VPNotFoundError,
-  VPAlreadyExistsError,
-  VPValidationError,
-  VPOperationNotPermittedError,
-  VPInvalidStateError,
+  // Orchestrator errors
+  OrchestratorNotFoundError,
+  OrchestratorAlreadyExistsError,
+  OrchestratorValidationError,
+  OrchestratorOperationNotPermittedError,
+  OrchestratorInvalidStateError,
 
   // API key errors
   APIKeyError,
@@ -1468,7 +1468,7 @@ export {
 export {
   // Slug generation
   generateSlug,
-  generateVPEmail,
+  generateOrchestratorEmail,
 
   // ID generation
   generateShortId,

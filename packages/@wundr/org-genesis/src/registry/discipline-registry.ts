@@ -336,7 +336,7 @@ export class DisciplineRegistry {
    * existed with the given ID.
    *
    * Note: This does not automatically remove associated agents or update
-   * parent VP references. Ensure proper cleanup is performed by the caller.
+   * parent Orchestrator references. Ensure proper cleanup is performed by the caller.
    *
    * @param id - The unique identifier of the discipline to remove
    * @returns True if the discipline was removed, false if not found

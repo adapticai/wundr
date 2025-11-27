@@ -43,7 +43,7 @@ Manual code analysis has been completed for the dashboard page. Playwright MCP t
 - Team Members (total count)
 - Channels (total count)
 - Workflows (total count)
-- Virtual Persons (VP count)
+- Orchestrators (VP count)
 
 **Implementation Details:**
 - Fetches from stats API with `includeActivity=false` parameter
@@ -96,7 +96,7 @@ Manual code analysis has been completed for the dashboard page. Playwright MCP t
 
 **Navigation Items:**
 - Dashboard
-- Virtual Persons
+- Orchestrators
 - Agents
 - Workflows
 - Deployments
@@ -329,7 +329,7 @@ When Playwright is available or manual testing is performed:
 - [ ] Team Members count displays correctly
 - [ ] Channels count displays correctly
 - [ ] Workflows count displays correctly
-- [ ] Virtual Persons count displays correctly
+- [ ] Orchestrators count displays correctly
 - [ ] Zero state shows "0" not empty
 - [ ] Error state displays user-friendly message
 - [ ] Loading skeleton appears during fetch
@@ -410,7 +410,7 @@ When Playwright is available or manual testing is performed:
    ```typescript
    // Only fetch needed fields
    const response = await fetch(
-     `/api/workspaces/${workspaceId}/dashboard/stats?fields=members.total,channels.total,workflows.total,members.vpCount&includeActivity=false`
+     `/api/workspaces/${workspaceId}/dashboard/stats?fields=members.total,channels.total,workflows.total,members.orchestratorCount&includeActivity=false`
    );
    ```
 
@@ -506,7 +506,7 @@ test.describe('Dashboard Page Tests', () => {
       await expect(statsWidget.locator('text=Team Members')).toBeVisible();
       await expect(statsWidget.locator('text=Channels')).toBeVisible();
       await expect(statsWidget.locator('text=Workflows')).toBeVisible();
-      await expect(statsWidget.locator('text=Virtual Persons')).toBeVisible();
+      await expect(statsWidget.locator('text=Orchestrators')).toBeVisible();
     });
 
     test('should display numeric values for stats', async ({ page }) => {
@@ -635,7 +635,7 @@ test.describe('Dashboard Page Tests', () => {
   test.describe('Sidebar Navigation', () => {
     test('should show all navigation items', async ({ page }) => {
       await expect(page.locator('text=Dashboard')).toBeVisible();
-      await expect(page.locator('text=Virtual Persons')).toBeVisible();
+      await expect(page.locator('text=Orchestrators')).toBeVisible();
       await expect(page.locator('text=Agents')).toBeVisible();
       await expect(page.locator('text=Workflows')).toBeVisible();
       await expect(page.locator('text=Deployments')).toBeVisible();

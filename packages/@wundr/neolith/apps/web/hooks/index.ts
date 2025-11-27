@@ -67,21 +67,29 @@ export type {
 } from './use-admin';
 
 // =============================================================================
-// VP Hooks
+// OrchestratorHooks
 // =============================================================================
-export { useVP, useVPs, useVPMutations } from './use-vp';
+export { useOrchestrator, useOrchestrators, useOrchestratorMutations } from './use-orchestrator';
 export type {
-  UseVPReturn,
-  UseVPsReturn,
-  UseVPMutationsReturn,
-} from './use-vp';
+  UseOrchestratorReturn,
+  UseOrchestratorsReturn,
+  UseOrchestratorMutationsReturn,
+} from './use-orchestrator';
 
-export { useVPPresence, useMultipleVPPresence } from './use-vp-presence';
+export { useOrchestratorPresence, useMultipleOrchestratorPresence } from './use-orchestrator-presence';
 export type {
-  VPPresenceData,
-  UseVPPresenceOptions,
-  UseVPPresenceReturn,
-} from './use-vp-presence';
+  OrchestratorPresenceData,
+  UseOrchestratorPresenceOptions,
+  UseOrchestratorPresenceReturn,
+} from './use-orchestrator-presence';
+
+export { useOrchestratorTasks } from './use-orchestrator-tasks';
+export type {
+  OrchestratorTask,
+  OrchestratorTaskMetrics,
+  UseOrchestratorTasksOptions,
+  UseOrchestratorTasksReturn,
+} from './use-orchestrator-tasks';
 
 // =============================================================================
 // Chat Hooks
@@ -177,7 +185,8 @@ export type {
   UserMetrics,
   ChannelMetrics,
   FileMetrics,
-  VPMetrics,
+  OrchestratorMetrics,
+  OrchestratorActivity,
   UseMetricsReturn,
   RealTimeStats,
   RealTimeStatsData,
@@ -258,20 +267,20 @@ export {
   useMultiplePresence,
   useChannelPresence,
   useSetStatus,
-  useVPHealth,
-  useVPHealthList,
+  useOrchestratorHealth,
+  useOrchestratorHealthList,
   usePresenceHeartbeat,
   usePresenceSubscription,
 } from './use-presence';
 export type {
   UserPresence,
-  VPHealthStatus,
+  OrchestratorHealthStatus,
   UseUserPresenceReturn,
   UseMultiplePresenceReturn,
   UseChannelPresenceReturn,
   UseSetStatusReturn,
-  UseVPHealthReturn,
-  UseVPHealthListReturn,
+  UseOrchestratorHealthReturn,
+  UseOrchestratorHealthListReturn,
   UsePresenceSubscriptionReturn,
 } from './use-presence';
 

@@ -18,7 +18,7 @@ import type {
   CompiledSessionConfig,
   SessionContext,
   DisciplinePack,
-  VPCharter,
+  OrchestratorCharter,
   AgentDefinition,
   MCPServerConfig,
   HookConfig,
@@ -103,9 +103,9 @@ export interface CompilationAssets {
   agents: AgentDefinition[];
 
   /**
-   * VP charters for supervisory configuration.
+   * Orchestrator charters for supervisory configuration.
    */
-  charters: VPCharter[];
+  charters: OrchestratorCharter[];
 
   /**
    * MCP server configurations for tool availability.
@@ -416,7 +416,7 @@ const DISCIPLINE_KEYWORDS: Record<string, string[]> = {
  * const config = await compiler.compile({
  *   discipline: 'engineering',
  *   taskDescription: 'Implement OAuth2 authentication',
- *   vpId: 'vp-engineering-001',
+ *   vpId: 'orchestrator-engineering-001',
  * });
  *
  * // Compile and write to worktree
@@ -424,7 +424,7 @@ const DISCIPLINE_KEYWORDS: Record<string, string[]> = {
  *   {
  *     discipline: 'engineering',
  *     taskDescription: 'Add REST API endpoints',
- *     vpId: 'vp-engineering-001',
+ *     vpId: 'orchestrator-engineering-001',
  *   },
  *   '/path/to/repo'
  * );
@@ -480,7 +480,7 @@ export class ContextCompiler {
    * 3. Synthesis to merge assets into a cohesive configuration
    * 4. Validation to ensure the configuration is valid
    *
-   * @param request - The compilation request containing discipline, task, and VP info
+   * @param request - The compilation request containing discipline, task, and Orchestrator info
    * @returns Promise resolving to the compiled session configuration
    * @throws Error if compilation fails or validation errors are found
    *
@@ -489,7 +489,7 @@ export class ContextCompiler {
    * const config = await compiler.compile({
    *   discipline: 'engineering',
    *   taskDescription: 'Implement user authentication with OAuth2',
-   *   vpId: 'vp-engineering-001',
+   *   vpId: 'orchestrator-engineering-001',
    *   additionalAgents: ['security-reviewer'],
    * });
    * ```
@@ -553,7 +553,7 @@ export class ContextCompiler {
    *   {
    *     discipline: 'engineering',
    *     taskDescription: 'Add payment processing',
-   *     vpId: 'vp-engineering-001',
+   *     vpId: 'orchestrator-engineering-001',
    *   },
    *   '/Users/dev/my-project'
    * );
@@ -739,7 +739,7 @@ export class ContextCompiler {
     }
     const agents = await this.loadAgents(Array.from(agentIds));
 
-    // Load VP charters for disciplines
+    // Load Orchestrator charters for disciplines
     const vpIds = new Set<string>();
     for (const discipline of disciplines) {
       if (discipline.parentVpId) {
@@ -1212,22 +1212,22 @@ export class ContextCompiler {
   }
 
   /**
-   * Loads VP charters by their IDs.
+   * Loads Orchestrator charters by their IDs.
    *
    * @internal
-   * @param vpIds - Array of VP IDs to load
-   * @returns Promise resolving to loaded VP charters
+   * @param vpIds - Array of Orchestrator IDs to load
+   * @returns Promise resolving to loaded Orchestrator charters
    */
-  private async loadCharters(vpIds: string[]): Promise<VPCharter[]> {
+  private async loadCharters(vpIds: string[]): Promise<OrchestratorCharter[]> {
     // Stub implementation - actual loading from registry
-    const charters: VPCharter[] = [];
+    const charters: OrchestratorCharter[] = [];
 
     for (const id of vpIds) {
       charters.push({
         id,
         tier: 1,
         identity: {
-          name: `VP ${id}`,
+          name: `Orchestrator ${id}`,
           slug: id,
           persona: 'A professional virtual persona managing organizational tasks',
         },
@@ -1476,7 +1476,7 @@ export class ContextCompiler {
  * const config = await compiler.compile({
  *   discipline: 'engineering',
  *   taskDescription: 'Implement new feature',
- *   vpId: 'vp-001',
+ *   vpId: 'orchestrator-001',
  * });
  * ```
  */
@@ -1495,7 +1495,7 @@ export type {
   CompiledSessionConfig,
   SessionContext,
   DisciplinePack,
-  VPCharter,
+  OrchestratorCharter,
   AgentDefinition,
   MCPServerConfig,
   HookConfig,

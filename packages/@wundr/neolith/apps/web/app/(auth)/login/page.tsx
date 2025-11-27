@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   /**
    * Handles OAuth sign-in with the specified provider.
@@ -27,6 +28,7 @@ export default function LoginPage() {
    */
   const handleOAuthSignIn = async (provider: string) => {
     setIsLoading(true);
+    setError('');
     try {
       await signIn(provider, { callbackUrl: '/dashboard' });
     } catch {
@@ -37,18 +39,28 @@ export default function LoginPage() {
 
   /**
    * Handles email/password form submission.
-   * Currently a placeholder for future credential-based auth.
    */
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+
     try {
-      await signIn('credentials', {
+      const result = await signIn('credentials', {
         email,
         password,
-        callbackUrl: '/dashboard',
+        redirect: false,
       });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+        setIsLoading(false);
+      } else if (result?.ok) {
+        // Redirect to dashboard on success
+        window.location.href = '/dashboard';
+      }
     } catch {
+      setError('An error occurred. Please try again.');
       setIsLoading(false);
     }
   };
@@ -99,6 +111,13 @@ export default function LoginPage() {
           </span>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+          {error}
+        </div>
+      )}
 
       {/* Email/Password Form */}
       <form onSubmit={handleEmailSignIn} className='space-y-4'>

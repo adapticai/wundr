@@ -1,19 +1,18 @@
 /**
  * Daemon Configuration API Route
  *
- * Handles configuration retrieval for VP daemon services.
+ * Handles configuration retrieval for Orchestrator daemon services.
  *
  * Routes:
- * - GET /api/daemon/config - Get VP configuration
+ * - GET /api/daemon/config - Get Orchestrator configuration
  *
  * @module app/api/daemon/config/route
  */
 
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import { NextResponse } from 'next/server';
-
 import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * JWT configuration
@@ -61,13 +60,13 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 }
 
 /**
- * GET /api/daemon/config - Get VP configuration
+ * GET /api/daemon/config - Get Orchestrator configuration
  *
- * Retrieves the full configuration for the VP daemon including
+ * Retrieves the full configuration for the Orchestrator daemon including
  * charter, capabilities, and operational settings.
  *
  * @param request - Next.js request with authentication
- * @returns VP configuration object
+ * @returns Orchestrator configuration object
  *
  * @example
  * ```
@@ -88,8 +87,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get VP with full details
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator with full details
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       include: {
         user: {

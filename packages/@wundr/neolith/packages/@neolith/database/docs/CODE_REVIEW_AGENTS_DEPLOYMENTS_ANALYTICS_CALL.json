@@ -65,7 +65,7 @@
           "category": "missing_package_integration",
           "line": 1,
           "title": "No @wundr package integration",
-          "description": "Agents likely need integration with @wundr/vp-daemon or similar packages",
+          "description": "Agents likely need integration with @wundr/orchestrator-daemon or similar packages",
           "impact": "Missing the core agent functionality that should be imported",
           "recommendation": "Check @wundr packages for agent services and integrate them",
           "estimated_effort": "4-6 hours"
@@ -473,9 +473,9 @@
     "package_integration_gaps": [
       {
         "severity": "high",
-        "title": "Missing @wundr/vp-daemon integration for agents",
+        "title": "Missing @wundr/orchestrator-daemon integration for agents",
         "description": "Agents page doesn't import or use any @wundr packages",
-        "recommendation": "Integrate with @wundr/vp-daemon for agent management",
+        "recommendation": "Integrate with @wundr/orchestrator-daemon for agent management",
         "estimated_effort": "6-8 hours"
       },
       {
@@ -586,7 +586,7 @@
     },
     {
       "priority": "P2 - Medium",
-      "item": "Integrate @wundr/vp-daemon with agents page",
+      "item": "Integrate @wundr/orchestrator-daemon with agents page",
       "estimated_effort": "6-8 hours",
       "impact": "Connects to actual agent infrastructure"
     },

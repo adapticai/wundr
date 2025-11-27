@@ -11,18 +11,15 @@
  */
 
 import { prisma } from '@neolith/database';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { auth } from '@/lib/auth';
 import { calculateChannelRelevance } from '@/lib/services/channel-intelligence-service';
 import {
+  CHANNEL_INTELLIGENCE_ERROR_CODES,
   calculateRelevanceSchema,
   createChannelIntelligenceError,
-  CHANNEL_INTELLIGENCE_ERROR_CODES,
 } from '@/lib/validations/channel-intelligence';
-import { VP_ERROR_CODES, createErrorResponse } from '@/lib/validations/vp';
-
-import type { NextRequest } from 'next/server';
 
 /**
  * Route context with workspace and channel ID parameters
@@ -64,12 +61,12 @@ async function getWorkspaceAccess(workspaceId: string, userId: string) {
 /**
  * GET /api/workspaces/:workspaceId/channels/:channelId/relevance
  *
- * Calculate relevance score between a VP and channel.
+ * Calculate relevance score between a Orchestrator and channel.
  * Returns a score (0-1) and detailed explanation of the calculation.
  *
  * Query Parameters:
- * - vpId: string (required) - VP to calculate relevance for
- * - disciplineOverride: string (optional) - Override VP discipline
+ * - vpId: string (required) - Orchestrator to calculate relevance for
+ * - disciplineOverride: string (optional) - Override Orchestrator discipline
  * - includeExplanation: boolean (default: true)
  *
  * @param request - Next.js request object
@@ -84,7 +81,7 @@ export async function GET(
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
-        createErrorResponse('Authentication required', VP_ERROR_CODES.UNAUTHORIZED),
+        createChannelIntelligenceError('Authentication required', CHANNEL_INTELLIGENCE_ERROR_CODES.UNAUTHORIZED),
         { status: 401 },
       );
     }
@@ -120,8 +117,8 @@ export async function GET(
 
     const { vpId, disciplineOverride, includeExplanation } = queryData;
 
-    // Verify VP exists and has access to workspace
-    const vp = await prisma.vP.findFirst({
+    // Verify Orchestrator exists and has access to workspace
+    const orchestrator = await prisma.vP.findFirst({
       where: {
         id: vpId,
         organizationId: workspaceAccess.workspace.organizationId,

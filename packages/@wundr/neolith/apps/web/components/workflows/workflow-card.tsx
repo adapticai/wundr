@@ -296,9 +296,9 @@ export function WorkflowStatusBadge({
           <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
         </span>
       )}
-      {status === 'error' && (
+      {status === 'archived' && (
         <span className="relative flex h-2 w-2">
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-gray-400" />
         </span>
       )}
       {status === 'inactive' && (

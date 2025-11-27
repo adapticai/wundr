@@ -18,16 +18,16 @@ export { StatusSelector } from './status-selector';
 export { OnlineUsersList } from './online-users-list';
 export type { OnlineUser } from './online-users-list';
 
-// VP Status Card
+// OrchestratorStatus Card
 export {
-  VPStatusCard,
-  VPStatusCardSkeleton,
-} from './vp-status-card';
+  OrchestratorStatusCard,
+  OrchestratorStatusCardSkeleton,
+} from './orchestrator-status-card';
 export type {
   DaemonHealthStatus,
-  VPHealthMetrics,
-  VPStatusData,
-} from './vp-status-card';
+  OrchestratorHealthMetrics,
+  OrchestratorStatusData,
+} from './orchestrator-status-card';
 
 // User Avatar with Presence
 export {

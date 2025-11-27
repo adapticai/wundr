@@ -8,21 +8,21 @@ datasource db {
 }
 
 model account {
-  id                  String    @id @default(cuid())
-  userId              String   @map("user_id")
-  type                String
-  provider            String
-  providerAccountId   String   @map("provider_account_id")
-  refreshToken        String?  @map("refresh_token")
-  accessToken         String?  @map("access_token")
-  expiresAt           Int?     @map("expires_at")
-  tokenType           String?  @map("token_type")
-  scope               String?
-  idToken             String?  @map("id_token")
-  sessionState        String?  @map("session_state")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
-  user                user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String   @map("provider_account_id")
+  refreshToken      String?  @map("refresh_token")
+  accessToken       String?  @map("access_token")
+  expiresAt         Int?     @map("expires_at")
+  tokenType         String?  @map("token_type")
+  scope             String?
+  idToken           String?  @map("id_token")
+  sessionState      String?  @map("session_state")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  user              user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -30,7 +30,7 @@ model account {
 }
 
 model backlogItem {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   position  Int      @default(0)
   backlogId String   @map("backlog_id")
   taskId    String   @map("task_id")
@@ -46,7 +46,7 @@ model backlogItem {
 }
 
 model backlog {
-  id           String         @id @default(cuid())
+  id           String        @id @default(cuid())
   name         String
   description  String?
   status       String        @default("active")
@@ -57,7 +57,7 @@ model backlog {
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   backlogItems backlogItem[]
-  vp           vP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
+  orchestrator orchestrator  @relation(fields: [vpId], references: [id], onDelete: Cascade) // Orchestrator that owns this backlog
   workspace    workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([vpId, name])
@@ -69,7 +69,7 @@ model backlog {
 }
 
 model channelMember {
-  id         String       @id @default(cuid())
+  id         String      @id @default(cuid())
   role       ChannelRole @default(MEMBER)
   channelId  String      @map("channel_id")
   userId     String      @map("user_id")
@@ -87,7 +87,7 @@ model channelMember {
 }
 
 model channel {
-  id             String           @id @default(cuid())
+  id             String          @id @default(cuid())
   name           String
   slug           String
   description    String?
@@ -113,22 +113,22 @@ model channel {
 }
 
 model daemonCredential {
-  id            String      @id @default(cuid())
-  apiKey        String     @unique @map("api_key")
-  apiSecretHash String     @map("api_secret_hash")
+  id            String    @id @default(cuid())
+  apiKey        String    @unique @map("api_key")
+  apiSecretHash String    @map("api_secret_hash")
   hostname      String?
   version       String?
   capabilities  String[]
   metadata      Json?
-  isActive      Boolean    @default(true) @map("is_active")
-  vpId          String     @map("vp_id")
-  workspaceId   String     @map("workspace_id")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
-  expiresAt     DateTime?  @map("expires_at")
-  lastUsedAt    DateTime?  @map("last_used_at")
-  vp            vP         @relation(fields: [vpId], references: [id], onDelete: Cascade)
-  workspace     workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  isActive      Boolean   @default(true) @map("is_active")
+  vpId          String    @map("vp_id")
+  workspaceId   String    @map("workspace_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  expiresAt     DateTime? @map("expires_at")
+  lastUsedAt    DateTime?    @map("last_used_at")
+  orchestrator  orchestrator @relation(fields: [vpId], references: [id], onDelete: Cascade) // Orchestrator these credentials authenticate
+  workspace     workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([apiKey])
   @@index([isActive])
@@ -138,7 +138,7 @@ model daemonCredential {
 }
 
 model discipline {
-  id             String        @id @default(cuid())
+  id             String       @id @default(cuid())
   name           String
   description    String?
   color          String?
@@ -146,8 +146,8 @@ model discipline {
   organizationId String       @map("organization_id")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
-  organization   organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  vps            vP[]
+  organization   organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  orchestrators  orchestrator[] // Orchestrators associated with this discipline
 
   @@unique([organizationId, name])
   @@index([name])
@@ -156,7 +156,7 @@ model discipline {
 }
 
 model file {
-  id                 String               @id @default(cuid())
+  id                 String              @id @default(cuid())
   filename           String
   originalName       String              @map("original_name")
   mimeType           String              @map("mime_type")
@@ -182,7 +182,7 @@ model file {
 }
 
 model messageAttachment {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   messageId String   @map("message_id")
   fileId    String   @map("file_id")
   createdAt DateTime @default(now()) @map("created_at")
@@ -196,7 +196,7 @@ model messageAttachment {
 }
 
 model message {
-  id                 String               @id @default(cuid())
+  id                 String              @id @default(cuid())
   content            String
   type               MessageType         @default(TEXT)
   metadata           Json                @default("{}")
@@ -226,7 +226,7 @@ model message {
 }
 
 model notification {
-  id           String                @id @default(cuid())
+  id           String               @id @default(cuid())
   title        String
   body         String
   type         NotificationType
@@ -253,7 +253,7 @@ model notification {
 }
 
 model organizationMember {
-  id             String            @id @default(cuid())
+  id             String           @id @default(cuid())
   role           OrganizationRole @default(MEMBER)
   organizationId String           @map("organization_id")
   userId         String           @map("user_id")
@@ -268,7 +268,7 @@ model organizationMember {
 }
 
 model organization {
-  id                  String                @id @default(cuid())
+  id                  String               @id @default(cuid())
   name                String
   slug                String               @unique
   avatarUrl           String?              @map("avatar_url")
@@ -278,7 +278,7 @@ model organization {
   updatedAt           DateTime             @updatedAt @map("updated_at")
   disciplines         discipline[]
   organizationMembers organizationMember[]
-  vps                 vP[]
+  orchestrators       orchestrator[] // Orchestrators in this organization
   workspaces          workspace[]
 
   @@index([slug])
@@ -286,24 +286,24 @@ model organization {
 }
 
 model pushSubscription {
-  id                  String        @id @default(cuid())
-  token               String       @unique
-  platform            PushPlatform
-  userAgent           String?      @map("user_agent")
-  deviceName          String?      @map("device_name")
-  deviceModel         String?      @map("device_model")
-  appVersion          String?      @map("app_version")
-  active              Boolean      @default(true)
-  deactivatedAt       DateTime?    @map("deactivated_at")
-  deactivationReason  String?      @map("deactivation_reason")
-  failureCount        Int          @default(0) @map("failure_count")
-  lastFailureAt       DateTime?    @map("last_failure_at")
-  lastFailureReason   String?      @map("last_failure_reason")
-  userId              String       @map("user_id")
-  createdAt           DateTime     @default(now()) @map("created_at")
-  updatedAt           DateTime     @updatedAt @map("updated_at")
-  lastActiveAt        DateTime?    @map("last_active_at")
-  user                user         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String       @id @default(cuid())
+  token              String       @unique
+  platform           PushPlatform
+  userAgent          String?      @map("user_agent")
+  deviceName         String?      @map("device_name")
+  deviceModel        String?      @map("device_model")
+  appVersion         String?      @map("app_version")
+  active             Boolean      @default(true)
+  deactivatedAt      DateTime?    @map("deactivated_at")
+  deactivationReason String?      @map("deactivation_reason")
+  failureCount       Int          @default(0) @map("failure_count")
+  lastFailureAt      DateTime?    @map("last_failure_at")
+  lastFailureReason  String?      @map("last_failure_reason")
+  userId             String       @map("user_id")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  lastActiveAt       DateTime?    @map("last_active_at")
+  user               user         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([active])
   @@index([platform])
@@ -313,7 +313,7 @@ model pushSubscription {
 }
 
 model reaction {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   emoji     String
   messageId String   @map("message_id")
   userId    String   @map("user_id")
@@ -328,7 +328,7 @@ model reaction {
 }
 
 model session {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   sessionToken String   @unique @map("session_token")
   expires      DateTime
   userId       String   @map("user_id")
@@ -340,30 +340,30 @@ model session {
 }
 
 model task {
-  id           String         @id @default(cuid())
-  title        String
-  description  String?
-  priority     TaskPriority  @default(MEDIUM)
-  status       TaskStatus    @default(TODO)
-  dueDate      DateTime?     @map("due_date")
-  estimatedHours Int?        @map("estimated_hours")
-  tags         String[]      @default([])
-  metadata     Json          @default("{}")
-  dependsOn    String[]      @default([]) @map("depends_on")
-  vpId         String        @map("vp_id")
-  workspaceId  String        @map("workspace_id")
-  channelId    String?       @map("channel_id")
-  createdById  String        @map("created_by_id")
-  assignedToId String?       @map("assigned_to_id")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  completedAt  DateTime?     @map("completed_at")
-  backlogItems backlogItem[]
-  assignedTo   user?         @relation("taskAssignedTo", fields: [assignedToId], references: [id])
-  channel      channel?      @relation(fields: [channelId], references: [id])
-  createdBy    user          @relation("taskCreatedBy", fields: [createdById], references: [id])
-  vp           vP            @relation(fields: [vpId], references: [id], onDelete: Cascade)
-  workspace    workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id             String        @id @default(cuid())
+  title          String
+  description    String?
+  priority       TaskPriority  @default(MEDIUM)
+  status         TaskStatus    @default(TODO)
+  dueDate        DateTime?     @map("due_date")
+  estimatedHours Int?          @map("estimated_hours")
+  tags           String[]      @default([])
+  metadata       Json          @default("{}")
+  dependsOn      String[]      @default([]) @map("depends_on")
+  vpId           String        @map("vp_id")
+  workspaceId    String        @map("workspace_id")
+  channelId      String?       @map("channel_id")
+  createdById    String        @map("created_by_id")
+  assignedToId   String?       @map("assigned_to_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  completedAt    DateTime?     @map("completed_at")
+  backlogItems   backlogItem[]
+  assignedTo     user?         @relation("taskAssignedTo", fields: [assignedToId], references: [id])
+  channel        channel?      @relation(fields: [channelId], references: [id])
+  createdBy      user          @relation("taskCreatedBy", fields: [createdById], references: [id])
+  orchestrator   orchestrator  @relation(fields: [vpId], references: [id], onDelete: Cascade) // Orchestrator responsible for this task
+  workspace      workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([assignedToId])
   @@index([channelId])
@@ -378,15 +378,15 @@ model task {
 }
 
 model user {
-  id                  String                @id @default(cuid())
+  id                  String               @id @default(cuid())
   email               String               @unique
   name                String?
   displayName         String?              @map("display_name")
   avatarUrl           String?              @map("avatar_url")
   bio                 String?
   status              UserStatus           @default(PENDING)
-  isVP                Boolean              @default(false) @map("is_vp")
-  vpConfig            Json?                @map("vp_config")
+  isVP                Boolean              @default(false) @map("is_vp") // Flag indicating if user is an Orchestrator
+  vpConfig            Json?                @map("vp_config") // Orchestrator configuration settings
   preferences         Json                 @default("{}")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
@@ -404,12 +404,12 @@ model user {
   sessions            session[]
   tasksAssignedTo     task[]               @relation("taskAssignedTo")
   tasksCreatedBy      task[]               @relation("taskCreatedBy")
-  vp                  vP?
+  orchestrator        orchestrator? // Associated Orchestrator profile (if user is an Orchestrator)
   workspaceMembers    workspaceMember[]
+  webhooks            webhook[]
 
   @@index([email])
   @@index([status])
-  webhooks            webhook[]
   @@map("users")
 }
 
@@ -422,37 +422,38 @@ model verificationToken {
   @@map("verification_tokens")
 }
 
-model vP {
-  id                String              @id @default(cuid())
-  discipline        String
-  role              String
-  capabilities      Json               @default("[]")
-  daemonEndpoint    String?            @map("daemon_endpoint")
-  status            VPStatus           @default(OFFLINE)
-  userId            String             @unique @map("user_id")
-  organizationId    String             @map("organization_id")
-  workspaceId       String?            @map("workspace_id")
-  disciplineId      String?            @map("discipline_id")
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
+/// Orchestrator - AI-powered autonomous agent for task execution and workflow automation
+model orchestrator {
+  id                String               @id @default(cuid())
+  discipline        String // Orchestrator's area of expertise (e.g., engineering, product, design)
+  role              String // Specific role within the discipline
+  capabilities      Json                 @default("[]") // List of capabilities and skills the Orchestrator possesses
+  daemonEndpoint    String?              @map("daemon_endpoint") // Endpoint for the daemon process running this Orchestrator
+  status            OrchestratorStatus   @default(OFFLINE) // Current operational status of the Orchestrator
+  userId            String               @unique @map("user_id") // Associated user account for this Orchestrator
+  organizationId    String               @map("organization_id")
+  workspaceId       String?              @map("workspace_id")
+  disciplineId      String?              @map("discipline_id")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
   backlogs          backlog[]
   daemonCredentials daemonCredential[]
   tasks             task[]
-  disciplineRef     discipline?        @relation(fields: [disciplineId], references: [id])
-  organization      organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user              user               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  disciplineRef     discipline?          @relation(fields: [disciplineId], references: [id])
+  organization      organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user              user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orchestratorMemories orchestratorMemory[]
 
   @@index([disciplineId])
   @@index([discipline])
   @@index([organizationId])
   @@index([status])
   @@index([workspaceId])
-  vPMemories          vPMemory[]
   @@map("vps")
 }
 
 model workflowExecution {
-  id           String                   @id @default(cuid())
+  id           String                  @id @default(cuid())
   status       WorkflowExecutionStatus @default(PENDING)
   triggeredBy  String                  @map("triggered_by")
   triggerType  String                  @map("trigger_type")
@@ -477,7 +478,7 @@ model workflowExecution {
 }
 
 model workflow {
-  id                 String               @id @default(cuid())
+  id                 String              @id @default(cuid())
   name               String
   description        String?
   trigger            Json
@@ -505,7 +506,7 @@ model workflow {
 }
 
 model workspaceMember {
-  id          String         @id @default(cuid())
+  id          String        @id @default(cuid())
   role        WorkspaceRole @default(MEMBER)
   workspaceId String        @map("workspace_id")
   userId      String        @map("user_id")
@@ -524,12 +525,12 @@ model workspace {
   name              String
   slug              String
   description       String?
-  avatarUrl         String?            @map("avatar_url")
+  avatarUrl         String?             @map("avatar_url")
   visibility        WorkspaceVisibility @default(PRIVATE)
-  settings          Json               @default("{}")
-  organizationId    String             @map("organization_id")
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
+  settings          Json                @default("{}")
+  organizationId    String              @map("organization_id")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
   backlogs          backlog[]
   channels          channel[]
   daemonCredentials daemonCredential[]
@@ -538,12 +539,14 @@ model workspace {
   workflows         workflow[]
   workspaceMembers  workspaceMember[]
   integrations      integration[]
-  organization      organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deployments       deployment[]
+  agents            agent[]
+  organization      organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  webhooks          webhook[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
   @@index([slug])
-  webhooks            webhook[]
   @@map("workspaces")
 }
 
@@ -625,11 +628,14 @@ enum UserStatus {
   SUSPENDED
 }
 
-enum VPStatus {
-  ONLINE
-  OFFLINE
-  BUSY
-  AWAY
+/// Orchestrator operational status enumeration
+enum OrchestratorStatus {
+  ONLINE // Orchestrator is active and available for tasks
+  OFFLINE // Orchestrator is not currently running
+  BUSY // Orchestrator is actively processing tasks
+  AWAY // Orchestrator is paused or temporarily unavailable
+
+  @@map("VPStatus")
 }
 
 enum WorkflowExecutionStatus {
@@ -690,7 +696,7 @@ enum IntegrationProvider {
 
 /// Integration - Third-party service integration configuration
 model integration {
-  id           String               @id @default(cuid())
+  id           String              @id @default(cuid())
   name         String
   description  String?
   provider     IntegrationProvider
@@ -734,22 +740,22 @@ enum WebhookDeliveryStatus {
 
 /// Webhook - Outgoing webhook configuration
 model webhook {
-  id             String            @id @default(cuid())
-  name           String
-  url            String
-  secret         String?
-  events         String[]
-  status         WebhookStatus     @default(ACTIVE)
-  headers        Json              @default("{}")
-  retryAttempts  Int               @default(3) @map("retry_attempts")
-  timeout        Int               @default(30000)
-  workspaceId    String            @map("workspace_id")
-  createdById    String            @map("created_by_id")
-  createdAt      DateTime          @default(now()) @map("created_at")
-  updatedAt      DateTime          @updatedAt @map("updated_at")
-  workspace      workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy      user              @relation(fields: [createdById], references: [id])
-  deliveries     webhookDelivery[]
+  id            String            @id @default(cuid())
+  name          String
+  url           String
+  secret        String?
+  events        String[]
+  status        WebhookStatus     @default(ACTIVE)
+  headers       Json              @default("{}")
+  retryAttempts Int               @default(3) @map("retry_attempts")
+  timeout       Int               @default(30000)
+  workspaceId   String            @map("workspace_id")
+  createdById   String            @map("created_by_id")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  workspace     workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy     user              @relation(fields: [createdById], references: [id])
+  deliveries    webhookDelivery[]
 
   @@index([workspaceId])
   @@index([status])
@@ -759,19 +765,19 @@ model webhook {
 
 /// WebhookDelivery - Webhook delivery attempt record
 model webhookDelivery {
-  id              String                @id @default(cuid())
-  webhookId       String                @map("webhook_id")
-  event           String
-  payload         Json
-  status          WebhookDeliveryStatus @default(PENDING)
-  responseStatus  Int?                  @map("response_status")
-  responseBody    String?               @map("response_body") @db.Text
-  error           String?               @db.Text
-  attemptCount    Int                   @default(0) @map("attempt_count")
-  nextRetryAt     DateTime?             @map("next_retry_at")
-  createdAt       DateTime              @default(now()) @map("created_at")
-  completedAt     DateTime?             @map("completed_at")
-  webhook         webhook               @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  id             String                @id @default(cuid())
+  webhookId      String                @map("webhook_id")
+  event          String
+  payload        Json
+  status         WebhookDeliveryStatus @default(PENDING)
+  responseStatus Int?                  @map("response_status")
+  responseBody   String?               @map("response_body") @db.Text
+  error          String?               @db.Text
+  attemptCount   Int                   @default(0) @map("attempt_count")
+  nextRetryAt    DateTime?             @map("next_retry_at")
+  createdAt      DateTime              @default(now()) @map("created_at")
+  completedAt    DateTime?             @map("completed_at")
+  webhook        webhook               @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([webhookId])
   @@index([status])
@@ -779,23 +785,230 @@ model webhookDelivery {
   @@map("webhook_deliveries")
 }
 
-/// VPMemory - VP memory entries for conversation context
-model vPMemory {
-  id          String   @id @default(cuid())
-  vpId        String   @map("vp_id")
-  memoryType  String   @map("memory_type")
-  content     String   @db.Text
-  embedding   Json?    
-  metadata    Json     @default("{}")
-  importance  Float    @default(0.5)
-  expiresAt   DateTime? @map("expires_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  vp          vP       @relation(fields: [vpId], references: [id], onDelete: Cascade)
+/// OrchestratorMemory - Memory entries for Orchestrator conversation context and learned knowledge
+model orchestratorMemory {
+  id             String       @id @default(cuid())
+  orchestratorId String       @map("vp_id") // Reference to the Orchestrator
+  memoryType     String       @map("memory_type") // Type of memory (e.g., conversation, learned_fact, procedure)
+  content        String       @db.Text // The actual memory content
+  embedding      Json? // Vector embedding for semantic search
+  metadata       Json         @default("{}") // Additional context and metadata
+  importance     Float        @default(0.5) // Importance score for memory retention (0.0 to 1.0)
+  expiresAt      DateTime?    @map("expires_at") // Optional expiration for temporary memories
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  orchestrator   orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade)
 
-  @@index([vpId])
+  @@index([orchestratorId])
   @@index([memoryType])
   @@index([importance])
   @@index([createdAt])
   @@map("vp_memories")
+}
+
+// =============================================================================
+// Export Job Models (Async Export System)
+// =============================================================================
+
+/// Export job status enumeration
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+/// Export format enumeration
+enum ExportFormat {
+  JSON
+  CSV
+}
+
+/// ExportJob - Background job for large workspace data exports
+model exportJob {
+  id          String       @id @default(cuid())
+  workspaceId String       @map("workspace_id")
+  type        String // channels, messages, members, workflows, all
+  format      ExportFormat @default(JSON)
+  status      ExportStatus @default(PENDING)
+  fileUrl     String?      @map("file_url")
+  fileSize    BigInt?      @map("file_size")
+  recordCount Int?         @map("record_count")
+  error       String?      @db.Text
+  progress    Int          @default(0)
+  startDate   DateTime?    @map("start_date")
+  endDate     DateTime?    @map("end_date")
+  requestedBy String       @map("requested_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  startedAt   DateTime?    @map("started_at")
+  completedAt DateTime?    @map("completed_at")
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([requestedBy])
+  @@index([createdAt])
+  @@map("export_jobs")
+}
+
+// =============================================================================
+// Deployment Models (CI/CD & Deployment Management)
+// =============================================================================
+
+/// Deployment status enumeration
+enum DeploymentStatus {
+  PENDING
+  BUILDING
+  DEPLOYING
+  ACTIVE
+  FAILED
+  STOPPED
+}
+
+/// Deployment environment enumeration
+enum DeploymentEnvironment {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+}
+
+/// Log level enumeration
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+/// Deployment type enumeration
+enum DeploymentType {
+  SERVICE
+  AGENT
+  WORKFLOW
+  INTEGRATION
+}
+
+/// Deployment - Application/service deployments
+model deployment {
+  id          String                @id @default(cuid())
+  name        String
+  description String?
+  type        DeploymentType        @default(SERVICE)
+  status      DeploymentStatus      @default(PENDING)
+  environment DeploymentEnvironment @default(DEVELOPMENT)
+  version     String?
+  url         String?
+
+  // Git info
+  commitHash String? @map("commit_hash")
+  branch     String?
+
+  // Build info
+  buildCommand String? @map("build_command")
+  outputDir    String? @map("output_dir")
+  envVars      Json?   @map("env_vars")
+
+  // Configuration
+  config Json @default("{}")
+
+  // Health & Stats (stored as JSON for flexibility)
+  health Json?
+  stats  Json?
+
+  // Timing
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  deployedAt  DateTime? @map("deployed_at")
+  duration    Int? // seconds
+
+  // Logs
+  logs deploymentLog[]
+
+  workspaceId String    @map("workspace_id")
+  workspace   workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdById String?   @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([workspaceId])
+  @@index([status])
+  @@index([environment])
+  @@index([type])
+  @@index([createdAt])
+  @@map("deployments")
+}
+
+/// DeploymentLog - Log entries for deployments
+model deploymentLog {
+  id           String     @id @default(cuid())
+  deploymentId String     @map("deployment_id")
+  deployment   deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  level        LogLevel   @default(INFO)
+  message      String     @db.Text
+  metadata     Json?
+  timestamp    DateTime   @default(now())
+
+  @@index([deploymentId])
+  @@index([level])
+  @@index([timestamp])
+  @@map("deployment_logs")
+}
+
+// =============================================================================
+// Agent Models (Task Automation Agents)
+// =============================================================================
+
+/// Agent type enumeration
+enum AgentType {
+  TASK
+  RESEARCH
+  CODING
+  DATA
+  QA
+  SUPPORT
+  CUSTOM
+}
+
+/// Agent status enumeration
+enum AgentStatus {
+  ACTIVE
+  PAUSED
+  INACTIVE
+}
+
+/// Agent - AI agent for task automation and assistance
+model agent {
+  id               String      @id @default(cuid())
+  name             String
+  type             AgentType
+  status           AgentStatus @default(INACTIVE)
+  description      String?
+  model            String      @default("claude-3-5-sonnet")
+  temperature      Float       @default(0.7)
+  maxTokens        Int         @default(4096) @map("max_tokens")
+  topP             Float?      @map("top_p")
+  frequencyPenalty Float?      @map("frequency_penalty")
+  presencePenalty  Float?      @map("presence_penalty")
+  tools            String[]    @default([])
+  systemPrompt     String?     @map("system_prompt") @db.Text
+  workspaceId      String      @map("workspace_id")
+  createdById      String?     @map("created_by_id")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  // Performance stats
+  tasksCompleted  Int       @default(0) @map("tasks_completed")
+  successRate     Float     @default(0) @map("success_rate")
+  avgResponseTime Float     @default(0) @map("avg_response_time")
+  lastActiveAt    DateTime? @map("last_active_at")
+  tokensUsed      Int       @default(0) @map("tokens_used")
+  totalCost       Float     @default(0) @map("total_cost")
+
+  workspace workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([type])
+  @@index([status])
+  @@index([createdById])
+  @@index([createdAt])
+  @@map("agents")
 }

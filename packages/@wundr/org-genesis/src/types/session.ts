@@ -145,7 +145,7 @@ export interface CompiledSessionConfig {
  * const session: SessionContext = {
  *   id: 'session-abc123',
  *   disciplineId: 'backend-engineering',
- *   parentVpId: 'vp-eng-001',
+ *   parentVpId: 'orchestrator-eng-001',
  *   worktreePath: '/worktrees/feature-auth',
  *   status: 'active',
  *   compiledConfig: { ... },
@@ -171,8 +171,8 @@ export interface SessionContext {
   disciplineId: string;
 
   /**
-   * The VP (Virtual Person) that owns this session.
-   * Sessions are always owned by a VP who provides resources and oversight.
+   * The Orchestrator (Orchestrator) that owns this session.
+   * Sessions are always owned by a Orchestrator who provides resources and oversight.
    */
   parentVpId: string;
 
@@ -242,7 +242,7 @@ export interface SessionContext {
  * const request: CompileSessionRequest = {
  *   discipline: 'backend-engineering',
  *   taskDescription: 'Implement user authentication with OAuth2',
- *   vpId: 'vp-eng-001',
+ *   vpId: 'orchestrator-eng-001',
  *   worktreeBasePath: '/worktrees',
  *   warmStartContext: 'Previous session implemented basic user model...',
  *   additionalAgents: ['security-reviewer', 'api-designer'],
@@ -264,7 +264,7 @@ export interface CompileSessionRequest {
   taskDescription: string;
 
   /**
-   * The VP ID that will own this session.
+   * The Orchestrator ID that will own this session.
    * Must have available session slots.
    */
   vpId: string;
@@ -347,7 +347,7 @@ export interface CompileSessionResult {
 }
 
 /**
- * Session slot for VP resource management.
+ * Session slot for Orchestrator resource management.
  *
  * VPs have a limited number of concurrent session slots. This type
  * tracks the allocation and status of each slot, enabling fair
@@ -362,7 +362,7 @@ export interface CompileSessionResult {
  * ```typescript
  * const slot: SessionSlot = {
  *   slotId: 'slot-001',
- *   vpId: 'vp-eng-001',
+ *   vpId: 'orchestrator-eng-001',
  *   sessionId: 'session-abc123',
  *   status: 'active',
  *   reservedAt: new Date('2025-01-15T09:55:00Z'),
@@ -378,7 +378,7 @@ export interface SessionSlot {
   slotId: string;
 
   /**
-   * The VP that owns this slot.
+   * The Orchestrator that owns this slot.
    * Slots are permanently assigned to VPs.
    */
   vpId: string;

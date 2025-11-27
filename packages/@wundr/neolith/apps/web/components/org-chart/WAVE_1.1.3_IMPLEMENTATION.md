@@ -1,7 +1,7 @@
 # Wave 1.1.3: Organization Hierarchy Display - Implementation Summary
 
 ## Overview
-Implemented comprehensive organization hierarchy visualization components with expandable/collapsible tree views, discipline-based grouping, and VP detail drill-down capabilities.
+Implemented comprehensive organization hierarchy visualization components with expandable/collapsible tree views, discipline-based grouping, and Orchestrator detail drill-down capabilities.
 
 ## Tasks Completed
 
@@ -13,7 +13,7 @@ Implemented comprehensive organization hierarchy visualization components with e
 - Loading states with skeleton components
 - Empty and error states
 
-### ✅ 1.1.3.2 - Add VP Reporting Lines Display
+### ✅ 1.1.3.2 - Add Orchestrator Reporting Lines Display
 **File:** `OrgConnector.tsx`
 - Visual connection lines between hierarchy nodes
 - Supervisor/subordinate relationship indicators
@@ -23,19 +23,19 @@ Implemented comprehensive organization hierarchy visualization components with e
 ### ✅ 1.1.3.3 - Show Authority Levels and Permissions
 **File:** `OrgNode.tsx`
 - Role badges: OWNER (primary), ADMIN (secondary), MEMBER (outline)
-- VP status indicators with animated dots:
+- Orchestrator status indicators with animated dots:
   - ONLINE (green with pulse)
   - BUSY (yellow with pulse)
   - AWAY (orange, static)
   - OFFLINE (gray, static)
 - Visual permission level differentiation
 
-### ✅ 1.1.3.4 - Add Drill-down to VP Details
+### ✅ 1.1.3.4 - Add Drill-down to Orchestrator Details
 **File:** `VPDetailsPopover.tsx`
-- Popover component showing quick VP information
+- Popover component showing quick Orchestrator information
 - Displays: Avatar, Name, Discipline, Status, Current Task
 - Quick action buttons:
-  - "View Details" - Navigate to VP detail page
+  - "View Details" - Navigate to Orchestrator detail page
   - "Start Chat" - Initiate conversation
 - Accessible tooltips for truncated content
 
@@ -66,7 +66,7 @@ components/org-chart/
 ├── OrgHierarchyChart.tsx         # Main hierarchy chart component
 ├── OrgNode.tsx                   # Individual node component (Org/Workspace/VP)
 ├── OrgConnector.tsx              # Connection lines for hierarchy
-├── VPDetailsPopover.tsx          # VP quick details popover
+├── VPDetailsPopover.tsx          # Orchestrator quick details popover
 ├── index.ts                      # Barrel exports
 ├── README.md                     # Component documentation
 ├── example.tsx                   # Usage examples
@@ -156,7 +156,7 @@ const hierarchy = {
       data: { vpCount: 5, onlineVPCount: 3 },
       children: [
         {
-          id: 'vp-1',
+          id: 'orchestrator-1',
           type: 'vp',
           name: 'John Doe',
           data: {
@@ -190,7 +190,7 @@ Example data transformation:
 async function fetchAndTransformOrgData() {
   const org = await fetch('/api/organization').then(r => r.json());
   const workspaces = await fetch('/api/workspaces').then(r => r.json());
-  const vps = await fetch('/api/vps').then(r => r.json());
+  const orchestrators = await fetch('/api/orchestrators').then(r => r.json());
 
   return {
     id: org.id,
@@ -201,10 +201,10 @@ async function fetchAndTransformOrgData() {
       type: 'workspace',
       name: ws.name,
       data: {
-        vpCount: vps.filter(vp => vp.workspaceId === ws.id).length,
-        onlineVPCount: vps.filter(vp => vp.workspaceId === ws.id && vp.status === 'ONLINE').length,
+        vpCount: orchestrators.filter(vp => vp.workspaceId === ws.id).length,
+        onlineVPCount: orchestrators.filter(vp => vp.workspaceId === ws.id && vp.status === 'ONLINE').length,
       },
-      children: vps
+      children: orchestrators
         .filter(vp => vp.workspaceId === ws.id)
         .map(vp => ({
           id: vp.id,
@@ -230,7 +230,7 @@ async function fetchAndTransformOrgData() {
 - [x] Expandable/collapsible functionality works
 - [x] Status indicators display correctly
 - [x] Discipline colors apply properly
-- [x] Popover shows VP details
+- [x] Popover shows Orchestrator details
 - [x] Responsive layouts adapt to viewport
 - [x] Loading states render
 - [x] Empty states display
@@ -249,7 +249,7 @@ All components use existing dependencies:
 ## Next Steps
 
 1. **Data Integration:** Connect to real API endpoints
-2. **Navigation:** Implement routing for VP detail pages
+2. **Navigation:** Implement routing for Orchestrator detail pages
 3. **Chat Integration:** Connect "Start Chat" action to chat system
 4. **Permissions:** Add permission checks for actions
 5. **Search/Filter:** Add search and filter capabilities

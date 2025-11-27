@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
 
 import { ThemeToggleLarge } from '@/components/layout/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,10 +17,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
+import { usePageHeader } from '@/contexts/page-header-context';
 
 export default function SettingsPage() {
+  const { setPageHeader } = usePageHeader();
   const [isLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Settings', 'Manage your account settings and preferences');
+  }, [setPageHeader]);
 
   // Form state
   const [profileData, setProfileData] = useState({
@@ -72,13 +80,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your account settings and preferences
-        </p>
-      </div>
 
       {/* Profile Settings Section */}
       <Card>
@@ -269,14 +270,14 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="vp-updates">VP Updates</Label>
+                <Label htmlFor="orchestrator-updates">VP Updates</Label>
                 <p className="text-sm text-muted-foreground">
                   Notifications from Virtual Professionals
                 </p>
               </div>
               <Switch
-                id="vp-updates"
-                checked={notificationSettings.vpUpdates}
+                id="orchestrator-updates"
+                checked={notificationSettings.orchestratorUpdates}
                 onCheckedChange={() => handleNotificationToggle('vpUpdates')}
               />
             </div>

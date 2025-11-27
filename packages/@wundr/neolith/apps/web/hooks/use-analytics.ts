@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // =============================================================================
 // Types - Analytics Tracking
@@ -59,11 +59,11 @@ export interface TimeSeriesDataPoint {
 }
 
 /**
- * VP activity metrics
+ * Orchestrator activity metrics
  */
-export interface VPActivity {
-  vpId: string;
-  vpName: string;
+export interface OrchestratorActivity {
+  orchestratorId: string;
+  orchestratorName: string;
   messageCount: number;
   taskCount: number;
   completedTasks: number;
@@ -128,7 +128,7 @@ export interface WorkspaceAnalytics {
     taskCompletion: TimeSeriesDataPoint[];
     workflowExecution: TimeSeriesDataPoint[];
   };
-  vpActivity: VPActivity[];
+  orchestratorActivity: OrchestratorActivity[];
   channelEngagement: ChannelEngagement[];
   taskMetrics: TaskMetrics;
   workflowMetrics: WorkflowMetrics;
@@ -229,14 +229,14 @@ export interface FileMetrics {
 }
 
 /**
- * VP (Virtual Person) metrics
+ * Orchestrator metrics
  */
-export interface VPMetrics {
-  /** Total number of VPs */
-  totalVPs: number;
-  /** Number of currently active VPs */
-  activeVPs: number;
-  /** Total messages sent by VPs */
+export interface OrchestratorMetrics {
+  /** Total number of Orchestrators */
+  totalOrchestrators: number;
+  /** Number of currently active Orchestrators */
+  activeOrchestrators: number;
+  /** Total messages sent by Orchestrators */
   messagesSent: number;
 }
 
@@ -252,8 +252,8 @@ export interface UsageMetrics {
   channels: ChannelMetrics;
   /** File storage metrics */
   files: FileMetrics;
-  /** VP metrics */
-  vp: VPMetrics;
+  /** Orchestrator metrics */
+  orchestrators: OrchestratorMetrics;
 }
 
 /**
@@ -396,7 +396,7 @@ export function useAnalytics(workspaceId: string): UseAnalyticsReturn {
 /**
  * Hook for fetching comprehensive workspace analytics data
  *
- * Fetches detailed analytics including time series data, VP activity,
+ * Fetches detailed analytics including time series data, Orchestrator activity,
  * channel engagement, task metrics, and workflow metrics.
  *
  * @param workspaceId - The workspace ID to fetch analytics for

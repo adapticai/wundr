@@ -5,20 +5,21 @@
  * It supports multiple authentication providers:
  * - GitHub OAuth for developer authentication
  * - Google OAuth for general user authentication
- * - Credentials-based authentication for VP service accounts
+ * - Credentials-based authentication for email/password and Orchestrator service accounts
  *
  * @module lib/auth
  */
 
+
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { avatarService } from '@neolith/core/services';
 import { prisma } from '@neolith/database';
+import crypto from 'crypto';
+import type { DefaultSession } from 'next-auth';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 import Google from 'next-auth/providers/google';
-
-import type { DefaultSession } from 'next-auth';
 
 /**
  * Extended session user type with Neolith-specific fields
@@ -43,6 +44,30 @@ declare module 'next-auth/jwt' {
     isVP?: boolean;
     role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
   }
+}
+
+/**
+ * Verify a password against a stored hash using PBKDF2
+ * @param password - Plain text password to verify
+ * @param storedHash - Stored hash in format "salt:hash"
+ * @returns True if password matches, false otherwise
+ */
+async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const [salt, hash] = storedHash.split(':');
+    if (!salt || !hash) {
+      resolve(false);
+      return;
+    }
+
+    crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, derivedKey) => {
+      if (err) {
+        resolve(false);
+        return;
+      }
+      resolve(hash === derivedKey.toString('hex'));
+    });
+  });
 }
 
 /**
@@ -117,13 +142,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
 
     /**
-     * Credentials Provider for VP Service Accounts
-     * Allows VP (Virtual Person) agents to authenticate using API keys
+     * Credentials Provider for Email/Password and OrchestratorService Accounts
+     * Supports both regular user login and Orchestrator authentication
      */
     Credentials({
-      id: 'vp-credentials',
-      name: 'VP Service Account',
+      id: 'credentials',
+      name: 'Credentials',
       credentials: {
+        email: {
+          label: 'Email',
+          type: 'email',
+          placeholder: 'user@example.com',
+        },
+        password: {
+          label: 'Password',
+          type: 'password',
+        },
+        // VP-specific fields (optional)
         apiKey: {
           label: 'API Key',
           type: 'password',
@@ -136,44 +171,103 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
       async authorize(credentials) {
-        // Validate required credentials
-        if (!credentials?.apiKey || !credentials?.vpId) {
+        // Check if this is a Orchestrator authentication request
+        if (credentials?.apiKey && credentials?.vpId) {
+          try {
+            // Look up Orchestrator by ID
+            const orchestrator = await prisma.vP.findUnique({
+              where: { id: credentials.vpId as string },
+              include: { user: true },
+            });
+
+            if (!vp) {
+              return null;
+            }
+
+            // Verify API key (stored in Orchestrator capabilities or config)
+            // In production, this should be a secure comparison with hashed keys
+            const vpConfig = vp.capabilities as { apiKey?: string } | null;
+            if (!vpConfig || vpConfig.apiKey !== credentials.apiKey) {
+              // For now, allow any Orchestrator to authenticate for development
+              // TODO: Implement proper API key verification in production
+              if (process.env.NODE_ENV !== 'development') {
+                return null;
+              }
+            }
+
+            // Return the VP's associated user
+            return {
+              id: vp.user.id,
+              name: vp.user.name,
+              email: vp.user.email,
+              image: vp.user.avatarUrl,
+              isVP: true,
+              role: 'MEMBER' as const,
+            };
+          } catch (error) {
+            console.error('VP authentication error:', error);
+            return null;
+          }
+        }
+
+        // Regular email/password authentication
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         try {
-          // Look up VP by ID
-          const vp = await prisma.vP.findUnique({
-            where: { id: credentials.vpId as string },
-            include: { user: true },
+          // Find user by email
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string },
+            include: {
+              accounts: {
+                where: {
+                  provider: 'credentials',
+                  type: 'credentials',
+                },
+              },
+            },
           });
 
-          if (!vp) {
+          if (!user || user.accounts.length === 0) {
+            // User doesn't exist or doesn't have credentials account
             return null;
           }
 
-          // Verify API key (stored in VP capabilities or config)
-          // In production, this should be a secure comparison with hashed keys
-          const vpConfig = vp.capabilities as { apiKey?: string } | null;
-          if (!vpConfig || vpConfig.apiKey !== credentials.apiKey) {
-            // For now, allow any VP to authenticate for development
-            // TODO: Implement proper API key verification in production
-            if (process.env.NODE_ENV !== 'development') {
-              return null;
-            }
+          // Get the hashed password from the account's refreshToken field
+          const credentialsAccount = user.accounts[0];
+          const storedHash = credentialsAccount.refreshToken;
+
+          if (!storedHash) {
+            return null;
           }
 
-          // Return the VP's associated user
+          // Verify password using PBKDF2
+          const isValid = await verifyPassword(
+            credentials.password as string,
+            storedHash,
+          );
+
+          if (!isValid) {
+            return null;
+          }
+
+          // Check if user is active
+          if (user.status !== 'ACTIVE') {
+            return null;
+          }
+
+          // Return user object
           return {
-            id: vp.user.id,
-            name: vp.user.name,
-            email: vp.user.email,
-            image: vp.user.avatarUrl,
-            isVP: true,
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.avatarUrl,
+            isVP: false,
             role: 'MEMBER' as const,
           };
         } catch (error) {
-          console.error('VP authentication error:', error);
+          console.error('Email/password authentication error:', error);
           return null;
         }
       },
@@ -194,7 +288,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // For OAuth accounts, ensure isVP is false
-      if (account && account.provider !== 'vp-credentials') {
+      if (account && account.provider !== 'orchestrator-credentials') {
         token.isVP = false;
       }
 
@@ -258,19 +352,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
 
-      // For VP credentials, check if VP exists and is active
-      if (account?.provider === 'vp-credentials' && user.id) {
-        try {
-          const vp = await prisma.vP.findFirst({
-            where: {
-              userId: user.id,
-              status: { not: 'OFFLINE' },
-            },
-          });
-          return !!vp;
-        } catch {
-          return false;
+      // For credentials provider (both email/password and VP)
+      if (account?.provider === 'credentials') {
+        // If user is a VP, check if Orchestrator exists and is active
+        if (user.isVP && user.id) {
+          try {
+            const orchestrator = await prisma.vP.findFirst({
+              where: {
+                userId: user.id,
+                status: { not: 'OFFLINE' },
+              },
+            });
+            return !!vp;
+          } catch {
+            return false;
+          }
         }
+        // For regular email/password login, allow sign in
+        return true;
       }
 
       return true;

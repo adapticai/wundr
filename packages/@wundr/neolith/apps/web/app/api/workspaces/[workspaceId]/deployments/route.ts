@@ -10,16 +10,13 @@
  * @module app/api/workspaces/[workspaceId]/deployments/route
  */
 
+import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 
 import type { NextRequest } from 'next/server';
-import type {
-  Deployment,
-  CreateDeploymentInput,
-  DeploymentFilters,
-} from '@/types/deployment';
+import type { CreateDeploymentInput, DeploymentFilters } from '@/types/deployment';
 
 /**
  * Route context with workspaceId parameter
@@ -64,151 +61,111 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const filters: DeploymentFilters = {
       status: searchParams.get('status') as DeploymentFilters['status'] | undefined,
-      environment: searchParams.get('environment') as DeploymentFilters['environment'] | undefined,
+      environment: searchParams.get('environment') as
+        | DeploymentFilters['environment']
+        | undefined,
       type: searchParams.get('type') as DeploymentFilters['type'] | undefined,
       search: searchParams.get('search') ?? undefined,
     };
 
-    // TODO: Replace with actual database query
-    // For now, return mock data
-    const mockDeployments: Deployment[] = [
-      {
-        id: 'dep_1',
-        workspaceId,
-        name: 'Main API Service',
-        description: 'Core API backend service',
-        type: 'service',
-        status: 'running',
-        environment: 'production',
-        version: 'v1.2.3',
-        url: 'https://api.example.com',
-        config: {
-          region: 'us-east-1',
-          replicas: 3,
-          resources: {
-            cpu: '1000m',
-            memory: '2Gi',
-          },
-          env: {},
-        },
-        health: {
-          status: 'healthy',
-          lastCheck: new Date(),
-          uptime: 86400,
-        },
-        stats: {
-          requests: 1250000,
-          errors: 42,
-          latencyP50: 125,
-          latencyP99: 480,
-        },
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date(),
-        deployedAt: new Date(),
-      },
-      {
-        id: 'dep_2',
-        workspaceId,
-        name: 'Customer Support Agent',
-        description: 'AI agent for customer inquiries',
-        type: 'agent',
-        status: 'running',
-        environment: 'production',
-        version: 'v2.0.1',
-        url: null,
-        config: {
-          region: 'us-east-1',
-          replicas: 2,
-          resources: {
-            cpu: '500m',
-            memory: '1Gi',
-          },
-          env: {},
-        },
-        health: {
-          status: 'healthy',
-          lastCheck: new Date(),
-          uptime: 43200,
-        },
-        stats: {
-          requests: 58000,
-          errors: 12,
-          latencyP50: 350,
-          latencyP99: 1200,
-        },
-        createdAt: new Date('2024-02-15'),
-        updatedAt: new Date(),
-        deployedAt: new Date(),
-      },
-      {
-        id: 'dep_3',
-        workspaceId,
-        name: 'Data Sync Workflow',
-        description: 'Automated data synchronization',
-        type: 'workflow',
-        status: 'running',
-        environment: 'staging',
-        version: 'v1.0.5',
-        url: null,
-        config: {
-          region: 'us-west-2',
-          replicas: 1,
-          resources: {
-            cpu: '250m',
-            memory: '512Mi',
-          },
-          env: {},
-        },
-        health: {
-          status: 'degraded',
-          lastCheck: new Date(),
-          uptime: 7200,
-        },
-        stats: {
-          requests: 5400,
-          errors: 28,
-          latencyP50: 2400,
-          latencyP99: 8500,
-        },
-        createdAt: new Date('2024-03-10'),
-        updatedAt: new Date(),
-        deployedAt: new Date(Date.now() - 7200000),
-      },
-    ];
-
-    // Apply filters
-    let filteredDeployments = mockDeployments;
+    // Build Prisma where clause
+    const where: Record<string, unknown> = {
+      workspaceId,
+    };
 
     if (filters.status) {
-      filteredDeployments = filteredDeployments.filter(
-        (d) => d.status === filters.status,
-      );
+      // Map frontend status to database enum
+      const statusMap: Record<string, string> = {
+        deploying: 'DEPLOYING',
+        running: 'ACTIVE',
+        stopped: 'STOPPED',
+        failed: 'FAILED',
+        updating: 'BUILDING',
+      };
+      where.status = statusMap[filters.status] || filters.status.toUpperCase();
     }
 
     if (filters.environment) {
-      filteredDeployments = filteredDeployments.filter(
-        (d) => d.environment === filters.environment,
-      );
+      where.environment = filters.environment.toUpperCase();
     }
 
     if (filters.type) {
-      filteredDeployments = filteredDeployments.filter(
-        (d) => d.type === filters.type,
-      );
+      where.type = filters.type.toUpperCase();
     }
 
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filteredDeployments = filteredDeployments.filter(
-        (d) =>
-          d.name.toLowerCase().includes(searchLower) ||
-          d.description?.toLowerCase().includes(searchLower),
-      );
+      where.OR = [
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ];
     }
 
+    // Query deployments from database
+    const deployments = await prisma.deployment.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Transform to frontend format
+    const transformedDeployments = deployments.map((d) => ({
+      id: d.id,
+      workspaceId: d.workspaceId,
+      name: d.name,
+      description: d.description,
+      type: d.type.toLowerCase() as 'service' | 'agent' | 'workflow' | 'integration',
+      status: (() => {
+        const statusMap: Record<string, string> = {
+          PENDING: 'deploying',
+          BUILDING: 'updating',
+          DEPLOYING: 'deploying',
+          ACTIVE: 'running',
+          FAILED: 'failed',
+          STOPPED: 'stopped',
+        };
+        return (
+          statusMap[d.status] || d.status.toLowerCase()
+        ) as 'deploying' | 'running' | 'stopped' | 'failed' | 'updating';
+      })(),
+      environment: d.environment.toLowerCase() as
+        | 'production'
+        | 'staging'
+        | 'development',
+      version: d.version || 'v1.0.0',
+      url: d.url,
+      config: d.config as {
+        region: string;
+        replicas: number;
+        resources: { cpu: string; memory: string };
+        env: Record<string, string>;
+      },
+      health: ((d.health as unknown) || {
+        status: 'unknown',
+        lastCheck: null,
+        uptime: 0,
+      }) as {
+        status: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
+        lastCheck: Date | null;
+        uptime: number;
+      },
+      stats: ((d.stats as unknown) || {
+        requests: 0,
+        errors: 0,
+        latencyP50: 0,
+        latencyP99: 0,
+      }) as {
+        requests: number;
+        errors: number;
+        latencyP50: number;
+        latencyP99: number;
+      },
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+      deployedAt: d.deployedAt,
+    }));
+
     return NextResponse.json({
-      deployments: filteredDeployments,
-      total: filteredDeployments.length,
+      deployments: transformedDeployments,
+      total: transformedDeployments.length,
     });
   } catch (error) {
     console.error('Error fetching deployments:', error);
@@ -278,38 +235,87 @@ export async function POST(
       );
     }
 
-    // TODO: Replace with actual database creation
-    // For now, return mock created deployment
-    const newDeployment: Deployment = {
-      id: `dep_${Date.now()}`,
-      workspaceId,
-      name: body.name,
-      description: body.description ?? null,
-      type: body.type,
-      status: 'deploying',
-      environment: body.environment,
-      version: 'v1.0.0',
-      url: null,
-      config: body.config,
-      health: {
+    // Create deployment in database
+    const deployment = await prisma.deployment.create({
+      data: {
+        workspaceId,
+        name: body.name,
+        description: body.description ?? null,
+        type: body.type.toUpperCase() as 'SERVICE' | 'AGENT' | 'WORKFLOW' | 'INTEGRATION',
+        status: 'DEPLOYING',
+        environment: body.environment.toUpperCase() as
+          | 'DEVELOPMENT'
+          | 'STAGING'
+          | 'PRODUCTION',
+        version: 'v1.0.0',
+        config: JSON.parse(JSON.stringify(body.config ?? {})),
+        health: JSON.parse(JSON.stringify({
+          status: 'unknown',
+          lastCheck: null,
+          uptime: 0,
+        })),
+        stats: JSON.parse(JSON.stringify({
+          requests: 0,
+          errors: 0,
+          latencyP50: 0,
+          latencyP99: 0,
+        })),
+        createdById: session.user.id,
+      },
+    });
+
+    // Transform to frontend format
+    const transformedDeployment = {
+      id: deployment.id,
+      workspaceId: deployment.workspaceId,
+      name: deployment.name,
+      description: deployment.description,
+      type: deployment.type.toLowerCase() as
+        | 'service'
+        | 'agent'
+        | 'workflow'
+        | 'integration',
+      status: 'deploying' as const,
+      environment: deployment.environment.toLowerCase() as
+        | 'production'
+        | 'staging'
+        | 'development',
+      version: deployment.version || 'v1.0.0',
+      url: deployment.url,
+      config: deployment.config as {
+        region: string;
+        replicas: number;
+        resources: { cpu: string; memory: string };
+        env: Record<string, string>;
+      },
+      health: ((deployment.health as unknown) || {
         status: 'unknown',
         lastCheck: null,
         uptime: 0,
+      }) as {
+        status: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
+        lastCheck: Date | null;
+        uptime: number;
       },
-      stats: {
+      stats: ((deployment.stats as unknown) || {
         requests: 0,
         errors: 0,
         latencyP50: 0,
         latencyP99: 0,
+      }) as {
+        requests: number;
+        errors: number;
+        latencyP50: number;
+        latencyP99: number;
       },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deployedAt: null,
+      createdAt: deployment.createdAt,
+      updatedAt: deployment.updatedAt,
+      deployedAt: deployment.deployedAt,
     };
 
     return NextResponse.json(
       {
-        deployment: newDeployment,
+        deployment: transformedDeployment,
         message: 'Deployment created successfully',
       },
       { status: 201 },

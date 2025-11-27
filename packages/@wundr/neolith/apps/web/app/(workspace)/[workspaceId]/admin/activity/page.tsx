@@ -1,7 +1,9 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { useAdminActivity, type AdminAction } from '@/hooks/use-admin';
 import { cn } from '@/lib/utils';
@@ -30,6 +32,12 @@ type ActivityFilterType =
 export default function AdminActivityPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Activity Log', 'Review admin actions and audit trail for your workspace');
+  }, [setPageHeader]);
 
   const [filterAction, setFilterAction] = useState<ActivityFilterType>('all');
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
@@ -115,14 +123,8 @@ export default function AdminActivityPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Activity Log</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Review admin actions and audit trail for your workspace
-          </p>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={handleExport}

@@ -4,7 +4,7 @@
  * Comprehensive test suite for the heartbeat service covering:
  * - Heartbeat sending and tracking
  * - Health check monitoring
- * - Timeout and unhealthy VP detection
+ * - Timeout and unhealthy Orchestrator detection
  * - Recovery detection
  * - Organization-level filtering
  *
@@ -12,13 +12,13 @@
  */
 
 import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-  afterEach,
   type _Mock,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
 } from 'vitest';
 
 import {
@@ -26,17 +26,17 @@ import {
   type MockRedis,
 } from '../../test-utils/mock-redis';
 import {
-  _createMockHeartbeatRecord,
-  createMockVPMetrics,
-  _createMockHealthStatus,
   _createMockDegradedHealthStatus,
+  _createMockHealthStatus,
+  _createMockHeartbeatRecord,
   _createMockUnhealthyHealthStatus,
   _createMockUnknownHealthStatus,
+  createMockVPMetrics,
   generatePresenceTestId,
-  resetPresenceIdCounter,
-  type HeartbeatRecord,
   type HealthCheckStatus,
   type HealthStatus,
+  type HeartbeatRecord,
+  resetPresenceIdCounter,
   type VPMetrics,
 } from '../../test-utils/presence-factories';
 
@@ -123,7 +123,7 @@ class MockHeartbeatService {
     const data = await this.redis.hgetall(key);
     const now = new Date();
 
-    // VP not registered
+    // Orchestrator not registered
     if (!data) {
       return {
         vpId,
@@ -335,7 +335,7 @@ return;
     const statuses = await this.heartbeatService.getAllVPHealthStatuses();
 
     for (const status of statuses) {
-      const previousStatus = this.previousStatuses.get(status.vpId);
+      const previousStatus = this.previousStatuses.get(status.orchestratorId);
 
       // Detect transition to unhealthy
       if (
@@ -343,7 +343,7 @@ return;
         previousStatus !== 'unhealthy' &&
         this.onUnhealthyCallback
       ) {
-        this.onUnhealthyCallback(status.vpId, status);
+        this.onUnhealthyCallback(status.orchestratorId, status);
       }
 
       // Detect recovery
@@ -352,10 +352,10 @@ return;
         previousStatus === 'unhealthy' &&
         this.onRecoveredCallback
       ) {
-        this.onRecoveredCallback(status.vpId, status);
+        this.onRecoveredCallback(status.orchestratorId, status);
       }
 
-      this.previousStatuses.set(status.vpId, status.status);
+      this.previousStatuses.set(status.orchestratorId, status.status);
     }
 
     return statuses;
@@ -397,7 +397,7 @@ describe('HeartbeatService', () => {
       const data = await redis.hgetall(key);
 
       expect(data).not.toBeNull();
-      expect(data?.vpId).toBe(vpId);
+      expect(data?.orchestratorId).toBe(vpId);
       expect(data?.daemonId).toBe(daemonId);
       expect(data?.timestamp).toBeDefined();
       expect(new Date(data!.timestamp).getTime()).toBeGreaterThan(0);
@@ -470,7 +470,7 @@ describe('HeartbeatService', () => {
       );
 
       const event = JSON.parse(redis._publishedMessages[0].message);
-      expect(event.vpId).toBe(vpId);
+      expect(event.orchestratorId).toBe(vpId);
       expect(event.daemonId).toBe(daemonId);
       expect(event.status).toBe('online');
     });
@@ -614,7 +614,7 @@ describe('HeartbeatService', () => {
       await heartbeatService.sendHeartbeat(unhealthyVP1, 'daemon2');
       await heartbeatService.sendHeartbeat(unhealthyVP2, 'daemon3');
 
-      // Keep healthy VP alive
+      // Keep healthy Orchestrator alive
       // Let unhealthy VPs timeout
       vi.advanceTimersByTime(HEARTBEAT_INTERVAL_MS * 4);
       await heartbeatService.sendHeartbeat(healthyVP, 'daemon1');
@@ -622,9 +622,9 @@ describe('HeartbeatService', () => {
       const unhealthyList = await heartbeatService.getUnhealthyVPs();
 
       expect(unhealthyList).toHaveLength(2);
-      expect(unhealthyList.map((u) => u.vpId)).toContain(unhealthyVP1);
-      expect(unhealthyList.map((u) => u.vpId)).toContain(unhealthyVP2);
-      expect(unhealthyList.map((u) => u.vpId)).not.toContain(healthyVP);
+      expect(unhealthyList.map((u) => u.orchestratorId)).toContain(unhealthyVP1);
+      expect(unhealthyList.map((u) => u.orchestratorId)).toContain(unhealthyVP2);
+      expect(unhealthyList.map((u) => u.orchestratorId)).not.toContain(healthyVP);
     });
 
     it('filters by organization', async () => {
@@ -648,10 +648,10 @@ describe('HeartbeatService', () => {
       const unhealthyOrg2 = await heartbeatService.getUnhealthyVPs(org2);
 
       expect(unhealthyOrg1).toHaveLength(1);
-      expect(unhealthyOrg1[0].vpId).toBe(vpOrg1);
+      expect(unhealthyOrg1[0].orchestratorId).toBe(vpOrg1);
 
       expect(unhealthyOrg2).toHaveLength(1);
-      expect(unhealthyOrg2[0].vpId).toBe(vpOrg2);
+      expect(unhealthyOrg2[0].orchestratorId).toBe(vpOrg2);
     });
 
     it('returns empty array when all VPs are healthy', async () => {
@@ -677,11 +677,11 @@ describe('HeartbeatService', () => {
   });
 
   // ===========================================================================
-  // VP Registration Tests
+  // OrchestratorRegistration Tests
   // ===========================================================================
 
   describe('VP registration', () => {
-    it('registers VP in registry set', async () => {
+    it('registers Orchestrator in registry set', async () => {
       const vpId = generatePresenceTestId('vp');
 
       await heartbeatService.registerVP(vpId);
@@ -701,7 +701,7 @@ describe('HeartbeatService', () => {
       expect(data?.organizationId).toBe(orgId);
     });
 
-    it('unregisters VP correctly', async () => {
+    it('unregisters Orchestrator correctly', async () => {
       const vpId = generatePresenceTestId('vp');
       const daemonId = generatePresenceTestId('daemon');
 
@@ -739,9 +739,9 @@ describe('HeartbeatService', () => {
 
       expect(statuses).toHaveLength(3);
 
-      const vp1Status = statuses.find((s) => s.vpId === vp1);
-      const vp2Status = statuses.find((s) => s.vpId === vp2);
-      const vp3Status = statuses.find((s) => s.vpId === vp3);
+      const vp1Status = statuses.find((s) => s.orchestratorId === vp1);
+      const vp2Status = statuses.find((s) => s.orchestratorId === vp2);
+      const vp3Status = statuses.find((s) => s.orchestratorId === vp3);
 
       expect(vp1Status?.status).toBe('healthy');
       expect(vp2Status?.status).toBe('healthy');
@@ -808,7 +808,7 @@ describe('HeartbeatMonitor', () => {
       await monitor.checkNow();
       expect(onUnhealthy).not.toHaveBeenCalled();
 
-      // Let VP become unhealthy
+      // Let Orchestrator become unhealthy
       vi.advanceTimersByTime(HEARTBEAT_INTERVAL_MS * 4);
       await monitor.checkNow();
 
@@ -830,11 +830,11 @@ describe('HeartbeatMonitor', () => {
       await heartbeatService.registerVP(vpId);
       await heartbeatService.sendHeartbeat(vpId, 'daemon1');
 
-      // Let VP become unhealthy
+      // Let Orchestrator become unhealthy
       vi.advanceTimersByTime(HEARTBEAT_INTERVAL_MS * 4);
       await monitor.checkNow();
 
-      // VP sends heartbeat (recovers)
+      // Orchestrator sends heartbeat (recovers)
       await heartbeatService.sendHeartbeat(vpId, 'daemon1');
       await monitor.checkNow();
 
@@ -929,7 +929,7 @@ describe('HeartbeatMonitor', () => {
   // ===========================================================================
 
   describe('edge cases', () => {
-    it('handles VP becoming unhealthy and recovering multiple times', async () => {
+    it('handles Orchestrator becoming unhealthy and recovering multiple times', async () => {
       vi.useFakeTimers();
       const onUnhealthy = vi.fn();
       const onRecovered = vi.fn();

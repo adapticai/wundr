@@ -52,7 +52,7 @@ export interface SearchFilters {
   isThreadReply?: boolean;
   /** Filter by discipline names */
   disciplines?: string[];
-  /** Filter by VP IDs */
+  /** Filter by OrchestratorIDs */
   vpIds?: string[];
 }
 
@@ -185,7 +185,7 @@ export interface UserSearchResult {
 }
 
 /**
- * VP (Virtual Professional) search result data
+ * Orchestrator (Virtual Professional) search result data
  */
 export interface VPSearchResult {
   type: 'vp';
@@ -281,9 +281,9 @@ export interface SearchIndexMetadata {
   discipline?: string;
   /** Avatar URL */
   avatarUrl?: string;
-  /** VP capabilities list */
+  /** Orchestrator capabilities list */
   capabilities?: string[];
-  /** VP status */
+  /** Orchestrator status */
   status?: string;
   /** Additional string metadata */
   [key: string]: string | number | boolean | string[] | undefined;

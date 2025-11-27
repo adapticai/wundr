@@ -8,21 +8,21 @@
  */
 
 // =============================================================================
-// VP RESOLVERS
+// ORCHESTRATOR RESOLVERS
 // =============================================================================
 
 export {
-  vpResolvers,
-  vpQueries,
-  vpMutations,
-  vpSubscriptions,
-  VPFieldResolvers,
-  VP_STATUS_CHANGED,
-  VPStatus,
-  type VPStatusType,
+  orchestratorResolvers,
+  orchestratorQueries,
+  orchestratorMutations,
+  orchestratorSubscriptions,
+  OrchestratorFieldResolvers,
+  ORCHESTRATOR_STATUS_CHANGED,
+  OrchestratorStatus,
+  type OrchestratorStatusType,
   type GraphQLContext,
-  type VPService,
-} from './vp-resolvers.js';
+  type OrchestratorService,
+} from './orchestrator-resolvers.js';
 
 // =============================================================================
 // MESSAGE RESOLVERS
@@ -114,18 +114,18 @@ export {
   presenceMutations,
   presenceSubscriptions,
   PresenceFieldResolvers,
-  VPPresenceFieldResolvers,
+  OrchestratorPresenceFieldResolvers,
   USER_PRESENCE_CHANGED,
   CHANNEL_PRESENCE_CHANGED,
-  VP_PRESENCE_CHANGED,
+  ORCHESTRATOR_PRESENCE_CHANGED,
   PRESENCE_JOIN,
   PRESENCE_LEAVE,
   PresenceStatus,
-  VPPresenceStatus,
+  OrchestratorPresenceStatus,
   type PresenceStatusType,
-  type VPPresenceStatusType,
+  type OrchestratorPresenceStatusType,
   type UserPresence,
-  type VPPresence,
+  type OrchestratorPresence,
   type ChannelPresence,
   type PresenceService,
 } from './presence-resolvers.js';
@@ -134,7 +134,7 @@ export {
 // RE-EXPORT DEFAULTS
 // =============================================================================
 
-export { default as vpResolversDefault } from './vp-resolvers.js';
+export { default as orchestratorResolversDefault } from './orchestrator-resolvers.js';
 export { default as messageResolversDefault } from './message-resolvers.js';
 export { default as organizationResolversDefault } from './organization-resolvers.js';
 export { default as workspaceResolversDefault } from './workspace-resolvers.js';

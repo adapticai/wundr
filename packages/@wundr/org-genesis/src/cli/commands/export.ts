@@ -13,10 +13,10 @@
 import { createRegistryManager } from '../../registry/index.js';
 
 import type {
-  OrganizationManifest,
-  VPCharter,
-  DisciplinePack,
   AgentDefinition,
+  DisciplinePack,
+  OrchestratorCharter,
+  OrganizationManifest,
 } from '../../types/index.js';
 
 // =============================================================================
@@ -56,7 +56,7 @@ export interface ExportOptions {
   format?: ExportFormat;
 
   /**
-   * Whether to include VP charters in the export.
+   * Whether to include Orchestrator charters in the export.
    * @default true
    */
   includeVPs?: boolean;
@@ -140,7 +140,7 @@ export interface ExportResult {
    */
   stats: {
     organizationCount: number;
-    vpCount: number;
+    orchestratorCount: number;
     disciplineCount: number;
     agentCount: number;
     totalFiles: number;
@@ -163,7 +163,7 @@ export interface ExportResult {
  */
 interface ExportedOrganization {
   manifest: OrganizationManifest;
-  vps: VPCharter[];
+  orchestrators: OrchestratorCharter[];
   disciplines: DisciplinePack[];
   agents: AgentDefinition[];
 }
@@ -211,7 +211,7 @@ function toJson(data: ExportedOrganization, prettyPrint: boolean): string {
     organization: serializeDates(
       data.manifest as unknown as Record<string, unknown>
     ),
-    vps: data.vps.map(vp =>
+    orchestrators: data.orchestrators.map(vp =>
       serializeDates(vp as unknown as Record<string, unknown>)
     ),
     disciplines: data.disciplines.map(d =>
@@ -251,9 +251,9 @@ function toYaml(data: ExportedOrganization): string {
   lines.push(`  lifecycleState: "${data.manifest.lifecycleState}"`);
   lines.push('');
 
-  if (data.vps.length > 0) {
+  if (data.orchestrators.length > 0) {
     lines.push('vps:');
-    for (const vp of data.vps) {
+    for (const orchestrator of data.orchestrators) {
       lines.push(`  - id: "${vp.id}"`);
       lines.push(`    name: "${vp.identity.name}"`);
       lines.push(`    tier: ${vp.tier}`);
@@ -312,12 +312,12 @@ function toMarkdown(data: ExportedOrganization): string {
   lines.push(`- **State:** ${data.manifest.lifecycleState}`);
   lines.push('');
 
-  if (data.vps.length > 0) {
-    lines.push('## Vice Presidents (Tier 1)');
+  if (data.orchestrators.length > 0) {
+    lines.push('## Orchestrators (Tier 1)');
     lines.push('');
     lines.push('| Name | ID | Disciplines | Capabilities |');
     lines.push('|------|-----|-------------|--------------|');
-    for (const vp of data.vps) {
+    for (const orchestrator of data.orchestrators) {
       lines.push(
         `| ${vp.identity.name} | ${vp.id} | ${vp.disciplineIds.length} | ${vp.capabilities.length} |`
       );
@@ -328,7 +328,7 @@ function toMarkdown(data: ExportedOrganization): string {
   if (data.disciplines.length > 0) {
     lines.push('## Disciplines (Tier 2)');
     lines.push('');
-    lines.push('| Name | Category | Agents | Parent VP |');
+    lines.push('| Name | Category | Agents | Parent Orchestrator |');
     lines.push('|------|----------|--------|-----------|');
     for (const disc of data.disciplines) {
       lines.push(
@@ -389,7 +389,7 @@ function formatTextOutput(result: ExportResult): void {
     console.log('  Export Statistics');
     console.log('  ' + '-'.repeat(40));
     console.log(`  Organizations: ${result.stats.organizationCount}`);
-    console.log(`  VPs:           ${result.stats.vpCount}`);
+    console.log(`  VPs:           ${result.stats.orchestratorCount}`);
     console.log(`  Disciplines:   ${result.stats.disciplineCount}`);
     console.log(`  Agents:        ${result.stats.agentCount}`);
     console.log('');
@@ -517,7 +517,7 @@ export async function exportCommand(
         filesExported: [],
         stats: {
           organizationCount: 0,
-          vpCount: 0,
+          orchestratorCount: 0,
           disciplineCount: 0,
           agentCount: 0,
           totalFiles: 0,
@@ -530,11 +530,11 @@ export async function exportCommand(
     const manifest = orgs.items[0] as unknown as OrganizationManifest;
 
     // Get VPs
-    let vps: VPCharter[] = [];
+    let orchestrators: OrchestratorCharter[] = [];
     if (includeVPs) {
-      vps = await registryManager.charters.listVPs();
+      orchestrators = await registryManager.charters.listVPs();
       // Filter to VPs belonging to this org
-      vps = vps.filter(vp =>
+      orchestrators = orchestrators.filter(vp =>
         manifest.vpRegistry.some(mapping => mapping.vpId === vp.id)
       );
     }
@@ -544,7 +544,7 @@ export async function exportCommand(
     if (includeDisciplines) {
       disciplines = await registryManager.disciplines.list();
       // Filter to disciplines belonging to VPs in this org
-      const vpIds = vps.map(vp => vp.id);
+      const vpIds = orchestrators.map(vp => vp.id);
       disciplines = disciplines.filter(
         d => d.parentVpId && vpIds.includes(d.parentVpId)
       );
@@ -564,7 +564,7 @@ export async function exportCommand(
     // Build export data
     const exportData: ExportedOrganization = {
       manifest,
-      vps,
+      orchestrators,
       disciplines,
       agents,
     };
@@ -636,10 +636,10 @@ export async function exportCommand(
 
         // Write VPs
         if (vps.length > 0) {
-          const vpsDir = path.join(outputPath, 'vps');
+          const orchestratorsDir = path.join(outputPath, 'vps');
           await fs.mkdir(vpsDir, { recursive: true });
 
-          for (const vp of vps) {
+          for (const orchestrator of orchestrators) {
             const vpContent =
               format === 'json'
                 ? JSON.stringify(
@@ -651,7 +651,7 @@ export async function exportCommand(
                   ? `# VP: ${vp.identity.name}\nid: "${vp.id}"\n`
                   : `# ${vp.identity.name}\n\n${vp.coreDirective}\n`;
             const vpPath = path.join(
-              vpsDir,
+              orchestratorsDir,
               `${vp.identity.slug}${getExtension(format)}`
             );
             await fs.writeFile(vpPath, vpContent, 'utf-8');
@@ -720,7 +720,7 @@ export async function exportCommand(
       filesExported,
       stats: {
         organizationCount: 1,
-        vpCount: vps.length,
+        orchestratorCount: orchestrators.length,
         disciplineCount: disciplines.length,
         agentCount: agents.length,
         totalFiles: filesExported.length,
@@ -735,7 +735,7 @@ export async function exportCommand(
       filesExported: [],
       stats: {
         organizationCount: 0,
-        vpCount: 0,
+        orchestratorCount: 0,
         disciplineCount: 0,
         agentCount: 0,
         totalFiles: 0,

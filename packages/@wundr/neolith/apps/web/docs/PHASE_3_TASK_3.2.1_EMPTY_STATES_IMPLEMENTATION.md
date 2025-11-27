@@ -56,8 +56,8 @@ interface EmptyStateAction {
 - Conditional rendering based on workspace count
 - Maintained existing dashboard stats and activity when workspaces exist
 
-#### VPs (Virtual Persons) Page
-**File**: `/apps/web/app/(workspace)/[workspaceId]/vps/page.tsx`
+#### VPs (Orchestrators) Page
+**File**: `/apps/web/app/(workspace)/[workspaceId]/orchestrators/page.tsx`
 
 **Implementation**:
 - Empty state with dual modes (filtered vs. no data)
@@ -159,7 +159,7 @@ apps/web/
             │   └── page.tsx (MODIFIED)
             ├── channels/
             │   └── page.tsx (NEW)
-            ├── vps/
+            ├── orchestrators/
             │   └── page.tsx (MODIFIED)
             └── workflows/
                 └── page.tsx (MODIFIED)
@@ -171,7 +171,7 @@ apps/web/
 | --------- | --------------- | -------------------------------------------- |
 | Dashboard | LayoutDashboard | Represents workspace/dashboard concept      |
 | Channels  | Hash            | Standard symbol for channels (#channel-name) |
-| VPs       | Users           | Represents virtual persons/team members      |
+| VPs       | Users           | Represents orchestrators/team members      |
 | Workflows | Workflow        | Directly represents automation/workflows     |
 
 ## Testing Recommendations

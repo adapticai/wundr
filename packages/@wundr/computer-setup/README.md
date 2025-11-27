@@ -53,7 +53,7 @@ transforms a fresh machine into a fully-configured development powerhouse in min
 - **Databases**: PostgreSQL, MySQL, MongoDB, Redis clients
 - **Cloud CLIs**: AWS, GCloud, Azure
 - **AI Tools**: Claude Code, Claude Flow, 80+ MCP agents
-- **VP Daemon**: Machine-level agent supervisor with tiered memory and external integrations
+- **Orchestrator Daemon**: Machine-level agent supervisor with tiered memory and external integrations
 
 ### Hardware-Adaptive Claude Optimization
 
@@ -145,19 +145,19 @@ npx @wundr.io/computer-setup
 # - Optional integrations (Slack, Gmail, team configs)
 ```
 
-### Global Setup (VP Daemon)
+### Global Setup (Orchestrator Daemon)
 
 For machine-level agent orchestration with external integrations:
 
 ```bash
-# Install VP Daemon and global wundr resources
+# Install Orchestrator Daemon and global wundr resources
 npx @wundr.io/computer-setup global-setup
 
-# Check VP Daemon installation status
-npx @wundr.io/computer-setup vp-status
+# Check Orchestrator Daemon installation status
+npx @wundr.io/computer-setup orchestrator-status
 ```
 
-See [VP Daemon Architecture](#-vp-daemon-architecture) for details.
+See [Orchestrator Daemon Architecture](#-orchestrator-daemon-architecture) for details.
 
 ### One-Command Setup
 
@@ -579,16 +579,16 @@ wundr computer-setup --mode minimal
 ### Global Setup Commands
 
 ```bash
-# Install VP Daemon and global wundr resources
+# Install Orchestrator Daemon and global wundr resources
 npx @wundr.io/computer-setup global-setup
 
 # Options:
-# --skip-daemon     Skip VP Daemon installation
-# --daemon-only     Only install VP Daemon
+# --skip-daemon     Skip Orchestrator Daemon installation
+# --daemon-only     Only install Orchestrator Daemon
 # --no-autostart    Don't configure daemon to start on boot
 
-# Check VP Daemon installation status
-npx @wundr.io/computer-setup vp-status
+# Check Orchestrator Daemon installation status
+npx @wundr.io/computer-setup orchestrator-status
 
 # Options:
 # --json            Output status as JSON
@@ -830,7 +830,7 @@ wundr computer-setup --remove-profile fullstack
   - sequentialthinking
 - ✅ 80+ Specialized Agents
 - ✅ Hardware optimization scripts
-- ✅ VP Daemon (via `global-setup` command):
+- ✅ Orchestrator Daemon (via `global-setup` command):
   - Machine-level agent supervisor
   - Session archetype management
   - MemGPT-inspired tiered memory
@@ -907,15 +907,15 @@ Computer Setup maintains resumable state:
 
 If installation fails, run `--resume` to continue from where it left off.
 
-## 🤖 VP Daemon Architecture
+## 🤖 Orchestrator Daemon Architecture
 
-The **VP Daemon** (Virtual Persona Daemon) is a machine-level supervisor that provides persistent
+The **Orchestrator Daemon** (Virtual Persona Daemon) is a machine-level supervisor that provides persistent
 agent orchestration, external integrations, and intelligent memory management across all Claude
 Code/Claude Flow sessions.
 
 ### Overview
 
-VP Daemon runs as a background service on your machine, acting as a central coordinator for:
+Orchestrator Daemon runs as a background service on your machine, acting as a central coordinator for:
 
 - **Session Management**: Spawning and managing Claude Code/Claude Flow sessions
 - **External Integrations**: Interfacing with Slack, Gmail, Google Drive, Twilio, and more
@@ -925,11 +925,11 @@ VP Daemon runs as a background service on your machine, acting as a central coor
 ### Installation
 
 ```bash
-# Install VP Daemon globally
+# Install Orchestrator Daemon globally
 npx @wundr.io/computer-setup global-setup
 
 # This installs:
-# - VP Daemon at ~/vp-daemon
+# - Orchestrator Daemon at ~/orchestrator-daemon
 # - Global wundr resources at ~/.wundr
 # - System service configuration
 # - Integration credentials storage
@@ -938,13 +938,13 @@ npx @wundr.io/computer-setup global-setup
 ### Checking Status
 
 ```bash
-# Check VP Daemon installation and running status
-npx @wundr.io/computer-setup vp-status
+# Check Orchestrator Daemon installation and running status
+npx @wundr.io/computer-setup orchestrator-status
 
 # Example output:
-# VP Daemon Status
+# Orchestrator Daemon Status
 # ================
-# Installation: ~/vp-daemon
+# Installation: ~/orchestrator-daemon
 # Status: Running (PID 12345)
 # Uptime: 3d 14h 22m
 # Active Sessions: 2
@@ -954,7 +954,7 @@ npx @wundr.io/computer-setup vp-status
 
 ### Session Archetypes
 
-VP Daemon supports pre-configured session archetypes optimized for different work contexts:
+Orchestrator Daemon supports pre-configured session archetypes optimized for different work contexts:
 
 | Archetype       | Description                                        | Pre-loaded Agents                        |
 | --------------- | -------------------------------------------------- | ---------------------------------------- |
@@ -966,15 +966,15 @@ VP Daemon supports pre-configured session archetypes optimized for different wor
 
 ```bash
 # Start a session with a specific archetype
-vp-daemon session start --archetype engineering
+orchestrator-daemon session start --archetype engineering
 
 # Create a custom archetype
-vp-daemon archetype create my-archetype --agents "coder,researcher,planner"
+orchestrator-daemon archetype create my-archetype --agents "coder,researcher,planner"
 ```
 
 ### Tiered Memory System
 
-VP Daemon implements a **MemGPT-inspired tiered memory architecture** for intelligent context
+Orchestrator Daemon implements a **MemGPT-inspired tiered memory architecture** for intelligent context
 management across sessions:
 
 ```
@@ -1017,27 +1017,27 @@ management across sessions:
 
 ```bash
 # View current memory state
-vp-daemon memory status
+orchestrator-daemon memory status
 
 # Manually promote context to long-term memory
-vp-daemon memory promote --key "project-architecture"
+orchestrator-daemon memory promote --key "project-architecture"
 
 # Search semantic memory
-vp-daemon memory search "authentication flow"
+orchestrator-daemon memory search "authentication flow"
 
 # Export memory for backup
-vp-daemon memory export --output ~/.wundr/memory-backup.json
+orchestrator-daemon memory export --output ~/.wundr/memory-backup.json
 ```
 
 ### External Integrations
 
-VP Daemon provides seamless integration with external services:
+Orchestrator Daemon provides seamless integration with external services:
 
 #### Slack Integration
 
 ```bash
 # Configure Slack integration
-vp-daemon integrations add slack --token $SLACK_BOT_TOKEN
+orchestrator-daemon integrations add slack --token $SLACK_BOT_TOKEN
 
 # Features:
 # - Receive tasks via Slack messages
@@ -1050,7 +1050,7 @@ vp-daemon integrations add slack --token $SLACK_BOT_TOKEN
 
 ```bash
 # Configure Gmail integration
-vp-daemon integrations add gmail --credentials ~/.wundr/gmail-credentials.json
+orchestrator-daemon integrations add gmail --credentials ~/.wundr/gmail-credentials.json
 
 # Features:
 # - Process emails as tasks
@@ -1063,7 +1063,7 @@ vp-daemon integrations add gmail --credentials ~/.wundr/gmail-credentials.json
 
 ```bash
 # Configure Google Drive integration
-vp-daemon integrations add google-drive --credentials ~/.wundr/gdrive-credentials.json
+orchestrator-daemon integrations add google-drive --credentials ~/.wundr/gdrive-credentials.json
 
 # Features:
 # - Access and analyze documents
@@ -1076,7 +1076,7 @@ vp-daemon integrations add google-drive --credentials ~/.wundr/gdrive-credential
 
 ```bash
 # Configure Twilio integration
-vp-daemon integrations add twilio --account-sid $TWILIO_SID --auth-token $TWILIO_TOKEN
+orchestrator-daemon integrations add twilio --account-sid $TWILIO_SID --auth-token $TWILIO_TOKEN
 
 # Features:
 # - SMS notifications for critical events
@@ -1084,27 +1084,27 @@ vp-daemon integrations add twilio --account-sid $TWILIO_SID --auth-token $TWILIO
 # - WhatsApp messaging support
 ```
 
-### VP Daemon Commands
+### Orchestrator Daemon Commands
 
 | Command                       | Description                                          |
 | ----------------------------- | ---------------------------------------------------- |
-| `vp-daemon start`             | Start the VP Daemon service                          |
-| `vp-daemon stop`              | Stop the VP Daemon service                           |
-| `vp-daemon restart`           | Restart the VP Daemon service                        |
-| `vp-daemon status`            | Show daemon status and statistics                    |
-| `vp-daemon session list`      | List active Claude Code/Flow sessions                |
-| `vp-daemon session start`     | Start a new session with optional archetype          |
-| `vp-daemon session stop`      | Stop a specific session                              |
-| `vp-daemon memory status`     | Show memory tier statistics                          |
-| `vp-daemon memory search`     | Search across memory tiers                           |
-| `vp-daemon integrations list` | List configured integrations                         |
-| `vp-daemon integrations add`  | Add a new integration                                |
-| `vp-daemon logs`              | View daemon logs                                     |
-| `vp-daemon config`            | View or modify daemon configuration                  |
+| `orchestrator-daemon start`             | Start the Orchestrator Daemon service                          |
+| `orchestrator-daemon stop`              | Stop the Orchestrator Daemon service                           |
+| `orchestrator-daemon restart`           | Restart the Orchestrator Daemon service                        |
+| `orchestrator-daemon status`            | Show daemon status and statistics                    |
+| `orchestrator-daemon session list`      | List active Claude Code/Flow sessions                |
+| `orchestrator-daemon session start`     | Start a new session with optional archetype          |
+| `orchestrator-daemon session stop`      | Stop a specific session                              |
+| `orchestrator-daemon memory status`     | Show memory tier statistics                          |
+| `orchestrator-daemon memory search`     | Search across memory tiers                           |
+| `orchestrator-daemon integrations list` | List configured integrations                         |
+| `orchestrator-daemon integrations add`  | Add a new integration                                |
+| `orchestrator-daemon logs`              | View daemon logs                                     |
+| `orchestrator-daemon config`            | View or modify daemon configuration                  |
 
 ### Configuration
 
-VP Daemon configuration is stored at `~/.wundr/vp-daemon.config.json`:
+Orchestrator Daemon configuration is stored at `~/.wundr/orchestrator-daemon.config.json`:
 
 ```json
 {
@@ -1139,8 +1139,8 @@ VP Daemon configuration is stored at `~/.wundr/vp-daemon.config.json`:
 #### Automated Code Review via Slack
 
 ```
-1. Developer pushes PR and mentions @vp-daemon in Slack
-2. VP Daemon receives webhook, spawns engineering session
+1. Developer pushes PR and mentions @orchestrator-daemon in Slack
+2. Orchestrator Daemon receives webhook, spawns engineering session
 3. Claude Code reviews PR using pre-loaded context
 4. Summary posted back to Slack thread
 5. Session context saved to episodic memory
@@ -1151,7 +1151,7 @@ VP Daemon configuration is stored at `~/.wundr/vp-daemon.config.json`:
 ```
 1. Stakeholder emails request to update-docs@company.com
 2. Gmail integration receives and parses email
-3. VP Daemon spawns session with documentation archetype
+3. Orchestrator Daemon spawns session with documentation archetype
 4. Claude Code updates relevant documentation
 5. Draft response sent for human approval
 6. Task outcome saved to semantic memory

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { DashboardSkeleton } from '@/components/skeletons/dashboard-skeleton';
+import { usePageHeader } from '@/contexts/page-header-context';
+import type { DashboardActivityApiResponse } from '@/types/api';
 
 interface DashboardContentProps {
   userName: string;
@@ -34,12 +36,17 @@ interface DashboardErrors {
   stats?: string;
 }
 
-export function DashboardContent({ userName, workspaceId }: DashboardContentProps) {
+export function DashboardContent({ workspaceId }: DashboardContentProps) {
+  const { setPageHeader } = usePageHeader();
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [stats, setStats] = useState<WorkspaceStats | null>(null);
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [errors, setErrors] = useState<DashboardErrors>({});
+
+  useEffect(() => {
+    setPageHeader('Dashboard', 'Overview of your workspace');
+  }, [setPageHeader]);
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -51,7 +58,7 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
         const result = await response.json();
 
         // Transform dashboard activity API response to match ActivityEntry interface
-        const transformedActivities: ActivityEntry[] = (result.data || []).map((activity: any) => ({
+        const transformedActivities: ActivityEntry[] = (result.data || []).map((activity: DashboardActivityApiResponse) => ({
           id: activity.id,
           type: activity.type,
           user: {
@@ -92,7 +99,7 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
           teamMembers: statsData.members.total || 0,
           channels: statsData.channels.total || 0,
           workflows: statsData.workflows.total || 0,
-          orchestrators: statsData.members.vpCount || 0,
+          orchestrators: statsData.members.orchestratorCount || 0,
         });
         setErrors((prev) => ({ ...prev, stats: undefined }));
       } catch (error) {
@@ -161,8 +168,6 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
 
   return (
     <div className="py-2">
-      <h1 className="text-3xl font-bold mb-8">Welcome, {userName}</h1>
-
       <div className="grid grid-cols-1 gap-8">
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -211,7 +216,7 @@ export function DashboardContent({ userName, workspaceId }: DashboardContentProp
                 <StatItem label="Team Members" value={stats?.teamMembers.toString() || '0'} />
                 <StatItem label="Channels" value={stats?.channels.toString() || '0'} />
                 <StatItem label="Workflows" value={stats?.workflows.toString() || '0'} />
-                <StatItem label="Virtual Persons" value={stats?.orchestrators.toString() || '0'} />
+                <StatItem label="Orchestrators" value={stats?.orchestrators.toString() || '0'} />
               </div>
             )}
           </div>

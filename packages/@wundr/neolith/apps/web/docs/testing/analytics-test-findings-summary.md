@@ -204,7 +204,7 @@ Analytics Dashboard
 
 ### Medium Priority (Nice to Have)
 1. **Add Pagination for Large Datasets**
-   - Limit VP leaderboard to 10 items
+   - Limit Orchestrator leaderboard to 10 items
    - Add "Load More" functionality
    - Reduce initial API payload
 

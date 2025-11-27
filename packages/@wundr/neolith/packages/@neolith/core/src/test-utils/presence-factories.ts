@@ -65,7 +65,7 @@ export interface UserPresence {
 }
 
 /**
- * VP (Virtual Person) presence information
+ * Orchestrator (Virtual Person) presence information
  */
 export interface VPPresence {
   vpId: string;
@@ -96,7 +96,7 @@ export interface DaemonInfo {
 }
 
 /**
- * VP performance metrics
+ * Orchestrator performance metrics
  */
 export interface VPMetrics {
   responseTimeMs: number;
@@ -232,7 +232,7 @@ export function createMockOnlineChannelMembers(
 }
 
 // =============================================================================
-// VP PRESENCE FACTORIES
+// OrchestratorPRESENCE FACTORIES
 // =============================================================================
 
 /**
@@ -250,7 +250,7 @@ export function createMockDaemonInfo(
     version: '1.0.0',
     startedAt: now,
     processId: Math.floor(Math.random() * 65535) + 1000,
-    hostname: `vp-daemon-${daemonId.slice(-6)}`,
+    hostname: `orchestrator-daemon-${daemonId.slice(-6)}`,
     uptime: 3600,
     healthCheckUrl: `https://daemon-${daemonId}.genesis.local/health`,
     ...overrides,
@@ -258,10 +258,10 @@ export function createMockDaemonInfo(
 }
 
 /**
- * Create mock VP metrics
+ * Create mock Orchestrator metrics
  */
 export function createMockVPMetrics(
-  overrides?: Partial<VPMetrics>,
+  overrides?: Partial<OrchestratorMetrics>,
 ): VPMetrics {
   return {
     responseTimeMs: Math.floor(Math.random() * 500) + 50,
@@ -276,12 +276,12 @@ export function createMockVPMetrics(
 }
 
 /**
- * Create a mock VP presence object
+ * Create a mock Orchestrator presence object
  */
 export function createMockVPPresence(
-  overrides?: Partial<VPPresence>,
+  overrides?: Partial<OrchestratorPresence>,
 ): VPPresence {
-  const vpId = overrides?.vpId ?? generatePresenceTestId('vp');
+  const vpId = overrides?.orchestratorId ?? generatePresenceTestId('vp');
   const userId = overrides?.userId ?? generatePresenceTestId('user');
   const now = new Date().toISOString();
 
@@ -301,24 +301,24 @@ export function createMockVPPresence(
 }
 
 /**
- * Create a mock VP presence with specific daemon info
+ * Create a mock Orchestrator presence with specific daemon info
  */
 export function createMockVPPresenceWithDaemon(
   daemonOverrides?: Partial<DaemonInfo>,
-  vpOverrides?: Partial<VPPresence>,
+  vpOverrides?: Partial<OrchestratorPresence>,
 ): VPPresence {
   return createMockVPPresence({
-    ...vpOverrides,
+    ...orchestratorOverrides,
     daemonInfo: createMockDaemonInfo(daemonOverrides),
   });
 }
 
 /**
- * Create multiple mock VP presences
+ * Create multiple mock Orchestrator presences
  */
 export function createMockVPPresenceList(
   count: number,
-  overrides?: Partial<VPPresence>,
+  overrides?: Partial<OrchestratorPresence>,
 ): VPPresence[] {
   return Array.from({ length: count }, () =>
     createMockVPPresence(overrides),
@@ -326,10 +326,10 @@ export function createMockVPPresenceList(
 }
 
 /**
- * Create a mock offline VP presence
+ * Create a mock offline Orchestrator presence
  */
 export function createMockOfflineVPPresence(
-  overrides?: Partial<VPPresence>,
+  overrides?: Partial<OrchestratorPresence>,
 ): VPPresence {
   const now = new Date();
   const lastSeen = new Date(now.getTime() - 300000); // 5 minutes ago
@@ -353,7 +353,7 @@ export function createMockOfflineVPPresence(
 export function createMockHeartbeatRecord(
   overrides?: Partial<HeartbeatRecord>,
 ): HeartbeatRecord {
-  const vpId = overrides?.vpId ?? generatePresenceTestId('vp');
+  const vpId = overrides?.orchestratorId ?? generatePresenceTestId('vp');
   const daemonId = overrides?.daemonId ?? generatePresenceTestId('daemon');
   const now = new Date().toISOString();
 
@@ -415,7 +415,7 @@ export function createMockErrorHeartbeat(
 export function createMockHealthStatus(
   overrides?: Partial<HealthCheckStatus>,
 ): HealthCheckStatus {
-  const vpId = overrides?.vpId ?? generatePresenceTestId('vp');
+  const vpId = overrides?.orchestratorId ?? generatePresenceTestId('vp');
   const now = new Date().toISOString();
 
   return {
@@ -612,7 +612,7 @@ export function createMockUserOfflineEvent(
 }
 
 /**
- * Create a mock VP online event
+ * Create a mock Orchestrator online event
  */
 export function createMockVPOnlineEvent(
   vpId: string,
@@ -630,7 +630,7 @@ export function createMockVPOnlineEvent(
 }
 
 /**
- * Create a mock VP offline event
+ * Create a mock Orchestrator offline event
  */
 export function createMockVPOfflineEvent(
   vpId: string,
@@ -673,7 +673,7 @@ export interface MockPresenceService {
 }
 
 /**
- * Create a mock presence service for testing user and VP presence functionality
+ * Create a mock presence service for testing user and Orchestrator presence functionality
  *
  * @returns A mock presence service with all methods as vi.fn() mocks
  *
@@ -719,7 +719,7 @@ export interface MockHeartbeatService {
 }
 
 /**
- * Create a mock heartbeat service for testing VP health monitoring
+ * Create a mock heartbeat service for testing Orchestrator health monitoring
  *
  * @returns A mock heartbeat service with all methods as vi.fn() mocks
  *
@@ -758,7 +758,7 @@ export interface MockHeartbeatMonitor {
 }
 
 /**
- * Create a mock heartbeat monitor for testing VP health check scheduling
+ * Create a mock heartbeat monitor for testing Orchestrator health check scheduling
  *
  * @returns A mock heartbeat monitor with all methods as vi.fn() mocks
  *
@@ -792,7 +792,7 @@ export const PresenceFactories = {
   userPresenceList: createMockUserPresenceList,
   onlineChannelMembers: createMockOnlineChannelMembers,
 
-  // VP presence
+  // Orchestrator presence
   vpPresence: createMockVPPresence,
   vpPresenceWithDaemon: createMockVPPresenceWithDaemon,
   vpPresenceList: createMockVPPresenceList,

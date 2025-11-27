@@ -3,9 +3,8 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { TRIGGER_TYPE_CONFIG } from '@/types/workflow';
-
 import type { TriggerConfig, TriggerType } from '@/types/workflow';
+import { TRIGGER_TYPE_CONFIG } from '@/types/workflow';
 
 export interface TriggerConfigPanelProps {
   trigger: TriggerConfig;
@@ -609,12 +608,12 @@ function MentionConfig({ mention, onChange }: MentionConfigProps) {
         <input
           id="mention-vps"
           type="text"
-          value={mention?.vpIds?.join(', ') || ''}
+          value={mention?.orchestratorIds?.join(', ') || ''}
           onChange={(e) =>
             onChange({
               ...mention,
-              vpIds: e.target.value
-                .split(',')
+              orchestratorIds: e.target.value
+              orchestratorIdplit(',')
                 .map((s) => s.trim())
                 .filter(Boolean),
             })

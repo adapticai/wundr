@@ -791,7 +791,7 @@ export async function migrateOrgGenesisResult(
   prisma: PrismaClient,
   workspaceId: string,
   manifest: OrganizationManifest,
-  vps: VPCharter[],
+  orchestrators: VPCharter[],
   disciplines: DisciplinePack[],
 ): Promise<void> {
   await prisma.$transaction(async (tx) => {
@@ -809,7 +809,7 @@ export async function migrateOrgGenesisResult(
     });
 
     // 2. Create VP users and mappings
-    for (const vp of vps) {
+    for (const vp of orchestrators) {
       const vpUser = await tx.user.create({
         data: {
           email: `${vp.identity.slug}@genesis.local`,

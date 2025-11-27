@@ -1,7 +1,7 @@
 /**
- * VP Daemon API Types
+ * OrchestratorDaemon API Types
  *
- * Type definitions for VP daemon integration API endpoints.
+ * Type definitions for Orchestrator daemon integration API endpoints.
  * Supports daemon registration, authentication, heartbeat, and session management.
  *
  * @module types/daemon
@@ -11,7 +11,7 @@
  * Daemon registration request payload
  */
 export interface DaemonRegistration {
-  /** VP identifier */
+  /** Orchestrator identifier */
   vpId: string;
   /** Organization identifier */
   organizationId: string;
@@ -53,7 +53,7 @@ export interface DaemonRegistrationResponse {
   success: boolean;
   /** Response data */
   data: {
-    /** VP identifier */
+    /** Orchestrator identifier */
     vpId: string;
     /** Organization identifier */
     organizationId: string;
@@ -122,7 +122,7 @@ export interface DaemonHeartbeatResponse {
  * Session creation request payload
  */
 export interface SessionCreate {
-  /** VP identifier */
+  /** Orchestrator identifier */
   vpId: string;
   /** Session type */
   type: 'daemon' | 'user' | 'system';
@@ -175,7 +175,7 @@ export type SessionStatus = 'active' | 'idle' | 'expired' | 'terminated';
 export interface Session {
   /** Unique session identifier */
   id: string;
-  /** VP identifier */
+  /** Orchestrator identifier */
   vpId: string;
   /** Session type */
   type: 'daemon' | 'user' | 'system';
@@ -265,7 +265,7 @@ export interface DaemonAuthResponse {
   expiresAt: string;
   /** Session identifier */
   sessionId: string;
-  /** VP information */
+  /** Orchestrator information */
   vp: {
     id: string;
     discipline: string | null;
@@ -293,7 +293,7 @@ export interface DaemonErrorResponse {
  * Daemon status information
  */
 export interface DaemonStatus {
-  /** VP identifier */
+  /** Orchestrator identifier */
   vpId: string;
   /** Daemon instance ID */
   daemonId: string;

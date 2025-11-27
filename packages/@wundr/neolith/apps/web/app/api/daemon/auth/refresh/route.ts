@@ -1,7 +1,7 @@
 /**
  * Daemon Token Refresh API Route
  *
- * Handles refreshing access tokens for VP daemon services.
+ * Handles refreshing access tokens for Orchestrator daemon services.
  *
  * Routes:
  * - POST /api/daemon/auth/refresh - Refresh access token
@@ -11,10 +11,9 @@
 
 import { redis, hashAPIKey } from '@neolith/core';
 import * as jwt from 'jsonwebtoken';
+import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
-import type { NextRequest} from 'next/server';
 
 /**
  * Schema for token refresh request body

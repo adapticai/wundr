@@ -1,7 +1,7 @@
 /**
  * Daemon Channel Join/Leave API Route
  *
- * Handles channel join and leave operations for VP daemon services.
+ * Handles channel join and leave operations for Orchestrator daemon services.
  *
  * Routes:
  * - POST /api/daemon/channels/[channelId]/join - Join a channel
@@ -12,9 +12,8 @@
 
 import { prisma } from '@neolith/database';
 import * as jwt from 'jsonwebtoken';
-import { NextResponse } from 'next/server';
-
 import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * JWT configuration
@@ -67,7 +66,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 /**
  * POST /api/daemon/channels/[channelId]/join - Join a channel
  *
- * Adds the VP daemon as a member of the specified channel.
+ * Adds the Orchestrator daemon as a member of the specified channel.
  *
  * @param request - Next.js request with authentication
  * @param params - Route parameters containing channelId
@@ -97,8 +96,8 @@ export async function POST(
 
     const { channelId } = await params;
 
-    // Get VP user info
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator user info
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: {
         userId: true,
@@ -140,7 +139,7 @@ export async function POST(
       );
     }
 
-    // Check if VP belongs to same organization
+    // Check if Orchestrator belongs to same organization
     if (channel.workspace.organizationId !== vp.organizationId) {
       return NextResponse.json(
         { error: 'Channel not found', code: CHANNEL_ERROR_CODES.CHANNEL_NOT_FOUND },
@@ -185,7 +184,7 @@ export async function POST(
 /**
  * DELETE /api/daemon/channels/[channelId]/join - Leave a channel
  *
- * Removes the VP daemon from the specified channel.
+ * Removes the Orchestrator daemon from the specified channel.
  *
  * @param request - Next.js request with authentication
  * @param params - Route parameters containing channelId
@@ -215,8 +214,8 @@ export async function DELETE(
 
     const { channelId } = await params;
 
-    // Get VP user info
-    const vp = await prisma.vP.findUnique({
+    // Get Orchestrator user info
+    const orchestrator = await prisma.vP.findUnique({
       where: { id: token.vpId },
       select: { userId: true },
     });

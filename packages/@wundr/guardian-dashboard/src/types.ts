@@ -17,11 +17,11 @@ export type InterventionType =
   | 'rollback';
 
 // ============================================================================
-// VP Alignment Drift Metrics (for VP Daemon integration)
+// Orchestrator Alignment Drift Metrics (for Orchestrator Daemon integration)
 // ============================================================================
 
 /**
- * Metrics for detecting alignment drift in VP Daemon context
+ * Metrics for detecting alignment drift in Orchestrator Daemon context
  * Uses rate-based metrics (0.0 - 1.0 scale)
  */
 export interface VPAlignmentDriftMetrics {

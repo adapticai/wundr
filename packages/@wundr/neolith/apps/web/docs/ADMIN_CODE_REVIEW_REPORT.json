@@ -338,7 +338,7 @@
       ]
     },
     {
-      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/vp-health/page.tsx",
+      "file": "/Users/iroselli/wundr/packages/@wundr/neolith/apps/web/app/(workspace)/[workspaceId]/admin/orchestrator-health/page.tsx",
       "linesOfCode": 395,
       "issues": [
         {
@@ -346,21 +346,21 @@
           "category": "missing_component_integration",
           "line": "7-9",
           "description": "Imports VPStatusCard components that may not exist",
-          "details": "Imports from @/components/presence/vp-status-card which needs verification"
+          "details": "Imports from @/components/presence/orchestrator-status-card which needs verification"
         },
         {
           "severity": "high",
           "category": "missing_api_integration",
           "line": "64",
           "description": "Health check endpoint may not exist",
-          "details": "Calls /api/organizations/${workspaceId}/vps/health-check but uses workspaceId not organizationId"
+          "details": "Calls /api/organizations/${workspaceId}/orchestrators/health-check but uses workspaceId not organizationId"
         },
         {
           "severity": "high",
           "category": "missing_api_integration",
           "line": "87",
           "description": "Daemon restart endpoint may not exist",
-          "details": "Calls /api/vps/${vpId}/daemon/restart"
+          "details": "Calls /api/orchestrators/${vpId}/daemon/restart"
         },
         {
           "severity": "medium",
@@ -463,10 +463,10 @@
       "/api/workspaces/[workspaceId]/admin/billing/plan - POST (referenced in hook)",
       "/api/workspaces/[workspaceId]/admin/billing/cancel - POST (referenced in hook)",
       "/api/workspaces/[workspaceId]/admin/billing/invoices/[invoiceId] - GET (referenced in hook)",
-      "/api/organizations/[orgId]/vps/health - GET (referenced in vp-health page)",
-      "/api/organizations/[orgId]/vps/health-check - POST (referenced in vp-health page)",
-      "/api/vps/[vpId]/health - GET (referenced in use-presence hook)",
-      "/api/vps/[vpId]/daemon/restart - POST (referenced in vp-health page)"
+      "/api/organizations/[orgId]/orchestrators/health - GET (referenced in orchestrator-health page)",
+      "/api/organizations/[orgId]/orchestrators/health-check - POST (referenced in orchestrator-health page)",
+      "/api/orchestrators/[orchestratorId]/health - GET (referenced in use-presence hook)",
+      "/api/orchestrators/[orchestratorId]/daemon/restart - POST (referenced in orchestrator-health page)"
     ],
     "mismatches": [
       {
@@ -534,8 +534,8 @@
       "priority": 5,
       "issue": "VP Health endpoints use inconsistent resource naming (organizations vs workspaces)",
       "impact": "VP health features may not work",
-      "files": ["app/(workspace)/[workspaceId]/admin/vp-health/page.tsx"],
-      "fix": "Standardize on workspaceId or organizationId throughout VP health feature"
+      "files": ["app/(workspace)/[workspaceId]/admin/orchestrator-health/page.tsx"],
+      "fix": "Standardize on workspaceId or organizationId throughout Orchestrator health feature"
     }
   ],
   "recommendations": {
@@ -557,7 +557,7 @@
       "Implement proper RBAC for all admin endpoints",
       "Add audit logging for all admin actions",
       "Create admin documentation for all features",
-      "Implement real-time updates for member presence and VP health"
+      "Implement real-time updates for member presence and Orchestrator health"
     ]
   },
   "summary": {

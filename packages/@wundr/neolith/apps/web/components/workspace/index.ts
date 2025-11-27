@@ -1,3 +1,3 @@
-export { WorkspaceCard, WorkspaceCardSkeleton } from './workspace-card';
-export type { Workspace } from './workspace-card';
-export { CreateWorkspaceCard } from './create-workspace-card';
+export { WorkspaceSwitcher, type Workspace } from './workspace-switcher';
+export { WorkspaceSidebar } from './workspace-sidebar';
+export { AddAccountDialog } from './add-account-dialog';

@@ -1057,13 +1057,13 @@ function getWebhookEventInfo(): WebhookEventInfo[] {
     {
       event: 'VP_MESSAGE',
       name: 'VP Message',
-      description: 'Triggered when a VP sends a message',
+      description: 'Triggered when a Orchestrator sends a message',
       payloadSchema: { type: 'object', properties: { vpId: { type: 'string' }, messageId: { type: 'string' } } },
     },
     {
       event: 'VP_ACTION',
       name: 'VP Action',
-      description: 'Triggered when a VP performs an action',
+      description: 'Triggered when a Orchestrator performs an action',
       payloadSchema: { type: 'object', properties: { vpId: { type: 'string' }, actionType: { type: 'string' } } },
     },
   ];

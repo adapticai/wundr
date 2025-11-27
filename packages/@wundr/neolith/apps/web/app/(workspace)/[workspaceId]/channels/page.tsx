@@ -1,8 +1,9 @@
 'use client';
 
-import { Hash, Plus } from 'lucide-react';
+import { Hash, Lock, Plus, Users, MessageSquare, Clock } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePageHeader } from '@/contexts/page-header-context';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { useChannels } from '@/hooks/use-channel';
+import { formatDistanceToNow } from 'date-fns';
+
+import type { Channel } from '@/types/channel';
 
 type ChannelType = 'PUBLIC' | 'PRIVATE';
 
@@ -28,14 +33,18 @@ interface CreateChannelFormData {
 }
 
 export default function ChannelsPage() {
-  // TODO: Replace with actual channel fetching logic
-  const channels: any[] = [];
-  const isLoading = false;
-  const error = null;
-
   const params = useParams();
   const router = useRouter();
   const workspaceId = params.workspaceId as string;
+  const { setPageHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setPageHeader('Channels', 'Communicate with your team');
+  }, [setPageHeader]);
+
+  // Fetch channels using the hook
+  const { channels, isLoading, error, refetch } = useChannels(workspaceId);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -115,10 +124,10 @@ export default function ChannelsPage() {
       setValidationErrors({});
       setIsCreateDialogOpen(false);
 
-      // Refresh the page or navigate to the new channel
-      router.refresh();
+      // Refetch channels to update the list
+      await refetch();
 
-      // Optional: Navigate to the new channel
+      // Navigate to the new channel
       if (result.data?.id) {
         router.push(`/${workspaceId}/channels/${result.data.id}`);
       }
@@ -145,14 +154,8 @@ export default function ChannelsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Channels</h1>
-          <p className="text-sm text-muted-foreground">
-            Organize conversations and collaborate with your team
-          </p>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => setIsCreateDialogOpen(true)}
@@ -195,16 +198,75 @@ export default function ChannelsPage() {
       {/* Channel Grid */}
       {!isLoading && !error && channels.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {channels.map((channel: any) => (
-            <div
+          {channels.map((channel: Channel) => (
+            <button
               key={channel.id}
-              className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
+              type="button"
+              onClick={() => router.push(`/${workspaceId}/channels/${channel.id}`)}
+              className="rounded-lg border bg-card p-4 text-left transition-all hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
-              <h3 className="font-semibold">{channel.name}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {channel.description}
-              </p>
-            </div>
+              {/* Channel Header */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {channel.type === 'private' ? (
+                    <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                  ) : (
+                    <Hash className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                  )}
+                  <h3 className="font-semibold truncate">{channel.name}</h3>
+                </div>
+                {channel.type === 'private' && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 flex-shrink-0">
+                    Private
+                  </span>
+                )}
+              </div>
+
+              {/* Channel Description */}
+              {channel.description && (
+                <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                  {channel.description}
+                </p>
+              )}
+
+              {/* Channel Stats */}
+              <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                {/* Member Count */}
+                <div className="flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5" />
+                  <span>{channel.memberCount || 0}</span>
+                </div>
+
+                {/* Message Count or Last Activity */}
+                {channel.lastMessage ? (
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    <span className="truncate flex-1">
+                      {formatDistanceToNow(new Date(channel.lastMessage.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>No messages</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Last Message Preview */}
+              {channel.lastMessage && (
+                <div className="mt-2 pt-2 border-t">
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    <span className="font-medium">
+                      {channel.lastMessage.author?.name || 'Someone'}
+                    </span>
+                    : {channel.lastMessage.content}
+                  </p>
+                </div>
+              )}
+            </button>
           ))}
         </div>
       )}

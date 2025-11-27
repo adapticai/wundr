@@ -13,7 +13,7 @@
  * @module @genesis/core/services/__tests__/daemon-auth-service.test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockRedis, type MockRedis } from '../../test-utils/mock-redis';
 
@@ -123,7 +123,7 @@ class MockDaemonAuthService {
 
     const daemon = await this.prisma.daemonCredential.create({
       data: {
-        vpId: registration.vpId,
+        vpId: registration.orchestratorId,
         workspaceId: registration.workspaceId,
         apiKey,
         apiSecretHash: this.hashSecret(apiSecret),
@@ -140,7 +140,7 @@ class MockDaemonAuthService {
       apiKey,
       apiSecret,
       workspaceId: registration.workspaceId,
-      vpId: registration.vpId,
+      vpId: registration.orchestratorId,
       createdAt: daemon.createdAt,
       isActive: daemon.isActive,
     };
@@ -171,8 +171,8 @@ class MockDaemonAuthService {
     }
 
     const scopes = request.scopes ?? this.getDefaultScopes();
-    const accessToken = this.generateMockToken('access', daemon.id, daemon.vpId, daemon.workspaceId);
-    const refreshToken = this.generateMockToken('refresh', daemon.id, daemon.vpId, daemon.workspaceId);
+    const accessToken = this.generateMockToken('access', daemon.id, daemon.orchestratorId, daemon.workspaceId);
+    const refreshToken = this.generateMockToken('refresh', daemon.id, daemon.orchestratorId, daemon.workspaceId);
 
     await this.redis.setex(`daemon:refresh:${daemon.id}`, this.refreshTokenTtl, refreshToken);
 
@@ -188,7 +188,7 @@ class MockDaemonAuthService {
       tokenType: 'Bearer' as const,
       scopes,
       daemonId: daemon.id,
-      vpId: daemon.vpId,
+      vpId: daemon.orchestratorId,
     };
   }
 
@@ -217,8 +217,8 @@ class MockDaemonAuthService {
     }
 
     const scopes = this.getDefaultScopes();
-    const accessToken = this.generateMockToken('access', daemon.id, daemon.vpId, daemon.workspaceId);
-    const newRefreshToken = this.generateMockToken('refresh', daemon.id, daemon.vpId, daemon.workspaceId);
+    const accessToken = this.generateMockToken('access', daemon.id, daemon.orchestratorId, daemon.workspaceId);
+    const newRefreshToken = this.generateMockToken('refresh', daemon.id, daemon.orchestratorId, daemon.workspaceId);
 
     await this.redis.setex(`daemon:refresh:${daemon.id}`, this.refreshTokenTtl, newRefreshToken);
 
@@ -229,7 +229,7 @@ class MockDaemonAuthService {
       tokenType: 'Bearer' as const,
       scopes,
       daemonId: daemon.id,
-      vpId: daemon.vpId,
+      vpId: daemon.orchestratorId,
     };
   }
 
@@ -254,7 +254,7 @@ class MockDaemonAuthService {
       type: 'access' as const,
       expiresAt: new Date(payload.exp * 1000),
       daemonId: payload.daemonId,
-      vpId: payload.vpId,
+      vpId: payload.orchestratorId,
       workspaceId: payload.workspaceId,
       scopes: payload.scopes,
     };
@@ -366,7 +366,7 @@ return null;
       apiKey: daemon.apiKey,
       apiSecret: '[REDACTED]',
       workspaceId: daemon.workspaceId,
-      vpId: daemon.vpId,
+      vpId: daemon.orchestratorId,
       createdAt: daemon.createdAt,
       expiresAt: daemon.expiresAt ?? undefined,
       lastUsedAt: daemon.lastUsedAt ?? undefined,
@@ -476,7 +476,7 @@ describe('DaemonAuthService', () => {
       expect(result.daemonId).toBe('daemon_123');
       expect(result.apiKey).toMatch(/^dk_/);
       expect(result.apiSecret).toBeDefined();
-      expect(result.vpId).toBe('vp_456');
+      expect(result.orchestratorId).toBe('vp_456');
       expect(result.workspaceId).toBe('ws_789');
       expect(result.isActive).toBe(true);
     });
@@ -548,7 +548,7 @@ describe('DaemonAuthService', () => {
       expect(result.refreshToken).toBeDefined();
       expect(result.tokenType).toBe('Bearer');
       expect(result.daemonId).toBe(mockDaemon.id);
-      expect(result.vpId).toBe(mockDaemon.vpId);
+      expect(result.orchestratorId).toBe(mockDaemon.orchestratorId);
     });
 
     it('should reject invalid API key', async () => {
@@ -657,7 +657,7 @@ describe('DaemonAuthService', () => {
       const result = await authService.verifyAccessToken(token);
 
       expect(result.daemonId).toBe('daemon_123');
-      expect(result.vpId).toBe('vp_456');
+      expect(result.orchestratorId).toBe('vp_456');
       expect(result.workspaceId).toBe('ws_789');
       expect(result.type).toBe('access');
     });
@@ -712,7 +712,7 @@ describe('DaemonAuthService', () => {
       const payload = Buffer.from(
         JSON.stringify({
           daemonId: mockDaemon.id,
-          vpId: mockDaemon.vpId,
+          vpId: mockDaemon.orchestratorId,
           workspaceId: mockDaemon.workspaceId,
           type: 'refresh',
           exp: Math.floor(Date.now() / 1000) + 86400,
@@ -787,7 +787,7 @@ describe('DaemonAuthService', () => {
 
       expect(session.id).toBeDefined();
       expect(session.daemonId).toBe('daemon_123');
-      expect(session.vpId).toBe('vp_456');
+      expect(session.orchestratorId).toBe('vp_456');
       expect(session.status).toBe('connected');
       expect(mockRedis.setex).toHaveBeenCalled();
       expect(mockRedis.sadd).toHaveBeenCalled();

@@ -124,14 +124,14 @@ export type UUID = string;
 export type InputMaybe<T> = T | null | undefined;
 
 // =============================================================================
-// VP TYPES
+// ORCHESTRATOR TYPES
 // =============================================================================
 
-// Export VP-specific type definitions (canonical source for VPStatus, VPPresenceStatus)
-export * from './types/vp.js';
+// Export Orchestrator-specific type definitions (canonical source for OrchestratorStatus, OrchestratorPresenceStatus)
+export * from './types/orchestrator.js';
 
-// Export VP GraphQL input types
-export * from './types/vp-inputs.js';
+// Export OrchestratorGraphQL input types
+export * from './types/orchestrator-inputs.js';
 
 // =============================================================================
 // MESSAGE TYPES
@@ -152,21 +152,21 @@ export * from './types/call.js';
 // =============================================================================
 
 // Export GraphQL resolvers for server-side use
-// Note: VPStatus, VPPresenceStatus, and WorkspaceVisibility are excluded here
-// as they are already exported from ./types/vp.js and defined locally below
+// Note: OrchestratorStatus, OrchestratorPresenceStatus, and WorkspaceVisibility are excluded here
+// as they are already exported from ./types/orchestrator.js and defined locally below
 export {
-  // VP Resolvers
-  vpResolvers,
-  vpQueries,
-  vpMutations,
-  vpSubscriptions,
-  VPFieldResolvers,
-  VP_STATUS_CHANGED,
-  // VPStatus is already exported from ./types/vp.js
-  type VPStatusType,
+  // OrchestratorResolvers
+  orchestratorResolvers,
+  orchestratorQueries,
+  orchestratorMutations,
+  orchestratorSubscriptions,
+  OrchestratorFieldResolvers,
+  ORCHESTRATOR_STATUS_CHANGED,
+  // OrchestratorStatus is already exported from ./types/orchestrator.js
+  type OrchestratorStatusType,
   type GraphQLContext,
-  type VPService,
-  vpResolversDefault,
+  type OrchestratorService,
+  orchestratorResolversDefault,
   // Message Resolvers
   messageResolvers,
   messageQueries,
@@ -228,18 +228,18 @@ export {
   presenceMutations,
   presenceSubscriptions,
   PresenceFieldResolvers,
-  VPPresenceFieldResolvers,
+  OrchestratorPresenceFieldResolvers,
   USER_PRESENCE_CHANGED,
   CHANNEL_PRESENCE_CHANGED,
-  VP_PRESENCE_CHANGED,
+  ORCHESTRATOR_PRESENCE_CHANGED,
   PRESENCE_JOIN,
   PRESENCE_LEAVE,
   PresenceStatus,
-  // VPPresenceStatus is already exported from ./types/vp.js
+  // OrchestratorPresenceStatus is already exported from ./types/orchestrator.js
   type PresenceStatusType,
-  type VPPresenceStatusType,
+  type OrchestratorPresenceStatusType,
   type UserPresence,
-  type VPPresence,
+  type OrchestratorPresence,
   type ChannelPresence,
   type PresenceService,
   presenceResolversDefault,

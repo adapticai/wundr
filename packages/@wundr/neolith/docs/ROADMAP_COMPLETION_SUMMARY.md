@@ -14,11 +14,11 @@ and infrastructure templates in place.
 | Phase | Name | Status | Commits |
 | ----- | ---- | ------ | ------- |
 | Phase 0 | Build Infrastructure | ✅ COMPLETED | Multiple commits |
-| Phase 1 | Core Features | ✅ COMPLETED | Org-genesis, VP backlog |
-| Phase 2 | VP Autonomous Operation | ✅ COMPLETED | Work engine, communication |
+| Phase 1 | Core Features | ✅ COMPLETED | Org-genesis, Orchestrator backlog |
+| Phase 2 | Orchestrator Autonomous Operation | ✅ COMPLETED | Work engine, communication |
 | Phase 3 | UI/UX Polish | ✅ COMPLETED | Responsive, themes, empty states |
 | Phase 4 | Multi-Platform | ✅ COMPLETED | Desktop config, mobile setup |
-| Phase 5 | Integration Testing | ✅ COMPLETED | Browser + VP integration |
+| Phase 5 | Integration Testing | ✅ COMPLETED | Browser + Orchestrator integration |
 | Phase 6 | Production Deployment | ✅ COMPLETED | Deployment configs ready |
 
 ## Phase 5 Deliverables
@@ -32,9 +32,9 @@ and infrastructure templates in place.
 - ✅ Skeleton loaders verified
 - ✅ Authentication redirects working
 
-### Wave 5.2: VP Integration Testing
+### Wave 5.2: Orchestrator Integration Testing
 - ✅ VP-daemon package verified (17/17 tests passing)
-- ✅ VP API endpoints verified (27/27 tests passing)
+- ✅ Orchestrator API endpoints verified (27/27 tests passing)
 - ✅ Task backlog system tested
 - ✅ Memory integration configured
 - ✅ Work engine service implemented
@@ -64,7 +64,7 @@ and infrastructure templates in place.
 ### Tests
 ```
 ✅ VP-daemon: 17/17 tests passing
-✅ VP API: 27/27 tests passing
+✅ Orchestrator API: 27/27 tests passing
 ```
 
 ## Files Created/Modified
@@ -73,7 +73,7 @@ and infrastructure templates in place.
 | File | Purpose |
 | ---- | ------- |
 | `docs/PHASE_5_BROWSER_TESTING_REPORT.md` | Browser testing report |
-| `docs/PHASE_5_VP_INTEGRATION_REPORT.md` | VP integration report |
+| `docs/PHASE_5_VP_INTEGRATION_REPORT.md` | Orchestrator integration report |
 | `apps/web/package.json` | Build script fix (webpack mode) |
 
 ### Phase 6
@@ -92,7 +92,7 @@ and infrastructure templates in place.
 ```
 e340ca7 feat(neolith): Phase 6 production deployment preparation
 401887c fix(neolith): use webpack mode for builds
-fe681a2 docs(neolith): Phase 5 Wave 5.2 VP integration testing complete
+fe681a2 docs(neolith): Phase 5 Wave 5.2 Orchestrator integration testing complete
 ```
 
 ## Production Deployment Checklist
@@ -139,7 +139,7 @@ fe681a2 docs(neolith): Phase 5 Wave 5.2 VP integration testing complete
 | TypeScript errors | 0 | ✅ Pass |
 | Build success | Yes | ✅ Pass |
 | VP-daemon tests | 100% | ✅ 17/17 |
-| VP API tests | 100% | ✅ 27/27 |
+| Orchestrator API tests | 100% | ✅ 27/27 |
 | Deployment configs | Complete | ✅ Ready |
 
 ## Recommendations
@@ -170,7 +170,7 @@ fe681a2 docs(neolith): Phase 5 Wave 5.2 VP integration testing complete
 
 1. Monitor error rates and latency
 2. Tune database connection pool
-3. Review VP task completion metrics
+3. Review Orchestrator task completion metrics
 4. Weekly security patches
 5. Monthly credential rotation
 

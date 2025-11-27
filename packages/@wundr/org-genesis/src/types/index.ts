@@ -12,7 +12,7 @@ export * from './organization.js';
 // Discipline types
 export * from './discipline.js';
 
-// Charter types (VP and Session Manager)
+// Charter types (Orchestrator and Session Manager)
 export * from './charter.js';
 
 // Agent types (Tier 3 sub-agents)

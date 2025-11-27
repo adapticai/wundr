@@ -221,7 +221,7 @@ Returns context data about existing orchestrators, channels, workflows.
 
 ### Short-term (Phase 9 Continuation)
 1. **Workspace Creation:** Replace existing wizard with conversational flow
-2. **Orchestrator Creation:** Integrate with VP creation pages
+2. **Orchestrator Creation:** Integrate with Orchestrator creation pages
 3. **Workflow Creation:** Add to workflow builder
 4. **Channel Creation:** Add to channel creation modal
 

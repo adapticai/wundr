@@ -2,15 +2,15 @@
  * Presence GraphQL Resolvers
  *
  * Comprehensive resolvers for presence tracking operations including queries, mutations,
- * subscriptions, and field resolvers. Implements real-time user and VP presence tracking,
+ * subscriptions, and field resolvers. Implements real-time user and Orchestrator presence tracking,
  * channel presence, and status management with proper authorization and rate limiting.
  *
  * @module @genesis/api-types/resolvers/presence-resolvers
  */
 
-import { GraphQLError } from 'graphql';
 
-import type { PrismaClient, UserStatus, Prisma } from '@prisma/client';
+import type { Prisma, PrismaClient, UserStatus } from '@prisma/client';
+import { GraphQLError } from 'graphql';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -31,16 +31,16 @@ export const PresenceStatus = {
 export type PresenceStatusType = (typeof PresenceStatus)[keyof typeof PresenceStatus];
 
 /**
- * VP status enum for VP presence (matches VPStatus in schema)
+ * Orchestrator status enum for Orchestrator presence (matches VPStatus in schema)
  */
-export const VPPresenceStatus = {
+export const OrchestratorPresenceStatus = {
   Online: 'ONLINE',
   Offline: 'OFFLINE',
   Busy: 'BUSY',
   Away: 'AWAY',
 } as const;
 
-export type VPPresenceStatusType = (typeof VPPresenceStatus)[keyof typeof VPPresenceStatus];
+export type OrchestratorPresenceStatusType = (typeof OrchestratorPresenceStatus)[keyof typeof OrchestratorPresenceStatus];
 
 /**
  * User role for authorization checks
@@ -109,12 +109,12 @@ export interface UserPresence {
 }
 
 /**
- * VP presence data type
+ * Orchestrator presence data type
  */
-export interface VPPresence {
-  vpId: string;
+export interface OrchestratorPresence {
+  orchestratorId: string;
   userId: string;
-  status: VPPresenceStatusType;
+  status: OrchestratorPresenceStatusType;
   lastActivity: Date | null;
   isHealthy: boolean;
   messageCount: number;
@@ -155,7 +155,7 @@ interface ChannelPresenceArgs {
 }
 
 interface VPPresenceArgs {
-  vpId: string;
+  orchestratorId: string;
 }
 
 interface OnlineVPsArgs {
@@ -222,8 +222,8 @@ export const USER_PRESENCE_CHANGED = 'USER_PRESENCE_CHANGED';
 /** Event name for channel presence changes */
 export const CHANNEL_PRESENCE_CHANGED = 'CHANNEL_PRESENCE_CHANGED';
 
-/** Event name for VP status changes */
-export const VP_PRESENCE_CHANGED = 'VP_PRESENCE_CHANGED';
+/** Event name for Orchestrator status changes */
+export const ORCHESTRATOR_PRESENCE_CHANGED = 'ORCHESTRATOR_PRESENCE_CHANGED';
 
 /** Event name for presence join */
 export const PRESENCE_JOIN = 'PRESENCE_JOIN';
@@ -553,19 +553,19 @@ export const presenceQueries = {
   },
 
   /**
-   * Get VP presence and health status
+   * Get Orchestrator presence and health status
    *
    * @param _parent - Parent resolver result (unused)
-   * @param args - Query arguments containing VP ID
+   * @param args - Query arguments containing OrchestratorID
    * @param context - GraphQL context
-   * @returns VP presence information
+   * @returns Orchestrator presence information
    * @throws GraphQLError if not authenticated
    *
    * @example
    * ```graphql
    * query {
-   *   vpPresence(vpId: "vp_123") {
-   *     vpId
+   *   vpPresence(orchestratorId: "vp_123") {
+   *     orchestratorId
    *     status
    *     isHealthy
    *     lastActivity
@@ -578,7 +578,7 @@ export const presenceQueries = {
     _parent: unknown,
     args: VPPresenceArgs,
     context: GraphQLContext
-  ): Promise<VPPresence | null> => {
+  ): Promise<OrchestratorPresence | null> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
@@ -586,7 +586,7 @@ export const presenceQueries = {
     }
 
     const vp = await context.prisma.vP.findUnique({
-      where: { id: args.vpId },
+      where: { id: args.orchestratorId },
       include: {
         user: {
           select: {
@@ -606,15 +606,15 @@ export const presenceQueries = {
       where: { authorId: vp.userId },
     });
 
-    // Determine if VP is healthy (online and recent activity)
+    // Determine if Orchestrator is healthy (online and recent activity)
     const isHealthy =
       vp.status === 'ONLINE' &&
       isUserOnline(vp.user.lastActiveAt);
 
     return {
-      vpId: vp.id,
+      orchestratorId: vp.id,
       userId: vp.userId,
-      status: vp.status as VPPresenceStatusType,
+      status: vp.status as OrchestratorPresenceStatusType,
       lastActivity: vp.user.lastActiveAt,
       isHealthy,
       messageCount,
@@ -627,14 +627,14 @@ export const presenceQueries = {
    * @param _parent - Parent resolver result (unused)
    * @param args - Query arguments containing organization ID
    * @param context - GraphQL context
-   * @returns Array of online VP presences
+   * @returns Array of online Orchestrator presences
    * @throws GraphQLError if not authenticated or access denied
    *
    * @example
    * ```graphql
    * query {
    *   onlineVPs(organizationId: "org_123") {
-   *     vpId
+   *     orchestratorId
    *     status
    *     isHealthy
    *   }
@@ -645,7 +645,7 @@ export const presenceQueries = {
     _parent: unknown,
     args: OnlineVPsArgs,
     context: GraphQLContext
-  ): Promise<VPPresence[]> => {
+  ): Promise<OrchestratorPresence[]> => {
     if (!isAuthenticated(context)) {
       throw new GraphQLError('Authentication required', {
         extensions: { code: 'UNAUTHENTICATED' },
@@ -669,7 +669,7 @@ export const presenceQueries = {
     }
 
     // Get all VPs in the organization that are online
-    const vps = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.vP.findMany({
       where: {
         organizationId: args.organizationId,
         status: { in: ['ONLINE', 'BUSY', 'AWAY'] },
@@ -685,7 +685,7 @@ export const presenceQueries = {
     });
 
     // Get message counts for all VPs
-    const vpUserIds = vps.map((vp) => vp.userId);
+    const vpUserIds = orchestrators.map((vp) => vp.userId);
     const messageCounts = await context.prisma.message.groupBy({
       by: ['authorId'],
       where: { authorId: { in: vpUserIds } },
@@ -696,10 +696,10 @@ export const presenceQueries = {
       messageCounts.map((mc) => [mc.authorId, mc._count?.id ?? 0])
     );
 
-    return vps.map((vp) => ({
-      vpId: vp.id,
+    return orchestrators.map((vp) => ({
+      orchestratorId: vp.id,
       userId: vp.userId,
-      status: vp.status as VPPresenceStatusType,
+      status: vp.status as OrchestratorPresenceStatusType,
       lastActivity: vp.user.lastActiveAt,
       isHealthy: vp.status === 'ONLINE' && isUserOnline(vp.user.lastActiveAt),
       messageCount: messageCountMap.get(vp.userId) ?? 0,
@@ -1182,13 +1182,13 @@ export const presenceSubscriptions = {
   },
 
   /**
-   * Subscribe to VP status changes in an organization
+   * Subscribe to Orchestrator status changes in an organization
    *
    * @example
    * ```graphql
    * subscription {
    *   vpStatusChanged(organizationId: "org_123") {
-   *     vpId
+   *     orchestratorId
    *     status
    *     isHealthy
    *   }
@@ -1197,7 +1197,7 @@ export const presenceSubscriptions = {
    */
   vpStatusChanged: {
     /**
-     * Subscribe to VP status changes in an organization
+     * Subscribe to Orchestrator status changes in an organization
      *
      * @param _parent - Parent resolver result (unused)
      * @param args - Subscription arguments with organization ID
@@ -1231,7 +1231,7 @@ export const presenceSubscriptions = {
         });
       }
 
-      return context.pubsub.asyncIterator(`${VP_PRESENCE_CHANGED}_${args.organizationId}`);
+      return context.pubsub.asyncIterator(`${ORCHESTRATOR_PRESENCE_CHANGED}_${args.organizationId}`);
     },
   },
 };
@@ -1271,24 +1271,24 @@ export const PresenceFieldResolvers = {
 };
 
 /**
- * VP Presence field resolvers
+ * OrchestratorPresence field resolvers
  */
-export const VPPresenceFieldResolvers = {
+export const OrchestratorPresenceFieldResolvers = {
   /**
-   * Resolve VP details for presence
+   * Resolve Orchestrator details for presence
    *
-   * @param parent - The parent VPPresence object
+   * @param parent - The parent OrchestratorPresence object
    * @param _args - Resolver arguments (unused)
    * @param context - GraphQL context
    * @returns The associated VP
    */
   vp: async (
-    parent: VPPresence,
+    parent: OrchestratorPresence,
     _args: unknown,
     context: GraphQLContext
   ) => {
     return context.prisma.vP.findUnique({
-      where: { id: parent.vpId },
+      where: { id: parent.orchestratorId },
       include: {
         user: {
           select: {
@@ -1315,7 +1315,7 @@ export const presenceResolvers = {
   Mutation: presenceMutations,
   Subscription: presenceSubscriptions,
   UserPresence: PresenceFieldResolvers,
-  VPPresence: VPPresenceFieldResolvers,
+  OrchestratorPresence: OrchestratorPresenceFieldResolvers,
 };
 
 export default presenceResolvers;

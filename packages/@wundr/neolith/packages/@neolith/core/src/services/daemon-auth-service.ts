@@ -1,26 +1,25 @@
 /**
  * @fileoverview Daemon Authentication Service
- * Provides authentication and authorization for VP daemons connecting to the Genesis platform.
+ * Provides authentication and authorization for Orchestrator daemons connecting to the Genesis platform.
  *
  * @packageDocumentation
  */
 
-import { DAEMON_TOKEN_EXPIRY, DAEMON_REDIS_KEYS, DAEMON_SCOPE_SETS } from '../types/daemon';
-
+import type { PrismaClient } from '@prisma/client';
+import type { Redis } from 'ioredis';
 import type {
+  DaemonAuthResult,
+  DaemonCredentials,
+  DaemonMetadata,
+  DaemonMetrics,
+  DaemonScope,
+  DaemonSession,
+  DaemonSessionStatus,
   DaemonToken,
   DaemonTokenPair,
   DaemonTokenPayload,
-  DaemonCredentials,
-  DaemonAuthResult,
-  DaemonSession,
-  DaemonSessionStatus,
-  DaemonScope,
-  DaemonMetrics,
-  DaemonMetadata,
 } from '../types/daemon';
-import type { PrismaClient } from '@prisma/client';
-import type { Redis } from 'ioredis';
+import { DAEMON_REDIS_KEYS, DAEMON_SCOPE_SETS, DAEMON_TOKEN_EXPIRY } from '../types/daemon';
 
 // =============================================================================
 // Configuration Types
@@ -124,11 +123,11 @@ export class DaemonAuthService {
   }
 
   /**
-   * Authenticate a daemon using VP API key.
+   * Authenticate a daemon using OrchestratorAPI key.
    */
   async authenticate(credentials: DaemonCredentials): Promise<DaemonAuthResult> {
     // Validate API key and get VP
-    // Note: We look for any VP user that has vpConfig set
+    // Note: We look for any Orchestrator user that has vpConfig set
     const user = await this.prisma.user.findFirst({
       where: {
         isVP: true,
@@ -143,7 +142,7 @@ export class DaemonAuthService {
     }
 
     /**
-     * VP configuration stored as JSON in the user record.
+     * Orchestrator configuration stored as JSON in the user record.
      */
     interface VPConfig {
       apiKeyHash?: string;
@@ -152,7 +151,7 @@ export class DaemonAuthService {
     }
 
     // Verify API key hash
-    const vpConfig = user.vpConfig as VPConfig | null;
+    const vpConfig = user.orchestratorConfig as VPConfig | null;
     const storedHash = vpConfig?.apiKeyHash;
 
     if (!storedHash || !await this.verifyApiKey(credentials.apiKey, storedHash)) {
@@ -170,8 +169,8 @@ export class DaemonAuthService {
       throw new InvalidCredentialsError('API key has expired');
     }
 
-    // Get VP record
-    const vp = await this.prisma.vP.findFirst({
+    // Get Orchestrator record
+    const orchestrator = await this.prisma.vP.findFirst({
       where: { userId: user.id },
       include: {
         organization: {
@@ -327,7 +326,7 @@ return;
     await this.saveSession(session);
 
     // Clean up session references
-    await this.redis.srem(DAEMON_REDIS_KEYS.vpSessions(session.vpId), sessionId);
+    await this.redis.srem(DAEMON_REDIS_KEYS.orchestratorSessions(session.orchestratorId), sessionId);
     await this.redis.srem(DAEMON_REDIS_KEYS.daemonSessions(session.daemonId), sessionId);
   }
 
@@ -410,7 +409,7 @@ return;
     const refreshJti = this.generateJti();
 
     const accessPayload: DaemonTokenPayload = {
-      sub: params.vpId,
+      sub: params.orchestratorId,
       iss: this.issuer,
       aud: this.audience,
       iat: now,
@@ -439,7 +438,7 @@ return;
         type: 'access',
         expiresAt: new Date((now + this.accessTokenTtl) * 1000),
         daemonId: params.daemonId,
-        vpId: params.vpId,
+        vpId: params.orchestratorId,
         workspaceId: params.workspaceId,
         organizationId: params.organizationId,
         scopes: params.scopes,
@@ -450,7 +449,7 @@ return;
         type: 'refresh',
         expiresAt: new Date((now + this.refreshTokenTtl) * 1000),
         daemonId: params.daemonId,
-        vpId: params.vpId,
+        vpId: params.orchestratorId,
         workspaceId: params.workspaceId,
         organizationId: params.organizationId,
         scopes: params.scopes,
@@ -471,7 +470,7 @@ return;
     const session: DaemonSession = {
       id: this.generateJti(),
       daemonId: params.daemonId,
-      vpId: params.vpId,
+      vpId: params.orchestratorId,
       workspaceId: params.workspaceId,
       organizationId: params.organizationId,
       status: 'active',
@@ -485,7 +484,7 @@ return;
     await this.saveSession(session);
 
     // Add to session indices
-    await this.redis.sadd(DAEMON_REDIS_KEYS.vpSessions(params.vpId), session.id);
+    await this.redis.sadd(DAEMON_REDIS_KEYS.orchestratorSessions(params.orchestratorId), session.id);
     await this.redis.sadd(DAEMON_REDIS_KEYS.daemonSessions(params.daemonId), session.id);
 
     return session;
@@ -525,17 +524,17 @@ return null;
   }
 
   /**
-   * Resolves the scopes to grant based on requested scopes and VP capabilities.
+   * Resolves the scopes to grant based on requested scopes and Orchestrator capabilities.
    *
    * @param requested - Scopes requested by the daemon
    * @param vpCapabilities - Capabilities configured for the VP
    * @returns Array of granted scopes
    */
   private resolveScopes(requested: DaemonScope[], vpCapabilities: string[]): DaemonScope[] {
-    // Build allowed scopes based on VP capabilities
+    // Build allowed scopes based on Orchestrator capabilities
     const allowedScopes = new Set(DAEMON_SCOPE_SETS.full);
 
-    // If VP has specific capabilities configured, restrict scopes accordingly
+    // If Orchestrator has specific capabilities configured, restrict scopes accordingly
     if (vpCapabilities.length > 0) {
       // Map capabilities to allowed scope sets
       const capabilityToScopes: Record<string, DaemonScope[]> = {
@@ -557,7 +556,7 @@ return null;
         }
       }
 
-      // Always allow basic VP scopes
+      // Always allow basic Orchestrator scopes
       restrictedScopes.add('vp:status');
       restrictedScopes.add('vp:config');
 

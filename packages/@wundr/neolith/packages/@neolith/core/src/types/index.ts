@@ -7,50 +7,50 @@
  */
 
 // =============================================================================
-// VP Types
+// OrchestratorTypes
 // =============================================================================
 
 export type {
-  // Core VP types
-  VPWithUser,
-  VPCharter,
-  VPPersonality,
-  VPCommunicationPreferences,
-  VPOperationalConfig,
-  VPWorkHours,
-  VPEscalationConfig,
+  // Core Orchestrator types
+  OrchestratorWithUser,
+  OrchestratorCharter,
+  OrchestratorPersonality,
+  OrchestratorCommunicationPreferences,
+  OrchestratorOperationalConfig,
+  OrchestratorWorkHours,
+  OrchestratorEscalationConfig,
 
   // Input types
-  CreateVPInput,
-  UpdateVPInput,
+  CreateOrchestratorInput,
+  UpdateOrchestratorInput,
 
   // Service account types
   ServiceAccountCredentials,
   APIKeyGenerationResult,
   APIKeyRotationResult,
   APIKeyValidationResult,
-  VPServiceAccountConfig,
+  OrchestratorServiceAccountConfig,
 
   // Query types
-  ListVPsOptions,
-  PaginatedVPResult,
+  ListOrchestratorsOptions,
+  PaginatedOrchestratorResult,
 
   // Event types
-  VPEventType,
-  VPEvent,
+  OrchestratorEventType,
+  OrchestratorEvent,
 
   // Utility types
   SlugOptions,
-} from './vp';
+} from './orchestrator';
 
 export {
   // Type guards
-  isVPCharter,
-  isVPServiceAccountConfig,
+  isOrchestratorCharter,
+  isOrchestratorServiceAccountConfig,
 
   // Constants
-  DEFAULT_VP_CHARTER,
-} from './vp';
+  DEFAULT_ORCHESTRATOR_CHARTER,
+} from './orchestrator';
 
 // =============================================================================
 // Message Types
@@ -148,7 +148,7 @@ export type {
   // Discipline types
   Discipline,
   DisciplineWithVPs,
-  VPBasic,
+  OrchestratorBasic,
   CreateDisciplineInput,
   UpdateDisciplineInput,
   ListDisciplinesOptions,
@@ -203,8 +203,8 @@ export type {
   HeartbeatEvent,
   DaemonRegisteredEvent,
   DaemonUnregisteredEvent,
-  VPUnhealthyEvent,
-  VPRecoveredEvent,
+  OrchestratorUnhealthyEvent,
+  OrchestratorRecoveredEvent,
 
   // Callback types
   OnVPUnhealthyCallback,
@@ -236,7 +236,7 @@ export type {
   DeviceType,
   UserPresence,
   PresenceMetadata,
-  VPPresence,
+  OrchestratorPresence,
   DaemonInfo,
   DaemonMetrics,
   ChannelPresence,
@@ -245,13 +245,13 @@ export type {
   PresenceEventType,
   BasePresenceEvent,
   UserPresenceEvent,
-  VPPresenceEvent,
+  OrchestratorPresenceEvent,
   ChannelPresenceEvent,
   PresenceEvent,
 
   // Callback types
   PresenceCallback,
-  VPPresenceCallback,
+  OrchestratorPresenceCallback,
   ChannelPresenceCallback,
   UnsubscribeFunction,
 
@@ -535,7 +535,7 @@ export {
 
 // Re-export commonly used database types for convenience
 export type {
-  VP,
+  Orchestrator,
   User,
   Organization,
   Workspace,
@@ -548,7 +548,7 @@ export type {
   OrganizationMember,
   WorkspaceMember,
   ChannelMember,
-  VPStatus,
+  OrchestratorStatus,
   UserStatus,
   OrganizationRole,
   WorkspaceRole,
@@ -806,7 +806,7 @@ export type {
   FileSearchResult,
   ChannelSearchResult,
   UserSearchResult,
-  VPSearchResult,
+  OrchestratorSearchResult,
 
   // Response types
   SearchResponse,
@@ -911,7 +911,7 @@ export type {
   ChannelMetrics,
   FileMetrics,
   CallMetrics,
-  VPMetrics,
+  OrchestratorMetrics,
 
   // Query types
   AnalyticsPeriod,
@@ -981,7 +981,7 @@ export type {
   MemberWebhookPayload,
   FileWebhookPayload,
   CallWebhookPayload,
-  VPWebhookPayload,
+  OrchestratorWebhookPayload,
   WebhookPayload,
 
   // Integration event types
@@ -1063,7 +1063,7 @@ export type {
   MemberTriggerConfig,
   FileUploadTriggerConfig,
   ReactionTriggerConfig,
-  VPResponseTriggerConfig,
+  OrchestratorResponseTriggerConfig,
   ManualTriggerConfig,
   TriggerConfig,
   WorkflowTrigger,

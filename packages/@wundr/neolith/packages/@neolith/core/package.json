@@ -1,7 +1,7 @@
 {
   "name": "@neolith/core",
   "version": "0.1.0",
-  "description": "Core service layer for Genesis App - VP management, authentication, and business logic",
+  "description": "Core service layer for Genesis App - Orchestrator management, authentication, and business logic",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

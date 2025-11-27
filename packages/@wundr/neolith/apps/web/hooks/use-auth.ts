@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import { useCallback } from 'react';
 
 /**
@@ -23,7 +23,7 @@ export interface UseAuthReturn {
   isAuthenticated: boolean;
   /** Whether the session is currently loading */
   isLoading: boolean;
-  /** Whether the authenticated user is a VP (Virtual Person) agent */
+  /** Whether the authenticated user is a Orchestrator (Orchestrator) agent */
   isVP: boolean;
   /** The user's role in the system */
   role: 'ADMIN' | 'MEMBER' | 'VIEWER' | undefined;

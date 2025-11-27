@@ -50,7 +50,7 @@ export default async function AdminLayout({
     { href: `/${workspaceId}/admin/roles`, label: 'Roles', icon: ShieldIcon },
     { href: `/${workspaceId}/admin/billing`, label: 'Billing', icon: CreditCardIcon },
     { href: `/${workspaceId}/admin/activity`, label: 'Activity', icon: ActivityIcon },
-    { href: `/${workspaceId}/admin/vp-health`, label: 'VP Health', icon: HeartPulseIcon },
+    { href: `/${workspaceId}/admin/orchestrator-health`, label: 'OrchestratorHealth', icon: HeartPulseIcon },
     { href: `/${workspaceId}/admin/org-chart`, label: 'Org Chart', icon: NetworkIcon },
   ];
 

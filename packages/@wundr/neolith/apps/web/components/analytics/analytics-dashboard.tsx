@@ -1,7 +1,7 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { BarChart } from './bar-chart';
 import { DateRangePicker } from './date-range-picker';
@@ -49,7 +49,7 @@ interface AnalyticsResponse {
     workflowExecution: Array<{ timestamp: string; value: number }>;
   };
   vpActivity: Array<{
-    vpId: string;
+    orchestratorId: string;
     vpName: string;
     messageCount: number;
     taskCount: number;
@@ -402,9 +402,9 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
             <div className="p-4 sm:p-6 bg-card border border-border rounded-lg">
               <Leaderboard
                 title="Top VPs by Messages"
-                data={metrics?.vpActivity.slice(0, 5).map(vp => ({
-                  id: vp.vpId,
-                  name: vp.vpName,
+                data={metrics?.orchestratorActivity.slice(0, 5).map(vp => ({
+                  id: vp.orchestratorId,
+                  name: vp.orchestratorName,
                   value: vp.messageCount,
                   subtitle: vp.status,
                 })) || []}

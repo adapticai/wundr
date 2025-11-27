@@ -1,7 +1,7 @@
 /**
  * Work Session Validation Schemas
  *
- * Zod validation schemas for VP work session and task execution operations.
+ * Zod validation schemas for Orchestrator work session and task execution operations.
  *
  * @module lib/validations/work-session
  */
@@ -57,7 +57,7 @@ export const captureOutputSchema = z.object({
   /** Task ID for this output */
   taskId: z.string().cuid('Invalid task ID'),
 
-  /** Incremental output/logs from VP */
+  /** Incremental output/logs from Orchestrator */
   output: z.string().max(100000, 'Output exceeds maximum length'),
 
   /** Array of artifact S3 URLs */

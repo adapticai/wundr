@@ -1,4 +1,4 @@
-# Phase 1 Task 2.1.3: UI Components for VP Interaction - Implementation Complete
+# Phase 1 Task 2.1.3: UI Components for Orchestrator Interaction - Implementation Complete
 
 ## Overview
 Implemented reusable, type-safe UI components for Virtual Person (VP) interaction following Shadcn/ui patterns and existing codebase conventions.
@@ -6,10 +6,10 @@ Implemented reusable, type-safe UI components for Virtual Person (VP) interactio
 ## Deliverables
 
 ### 1. VPStatusBadge (Updated)
-**File:** `/apps/web/components/vp/vp-status-badge.tsx`
+**File:** `/apps/web/components/vp/orchestrator-status-badge.tsx`
 
 **Features:**
-- Color-coded status badges for all VP states (ACTIVE, INACTIVE, PROVISIONING, ERROR, SUSPENDED)
+- Color-coded status badges for all Orchestrator states (ACTIVE, INACTIVE, PROVISIONING, ERROR, SUSPENDED)
 - Animated pulse indicators for active states
 - Optional tooltip showing current task
 - Three size variants (sm, md, lg)
@@ -21,7 +21,7 @@ Implemented reusable, type-safe UI components for Virtual Person (VP) interactio
 
 **Usage:**
 ```tsx
-<VPStatusBadge
+<Orchestrator StatusBadge
   status="ACTIVE"
   currentTask="Analyzing user feedback"
   showTooltip
@@ -29,12 +29,12 @@ Implemented reusable, type-safe UI components for Virtual Person (VP) interactio
 ```
 
 ### 2. VPTaskAssignmentDialog (New)
-**File:** `/apps/web/components/vp/vp-task-assignment-dialog.tsx`
+**File:** `/apps/web/components/vp/orchestrator-task-assignment-dialog.tsx`
 
 **Features:**
 - Complete form validation using Zod and react-hook-form
 - Task title, description, and priority fields
-- VP selector with avatar display
+- Orchestrator selector with avatar display
 - Filters to show only active VPs
 - Color-coded priority indicators
 - Controlled/uncontrolled dialog modes
@@ -52,15 +52,15 @@ Implemented reusable, type-safe UI components for Virtual Person (VP) interactio
 
 **Usage:**
 ```tsx
-<VPTaskAssignmentDialog
-  vps={availableVPs}
+<Orchestrator TaskAssignmentDialog
+  orchestrators={availableVPs}
   onAssignTask={handleAssignTask}
   trigger={<Button>Assign Task</Button>}
 />
 ```
 
 ### 3. VPPresenceIndicator (New)
-**File:** `/apps/web/components/vp/vp-presence-indicator.tsx`
+**File:** `/apps/web/components/vp/orchestrator-presence-indicator.tsx`
 
 **Components:**
 - `VPPresenceIndicator` - Basic presence indicator with tooltip
@@ -77,24 +77,24 @@ Implemented reusable, type-safe UI components for Virtual Person (VP) interactio
 
 **Usage:**
 ```tsx
-<VPPresenceIndicator
+<Orchestrator PresenceIndicator
   status="working"
   currentActivity="Processing documents"
   showLabel
 />
 
-<VPPresenceCard
+<Orchestrator PresenceCard
   status="working"
   vpName="Sarah Thompson"
   currentActivity="Reviewing reports"
   lastActiveAt={new Date()}
 />
 
-<VPTypingIndicator vpName="Sarah Thompson" />
+<Orchestrator TypingIndicator vpName="Sarah Thompson" />
 ```
 
 ### 4. TaskPriorityBadge (New)
-**File:** `/apps/web/components/vp/vp-task-assignment-dialog.tsx` (exported)
+**File:** `/apps/web/components/vp/orchestrator-task-assignment-dialog.tsx` (exported)
 
 **Features:**
 - Color-coded priority badges
@@ -111,8 +111,8 @@ Implemented reusable, type-safe UI components for Virtual Person (VP) interactio
 
 All new components properly exported:
 ```typescript
-export { VPTaskAssignmentDialog, TaskPriorityBadge } from './vp-task-assignment-dialog';
-export { VPPresenceIndicator, VPPresenceCard, VPTypingIndicator } from './vp-presence-indicator';
+export { VPTaskAssignmentDialog, TaskPriorityBadge } from './orchestrator-task-assignment-dialog';
+export { VPPresenceIndicator, VPPresenceCard, VPTypingIndicator } from './orchestrator-presence-indicator';
 ```
 
 ### 6. Documentation
@@ -143,43 +143,43 @@ Comprehensive documentation including:
 - **Error Handling**: Graceful degradation and user feedback
 
 ### Integration Points
-- Uses existing VP types from `/types/vp.ts`
+- Uses existing Orchestrator types from `/types/vp.ts`
 - Integrates with Shadcn/ui components
-- Follows existing VP component patterns (VPCard, VPConfigForm)
-- Compatible with existing VP management workflows
+- Follows existing Orchestrator component patterns (VPCard, VPConfigForm)
+- Compatible with existing Orchestrator management workflows
 
 ## Statistics
 - **Files Created**: 2 new component files
-- **Files Updated**: 2 (vp-status-badge.tsx, index.ts)
+- **Files Updated**: 2 (orchestrator-status-badge.tsx, index.ts)
 - **Total Lines of Code**: ~658 lines (new components only)
 - **Components**: 6 new/updated components
 - **Exports**: 9 total component exports
 
 ## Testing Recommendations
 1. **Unit Tests**: Form validation, state management
-2. **Integration Tests**: Dialog interactions, VP selection
+2. **Integration Tests**: Dialog interactions, Orchestrator selection
 3. **E2E Tests**: Task assignment workflow
 4. **Accessibility Tests**: Screen reader compatibility, keyboard navigation
 
 ## Next Steps
 1. Create API endpoints for task assignment (Phase 1 Task 2.2)
-2. Implement VP backlog management UI
+2. Implement Orchestrator backlog management UI
 3. Add real-time presence updates via WebSocket
-4. Integrate with VP daemon for task distribution
+4. Integrate with Orchestrator daemon for task distribution
 
 ## Files Modified
 
 ### New Files
 ```
-/apps/web/components/vp/vp-task-assignment-dialog.tsx (307 lines)
-/apps/web/components/vp/vp-presence-indicator.tsx (209 lines)
+/apps/web/components/vp/orchestrator-task-assignment-dialog.tsx (307 lines)
+/apps/web/components/vp/orchestrator-presence-indicator.tsx (209 lines)
 /apps/web/components/vp/README.md (documentation)
 /docs/phase-1-task-2.1.3-implementation.md (this file)
 ```
 
 ### Updated Files
 ```
-/apps/web/components/vp/vp-status-badge.tsx (142 lines, +28 lines)
+/apps/web/components/vp/orchestrator-status-badge.tsx (142 lines, +28 lines)
 /apps/web/components/vp/index.ts (+5 exports)
 ```
 

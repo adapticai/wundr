@@ -209,7 +209,7 @@ export interface NotificationPreferences {
   calls: boolean;
   /** Receive notifications for channel updates */
   channelUpdates: boolean;
-  /** Receive notifications for VP status changes */
+  /** Receive notifications for Orchestrator status changes */
   vpStatus: boolean;
   /** Receive system notifications */
   system: boolean;

@@ -21,6 +21,7 @@ import {
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
+import type { Prisma } from '@prisma/client';
 
 import type { CreateChannelInput } from '@/lib/validations/organization';
 import type { NextRequest } from 'next/server';
@@ -170,10 +171,10 @@ export async function GET(
     }
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.channelWhereInput = {
       workspaceId: params.workspaceId,
       ...(!includeArchived && { isArchived: false }),
-      ...(typeFilter && { type: typeFilter }),
+      ...(typeFilter && { type: typeFilter as 'PUBLIC' | 'PRIVATE' | 'DM' | 'HUDDLE' }),
     };
 
     // For PRIVATE, DM, and HUDDLE channels, only show channels the user is a member of

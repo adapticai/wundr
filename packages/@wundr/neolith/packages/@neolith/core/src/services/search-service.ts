@@ -15,19 +15,19 @@
  * @module @genesis/core/services/search-service
  */
 
+import type { PrismaClient } from '@prisma/client';
+import type { Redis } from 'ioredis';
 import type {
+  SearchFacets,
+  SearchFilters,
+  SearchIndexDocument,
   SearchQuery,
   SearchResponse,
   SearchResult,
   SearchResultType,
-  SearchFilters,
-  SearchFacets,
-  SearchSuggestion,
-  SearchIndexDocument,
   SearchSort,
+  SearchSuggestion,
 } from '../types/search';
-import type { PrismaClient } from '@prisma/client';
-import type { Redis } from 'ioredis';
 
 // =============================================================================
 // TYPES
@@ -660,7 +660,7 @@ export class SearchServiceImpl implements SearchService {
    * @param limit - Maximum results to return (default: 20)
    * @param offset - Result offset for pagination (default: 0)
    * @param highlight - Include highlighted snippets in results (default: false)
-   * @returns Array of VP search results with scores
+   * @returns Array of Orchestrator search results with scores
    */
   private async searchVPs(
     tsQuery: string,
@@ -689,9 +689,9 @@ export class SearchServiceImpl implements SearchService {
       paramIndex++;
     }
 
-    if (filters?.vpIds?.length) {
+    if (filters?.orchestratorIds?.length) {
       conditions.push(`vp.id = ANY($${paramIndex})`);
-      params.push(filters.vpIds);
+      params.push(filters.orchestratorIds);
       paramIndex++;
     }
 

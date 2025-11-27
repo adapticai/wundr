@@ -14,54 +14,54 @@
 import { z } from 'zod';
 
 import type {
-  // Organization types
-  OrgSize,
-  OrgIndustry,
-  OrganizationManifest,
+  AgentCapabilities,
+  // Agent types
+  AgentDefinition,
+  AgentIdentity,
+  AgentScope,
+  AgentTool,
+  AgentToolType,
+  ClaudeMdConfig,
+  CompiledSessionConfig,
+  // Session types
+  CompileSessionRequest,
+  CreateAgentConfig,
+  CreateDisciplineConfig,
+  CreateOrchestratorConfig,
   CreateOrgConfig,
-  OrgLifecycleState,
-  VPResourceAllocation,
-  VPNodeMapping,
-  VPNodeStatus,
-  OrgGovernanceConfig,
-  OrgSecurityConfig,
-  OrgCommunicationConfig,
+  CreateSessionManagerConfig,
   // Discipline types
   DisciplineCategory,
   DisciplinePack,
-  CreateDisciplineConfig,
-  ClaudeMdConfig,
-  MCPServerConfig,
-  HookConfig,
-  // Charter types
-  VPCharter,
-  SessionManagerCharter,
-  CreateVPConfig,
-  CreateSessionManagerConfig,
-  AgentIdentity,
-  ResourceLimits,
-  MeasurableObjectives,
   HardConstraints,
-  VPCapability,
-  // Agent types
-  AgentDefinition,
-  CreateAgentConfig,
-  ModelAssignment,
-  AgentScope,
-  AgentCapabilities,
-  AgentTool,
-  AgentToolType,
-  // Session types
-  CompileSessionRequest,
-  SessionContext,
-  SessionStatus,
+  HookConfig,
+  MCPServerConfig,
+  MeasurableObjectives,
   MemoryBank,
-  CompiledSessionConfig,
+  ModelAssignment,
+  OrchestratorCapability,
+  // Charter types
+  OrchestratorCharter,
+  OrchestratorNodeStatus,
+  OrchestratorResourceAllocation,
+  OrganizationManifest,
+  OrgCommunicationConfig,
+  OrgGovernanceConfig,
+  OrgIndustry,
+  OrgLifecycleState,
+  OrgSecurityConfig,
+  // Organization types
+  OrgSize,
   // Registry types
   RegistryEntry,
   RegistryEntryType,
   RegistryQuery,
   RegistryQueryResult,
+  ResourceLimits,
+  SessionContext,
+  SessionManagerCharter,
+  SessionStatus,
+  VPNodeMapping,
 } from '../types/index.js';
 
 // =============================================================================
@@ -135,37 +135,37 @@ export const OrgLifecycleStateSchema = z.enum(['draft', 'active', 'suspended', '
 }) satisfies z.ZodType<OrgLifecycleState>;
 
 /**
- * Schema for VPNodeStatus
+ * Schema for OrchestratorNodeStatus
  */
-export const VPNodeStatusSchema = z.enum(
+export const OrchestratorNodeStatusSchema = z.enum(
   ['active', 'inactive', 'provisioning', 'error', 'maintenance'],
   {
     errorMap: () => ({
-      message: 'VP node status must be one of: active, inactive, provisioning, error, maintenance',
+      message: 'Orchestrator node status must be one of: active, inactive, provisioning, error, maintenance',
     }),
   },
-) satisfies z.ZodType<VPNodeStatus>;
+) satisfies z.ZodType<OrchestratorNodeStatus>;
 
 /**
- * Schema for VPResourceAllocation
+ * Schema for OrchestratorResourceAllocation
  */
-export const VPResourceAllocationSchema = z.object({
+export const OrchestratorResourceAllocationSchema = z.object({
   cpuCores: z.number().int().min(1, 'CPU cores must be at least 1'),
   memoryMb: z.number().int().min(256, 'Memory must be at least 256MB'),
   maxConcurrentTasks: z.number().int().min(1, 'Must allow at least 1 concurrent task'),
   tokenBudgetPerHour: z.number().int().min(1000, 'Token budget must be at least 1000'),
-}) satisfies z.ZodType<VPResourceAllocation>;
+}) satisfies z.ZodType<OrchestratorResourceAllocation>;
 
 /**
  * Schema for VPNodeMapping
  */
 export const VPNodeMappingSchema = z.object({
-  vpId: z.string().min(1, 'VP ID is required'),
+  vpId: z.string().min(1, 'Orchestrator ID is required'),
   nodeId: z.string().min(1, 'Node ID is required'),
   hostname: z.string().min(1, 'Hostname is required'),
-  status: VPNodeStatusSchema,
+  status: OrchestratorNodeStatusSchema,
   assignedDisciplineId: z.string().optional(),
-  resources: VPResourceAllocationSchema.optional(),
+  resources: OrchestratorResourceAllocationSchema.optional(),
   healthMetrics: z
     .object({
       uptime: z.number().min(0).max(100),
@@ -180,7 +180,7 @@ export const VPNodeMappingSchema = z.object({
   tags: z.array(z.string()).optional(),
   provisionedAt: z.coerce.date().optional(),
   lastStatusChange: z.coerce.date().optional(),
-}) satisfies z.ZodType<VPNodeMapping>;
+}) satisfies z.ZodType<OrchestratorNodeMapping>;
 
 /**
  * Schema for OrgGovernanceConfig
@@ -237,9 +237,9 @@ export const CreateOrgConfigSchema = z.object({
   description: z.string().optional(),
   industry: OrgIndustrySchema,
   size: OrgSizeSchema,
-  vpCount: z
+  orchestratorCount: z
     .number()
-    .int('VP count must be a whole number')
+    .int('Orchestrator count must be a whole number')
     .min(1, 'Organization must have at least 1 VP')
     .max(100, 'Organization cannot have more than 100 VPs')
     .optional(),
@@ -378,20 +378,20 @@ export const DisciplinePackSchema = z.object({
 }) satisfies z.ZodType<DisciplinePack>;
 
 // =============================================================================
-// Charter Schemas (VP and Session Manager)
+// Charter Schemas (Orchestrator and Session Manager)
 // =============================================================================
 
 /**
- * Schema for VPCapability
+ * Schema for OrchestratorCapability
  */
-export const VPCapabilitySchema = z.enum([
+export const OrchestratorCapabilitySchema = z.enum([
   'context_compilation',
   'resource_management',
   'slack_operations',
   'session_spawning',
   'task_triage',
   'memory_management',
-]) satisfies z.ZodType<VPCapability>;
+]) satisfies z.ZodType<OrchestratorCapability>;
 
 /**
  * Schema for AgentIdentity
@@ -436,29 +436,29 @@ export const HardConstraintsSchema = z.object({
 }) satisfies z.ZodType<HardConstraints>;
 
 /**
- * Schema for CreateVPConfig
+ * Schema for CreateOrchestratorConfig
  */
-export const CreateVPConfigSchema = z.object({
-  name: z.string().min(1, 'VP name is required').max(100),
+export const CreateOrchestratorConfigSchema = z.object({
+  name: z.string().min(1, 'Orchestrator name is required').max(100),
   persona: z.string().min(1, 'Persona is required'),
   slackHandle: z.string().optional(),
-  capabilities: z.array(VPCapabilitySchema).optional(),
+  capabilities: z.array(OrchestratorCapabilitySchema).optional(),
   resourceLimits: ResourceLimitsSchema.partial().optional(),
   mcpTools: z.array(z.string()).optional(),
   objectives: MeasurableObjectivesSchema.partial().optional(),
   constraints: HardConstraintsSchema.partial().optional(),
   disciplineIds: z.array(z.string()).optional(),
-}) satisfies z.ZodType<CreateVPConfig>;
+}) satisfies z.ZodType<CreateOrchestratorConfig>;
 
 /**
- * Schema for VPCharter
+ * Schema for OrchestratorCharter
  */
-export const VPCharterSchema = z.object({
-  id: z.string().min(1, 'VP ID is required'),
+export const OrchestratorCharterSchema = z.object({
+  id: z.string().min(1, 'Orchestrator ID is required'),
   tier: z.literal(1),
   identity: AgentIdentitySchema,
   coreDirective: z.string().min(10),
-  capabilities: z.array(VPCapabilitySchema),
+  capabilities: z.array(OrchestratorCapabilitySchema),
   mcpTools: z.array(z.string()),
   resourceLimits: ResourceLimitsSchema,
   objectives: MeasurableObjectivesSchema,
@@ -467,7 +467,7 @@ export const VPCharterSchema = z.object({
   nodeId: z.string().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-}) satisfies z.ZodType<VPCharter>;
+}) satisfies z.ZodType<OrchestratorCharter>;
 
 /**
  * Schema for CreateSessionManagerConfig
@@ -475,7 +475,7 @@ export const VPCharterSchema = z.object({
 export const CreateSessionManagerConfigSchema = z.object({
   name: z.string().min(1, 'Session Manager name is required').max(100),
   disciplineId: z.string().min(1, 'Discipline ID is required'),
-  parentVpId: z.string().min(1, 'Parent VP ID is required'),
+  parentVpId: z.string().min(1, 'Parent Orchestrator ID is required'),
   persona: z.string().optional(),
   mcpTools: z.array(z.string()).optional(),
   agentIds: z.array(z.string()).optional(),
@@ -637,7 +637,7 @@ export const CompileSessionRequestSchema = z.object({
     .string()
     .min(1, 'Task description is required')
     .max(2000, 'Task description must be 2000 characters or less'),
-  vpId: z.string().min(1, 'VP ID is required'),
+  vpId: z.string().min(1, 'Orchestrator ID is required'),
   worktreeBasePath: z.string().optional(),
   warmStartContext: z.string().optional(),
   additionalAgents: z.array(z.string()).optional(),
@@ -789,17 +789,17 @@ export function validateDisciplinePack(data: unknown): DisciplinePack {
 }
 
 /**
- * Validate CreateVPConfig
+ * Validate CreateOrchestratorConfig
  */
-export function validateCreateVPConfig(data: unknown): CreateVPConfig {
-  return validate(CreateVPConfigSchema, data, 'CreateVPConfig');
+export function validateCreateOrchestratorConfig(data: unknown): CreateOrchestratorConfig {
+  return validate(CreateOrchestratorConfigSchema, data, 'CreateOrchestratorConfig');
 }
 
 /**
- * Validate VPCharter
+ * Validate OrchestratorCharter
  */
-export function validateVPCharter(data: unknown): VPCharter {
-  return validate(VPCharterSchema, data, 'VPCharter');
+export function validateOrchestratorCharter(data: unknown): OrchestratorCharter {
+  return validate(OrchestratorCharterSchema, data, 'OrchestratorCharter');
 }
 
 /**
@@ -903,7 +903,7 @@ export const schemas = {
   CreateOrgConfig: CreateOrgConfigSchema,
   OrganizationManifest: OrganizationManifestSchema,
   VPNodeMapping: VPNodeMappingSchema,
-  VPResourceAllocation: VPResourceAllocationSchema,
+  OrchestratorResourceAllocation: OrchestratorResourceAllocationSchema,
   OrgGovernanceConfig: OrgGovernanceConfigSchema,
   OrgSecurityConfig: OrgSecurityConfigSchema,
   OrgCommunicationConfig: OrgCommunicationConfigSchema,
@@ -916,14 +916,14 @@ export const schemas = {
   HookConfig: HookConfigSchema,
   ClaudeMdConfig: ClaudeMdConfigSchema,
 
-  // Charter (VP and Session Manager)
-  VPCapability: VPCapabilitySchema,
+  // Charter (Orchestrator and Session Manager)
+  OrchestratorCapability: OrchestratorCapabilitySchema,
   AgentIdentity: AgentIdentitySchema,
   ResourceLimits: ResourceLimitsSchema,
   MeasurableObjectives: MeasurableObjectivesSchema,
   HardConstraints: HardConstraintsSchema,
-  CreateVPConfig: CreateVPConfigSchema,
-  VPCharter: VPCharterSchema,
+  CreateOrchestratorConfig: CreateOrchestratorConfigSchema,
+  OrchestratorCharter: OrchestratorCharterSchema,
   CreateSessionManagerConfig: CreateSessionManagerConfigSchema,
   SessionManagerCharter: SessionManagerCharterSchema,
 

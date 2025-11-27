@@ -16,7 +16,7 @@ This endpoint generates a complete organizational structure with workspace, VPs,
 2. Generates org structure using @wundr/org-genesis
 3. Creates workspace in database
 4. Creates discipline records
-5. Creates VP users for each discipline
+5. Creates Orchestrator users for each discipline
 6. Creates channels for each discipline
 7. Auto-assigns VPs to their discipline channels
 8. Creates default #general channel
@@ -215,7 +215,7 @@ All operations are atomic - if any step fails, all changes are rolled back.
 
 1. **Genesis Generation** (~5-10s)
    - Creates organizational manifest
-   - Generates VP charters
+   - Generates Orchestrator charters
    - Generates discipline packs
    - Generates agent definitions
 
@@ -227,15 +227,15 @@ All operations are atomic - if any step fails, all changes are rolled back.
 3. **Database Creation** (~3-5s)
    - Creates workspace
    - Creates disciplines
-   - Creates VP users
+   - Creates Orchestrator users
    - Creates channels
    - Assigns memberships
 
-### VP User Creation
+### Orchestrator User Creation
 
-Each VP is created as a user with:
-- Email: `{vp-name}@vp.{workspace-slug}.local`
-- Display name: VP title
+Each Orchestrator is created as a user with:
+- Email: `{orchestrator-name}@vp.{workspace-slug}.local`
+- Display name: Orchestrator title
 - Status: ACTIVE
 - Type: isVP = true
 - Config: Persona, responsibilities, KPIs
@@ -247,7 +247,7 @@ For each discipline, creates:
 - Topic and purpose from discipline definition
 - Settings with discipline metadata
 - Creator as ADMIN
-- VP as MEMBER
+- Orchestrator as MEMBER
 - Default #general channel with all VPs
 
 ### Discipline Mapping
@@ -256,7 +256,7 @@ Disciplines are mapped with:
 - Color coding based on name
 - Icon assignment based on type
 - Parent organization link
-- VP association
+- Orchestrator association
 
 ## Usage Examples
 
@@ -303,7 +303,7 @@ const response = await fetch('/api/workspaces/generate-org', {
 });
 
 const result = await response.json();
-console.log(`Created workspace with ${result.genesis.vpCount} VPs`);
+console.log(`Created workspace with ${result.genesis.orchestratorCount} VPs`);
 ```
 
 ## Testing
@@ -359,7 +359,7 @@ Key metrics to monitor:
 - Request duration
 - Generation success rate
 - Transaction failure rate
-- VP creation count
+- Orchestrator creation count
 - Channel creation count
 - Error rates by type
 
@@ -376,7 +376,7 @@ Key metrics to monitor:
 1. Add webhook support for completion notifications
 2. Implement async processing for large organizations
 3. Add progress streaming via Server-Sent Events
-4. Support for custom VP templates
+4. Support for custom Orchestrator templates
 5. Bulk import/export of organizational structures
 6. Integration with external org charts
-7. Automatic assignment of real users to VP roles
+7. Automatic assignment of real users to Orchestrator roles

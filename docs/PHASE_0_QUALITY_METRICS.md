@@ -539,7 +539,7 @@ However, **security and testing gaps** prevent production deployment:
 
 ### Test Files Analyzed (2)
 
-- vps.test.ts
+- orchestrators.test.ts
 
 ### Documentation Created
 

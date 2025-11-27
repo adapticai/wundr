@@ -16,7 +16,7 @@
  *   ALL_DISCIPLINE_IDS,
  *
  *   // Charter templates
- *   VP_CHARTER_TEMPLATE_VERSION,
+ *   ORCHESTRATOR_CHARTER_TEMPLATE_VERSION,
  *   CHARTER_TEMPLATE_TYPES,
  *
  *   // Agent templates

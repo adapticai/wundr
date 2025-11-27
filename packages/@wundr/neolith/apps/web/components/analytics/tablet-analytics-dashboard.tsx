@@ -11,6 +11,7 @@ import { useState } from 'react';
 
 import { useIsTablet, useOrientation } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
+import type { ChartDataPoint } from '@/types/api';
 
 export interface AnalyticsMetric {
   id: string;
@@ -28,7 +29,7 @@ export interface ChartData {
   id: string;
   title: string;
   type: 'line' | 'bar' | 'donut' | 'area';
-  data: any[];
+  data: ChartDataPoint[];
   height?: number;
 }
 
