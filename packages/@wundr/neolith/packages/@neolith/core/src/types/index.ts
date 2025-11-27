@@ -207,10 +207,16 @@ export type {
   OrchestratorRecoveredEvent,
 
   // Callback types
-  OnVPUnhealthyCallback,
-  OnVPRecoveredCallback,
+  OnOrchestratorUnhealthyCallback,
+  OnOrchestratorRecoveredCallback,
   OnDaemonRegisteredCallback,
   OnDaemonUnregisteredCallback,
+} from './heartbeat';
+
+// Backward compatibility aliases for heartbeat callbacks
+export type {
+  OnOrchestratorUnhealthyCallback as OnVPUnhealthyCallback,
+  OnOrchestratorRecoveredCallback as OnVPRecoveredCallback,
 } from './heartbeat';
 
 export {
@@ -257,6 +263,10 @@ export type {
 
   // Configuration types
   PresenceConfig,
+
+  // Backward compatibility aliases
+  VPPresenceCallback,
+  VPPresenceEvent,
 } from './presence';
 
 export {

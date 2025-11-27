@@ -427,6 +427,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.679.0
         version: 3.937.0
+      '@livekit/protocol':
+        specifier: ^1.43.2
+        version: 1.43.2
       '@neolith/database':
         specifier: workspace:*
         version: link:../database
@@ -2678,8 +2681,8 @@ packages:
   '@livekit/protocol@1.42.2':
     resolution: {integrity: sha512-0jeCwoMJKcwsZICg5S6RZM4xhJoF78qMvQELjACJQn6/VB+jmiySQKOSELTXvPBVafHfEbMlqxUw2UR1jTXs2g==}
 
-  '@livekit/protocol@1.43.1':
-    resolution: {integrity: sha512-0NiinrCw9PruS9rFqr/F4UhLn0t09DDjSRgMnU3uu2iHT7uW4wgXPBlTp9HZ/nSShsSd0YCcG2HLX3ltwgkVcw==}
+  '@livekit/protocol@1.43.2':
+    resolution: {integrity: sha512-QHBPAfdfjvTKYnr1IMtFdXpmCamLzLY2GrZSM6I/ajVKG1jMHx14wXDQES+3JQ3+dgXJB/4xcRVO+DJ9fnmEEg==}
 
   '@malept/cross-spawn-promise@1.1.1':
     resolution: {integrity: sha512-RTBGWL5FWQcg9orDOCcp4LvItNzUPcyEU9bwaeJX0rJ1IQxzucC48Y0/sQLp/g6t99IQgAlGIaesJS+gTn7tVQ==}
@@ -12011,7 +12014,7 @@ snapshots:
     dependencies:
       '@bufbuild/protobuf': 1.10.1
 
-  '@livekit/protocol@1.43.1':
+  '@livekit/protocol@1.43.2':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
 
@@ -16994,7 +16997,7 @@ snapshots:
   livekit-server-sdk@2.14.2:
     dependencies:
       '@bufbuild/protobuf': 1.10.1
-      '@livekit/protocol': 1.43.1
+      '@livekit/protocol': 1.43.2
       camelcase-keys: 9.1.3
       jose: 5.10.0
 

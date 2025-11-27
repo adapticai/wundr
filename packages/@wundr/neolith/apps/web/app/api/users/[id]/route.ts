@@ -46,7 +46,7 @@ import type { NextRequest } from 'next/server';
  *     "avatarUrl": "https://...",
  *     "bio": "Software engineer",
  *     "status": "ACTIVE",
- *     "isVP": false,
+ *     "isOrchestrator": false,
  *     "createdAt": "2024-01-01T00:00:00.000Z",
  *     "lastActiveAt": "2024-01-01T00:00:00.000Z"
  *   }
@@ -94,10 +94,10 @@ export async function GET(
         avatarUrl: true,
         bio: true,
         status: true,
-        isVP: true,
+        isOrchestrator: true,
         createdAt: true,
         lastActiveAt: true,
-        // Exclude: preferences, updatedAt, vpConfig
+        // Exclude: preferences, updatedAt, orchestratorConfig
       },
     });
 
@@ -120,7 +120,7 @@ export async function GET(
           avatarUrl: true,
           bio: true,
           status: true,
-          isVP: true,
+          isOrchestrator: true,
           preferences: true,
           createdAt: true,
           updatedAt: true,

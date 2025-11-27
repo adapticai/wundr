@@ -12,7 +12,7 @@
  */
 export interface DaemonRegistration {
   /** Orchestrator identifier */
-  vpId: string;
+  orchestratorId: string;
   /** Organization identifier */
   organizationId: string;
   /** Daemon API key for authentication */
@@ -54,7 +54,7 @@ export interface DaemonRegistrationResponse {
   /** Response data */
   data: {
     /** Orchestrator identifier */
-    vpId: string;
+    orchestratorId: string;
     /** Organization identifier */
     organizationId: string;
     /** ISO 8601 timestamp of registration */
@@ -123,7 +123,7 @@ export interface DaemonHeartbeatResponse {
  */
 export interface SessionCreate {
   /** Orchestrator identifier */
-  vpId: string;
+  orchestratorId: string;
   /** Session type */
   type: 'daemon' | 'user' | 'system';
   /** Optional session metadata */
@@ -176,7 +176,7 @@ export interface Session {
   /** Unique session identifier */
   id: string;
   /** Orchestrator identifier */
-  vpId: string;
+  orchestratorId: string;
   /** Session type */
   type: 'daemon' | 'user' | 'system';
   /** Current session status */
@@ -266,7 +266,7 @@ export interface DaemonAuthResponse {
   /** Session identifier */
   sessionId: string;
   /** Orchestrator information */
-  vp: {
+  orchestrator: {
     id: string;
     discipline: string | null;
     role: string | null;
@@ -294,7 +294,7 @@ export interface DaemonErrorResponse {
  */
 export interface DaemonStatus {
   /** Orchestrator identifier */
-  vpId: string;
+  orchestratorId: string;
   /** Daemon instance ID */
   daemonId: string;
   /** Current status */

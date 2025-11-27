@@ -580,7 +580,7 @@ export async function createOrgCommand(
 
     // Calculate statistics
     const stats: GenesisStats = {
-      orchestratorCount: manifest.orchestratorRegistry.length,
+      orchestratorCount: manifest.vpRegistry.length,
       disciplineCount: manifest.disciplineIds.length,
       agentCount: manifest.disciplineIds.length * 5, // Estimate: ~5 agents per discipline
       toolCount: manifest.disciplineIds.length * 3, // Estimate: ~3 tools per discipline
@@ -772,7 +772,7 @@ function generateMockVPs(
   return Array.from({ length: count }, (_, i) => {
     const role = vpRoles[i % vpRoles.length];
     return {
-      vpId: `orchestrator-${role}-${String(i + 1).padStart(3, '0')}`,
+      orchestratorId: `orchestrator-${role}-${String(i + 1).padStart(3, '0')}`,
       nodeId: `node-${orgId}-${String(i + 1).padStart(3, '0')}`,
       hostname: `orchestrator-${role}.cluster.internal`,
       status: 'provisioning' as const,

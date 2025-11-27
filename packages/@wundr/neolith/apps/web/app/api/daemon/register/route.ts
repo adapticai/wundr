@@ -36,7 +36,7 @@ const daemonInfoSchema = z.object({
  * Schema for registration request body.
  */
 const registerRequestSchema = z.object({
-  vpId: z.string().min(1, 'VP ID is required'),
+  orchestratorId: z.string().min(1, 'Orchestrator ID is required'),
   organizationId: z.string().min(1, 'Organization ID is required'),
   daemonInfo: daemonInfoSchema,
   apiKey: z.string().min(1, 'API key is required'),
@@ -49,7 +49,7 @@ const registerRequestSchema = z.object({
 const REGISTER_ERROR_CODES = {
   VALIDATION_ERROR: 'REGISTER_VALIDATION_ERROR',
   UNAUTHORIZED: 'UNAUTHORIZED',
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   DAEMON_ALREADY_REGISTERED: 'DAEMON_ALREADY_REGISTERED',
   ORGANIZATION_NOT_FOUND: 'ORGANIZATION_NOT_FOUND',
   FORBIDDEN: 'FORBIDDEN',
@@ -80,7 +80,7 @@ function createErrorResponse(
 /**
  * POST /api/daemon/register
  *
- * Registers a daemon for a VP.
+ * Registers a daemon for an Orchestrator.
  * Requires daemon API key authentication.
  *
  * @param request - Next.js request with registration data
@@ -92,7 +92,7 @@ function createErrorResponse(
  * Content-Type: application/json
  *
  * {
- *   "vpId": "vp_123",
+ *   "orchestratorId": "orch_123",
  *   "organizationId": "org_456",
  *   "apiKey": "gns_abc123...",
  *   "daemonInfo": {
@@ -133,10 +133,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { vpId, organizationId, apiKey, daemonInfo } = parseResult.data;
+    const { orchestratorId, organizationId, apiKey, daemonInfo } = parseResult.data;
 
-    // TODO: Validate API key against VP's stored key hash
-    // This would use vpService.validateAPIKey(apiKey)
+    // TODO: Validate API key against Orchestrator's stored key hash
+    // This would use orchestratorService.validateAPIKey(apiKey)
     if (!apiKey.startsWith('gns_')) {
       return NextResponse.json(
         createErrorResponse('Invalid API key', REGISTER_ERROR_CODES.UNAUTHORIZED),
@@ -145,13 +145,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // TODO: Verify Orchestrator exists and belongs to the organization
-    // const orchestrator = await vpService.getVP(vpId);
-    // if (!vp || vp.organizationId !== organizationId) {...}
+    // const orchestrator = await orchestratorService.getOrchestrator(orchestratorId);
+    // if (!orchestrator || orchestrator.organizationId !== organizationId) {...}
 
     // TODO: Get Redis client and heartbeat service
     // const redis = getRedisClient();
     // const heartbeatService = createHeartbeatService(redis);
-    // await heartbeatService.registerDaemon(vpId, {
+    // await heartbeatService.registerDaemon(orchestratorId, {
     //   ...daemonInfo,
     //   startedAt: new Date(daemonInfo.startedAt),
     // });
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       {
         success: true,
         data: {
-          vpId,
+          orchestratorId,
           organizationId,
           registeredAt,
           daemonInfo: {
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             registeredAt,
           },
           heartbeatInterval: 30000, // 30 seconds
-          healthCheckEndpoint: `/api/daemon/health/${vpId}`,
+          healthCheckEndpoint: `/api/daemon/health/${orchestratorId}`,
         },
         message: 'Daemon registered successfully',
       },
@@ -184,15 +184,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (error.message.includes('already registered')) {
         return NextResponse.json(
           createErrorResponse(
-            'Daemon already registered for this VP',
+            'Daemon already registered for this Orchestrator',
             REGISTER_ERROR_CODES.DAEMON_ALREADY_REGISTERED,
           ),
           { status: 409 },
         );
       }
-      if (error.message.includes('VP not found')) {
+      if (error.message.includes('Orchestrator not found')) {
         return NextResponse.json(
-          createErrorResponse('VP not found', REGISTER_ERROR_CODES.VP_NOT_FOUND),
+          createErrorResponse('Orchestrator not found', REGISTER_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
           { status: 404 },
         );
       }

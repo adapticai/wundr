@@ -5,7 +5,7 @@
  * Sessions track daemon connection state and activity.
  *
  * Routes:
- * - GET /api/daemon/sessions - List all sessions for authenticated daemon/VP
+ * - GET /api/daemon/sessions - List all sessions for authenticated daemon/Orchestrator
  * - POST /api/daemon/sessions - Create a new session
  * - PATCH /api/daemon/sessions - Update session status and metadata
  * - DELETE /api/daemon/sessions - Terminate session
@@ -42,7 +42,7 @@ const DEFAULT_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 // =============================================================================
 
 const sessionCreateSchema = z.object({
-  vpId: z.string().min(1, 'VP ID is required'),
+  orchestratorId: z.string().min(1, 'Orchestrator ID is required'),
   type: z.enum(['daemon', 'user', 'system']),
   metadata: z
     .object({
@@ -73,7 +73,7 @@ const ERROR_CODES = {
   UNAUTHORIZED: 'UNAUTHORIZED',
   SESSION_NOT_FOUND: 'SESSION_NOT_FOUND',
   SESSION_EXPIRED: 'SESSION_EXPIRED',
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   FORBIDDEN: 'FORBIDDEN',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
@@ -103,7 +103,7 @@ function createErrorResponse(
  * Verify daemon authentication token
  */
 async function verifyDaemonToken(request: NextRequest): Promise<{
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
 }> {
@@ -114,7 +114,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<{
 
   const token = authHeader.slice(7);
   const decoded = jwt.verify(token, JWT_SECRET) as {
-    vpId: string;
+    orchestratorId: string;
     daemonId: string;
     scopes: string[];
     type: string;
@@ -125,7 +125,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<{
   }
 
   return {
-    vpId: decoded.vpId,
+    orchestratorId: decoded.orchestratorId,
     daemonId: decoded.daemonId,
     scopes: decoded.scopes,
   };
@@ -134,8 +134,8 @@ async function verifyDaemonToken(request: NextRequest): Promise<{
 /**
  * Generate unique session ID
  */
-function generateSessionId(vpId: string, type: string): string {
-  return `session_${type}_${vpId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+function generateSessionId(orchestratorId: string, type: string): string {
+  return `session_${type}_${orchestratorId}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 /**
@@ -145,7 +145,7 @@ function parseSession(sessionId: string, data: string): Session {
   const parsed = JSON.parse(data);
   return {
     id: sessionId,
-    vpId: parsed.vpId,
+    orchestratorId: parsed.orchestratorId,
     type: parsed.type || 'daemon',
     status: parsed.status || 'active',
     createdAt: parsed.createdAt,
@@ -164,7 +164,7 @@ function parseSession(sessionId: string, data: string): Session {
 /**
  * GET /api/daemon/sessions
  *
- * List all sessions for the authenticated daemon/VP.
+ * List all sessions for the authenticated daemon/Orchestrator.
  * Returns active and recent sessions with metadata.
  *
  * @param request - Next.js request with authentication header
@@ -179,7 +179,7 @@ function parseSession(sessionId: string, data: string): Session {
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify authentication
-    let token: { vpId: string; daemonId: string; scopes: string[] };
+    let token: { orchestratorId: string; daemonId: string; scopes: string[] };
     try {
       token = await verifyDaemonToken(request);
     } catch {
@@ -193,7 +193,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const sessions: Session[] = [];
 
     try {
-      const pattern = `daemon:session:*${token.vpId}*`;
+      const pattern = `daemon:session:*${token.orchestratorId}*`;
       const keys = await redis.keys(pattern);
 
       for (const key of keys) {
@@ -242,10 +242,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * Content-Type: application/json
  *
  * {
- *   "vpId": "vp_123",
+ *   "orchestratorId": "vp_123",
  *   "type": "daemon",
  *   "metadata": {
- *     "userAgent": "VP-Daemon/1.0.0",
+ *     "userAgent": "Orchestrator-Daemon/1.0.0",
  *     "ipAddress": "192.168.1.100"
  *   },
  *   "timeoutSeconds": 604800
@@ -255,7 +255,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify authentication
-    let token: { vpId: string; daemonId: string; scopes: string[] };
+    let token: { orchestratorId: string; daemonId: string; scopes: string[] };
     try {
       token = await verifyDaemonToken(request);
     } catch {
@@ -289,35 +289,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const sessionData: SessionCreate = parseResult.data;
 
     // Verify Orchestrator ownership
-    if (sessionData.vpId !== token.vpId) {
+    if (sessionData.orchestratorId !== token.orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Cannot create session for different VP', ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Cannot create session for different Orchestrator', ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
 
     // Verify Orchestrator exists
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: sessionData.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: sessionData.orchestratorId },
       select: { id: true, status: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('VP not found', ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
 
     // Generate session ID and timestamps
-    const sessionId = generateSessionId(sessionData.vpId, sessionData.type);
+    const sessionId = generateSessionId(sessionData.orchestratorId, sessionData.type);
     const now = new Date();
     const ttl = sessionData.timeoutSeconds || DEFAULT_SESSION_TTL_SECONDS;
     const expiresAt = new Date(now.getTime() + ttl * 1000);
 
     const session: Session = {
       id: sessionId,
-      vpId: sessionData.vpId,
+      orchestratorId: sessionData.orchestratorId,
       type: sessionData.type,
       status: 'active',
       createdAt: now.toISOString(),
@@ -380,7 +380,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify authentication
-    let token: { vpId: string; daemonId: string; scopes: string[] };
+    let token: { orchestratorId: string; daemonId: string; scopes: string[] };
     try {
       token = await verifyDaemonToken(request);
     } catch {
@@ -438,9 +438,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const session = parseSession(updateData.sessionId, sessionData);
 
     // Verify session ownership
-    if (session.vpId !== token.vpId) {
+    if (session.orchestratorId !== token.orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Cannot update session for different VP', ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Cannot update session for different Orchestrator', ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
@@ -519,7 +519,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify authentication
-    let token: { vpId: string; daemonId: string; scopes: string[] };
+    let token: { orchestratorId: string; daemonId: string; scopes: string[] };
     try {
       token = await verifyDaemonToken(request);
     } catch {
@@ -564,9 +564,9 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     const session = parseSession(sessionId, sessionData);
 
     // Verify session ownership
-    if (session.vpId !== token.vpId) {
+    if (session.orchestratorId !== token.orchestratorId) {
       return NextResponse.json(
-        createErrorResponse('Cannot delete session for different VP', ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Cannot delete session for different Orchestrator', ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }

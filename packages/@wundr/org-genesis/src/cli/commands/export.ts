@@ -254,11 +254,11 @@ function toYaml(data: ExportedOrganization): string {
   if (data.orchestrators.length > 0) {
     lines.push('vps:');
     for (const orchestrator of data.orchestrators) {
-      lines.push(`  - id: "${vp.id}"`);
-      lines.push(`    name: "${vp.identity.name}"`);
-      lines.push(`    tier: ${vp.tier}`);
+      lines.push(`  - id: "${orchestrator.id}"`);
+      lines.push(`    name: "${orchestrator.identity.name}"`);
+      lines.push(`    tier: ${orchestrator.tier}`);
       lines.push('    capabilities:');
-      for (const cap of vp.capabilities) {
+      for (const cap of orchestrator.capabilities) {
         lines.push(`      - "${cap}"`);
       }
     }
@@ -319,7 +319,7 @@ function toMarkdown(data: ExportedOrganization): string {
     lines.push('|------|-----|-------------|--------------|');
     for (const orchestrator of data.orchestrators) {
       lines.push(
-        `| ${vp.identity.name} | ${vp.id} | ${vp.disciplineIds.length} | ${vp.capabilities.length} |`
+        `| ${orchestrator.identity.name} | ${orchestrator.id} | ${orchestrator.disciplineIds.length} | ${orchestrator.capabilities.length} |`
       );
     }
     lines.push('');
@@ -534,8 +534,8 @@ export async function exportCommand(
     if (includeVPs) {
       orchestrators = await registryManager.charters.listVPs();
       // Filter to VPs belonging to this org
-      orchestrators = orchestrators.filter(vp =>
-        manifest.vpRegistry.some(mapping => mapping.vpId === vp.id)
+      orchestrators = orchestrators.filter(orchestrator =>
+        manifest.vpRegistry.some(mapping => mapping.orchestratorId === orchestrator.id)
       );
     }
 
@@ -544,7 +544,7 @@ export async function exportCommand(
     if (includeDisciplines) {
       disciplines = await registryManager.disciplines.list();
       // Filter to disciplines belonging to VPs in this org
-      const vpIds = orchestrators.map(vp => vp.id);
+      const vpIds = orchestrators.map(orchestrator => orchestrator.id);
       disciplines = disciplines.filter(
         d => d.parentVpId && vpIds.includes(d.parentVpId)
       );
@@ -635,28 +635,28 @@ export async function exportCommand(
         totalSizeBytes += Buffer.byteLength(manifestContent, 'utf-8');
 
         // Write VPs
-        if (vps.length > 0) {
-          const orchestratorsDir = path.join(outputPath, 'vps');
-          await fs.mkdir(vpsDir, { recursive: true });
+        if (orchestrators.length > 0) {
+          const orchestratorsDir = path.join(outputPath, 'orchestrators');
+          await fs.mkdir(orchestratorsDir, { recursive: true });
 
           for (const orchestrator of orchestrators) {
-            const vpContent =
+            const orchestratorContent =
               format === 'json'
                 ? JSON.stringify(
-                    serializeDates(vp as unknown as Record<string, unknown>),
+                    serializeDates(orchestrator as unknown as Record<string, unknown>),
                     null,
                     prettyPrint ? 2 : 0
                   )
                 : format === 'yaml'
-                  ? `# VP: ${vp.identity.name}\nid: "${vp.id}"\n`
-                  : `# ${vp.identity.name}\n\n${vp.coreDirective}\n`;
-            const vpPath = path.join(
+                  ? `# Orchestrator: ${orchestrator.identity.name}\nid: "${orchestrator.id}"\n`
+                  : `# ${orchestrator.identity.name}\n\n${orchestrator.coreDirective}\n`;
+            const orchestratorPath = path.join(
               orchestratorsDir,
-              `${vp.identity.slug}${getExtension(format)}`
+              `${orchestrator.identity.slug}${getExtension(format)}`
             );
-            await fs.writeFile(vpPath, vpContent, 'utf-8');
-            filesExported.push(vpPath);
-            totalSizeBytes += Buffer.byteLength(vpContent, 'utf-8');
+            await fs.writeFile(orchestratorPath, orchestratorContent, 'utf-8');
+            filesExported.push(orchestratorPath);
+            totalSizeBytes += Buffer.byteLength(orchestratorContent, 'utf-8');
           }
         }
 

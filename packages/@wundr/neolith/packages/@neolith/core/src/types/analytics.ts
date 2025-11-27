@@ -72,7 +72,7 @@ export interface AnalyticsEvent {
   /** User who triggered the event (if applicable) */
   userId?: string;
   /** Orchestrator that triggered the event (if applicable) */
-  vpId?: string;
+  orchestratorId?: string;
   /** Type of analytics event */
   eventType: AnalyticsEventType;
   /** Event-specific data with typed properties */
@@ -118,7 +118,7 @@ export interface UsageMetrics {
   channels: ChannelMetrics;
   files: FileMetrics;
   calls: CallMetrics;
-  vp: VPMetrics;
+  orchestrator: OrchestratorMetrics;
 }
 
 export interface MessageMetrics {
@@ -168,16 +168,16 @@ export interface CallMetrics {
   peakHours: Array<{ hour: number; count: number }>;
 }
 
-export interface VPMetrics {
-  totalVPs: number;
-  activeVPs: number;
+export interface OrchestratorMetrics {
+  totalOrchestrators: number;
+  activeOrchestrators: number;
   messagesSent: number;
   messagesReceived: number;
   tasksCompleted: number;
   averageResponseTime: number;
-  byVP: Array<{
-    vpId: string;
-    vpName: string;
+  byOrchestrator: Array<{
+    orchestratorId: string;
+    orchestratorName: string;
     discipline: string;
     messagesSent: number;
     tasksCompleted: number;
@@ -196,7 +196,7 @@ export interface AnalyticsQuery {
   filters?: {
     channelIds?: string[];
     userIds?: string[];
-    vpIds?: string[];
+    orchestratorIds?: string[];
     eventTypes?: AnalyticsEventType[];
   };
 }
@@ -227,7 +227,7 @@ export interface WidgetFilters {
   /** Filter by user IDs */
   userIds?: string[];
   /** Filter by OrchestratorIDs */
-  vpIds?: string[];
+  orchestratorIds?: string[];
   /** Filter by event types */
   eventTypes?: AnalyticsEventType[];
   /** Filter by date range */

@@ -132,7 +132,7 @@ export interface DisciplineApiResponse {
   name: string;
   description?: string;
   slug?: string;
-  parentVpId?: string;
+  parentOrchestratorId?: string;
   hooks?: Array<{
     description: string;
     [key: string]: unknown;
@@ -142,7 +142,7 @@ export interface DisciplineApiResponse {
     [key: string]: unknown;
   };
   agentIds?: string[];
-  vpId?: string;
+  orchestratorId?: string;
   [key: string]: unknown;
 }
 
@@ -159,7 +159,7 @@ export interface AgentApiResponse {
   capabilities?: Record<string, unknown>;
   charter?: string;
   usedByDisciplines?: string[];
-  vpId?: string;
+  orchestratorId?: string;
   disciplineId?: string;
   [key: string]: unknown;
 }
@@ -179,7 +179,6 @@ export interface GenesisApiResult {
  */
 export interface PrismaWhereClause {
   [key: string]: unknown;
-  vpId?: string; // @deprecated Use orchestratorId instead
   orchestratorId?: string;
   workspaceId?: string;
   status?: {

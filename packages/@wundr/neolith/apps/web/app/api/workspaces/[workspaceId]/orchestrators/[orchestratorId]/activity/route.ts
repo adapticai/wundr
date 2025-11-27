@@ -99,7 +99,7 @@ async function getOrchestratorWithWorkspaceAccess(
   }
 
   // Fetch Orchestrator and verify it belongs to the workspace
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -224,8 +224,8 @@ export async function GET(
     const taskId = searchParams.get('taskId') || undefined;
 
     // Build where clause
-    const where: Prisma.vPMemoryWhereInput = {
-      vpId: orchestratorId,
+    const where: Prisma.orchestratorMemoryWhereInput = {
+      orchestratorId: orchestratorId,
     };
 
     // Filter by activity types (stored in memoryType field)
@@ -254,7 +254,7 @@ export async function GET(
     // Filtering by these would require filtering in memory after fetching
 
     // Fetch activities with cursor pagination
-    const activities = await prisma.vPMemory.findMany({
+    const activities = await prisma.orchestratorMemory.findMany({
       where,
       ...(cursor && {
         cursor: { id: cursor },
@@ -443,10 +443,10 @@ export async function POST(
     }
 
     // Check permissions: either admin/owner OR the Orchestrator's own service account
-    const isVPServiceAccount = session.user.isVP && session.user.id === result.orchestrator.userId;
+    const isOrchestratorServiceAccount = session.user.isOrchestrator && session.user.id === result.orchestrator.userId;
     const hasAdminAccess = result.role === 'OWNER' || result.role === 'ADMIN';
 
-    if (!isVPServiceAccount && !hasAdminAccess) {
+    if (!isOrchestratorServiceAccount && !hasAdminAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to log activity for this Orchestrator',
@@ -496,10 +496,10 @@ export async function POST(
       }),
     };
 
-    // Create activity record as VPMemory
-    const activity = await prisma.vPMemory.create({
+    // Create activity record as OrchestratorMemory
+    const activity = await prisma.orchestratorMemory.create({
       data: {
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         memoryType,
         content: input.description,
         metadata: activityMetadata as unknown as Prisma.InputJsonValue,

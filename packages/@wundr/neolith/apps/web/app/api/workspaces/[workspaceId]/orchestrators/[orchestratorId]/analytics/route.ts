@@ -40,7 +40,7 @@ interface RouteContext {
 /**
  * Helper to verify workspace and Orchestrator access
  */
-async function verifyVPAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function verifyOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -63,7 +63,7 @@ async function verifyVPAccess(workspaceId: string, orchestratorId: string, userI
     return null;
   }
 
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -133,7 +133,7 @@ export async function GET(
     }
 
     // Verify access
-    const access = await verifyVPAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
@@ -183,7 +183,7 @@ export async function GET(
 
     // Build where condition for detailed queries
     const whereCondition: Prisma.taskWhereInput = {
-      vpId: orchestratorId,
+      orchestratorId: orchestratorId,
       updatedAt: {
         gte: startDate,
         lte: endDate,

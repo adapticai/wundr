@@ -182,7 +182,7 @@ export async function GET(
                 email: true,
                 avatarUrl: true,
                 status: true,
-                isVP: true,
+                isOrchestrator: true,
               },
             },
           },

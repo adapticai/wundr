@@ -168,8 +168,8 @@ export async function GET(
     // Extract cursor parameter for cursor-based pagination
     const cursor = request.nextUrl.searchParams.get('cursor');
 
-    // Build where clause - filter VPs by workspace's organization
-    const where: Prisma.vPWhereInput = {
+    // Build where clause - filter Orchestrators by workspace's organization
+    const where: Prisma.orchestratorWhereInput = {
       organizationId: access.workspace.organizationId,
       ...(filters.discipline && { discipline: filters.discipline }),
       ...(filters.status && { status: filters.status }),
@@ -186,7 +186,7 @@ export async function GET(
     // Build orderBy based on sortBy field
     // Map sortBy to the correct field
     // The schema only allows: 'createdAt', 'updatedAt', 'discipline', 'role', 'status'
-    const orderBy: Prisma.vPOrderByWithRelationInput = { [filters.sortBy]: filters.sortOrder };
+    const orderBy: Prisma.orchestratorOrderByWithRelationInput = { [filters.sortBy]: filters.sortOrder };
 
     // Determine pagination approach
     let skip: number | undefined;
@@ -203,9 +203,9 @@ export async function GET(
       take = filters.limit;
     }
 
-    // Fetch VPs and total count in parallel
+    // Fetch Orchestrators and total count in parallel
     const [orchestrators, totalCount] = await Promise.all([
-      prisma.vP.findMany({
+      prisma.orchestrator.findMany({
         where,
         ...(cursorConfig ? cursorConfig : { skip }),
         take,
@@ -246,18 +246,18 @@ export async function GET(
           },
         },
       }),
-      prisma.vP.count({ where }),
+      prisma.orchestrator.count({ where }),
     ]);
 
     // Enhance Orchestrators with task statistics
     const orchestratorIds = orchestrators.map((orchestrator) => orchestrator.id);
 
-    // Fetch task statistics for all VPs in parallel
+    // Fetch task statistics for all Orchestrators in parallel
     const [completedTaskCounts, activeTaskCounts] = await Promise.all([
       prisma.task.groupBy({
-        by: ['vpId'],
+        by: ['orchestratorId'],
         where: {
-          vpId: { in: orchestratorIds },
+          orchestratorId: { in: orchestratorIds },
           status: 'DONE',
         },
         _count: {
@@ -265,9 +265,9 @@ export async function GET(
         },
       }),
       prisma.task.groupBy({
-        by: ['vpId'],
+        by: ['orchestratorId'],
         where: {
-          vpId: { in: orchestratorIds },
+          orchestratorId: { in: orchestratorIds },
           status: { in: ['TODO', 'IN_PROGRESS'] },
         },
         _count: {
@@ -278,10 +278,10 @@ export async function GET(
 
     // Create lookup maps for O(1) access
     const completedTaskMap = new Map(
-      completedTaskCounts.map((item) => [item.vpId, item._count.id]),
+      completedTaskCounts.map((item) => [item.orchestratorId, item._count.id]),
     );
     const activeTaskMap = new Map(
-      activeTaskCounts.map((item) => [item.vpId, item._count.id]),
+      activeTaskCounts.map((item) => [item.orchestratorId, item._count.id]),
     );
 
     // Enhance Orchestrator data with statistics
@@ -484,13 +484,13 @@ export async function POST(
           displayName: input.user?.displayName,
           avatarUrl: input.user?.avatarUrl,
           bio: input.user?.bio,
-          isVP: true,
+          isOrchestrator: true,
           status: 'ACTIVE',
         },
       });
 
       // Create the Orchestrator
-      const newOrchestrator = await tx.vP.create({
+      const newOrchestrator = await tx.orchestrator.create({
         data: {
           discipline: input.discipline,
           role: input.role,

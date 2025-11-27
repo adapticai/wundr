@@ -27,8 +27,8 @@ export type WebhookEventType =
   | 'channel.deleted'
   | 'member.joined'
   | 'member.left'
-  | 'vp.status_changed'
-  | 'vp.message'
+  | 'orchestrator.status_changed'
+  | 'orchestrator.message'
   | 'task.created'
   | 'task.completed'
   | 'workflow.triggered'
@@ -73,7 +73,7 @@ export type WebhookStatus = 'active' | 'inactive' | 'disabled';
 export interface WebhookFilters {
   channelIds?: string[];
   userIds?: string[];
-  vpIds?: string[];
+  orchestratorIds?: string[];
 }
 
 export interface WebhookConfig {
@@ -214,8 +214,8 @@ export const WEBHOOK_EVENTS: Record<WebhookEventType, { label: string; descripti
   'channel.deleted': { label: 'Channel Deleted', description: 'Triggered when a channel is deleted' },
   'member.joined': { label: 'Member Joined', description: 'Triggered when a member joins' },
   'member.left': { label: 'Member Left', description: 'Triggered when a member leaves' },
-  'vp.status_changed': { label: 'VP Status Changed', description: 'Triggered when a Orchestrator status changes' },
-  'vp.message': { label: 'VP Message', description: 'Triggered when a Orchestrator sends a message' },
+  'orchestrator.status_changed': { label: 'Orchestrator Status Changed', description: 'Triggered when an Orchestrator status changes' },
+  'orchestrator.message': { label: 'Orchestrator Message', description: 'Triggered when an Orchestrator sends a message' },
   'task.created': { label: 'Task Created', description: 'Triggered when a task is created' },
   'task.completed': { label: 'Task Completed', description: 'Triggered when a task is completed' },
   'workflow.triggered': { label: 'Workflow Triggered', description: 'Triggered when a workflow starts' },

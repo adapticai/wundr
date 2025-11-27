@@ -71,7 +71,7 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
 
   const navItems = [
     { href: `/${workspaceId}/dashboard`, icon: <DashboardIcon />, label: 'Dashboard' },
-    { href: `/${workspaceId}/orchestrators`, icon: <Orchestrator sIcon />, label: 'Orchestrators' },
+    { href: `/${workspaceId}/orchestrators`, icon: <OrchestratorsIcon />, label: 'Orchestrators' },
     { href: `/${workspaceId}/agents`, icon: <AgentsIcon />, label: 'Agents' },
     { href: `/${workspaceId}/workflows`, icon: <WorkflowsIcon />, label: 'Workflows' },
     { href: `/${workspaceId}/deployments`, icon: <DeploymentsIcon />, label: 'Deployments' },
@@ -352,7 +352,7 @@ function SettingsIcon() {
   );
 }
 
-function VPsIcon() {
+function OrchestratorsIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

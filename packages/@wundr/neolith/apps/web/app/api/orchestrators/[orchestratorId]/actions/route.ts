@@ -27,7 +27,7 @@ import type { NextRequest} from 'next/server';
  * Route context with OrchestratorID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ orchestratorId: string }>;
 }
 
 /**
@@ -116,8 +116,8 @@ export async function POST(
     });
 
     // Fetch Orchestrator and verify access
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: params.id },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: params.orchestratorId },
       include: {
         user: {
           select: {
@@ -151,7 +151,7 @@ export async function POST(
 
     if (!membership) {
       return NextResponse.json(
-        createErrorResponse('Access denied to this VP', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Access denied to this Orchestrator', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
@@ -191,8 +191,8 @@ export async function POST(
       });
 
       // Update Orchestrator status
-      return tx.vP.update({
-        where: { id: params.id },
+      return tx.orchestrator.update({
+        where: { id: params.orchestratorId },
         data: { status: newStatus },
         include: {
           user: {

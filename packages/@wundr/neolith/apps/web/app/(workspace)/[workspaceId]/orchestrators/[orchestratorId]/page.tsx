@@ -19,13 +19,13 @@ import {
   Clock,
   MessageSquare,
   Tag,
-  Calendar,
   TrendingUp,
   Brain,
   Zap,
   ChevronRight,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
+import type React from 'react';
 import { useState, useCallback, useEffect } from 'react';
 
 import { usePageHeader } from '@/contexts/page-header-context';
@@ -39,7 +39,7 @@ import { useOrchestrator, useOrchestratorMutations } from '@/hooks/use-orchestra
 import { cn } from '@/lib/utils';
 import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
 
-import type { Orchestrator, UpdateOrchestratorInput } from '@/types/orchestrator';
+import type { UpdateOrchestratorInput } from '@/types/orchestrator';
 
 export default function OrchestratorDetailPage() {
   const params = useParams();
@@ -223,6 +223,12 @@ export default function OrchestratorDetailPage() {
                   <Badge className={cn(statusConfig.bgColor, statusConfig.color)}>
                     {statusConfig.label}
                   </Badge>
+                  {isEditingMode && (
+                    <Badge variant="outline" className="text-amber-600 border-amber-400 bg-amber-50">
+                      <Edit className="h-3 w-3 mr-1" />
+                      Editing Mode
+                    </Badge>
+                  )}
                   {orchestrator.discipline && (
                     <Badge variant="outline">
                       <Tag className="h-3 w-3 mr-1" />
@@ -493,47 +499,275 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-// Activity Log Component
+/**
+ * Activity type configuration for visual styling
+ */
+const ACTIVITY_TYPE_CONFIG: Record<
+  string,
+  { icon: React.ComponentType<{ className?: string }>; color: string; bgColor: string }
+> = {
+  TASK_STARTED: { icon: Play, color: 'text-green-600', bgColor: 'bg-green-100' },
+  TASK_COMPLETED: { icon: Zap, color: 'text-blue-600', bgColor: 'bg-blue-100' },
+  TASK_UPDATED: { icon: Activity, color: 'text-amber-600', bgColor: 'bg-amber-100' },
+  STATUS_CHANGE: { icon: Clock, color: 'text-purple-600', bgColor: 'bg-purple-100' },
+  MESSAGE_SENT: { icon: MessageSquare, color: 'text-indigo-600', bgColor: 'bg-indigo-100' },
+  CHANNEL_JOINED: { icon: Users, color: 'text-teal-600', bgColor: 'bg-teal-100' },
+  CHANNEL_LEFT: { icon: Users, color: 'text-gray-600', bgColor: 'bg-gray-100' },
+  DECISION_MADE: { icon: Brain, color: 'text-pink-600', bgColor: 'bg-pink-100' },
+  LEARNING_RECORDED: { icon: TrendingUp, color: 'text-cyan-600', bgColor: 'bg-cyan-100' },
+  CONVERSATION_INITIATED: { icon: MessageSquare, color: 'text-violet-600', bgColor: 'bg-violet-100' },
+  TASK_DELEGATED: { icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-100' },
+  TASK_ESCALATED: { icon: TrendingUp, color: 'text-red-600', bgColor: 'bg-red-100' },
+  ERROR_OCCURRED: { icon: AlertIcon, color: 'text-red-600', bgColor: 'bg-red-100' },
+  SYSTEM_EVENT: { icon: Settings, color: 'text-gray-600', bgColor: 'bg-gray-100' },
+};
+
+/**
+ * OrchestratorActivity entry interface
+ */
+interface OrchestratorActivityEntry {
+  id: string;
+  type: string;
+  description: string;
+  details: Record<string, unknown>;
+  channelId?: string;
+  taskId?: string;
+  importance: number;
+  keywords: string[];
+  timestamp: string;
+  updatedAt: string;
+}
+
+/**
+ * Activity Log Component - Production-ready activity feed for Orchestrators
+ *
+ * Fetches real activity data from the orchestrator activity API with:
+ * - Cursor-based pagination
+ * - Loading states
+ * - Error handling with retry
+ * - Activity type icons and color coding
+ * - Relative time formatting
+ */
 function ActivityLog({ orchestratorId }: { orchestratorId: string }) {
-  // TODO: Implement actual activity fetching from API
-  const mockActivities = [
-    {
-      id: '1',
-      timestamp: new Date(Date.now() - 1000 * 60 * 5),
-      type: 'status_change',
-      description: 'Status changed to Online',
-    },
-    {
-      id: '2',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60),
-      type: 'message',
-      description: 'Processed 15 messages',
-    },
-    {
-      id: '3',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      type: 'configuration',
-      description: 'System prompt updated',
-    },
-  ];
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
+
+  const [activities, setActivities] = useState<OrchestratorActivityEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  /**
+   * Format relative time for activity timestamps
+   */
+  const formatRelativeTime = useCallback((timestamp: string): string => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSecs < 60) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }, []);
+
+  /**
+   * Fetch activities from API
+   */
+  const fetchActivities = useCallback(async (append = false) => {
+    if (!workspaceId || !orchestratorId) return;
+
+    if (!append) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+    setError(null);
+
+    try {
+      const params = new URLSearchParams({
+        limit: '20',
+      });
+      if (append && cursor) {
+        params.set('cursor', cursor);
+      }
+
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/orchestrators/${orchestratorId}/activity?${params.toString()}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch activities: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const newActivities = result.data?.activities || [];
+      const pagination = result.data?.pagination || {};
+
+      if (append) {
+        setActivities(prev => [...prev, ...newActivities]);
+      } else {
+        setActivities(newActivities);
+      }
+
+      setCursor(pagination.cursor || null);
+      setHasMore(pagination.hasMore || false);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch activities');
+      setError(error);
+      console.error('[ActivityLog] Error fetching activities:', error);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [workspaceId, orchestratorId, cursor]);
+
+  /**
+   * Load more activities (pagination)
+   */
+  const handleLoadMore = useCallback(() => {
+    if (!hasMore || isLoadingMore) return;
+    fetchActivities(true);
+  }, [hasMore, isLoadingMore, fetchActivities]);
+
+  /**
+   * Retry after error
+   */
+  const handleRetry = useCallback(() => {
+    setCursor(null);
+    fetchActivities(false);
+  }, [fetchActivities]);
+
+  /**
+   * Initial fetch
+   */
+  useEffect(() => {
+    fetchActivities(false);
+  }, [orchestratorId, workspaceId]); // Re-fetch when IDs change
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex gap-3 items-start animate-pulse">
+            <div className="h-8 w-8 rounded-full bg-muted" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-muted rounded w-3/4" />
+              <div className="h-3 bg-muted rounded w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 max-w-sm text-center">
+          <AlertIcon className="h-6 w-6 text-red-600 mx-auto mb-2" />
+          <p className="text-sm text-red-800 font-medium">Failed to load activity</p>
+          <p className="text-xs text-red-600 mt-1">{error.message}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRetry}
+            className="mt-3"
+          >
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (activities.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <Activity className="h-12 w-12 text-muted-foreground/50 mb-4" />
+        <p className="text-sm font-medium text-muted-foreground">No activity recorded yet</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Activity will appear here as this orchestrator performs actions
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {mockActivities.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">No activity recorded yet</p>
-      ) : (
-        <div className="space-y-3">
-          {mockActivities.map((activity) => (
-            <div key={activity.id} className="flex gap-3 items-start border-l-2 border-primary pl-3">
-              <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">{activity.description}</p>
-                <p className="text-xs text-muted-foreground">
-                  {activity.timestamp.toLocaleString()}
-                </p>
+      <div className="space-y-3">
+        {activities.map((activity) => {
+          const config = ACTIVITY_TYPE_CONFIG[activity.type] || ACTIVITY_TYPE_CONFIG.SYSTEM_EVENT;
+          const IconComponent = config.icon;
+
+          return (
+            <div
+              key={activity.id}
+              className="flex gap-3 items-start p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+            >
+              <div className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-full shrink-0',
+                config.bgColor
+              )}>
+                <IconComponent className={cn('h-4 w-4', config.color)} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-tight">{activity.description}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-muted-foreground">
+                    {formatRelativeTime(activity.timestamp)}
+                  </span>
+                  {activity.importance >= 7 && (
+                    <Badge variant="outline" className="text-xs h-5 px-1.5">
+                      High Priority
+                    </Badge>
+                  )}
+                </div>
+                {activity.keywords && activity.keywords.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {activity.keywords.slice(0, 3).map((keyword, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-muted px-1.5 py-0.5 rounded"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          ))}
+          );
+        })}
+      </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? 'Loading...' : 'Load More'}
+          </Button>
         </div>
       )}
     </div>

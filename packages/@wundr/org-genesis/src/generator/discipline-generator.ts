@@ -674,7 +674,7 @@ export class DisciplineGenerator {
 
         // Convert to full discipline packs
         const disciplines = limitedData.map(parsed => {
-          const partialPack = convertToDisciplinePack(parsed, context.orchestratorSlug);
+          const partialPack = convertToDisciplinePack(parsed, context.vpSlug);
           return this.enrichWithDefaults({
             ...partialPack,
             id: generateDisciplineId(),
@@ -1135,7 +1135,7 @@ export class DisciplineGenerator {
     const now = new Date();
 
     // Determine category from Orchestrator name/slug
-    const vpNameLower = context.orchestratorName.toLowerCase();
+    const vpNameLower = context.vpName.toLowerCase();
     let primaryCategory: DisciplineCategory = 'custom';
 
     if (vpNameLower.includes('engineer') || vpNameLower.includes('tech')) {
@@ -1186,8 +1186,8 @@ export class DisciplineGenerator {
         name: primaryName,
         slug: generateSlug(primaryName),
         category: primaryCategory,
-        description: `${primaryName} discipline under ${context.orchestratorName}`,
-        parentVpId: context.orchestratorSlug,
+        description: `${primaryName} discipline under ${context.vpName}`,
+        parentVpId: context.vpSlug,
         agentIds: [],
         createdAt: now,
         updatedAt: now,
@@ -1195,8 +1195,8 @@ export class DisciplineGenerator {
     );
 
     // Add additional disciplines based on responsibilities
-    if (context.orchestratorResponsibilities) {
-      for (const responsibility of context.orchestratorResponsibilities.slice(0, 4)) {
+    if (context.vpResponsibilities) {
+      for (const responsibility of context.vpResponsibilities.slice(0, 4)) {
         const disciplineName = responsibility;
         const slug = generateSlug(disciplineName);
 
@@ -1212,7 +1212,7 @@ export class DisciplineGenerator {
             slug,
             category: primaryCategory,
             description: `${disciplineName} discipline focusing on ${responsibility.toLowerCase()}`,
-            parentVpId: context.orchestratorSlug,
+            parentVpId: context.vpSlug,
             agentIds: [],
             createdAt: now,
             updatedAt: now,

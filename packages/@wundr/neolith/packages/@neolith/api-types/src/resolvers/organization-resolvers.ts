@@ -1306,7 +1306,7 @@ export const OrganizationFieldResolvers = {
     _args: unknown,
     context: GraphQLContext
   ) => {
-    return context.prisma.vP.findMany({
+    return context.prisma.orchestrator.findMany({
       where: { organizationId: parent.id },
       orderBy: { createdAt: 'desc' },
     });

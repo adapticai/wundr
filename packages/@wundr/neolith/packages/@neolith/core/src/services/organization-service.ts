@@ -465,8 +465,8 @@ export class OrganizationServiceImpl implements OrganizationService {
           });
         }
 
-        // Delete all VPs in organization
-        await tx.vP.deleteMany({
+        // Delete all Orchestrators in organization
+        await tx.orchestrator.deleteMany({
           where: { organizationId: id },
         });
 

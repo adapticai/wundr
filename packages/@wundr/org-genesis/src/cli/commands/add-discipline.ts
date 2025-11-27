@@ -572,7 +572,7 @@ export async function addDisciplineCommand(
 
       // Verify Orchestrator exists
       const orchestrator = await registryManager.charters.getVP(orchestratorId);
-      if (!vp) {
+      if (!orchestrator) {
         return {
           success: false,
           error: `Orchestrator not found: ${orchestratorId}`,
@@ -620,14 +620,14 @@ export async function addDisciplineCommand(
 
       // Update Orchestrator to include this discipline
       const orchestrator = await registryManager.charters.getVP(orchestratorId);
-      if (vp && !vp.disciplineIds.includes(id)) {
-        // Update VP's discipline list and re-register
-        const updatedVp: OrchestratorCharter = {
+      if (orchestrator && !orchestrator.disciplineIds.includes(id)) {
+        // Update Orchestrator's discipline list and re-register
+        const updatedOrchestrator: OrchestratorCharter = {
           ...orchestrator,
           disciplineIds: [...orchestrator.disciplineIds, id],
           updatedAt: new Date(),
         };
-        await registryManager.charters.registerVP(updatedVp);
+        await registryManager.charters.registerVP(updatedOrchestrator);
       }
     } else if (options.dryRun) {
       warnings.push('Dry-run mode: Discipline was not persisted to registry');

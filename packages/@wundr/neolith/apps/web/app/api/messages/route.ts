@@ -266,7 +266,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             name: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         reactions: {

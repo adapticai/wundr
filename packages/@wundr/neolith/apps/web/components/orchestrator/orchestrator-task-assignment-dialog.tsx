@@ -46,26 +46,26 @@ const taskAssignmentSchema = z.object({
   title: z.string().min(1, 'Task title is required').max(100, 'Title must be 100 characters or less'),
   description: z.string().min(1, 'Description is required').max(1000, 'Description must be 1000 characters or less'),
   priority: z.enum(TASK_PRIORITIES),
-  vpId: z.string().min(1, 'Please select a VP'),
+  orchestratorId: z.string().min(1, 'Please select an Orchestrator'),
 });
 
 type TaskAssignmentFormValues = z.infer<typeof taskAssignmentSchema>;
 
-interface VPTaskAssignmentDialogProps {
-  orchestrators: VP[];
+interface OrchestratorTaskAssignmentDialogProps {
+  orchestrators: Orchestrator[];
   onAssignTask?: (task: TaskAssignmentFormValues) => Promise<void>;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function VPTaskAssignmentDialog({
+export function OrchestratorTaskAssignmentDialog({
   orchestrators,
   onAssignTask,
   trigger,
   open: controlledOpen,
   onOpenChange,
-}: VPTaskAssignmentDialogProps) {
+}: OrchestratorTaskAssignmentDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,7 +79,7 @@ export function VPTaskAssignmentDialog({
       title: '',
       description: '',
       priority: 'medium',
-      vpId: '',
+      orchestratorId: '',
     },
   });
 
@@ -100,17 +100,17 @@ export function VPTaskAssignmentDialog({
     }
   };
 
-  // Filter only online VPs
-  const activeVPs = orchestrators.filter((vp) => vp.status === 'ONLINE');
+  // Filter only online Orchestrators
+  const activeOrchestrators = orchestrators.filter((orchestrator) => orchestrator.status === 'ONLINE');
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Assign Task to VP</DialogTitle>
+          <DialogTitle>Assign Task to Orchestrator</DialogTitle>
           <DialogDescription>
-            Create a new task and assign it to a orchestrator. Only active VPs are available for assignment.
+            Create a new task and assign it to an orchestrator. Only active Orchestrators are available for assignment.
           </DialogDescription>
         </DialogHeader>
 
@@ -149,7 +149,7 @@ export function VPTaskAssignmentDialog({
                     />
                   </FormControl>
                   <FormDescription>
-                    Provide clear instructions and context for the VP
+                    Provide clear instructions and context for the Orchestrator
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -207,44 +207,44 @@ export function VPTaskAssignmentDialog({
             {/* OrchestratorSelector */}
             <FormField
               control={form.control}
-              name="vpId"
+              name="orchestratorId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Assign to VP</FormLabel>
+                  <FormLabel>Assign to Orchestrator</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a VP" />
+                        <SelectValue placeholder="Select an Orchestrator" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {activeVPs.length === 0 ? (
+                      {activeOrchestrators.length === 0 ? (
                         <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                          No active VPs available
+                          No active Orchestrators available
                         </div>
                       ) : (
-                        activeVPs.map((vp) => (
-                          <SelectItem key={vp.id} value={vp.id}>
+                        activeOrchestrators.map((orchestrator) => (
+                          <SelectItem key={orchestrator.id} value={orchestrator.id}>
                             <div className="flex items-center gap-2">
-                              {vp.avatarUrl ? (
+                              {orchestrator.avatarUrl ? (
                                 <img
-                                  src={vp.avatarUrl}
-                                  alt={vp.title}
+                                  src={orchestrator.avatarUrl}
+                                  alt={orchestrator.title}
                                   className="h-5 w-5 rounded-full object-cover"
                                 />
                               ) : (
                                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                                  {vp.title.charAt(0)}
+                                  {orchestrator.title.charAt(0)}
                                 </div>
                               )}
                               <span className="truncate">
-                                {vp.title}
-                                {vp.discipline && (
+                                {orchestrator.title}
+                                {orchestrator.discipline && (
                                   <span className="ml-1 text-muted-foreground">
-                                    ({vp.discipline})
+                                    ({orchestrator.discipline})
                                   </span>
                                 )}
                               </span>
@@ -255,8 +255,8 @@ export function VPTaskAssignmentDialog({
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    {activeVPs.length === 0
-                      ? 'No VPs are currently active. Please activate a Orchestrator first.'
+                    {activeOrchestrators.length === 0
+                      ? 'No Orchestrators are currently active. Please activate an Orchestrator first.'
                       : 'Choose which Orchestrator should handle this task'}
                   </FormDescription>
                   <FormMessage />
@@ -275,7 +275,7 @@ export function VPTaskAssignmentDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || activeVPs.length === 0}
+                disabled={isSubmitting || activeOrchestrators.length === 0}
               >
                 {isSubmitting ? 'Assigning...' : 'Assign Task'}
               </Button>

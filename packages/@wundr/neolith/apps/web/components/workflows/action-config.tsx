@@ -174,8 +174,8 @@ export function ActionConfigPanel({
           />
         )}
 
-        {action.type === 'notify_vp' && (
-          <NotifyVPConfig
+        {action.type === 'notify_orchestrator' && (
+          <NotifyOrchestratorConfig
             config={action.config}
             onChange={handleConfigChange}
           />
@@ -678,13 +678,13 @@ function ConditionConfig({ config, onChange }: ConditionConfigProps) {
   );
 }
 
-// Notify OrchestratorConfiguration
-interface NotifyVPConfigProps {
+// Notify Orchestrator Configuration
+interface NotifyOrchestratorConfigProps {
   config: ActionConfig['config'];
   onChange: (updates: Partial<ActionConfig['config']>) => void;
 }
 
-function NotifyVPConfig({ config, onChange }: NotifyVPConfigProps) {
+function NotifyOrchestratorConfig({ config, onChange }: NotifyOrchestratorConfigProps) {
   return (
     <div className="space-y-4">
       <div>
@@ -712,7 +712,7 @@ function NotifyVPConfig({ config, onChange }: NotifyVPConfigProps) {
           id="orchestrator-message"
           value={config.message || ''}
           onChange={(e) => onChange({ message: e.target.value })}
-          placeholder="Additional context for the VP"
+          placeholder="Additional context for the Orchestrator"
           rows={3}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />

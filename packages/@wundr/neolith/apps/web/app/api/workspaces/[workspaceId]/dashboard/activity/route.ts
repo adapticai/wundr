@@ -55,14 +55,14 @@ const activityQuerySchema = z.object({
 export type ActivityQueryParams = z.infer<typeof activityQuerySchema>;
 
 /**
- * Actor information (user or VP)
+ * Actor information (user or Orchestrator)
  */
 interface Actor {
   id: string;
   name: string | null;
   displayName: string | null;
   avatarUrl: string | null;
-  isVP: boolean;
+  isOrchestrator: boolean;
   email?: string | null;
 }
 
@@ -149,7 +149,7 @@ async function fetchMessageActivities(
           name: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
           email: true,
         },
       },
@@ -178,7 +178,7 @@ async function fetchMessageActivities(
       name: msg.author.name,
       displayName: msg.author.displayName,
       avatarUrl: msg.author.avatarUrl,
-      isVP: msg.author.isVP,
+      isOrchestrator: msg.author.isOrchestrator,
       email: msg.author.email,
     },
     target: {
@@ -233,7 +233,7 @@ async function fetchTaskActivities(
           name: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
           email: true,
         },
       },
@@ -243,10 +243,10 @@ async function fetchTaskActivities(
           name: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
         },
       },
-      vp: {
+      orchestrator: {
         select: {
           id: true,
           role: true,
@@ -284,7 +284,7 @@ async function fetchTaskActivities(
         name: task.createdBy.name,
         displayName: task.createdBy.displayName,
         avatarUrl: task.createdBy.avatarUrl,
-        isVP: task.createdBy.isVP,
+        isOrchestrator: task.createdBy.isOrchestrator,
         email: task.createdBy.email,
       },
       target: {
@@ -304,9 +304,9 @@ async function fetchTaskActivities(
         assignedTo: task.assignedTo ? {
           id: task.assignedTo.id,
           name: task.assignedTo.name || task.assignedTo.displayName,
-          isVP: task.assignedTo.isVP,
+          isOrchestrator: task.assignedTo.isOrchestrator,
         } : null,
-        vp: task.orchestrator ? {
+        orchestrator: task.orchestrator ? {
           id: task.orchestrator.id,
           role: task.orchestrator.role,
           discipline: task.orchestrator.discipline,
@@ -357,7 +357,7 @@ async function fetchWorkflowActivities(
       name: true,
       displayName: true,
       avatarUrl: true,
-      isVP: true,
+      isOrchestrator: true,
       email: true,
     },
   });
@@ -377,7 +377,7 @@ async function fetchWorkflowActivities(
           name: user.name,
           displayName: user.displayName,
           avatarUrl: user.avatarUrl,
-          isVP: user.isVP,
+          isOrchestrator: user.isOrchestrator,
           email: user.email,
         },
         target: {
@@ -426,7 +426,7 @@ async function fetchMemberActivities(
           name: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
           email: true,
         },
       },
@@ -448,7 +448,7 @@ async function fetchMemberActivities(
       name: member.user.name,
       displayName: member.user.displayName,
       avatarUrl: member.user.avatarUrl,
-      isVP: member.user.isVP,
+      isOrchestrator: member.user.isOrchestrator,
       email: member.user.email,
     },
     target: {
@@ -491,7 +491,7 @@ async function fetchFileActivities(
           name: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
           email: true,
         },
       },
@@ -507,7 +507,7 @@ async function fetchFileActivities(
       name: file.uploadedBy.name,
       displayName: file.uploadedBy.displayName,
       avatarUrl: file.uploadedBy.avatarUrl,
-      isVP: file.uploadedBy.isVP,
+      isOrchestrator: file.uploadedBy.isOrchestrator,
       email: file.uploadedBy.email,
     },
     target: {
@@ -555,7 +555,7 @@ async function fetchChannelActivities(
           name: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
           email: true,
         },
       },
@@ -573,7 +573,7 @@ async function fetchChannelActivities(
         name: channel.createdBy!.name,
         displayName: channel.createdBy!.displayName,
         avatarUrl: channel.createdBy!.avatarUrl,
-        isVP: channel.createdBy!.isVP,
+        isOrchestrator: channel.createdBy!.isOrchestrator,
         email: channel.createdBy!.email,
       },
       target: {

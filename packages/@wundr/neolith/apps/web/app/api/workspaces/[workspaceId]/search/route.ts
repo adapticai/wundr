@@ -74,7 +74,7 @@ interface MessageResult {
   authorId: string;
   authorName: string | null;
   authorAvatarUrl: string | null;
-  authorIsVP: boolean;
+  authorIsOrchestrator: boolean;
   createdAt: Date;
   isEdited: boolean;
   replyCount: number;
@@ -309,7 +309,7 @@ async function searchMessages(
             id: true,
             name: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         channel: {
@@ -337,7 +337,7 @@ async function searchMessages(
     authorId: message.authorId,
     authorName: message.author.name,
     authorAvatarUrl: message.author.avatarUrl,
-    authorIsVP: message.author.isVP,
+    authorIsOrchestrator: message.author.isOrchestrator,
     createdAt: message.createdAt,
     isEdited: message.isEdited,
     replyCount: message._count.replies,

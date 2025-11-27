@@ -1,7 +1,7 @@
 /**
  * Task Assignment Route
  *
- * Handles assigning tasks from humans to VPs or from Orchestrator to VP.
+ * Handles assigning tasks from humans to Orchestrators or from Orchestrator to Orchestrator.
  *
  * Routes:
  * - POST /api/tasks/assign - Assign one or more tasks to a user
@@ -25,8 +25,8 @@ import {
 /**
  * POST /api/tasks/assign
  *
- * Assign one or more tasks to a user (human or VP).
- * Supports both human-to-VP assignment and VP-to-VP assignment.
+ * Assign one or more tasks to a user (human or Orchestrator).
+ * Supports both human-to-Orchestrator assignment and Orchestrator-to-Orchestrator assignment.
  *
  * Request body:
  * {
@@ -46,8 +46,8 @@ import {
  *
  * {
  *   "taskIds": ["task_123", "task_456"],
- *   "assigneeId": "vp_789",
- *   "reason": "VP has capacity for these tasks"
+ *   "assigneeId": "orchestrator_789",
+ *   "reason": "Orchestrator has capacity for these tasks"
  * }
  * ```
  */
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Verify assignee exists
     const assignee = await prisma.user.findUnique({
       where: { id: input.assigneeId },
-      select: { id: true, isVP: true },
+      select: { id: true, isOrchestrator: true },
     });
 
     if (!assignee) {
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 },
               },
               include: {
-                assignedTo: { select: { id: true, name: true, email: true, isVP: true } },
+                assignedTo: { select: { id: true, name: true, email: true, isOrchestrator: true } },
               },
             });
 

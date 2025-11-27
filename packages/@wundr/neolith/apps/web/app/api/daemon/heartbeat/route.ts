@@ -65,7 +65,7 @@ const HEARTBEAT_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -160,8 +160,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const nextHeartbeat = new Date(now.getTime() + HEARTBEAT_INTERVAL_MS).toISOString();
 
     // Get Orchestrator info
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: {
         id: true,
         organizationId: true,
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: HEARTBEAT_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
@@ -177,24 +177,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update Orchestrator status
-    const vpStatus = status === 'idle' ? 'AWAY' : status === 'busy' ? 'BUSY' : 'ONLINE';
-    await prisma.vP.update({
-      where: { id: token.vpId },
+    const orchestratorStatus = status === 'idle' ? 'AWAY' : status === 'busy' ? 'BUSY' : 'ONLINE';
+    await prisma.orchestrator.update({
+      where: { id: token.orchestratorId },
       data: {
-        status: vpStatus,
+        status: orchestratorStatus,
       },
     });
 
     // Store heartbeat in Redis
-    const heartbeatKey = `daemon:heartbeat:${token.vpId}`;
+    const heartbeatKey = `daemon:heartbeat:${token.orchestratorId}`;
     const heartbeatData = {
-      vpId: token.vpId,
+      orchestratorId: token.orchestratorId,
       daemonId: token.daemonId,
       sessionId: sessionId || token.daemonId,
       status,
       metrics: metrics || {},
       receivedAt: serverTime,
-      organizationId: vp.organizationId,
+      organizationId: orchestrator.organizationId,
     };
 
     try {
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Store metrics history (last 100 heartbeats)
       if (metrics) {
-        const metricsKey = `daemon:metrics:${token.vpId}`;
+        const metricsKey = `daemon:metrics:${token.orchestratorId}`;
         await redis.lpush(
           metricsKey,
           JSON.stringify({
@@ -238,10 +238,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Publish heartbeat for monitoring
       await redis.publish(
-        `daemon:heartbeats:${vp.organizationId}`,
+        `daemon:heartbeats:${orchestrator.organizationId}`,
         JSON.stringify({
           type: 'heartbeat',
-          vpId: token.vpId,
+          orchestratorId: token.orchestratorId,
           status,
           receivedAt: serverTime,
         }),

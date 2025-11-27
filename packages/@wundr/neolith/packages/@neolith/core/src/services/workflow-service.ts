@@ -462,7 +462,7 @@ export const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Ask VP',
         config: {
           type: 'invoke_vp',
-          vpId: '{{config.orchestratorId}}',
+          orchestratorId: '{{config.orchestratorId}}',
           prompt: '{{trigger.message.content}}',
           waitForResponse: true,
         } as InvokeVPConfig,
@@ -481,7 +481,7 @@ export const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
     ],
     variables: [
       {
-        name: 'vpId',
+        name: 'orchestratorId',
         type: 'string',
         defaultValue: '',
       },
@@ -1365,14 +1365,14 @@ export class WorkflowServiceImpl implements WorkflowService {
   private async executeInvokeVPAction(
     config: InvokeVPConfig,
     context: ExecutionContext,
-  ): Promise<{ vpId: string; prompt: string; response?: string }> {
-    const vpId = this.interpolateTemplate(config.orchestratorId, context);
+  ): Promise<{ orchestratorId: string; prompt: string; response?: string }> {
+    const orchestratorId = this.interpolateTemplate(config.orchestratorId, context);
     const prompt = this.interpolateTemplate(config.prompt, context);
 
     // In real implementation, this would call the Orchestrator service
     // For now, return a mock response
     return {
-      vpId,
+      orchestratorId,
       prompt,
       response: config.waitForResponse ? 'Mock Orchestrator response' : undefined,
     };

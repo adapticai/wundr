@@ -469,8 +469,8 @@ describe('AnalyticsService', () => {
         period: 'week',
       });
 
-      expect(metrics.orchestrator.totalVPs).toBe(5);
-      expect(metrics.orchestrator.activeVPs).toBe(3);
+      expect(metrics.orchestrator.totalOrchestrators).toBe(5);
+      expect(metrics.orchestrator.activeOrchestrators).toBe(3);
       expect(metrics.orchestrator.messagesSent).toBe(100);
     });
 

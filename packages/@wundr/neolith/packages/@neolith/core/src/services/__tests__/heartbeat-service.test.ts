@@ -314,7 +314,7 @@ return;
   }
 
   async getMonitoringStats(): Promise<{
-    totalVPs: number;
+    totalOrchestrators: number;
     healthyCount: number;
     degradedCount: number;
     unhealthyCount: number;
@@ -323,7 +323,7 @@ return;
     const statuses = await this.heartbeatService.getAllVPHealthStatuses();
 
     return {
-      totalVPs: statuses.length,
+      totalOrchestrators: statuses.length,
       healthyCount: statuses.filter((s) => s.status === 'healthy').length,
       degradedCount: statuses.filter((s) => s.status === 'degraded').length,
       unhealthyCount: statuses.filter((s) => s.status === 'unhealthy').length,
@@ -907,16 +907,16 @@ describe('HeartbeatMonitor', () => {
 
       const stats = await monitor.getMonitoringStats();
 
-      expect(stats.totalVPs).toBe(3);
+      expect(stats.totalOrchestrators).toBe(3);
       expect(stats.healthyCount).toBe(1);
       expect(stats.unhealthyCount).toBe(1);
       expect(stats.unknownCount).toBe(1);
     });
 
-    it('returns zeros when no VPs registered', async () => {
+    it('returns zeros when no Orchestrators registered', async () => {
       const stats = await monitor.getMonitoringStats();
 
-      expect(stats.totalVPs).toBe(0);
+      expect(stats.totalOrchestrators).toBe(0);
       expect(stats.healthyCount).toBe(0);
       expect(stats.degradedCount).toBe(0);
       expect(stats.unhealthyCount).toBe(0);

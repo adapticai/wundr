@@ -38,10 +38,10 @@ import type {
   InsightRecommendation,
   InsightReport,
   MessageMetrics,
+  OrchestratorMetrics,
   TrendData,
   UsageMetrics,
   UserMetrics,
-  VPMetrics,
 } from '../types/analytics';
 import {
   ANALYTICS_REDIS_KEYS,
@@ -169,9 +169,9 @@ export interface AttachmentAggregateResult {
 }
 
 /**
- * Where clause for filtering VPs.
+ * Where clause for filtering Orchestrators.
  */
-export interface VPWhereInput {
+export interface OrchestratorWhereInput {
   workspaceId?: string;
   status?: string;
 }
@@ -214,8 +214,8 @@ export interface AnalyticsDatabaseClient {
     }): Promise<AttachmentAggregateResult>;
   };
   /** Orchestrator count operations */
-  vP: {
-    count(args: { where: VPWhereInput }): Promise<number>;
+  orchestrator: {
+    count(args: { where: OrchestratorWhereInput }): Promise<number>;
   };
   /** Reaction count operations */
   reaction: {
@@ -425,13 +425,13 @@ return;
   async getMetrics(query: AnalyticsQuery): Promise<UsageMetrics> {
     const { startDate, endDate } = this.getPeriodDates(query.period, query.startDate, query.endDate);
 
-    const [messages, users, channels, files, calls, vp] = await Promise.all([
+    const [messages, users, channels, files, calls, orchestrator] = await Promise.all([
       this.getMessageMetrics(query.workspaceId, startDate, endDate),
       this.getUserMetrics(query.workspaceId, startDate, endDate),
       this.getChannelMetrics(query.workspaceId, startDate, endDate),
       this.getFileMetrics(query.workspaceId, startDate, endDate),
       this.getCallMetrics(query.workspaceId, startDate, endDate),
-      this.getVPMetrics(query.workspaceId, startDate, endDate),
+      this.getOrchestratorMetrics(query.workspaceId, startDate, endDate),
     ]);
 
     return {
@@ -444,7 +444,7 @@ return;
       channels,
       files,
       calls,
-      vp,
+      orchestrator,
     };
   }
 
@@ -727,42 +727,42 @@ return;
   /**
    * Get Orchestrator metrics
    */
-  private async getVPMetrics(
+  private async getOrchestratorMetrics(
     workspaceId: string,
     startDate: Date,
     endDate: Date,
   ): Promise<OrchestratorMetrics> {
-    const [totalVPs, activeVPs, vpMessages] = await Promise.all([
-      this.prisma.vP.count({ where: { workspaceId } }),
-      this.prisma.vP.count({ where: { workspaceId, status: 'active' } }),
+    const [totalOrchestrators, activeOrchestrators, orchestratorMessages] = await Promise.all([
+      this.prisma.orchestrator.count({ where: { workspaceId } }),
+      this.prisma.orchestrator.count({ where: { workspaceId, status: 'active' } }),
       this.prisma.$queryRaw<
-        Array<{ vpId: string; vpName: string; discipline: string; messagesSent: bigint }>
+        Array<{ orchestratorId: string; orchestratorName: string; discipline: string; messagesSent: bigint }>
       >`
         SELECT
-          vp.id as "vpId",
-          vp.name as "vpName",
-          vp.discipline,
+          o.id as "orchestratorId",
+          o.name as "orchestratorName",
+          o.discipline,
           COUNT(m.id) as "messagesSent"
-        FROM "VP" vp
-        LEFT JOIN "Message" m ON m."senderId" = vp.id AND m."senderType" = 'vp'
+        FROM "Orchestrator" o
+        LEFT JOIN "Message" m ON m."senderId" = o.id AND m."senderType" = 'orchestrator'
           AND m."createdAt" >= ${startDate} AND m."createdAt" <= ${endDate}
-        WHERE vp."workspaceId" = ${workspaceId}
-        GROUP BY vp.id, vp.name, vp.discipline
+        WHERE o."workspaceId" = ${workspaceId}
+        GROUP BY o.id, o.name, o.discipline
       `,
     ]);
 
-    const totalMessagesSent = vpMessages.reduce((sum, v) => sum + Number(v.messagesSent), 0);
+    const totalMessagesSent = orchestratorMessages.reduce((sum, v) => sum + Number(v.messagesSent), 0);
 
     return {
-      totalVPs,
-      activeVPs,
+      totalOrchestrators,
+      activeOrchestrators,
       messagesSent: totalMessagesSent,
       messagesReceived: 0,
       tasksCompleted: 0,
       averageResponseTime: 0,
-      byVP: vpMessages.map((v) => ({
-        vpId: v.orchestratorId,
-        vpName: v.orchestratorName,
+      byOrchestrator: orchestratorMessages.map((v) => ({
+        orchestratorId: v.orchestratorId,
+        orchestratorName: v.orchestratorName,
         discipline: v.discipline,
         messagesSent: Number(v.messagesSent),
         tasksCompleted: 0,
@@ -880,11 +880,11 @@ return;
     }
 
     // Orchestrator utilization
-    if (metrics.orchestrator.totalVPs > 0 && metrics.orchestrator.activeVPs < metrics.orchestrator.totalVPs) {
+    if (metrics.orchestrator.totalOrchestrators > 0 && metrics.orchestrator.activeOrchestrators < metrics.orchestrator.totalOrchestrators) {
       recommendations.push({
         priority: 'low',
-        title: 'Activate VPs',
-        description: `${metrics.orchestrator.totalVPs - metrics.orchestrator.activeVPs} VPs are not currently active. Review their configuration.`,
+        title: 'Activate Orchestrators',
+        description: `${metrics.orchestrator.totalOrchestrators - metrics.orchestrator.activeOrchestrators} Orchestrators are not currently active. Review their configuration.`,
       });
     }
 

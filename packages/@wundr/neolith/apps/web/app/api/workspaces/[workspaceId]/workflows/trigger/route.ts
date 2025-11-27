@@ -124,7 +124,7 @@ function checkTriggerFilters(
     return true;
   }
 
-  const { channelIds, userIds, vpIds } = trigger.filters;
+  const { channelIds, userIds, orchestratorIds } = trigger.filters;
 
   // Check channel filter
   if (channelIds && channelIds.length > 0) {
@@ -143,9 +143,9 @@ function checkTriggerFilters(
   }
 
   // Check Orchestrator filter
-  if (vpIds && vpIds.length > 0) {
-    const eventVpId = eventData.vpId as string | undefined;
-    if (!eventVpId || !vpIds.includes(eventVpId)) {
+  if (orchestratorIds && orchestratorIds.length > 0) {
+    const eventOrchestratorId = eventData.orchestratorId as string | undefined;
+    if (!eventOrchestratorId || !orchestratorIds.includes(eventOrchestratorId)) {
       return false;
     }
   }

@@ -12,7 +12,7 @@ export interface AuthUser {
   name?: string | null;
   email?: string | null;
   image?: string | null;
-  isVP: boolean;
+  isOrchestrator: boolean;
   role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
 }
 
@@ -23,8 +23,8 @@ export interface UseAuthReturn {
   isAuthenticated: boolean;
   /** Whether the session is currently loading */
   isLoading: boolean;
-  /** Whether the authenticated user is a Orchestrator (Orchestrator) agent */
-  isVP: boolean;
+  /** Whether the authenticated user is an Orchestrator (AI Agent) */
+  isOrchestrator: boolean;
   /** The user's role in the system */
   role: 'ADMIN' | 'MEMBER' | 'VIEWER' | undefined;
   /** Function to trigger sign in */
@@ -74,7 +74,7 @@ export function useAuth(): UseAuthReturn {
     user,
     isAuthenticated: status === 'authenticated',
     isLoading: status === 'loading',
-    isVP: user?.isVP ?? false,
+    isOrchestrator: user?.isOrchestrator ?? false,
     role: user?.role,
     signIn,
     signOut: handleSignOut,

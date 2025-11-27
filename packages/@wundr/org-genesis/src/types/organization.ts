@@ -157,7 +157,7 @@ export interface OrchestratorHealthMetrics {
  * @example
  * ```typescript
  * const vpMapping: VPNodeMapping = {
- *   vpId: 'orchestrator-cto-001',
+ *   orchestratorId: 'orchestrator-cto-001',
  *   nodeId: 'node-us-east-1a',
  *   hostname: 'orchestrator-cto.cluster.internal',
  *   status: 'active',
@@ -176,7 +176,7 @@ export interface VPNodeMapping {
    * Unique identifier for the Orchestrator.
    * Format: `orchestrator-{role}-{sequence}`
    */
-  vpId: string;
+  orchestratorId: string;
 
   /**
    * Identifier of the compute node hosting this Orchestrator.

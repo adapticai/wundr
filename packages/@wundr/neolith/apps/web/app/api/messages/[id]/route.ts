@@ -53,7 +53,7 @@ async function getMessageWithAccessCheck(messageId: string, userId: string) {
           name: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
         },
       },
       channel: {
@@ -313,7 +313,7 @@ export async function PATCH(
             name: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         reactions: {

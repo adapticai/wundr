@@ -4,14 +4,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { VPStatusBadge } from '@/components/orchestrator/orchestrator-status-badge';
+import { OrchestratorStatusBadge } from '@/components/orchestrator/orchestrator-status-badge';
 
-import { DISCIPLINE_COLORS, type VPDetailsPopoverProps } from './types';
+import { DISCIPLINE_COLORS, type OrchestratorDetailsPopoverProps } from './types';
 
 /**
  * Popover component showing quick Orchestrator details on hover/click
  */
-export function VPDetailsPopover({ vp, children }: VPDetailsPopoverProps) {
+export function OrchestratorDetailsPopover({ orchestrator, children }: OrchestratorDetailsPopoverProps) {
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -21,8 +21,8 @@ export function VPDetailsPopover({ vp, children }: VPDetailsPopoverProps) {
       .slice(0, 2);
   };
 
-  const disciplineColor = vp.discipline
-    ? DISCIPLINE_COLORS[vp.discipline] || 'bg-gray-100 text-gray-800 border-gray-300'
+  const disciplineColor = orchestrator.discipline
+    ? DISCIPLINE_COLORS[orchestrator.discipline] || 'bg-gray-100 text-gray-800 border-gray-300'
     : 'bg-gray-100 text-gray-800 border-gray-300';
 
   return (
@@ -33,19 +33,19 @@ export function VPDetailsPopover({ vp, children }: VPDetailsPopoverProps) {
           {/* Header with avatar and name */}
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
-              {vp.avatarUrl && <AvatarImage src={vp.avatarUrl} alt={vp.name} />}
+              {orchestrator.avatarUrl && <AvatarImage src={orchestrator.avatarUrl} alt={orchestrator.name} />}
               <AvatarFallback className="text-sm font-semibold">
-                {getInitials(vp.name)}
+                {getInitials(orchestrator.name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-base truncate">{vp.name}</h4>
-              {vp.discipline && (
+              <h4 className="font-semibold text-base truncate">{orchestrator.name}</h4>
+              {orchestrator.discipline && (
                 <Badge
                   variant="outline"
                   className={`mt-1 text-xs ${disciplineColor}`}
                 >
-                  {vp.discipline}
+                  {orchestrator.discipline}
                 </Badge>
               )}
             </div>
@@ -57,15 +57,15 @@ export function VPDetailsPopover({ vp, children }: VPDetailsPopoverProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Status</span>
-              <OrchestratorStatusBadge status={vp.status} size="sm" />
+              <OrchestratorStatusBadge status={orchestrator.status} size="sm" />
             </div>
 
             {/* Current task */}
-            {vp.currentTask && (
+            {orchestrator.currentTask && (
               <div className="space-y-1">
                 <span className="text-sm text-muted-foreground">Current Task</span>
                 <p className="text-sm text-foreground bg-muted p-2 rounded-md break-words">
-                  {vp.currentTask}
+                  {orchestrator.currentTask}
                 </p>
               </div>
             )}
@@ -77,7 +77,7 @@ export function VPDetailsPopover({ vp, children }: VPDetailsPopoverProps) {
               className="flex-1 text-xs py-2 px-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                window.location.href = `/vp/${vp.id}`;
+                window.location.href = `/orchestrators/${orchestrator.id}`;
               }}
             >
               View Details
@@ -87,7 +87,7 @@ export function VPDetailsPopover({ vp, children }: VPDetailsPopoverProps) {
               onClick={(e) => {
                 e.stopPropagation();
                 // TODO: Implement chat navigation
-                console.log('Start chat with VP:', vp.id);
+                console.log('Start chat with Orchestrator:', orchestrator.id);
               }}
             >
               Start Chat

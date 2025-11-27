@@ -5,7 +5,7 @@
  * Supports delta updates based on last poll timestamp.
  *
  * Routes:
- * - POST /api/tasks/poll - Poll for tasks assigned to a VP
+ * - POST /api/tasks/poll - Poll for tasks assigned to an Orchestrator
  *
  * @module app/api/tasks/poll/route
  */
@@ -32,7 +32,7 @@ import {
  *
  * Request body:
  * {
- *   "vpId": "vp_123",
+ *   "orchestratorId": "orchestrator_123",
  *   "workspaceId": "ws_123",
  *   "status": ["TODO", "IN_PROGRESS"],
  *   "minPriority": "HIGH",
@@ -41,16 +41,16 @@ import {
  * }
  *
  * @param request - Next.js request with polling data
- * @returns List of tasks for the VP
+ * @returns List of tasks for the Orchestrator
  *
  * @example
  * ```
  * POST /api/tasks/poll
  * Content-Type: application/json
- * X-VP-API-Key: vp_key_123
+ * X-Orchestrator-API-Key: orchestrator_key_123
  *
  * {
- *   "vpId": "vp_123",
+ *   "orchestratorId": "orchestrator_123",
  *   "workspaceId": "ws_123",
  *   "status": ["TODO", "IN_PROGRESS"],
  *   "limit": 50
@@ -86,19 +86,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const input: TaskPollingInput = parseResult.data;
 
     // Verify Orchestrator exists and belongs to the workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
-        id: input.vpId,
+        id: input.orchestratorId,
         workspaceId: input.workspaceId,
       },
       select: { id: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         createErrorResponse(
-          'VP not found in workspace',
-          TASK_ERROR_CODES.VP_NOT_FOUND,
+          'Orchestrator not found in workspace',
+          TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
         { status: 404 },
       );
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Build where clause
     const where: Prisma.taskWhereInput = {
-      vpId: input.vpId,
+      orchestratorId: input.orchestratorId,
       workspaceId: input.workspaceId,
     };
 
@@ -151,13 +151,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       include: {
         workspace: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true, email: true } },
-        assignedTo: { select: { id: true, name: true, email: true, isVP: true } },
+        assignedTo: { select: { id: true, name: true, email: true, isOrchestrator: true } },
       },
     });
 
     // Calculate polling metadata
     const pollMetadata = {
-      vpId: input.vpId,
+      orchestratorId: input.orchestratorId,
       workspaceId: input.workspaceId,
       polledAt: new Date().toISOString(),
       since: input.since,

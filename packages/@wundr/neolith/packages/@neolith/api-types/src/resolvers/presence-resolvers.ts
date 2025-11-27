@@ -585,7 +585,7 @@ export const presenceQueries = {
       });
     }
 
-    const vp = await context.prisma.vP.findUnique({
+    const orch = await context.prisma.orchestrator.findUnique({
       where: { id: args.orchestratorId },
       include: {
         user: {
@@ -597,25 +597,25 @@ export const presenceQueries = {
       },
     });
 
-    if (!vp) {
+    if (!orch) {
       return null;
     }
 
-    // Get message count for VP
+    // Get message count for orchestrator
     const messageCount = await context.prisma.message.count({
-      where: { authorId: vp.userId },
+      where: { authorId: orch.userId },
     });
 
     // Determine if Orchestrator is healthy (online and recent activity)
     const isHealthy =
-      vp.status === 'ONLINE' &&
-      isUserOnline(vp.user.lastActiveAt);
+      orch.status === 'ONLINE' &&
+      isUserOnline(orch.user.lastActiveAt);
 
     return {
-      orchestratorId: vp.id,
-      userId: vp.userId,
-      status: vp.status as OrchestratorPresenceStatusType,
-      lastActivity: vp.user.lastActiveAt,
+      orchestratorId: orch.id,
+      userId: orch.userId,
+      status: orch.status as OrchestratorPresenceStatusType,
+      lastActivity: orch.user.lastActiveAt,
       isHealthy,
       messageCount,
     };
@@ -669,7 +669,7 @@ export const presenceQueries = {
     }
 
     // Get all VPs in the organization that are online
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where: {
         organizationId: args.organizationId,
         status: { in: ['ONLINE', 'BUSY', 'AWAY'] },
@@ -1287,7 +1287,7 @@ export const OrchestratorPresenceFieldResolvers = {
     _args: unknown,
     context: GraphQLContext
   ) => {
-    return context.prisma.vP.findUnique({
+    return context.prisma.orchestrator.findUnique({
       where: { id: parent.orchestratorId },
       include: {
         user: {

@@ -16,7 +16,7 @@ import type {
   OrganizationMember,
   OrganizationRole,
   User,
-  VP,
+  Orchestrator,
   Workspace,
   WorkspaceMember,
   WorkspaceRole,
@@ -44,7 +44,7 @@ export interface OrganizationWithRelations extends Organization {
   /** Workspaces in the organization */
   workspaces: Workspace[];
   /** VPs in the organization */
-  orchestrators: VP[];
+  orchestrators: Orchestrator[];
 }
 
 /**
@@ -341,7 +341,7 @@ export interface Discipline {
   /** Organization ID */
   organizationId: string;
   /** Number of VPs in this discipline */
-  vpCount: number;
+  orchestratorCount: number;
   /** When this discipline was first created (first Orchestrator with this discipline) */
   createdAt: Date;
 }
@@ -351,13 +351,13 @@ export interface Discipline {
  */
 export interface DisciplineWithVPs extends Discipline {
   /** VPs in this discipline */
-  orchestrators: VPBasic[];
+  orchestrators: OrchestratorBasic[];
 }
 
 /**
  * Basic Orchestrator info for discipline listing.
  */
-export interface VPBasic {
+export interface OrchestratorBasic {
   /** OrchestratorID */
   id: string;
   /** Orchestrator role */
@@ -407,7 +407,7 @@ export interface ListDisciplinesOptions {
   /** Number of records to take */
   take?: number;
   /** Field to order by */
-  orderBy?: 'name' | 'vpCount' | 'createdAt';
+  orderBy?: 'name' | 'orchestratorCount' | 'createdAt';
   /** Order direction */
   orderDirection?: 'asc' | 'desc';
 }

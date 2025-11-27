@@ -13,7 +13,7 @@
  */
 
 
-import type { PrismaClient, vP as PrismaOrchestrator } from '@prisma/client';
+import type { PrismaClient, orchestrator as PrismaOrchestrator } from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================
@@ -164,8 +164,8 @@ interface DeletePayload {
   errors: Array<{ code: string; message: string; path?: string[] }>;
 }
 
-interface VPPayload {
-  vp: Orchestrator | null;
+interface OrchestratorPayload {
+  orchestrator: Orchestrator | null;
   errors: Array<{ code: string; message: string; path?: string[] }>;
 }
 
@@ -344,7 +344,7 @@ function createErrorPayload(
 /**
  * Convert Prisma Orchestrator t Orchestrator solver Orchestrator type
  */
-function toVP(prismaOrchestrator: PrismaOrchestrator): Orchestrator {
+function toOrchestrator(prismaOrchestrator: PrismaOrchestrator): Orchestrator {
   return {
     id: prismaOrchestrator.id,
     userId: prismaOrchestrator.userId,
@@ -500,7 +500,7 @@ export const disciplineQueries = {
     }
 
     // Find VPs with this discipline (case-insensitive match on slug)
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where: {
         organizationId: orgId,
         discipline: {
@@ -511,7 +511,7 @@ export const disciplineQueries = {
       orderBy: { createdAt: 'asc' },
     });
 
-    if (vps.length === 0) {
+    if (orchestrators.length === 0) {
       return null;
     }
 
@@ -571,7 +571,7 @@ export const disciplineQueries = {
     }
 
     // Get all VPs in the organization
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where: { organizationId },
       orderBy: { createdAt: 'asc' },
     });
@@ -582,20 +582,20 @@ export const disciplineQueries = {
       { name: string; orchestrators: typeof orchestrators; earliest: Date }
     >();
 
-    for (const vp of orchestrators) {
-      const normalizedName = vp.discipline.toLowerCase();
+    for (const orchestratorItem of orchestrators) {
+      const normalizedName = orchestratorItem.discipline.toLowerCase();
 
       if (!disciplineMap.has(normalizedName)) {
         disciplineMap.set(normalizedName, {
-          name: vp.discipline,
-          orchestrators: [vp],
-          earliest: vp.createdAt,
+          name: orchestratorItem.discipline,
+          orchestrators: [orchestratorItem],
+          earliest: orchestratorItem.createdAt,
         });
       } else {
         const entry = disciplineMap.get(normalizedName)!;
-        entry.orchestrators.push(vp);
-        if (vp.createdAt < entry.earliest) {
-          entry.earliest = vp.createdAt;
+        entry.orchestrators.push(orchestratorItem);
+        if (orchestratorItem.createdAt < entry.earliest) {
+          entry.earliest = orchestratorItem.createdAt;
         }
       }
     }
@@ -708,7 +708,7 @@ export const disciplineMutations = {
     const normalizedName = input.name.toLowerCase();
 
     // Check if discipline already exists (has VPs)
-    const existingVPs = await context.prisma.vP.findMany({
+    const existingVPs = await context.prisma.orchestrator.findMany({
       where: {
         organizationId: input.organizationId,
         discipline: {
@@ -730,7 +730,7 @@ export const disciplineMutations = {
 
     // If discipline already has VPs, return existing discipline
     if (existingVPs.length > 0) {
-      const vpCount = await context.prisma.vP.count({
+      const vpCount = await context.prisma.orchestrator.count({
         where: {
           organizationId: input.organizationId,
           discipline: {
@@ -816,7 +816,7 @@ export const disciplineMutations = {
     }
 
     // Find VPs with this discipline
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where: {
         organizationId: orgId,
         discipline: {
@@ -827,7 +827,7 @@ export const disciplineMutations = {
       orderBy: { createdAt: 'asc' },
     });
 
-    if (vps.length === 0) {
+    if (orchestrators.length === 0) {
       return createErrorPayload('NOT_FOUND', 'Discipline not found');
     }
 
@@ -841,7 +841,7 @@ export const disciplineMutations = {
         newName = input.name;
 
         // Update all VPs with this discipline to use the new name
-        await context.prisma.vP.updateMany({
+        await context.prisma.orchestrator.updateMany({
           where: {
             organizationId: orgId,
             discipline: {
@@ -935,7 +935,7 @@ export const disciplineMutations = {
     }
 
     // Find VPs with this discipline to get the actual name
-    const orchestrators = await context.prisma.vP.findFirst({
+    const orchestrators = await context.prisma.orchestrator.findFirst({
       where: {
         organizationId: orgId,
         discipline: {
@@ -1017,19 +1017,19 @@ export const disciplineMutations = {
     const { orchestratorId, disciplineId } = args;
 
     // Find the VP
-    const vp = await context.prisma.vP.findUnique({
+    const orch = await context.prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
     });
 
-    if (!vp) {
+    if (!orch) {
       return {
-        vp: null,
+        orchestrator: null,
         errors: [{ code: 'NOT_FOUND', message: 'VP not found' }],
       };
     }
 
     // Check organization modification permission
-    const canModify = await canModifyOrganization(context, vp.organizationId);
+    const canModify = await canModifyOrganization(context, orch.organizationId);
     if (!canModify) {
       throw new GraphQLError('You do not have permission to modify VPs in this organization', {
         extensions: { code: 'FORBIDDEN' },
@@ -1040,23 +1040,23 @@ export const disciplineMutations = {
     const parsed = parseDisciplineId(disciplineId);
     if (!parsed) {
       return {
-        vp: null,
+        orchestrator: null,
         errors: [{ code: 'BAD_USER_INPUT', message: 'Invalid discipline ID' }],
       };
     }
 
     // Verify discipline is in the same organization
-    if (parsed.orgId !== vp.organizationId) {
+    if (parsed.orgId !== orch.organizationId) {
       return {
-        vp: null,
+        orchestrator: null,
         errors: [{ code: 'BAD_USER_INPUT', message: 'Discipline must be in the same organization as the VP' }],
       };
     }
 
     // Find an existing Orchestrator with this discipline to get the proper casing
-    const existingVPWithDiscipline = await context.prisma.vP.findFirst({
+    const existingVPWithDiscipline = await context.prisma.orchestrator.findFirst({
       where: {
-        organizationId: vp.organizationId,
+        organizationId: orch.organizationId,
         discipline: {
           contains: parsed.slug,
           mode: 'insensitive',
@@ -1071,7 +1071,7 @@ export const disciplineMutations = {
     } else {
       // Try to get from organization settings
       const org = await context.prisma.organization.findUnique({
-        where: { id: vp.organizationId },
+        where: { id: orch.organizationId },
         select: { settings: true },
       });
 
@@ -1093,13 +1093,13 @@ export const disciplineMutations = {
     }
 
     // Update Orchestrator with new discipline
-    const updatedVP = await context.prisma.vP.update({
+    const updatedVP = await context.prisma.orchestrator.update({
       where: { id: orchestratorId },
       data: { discipline: disciplineName },
     });
 
     return {
-      vp: toVP(updatedVP),
+      orchestrator: toOrchestrator(updatedVP),
       errors: [],
     };
   },
@@ -1144,7 +1144,7 @@ export const DisciplineFieldResolvers = {
     _args: unknown,
     context: GraphQLContext
   ) => {
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where: {
         organizationId: parent.organizationId,
         discipline: {
@@ -1155,7 +1155,7 @@ export const DisciplineFieldResolvers = {
       orderBy: { createdAt: 'desc' },
     });
 
-    return orchestrators.map(toVP);
+    return orchestrators.map(toOrchestrator);
   },
 };
 

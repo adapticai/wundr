@@ -16,7 +16,7 @@ export {
 } from './OrgHierarchyChart';
 export { OrgNode, OrgNodeSkeleton } from './OrgNode';
 export { OrgConnector, DisciplineConnector } from './OrgConnector';
-export { VPDetailsPopover } from './VPDetailsPopover';
+export { OrchestratorDetailsPopover } from './OrchestratorDetailsPopover';
 
 // Types
 export * from './types';

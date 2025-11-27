@@ -105,7 +105,7 @@ export function OrgPreview({
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 <div className="rounded-lg border bg-muted/50 p-4 text-center">
-                  <div className="text-3xl font-bold text-primary">{vps.length}</div>
+                  <div className="text-3xl font-bold text-primary">{orchestrators.length}</div>
                   <div className="text-sm text-muted-foreground">Leadership Roles</div>
                 </div>
                 <div className="rounded-lg border bg-muted/50 p-4 text-center">
@@ -138,19 +138,19 @@ export function OrgPreview({
 
         {/* Details Tab */}
         <TabsContent value="details" className="space-y-4 mt-6">
-          {vps.map((vp) => {
-            const vpDisciplines = disciplines.filter((d) => d.orchestratorId === vp.id);
+          {orchestrators.map((orch) => {
+            const orchDisciplines = disciplines.filter((d) => d.orchestratorId === orch.id);
 
             return (
-              <Card key={vp.id}>
+              <Card key={orch.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle>{vp.title}</CardTitle>
-                      <CardDescription>{vp.name}</CardDescription>
+                      <CardTitle>{orch.title}</CardTitle>
+                      <CardDescription>{orch.name}</CardDescription>
                     </div>
                     <Badge variant="secondary">
-                      {vpDisciplines.length} Disciplines
+                      {orchDisciplines.length} Disciplines
                     </Badge>
                   </div>
                 </CardHeader>
@@ -159,7 +159,7 @@ export function OrgPreview({
                   <div>
                     <h4 className="mb-2 text-sm font-semibold">Responsibilities</h4>
                     <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
-                      {vp.responsibilities.map((resp, i) => (
+                      {orch.responsibilities.map((resp, i) => (
                         <li key={i}>{resp}</li>
                       ))}
                     </ul>
@@ -169,7 +169,7 @@ export function OrgPreview({
                   <div>
                     <h4 className="mb-2 text-sm font-semibold">Key Performance Indicators</h4>
                     <div className="flex flex-wrap gap-2">
-                      {vp.kpis.map((kpi, i) => (
+                      {orch.kpis.map((kpi, i) => (
                         <Badge key={i} variant="outline">
                           {kpi}
                         </Badge>
@@ -178,11 +178,11 @@ export function OrgPreview({
                   </div>
 
                   {/* Disciplines */}
-                  {vpDisciplines.length > 0 && (
+                  {orchDisciplines.length > 0 && (
                     <div>
                       <h4 className="mb-2 text-sm font-semibold">Disciplines</h4>
                       <div className="space-y-3">
-                        {vpDisciplines.map((discipline) => {
+                        {orchDisciplines.map((discipline) => {
                           const disciplineAgents = agents.filter(
                             (a) => a.disciplineId === discipline.id,
                           );

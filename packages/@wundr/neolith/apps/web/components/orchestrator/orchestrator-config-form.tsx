@@ -6,40 +6,40 @@ import { cn } from '@/lib/utils';
 import {
   PERSONALITY_TRAITS,
   type PersonalityTrait,
-  type UpdateVPInput,
-  type VP,
-  type VPCharter,
+  type UpdateOrchestratorInput,
+  type Orchestrator,
+  type OrchestratorCharter,
 } from '@/types/orchestrator';
 
-interface VPConfigFormProps {
-  vp: VP;
-  onSave: (input: UpdateVPInput) => Promise<void>;
+interface OrchestratorConfigFormProps {
+  orchestrator: Orchestrator;
+  onSave: (input: UpdateOrchestratorInput) => Promise<void>;
   onReset?: () => void;
   isLoading?: boolean;
   className?: string;
 }
 
-export function VPConfigForm({
-  vp,
+export function OrchestratorConfigForm({
+  orchestrator,
   onSave,
   onReset,
   isLoading = false,
   className,
-}: VPConfigFormProps) {
-  const [systemPrompt, setSystemPrompt] = useState(vp.systemPrompt || '');
+}: OrchestratorConfigFormProps) {
+  const [systemPrompt, setSystemPrompt] = useState(orchestrator.systemPrompt || '');
   const [selectedTraits, setSelectedTraits] = useState<PersonalityTrait[]>(
-    (vp.charter?.personality?.traits as PersonalityTrait[]) || [],
+    (orchestrator.charter?.personality?.traits as PersonalityTrait[]) || [],
   );
-  const [expertise, setExpertise] = useState<string[]>(vp.charter?.expertise || []);
+  const [expertise, setExpertise] = useState<string[]>(orchestrator.charter?.expertise || []);
   const [newExpertise, setNewExpertise] = useState('');
   const [communicationTone, setCommunicationTone] = useState<'formal' | 'casual' | 'professional' | 'friendly'>(
-    vp.charter?.communicationPreferences?.tone || 'professional',
+    orchestrator.charter?.communicationPreferences?.tone || 'professional',
   );
   const [responseLength, setResponseLength] = useState<'concise' | 'detailed' | 'balanced'>(
-    vp.charter?.communicationPreferences?.responseLength || 'balanced',
+    orchestrator.charter?.communicationPreferences?.responseLength || 'balanced',
   );
   const [useEmoji, setUseEmoji] = useState(
-    vp.charter?.communicationPreferences?.useEmoji || false,
+    orchestrator.charter?.communicationPreferences?.useEmoji || false,
   );
   const [isDirty, setIsDirty] = useState(false);
 
@@ -69,15 +69,15 @@ export function VPConfigForm({
       personality: {
         ...orchestrator.charter?.personality,
         traits: selectedTraits,
-        communicationStyle: vp.charter?.personality?.communicationStyle || '',
-        decisionMakingStyle: vp.charter?.personality?.decisionMakingStyle || '',
-        background: vp.charter?.personality?.background || '',
+        communicationStyle: orchestrator.charter?.personality?.communicationStyle || '',
+        decisionMakingStyle: orchestrator.charter?.personality?.decisionMakingStyle || '',
+        background: orchestrator.charter?.personality?.background || '',
       },
       expertise,
       communicationPreferences: {
-        tone: communicationTone as VPCharter['communicationPreferences']['tone'],
-        responseLength: responseLength as VPCharter['communicationPreferences']['responseLength'],
-        formality: vp.charter?.communicationPreferences?.formality || 'medium',
+        tone: communicationTone as OrchestratorCharter['communicationPreferences']['tone'],
+        responseLength: responseLength as OrchestratorCharter['communicationPreferences']['responseLength'],
+        formality: orchestrator.charter?.communicationPreferences?.formality || 'medium',
         useEmoji,
       },
     };
@@ -89,7 +89,7 @@ export function VPConfigForm({
 
     setIsDirty(false);
   }, [
-    vp.charter,
+    orchestrator.charter,
     systemPrompt,
     selectedTraits,
     expertise,
@@ -100,15 +100,15 @@ export function VPConfigForm({
   ]);
 
   const handleReset = useCallback(() => {
-    setSystemPrompt(vp.systemPrompt || '');
-    setSelectedTraits((vp.charter?.personality?.traits as PersonalityTrait[]) || []);
-    setExpertise(vp.charter?.expertise || []);
-    setCommunicationTone(vp.charter?.communicationPreferences?.tone || 'professional');
-    setResponseLength(vp.charter?.communicationPreferences?.responseLength || 'balanced');
-    setUseEmoji(vp.charter?.communicationPreferences?.useEmoji || false);
+    setSystemPrompt(orchestrator.systemPrompt || '');
+    setSelectedTraits((orchestrator.charter?.personality?.traits as PersonalityTrait[]) || []);
+    setExpertise(orchestrator.charter?.expertise || []);
+    setCommunicationTone(orchestrator.charter?.communicationPreferences?.tone || 'professional');
+    setResponseLength(orchestrator.charter?.communicationPreferences?.responseLength || 'balanced');
+    setUseEmoji(orchestrator.charter?.communicationPreferences?.useEmoji || false);
     setIsDirty(false);
     onReset?.();
-  }, [vp, onReset]);
+  }, [orchestrator, onReset]);
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -124,7 +124,7 @@ export function VPConfigForm({
             setSystemPrompt(e.target.value);
             setIsDirty(true);
           }}
-          placeholder="Enter the system prompt for this VP. You can use markdown formatting..."
+          placeholder="Enter the system prompt for this Orchestrator. You can use markdown formatting..."
           className="min-h-[200px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           disabled={isLoading}
         />
@@ -155,7 +155,7 @@ export function VPConfigForm({
           ))}
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Select traits that define this VP&apos;s personality. These influence communication style.
+          Select traits that define this Orchestrator&apos;s personality. These influence communication style.
         </p>
       </section>
 

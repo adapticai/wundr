@@ -9,7 +9,7 @@
  *
  * Supported Entity Types:
  * - workspace: Full organization hierarchy
- * - orchestrator: Top-level autonomous agent (formerly VP)
+ * - orchestrator: Top-level autonomous agent
  * - session-manager: Mid-level context-specific agent
  * - subagent: Task-specific worker agent
  * - workflow: Automated process with triggers/actions

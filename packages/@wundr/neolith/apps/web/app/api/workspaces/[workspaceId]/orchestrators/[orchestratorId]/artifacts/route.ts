@@ -139,7 +139,7 @@ export async function POST(
     }
 
     // Verify Orchestrator exists and belongs to workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         workspaceId,
@@ -148,7 +148,7 @@ export async function POST(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', WORK_SESSION_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -157,7 +157,7 @@ export async function POST(
     const task = await prisma.task.findFirst({
       where: {
         id: taskId,
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         workspaceId,
       },
       select: {
@@ -208,7 +208,7 @@ export async function POST(
         workspaceId,
         uploadedById: session.user.id,
         metadata: {
-          type: 'vp_artifact',
+          type: 'orchestrator_artifact',
           orchestratorId,
           taskId,
           taskTitle: task.title,

@@ -314,7 +314,7 @@ export interface CallWebhookPayload extends BaseWebhookPayload {
 /**
  * Payload for VP-related webhook events.
  */
-export interface VPWebhookPayload extends BaseWebhookPayload {
+export interface OrchestratorWebhookPayload extends BaseWebhookPayload {
   event: 'vp.message' | 'vp.action';
   data: {
     vpId: string;
@@ -348,7 +348,7 @@ export type WebhookPayload =
   | MemberWebhookPayload
   | FileWebhookPayload
   | CallWebhookPayload
-  | VPWebhookPayload
+  | OrchestratorWebhookPayload
   | GenericWebhookPayload;
 
 // =============================================================================

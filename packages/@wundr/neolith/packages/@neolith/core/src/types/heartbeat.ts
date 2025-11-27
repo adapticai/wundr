@@ -80,7 +80,7 @@ export interface HeartbeatMetrics {
  */
 export interface HeartbeatRecord {
   /** OrchestratorID this heartbeat belongs to */
-  vpId: string;
+  orchestratorId: string;
 
   /** Organization ID the Orchestrator belongs to */
   organizationId: string;
@@ -146,7 +146,7 @@ export type HealthStatusType =
  */
 export interface RegisterDaemonInput {
   /** OrchestratorID the daemon is serving */
-  vpId: string;
+  orchestratorId: string;
 
   /** Information about the daemon */
   daemonInfo: HeartbeatDaemonInfo;
@@ -160,7 +160,7 @@ export interface RegisterDaemonInput {
  */
 export interface SendHeartbeatInput {
   /** OrchestratorID sending the heartbeat */
-  vpId: string;
+  orchestratorId: string;
 
   /** Optional metrics to include */
   metrics?: Partial<HeartbeatMetrics>;
@@ -174,7 +174,7 @@ export interface SendHeartbeatInput {
  */
 export interface UnregisterDaemonInput {
   /** OrchestratorID to unregister */
-  vpId: string;
+  orchestratorId: string;
 
   /** Reason for unregistering */
   reason?: 'shutdown' | 'error' | 'maintenance' | 'unknown';
@@ -252,7 +252,7 @@ export interface HeartbeatEvent {
   type: HeartbeatEventType;
 
   /** OrchestratorID the event relates to */
-  vpId: string;
+  orchestratorId: string;
 
   /** Organization ID */
   organizationId: string;
@@ -288,7 +288,7 @@ export interface DaemonUnregisteredEvent extends HeartbeatEvent {
 /**
  * Event emitted when Orchestrator becomes unhealthy.
  */
-export interface VPUnhealthyEvent extends HeartbeatEvent {
+export interface OrchestratorUnhealthyEvent extends HeartbeatEvent {
   type: 'vp.unhealthy';
   data: {
     status: HealthStatus;
@@ -300,7 +300,7 @@ export interface VPUnhealthyEvent extends HeartbeatEvent {
 /**
  * Event emitted when Orchestrator recovers.
  */
-export interface VPRecoveredEvent extends HeartbeatEvent {
+export interface OrchestratorRecoveredEvent extends HeartbeatEvent {
   type: 'vp.recovered';
   data: {
     downtime: number; // milliseconds
@@ -315,22 +315,22 @@ export interface VPRecoveredEvent extends HeartbeatEvent {
 /**
  * Callback for Orchestrator unhealthy events.
  */
-export type OnVPUnhealthyCallback = (vpId: string, status: HealthStatus) => void | Promise<void>;
+export type OnOrchestratorUnhealthyCallback = (orchestratorId: string, status: HealthStatus) => void | Promise<void>;
 
 /**
  * Callback for Orchestrator recovered events.
  */
-export type OnVPRecoveredCallback = (vpId: string) => void | Promise<void>;
+export type OnOrchestratorRecoveredCallback = (orchestratorId: string) => void | Promise<void>;
 
 /**
  * Callback for daemon registered events.
  */
-export type OnDaemonRegisteredCallback = (vpId: string, daemonInfo: HeartbeatDaemonInfo) => void | Promise<void>;
+export type OnDaemonRegisteredCallback = (orchestratorId: string, daemonInfo: HeartbeatDaemonInfo) => void | Promise<void>;
 
 /**
  * Callback for daemon unregistered events.
  */
-export type OnDaemonUnregisteredCallback = (vpId: string, reason?: string) => void | Promise<void>;
+export type OnDaemonUnregisteredCallback = (orchestratorId: string, reason?: string) => void | Promise<void>;
 
 // =============================================================================
 // Redis Key Patterns
@@ -340,26 +340,26 @@ export type OnDaemonUnregisteredCallback = (vpId: string, reason?: string) => vo
  * Redis key patterns used for heartbeat storage.
  */
 export const HEARTBEAT_REDIS_KEYS = {
-  /** Latest heartbeat for a VP: heartbeat:{vpId} */
-  heartbeat: (vpId: string) => `heartbeat:${vpId}`,
+  /** Latest heartbeat for a VP: heartbeat:{orchestratorId} */
+  heartbeat: (orchestratorId: string) => `heartbeat:${orchestratorId}`,
 
-  /** Heartbeat history for a VP: heartbeat:history:{vpId} */
-  history: (vpId: string) => `heartbeat:history:${vpId}`,
+  /** Heartbeat history for a VP: heartbeat:history:{orchestratorId} */
+  history: (orchestratorId: string) => `heartbeat:history:${orchestratorId}`,
 
-  /** Daemon info for a VP: daemon:{vpId} */
-  daemon: (vpId: string) => `daemon:${vpId}`,
+  /** Daemon info for a VP: daemon:{orchestratorId} */
+  daemon: (orchestratorId: string) => `daemon:${orchestratorId}`,
 
-  /** Health status for a VP: health:{vpId} */
-  health: (vpId: string) => `health:${vpId}`,
+  /** Health status for a VP: health:{orchestratorId} */
+  health: (orchestratorId: string) => `health:${orchestratorId}`,
 
-  /** Set of all registered OrchestratorIDs: registered:vps */
-  registeredVPs: () => 'registered:vps',
+  /** Set of all registered OrchestratorIDs: registered:orchestrators */
+  registeredOrchestrators: () => 'registered:orchestrators',
 
-  /** Set of VPs by organization: org:{orgId}:vps */
-  orgVPs: (orgId: string) => `org:${orgId}:vps`,
+  /** Set of VPs by organization: org:{orgId}:orchestrators */
+  orgOrchestrators: (orgId: string) => `org:${orgId}:orchestrators`,
 
-  /** Lock for a VP: lock:heartbeat:{vpId} */
-  lock: (vpId: string) => `lock:heartbeat:${vpId}`,
+  /** Lock for a VP: lock:heartbeat:{orchestratorId} */
+  lock: (orchestratorId: string) => `lock:heartbeat:${orchestratorId}`,
 } as const;
 
 // =============================================================================

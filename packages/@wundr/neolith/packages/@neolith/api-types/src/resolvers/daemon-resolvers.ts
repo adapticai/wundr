@@ -553,14 +553,14 @@ export function createDaemonResolvers(context: DaemonResolverContext) {
       registerDaemon: async (_: unknown, { input }: { input: RegisterDaemonInput }) => {
         // Verify user has access to Orchestrator - check by orchestratorId and organizationId
         // Orchestrator may not have workspaceId directly, so we check organization membership
-        const orchestrator = await context.prisma.vP.findFirst({
+        const orchestrator = await context.prisma.orchestrator.findFirst({
           where: {
             id: input.orchestratorId,
           },
         });
 
-        if (!vp) {
-          throw new GraphQLError('VP not found or access denied', {
+        if (!orchestrator) {
+          throw new GraphQLError('Orchestrator not found or access denied', {
             extensions: { code: 'NOT_FOUND' },
           });
         }
@@ -769,13 +769,13 @@ export const daemonQueries = {
     return resolvers.Query.daemonMetrics(undefined, args);
   },
 
-  vpDaemons: async (
+  orchestratorDaemons: async (
     _parent: unknown,
-    args: { workspaceId: string },
+    args: { orchestratorId: string },
     context: DaemonResolverContext
   ) => {
     const resolvers = createDaemonResolvers(context);
-    return resolvers.Query.orchestratorDaemons(undefined, args);
+    return resolvers.Query.daemonCredentials(undefined, args);
   },
 };
 
@@ -869,7 +869,7 @@ export const DaemonCredentialFieldResolvers = {
     _args: unknown,
     context: DaemonResolverContext
   ) => {
-    return context.prisma.vP.findUnique({
+    return context.prisma.orchestrator.findUnique({
       where: { id: parent.orchestratorId },
     });
   },

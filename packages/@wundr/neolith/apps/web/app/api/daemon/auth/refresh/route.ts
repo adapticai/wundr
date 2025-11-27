@@ -43,7 +43,7 @@ const REFRESH_ERROR_CODES = {
  * Decoded refresh token payload
  */
 interface RefreshTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   type: 'refresh';
   iat: number;
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { vpId, daemonId } = decoded;
+    const { orchestratorId, daemonId } = decoded;
 
     // Verify session exists in Redis
     let sessionData: { scopes?: string[]; refreshToken?: string } | null = null;
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const accessToken = jwt.sign(
       {
-        vpId,
+        orchestratorId,
         daemonId,
         scopes,
         type: 'access',

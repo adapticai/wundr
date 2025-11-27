@@ -17,7 +17,7 @@ import type {
   OrgHierarchyNode,
   OrgHierarchyResponse,
   OrgHierarchyStats,
-  VPNodeData,
+  OrchestratorNodeData,
   WorkspaceNodeData,
 } from '@/lib/validations/org-hierarchy';
 import { ORG_HIERARCHY_ERROR_CODES } from '@/lib/validations/org-hierarchy';
@@ -68,7 +68,7 @@ async function checkWorkspaceAccess(workspaceId: string, userId: string) {
  * GET /api/workspaces/:workspaceId/org-hierarchy
  *
  * Get organization hierarchy tree for visualization.
- * Returns workspaces with VPs grouped by discipline.
+ * Returns workspaces with Orchestrators grouped by discipline.
  *
  * @param request - Next.js request object
  * @param context - Route context containing workspace ID
@@ -148,8 +148,8 @@ export async function GET(
       );
     }
 
-    // Fetch all VPs for the organization (both workspace-specific and org-wide)
-    const orchestrators = await prisma.vP.findMany({
+    // Fetch all Orchestrators for the organization (both workspace-specific and org-wide)
+    const orchestrators = await prisma.orchestrator.findMany({
       where: {
         organizationId,
       },
@@ -175,11 +175,11 @@ export async function GET(
       },
     });
 
-    // Fetch current tasks for all VPs in parallel
-    const vpTasksPromises = orchestrators.map(async (vp) => {
+    // Fetch current tasks for all Orchestrators in parallel
+    const orchestratorTasksPromises = orchestrators.map(async (orchestrator) => {
       const currentTask = await prisma.task.findFirst({
         where: {
-          vpId: vp.id,
+          orchestratorId: orchestrator.id,
           status: { in: ['IN_PROGRESS', 'TODO'] },
         },
         orderBy: [{ status: 'asc' }, { priority: 'desc' }],
@@ -188,72 +188,72 @@ export async function GET(
           title: true,
         },
       });
-      return { vpId: vp.id, currentTask };
+      return { orchestratorId: orchestrator.id, currentTask };
     });
 
-    const vpTasksResults = await Promise.all(vpTasksPromises);
-    const vpTasksMap = new Map(vpTasksResults.map((r) => [r.vpId, r.currentTask]));
+    const orchestratorTasksResults = await Promise.all(orchestratorTasksPromises);
+    const orchestratorTasksMap = new Map(orchestratorTasksResults.map((r) => [r.orchestratorId, r.currentTask]));
 
     // Build hierarchy tree
     const hierarchy: OrgHierarchyNode[] = [];
 
-    // Group VPs by workspace and discipline
-    const workspaceVPsMap = new Map<string, typeof orchestrators>();
-    const orgWideVPs: typeof orchestrators = [];
+    // Group Orchestrators by workspace and discipline
+    const workspaceOrchestratorsMap = new Map<string, typeof orchestrators>();
+    const orgWideOrchestrators: typeof orchestrators = [];
 
-    for (const vp of orchestrators) {
-      if (vp.workspaceId) {
-        const existing = workspaceVPsMap.get(vp.workspaceId) || [];
-        existing.push(vp);
-        workspaceVPsMap.set(vp.workspaceId, existing);
+    for (const orchestrator of orchestrators) {
+      if (orchestrator.workspaceId) {
+        const existing = workspaceOrchestratorsMap.get(orchestrator.workspaceId) || [];
+        existing.push(orchestrator);
+        workspaceOrchestratorsMap.set(orchestrator.workspaceId, existing);
       } else {
-        orgWideVPs.push(vp);
+        orgWideOrchestrators.push(orchestrator);
       }
     }
 
     // Process each workspace
     for (const ws of organization.workspaces) {
-      const workspaceVPs = workspaceVPsMap.get(ws.id) || [];
+      const workspaceOrchestrators = workspaceOrchestratorsMap.get(ws.id) || [];
 
-      // Group VPs by discipline
+      // Group Orchestrators by discipline
       const disciplineMap = new Map<string, typeof orchestrators>();
-      const noDisciplineVPs: typeof orchestrators = [];
+      const noDisciplineOrchestrators: typeof orchestrators = [];
 
-      for (const vp of workspaceVPs) {
-        if (vp.disciplineRef) {
-          const disciplineKey = vp.disciplineRef.id;
+      for (const orchestrator of workspaceOrchestrators) {
+        if (orchestrator.disciplineRef) {
+          const disciplineKey = orchestrator.disciplineRef.id;
           const existing = disciplineMap.get(disciplineKey) || [];
-          existing.push(vp);
+          existing.push(orchestrator);
           disciplineMap.set(disciplineKey, existing);
         } else {
-          noDisciplineVPs.push(vp);
+          noDisciplineOrchestrators.push(orchestrator);
         }
       }
 
       // Build discipline nodes
       const disciplineNodes: OrgHierarchyNode[] = [];
 
-      for (const [disciplineId, disciplineVPs] of disciplineMap.entries()) {
-        const firstVP = disciplineVPs[0];
-        const disciplineName = firstVP?.disciplineRef?.name || 'Unknown';
+      for (const [disciplineId, disciplineOrchestrators] of disciplineMap.entries()) {
+        const firstOrchestrator = disciplineOrchestrators[0];
+        const disciplineName = firstOrchestrator?.disciplineRef?.name || 'Unknown';
 
         // Build Orchestrator nodes for this discipline
-        const vpNodes: OrgHierarchyNode[] = disciplineVPs.map((vp) => {
-          const currentTask = vpTasksMap.get(vp.id);
-          const vpData: VPNodeData = {
-            avatarUrl: vp.user.avatarUrl,
-            status: vp.status,
-            discipline: vp.disciplineRef?.name || null,
-            role: vp.role,
+        const orchestratorNodes: OrgHierarchyNode[] = disciplineOrchestrators.map((orchestrator) => {
+          const currentTask = orchestratorTasksMap.get(orchestrator.id);
+          const orchestratorData: OrchestratorNodeData = {
+            avatarUrl: orchestrator.user.avatarUrl,
+            status: orchestrator.status,
+            discipline: orchestrator.disciplineRef?.name || null,
+            role: orchestrator.role,
             currentTask: currentTask || null,
-            email: vp.user.email,
+            email: orchestrator.user.email,
           };
 
           return {
-            id: vp.id,
-            type: 'vp' as const,
-            name: vp.user.displayName || vp.user.name || vp.user.email || 'Unknown VP',
-            data: vpData,
+            id: orchestrator.id,
+            type: 'orchestrator' as const,
+            name: orchestrator.user.displayName || orchestrator.user.name || orchestrator.user.email || 'Unknown Orchestrator',
+            data: orchestratorData,
           };
         });
 
@@ -261,27 +261,27 @@ export async function GET(
           id: disciplineId,
           type: 'discipline' as const,
           name: disciplineName,
-          children: vpNodes,
+          children: orchestratorNodes,
         });
       }
 
-      // Add VPs without discipline directly to workspace
-      const noDisciplineVPNodes: OrgHierarchyNode[] = noDisciplineVPs.map((vp) => {
-        const currentTask = vpTasksMap.get(vp.id);
-        const vpData: VPNodeData = {
-          avatarUrl: vp.user.avatarUrl,
-          status: vp.status,
+      // Add Orchestrators without discipline directly to workspace
+      const noDisciplineOrchestratorNodes: OrgHierarchyNode[] = noDisciplineOrchestrators.map((orchestrator) => {
+        const currentTask = orchestratorTasksMap.get(orchestrator.id);
+        const orchestratorData: OrchestratorNodeData = {
+          avatarUrl: orchestrator.user.avatarUrl,
+          status: orchestrator.status,
           discipline: null,
-          role: vp.role,
+          role: orchestrator.role,
           currentTask: currentTask || null,
-          email: vp.user.email,
+          email: orchestrator.user.email,
         };
 
         return {
-          id: vp.id,
-          type: 'vp' as const,
-          name: vp.user.displayName || vp.user.name || vp.user.email || 'Unknown VP',
-          data: vpData,
+          id: orchestrator.id,
+          type: 'orchestrator' as const,
+          name: orchestrator.user.displayName || orchestrator.user.name || orchestrator.user.email || 'Unknown Orchestrator',
+          data: orchestratorData,
         };
       });
 
@@ -296,7 +296,7 @@ export async function GET(
         id: ws.id,
         type: 'workspace' as const,
         name: ws.name,
-        children: [...disciplineNodes, ...noDisciplineVPNodes],
+        children: [...disciplineNodes, ...noDisciplineOrchestratorNodes],
         data: workspaceData,
       };
 
@@ -304,8 +304,8 @@ export async function GET(
     }
 
     // Calculate statistics
-    const totalVPs = orchestrators.length;
-    const onlineVPs = orchestrators.filter((vp) => vp.status === 'ONLINE').length;
+    const totalOrchestrators = orchestrators.length;
+    const onlineOrchestrators = orchestrators.filter((orchestrator) => orchestrator.status === 'ONLINE').length;
     const totalWorkspaces = organization.workspaces.length;
     const totalChannels = organization.workspaces.reduce(
       (sum, ws) => sum + ws._count.channels,
@@ -313,8 +313,8 @@ export async function GET(
     );
 
     const stats: OrgHierarchyStats = {
-      totalVPs,
-      onlineVPs,
+      totalOrchestrators,
+      onlineOrchestrators,
       totalWorkspaces,
       totalChannels,
     };

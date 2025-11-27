@@ -87,7 +87,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Build where clause
-    const where: Prisma.vPWhereInput = {
+    const where: Prisma.orchestratorWhereInput = {
       organizationId: filters.organizationId
         ? filters.organizationId
         : { in: accessibleOrgIds },
@@ -108,14 +108,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const take = filters.limit;
 
     // Build orderBy
-    const orderBy: Prisma.vPOrderByWithRelationInput =
+    const orderBy: Prisma.orchestratorOrderByWithRelationInput =
       filters.sortBy === 'createdAt' || filters.sortBy === 'updatedAt'
         ? { [filters.sortBy]: filters.sortOrder }
         : { [filters.sortBy]: filters.sortOrder };
 
-    // Fetch VPs and total count in parallel
+    // Fetch Orchestrators and total count in parallel
     const [orchestrators, totalCount] = await Promise.all([
-      prisma.vP.findMany({
+      prisma.orchestrator.findMany({
         where,
         skip,
         take,
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           },
         },
       }),
-      prisma.vP.count({ where }),
+      prisma.orchestrator.count({ where }),
     ]);
 
     // Calculate pagination metadata
@@ -281,13 +281,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           displayName: input.user?.displayName,
           avatarUrl: input.user?.avatarUrl,
           bio: input.user?.bio,
-          isVP: true,
+          isOrchestrator: true,
           status: 'ACTIVE',
         },
       });
 
       // Create the Orchestrator
-      const newOrchestrator = await tx.vP.create({
+      const newOrchestrator = await tx.orchestrator.create({
         data: {
           discipline: input.discipline,
           role: input.role,

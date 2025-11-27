@@ -148,7 +148,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
     },
     {
       icon: Users,
-      label: 'Create VP',
+      label: 'Create Orchestrator',
       path: `${basePath}/orchestrators/new`,
       keywords: ['create orchestrator', 'new agent'],
     },

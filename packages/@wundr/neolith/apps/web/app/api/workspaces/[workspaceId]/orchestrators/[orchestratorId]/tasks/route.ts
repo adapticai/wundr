@@ -103,7 +103,7 @@ export async function GET(
     }
 
     // Verify Orchestrator exists and belongs to the workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
       },
@@ -112,7 +112,7 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -184,7 +184,7 @@ export async function GET(
 
     // Build where clause
     const where: Prisma.taskWhereInput = {
-      vpId: orchestratorId,
+      orchestratorId: orchestratorId,
       workspaceId,
       ...(statusFilter && { status: { in: statusFilter as TaskStatus[] } }),
       ...(priorityFilter && { priority: { in: priorityFilter as TaskPriority[] } }),
@@ -203,7 +203,7 @@ export async function GET(
         { createdAt: 'desc' }, // Then newest first
       ],
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -377,7 +377,7 @@ export async function POST(
     }
 
     // Verify Orchestrator exists and belongs to the workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
       },
@@ -386,7 +386,7 @@ export async function POST(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -483,14 +483,14 @@ export async function POST(
         tags: input.tags,
         dependsOn: input.dependsOn,
         metadata: input.metadata as Prisma.InputJsonValue,
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         workspaceId,
         channelId: input.channelId,
         createdById: session.user.id,
         assignedToId: input.assignedToId,
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,

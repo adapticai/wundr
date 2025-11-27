@@ -36,7 +36,7 @@ const CHANNEL_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -97,15 +97,15 @@ export async function POST(
     const { channelId } = await params;
 
     // Get Orchestrator user info
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: {
         userId: true,
         organizationId: true,
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
@@ -140,7 +140,7 @@ export async function POST(
     }
 
     // Check if Orchestrator belongs to same organization
-    if (channel.workspace.organizationId !== vp.organizationId) {
+    if (channel.workspace.organizationId !== orchestrator.organizationId) {
       return NextResponse.json(
         { error: 'Channel not found', code: CHANNEL_ERROR_CODES.CHANNEL_NOT_FOUND },
         { status: 404 },
@@ -151,7 +151,7 @@ export async function POST(
     const existingMembership = await prisma.channelMember.findFirst({
       where: {
         channelId,
-        userId: vp.userId,
+        userId: orchestrator.userId,
       },
     });
 
@@ -166,7 +166,7 @@ export async function POST(
     await prisma.channelMember.create({
       data: {
         channelId,
-        userId: vp.userId,
+        userId: orchestrator.userId,
         role: 'MEMBER',
       },
     });
@@ -215,12 +215,12 @@ export async function DELETE(
     const { channelId } = await params;
 
     // Get Orchestrator user info
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
@@ -231,7 +231,7 @@ export async function DELETE(
     const membership = await prisma.channelMember.findFirst({
       where: {
         channelId,
-        userId: vp.userId,
+        userId: orchestrator.userId,
       },
     });
 

@@ -14,12 +14,12 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  vpIdParamSchema,
+  orchestratorIdParamSchema,
   createPresenceErrorResponse,
   PRESENCE_ERROR_CODES,
 } from '@/lib/validations/presence';
 
-import type { VPPresenceResponse } from '@/lib/validations/presence';
+import type { OrchestratorPresenceResponse } from '@/lib/validations/presence';
 import type { NextRequest } from 'next/server';
 
 /** Time in ms after which a user is considered offline (5 minutes) */
@@ -85,7 +85,7 @@ export async function GET(
 
     // Validate orchestratorId parameter
     const params = await context.params;
-    const paramResult = vpIdParamSchema.safeParse(params);
+    const paramResult = orchestratorIdParamSchema.safeParse(params);
     if (!paramResult.success) {
       return NextResponse.json(
         createPresenceErrorResponse('Invalid OrchestratorID format', PRESENCE_ERROR_CODES.VALIDATION_ERROR),
@@ -94,7 +94,7 @@ export async function GET(
     }
 
     // Get Orchestrator with user info
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: params.orchestratorId },
       include: {
         user: {
@@ -108,7 +108,7 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createPresenceErrorResponse('Orchestrator not found', PRESENCE_ERROR_CODES.VP_NOT_FOUND),
+        createPresenceErrorResponse('Orchestrator not found', PRESENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -121,10 +121,10 @@ export async function GET(
     // Determine if Orchestrator is healthy (online and recent activity)
     const isHealthy = orchestrator.status === 'ONLINE' && isUserOnline(orchestrator.user.lastActiveAt);
 
-    const response: VPPresenceResponse = {
-      vpId: orchestrator.id,
+    const response: OrchestratorPresenceResponse = {
+      orchestratorId: orchestrator.id,
       userId: orchestrator.userId,
-      status: orchestrator.status as VPPresenceResponse['status'],
+      status: orchestrator.status as OrchestratorPresenceResponse['status'],
       lastActivity: orchestrator.user.lastActiveAt?.toISOString() ?? null,
       isHealthy,
       messageCount,

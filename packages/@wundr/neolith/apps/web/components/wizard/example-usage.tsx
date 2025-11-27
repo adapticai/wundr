@@ -188,7 +188,7 @@ export function EditEntityWizardExample() {
  */
 export function SessionManagerWizardExample() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [, setIsSubmitting] = React.useState(false);
 
   const handleComplete = async (data: EntityData) => {
     setIsSubmitting(true);

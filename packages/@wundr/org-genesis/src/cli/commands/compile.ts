@@ -345,7 +345,7 @@ export async function compileCommand(
 
     // Verify Orchestrator exists
     const orchestrator = await registryManager.charters.getVP(vpId);
-    if (!vp) {
+    if (!orchestrator) {
       return {
         success: false,
         error: `Orchestrator not found: ${vpId}`,

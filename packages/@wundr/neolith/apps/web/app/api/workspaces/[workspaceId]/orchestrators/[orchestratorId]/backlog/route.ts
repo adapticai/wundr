@@ -97,7 +97,7 @@ export async function GET(
     }
 
     // Verify Orchestrator exists and belongs to workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
       },
@@ -118,7 +118,7 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -126,7 +126,7 @@ export async function GET(
     // Orchestrator can be workspace-specific or organization-wide
     if (orchestrator.workspaceId && orchestrator.workspaceId !== workspaceId) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -163,7 +163,7 @@ export async function GET(
 
     // Build where clause
     const where: Prisma.taskWhereInput = {
-      vpId: orchestratorId,
+      orchestratorId: orchestratorId,
       workspaceId,
       ...(statusArray && { status: { in: statusArray as TaskStatus[] } }),
       ...(priorityArray && { priority: { in: priorityArray as TaskPriority[] } }),
@@ -327,7 +327,7 @@ export async function POST(
     }
 
     // Verify Orchestrator exists and belongs to workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
       },
@@ -340,7 +340,7 @@ export async function POST(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -348,7 +348,7 @@ export async function POST(
     // Orchestrator can be workspace-specific or organization-wide
     if (orchestrator.workspaceId && orchestrator.workspaceId !== workspaceId) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -427,14 +427,14 @@ export async function POST(
         tags: input.tags,
         dependsOn: input.dependsOn,
         metadata: input.metadata as Prisma.InputJsonValue,
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         workspaceId,
         channelId: input.channelId,
         createdById: session.user.id,
         assignedToId: input.assignedToId,
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,

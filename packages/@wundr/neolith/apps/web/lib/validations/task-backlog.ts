@@ -19,7 +19,7 @@ export const assignTaskSchema = z.object({
   assigneeId: z.string().cuid('Invalid assignee ID format'),
 
   /** Type of assignee */
-  assigneeType: z.enum(['VP', 'USER'], {
+  assigneeType: z.enum(['ORCHESTRATOR', 'USER'], {
     required_error: 'Assignee type is required',
   }),
 
@@ -171,7 +171,7 @@ export type AddBacklogTaskInput = z.infer<typeof addBacklogTaskSchema>;
  * Error response helpers
  */
 export const BACKLOG_ERROR_CODES = {
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   WORKSPACE_NOT_FOUND: 'WORKSPACE_NOT_FOUND',
   TASK_NOT_FOUND: 'TASK_NOT_FOUND',
   UNAUTHORIZED: 'UNAUTHORIZED',

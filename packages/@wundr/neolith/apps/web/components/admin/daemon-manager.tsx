@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 
 interface DaemonCredential {
   id: string;
-  vpId: string;
+  orchestratorId: string;
   apiKey: string;
   hostname?: string;
   version?: string;
@@ -46,10 +46,10 @@ interface DaemonMetrics {
 export interface DaemonManagerProps {
   /** The workspace ID for daemon management */
   workspaceId: string;
-  /** The Orchestratora ID to manage daemons for */
-  vpId: string;
-  /** Display name of the Orchestratora */
-  vpName: string;
+  /** The Orchestrator ID to manage daemons for */
+  orchestratorId: string;
+  /** Display name of the Orchestrator */
+  orchestratorName: string;
   /** Additional CSS classes to apply */
   className?: string;
 }
@@ -66,8 +66,8 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function DaemonManager({
   workspaceId,
-  vpId,
-  vpName,
+  orchestratorId,
+  orchestratorName,
   className,
 }: DaemonManagerProps) {
   const [credentials, setCredentials] = useState<DaemonCredential[]>([]);
@@ -84,7 +84,7 @@ export function DaemonManager({
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/workspaces/${workspaceId}/admin/daemons?vpId=${vpId}`,
+        `/api/workspaces/${workspaceId}/admin/daemons?orchestratorId=${orchestratorId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -95,7 +95,7 @@ export function DaemonManager({
     } finally {
       setIsLoading(false);
     }
-  }, [workspaceId, vpId]);
+  }, [workspaceId, orchestratorId]);
 
   useEffect(() => {
     fetchData();
@@ -137,7 +137,7 @@ export function DaemonManager({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          vpId,
+          orchestratorId,
           hostname: 'pending-setup',
           version: '1.0.0',
           capabilities: ['messaging', 'presence'],
@@ -217,7 +217,7 @@ export function DaemonManager({
         <div>
           <h3 className="text-lg font-semibold text-foreground">Daemon Credentials</h3>
           <p className="text-sm text-muted-foreground">
-            Manage machine authentication for {vpName}
+            Manage machine authentication for {orchestratorName}
           </p>
         </div>
         <Button

@@ -70,7 +70,7 @@ async function verifyWorkspaceAccess(
  *
  * Workflow:
  * 1. Validate user has workspace access
- * 2. Verify both VPs exist and belong to same organization
+ * 2. Verify both Orchestrators exist and belong to same organization
  * 3. Verify task ownership
  * 4. Transfer task with context and memory
  * 5. Create comprehensive audit trail
@@ -143,7 +143,7 @@ export async function POST(
     const { toOrchestratorId, taskId, context: handoffContext, notes } = parseResult.data;
 
     // Verify source Orchestrator exists and belongs to workspace
-    const sourceVP = await prisma.vP.findFirst({
+    const sourceOrchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: accessCheck.organizationId,
@@ -158,7 +158,7 @@ export async function POST(
       },
     });
 
-    if (!sourceVP) {
+    if (!sourceOrchestrator) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Source Orchestrator not found or not accessible',
@@ -169,7 +169,7 @@ export async function POST(
     }
 
     // Verify target Orchestrator exists and belongs to same organization
-    const targetVP = await prisma.vP.findFirst({
+    const targetOrchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: toOrchestratorId,
         organizationId: accessCheck.organizationId,
@@ -183,7 +183,7 @@ export async function POST(
       },
     });
 
-    if (!targetVP) {
+    if (!targetOrchestrator) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Target Orchestrator not found or not in same organization',
@@ -194,12 +194,12 @@ export async function POST(
     }
 
     // Check if target Orchestrator is available
-    if (targetVP.status === 'OFFLINE') {
+    if (targetOrchestrator.status === 'OFFLINE') {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Target Orchestrator is currently offline',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { targetVpStatus: targetVP.status },
+          { targetOrchestratorStatus: targetOrchestrator.status },
         ),
         { status: 400 },
       );
@@ -210,7 +210,7 @@ export async function POST(
       where: { id: taskId },
       select: {
         id: true,
-        vpId: true,
+        orchestratorId: true,
         title: true,
         description: true,
         status: true,
@@ -230,7 +230,7 @@ export async function POST(
       );
     }
 
-    if (task.vpId !== orchestratorId) {
+    if (task.orchestratorId !== orchestratorId) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Task does not belong to source Orchestrator',
@@ -268,10 +268,10 @@ export async function POST(
     // Create notification for target Orchestrator with full context
     await prisma.notification.create({
       data: {
-        userId: targetVP.userId,
+        userId: targetOrchestrator.userId,
         type: 'SYSTEM',
         title: 'Task Handed Off to You',
-        body: `${sourceVP.role} has handed off task: ${task.title}`,
+        body: `${sourceOrchestrator.role} has handed off task: ${task.title}`,
         priority: 'HIGH',
         resourceId: taskId,
         resourceType: 'task',
@@ -294,10 +294,10 @@ export async function POST(
     // Create notification for source Orchestrator confirming handoff
     await prisma.notification.create({
       data: {
-        userId: sourceVP.userId,
+        userId: sourceOrchestrator.userId,
         type: 'SYSTEM',
         title: 'Task Handoff Complete',
-        body: `Task "${task.title}" successfully handed off to ${targetVP.role}`,
+        body: `Task "${task.title}" successfully handed off to ${targetOrchestrator.role}`,
         priority: 'NORMAL',
         resourceId: taskId,
         resourceType: 'task',
@@ -316,21 +316,21 @@ export async function POST(
       data: {
         success: true,
         taskId: result.taskId,
-        fromVpId: result.fromVpId,
-        toVpId: result.toVpId,
+        fromOrchestratorId: result.fromOrchestratorId,
+        toOrchestratorId: result.toOrchestratorId,
         context: result.context,
         handoffAt: result.handoffAt,
         message: result.message,
         auditTrail: {
-          sourceVp: {
-            id: sourceVP.id,
-            role: sourceVP.role,
-            discipline: sourceVP.discipline,
+          sourceOrchestrator: {
+            id: sourceOrchestrator.id,
+            role: sourceOrchestrator.role,
+            discipline: sourceOrchestrator.discipline,
           },
-          targetVp: {
-            id: targetVP.id,
-            role: targetVP.role,
-            discipline: targetVP.discipline,
+          targetOrchestrator: {
+            id: targetOrchestrator.id,
+            role: targetOrchestrator.role,
+            discipline: targetOrchestrator.discipline,
           },
           taskSnapshot: {
             title: task.title,

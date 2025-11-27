@@ -58,7 +58,7 @@ async function verifyVPAccess(workspaceId: string, orchestratorId: string, userI
     return null;
   }
 
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,

@@ -193,9 +193,9 @@ return `${Math.round(gb * 1024)} MB`;
             formatValue={formatStorage}
           />
           <UsageMeter
-            label="Orchestratoras"
-            used={usage.vps.used}
-            limit={usage.vps.limit}
+            label="Orchestrators"
+            used={usage.orchestrators.used}
+            limit={usage.orchestrators.limit}
             formatValue={(v) => v.toString()}
           />
           <UsageMeter

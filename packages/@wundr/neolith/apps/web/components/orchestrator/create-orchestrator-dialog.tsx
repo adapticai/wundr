@@ -183,7 +183,7 @@ return null;
         <div className="border-b px-6 py-4">
           <div className="flex items-center justify-between">
             <h2 id="create-orchestrator-title" className="text-lg font-semibold text-foreground">
-              Create New VP
+              Create New Orchestrator
             </h2>
             <button
               type="button"
@@ -294,7 +294,7 @@ return null;
                   id="orchestrator-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief description of this VP's purpose and responsibilities..."
+                  placeholder="Brief description of this Orchestrator's purpose and responsibilities..."
                   rows={3}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   disabled={isLoading}
@@ -329,7 +329,7 @@ return null;
                   ))}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Select at least one trait that defines this VP&apos;s personality.
+                  Select at least one trait that defines this Orchestrator&apos;s personality.
                 </p>
               </div>
 
@@ -580,7 +580,7 @@ return null;
                 disabled={isLoading}
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
-                {isLoading ? 'Creating...' : 'Create VP'}
+                {isLoading ? 'Creating...' : 'Create Orchestrator'}
               </button>
             ) : (
               <button

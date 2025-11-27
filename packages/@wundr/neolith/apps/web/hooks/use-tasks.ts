@@ -19,7 +19,7 @@ export interface Task {
   dueDate: Date | null;
   tags: string[];
   metadata: Record<string, unknown> | null;
-  vpId: string;
+  orchestratorId: string;
   workspaceId: string;
   createdById: string;
   assignedToId: string | null;
@@ -27,7 +27,7 @@ export interface Task {
   createdAt: Date;
   updatedAt: Date;
   completedAt: Date | null;
-  vp?: {
+  orchestrator?: {
     id: string;
     role: string;
     user: {

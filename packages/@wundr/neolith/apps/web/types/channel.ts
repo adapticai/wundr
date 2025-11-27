@@ -63,7 +63,7 @@ export interface ChannelPermissions {
 export interface DirectMessageParticipant {
   id: string;
   user: User;
-  isVP?: boolean;
+  isOrchestrator?: boolean;
 }
 
 export interface DirectMessageChannel {

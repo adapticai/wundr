@@ -86,7 +86,7 @@ function createRedisClientAdapter(rawRedis: ReturnType<typeof getRedisClient>): 
 
 const HEALTH_ERROR_CODES = {
   UNAUTHORIZED: 'UNAUTHORIZED',
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   FORBIDDEN: 'FORBIDDEN',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
@@ -184,7 +184,7 @@ export async function GET(
     const { orchestratorId } = await params;
 
     // Get Orchestrator to verify it exists and get organization
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       include: {
         user: {
@@ -207,7 +207,7 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', HEALTH_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', HEALTH_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }

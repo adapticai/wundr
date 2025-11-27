@@ -272,7 +272,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     });
 
     // Get Orchestrator count for this discipline
-    const vpCount = await this.db.vP.count({
+    const orchestratorCount = await this.db.orchestrator.count({
       where: {
         organizationId: data.organizationId,
         discipline: data.name,
@@ -284,7 +284,7 @@ export class DisciplineServiceImpl implements DisciplineService {
       name: data.name,
       description: data.description,
       organizationId: data.organizationId,
-      vpCount,
+      orchestratorCount: orchestratorCount,
       createdAt: new Date(metadata.createdAt),
     };
   }
@@ -310,7 +310,7 @@ export class DisciplineServiceImpl implements DisciplineService {
 
       if (disciplines[id]) {
         const metadata = disciplines[id];
-        const vpCount = await this.db.vP.count({
+        const orchestratorCount = await this.db.orchestrator.count({
           where: {
             organizationId: org.id,
             discipline: metadata.name,
@@ -322,7 +322,7 @@ export class DisciplineServiceImpl implements DisciplineService {
           name: metadata.name,
           description: metadata.description,
           organizationId: org.id,
-          vpCount,
+          orchestratorCount: orchestratorCount,
           createdAt: new Date(metadata.createdAt),
         };
       }
@@ -355,7 +355,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     }
 
     const metadata = disciplines[id];
-    const vpCount = await this.db.vP.count({
+    const orchestratorCount = await this.db.orchestrator.count({
       where: {
         organizationId,
         discipline: metadata.name,
@@ -367,7 +367,7 @@ export class DisciplineServiceImpl implements DisciplineService {
       name: metadata.name,
       description: metadata.description,
       organizationId,
-      vpCount,
+      orchestratorCount: orchestratorCount,
       createdAt: new Date(metadata.createdAt),
     };
   }
@@ -388,7 +388,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     const disciplineMetadata = settings.disciplines || {};
 
     // Also get disciplines from Orchestrators that may not have metadata
-    const vpDisciplines = await this.db.vP.findMany({
+    const vpDisciplines = await this.db.orchestrator.findMany({
       where: { organizationId: orgId },
       select: {
         discipline: true,
@@ -402,7 +402,7 @@ export class DisciplineServiceImpl implements DisciplineService {
 
     // Add disciplines from metadata
     for (const [id, metadata] of Object.entries(disciplineMetadata)) {
-      const vpCount = await this.db.vP.count({
+      const orchestratorCount = await this.db.orchestrator.count({
         where: {
           organizationId: orgId,
           discipline: metadata.name,
@@ -414,7 +414,7 @@ export class DisciplineServiceImpl implements DisciplineService {
         name: metadata.name,
         description: metadata.description,
         organizationId: orgId,
-        vpCount,
+        orchestratorCount: orchestratorCount,
         createdAt: new Date(metadata.createdAt),
       });
     }
@@ -423,7 +423,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     for (const vp of vpDisciplines) {
       if (!disciplineMap.has(vp.discipline)) {
         const id = generateSlug(vp.discipline);
-        const vpCount = await this.db.vP.count({
+        const orchestratorCount = await this.db.orchestrator.count({
           where: {
             organizationId: orgId,
             discipline: vp.discipline,
@@ -434,7 +434,7 @@ export class DisciplineServiceImpl implements DisciplineService {
           id,
           name: vp.discipline,
           organizationId: orgId,
-          vpCount,
+          orchestratorCount: orchestratorCount,
           createdAt: vp.createdAt,
         });
       }
@@ -479,7 +479,7 @@ export class DisciplineServiceImpl implements DisciplineService {
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
-        case 'vpCount':
+        case 'orchestratorCount':
           comparison = a.orchestratorCount - b.orchestratorCount;
           break;
         case 'createdAt':
@@ -558,7 +558,7 @@ export class DisciplineServiceImpl implements DisciplineService {
 
     // If name changed, update all Orchestrators with this discipline
     if (data.name && data.name !== oldName) {
-      await this.db.vP.updateMany({
+      await this.db.orchestrator.updateMany({
         where: {
           organizationId: discipline.organizationId,
           discipline: oldName,
@@ -570,7 +570,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     }
 
     // Get updated Orchestrator count
-    const vpCount = await this.db.vP.count({
+    const orchestratorCount = await this.db.orchestrator.count({
       where: {
         organizationId: discipline.organizationId,
         discipline: data.name || oldName,
@@ -582,7 +582,7 @@ export class DisciplineServiceImpl implements DisciplineService {
       name: disciplines[id].name,
       description: disciplines[id].description,
       organizationId: discipline.organizationId,
-      vpCount,
+      orchestratorCount: orchestratorCount,
       createdAt: new Date(disciplines[id].createdAt),
     };
   }
@@ -631,20 +631,20 @@ export class DisciplineServiceImpl implements DisciplineService {
    */
   async assignVPToDiscipline(vpId: string, disciplineId: string): Promise<void> {
     // Verify Orchestrator exists
-    const vp = await this.db.vP.findUnique({
+    const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: vpId },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new OrchestratorNotFoundError(vpId);
     }
 
     // Get discipline name from ID or use ID as name
-    const discipline = await this.getDisciplineInOrg(disciplineId, vp.organizationId);
+    const discipline = await this.getDisciplineInOrg(disciplineId, orchestrator.organizationId);
     const disciplineName = discipline?.name || disciplineId;
 
     // Update Orchestrator discipline
-    await this.db.vP.update({
+    await this.db.orchestrator.update({
       where: { id: vpId },
       data: { discipline: disciplineName },
     });
@@ -655,16 +655,16 @@ export class DisciplineServiceImpl implements DisciplineService {
    */
   async removeVPFromDiscipline(vpId: string): Promise<void> {
     // Verify Orchestrator exists
-    const vp = await this.db.vP.findUnique({
+    const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: vpId },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new OrchestratorNotFoundError(vpId);
     }
 
     // Set discipline to empty string (unassigned)
-    await this.db.vP.update({
+    await this.db.orchestrator.update({
       where: { id: vpId },
       data: { discipline: 'Unassigned' },
     });
@@ -678,7 +678,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     const discipline = await this.getDiscipline(disciplineId);
     const disciplineName = discipline?.name || disciplineId;
 
-    const orchestrators = await this.db.vP.findMany({
+    const orchestrators = await this.db.orchestrator.findMany({
       where: { discipline: disciplineName },
       include: { user: true },
       orderBy: { createdAt: 'desc' },
@@ -698,7 +698,7 @@ export class DisciplineServiceImpl implements DisciplineService {
     const discipline = await this.getDisciplineInOrg(disciplineId, organizationId);
     const disciplineName = discipline?.name || disciplineId;
 
-    const orchestrators = await this.db.vP.findMany({
+    const orchestrators = await this.db.orchestrator.findMany({
       where: {
         discipline: disciplineName,
         organizationId,

@@ -40,20 +40,20 @@ async function createOrchestrator(spec: OrchestratorSpec, workspaceId: string) {
     throw new Error('Workspace not found');
   }
 
-  // Create a user for the VP/Orchestrator
-  const vpUser = await prisma.user.create({
+  // Create a user for the Orchestrator
+  const orchestratorUser = await prisma.user.create({
     data: {
       name: spec.name,
       email: `${spec.name.toLowerCase().replace(/\s+/g, '-')}@orchestrator.neolith.ai`,
       avatarUrl: null, // Could generate avatar later
-      isVP: true,
+      isOrchestrator: true,
     },
   });
 
-  // Create the Orchestrator (Orchestrator)
-  const orchestrator = await prisma.vP.create({
+  // Create the Orchestrator
+  const orchestrator = await prisma.orchestrator.create({
     data: {
-      userId: vpUser.id,
+      userId: orchestratorUser.id,
       workspaceId,
       organizationId: workspace.organizationId,
       role: spec.role,
@@ -71,9 +71,9 @@ async function createOrchestrator(spec: OrchestratorSpec, workspaceId: string) {
 
   // Note: Session managers and subagents are not in the current schema
   // They would be added in future schema updates
-  // For now, store them in the VP's capabilities JSON
+  // For now, store them in the Orchestrator's capabilities JSON
 
-  return vp;
+  return orchestrator;
 }
 
 /**
@@ -212,15 +212,15 @@ async function createWorkspace(spec: WorkspaceSpec, userId: string, organization
  */
 async function createSessionManager(spec: SessionManagerSpec) {
   // Get the parent Orchestrator and update its capabilities
-  const orchestrator = await prisma.vP.findUnique({
+  const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: spec.orchestratorId },
   });
 
-  if (!vp) {
+  if (!orchestrator) {
     throw new Error('Parent orchestrator not found');
   }
 
-  const capabilities = (vp.capabilities as Record<string, unknown>) || {};
+  const capabilities = (orchestrator.capabilities as Record<string, unknown>) || {};
   const sessionManagers = (capabilities.sessionManagers as Array<unknown>) || [];
 
   sessionManagers.push({
@@ -233,7 +233,7 @@ async function createSessionManager(spec: SessionManagerSpec) {
     subagents: spec.subagents || [],
   });
 
-  await prisma.vP.update({
+  await prisma.orchestrator.update({
     where: { id: spec.orchestratorId },
     data: {
       capabilities: {
@@ -252,15 +252,15 @@ async function createSessionManager(spec: SessionManagerSpec) {
  */
 async function createSubagent(spec: SubagentSpec) {
   // Get the parent and update its capabilities
-  const orchestrator = await prisma.vP.findUnique({
+  const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: spec.parentId },
   });
 
-  if (!vp) {
+  if (!orchestrator) {
     throw new Error('Parent not found');
   }
 
-  const capabilities = (vp.capabilities as Record<string, unknown>) || {};
+  const capabilities = (orchestrator.capabilities as Record<string, unknown>) || {};
   const subagents = (capabilities.subagents as Array<unknown>) || [];
 
   subagents.push({
@@ -273,7 +273,7 @@ async function createSubagent(spec: SubagentSpec) {
     examples: spec.examples || [],
   });
 
-  await prisma.vP.update({
+  await prisma.orchestrator.update({
     where: { id: spec.parentId },
     data: {
       capabilities: {
@@ -460,7 +460,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Verify parent orchestrator exists
-        const parentOrch = await prisma.vP.findUnique({
+        const parentOrch = await prisma.orchestrator.findUnique({
           where: { id: specParseResult.data.orchestratorId },
         });
         if (!parentOrch) {
@@ -485,10 +485,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         }
 
         // Verify parent exists (only orchestrator is supported for now)
-        const parentVP = await prisma.vP.findUnique({
+        const parentOrchestrator = await prisma.orchestrator.findUnique({
           where: { id: specParseResult.data.parentId },
         });
-        if (!parentVP) {
+        if (!parentOrchestrator) {
           return NextResponse.json(
             createCreationErrorResponse('Parent orchestrator not found', CREATION_ERROR_CODES.PARENT_NOT_FOUND),
             { status: 404 },

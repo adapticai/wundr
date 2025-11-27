@@ -300,7 +300,7 @@ function UserResult({ result, workspaceId }: ResultRendererProps) {
   );
 }
 
-function VPResult({ result, workspaceId }: ResultRendererProps) {
+function OrchestratorResult({ result, workspaceId }: ResultRendererProps) {
   const data = result.data as VPResultData;
 
   return (

@@ -35,7 +35,7 @@ interface CreateDMResponse {
       name: string;
       avatarUrl?: string | null;
       status?: 'online' | 'offline' | 'away' | 'busy';
-      isVP?: boolean;
+      isOrchestrator?: boolean;
     };
   };
   isNew: boolean;

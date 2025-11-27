@@ -168,7 +168,7 @@ export interface ReactionTriggerConfig {
 /**
  * Orchestrator response trigger configuration.
  */
-export interface VPResponseTriggerConfig {
+export interface OrchestratorResponseTriggerConfig {
   type: 'vp_response';
   /** OrchestratorID to watch */
   vpId?: string;
@@ -199,7 +199,7 @@ export type TriggerConfig =
   | MemberTriggerConfig
   | FileUploadTriggerConfig
   | ReactionTriggerConfig
-  | VPResponseTriggerConfig
+  | OrchestratorResponseTriggerConfig
   | ManualTriggerConfig;
 
 /**
@@ -338,8 +338,8 @@ export interface WebhookActionConfig {
  */
 export interface InvokeVPConfig {
   type: 'invoke_vp';
-  /** OrchestratorID to invoke */
-  vpId: string;
+  /** Orchestrator ID to invoke */
+  orchestratorId: string;
   /** Prompt for the Orchestrator */
   prompt: string;
   /** Additional context data */
@@ -1098,8 +1098,8 @@ export interface WebhookActionResult {
  * Result of an invoke Orchestrator action.
  */
 export interface InvokeVPActionResult {
-  /** OrchestratorID that was invoked */
-  vpId: string;
+  /** Orchestrator ID that was invoked */
+  orchestratorId: string;
   /** Prompt sent to Orchestrator */
   prompt: string;
   /** Response from Orchestrator if waited for */

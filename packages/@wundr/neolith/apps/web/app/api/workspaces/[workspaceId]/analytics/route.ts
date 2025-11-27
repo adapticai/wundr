@@ -65,10 +65,10 @@ interface AnalyticsResponse {
     totalMessages: number;
     totalChannels: number;
     totalMembers: number;
-    totalVPs: number;
+    totalOrchestrators: number;
     totalTasks: number;
     totalWorkflows: number;
-    activeVPs: number;
+    activeOrchestrators: number;
     completedTasks: number;
     successfulWorkflows: number;
   };
@@ -77,9 +77,9 @@ interface AnalyticsResponse {
     taskCompletion: TimeSeriesDataPoint[];
     workflowExecution: TimeSeriesDataPoint[];
   };
-  vpActivity: Array<{
-    vpId: string;
-    vpName: string;
+  orchestratorActivity: Array<{
+    orchestratorId: string;
+    orchestratorName: string;
     messageCount: number;
     taskCount: number;
     completedTasks: number;
@@ -272,10 +272,10 @@ export async function GET(
       totalMessages,
       totalChannels,
       totalMembers,
-      totalVPs,
+      totalOrchestrators,
       totalTasks,
       totalWorkflows,
-      activeVPs,
+      activeOrchestrators,
       completedTasks,
       successfulWorkflows,
     ] = await Promise.all([
@@ -305,8 +305,8 @@ export async function GET(
           workspaceId: params.workspaceId,
         },
       }),
-      // Total VPs
-      prisma.vP.count({
+      // Total Orchestrators
+      prisma.orchestrator.count({
         where: {
           workspaceId: params.workspaceId,
         },
@@ -327,8 +327,8 @@ export async function GET(
           workspaceId: params.workspaceId,
         },
       }),
-      // Active VPs (ONLINE or BUSY)
-      prisma.vP.count({
+      // Active Orchestrators (ONLINE or BUSY)
+      prisma.orchestrator.count({
         where: {
           workspaceId: params.workspaceId,
           status: {
@@ -429,7 +429,7 @@ export async function GET(
     );
 
     // Fetch Orchestrator activity metrics
-    const orchestrators = await prisma.vP.findMany({
+    const orchestrators = await prisma.orchestrator.findMany({
       where: {
         workspaceId: params.workspaceId,
       },
@@ -455,12 +455,12 @@ export async function GET(
       },
     });
 
-    const vpActivity = await Promise.all(
-      orchestrators.map(async (vp) => {
+    const orchestratorActivity = await Promise.all(
+      orchestrators.map(async (orchestrator) => {
         const [messageCount, completedTaskCount] = await Promise.all([
           prisma.message.count({
             where: {
-              authorId: vp.userId,
+              authorId: orchestrator.userId,
               channel: {
                 workspaceId: params.workspaceId,
               },
@@ -473,7 +473,7 @@ export async function GET(
           }),
           prisma.task.count({
             where: {
-              vpId: vp.id,
+              orchestratorId: orchestrator.id,
               status: 'DONE',
               completedAt: {
                 gte: start,
@@ -484,12 +484,12 @@ export async function GET(
         ]);
 
         return {
-          vpId: vp.id,
-          vpName: vp.user.displayName || vp.user.name || 'Unknown VP',
+          orchestratorId: orchestrator.id,
+          orchestratorName: orchestrator.user.displayName || orchestrator.user.name || 'Unknown Orchestrator',
           messageCount,
-          taskCount: vp._count.tasks,
+          taskCount: orchestrator._count.tasks,
           completedTasks: completedTaskCount,
-          status: vp.status,
+          status: orchestrator.status,
         };
       }),
     );
@@ -641,10 +641,10 @@ export async function GET(
         totalMessages,
         totalChannels,
         totalMembers,
-        totalVPs,
+        totalOrchestrators,
         totalTasks,
         totalWorkflows,
-        activeVPs,
+        activeOrchestrators,
         completedTasks,
         successfulWorkflows,
       },
@@ -653,7 +653,7 @@ export async function GET(
         taskCompletion: taskTimeSeries,
         workflowExecution: workflowTimeSeries,
       },
-      vpActivity: vpActivity.sort((a, b) => b.messageCount - a.messageCount),
+      orchestratorActivity: orchestratorActivity.sort((a, b) => b.messageCount - a.messageCount),
       channelEngagement: channelEngagement.sort((a, b) => b.messageCount - a.messageCount),
       taskMetrics: {
         byStatus: Object.fromEntries(

@@ -15,14 +15,13 @@ import {
   Save,
   AlertCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ConversationalWizard, type Message, type EntityData } from './conversational-wizard';
 
@@ -306,20 +305,6 @@ export function DualModeEditor({
         localStorage.removeItem(`${storageKey}-${entityType}`);
       }
     }
-  };
-
-  /**
-   * Handle data update from ConversationalWizard
-   */
-  const handleWizardDataUpdate = (newData: EntityData) => {
-    setData(newData);
-  };
-
-  /**
-   * Handle conversation messages
-   */
-  const handleConversationUpdate = (messages: Message[]) => {
-    setConversationHistory(messages);
   };
 
   return (

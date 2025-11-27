@@ -32,7 +32,7 @@ import { NextResponse } from 'next/server';
  */
 export async function GET(_request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({
-    message: 'VP Daemon WebSocket endpoint',
+    message: 'Orchestrator Daemon WebSocket endpoint',
     protocol: 'WebSocket',
     version: '1.0.0',
     documentation: 'https://docs.neolith.io/daemon-websocket',

@@ -6,9 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-interface VPMessageIndicatorProps {
+interface OrchestratorMessageIndicatorProps {
   avatarUrl?: string | null;
-  vpName: string;
+  orchestratorName: string;
   variant?: 'badge' | 'icon' | 'label' | 'subtle';
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
@@ -36,15 +36,15 @@ const sizeClasses = {
   },
 };
 
-export function VPMessageIndicator({
+export function OrchestratorMessageIndicator({
   avatarUrl,
-  vpName,
+  orchestratorName,
   variant = 'badge',
   size = 'md',
   showLabel = false,
   className,
-}: VPMessageIndicatorProps) {
-  const initials = vpName
+}: OrchestratorMessageIndicatorProps) {
+  const initials = orchestratorName
     .split(' ')
     .map((n) => n[0])
     .join('')
@@ -58,7 +58,7 @@ export function VPMessageIndicator({
     return (
       <div className={cn('relative inline-flex', className)}>
         <Avatar className={sizes.avatar}>
-          <AvatarImage src={avatarUrl || undefined} alt={vpName} />
+          <AvatarImage src={avatarUrl || undefined} alt={orchestratorName} />
           <AvatarFallback className="bg-primary/10 text-primary">
             {initials}
           </AvatarFallback>
@@ -119,7 +119,7 @@ export function VPMessageIndicator({
     return (
       <div className={cn('relative inline-flex', className)}>
         <Avatar className={sizes.avatar}>
-          <AvatarImage src={avatarUrl || undefined} alt={vpName} />
+          <AvatarImage src={avatarUrl || undefined} alt={orchestratorName} />
           <AvatarFallback className="bg-primary/10 text-primary">
             {initials}
           </AvatarFallback>
@@ -139,19 +139,19 @@ export function VPMessageIndicator({
   return null;
 }
 
-// Message wrapper that applies VP-specific styling
-interface VPMessageWrapperProps {
+// Message wrapper that applies Orchestrator-specific styling
+interface OrchestratorMessageWrapperProps {
   children: React.ReactNode;
-  isVP?: boolean;
+  isOrchestrator?: boolean;
   className?: string;
 }
 
-export function VPMessageWrapper({
+export function OrchestratorMessageWrapper({
   children,
-  isVP = false,
+  isOrchestrator = false,
   className,
-}: VPMessageWrapperProps) {
-  if (!isVP) {
+}: OrchestratorMessageWrapperProps) {
+  if (!isOrchestrator) {
     return <div className={className}>{children}</div>;
   }
 
@@ -169,7 +169,7 @@ export function VPMessageWrapper({
 }
 
 // Compact indicator for message lists
-export function VPMessageBadge({ className }: { className?: string }) {
+export function OrchestratorMessageBadge({ className }: { className?: string }) {
   return (
     <div
       className={cn(
@@ -178,7 +178,7 @@ export function VPMessageBadge({ className }: { className?: string }) {
       )}
     >
       <Bot className="h-3 w-3" />
-      <span>VP</span>
+      <span>AI</span>
     </div>
   );
 }

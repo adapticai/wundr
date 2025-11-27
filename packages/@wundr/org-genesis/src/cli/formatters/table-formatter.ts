@@ -365,7 +365,7 @@ export function formatVPsAsTable(
   orchestrators: OrchestratorCharter[],
   options: TableFormatOptions = {}
 ): string {
-  if (vps.length === 0) {
+  if (orchestrators.length === 0) {
     return 'No VPs found.';
   }
 
@@ -378,12 +378,12 @@ export function formatVPsAsTable(
     'left',
   ];
 
-  const rows = orchestrators.map(vp => [
-    vp.identity.name,
-    vp.id,
-    String(vp.disciplineIds.length),
-    String(vp.capabilities.length),
-    vp.nodeId || '-',
+  const rows = orchestrators.map(orchestrator => [
+    orchestrator.identity.name,
+    orchestrator.id,
+    String(orchestrator.disciplineIds.length),
+    String(orchestrator.capabilities.length),
+    orchestrator.nodeId || '-',
   ]);
 
   return renderTable(headers, rows, alignments, options);
@@ -406,27 +406,27 @@ export function formatVPsAsTable(
  * ```
  */
 export function formatVPDetailsAsTable(
-  vp: OrchestratorCharter,
+  orchestrator: OrchestratorCharter,
   options: TableFormatOptions = {}
 ): string {
   const headers = ['Property', 'Value'];
   const alignments: Array<'left' | 'right' | 'center'> = ['left', 'left'];
 
   const rows: string[][] = [
-    ['ID', vp.id],
-    ['Name', vp.identity.name],
-    ['Slug', vp.identity.slug],
-    ['Persona', truncate(vp.identity.persona, 50)],
-    ['Core Directive', truncate(vp.coreDirective, 50)],
-    ['Tier', String(vp.tier)],
-    ['Disciplines', vp.disciplineIds.join(', ') || '-'],
-    ['Capabilities', vp.capabilities.join(', ')],
-    ['MCP Tools', vp.mcpTools.join(', ') || '-'],
-    ['Max Sessions', String(vp.resourceLimits.maxConcurrentSessions)],
-    ['Token Budget/hr', String(vp.resourceLimits.tokenBudgetPerHour)],
-    ['Node ID', vp.nodeId || '-'],
-    ['Created', vp.createdAt.toISOString()],
-    ['Updated', vp.updatedAt.toISOString()],
+    ['ID', orchestrator.id],
+    ['Name', orchestrator.identity.name],
+    ['Slug', orchestrator.identity.slug],
+    ['Persona', truncate(orchestrator.identity.persona, 50)],
+    ['Core Directive', truncate(orchestrator.coreDirective, 50)],
+    ['Tier', String(orchestrator.tier)],
+    ['Disciplines', orchestrator.disciplineIds.join(', ') || '-'],
+    ['Capabilities', orchestrator.capabilities.join(', ')],
+    ['MCP Tools', orchestrator.mcpTools.join(', ') || '-'],
+    ['Max Sessions', String(orchestrator.resourceLimits.maxConcurrentSessions)],
+    ['Token Budget/hr', String(orchestrator.resourceLimits.tokenBudgetPerHour)],
+    ['Node ID', orchestrator.nodeId || '-'],
+    ['Created', orchestrator.createdAt.toISOString()],
+    ['Updated', orchestrator.updatedAt.toISOString()],
   ];
 
   return renderTable(headers, rows, alignments, options);

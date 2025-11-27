@@ -2,7 +2,7 @@
 
 import { Building2, ChevronDown, ChevronRight, Folder, User } from 'lucide-react';
 import React from 'react';
-import { VPStatusDot } from '@/components/orchestrator/orchestrator-status-badge';
+import { OrchestratorStatusDot } from '@/components/orchestrator/orchestrator-status-badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 
 import { DISCIPLINE_COLORS, type OrgHierarchyNode, type OrgNodeProps } from './types';
-import { VPDetailsPopover } from './VPDetailsPopover';
+import { OrchestratorDetailsPopover } from './OrchestratorDetailsPopover';
 
 /**
  * Individual node component in the org hierarchy tree
@@ -26,7 +26,7 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
         return <Building2 className="h-5 w-5 text-primary" />;
       case 'workspace':
         return <Folder className="h-5 w-5 text-blue-600" />;
-      case 'vp':
+      case 'orchestrator':
         return node.data?.avatarUrl ? null : <User className="h-4 w-4 text-muted-foreground" />;
       default:
         return null;
@@ -128,18 +128,18 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
                 {getNodeIcon()}
                 <div className="flex-1">
                   <h3 className="font-semibold text-base">{node.name}</h3>
-                  {(node.data?.orchestratorCount !== undefined || node.data?.onlineVPCount !== undefined) && (
+                  {(node.data?.orchestratorCount !== undefined || node.data?.onlineOrchestratorCount !== undefined) && (
                     <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
                       {node.data.orchestratorCount !== undefined && (
                         <span className="flex items-center gap-1">
                           <User className="h-3 w-3" />
-                          {node.data.orchestratorCount} VPs
+                          {node.data.orchestratorCount} Orchestrators
                         </span>
                       )}
-                      {node.data.onlineVPCount !== undefined && (
+                      {node.data.onlineOrchestratorCount !== undefined && (
                         <span className="flex items-center gap-1 text-green-600">
-                          <VPStatusDot status="ONLINE" size="sm" showPulse={false} />
-                          {node.data.onlineVPCount} Online
+                          <OrchestratorStatusDot status="ONLINE" size="sm" showPulse={false} />
+                          {node.data.onlineOrchestratorCount} Online
                         </span>
                       )}
                     </div>
@@ -161,18 +161,18 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
 
         {isExpanded && hasChildren && (
           <div className="ml-6 space-y-2 border-l-2 border-border pl-4">
-            {/* Group VPs by discipline */}
+            {/* Group Orchestrators by discipline */}
             {groupByDiscipline(node.children || []).map(([discipline, orchestrators]) => (
               <div key={discipline} className="space-y-2">
                 <div className="flex items-center gap-2 px-2 py-1">
                   <span className={cn('text-xs font-semibold px-2 py-1 rounded-md', disciplineColor)}>
                     {discipline || 'Uncategorized'}
                   </span>
-                  <span className="text-xs text-muted-foreground">({vps.length})</span>
+                  <span className="text-xs text-muted-foreground">({orchestrators.length})</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {vps.map((vp) => (
-                    <OrgNodeRenderer key={vp.id} node={vp} depth={depth + 1} onNodeClick={onNodeClick} />
+                  {orchestrators.map((orchestrator) => (
+                    <OrgNodeRenderer key={orchestrator.id} node={orchestrator} depth={depth + 1} onNodeClick={onNodeClick} />
                   ))}
                 </div>
               </div>
@@ -183,9 +183,9 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
     );
   }
 
-  // VP node
-  if (node.type === 'vp' && node.data?.status) {
-    const vpDetails = {
+  // Orchestrator node
+  if (node.type === 'orchestrator' && node.data?.status) {
+    const orchestratorDetails = {
       id: node.id,
       name: node.name,
       avatarUrl: node.data.avatarUrl,
@@ -195,7 +195,7 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
     };
 
     return (
-      <VPDetailsPopover vp={vpDetails}>
+      <OrchestratorDetailsPopover orchestrator={orchestratorDetails}>
         <Card
           className={cn(
             'cursor-pointer transition-all hover:shadow-md hover:border-primary/50 relative overflow-hidden',
@@ -221,7 +221,7 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
                 </Avatar>
                 {node.data.status && (
                   <div className="absolute -bottom-1 -right-1">
-                    <VPStatusDot status={node.data.status} size="md" showPulse />
+                    <OrchestratorStatusDot status={node.data.status} size="md" showPulse />
                   </div>
                 )}
               </div>
@@ -262,7 +262,7 @@ export function OrgNode({ node, depth, onNodeClick, isExpanded, onToggleExpand }
             </div>
           </CardContent>
         </Card>
-      </VPDetailsPopover>
+      </OrchestratorDetailsPopover>
     );
   }
 
@@ -313,7 +313,7 @@ function groupByDiscipline(nodes: OrgNodeProps['node'][]): [string, OrgNodeProps
 /**
  * Loading skeleton for org nodes
  */
-export function OrgNodeSkeleton({ type = 'vp' }: { type?: 'organization' | 'workspace' | 'vp' }) {
+export function OrgNodeSkeleton({ type = 'orchestrator' }: { type?: 'organization' | 'workspace' | 'orchestrator' }) {
   if (type === 'organization') {
     return (
       <Card>

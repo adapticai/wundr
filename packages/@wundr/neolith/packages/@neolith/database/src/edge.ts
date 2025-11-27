@@ -34,7 +34,7 @@ export type {
   user as User,
   organization as Organization,
   workspace as Workspace,
-  vP as VP,
+  orchestrator as Orchestrator,
   channel as Channel,
   message as Message,
   file as File,
@@ -53,7 +53,7 @@ export type {
 // Export all enums
 export {
   UserStatus,
-  VPStatus,
+  OrchestratorStatus,
   WorkspaceVisibility,
   ChannelType,
   MessageType,

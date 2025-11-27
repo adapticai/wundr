@@ -9,7 +9,7 @@
  */
 
 
-import type { Prisma, PrismaClient, vP as PrismaOrchestrator, OrchestratorStatus as PrismaOrchestratorStatus } from '@prisma/client';
+import type { Prisma, PrismaClient, orchestrator as PrismaOrchestrator, OrchestratorStatus as PrismaOrchestratorStatus } from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
 // =============================================================================
@@ -472,7 +472,7 @@ export const orchestratorQueries = {
       });
     }
 
-    const orchestrator = await context.prisma.vP.findUnique({
+    const orchestrator = await context.prisma.orchestrator.findUnique({
       where: { id: args.id },
     });
 
@@ -521,7 +521,7 @@ export const orchestratorQueries = {
     }
 
     // Find Orchestrator by discipline slug or user email pattern
-    const orchestrator = await context.prisma.vP.findFirst({
+    const orchestrator = await context.prisma.orchestrator.findFirst({
       where: {
         OR: [
           { discipline: { contains: args.slug, mode: 'insensitive' } },
@@ -622,14 +622,14 @@ export const orchestratorQueries = {
     }
 
     // Fetch VPs with extra record for hasNextPage
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where,
       take: first + 1,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
 
     // Get total count
-    const totalCount = await context.prisma.vP.count({
+    const totalCount = await context.prisma.orchestrator.count({
       where: { organizationId: orgId },
     });
 
@@ -690,7 +690,7 @@ export const orchestratorQueries = {
       });
     }
 
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where: { discipline: args.disciplineId },
       orderBy: { createdAt: 'desc' },
     });
@@ -746,7 +746,7 @@ export const orchestratorQueries = {
       });
     }
 
-    const orchestrator = await context.prisma.vP.findUnique({
+    const orchestrator = await context.prisma.orchestrator.findUnique({
       where: { id: args.id },
     });
 
@@ -854,13 +854,13 @@ export const orchestratorMutations = {
         email: orchestratorEmail,
         name: input.displayName ?? input.role,
         displayName: input.displayName ?? input.role,
-        isVP: true,
+        isOrchestrator: true,
         status: 'ACTIVE',
       },
     });
 
     // Create the Orchestrator
-    const orchestrator = await context.prisma.vP.create({
+    const orchestrator = await context.prisma.orchestrator.create({
       data: {
         userId: orchestratorUser.id,
         organizationId: input.organizationId,
@@ -925,7 +925,7 @@ export const orchestratorMutations = {
     const { id, input } = args;
 
     // Fetch existing Orchestrator
-    const existingVP = await context.prisma.vP.findUnique({
+    const existingVP = await context.prisma.orchestrator.findUnique({
       where: { id },
     });
 
@@ -977,7 +977,7 @@ export const orchestratorMutations = {
       updateData.daemonEndpoint = input.daemonEndpoint;
     }
 
-    const orchestrator = await context.prisma.vP.update({
+    const orchestrator = await context.prisma.orchestrator.update({
       where: { id },
       data: updateData,
     });
@@ -1026,7 +1026,7 @@ export const orchestratorMutations = {
       });
     }
 
-    const orchestrator = await context.prisma.vP.findUnique({
+    const orchestrator = await context.prisma.orchestrator.findUnique({
       where: { id: args.id },
     });
 
@@ -1051,7 +1051,7 @@ export const orchestratorMutations = {
     }
 
     // Delete Orchestrator (user will cascade due to onDelete: Cascade)
-    await context.prisma.vP.delete({ where: { id: args.id } });
+    await context.prisma.orchestrator.delete({ where: { id: args.id } });
 
     return {
       success: true,
@@ -1092,7 +1092,7 @@ export const orchestratorMutations = {
       });
     }
 
-    const existingVP = await context.prisma.vP.findUnique({
+    const existingVP = await context.prisma.orchestrator.findUnique({
       where: { id: args.id },
     });
 
@@ -1111,7 +1111,7 @@ export const orchestratorMutations = {
       return createSuccessPayload(existingVPData);
     }
 
-    const orchestrator = await context.prisma.vP.update({
+    const orchestrator = await context.prisma.orchestrator.update({
       where: { id: args.id },
       data: { status: 'ONLINE' },
     });
@@ -1156,7 +1156,7 @@ export const orchestratorMutations = {
       });
     }
 
-    const existingVP = await context.prisma.vP.findUnique({
+    const existingVP = await context.prisma.orchestrator.findUnique({
       where: { id: args.id },
     });
 
@@ -1175,7 +1175,7 @@ export const orchestratorMutations = {
       return createSuccessPayload(existingVPData);
     }
 
-    const orchestrator = await context.prisma.vP.update({
+    const orchestrator = await context.prisma.orchestrator.update({
       where: { id: args.id },
       data: { status: 'OFFLINE' },
     });
@@ -1224,7 +1224,7 @@ export const orchestratorMutations = {
       });
     }
 
-    const existingVP = await context.prisma.vP.findUnique({
+    const existingVP = await context.prisma.orchestrator.findUnique({
       where: { id: args.id },
     });
 
@@ -1299,7 +1299,7 @@ export const orchestratorMutations = {
       });
     }
 
-    const existingVP = await context.prisma.vP.findUnique({
+    const existingVP = await context.prisma.orchestrator.findUnique({
       where: { id: args.id },
     });
 
@@ -1335,7 +1335,7 @@ export const orchestratorMutations = {
       updateData.capabilities = args.config.capabilities;
     }
 
-    const orchestrator = await context.prisma.vP.update({
+    const orchestrator = await context.prisma.orchestrator.update({
       where: { id: args.id },
       data: updateData,
     });
@@ -1458,7 +1458,7 @@ export const OrchestratorFieldResolvers = {
     context: GraphQLContext
   ) => {
     // Find VPs in the same organization (excluding self)
-    const orchestrators = await context.prisma.vP.findMany({
+    const orchestrators = await context.prisma.orchestrator.findMany({
       where: {
         organizationId: parent.organizationId,
         id: { not: parent.id },

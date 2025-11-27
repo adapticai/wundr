@@ -42,7 +42,7 @@ const PRESENCE_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -128,8 +128,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { status, statusText } = parseResult.data;
 
     // Get Orchestrator info
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: {
         id: true,
         userId: true,
@@ -137,7 +137,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: PRESENCE_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
@@ -145,26 +145,26 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     // Map presence status to Orchestrator status
-    const vpStatus = status === 'offline' ? 'OFFLINE' : status === 'busy' ? 'BUSY' : 'ONLINE';
+    const orchestratorStatus = status === 'offline' ? 'OFFLINE' : status === 'busy' ? 'BUSY' : 'ONLINE';
 
     // Update Orchestrator status in database
-    await prisma.vP.update({
-      where: { id: token.vpId },
+    await prisma.orchestrator.update({
+      where: { id: token.orchestratorId },
       data: {
-        status: vpStatus,
+        status: orchestratorStatus,
       },
     });
 
     // Update user status
     await prisma.user.update({
-      where: { id: vp.userId },
+      where: { id: orchestrator.userId },
       data: {
-        status: vpStatus === 'OFFLINE' ? 'INACTIVE' : 'ACTIVE',
+        status: orchestratorStatus === 'OFFLINE' ? 'INACTIVE' : 'ACTIVE',
       },
     });
 
     // Store presence in Redis for real-time access
-    const presenceKey = `presence:vp:${token.vpId}`;
+    const presenceKey = `presence:orchestrator:${token.orchestratorId}`;
     const presenceData = {
       status,
       statusText: statusText || null,
@@ -181,10 +181,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
       // Publish presence update for real-time subscriptions
       await redis.publish(
-        `presence:updates:${vp.organizationId}`,
+        `presence:updates:${orchestrator.organizationId}`,
         JSON.stringify({
-          type: 'vp_presence_update',
-          vpId: token.vpId,
+          type: 'orchestrator_presence_update',
+          orchestratorId: token.orchestratorId,
           ...presenceData,
         }),
       );

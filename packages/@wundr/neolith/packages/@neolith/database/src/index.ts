@@ -44,7 +44,7 @@ export type {
   session as Session,
   task as Task,
   user as User,
-  vP as VP,
+  orchestrator as Orchestrator,
   workspace as Workspace,
   workspaceMember as WorkspaceMember,
 } from '@prisma/client';
@@ -63,7 +63,7 @@ export {
   TaskPriority,
   TaskStatus,
   UserStatus,
-  VPStatus,
+  OrchestratorStatus,
   WorkspaceRole,
   WorkspaceVisibility,
 } from '@prisma/client';

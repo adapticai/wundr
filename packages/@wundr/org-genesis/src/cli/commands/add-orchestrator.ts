@@ -262,7 +262,7 @@ function validateOptions(options: AddOrchestratorOptions): string[] {
  * @param result - The add Orchestrator result
  */
 function formatTextOutput(result: AddOrchestratorResult): void {
-  if (result.success && result.orchestrator) {
+  if (result.success && result.vp) {
     console.log('\n');
     console.log('='.repeat(60));
     console.log('  Orchestrator Created Successfully!');
@@ -270,30 +270,30 @@ function formatTextOutput(result: AddOrchestratorResult): void {
     console.log('');
     console.log('  Orchestrator Details');
     console.log('  ' + '-'.repeat(40));
-    console.log(`  ID:       ${result.orchestrator.id}`);
-    console.log(`  Name:     ${result.orchestrator.identity.name}`);
-    console.log(`  Slug:     ${result.orchestrator.identity.slug}`);
-    console.log(`  Tier:     ${result.orchestrator.tier}`);
+    console.log(`  ID:       ${result.vp.id}`);
+    console.log(`  Name:     ${result.vp.identity.name}`);
+    console.log(`  Slug:     ${result.vp.identity.slug}`);
+    console.log(`  Tier:     ${result.vp.tier}`);
     console.log('');
     console.log('  Capabilities');
     console.log('  ' + '-'.repeat(40));
-    result.orchestrator.capabilities.forEach(cap => {
+    result.vp.capabilities.forEach(cap => {
       console.log(`  - ${cap}`);
     });
     console.log('');
     console.log('  Resource Limits');
     console.log('  ' + '-'.repeat(40));
     console.log(
-      `  Max Concurrent Sessions: ${result.orchestrator.resourceLimits.maxConcurrentSessions}`
+      `  Max Concurrent Sessions: ${result.vp.resourceLimits.maxConcurrentSessions}`
     );
     console.log(
-      `  Token Budget/Hour:       ${result.orchestrator.resourceLimits.tokenBudgetPerHour.toLocaleString()}`
+      `  Token Budget/Hour:       ${result.vp.resourceLimits.tokenBudgetPerHour.toLocaleString()}`
     );
     console.log(
-      `  Max Memory (MB):         ${result.orchestrator.resourceLimits.maxMemoryMB}`
+      `  Max Memory (MB):         ${result.vp.resourceLimits.maxMemoryMB}`
     );
     console.log(
-      `  Max CPU (%):             ${result.orchestrator.resourceLimits.maxCpuPercent}`
+      `  Max CPU (%):             ${result.vp.resourceLimits.maxCpuPercent}`
     );
     console.log('');
 
@@ -309,7 +309,7 @@ function formatTextOutput(result: AddOrchestratorResult): void {
     console.log('='.repeat(60));
     console.log('');
   } else {
-    console.error('\n  Error creating VP:');
+    console.error('\n  Error creating Orchestrator:');
     console.error(`  ${result.error}`);
     console.error('');
   }
@@ -323,11 +323,11 @@ function formatTextOutput(result: AddOrchestratorResult): void {
 function formatJsonOutput(result: AddOrchestratorResult): void {
   const output = {
     ...result,
-    vp: result.orchestrator
+    vp: result.vp
       ? {
-          ...result.orchestrator,
-          createdAt: result.orchestrator.createdAt.toISOString(),
-          updatedAt: result.orchestrator.updatedAt.toISOString(),
+          ...result.vp,
+          createdAt: result.vp.createdAt.toISOString(),
+          updatedAt: result.vp.updatedAt.toISOString(),
         }
       : undefined,
   };

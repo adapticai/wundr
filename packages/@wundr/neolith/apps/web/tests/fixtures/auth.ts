@@ -28,7 +28,7 @@ export const TEST_USER = {
   name: 'Test User',
   image: null,
   role: 'MEMBER' as const,
-  isVP: false,
+  isOrchestrator: false,
 };
 
 /**
@@ -41,28 +41,28 @@ export const ADMIN_USER = {
   name: 'Admin User',
   image: null,
   role: 'ADMIN' as const,
-  isVP: false,
+  isOrchestrator: false,
 };
 
 /**
  * Orchestrator test user for orchestrator authentication
  */
-export const VP_USER = {
+export const ORCHESTRATOR_USER = {
   id: 'orchestrator-user-id',
-  email: 'vp@neolith.dev',
-  password: 'VPPassword123!',
-  name: 'Test VP',
+  email: 'orchestrator@neolith.dev',
+  password: 'OrchestratorPassword123!',
+  name: 'Test Orchestrator',
   image: null,
   role: 'MEMBER' as const,
-  isVP: true,
-  vpId: 'test-orchestrator-123',
+  isOrchestrator: true,
+  orchestratorId: 'test-orchestrator-123',
   apiKey: 'test-api-key',
 };
 
 /**
  * Creates a session cookie for NextAuth.js
  */
-function createSessionToken(user: typeof TEST_USER | typeof ADMIN_USER | typeof VP_USER) {
+function createSessionToken(user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER) {
   // In production, this would be a proper JWT token
   // For testing, we create a mock session token
   const sessionData = {
@@ -72,7 +72,7 @@ function createSessionToken(user: typeof TEST_USER | typeof ADMIN_USER | typeof 
       email: user.email,
       image: user.image,
       role: user.role,
-      isVP: user.isVP,
+      isOrchestrator: user.isOrchestrator,
     },
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
   };
@@ -84,7 +84,7 @@ function createSessionToken(user: typeof TEST_USER | typeof ADMIN_USER | typeof 
 /**
  * Authenticate a page with a test user
  */
-export async function authenticatePage(page: Page, user: typeof TEST_USER | typeof ADMIN_USER | typeof VP_USER = TEST_USER) {
+export async function authenticatePage(page: Page, user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER = TEST_USER) {
   const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
   // Create session cookie
@@ -160,8 +160,8 @@ export async function logout(page: Page) {
 export const test = base.extend<{
   authenticatedPage: Page;
   adminPage: Page;
-  vpPage: Page;
-  loginAsUser: (user?: typeof TEST_USER | typeof ADMIN_USER | typeof VP_USER) => Promise<void>;
+  orchestratorPage: Page;
+  loginAsUser: (user?: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER) => Promise<void>;
 }>({
   /**
    * Page with regular user authentication
@@ -182,8 +182,8 @@ export const test = base.extend<{
   /**
    * Page with Orchestrator user authentication
    */
-  vpPage: async ({ page }, use) => {
-    await authenticatePage(page, VP_USER);
+  orchestratorPage: async ({ page }, use) => {
+    await authenticatePage(page, ORCHESTRATOR_USER);
     await use(page);
   },
 
@@ -191,7 +191,7 @@ export const test = base.extend<{
    * Helper function to login as any user
    */
   loginAsUser: async ({ page }, use) => {
-    const login = async (user: typeof TEST_USER | typeof ADMIN_USER | typeof VP_USER = TEST_USER) => {
+    const login = async (user: typeof TEST_USER | typeof ADMIN_USER | typeof ORCHESTRATOR_USER = TEST_USER) => {
       await authenticatePage(page, user);
     };
     await use(login);

@@ -394,7 +394,7 @@ export class OrchestratorGenerator {
     // Track existing Orchestrator slugs for deduplication
     if (context.existingOrchestrators) {
       for (const orchestrator of context.existingOrchestrators) {
-        this.generatedSlugs.add(vp.identity.slug);
+        this.generatedSlugs.add(orchestrator.identity.slug);
       }
     }
 
@@ -424,20 +424,20 @@ export class OrchestratorGenerator {
     }
 
     // Convert parsed data to full OrchestratorCharter objects
-    const orchestrators = this.buildOrchestratorCharters(parseResult.vps, context);
+    const orchestrators = this.buildOrchestratorCharters(parseResult.orchestrators, context);
 
     // Validate each charter
     for (const orchestrator of orchestrators) {
-      const charterValidation = this.validateCharter(vp);
+      const charterValidation = this.validateCharter(orchestrator);
       if (!charterValidation.valid) {
         warnings.push(
-          `Orchestrator '${vp.identity.name}' has validation issues: ${charterValidation.errors.map(e => e.message).join(', ')}`,
+          `Orchestrator '${orchestrator.identity.name}' has validation issues: ${charterValidation.errors.map(e => e.message).join(', ')}`,
         );
       }
       if (charterValidation.warnings.length > 0) {
         warnings.push(
           ...charterValidation.warnings.map(
-            w => `Orchestrator '${vp.identity.name}': ${w.message}`,
+            w => `Orchestrator '${orchestrator.identity.name}': ${w.message}`,
           ),
         );
       }
@@ -446,7 +446,7 @@ export class OrchestratorGenerator {
     // Store in registry if available
     if (this.registry) {
       for (const orchestrator of orchestrators) {
-        this.registry.set(vp.id, vp);
+        this.registry.set(orchestrator.id, orchestrator);
       }
     }
 
@@ -499,7 +499,7 @@ export class OrchestratorGenerator {
     // Parse the response
     const parseResult = parseOrchestratorRefinementResponse(rawResponse);
 
-    if (!parseResult.success || parseResult.vps.length === 0) {
+    if (!parseResult.success || parseResult.orchestrators.length === 0) {
       // Return original with warnings if parsing failed
       return {
         vp,
@@ -512,7 +512,7 @@ export class OrchestratorGenerator {
     }
 
     // Build the refined VP, preserving the original ID
-    const refinedOrchestrator = this.buildSingleOrchestratorCharter(parseResult.vps[0], vp.id);
+    const refinedOrchestrator = this.buildSingleOrchestratorCharter(parseResult.orchestrators[0], vp.id);
 
     // Update timestamps
     refinedOrchestrator.updatedAt = new Date();

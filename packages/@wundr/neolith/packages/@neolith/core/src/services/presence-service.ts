@@ -20,6 +20,7 @@ import type {
   ChannelPresenceCallback,
   ChannelPresenceEvent,
   DaemonInfo,
+  OrchestratorPresence,
   PresenceCallback,
   PresenceConfig,
   PresenceEvent,
@@ -28,7 +29,6 @@ import type {
   UnsubscribeFunction,
   UserPresence,
   UserPresenceEvent,
-  VPPresence,
   VPPresenceCallback,
   VPPresenceEvent,
 } from '../types/presence';
@@ -642,7 +642,7 @@ export class PresenceServiceImpl implements PresenceService {
       await this.publishVPEvent({
         type: 'vp.online',
         timestamp: now,
-        vpId,
+        orchestratorId: vpId,
         currentStatus: 'ONLINE',
         daemonInfo,
       });
@@ -684,7 +684,7 @@ export class PresenceServiceImpl implements PresenceService {
       await this.publishVPEvent({
         type: 'vp.offline',
         timestamp: now,
-        vpId,
+        orchestratorId: vpId,
         previousStatus: previousStatus ?? undefined,
         currentStatus: 'OFFLINE',
       });
@@ -710,14 +710,14 @@ export class PresenceServiceImpl implements PresenceService {
         this.redis.exists(heartbeatKey),
       ]);
 
-      if (!data || Object.keys(data).length === 0 || !data.orchestratorId || !data.lastHeartbeat) {
+      if (!data || Object.keys(data).length === 0 || !data.vpId || !data.lastHeartbeat) {
         return null;
       }
 
       const status: PresenceStatus = heartbeatExists ? (data.status as PresenceStatus) : 'OFFLINE';
 
       return {
-        vpId: data.orchestratorId,
+        orchestratorId: data.vpId,
         status,
         lastHeartbeat: new Date(data.lastHeartbeat),
         daemonInfo: data.daemonInfo ? JSON.parse(data.daemonInfo) : {
@@ -772,7 +772,7 @@ export class PresenceServiceImpl implements PresenceService {
       await this.publishVPEvent({
         type: 'vp.heartbeat',
         timestamp: now,
-        vpId,
+        orchestratorId: vpId,
         currentStatus: 'ONLINE',
       });
     } catch (error) {

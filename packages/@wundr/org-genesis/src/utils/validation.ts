@@ -42,6 +42,7 @@ import type {
   OrchestratorCapability,
   // Charter types
   OrchestratorCharter,
+  VPNodeMapping,
   OrchestratorNodeStatus,
   OrchestratorResourceAllocation,
   OrganizationManifest,
@@ -61,7 +62,6 @@ import type {
   SessionContext,
   SessionManagerCharter,
   SessionStatus,
-  VPNodeMapping,
 } from '../types/index.js';
 
 // =============================================================================
@@ -160,7 +160,7 @@ export const OrchestratorResourceAllocationSchema = z.object({
  * Schema for VPNodeMapping
  */
 export const VPNodeMappingSchema = z.object({
-  vpId: z.string().min(1, 'Orchestrator ID is required'),
+  orchestratorId: z.string().min(1, 'Orchestrator ID is required'),
   nodeId: z.string().min(1, 'Node ID is required'),
   hostname: z.string().min(1, 'Hostname is required'),
   status: OrchestratorNodeStatusSchema,
@@ -180,7 +180,7 @@ export const VPNodeMappingSchema = z.object({
   tags: z.array(z.string()).optional(),
   provisionedAt: z.coerce.date().optional(),
   lastStatusChange: z.coerce.date().optional(),
-}) satisfies z.ZodType<OrchestratorNodeMapping>;
+}) satisfies z.ZodType<VPNodeMapping>;
 
 /**
  * Schema for OrgGovernanceConfig

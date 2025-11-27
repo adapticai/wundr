@@ -2,7 +2,7 @@
  * OrchestratorComparison Analytics API Route
  *
  * Compares Orchestrator performance across a workspace.
- * Ranks VPs by various metrics to identify top performers and improvement areas.
+ * Ranks Orchestrators by various metrics to identify top performers and improvement areas.
  *
  * Routes:
  * - GET /api/workspaces/:workspaceId/orchestrators/analytics/comparison - Compare Orchestrator performance
@@ -14,7 +14,7 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
-import { compareVPs } from '@/lib/services/orchestrator-analytics-service-extended';
+import { compareOrchestrators } from '@/lib/services/orchestrator-analytics-service-extended';
 import {
   orchestratorComparisonQuerySchema,
   createAnalyticsErrorResponse,
@@ -64,14 +64,14 @@ async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
  * GET /api/workspaces/:workspaceId/orchestrators/analytics/comparison
  *
  * Compare Orchestrator performance across workspace.
- * Returns ranked list of VPs by selected metric with percentile rankings.
+ * Returns ranked list of Orchestrators by selected metric with percentile rankings.
  *
  * Query Parameters:
  * - metric: Metric to compare by (taskCompletionRate, avgResponseTime, qualityScore, tasksCompleted, errorRate)
  * - timeRange: Time range for comparison (24h, 7d, 30d, 90d) - default: 30d
  * - limit: Number of top performers to return (1-50) - default: 10
  * - discipline: Filter by discipline (optional)
- * - includeInactive: Include inactive VPs (boolean) - default: false
+ * - includeInactive: Include inactive Orchestrators (boolean) - default: false
  * - sortOrder: Sort order (asc, desc) - default: desc
  *
  * @param request - Next.js request object with query parameters
@@ -163,7 +163,7 @@ export async function GET(
     }
 
     // Get Orchestrator comparison data
-    const comparison = await compareVPs(
+    const comparison = await compareOrchestrators(
       access.workspace.organizationId,
       query.metric,
       query.limit,
@@ -179,9 +179,9 @@ export async function GET(
       );
     }
 
-    // Filter inactive VPs if not included
+    // Filter inactive Orchestrators if not included
     if (!query.includeInactive) {
-      const activeVPIds = await prisma.vP
+      const activeOrchestratorIds = await prisma.orchestrator
         .findMany({
           where: {
             organizationId: access.workspace.organizationId,
@@ -192,12 +192,12 @@ export async function GET(
         .then((orchestrators) => orchestrators.map((orchestrator) => orchestrator.id));
 
       filteredComparison = filteredComparison.filter((orchestrator) =>
-        activeVPIds.includes(orchestrator.vpId),
+        activeOrchestratorIds.includes(orchestrator.orchestratorId),
       );
     }
 
     // Get total Orchestrator count for context
-    const totalVPCount = await prisma.vP.count({
+    const totalOrchestratorCount = await prisma.orchestrator.count({
       where: {
         organizationId: access.workspace.organizationId,
         ...(query.discipline && { discipline: query.discipline }),
@@ -226,8 +226,8 @@ export async function GET(
       },
       rankings: filteredComparison.map((orchestrator) => ({
         rank: orchestrator.rank,
-        vpId: orchestrator.vpId,
-        vpName: orchestrator.vpName,
+        orchestratorId: orchestrator.orchestratorId,
+        orchestratorName: orchestrator.orchestratorName,
         discipline: orchestrator.discipline,
         role: orchestrator.role,
         metricValue: Math.round(orchestrator.metricValue * 100) / 100,
@@ -235,8 +235,8 @@ export async function GET(
         trend: orchestrator.trend,
       })),
       summary: {
-        totalVPs: totalVPCount,
-        rankedVPs: filteredComparison.length,
+        totalOrchestrators: totalOrchestratorCount,
+        rankedOrchestrators: filteredComparison.length,
         metric: query.metric,
         avgValue: Math.round(avgMetricValue * 100) / 100,
         maxValue: Math.round(maxMetricValue * 100) / 100,
@@ -251,7 +251,7 @@ export async function GET(
     } else {
       const topPerformer = filteredComparison[0];
       response.insights.push(
-        `Top performer: ${topPerformer.vpName} (${topPerformer.discipline}) with ${Math.round(topPerformer.metricValue * 100) / 100}`,
+        `Top performer: ${topPerformer.orchestratorName} (${topPerformer.discipline}) with ${Math.round(topPerformer.metricValue * 100) / 100}`,
       );
 
       if (filteredComparison.length >= 3) {

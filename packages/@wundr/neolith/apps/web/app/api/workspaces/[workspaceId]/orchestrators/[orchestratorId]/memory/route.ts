@@ -40,7 +40,7 @@ interface RouteContext {
 /**
  * Helper to verify Orchestrator access
  */
-async function verifyVPAccess(
+async function verifyOrchestratorAccess(
   workspaceId: string,
   orchestratorId: string,
   userId: string,
@@ -58,7 +58,7 @@ async function verifyVPAccess(
   }
 
   // Verify Orchestrator exists
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
     },
@@ -117,7 +117,7 @@ export async function GET(
     const { workspaceId, orchestratorId } = resolvedParams;
 
     // Verify access
-    const access = await verifyVPAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!access.allowed) {
       return NextResponse.json(
         createErrorResponse(
@@ -159,8 +159,8 @@ export async function GET(
     const skip = (filters.page - 1) * filters.limit;
 
     // Build where clause
-    const where: Prisma.vPMemoryWhereInput = {
-      vpId: orchestratorId,
+    const where: Prisma.orchestratorMemoryWhereInput = {
+      orchestratorId: orchestratorId,
       ...(filters.memoryType && {
         memoryType: Array.isArray(filters.memoryType)
           ? { in: filters.memoryType }
@@ -180,19 +180,19 @@ export async function GET(
     };
 
     // Build order by
-    const orderBy: Prisma.vPMemoryOrderByWithRelationInput = {
+    const orderBy: Prisma.orchestratorMemoryOrderByWithRelationInput = {
       [filters.sortBy]: filters.sortOrder,
     };
 
     // Fetch memories with count
     const [memories, totalCount] = await Promise.all([
-      prisma.vPMemory.findMany({
+      prisma.orchestratorMemory.findMany({
         where,
         orderBy,
         skip,
         take: filters.limit,
       }),
-      prisma.vPMemory.count({ where }),
+      prisma.orchestratorMemory.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -250,7 +250,7 @@ export async function POST(
     const { workspaceId, orchestratorId } = resolvedParams;
 
     // Verify access
-    const access = await verifyVPAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!access.allowed) {
       return NextResponse.json(
         createErrorResponse(

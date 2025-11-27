@@ -1,7 +1,7 @@
 /**
  * Task Assignment API Routes
  *
- * Handles assigning tasks to VPs or users.
+ * Handles assigning tasks to Orchestrators or users.
  *
  * Routes:
  * - POST /api/workspaces/[workspaceId]/tasks/[taskId]/assign - Assign task to Orchestrator or user
@@ -22,13 +22,13 @@ import { assignTaskSchema, BACKLOG_ERROR_CODES } from '@/lib/validations/task-ba
 /**
  * POST /api/workspaces/[workspaceId]/tasks/[taskId]/assign
  *
- * Assign a task to a Orchestrator or user. Validates that the assignee exists and
+ * Assign a task to an Orchestrator or user. Validates that the assignee exists and
  * is accessible within the workspace. Logs the assignment change.
  *
  * Request body:
  * {
  *   "assigneeId": "user_123",
- *   "assigneeType": "VP" | "USER",
+ *   "assigneeType": "ORCHESTRATOR" | "USER",
  *   "notes": "Assignment reason",
  *   "metadata": { ... }
  * }
@@ -43,9 +43,9 @@ import { assignTaskSchema, BACKLOG_ERROR_CODES } from '@/lib/validations/task-ba
  * Content-Type: application/json
  *
  * {
- *   "assigneeId": "vp_789",
- *   "assigneeType": "VP",
- *   "notes": "VP has relevant expertise"
+ *   "assigneeId": "orch_789",
+ *   "assigneeType": "ORCHESTRATOR",
+ *   "notes": "Orchestrator has relevant expertise"
  * }
  * ```
  */
@@ -149,9 +149,9 @@ export async function POST(
     // Verify assignee exists and is valid
     let assigneeUserId: string;
 
-    if (input.assigneeType === 'VP') {
+    if (input.assigneeType === 'ORCHESTRATOR') {
       // Lookup Orchestrator and get their user ID
-      const orchestrator = await prisma.vP.findFirst({
+      const orchestrator = await prisma.orchestrator.findFirst({
         where: {
           id: input.assigneeId,
         },
@@ -163,22 +163,22 @@ export async function POST(
         },
       });
 
-      if (!vp) {
+      if (!orchestrator) {
         return NextResponse.json(
-          createErrorResponse('VP not found', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+          createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
           { status: 404 },
         );
       }
 
       // Orchestrator can be workspace-specific or organization-wide
-      if (vp.workspaceId && vp.workspaceId !== workspaceId) {
+      if (orchestrator.workspaceId && orchestrator.workspaceId !== workspaceId) {
         return NextResponse.json(
-          createErrorResponse('VP not found in this workspace', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+          createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
           { status: 404 },
         );
       }
 
-      assigneeUserId = vp.userId;
+      assigneeUserId = orchestrator.userId;
     } else {
       // Verify user exists and is a member of the workspace
       const user = await prisma.user.findUnique({
@@ -240,7 +240,7 @@ export async function POST(
         } as Prisma.InputJsonValue,
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,

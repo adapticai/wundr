@@ -114,7 +114,7 @@ export async function GET(
     }
 
     // Verify Orchestrator exists and belongs to this workspace/organization
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: workspace.organizationId,
@@ -382,7 +382,7 @@ export async function POST(
       );
     }
 
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: workspace.organizationId,

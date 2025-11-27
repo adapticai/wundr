@@ -56,16 +56,16 @@ vi.mock('@neolith/core', () => ({
       tokenType: 'Bearer',
       scopes: ['messages:read', 'messages:write'],
       daemonId: 'daemon-1',
-      vpId: 'orchestrator-1',
+      orchestratorId: 'orchestrator-1',
     }),
     verifyAccessToken: vi.fn().mockResolvedValue({
       token: 'test-token',
       type: 'access',
       expiresAt: new Date(Date.now() + 3600000),
       daemonId: 'daemon-1',
-      vpId: 'orchestrator-1',
+      orchestratorId: 'orchestrator-1',
       workspaceId: 'ws-1',
-      scopes: ['messages:read', 'messages:write', 'presence:write', 'vp:status', 'vp:config'],
+      scopes: ['messages:read', 'messages:write', 'presence:write', 'orchestrator:status', 'orchestrator:config'],
     }),
     refreshAccessToken: vi.fn().mockResolvedValue({
       accessToken: 'new-access-token',
@@ -84,9 +84,9 @@ vi.mock('@neolith/core', () => ({
     joinChannel: vi.fn(),
     leaveChannel: vi.fn(),
     updatePresence: vi.fn(),
-    updateVPStatus: vi.fn(),
+    updateOrchestratorStatus: vi.fn(),
     getConfig: vi.fn().mockResolvedValue({
-      vpId: 'orchestrator-1',
+      orchestratorId: 'orchestrator-1',
       workspaceId: 'ws-1',
       settings: { heartbeatIntervalMs: 30000 },
       features: { messaging: true },
@@ -186,7 +186,7 @@ describe('Daemon API Routes', () => {
         },
         body: JSON.stringify({
           channelId: 'ch-1',
-          content: 'Hello from VP',
+          content: 'Hello from Orchestrator',
         }),
       });
 
@@ -249,7 +249,7 @@ describe('Daemon API Routes', () => {
       expect(response.status).toBe(200);
 
       const data = await response.json();
-      expect(data.vpId).toBeDefined();
+      expect(data.orchestratorId).toBeDefined();
       expect(data.features).toBeDefined();
     });
   });
@@ -264,7 +264,7 @@ describe('Daemon API Routes', () => {
           authorization: 'Bearer test-token',
         },
         body: JSON.stringify({
-          vpId: 'orchestrator-1',
+          orchestratorId: 'orchestrator-1',
           apiKey: 'gns_test123',
           metrics: {
             cpuUsage: 45,

@@ -6,7 +6,7 @@ import type { OrgGenerationResponse } from '@/lib/validations/org-genesis';
  * Organization Chart Visualization Component
  *
  * Displays the generated organization structure as a hierarchical tree chart.
- * Shows VPs, their disciplines, and agent counts.
+ * Shows Orchestrators, their disciplines, and agent counts.
  */
 interface OrgChartVisualizationProps {
   orgData: OrgGenerationResponse;
@@ -15,8 +15,8 @@ interface OrgChartVisualizationProps {
 export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
   const { manifest, orchestrators, disciplines, agents } = orgData;
 
-  // Group disciplines by VP
-  const disciplinesByVP = disciplines.reduce(
+  // Group disciplines by Orchestrator
+  const disciplinesByOrchestrator = disciplines.reduce(
     (acc, discipline) => {
       if (!acc[discipline.orchestratorId]) {
         acc[discipline.orchestratorId] = [];
@@ -49,34 +49,34 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
         <div className="h-8 w-0.5 bg-border" />
       </div>
 
-      {/* VPs and Disciplines */}
+      {/* Orchestrators and Disciplines */}
       <div className="space-y-8">
-        {vps.map((vp, vpIndex) => {
-          const vpDisciplines = disciplinesByVP[vp.id] || [];
+        {orchestrators.map((orchestrator, orchestratorIndex) => {
+          const orchestratorDisciplines = disciplinesByOrchestrator[orchestrator.id] || [];
 
           return (
-            <div key={vp.id} className="relative">
+            <div key={orchestrator.id} className="relative">
               {/* OrchestratorNode */}
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                    VP
+                    AI
                   </div>
                 </div>
 
                 <div className="flex-1 rounded-lg border bg-card p-4">
-                  <h4 className="font-semibold">{vp.title}</h4>
-                  <p className="text-sm text-muted-foreground">{vp.name}</p>
+                  <h4 className="font-semibold">{orchestrator.title}</h4>
+                  <p className="text-sm text-muted-foreground">{orchestrator.name}</p>
 
                   {/* Disciplines under this Orchestrator */}
-                  {vpDisciplines.length > 0 && (
+                  {orchestratorDisciplines.length > 0 && (
                     <div className="mt-4 space-y-3">
                       <div className="text-xs font-medium text-muted-foreground">
-                        DISCIPLINES ({vpDisciplines.length})
+                        DISCIPLINES ({orchestratorDisciplines.length})
                       </div>
 
                       <div className="grid gap-2 sm:grid-cols-2">
-                        {vpDisciplines.map((discipline) => {
+                        {orchestratorDisciplines.map((discipline) => {
                           const agentCount = agentsByDiscipline[discipline.id] || 0;
 
                           return (
@@ -128,13 +128,13 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
                   )}
 
                   {/* KPIs */}
-                  {vp.kpis.length > 0 && (
+                  {orchestrator.kpis.length > 0 && (
                     <div className="mt-4 space-y-2">
                       <div className="text-xs font-medium text-muted-foreground">
                         KEY PERFORMANCE INDICATORS
                       </div>
                       <ul className="space-y-1">
-                        {vp.kpis.slice(0, 3).map((kpi, i) => (
+                        {orchestrator.kpis.slice(0, 3).map((kpi, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm">
                             <CheckIcon className="h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400 mt-0.5" />
                             <span className="text-muted-foreground">{kpi}</span>
@@ -147,7 +147,7 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
               </div>
 
               {/* Connecting line to next Orchestrator */}
-              {vpIndex < orchestrators.length - 1 && (
+              {orchestratorIndex < orchestrators.length - 1 && (
                 <div className="ml-5 h-6 w-0.5 bg-border" />
               )}
             </div>
@@ -158,8 +158,8 @@ export function OrgChartVisualization({ orgData }: OrgChartVisualizationProps) {
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-4 rounded-lg border bg-muted/50 p-4">
         <div className="text-center">
-          <div className="text-2xl font-bold text-primary">{vps.length}</div>
-          <div className="text-xs text-muted-foreground">Vice Presidents</div>
+          <div className="text-2xl font-bold text-primary">{orchestrators.length}</div>
+          <div className="text-xs text-muted-foreground">Orchestrators</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-primary">{disciplines.length}</div>

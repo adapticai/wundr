@@ -53,7 +53,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ orchestratorId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -67,7 +67,7 @@ export async function GET(
 
     // Get OrchestratorID from params
     const resolvedParams = await params;
-    const orchestratorId = resolvedParams.id;
+    const orchestratorId = resolvedParams.orchestratorId;
 
     // Validate OrchestratorID format
     if (!orchestratorId || orchestratorId.length === 0) {
@@ -78,14 +78,14 @@ export async function GET(
     }
 
     // Verify Orchestrator exists
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: { id: true, workspaceId: true, userId: true },
     });
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -140,7 +140,7 @@ export async function GET(
 
     // Build where clause
     const where: Prisma.taskWhereInput = {
-      vpId: orchestratorId,
+      orchestratorId: orchestratorId,
       ...(statusArray && { status: { in: statusArray as TaskStatus[] } }),
       ...(priorityArray && { priority: { in: priorityArray as TaskPriority[] } }),
       ...(!filters.includeCompleted && {
@@ -191,7 +191,7 @@ export async function GET(
     const hasPreviousPage = filters.page > 1;
 
     // Calculate metrics for this backlog
-    const metricsWhere: Prisma.taskWhereInput = { vpId: orchestratorId };
+    const metricsWhere: Prisma.taskWhereInput = { orchestratorId: orchestratorId };
     const [totalTasks, todoCount, inProgressCount, blockedCount, doneCount] = await Promise.all([
       prisma.task.count({ where: metricsWhere }),
       prisma.task.count({ where: { ...metricsWhere, status: 'TODO' } }),
@@ -270,7 +270,7 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ orchestratorId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -284,7 +284,7 @@ export async function POST(
 
     // Get OrchestratorID from params
     const resolvedParams = await params;
-    const orchestratorId = resolvedParams.id;
+    const orchestratorId = resolvedParams.orchestratorId;
 
     // Validate OrchestratorID format
     if (!orchestratorId || orchestratorId.length === 0) {
@@ -321,14 +321,14 @@ export async function POST(
     const input: CreateBacklogItemInput = parseResult.data;
 
     // Verify Orchestrator exists and get workspace context
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: { id: true, workspaceId: true, userId: true },
     });
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -381,7 +381,7 @@ export async function POST(
         dueDate: input.dueDate ? new Date(input.dueDate) : null,
         tags: input.tags,
         metadata: metadata as Prisma.InputJsonValue,
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         workspaceId: orchestrator.workspaceId!,
         createdById: session.user.id,
         assignedToId: input.assignedToId,
@@ -390,7 +390,7 @@ export async function POST(
         workspace: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true, email: true } },
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,

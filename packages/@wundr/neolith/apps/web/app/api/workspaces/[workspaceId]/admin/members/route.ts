@@ -128,7 +128,7 @@ export async function GET(
               email: true,
               displayName: true,
               avatarUrl: true,
-              isVP: true,
+              isOrchestrator: true,
               status: true,
             },
           },
@@ -167,7 +167,7 @@ export async function GET(
           email: m.user.email,
           displayName: m.user.displayName,
           avatarUrl: m.user.avatarUrl,
-          isVP: m.user.isVP,
+          isOrchestrator: m.user.isOrchestrator,
         },
         role: m.role,
         roleId: null, // Would be populated from custom roles

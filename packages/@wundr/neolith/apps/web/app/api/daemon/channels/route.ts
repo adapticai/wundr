@@ -31,7 +31,7 @@ const CHANNEL_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -86,15 +86,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get Orchestrator user ID
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: {
         userId: true,
         organizationId: true,
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: CHANNEL_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Get channels where Orchestrator is a member
     const memberships = await prisma.channelMember.findMany({
       where: {
-        userId: vp.userId,
+        userId: orchestrator.userId,
       },
       include: {
         channel: {

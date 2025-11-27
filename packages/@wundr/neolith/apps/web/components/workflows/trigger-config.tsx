@@ -612,13 +612,12 @@ function MentionConfig({ mention, onChange }: MentionConfigProps) {
           onChange={(e) =>
             onChange({
               ...mention,
-              orchestratorIds: e.target.value
-              orchestratorIdplit(',')
+              orchestratorIds: e.target.value.split(',')
                 .map((s) => s.trim())
                 .filter(Boolean),
             })
           }
-          placeholder="VP IDs, comma-separated"
+          placeholder="Orchestrator IDs, comma-separated"
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
       </div>

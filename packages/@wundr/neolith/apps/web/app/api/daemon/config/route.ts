@@ -24,7 +24,7 @@ const JWT_SECRET = process.env.DAEMON_JWT_SECRET || 'daemon-secret-change-in-pro
  */
 const CONFIG_ERROR_CODES = {
   UNAUTHORIZED: 'UNAUTHORIZED',
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
@@ -32,7 +32,7 @@ const CONFIG_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -88,8 +88,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get Orchestrator with full details
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       include: {
         user: {
           select: {
@@ -113,33 +113,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
-        { error: 'VP not found', code: CONFIG_ERROR_CODES.VP_NOT_FOUND },
+        { error: 'Orchestrator not found', code: CONFIG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND },
         { status: 404 },
       );
     }
 
     // Parse capabilities (remove sensitive data like API key hash)
-    const capabilities = (vp.capabilities as Record<string, unknown>) || {};
+    const capabilities = (orchestrator.capabilities as Record<string, unknown>) || {};
     const { apiKeyHash: _removed, ...safeCapabilities } = capabilities;
 
     // Build configuration response
     const config = {
-      vp: {
-        id: vp.id,
-        discipline: vp.discipline,
-        role: vp.role,
-        status: vp.status,
-        daemonEndpoint: vp.daemonEndpoint,
-        createdAt: vp.createdAt,
-        updatedAt: vp.updatedAt,
+      orchestrator: {
+        id: orchestrator.id,
+        discipline: orchestrator.discipline,
+        role: orchestrator.role,
+        status: orchestrator.status,
+        daemonEndpoint: orchestrator.daemonEndpoint,
+        createdAt: orchestrator.createdAt,
+        updatedAt: orchestrator.updatedAt,
       },
-      user: vp.user,
+      user: orchestrator.user,
       organization: {
-        id: vp.organization.id,
-        name: vp.organization.name,
-        slug: vp.organization.slug,
+        id: orchestrator.organization.id,
+        name: orchestrator.organization.name,
+        slug: orchestrator.organization.slug,
       },
       capabilities: safeCapabilities,
       charter: safeCapabilities.charter || null,

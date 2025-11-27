@@ -10,30 +10,30 @@ import { cn } from '@/lib/utils';
 
 import type { Orchestrator } from '@/types/orchestrator';
 
-interface VPTask {
+interface OrchestratorTask {
   id: string;
   title: string;
   progress: number;
   estimatedMinutes: number;
 }
 
-interface VPPresenceTooltipProps {
-  vp: VP;
-  currentTask?: VPTask | null;
+interface OrchestratorPresenceTooltipProps {
+  orchestrator: Orchestrator;
+  currentTask?: OrchestratorTask | null;
   children: React.ReactNode;
   workspaceId?: string;
   className?: string;
 }
 
-export function VPPresenceTooltip({
-  vp,
+export function OrchestratorPresenceTooltip({
+  orchestrator,
   currentTask,
   children,
   workspaceId,
   className,
-}: VPPresenceTooltipProps) {
+}: OrchestratorPresenceTooltipProps) {
   const hasTask = currentTask !== null && currentTask !== undefined;
-  const initials = vp.title
+  const initials = orchestrator.title
     .split(' ')
     .map((n) => n[0])
     .join('')
@@ -49,7 +49,7 @@ export function VPPresenceTooltip({
           <div className="flex items-start gap-3">
             <div className="relative">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={vp.avatarUrl || undefined} alt={vp.title} />
+                <AvatarImage src={orchestrator.avatarUrl || undefined} alt={orchestrator.title} />
                 <AvatarFallback className="bg-primary/10 text-primary">
                   {initials}
                 </AvatarFallback>
@@ -60,21 +60,21 @@ export function VPPresenceTooltip({
             </div>
 
             <div className="flex-1 space-y-1">
-              <h4 className="text-sm font-semibold leading-none">{vp.title}</h4>
-              {vp.discipline && (
-                <p className="text-xs text-muted-foreground">{vp.discipline}</p>
+              <h4 className="text-sm font-semibold leading-none">{orchestrator.title}</h4>
+              {orchestrator.discipline && (
+                <p className="text-xs text-muted-foreground">{orchestrator.discipline}</p>
               )}
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span
                   className={cn(
                     'inline-flex h-2 w-2 rounded-full',
-                    vp.status === 'ONLINE' && 'bg-green-500',
-                    vp.status === 'BUSY' && 'bg-yellow-500',
-                    vp.status === 'AWAY' && 'bg-orange-500',
-                    vp.status === 'OFFLINE' && 'bg-gray-400',
+                    orchestrator.status === 'ONLINE' && 'bg-green-500',
+                    orchestrator.status === 'BUSY' && 'bg-yellow-500',
+                    orchestrator.status === 'AWAY' && 'bg-orange-500',
+                    orchestrator.status === 'OFFLINE' && 'bg-gray-400',
                   )}
                 />
-                <span className="capitalize">{vp.status.toLowerCase()}</span>
+                <span className="capitalize">{orchestrator.status.toLowerCase()}</span>
               </div>
             </div>
           </div>
@@ -129,7 +129,7 @@ export function VPPresenceTooltip({
                 No active task
               </p>
               <p className="text-xs text-muted-foreground">
-                {vp.status === 'ONLINE' ? 'Ready for assignment' : 'Currently unavailable'}
+                {orchestrator.status === 'ONLINE' ? 'Ready for assignment' : 'Currently unavailable'}
               </p>
             </div>
           )}
@@ -138,16 +138,16 @@ export function VPPresenceTooltip({
           <div className="flex items-center justify-between border-t pt-2 text-xs">
             <div className="flex flex-col">
               <span className="text-muted-foreground">Messages</span>
-              <span className="font-medium">{vp.messageCount.toLocaleString()}</span>
+              <span className="font-medium">{orchestrator.messageCount.toLocaleString()}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground">Tasks</span>
-              <span className="font-medium">{vp.agentCount}</span>
+              <span className="font-medium">{orchestrator.agentCount}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground">Last Active</span>
               <span className="font-medium">
-                {vp.lastActivityAt ? formatRelativeTime(new Date(vp.lastActivityAt)) : 'Never'}
+                {orchestrator.lastActivityAt ? formatRelativeTime(new Date(orchestrator.lastActivityAt)) : 'Never'}
               </span>
             </div>
           </div>

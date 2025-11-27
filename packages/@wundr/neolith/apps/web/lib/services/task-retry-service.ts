@@ -181,7 +181,7 @@ export async function getTasksReadyForRetry(orchestratorId?: string, workspaceId
   };
 
   if (orchestratorId) {
-    where.orchestratorIdestorchestratorIdrId = orchestratorId;
+    where.orchestratorId = orchestratorId;
   }
   if (workspaceId) {
     where.workspaceId = workspaceId;

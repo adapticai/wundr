@@ -22,7 +22,7 @@ export type ActivityType = 'message' | 'task' | 'workflow' | 'member' | 'file' |
 export interface MemberStats {
   total: number;
   activeToday: number;
-  vpCount: number;
+  orchestratorCount: number;
   humanCount: number;
 }
 
@@ -114,14 +114,14 @@ export interface DashboardStatsResponse {
 }
 
 /**
- * Actor information (user or VP)
+ * Actor information (user or Orchestrator)
  */
 export interface ActivityActor {
   id: string;
   name: string | null;
   displayName: string | null;
   avatarUrl: string | null;
-  isVP: boolean;
+  isOrchestrator: boolean;
   email?: string | null;
 }
 

@@ -352,7 +352,7 @@ async function estimateRecordCount(
   }
 
   if (type === 'all' || type === 'vps') {
-    count += await prisma.vP.count({
+    count += await prisma.orchestrator.count({
       where: { workspaceId, ...dateFilter },
     });
   }
@@ -469,7 +469,7 @@ async function fetchExportData(
 
   // Export VPs
   if (shouldExportAll || type === 'vps') {
-    exportData.orchestrators = await prisma.vP.findMany({
+    exportData.orchestrators = await prisma.orchestrator.findMany({
       where: { workspaceId, ...dateFilter },
       select: {
         id: true,

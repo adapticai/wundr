@@ -16,7 +16,7 @@ import { z } from 'zod';
 /**
  * Organization hierarchy node type enum
  */
-export const orgHierarchyNodeTypeEnum = z.enum(['workspace', 'discipline', 'vp']);
+export const orgHierarchyNodeTypeEnum = z.enum(['workspace', 'discipline', 'vp', 'orchestrator']);
 export type OrgHierarchyNodeType = z.infer<typeof orgHierarchyNodeTypeEnum>;
 
 /**
@@ -60,6 +60,9 @@ export const vpNodeDataSchema = z.object({
 
 export type VPNodeData = z.infer<typeof vpNodeDataSchema>;
 
+/** Alias for VPNodeData using Orchestrator terminology */
+export type OrchestratorNodeData = VPNodeData;
+
 /**
  * Schema for workspace node data within the hierarchy
  */
@@ -81,11 +84,11 @@ export type WorkspaceNodeData = z.infer<typeof workspaceNodeDataSchema>;
  */
 export const orgHierarchyNodeSchema: z.ZodType<{
   id: string;
-  type: 'workspace' | 'discipline' | 'vp';
+  type: 'workspace' | 'discipline' | 'vp' | 'orchestrator';
   name: string;
   children?: Array<{
     id: string;
-    type: 'workspace' | 'discipline' | 'vp';
+    type: 'workspace' | 'discipline' | 'vp' | 'orchestrator';
     name: string;
     children?: unknown[];
     data?: VPNodeData | WorkspaceNodeData;
@@ -116,11 +119,11 @@ export type OrgHierarchyNode = z.infer<typeof orgHierarchyNodeSchema>;
  * Schema for organization hierarchy statistics
  */
 export const orgHierarchyStatsSchema = z.object({
-  /** Total number of VPs in organization */
-  totalVPs: z.number().int().nonnegative(),
+  /** Total number of Orchestrators in organization */
+  totalOrchestrators: z.number().int().nonnegative(),
 
-  /** Number of online VPs */
-  onlineVPs: z.number().int().nonnegative(),
+  /** Number of online Orchestrators */
+  onlineOrchestrators: z.number().int().nonnegative(),
 
   /** Total number of workspaces */
   totalWorkspaces: z.number().int().nonnegative(),

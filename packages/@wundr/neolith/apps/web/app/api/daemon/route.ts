@@ -47,7 +47,7 @@ const daemonInfoSchema = z.object({
 });
 
 const registrationSchema = z.object({
-  vpId: z.string().min(1, 'VP ID is required'),
+  orchestratorId: z.string().min(1, 'Orchestrator ID is required'),
   organizationId: z.string().min(1, 'Organization ID is required'),
   daemonInfo: daemonInfoSchema,
   apiKey: z.string().min(1, 'API key is required'),
@@ -60,7 +60,7 @@ const registrationSchema = z.object({
 const ERROR_CODES = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   UNAUTHORIZED: 'UNAUTHORIZED',
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   DAEMON_ALREADY_REGISTERED: 'DAEMON_ALREADY_REGISTERED',
   ORGANIZATION_NOT_FOUND: 'ORGANIZATION_NOT_FOUND',
   FORBIDDEN: 'FORBIDDEN',
@@ -92,7 +92,7 @@ function createErrorResponse(
  * Verify daemon authentication token
  */
 async function verifyDaemonToken(request: NextRequest): Promise<{
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
 }> {
@@ -103,7 +103,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<{
 
   const token = authHeader.slice(7);
   const decoded = jwt.verify(token, JWT_SECRET) as {
-    vpId: string;
+    orchestratorId: string;
     daemonId: string;
     scopes: string[];
     type: string;
@@ -114,7 +114,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<{
   }
 
   return {
-    vpId: decoded.vpId,
+    orchestratorId: decoded.orchestratorId,
     daemonId: decoded.daemonId,
     scopes: decoded.scopes,
   };
@@ -127,7 +127,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<{
 /**
  * POST /api/daemon
  *
- * Register a new daemon instance for a VP.
+ * Register a new daemon instance for an Orchestrator.
  * This is the primary registration endpoint that validates credentials,
  * stores daemon information, and returns configuration for the daemon.
  *
@@ -140,7 +140,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<{
  * Content-Type: application/json
  *
  * {
- *   "vpId": "vp_123",
+ *   "orchestratorId": "vp_123",
  *   "organizationId": "org_456",
  *   "apiKey": "vp_abc123_xyz789",
  *   "daemonInfo": {
@@ -178,11 +178,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { vpId, organizationId, apiKey, daemonInfo } = parseResult.data;
+    const { orchestratorId, organizationId, apiKey, daemonInfo } = parseResult.data;
 
     // Verify Orchestrator exists and belongs to organization
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: orchestratorId },
       select: {
         id: true,
         organizationId: true,
@@ -191,16 +191,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('VP not found', ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
 
-    if (vp.organizationId !== organizationId) {
+    if (orchestrator.organizationId !== organizationId) {
       return NextResponse.json(
-        createErrorResponse('VP does not belong to organization', ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Orchestrator does not belong to organization', ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
@@ -215,13 +215,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check if daemon already registered
     try {
-      const existingDaemon = await redis.get(`daemon:heartbeat:${vpId}`);
+      const existingDaemon = await redis.get(`daemon:heartbeat:${orchestratorId}`);
       if (existingDaemon) {
         const existing = JSON.parse(existingDaemon);
         if (existing.daemonId !== daemonInfo.instanceId) {
           return NextResponse.json(
             createErrorResponse(
-              'Another daemon instance already registered for this VP',
+              'Another daemon instance already registered for this Orchestrator',
               ERROR_CODES.DAEMON_ALREADY_REGISTERED,
               { existingInstanceId: existing.daemonId },
             ),
@@ -238,13 +238,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Store daemon registration in Redis
     try {
-      const daemonKey = `daemon:registration:${vpId}`;
+      const daemonKey = `daemon:registration:${orchestratorId}`;
       await redis.setex(
         daemonKey,
         7 * 24 * 60 * 60, // 7 days
         JSON.stringify({
           ...daemonInfo,
-          vpId,
+          orchestratorId,
           organizationId,
           registeredAt,
         }),
@@ -255,8 +255,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update Orchestrator status to indicate daemon is registered
-    await prisma.vP.update({
-      where: { id: vpId },
+    await prisma.orchestrator.update({
+      where: { id: orchestratorId },
       data: {
         status: 'ONLINE',
       },
@@ -265,7 +265,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const response: DaemonRegistrationResponse = {
       success: true,
       data: {
-        vpId,
+        orchestratorId,
         organizationId,
         registeredAt,
         daemonInfo: {
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           registeredAt,
         },
         heartbeatInterval: HEARTBEAT_INTERVAL_MS,
-        healthCheckEndpoint: `/api/daemon/health/${vpId}`,
+        healthCheckEndpoint: `/api/daemon/health/${orchestratorId}`,
       },
       message: 'Daemon registered successfully',
     };
@@ -286,7 +286,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (error.message.includes('already registered')) {
         return NextResponse.json(
           createErrorResponse(
-            'Daemon already registered for this VP',
+            'Daemon already registered for this Orchestrator',
             ERROR_CODES.DAEMON_ALREADY_REGISTERED,
           ),
           { status: 409 },
@@ -319,7 +319,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify authentication
-    let token: { vpId: string; daemonId: string; scopes: string[] };
+    let token: { orchestratorId: string; daemonId: string; scopes: string[] };
     try {
       token = await verifyDaemonToken(request);
     } catch {
@@ -331,19 +331,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Get daemon status from Redis
     let status: DaemonStatus = {
-      vpId: token.vpId,
+      orchestratorId: token.orchestratorId,
       daemonId: token.daemonId,
       status: 'offline',
     };
 
     try {
-      const heartbeatKey = `daemon:heartbeat:${token.vpId}`;
+      const heartbeatKey = `daemon:heartbeat:${token.orchestratorId}`;
       const heartbeatData = await redis.get(heartbeatKey);
 
       if (heartbeatData) {
         const heartbeat = JSON.parse(heartbeatData);
         status = {
-          vpId: token.vpId,
+          orchestratorId: token.orchestratorId,
           daemonId: token.daemonId,
           status: 'online',
           lastHeartbeat: heartbeat.receivedAt,
@@ -398,7 +398,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify authentication
-    let token: { vpId: string; daemonId: string; scopes: string[] };
+    let token: { orchestratorId: string; daemonId: string; scopes: string[] };
     try {
       token = await verifyDaemonToken(request);
     } catch {
@@ -411,10 +411,10 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     // Remove daemon data from Redis
     try {
       await Promise.all([
-        redis.del(`daemon:registration:${token.vpId}`),
-        redis.del(`daemon:heartbeat:${token.vpId}`),
+        redis.del(`daemon:registration:${token.orchestratorId}`),
+        redis.del(`daemon:heartbeat:${token.orchestratorId}`),
         redis.del(`daemon:session:${token.daemonId}`),
-        redis.del(`daemon:metrics:${token.vpId}`),
+        redis.del(`daemon:metrics:${token.orchestratorId}`),
       ]);
     } catch (redisError) {
       console.error('Redis cleanup error:', redisError);
@@ -422,8 +422,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update Orchestrator status
-    await prisma.vP.update({
-      where: { id: token.vpId },
+    await prisma.orchestrator.update({
+      where: { id: token.orchestratorId },
       data: {
         status: 'OFFLINE',
       },

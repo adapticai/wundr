@@ -23,7 +23,7 @@ export type ActionType =
   | 'http_request'
   | 'wait'
   | 'condition'
-  | 'notify_vp';
+  | 'notify_orchestrator';
 
 export interface TriggerConfig {
   type: TriggerType;
@@ -49,7 +49,7 @@ export interface TriggerConfig {
   };
   mention?: {
     userIds?: string[];
-    vpIds?: string[];
+    orchestratorIds?: string[];
   };
   webhook?: {
     secret?: string;
@@ -88,8 +88,8 @@ export interface ActionConfig {
     };
     thenActions?: string[];
     elseActions?: string[];
-    // notify_vp
-    vpId?: string;
+    // notify_orchestrator
+    orchestratorId?: string;
   };
   errorHandling?: {
     onError: 'stop' | 'continue' | 'retry';
@@ -297,9 +297,9 @@ export const ACTION_TYPE_CONFIG: Record<
     description: 'Branch based on a condition',
     icon: 'git-branch',
   },
-  notify_vp: {
-    label: 'Notify VP',
-    description: 'Trigger a Orchestrator agent to respond',
+  notify_orchestrator: {
+    label: 'Notify Orchestrator',
+    description: 'Trigger an Orchestrator agent to respond',
     icon: 'bot',
   },
 };
@@ -393,8 +393,8 @@ export const DEFAULT_ACTION_CONFIGS: Record<ActionType, Partial<ActionConfig['co
       value: '',
     },
   },
-  notify_vp: {
-    vpId: '',
+  notify_orchestrator: {
+    orchestratorId: '',
     message: 'Action required for: {{trigger.message.content}}',
   },
 };

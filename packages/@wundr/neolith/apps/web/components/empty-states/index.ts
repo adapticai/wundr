@@ -5,7 +5,9 @@
 
 export { EmptyDashboard } from './empty-dashboard';
 export { EmptyChannels } from './empty-channels';
-export { EmptyVPs } from './empty-vps';
+export { EmptyOrchestrators } from './empty-orchestrators';
+/** @deprecated Use EmptyOrchestrators instead */
+export { EmptyOrchestrators as EmptyVPs } from './empty-orchestrators';
 export { EmptyWorkflows } from './empty-workflows';
 export { EmptyMembers } from './empty-members';
 export { EmptyRoles } from './empty-roles';

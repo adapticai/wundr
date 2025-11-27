@@ -536,7 +536,7 @@ const DEFAULT_CONFIG: CharterRegistryConfig = {
  */
 export class CharterRegistry {
   /** Storage backend for Orchestrator charters */
-  private readonly vpStorage: IRegistryStorage<OrchestratorCharter>;
+  private readonly orchestratorStorage: IRegistryStorage<OrchestratorCharter>;
 
   /** Storage backend for Session Manager charters */
   private readonly sessionManagerStorage: IRegistryStorage<SessionManagerCharter>;

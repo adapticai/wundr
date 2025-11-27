@@ -2,7 +2,7 @@
  * OrchestratorObservability Dashboard API Route
  *
  * Provides real-time Orchestrator status dashboard data for monitoring and debugging.
- * Returns all VPs with current status, active tasks, health metrics, and recent events.
+ * Returns all Orchestrators with current status, active tasks, health metrics, and recent events.
  *
  * Routes:
  * - GET /api/workspaces/:workspaceId/orchestrators/observability - Get real-time Orchestrator status dashboard
@@ -69,7 +69,7 @@ async function verifyWorkspaceAccess(workspaceId: string, userId: string) {
  * GET /api/workspaces/:workspaceId/orchestrators/observability
  *
  * Get real-time Orchestrator status dashboard data.
- * Returns comprehensive health metrics, task status, and recent activity for all VPs.
+ * Returns comprehensive health metrics, task status, and recent activity for all Orchestrators.
  *
  * Query Parameters:
  * - timeRange: Time range for dashboard data (5m, 15m, 1h, 6h, 24h) - default: 1h
@@ -163,8 +163,8 @@ export async function GET(
     // Get Orchestrator details if requested
     const orchestratorDetails = await Promise.all(
       filteredStatuses.map(async (status) => {
-        const orchestrator = await prisma.vP.findUnique({
-          where: { id: status.vpId },
+        const orchestrator = await prisma.orchestrator.findUnique({
+          where: { id: status.orchestratorId },
           include: {
             user: {
               select: {
@@ -182,7 +182,7 @@ export async function GET(
         if (query.includeTaskDetails) {
           tasks = await prisma.task.findMany({
             where: {
-              vpId: status.vpId,
+              orchestratorId: status.orchestratorId,
               status: { in: ['TODO', 'IN_PROGRESS'] },
             },
             take: 5,
@@ -199,10 +199,10 @@ export async function GET(
         }
 
         return {
-          vpId: status.vpId,
-          vpName: orchestrator?.user.name || 'Unknown',
-          vpEmail: orchestrator?.user.email,
-          vpAvatarUrl: orchestrator?.user.avatarUrl,
+          orchestratorId: status.orchestratorId,
+          orchestratorName: orchestrator?.user.name || 'Unknown',
+          orchestratorEmail: orchestrator?.user.email,
+          orchestratorAvatarUrl: orchestrator?.user.avatarUrl,
           discipline: orchestrator?.discipline,
           role: orchestrator?.role,
           status: status.status,
@@ -224,7 +224,7 @@ export async function GET(
 
     // Calculate dashboard summary
     const summary = {
-      totalVPs: filteredStatuses.length,
+      totalOrchestrators: filteredStatuses.length,
       byStatus: {
         online: filteredStatuses.filter((s) => s.status === 'ONLINE').length,
         offline: filteredStatuses.filter((s) => s.status === 'OFFLINE').length,
@@ -244,7 +244,7 @@ export async function GET(
       },
       tasks: {
         totalActive: filteredStatuses.reduce((sum, s) => sum + s.currentTasksCount, 0),
-        avgPerVP:
+        avgPerOrchestrator:
           filteredStatuses.length > 0
             ? Math.round(
                 filteredStatuses.reduce((sum, s) => sum + s.currentTasksCount, 0) /
@@ -262,16 +262,16 @@ export async function GET(
       timestamp: new Date().toISOString(),
       summary,
       orchestrators: orchestratorDetails,
-      alerts: [] as Array<{ severity: string; message: string; vpId: string }>,
+      alerts: [] as Array<{ severity: string; message: string; orchestratorId: string }>,
     };
 
-    // Generate alerts for unhealthy VPs
+    // Generate alerts for unhealthy Orchestrators
     filteredStatuses.forEach((status) => {
       if (!status.isHealthy) {
         response.alerts.push({
           severity: status.healthScore < 40 ? 'critical' : status.healthScore < 60 ? 'high' : 'medium',
           message: `Orchestrator health degraded: ${status.issues.join(', ')}`,
-          vpId: status.vpId,
+          orchestratorId: status.orchestratorId,
         });
       }
 
@@ -279,7 +279,7 @@ export async function GET(
         response.alerts.push({
           severity: 'high',
           message: `High error rate: ${status.errorRate}%`,
-          vpId: status.vpId,
+          orchestratorId: status.orchestratorId,
         });
       }
 
@@ -287,7 +287,7 @@ export async function GET(
         response.alerts.push({
           severity: 'medium',
           message: `High task load: ${status.currentTasksCount} active tasks`,
-          vpId: status.vpId,
+          orchestratorId: status.orchestratorId,
         });
       }
     });
@@ -318,7 +318,7 @@ export async function GET(
  * Events can be Orchestrator-specific or workspace-level.
  *
  * Request Body:
- * - vpId: OrchestratorID (optional for workspace-level events)
+ * - orchestratorId: OrchestratorID (optional for workspace-level events)
  * - eventType: Event type (status_change, task_started, task_completed, task_failed, error, warning, info)
  * - message: Event message (required)
  * - severity: Event severity (info, warning, error, critical) - default: info
@@ -419,7 +419,7 @@ export async function POST(
 
     // Verify Orchestrator exists if provided
     if (input.orchestratorId) {
-      const orchestrator = await prisma.vP.findFirst({
+      const orchestrator = await prisma.orchestrator.findFirst({
         where: {
           id: input.orchestratorId,
           organizationId: access.workspace.organizationId,
@@ -444,7 +444,7 @@ export async function POST(
     const event = {
       id: `evt_${Date.now()}`,
       workspaceId,
-      vpId: input.orchestratorId,
+      orchestratorId: input.orchestratorId,
       eventType: input.eventType,
       message: input.message,
       severity: input.severity,

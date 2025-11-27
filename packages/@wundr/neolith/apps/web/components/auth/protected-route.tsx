@@ -8,20 +8,20 @@ import { useAuth } from '@/hooks/use-auth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireVP?: boolean;
+  requireOrchestrator?: boolean;
 }
 
-export function ProtectedRoute({ children, requireVP = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, isVP } = useAuth();
+export function ProtectedRoute({ children, requireOrchestrator = false }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, isOrchestrator } = useAuth();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       redirect('/login');
     }
-    if (!isLoading && requireVP && !isVP) {
+    if (!isLoading && requireOrchestrator && !isOrchestrator) {
       redirect('/unauthorized');
     }
-  }, [isLoading, isAuthenticated, requireVP, isVP]);
+  }, [isLoading, isAuthenticated, requireOrchestrator, isOrchestrator]);
 
   if (isLoading) {
     return <FullPageSpinner />;
@@ -31,7 +31,7 @@ export function ProtectedRoute({ children, requireVP = false }: ProtectedRoutePr
     return null;
   }
 
-  if (requireVP && !isVP) {
+  if (requireOrchestrator && !isOrchestrator) {
     return null;
   }
 

@@ -1,7 +1,7 @@
 /**
- * Discipline VPs API Route
+ * Discipline Orchestrators API Route
  *
- * Lists VPs belonging to a discipline.
+ * Lists Orchestrators belonging to a discipline.
  *
  * Routes:
  * - GET /api/disciplines/:id/orchestrators - Get Orchestrators in a discipline
@@ -31,11 +31,11 @@ interface RouteContext {
 /**
  * GET /api/disciplines/:id/orchestrators
  *
- * List all VPs in a discipline. Requires organization membership.
+ * List all Orchestrators in a discipline. Requires organization membership.
  *
  * @param request - Next.js request object
  * @param context - Route context containing discipline ID
- * @returns List of VPs
+ * @returns List of Orchestrators
  *
  * @example
  * ```
@@ -101,8 +101,8 @@ export async function GET(
       );
     }
 
-    // Fetch VPs in this discipline
-    const orchestrators = await prisma.vP.findMany({
+    // Fetch Orchestrators in this discipline
+    const orchestrators = await prisma.orchestrator.findMany({
       where: { disciplineId: params.id },
       include: {
         user: {
@@ -113,7 +113,7 @@ export async function GET(
             displayName: true,
             avatarUrl: true,
             status: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
       },

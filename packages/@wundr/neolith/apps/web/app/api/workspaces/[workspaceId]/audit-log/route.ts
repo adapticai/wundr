@@ -34,7 +34,7 @@ interface AuditLogEntry {
   actorId: string;
   actorName: string | null;
   actorEmail: string | null;
-  actorType: 'user' | 'vp' | 'system';
+  actorType: 'user' | 'orchestrator' | 'system';
   targetType: string | null;
   targetId: string | null;
   targetName: string | null;
@@ -74,7 +74,7 @@ interface AuditLogResponse {
   filters: {
     action?: string;
     actorId?: string;
-    actorType?: 'user' | 'vp' | 'system';
+    actorType?: 'user' | 'orchestrator' | 'system';
     startDate?: string;
     endDate?: string;
     severity?: 'info' | 'warning' | 'critical';
@@ -101,11 +101,11 @@ function getSeverity(action: string): 'info' | 'warning' | 'critical' {
 /**
  * Determine actor type from user data
  */
-function getActorType(user: { isVP: boolean } | null): 'user' | 'vp' | 'system' {
+function getActorType(user: { isOrchestrator: boolean } | null): 'user' | 'orchestrator' | 'system' {
   if (!user) {
 return 'system';
 }
-  return user.isVP ? 'vp' : 'user';
+  return user.isOrchestrator ? 'orchestrator' : 'user';
 }
 
 /**
@@ -152,7 +152,7 @@ return undefined;
  * - pageSize: Items per page (default: 50, max: 100)
  * - action: Filter by action type
  * - actorId: Filter by actor ID
- * - actorType: Filter by actor type (user/vp/system)
+ * - actorType: Filter by actor type (user/orchestrator/system)
  * - startDate: Filter by start date (ISO 8601)
  * - endDate: Filter by end date (ISO 8601)
  * - severity: Filter by severity (info/warning/critical)
@@ -264,7 +264,7 @@ export async function GET(
       createdAt: Date;
       action: string;
       userId: string | null;
-      user: { id: string; name: string | null; email: string; isVP: boolean } | null;
+      user: { id: string; name: string | null; email: string; isOrchestrator: boolean } | null;
       entityType: string | null;
       entityId: string | null;
       changes: unknown;
@@ -318,7 +318,7 @@ export async function GET(
       filters: {
         action,
         actorId,
-        actorType: actorType as 'user' | 'vp' | 'system' | undefined,
+        actorType: actorType as 'user' | 'orchestrator' | 'system' | undefined,
         startDate: startDateStr,
         endDate: endDateStr,
       },

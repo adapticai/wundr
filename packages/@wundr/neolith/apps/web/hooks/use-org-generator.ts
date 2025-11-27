@@ -48,7 +48,7 @@ export interface GeneratedWorkspace {
       id: string;
       name: string | null;
       email: string;
-      isVP: boolean;
+      isOrchestrator: boolean;
     };
   }>;
   _count?: {
@@ -64,14 +64,14 @@ export interface GenerationResult {
   data: GeneratedWorkspace;
   genesis: {
     manifestId: string;
-    vpCount: number;
+    orchestratorCount: number;
     disciplineCount: number;
     agentCount: number;
     generationTimeMs: number;
   };
   migration: {
     status: string;
-    vpMappings: number;
+    orchestratorMappings: number;
     disciplineMappings: number;
     warnings: string[];
   };

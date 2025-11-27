@@ -18,6 +18,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.679.0",
     "@aws-sdk/s3-request-presigner": "^3.679.0",
+    "@livekit/protocol": "^1.43.2",
     "@neolith/database": "workspace:*",
     "@paralleldrive/cuid2": "^2.2.2",
     "firebase-admin": "^12.7.0",
@@ -67,6 +68,8 @@
       "types": "./dist/redis/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "UNLICENSED"
 }

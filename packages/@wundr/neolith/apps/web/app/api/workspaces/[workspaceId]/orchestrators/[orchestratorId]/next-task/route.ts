@@ -1,7 +1,7 @@
 /**
  * OrchestratorNext Task Polling API Routes
  *
- * Handles intelligent task selection for VPs based on priority,
+ * Handles intelligent task selection for Orchestrators based on priority,
  * dependencies, deadlines, and Orchestrator capabilities.
  *
  * Routes:
@@ -88,7 +88,7 @@ export async function GET(
     }
 
     // Verify Orchestrator exists and belongs to workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
       },
@@ -110,7 +110,7 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -118,14 +118,14 @@ export async function GET(
     // Orchestrator can be workspace-specific or organization-wide
     if (orchestrator.workspaceId && orchestrator.workspaceId !== workspaceId) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found in this workspace', BACKLOG_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
 
     // Check user has access to workspace (or is the Orchestrator itself)
-    const isVPUser = session.user.id === orchestrator.user.id;
-    if (!isVPUser) {
+    const isOrchestratorUser = session.user.id === orchestrator.user.id;
+    if (!isOrchestratorUser) {
       const workspaceMember = await prisma.workspaceMember.findFirst({
         where: {
           workspaceId,
@@ -167,7 +167,7 @@ export async function GET(
 
     // Build base where clause
     const where: Prisma.taskWhereInput = {
-      vpId: orchestratorId,
+      orchestratorId: orchestratorId,
       workspaceId,
       status: { in: statusArray as TaskStatus[] },
       // Only unassigned or assigned to this Orchestrator
@@ -262,7 +262,7 @@ export async function GET(
 
     if (filters.capabilities && filters.capabilities.length > 0) {
       // Try to find a task that matches Orchestrator capabilities
-      const vpCapabilities = Array.isArray(orchestrator.capabilities)
+      const orchestratorCapabilities = Array.isArray(orchestrator.capabilities)
         ? orchestrator.capabilities
         : [];
 
@@ -278,7 +278,7 @@ export async function GET(
 
         // Check if Orchestrator has all required capabilities
         const hasAllCapabilities = requiredCapabilities.every((cap) =>
-          vpCapabilities.includes(cap),
+          orchestratorCapabilities.includes(cap),
         );
 
         if (hasAllCapabilities) {

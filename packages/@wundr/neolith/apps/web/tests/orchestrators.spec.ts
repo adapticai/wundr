@@ -23,11 +23,11 @@ import { expect, test } from '@playwright/test';
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 
 // Mock Orchestrator data
-const mockVPs = [
+const mockOrchestrators = [
   {
     id: 'vp_001',
     userId: 'user_001',
-    title: 'VP of Engineering',
+    title: 'Head of Engineering',
     description: 'Technical leadership and engineering excellence',
     discipline: 'Engineering',
     status: 'ONLINE',
@@ -69,7 +69,7 @@ const mockVPs = [
   {
     id: 'vp_002',
     userId: 'user_001',
-    title: 'VP of Product',
+    title: 'Head of Product',
     description: 'Product strategy and roadmap management',
     discipline: 'Product',
     status: 'BUSY',
@@ -88,7 +88,7 @@ const mockVPs = [
   {
     id: 'vp_003',
     userId: 'user_001',
-    title: 'VP of Design',
+    title: 'Head of Design',
     description: 'Design system and user experience',
     discipline: 'Design',
     status: 'OFFLINE',
@@ -106,34 +106,34 @@ const mockVPs = [
   },
 ];
 
-const mockEmptyVPs: typeof mockVPs = [];
+const mockEmptyOrchestrators: typeof mockOrchestrators = [];
 
-test.describe('VPs Page - Full Test Suite', () => {
+test.describe('Orchestrators Page - Full Test Suite', () => {
   test.beforeEach(async ({ page }) => {
     // Intercept Orchestrator list API and return mock data
-    await page.route('**/api/workspaces/**/vps*', async (route) => {
+    await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
       const url = route.request().url();
       const urlParams = new URL(url).searchParams;
       const status = urlParams.get('status');
       const discipline = urlParams.get('discipline');
       const search = urlParams.get('search');
 
-      let filteredVPs = [...mockVPs];
+      let filteredOrchestrators = [...mockOrchestrators];
 
       // Apply filters
       if (status) {
-        filteredVPs = filteredVPs.filter((vp) => vp.status === status);
+        filteredOrchestrators = filteredOrchestrators.filter((orch) => orch.status === status);
       }
       if (discipline) {
-        filteredVPs = filteredVPs.filter((vp) => vp.discipline === discipline);
+        filteredOrchestrators = filteredOrchestrators.filter((orch) => orch.discipline === discipline);
       }
       if (search) {
         const searchLower = search.toLowerCase();
-        filteredVPs = filteredVPs.filter(
-          (vp) =>
-            vp.title.toLowerCase().includes(searchLower) ||
-            vp.discipline?.toLowerCase().includes(searchLower) ||
-            vp.description?.toLowerCase().includes(searchLower),
+        filteredOrchestrators = filteredOrchestrators.filter(
+          (orch) =>
+            orch.title.toLowerCase().includes(searchLower) ||
+            orch.discipline?.toLowerCase().includes(searchLower) ||
+            orch.description?.toLowerCase().includes(searchLower),
         );
       }
 
@@ -141,23 +141,23 @@ test.describe('VPs Page - Full Test Suite', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          data: filteredVPs,
+          data: filteredOrchestrators,
           metadata: {
-            total: filteredVPs.length,
-            filtered: filteredVPs.length,
+            total: filteredOrchestrators.length,
+            filtered: filteredOrchestrators.length,
           },
         }),
       });
     });
 
-    // Navigate to VPs page (assuming workspace ID is available)
+    // Navigate to Orchestrators page (assuming workspace ID is available)
     await page.goto(BASE_URL);
-    await page.waitForURL(/\/.*\/(dashboard|vps)/, { timeout: 10000 });
+    await page.waitForURL(/\/.*\/(dashboard|orchestrators)/, { timeout: 10000 });
 
-    // Navigate to VPs page if not already there
+    // Navigate to Orchestrators page if not already there
     const currentUrl = page.url();
     if (!currentUrl.includes('/orchestrators')) {
-      const workspaceId = currentUrl.match(/\/([^\/]+)\/(dashboard|vps)/)?.[1];
+      const workspaceId = currentUrl.match(/\/([^\/]+)\/(dashboard|orchestrators)/)?.[1];
       if (workspaceId) {
         await page.goto(`${BASE_URL}/${workspaceId}/orchestrators`);
       }
@@ -167,8 +167,8 @@ test.describe('VPs Page - Full Test Suite', () => {
   });
 
   test.describe('Page Load & Basic Display', () => {
-    test('should load VPs page successfully', async ({ page }) => {
-      await expect(page).toHaveURL(/\/vps$/);
+    test('should load Orchestrators page successfully', async ({ page }) => {
+      await expect(page).toHaveURL(/\/orchestrators$/);
       await expect(page.locator('h1:has-text("Orchestrators")')).toBeVisible();
     });
 
@@ -180,7 +180,7 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
 
     test('should display Create Orchestrator button', async ({ page }) => {
-      const createButton = page.locator('button:has-text("Create VP")');
+      const createButton = page.locator('button:has-text("Create Orchestrator")');
       await expect(createButton).toBeVisible();
       await expect(createButton).toBeEnabled();
     });
@@ -193,7 +193,7 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
 
     test('should display correct stat counts', async ({ page }) => {
-      // Based on mockVPs: 1 Online, 1 Offline, 1 Busy, 0 Away
+      // Based on mockOrchestrators: 1 Online, 1 Offline, 1 Busy, 0 Away
       const statsContainer = page.locator('.grid.grid-cols-2.gap-4');
 
       // Check for presence of stats (exact values may vary based on data)
@@ -201,22 +201,22 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
   });
 
-  test.describe('VP List Display', () => {
+  test.describe('Orchestrator List Display', () => {
     test('should display Orchestrator cards when data exists', async ({ page }) => {
-      const vpCards = page.locator('[class*="grid"] > div').filter({
+      const orchestratorCards = page.locator('[class*="grid"] > div').filter({
         has: page.locator('h3'),
       });
 
-      // Should have 3 VPs from mock data
-      await expect(vpCards).toHaveCount(3);
+      // Should have 3 Orchestrators from mock data
+      await expect(orchestratorCards).toHaveCount(3);
     });
 
     test('should display Orchestrator card with correct information', async ({ page }) => {
       const firstCard = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..');
 
-      await expect(firstCard.locator('h3')).toContainText('VP of Engineering');
+      await expect(firstCard.locator('h3')).toContainText('Head of Engineering');
       await expect(firstCard.locator('text=Engineering')).toBeVisible();
       await expect(
         firstCard.locator('text=Technical leadership'),
@@ -225,7 +225,7 @@ test.describe('VPs Page - Full Test Suite', () => {
 
     test('should display Orchestrator status badge', async ({ page }) => {
       const onlineCard = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..');
       await expect(onlineCard.locator('text=Online')).toBeVisible();
     });
@@ -234,7 +234,7 @@ test.describe('VPs Page - Full Test Suite', () => {
       page,
     }) => {
       const firstCard = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..');
 
       // Should show message count
@@ -246,7 +246,7 @@ test.describe('VPs Page - Full Test Suite', () => {
 
     test('should show loading skeleton initially', async ({ page }) => {
       // Intercept and delay API
-      await page.route('**/api/workspaces/**/vps*', async (route) => {
+      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         await route.continue();
       });
@@ -262,12 +262,12 @@ test.describe('VPs Page - Full Test Suite', () => {
   test.describe('Empty State', () => {
     test.beforeEach(async ({ page }) => {
       // Override route to return empty data
-      await page.route('**/api/workspaces/**/vps*', async (route) => {
+      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
-            data: mockEmptyVPs,
+            data: mockEmptyOrchestrators,
             metadata: { total: 0, filtered: 0 },
           }),
         });
@@ -277,7 +277,7 @@ test.describe('VPs Page - Full Test Suite', () => {
       await page.waitForLoadState('networkidle');
     });
 
-    test('should display empty state when no VPs exist', async ({ page }) => {
+    test('should display empty state when no Orchestrators exist', async ({ page }) => {
       await expect(page.locator('text=No Orchestrators Yet')).toBeVisible();
       await expect(
         page.locator('text=Get started by creating'),
@@ -285,18 +285,18 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
 
     test('should show Create Orchestrator action in empty state', async ({ page }) => {
-      const createButton = page.locator('button:has-text("Create Your First VP")');
+      const createButton = page.locator('button:has-text("Create Your First Orchestrator")');
       await expect(createButton).toBeVisible();
     });
 
     test('should open create dialog from empty state', async ({ page }) => {
-      await page.locator('button:has-text("Create Your First VP")').click();
-      await expect(page.locator('h2:has-text("Create New VP")')).toBeVisible();
+      await page.locator('button:has-text("Create Your First Orchestrator")').click();
+      await expect(page.locator('h2:has-text("Create New Orchestrator")')).toBeVisible();
     });
   });
 
   test.describe('Status Filter', () => {
-    test('should filter VPs by Online status', async ({ page }) => {
+    test('should filter Orchestrators by Online status', async ({ page }) => {
       const statusSelect = page.locator('select').filter({
         has: page.locator('option:has-text("Online")'),
       });
@@ -304,13 +304,13 @@ test.describe('VPs Page - Full Test Suite', () => {
       await statusSelect.selectOption('ONLINE');
       await page.waitForLoadState('networkidle');
 
-      // Should only show 1 Online VP
-      const vpCards = page.locator('h3:has-text("VP of")');
-      await expect(vpCards).toHaveCount(1);
-      await expect(page.locator('h3:has-text("VP of Engineering")')).toBeVisible();
+      // Should only show 1 Online Orchestrator
+      const orchestratorCards = page.locator('h3:has-text("Head of")');
+      await expect(orchestratorCards).toHaveCount(1);
+      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
     });
 
-    test('should filter VPs by Busy status', async ({ page }) => {
+    test('should filter Orchestrators by Busy status', async ({ page }) => {
       const statusSelect = page.locator('select').filter({
         has: page.locator('option:has-text("Busy")'),
       });
@@ -318,11 +318,11 @@ test.describe('VPs Page - Full Test Suite', () => {
       await statusSelect.selectOption('BUSY');
       await page.waitForLoadState('networkidle');
 
-      // Should only show 1 Busy VP
-      await expect(page.locator('h3:has-text("VP of Product")')).toBeVisible();
+      // Should only show 1 Busy Orchestrator
+      await expect(page.locator('h3:has-text("Head of Product")')).toBeVisible();
     });
 
-    test('should filter VPs by Offline status', async ({ page }) => {
+    test('should filter Orchestrators by Offline status', async ({ page }) => {
       const statusSelect = page.locator('select').filter({
         has: page.locator('option:has-text("Offline")'),
       });
@@ -330,8 +330,8 @@ test.describe('VPs Page - Full Test Suite', () => {
       await statusSelect.selectOption('OFFLINE');
       await page.waitForLoadState('networkidle');
 
-      // Should only show 1 Offline VP
-      await expect(page.locator('h3:has-text("VP of Design")')).toBeVisible();
+      // Should only show 1 Offline Orchestrator
+      await expect(page.locator('h3:has-text("Head of Design")')).toBeVisible();
     });
 
     test('should show All Status by default', async ({ page }) => {
@@ -351,61 +351,61 @@ test.describe('VPs Page - Full Test Suite', () => {
       await statusSelect.selectOption('ONLINE');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('text=Showing 1 of 3 VPs')).toBeVisible();
+      await expect(page.locator('text=Showing 1 of 3 Orchestrators')).toBeVisible();
     });
   });
 
   test.describe('Search Filter', () => {
-    test('should filter VPs by name search', async ({ page }) => {
+    test('should filter Orchestrators by name search', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('Engineering');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("VP of Engineering")')).toBeVisible();
-      await expect(page.locator('h3:has-text("VP of Product")')).not.toBeVisible();
+      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
+      await expect(page.locator('h3:has-text("Head of Product")')).not.toBeVisible();
     });
 
-    test('should filter VPs by discipline search', async ({ page }) => {
+    test('should filter Orchestrators by discipline search', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('Product');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("VP of Product")')).toBeVisible();
+      await expect(page.locator('h3:has-text("Head of Product")')).toBeVisible();
     });
 
     test('should be case insensitive', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('engineering');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("VP of Engineering")')).toBeVisible();
+      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
     });
 
     test('should show empty state when search has no results', async ({
       page,
     }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
 
-      await searchInput.fill('NonexistentVP');
+      await searchInput.fill('NonexistentOrchestrator');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('text=No VPs Found')).toBeVisible();
+      await expect(page.locator('text=No Orchestrators Found')).toBeVisible();
     });
 
     test('should clear search when input is cleared', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
 
       await searchInput.fill('Engineering');
@@ -414,14 +414,14 @@ test.describe('VPs Page - Full Test Suite', () => {
       await searchInput.clear();
       await page.waitForLoadState('networkidle');
 
-      // Should show all VPs again
-      const vpCards = page.locator('h3:has-text("VP of")');
-      await expect(vpCards).toHaveCount(3);
+      // Should show all Orchestrators again
+      const orchestratorCards = page.locator('h3:has-text("Head of")');
+      await expect(orchestratorCards).toHaveCount(3);
     });
   });
 
   test.describe('Discipline Filter', () => {
-    test('should filter VPs by discipline', async ({ page }) => {
+    test('should filter Orchestrators by discipline', async ({ page }) => {
       const disciplineSelect = page.locator('select').filter({
         has: page.locator('option:has-text("Engineering")'),
       });
@@ -429,8 +429,8 @@ test.describe('VPs Page - Full Test Suite', () => {
       await disciplineSelect.selectOption('Engineering');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h3:has-text("VP of Engineering")')).toBeVisible();
-      await expect(page.locator('h3:has-text("VP of Product")')).not.toBeVisible();
+      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
+      await expect(page.locator('h3:has-text("Head of Product")')).not.toBeVisible();
     });
 
     test('should show all disciplines in dropdown', async ({ page }) => {
@@ -454,20 +454,20 @@ test.describe('VPs Page - Full Test Suite', () => {
 
       // Set search filter
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
       await searchInput.fill('Engineering');
 
       await page.waitForLoadState('networkidle');
 
       // Should only show Engineering Orchestrator that is Online
-      await expect(page.locator('h3:has-text("VP of Engineering")')).toBeVisible();
-      await expect(page.locator('text=Showing 1 of 3 VPs')).toBeVisible();
+      await expect(page.locator('h3:has-text("Head of Engineering")')).toBeVisible();
+      await expect(page.locator('text=Showing 1 of 3 Orchestrators')).toBeVisible();
     });
 
     test('should show active filter count', async ({ page }) => {
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
       await searchInput.fill('Engineering');
 
@@ -477,7 +477,7 @@ test.describe('VPs Page - Full Test Suite', () => {
     test('should clear all filters', async ({ page }) => {
       // Apply filters
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
       await searchInput.fill('Engineering');
 
@@ -489,9 +489,9 @@ test.describe('VPs Page - Full Test Suite', () => {
       // Clear filters
       await page.locator('button:has-text("Clear")').click();
 
-      // Should show all VPs
-      const vpCards = page.locator('h3:has-text("VP of")');
-      await expect(vpCards).toHaveCount(3);
+      // Should show all Orchestrators
+      const orchestratorCards = page.locator('h3:has-text("Head of")');
+      await expect(orchestratorCards).toHaveCount(3);
 
       // Filters should be reset
       expect(await searchInput.inputValue()).toBe('');
@@ -499,26 +499,26 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
   });
 
-  test.describe('Create OrchestratorWizard', () => {
+  test.describe('Create Orchestrator Wizard', () => {
     test('should open create Orchestrator dialog', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
-      await expect(page.locator('h2:has-text("Create New VP")')).toBeVisible();
+      await page.locator('button:has-text("Create Orchestrator")').click();
+      await expect(page.locator('h2:has-text("Create New Orchestrator")')).toBeVisible();
     });
 
     test('should close dialog on X button click', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
       await page.locator('button[aria-label="Close dialog"]').click();
-      await expect(page.locator('h2:has-text("Create New VP")')).not.toBeVisible();
+      await expect(page.locator('h2:has-text("Create New Orchestrator")')).not.toBeVisible();
     });
 
     test('should close dialog on Cancel click', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
       await page.locator('button:has-text("Cancel")').click();
-      await expect(page.locator('h2:has-text("Create New VP")')).not.toBeVisible();
+      await expect(page.locator('h2:has-text("Create New Orchestrator")')).not.toBeVisible();
     });
 
     test('should display step indicators', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       await expect(page.locator('text=Basic Info')).toBeVisible();
       await expect(page.locator('text=Charter')).toBeVisible();
@@ -529,14 +529,14 @@ test.describe('VPs Page - Full Test Suite', () => {
     test('Step 1: Basic Info - should require name and discipline', async ({
       page,
     }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Next button should be disabled
       const nextButton = page.locator('button:has-text("Next")');
       await expect(nextButton).toBeDisabled();
 
       // Fill in required fields
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
 
       // Next button should be enabled
@@ -544,9 +544,9 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
 
     test('Step 1: Basic Info - should accept description', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page
         .locator('textarea#orchestrator-description')
@@ -561,10 +561,10 @@ test.describe('VPs Page - Full Test Suite', () => {
     test('Step 2: Charter - should require at least one personality trait', async ({
       page,
     }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Complete step 1
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
@@ -580,10 +580,10 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
 
     test('Step 2: Charter - should allow adding expertise', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Complete step 1
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
@@ -602,10 +602,10 @@ test.describe('VPs Page - Full Test Suite', () => {
     test('Step 2: Charter - should allow removing expertise', async ({
       page,
     }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Complete step 1
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
@@ -627,10 +627,10 @@ test.describe('VPs Page - Full Test Suite', () => {
     test('Step 3: Operations - should have default work hours', async ({
       page,
     }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Complete steps 1-2
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Analytical")').click();
@@ -645,10 +645,10 @@ test.describe('VPs Page - Full Test Suite', () => {
     test('Step 3: Operations - should allow customizing work hours', async ({
       page,
     }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Complete steps 1-2
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Analytical")').click();
@@ -669,10 +669,10 @@ test.describe('VPs Page - Full Test Suite', () => {
     test('Step 4: Review - should display all entered information', async ({
       page,
     }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Complete all steps
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page
         .locator('textarea#orchestrator-description')
@@ -686,7 +686,7 @@ test.describe('VPs Page - Full Test Suite', () => {
       await page.locator('button:has-text("Next")').click();
 
       // Verify review content
-      await expect(page.locator('text=Test VP')).toBeVisible();
+      await expect(page.locator('text=Test Orchestrator')).toBeVisible();
       await expect(page.locator('text=Engineering')).toBeVisible();
       await expect(page.locator('text=Test description')).toBeVisible();
       await expect(page.locator('text=Analytical')).toBeVisible();
@@ -694,26 +694,26 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
 
     test('Step 4: Review - should have Create Orchestrator button', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Navigate to review step
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Analytical")').click();
       await page.locator('button:has-text("Next")').click();
       await page.locator('button:has-text("Next")').click();
 
-      const createButton = page.locator('button:has-text("Create VP")');
+      const createButton = page.locator('button:has-text("Create Orchestrator")');
       await expect(createButton).toBeVisible();
       await expect(createButton).toBeEnabled();
     });
 
     test('should allow going back to previous steps', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Go to step 2
-      await page.locator('input#orchestrator-title').fill('Test VP');
+      await page.locator('input#orchestrator-title').fill('Test Orchestrator');
       await page.locator('select#orchestrator-discipline').selectOption('Engineering');
       await page.locator('button:has-text("Next")').click();
 
@@ -721,11 +721,11 @@ test.describe('VPs Page - Full Test Suite', () => {
       await page.locator('button:has-text("Back")').click();
 
       // Should see step 1 content
-      await expect(page.locator('input#orchestrator-title')).toHaveValue('Test VP');
+      await expect(page.locator('input#orchestrator-title')).toHaveValue('Test Orchestrator');
     });
 
     test('should show progress through steps', async ({ page }) => {
-      await page.locator('button:has-text("Create VP")').click();
+      await page.locator('button:has-text("Create Orchestrator")').click();
 
       // Step 1 should be active
       const step1Indicator = page
@@ -740,52 +740,52 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
   });
 
-  test.describe('VP Card Interactions', () => {
+  test.describe('Orchestrator Card Interactions', () => {
     test('should navigate to Orchestrator detail on View click', async ({ page }) => {
       const viewButton = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..')
         .locator('a:has-text("View")');
 
       await viewButton.click();
-      await expect(page).toHaveURL(/\/vps\/vp_001$/);
+      await expect(page).toHaveURL(/\/orchestrators\/orch_001$/);
     });
 
     test('should have hover effect on Orchestrator card', async ({ page }) => {
-      const vpCard = page.locator('h3:has-text("VP of Engineering")').locator('..');
+      const orchestratorCard = page.locator('h3:has-text("Head of Engineering")').locator('..');
 
-      await vpCard.hover();
+      await orchestratorCard.hover();
 
       // Check for hover classes (implementation-specific)
-      const classes = await vpCard.getAttribute('class');
+      const classes = await orchestratorCard.getAttribute('class');
       expect(classes).toContain('hover:border-primary');
     });
 
     test('should display initials when no avatar', async ({ page }) => {
       const avatarDiv = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..')
         .locator('.rounded-full')
         .first();
 
-      // Should show initials (VE for Orchestrator of Engineering)
-      await expect(avatarDiv).toContainText('VE');
+      // Should show initials (HE for Head of Engineering)
+      await expect(avatarDiv).toContainText('HE');
     });
   });
 
-  test.describe('VP Detail Page', () => {
+  test.describe('Orchestrator Detail Page', () => {
     test.beforeEach(async ({ page }) => {
-      // Mock single OrchestratorAPI
-      await page.route('**/api/workspaces/**/orchestrators/vp_001*', async (route) => {
+      // Mock single Orchestrator API
+      await page.route('**/api/workspaces/**/orchestrators/orch_001*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ data: mockVPs[0] }),
+          body: JSON.stringify({ data: mockOrchestrators[0] }),
         });
       });
 
       // Mock Orchestrator tasks API
-      await page.route('**/api/orchestrators/vp_001/tasks*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/tasks*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -802,7 +802,7 @@ test.describe('VPs Page - Full Test Suite', () => {
 
       // Navigate to detail page
       const viewButton = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..')
         .locator('a:has-text("View")');
       await viewButton.click();
@@ -810,17 +810,17 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
 
     test('should load Orchestrator detail page', async ({ page }) => {
-      await expect(page).toHaveURL(/\/vps\/vp_001$/);
-      await expect(page.locator('h1:has-text("VP of Engineering")')).toBeVisible();
+      await expect(page).toHaveURL(/\/orchestrators\/orch_001$/);
+      await expect(page.locator('h1:has-text("Head of Engineering")')).toBeVisible();
     });
 
     test('should display breadcrumb navigation', async ({ page }) => {
-      await expect(page.locator('a:has-text("VPs")')).toBeVisible();
-      await expect(page.locator('text=VP of Engineering')).toBeVisible();
+      await expect(page.locator('a:has-text("Orchestrators")')).toBeVisible();
+      await expect(page.locator('text=Head of Engineering')).toBeVisible();
     });
 
     test('should display Orchestrator information', async ({ page }) => {
-      await expect(page.locator('h1:has-text("VP of Engineering")')).toBeVisible();
+      await expect(page.locator('h1:has-text("Head of Engineering")')).toBeVisible();
       await expect(page.locator('text=Engineering')).toBeVisible();
       await expect(page.locator('text=Technical leadership')).toBeVisible();
       await expect(page.locator('text=Online')).toBeVisible();
@@ -877,19 +877,19 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
   });
 
-  test.describe('VP Status Management', () => {
+  test.describe('Orchestrator Status Management', () => {
     test.beforeEach(async ({ page }) => {
-      // Mock single OrchestratorAPI
-      await page.route('**/api/workspaces/**/orchestrators/vp_001*', async (route) => {
+      // Mock single Orchestrator API
+      await page.route('**/api/workspaces/**/orchestrators/orch_001*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ data: mockVPs[0] }),
+          body: JSON.stringify({ data: mockOrchestrators[0] }),
         });
       });
 
       // Mock Orchestrator tasks API
-      await page.route('**/api/orchestrators/vp_001/tasks*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/tasks*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -906,7 +906,7 @@ test.describe('VPs Page - Full Test Suite', () => {
 
       // Navigate to detail page
       const viewButton = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..')
         .locator('a:has-text("View")');
       await viewButton.click();
@@ -915,11 +915,11 @@ test.describe('VPs Page - Full Test Suite', () => {
 
     test('should show confirmation before status change', async ({ page }) => {
       // Mock status update API
-      await page.route('**/api/orchestrators/vp_001/status*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/status*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ data: { ...mockVPs[0], status: 'OFFLINE' } }),
+          body: JSON.stringify({ data: { ...mockOrchestrators[0], status: 'OFFLINE' } }),
         });
       });
 
@@ -931,19 +931,19 @@ test.describe('VPs Page - Full Test Suite', () => {
     });
   });
 
-  test.describe('VP Delete', () => {
+  test.describe('Orchestrator Delete', () => {
     test.beforeEach(async ({ page }) => {
-      // Mock single OrchestratorAPI
-      await page.route('**/api/workspaces/**/orchestrators/vp_001*', async (route) => {
+      // Mock single Orchestrator API
+      await page.route('**/api/workspaces/**/orchestrators/orch_001*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ data: mockVPs[0] }),
+          body: JSON.stringify({ data: mockOrchestrators[0] }),
         });
       });
 
       // Mock Orchestrator tasks API
-      await page.route('**/api/orchestrators/vp_001/tasks*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001/tasks*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -960,7 +960,7 @@ test.describe('VPs Page - Full Test Suite', () => {
 
       // Navigate to detail page
       const viewButton = page
-        .locator('h3:has-text("VP of Engineering")')
+        .locator('h3:has-text("Head of Engineering")')
         .locator('..')
         .locator('a:has-text("View")');
       await viewButton.click();
@@ -978,11 +978,11 @@ test.describe('VPs Page - Full Test Suite', () => {
       await deleteButton.click();
     });
 
-    test('should redirect to VPs list after successful delete', async ({
+    test('should redirect to Orchestrators list after successful delete', async ({
       page,
     }) => {
       // Mock delete API
-      await page.route('**/api/orchestrators/vp_001*', async (route) => {
+      await page.route('**/api/orchestrators/orch_001*', async (route) => {
         if (route.request().method() === 'DELETE') {
           await route.fulfill({
             status: 200,
@@ -1000,15 +1000,15 @@ test.describe('VPs Page - Full Test Suite', () => {
       const deleteButton = page.locator('button:has-text("Delete")');
       await deleteButton.click();
 
-      // Should redirect to VPs list
-      await expect(page).toHaveURL(/\/vps$/);
+      // Should redirect to Orchestrators list
+      await expect(page).toHaveURL(/\/orchestrators$/);
     });
   });
 
   test.describe('Error Handling', () => {
     test('should display error message on API failure', async ({ page }) => {
       // Override route to return error
-      await page.route('**/api/workspaces/**/vps*', async (route) => {
+      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -1019,12 +1019,12 @@ test.describe('VPs Page - Full Test Suite', () => {
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('text=Failed to load VPs')).toBeVisible();
+      await expect(page.locator('text=Failed to load Orchestrators')).toBeVisible();
     });
 
     test('should have retry button on error', async ({ page }) => {
       // Override route to return error
-      await page.route('**/api/workspaces/**/vps*', async (route) => {
+      await page.route('**/api/workspaces/**/orchestrators*', async (route) => {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -1044,7 +1044,7 @@ test.describe('VPs Page - Full Test Suite', () => {
         await route.fulfill({
           status: 404,
           contentType: 'application/json',
-          body: JSON.stringify({ error: 'VP not found' }),
+          body: JSON.stringify({ error: 'Orchestrator not found' }),
         });
       });
 
@@ -1055,8 +1055,8 @@ test.describe('VPs Page - Full Test Suite', () => {
         await page.goto(`${BASE_URL}/${workspaceId}/orchestrators/nonexistent`);
         await page.waitForLoadState('networkidle');
 
-        await expect(page.locator('text=VP not found')).toBeVisible();
-        await expect(page.locator('a:has-text("Back to VPs")')).toBeVisible();
+        await expect(page.locator('text=Orchestrator not found')).toBeVisible();
+        await expect(page.locator('a:has-text("Back to Orchestrators")')).toBeVisible();
       }
     });
   });
@@ -1066,18 +1066,18 @@ test.describe('VPs Page - Full Test Suite', () => {
       await page.setViewportSize({ width: 375, height: 667 });
 
       // Orchestrator cards should stack vertically
-      const vpCards = page.locator('[class*="grid"] > div').filter({
+      const orchestratorCards = page.locator('[class*="grid"] > div').filter({
         has: page.locator('h3'),
       });
 
-      await expect(vpCards.first()).toBeVisible();
+      await expect(orchestratorCards.first()).toBeVisible();
     });
 
     test('should show filter controls on tablet', async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
 
       const searchInput = page.locator(
-        'input[placeholder*="Search VPs"]',
+        'input[placeholder*="Search Orchestrators"]',
       );
       await expect(searchInput).toBeVisible();
     });

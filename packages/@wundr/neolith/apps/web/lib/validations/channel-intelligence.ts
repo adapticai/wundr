@@ -160,7 +160,7 @@ export type ActivityMetricsFiltersInput = z.infer<typeof activityMetricsFiltersS
  */
 export const calculateRelevanceSchema = z.object({
   /** OrchestratorID to calculate relevance for */
-  vpId: z.string().cuid('Invalid OrchestratorID'),
+  orchestratorId: z.string().cuid('Invalid OrchestratorID'),
 
   /** Optional: Override Orchestrator discipline for calculation */
   disciplineOverride: z.string().max(100).optional(),
@@ -201,7 +201,7 @@ export function createChannelIntelligenceError(
  * Common error codes for channel intelligence API
  */
 export const CHANNEL_INTELLIGENCE_ERROR_CODES = {
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   CHANNEL_NOT_FOUND: 'CHANNEL_NOT_FOUND',
   WORKSPACE_NOT_FOUND: 'WORKSPACE_NOT_FOUND',
   UNAUTHORIZED: 'UNAUTHORIZED',

@@ -125,7 +125,7 @@ function createMockVPResponse() {
       name: 'Test Orchestrator',
       displayName: 'Test Orchestrator',
       status: 'ACTIVE',
-      isVP: true,
+      isOrchestrator: true,
     },
   };
 }

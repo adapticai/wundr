@@ -351,11 +351,11 @@ function convertMetricsToCSV(
     lines.push(`Files,Total Size (bytes),${metrics.files.totalSize}`);
   }
 
-  // VPs
+  // Orchestrators
   if (metrics.orchestrator) {
-    lines.push(`VPs,Total,${metrics.orchestrator.totalVPs}`);
-    lines.push(`VPs,Active,${metrics.orchestrator.activeVPs}`);
-    lines.push(`VPs,Messages Sent,${metrics.orchestrator.messagesSent}`);
+    lines.push(`Orchestrators,Total,${metrics.orchestrator.totalOrchestrators}`);
+    lines.push(`Orchestrators,Active,${metrics.orchestrator.activeOrchestrators}`);
+    lines.push(`Orchestrators,Messages Sent,${metrics.orchestrator.messagesSent}`);
   }
 
   return lines.join('\n');

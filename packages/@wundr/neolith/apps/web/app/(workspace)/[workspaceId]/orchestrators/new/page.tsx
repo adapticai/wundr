@@ -17,7 +17,7 @@ import { ConversationalCreator } from '@/components/creation/conversational-crea
 import { SpecReviewForm } from '@/components/creation/spec-review-form';
 import { Button } from '@/components/ui/button';
 import type { EntitySpec } from '@/components/creation/types';
-import type { CreateVPInput } from '@/types/orchestrator';
+import type { CreateOrchestratorInput } from '@/types/orchestrator';
 
 type ViewMode = 'conversation' | 'review';
 
@@ -60,8 +60,8 @@ export default function NewOrchestratorPage() {
       setError(null);
 
       try {
-        // Transform the spec into CreateVPInput format
-        const input: CreateVPInput = {
+        // Transform the spec into CreateOrchestratorInput format
+        const input: CreateOrchestratorInput = {
           title: finalSpec.name,
           discipline: extractDiscipline(finalSpec),
           description: finalSpec.description,

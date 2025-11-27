@@ -41,7 +41,7 @@ type UpdateStatusInput = z.infer<typeof updateStatusSchema>;
 /**
  * Helper function to check if user has access to an Orchestrator within a workspace
  */
-async function checkVPAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function checkOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
   // First, verify workspace exists and user has access
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
@@ -68,7 +68,7 @@ async function checkVPAccess(workspaceId: string, orchestratorId: string, userId
   }
 
   // Fetch Orchestrator and verify it belongs to the workspace
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -151,7 +151,7 @@ export async function GET(
     }
 
     // Check access
-    const result = await checkVPAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
 
     if (!result) {
       return NextResponse.json(
@@ -161,7 +161,7 @@ export async function GET(
     }
 
     // Get Orchestrator with user's lastActiveAt
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: {
         id: true,
@@ -184,7 +184,7 @@ export async function GET(
     // Fetch current active task
     const currentTask = await prisma.task.findFirst({
       where: {
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         status: 'IN_PROGRESS',
       },
       orderBy: [
@@ -303,7 +303,7 @@ export async function POST(
     const input: UpdateStatusInput = parseResult.data;
 
     // Check access
-    const result = await checkVPAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
 
     if (!result) {
       return NextResponse.json(
@@ -313,10 +313,10 @@ export async function POST(
     }
 
     // Check if user is the Orchestrator or has admin/owner access
-    const isVPUser = session.user.id === result.orchestrator.userId;
+    const isOrchestratorUser = session.user.id === result.orchestrator.userId;
     const hasAdminAccess = result.role === 'OWNER' || result.role === 'ADMIN';
 
-    if (!isVPUser && !hasAdminAccess) {
+    if (!isOrchestratorUser && !hasAdminAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to update Orchestrator status',
@@ -330,7 +330,7 @@ export async function POST(
     const now = new Date();
     const updatedOrchestrator = await prisma.$transaction(async (tx) => {
       // Update Orchestrator status
-      const orchestrator = await tx.vP.update({
+      const orchestrator = await tx.orchestrator.update({
         where: { id: orchestratorId },
         data: { status: input.status },
         select: {

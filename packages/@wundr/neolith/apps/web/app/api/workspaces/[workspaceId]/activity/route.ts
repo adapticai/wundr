@@ -70,9 +70,9 @@ const activityTypeEnum = z.enum([
   'integration.disconnected',
 
   // Orchestrator events
-  'vp.created',
-  'vp.updated',
-  'vp.status_changed',
+  'orchestrator.created',
+  'orchestrator.updated',
+  'orchestrator.status_changed',
 ]);
 
 export type ActivityType = z.infer<typeof activityTypeEnum>;
@@ -104,7 +104,7 @@ interface ActivityEntry {
     email: string | null;
     displayName: string | null;
     avatarUrl: string | null;
-    isVP: boolean;
+    isOrchestrator: boolean;
   };
   resourceType?: string | null;
   resourceId?: string | null;
@@ -207,7 +207,7 @@ export async function GET(
             email: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
       },
@@ -249,7 +249,7 @@ export async function GET(
               email: true,
               displayName: true,
               avatarUrl: true,
-              isVP: true,
+              isOrchestrator: true,
             },
           },
         },
@@ -294,7 +294,7 @@ export async function GET(
               email: true,
               displayName: true,
               avatarUrl: true,
-              isVP: true,
+              isOrchestrator: true,
             },
           },
         },
@@ -338,7 +338,7 @@ export async function GET(
               email: true,
               displayName: true,
               avatarUrl: true,
-              isVP: true,
+              isOrchestrator: true,
             },
           },
         },
@@ -388,7 +388,7 @@ export async function GET(
           email: true,
           displayName: true,
           avatarUrl: true,
-          isVP: true,
+          isOrchestrator: true,
         },
       });
       const creatorMap = new Map(creators.map(c => [c.id, c]));

@@ -108,7 +108,7 @@ export interface DaemonToken {
   daemonId: string;
 
   /** The OrchestratorID this token authenticates */
-  vpId: string;
+  orchestratorId: string;
 
   /** The workspace ID context */
   workspaceId: string;
@@ -284,7 +284,7 @@ export interface DaemonSession {
   daemonId: string;
 
   /** OrchestratorID */
-  vpId: string;
+  orchestratorId: string;
 
   /** Workspace ID */
   workspaceId: string;
@@ -400,7 +400,7 @@ export interface DaemonEvent {
   daemonId: string;
 
   /** OrchestratorID the event is for */
-  vpId: string;
+  orchestratorId: string;
 
   /** Event payload with structured data */
   payload: DaemonEventPayload;
@@ -430,7 +430,7 @@ export interface DaemonEvent {
  */
 export interface DaemonConfig {
   /** OrchestratorID this config is for */
-  vpId: string;
+  orchestratorId: string;
 
   /** Workspace ID */
   workspaceId: string;
@@ -612,7 +612,7 @@ export const DAEMON_REDIS_KEYS = {
   session: (sessionId: string) => `daemon:session:${sessionId}`,
 
   /** Sessions by Orchestrator */
-  vpSessions: (vpId: string) => `daemon:vp:${vpId}:sessions`,
+  orchestratorSessions: (orchestratorId: string) => `daemon:orchestrator:${orchestratorId}:sessions`,
 
   /** Sessions by daemon */
   daemonSessions: (daemonId: string) => `daemon:instance:${daemonId}:sessions`,
@@ -664,7 +664,7 @@ export interface DaemonRegistrationMetadata {
  */
 export interface DaemonRegistration {
   /** Orchestrator to associate with daemon */
-  vpId: string;
+  orchestratorId: string;
 
   /** Workspace to associate with daemon */
   workspaceId: string;
@@ -700,7 +700,7 @@ export interface DaemonRegistrationCredentials {
   workspaceId: string;
 
   /** Associated Orchestrator identifier */
-  vpId: string;
+  orchestratorId: string;
 
   /** Credential creation timestamp */
   createdAt: Date;
@@ -753,7 +753,7 @@ export interface DaemonAuthResponse {
   daemonId: string;
 
   /** Orchestrator identifier */
-  vpId: string;
+  orchestratorId: string;
 }
 
 /**

@@ -34,7 +34,7 @@ import type { NextRequest} from 'next/server';
  * Route context with OrchestratorID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ orchestratorId: string }>;
 }
 
 /**
@@ -137,8 +137,8 @@ export async function POST(
     });
 
     // Fetch Orchestrator and verify access
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: params.id },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: params.orchestratorId },
       include: {
         user: {
           select: { id: true, name: true, email: true },
@@ -163,7 +163,7 @@ export async function POST(
 
     if (!membership) {
       return NextResponse.json(
-        createErrorResponse('Access denied to this VP', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Access denied to this Orchestrator', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
@@ -204,8 +204,8 @@ export async function POST(
     };
 
     // Update Orchestrator with new API key
-    await prisma.vP.update({
-      where: { id: params.id },
+    await prisma.orchestrator.update({
+      where: { id: params.orchestratorId },
       data: { capabilities: updatedCapabilities },
     });
 
@@ -218,8 +218,8 @@ export async function POST(
           name: input.name,
           scopes: input.scopes,
           expiresAt,
-          vpId: params.id,
-          vpName: orchestrator.user.name,
+          orchestratorId: params.orchestratorId,
+          orchestratorName: orchestrator.user.name,
         },
         message:
           'API key generated successfully. Store this key securely - it will not be shown again.',
@@ -281,8 +281,8 @@ export async function DELETE(
     });
 
     // Fetch Orchestrator and verify access
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: params.id },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: params.orchestratorId },
       select: {
         id: true,
         organizationId: true,
@@ -307,7 +307,7 @@ export async function DELETE(
 
     if (!membership) {
       return NextResponse.json(
-        createErrorResponse('Access denied to this VP', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Access denied to this Orchestrator', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
@@ -327,7 +327,7 @@ export async function DELETE(
       (orchestrator.capabilities as Record<string, unknown>) ?? {};
     if (!currentCapabilities.apiKey) {
       return NextResponse.json(
-        createErrorResponse('VP does not have an API key', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
+        createErrorResponse('Orchestrator does not have an API key', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
         { status: 404 },
       );
     }
@@ -336,8 +336,8 @@ export async function DELETE(
     const { apiKey: _, ...updatedCapabilities } = currentCapabilities;
 
     // Update Orchestrator to remove API key
-    await prisma.vP.update({
-      where: { id: params.id },
+    await prisma.orchestrator.update({
+      where: { id: params.orchestratorId },
       data: { capabilities: updatedCapabilities as Prisma.InputJsonValue },
     });
 
@@ -345,8 +345,8 @@ export async function DELETE(
 
     return NextResponse.json({
       message: 'API key revoked successfully',
-      vpId: params.id,
-      vpName: orchestrator.user.name,
+      orchestratorId: params.orchestratorId,
+      orchestratorName: orchestrator.user.name,
     });
   } catch (error) {
     console.error('[DELETE /api/orchestrators/:id/api-key] Error:', error);

@@ -186,11 +186,11 @@ function getChildPrefix(
  *
  * @internal
  */
-function formatVPNode(vp: OrchestratorCharter, options: TreeFormatOptions): string {
-  const name = truncate(vp.identity.name, 40);
-  const id = options.showIds ? ` (${vp.id})` : '';
+function formatOrchestratorNode(orchestrator: OrchestratorCharter, options: TreeFormatOptions): string {
+  const name = truncate(orchestrator.identity.name, 40);
+  const id = options.showIds ? ` (${orchestrator.id})` : '';
   const count = options.showCounts
-    ? ` [${vp.disciplineIds.length} disciplines]`
+    ? ` [${orchestrator.disciplineIds.length} disciplines]`
     : '';
   return `${ICONS.VP} ${name}${id}${count}`;
 }
@@ -278,15 +278,15 @@ export function formatAsTree(
   const { manifest, orchestrators, disciplines, agents } = org;
 
   // Create lookup maps for efficient access
-  const disciplinesByVpId = new Map<string, DisciplinePack[]>();
+  const disciplinesByOrchestratorId = new Map<string, DisciplinePack[]>();
   const agentsByDisciplineId = new Map<string, AgentDefinition[]>();
 
   // Group disciplines by parent Orchestrator
   for (const discipline of disciplines) {
     if (discipline.parentVpId) {
-      const existing = disciplinesByVpId.get(discipline.parentVpId) || [];
+      const existing = disciplinesByOrchestratorId.get(discipline.parentVpId) || [];
       existing.push(discipline);
-      disciplinesByVpId.set(discipline.parentVpId, existing);
+      disciplinesByOrchestratorId.set(discipline.parentVpId, existing);
     }
   }
 
@@ -309,7 +309,7 @@ export function formatAsTree(
   }
 
   // Root node - Organization
-  const orgCount = options.showCounts ? ` [${vps.length} VPs]` : '';
+  const orgCount = options.showCounts ? ` [${orchestrators.length} VPs]` : '';
   lines.push(
     `${ICONS.ORG} ${manifest.name} (${manifest.industry}, ${manifest.size})${orgCount}`
   );
@@ -323,7 +323,7 @@ export function formatAsTree(
   for (let vpIdx = 0; vpIdx < orchestrators.length; vpIdx++) {
     const orchestrator = orchestrators[vpIdx];
     const isLastOrchestrator = vpIdx === orchestrators.length - 1;
-    const vpLine = buildTreeLine('', isLastOrchestrator, formatVPNode(vp, options));
+    const vpLine = buildTreeLine('', isLastOrchestrator, formatOrchestratorNode(orchestrator, options));
     lines.push(vpLine);
 
     // Check max depth for disciplines
@@ -332,7 +332,7 @@ export function formatAsTree(
     }
 
     // Get disciplines for this Orchestrator
-    const vpDisciplines = disciplinesByVpId.get(vp.id) || [];
+    const vpDisciplines = disciplinesByOrchestratorId.get(orchestrator.id) || [];
     const vpPrefix = getChildPrefix('', isLastOrchestrator);
 
     for (let discIdx = 0; discIdx < vpDisciplines.length; discIdx++) {
@@ -435,7 +435,7 @@ export function formatAsTree(
  * ```
  */
 export function formatVPTree(
-  vp: OrchestratorCharter,
+  orchestrator: OrchestratorCharter,
   disciplines: DisciplinePack[],
   agents: AgentDefinition[],
   options: TreeFormatOptions = {}
@@ -450,13 +450,13 @@ export function formatVPTree(
   }
 
   // Filter disciplines to those belonging to this Orchestrator
-  const vpDisciplines = disciplines.filter(d => d.parentVpId === vp.id);
+  const vpDisciplines = disciplines.filter(d => d.parentVpId === orchestrator.id);
 
   // Root node - Orchestrator
   const orchestratorCount = options.showCounts
     ? ` [${vpDisciplines.length} disciplines]`
     : '';
-  lines.push(`${ICONS.VP} ${vp.identity.name}${orchestratorCount}`);
+  lines.push(`${ICONS.VP} ${orchestrator.identity.name}${orchestratorCount}`);
 
   if (options.maxDepth !== undefined && options.maxDepth < 1) {
     return lines.join('\n');

@@ -36,7 +36,7 @@ interface RouteContext {
 /**
  * Helper to verify Orchestrator access
  */
-async function verifyVPAccess(
+async function verifyOrchestratorAccess(
   workspaceId: string,
   orchestratorId: string,
   userId: string,
@@ -54,7 +54,7 @@ async function verifyVPAccess(
   }
 
   // Verify Orchestrator exists
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
     },
@@ -107,7 +107,7 @@ export async function GET(
     const { workspaceId, orchestratorId } = resolvedParams;
 
     // Verify access
-    const hasAccess = await verifyVPAccess(workspaceId, orchestratorId, session.user.id);
+    const hasAccess = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!hasAccess) {
       return NextResponse.json(
         createErrorResponse(
@@ -142,8 +142,8 @@ export async function GET(
     const search: MemorySearchInput = parseResult.data;
 
     // Build where clause for text search
-    const where: Prisma.vPMemoryWhereInput = {
-      vpId: orchestratorId,
+    const where: Prisma.orchestratorMemoryWhereInput = {
+      orchestratorId: orchestratorId,
       content: { contains: search.query, mode: 'insensitive' as const },
       ...(search.memoryType && {
         memoryType: Array.isArray(search.memoryType)
@@ -158,7 +158,7 @@ export async function GET(
     };
 
     // Search memories ordered by importance and recency
-    const memories = await prisma.vPMemory.findMany({
+    const memories = await prisma.orchestratorMemory.findMany({
       where,
       orderBy: [{ importance: 'desc' }, { createdAt: 'desc' }],
       take: search.limit,

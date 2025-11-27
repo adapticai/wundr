@@ -3,13 +3,15 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-import type { VPStatus } from '@/types/orchestrator';
+import type { OrchestratorStatus } from '@/types/orchestrator';
 
-export type VPPresenceStatus = 'online' | 'offline' | 'working' | 'idle';
+export type OrchestratorPresenceStatus = 'online' | 'offline' | 'working' | 'idle';
+/** @deprecated Use OrchestratorPresenceStatus instead */
+export type VPPresenceStatus = OrchestratorPresenceStatus;
 
-interface VPPresenceIndicatorProps {
-  status: VPPresenceStatus;
-  vpStatus?: VPStatus;
+interface OrchestratorPresenceIndicatorProps {
+  status: OrchestratorPresenceStatus;
+  orchestratorStatus?: OrchestratorStatus;
   currentActivity?: string;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
@@ -54,14 +56,14 @@ const sizeClasses = {
   lg: 'h-3 w-3',
 };
 
-export function VPPresenceIndicator({
+export function OrchestratorPresenceIndicator({
   status,
-  vpStatus,
+  orchestratorStatus,
   currentActivity,
   size = 'md',
   showLabel = false,
   className,
-}: VPPresenceIndicatorProps) {
+}: OrchestratorPresenceIndicatorProps) {
   const config = presenceConfig[status];
 
   const indicator = (
@@ -99,7 +101,7 @@ export function VPPresenceIndicator({
   );
 
   // Show tooltip if there's activity information
-  if (currentActivity || vpStatus) {
+  if (currentActivity || orchestratorStatus) {
     return (
       <TooltipProvider>
         <Tooltip>
@@ -107,9 +109,9 @@ export function VPPresenceIndicator({
           <TooltipContent>
             <div className="space-y-1">
               <p className="text-sm font-medium">{config.label}</p>
-              {vpStatus && (
+              {orchestratorStatus && (
                 <p className="text-xs text-muted-foreground">
-                  Status: {vpStatus}
+                  Status: {orchestratorStatus}
                 </p>
               )}
               {currentActivity && (
@@ -128,22 +130,22 @@ export function VPPresenceIndicator({
 }
 
 // Composite component that shows both presence and current activity
-interface VPPresenceCardProps {
-  status: VPPresenceStatus;
-  vpStatus?: VPStatus;
-  vpName: string;
+interface OrchestratorPresenceCardProps {
+  status: OrchestratorPresenceStatus;
+  orchestratorStatus?: OrchestratorStatus;
+  orchestratorName: string;
   currentActivity?: string;
   lastActiveAt?: Date;
   className?: string;
 }
 
-export function VPPresenceCard({
+export function OrchestratorPresenceCard({
   status,
-  vpName,
+  orchestratorName,
   currentActivity,
   lastActiveAt,
   className,
-}: VPPresenceCardProps) {
+}: OrchestratorPresenceCardProps) {
   const config = presenceConfig[status];
 
   const formatLastActive = (date: Date) => {
@@ -174,7 +176,7 @@ export function VPPresenceCard({
       <OrchestratorPresenceIndicator status={status} size="md" />
       <div className="flex-1 space-y-1">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">{vpName}</h4>
+          <h4 className="text-sm font-semibold">{orchestratorName}</h4>
           <span className={cn('text-xs font-medium', config.color)}>
             {config.label}
           </span>
@@ -195,7 +197,7 @@ export function VPPresenceCard({
 }
 
 // Animated typing indicator for when Orchestrator is actively working
-export function VPTypingIndicator({ vpName }: { vpName: string }) {
+export function OrchestratorTypingIndicator({ orchestratorName }: { orchestratorName: string }) {
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground">
       <div className="flex gap-1">
@@ -203,7 +205,14 @@ export function VPTypingIndicator({ vpName }: { vpName: string }) {
         <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
       </div>
-      <span>{vpName} is typing...</span>
+      <span>{orchestratorName} is typing...</span>
     </div>
   );
 }
+
+/** @deprecated Use OrchestratorPresenceIndicator instead */
+export const VPPresenceIndicator = OrchestratorPresenceIndicator;
+/** @deprecated Use OrchestratorPresenceCard instead */
+export const VPPresenceCard = OrchestratorPresenceCard;
+/** @deprecated Use OrchestratorTypingIndicator instead */
+export const VPTypingIndicator = OrchestratorTypingIndicator;

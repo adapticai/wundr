@@ -1,8 +1,8 @@
 /**
  * OrchestratorCollaboration API Routes
  *
- * Manages collaboration requests between VPs for joint task execution.
- * Allows VPs to request, list, and end collaborations.
+ * Manages collaboration requests between Orchestrators for joint task execution.
+ * Allows Orchestrators to request, list, and end collaborations.
  *
  * Routes:
  * - POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate - Request collaboration
@@ -72,7 +72,7 @@ async function verifyWorkspaceAccess(
 /**
  * POST /api/workspaces/:workspaceId/orchestrators/:orchestratorId/collaborate
  *
- * Request collaboration with other VPs on a task.
+ * Request collaboration with other Orchestrators on a task.
  *
  * @param request - Next.js request with collaboration data
  * @param context - Route context containing workspace and OrchestratorIDs
@@ -141,7 +141,7 @@ export async function POST(
     const { taskId, requiredOrchestratorIds, roles, note } = parseResult.data;
 
     // Verify Orchestrator exists and belongs to workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: accessCheck.organizationId,
@@ -183,7 +183,7 @@ export async function POST(
     });
 
     // Fetch collaborator user IDs for notifications
-    const collaborators = await prisma.vP.findMany({
+    const collaborators = await prisma.orchestrator.findMany({
       where: { id: { in: requiredOrchestratorIds } },
       select: { userId: true, role: true },
     });
@@ -273,7 +273,7 @@ export async function GET(
     }
 
     // Verify Orchestrator exists
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: accessCheck.organizationId,
@@ -304,10 +304,10 @@ export async function GET(
         description: task.description,
         status: task.status,
         priority: task.priority,
-        primaryVp: task.vp,
+        primaryOrchestrator: task.orchestrator,
         workspace: task.workspace,
         collaborators: collaborators.map((c) => ({
-          vpId: c.vpId,
+          orchestratorId: c.orchestratorId,
           role: c.role,
           addedAt: c.addedAt,
         })),
@@ -389,7 +389,7 @@ export async function DELETE(
     }
 
     // Verify Orchestrator exists
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: accessCheck.organizationId,
@@ -426,7 +426,7 @@ export async function DELETE(
     const collaborators = metadata.collaborators || [];
 
     // Remove Orchestrator from collaborators
-    const updatedCollaborators = collaborators.filter((c) => c.vpId !== orchestratorId);
+    const updatedCollaborators = collaborators.filter((c) => c.orchestratorId !== orchestratorId);
 
     // Update task metadata
     await prisma.task.update({

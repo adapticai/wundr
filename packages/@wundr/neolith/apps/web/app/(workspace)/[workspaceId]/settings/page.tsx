@@ -41,7 +41,7 @@ export default function SettingsPage() {
     pushNotifications: false,
     weeklyDigest: true,
     mentionAlerts: true,
-    vpUpdates: true,
+    orchestratorUpdates: true,
   });
 
   const [accountSettings, setAccountSettings] = useState({
@@ -270,7 +270,7 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="orchestrator-updates">VP Updates</Label>
+                <Label htmlFor="orchestrator-updates">Orchestrator Updates</Label>
                 <p className="text-sm text-muted-foreground">
                   Notifications from Virtual Professionals
                 </p>
@@ -278,7 +278,7 @@ export default function SettingsPage() {
               <Switch
                 id="orchestrator-updates"
                 checked={notificationSettings.orchestratorUpdates}
-                onCheckedChange={() => handleNotificationToggle('vpUpdates')}
+                onCheckedChange={() => handleNotificationToggle('orchestratorUpdates')}
               />
             </div>
           </div>

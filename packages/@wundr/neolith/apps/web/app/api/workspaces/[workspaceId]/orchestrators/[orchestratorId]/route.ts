@@ -67,7 +67,7 @@ async function getOrchestratorWithWorkspaceAccess(
   }
 
   // Fetch Orchestrator and verify it belongs to the workspace
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -88,7 +88,7 @@ async function getOrchestratorWithWorkspaceAccess(
           status: true,
           createdAt: true,
           lastActiveAt: true,
-          isVP: true,
+          isOrchestrator: true,
         },
       },
       organization: {
@@ -174,7 +174,7 @@ export async function GET(
     // Fetch current active task
     const currentTask = await prisma.task.findFirst({
       where: {
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         status: { in: ['IN_PROGRESS', 'TODO'] },
       },
       orderBy: [
@@ -225,18 +225,18 @@ export async function GET(
       // Count completed tasks
       prisma.task.count({
         where: {
-          vpId: orchestratorId,
+          orchestratorId: orchestratorId,
           status: 'DONE',
         },
       }),
       // Count all tasks
       prisma.task.count({
-        where: { vpId: orchestratorId },
+        where: { orchestratorId: orchestratorId },
       }),
       // Get completed tasks with time data for average calculation
       prisma.task.findMany({
         where: {
-          vpId: orchestratorId,
+          orchestratorId: orchestratorId,
           status: 'DONE',
           completedAt: { not: null },
         },
@@ -399,7 +399,7 @@ export async function PATCH(
       }
 
       // Update Orchestrator
-      return tx.vP.update({
+      return tx.orchestrator.update({
         where: { id: orchestratorId },
         data: {
           ...(input.discipline !== undefined && { discipline: input.discipline }),
@@ -526,7 +526,7 @@ export async function DELETE(
     // Soft delete: Set status to OFFLINE and update user status
     await prisma.$transaction(async (tx) => {
       // Update Orchestrator status to OFFLINE
-      await tx.vP.update({
+      await tx.orchestrator.update({
         where: { id: orchestratorId },
         data: { status: 'OFFLINE' },
       });

@@ -1,7 +1,7 @@
 /**
  * Channel Relevance Calculation API Routes
  *
- * Calculates relevance scores between VPs and channels based on
+ * Calculates relevance scores between Orchestrators and channels based on
  * discipline match, role alignment, member similarity, and activity.
  *
  * Routes:
@@ -65,7 +65,7 @@ async function getWorkspaceAccess(workspaceId: string, userId: string) {
  * Returns a score (0-1) and detailed explanation of the calculation.
  *
  * Query Parameters:
- * - vpId: string (required) - Orchestrator to calculate relevance for
+ * - orchestratorId: string (required) - Orchestrator to calculate relevance for
  * - disciplineOverride: string (optional) - Override Orchestrator discipline
  * - includeExplanation: boolean (default: true)
  *
@@ -115,12 +115,12 @@ export async function GET(
     const searchParams = Object.fromEntries(request.nextUrl.searchParams);
     const queryData = calculateRelevanceSchema.parse(searchParams);
 
-    const { vpId, disciplineOverride, includeExplanation } = queryData;
+    const { orchestratorId, disciplineOverride, includeExplanation } = queryData;
 
     // Verify Orchestrator exists and has access to workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
-        id: vpId,
+        id: orchestratorId,
         organizationId: workspaceAccess.workspace.organizationId,
         OR: [{ workspaceId }, { workspaceId: null }],
       },
@@ -141,11 +141,11 @@ export async function GET(
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         createChannelIntelligenceError(
-          'VP not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VP_NOT_FOUND,
+          'Orchestrator not found or access denied',
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
         { status: 404 },
       );
@@ -179,16 +179,16 @@ export async function GET(
     }
 
     // Calculate relevance
-    const relevance = await calculateChannelRelevance(vpId, channelId);
+    const relevance = await calculateChannelRelevance(orchestratorId, channelId);
 
     // Build response
     const response: {
       channelId: string;
       channelName: string;
       channelType: string;
-      vpId: string;
-      vpDiscipline: string;
-      vpRole: string;
+      orchestratorId: string;
+      orchestratorDiscipline: string;
+      orchestratorRole: string;
       relevanceScore: number;
       explanation?: string;
       factors?: {
@@ -203,9 +203,9 @@ export async function GET(
       channelId: channel.id,
       channelName: channel.name,
       channelType: channel.type,
-      vpId: vp.id,
-      vpDiscipline: disciplineOverride || vp.discipline,
-      vpRole: vp.role,
+      orchestratorId: orchestrator.id,
+      orchestratorDiscipline: disciplineOverride || orchestrator.discipline,
+      orchestratorRole: orchestrator.role,
       relevanceScore: relevance.score,
     };
 
@@ -236,11 +236,11 @@ export async function GET(
 
     // Handle specific calculation errors
     if (error instanceof Error) {
-      if (error.message.includes('VP not found')) {
+      if (error.message.includes('Orchestrator not found')) {
         return NextResponse.json(
           createChannelIntelligenceError(
             error.message,
-            CHANNEL_INTELLIGENCE_ERROR_CODES.VP_NOT_FOUND,
+            CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
           ),
           { status: 404 },
         );

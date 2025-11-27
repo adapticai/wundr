@@ -111,7 +111,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Fetch all VPs (or specific Orchestrator if orchestratorId provided) to check API keys
     // Note: In production with many VPs, consider a dedicated API key table with index
-    const orchestrators = await prisma.vP.findMany({
+    const orchestrators = await prisma.orchestrator.findMany({
       where: whereClause,
       include: {
         user: {

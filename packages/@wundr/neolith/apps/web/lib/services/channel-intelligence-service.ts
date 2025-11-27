@@ -106,7 +106,7 @@ export async function autoJoinOrchestratorToChannel(
 ): Promise<AutoJoinResult> {
   try {
     // Fetch Orchestrator details
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       include: {
         user: {
@@ -119,7 +119,7 @@ export async function autoJoinOrchestratorToChannel(
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return {
         success: false,
         channelId,
@@ -155,7 +155,7 @@ export async function autoJoinOrchestratorToChannel(
       where: {
         channelId_userId: {
           channelId,
-          userId: vp.userId,
+          userId: orchestrator.userId,
         },
       },
     });
@@ -184,7 +184,7 @@ export async function autoJoinOrchestratorToChannel(
     await prisma.channelMember.create({
       data: {
         channelId,
-        userId: vp.userId,
+        userId: orchestrator.userId,
         role: 'MEMBER',
         joinedAt: new Date(),
       },
@@ -194,13 +194,13 @@ export async function autoJoinOrchestratorToChannel(
     await prisma.message.create({
       data: {
         channelId,
-        authorId: vp.userId,
-        content: `Orchestrator ${vp.user.name || vp.role} has joined the channel`,
+        authorId: orchestrator.userId,
+        content: `Orchestrator ${orchestrator.user.name || orchestrator.role} has joined the channel`,
         type: 'SYSTEM',
         metadata: {
           eventType: 'orchestrator_auto_join',
           orchestratorId,
-          discipline: vp.discipline,
+          discipline: orchestrator.discipline,
         },
       },
     });
@@ -238,7 +238,7 @@ export async function getRelevantChannels(
   limit: number = 10,
 ): Promise<ChannelRelevance[]> {
   // Fetch Orchestrator details with discipline
-  const orchestrator = await prisma.vP.findUnique({
+  const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
     include: {
       disciplineRef: {
@@ -259,23 +259,23 @@ export async function getRelevantChannels(
     },
   });
 
-  if (!vp) {
+  if (!orchestrator) {
     return [];
   }
 
   // Get Orchestrator capabilities as array of strings
-  const capabilities = Array.isArray(vp.capabilities)
-    ? (vp.capabilities as string[])
+  const capabilities = Array.isArray(orchestrator.capabilities)
+    ? (orchestrator.capabilities as string[])
     : [];
 
   // Get channels Orchestrator is not already a member of
-  const memberChannelIds = vp.user.channelMembers.map(m => m.channelId);
+  const memberChannelIds = orchestrator.user.channelMembers.map(m => m.channelId);
 
   // Fetch all public channels in the Orchestrator's organization
   const channels = await prisma.channel.findMany({
     where: {
       workspace: {
-        organizationId: vp.organizationId,
+        organizationId: orchestrator.organizationId,
       },
       type: 'PUBLIC',
       isArchived: false,
@@ -299,9 +299,9 @@ export async function getRelevantChannels(
   for (const channel of channels) {
     const relevanceScore = await calculateChannelRelevanceLegacy(
       channel,
-      vp.discipline,
+      orchestrator.discipline,
       capabilities,
-      vp.disciplineRef?.name,
+      orchestrator.disciplineRef?.name,
     );
 
     if (relevanceScore.score > 0) {
@@ -434,7 +434,7 @@ export async function shouldNotifyOrchestrator(
   },
 ): Promise<NotificationDecision> {
   // Fetch Orchestrator details
-  const orchestrator = await prisma.vP.findUnique({
+  const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
     include: {
       user: true,
@@ -446,7 +446,7 @@ export async function shouldNotifyOrchestrator(
     },
   });
 
-  if (!vp) {
+  if (!orchestrator) {
     return {
       shouldNotify: false,
       reason: 'Orchestrator not found',
@@ -456,7 +456,7 @@ export async function shouldNotifyOrchestrator(
   }
 
   // Don't notify about own messages
-  if (message.authorId === vp.userId) {
+  if (message.authorId === orchestrator.userId) {
     return {
       shouldNotify: false,
       reason: 'Own message',
@@ -483,13 +483,13 @@ export async function shouldNotifyOrchestrator(
   const contentLower = message.content.toLowerCase();
 
   // Check for @mention (URGENT)
-  const vpMentionPatterns = [
-    `@${vp.user.name?.toLowerCase()}`,
-    `@${vp.role.toLowerCase()}`,
-    vp.user.email?.toLowerCase(),
+  const orchestratorMentionPatterns = [
+    `@${orchestrator.user.name?.toLowerCase()}`,
+    `@${orchestrator.role.toLowerCase()}`,
+    orchestrator.user.email?.toLowerCase(),
   ].filter(Boolean);
 
-  for (const pattern of vpMentionPatterns) {
+  for (const pattern of orchestratorMentionPatterns) {
     if (contentLower.includes(pattern)) {
       shouldNotify = true;
       priority = 'urgent';
@@ -500,10 +500,10 @@ export async function shouldNotifyOrchestrator(
   }
 
   // Check for discipline mention (HIGH)
-  if (vp.discipline) {
+  if (orchestrator.discipline) {
     const disciplinePatterns = [
-      vp.discipline.toLowerCase(),
-      vp.disciplineRef?.name?.toLowerCase(),
+      orchestrator.discipline.toLowerCase(),
+      orchestrator.disciplineRef?.name?.toLowerCase(),
     ].filter(Boolean) as string[];
 
     for (const pattern of disciplinePatterns) {
@@ -517,8 +517,8 @@ export async function shouldNotifyOrchestrator(
   }
 
   // Check for capability keywords (MEDIUM)
-  const capabilities = Array.isArray(vp.capabilities)
-    ? (vp.capabilities as string[])
+  const capabilities = Array.isArray(orchestrator.capabilities)
+    ? (orchestrator.capabilities as string[])
     : [];
 
   for (const capability of capabilities) {
@@ -717,7 +717,7 @@ export async function calculateChannelRelevance(
   channelId: string,
 ): Promise<ChannelRelevance> {
   // Fetch Orchestrator details
-  const orchestrator = await prisma.vP.findUnique({
+  const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
     include: {
       user: {
@@ -735,8 +735,8 @@ export async function calculateChannelRelevance(
     },
   });
 
-  if (!vp) {
-    throw new Error(`VP not found: ${orchestratorId}`);
+  if (!orchestrator) {
+    throw new Error(`Orchestrator not found: ${orchestratorId}`);
   }
 
   // Fetch channel details with members
@@ -753,7 +753,7 @@ export async function calculateChannelRelevance(
         user: {
           select: {
             id: true,
-            vp: {
+            orchestrator: {
               select: {
                 discipline: true,
                 role: true,
@@ -789,9 +789,9 @@ export async function calculateChannelRelevance(
   };
 
   const factors: RelevanceFactors = {
-    disciplineMatch: calculateDisciplineMatch(vp, channel),
-    roleMatch: calculateRoleMatch(vp, channel),
-    memberSimilarity: calculateMemberSimilarity(vp, channelWithMembers),
+    disciplineMatch: calculateDisciplineMatch(orchestrator, channel),
+    roleMatch: calculateRoleMatch(orchestrator, channel),
+    memberSimilarity: calculateMemberSimilarity(orchestrator, channelWithMembers),
     activityLevel: calculateActivityLevel(channelWithCounts),
     channelAge: calculateChannelAge(channel),
   };
@@ -813,7 +813,7 @@ export async function calculateChannelRelevance(
     factors.channelAge * weights.channelAge;
 
   // Generate explanation
-  const explanation = generateRelevanceExplanation(factors, vp, channel);
+  const explanation = generateRelevanceExplanation(factors, orchestrator, channel);
 
   return {
     channelId,
@@ -842,7 +842,7 @@ export async function getRecommendedChannels(
   const { minScore = 0.5, limit = 10, excludeJoined = true, channelType } = options;
 
   // Get Orchestrator with workspace context
-  const orchestrator = await prisma.vP.findUnique({
+  const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
     include: {
       user: {
@@ -856,19 +856,19 @@ export async function getRecommendedChannels(
     },
   });
 
-  if (!vp) {
-    throw new Error(`VP not found: ${orchestratorId}`);
+  if (!orchestrator) {
+    throw new Error(`Orchestrator not found: ${orchestratorId}`);
   }
 
   // Get all channels in the workspace
   const channels = await prisma.channel.findMany({
     where: {
-      workspaceId: vp.workspaceId ?? undefined,
+      workspaceId: orchestrator.workspaceId ?? undefined,
       isArchived: false,
       ...(channelType && { type: channelType }),
       ...(excludeJoined && {
         id: {
-          notIn: vp.user.channelMembers.map((m) => m.channelId),
+          notIn: orchestrator.user.channelMembers.map((m) => m.channelId),
         },
       }),
     },
@@ -950,8 +950,8 @@ export async function trackChannelActivity(event: ActivityEvent): Promise<void> 
   const { orchestratorId, channelId, eventType, metadata, timestamp = new Date() } = event;
 
   // Verify Orchestrator and channel exist
-  const [vp, channel] = await Promise.all([
-    prisma.vP.findUnique({
+  const [orch, channel] = await Promise.all([
+    prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: { id: true, userId: true },
     }),
@@ -961,7 +961,7 @@ export async function trackChannelActivity(event: ActivityEvent): Promise<void> 
     }),
   ]);
 
-  if (!vp || !channel) {
+  if (!orch || !channel) {
     throw new Error('Orchestrator or channel not found');
   }
 
@@ -973,7 +973,7 @@ export async function trackChannelActivity(event: ActivityEvent): Promise<void> 
     await prisma.channelMember.updateMany({
       where: {
         channelId,
-        userId: vp.userId,
+        userId: orch.userId,
       },
       data: {
         lastReadAt: timestamp,
@@ -982,7 +982,7 @@ export async function trackChannelActivity(event: ActivityEvent): Promise<void> 
   }
 
   // Log to console for debugging (replace with proper logging service)
-  console.log(`[Channel Activity] VP:${orchestratorId} Channel:${channelId} Event:${eventType}`, {
+  console.log(`[Channel Activity] Orchestrator:${orchestratorId} Channel:${channelId} Event:${eventType}`, {
     metadata,
     timestamp,
   });
@@ -1038,12 +1038,12 @@ return 0.5;
  * Calculate member similarity score (0-1)
  */
 function calculateMemberSimilarity(
-  vp: { discipline: string },
+  orchestratorParam: { discipline: string },
   channel: {
     members: Array<{
       user: {
         id: string;
-        vp: {
+        orchestrator: {
           discipline: string;
           disciplineRef: { name: string } | null;
         } | null;
@@ -1051,19 +1051,19 @@ function calculateMemberSimilarity(
     }>;
   },
 ): number {
-  const vpDiscipline = vp.discipline.toLowerCase();
+  const orchestratorDiscipline = orchestratorParam.discipline.toLowerCase();
 
-  // Count members with VPs in the same discipline
+  // Count members with Orchestrators in the same discipline
   const similarMembers = channel.members.filter((member) => {
-    const memberVP = member.user.orchestrator;
-    if (!memberVP) {
+    const memberOrchestrator = member.user.orchestrator;
+    if (!memberOrchestrator) {
 return false;
 }
 
     const memberDiscipline = (
-      memberVP.disciplineRef?.name || memberVP.discipline
+      memberOrchestrator.disciplineRef?.name || memberOrchestrator.discipline
     ).toLowerCase();
-    return memberDiscipline === vpDiscipline;
+    return memberDiscipline === orchestratorDiscipline;
   });
 
   const totalMembers = channel.members.length;

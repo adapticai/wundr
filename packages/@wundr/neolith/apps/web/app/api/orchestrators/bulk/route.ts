@@ -119,7 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const adminOrgIds = new Set(userOrganizations.map((m) => m.organizationId));
 
     // Fetch all requested VPs
-    const orchestrators = await prisma.vP.findMany({
+    const orchestrators = await prisma.orchestrator.findMany({
       where: { id: { in: input.ids } },
       include: {
         user: {
@@ -185,10 +185,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Perform batch update in a transaction
-    if (vpsToUpdate.length > 0) {
+    if (orchestratorsToUpdate.length > 0) {
       await prisma.$transaction(async (tx) => {
         // Update all Orchestrator statuses
-        await tx.vP.updateMany({
+        await tx.orchestrator.updateMany({
           where: { id: { in: orchestratorsToUpdate.map((v) => v.orchestratorId) } },
           data: { status: newStatus },
         });

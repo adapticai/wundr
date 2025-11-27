@@ -42,7 +42,7 @@ interface TaskDetails {
   createdAt: Date;
   updatedAt: Date;
   completedAt: Date | null;
-  vp: {
+  orchestrator: {
     id: string;
     discipline: string;
     role: string;
@@ -150,7 +150,7 @@ export async function GET(
     const task = await prisma.task.findUnique({
       where: { id: taskId },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             discipline: true,
@@ -194,7 +194,7 @@ export async function GET(
     }
 
     // Verify task belongs to specified Orchestrator and workspace
-    if (task.vpId !== orchestratorId || task.workspaceId !== workspaceId) {
+    if (task.orchestratorId !== orchestratorId || task.workspaceId !== workspaceId) {
       return NextResponse.json(
         createErrorResponse('Task does not belong to specified Orchestrator/workspace', TASK_ERROR_CODES.FORBIDDEN),
         { status: 403 },
@@ -381,7 +381,7 @@ export async function PATCH(
     }
 
     // Verify task belongs to specified Orchestrator and workspace
-    if (existingTask.vpId !== orchestratorId || existingTask.workspaceId !== workspaceId) {
+    if (existingTask.orchestratorId !== orchestratorId || existingTask.workspaceId !== workspaceId) {
       return NextResponse.json(
         createErrorResponse('Task does not belong to specified Orchestrator/workspace', TASK_ERROR_CODES.FORBIDDEN),
         { status: 403 },
@@ -475,7 +475,7 @@ export async function PATCH(
       where: { id: taskId },
       data: updateData,
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             discipline: true,
@@ -611,7 +611,7 @@ export async function DELETE(
     }
 
     // Verify task belongs to specified Orchestrator and workspace
-    if (task.vpId !== orchestratorId || task.workspaceId !== workspaceId) {
+    if (task.orchestratorId !== orchestratorId || task.workspaceId !== workspaceId) {
       return NextResponse.json(
         createErrorResponse('Task does not belong to specified Orchestrator/workspace', TASK_ERROR_CODES.FORBIDDEN),
         { status: 403 },

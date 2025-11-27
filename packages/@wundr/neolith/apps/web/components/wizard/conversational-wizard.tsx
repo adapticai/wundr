@@ -29,7 +29,7 @@ export interface Message {
  */
 export interface EntityData {
   name: string;
-  description: string;
+  description?: string;
   [key: string]: unknown;
 }
 
@@ -164,24 +164,10 @@ export function ConversationalWizard({
   };
 
   /**
-   * Handle switching back to chat
-   */
-  const handleBackToChat = () => {
-    setActiveTab('chat');
-  };
-
-  /**
    * Handle form submission
    */
   const handleFormSubmit = (data: EntityData) => {
     onComplete(data);
-  };
-
-  /**
-   * Handle updating data from form
-   */
-  const handleDataUpdate = (data: EntityData) => {
-    setExtractedData(data);
   };
 
   return (
@@ -246,11 +232,9 @@ export function ConversationalWizard({
           {extractedData && (
             <EntityReviewForm
               entityType={entityType}
-              data={extractedData}
+              extractedData={extractedData as Parameters<typeof EntityReviewForm>[0]['extractedData']}
               onSubmit={handleFormSubmit}
               onCancel={onCancel}
-              onBackToChat={handleBackToChat}
-              onUpdate={handleDataUpdate}
             />
           )}
         </TabsContent>

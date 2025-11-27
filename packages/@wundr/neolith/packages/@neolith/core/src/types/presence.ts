@@ -72,9 +72,9 @@ export interface PresenceMetadata {
 /**
  * Orchestrator (Virtual Person) presence information.
  */
-export interface VPPresence {
+export interface OrchestratorPresence {
   /** Unique Orchestrator identifier */
-  vpId: string;
+  orchestratorId: string;
 
   /** Current presence status */
   status: PresenceStatus;
@@ -201,11 +201,11 @@ export interface UserPresenceEvent extends BasePresenceEvent {
 /**
  * Orchestrator presence change event.
  */
-export interface VPPresenceEvent extends BasePresenceEvent {
+export interface OrchestratorPresenceEvent extends BasePresenceEvent {
   type: 'vp.online' | 'vp.offline' | 'vp.heartbeat';
 
   /** OrchestratorID associated with the event */
-  vpId: string;
+  orchestratorId: string;
 
   /** Previous presence state */
   previousStatus?: PresenceStatus;
@@ -236,7 +236,12 @@ export interface ChannelPresenceEvent extends BasePresenceEvent {
 /**
  * Union type for all presence events.
  */
-export type PresenceEvent = UserPresenceEvent | VPPresenceEvent | ChannelPresenceEvent;
+export type PresenceEvent = UserPresenceEvent | OrchestratorPresenceEvent | ChannelPresenceEvent;
+
+/**
+ * @deprecated Use OrchestratorPresenceEvent instead
+ */
+export type VPPresenceEvent = OrchestratorPresenceEvent;
 
 // =============================================================================
 // Callback Types
@@ -250,12 +255,17 @@ export type PresenceCallback = (event: UserPresenceEvent) => void;
 /**
  * Callback for Orchestrator presence changes.
  */
-export type VPPresenceCallback = (event: VPPresenceEvent) => void;
+export type OrchestratorPresenceCallback = (event: OrchestratorPresenceEvent) => void;
 
 /**
  * Callback for channel presence changes.
  */
 export type ChannelPresenceCallback = (event: ChannelPresenceEvent) => void;
+
+/**
+ * @deprecated Use OrchestratorPresenceCallback instead
+ */
+export type VPPresenceCallback = OrchestratorPresenceCallback;
 
 /**
  * Unsubscribe function returned by subscription methods.
@@ -356,9 +366,9 @@ export function isUserPresence(value: unknown): value is UserPresence {
 }
 
 /**
- * Type guard to check if a value is a VPPresence object.
+ * Type guard to check if a value is a OrchestratorPresence object.
  */
-export function isVPPresence(value: unknown): value is VPPresence {
+export function isVPPresence(value: unknown): value is OrchestratorPresence {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -387,9 +397,9 @@ export function isUserPresenceEvent(event: PresenceEvent): event is UserPresence
 }
 
 /**
- * Type guard to check if a value is a VPPresenceEvent.
+ * Type guard to check if a value is a OrchestratorPresenceEvent.
  */
-export function isVPPresenceEvent(event: PresenceEvent): event is VPPresenceEvent {
+export function isVPPresenceEvent(event: PresenceEvent): event is OrchestratorPresenceEvent {
   return event.type.startsWith('vp.');
 }
 

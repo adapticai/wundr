@@ -2,7 +2,7 @@
  * Full Flow Integration Tests
  *
  * Comprehensive end-to-end tests for critical user flows:
- * 1. Login → Dashboard → Create Orchestrator → View VP
+ * 1. Login → Dashboard → Create Orchestrator → View Orchestrator
  * 2. Dashboard → Channels → Create Channel → Send Message
  * 3. Dashboard → Workflows → Create Workflow → View Workflow
  * 4. Dashboard → Agents → Create Agent → View Agent
@@ -55,7 +55,7 @@ function getErrorReport(): string {
   return `Errors found (${criticalErrors.length}):\n${criticalErrors.map((e, i) => `  ${i + 1}. ${e}`).join('\n')}`;
 }
 
-test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View VP', () => {
+test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View Orchestrator', () => {
   // workspaceId will be extracted from URL after login
   let workspaceId: string = 'pending-auth';
 
@@ -79,20 +79,20 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View VP',
     expect(page.url()).toContain('/dashboard');
 
     // Step 2: Navigate to Orchestrators page
-    await page.click('aside a:has-text("Orchestrators"), a:has-text("VPs")');
+    await page.click('aside a:has-text("Orchestrators")');
     await page.waitForURL(/\/orchestrators/, { timeout: 10000 });
 
     await page.screenshot({
-      path: path.join(SCREENSHOTS_DIR, 'flow1-step2-vps-page.png'),
+      path: path.join(SCREENSHOTS_DIR, 'flow1-step2-orchestrators-page.png'),
       fullPage: true,
     });
 
-    console.log('Step 2: VPs page loaded');
+    console.log('Step 2: Orchestrators page loaded');
 
     // Step 3: Click Create Orchestrator button
-    const createVPButton = page.locator('button:has-text("Create VP")').first();
-    await expect(createVPButton).toBeVisible({ timeout: 5000 });
-    await createVPButton.click();
+    const createOrchestratorButton = page.locator('button:has-text("Create Orchestrator")').first();
+    await expect(createOrchestratorButton).toBeVisible({ timeout: 5000 });
+    await createOrchestratorButton.click();
     await page.waitForTimeout(1000);
 
     await page.screenshot({
@@ -104,11 +104,11 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View VP',
 
     // Step 4: Fill out Orchestrator creation form
     const timestamp = Date.now();
-    const vpName = `Test Orchestrator ${timestamp}`;
+    const orchestratorName = `Test Orchestrator ${timestamp}`;
 
     // Find and fill name field
     const nameInput = page.locator('input[name="name"], input[id="orchestrator-name"], input[placeholder*="name" i]').first();
-    await nameInput.fill(vpName);
+    await nameInput.fill(orchestratorName);
 
     // Select discipline if available
     const disciplineSelect = page.locator('select[name="discipline"], select[id="discipline"]').first();
@@ -121,10 +121,10 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View VP',
       fullPage: true,
     });
 
-    console.log('Step 4: Form filled with:', vpName);
+    console.log('Step 4: Form filled with:', orchestratorName);
 
     // Step 5: Submit form (stub - may not actually create)
-    const submitButton = page.locator('button[type="submit"]:has-text("Create"), button:has-text("Create VP")').last();
+    const submitButton = page.locator('button[type="submit"]:has-text("Create"), button:has-text("Create Orchestrator")').last();
     await submitButton.click();
     await page.waitForTimeout(2000);
 
@@ -135,9 +135,9 @@ test.describe('Flow 1: Login → Dashboard → Create Orchestrator → View VP',
 
     console.log('Step 5: Form submitted');
 
-    // Step 6: Verify we're back on VPs page or see the new VP
+    // Step 6: Verify we're back on Orchestrators page or see the new Orchestrator
     const currentUrl = page.url();
-    expect(currentUrl).toMatch(/\/(vps|virtual-persons)/);
+    expect(currentUrl).toMatch(/\/orchestrators/);
 
     console.log('Step 6: Flow completed');
     console.log('Console Errors:', getErrorReport());
@@ -616,7 +616,7 @@ test.describe('Integration Test Summary Report', () => {
 
     // Test all flows quickly to generate summary
     const flows = [
-      { name: 'VP Creation Flow', route: '/orchestrators', button: 'Create VP' },
+      { name: 'Orchestrator Creation Flow', route: '/orchestrators', button: 'Create Orchestrator' },
       { name: 'Channel Creation Flow', route: '/channels', button: 'Create Channel' },
       { name: 'Workflow Creation Flow', route: '/workflows', button: 'Create Workflow' },
       { name: 'Agent Creation Flow', route: '/agents', button: 'Create Agent' },

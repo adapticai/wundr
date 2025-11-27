@@ -195,17 +195,17 @@ export class DaemonApiService {
     this.requireScope(token, 'messages:write');
 
     // Get the VP's associated user ID
-    const orchestrator = await this.prisma.vP.findUnique({
+    const orchestrator = await this.prisma.orchestrator.findUnique({
       where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
     // Verify Orchestrator has access to channel
-    const hasAccess = await this.checkChannelAccess(vp.userId, params.channelId);
+    const hasAccess = await this.checkChannelAccess(orchestrator.userId, params.channelId);
     if (!hasAccess) {
       throw new DaemonApiError('VP does not have access to this channel', 'CHANNEL_ACCESS_DENIED');
     }
@@ -214,7 +214,7 @@ export class DaemonApiService {
     const message = await this.prisma.message.create({
       data: {
         channel: { connect: { id: params.channelId } },
-        author: { connect: { id: vp.userId } },
+        author: { connect: { id: orchestrator.userId } },
         content: params.content,
         parent: params.parentId ? { connect: { id: params.parentId } } : undefined,
         // Cast metadata to satisfy Prisma's InputJsonValue type
@@ -243,8 +243,8 @@ export class DaemonApiService {
     await this.redis.publish(`channel:${params.channelId}:messages`, JSON.stringify({
       type: 'message.new',
       messageId: message.id,
-      authorId: vp.userId,
-      vpId: token.orchestratorId,
+      authorId: orchestrator.userId,
+      orchestratorId: token.orchestratorId,
     }));
 
     return message.id;
@@ -272,16 +272,16 @@ export class DaemonApiService {
     this.requireScope(token, 'messages:read');
 
     // Get the VP's associated user ID
-    const orchestrator = await this.prisma.vP.findUnique({
+    const orchestrator = await this.prisma.orchestrator.findUnique({
       where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
-    const hasAccess = await this.checkChannelAccess(vp.userId, channelId);
+    const hasAccess = await this.checkChannelAccess(orchestrator.userId, channelId);
     if (!hasAccess) {
       throw new DaemonApiError('VP does not have access to this channel', 'CHANNEL_ACCESS_DENIED');
     }
@@ -329,18 +329,18 @@ export class DaemonApiService {
     this.requireScope(token, 'channels:read');
 
     // Get the VP's associated user ID
-    const orchestrator = await this.prisma.vP.findUnique({
+    const orchestrator = await this.prisma.orchestrator.findUnique({
       where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
     // Get channels Orchestrator is a member of
     const memberships = await this.prisma.channelMember.findMany({
-      where: { userId: vp.userId },
+      where: { userId: orchestrator.userId },
       include: {
         channel: {
           include: {
@@ -367,12 +367,12 @@ export class DaemonApiService {
     this.requireScope(token, 'channels:join');
 
     // Get the VP's associated user ID
-    const orchestrator = await this.prisma.vP.findUnique({
+    const orchestrator = await this.prisma.orchestrator.findUnique({
       where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
@@ -392,11 +392,11 @@ export class DaemonApiService {
     // Add Orchestrator to channel
     await this.prisma.channelMember.upsert({
       where: {
-        channelId_userId: { channelId, userId: vp.userId },
+        channelId_userId: { channelId, userId: orchestrator.userId },
       },
       create: {
         channelId,
-        userId: vp.userId,
+        userId: orchestrator.userId,
         role: 'MEMBER',
       },
       update: {},
@@ -412,17 +412,17 @@ export class DaemonApiService {
     this.requireScope(token, 'channels:join');
 
     // Get the VP's associated user ID
-    const orchestrator = await this.prisma.vP.findUnique({
+    const orchestrator = await this.prisma.orchestrator.findUnique({
       where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
     await this.prisma.channelMember.deleteMany({
-      where: { channelId, userId: vp.userId },
+      where: { channelId, userId: orchestrator.userId },
     });
 
     await this.publishEvent(token.daemonId, token.orchestratorId, 'channel.left', { channelId });
@@ -515,18 +515,18 @@ export class DaemonApiService {
   async getConfig(token: DaemonToken): Promise<DaemonConfig> {
     this.requireScope(token, 'vp:config');
 
-    const orchestrator = await this.prisma.vP.findUnique({
+    const orchestrator = await this.prisma.orchestrator.findUnique({
       where: { id: token.orchestratorId },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
-    const capabilities = vp.capabilities as string[] | null;
+    const capabilities = orchestrator.capabilities as string[] | null;
 
     return {
-      vpId: token.orchestratorId,
+      orchestratorId: token.orchestratorId,
       workspaceId: token.workspaceId,
       settings: {
         maxConcurrentConnections: 5,
@@ -557,7 +557,7 @@ export class DaemonApiService {
     // Map status to VPStatus enum
     const vpStatus = status === 'active' ? 'ONLINE' : status === 'paused' ? 'AWAY' : 'BUSY';
 
-    await this.prisma.vP.update({
+    await this.prisma.orchestrator.update({
       where: { id: token.orchestratorId },
       data: {
         status: vpStatus,
@@ -598,16 +598,16 @@ export class DaemonApiService {
     this.requireScope(token, 'messages:read');
 
     // Get the VP's associated user ID
-    const orchestrator = await this.prisma.vP.findUnique({
+    const orchestrator = await this.prisma.orchestrator.findUnique({
       where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new DaemonApiError('VP not found', 'VP_NOT_FOUND');
     }
 
-    const hasAccess = await this.checkChannelAccess(vp.userId, channelId);
+    const hasAccess = await this.checkChannelAccess(orchestrator.userId, channelId);
     if (!hasAccess) {
       throw new DaemonApiError('VP does not have access to this channel', 'CHANNEL_ACCESS_DENIED');
     }
@@ -694,20 +694,20 @@ export class DaemonApiService {
    * Publishes a daemon event to Redis for delivery.
    *
    * @param daemonId - The daemon instance ID
-   * @param vpId - The OrchestratorID associated with the event
+   * @param orchestratorId - The OrchestratorID associated with the event
    * @param type - The event type
    * @param payload - Event-specific data payload
    */
   private async publishEvent(
     daemonId: string,
-    vpId: string,
+    orchestratorId: string,
     type: DaemonEventType,
     payload: DaemonEventPayload,
   ): Promise<void> {
     const event: DaemonEvent = {
       id: `evt_${Date.now()}_${crypto.randomUUID().split('-')[0]}`,
       daemonId,
-      vpId,
+      orchestratorId,
       type,
       payload,
       timestamp: new Date(),

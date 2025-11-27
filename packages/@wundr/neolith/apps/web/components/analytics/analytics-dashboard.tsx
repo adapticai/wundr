@@ -36,10 +36,10 @@ interface AnalyticsResponse {
     totalMessages: number;
     totalChannels: number;
     totalMembers: number;
-    totalVPs: number;
+    totalOrchestrators: number;
     totalTasks: number;
     totalWorkflows: number;
-    activeVPs: number;
+    activeOrchestrators: number;
     completedTasks: number;
     successfulWorkflows: number;
   };
@@ -48,9 +48,9 @@ interface AnalyticsResponse {
     taskCompletion: Array<{ timestamp: string; value: number }>;
     workflowExecution: Array<{ timestamp: string; value: number }>;
   };
-  vpActivity: Array<{
+  orchestratorActivity: Array<{
     orchestratorId: string;
-    vpName: string;
+    orchestratorName: string;
     messageCount: number;
     taskCount: number;
     completedTasks: number;
@@ -344,8 +344,8 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
           isLoading={isLoading}
         />
         <MetricCard
-          title="Active VPs"
-          value={metrics?.summary.activeVPs || 0}
+          title="Active Orchestrators"
+          value={metrics?.summary.activeOrchestrators || 0}
           icon={<BotIcon />}
           isLoading={isLoading}
         />
@@ -401,12 +401,12 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="p-4 sm:p-6 bg-card border border-border rounded-lg">
               <Leaderboard
-                title="Top VPs by Messages"
-                data={metrics?.orchestratorActivity.slice(0, 5).map(vp => ({
-                  id: vp.orchestratorId,
-                  name: vp.orchestratorName,
-                  value: vp.messageCount,
-                  subtitle: vp.status,
+                title="Top Orchestrators by Messages"
+                data={metrics?.orchestratorActivity.slice(0, 5).map(orch => ({
+                  id: orch.orchestratorId,
+                  name: orch.orchestratorName,
+                  value: orch.messageCount,
+                  subtitle: orch.status,
                 })) || []}
                 valueLabel="messages"
               />
@@ -447,9 +447,9 @@ export function AnalyticsDashboard({ workspaceId, className }: AnalyticsDashboar
             </div>
             <div className="p-4 bg-muted/50 rounded-lg text-center">
               <p className="text-2xl sm:text-3xl font-semibold text-foreground">
-                {metrics?.summary.totalVPs.toLocaleString() || 0}
+                {metrics?.summary.totalOrchestrators.toLocaleString() || 0}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">VPs Configured</p>
+              <p className="text-sm text-muted-foreground mt-1">Orchestrators Configured</p>
             </div>
             <div className="p-4 bg-muted/50 rounded-lg text-center">
               <p className="text-2xl sm:text-3xl font-semibold text-foreground">

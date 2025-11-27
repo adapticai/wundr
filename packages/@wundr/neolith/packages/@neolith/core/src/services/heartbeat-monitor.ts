@@ -12,8 +12,8 @@ import { prisma } from '@neolith/database';
 import type {
   HealthStatus,
   HeartbeatConfig,
-  OnVPRecoveredCallback,
-  OnVPUnhealthyCallback,
+  OnOrchestratorRecoveredCallback,
+  OnOrchestratorUnhealthyCallback,
 } from '../types/heartbeat';
 import {
   DEFAULT_HEARTBEAT_CONFIG,
@@ -47,14 +47,14 @@ export interface HeartbeatMonitorService {
    *
    * @param callback - Function to call when a Orchestrator becomes unhealthy
    */
-  onVPUnhealthy(callback: OnVPUnhealthyCallback): void;
+  onVPUnhealthy(callback: OnOrchestratorUnhealthyCallback): void;
 
   /**
    * Registers a callback for Orchestrator recovered events.
    *
    * @param callback - Function to call when a Orchestrator recovers
    */
-  onVPRecovered(callback: OnVPRecoveredCallback): void;
+  onVPRecovered(callback: OnOrchestratorRecoveredCallback): void;
 
   /**
    * Manually checks all registered VPs.
@@ -129,11 +129,11 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   private readonly db: PrismaClient;
 
   private monitorInterval: NodeJS.Timeout | null = null;
-  private unhealthyCallbacks: OnVPUnhealthyCallback[] = [];
-  private recoveredCallbacks: OnVPRecoveredCallback[] = [];
+  private unhealthyCallbacks: OnOrchestratorUnhealthyCallback[] = [];
+  private recoveredCallbacks: OnOrchestratorRecoveredCallback[] = [];
 
   // Track Orchestrator states for detecting transitions
-  private vpStates: Map<string, HealthStatus> = new Map();
+  private orchestratorStates: Map<string, HealthStatus> = new Map();
 
   // Recovery tracking
   private recoveryHeartbeats: Map<string, number> = new Map();
@@ -216,14 +216,14 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
   /**
    * Registers a callback for Orchestrator unhealthy events.
    */
-  onVPUnhealthy(callback: OnVPUnhealthyCallback): void {
+  onVPUnhealthy(callback: OnOrchestratorUnhealthyCallback): void {
     this.unhealthyCallbacks.push(callback);
   }
 
   /**
    * Registers a callback for Orchestrator recovered events.
    */
-  onVPRecovered(callback: OnVPRecoveredCallback): void {
+  onVPRecovered(callback: OnOrchestratorRecoveredCallback): void {
     this.recoveredCallbacks.push(callback);
   }
 
@@ -238,7 +238,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
     const results = new Map<string, HealthStatus>();
 
     // Get all registered OrchestratorIDs
-    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.registeredVPs());
+    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.registeredOrchestrators());
 
     // Check each VP
     for (const vpId of vpIds) {
@@ -256,7 +256,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
     const results = new Map<string, HealthStatus>();
 
     // Get OrchestratorIDs for this organization
-    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.orgVPs(orgId));
+    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orgId));
 
     // Check each VP
     for (const vpId of vpIds) {
@@ -378,7 +378,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
     this.stats.totalUnhealthyEvents++;
 
     // Update Orchestrator status in database
-    await this.db.vP.update({
+    await this.db.orchestrator.update({
       where: { id: vpId },
       data: { status: 'AWAY' }, // Set to AWAY for unhealthy
     }).catch(() => {
@@ -403,7 +403,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
     this.stats.totalRecoveryEvents++;
 
     // Update Orchestrator status in database
-    await this.db.vP.update({
+    await this.db.orchestrator.update({
       where: { id: vpId },
       data: { status: 'ONLINE' },
     }).catch(() => {
@@ -425,7 +425,7 @@ export class HeartbeatMonitor implements HeartbeatMonitorService {
    * Deactivates an unhealthy VP.
    */
   private async deactivateVP(vpId: string): Promise<void> {
-    await this.db.vP.update({
+    await this.db.orchestrator.update({
       where: { id: vpId },
       data: { status: 'OFFLINE' },
     }).catch(() => {

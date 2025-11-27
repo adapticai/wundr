@@ -496,8 +496,8 @@ export type {
   OrchestratorEscalationConfig,
 
   // OrchestratorInput types
-  CreateVPInput,
-  UpdateVPInput,
+  CreateOrchestratorInput,
+  UpdateOrchestratorInput,
 
   // Service account types
   ServiceAccountCredentials,
@@ -507,8 +507,8 @@ export type {
   OrchestratorServiceAccountConfig,
 
   // OrchestratorQuery types
-  ListVPsOptions,
-  PaginatedVPResult,
+  ListOrchestratorsOptions,
+  PaginatedOrchestratorResult,
 
   // OrchestratorEvent types
   OrchestratorEventType,
@@ -602,6 +602,8 @@ export type {
   ChannelPresenceCallback,
   UnsubscribeFunction,
   PresenceConfig,
+  VPPresenceCallback,
+  VPPresenceEvent,
 
   // Heartbeat types
   HeartbeatDaemonInfo,
@@ -619,6 +621,8 @@ export type {
   DaemonUnregisteredEvent,
   OrchestratorUnhealthyEvent,
   OrchestratorRecoveredEvent,
+  OnOrchestratorUnhealthyCallback,
+  OnOrchestratorRecoveredCallback,
   OnVPUnhealthyCallback,
   OnVPRecoveredCallback,
   OnDaemonRegisteredCallback,
@@ -1141,11 +1145,11 @@ export type {
 
 export {
   // OrchestratorType guards
-  isVPCharter,
+  isOrchestratorCharter,
   isOrchestratorServiceAccountConfig,
 
   // OrchestratorConstants
-  DEFAULT_VP_CHARTER,
+  DEFAULT_ORCHESTRATOR_CHARTER,
 
   // Message Type guards
   isMessageWithAuthor,

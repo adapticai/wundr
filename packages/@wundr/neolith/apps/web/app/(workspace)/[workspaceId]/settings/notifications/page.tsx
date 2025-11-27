@@ -103,8 +103,8 @@ export default function NotificationsSettingsPage() {
 
           <label className="flex items-center justify-between cursor-pointer">
             <div>
-              <span className="text-sm font-medium">VP updates</span>
-              <p className="text-xs text-muted-foreground">Updates from your VPs</p>
+              <span className="text-sm font-medium">Orchestrator updates</span>
+              <p className="text-xs text-muted-foreground">Updates from your Orchestrators</p>
             </div>
             <input
               type="checkbox"

@@ -300,9 +300,9 @@ function ActivityCard({ activity }: ActivityCardProps) {
                 <span className="font-semibold">
                   {activity.actor.displayName || activity.actor.name || 'Unknown user'}
                 </span>
-                {activity.actor.isVP && (
+                {activity.actor.isOrchestrator && (
                   <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/20 dark:text-purple-300">
-                    VP
+                    AI
                   </span>
                 )}
                 <span className="text-muted-foreground"> {activity.action} </span>

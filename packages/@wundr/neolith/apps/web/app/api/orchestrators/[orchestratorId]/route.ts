@@ -30,7 +30,7 @@ import type { NextRequest} from 'next/server';
  * Route context with OrchestratorID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ orchestratorId: string }>;
 }
 
 /**
@@ -47,7 +47,7 @@ async function getVPWithAccessCheck(orchestratorId: string, userId: string) {
   const accessibleOrgIds = userOrganizations.map((m) => m.organizationId);
 
   // Fetch Orchestrator and verify organization access
-  const orchestrator = await prisma.vP.findUnique({
+  const orchestrator = await prisma.orchestrator.findUnique({
     where: { id: orchestratorId },
     include: {
       user: {
@@ -119,7 +119,7 @@ export async function GET(
     }
 
     // Get Orchestrator with access check
-    const result = await getVPWithAccessCheck(params.id, session.user.id);
+    const result = await getVPWithAccessCheck(params.orchestratorId, session.user.id);
 
     if (!result) {
       return NextResponse.json(
@@ -202,7 +202,7 @@ export async function PATCH(
     const input: UpdateOrchestratorInput = parseResult.data;
 
     // Get Orchestrator with access check
-    const result = await getVPWithAccessCheck(params.id, session.user.id);
+    const result = await getVPWithAccessCheck(params.orchestratorId, session.user.id);
 
     if (!result) {
       return NextResponse.json(
@@ -242,8 +242,8 @@ export async function PATCH(
       }
 
       // Update Orchestrator
-      return tx.vP.update({
-        where: { id: params.id },
+      return tx.orchestrator.update({
+        where: { id: params.orchestratorId },
         data: {
           ...(input.discipline !== undefined && { discipline: input.discipline }),
           ...(input.role !== undefined && { role: input.role }),
@@ -329,7 +329,7 @@ export async function DELETE(
     }
 
     // Get Orchestrator with access check
-    const result = await getVPWithAccessCheck(params.id, session.user.id);
+    const result = await getVPWithAccessCheck(params.orchestratorId, session.user.id);
 
     if (!result) {
       return NextResponse.json(
@@ -353,8 +353,8 @@ export async function DELETE(
     // The cascade delete on Orchestrator->User relation will handle cleanup
     await prisma.$transaction(async (tx) => {
       // Delete the Orchestrator first
-      await tx.vP.delete({
-        where: { id: params.id },
+      await tx.orchestrator.delete({
+        where: { id: params.orchestratorId },
       });
 
       // Delete the associated user
@@ -365,7 +365,7 @@ export async function DELETE(
 
     return NextResponse.json({
       message: 'Orchestrator deleted successfully',
-      deletedId: params.id,
+      deletedId: params.orchestratorId,
     });
   } catch (error) {
     console.error('[DELETE /api/orchestrators/:id] Error:', error);

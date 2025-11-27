@@ -78,9 +78,6 @@ export interface CreateOrchestratorInput {
   organizationId?: string;
 }
 
-// Alias for backward compatibility
-export type CreateVPInput = CreateOrchestratorInput;
-
 export interface UpdateOrchestratorInput {
   title?: string;
   description?: string;
@@ -114,11 +111,6 @@ export const ORCHESTRATOR_DISCIPLINES = [
   'Research',
   'Data Science',
 ] as const;
-
-// Alias for backward compatibility
-export const VP_DISCIPLINES = ORCHESTRATOR_DISCIPLINES;
-export type VPCharter = OrchestratorCharter;
-export type VPStatus = OrchestratorStatus;
 
 export type OrchestratorDiscipline = (typeof ORCHESTRATOR_DISCIPLINES)[number];
 

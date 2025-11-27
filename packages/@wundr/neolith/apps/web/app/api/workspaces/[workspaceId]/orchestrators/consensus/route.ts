@@ -45,9 +45,9 @@ const initiateConsensusSchema = z.object({
   description: z.string().max(2000, 'Description too long').optional(),
 
   /** OrchestratorIDs required to vote */
-  requiredVpIds: z
+  requiredOrchestratorIds: z
     .array(z.string().cuid('Invalid OrchestratorID'))
-    .min(2, 'At least two VPs required for consensus'),
+    .min(2, 'At least two Orchestrators required for consensus'),
 
   /** Threshold percentage for consensus (50-100) */
   threshold: z.number().min(50).max(100).default(75),
@@ -70,7 +70,7 @@ const castVoteSchema = z.object({
   consensusId: z.string().cuid('Invalid consensus ID'),
 
   /** OrchestratorID casting the vote */
-  vpId: z.string().cuid('Invalid OrchestratorID'),
+  orchestratorId: z.string().cuid('Invalid OrchestratorID'),
 
   /** Vote decision */
   vote: z.enum(['APPROVE', 'REJECT', 'ABSTAIN']),
@@ -87,7 +87,7 @@ interface ConsensusMetadata {
   type: string;
   title: string;
   description?: string;
-  requiredVpIds: string[];
+  requiredOrchestratorIds: string[];
   threshold: number;
   taskId?: string;
   deadline?: string;
@@ -141,15 +141,15 @@ async function verifyWorkspaceAccess(
 function calculateConsensusResult(
   votes: Array<{ vote: string }>,
   threshold: number,
-  requiredVpIds: string[],
+  requiredOrchestratorIds: string[],
 ): { status: 'PENDING' | 'APPROVED' | 'REJECTED'; reason: string } {
-  const totalRequired = requiredVpIds.length;
+  const totalRequired = requiredOrchestratorIds.length;
   const approveVotes = votes.filter((v) => v.vote === 'APPROVE').length;
   const totalVotes = votes.length;
 
   // Check if all votes are in
   if (totalVotes < totalRequired) {
-    return { status: 'PENDING', reason: 'Awaiting votes from all required VPs' };
+    return { status: 'PENDING', reason: 'Awaiting votes from all required Orchestrators' };
   }
 
   // Calculate approval percentage
@@ -171,7 +171,7 @@ function calculateConsensusResult(
 /**
  * POST /api/workspaces/:workspaceId/orchestrators/consensus
  *
- * Initiate a new consensus vote among VPs.
+ * Initiate a new consensus vote among Orchestrators.
  *
  * @param request - Next.js request with consensus data
  * @param context - Route context containing workspace ID
@@ -237,13 +237,13 @@ export async function POST(
       );
     }
 
-    const { type, title, description, requiredVpIds, threshold, taskId, deadline, metadata } =
+    const { type, title, description, requiredOrchestratorIds, threshold, taskId, deadline, metadata } =
       parseResult.data;
 
-    // Verify all required VPs exist and belong to workspace organization
-    const orchestrators = await prisma.vP.findMany({
+    // Verify all required Orchestrators exist and belong to workspace organization
+    const orchestrators = await prisma.orchestrator.findMany({
       where: {
-        id: { in: requiredVpIds },
+        id: { in: requiredOrchestratorIds },
         organizationId: accessCheck.organizationId,
       },
       select: {
@@ -253,10 +253,10 @@ export async function POST(
       },
     });
 
-    if (orchestrators.length !== requiredVpIds.length) {
+    if (orchestrators.length !== requiredOrchestratorIds.length) {
       return NextResponse.json(
         createCoordinationErrorResponse(
-          'Some VPs not found or not in workspace organization',
+          'Some Orchestrators not found or not in workspace organization',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
         { status: 404 },
@@ -292,7 +292,7 @@ export async function POST(
       type,
       title,
       description,
-      requiredVpIds,
+      requiredOrchestratorIds,
       threshold,
       taskId,
       deadline,
@@ -323,7 +323,7 @@ export async function POST(
       },
     });
 
-    // Create notifications for all required VPs
+    // Create notifications for all required Orchestrators
     await Promise.all(
       orchestrators.map((orchestrator) =>
         prisma.notification.create({
@@ -353,7 +353,7 @@ export async function POST(
       data: {
         consensusId,
         ...consensusMetadata,
-        requiredVps: orchestrators.map((orchestrator) => ({
+        requiredOrchestrators: orchestrators.map((orchestrator) => ({
           id: orchestrator.id,
           role: orchestrator.role,
         })),
@@ -438,7 +438,7 @@ export async function GET(
 
     // Filter by Orchestrator if specified
     if (orchestratorId) {
-      consensusArray = consensusArray.filter((c) => c.requiredVpIds.includes(orchestratorId));
+      consensusArray = consensusArray.filter((c) => c.requiredOrchestratorIds.includes(orchestratorId));
     }
 
     // Sort by most recent first
@@ -531,12 +531,12 @@ export async function PATCH(
       );
     }
 
-    const { consensusId, vpId, vote, comment } = parseResult.data;
+    const { consensusId, orchestratorId, vote, comment } = parseResult.data;
 
     // Verify Orchestrator exists and belongs to organization
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
-        id: vpId,
+        id: orchestratorId,
         organizationId: accessCheck.organizationId,
       },
       select: { id: true, role: true, userId: true },
@@ -574,7 +574,7 @@ export async function PATCH(
     }
 
     // Verify Orchestrator is required to vote
-    if (!consensus.requiredVpIds.includes(vpId)) {
+    if (!consensus.requiredOrchestratorIds.includes(orchestratorId)) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Orchestrator is not required to vote on this consensus',
@@ -585,11 +585,11 @@ export async function PATCH(
     }
 
     // Check if Orchestrator already voted
-    const existingVoteIndex = consensus.votes.findIndex((v) => v.orchestratorId === vpId);
+    const existingVoteIndex = consensus.votes.findIndex((v) => v.orchestratorId === orchestratorId);
     if (existingVoteIndex !== -1) {
       // Update existing vote
       consensus.votes[existingVoteIndex] = {
-        orchestratorId: vpId,
+        orchestratorId: orchestratorId,
         vote,
         comment,
         votedAt: new Date().toISOString(),
@@ -597,7 +597,7 @@ export async function PATCH(
     } else {
       // Add new vote
       consensus.votes.push({
-        orchestratorId: vpId,
+        orchestratorId: orchestratorId,
         vote,
         comment,
         votedAt: new Date().toISOString(),
@@ -605,7 +605,7 @@ export async function PATCH(
     }
 
     // Calculate consensus result
-    const result = calculateConsensusResult(consensus.votes, consensus.threshold, consensus.requiredVpIds);
+    const result = calculateConsensusResult(consensus.votes, consensus.threshold, consensus.requiredOrchestratorIds);
     consensus.status = result.status;
     consensus.updatedAt = new Date().toISOString();
 
@@ -623,13 +623,13 @@ export async function PATCH(
 
     // If consensus reached, notify all participants
     if (result.status !== 'PENDING') {
-      const allVps = await prisma.vP.findMany({
-        where: { id: { in: consensus.requiredVpIds } },
+      const allOrchestrators = await prisma.orchestrator.findMany({
+        where: { id: { in: consensus.requiredOrchestratorIds } },
         select: { userId: true },
       });
 
       await Promise.all(
-        allVps.map((participant) =>
+        allOrchestrators.map((participant) =>
           prisma.notification.create({
             data: {
               userId: participant.userId,

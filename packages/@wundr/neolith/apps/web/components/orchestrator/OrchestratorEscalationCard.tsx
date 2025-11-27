@@ -26,19 +26,19 @@ interface BlockedTask {
   estimatedImpact: string;
 }
 
-interface VPEscalation {
+interface OrchestratorEscalation {
   id: string;
-  vp: VP;
+  orchestrator: Orchestrator;
   task: BlockedTask;
   reason: EscalationReason;
-  vpReasoning: string;
+  orchestratorReasoning: string;
   suggestedActions?: string[];
   escalatedAt: Date;
   status: 'pending' | 'assigned' | 'resolved';
 }
 
-interface VPEscalationCardProps {
-  escalation: VPEscalation;
+interface OrchestratorEscalationCardProps {
+  escalation: OrchestratorEscalation;
   workspaceId?: string;
   onAssign?: (escalationId: string, userId: string) => void;
   onResolve?: (escalationId: string, resolution: string) => void;
@@ -86,14 +86,14 @@ const priorityConfig = {
   urgent: { color: 'text-red-700', bgColor: 'bg-red-100', dotColor: 'bg-red-500' },
 };
 
-export function VPEscalationCard({
+export function OrchestratorEscalationCard({
   escalation,
   workspaceId,
   onAssign,
   onResolve,
   onRespond,
   className,
-}: VPEscalationCardProps) {
+}: OrchestratorEscalationCardProps) {
   const reasonCfg = reasonConfig[escalation.reason.type];
   const priorityCfg = priorityConfig[escalation.task.priority];
   const ReasonIcon = reasonCfg.icon;
@@ -206,9 +206,9 @@ export function VPEscalationCard({
 
         <Separator />
 
-        {/* VP's Reasoning */}
+        {/* Orchestrator's Reasoning */}
         <div className="space-y-2">
-          <p className="text-sm font-medium">VP Analysis</p>
+          <p className="text-sm font-medium">Orchestrator Analysis</p>
           <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
             {escalation.orchestratorReasoning}
           </div>
@@ -274,7 +274,7 @@ export function VPEscalationCard({
               }}
             >
               <MessageSquare className="mr-2 h-4 w-4" />
-              Respond to VP
+              Respond to Orchestrator
             </Button>
           )}
 
@@ -292,18 +292,18 @@ export function VPEscalationCard({
 }
 
 // Compact list item version for escalation lists
-interface VPEscalationListItemProps {
-  escalation: VPEscalation;
+interface OrchestratorEscalationListItemProps {
+  escalation: OrchestratorEscalation;
   workspaceId?: string;
   onClick?: () => void;
   className?: string;
 }
 
-export function VPEscalationListItem({
+export function OrchestratorEscalationListItem({
   escalation,
   onClick,
   className,
-}: VPEscalationListItemProps) {
+}: OrchestratorEscalationListItemProps) {
   const reasonCfg = reasonConfig[escalation.reason.type];
   const priorityCfg = priorityConfig[escalation.task.priority];
 

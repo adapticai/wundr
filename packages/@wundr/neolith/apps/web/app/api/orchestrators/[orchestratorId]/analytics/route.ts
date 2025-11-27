@@ -29,7 +29,7 @@ import type { NextRequest } from 'next/server';
  * Route context with OrchestratorID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ orchestratorId: string }>;
 }
 
 /**
@@ -69,7 +69,7 @@ export async function GET(
 
     // Get OrchestratorID from params
     const params = await context.params;
-    const orchestratorId = params.id;
+    const orchestratorId = params.orchestratorId;
 
     // Validate OrchestratorID format
     if (!orchestratorId || orchestratorId.length === 0) {

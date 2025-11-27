@@ -52,18 +52,18 @@ model backlog {
   status       String        @default("active")
   priority     Int           @default(0)
   metadata     Json          @default("{}")
-  vpId         String        @map("vp_id")
+  orchestratorId String      @map("vp_id")
   workspaceId  String        @map("workspace_id")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   backlogItems backlogItem[]
-  orchestrator orchestrator  @relation(fields: [vpId], references: [id], onDelete: Cascade) // Orchestrator that owns this backlog
+  orchestrator orchestrator  @relation(fields: [orchestratorId], references: [id], onDelete: Cascade) // Orchestrator that owns this backlog
   workspace    workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([vpId, name])
+  @@unique([orchestratorId, name])
   @@index([priority])
   @@index([status])
-  @@index([vpId])
+  @@index([orchestratorId])
   @@index([workspaceId])
   @@map("backlogs")
 }
@@ -121,18 +121,18 @@ model daemonCredential {
   capabilities  String[]
   metadata      Json?
   isActive      Boolean   @default(true) @map("is_active")
-  vpId          String    @map("vp_id")
+  orchestratorId String   @map("vp_id")
   workspaceId   String    @map("workspace_id")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   expiresAt     DateTime? @map("expires_at")
   lastUsedAt    DateTime?    @map("last_used_at")
-  orchestrator  orchestrator @relation(fields: [vpId], references: [id], onDelete: Cascade) // Orchestrator these credentials authenticate
+  orchestrator  orchestrator @relation(fields: [orchestratorId], references: [id], onDelete: Cascade) // Orchestrator these credentials authenticate
   workspace     workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([apiKey])
   @@index([isActive])
-  @@index([vpId])
+  @@index([orchestratorId])
   @@index([workspaceId])
   @@map("daemon_credentials")
 }
@@ -350,7 +350,7 @@ model task {
   tags           String[]      @default([])
   metadata       Json          @default("{}")
   dependsOn      String[]      @default([]) @map("depends_on")
-  vpId           String        @map("vp_id")
+  orchestratorId String        @map("vp_id")
   workspaceId    String        @map("workspace_id")
   channelId      String?       @map("channel_id")
   createdById    String        @map("created_by_id")
@@ -362,7 +362,7 @@ model task {
   assignedTo     user?         @relation("taskAssignedTo", fields: [assignedToId], references: [id])
   channel        channel?      @relation(fields: [channelId], references: [id])
   createdBy      user          @relation("taskCreatedBy", fields: [createdById], references: [id])
-  orchestrator   orchestrator  @relation(fields: [vpId], references: [id], onDelete: Cascade) // Orchestrator responsible for this task
+  orchestrator   orchestrator  @relation(fields: [orchestratorId], references: [id], onDelete: Cascade) // Orchestrator responsible for this task
   workspace      workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([assignedToId])
@@ -372,7 +372,7 @@ model task {
   @@index([dueDate])
   @@index([priority])
   @@index([status])
-  @@index([vpId])
+  @@index([orchestratorId])
   @@index([workspaceId])
   @@map("tasks")
 }
@@ -385,8 +385,8 @@ model user {
   avatarUrl           String?              @map("avatar_url")
   bio                 String?
   status              UserStatus           @default(PENDING)
-  isVP                Boolean              @default(false) @map("is_vp") // Flag indicating if user is an Orchestrator
-  vpConfig            Json?                @map("vp_config") // Orchestrator configuration settings
+  isOrchestrator      Boolean              @default(false) @map("is_vp") // Flag indicating if user is an Orchestrator
+  orchestratorConfig  Json?                @map("vp_config") // Orchestrator configuration settings
   preferences         Json                 @default("{}")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")

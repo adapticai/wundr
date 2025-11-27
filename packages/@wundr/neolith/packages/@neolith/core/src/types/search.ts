@@ -52,8 +52,8 @@ export interface SearchFilters {
   isThreadReply?: boolean;
   /** Filter by discipline names */
   disciplines?: string[];
-  /** Filter by OrchestratorIDs */
-  vpIds?: string[];
+  /** Filter by Orchestrator IDs */
+  orchestratorIds?: string[];
 }
 
 /**
@@ -123,7 +123,7 @@ export type SearchResultData =
   | FileSearchResult
   | ChannelSearchResult
   | UserSearchResult
-  | VPSearchResult;
+  | OrchestratorSearchResult;
 
 /**
  * Message search result data
@@ -187,7 +187,7 @@ export interface UserSearchResult {
 /**
  * Orchestrator (Virtual Professional) search result data
  */
-export interface VPSearchResult {
+export interface OrchestratorSearchResult {
   type: 'vp';
   vpId: string;
   name: string;
@@ -382,11 +382,11 @@ export function isUserSearchResult(
 }
 
 /**
- * Type guard to check if data is a VPSearchResult
+ * Type guard to check if data is a OrchestratorSearchResult
  */
 export function isVPSearchResult(
   data: SearchResultData,
-): data is VPSearchResult {
+): data is OrchestratorSearchResult {
   return data.type === 'vp';
 }
 

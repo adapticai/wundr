@@ -64,7 +64,7 @@ async function getOrchestratorWithWorkspaceAccess(
     return null;
   }
 
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -143,7 +143,7 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VP_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
         { status: 404 },
       );
@@ -195,7 +195,7 @@ export async function GET(
           prisma.message.count({ where: messageWhere }),
           prisma.task.findMany({
             where: {
-              vpId: orchestratorId,
+              orchestratorId: orchestratorId,
               // Assuming tasks have a channelId or similar reference
               // Adjust based on your schema
             },
@@ -346,7 +346,7 @@ export async function POST(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VP_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
         { status: 404 },
       );
@@ -388,7 +388,7 @@ export async function POST(
 
     // Track the activity
     await trackChannelActivity({
-      vpId: orchestratorId,
+      orchestratorId: orchestratorId,
       channelId,
       eventType: activityData.eventType,
       metadata: activityData.metadata,

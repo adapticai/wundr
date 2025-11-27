@@ -61,7 +61,7 @@ async function verifyMemoryAccess(
   }
 
   // Verify Orchestrator exists and belongs to workspace
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
     },
@@ -77,10 +77,10 @@ async function verifyMemoryAccess(
   }
 
   // Verify memory exists and belongs to Orchestrator
-  const memory = await prisma.vPMemory.findFirst({
+  const memory = await prisma.orchestratorMemory.findFirst({
     where: {
       id: memoryId,
-      vpId: orchestratorId,
+      orchestratorId: orchestratorId,
     },
   });
 
@@ -226,7 +226,7 @@ export async function PATCH(
     const input: UpdateMemoryInput = parseResult.data;
 
     // Update memory
-    const updatedMemory = await prisma.vPMemory.update({
+    const updatedMemory = await prisma.orchestratorMemory.update({
       where: { id: memoryId },
       data: {
         ...(input.content && { content: input.content }),

@@ -109,7 +109,7 @@ vi.mock('@neolith/core', () => ({
         byDay: [],
         peakHours: [],
       },
-      vp: {
+      orchestrator: {
         totalVPs: 5,
         activeVPs: 3,
         messagesSent: 100,

@@ -427,7 +427,7 @@ export class GenesisEngine {
    * Orchestrator generator for Phase 1 generation.
    * @internal
    */
-  private readonly vpGenerator: OrchestratorGenerator;
+  private readonly orchestratorGenerator: OrchestratorGenerator;
 
   /**
    * Discipline generator for Phase 2 generation.
@@ -733,7 +733,7 @@ export class GenesisEngine {
       const progress = 15 + Math.floor(((i + 1) / result.orchestrators.length) * 20);
       this.reportProgress(
         options?.onProgress,
-        `Generated VP: ${vp.identity.name}`,
+        `Generated VP: ${orchestrator.identity.name}`,
         progress,
       );
     }
@@ -768,14 +768,14 @@ export class GenesisEngine {
     const allDisciplines: DisciplinePack[] = [];
     const existingDisciplineSlugs: string[] = [];
 
-    this.log(`Generating disciplines for ${vps.length} VPs`);
+    this.log(`Generating disciplines for ${orchestrators.length} VPs`);
 
     for (let vpIndex = 0; vpIndex < orchestrators.length; vpIndex++) {
       const orchestrator = orchestrators[vpIndex];
 
       // Use the convenience method to generate disciplines for this Orchestrator
       const disciplines = await this.disciplineGenerator.generateForVP(
-        vp,
+        orchestrator,
         industry,
       );
 
@@ -798,8 +798,8 @@ export class GenesisEngine {
         allDisciplines.push(discipline);
 
         // Update Orchestrator with discipline ID
-        if (!vp.disciplineIds.includes(discipline.id)) {
-          vp.disciplineIds.push(discipline.id);
+        if (!orchestrator.disciplineIds.includes(discipline.id)) {
+          orchestrator.disciplineIds.push(discipline.id);
         }
 
         // Report incremental progress
@@ -807,7 +807,7 @@ export class GenesisEngine {
           40 +
           Math.floor(
             ((vpIndex * limitedDisciplines.length + i) /
-              (vps.length * limitedDisciplines.length)) *
+              (orchestrators.length * limitedDisciplines.length)) *
               25,
           );
         this.reportProgress(
@@ -937,7 +937,7 @@ export class GenesisEngine {
 
     // Save VPs
     for (const orchestrator of result.orchestrators) {
-      await this.registry.charters.registerVP(vp);
+      await this.registry.charters.registerVP(orchestrator);
     }
     this.log(`Saved ${result.orchestrators.length} Orchestrator charters`);
 
@@ -1004,13 +1004,13 @@ export class GenesisEngine {
     this.log(`Wrote manifest to ${manifestPath}`);
 
     // Create and write VPs
-    const orchestratorsDir = pathModule.join(path, 'vps');
-    await fs.mkdir(vpsDir, { recursive: true });
+    const orchestratorsDir = pathModule.join(path, 'orchestrators');
+    await fs.mkdir(orchestratorsDir, { recursive: true });
     for (const orchestrator of result.orchestrators) {
-      const vpPath = pathModule.join(vpsDir, `${vp.identity.slug}.json`);
-      await fs.writeFile(vpPath, JSON.stringify(this.serializeVP(vp), null, 2));
+      const vpPath = pathModule.join(orchestratorsDir, `${orchestrator.identity.slug}.json`);
+      await fs.writeFile(vpPath, JSON.stringify(this.serializeOrchestrator(orchestrator), null, 2));
     }
-    this.log(`Wrote ${result.orchestrators.length} Orchestrator charters to ${vpsDir}`);
+    this.log(`Wrote ${result.orchestrators.length} Orchestrator charters to ${orchestratorsDir}`);
 
     // Create and write disciplines
     const disciplinesDir = pathModule.join(path, 'disciplines');
@@ -1248,9 +1248,9 @@ export class GenesisEngine {
     let manifest = result.manifest;
     for (const orchestrator of orchestrators) {
       manifest = this.manifestGenerator.addVP(manifest, {
-        orchestratorId: vp.id,
-        nodeId: vp.nodeId ?? `node-${vp.identity.slug}`,
-        hostname: `${vp.identity.slug}.cluster.internal`,
+        orchestratorId: orchestrator.id,
+        nodeId: orchestrator.nodeId ?? `node-${orchestrator.identity.slug}`,
+        hostname: `${orchestrator.identity.slug}.cluster.internal`,
         status: 'provisioning',
       });
     }
@@ -1319,11 +1319,11 @@ export class GenesisEngine {
    * Serialize Orchestrator charter for JSON export.
    * @internal
    */
-  private serializeVP(vp: OrchestratorCharter): Record<string, unknown> {
+  private serializeOrchestrator(orchestrator: OrchestratorCharter): Record<string, unknown> {
     return {
       ...orchestrator,
-      createdAt: vp.createdAt.toISOString(),
-      updatedAt: vp.updatedAt.toISOString(),
+      createdAt: orchestrator.createdAt.toISOString(),
+      updatedAt: orchestrator.updatedAt.toISOString(),
     };
   }
 

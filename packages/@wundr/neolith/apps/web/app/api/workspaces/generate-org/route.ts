@@ -2,7 +2,7 @@
  * Workspace Genesis API Route
  *
  * POST /api/workspaces/generate-org - Generate a full organizational structure
- * using @wundr/org-genesis and create workspace with VPs, disciplines, and channels.
+ * using @wundr/org-genesis and create workspace with Orchestrators, disciplines, and channels.
  *
  * This endpoint:
  * 1. Validates user permissions
@@ -10,7 +10,7 @@
  * 3. Creates workspace in database transaction
  * 4. Creates Orchestrator users for each discipline
  * 5. Creates channels for each discipline
- * 6. Auto-assigns VPs to their discipline channels
+ * 6. Auto-assigns Orchestrators to their discipline channels
  *
  * @module app/api/workspaces/generate-org/route
  */
@@ -26,7 +26,7 @@ import {
   type GenerateOrgInput,
   generateOrgSchema,
 } from '@/lib/validations/workspace-genesis';
-import type { AgentApiResponse, DisciplineApiResponse, VPApiResponse } from '@/types/api';
+import type { AgentApiResponse, DisciplineApiResponse, OrchestratorApiResponse } from '@/types/api';
 
 // Dynamic imports for org-genesis packages to avoid build-time resolution issues
 // These packages are loaded at runtime when the API is called
@@ -60,7 +60,7 @@ type _GenesisResultDetailed = {
     name: string;
     description: string;
     slug: string;
-    parentVpId?: string;
+    parentOrchestratorId?: string;
     claudeMd?: { objectives?: string[] };
     hooks?: Array<{ description: string }>;
     agentIds?: string[];
@@ -74,7 +74,7 @@ type _GenesisResultDetailed = {
     charter?: string;
   }>;
   stats: {
-    vpCount: number;
+    orchestratorCount: number;
     disciplineCount: number;
     agentCount: number;
     generationTimeMs: number;
@@ -115,7 +115,7 @@ type _NeolithResultDetailed = {
     id: string;
     name: string;
     description: string;
-    vpId: string;
+    orchestratorId: string;
     slug: string;
     purpose: string;
     activities: string[];
@@ -139,7 +139,7 @@ type _NeolithResultDetailed = {
 
 type MigrationResult = {
   status: string;
-  vpMappings: { total: number };
+  orchestratorMappings: { total: number };
   disciplineMappings: { total: number };
   warnings: string[];
 };
@@ -147,7 +147,7 @@ type MigrationResult = {
 /**
  * POST /api/workspaces/generate-org
  *
- * Generate a complete organizational structure with workspace, VPs, disciplines,
+ * Generate a complete organizational structure with workspace, Orchestrators, disciplines,
  * and channels using the org-genesis engine.
  *
  * @param request - Next.js request with generation parameters
@@ -289,7 +289,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
 
       console.log('[generate-org] Genesis generation complete:', {
-        vpCount: genesisResult.stats.vpCount,
+        orchestratorCount: genesisResult.stats.orchestratorCount,
         disciplineCount: genesisResult.stats.disciplineCount,
         agentCount: genesisResult.stats.agentCount,
         duration: genesisResult.stats.generationTimeMs,
@@ -323,16 +323,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         createdAt: new Date().toISOString(),
         schemaVersion: '1.0.0',
       },
-      orchestrators: genesisResult.orchestrators.map((vp: VPApiResponse) => ({
-        id: vp.id,
-        name: vp.identity?.name || vp.title || 'Unnamed VP',
-        title: vp.coreDirective,
-        responsibilities: vp.capabilities || [],
-        disciplines: vp.disciplineIds || [],
+      orchestrators: genesisResult.orchestrators.map((orchestrator: OrchestratorApiResponse) => ({
+        id: orchestrator.id,
+        name: orchestrator.identity?.name || orchestrator.title || 'Unnamed Orchestrator',
+        title: orchestrator.coreDirective,
+        responsibilities: orchestrator.capabilities || [],
+        disciplines: orchestrator.disciplineIds || [],
         persona: {
           communicationStyle: 'professional',
           decisionMakingStyle: 'data-driven',
-          background: vp.identity?.persona || '',
+          background: orchestrator.identity?.persona || '',
           traits: [],
         },
         kpis: [],
@@ -341,7 +341,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         id: discipline.id,
         name: discipline.name,
         description: discipline.description,
-        vpId: discipline.parentVpId || '',
+        orchestratorId: discipline.parentOrchestratorId || '',
         slug: discipline.slug,
         purpose: discipline.claudeMd?.objectives?.[0] || discipline.description,
         activities: discipline.hooks?.map((h) => h.description) || [],
@@ -379,7 +379,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       console.log('[generate-org] Migration validation complete:', {
-        vpMappings: migrationResult.vpMappings.total,
+        orchestratorMappings: migrationResult.orchestratorMappings.total,
         disciplineMappings: migrationResult.disciplineMappings.total,
         status: migrationResult.status,
       });
@@ -416,7 +416,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               orgGenesis: {
                 manifestId: genesisResult.manifest.id,
                 generatedAt: new Date().toISOString(),
-                vpCount: genesisResult.stats.vpCount,
+                orchestratorCount: genesisResult.stats.orchestratorCount,
                 disciplineCount: genesisResult.stats.disciplineCount,
                 agentCount: genesisResult.stats.agentCount,
               },
@@ -448,49 +448,49 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           disciplineMap.set(discipline.id, dbDiscipline.id);
         }
 
-        // 8.4. Create OrchestratorUsers
-        const vpMap = new Map<string, string>();
-        for (const vp of neolithResult.orchestrators) {
-          // Find discipline ID for this VP
-          const vpDisciplines = neolithResult.disciplines.filter((d: DisciplineApiResponse) =>
-            vp.disciplines.includes(d.id),
+        // 8.4. Create Orchestrator Users
+        const orchestratorMap = new Map<string, string>();
+        for (const orchestrator of neolithResult.orchestrators) {
+          // Find discipline ID for this Orchestrator
+          const orchestratorDisciplines = neolithResult.disciplines.filter((d: DisciplineApiResponse) =>
+            orchestrator.disciplines.includes(d.id),
           );
-          const primaryDisciplineId = vpDisciplines[0]
-            ? disciplineMap.get(vpDisciplines[0].id)
+          const primaryDisciplineId = orchestratorDisciplines[0]
+            ? disciplineMap.get(orchestratorDisciplines[0].id)
             : undefined;
 
-          // Create User for VP
-          const vpUser = await tx.user.create({
+          // Create User for Orchestrator
+          const orchestratorUser = await tx.user.create({
             data: {
-              email: `${vp.name.toLowerCase().replace(/\s+/g, '.')}@vp.${input.workspaceSlug}.local`,
-              name: vp.name,
-              displayName: vp.title,
-              isVP: true,
+              email: `${orchestrator.name.toLowerCase().replace(/\s+/g, '.')}@orchestrator.${input.workspaceSlug}.local`,
+              name: orchestrator.name,
+              displayName: orchestrator.title,
+              isOrchestrator: true,
               status: 'ACTIVE',
-              vpConfig: {
-                responsibilities: vp.responsibilities,
+              orchestratorConfig: {
+                responsibilities: orchestrator.responsibilities,
                 persona: {
-                  communicationStyle: vp.persona.communicationStyle,
-                  decisionMakingStyle: vp.persona.decisionMakingStyle,
-                  background: vp.persona.background,
-                  traits: vp.persona.traits,
+                  communicationStyle: orchestrator.persona.communicationStyle,
+                  decisionMakingStyle: orchestrator.persona.decisionMakingStyle,
+                  background: orchestrator.persona.background,
+                  traits: orchestrator.persona.traits,
                 },
-                kpis: vp.kpis,
+                kpis: orchestrator.kpis,
               } as Prisma.InputJsonValue,
             },
           });
 
-          // Create OrchestratorRecord
-          await tx.vP.create({
+          // Create Orchestrator Record
+          await tx.orchestrator.create({
             data: {
-              userId: vpUser.id,
+              userId: orchestratorUser.id,
               organizationId: input.organizationId,
               workspaceId: newWorkspace.id,
               disciplineId: primaryDisciplineId,
-              discipline: vpDisciplines[0]?.name || 'General',
-              role: vp.title,
+              discipline: orchestratorDisciplines[0]?.name || 'General',
+              role: orchestrator.title,
               status: 'OFFLINE',
-              capabilities: vp.responsibilities as Prisma.InputJsonValue,
+              capabilities: orchestrator.responsibilities as Prisma.InputJsonValue,
             },
           });
 
@@ -498,12 +498,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           await tx.workspaceMember.create({
             data: {
               workspaceId: newWorkspace.id,
-              userId: vpUser.id,
+              userId: orchestratorUser.id,
               role: 'MEMBER',
             },
           });
 
-          vpMap.set(vp.id, vpUser.id);
+          orchestratorMap.set(orchestrator.id, orchestratorUser.id);
         }
 
         // 8.5. Create Channels for Disciplines
@@ -522,7 +522,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               createdById: session.user.id,
               settings: {
                 disciplineId: discipline.id,
-                vpId: discipline.vpId,
+                orchestratorId: discipline.orchestratorId,
                 activities: discipline.activities,
                 capabilities: discipline.capabilities,
               } as Prisma.InputJsonValue,
@@ -541,12 +541,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           });
 
           // 8.6. Auto-assign Orchestrator to Discipline Channel
-          const vpUserId = vpMap.get(discipline.vpId);
-          if (vpUserId) {
+          const orchestratorUserId = orchestratorMap.get(discipline.orchestratorId);
+          if (orchestratorUserId) {
             await tx.channelMember.create({
               data: {
                 channelId: channel.id,
-                userId: vpUserId,
+                userId: orchestratorUserId,
                 role: 'MEMBER',
               },
             });
@@ -573,12 +573,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           },
         });
 
-        // Add all VPs to #general
-        for (const vpUserId of vpMap.values()) {
+        // Add all Orchestrators to #general
+        for (const orchestratorUserId of orchestratorMap.values()) {
           await tx.channelMember.create({
             data: {
               channelId: generalChannel.id,
-              userId: vpUserId,
+              userId: orchestratorUserId,
               role: 'MEMBER',
             },
           });
@@ -612,7 +612,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                     name: true,
                     email: true,
                     displayName: true,
-                    isVP: true,
+                    isOrchestrator: true,
                   },
                 },
               },
@@ -639,7 +639,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log('[generate-org] Workspace created successfully:', {
       workspaceId: workspace?.id,
       duration,
-      vpCount: genesisResult.stats.vpCount,
+      orchestratorCount: genesisResult.stats.orchestratorCount,
       disciplineCount: genesisResult.stats.disciplineCount,
       channelCount: workspace?.channels?.length ?? 0,
     });
@@ -649,14 +649,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         data: workspace,
         genesis: {
           manifestId: genesisResult.manifest.id,
-          vpCount: genesisResult.stats.vpCount,
+          orchestratorCount: genesisResult.stats.orchestratorCount,
           disciplineCount: genesisResult.stats.disciplineCount,
           agentCount: genesisResult.stats.agentCount,
           generationTimeMs: genesisResult.stats.generationTimeMs,
         },
         migration: {
           status: migrationResult.status,
-          vpMappings: migrationResult.vpMappings.total,
+          orchestratorMappings: migrationResult.orchestratorMappings.total,
           disciplineMappings: migrationResult.disciplineMappings.total,
           warnings: migrationResult.warnings,
         },

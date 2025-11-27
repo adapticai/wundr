@@ -42,7 +42,7 @@ const EVENT_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -115,15 +115,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const since = sinceParam ? new Date(sinceParam) : new Date(Date.now() - 5 * 60 * 1000); // Default: last 5 minutes
 
     // Get Orchestrator info
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: {
         userId: true,
         organizationId: true,
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: EVENT_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
@@ -132,14 +132,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Get channels the Orchestrator is a member of
     const memberships = await prisma.channelMember.findMany({
-      where: { userId: vp.userId },
+      where: { userId: orchestrator.userId },
       select: { channelId: true },
     });
     const channelIds = memberships.map((m) => m.channelId);
 
     const events: PendingEvent[] = [];
 
-    // Fetch new messages in VP's channels (using type assertion for Prisma column mapping)
+    // Fetch new messages in Orchestrator's channels (using type assertion for Prisma column mapping)
     type MessageWithAuthorId = { id: string; content: string; createdAt: Date; channelId: string; authorId: string };
     const rawNewMessages = await prisma.message.findMany({
       where: {
@@ -152,11 +152,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const newMessagesTyped = rawNewMessages as unknown as MessageWithAuthorId[];
 
     // Filter out own messages and get author/channel info
-    const filteredMessages = newMessagesTyped.filter((m) => m.authorId !== vp.userId);
+    const filteredMessages = newMessagesTyped.filter((m) => m.authorId !== orchestrator.userId);
     const authorIds = Array.from(new Set(filteredMessages.map((m) => m.authorId)));
     const authors = await prisma.user.findMany({
       where: { id: { in: authorIds } },
-      select: { id: true, name: true, avatarUrl: true, isVP: true },
+      select: { id: true, name: true, avatarUrl: true, isOrchestrator: true },
     });
     const authorMap = new Map(authors.map((a) => [a.id, a]));
 
@@ -186,12 +186,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
     }
 
-    // Check for mentions (messages containing @vpname)
+    // Check for mentions (messages containing @orchestratorname)
     const rawMentionMessages = await prisma.message.findMany({
       where: {
         channelId: { in: channelIds },
         createdAt: { gt: since },
-        content: { contains: `@${vp.userId}` },
+        content: { contains: `@${orchestrator.userId}` },
       },
       orderBy: { createdAt: 'asc' },
       take: 50,
@@ -205,7 +205,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (mentionAuthorIds.length > 0) {
       const mentionAuthors = await prisma.user.findMany({
         where: { id: { in: mentionAuthorIds } },
-        select: { id: true, name: true, avatarUrl: true, isVP: true },
+        select: { id: true, name: true, avatarUrl: true, isOrchestrator: true },
       });
       mentionAuthors.forEach((a) => authorMap.set(a.id, a));
     }
@@ -235,7 +235,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Check Redis for any queued events (e.g., from webhooks)
     try {
-      const queuedEventsKey = `daemon:events:${token.vpId}`;
+      const queuedEventsKey = `daemon:events:${token.orchestratorId}`;
       const queuedEvents = await redis.lrange(queuedEventsKey, 0, 99);
 
       for (const eventStr of queuedEvents) {
@@ -322,7 +322,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     // Store acknowledgment in Redis
     try {
-      const ackKey = `daemon:ack:${token.vpId}`;
+      const ackKey = `daemon:ack:${token.orchestratorId}`;
       const pipeline = redis.pipeline();
 
       for (const eventId of eventIds) {
@@ -335,7 +335,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       await pipeline.exec();
 
       // Remove acknowledged events from the queue
-      const queuedEventsKey = `daemon:events:${token.vpId}`;
+      const queuedEventsKey = `daemon:events:${token.orchestratorId}`;
       const queuedEvents = await redis.lrange(queuedEventsKey, 0, -1);
 
       for (const eventStr of queuedEvents) {

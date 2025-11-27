@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 
 import { cn } from '@/lib/utils';
 
-interface VPThinkingIndicatorProps {
-  vpName?: string;
+interface OrchestratorThinkingIndicatorProps {
+  orchestratorName?: string;
   taskContext?: string;
   variant?: 'dots' | 'spinner' | 'pulse';
   size?: 'sm' | 'md' | 'lg';
@@ -35,14 +35,14 @@ const sizeClasses = {
   },
 };
 
-export function VPThinkingIndicator({
-  vpName,
+export function OrchestratorThinkingIndicator({
+  orchestratorName,
   taskContext,
   variant = 'dots',
   size = 'md',
   showText = true,
   className,
-}: VPThinkingIndicatorProps) {
+}: OrchestratorThinkingIndicatorProps) {
   const sizes = sizeClasses[size];
 
   return (
@@ -54,7 +54,7 @@ export function VPThinkingIndicator({
       )}
       role="status"
       aria-live="polite"
-      aria-label={`${vpName || 'VP'} is working`}
+      aria-label={`${orchestratorName || 'Orchestrator'} is working`}
     >
       <Bot className={cn('text-primary', sizes.icon)} />
 
@@ -66,7 +66,7 @@ export function VPThinkingIndicator({
 
       {showText && (
         <span className={cn('font-medium text-primary', sizes.text)}>
-          {vpName ? `${vpName} is working` : 'VP is working'}
+          {orchestratorName ? `${orchestratorName} is working` : 'Orchestrator is working'}
           {taskContext && (
             <span className="text-muted-foreground">: {taskContext}</span>
           )}

@@ -24,7 +24,7 @@ import { BACKLOG_ERROR_CODES, completeTaskSchema } from '@/lib/validations/task-
  * POST /api/workspaces/[workspaceId]/tasks/[taskId]/complete
  *
  * Mark a task as complete (DONE status). Records completion time, results,
- * and artifacts. If completed by a VP, posts status to assigned channel.
+ * and artifacts. If completed by an Orchestrator, posts status to assigned channel.
  * Triggers any configured workflow webhooks.
  *
  * Request body:
@@ -87,10 +87,10 @@ export async function POST(
         workspaceId: true,
         channelId: true,
         status: true,
-        vpId: true,
+        orchestratorId: true,
         assignedToId: true,
         completedAt: true,
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -109,7 +109,7 @@ export async function POST(
             id: true,
             name: true,
             email: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         channel: {
@@ -146,7 +146,7 @@ export async function POST(
 
     // Verify user has permission to complete the task
     const isAssignee = task.assignedToId === session.user.id;
-    const isVPUser = task.vp.userId === session.user.id;
+    const isOrchestratorUser = task.orchestrator.userId === session.user.id;
 
     // Check if user is a workspace member
     const workspaceMember = await prisma.workspaceMember.findFirst({
@@ -156,7 +156,7 @@ export async function POST(
       },
     });
 
-    if (!isAssignee && !isVPUser && !workspaceMember) {
+    if (!isAssignee && !isOrchestratorUser && !workspaceMember) {
       return NextResponse.json(
         createErrorResponse(
           'You do not have permission to complete this task',
@@ -213,7 +213,7 @@ export async function POST(
         } as Prisma.InputJsonValue,
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -233,14 +233,14 @@ export async function POST(
     );
 
     // If Orchestrator completed the task and there's a channel, post status message
-    if (task.assignedTo?.isVP && task.channelId) {
+    if (task.assignedTo?.isOrchestrator && task.channelId) {
       try {
         await prisma.message.create({
           data: {
             content: `Task completed: **${task.title}**${input.notes ? `\n\n${input.notes}` : ''}${input.artifacts.length > 0 ? `\n\nArtifacts:\n${input.artifacts.map((a) => `- ${a}`).join('\n')}` : ''}`,
             type: 'SYSTEM',
             channelId: task.channelId,
-            authorId: task.vp.userId,
+            authorId: task.orchestrator.userId,
             metadata: {
               taskId: task.id,
               eventType: 'task_completed',
@@ -278,7 +278,7 @@ export async function POST(
               status: updatedTask.status,
               completedAt: completedAt.toISOString(),
               completedBy: session.user.id,
-              vpId: task.vpId,
+              orchestratorId: task.orchestratorId,
               workspaceId,
             },
             completion: input,
@@ -305,7 +305,7 @@ export async function POST(
         completedAt: completedAt.toISOString(),
         completedBy: session.user.name || session.user.email,
         artifactCount: input.artifacts.length,
-        channelNotified: !!task.channelId && !!task.assignedTo?.isVP,
+        channelNotified: !!task.channelId && !!task.assignedTo?.isOrchestrator,
       },
     });
   } catch (error) {

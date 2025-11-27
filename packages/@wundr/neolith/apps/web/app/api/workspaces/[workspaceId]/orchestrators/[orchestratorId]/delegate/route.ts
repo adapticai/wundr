@@ -1,7 +1,7 @@
 /**
  * OrchestratorTask Delegation API Route
  *
- * Allows VPs to delegate tasks to humans or other VPs.
+ * Allows Orchestrators to delegate tasks to humans or other Orchestrators.
  * Creates task assignment, notifications, and optional channel messages.
  *
  * Routes:
@@ -123,7 +123,7 @@ export async function POST(
     }
 
     // Verify Orchestrator exists and belongs to this workspace/organization
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: workspace.organizationId,
@@ -165,7 +165,7 @@ export async function POST(
     const task = await prisma.task.findFirst({
       where: {
         id: input.taskId,
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
       },
     });
 
@@ -216,8 +216,8 @@ export async function POST(
       note: input.note,
     });
 
-    // Check if target user is a Orchestrator
-    const targetVP = await prisma.vP.findFirst({
+    // Check if target user is an Orchestrator
+    const targetOrchestrator = await prisma.orchestrator.findFirst({
       where: {
         userId: targetUser.id,
         organizationId: workspace.organizationId,
@@ -230,8 +230,8 @@ export async function POST(
       where: { id: input.taskId },
       data: {
         assignedToId: targetUser.id,
-        // Update orchestratorId only if target is a Orchestrator
-        ...(targetVP && { vpId: targetVP.id }),
+        // Update orchestratorId only if target is an Orchestrator
+        ...(targetOrchestrator && { orchestratorId: targetOrchestrator.id }),
         // Update priority if provided
         ...(input.priority && { priority: input.priority }),
         // Update due date if provided

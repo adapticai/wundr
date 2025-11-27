@@ -28,7 +28,7 @@ import type { NextRequest } from 'next/server';
  * Route context with OrchestratorID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ orchestratorId: string }>;
 }
 
 /**
@@ -106,8 +106,8 @@ export async function POST(
     const input: EscalateTaskInput = parseResult.data;
 
     // Get Orchestrator and verify access
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: params.id },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: params.orchestratorId },
       include: {
         user: {
           select: {
@@ -133,10 +133,10 @@ export async function POST(
     }
 
     // Check if authenticated user is the Orchestrator or has admin/owner role
-    const isVPUser = session.user.id === orchestrator.user.id;
+    const isOrchestratorUser = session.user.id === orchestrator.user.id;
     let hasAdminAccess = false;
 
-    if (!isVPUser) {
+    if (!isOrchestratorUser) {
       const membership = await prisma.organizationMember.findUnique({
         where: {
           organizationId_userId: {
@@ -149,7 +149,7 @@ export async function POST(
       hasAdminAccess = membership?.role === 'OWNER' || membership?.role === 'ADMIN';
     }
 
-    if (!isVPUser && !hasAdminAccess) {
+    if (!isOrchestratorUser && !hasAdminAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to escalate tasks for this Orchestrator',
@@ -163,7 +163,7 @@ export async function POST(
     const task = await prisma.task.findUnique({
       where: { id: input.taskId },
       include: {
-        vp: true,
+        orchestrator: true,
         channel: true,
       },
     });
@@ -176,9 +176,9 @@ export async function POST(
     }
 
     // Verify task belongs to Orchestrator
-    if (task.vpId !== orchestrator.id) {
+    if (task.orchestratorId !== orchestrator.id) {
       return NextResponse.json(
-        createErrorResponse('Task does not belong to this VP', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
+        createErrorResponse('Task does not belong to this Orchestrator', ORCHESTRATOR_ERROR_CODES.FORBIDDEN),
         { status: 403 },
       );
     }
@@ -231,8 +231,8 @@ export async function POST(
         escalatedAt: new Date().toISOString(),
         reason: input.reason,
         severity: input.severity,
-        vpId: orchestrator.id,
-        vpName: orchestrator.user.name,
+        orchestratorId: orchestrator.id,
+        orchestratorName: orchestrator.user.name,
         context: input.context,
       },
     };
@@ -256,7 +256,7 @@ export async function POST(
       type: 'escalation',
       severity: input.severity,
       taskId: task.id,
-      vpId: orchestrator.id,
+      orchestratorId: orchestrator.id,
       reason: input.reason,
       ...(input.context ?? {}),
     };
@@ -277,7 +277,7 @@ export async function POST(
             email: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         channel: {

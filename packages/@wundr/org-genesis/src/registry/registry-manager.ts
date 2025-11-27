@@ -591,7 +591,7 @@ export class RegistryManager {
    */
   async exportAll(): Promise<RegistryExport> {
     // Fetch all data from all registries in parallel
-    const [vps, sessionManagers, disciplines, agents, tools, hooks] = await Promise.all([
+    const [orchestrators, sessionManagers, disciplines, agents, tools, hooks] = await Promise.all([
       this.charters.listVPs(),
       this.charters.listSessionManagers(),
       this.disciplines.list(),
@@ -649,7 +649,7 @@ export class RegistryManager {
     if (data.charters) {
       if (data.charters.orchestrators) {
         for (const orchestrator of data.charters.orchestrators) {
-          await this.charters.registerVP(vp);
+          await this.charters.registerVP(orchestrator);
         }
       }
       if (data.charters.sessionManagers) {

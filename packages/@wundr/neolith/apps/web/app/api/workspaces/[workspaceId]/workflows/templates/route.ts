@@ -87,11 +87,11 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
   },
   {
     id: 'template-orchestrator-status-monitor',
-    name: 'VP Status Monitor',
-    description: 'Notify admins when a Orchestrator goes offline unexpectedly',
+    name: 'Orchestrator Status Monitor',
+    description: 'Notify admins when an Orchestrator goes offline unexpectedly',
     category: 'automation',
     trigger: {
-      type: 'vp.status_changed',
+      type: 'orchestrator.status_changed',
       config: {},
       conditions: [
         { field: 'newStatus', operator: 'equals', value: 'OFFLINE' },
@@ -103,14 +103,14 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Notify Admins',
         config: {
           targetRole: 'ADMIN',
-          message: 'VP "{{trigger.orchestrator.name}}" has gone offline',
+          message: 'Orchestrator "{{trigger.orchestrator.name}}" has gone offline',
           priority: 'high',
         },
         conditions: [],
         onError: 'continue',
       },
     ],
-    tags: ['vp', 'monitoring', 'alerts'],
+    tags: ['orchestrator', 'monitoring', 'alerts'],
     isBuiltIn: true,
   },
   {
@@ -132,7 +132,7 @@ const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
         name: 'Post Daily Summary',
         config: {
           channel: 'general',
-          message: 'Daily Activity Summary:\n- Messages: {{stats.messageCount}}\n- Active VPs: {{stats.activeVpCount}}\n- New Members: {{stats.newMemberCount}}',
+          message: 'Daily Activity Summary:\n- Messages: {{stats.messageCount}}\n- Active Orchestrators: {{stats.activeOrchestratorCount}}\n- New Members: {{stats.newMemberCount}}',
         },
         conditions: [],
         onError: 'continue',

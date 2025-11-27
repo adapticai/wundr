@@ -1,7 +1,7 @@
 /**
- * OrchestratorStatus Update API Route
+ * Orchestrator Status Update API Route
  *
- * Allows Orchestrators (VPs) to post status updates to channels.
+ * Allows Orchestrators to post status updates to channels.
  *
  * Routes:
  * - POST /api/orchestrators/:id/status - Post a status update
@@ -28,7 +28,7 @@ import type { NextRequest } from 'next/server';
  * Route context with OrchestratorID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ orchestratorId: string }>;
 }
 
 /**
@@ -104,8 +104,8 @@ export async function POST(
     const input: OrchestratorStatusUpdateInput = parseResult.data;
 
     // Get Orchestrator and verify access
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: params.id },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: params.orchestratorId },
       include: {
         user: {
           select: {
@@ -132,10 +132,10 @@ export async function POST(
     }
 
     // Check if authenticated user is the Orchestrator or has admin/owner role
-    const isVPUser = session.user.id === orchestrator.user.id;
+    const isOrchestratorUser = session.user.id === orchestrator.user.id;
     let hasAdminAccess = false;
 
-    if (!isVPUser) {
+    if (!isOrchestratorUser) {
       const membership = await prisma.organizationMember.findUnique({
         where: {
           organizationId_userId: {
@@ -148,7 +148,7 @@ export async function POST(
       hasAdminAccess = membership?.role === 'OWNER' || membership?.role === 'ADMIN';
     }
 
-    if (!isVPUser && !hasAdminAccess) {
+    if (!isOrchestratorUser && !hasAdminAccess) {
       return NextResponse.json(
         createErrorResponse(
           'Insufficient permissions to post status for this Orchestrator',
@@ -210,7 +210,7 @@ export async function POST(
     const metadata = {
       statusType: input.statusType,
       isStatusUpdate: true,
-      vpId: orchestrator.id,
+      orchestratorId: orchestrator.id,
       ...(input.metadata ?? {}),
     };
 
@@ -231,7 +231,7 @@ export async function POST(
             email: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         channel: {

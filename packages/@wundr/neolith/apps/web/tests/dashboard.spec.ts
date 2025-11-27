@@ -149,7 +149,7 @@ test.describe('Dashboard Page - Full Test Suite', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             data: {
-              members: { total: 0, activeToday: 0, vpCount: 0, humanCount: 0 },
+              members: { total: 0, activeToday: 0, orchestratorCount: 0, humanCount: 0 },
               channels: { total: 0, publicCount: 0, privateCount: 0 },
               workflows: { total: 0, active: 0, draft: 0, inactive: 0, archived: 0 },
               messages: { today: 0, week: 0, month: 0, total: 0 }

@@ -32,7 +32,7 @@ import {
  * Requires authentication. Users can only see tasks from workspaces they belong to.
  *
  * Query Parameters:
- * - vpId: Filter by OrchestratorID
+ * - orchestratorId: Filter by OrchestratorID
  * - workspaceId: Filter by workspace ID
  * - status: Filter by status (TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED)
  * - priority: Filter by priority (CRITICAL, HIGH, MEDIUM, LOW)
@@ -48,7 +48,7 @@ import {
  *
  * @example
  * ```
- * GET /api/tasks?vpId=vp_123&status=TODO&priority=HIGH&sortBy=priority&limit=50
+ * GET /api/tasks?orchestratorId=orchestrator_123&status=TODO&priority=HIGH&sortBy=priority&limit=50
  * ```
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       workspaceId: filters.workspaceId
         ? filters.workspaceId
         : { in: accessibleWorkspaceIds },
-      ...(filters.vpId && { vpId: filters.vpId }),
+      ...(filters.orchestratorId && { orchestratorId: filters.orchestratorId }),
       ...(filters.channelId && { channelId: filters.channelId }),
       ...(filters.assignedToId && { assignedToId: filters.assignedToId }),
       ...(statusArray && { status: { in: statusArray as TaskStatus[] } }),
@@ -173,7 +173,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         take,
         orderBy,
         include: {
-          vp: {
+          orchestrator: {
             select: {
               id: true,
               role: true,
@@ -216,7 +216,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 /**
  * POST /api/tasks
  *
- * Create a new task for a VP. Requires authentication and access to the workspace.
+ * Create a new task for an Orchestrator. Requires authentication and access to the workspace.
  * Validates task dependencies to prevent circular references.
  *
  * Request body:
@@ -225,7 +225,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  *   "description": "Detailed description",
  *   "priority": "HIGH",
  *   "status": "TODO",
- *   "vpId": "vp_123",
+ *   "orchestratorId": "orchestrator_123",
  *   "workspaceId": "ws_123",
  *   "estimatedHours": 8,
  *   "dueDate": "2025-12-31T00:00:00Z",
@@ -245,7 +245,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * {
  *   "title": "Add authentication",
  *   "priority": "HIGH",
- *   "vpId": "vp_123",
+ *   "orchestratorId": "orchestrator_123",
  *   "workspaceId": "ws_123"
  * }
  * ```
@@ -306,16 +306,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verify Orchestrator exists and belongs to the same workspace
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
-        id: input.vpId,
+        id: input.orchestratorId,
       },
       select: { id: true, workspaceId: true },
     });
 
-    if (!vp || (vp.workspaceId && vp.workspaceId !== input.workspaceId)) {
+    if (!orchestrator || (orchestrator.workspaceId && orchestrator.workspaceId !== input.workspaceId)) {
       return NextResponse.json(
-        createErrorResponse('VP not found in this workspace', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found in this workspace', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -368,14 +368,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         tags: input.tags,
         dependsOn: input.dependsOn,
         metadata: input.metadata as Prisma.InputJsonValue,
-        vpId: input.vpId,
+        orchestratorId: input.orchestratorId,
         workspaceId: input.workspaceId,
         channelId: input.channelId,
         createdById: session.user.id,
         assignedToId: input.assignedToId,
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,

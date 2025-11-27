@@ -80,7 +80,7 @@ export async function GET(
     }
 
     // Verify Orchestrator exists
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: {
         id: true,
@@ -91,7 +91,7 @@ export async function GET(
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', WORK_SESSION_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', WORK_SESSION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -99,7 +99,7 @@ export async function GET(
     // Find the active task for this Orchestrator
     const activeTask = await prisma.task.findFirst({
       where: {
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         workspaceId,
         status: 'IN_PROGRESS',
       },

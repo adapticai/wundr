@@ -126,12 +126,12 @@ export class DaemonAuthService {
    * Authenticate a daemon using OrchestratorAPI key.
    */
   async authenticate(credentials: DaemonCredentials): Promise<DaemonAuthResult> {
-    // Validate API key and get VP
-    // Note: We look for any Orchestrator user that has vpConfig set
+    // Validate API key and get Orchestrator
+    // Note: We look for any Orchestrator user that has orchestratorConfig set
     const user = await this.prisma.user.findFirst({
       where: {
-        isVP: true,
-        vpConfig: {
+        isOrchestrator: true,
+        orchestratorConfig: {
           not: { equals: null },
         },
       },
@@ -144,33 +144,33 @@ export class DaemonAuthService {
     /**
      * Orchestrator configuration stored as JSON in the user record.
      */
-    interface VPConfig {
+    interface OrchestratorConfig {
       apiKeyHash?: string;
       apiKeyRevoked?: boolean;
       apiKeyExpiresAt?: string;
     }
 
     // Verify API key hash
-    const vpConfig = user.orchestratorConfig as VPConfig | null;
-    const storedHash = vpConfig?.apiKeyHash;
+    const orchestratorConfig = user.orchestratorConfig as OrchestratorConfig | null;
+    const storedHash = orchestratorConfig?.apiKeyHash;
 
     if (!storedHash || !await this.verifyApiKey(credentials.apiKey, storedHash)) {
       throw new InvalidCredentialsError('Invalid API key');
     }
 
     // Check if API key is revoked
-    if (vpConfig?.apiKeyRevoked) {
+    if (orchestratorConfig?.apiKeyRevoked) {
       throw new InvalidCredentialsError('API key has been revoked');
     }
 
     // Check if API key is expired
-    const expiresAt = vpConfig?.apiKeyExpiresAt;
+    const expiresAt = orchestratorConfig?.apiKeyExpiresAt;
     if (expiresAt && new Date(expiresAt) < new Date()) {
       throw new InvalidCredentialsError('API key has expired');
     }
 
     // Get Orchestrator record
-    const orchestrator = await this.prisma.vP.findFirst({
+    const orchestrator = await this.prisma.orchestrator.findFirst({
       where: { userId: user.id },
       include: {
         organization: {
@@ -183,26 +183,26 @@ export class DaemonAuthService {
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new InvalidCredentialsError('VP not found');
     }
 
-    const workspace = vp.organization?.workspaces?.[0];
+    const workspace = orchestrator.organization?.workspaces?.[0];
     if (!workspace) {
       throw new InvalidCredentialsError('No workspace found for VP');
     }
 
     // Determine granted scopes
     const requestedScopes = credentials.requestedScopes ?? DAEMON_SCOPE_SETS.standard;
-    const vpCapabilities = Array.isArray(vp.capabilities) ? vp.capabilities as string[] : [];
+    const vpCapabilities = Array.isArray(orchestrator.capabilities) ? orchestrator.capabilities as string[] : [];
     const grantedScopes = this.resolveScopes(requestedScopes, vpCapabilities);
 
     // Create session
     const session = await this.createSession({
       daemonId: credentials.daemonId,
-      vpId: vp.id,
+      orchestratorId: orchestrator.id,
       workspaceId: workspace.id,
-      organizationId: vp.organizationId,
+      organizationId: orchestrator.organizationId,
       scopes: grantedScopes,
       metadata: credentials.metadata,
     });
@@ -210,9 +210,9 @@ export class DaemonAuthService {
     // Generate tokens
     const tokens = await this.generateTokenPair({
       daemonId: credentials.daemonId,
-      vpId: vp.id,
+      orchestratorId: orchestrator.id,
       workspaceId: workspace.id,
-      organizationId: vp.organizationId,
+      organizationId: orchestrator.organizationId,
       scopes: grantedScopes,
       sessionId: session.id,
     });
@@ -220,10 +220,10 @@ export class DaemonAuthService {
     return {
       tokens,
       vp: {
-        id: vp.id,
+        id: orchestrator.id,
         name: user.name ?? user.displayName ?? 'VP',
-        discipline: vp.discipline,
-        role: vp.role,
+        discipline: orchestrator.discipline,
+        role: orchestrator.role,
       },
       workspace: {
         id: workspace.id,
@@ -257,7 +257,7 @@ export class DaemonAuthService {
     // Generate new token pair
     const tokens = await this.generateTokenPair({
       daemonId: payload.daemonId,
-      vpId: payload.sub,
+      orchestratorId: payload.sub,
       workspaceId: payload.workspaceId,
       organizationId: payload.organizationId,
       scopes: payload.scopes,
@@ -291,7 +291,7 @@ export class DaemonAuthService {
       type: 'access',
       expiresAt: new Date(payload.exp * 1000),
       daemonId: payload.daemonId,
-      vpId: payload.sub,
+      orchestratorId: payload.sub,
       workspaceId: payload.workspaceId,
       organizationId: payload.organizationId,
       scopes: payload.scopes,
@@ -398,7 +398,7 @@ return;
 
   private async generateTokenPair(params: {
     daemonId: string;
-    vpId: string;
+    orchestratorId: string;
     workspaceId: string;
     organizationId?: string;
     scopes: DaemonScope[];
@@ -438,7 +438,7 @@ return;
         type: 'access',
         expiresAt: new Date((now + this.accessTokenTtl) * 1000),
         daemonId: params.daemonId,
-        vpId: params.orchestratorId,
+        orchestratorId: params.orchestratorId,
         workspaceId: params.workspaceId,
         organizationId: params.organizationId,
         scopes: params.scopes,
@@ -449,7 +449,7 @@ return;
         type: 'refresh',
         expiresAt: new Date((now + this.refreshTokenTtl) * 1000),
         daemonId: params.daemonId,
-        vpId: params.orchestratorId,
+        orchestratorId: params.orchestratorId,
         workspaceId: params.workspaceId,
         organizationId: params.organizationId,
         scopes: params.scopes,
@@ -460,7 +460,7 @@ return;
 
   private async createSession(params: {
     daemonId: string;
-    vpId: string;
+    orchestratorId: string;
     workspaceId: string;
     organizationId?: string;
     scopes: DaemonScope[];
@@ -470,7 +470,7 @@ return;
     const session: DaemonSession = {
       id: this.generateJti(),
       daemonId: params.daemonId,
-      vpId: params.orchestratorId,
+      orchestratorId: params.orchestratorId,
       workspaceId: params.workspaceId,
       organizationId: params.organizationId,
       status: 'active',

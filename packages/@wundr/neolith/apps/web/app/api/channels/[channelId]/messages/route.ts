@@ -171,7 +171,7 @@ export async function GET(
             name: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         reactions: {
@@ -397,7 +397,7 @@ export async function POST(
             name: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         reactions: true,

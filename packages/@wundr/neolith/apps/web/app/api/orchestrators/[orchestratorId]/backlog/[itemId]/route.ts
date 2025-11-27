@@ -45,7 +45,7 @@ import type { NextRequest } from 'next/server';
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string; itemId: string }> },
+  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -59,7 +59,7 @@ export async function GET(
 
     // Get OrchestratorID and item ID from params
     const resolvedParams = await params;
-    const orchestratorId = resolvedParams.id;
+    const orchestratorId = resolvedParams.orchestratorId;
     const itemId = resolvedParams.itemId;
 
     // Validate IDs
@@ -78,14 +78,14 @@ export async function GET(
     }
 
     // Verify Orchestrator exists and get workspace
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: { id: true, workspaceId: true, userId: true },
     });
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -118,12 +118,12 @@ export async function GET(
             name: true,
             description: true,
             status: true,
-            vpId: true,
+            orchestratorId: true,
           },
         },
         task: {
           include: {
-            vp: {
+            orchestrator: {
               select: {
                 id: true,
                 role: true,
@@ -148,7 +148,7 @@ export async function GET(
     }
 
     // Verify the backlog item belongs to the requested Orchestrator
-    if (backlogItem.backlog.vpId !== orchestratorId) {
+    if (backlogItem.backlog.orchestratorId !== orchestratorId) {
       return NextResponse.json(
         createErrorResponse('Backlog item does not belong to this Orchestrator', TASK_ERROR_CODES.FORBIDDEN),
         { status: 403 },
@@ -220,7 +220,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; itemId: string }> },
+  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -234,7 +234,7 @@ export async function PATCH(
 
     // Get OrchestratorID and item ID from params
     const resolvedParams = await params;
-    const orchestratorId = resolvedParams.id;
+    const orchestratorId = resolvedParams.orchestratorId;
     const itemId = resolvedParams.itemId;
 
     // Validate IDs
@@ -253,14 +253,14 @@ export async function PATCH(
     }
 
     // Verify Orchestrator exists and get workspace
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: { id: true, workspaceId: true, userId: true },
     });
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -290,7 +290,7 @@ export async function PATCH(
         id: true,
         taskId: true,
         backlog: {
-          select: { vpId: true },
+          select: { orchestratorId: true },
         },
       },
     });
@@ -303,7 +303,7 @@ export async function PATCH(
     }
 
     // Verify the backlog item belongs to the requested Orchestrator
-    if (backlogItem.backlog.vpId !== orchestratorId) {
+    if (backlogItem.backlog.orchestratorId !== orchestratorId) {
       return NextResponse.json(
         createErrorResponse('Backlog item does not belong to this Orchestrator', TASK_ERROR_CODES.FORBIDDEN),
         { status: 403 },
@@ -426,7 +426,7 @@ export async function PATCH(
         ...(input.status === 'DONE' && { completedAt: new Date() }),
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -503,7 +503,7 @@ export async function PATCH(
  */
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string; itemId: string }> },
+  { params }: { params: Promise<{ orchestratorId: string; itemId: string }> },
 ): Promise<NextResponse> {
   try {
     // Authenticate user
@@ -517,7 +517,7 @@ export async function DELETE(
 
     // Get OrchestratorID and item ID from params
     const resolvedParams = await params;
-    const orchestratorId = resolvedParams.id;
+    const orchestratorId = resolvedParams.orchestratorId;
     const itemId = resolvedParams.itemId;
 
     // Validate IDs
@@ -536,14 +536,14 @@ export async function DELETE(
     }
 
     // Verify Orchestrator exists and get workspace
-    const orchestrator = await prisma.vP.findUnique({
+    const orchestrator = await prisma.orchestrator.findUnique({
       where: { id: orchestratorId },
       select: { id: true, workspaceId: true, userId: true },
     });
 
     if (!orchestrator) {
       return NextResponse.json(
-        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.VP_NOT_FOUND),
+        createErrorResponse('Orchestrator not found', TASK_ERROR_CODES.ORCHESTRATOR_NOT_FOUND),
         { status: 404 },
       );
     }
@@ -572,7 +572,7 @@ export async function DELETE(
       select: {
         id: true,
         backlog: {
-          select: { vpId: true },
+          select: { orchestratorId: true },
         },
       },
     });
@@ -585,7 +585,7 @@ export async function DELETE(
     }
 
     // Verify the backlog item belongs to the requested Orchestrator
-    if (backlogItem.backlog.vpId !== orchestratorId) {
+    if (backlogItem.backlog.orchestratorId !== orchestratorId) {
       return NextResponse.json(
         createErrorResponse('Backlog item does not belong to this Orchestrator', TASK_ERROR_CODES.FORBIDDEN),
         { status: 403 },

@@ -17,7 +17,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 describe('Task API', () => {
   let testUserId: string;
-  let testVpId: string;
+  let testOrchestratorId: string;
   let testWorkspaceId: string;
   let testTaskId: string;
 
@@ -59,26 +59,26 @@ describe('Task API', () => {
       },
     });
 
-    // Create test VP
-    const vpUser = await prisma.user.create({
+    // Create test Orchestrator
+    const orchestratorUser = await prisma.user.create({
       data: {
         email: `orchestrator-${Date.now()}@test.local`,
-        name: 'Test VP',
-        isVP: true,
+        name: 'Test Orchestrator',
+        isOrchestrator: true,
         status: 'ACTIVE',
       },
     });
 
-    const orchestrator = await prisma.vP.create({
+    const orchestrator = await prisma.orchestrator.create({
       data: {
         discipline: 'Engineering',
         role: 'Backend Engineer',
-        userId: vpUser.id,
+        userId: orchestratorUser.id,
         organizationId: org.id,
         workspaceId: workspace.id,
       },
     });
-    testVpId = vp.id;
+    testOrchestratorId = orchestrator.id;
   });
 
   afterAll(async () => {
@@ -86,7 +86,7 @@ describe('Task API', () => {
     await prisma.task.deleteMany({ where: { workspaceId: testWorkspaceId } });
     await prisma.backlogItem.deleteMany({});
     await prisma.backlog.deleteMany({ where: { workspaceId: testWorkspaceId } });
-    await prisma.vP.deleteMany({ where: { workspaceId: testWorkspaceId } });
+    await prisma.orchestrator.deleteMany({ where: { workspaceId: testWorkspaceId } });
     await prisma.workspaceMember.deleteMany({ where: { workspaceId: testWorkspaceId } });
     await prisma.workspace.deleteMany({ where: { id: testWorkspaceId } });
     await prisma.user.deleteMany({ where: { id: { in: [testUserId] } } });
@@ -101,7 +101,7 @@ describe('Task API', () => {
           description: 'A test task description',
           priority: 'HIGH',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
         },
@@ -111,7 +111,7 @@ describe('Task API', () => {
       expect(task.title).toBe('Test Task');
       expect(task.priority).toBe('HIGH');
       expect(task.status).toBe('TODO');
-      expect(task.vpId).toBe(testVpId);
+      expect(task.orchestratorId).toBe(testOrchestratorId);
 
       testTaskId = task.id;
     });
@@ -122,7 +122,7 @@ describe('Task API', () => {
           title: 'Parent Task',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
         },
@@ -133,7 +133,7 @@ describe('Task API', () => {
           title: 'Child Task',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
           dependsOn: [parentTask.id],
@@ -149,7 +149,7 @@ describe('Task API', () => {
           title: 'Tagged Task',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
           tags: ['urgent', 'backend', 'critical'],
@@ -165,7 +165,7 @@ describe('Task API', () => {
           title: 'Estimated Task',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
           estimatedHours: 8,
@@ -182,7 +182,7 @@ describe('Task API', () => {
           title: 'Due Date Task',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
           dueDate,
@@ -256,11 +256,11 @@ describe('Task API', () => {
 
     it('should retrieve tasks by OrchestratorID', async () => {
       const tasks = await prisma.task.findMany({
-        where: { vpId: testVpId },
+        where: { orchestratorId: testOrchestratorId },
       });
 
       expect(tasks.length).toBeGreaterThan(0);
-      expect(tasks.every((t) => t.vpId === testVpId)).toBe(true);
+      expect(tasks.every((t) => t.orchestratorId === testOrchestratorId)).toBe(true);
     });
 
     it('should retrieve tasks by workspace ID', async () => {
@@ -330,7 +330,7 @@ describe('Task API', () => {
           title: 'Task to Delete',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
         },
@@ -350,7 +350,7 @@ describe('Task API', () => {
           title: 'Task to Assign',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
         },
@@ -378,7 +378,7 @@ describe('Task API', () => {
           title: 'Task to Reassign',
           priority: 'MEDIUM',
           status: 'TODO',
-          vpId: testVpId,
+          orchestratorId: testOrchestratorId,
           workspaceId: testWorkspaceId,
           createdById: testUserId,
           assignedToId: testUserId,

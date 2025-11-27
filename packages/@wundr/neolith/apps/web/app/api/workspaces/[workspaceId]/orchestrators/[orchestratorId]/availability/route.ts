@@ -37,7 +37,7 @@ interface RouteContext {
 /**
  * Helper function to check if user has access to an Orchestrator within a workspace
  */
-async function checkVPAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function checkOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -61,7 +61,7 @@ async function checkVPAccess(workspaceId: string, orchestratorId: string, userId
     return null;
   }
 
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -135,7 +135,7 @@ export async function GET(
       );
     }
 
-    const result = await checkVPAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!result) {
       return NextResponse.json(
         createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
@@ -270,7 +270,7 @@ export async function POST(
       );
     }
 
-    const result = await checkVPAccess(workspaceId, orchestratorId, session.user.id);
+    const result = await checkOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!result) {
       return NextResponse.json(
         createErrorResponse('Orchestrator not found or access denied', ORCHESTRATOR_ERROR_CODES.NOT_FOUND),
@@ -284,7 +284,7 @@ export async function POST(
     const task = await prisma.task.findFirst({
       where: {
         id: taskId,
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
         workspaceId,
       },
       select: { id: true },

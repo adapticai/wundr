@@ -22,7 +22,7 @@ import { z } from 'zod';
  * Schema for unregistration request body.
  */
 const unregisterRequestSchema = z.object({
-  vpId: z.string().min(1, 'VP ID is required'),
+  orchestratorId: z.string().min(1, 'Orchestrator ID is required'),
   apiKey: z.string().min(1, 'API key is required'),
   reason: z.enum(['shutdown', 'error', 'maintenance', 'unknown']).optional(),
 });
@@ -35,7 +35,7 @@ const UNREGISTER_ERROR_CODES = {
   VALIDATION_ERROR: 'UNREGISTER_VALIDATION_ERROR',
   UNAUTHORIZED: 'UNAUTHORIZED',
   DAEMON_NOT_REGISTERED: 'DAEMON_NOT_REGISTERED',
-  VP_NOT_FOUND: 'VP_NOT_FOUND',
+  ORCHESTRATOR_NOT_FOUND: 'ORCHESTRATOR_NOT_FOUND',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
@@ -63,7 +63,7 @@ function createErrorResponse(
 /**
  * POST /api/daemon/unregister
  *
- * Unregisters a daemon for a VP.
+ * Unregisters a daemon for an Orchestrator.
  * Requires daemon API key authentication.
  *
  * @param request - Next.js request with unregistration data
@@ -75,7 +75,7 @@ function createErrorResponse(
  * Content-Type: application/json
  *
  * {
- *   "vpId": "vp_123",
+ *   "orchestratorId": "vp_123",
  *   "apiKey": "gns_abc123...",
  *   "reason": "shutdown"
  * }
@@ -107,9 +107,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const { vpId, apiKey, reason } = parseResult.data;
+    const { orchestratorId, apiKey, reason } = parseResult.data;
 
-    // TODO: Validate API key against VP's stored key hash
+    // TODO: Validate API key against Orchestrator's stored key hash
     if (!apiKey.startsWith('gns_')) {
       return NextResponse.json(
         createErrorResponse('Invalid API key', UNREGISTER_ERROR_CODES.UNAUTHORIZED),
@@ -120,14 +120,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // TODO: Get Redis client and heartbeat service
     // const redis = getRedisClient();
     // const heartbeatService = createHeartbeatService(redis);
-    // await heartbeatService.unregisterDaemon(vpId);
+    // await heartbeatService.unregisterDaemon(orchestratorId);
 
     const unregisteredAt = new Date().toISOString();
 
     return NextResponse.json({
       success: true,
       data: {
-        vpId,
+        orchestratorId,
         unregisteredAt,
         reason: reason ?? 'unknown',
       },

@@ -38,41 +38,41 @@ export function OrgChart({ workspaceId, orgName, orchestrators, className }: Org
   }, []);
 
   // Filter and search logic
-  const filteredVPs = useMemo(() => {
+  const filteredOrchestrators = useMemo(() => {
     let filtered = orchestrators;
 
     // Apply discipline filter
     if (selectedDisciplines.length > 0) {
-      filtered = filtered.filter((vp) => selectedDisciplines.includes(vp.discipline));
+      filtered = filtered.filter((orch) => selectedDisciplines.includes(orch.discipline));
     }
 
     // Apply status filter
     if (selectedStatuses.length > 0) {
-      filtered = filtered.filter((vp) => selectedStatuses.includes(vp.status));
+      filtered = filtered.filter((orch) => selectedStatuses.includes(orch.status));
     }
 
     // Apply search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (vp) =>
-          vp.name.toLowerCase().includes(query) ||
-          vp.title.toLowerCase().includes(query) ||
-          vp.discipline.toLowerCase().includes(query) ||
-          vp.status.toLowerCase().includes(query),
+        (orch) =>
+          orch.name.toLowerCase().includes(query) ||
+          orch.title.toLowerCase().includes(query) ||
+          orch.discipline.toLowerCase().includes(query) ||
+          orch.status.toLowerCase().includes(query),
       );
     }
 
     return filtered;
-  }, [vps, selectedDisciplines, selectedStatuses, searchQuery]);
+  }, [orchestrators, selectedDisciplines, selectedStatuses, searchQuery]);
 
   // Calculate match highlighting
-  const highlightedVPs = useMemo(() => {
+  const highlightedOrchestrators = useMemo(() => {
     if (!searchQuery.trim()) {
 return new Set<string>();
 }
-    return new Set(filteredVPs.map((vp) => vp.id));
-  }, [filteredVPs, searchQuery]);
+    return new Set(filteredOrchestrators.map((orch) => orch.id));
+  }, [filteredOrchestrators, searchQuery]);
 
   const handleDisciplineToggle = (discipline: string) => {
     setSelectedDisciplines((prev) =>
@@ -92,26 +92,26 @@ return new Set<string>();
   };
 
   // Empty state
-  if (vps.length === 0) {
+  if (orchestrators.length === 0) {
     return <OrgChartEmptyState workspaceId={workspaceId} className={className} />;
   }
 
-  // Group VPs by discipline for tablet/desktop view
+  // Group orchestrators by discipline for tablet/desktop view
   const orchestratorsByDiscipline = useMemo(() => {
     const grouped = new Map<string, OrgNode[]>();
-    filteredVPs.forEach((vp) => {
-      const existing = grouped.get(vp.discipline) || [];
-      grouped.set(vp.discipline, [...existing, vp]);
+    filteredOrchestrators.forEach((orch) => {
+      const existing = grouped.get(orch.discipline) || [];
+      grouped.set(orch.discipline, [...existing, orch]);
     });
     return grouped;
-  }, [filteredVPs]);
+  }, [filteredOrchestrators]);
 
   return (
     <div className={cn('space-y-6', className)}>
       <OrgChartToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        matchCount={searchQuery ? filteredVPs.length : undefined}
+        matchCount={searchQuery ? filteredOrchestrators.length : undefined}
         selectedDisciplines={selectedDisciplines}
         selectedStatuses={selectedStatuses}
         onDisciplineToggle={handleDisciplineToggle}
@@ -129,7 +129,7 @@ return new Set<string>();
           isMobile && 'snap-x snap-mandatory',
         )}
       >
-        {filteredVPs.length === 0 ? (
+        {filteredOrchestrators.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-stone-400">
               No Orchestrators match your search and filter criteria.
@@ -138,12 +138,12 @@ return new Set<string>();
         ) : isMobile ? (
           // Mobile: Horizontal scroll with snap
           <div className="flex gap-4 pb-4" style={{ minWidth: 'max-content' }}>
-            {filteredVPs.map((vp) => (
-              <div key={vp.id} className="snap-center" style={{ minWidth: '200px' }}>
+            {filteredOrchestrators.map((orch) => (
+              <div key={orch.id} className="snap-center" style={{ minWidth: '200px' }}>
                 <OrgChartNode
-                  node={vp}
-                  isHighlighted={highlightedVPs.has(vp.id)}
-                  isDimmed={searchQuery.trim() !== '' && !highlightedVPs.has(vp.id)}
+                  node={orch}
+                  isHighlighted={highlightedOrchestrators.has(orch.id)}
+                  isDimmed={searchQuery.trim() !== '' && !highlightedOrchestrators.has(orch.id)}
                 />
               </div>
             ))}
@@ -151,30 +151,30 @@ return new Set<string>();
         ) : isTablet ? (
           // Tablet: Compact grid view
           <div className="grid grid-cols-2 gap-4">
-            {filteredVPs.map((vp) => (
+            {filteredOrchestrators.map((orch) => (
               <OrgChartNode
-                key={vp.id}
-                node={vp}
-                isHighlighted={highlightedVPs.has(vp.id)}
-                isDimmed={searchQuery.trim() !== '' && !highlightedVPs.has(vp.id)}
+                key={orch.id}
+                node={orch}
+                isHighlighted={highlightedOrchestrators.has(orch.id)}
+                isDimmed={searchQuery.trim() !== '' && !highlightedOrchestrators.has(orch.id)}
               />
             ))}
           </div>
         ) : (
           // Desktop: Full tree view grouped by discipline
           <div className="space-y-8">
-            {Array.from(vpsByDiscipline.entries()).map(([discipline, disciplineVPs]) => (
+            {Array.from(orchestratorsByDiscipline.entries()).map(([discipline, disciplineOrchestrators]) => (
               <div key={discipline}>
                 <h3 className="text-lg font-semibold text-stone-100 mb-4 pb-2 border-b border-stone-800">
                   {discipline}
                 </h3>
                 <div className="grid grid-cols-3 xl:grid-cols-4 gap-4">
-                  {disciplineVPs.map((vp) => (
+                  {disciplineOrchestrators.map((orch) => (
                     <OrgChartNode
-                      key={vp.id}
-                      node={vp}
-                      isHighlighted={highlightedVPs.has(vp.id)}
-                      isDimmed={searchQuery.trim() !== '' && !highlightedVPs.has(vp.id)}
+                      key={orch.id}
+                      node={orch}
+                      isHighlighted={highlightedOrchestrators.has(orch.id)}
+                      isDimmed={searchQuery.trim() !== '' && !highlightedOrchestrators.has(orch.id)}
                     />
                   ))}
                 </div>

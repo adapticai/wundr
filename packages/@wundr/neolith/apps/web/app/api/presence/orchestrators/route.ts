@@ -1,7 +1,7 @@
 /**
  * OrchestratorPresence List API Route
  *
- * Get presence status for all VPs in an organization.
+ * Get presence status for all Orchestrators in an organization.
  *
  * Routes:
  * - GET /api/presence/orchestrators?organizationId= - Get Orchestrator presence list
@@ -19,7 +19,7 @@ import {
   PRESENCE_ERROR_CODES,
 } from '@/lib/validations/presence';
 
-import type { VPPresenceResponse } from '@/lib/validations/presence';
+import type { OrchestratorPresenceResponse } from '@/lib/validations/presence';
 import type { NextRequest } from 'next/server';
 
 /** Time in ms after which a user is considered offline (5 minutes) */
@@ -38,7 +38,7 @@ return false;
 /**
  * GET /api/presence/orchestrators?organizationId=
  *
- * Get presence status for all VPs in an organization.
+ * Get presence status for all Orchestrators in an organization.
  * Requires authentication and organization membership.
  *
  * @param request - Next.js request with organizationId query parameter
@@ -119,8 +119,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get all VPs in the organization
-    const orchestrators = await prisma.vP.findMany({
+    // Get all Orchestrators in the organization
+    const orchestrators = await prisma.orchestrator.findMany({
       where: { organizationId },
       include: {
         user: {
@@ -132,11 +132,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Get message counts for all VPs
-    const vpUserIds = orchestrators.map((orchestrator) => orchestrator.userId);
+    // Get message counts for all Orchestrators
+    const orchestratorUserIds = orchestrators.map((orchestrator) => orchestrator.userId);
     const messageCounts = await prisma.message.groupBy({
       by: ['authorId'],
-      where: { authorId: { in: vpUserIds } },
+      where: { authorId: { in: orchestratorUserIds } },
       _count: { id: true },
     });
 
@@ -145,10 +145,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
 
     // Build Orchestrator presence responses
-    const responses: VPPresenceResponse[] = orchestrators.map((orchestrator) => ({
-      vpId: orchestrator.id,
+    const responses: OrchestratorPresenceResponse[] = orchestrators.map((orchestrator) => ({
+      orchestratorId: orchestrator.id,
       userId: orchestrator.userId,
-      status: orchestrator.status as VPPresenceResponse['status'],
+      status: orchestrator.status as OrchestratorPresenceResponse['status'],
       lastActivity: orchestrator.user.lastActiveAt?.toISOString() ?? null,
       isHealthy: orchestrator.status === 'ONLINE' && isUserOnline(orchestrator.user.lastActiveAt),
       messageCount: messageCountMap.get(orchestrator.userId) ?? 0,

@@ -46,7 +46,7 @@ const AUTH_ERROR_CODES = {
 /**
  * Generate JWT tokens for authenticated daemon
  */
-function generateTokens(vpId: string, daemonId: string, scopes: string[]): {
+function generateTokens(orchestratorId: string, daemonId: string, scopes: string[]): {
   accessToken: string;
   refreshToken: string;
   expiresAt: Date;
@@ -56,7 +56,7 @@ function generateTokens(vpId: string, daemonId: string, scopes: string[]): {
 
   const accessToken = jwt.sign(
     {
-      vpId,
+      orchestratorId,
       daemonId,
       scopes,
       type: 'access',
@@ -67,7 +67,7 @@ function generateTokens(vpId: string, daemonId: string, scopes: string[]): {
 
   const refreshToken = jwt.sign(
     {
-      vpId,
+      orchestratorId,
       daemonId,
       type: 'refresh',
     },
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { apiKey, apiSecret: _apiSecret, scopes } = parseResult.data;
 
-    // Extract OrchestratorID from API key prefix (format: vp_<vpId>_<random>)
+    // Extract OrchestratorID from API key prefix (format: vp_<orchestratorId>_<random>)
     const keyParts = apiKey.split('_');
     if (keyParts.length < 3 || keyParts[0] !== 'vp') {
       return NextResponse.json(
@@ -131,11 +131,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const vpId = keyParts[1];
+    const orchestratorId = keyParts[1];
 
     // Look up Orchestrator and verify API key
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: orchestratorId },
       include: {
         user: {
           select: {
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Invalid credentials', code: AUTH_ERROR_CODES.INVALID_CREDENTIALS },
         { status: 401 },
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check if Orchestrator is active
-    if (vp.status === 'OFFLINE') {
+    if (orchestrator.status === 'OFFLINE') {
       return NextResponse.json(
         { error: 'Daemon is disabled', code: AUTH_ERROR_CODES.DAEMON_DISABLED },
         { status: 403 },
@@ -171,10 +171,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verify API key hash
-    const vpCapabilities = vp.capabilities as { apiKeyHash?: string } | null;
-    if (vpCapabilities?.apiKeyHash) {
+    const orchestratorCapabilities = orchestrator.capabilities as { apiKeyHash?: string } | null;
+    if (orchestratorCapabilities?.apiKeyHash) {
       const providedHash = await hashAPIKey(apiKey);
-      if (providedHash !== vpCapabilities.apiKeyHash) {
+      if (providedHash !== orchestratorCapabilities.apiKeyHash) {
         return NextResponse.json(
           { error: 'Invalid credentials', code: AUTH_ERROR_CODES.INVALID_CREDENTIALS },
           { status: 401 },
@@ -183,9 +183,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Generate session ID and tokens
-    const sessionId = `daemon_session_${vpId}_${Date.now()}`;
+    const sessionId = `daemon_session_${orchestratorId}_${Date.now()}`;
     const { accessToken, refreshToken, expiresAt } = generateTokens(
-      vpId,
+      orchestratorId,
       sessionId,
       scopes,
     );
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         `daemon:session:${sessionId}`,
         7 * 24 * 60 * 60, // 7 days
         JSON.stringify({
-          vpId,
+          orchestratorId,
           scopes,
           refreshToken: await hashAPIKey(refreshToken),
           createdAt: new Date().toISOString(),
@@ -209,8 +209,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update Orchestrator status
-    await prisma.vP.update({
-      where: { id: vpId },
+    await prisma.orchestrator.update({
+      where: { id: orchestratorId },
       data: {
         status: 'ONLINE',
       },
@@ -221,13 +221,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       refreshToken,
       expiresAt: expiresAt.toISOString(),
       sessionId,
-      vp: {
-        id: vp.id,
-        discipline: vp.discipline,
-        role: vp.role,
-        status: vp.status,
-        user: vp.user,
-        organization: vp.organization,
+      orchestrator: {
+        id: orchestrator.id,
+        discipline: orchestrator.discipline,
+        role: orchestrator.role,
+        status: orchestrator.status,
+        user: orchestrator.user,
+        organization: orchestrator.organization,
       },
     });
   } catch (error) {

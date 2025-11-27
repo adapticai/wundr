@@ -46,7 +46,7 @@ const STATUS_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -77,7 +77,7 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
  * PUT /api/daemon/status - Update Orchestrator operational status
  *
  * Updates the operational status of the Orchestrator (active, paused, error).
- * This is different from presence - it indicates the VP's operational state.
+ * This is different from presence - it indicates the Orchestrator's operational state.
  *
  * @param request - Next.js request with status data
  * @returns Success status
@@ -133,8 +133,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     const { status, message } = parseResult.data;
 
     // Get Orchestrator info
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: {
         id: true,
         organizationId: true,
@@ -142,7 +142,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
         { error: 'Unauthorized', code: STATUS_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
@@ -150,14 +150,14 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     // Map operational status to Orchestrator status enum (ERROR maps to OFFLINE as ERROR is not in enum)
-    const vpDbStatus = status === 'error' ? 'OFFLINE' : status === 'paused' ? 'BUSY' : 'ONLINE';
+    const orchestratorDbStatus = status === 'error' ? 'OFFLINE' : status === 'paused' ? 'BUSY' : 'ONLINE';
 
     // Update Orchestrator with operational status
-    const currentCapabilities = (vp.capabilities as Record<string, unknown>) || {};
-    await prisma.vP.update({
-      where: { id: token.vpId },
+    const currentCapabilities = (orchestrator.capabilities as Record<string, unknown>) || {};
+    await prisma.orchestrator.update({
+      where: { id: token.orchestratorId },
       data: {
-        status: vpDbStatus,
+        status: orchestratorDbStatus,
         capabilities: {
           ...currentCapabilities,
           operationalStatus: status,
@@ -168,7 +168,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     });
 
     // Store operational status in Redis for real-time monitoring
-    const statusKey = `daemon:status:${token.vpId}`;
+    const statusKey = `daemon:status:${token.orchestratorId}`;
     const statusData = {
       status,
       message: message || null,
@@ -185,10 +185,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
       // Publish status update for monitoring dashboards
       await redis.publish(
-        `daemon:status:updates:${vp.organizationId}`,
+        `daemon:status:updates:${orchestrator.organizationId}`,
         JSON.stringify({
-          type: 'vp_status_update',
-          vpId: token.vpId,
+          type: 'orchestrator_status_update',
+          orchestratorId: token.orchestratorId,
           ...statusData,
         }),
       );

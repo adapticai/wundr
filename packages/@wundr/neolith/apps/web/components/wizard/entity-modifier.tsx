@@ -6,7 +6,7 @@
 'use client';
 
 import * as React from 'react';
-import { ArrowLeft, Sparkles, CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
+import { Sparkles, CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -97,7 +97,7 @@ export function EntityModifier({
   const [suggestedChanges, setSuggestedChanges] = React.useState<SuggestedChanges | undefined>();
   const [activeTab, setActiveTab] = React.useState<'chat' | 'review'>('chat');
   const [isApplying, setIsApplying] = React.useState(false);
-  const [modificationHistory, setModificationHistory] = React.useState<SuggestedChanges[]>([]);
+  const [, setModificationHistory] = React.useState<SuggestedChanges[]>([]);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   // Initialize with greeting message
@@ -367,7 +367,7 @@ export function EntityModifier({
  */
 function CurrentStateView({
   data,
-  entityType,
+  entityType: _entityType,
 }: {
   data: EntityData;
   entityType: EntityType;
@@ -417,7 +417,7 @@ function ModificationBadge({ modification }: { modification: Modification }) {
  * ReviewChanges - Compare before/after and apply changes
  */
 function ReviewChanges({
-  entityType,
+  entityType: _entityType,
   currentData,
   previewData,
   suggestedChanges,

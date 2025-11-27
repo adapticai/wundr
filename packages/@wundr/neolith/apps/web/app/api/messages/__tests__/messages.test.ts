@@ -134,7 +134,7 @@ function createMockMessageResponse(overrides?: Record<string, unknown>) {
       name: 'Test User',
       displayName: 'Test User',
       avatarUrl: null,
-      isVP: false,
+      isOrchestrator: false,
     },
     reactions: [],
     replyCount: 0,

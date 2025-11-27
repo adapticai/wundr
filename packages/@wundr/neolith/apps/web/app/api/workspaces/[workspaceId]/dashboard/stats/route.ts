@@ -40,7 +40,7 @@ interface DashboardStats {
   members: {
     total: number;
     activeToday: number;
-    vpCount: number;
+    orchestratorCount: number;
     humanCount: number;
   };
   channels: {
@@ -249,7 +249,7 @@ export async function GET(
           user: {
             select: {
               id: true,
-              isVP: true,
+              isOrchestrator: true,
               lastActiveAt: true,
             },
           },
@@ -356,8 +356,8 @@ export async function GET(
 
     // Process member statistics
     const totalMembers = membersData.length;
-    const vpCount = membersData.filter(m => m.user.isVP).length;
-    const humanCount = totalMembers - vpCount;
+    const orchestratorCount = membersData.filter(m => m.user.isOrchestrator).length;
+    const humanCount = totalMembers - orchestratorCount;
 
     // Process channel statistics
     const channelStats = channelsData.reduce(
@@ -479,7 +479,7 @@ export async function GET(
       members: {
         total: totalMembers,
         activeToday: activeMembers,
-        vpCount,
+        orchestratorCount,
         humanCount,
       },
       channels: channelStats,

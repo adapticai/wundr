@@ -37,7 +37,7 @@ const mockPresenceService = {
   getChannelPresence: vi.fn(),
   setVPOnline: vi.fn(),
   setVPOffline: vi.fn(),
-  getVPPresence: vi.fn(),
+  getOrchestratorPresence: vi.fn(),
   addUserToChannel: vi.fn(),
   removeUserFromChannel: vi.fn(),
 };
@@ -47,7 +47,7 @@ const mockHeartbeatService = {
   sendHeartbeat: vi.fn(),
   checkHealth: vi.fn(),
   getUnhealthyVPs: vi.fn(),
-  getVPHealthStatus: vi.fn(),
+  getOrchestratorHealthStatus: vi.fn(),
   registerVP: vi.fn(),
   unregisterVP: vi.fn(),
 };
@@ -132,16 +132,16 @@ function createMockUserPresence(userId: string, status: UserPresenceStatus = 'on
   };
 }
 
-function createMockVPPresence(vpId: string) {
+function createMockOrchestratorPresence(orchestratorId: string) {
   return {
-    vpId,
-    userId: `user-${vpId}`,
+    orchestratorId,
+    userId: `user-${orchestratorId}`,
     status: 'online',
     lastHeartbeat: new Date().toISOString(),
     lastSeen: new Date().toISOString(),
     connectedAt: new Date().toISOString(),
     daemonInfo: {
-      daemonId: `daemon-${vpId}`,
+      daemonId: `daemon-${orchestratorId}`,
       endpoint: 'https://daemon.example.com',
       version: '1.0.0',
     },
@@ -481,13 +481,13 @@ describe('Presence API', () => {
   describe('POST /api/daemon/heartbeat', () => {
     it('updates Orchestrator heartbeat', async () => {
       const apiKey = 'gns_valid_api_key_123';
-      const vpId = 'orchestrator-123';
+      const orchestratorId = 'orchestrator-123';
       const daemonId = 'daemon-456';
 
       // Mock valid API key
       mockVPService.validateAPIKey.mockResolvedValue({
         valid: true,
-        vp: { id: vpId, userId: 'user-orchestrator-123' },
+        orchestrator: { id: orchestratorId, userId: 'user-orchestrator-123' },
       });
 
       mockHeartbeatService.sendHeartbeat.mockResolvedValue(undefined);
@@ -497,7 +497,7 @@ describe('Presence API', () => {
       expect(validation.valid).toBe(true);
 
       // Send heartbeat
-      await mockHeartbeatService.sendHeartbeat(vpId, daemonId, {
+      await mockHeartbeatService.sendHeartbeat(orchestratorId, daemonId, {
         responseTimeMs: 150,
         messagesProcessed: 100,
         errorsCount: 0,
@@ -506,7 +506,7 @@ describe('Presence API', () => {
       });
 
       expect(mockHeartbeatService.sendHeartbeat).toHaveBeenCalledWith(
-        vpId,
+        orchestratorId,
         daemonId,
         expect.objectContaining({
           responseTimeMs: 150,
@@ -536,7 +536,7 @@ describe('Presence API', () => {
     it('stores metrics', async () => {
       // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
-      const vpId = 'orchestrator-123';
+      const orchestratorId = 'orchestrator-123';
       const daemonId = 'daemon-456';
       const metrics = {
         responseTimeMs: 200,
@@ -548,15 +548,15 @@ describe('Presence API', () => {
 
       mockVPService.validateAPIKey.mockResolvedValue({
         valid: true,
-        vp: { id: vpId },
+        orchestrator: { id: orchestratorId },
       });
 
       mockHeartbeatService.sendHeartbeat.mockResolvedValue(undefined);
 
-      await mockHeartbeatService.sendHeartbeat(vpId, daemonId, metrics);
+      await mockHeartbeatService.sendHeartbeat(orchestratorId, daemonId, metrics);
 
       expect(mockHeartbeatService.sendHeartbeat).toHaveBeenCalledWith(
-        vpId,
+        orchestratorId,
         daemonId,
         metrics,
       );
@@ -603,17 +603,17 @@ describe('Presence API', () => {
     it('returns health status in response', async () => {
       // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
-      const vpId = 'orchestrator-123';
+      const orchestratorId = 'orchestrator-123';
       const daemonId = 'daemon-456';
 
       mockVPService.validateAPIKey.mockResolvedValue({
         valid: true,
-        vp: { id: vpId },
+        orchestrator: { id: orchestratorId },
       });
 
       mockHeartbeatService.sendHeartbeat.mockResolvedValue(undefined);
-      mockHeartbeatService.getVPHealthStatus.mockResolvedValue({
-        vpId,
+      mockHeartbeatService.getOrchestratorHealthStatus.mockResolvedValue({
+        orchestratorId,
         status: 'healthy',
         lastHeartbeat: new Date().toISOString(),
         missedHeartbeats: 0,
@@ -622,8 +622,8 @@ describe('Presence API', () => {
         message: 'All systems operational',
       });
 
-      await mockHeartbeatService.sendHeartbeat(vpId, daemonId);
-      const health = await mockHeartbeatService.getVPHealthStatus(vpId);
+      await mockHeartbeatService.sendHeartbeat(orchestratorId, daemonId);
+      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
       expect(health.status).toBe('healthy');
       expect(health.missedHeartbeats).toBe(0);
@@ -638,15 +638,15 @@ describe('Presence API', () => {
     it('returns Orchestrator health status', async () => {
       // @ts-expect-error Used to demonstrate API key validation flow
       const _apiKey = 'gns_valid_api_key_123';
-      const vpId = 'orchestrator-123';
+      const orchestratorId = 'orchestrator-123';
 
       mockVPService.validateAPIKey.mockResolvedValue({
         valid: true,
-        vp: { id: vpId },
+        orchestrator: { id: orchestratorId },
       });
 
-      mockHeartbeatService.getVPHealthStatus.mockResolvedValue({
-        vpId,
+      mockHeartbeatService.getOrchestratorHealthStatus.mockResolvedValue({
+        orchestratorId,
         status: 'healthy',
         lastHeartbeat: new Date().toISOString(),
         missedHeartbeats: 0,
@@ -655,17 +655,17 @@ describe('Presence API', () => {
         message: 'All systems operational',
       });
 
-      const health = await mockHeartbeatService.getVPHealthStatus(vpId);
+      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
-      expect(health.vpId).toBe(vpId);
+      expect(health.orchestratorId).toBe(orchestratorId);
       expect(health.status).toBe('healthy');
     });
 
     it('returns degraded status for missed heartbeats', async () => {
-      const vpId = 'orchestrator-123';
+      const orchestratorId = 'orchestrator-123';
 
-      mockHeartbeatService.getVPHealthStatus.mockResolvedValue({
-        vpId,
+      mockHeartbeatService.getOrchestratorHealthStatus.mockResolvedValue({
+        orchestratorId,
         status: 'degraded',
         lastHeartbeat: new Date(Date.now() - 60000).toISOString(),
         missedHeartbeats: 2,
@@ -674,26 +674,26 @@ describe('Presence API', () => {
         message: 'Missed 2 heartbeat(s)',
       });
 
-      const health = await mockHeartbeatService.getVPHealthStatus(vpId);
+      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
       expect(health.status).toBe('degraded');
       expect(health.missedHeartbeats).toBe(2);
     });
 
-    it('returns unhealthy status for unresponsive VP', async () => {
-      const vpId = 'orchestrator-123';
+    it('returns unhealthy status for unresponsive Orchestrator', async () => {
+      const orchestratorId = 'orchestrator-123';
 
-      mockHeartbeatService.getVPHealthStatus.mockResolvedValue({
-        vpId,
+      mockHeartbeatService.getOrchestratorHealthStatus.mockResolvedValue({
+        orchestratorId,
         status: 'unhealthy',
         lastHeartbeat: new Date(Date.now() - 180000).toISOString(),
         missedHeartbeats: 6,
         consecutiveFailures: 6,
         lastCheckAt: new Date().toISOString(),
-        message: 'VP unresponsive - missed 6 consecutive heartbeats',
+        message: 'Orchestrator unresponsive - missed 6 consecutive heartbeats',
       });
 
-      const health = await mockHeartbeatService.getVPHealthStatus(vpId);
+      const health = await mockHeartbeatService.getOrchestratorHealthStatus(orchestratorId);
 
       expect(health.status).toBe('unhealthy');
       expect(health.missedHeartbeats).toBeGreaterThanOrEqual(3);
@@ -701,52 +701,52 @@ describe('Presence API', () => {
   });
 
   // ===========================================================================
-  // GET /api/presence/orchestrators/:vpId - Get OrchestratorPresence
+  // GET /api/presence/orchestrators/:orchestratorId - Get OrchestratorPresence
   // ===========================================================================
 
-  describe('GET /api/presence/orchestrators/:vpId', () => {
+  describe('GET /api/presence/orchestrators/:orchestratorId', () => {
     it('returns Orchestrator presence when online', async () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const vpId = 'orchestrator-123';
-      const mockPresence = createMockVPPresence(vpId);
+      const orchestratorId = 'orchestrator-123';
+      const mockPresence = createMockOrchestratorPresence(orchestratorId);
 
-      mockPresenceService.getVPPresence.mockResolvedValue(mockPresence);
+      mockPresenceService.getOrchestratorPresence.mockResolvedValue(mockPresence);
 
-      const result = await mockPresenceService.getVPPresence(vpId);
+      const result = await mockPresenceService.getOrchestratorPresence(orchestratorId);
 
-      expect(result.vpId).toBe(vpId);
+      expect(result.orchestratorId).toBe(orchestratorId);
       expect(result.status).toBe('online');
       expect(result.daemonInfo).toBeDefined();
     });
 
-    it('returns null for offline VP', async () => {
+    it('returns null for offline Orchestrator', async () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const vpId = 'offline-vp';
+      const orchestratorId = 'offline-orchestrator';
 
-      mockPresenceService.getVPPresence.mockResolvedValue(null);
+      mockPresenceService.getOrchestratorPresence.mockResolvedValue(null);
 
-      const result = await mockPresenceService.getVPPresence(vpId);
+      const result = await mockPresenceService.getOrchestratorPresence(orchestratorId);
 
       expect(result).toBeNull();
     });
 
-    it('includes daemon info for online VP', async () => {
+    it('includes daemon info for online Orchestrator', async () => {
       const session = createMockSession();
       mockAuth.mockResolvedValue(session);
 
-      const vpId = 'orchestrator-123';
-      const mockPresence = createMockVPPresence(vpId);
+      const orchestratorId = 'orchestrator-123';
+      const mockPresence = createMockOrchestratorPresence(orchestratorId);
 
-      mockPresenceService.getVPPresence.mockResolvedValue(mockPresence);
+      mockPresenceService.getOrchestratorPresence.mockResolvedValue(mockPresence);
 
-      const result = await mockPresenceService.getVPPresence(vpId);
+      const result = await mockPresenceService.getOrchestratorPresence(orchestratorId);
 
       expect(result.daemonInfo).toBeDefined();
-      expect(result.daemonInfo.daemonId).toBe(`daemon-${vpId}`);
+      expect(result.daemonInfo.daemonId).toBe(`daemon-${orchestratorId}`);
       expect(result.daemonInfo.endpoint).toBeDefined();
       expect(result.daemonInfo.version).toBeDefined();
     });
@@ -757,7 +757,7 @@ describe('Presence API', () => {
   // ===========================================================================
 
   describe('Admin Endpoints', () => {
-    it('GET /api/admin/presence/unhealthy - lists unhealthy VPs', async () => {
+    it('GET /api/admin/presence/unhealthy - lists unhealthy Orchestrators', async () => {
       const session = createMockSession({
         user: {
           id: 'admin-123',
@@ -770,13 +770,13 @@ describe('Presence API', () => {
 
       const unhealthyVPs = [
         {
-          vpId: 'orchestrator-1',
+          orchestratorId: 'orchestrator-1',
           status: 'unhealthy',
           missedHeartbeats: 5,
           lastHeartbeat: new Date(Date.now() - 150000).toISOString(),
         },
         {
-          vpId: 'orchestrator-2',
+          orchestratorId: 'orchestrator-2',
           status: 'unhealthy',
           missedHeartbeats: 4,
           lastHeartbeat: new Date(Date.now() - 120000).toISOString(),
@@ -791,7 +791,7 @@ describe('Presence API', () => {
       expect(result[0].status).toBe('unhealthy');
     });
 
-    it('requires admin role for unhealthy VPs list', async () => {
+    it('requires admin role for unhealthy Orchestrators list', async () => {
       const session = createMockSession({
         user: {
           id: 'user-123',
@@ -811,7 +811,7 @@ describe('Presence API', () => {
       expect(expectedStatus).toBe(403);
     });
 
-    it('filters unhealthy VPs by organization', async () => {
+    it('filters unhealthy Orchestrators by organization', async () => {
       const session = createMockSession({
         user: {
           id: 'admin-123',
@@ -825,7 +825,7 @@ describe('Presence API', () => {
       const orgId = 'org-123';
 
       mockHeartbeatService.getUnhealthyVPs.mockResolvedValue([
-        { vpId: 'orchestrator-1', organizationId: orgId, status: 'unhealthy' },
+        { orchestratorId: 'orchestrator-1', organizationId: orgId, status: 'unhealthy' },
       ]);
 
       const result = await mockHeartbeatService.getUnhealthyVPs(orgId);

@@ -70,7 +70,7 @@ async function verifyWorkspaceAccess(
  *
  * Workflow:
  * 1. Validate user has workspace access
- * 2. Verify both VPs exist and belong to same organization
+ * 2. Verify both Orchestrators exist and belong to same organization
  * 3. Check Orchestrator compatibility (discipline/capability alignment)
  * 4. Create delegation record and update task ownership
  * 5. Notify target Orchestrator
@@ -142,7 +142,7 @@ export async function POST(
     const { toOrchestratorId, taskId, note, priority, dueDate } = parseResult.data;
 
     // Verify source Orchestrator exists and belongs to workspace
-    const sourceVP = await prisma.vP.findFirst({
+    const sourceOrchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: accessCheck.organizationId,
@@ -157,7 +157,7 @@ export async function POST(
       },
     });
 
-    if (!sourceVP) {
+    if (!sourceOrchestrator) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Source Orchestrator not found or not accessible',
@@ -168,7 +168,7 @@ export async function POST(
     }
 
     // Verify target Orchestrator exists and belongs to same organization
-    const targetVP = await prisma.vP.findFirst({
+    const targetOrchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: toOrchestratorId,
         organizationId: accessCheck.organizationId,
@@ -183,7 +183,7 @@ export async function POST(
       },
     });
 
-    if (!targetVP) {
+    if (!targetOrchestrator) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Target Orchestrator not found or not in same organization',
@@ -194,12 +194,12 @@ export async function POST(
     }
 
     // Check if target Orchestrator is available (not OFFLINE)
-    if (targetVP.status === 'OFFLINE') {
+    if (targetOrchestrator.status === 'OFFLINE') {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Target Orchestrator is currently offline',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.VALIDATION_ERROR,
-          { targetVpStatus: targetVP.status },
+          { targetOrchestratorStatus: targetOrchestrator.status },
         ),
         { status: 400 },
       );
@@ -210,7 +210,7 @@ export async function POST(
       where: { id: taskId },
       select: {
         id: true,
-        vpId: true,
+        orchestratorId: true,
         title: true,
         workspaceId: true,
       },
@@ -226,7 +226,7 @@ export async function POST(
       );
     }
 
-    if (task.vpId !== orchestratorId) {
+    if (task.orchestratorId !== orchestratorId) {
       return NextResponse.json(
         createCoordinationErrorResponse(
           'Task does not belong to source Orchestrator',
@@ -256,7 +256,7 @@ export async function POST(
     // Create notification for target Orchestrator
     await prisma.notification.create({
       data: {
-        userId: targetVP.userId,
+        userId: targetOrchestrator.userId,
         type: 'SYSTEM',
         title: 'New Task Delegated',
         body: `You have been delegated task: ${task.title}`,
@@ -265,8 +265,8 @@ export async function POST(
         resourceType: 'task',
         metadata: {
           taskId,
-          fromVpId: orchestratorId,
-          toVpId: toOrchestratorId,
+          fromOrchestratorId: orchestratorId,
+          toOrchestratorId: toOrchestratorId,
           delegatedAt: result.delegatedAt.toISOString(),
           note,
           notificationType: 'TASK_DELEGATED',
@@ -279,15 +279,15 @@ export async function POST(
       data: {
         success: true,
         taskId: result.taskId,
-        fromVpId: result.fromVpId,
-        toVpId: result.toVpId,
+        fromOrchestratorId: result.fromOrchestratorId,
+        toOrchestratorId: result.toOrchestratorId,
         delegatedAt: result.delegatedAt,
         message: result.message,
         compatibility: {
-          sourceDiscipline: sourceVP.discipline,
-          targetDiscipline: targetVP.discipline,
-          sourceRole: sourceVP.role,
-          targetRole: targetVP.role,
+          sourceDiscipline: sourceOrchestrator.discipline,
+          targetDiscipline: targetOrchestrator.discipline,
+          sourceRole: sourceOrchestrator.role,
+          targetRole: targetOrchestrator.role,
         },
       },
       message: 'Task delegated successfully',

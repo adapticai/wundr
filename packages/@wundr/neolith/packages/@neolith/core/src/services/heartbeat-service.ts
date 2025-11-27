@@ -242,12 +242,12 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    */
   async registerDaemon(vpId: string, daemonInfo: HeartbeatDaemonInfo): Promise<void> {
     // Validate Orchestrator exists
-    const orchestrator = await this.db.vP.findUnique({
+    const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: vpId },
       include: { organization: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new OrchestratorNotFoundError(vpId);
     }
 
@@ -278,8 +278,8 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     );
 
     // Add to registered Orchestrators set
-    await this.redis.sadd(HEARTBEAT_REDIS_KEYS.registeredVPs(), vpId);
-    await this.redis.sadd(HEARTBEAT_REDIS_KEYS.orgVPs(vp.organizationId), vpId);
+    await this.redis.sadd(HEARTBEAT_REDIS_KEYS.registeredOrchestrators(), vpId);
+    await this.redis.sadd(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orchestrator.organizationId), vpId);
 
     // Initialize health status
     const healthStatus: HealthStatus = {
@@ -297,7 +297,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     this.sequenceCounters.set(vpId, 0);
 
     // Update Orchestrator status to ONLINE
-    await this.db.vP.update({
+    await this.db.orchestrator.update({
       where: { id: vpId },
       data: { status: 'ONLINE' },
     });
@@ -314,7 +314,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     }
 
     // Get Orchestrator to find org ID
-    const orchestrator = await this.db.vP.findUnique({
+    const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: vpId },
     });
 
@@ -323,16 +323,16 @@ export class HeartbeatServiceImpl implements HeartbeatService {
       this.redis.del(HEARTBEAT_REDIS_KEYS.daemon(vpId)),
       this.redis.del(HEARTBEAT_REDIS_KEYS.heartbeat(vpId)),
       this.redis.del(HEARTBEAT_REDIS_KEYS.health(vpId)),
-      this.redis.srem(HEARTBEAT_REDIS_KEYS.registeredVPs(), vpId),
-      orchestrator ? this.redis.srem(HEARTBEAT_REDIS_KEYS.orgVPs(vp.organizationId), vpId) : Promise.resolve(),
+      this.redis.srem(HEARTBEAT_REDIS_KEYS.registeredOrchestrators(), vpId),
+      orchestrator ? this.redis.srem(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orchestrator.organizationId), vpId) : Promise.resolve(),
     ]);
 
     // Remove sequence counter
     this.sequenceCounters.delete(vpId);
 
     // Update Orchestrator status to OFFLINE
-    if (vp) {
-      await this.db.vP.update({
+    if (orchestrator) {
+      await this.db.orchestrator.update({
         where: { id: vpId },
         data: { status: 'OFFLINE' },
       });
@@ -356,11 +356,11 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     const daemonInfo = JSON.parse(daemonInfoStr);
 
     // Get Orchestrator for org ID
-    const orchestrator = await this.db.vP.findUnique({
+    const orchestrator = await this.db.orchestrator.findUnique({
       where: { id: vpId },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       throw new OrchestratorNotFoundError(vpId);
     }
 
@@ -371,8 +371,8 @@ export class HeartbeatServiceImpl implements HeartbeatService {
 
     // Create heartbeat record
     const heartbeatRecord: HeartbeatRecord = {
-      vpId,
-      organizationId: vp.organizationId,
+      orchestratorId: vpId,
+      organizationId: orchestrator.organizationId,
       timestamp: new Date(),
       metrics: metrics ?? DEFAULT_HEARTBEAT_METRICS,
       daemonInfo: {
@@ -540,7 +540,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
    */
   async getUnhealthyVPs(orgId: string): Promise<string[]> {
     // Get all Orchestrators for the organization
-    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.orgVPs(orgId));
+    const vpIds = await this.redis.smembers(HEARTBEAT_REDIS_KEYS.orgOrchestrators(orgId));
     const unhealthyVPs: string[] = [];
 
     // Check health of each Orchestrator
@@ -600,7 +600,7 @@ export class HeartbeatServiceImpl implements HeartbeatService {
     );
 
     // Update Orchestrator status to ONLINE
-    await this.db.vP.update({
+    await this.db.orchestrator.update({
       where: { id: vpId },
       data: { status: 'ONLINE' },
     });

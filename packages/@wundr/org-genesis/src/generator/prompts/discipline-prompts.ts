@@ -428,15 +428,15 @@ export function buildDisciplineGenerationPrompt(
 
   // Replace simple placeholders
   prompt = prompt.replace(/\{\{orgName\}\}/g, context.orgName);
-  prompt = prompt.replace(/\{\{vpName\}\}/g, context.orchestratorName);
-  prompt = prompt.replace(/\{\{vpSlug\}\}/g, context.orchestratorSlug);
+  prompt = prompt.replace(/\{\{vpName\}\}/g, context.vpName);
+  prompt = prompt.replace(/\{\{vpSlug\}\}/g, context.vpSlug);
   prompt = prompt.replace(/\{\{industry\}\}/g, context.industry);
 
   // Handle vpResponsibilities conditional block
-  if (context.orchestratorResponsibilities && context.orchestratorResponsibilities.length > 0) {
+  if (context.vpResponsibilities && context.vpResponsibilities.length > 0) {
     const responsibilitiesBlock =
       'Orchestrator Responsibilities:\n' +
-      context.orchestratorResponsibilities.map((r) => `- ${r}`).join('\n');
+      context.vpResponsibilities.map((r) => `- ${r}`).join('\n');
     prompt = prompt.replace(
       /\{\{#if vpResponsibilities\}\}[\s\S]*?\{\{\/if\}\}/,
       responsibilitiesBlock,

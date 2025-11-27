@@ -100,7 +100,7 @@ export async function PATCH(
         workspaceId,
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -216,7 +216,7 @@ export async function PATCH(
       where: { id: taskId },
       data: updateData,
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,

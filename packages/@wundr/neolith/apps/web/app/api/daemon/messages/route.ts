@@ -52,7 +52,7 @@ const MESSAGE_ERROR_CODES = {
  * Decoded access token payload
  */
 interface AccessTokenPayload {
-  vpId: string;
+  orchestratorId: string;
   daemonId: string;
   scopes: string[];
   type: 'access';
@@ -82,20 +82,20 @@ async function verifyDaemonToken(request: NextRequest): Promise<AccessTokenPaylo
 /**
  * Check if Orchestrator has access to a channel
  */
-async function checkChannelAccess(vpId: string, channelId: string): Promise<boolean> {
-  const orchestrator = await prisma.vP.findUnique({
-    where: { id: vpId },
+async function checkChannelAccess(orchestratorId: string, channelId: string): Promise<boolean> {
+  const orchestrator = await prisma.orchestrator.findUnique({
+    where: { id: orchestratorId },
     select: { userId: true },
   });
 
-  if (!vp) {
+  if (!orchestrator) {
     return false;
   }
 
   const membership = await prisma.channelMember.findFirst({
     where: {
       channelId,
-      userId: vp.userId,
+      userId: orchestrator.userId,
     },
   });
 
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Check channel access
-    const hasAccess = await checkChannelAccess(token.vpId, channelId);
+    const hasAccess = await checkChannelAccess(token.orchestratorId, channelId);
     if (!hasAccess) {
       return NextResponse.json(
         { error: 'Channel access denied', code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED },
@@ -195,7 +195,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         name: true,
         displayName: true,
         avatarUrl: true,
-        isVP: true,
+        isOrchestrator: true,
       },
     });
     const authorMap = new Map(authors.map((a) => [a.id, a]));
@@ -291,7 +291,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { channelId, content, threadId, attachments, metadata } = parseResult.data;
 
     // Check channel access
-    const hasAccess = await checkChannelAccess(token.vpId, channelId);
+    const hasAccess = await checkChannelAccess(token.orchestratorId, channelId);
     if (!hasAccess) {
       return NextResponse.json(
         { error: 'Channel access denied', code: MESSAGE_ERROR_CODES.CHANNEL_ACCESS_DENIED },
@@ -300,14 +300,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get Orchestrator user ID
-    const orchestrator = await prisma.vP.findUnique({
-      where: { id: token.vpId },
+    const orchestrator = await prisma.orchestrator.findUnique({
+      where: { id: token.orchestratorId },
       select: { userId: true },
     });
 
-    if (!vp) {
+    if (!orchestrator) {
       return NextResponse.json(
-        { error: 'VP not found', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
+        { error: 'Orchestrator not found', code: MESSAGE_ERROR_CODES.UNAUTHORIZED },
         { status: 401 },
       );
     }
@@ -324,7 +324,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const messageData: MessageCreateData = {
       content,
       channelId,
-      authorId: vp.userId,
+      authorId: orchestrator.userId,
     };
 
     if (threadId) {

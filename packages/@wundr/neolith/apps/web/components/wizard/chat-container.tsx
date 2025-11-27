@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { ChatMessage, ChatMessageProps } from "./chat-message"
+import { ChatMessage } from "./chat-message"
+import type { ChatMessageProps } from "./chat-message"
 import { Button } from "@/components/ui/button"
 import { Loader2, Sparkles } from "lucide-react"
 
@@ -130,9 +131,7 @@ export function ChatContainer({
               role={message.role}
               content={message.content}
               timestamp={message.timestamp}
-              isTyping={message.isTyping}
-              avatarUrl={message.avatarUrl}
-              userName={message.userName}
+              isStreaming={message.isStreaming}
             />
           </div>
         ))}

@@ -15,14 +15,14 @@ import { useCallback, useEffect, useState } from 'react';
 export type ActivityType = 'message' | 'task' | 'workflow' | 'member' | 'file' | 'channel' | 'all';
 
 /**
- * Actor information (user or VP)
+ * Actor information (user or Orchestrator)
  */
 export interface Actor {
   id: string;
   name: string | null;
   displayName: string | null;
   avatarUrl: string | null;
-  isVP: boolean;
+  isOrchestrator: boolean;
   email?: string | null;
 }
 

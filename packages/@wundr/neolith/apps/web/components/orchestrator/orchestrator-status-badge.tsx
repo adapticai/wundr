@@ -2,11 +2,11 @@
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { VPStatus } from '@/types/orchestrator';
-import { VP_STATUS_CONFIG } from '@/types/orchestrator';
+import type { OrchestratorStatus } from '@/types/orchestrator';
+import { ORCHESTRATOR_STATUS_CONFIG } from '@/types/orchestrator';
 
-interface VPStatusBadgeProps {
-  status: VPStatus;
+interface OrchestratorStatusBadgeProps {
+  status: OrchestratorStatus;
   size?: 'sm' | 'md' | 'lg';
   showPulse?: boolean;
   className?: string;
@@ -20,15 +20,15 @@ const sizeClasses = {
   lg: 'px-3 py-1.5 text-base',
 };
 
-export function VPStatusBadge({
+export function OrchestratorStatusBadge({
   status,
   size = 'md',
   showPulse = true,
   className,
   currentTask,
   showTooltip = false,
-}: VPStatusBadgeProps) {
-  const config = VP_STATUS_CONFIG[status];
+}: OrchestratorStatusBadgeProps) {
+  const config = ORCHESTRATOR_STATUS_CONFIG[status];
 
   const badge = (
     <span
@@ -86,8 +86,8 @@ export function VPStatusBadge({
   return badge;
 }
 
-interface VPStatusDotProps {
-  status: VPStatus;
+interface OrchestratorStatusDotProps {
+  status: OrchestratorStatus;
   size?: 'sm' | 'md' | 'lg';
   showPulse?: boolean;
   className?: string;
@@ -99,26 +99,26 @@ const dotSizeClasses = {
   lg: 'h-3 w-3',
 };
 
-const statusDotColors: Record<VPStatus, string> = {
+const statusDotColors: Record<OrchestratorStatus, string> = {
   ONLINE: 'bg-green-500',
   OFFLINE: 'bg-gray-400',
   BUSY: 'bg-yellow-500',
   AWAY: 'bg-orange-500',
 };
 
-export function VPStatusDot({
+export function OrchestratorStatusDot({
   status,
   size = 'md',
   showPulse = true,
   className,
-}: VPStatusDotProps) {
+}: OrchestratorStatusDotProps) {
   const isAnimated = showPulse && (status === 'ONLINE' || status === 'BUSY');
 
   return (
     <span
       className={cn('relative inline-flex', dotSizeClasses[size], className)}
       role="status"
-      aria-label={`Status: ${VP_STATUS_CONFIG[status].label}`}
+      aria-label={`Status: ${ORCHESTRATOR_STATUS_CONFIG[status].label}`}
     >
       {isAnimated && (
         <span

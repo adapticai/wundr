@@ -27,7 +27,7 @@ import type { NextRequest } from 'next/server';
  * Route context with OrchestratorID parameter
  */
 interface RouteContext {
-  params: Promise<{ id: string }>;
+  params: Promise<{ orchestratorId: string }>;
 }
 
 /**
@@ -83,7 +83,7 @@ export async function POST(
       );
     }
 
-    const fromVpId = params.id;
+    const fromVpId = params.orchestratorId;
 
     // Parse request body
     let body: unknown;

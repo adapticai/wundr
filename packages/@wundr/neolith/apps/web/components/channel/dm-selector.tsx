@@ -160,7 +160,7 @@ return null;
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={
-                  selectedUsers.length > 0 ? 'Add more people...' : 'Search for users or VPs...'
+                  selectedUsers.length > 0 ? 'Add more people...' : 'Search for users or Orchestrators...'
                 }
                 className="w-full border-0 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none"
                 disabled={isLoading || isSubmitting}
@@ -224,9 +224,9 @@ return null;
                               dm.participants[0].user.name.charAt(0).toUpperCase()
                             )}
                           </div>
-                          {dm.participants[0].isVP && (
+                          {dm.participants[0].isOrchestrator && (
                             <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">
-                              VP
+                              AI
                             </span>
                           )}
                         </div>
@@ -286,11 +286,11 @@ return null;
 
 interface UserItemProps {
   user: User;
-  isVP?: boolean;
+  isOrchestrator?: boolean;
   onSelect: () => void;
 }
 
-function UserItem({ user, isVP, onSelect }: UserItemProps) {
+function UserItem({ user, isOrchestrator, onSelect }: UserItemProps) {
   const statusColors = {
     online: 'bg-green-500',
     offline: 'bg-gray-400',
@@ -324,9 +324,9 @@ function UserItem({ user, isVP, onSelect }: UserItemProps) {
             statusColors[user.status || 'offline'],
           )}
         />
-        {isVP && (
+        {isOrchestrator && (
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">
-            VP
+            AI
           </span>
         )}
       </div>

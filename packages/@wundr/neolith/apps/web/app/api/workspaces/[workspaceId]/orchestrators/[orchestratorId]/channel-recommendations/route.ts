@@ -1,7 +1,7 @@
 /**
  * OrchestratorChannel Recommendations API Routes
  *
- * Provides personalized channel recommendations for VPs based on
+ * Provides personalized channel recommendations for Orchestrators based on
  * discipline, expertise, and relevance scoring. Excludes channels
  * the Orchestrator is already a member of.
  *
@@ -63,7 +63,7 @@ async function getOrchestratorWithWorkspaceAccess(
     return null;
   }
 
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -137,7 +137,7 @@ export async function GET(
       return NextResponse.json(
         createChannelIntelligenceError(
           'Orchestrator not found or access denied',
-          CHANNEL_INTELLIGENCE_ERROR_CODES.VP_NOT_FOUND,
+          CHANNEL_INTELLIGENCE_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
         { status: 404 },
       );
@@ -215,8 +215,8 @@ export async function GET(
       meta: {
         count: formattedRecommendations.length,
         minScore: filters.minScore,
-        vpDiscipline: result.orchestrator.discipline,
-        vpRole: result.orchestrator.role,
+        orchestratorDiscipline: result.orchestrator.discipline,
+        orchestratorRole: result.orchestrator.role,
       },
     });
   } catch (error) {

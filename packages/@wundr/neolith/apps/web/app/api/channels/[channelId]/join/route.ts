@@ -161,7 +161,7 @@ export async function POST(
             email: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
         channel: {

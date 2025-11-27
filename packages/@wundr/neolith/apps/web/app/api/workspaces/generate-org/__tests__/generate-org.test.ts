@@ -44,7 +44,7 @@ describe('POST /api/workspaces/generate-org', () => {
       id: 'user_123',
       email: 'test@example.com',
       name: 'Test User',
-      isVP: false,
+      isOrchestrator: false,
     },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
   };
@@ -329,7 +329,7 @@ describe('POST /api/workspaces/generate-org', () => {
         disciplines: [],
         agents: [],
         stats: {
-          vpCount: 0,
+          orchestratorCount: 0,
           disciplineCount: 0,
           agentCount: 0,
           generationTimeMs: 1000,
@@ -387,8 +387,8 @@ describe('POST /api/workspaces/generate-org', () => {
         },
         orchestrators: [
           {
-            id: 'vp_1',
-            name: 'VP of Engineering',
+            id: 'orchestrator_1',
+            name: 'Head of Engineering',
             title: 'Chief Technology Officer',
             responsibilities: ['Technology Strategy', 'Team Leadership'],
             disciplines: ['disc_1'],
@@ -406,7 +406,7 @@ describe('POST /api/workspaces/generate-org', () => {
             id: 'disc_1',
             name: 'Engineering',
             description: 'Software engineering discipline',
-            vpId: 'vp_1',
+            orchestratorId: 'orchestrator_1',
             slug: 'engineering',
             purpose: 'Build products',
             activities: ['Coding', 'Testing'],
@@ -415,7 +415,7 @@ describe('POST /api/workspaces/generate-org', () => {
         ],
         agents: [],
         stats: {
-          vpCount: 1,
+          orchestratorCount: 1,
           disciplineCount: 1,
           agentCount: 0,
           generationTimeMs: 5000,
@@ -425,7 +425,7 @@ describe('POST /api/workspaces/generate-org', () => {
       };
 
       const mockMigrationResult = {
-        vpMappings: {
+        orchestratorMappings: {
           mappings: [],
           total: 1,
           successful: 1,
@@ -484,7 +484,7 @@ describe('POST /api/workspaces/generate-org', () => {
       expect(response.status).toBe(201);
       expect(data.data).toBeDefined();
       expect(data.genesis).toBeDefined();
-      expect(data.genesis.vpCount).toBe(1);
+      expect(data.genesis.orchestratorCount).toBe(1);
       expect(data.genesis.disciplineCount).toBe(1);
       expect(data.migration).toBeDefined();
       expect(data.migration.status).toBe('complete');

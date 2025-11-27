@@ -10,31 +10,31 @@ import { cn } from '@/lib/utils';
 
 import type { Orchestrator } from '@/types/orchestrator';
 
-interface VPActivity {
+interface OrchestratorActivity {
   id: string;
   type: 'task_completed' | 'task_started' | 'message_sent' | 'escalation';
   title: string;
   timestamp: Date;
 }
 
-interface VPWorkStats {
+interface OrchestratorWorkStats {
   tasksCompletedToday: number;
   tasksCompletedWeek: number;
   currentTaskProgress: number;
   currentTaskTitle?: string;
   activeTimeToday: number; // in minutes
   idleTimeToday: number; // in minutes
-  recentActivities: VPActivity[];
+  recentActivities: OrchestratorActivity[];
 }
 
-interface VPWorkSummaryProps {
-  vp: VP;
-  stats: VPWorkStats;
+interface OrchestratorWorkSummaryProps {
+  orchestrator: Orchestrator;
+  stats: OrchestratorWorkStats;
   workspaceId?: string;
   className?: string;
 }
 
-export function VPWorkSummary({ vp, stats, workspaceId, className }: VPWorkSummaryProps) {
+export function OrchestratorWorkSummary({ orchestrator, stats, workspaceId, className }: OrchestratorWorkSummaryProps) {
   const totalTimeToday = stats.activeTimeToday + stats.idleTimeToday;
   const activePercentage =
     totalTimeToday > 0 ? Math.round((stats.activeTimeToday / totalTimeToday) * 100) : 0;
@@ -44,12 +44,12 @@ export function VPWorkSummary({ vp, stats, workspaceId, className }: VPWorkSumma
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-lg">{vp.title} Work Summary</CardTitle>
+            <CardTitle className="text-lg">{orchestrator.title} Work Summary</CardTitle>
             <CardDescription>Performance metrics and recent activity</CardDescription>
           </div>
           {workspaceId && (
             <Link
-              href={`/${workspaceId}/orchestrators/${vp.id}`}
+              href={`/${workspaceId}/orchestrators/${orchestrator.id}`}
               className="text-sm font-medium text-primary hover:underline"
             >
               View Details
@@ -178,7 +178,7 @@ export function VPWorkSummary({ vp, stats, workspaceId, className }: VPWorkSumma
 }
 
 // Activity icon component
-function ActivityIcon({ type }: { type: VPActivity['type'] }) {
+function ActivityIcon({ type }: { type: OrchestratorActivity['type'] }) {
   const iconClass = 'h-4 w-4';
 
   switch (type) {

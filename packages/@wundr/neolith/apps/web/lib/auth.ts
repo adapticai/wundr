@@ -28,20 +28,20 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
-      isVP: boolean;
+      isOrchestrator: boolean;
       role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
     } & DefaultSession['user'];
   }
 
   interface User {
-    isVP?: boolean;
+    isOrchestrator?: boolean;
     role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    isVP?: boolean;
+    isOrchestrator?: boolean;
     role?: 'ADMIN' | 'MEMBER' | 'VIEWER';
   }
 }
@@ -118,7 +118,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: profile.name ?? profile.login,
           email: profile.email,
           image: profile.avatar_url,
-          isVP: false,
+          isOrchestrator: false,
         };
       },
     }),
@@ -136,7 +136,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: profile.name,
           email: profile.email,
           image: profile.picture,
-          isVP: false,
+          isOrchestrator: false,
         };
       },
     }),
@@ -158,36 +158,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           label: 'Password',
           type: 'password',
         },
-        // VP-specific fields (optional)
+        // Orchestrator-specific fields (optional)
         apiKey: {
           label: 'API Key',
           type: 'password',
-          placeholder: 'VP API Key',
+          placeholder: 'Orchestrator API Key',
         },
-        vpId: {
-          label: 'VP ID',
+        orchestratorId: {
+          label: 'Orchestrator ID',
           type: 'text',
-          placeholder: 'VP Identifier',
+          placeholder: 'Orchestrator Identifier',
         },
       },
       async authorize(credentials) {
         // Check if this is a Orchestrator authentication request
-        if (credentials?.apiKey && credentials?.vpId) {
+        if (credentials?.apiKey && credentials?.orchestratorId) {
           try {
             // Look up Orchestrator by ID
-            const orchestrator = await prisma.vP.findUnique({
-              where: { id: credentials.vpId as string },
+            const orchestrator = await prisma.orchestrator.findUnique({
+              where: { id: credentials.orchestratorId as string },
               include: { user: true },
             });
 
-            if (!vp) {
+            if (!orchestrator) {
               return null;
             }
 
             // Verify API key (stored in Orchestrator capabilities or config)
             // In production, this should be a secure comparison with hashed keys
-            const vpConfig = vp.capabilities as { apiKey?: string } | null;
-            if (!vpConfig || vpConfig.apiKey !== credentials.apiKey) {
+            const orchestratorConfig = orchestrator.capabilities as { apiKey?: string } | null;
+            if (!orchestratorConfig || orchestratorConfig.apiKey !== credentials.apiKey) {
               // For now, allow any Orchestrator to authenticate for development
               // TODO: Implement proper API key verification in production
               if (process.env.NODE_ENV !== 'development') {
@@ -195,17 +195,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               }
             }
 
-            // Return the VP's associated user
+            // Return the Orchestrator's associated user
             return {
-              id: vp.user.id,
-              name: vp.user.name,
-              email: vp.user.email,
-              image: vp.user.avatarUrl,
-              isVP: true,
+              id: orchestrator.user.id,
+              name: orchestrator.user.name,
+              email: orchestrator.user.email,
+              image: orchestrator.user.avatarUrl,
+              isOrchestrator: true,
               role: 'MEMBER' as const,
             };
           } catch (error) {
-            console.error('VP authentication error:', error);
+            console.error('Orchestrator authentication error:', error);
             return null;
           }
         }
@@ -263,7 +263,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: user.name,
             email: user.email,
             image: user.avatarUrl,
-            isVP: false,
+            isOrchestrator: false,
             role: 'MEMBER' as const,
           };
         } catch (error) {
@@ -283,13 +283,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account }) {
       // On initial sign in, add user data to token
       if (user) {
-        token.isVP = user.isVP ?? false;
+        token.isOrchestrator = user.isOrchestrator ?? false;
         token.role = user.role ?? 'MEMBER';
       }
 
-      // For OAuth accounts, ensure isVP is false
+      // For OAuth accounts, ensure isOrchestrator is false
       if (account && account.provider !== 'orchestrator-credentials') {
-        token.isVP = false;
+        token.isOrchestrator = false;
       }
 
       return token;
@@ -302,7 +302,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
-        session.user.isVP = token.isVP ?? false;
+        session.user.isOrchestrator = token.isOrchestrator ?? false;
         session.user.role = token.role ?? 'MEMBER';
       }
       return session;
@@ -352,18 +352,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
 
-      // For credentials provider (both email/password and VP)
+      // For credentials provider (both email/password and Orchestrator)
       if (account?.provider === 'credentials') {
-        // If user is a VP, check if Orchestrator exists and is active
-        if (user.isVP && user.id) {
+        // If user is an Orchestrator, check if Orchestrator exists and is active
+        if (user.isOrchestrator && user.id) {
           try {
-            const orchestrator = await prisma.vP.findFirst({
+            const orchestrator = await prisma.orchestrator.findFirst({
               where: {
                 userId: user.id,
                 status: { not: 'OFFLINE' },
               },
             });
-            return !!vp;
+            return !!orchestrator;
           } catch {
             return false;
           }

@@ -121,7 +121,7 @@ export async function POST(
     }
 
     // Verify Orchestrator exists and belongs to this workspace/organization
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: workspace.organizationId,
@@ -164,7 +164,7 @@ export async function POST(
       const task = await prisma.task.findFirst({
         where: {
           id: input.taskId,
-          vpId: orchestratorId,
+          orchestratorId: orchestratorId,
         },
       });
 
@@ -205,7 +205,7 @@ export async function POST(
       targetChannelIds = channels.map((c) => c.id);
     } else {
       // Auto-target Orchestrator's assigned channels (channels where Orchestrator is a member)
-      const vpChannels = await prisma.channelMember.findMany({
+      const orchestratorChannels = await prisma.channelMember.findMany({
         where: {
           userId: orchestrator.user.id,
           channel: {
@@ -218,7 +218,7 @@ export async function POST(
         },
       });
 
-      if (vpChannels.length === 0) {
+      if (orchestratorChannels.length === 0) {
         return NextResponse.json(
           createErrorResponse(
             'No assigned channels found for this Orchestrator',
@@ -228,7 +228,7 @@ export async function POST(
         );
       }
 
-      targetChannelIds = vpChannels.map((c) => c.channelId);
+      targetChannelIds = orchestratorChannels.map((c) => c.channelId);
     }
 
     // Create messages in all target channels

@@ -196,7 +196,7 @@ export async function PATCH(
             email: true,
             displayName: true,
             avatarUrl: true,
-            isVP: true,
+            isOrchestrator: true,
           },
         },
       },

@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
-import type { MetricTimeRange, VPAnalytics, VPMetrics } from '@/types/orchestrator-analytics';
+import type { MetricTimeRange, OrchestratorAnalytics, OrchestratorMetrics } from '@/types/orchestrator-analytics';
 
-interface VPAnalyticsCardProps {
-  vpId: string;
+interface OrchestratorAnalyticsCardProps {
+  orchestratorId: string;
   className?: string;
   timeRange?: MetricTimeRange;
 }
@@ -15,16 +15,16 @@ interface VPAnalyticsCardProps {
 /**
  * OrchestratorAnalytics Card Component
  *
- * Displays key performance metrics and analytics for a VP.
+ * Displays key performance metrics and analytics for an Orchestrator.
  * Shows task completion rates, average duration, and trend indicators.
  */
-export function VPAnalyticsCard({
-  vpId,
+export function OrchestratorAnalyticsCard({
+  orchestratorId,
   className,
   timeRange = '7d',
-}: VPAnalyticsCardProps) {
-  const [metrics, setMetrics] = useState<VPMetrics | null>(null);
-  const [analytics, setAnalytics] = useState<VPAnalytics | null>(null);
+}: OrchestratorAnalyticsCardProps) {
+  const [metrics, setMetrics] = useState<OrchestratorMetrics | null>(null);
+  const [analytics, setAnalytics] = useState<OrchestratorAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +35,7 @@ export function VPAnalyticsCard({
         setError(null);
 
         const response = await fetch(
-          `/api/orchestrators/${vpId}/analytics?timeRange=${timeRange}`,
+          `/api/orchestrators/${orchestratorId}/analytics?timeRange=${timeRange}`,
         );
 
         if (!response.ok) {
@@ -54,10 +54,10 @@ export function VPAnalyticsCard({
     }
 
     fetchAnalytics();
-  }, [vpId, timeRange]);
+  }, [orchestratorId, timeRange]);
 
   if (loading) {
-    return <VPAnalyticsCardSkeleton className={className} />;
+    return <OrchestratorAnalyticsCardSkeleton className={className} />;
   }
 
   if (error || !metrics || !analytics) {
@@ -210,7 +210,7 @@ function MetricItem({ label, value, icon, color }: MetricItemProps) {
 /**
  * Loading Skeleton
  */
-export function VPAnalyticsCardSkeleton({ className }: { className?: string }) {
+export function OrchestratorAnalyticsCardSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn('rounded-lg border bg-card p-5 shadow-sm', className)}>
       {/* Header Skeleton */}

@@ -72,7 +72,7 @@ export async function GET(
     const task = await prisma.task.findUnique({
       where: { id },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -303,7 +303,7 @@ export async function PATCH(
         ...(input.metadata && { metadata: input.metadata as Prisma.InputJsonValue }),
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,

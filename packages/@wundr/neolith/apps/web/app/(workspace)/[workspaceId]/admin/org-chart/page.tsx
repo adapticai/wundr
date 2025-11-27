@@ -40,7 +40,7 @@ export default function OrgChartPage() {
 
         // Fetch VPs for this workspace
         const orchestratorsRes = await fetch(`/api/workspaces/${workspaceId}/orchestrators`);
-        if (!vpsRes.ok) {
+        if (!orchestratorsRes.ok) {
           throw new Error('Failed to fetch Orchestrators');
         }
         const orchestratorsData = await orchestratorsRes.json();

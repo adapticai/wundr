@@ -599,10 +599,10 @@ export function parseOrchestratorRefinementResponse(response: string): Orchestra
   const result = parseOrchestratorGenerationResponse(response);
 
   // For refinement, we expect exactly one Orchestrator
-  if (result.success && result.vps.length > 1) {
+  if (result.success && result.orchestrators.length > 1) {
     return {
       ...result,
-      orchestrators: [result.vps[0]],
+      orchestrators: [result.orchestrators[0]],
       errors: [...result.errors, 'Multiple VPs returned, using first one'],
     };
   }

@@ -27,13 +27,13 @@ const exampleHierarchy: OrgHierarchyNode = {
       type: 'workspace',
       name: 'Engineering',
       data: {
-        vpCount: 5,
-        onlineVPCount: 3,
+        orchestratorCount: 5,
+        onlineOrchestratorCount: 3,
       },
       children: [
         {
           id: 'orchestrator-1',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Alice Johnson',
           data: {
             avatarUrl: '/avatars/alice.jpg',
@@ -45,7 +45,7 @@ const exampleHierarchy: OrgHierarchyNode = {
         },
         {
           id: 'orchestrator-2',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Bob Smith',
           data: {
             status: 'BUSY',
@@ -56,7 +56,7 @@ const exampleHierarchy: OrgHierarchyNode = {
         },
         {
           id: 'orchestrator-3',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Charlie Brown',
           data: {
             status: 'ONLINE',
@@ -72,13 +72,13 @@ const exampleHierarchy: OrgHierarchyNode = {
       type: 'workspace',
       name: 'Product & Design',
       data: {
-        vpCount: 4,
-        onlineVPCount: 2,
+        orchestratorCount: 4,
+        onlineOrchestratorCount: 2,
       },
       children: [
         {
           id: 'orchestrator-4',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Diana Prince',
           data: {
             status: 'ONLINE',
@@ -89,7 +89,7 @@ const exampleHierarchy: OrgHierarchyNode = {
         },
         {
           id: 'orchestrator-5',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Eve Torres',
           data: {
             status: 'ONLINE',
@@ -100,7 +100,7 @@ const exampleHierarchy: OrgHierarchyNode = {
         },
         {
           id: 'orchestrator-6',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Frank Castle',
           data: {
             status: 'AWAY',
@@ -111,7 +111,7 @@ const exampleHierarchy: OrgHierarchyNode = {
         },
         {
           id: 'orchestrator-7',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Grace Hopper',
           data: {
             status: 'OFFLINE',
@@ -126,13 +126,13 @@ const exampleHierarchy: OrgHierarchyNode = {
       type: 'workspace',
       name: 'Customer Success',
       data: {
-        vpCount: 3,
-        onlineVPCount: 3,
+        orchestratorCount: 3,
+        onlineOrchestratorCount: 3,
       },
       children: [
         {
           id: 'orchestrator-8',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Henry Ford',
           data: {
             status: 'ONLINE',
@@ -143,7 +143,7 @@ const exampleHierarchy: OrgHierarchyNode = {
         },
         {
           id: 'orchestrator-9',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Irene Curie',
           data: {
             status: 'ONLINE',
@@ -154,7 +154,7 @@ const exampleHierarchy: OrgHierarchyNode = {
         },
         {
           id: 'orchestrator-10',
-          type: 'vp',
+          type: 'orchestrator',
           name: 'Jack Sparrow',
           data: {
             status: 'BUSY',
@@ -178,9 +178,9 @@ export function OrgChartExample() {
   const handleNodeClick = (node: OrgHierarchyNode) => {
     console.log('Clicked node:', node);
     // You can navigate to a detail page, show a modal, etc.
-    if (node.type === 'vp') {
+    if (node.type === 'orchestrator') {
       // Navigate to Orchestrator detail page
-      // router.push(`/vp/${node.id}`);
+      // router.push(`/orchestrators/${node.id}`);
     } else if (node.type === 'workspace') {
       // Navigate to workspace page
       // router.push(`/workspace/${node.id}`);

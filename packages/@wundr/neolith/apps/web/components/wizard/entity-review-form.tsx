@@ -42,7 +42,7 @@ import {
 import { cn } from '@/lib/utils';
 
 // Entity Type Definitions
-export type EntityType = 'workspace' | 'orchestrator' | 'workflow' | 'session-manager';
+export type EntityType = 'workspace' | 'orchestrator' | 'workflow' | 'session-manager' | 'channel' | 'subagent';
 
 // Zod Schemas
 const workspaceSchema = z.object({
@@ -60,6 +60,7 @@ const workspaceSchema = z.object({
 
 const orchestratorSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  description: z.string().min(10, 'Description must be at least 10 characters').optional(),
   role: z.string().min(1, 'Role is required'),
   goals: z.array(z.string().min(1, 'Goal cannot be empty')).min(1, 'At least one goal is required'),
   capabilities: z.array(z.string().min(1, 'Capability cannot be empty')).min(1, 'At least one capability is required'),
@@ -99,18 +100,36 @@ const sessionManagerSchema = z.object({
   ).min(1, 'At least one rule is required'),
 });
 
+const channelSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  description: z.string().optional(),
+  type: z.enum(['public', 'private', 'direct']).optional(),
+  members: z.array(z.string()).optional(),
+});
+
+const subagentSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  description: z.string().optional(),
+  capabilities: z.array(z.string()).optional(),
+  parentId: z.string().optional(),
+});
+
 type WorkspaceData = z.infer<typeof workspaceSchema>;
 type OrchestratorData = z.infer<typeof orchestratorSchema>;
 type WorkflowData = z.infer<typeof workflowSchema>;
 type SessionManagerData = z.infer<typeof sessionManagerSchema>;
+type ChannelData = z.infer<typeof channelSchema>;
+type SubagentData = z.infer<typeof subagentSchema>;
 
-type EntityData = WorkspaceData | OrchestratorData | WorkflowData | SessionManagerData;
+type EntityData = WorkspaceData | OrchestratorData | WorkflowData | SessionManagerData | ChannelData | SubagentData;
 
 const entitySchemas = {
   workspace: workspaceSchema,
   orchestrator: orchestratorSchema,
   workflow: workflowSchema,
   'session-manager': sessionManagerSchema,
+  channel: channelSchema,
+  subagent: subagentSchema,
 };
 
 // Props
@@ -164,7 +183,8 @@ export function EntityReviewForm({
 
   const schema = entitySchemas[entityType];
   const form = useForm({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema as any),
     defaultValues: extractedData,
   });
 

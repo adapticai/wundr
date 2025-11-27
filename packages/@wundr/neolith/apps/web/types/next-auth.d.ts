@@ -24,8 +24,8 @@ declare module 'next-auth' {
     user: {
       /** The user's unique identifier */
       id: string;
-      /** Whether the user is a Orchestrator (Orchestrator/AI Agent) */
-      isVP: boolean;
+      /** Whether the user is an Orchestrator (AI Agent) */
+      isOrchestrator: boolean;
       /** The user's role in the system */
       role: UserRole;
     } & DefaultSession['user'];
@@ -36,8 +36,8 @@ declare module 'next-auth' {
    * Matches the Prisma User model with auth-specific fields
    */
   interface User extends DefaultUser {
-    /** Whether the user is a Orchestrator (Orchestrator/AI Agent) */
-    isVP?: boolean;
+    /** Whether the user is an Orchestrator (AI Agent) */
+    isOrchestrator?: boolean;
     /** The user's role in the system */
     role?: UserRole;
   }
@@ -51,8 +51,8 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     /** The user's unique identifier (sub claim) */
     id?: string;
-    /** Whether the user is a Orchestrator (Orchestrator/AI Agent) */
-    isVP?: boolean;
+    /** Whether the user is an Orchestrator (AI Agent) */
+    isOrchestrator?: boolean;
     /** The user's role in the system */
     role?: UserRole;
   }

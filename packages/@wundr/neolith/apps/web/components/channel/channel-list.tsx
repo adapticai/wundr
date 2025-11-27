@@ -411,9 +411,9 @@ function DirectMessageItem({ dm, workspaceId, isActive }: DirectMessageItemProps
         {firstParticipant?.user?.status === 'online' && (
           <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background bg-emerald-500" />
         )}
-        {firstParticipant?.isVP && (
+        {firstParticipant?.isOrchestrator && (
           <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">
-            VP
+            AI
           </span>
         )}
       </div>

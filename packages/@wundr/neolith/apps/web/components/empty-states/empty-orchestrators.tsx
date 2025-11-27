@@ -1,6 +1,6 @@
 /**
- * Empty VPs Component
- * @module components/empty-states/empty-vps
+ * Empty Orchestrators Component
+ * @module components/empty-states/empty-orchestrators
  */
 'use client';
 
@@ -8,22 +8,22 @@ import * as React from 'react';
 import { Bot } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 
-interface EmptyVPsProps {
-  onCreateVP?: () => void;
+interface EmptyOrchestratorsProps {
+  onCreateOrchestrator?: () => void;
   onBrowseTemplates?: () => void;
 }
 
-export function EmptyVPs({ onCreateVP, onBrowseTemplates }: EmptyVPsProps) {
+export function EmptyOrchestrators({ onCreateOrchestrator, onBrowseTemplates }: EmptyOrchestratorsProps) {
   return (
     <EmptyState
       icon={Bot}
       title="No Orchestrators yet"
       description="Create your first Orchestrator to automate workflows and enhance your team's capabilities."
       action={
-        onCreateVP
+        onCreateOrchestrator
           ? {
-              label: 'Create VP',
-              onClick: onCreateVP,
+              label: 'Create Orchestrator',
+              onClick: onCreateOrchestrator,
             }
           : undefined
       }

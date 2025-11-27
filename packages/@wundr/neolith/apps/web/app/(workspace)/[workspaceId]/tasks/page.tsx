@@ -25,7 +25,7 @@ interface Task {
   priority: TaskPriorityType;
   dueDate: Date | null;
   tags: string[];
-  vpId: string;
+  orchestratorId: string;
   workspaceId: string;
   createdById: string;
   assignedToId: string | null;

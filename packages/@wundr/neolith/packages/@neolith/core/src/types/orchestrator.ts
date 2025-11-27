@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import type { User, VP, VPStatus } from '@neolith/database';
+import type { User, Orchestrator, OrchestratorStatus } from '@neolith/database';
 
 // =============================================================================
 // OrchestratorCore Types
@@ -166,7 +166,7 @@ export interface CreateOrchestratorInput {
   daemonEndpoint?: string;
 
   /** Initial Orchestrator status */
-  status?: VPStatus;
+  status?: OrchestratorStatus;
 
   /** Charter configuration */
   charter?: Partial<OrchestratorCharter>;
@@ -322,7 +322,7 @@ export interface ListOrchestratorsOptions {
   discipline?: string;
 
   /** Filter by status */
-  status?: VPStatus;
+  status?: OrchestratorStatus;
 
   /** Include inactive Orchestrators */
   includeInactive?: boolean;

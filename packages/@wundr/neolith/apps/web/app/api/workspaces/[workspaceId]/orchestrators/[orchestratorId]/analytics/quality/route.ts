@@ -40,7 +40,7 @@ interface RouteContext {
 /**
  * Helper to verify workspace and Orchestrator access
  */
-async function verifyVPAccess(workspaceId: string, orchestratorId: string, userId: string) {
+async function verifyOrchestratorAccess(workspaceId: string, orchestratorId: string, userId: string) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, organizationId: true },
@@ -63,7 +63,7 @@ async function verifyVPAccess(workspaceId: string, orchestratorId: string, userI
     return null;
   }
 
-  const orchestrator = await prisma.vP.findFirst({
+  const orchestrator = await prisma.orchestrator.findFirst({
     where: {
       id: orchestratorId,
       organizationId: workspace.organizationId,
@@ -130,7 +130,7 @@ export async function GET(
     }
 
     // Verify access
-    const access = await verifyVPAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
@@ -182,7 +182,7 @@ export async function GET(
     const [completedTasks, totalTasks] = await Promise.all([
       prisma.task.count({
         where: {
-          vpId: orchestratorId,
+          orchestratorId: orchestratorId,
           status: 'DONE',
           completedAt: {
             gte: startDate,
@@ -192,7 +192,7 @@ export async function GET(
       }),
       prisma.task.count({
         where: {
-          vpId: orchestratorId,
+          orchestratorId: orchestratorId,
           updatedAt: {
             gte: startDate,
             lte: endDate,
@@ -329,7 +329,7 @@ export async function POST(
     }
 
     // Verify access
-    const access = await verifyVPAccess(workspaceId, orchestratorId, session.user.id);
+    const access = await verifyOrchestratorAccess(workspaceId, orchestratorId, session.user.id);
     if (!access) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
@@ -372,10 +372,10 @@ export async function POST(
     // Verify task belongs to Orchestrator
     const task = await prisma.task.findUnique({
       where: { id: input.taskId },
-      select: { vpId: true, status: true },
+      select: { orchestratorId: true, status: true },
     });
 
-    if (!task || task.vpId !== orchestratorId) {
+    if (!task || task.orchestratorId !== orchestratorId) {
       return NextResponse.json(
         createAnalyticsErrorResponse(
           'Task not found or does not belong to this Orchestrator',

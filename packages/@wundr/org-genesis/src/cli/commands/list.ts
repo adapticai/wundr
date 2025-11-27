@@ -235,9 +235,9 @@ function formatOrgsTable(orgs: OrganizationManifest[], verbose: boolean): void {
  * @param orchestrators - VPs to format
  * @param verbose - Whether to show verbose output
  */
-function formatVPsTable(vps: OrchestratorCharter[], verbose: boolean): void {
-  if (vps.length === 0) {
-    console.log('  No VPs found.');
+function formatVPsTable(orchestrators: OrchestratorCharter[], verbose: boolean): void {
+  if (orchestrators.length === 0) {
+    console.log('  No Orchestrators found.');
     return;
   }
 
@@ -259,11 +259,11 @@ function formatVPsTable(vps: OrchestratorCharter[], verbose: boolean): void {
   for (const orchestrator of orchestrators) {
     if (verbose) {
       console.log(
-        `  ${pad(truncate(vp.id, 29), 30)} ${pad(truncate(vp.identity.name, 24), 25)} ${pad(String(vp.disciplineIds.length), 12)} ${formatDate(vp.createdAt)}`
+        `  ${pad(truncate(orchestrator.id, 29), 30)} ${pad(truncate(orchestrator.identity.name, 24), 25)} ${pad(String(orchestrator.disciplineIds.length), 12)} ${formatDate(orchestrator.createdAt)}`
       );
     } else {
       console.log(
-        `  ${pad(truncate(vp.identity.name, 29), 30)} ${pad(truncate(vp.identity.slug, 24), 25)} ${pad(String(vp.disciplineIds.length), 12)} ${vp.capabilities.length}`
+        `  ${pad(truncate(orchestrator.identity.name, 29), 30)} ${pad(truncate(orchestrator.identity.slug, 24), 25)} ${pad(String(orchestrator.disciplineIds.length), 12)} ${orchestrator.capabilities.length}`
       );
     }
   }
@@ -372,18 +372,18 @@ function formatTreeOutput(result: ListResult): void {
     for (const org of result.organizations) {
       console.log(`  [ORG] ${org.name} (${org.id})`);
 
-      if (result.vps) {
-        const orgVps = result.vps.filter(vp =>
-          org.vpRegistry.some(mapping => mapping.vpId === vp.id)
+      if (result.orchestrators) {
+        const orgOrchestrators = result.orchestrators.filter(orchestrator =>
+          org.vpRegistry.some(mapping => mapping.orchestratorId === orchestrator.id)
         );
-        for (const orchestrator of orgVps) {
-          console.log(`    +-- [VP] ${vp.identity.name}`);
+        for (const orchestrator of orgOrchestrators) {
+          console.log(`    +-- [Orchestrator] ${orchestrator.identity.name}`);
 
           if (result.disciplines) {
-            const vpDiscs = result.disciplines.filter(
-              d => d.parentVpId === vp.id
+            const orchestratorDiscs = result.disciplines.filter(
+              d => d.parentVpId === orchestrator.id
             );
-            for (const disc of vpDiscs) {
+            for (const disc of orchestratorDiscs) {
               console.log(`    |   +-- [DISC] ${disc.name} (${disc.category})`);
 
               if (result.agents) {
@@ -401,13 +401,13 @@ function formatTreeOutput(result: ListResult): void {
         }
       }
     }
-  } else if (result.vps && result.vps.length > 0) {
-    for (const orchestrator of result.vps) {
-      console.log(`  [VP] ${vp.identity.name} (${vp.id})`);
+  } else if (result.orchestrators && result.orchestrators.length > 0) {
+    for (const orchestrator of result.orchestrators) {
+      console.log(`  [Orchestrator] ${orchestrator.identity.name} (${orchestrator.id})`);
 
       if (result.disciplines) {
-        const vpDiscs = result.disciplines.filter(d => d.parentVpId === vp.id);
-        for (const disc of vpDiscs) {
+        const orchestratorDiscs = result.disciplines.filter(d => d.parentVpId === orchestrator.id);
+        for (const disc of orchestratorDiscs) {
           console.log(`    +-- [DISC] ${disc.name} (${disc.category})`);
 
           if (result.agents) {
@@ -456,10 +456,10 @@ function formatJsonOutput(result: ListResult): void {
       createdAt: org.createdAt.toISOString(),
       updatedAt: org.updatedAt.toISOString(),
     })),
-    orchestrators: result.vps?.map(vp => ({
-      ...vp,
-      createdAt: vp.createdAt.toISOString(),
-      updatedAt: vp.updatedAt.toISOString(),
+    orchestrators: result.orchestrators?.map(orchestrator => ({
+      ...orchestrator,
+      createdAt: orchestrator.createdAt.toISOString(),
+      updatedAt: orchestrator.updatedAt.toISOString(),
     })),
     disciplines: result.disciplines?.map(disc => ({
       ...disc,
@@ -552,7 +552,7 @@ export async function listCommand(
 
     if (type === 'vps' || type === 'all') {
       const orchestrators = await registryManager.charters.listVPs();
-      result.vps = orchestrators;
+      result.orchestrators = orchestrators;
       result.total += orchestrators.length;
     }
 
@@ -730,7 +730,7 @@ export async function runListCommand(args: string[]): Promise<void> {
       formatOrgsTable(result.organizations ?? [], options.verbose ?? false);
     }
     if (type === 'vps' || type === 'all') {
-      formatVPsTable(result.vps ?? [], options.verbose ?? false);
+      formatVPsTable(result.orchestrators ?? [], options.verbose ?? false);
     }
     if (type === 'disciplines' || type === 'all') {
       formatDisciplinesTable(

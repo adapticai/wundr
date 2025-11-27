@@ -1,7 +1,7 @@
 /**
  * OrchestratorTask Escalation API Route
  *
- * Allows VPs to escalate blocked tasks to human supervisors.
+ * Allows Orchestrators to escalate blocked tasks to human supervisors.
  * Creates notifications and task handoff with full context.
  *
  * Routes:
@@ -123,7 +123,7 @@ export async function POST(
     }
 
     // Verify Orchestrator exists and belongs to this workspace/organization
-    const orchestrator = await prisma.vP.findFirst({
+    const orchestrator = await prisma.orchestrator.findFirst({
       where: {
         id: orchestratorId,
         organizationId: workspace.organizationId,
@@ -165,7 +165,7 @@ export async function POST(
     const task = await prisma.task.findFirst({
       where: {
         id: input.taskId,
-        vpId: orchestratorId,
+        orchestratorId: orchestratorId,
       },
       include: {
         channel: {
@@ -273,7 +273,7 @@ export async function POST(
             metadata: {
               taskId: task.id,
               orchestratorId,
-              vpName: orchestrator.user.name,
+              orchestratorName: orchestrator.user.name,
               severity: input.severity,
               context: input.context,
             } as unknown as Prisma.InputJsonValue,

@@ -71,7 +71,7 @@ export function generateSlug(
  * @param domain - The email domain (default: 'vp.genesis.local')
  * @returns A unique email address
  */
-export function generateVPEmail(
+export function generateOrchestratorEmail(
   name: string,
   organizationSlug: string,
   domain: string = 'vp.genesis.local',

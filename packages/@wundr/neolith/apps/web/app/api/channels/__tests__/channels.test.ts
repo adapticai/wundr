@@ -114,7 +114,7 @@ function createMockMemberResponse(overrides?: Record<string, unknown>) {
       email: 'testuser@example.com',
       displayName: 'Test User',
       avatarUrl: null,
-      isVP: false,
+      isOrchestrator: false,
       status: 'ACTIVE',
     },
     ...overrides,

@@ -2,7 +2,7 @@
  * Types for Organization Chart hierarchy display
  */
 
-export type OrgNodeType = 'organization' | 'workspace' | 'vp';
+export type OrgNodeType = 'organization' | 'workspace' | 'orchestrator';
 
 export interface OrgNodeData {
   avatarUrl?: string;
@@ -10,8 +10,8 @@ export interface OrgNodeData {
   discipline?: string;
   role?: 'OWNER' | 'ADMIN' | 'MEMBER';
   currentTask?: string;
-  vpCount?: number;
-  onlineVPCount?: number;
+  orchestratorCount?: number;
+  onlineOrchestratorCount?: number;
   pendingTasks?: number;
   supervisorId?: string;
 }
@@ -39,8 +39,8 @@ export interface OrgNodeProps {
   parentType?: OrgNodeType;
 }
 
-export interface VPDetailsPopoverProps {
-  vp: {
+export interface OrchestratorDetailsPopoverProps {
+  orchestrator: {
     id: string;
     name: string;
     avatarUrl?: string;

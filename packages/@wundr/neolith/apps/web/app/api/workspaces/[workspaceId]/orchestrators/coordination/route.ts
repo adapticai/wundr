@@ -21,7 +21,7 @@ import {
   ORCHESTRATOR_COORDINATION_ERROR_CODES,
 } from '@/lib/validations/orchestrator-coordination';
 
-import type { VPCoordinationMetadata } from '@/lib/services/orchestrator-coordination-service';
+import type { OrchestratorCoordinationMetadata } from '@/lib/services/orchestrator-coordination-service';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -34,12 +34,12 @@ interface RouteContext {
 /**
  * Schema for creating multi-Orchestrator task
  */
-const createMultiVpTaskSchema = z.object({
+const createMultiOrchestratorTaskSchema = z.object({
   /** Primary OrchestratorID for the task */
-  primaryVpId: z.string().cuid('Invalid primary OrchestratorID'),
+  primaryOrchestratorId: z.string().cuid('Invalid primary OrchestratorID'),
 
   /** Additional OrchestratorIDs required for consensus */
-  requiredVpIds: z
+  requiredOrchestratorIds: z
     .array(z.string().cuid('Invalid OrchestratorID'))
     .min(1, 'At least one additional Orchestrator required'),
 
@@ -53,7 +53,7 @@ const createMultiVpTaskSchema = z.object({
   /** Optional due date */
   dueDate: z.string().datetime('Invalid datetime format').optional(),
 
-  /** Consensus threshold (percentage of VPs that must agree) */
+  /** Consensus threshold (percentage of Orchestrators that must agree) */
   consensusThreshold: z.number().min(50).max(100).default(100),
 
   /** Additional metadata */
@@ -150,7 +150,7 @@ export async function GET(
         },
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -165,8 +165,8 @@ export async function GET(
     const delegations: Array<{
       taskId: string;
       taskTitle: string;
-      fromVpId: string;
-      toVpId: string;
+      fromOrchestratorId: string;
+      toOrchestratorId: string;
       delegatedAt: string;
       note?: string;
     }> = [];
@@ -174,31 +174,31 @@ export async function GET(
     const collaborations: Array<{
       taskId: string;
       taskTitle: string;
-      primaryVpId: string;
-      collaborators: Array<{ vpId: string; role: string; addedAt: string }>;
+      primaryOrchestratorId: string;
+      collaborators: Array<{ orchestratorId: string; role: string; addedAt: string }>;
     }> = [];
 
     const handoffs: Array<{
       taskId: string;
       taskTitle: string;
-      fromVpId: string;
-      toVpId: string;
+      fromOrchestratorId: string;
+      toOrchestratorId: string;
       handoffAt: string;
       context: Record<string, unknown>;
     }> = [];
 
     tasks.forEach((task) => {
-      const metadata = task.metadata as VPCoordinationMetadata;
+      const metadata = task.metadata as OrchestratorCoordinationMetadata;
 
       // Extract delegations
       if (metadata.delegations) {
         metadata.delegations.forEach((delegation) => {
-          if (!orchestratorId || delegation.fromVpId === orchestratorId || delegation.toVpId === orchestratorId) {
+          if (!orchestratorId || delegation.fromOrchestratorId === orchestratorId || delegation.toOrchestratorId === orchestratorId) {
             delegations.push({
               taskId: task.id,
               taskTitle: task.title,
-              fromVpId: delegation.fromVpId,
-              toVpId: delegation.toVpId,
+              fromOrchestratorId: delegation.fromOrchestratorId,
+              toOrchestratorId: delegation.toOrchestratorId,
               delegatedAt: delegation.delegatedAt,
               note: delegation.note,
             });
@@ -208,11 +208,11 @@ export async function GET(
 
       // Extract collaborations
       if (metadata.collaborators && metadata.collaborators.length > 0) {
-        if (!orchestratorId || metadata.collaborators.some((c) => c.vpId === orchestratorId) || task.vpId === orchestratorId) {
+        if (!orchestratorId || metadata.collaborators.some((c) => c.orchestratorId === orchestratorId) || task.orchestratorId === orchestratorId) {
           collaborations.push({
             taskId: task.id,
             taskTitle: task.title,
-            primaryVpId: task.vpId,
+            primaryOrchestratorId: task.orchestratorId,
             collaborators: metadata.collaborators,
           });
         }
@@ -221,12 +221,12 @@ export async function GET(
       // Extract handoffs
       if (metadata.handoffs) {
         metadata.handoffs.forEach((handoff) => {
-          if (!orchestratorId || handoff.fromVpId === orchestratorId || handoff.toVpId === orchestratorId) {
+          if (!orchestratorId || handoff.fromOrchestratorId === orchestratorId || handoff.toOrchestratorId === orchestratorId) {
             handoffs.push({
               taskId: task.id,
               taskTitle: task.title,
-              fromVpId: handoff.fromVpId,
-              toVpId: handoff.toVpId,
+              fromOrchestratorId: handoff.fromOrchestratorId,
+              toOrchestratorId: handoff.toOrchestratorId,
               handoffAt: handoff.handoffAt,
               context: handoff.context,
             });
@@ -327,7 +327,7 @@ export async function POST(
     }
 
     // Validate input
-    const parseResult = createMultiVpTaskSchema.safeParse(body);
+    const parseResult = createMultiOrchestratorTaskSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
         createCoordinationErrorResponse(
@@ -340,8 +340,8 @@ export async function POST(
     }
 
     const {
-      primaryVpId,
-      requiredVpIds,
+      primaryOrchestratorId,
+      requiredOrchestratorIds,
       title,
       description,
       priority,
@@ -350,11 +350,11 @@ export async function POST(
       metadata: additionalMetadata,
     } = parseResult.data;
 
-    // Verify all VPs exist and belong to workspace organization
-    const allVpIds = [primaryVpId, ...requiredVpIds];
-    const orchestrators = await prisma.vP.findMany({
+    // Verify all Orchestrators exist and belong to workspace organization
+    const allOrchestratorIds = [primaryOrchestratorId, ...requiredOrchestratorIds];
+    const orchestrators = await prisma.orchestrator.findMany({
       where: {
-        id: { in: allVpIds },
+        id: { in: allOrchestratorIds },
         organizationId: accessCheck.organizationId,
       },
       select: {
@@ -366,10 +366,10 @@ export async function POST(
       },
     });
 
-    if (orchestrators.length !== allVpIds.length) {
+    if (orchestrators.length !== allOrchestratorIds.length) {
       return NextResponse.json(
         createCoordinationErrorResponse(
-          'Some VPs not found or not in workspace organization',
+          'Some Orchestrators not found or not in workspace organization',
           ORCHESTRATOR_COORDINATION_ERROR_CODES.ORCHESTRATOR_NOT_FOUND,
         ),
         { status: 404 },
@@ -377,9 +377,9 @@ export async function POST(
     }
 
     // Create multi-Orchestrator task with coordination metadata
-    const coordinationMetadata: VPCoordinationMetadata = {
-      collaborators: requiredVpIds.map((vpId) => ({
-        vpId,
+    const coordinationMetadata: OrchestratorCoordinationMetadata = {
+      collaborators: requiredOrchestratorIds.map((orchestratorId) => ({
+        orchestratorId,
         role: 'collaborator',
         addedAt: new Date().toISOString(),
       })),
@@ -392,7 +392,7 @@ export async function POST(
         priority,
         status: 'TODO',
         workspaceId,
-        vpId: primaryVpId,
+        orchestratorId: primaryOrchestratorId,
         createdById: session.user.id,
         dueDate: dueDate ? new Date(dueDate) : null,
         metadata: {
@@ -404,7 +404,7 @@ export async function POST(
         } as never,
       },
       include: {
-        vp: {
+        orchestrator: {
           select: {
             id: true,
             role: true,
@@ -414,10 +414,10 @@ export async function POST(
       },
     });
 
-    // Create notifications for all required VPs
-    const primaryVp = orchestrators.find((orchestrator) => orchestrator.id === primaryVpId);
+    // Create notifications for all required Orchestrators
+    const primaryOrchestrator = orchestrators.find((orchestrator) => orchestrator.id === primaryOrchestratorId);
     await Promise.all(
-      requiredVpIds.map((orchestratorId) => {
+      requiredOrchestratorIds.map((orchestratorId) => {
         const orchestrator = orchestrators.find((v) => v.id === orchestratorId);
         if (!orchestrator) {
 return Promise.resolve();
@@ -427,17 +427,17 @@ return Promise.resolve();
           data: {
             userId: orchestrator.userId,
             type: 'SYSTEM',
-            title: 'New Multi-OrchestratorTask',
-            body: `${primaryVp?.role || 'A Orchestrator'} has created a multi-Orchestrator task requiring your participation: ${title}`,
+            title: 'New Multi-Orchestrator Task',
+            body: `${primaryOrchestrator?.role || 'An Orchestrator'} has created a multi-Orchestrator task requiring your participation: ${title}`,
             priority: 'HIGH',
             resourceId: task.id,
             resourceType: 'task',
             metadata: {
               taskId: task.id,
-              primaryVpId,
+              primaryOrchestratorId,
               consensusThreshold,
               createdAt: new Date().toISOString(),
-              notificationType: 'MULTI_VP_TASK',
+              notificationType: 'MULTI_ORCHESTRATOR_TASK',
             },
             read: false,
           },
@@ -449,8 +449,8 @@ return Promise.resolve();
       data: {
         task,
         coordination: {
-          primaryVp: orchestrators.find((orchestrator) => orchestrator.id === primaryVpId),
-          requiredVps: orchestrators.filter((orchestrator) => requiredVpIds.includes(orchestrator.id)),
+          primaryOrchestrator: orchestrators.find((orchestrator) => orchestrator.id === primaryOrchestratorId),
+          requiredOrchestrators: orchestrators.filter((orchestrator) => requiredOrchestratorIds.includes(orchestrator.id)),
           consensusThreshold,
           status: 'PENDING',
         },

@@ -47,7 +47,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
       id: 'user_123',
       email: 'test@example.com',
       name: 'Test User',
-      isVP: false,
+      isOrchestrator: false,
     },
   };
 
@@ -135,7 +135,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
           id: 'user_123',
           name: 'Test User',
           avatarUrl: null,
-          isVP: false,
+          isOrchestrator: false,
         },
         channel: {
           id: 'ch_1',
@@ -196,7 +196,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
           id: 'user_123',
           name: 'Test User',
           avatarUrl: null,
-          isVP: false,
+          isOrchestrator: false,
         },
         channel: {
           id: 'ch_1',
@@ -269,7 +269,7 @@ describe('GET /api/workspaces/:workspaceId/search', () => {
         id: 'user_123',
         name: 'Test User',
         avatarUrl: null,
-        isVP: false,
+        isOrchestrator: false,
       },
       channel: {
         id: 'ch_1',

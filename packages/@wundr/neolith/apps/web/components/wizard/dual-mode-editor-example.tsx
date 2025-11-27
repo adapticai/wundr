@@ -20,7 +20,7 @@ export function WorkspaceCreatorExample() {
 
   const handleAskAI = async (
     field: string,
-    currentValue: string,
+    _currentValue: string,
     context: EntityData
   ): Promise<string> => {
     // Mock AI response - replace with actual LLM API call
