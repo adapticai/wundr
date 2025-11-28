@@ -191,7 +191,9 @@ export function useUserWorkspaces(): UseUserWorkspacesReturn {
         throw new Error(errorData.error || 'Failed to fetch workspaces');
       }
 
-      const data = await response.json();
+      const response_data = await response.json();
+      // API returns { data: { workspaces, invites } }, extract the nested data
+      const data = response_data.data || response_data;
 
       // Transform workspaces with date parsing and ensure proper types
       const transformedWorkspaces = (data.workspaces || []).map((workspace: any) => ({

@@ -30,7 +30,7 @@ import type { NextRequest } from 'next/server';
  */
 interface StoredHuddleData {
   id: string;
-  workspaceId: string;
+  workspaceSlug: string;
   name: string;
   description: string | null;
   isPublic: boolean;

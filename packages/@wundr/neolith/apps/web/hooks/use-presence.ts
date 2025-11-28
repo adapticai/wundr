@@ -406,7 +406,7 @@ return;
 
     const connect = () => {
       const eventSource = new EventSource(
-        `/api/channels/${channelId}/presence/subscribe`,
+        `/api/presence/stream?channelIds=${channelId}`,
       );
 
       eventSource.onopen = () => {

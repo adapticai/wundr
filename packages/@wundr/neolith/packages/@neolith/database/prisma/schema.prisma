@@ -69,20 +69,23 @@ model backlog {
 }
 
 model channelMember {
-  id         String      @id @default(cuid())
-  role       ChannelRole @default(MEMBER)
-  channelId  String      @map("channel_id")
-  userId     String      @map("user_id")
-  joinedAt   DateTime    @default(now()) @map("joined_at")
-  lastReadAt DateTime?   @map("last_read_at")
-  leftAt     DateTime?   @map("left_at")
-  channel    channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user       user        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String      @id @default(cuid())
+  role                  ChannelRole @default(MEMBER)
+  channelId             String      @map("channel_id")
+  userId                String      @map("user_id")
+  joinedAt              DateTime    @default(now()) @map("joined_at")
+  lastReadAt            DateTime?   @map("last_read_at")
+  leftAt                DateTime?   @map("left_at")
+  isStarred             Boolean     @default(false) @map("is_starred")
+  notificationPreference String     @default("all") @map("notification_preference")
+  channel               channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user                  user        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([channelId, userId])
   @@index([channelId])
   @@index([leftAt])
   @@index([userId])
+  @@index([isStarred])
   @@map("channel_members")
 }
 

@@ -30,7 +30,7 @@ interface MockFile {
   id: string;
   filename: string;
   mimeType: string;
-  workspaceId: string;
+  workspaceSlug: string;
   uploadedById: string;
   status: string;
 }
@@ -100,7 +100,7 @@ const mockFile: MockFile = {
   id: 'file_123',
   filename: 'document.pdf',
   mimeType: 'application/pdf',
-  workspaceId: 'workspace_123',
+  workspaceSlug: 'workspace_123',
   uploadedById: 'user_123',
   status: 'READY',
 };

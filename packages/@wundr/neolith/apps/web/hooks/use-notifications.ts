@@ -141,7 +141,7 @@ return;
 
         const params = new URLSearchParams();
         if (!refresh && cursor) {
-          params.set('cursor', cursor);
+          params.set('page', cursor);
         }
         params.set('limit', '20');
 
@@ -151,9 +151,14 @@ return;
           throw new Error('Failed to fetch notifications');
         }
 
-        const data = await response.json();
-        const newNotifications = data.notifications.map((n: Notification) => ({
+        const result = await response.json();
+        // API returns { data: [...], pagination: {...} }
+        const notificationsData = result.data || [];
+        const newNotifications = notificationsData.map((n: Notification & { type: string; priority: string }) => ({
           ...n,
+          // Map database type to frontend type (lowercase)
+          type: n.type?.toLowerCase() as Notification['type'],
+          priority: n.priority?.toLowerCase() as Notification['priority'],
           createdAt: new Date(n.createdAt),
         }));
 
@@ -163,8 +168,15 @@ return;
           setNotifications((prev) => [...prev, ...newNotifications]);
         }
 
-        setCursor(data.nextCursor || null);
-        setHasMore(!!data.nextCursor);
+        // Handle pagination
+        const pagination = result.pagination;
+        if (pagination) {
+          setCursor(pagination.hasNextPage ? String(pagination.page + 1) : null);
+          setHasMore(pagination.hasNextPage);
+        } else {
+          setCursor(null);
+          setHasMore(false);
+        }
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {

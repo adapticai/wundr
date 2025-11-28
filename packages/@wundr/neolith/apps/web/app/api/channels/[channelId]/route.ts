@@ -143,6 +143,22 @@ export async function GET(
             slug: true,
           },
         },
+        // Include channel members with user details for DM headers
+        channelMembers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+                email: true,
+                avatarUrl: true,
+                status: true,
+                isOrchestrator: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             channelMembers: true,
@@ -152,12 +168,30 @@ export async function GET(
       },
     });
 
+    // Transform channelMembers to a simpler members array for the client
+    const members = channel?.channelMembers?.map((cm) => ({
+      userId: cm.userId,
+      role: cm.role,
+      joinedAt: cm.joinedAt,
+      ...cm.user,
+    }));
+
+    // Get the current user's starred status
+    const currentUserMembership = channel?.channelMembers?.find(
+      (cm) => cm.userId === session.user.id
+    );
+
     return NextResponse.json({
-      data: channel,
+      data: {
+        ...channel,
+        members, // Add flattened members array
+        isStarred: currentUserMembership?.isStarred ?? false, // Include starred status
+      },
       membership: access.channelMembership
         ? {
             role: access.channelMembership.role,
             joinedAt: access.channelMembership.joinedAt,
+            isStarred: access.channelMembership.isStarred ?? false,
           }
         : null,
     });

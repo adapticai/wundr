@@ -40,11 +40,34 @@ async function getParentMessageWithAccess(messageId: string, userId: string) {
   const message = await prisma.message.findUnique({
     where: { id: messageId },
     include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          displayName: true,
+          avatarUrl: true,
+          isOrchestrator: true,
+        },
+      },
       channel: {
         include: {
           channelMembers: {
             where: { userId },
             select: { userId: true },
+          },
+        },
+      },
+      reactions: {
+        select: {
+          id: true,
+          emoji: true,
+          userId: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
       },
@@ -240,9 +263,18 @@ export async function GET(
         parentMessage: {
           id: parentMessage.id,
           content: parentMessage.content,
+          type: parentMessage.type,
+          authorId: parentMessage.authorId,
+          channelId: parentMessage.channelId,
           createdAt: parentMessage.createdAt,
+          updatedAt: parentMessage.updatedAt,
+          editedAt: parentMessage.editedAt,
+          author: parentMessage.author,
+          reactions: parentMessage.reactions,
+          replyCount: totalCount,
         },
         replies: resultReplies,
+        participants: [], // Can be expanded to track thread participants
       },
       pagination: {
         hasMore,

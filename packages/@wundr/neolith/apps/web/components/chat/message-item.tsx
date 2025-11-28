@@ -55,6 +55,15 @@ export const MessageItem = memo(function MessageItem({
   const [editContent, setEditContent] = useState(message.content);
 
   const isOwn = message.authorId === currentUser.id;
+
+  // Fallback author if not present
+  const author = message.author || {
+    id: message.authorId,
+    name: 'Unknown User',
+    email: '',
+    image: null,
+  };
+
   const formattedTime = useMemo(
     () =>
       new Date(message.createdAt).toLocaleTimeString(undefined, {
@@ -146,15 +155,15 @@ export const MessageItem = memo(function MessageItem({
           <div className="shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
 
-            {message.author.image ? (
+            {author.image ? (
               <img
-                src={message.author.image}
-                alt={message.author.name}
+                src={author.image}
+                alt={author.name}
                 className="h-10 w-10 rounded-full object-cover"
               />
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-                {message.author.name.charAt(0).toUpperCase()}
+                {author.name.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
@@ -163,7 +172,7 @@ export const MessageItem = memo(function MessageItem({
           <div className="min-w-0 flex-1">
             {/* Header */}
             <div className="mb-1 flex items-baseline gap-2">
-              <span className="font-semibold text-foreground">{message.author.name}</span>
+              <span className="font-semibold text-foreground">{author.name}</span>
               <span className="text-xs text-muted-foreground">{formattedTime}</span>
               {message.editedAt && (
                 <span className="text-xs text-muted-foreground">(edited)</span>
@@ -201,7 +210,7 @@ export const MessageItem = memo(function MessageItem({
             )}
 
             {/* Attachments */}
-            {message.attachments.length > 0 && (
+            {message.attachments?.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {message.attachments.map((attachment) => (
                   <AttachmentPreview key={attachment.id} attachment={attachment} />
@@ -210,7 +219,7 @@ export const MessageItem = memo(function MessageItem({
             )}
 
             {/* Reactions */}
-            {message.reactions.length > 0 && (
+            {message.reactions?.length > 0 && (
               <div className="mt-2">
                 <ReactionDisplay
                   reactions={message.reactions}

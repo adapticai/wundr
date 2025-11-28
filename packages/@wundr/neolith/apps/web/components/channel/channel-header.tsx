@@ -1,11 +1,39 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-
 import type { Channel, ChannelPermissions } from '@/types/channel';
+import {
+  Bell,
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  FileText,
+  Info,
+  LogOut,
+  MessageSquare,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Settings,
+  Sparkles,
+  Star,
+  UserPlus,
+  Workflow,
+} from 'lucide-react';
+import { useCallback, useState } from 'react';
 
+
+/**
+ * Channel header tabs
+ */
+type ChannelTab = 'messages' | 'canvas' | 'files';
 
 /**
  * Props for the ChannelHeader component
@@ -15,30 +43,68 @@ interface ChannelHeaderProps {
   channel: Channel;
   /** Permissions for the current user in this channel */
   permissions: ChannelPermissions;
+  /** Current workspace ID */
+  workspaceId?: string;
+  /** Active tab */
+  activeTab?: ChannelTab;
+  /** Callback when tab changes */
+  onTabChange?: (tab: ChannelTab) => void;
   /** Callback fired when the star toggle is clicked */
   onToggleStar?: (isStarred: boolean) => Promise<void>;
   /** Callback fired when user leaves the channel */
   onLeave?: () => Promise<void>;
-  /** Callback to open channel settings */
+  /** Callback to open channel details/settings */
   onOpenSettings?: () => void;
   /** Callback to open member list */
   onOpenMembers?: () => void;
+  /** Callback to open channel details */
+  onOpenDetails?: () => void;
+  /** Callback for summarize channel */
+  onSummarize?: () => void;
+  /** Callback for edit notifications */
+  onEditNotifications?: () => void;
+  /** Callback for add template */
+  onAddTemplate?: () => void;
+  /** Callback for add workflow */
+  onAddWorkflow?: () => void;
+  /** Callback for search in channel */
+  onSearchInChannel?: () => void;
+  /** Callback for invite people */
+  onInvite?: () => void;
   /** Additional CSS class names */
   className?: string;
 }
 
+/**
+ * Slack-like Channel Header Component
+ *
+ * Features:
+ * - Channel name with dropdown menu containing all options
+ * - Tabs (Messages, Canvas, Files, +)
+ * - Member avatars with count
+ * - Star button
+ * - All menu options (Open channel details, Summarise channel, Edit notifications, etc.)
+ */
 export function ChannelHeader({
   channel,
   permissions,
+  workspaceId,
+  activeTab = 'messages',
+  onTabChange,
   onToggleStar,
   onLeave,
   onOpenSettings,
   onOpenMembers,
+  onOpenDetails,
+  onSummarize,
+  onEditNotifications,
+  onAddTemplate,
+  onAddWorkflow,
+  onSearchInChannel,
+  onInvite,
   className,
 }: ChannelHeaderProps) {
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isStarring, setIsStarring] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
 
   const handleToggleStar = useCallback(async () => {
     if (isStarring) {
@@ -52,65 +118,142 @@ return;
     }
   }, [channel.isStarred, isStarring, onToggleStar]);
 
+  const handleCopyLink = useCallback(() => {
+    const url = `${window.location.origin}/${workspaceId}/channels/${channel?.id}`;
+    navigator.clipboard.writeText(url);
+  }, [workspaceId, channel?.id]);
+
+  const handleOpenInNewWindow = useCallback(() => {
+    const url = `${window.location.origin}/${workspaceId}/channels/${channel?.id}`;
+    window.open(url, '_blank');
+  }, [workspaceId, channel?.id]);
+
   const handleLeave = useCallback(async () => {
-    setShowMenu(false);
     await onLeave?.();
   }, [onLeave]);
 
   return (
     <div className={cn('border-b bg-card', className)}>
-      <div className="flex h-14 items-center justify-between px-4">
-        {/* Left: Channel info */}
-        <div className="flex items-center gap-3 min-w-0">
-          <ChannelTypeIcon type={channel.type} className="h-5 w-5 shrink-0 text-muted-foreground" />
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="truncate font-semibold text-foreground">
-                {channel.name}
-              </h1>
-              {channel.isArchived && (
-                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                  Archived
-                </span>
-              )}
-            </div>
-            {channel.description && (
-              <button
-                type="button"
-                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                className={cn(
-                  'text-left text-xs text-muted-foreground hover:text-foreground',
-                  !isDescriptionExpanded && 'truncate max-w-xs',
-                )}
-              >
-                {channel.description}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Right: Actions */}
+      {/* Top row: Channel name, star, members */}
+      <div className="flex h-12 items-center justify-between px-4">
+        
+        {/* Left side: Channel name with dropdown */}
         <div className="flex items-center gap-2">
-          {/* Member count */}
+          {/* Star button */}
           <button
             type="button"
-            onClick={onOpenMembers}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-            title="View members"
+            onClick={handleToggleStar}
+            disabled={isStarring}
+            className="rounded-md p-1.5 hover:bg-accent transition-colors"
+            title={channel.isStarred ? 'Unstar channel' : 'Star channel'}
           >
-            <MembersIcon className="h-4 w-4" />
-            <span>{channel.memberCount}</span>
-            {/* Avatar stack */}
-            <div className="ml-1 flex -space-x-2">
+            <Star
+              className={cn(
+                'h-4 w-4',
+                channel.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground',
+              )}
+            />
+          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-accent transition-colors"
+              >
+                <ChannelTypeIcon type={channel.type} className="h-4 w-4 text-muted-foreground" />
+                <span className="font-semibold">{channel.name}</span>
+                {channel.isArchived && (
+                  <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                    Archived
+                  </span>
+                )}
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuItem onClick={onOpenDetails || onOpenSettings}>
+                <Info className="mr-2 h-4 w-4" />
+                Open channel details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onSummarize}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Summarise channel
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onEditNotifications}>
+                <Bell className="mr-2 h-4 w-4" />
+                Edit notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleToggleStar} disabled={isStarring}>
+                <Star className={cn('mr-2 h-4 w-4', channel.isStarred && 'fill-yellow-400 text-yellow-400')} />
+                {channel.isStarred ? 'Unstar channel' : 'Star channel'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onAddTemplate}>
+                <FileText className="mr-2 h-4 w-4" />
+                Add template
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onAddWorkflow}>
+                <Workflow className="mr-2 h-4 w-4" />
+                Add workflow
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {permissions.canEdit && (
+                <DropdownMenuItem onClick={onOpenSettings}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Edit settings
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={handleCopyLink}>
+                <Copy className="mr-2 h-4 w-4" />
+                Copy link
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onSearchInChannel}>
+                <Search className="mr-2 h-4 w-4" />
+                Search in channel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleOpenInNewWindow}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open in new window
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLeave}
+                className="text-destructive focus:text-destructive"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Leave channel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          
+
+          {/* Channel description (if exists) */}
+          {channel.description && (
+            <span className="hidden lg:inline text-sm text-muted-foreground truncate max-w-xs">
+              {channel.description}
+            </span>
+          )}
+        </div>
+
+        {/* Right side: Members and actions */}
+        <div className="flex items-center gap-3">
+          {/* Member avatars */}
+          <button
+            type="button"
+            onClick={onOpenMembers || onOpenDetails}
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-accent transition-colors"
+          >
+            <div className="flex -space-x-2">
               {channel.members.slice(0, 3).map((member, index) => (
                 <div
                   key={member.userId}
                   className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium"
                   style={{ zIndex: 3 - index }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-
                   {member.user.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={member.user.image}
                       alt={member.user.name}
@@ -127,114 +270,114 @@ return;
                 </div>
               )}
             </div>
+            <span className="text-sm text-muted-foreground">{channel.memberCount}</span>
           </button>
 
-          {/* Star button */}
-          <button
-            type="button"
-            onClick={handleToggleStar}
-            disabled={isStarring}
-            className={cn(
-              'rounded-md p-2 transition-colors',
-              channel.isStarred
-                ? 'text-yellow-500 hover:bg-accent'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-            )}
-            title={channel.isStarred ? 'Unstar channel' : 'Star channel'}
-          >
-            {channel.isStarred ? (
-              <StarFilledIcon className="h-5 w-5" />
-            ) : (
-              <StarIcon className="h-5 w-5" />
-            )}
-          </button>
-
-          {/* Settings (if admin) */}
-          {permissions.canEdit && (
+          {/* Invite button (if can invite) */}
+          {permissions.canInvite && (
             <button
               type="button"
-              onClick={onOpenSettings}
-              className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground"
-              title="Channel settings"
+              onClick={onInvite}
+              className="rounded-md p-1.5 hover:bg-accent transition-colors"
+              title="Invite people"
             >
-              <SettingsIcon className="h-5 w-5" />
+              <UserPlus className="h-5 w-5 text-muted-foreground" />
             </button>
           )}
 
-          {/* Menu */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowMenu(!showMenu)}
-              className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              <MoreIcon className="h-5 w-5" />
-            </button>
-
-            {showMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowMenu(false)}
-                />
-                <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-md border bg-card py-1 shadow-lg">
-                  <button
-                    type="button"
-                    onClick={onOpenMembers}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent"
-                  >
-                    <MembersIcon className="h-4 w-4" />
-                    View members
-                  </button>
-                  {permissions.canInvite && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowMenu(false);
-                        // Open invite dialog - handled by parent
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent"
-                    >
-                      <InviteIcon className="h-4 w-4" />
-                      Invite people
-                    </button>
-                  )}
-                  {permissions.canEdit && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowMenu(false);
-                        onOpenSettings?.();
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent"
-                    >
-                      <EditIcon className="h-4 w-4" />
-                      Edit channel
-                    </button>
-                  )}
-                  <div className="my-1 h-px bg-border" />
-                  <button
-                    type="button"
-                    onClick={handleLeave}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
-                  >
-                    <LeaveIcon className="h-4 w-4" />
-                    Leave channel
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          {/* More actions button */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="rounded-md p-1.5 hover:bg-accent transition-colors"
+                title="More actions"
+              >
+                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={onOpenDetails || onOpenSettings}>
+                <Info className="mr-2 h-4 w-4" />
+                Channel details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onSearchInChannel}>
+                <Search className="mr-2 h-4 w-4" />
+                Search in channel
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onEditNotifications}>
+                <Bell className="mr-2 h-4 w-4" />
+                Notifications
+              </DropdownMenuItem>
+              {permissions.canEdit && (
+                <DropdownMenuItem onClick={onOpenSettings}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      {/* Expanded description */}
-      {channel.description && isDescriptionExpanded && (
-        <div className="border-t px-4 py-3">
-          <p className="text-sm text-muted-foreground">{channel.description}</p>
-        </div>
-      )}
+      {/* Bottom row: Tabs */}
+      <div className="flex items-center gap-1 px-4 pb-1">
+        <TabButton
+          active={activeTab === 'messages'}
+          onClick={() => onTabChange?.('messages')}
+          icon={<MessageSquare className="h-4 w-4" />}
+          label="Messages"
+        />
+        <TabButton
+          active={activeTab === 'canvas'}
+          onClick={() => onTabChange?.('canvas')}
+          icon={<FileText className="h-4 w-4" />}
+          label="Canvas"
+        />
+        <TabButton
+          active={activeTab === 'files'}
+          onClick={() => onTabChange?.('files')}
+          icon={<FileText className="h-4 w-4" />}
+          label="Files"
+        />
+        <button
+          type="button"
+          className="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors"
+          title="Add a tab"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
     </div>
+  );
+}
+
+/**
+ * Tab button component
+ */
+interface TabButtonProps {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}
+
+function TabButton({ active, onClick, icon, label }: TabButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+        active
+          ? 'bg-accent text-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+      )}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
 
@@ -262,6 +405,25 @@ function ChannelTypeIcon({
     );
   }
 
+  if (type === 'direct') {
+    return (
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    );
+  }
+
   return (
     <svg
       className={className}
@@ -280,142 +442,4 @@ function ChannelTypeIcon({
   );
 }
 
-function MembersIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function StarIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  );
-}
-
-function StarFilledIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  );
-}
-
-function SettingsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function MoreIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="19" cy="12" r="1" />
-      <circle cx="5" cy="12" r="1" />
-    </svg>
-  );
-}
-
-function InviteIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <line x1="19" x2="19" y1="8" y2="14" />
-      <line x1="22" x2="16" y1="11" y2="11" />
-    </svg>
-  );
-}
-
-function EditIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-      <path d="m15 5 4 4" />
-    </svg>
-  );
-}
-
-function LeaveIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" x2="9" y1="12" y2="12" />
-    </svg>
-  );
-}
+export default ChannelHeader;

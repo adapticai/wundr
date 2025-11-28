@@ -37,7 +37,7 @@ function ChannelSectionSkeleton({ title: _title, itemCount, showAction }: Channe
   return (
     <div className="py-1">
       {/* Section Header */}
-      <div className="flex items-center justify-between px-3 py-1">
+      <div className="flex items-center justify-between py-1">
         <div className="flex flex-1 items-center gap-1">
           <Skeleton className="h-3 w-3 rounded" />
           <Skeleton className="h-3 w-24" />

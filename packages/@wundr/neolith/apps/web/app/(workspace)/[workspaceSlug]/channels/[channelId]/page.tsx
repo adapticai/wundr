@@ -1,0 +1,559 @@
+'use client';
+
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+
+import {
+  MessageList,
+  MessageInput,
+  ThreadPanel,
+  TypingIndicator,
+} from '@/components/chat';
+import { ChannelHeader } from '@/components/channel';
+import { CanvasTab } from '@/components/channel/canvas-tab';
+import { FilesTab } from '@/components/channel/files-tab';
+import { EditChannelDialog } from '@/components/channel/edit-channel-dialog';
+import { NotificationsDialog } from '@/components/channel/notifications-dialog';
+import { ChannelDetailsPanel } from '@/components/channel/channel-details-panel';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useAuth } from '@/hooks/use-auth';
+import {
+  useMessages,
+  useSendMessage,
+  useChannel,
+  useTypingIndicator,
+  useThread,
+} from '@/hooks/use-chat';
+
+import type { Message, User } from '@/types/chat';
+import type { Channel, ChannelPermissions } from '@/types/channel';
+
+type ChannelTab = 'messages' | 'canvas' | 'files';
+
+export default function ChannelPage() {
+  const params = useParams();
+  const router = useRouter();
+  const channelId = params.channelId as string;
+  const workspaceSlug = params.workspaceSlug as string;
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
+
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ChannelTab>('messages');
+
+  // Dialog and panel states
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
+  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  // isStarred is derived from channel data, with local state for optimistic updates
+  const [localIsStarred, setLocalIsStarred] = useState<boolean | null>(null);
+
+  // Convert auth user to chat User type
+  const currentUser = useMemo<User | null>(() => {
+    if (!authUser) {
+      return null;
+    }
+    return {
+      id: authUser.id,
+      name: authUser.name || 'Unknown User',
+      email: authUser.email || '',
+      image: authUser.image,
+      status: 'online',
+    };
+  }, [authUser]);
+
+  // Fetch channel details
+  const { channel, isLoading: isChannelLoading } = useChannel(channelId);
+
+  // Derive isStarred: use local state for optimistic updates, fallback to channel data
+  const isStarred = localIsStarred ?? (channel as any)?.isStarred ?? false;
+
+  // Sync local starred state when channel data loads
+  useEffect(() => {
+    if (channel && localIsStarred === null) {
+      setLocalIsStarred((channel as any).isStarred ?? false);
+    }
+  }, [channel, localIsStarred]);
+
+  // Fetch messages
+  const {
+    messages,
+    isLoading: isMessagesLoading,
+    isLoadingMore,
+    hasMore,
+    loadMore,
+    addOptimisticMessage,
+    updateOptimisticMessage,
+    removeOptimisticMessage,
+  } = useMessages(channelId);
+
+  // Send message hook
+  const { sendMessage, editMessage, deleteMessage } = useSendMessage();
+
+  // Typing indicator
+  const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
+    channelId,
+    currentUser?.id || '',
+  );
+
+  // Thread state
+  const {
+    thread,
+    isLoading: isThreadLoading,
+    addOptimisticReply,
+  } = useThread(activeThreadId || '');
+
+  // Mark channel as read when opened
+  useEffect(() => {
+    if (channelId && currentUser && !isMessagesLoading) {
+      fetch(`/api/channels/${channelId}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      }).catch(console.error);
+    }
+  }, [channelId, currentUser, isMessagesLoading]);
+
+  // Handle send message
+  const handleSendMessage = useCallback(
+    async (content: string, mentions: string[], attachments: File[]) => {
+      if (!currentUser) {
+        return;
+      }
+
+      const { optimisticId, message } = await sendMessage(
+        { content, channelId, mentions, attachments },
+        currentUser,
+      );
+
+      // Add optimistic message
+      addOptimisticMessage({
+        id: optimisticId,
+        content,
+        authorId: currentUser.id,
+        author: currentUser,
+        channelId,
+        parentId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        reactions: [],
+        replyCount: 0,
+        mentions: [],
+        attachments: [],
+      });
+
+      // Replace optimistic message with real one
+      if (message) {
+        updateOptimisticMessage(optimisticId, { ...message, id: message.id });
+      } else {
+        // Remove on failure
+        removeOptimisticMessage(optimisticId);
+      }
+    },
+    [channelId, currentUser, sendMessage, addOptimisticMessage, updateOptimisticMessage, removeOptimisticMessage],
+  );
+
+  // Handle send thread reply
+  const handleSendThreadReply = useCallback(
+    async (content: string, mentions: string[], attachments: File[]) => {
+      if (!activeThreadId || !currentUser) {
+return;
+}
+
+      const { optimisticId } = await sendMessage(
+        { content, channelId, parentId: activeThreadId, mentions, attachments },
+        currentUser,
+      );
+
+      // Add optimistic reply
+      addOptimisticReply({
+        id: optimisticId,
+        content,
+        authorId: currentUser.id,
+        author: currentUser,
+        channelId,
+        parentId: activeThreadId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        reactions: [],
+        replyCount: 0,
+        mentions: [],
+        attachments: [],
+      });
+
+      // Update reply count on parent
+      updateOptimisticMessage(activeThreadId, {
+        replyCount: (messages.find((m) => m.id === activeThreadId)?.replyCount || 0) + 1,
+      });
+    },
+    [activeThreadId, channelId, currentUser, sendMessage, addOptimisticReply, updateOptimisticMessage, messages],
+  );
+
+  // Handle edit message
+  const handleEditMessage = useCallback(
+    async (message: Message) => {
+      const result = await editMessage(message.id, { content: message.content });
+      if (result) {
+        updateOptimisticMessage(message.id, result);
+      }
+    },
+    [editMessage, updateOptimisticMessage],
+  );
+
+  // Handle delete message
+  const handleDeleteMessage = useCallback(
+    async (messageId: string) => {
+      const success = await deleteMessage(messageId);
+      if (success) {
+        removeOptimisticMessage(messageId);
+      }
+    },
+    [deleteMessage, removeOptimisticMessage],
+  );
+
+  // Handle reaction toggle
+  const handleReaction = useCallback(
+    async (messageId: string, emoji: string) => {
+      if (!currentUser) {
+        return;
+      }
+
+      // Optimistic update
+      const message = messages.find((m) => m.id === messageId);
+      if (!message) {
+        return;
+      }
+
+      const existingReaction = message.reactions.find((r) => r.emoji === emoji);
+      let updatedReactions = [...message.reactions];
+
+      if (existingReaction) {
+        if (existingReaction.hasReacted) {
+          // Remove user's reaction
+          if (existingReaction.count === 1) {
+            updatedReactions = updatedReactions.filter((r) => r.emoji !== emoji);
+          } else {
+            updatedReactions = updatedReactions.map((r) =>
+              r.emoji === emoji
+                ? {
+                    ...r,
+                    count: r.count - 1,
+                    hasReacted: false,
+                    users: r.users.filter((u) => u.id !== currentUser.id),
+                  }
+                : r,
+            );
+          }
+        } else {
+          // Add user's reaction
+          updatedReactions = updatedReactions.map((r) =>
+            r.emoji === emoji
+              ? {
+                  ...r,
+                  count: r.count + 1,
+                  hasReacted: true,
+                  users: [...r.users, currentUser],
+                }
+              : r,
+          );
+        }
+      } else {
+        // New reaction
+        updatedReactions.push({
+          emoji,
+          count: 1,
+          hasReacted: true,
+          users: [currentUser],
+        });
+      }
+
+      updateOptimisticMessage(messageId, { reactions: updatedReactions });
+
+      // Send to server
+      try {
+        await fetch(`/api/messages/${messageId}/reactions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emoji }),
+        });
+      } catch {
+        // Revert on error
+        updateOptimisticMessage(messageId, { reactions: message.reactions });
+      }
+    },
+    [currentUser, messages, updateOptimisticMessage],
+  );
+
+  // Handle reply (open thread)
+  const handleReply = useCallback((message: Message) => {
+    setActiveThreadId(message.id);
+  }, []);
+
+  // Handle open thread
+  const handleOpenThread = useCallback((message: Message) => {
+    setActiveThreadId(message.id);
+  }, []);
+
+  // Handle close thread
+  const handleCloseThread = useCallback(() => {
+    setActiveThreadId(null);
+  }, []);
+
+  // Star toggle handler - must be before conditional returns
+  const handleToggleStar = useCallback(async () => {
+    const previousValue = isStarred;
+    const newValue = !isStarred;
+
+    // Optimistic update
+    setLocalIsStarred(newValue);
+
+    try {
+      const method = previousValue ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/channels/${channelId}/star`, { method });
+      if (!response.ok) {
+        // Revert on failure
+        console.error('Failed to toggle star, reverting');
+        setLocalIsStarred(previousValue);
+      }
+    } catch (error) {
+      // Revert on error
+      console.error('Failed to toggle star:', error);
+      setLocalIsStarred(previousValue);
+    }
+  }, [channelId, isStarred]);
+
+  // Leave channel handler - must be before conditional returns
+  const handleLeaveChannel = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/channels/${channelId}/members/leave`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        router.push(`/${workspaceSlug}/channels`);
+      }
+    } catch (error) {
+      console.error('Failed to leave channel:', error);
+    }
+  }, [channelId, workspaceSlug, router]);
+
+  // Edit channel handler - must be before conditional returns
+  const handleEditChannel = useCallback(async (updates: { name?: string; description?: string }) => {
+    const response = await fetch(`/api/channels/${channelId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update channel');
+    }
+    // Refetch channel data
+    window.location.reload();
+  }, [channelId]);
+
+  // Remove member handler - must be before conditional returns
+  const handleRemoveMember = useCallback(async (userId: string) => {
+    const response = await fetch(`/api/channels/${channelId}/members/${userId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to remove member');
+    }
+  }, [channelId]);
+
+  // Change member role handler - must be before conditional returns
+  const handleChangeMemberRole = useCallback(async (userId: string, role: 'admin' | 'member') => {
+    const response = await fetch(`/api/channels/${channelId}/members/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: role.toUpperCase() }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to change member role');
+    }
+  }, [channelId]);
+
+  // Tab change handler
+  const handleTabChange = useCallback((tab: ChannelTab) => {
+    setActiveTab(tab);
+  }, []);
+
+  const isLoading = isChannelLoading || isMessagesLoading || isAuthLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  // Require authentication
+  if (!currentUser) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <p className="text-muted-foreground">Please sign in to view this channel.</p>
+      </div>
+    );
+  }
+
+  // Transform channel data for ChannelHeader component
+  const channelForHeader: Channel | null = channel ? {
+    id: channel.id,
+    name: channel.name,
+    description: channel.description,
+    type: channel.type as 'public' | 'private' | 'direct',
+    workspaceId: workspaceSlug,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    createdById: '',
+    members: (channel.members || []).map((m: any) => ({
+      id: m.id || m.userId,
+      userId: m.userId || m.id,
+      user: {
+        id: m.userId || m.user?.id || m.id,
+        name: m.displayName || m.name || m.user?.displayName || m.user?.name || 'Unknown',
+        email: m.email || m.user?.email || '',
+        image: m.avatarUrl || m.image || m.user?.avatarUrl || m.user?.image,
+        status: 'online' as const,
+      },
+      channelId: channel.id,
+      role: (m.role || 'member') as 'admin' | 'member',
+      joinedAt: new Date(),
+    })),
+    memberCount: channel.members?.length || 0,
+    unreadCount: 0,
+    isStarred: isStarred,
+    isArchived: false,
+  } : null;
+
+  // Default permissions (TODO: get from API)
+  const permissions: ChannelPermissions = {
+    canEdit: true,
+    canDelete: true,
+    canArchive: true,
+    canInvite: true,
+    canRemoveMembers: true,
+    canChangeRoles: true,
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-4rem)] flex-col">
+      {/* Slack-like Channel Header */}
+      {channelForHeader && (
+        <ChannelHeader
+          channel={channelForHeader}
+          permissions={permissions}
+          workspaceId={workspaceSlug}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onToggleStar={handleToggleStar}
+          onLeave={handleLeaveChannel}
+          onOpenDetails={() => setShowDetailsPanel(true)}
+          onOpenSettings={() => setShowEditDialog(true)}
+          onSummarize={() => console.log('Summarize channel - AI feature coming soon')}
+          onEditNotifications={() => setShowNotificationsDialog(true)}
+          onAddTemplate={() => console.log('Add template - feature coming soon')}
+          onAddWorkflow={() => console.log('Add workflow - feature coming soon')}
+          onSearchInChannel={() => console.log('Search in channel - feature coming soon')}
+          onInvite={() => setShowDetailsPanel(true)}
+        />
+      )}
+
+      {/* Main content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Tab content */}
+        {activeTab === 'messages' && (
+          <div className="flex flex-1 flex-col">
+            <MessageList
+              messages={messages}
+              currentUser={currentUser}
+              isLoadingMore={isLoadingMore}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              onReply={handleReply}
+              onEdit={handleEditMessage}
+              onDelete={handleDeleteMessage}
+              onReaction={handleReaction}
+              onOpenThread={handleOpenThread}
+            />
+
+            {/* Typing indicator */}
+            <TypingIndicator typingUsers={typingUsers} />
+
+            {/* Message input */}
+            <MessageInput
+              channelId={channelId}
+              currentUser={currentUser}
+              placeholder={`Message #${channel?.name || 'channel'}...`}
+              onSend={handleSendMessage}
+              onTyping={startTyping}
+              onStopTyping={stopTyping}
+            />
+          </div>
+        )}
+
+        {activeTab === 'canvas' && (
+          <CanvasTab channelId={channelId} className="flex-1" />
+        )}
+
+        {activeTab === 'files' && (
+          <FilesTab channelId={channelId} className="flex-1" />
+        )}
+
+        {/* Thread panel */}
+        {activeTab === 'messages' && (
+          <ThreadPanel
+            thread={thread}
+            currentUser={currentUser}
+            channelId={channelId}
+            isLoading={isThreadLoading}
+            isOpen={!!activeThreadId}
+            onClose={handleCloseThread}
+            onSendReply={handleSendThreadReply}
+            onEditMessage={handleEditMessage}
+            onDeleteMessage={handleDeleteMessage}
+            onReaction={handleReaction}
+          />
+        )}
+      </div>
+
+      {/* Dialogs and Panels */}
+      {channelForHeader && (
+        <>
+          <EditChannelDialog
+            channel={channelForHeader}
+            isOpen={showEditDialog}
+            onClose={() => setShowEditDialog(false)}
+            onSave={handleEditChannel}
+          />
+
+          <NotificationsDialog
+            channelId={channelId}
+            channelName={channelForHeader.name}
+            isOpen={showNotificationsDialog}
+            onClose={() => setShowNotificationsDialog(false)}
+          />
+
+          <ChannelDetailsPanel
+            channel={channelForHeader}
+            permissions={permissions}
+            isOpen={showDetailsPanel}
+            onClose={() => setShowDetailsPanel(false)}
+            onEditChannel={() => {
+              setShowDetailsPanel(false);
+              setShowEditDialog(true);
+            }}
+            onEditNotifications={() => {
+              setShowDetailsPanel(false);
+              setShowNotificationsDialog(true);
+            }}
+            onInvite={() => console.log('Invite - feature coming soon')}
+            onRemoveMember={handleRemoveMember}
+            onChangeMemberRole={handleChangeMemberRole}
+            currentUserId={currentUser?.id || ''}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+

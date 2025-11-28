@@ -218,7 +218,7 @@ return;
       eventSourceRef.current.close();
     }
 
-    const eventSource = new EventSource('/api/presence/subscribe');
+    const eventSource = new EventSource('/api/presence/stream');
 
     eventSource.onopen = () => {
       setIsConnected(true);
@@ -333,8 +333,12 @@ return;
     };
 
     // Handle before unload - mark as offline
+    // Note: Using heartbeat endpoint with status will mark user as inactive
+    // The server will automatically detect offline users via lastActiveAt timestamp
     const handleBeforeUnload = () => {
-      navigator.sendBeacon('/api/presence/offline');
+      // sendBeacon is fire-and-forget, ideal for page unload
+      // We don't have a dedicated offline endpoint, but the server will
+      // detect offline users when heartbeats stop
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -355,8 +359,8 @@ return;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
 
-      // Mark as offline
-      fetch('/api/presence/offline', { method: 'POST' }).catch(() => {});
+      // Note: Server will automatically detect offline via lastActiveAt timestamp
+      // No explicit offline endpoint needed - heartbeat absence indicates offline
     };
   }, [userId, enabled, sendHeartbeat, connect, isConnected]);
 

@@ -10,44 +10,34 @@ import {
   Workflow,
   Rocket,
   Settings,
-  Plus,
   HelpCircle,
-  ChevronRight,
   LogOut,
   Bell,
   ChevronsUpDown,
-  BadgeCheck,
   CreditCard,
+  Shield,
+  Palette,
+  User,
 } from 'lucide-react';
 
 import { WorkspaceSwitcher } from './workspace-switcher';
 import { ChannelList } from '@/components/channel';
 import { CreateChannelDialog } from '@/components/channel/create-channel-dialog';
-import { CreateConversationDialog } from '@/components/channel/create-conversation-dialog';
 import { useChannels, useDirectMessages, useChannelMutations } from '@/hooks/use-channel';
+import { useRealtimeSidebar } from '@/hooks/use-realtime-sidebar';
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +51,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface WorkspaceSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user?: {
+    id?: string;
     name?: string | null;
     email?: string | null;
     image?: string | null;
@@ -97,21 +88,12 @@ const navItems = [
   },
 ];
 
-const settingsItems = [
-  {
-    title: 'Settings',
-    icon: Settings,
-    url: '/settings',
-    items: [
-      { title: 'Profile', url: '/settings/profile' },
-      { title: 'Preferences', url: '/settings/preferences' },
-      { title: 'Security', url: '/settings/security' },
-      { title: 'Notifications', url: '/settings/notifications' },
-    ],
-  },
-];
-
 const secondaryItems = [
+  {
+    title: 'Workspace Settings',
+    icon: Settings,
+    url: '/admin/settings',
+  },
   {
     title: 'Help & Support',
     icon: HelpCircle,
@@ -122,13 +104,13 @@ const secondaryItems = [
 export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
   const pathname = usePathname();
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
+  const workspaceId = params.workspaceSlug as string;
 
   // Fetch channels and DMs
   const {
+    channels: allChannels,
     publicChannels,
     privateChannels,
-    starredChannels,
     isLoading: isChannelsLoading,
     error: channelsError,
     refetch: refetchChannels,
@@ -143,9 +125,52 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
 
   const { createChannel } = useChannelMutations();
 
+  // Real-time sidebar updates via SSE
+  const {
+    channels: realtimeChannels,
+    directMessages: realtimeDMs,
+    starredChannels,
+    starredDMs,
+    isConnected: isRealtimeConnected,
+    updateChannelStarStatus,
+    updateDMStarStatus,
+  } = useRealtimeSidebar({
+    workspaceSlug: workspaceId,
+    initialChannels: [...publicChannels, ...privateChannels],
+    initialDirectMessages: directMessages,
+    enabled: !isChannelsLoading && !isDMsLoading,
+  });
+
+  // Use realtime data if connected, otherwise fall back to fetched data
+  const effectiveChannels = isRealtimeConnected && realtimeChannels.length > 0
+    ? realtimeChannels
+    : [...publicChannels, ...privateChannels];
+  const effectiveDMs = isRealtimeConnected && realtimeDMs.length > 0
+    ? realtimeDMs
+    : directMessages;
+
+  // Handle channel star toggle with optimistic updates
+  const handleChannelStarChange = React.useCallback((channelId: string, isStarred: boolean) => {
+    console.log('[WorkspaceSidebar] handleChannelStarChange:', { channelId, isStarred });
+    const channel = allChannels.find((c) => c.id === channelId);
+    updateChannelStarStatus(channelId, isStarred, channel);
+  }, [allChannels, updateChannelStarStatus]);
+
+  // Handle DM star toggle with optimistic updates
+  const handleDMStarChange = React.useCallback((dmId: string, isStarred: boolean) => {
+    console.log('[WorkspaceSidebar] handleDMStarChange:', { dmId, isStarred });
+    const dm = directMessages.find((d) => d.id === dmId);
+    updateDMStarStatus(dmId, isStarred, dm);
+  }, [directMessages, updateDMStarStatus]);
+
   // Dialog states
   const [isCreateChannelDialogOpen, setIsCreateChannelDialogOpen] = React.useState(false);
-  const [isCreateDMDialogOpen, setIsCreateDMDialogOpen] = React.useState(false);
+
+  // Prevent hydration mismatch for DropdownMenu (Radix generates different IDs on server vs client)
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleCreateChannel = React.useCallback(
     async (input: {
@@ -159,14 +184,6 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
       setIsCreateChannelDialogOpen(false);
     },
     [workspaceId, createChannel, refetchChannels],
-  );
-
-  const handleCreateDM = React.useCallback(
-    async () => {
-      // Refetch DMs after creation
-      await refetchDMs();
-    },
-    [refetchDMs],
   );
 
   const handleRetry = React.useCallback(async () => {
@@ -187,7 +204,6 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
       <SidebarContent>
         {/* Platform Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -206,69 +222,23 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Settings with submenu */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
-          <SidebarMenu>
-            {settingsItems.map((item) => (
-              <Collapsible
-                key={item.title}
-                asChild
-                defaultOpen={isActive(item.url)}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.title}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={isActive(subItem.url)}
-                          >
-                            <Link href={`/${workspaceId}${subItem.url}`}>
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
         <SidebarSeparator />
 
         {/* Channels Section */}
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-          <SidebarGroupLabel>Channels</SidebarGroupLabel>
-          <SidebarGroupAction
-            title="Create Channel"
-            onClick={() => setIsCreateChannelDialogOpen(true)}
-          >
-            <Plus />
-            <span className="sr-only">Create Channel</span>
-          </SidebarGroupAction>
           <SidebarGroupContent>
             <ChannelList
               workspaceId={workspaceId}
-              channels={[...publicChannels, ...privateChannels]}
-              directMessages={directMessages}
+              currentUserId={user?.id}
+              channels={effectiveChannels}
+              directMessages={effectiveDMs}
               starredChannels={starredChannels}
+              starredDMs={starredDMs}
               isLoading={isChannelsLoading || isDMsLoading}
               error={channelsError || dmsError}
               onCreateChannel={handleCreateChannel}
-              onCreateDM={handleCreateDM}
+              onChannelStarChange={handleChannelStarChange}
+              onDMStarChange={handleDMStarChange}
               onRetry={handleRetry}
               className="h-full"
             />
@@ -297,25 +267,26 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
-                    <AvatarFallback className="rounded-lg">
-                      {user?.name?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user?.name || 'User'}</span>
-                    <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
+            {mounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  >
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarImage src={user?.image || undefined} alt={user?.name || 'User'} />
+                      <AvatarFallback className="rounded-lg">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">{user?.name || 'User'}</span>
+                      <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>
+                    </div>
+                    <ChevronsUpDown className="ml-auto size-4" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
                 side="bottom"
@@ -340,20 +311,35 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
                     <Link href={`/${workspaceId}/settings/profile`}>
-                      <BadgeCheck className="mr-2 h-4 w-4" />
-                      Account
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${workspaceId}/admin/billing`}>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Billing
+                    <Link href={`/${workspaceId}/settings/security`}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Security
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href={`/${workspaceId}/settings/notifications`}>
                       <Bell className="mr-2 h-4 w-4" />
                       Notifications
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/${workspaceId}/settings/appearance`}>
+                      <Palette className="mr-2 h-4 w-4" />
+                      Appearance
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/${workspaceId}/admin/billing`}>
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Billing
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -365,7 +351,21 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenu>
+            ) : (
+              <SidebarMenuButton size="lg">
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarFallback className="rounded-lg">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">{user?.name || 'User'}</span>
+                  <span className="truncate text-xs">{user?.email || 'user@example.com'}</span>
+                </div>
+                <ChevronsUpDown className="ml-auto size-4" />
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
@@ -380,13 +380,6 @@ export function WorkspaceSidebar({ user, ...props }: WorkspaceSidebarProps) {
         workspaceId={workspaceId}
       />
 
-      {/* Create DM Dialog */}
-      <CreateConversationDialog
-        isOpen={isCreateDMDialogOpen}
-        onClose={() => setIsCreateDMDialogOpen(false)}
-        onCreateDM={handleCreateDM}
-        workspaceId={workspaceId}
-      />
     </Sidebar>
   );
 }

@@ -304,6 +304,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.sub;
         session.user.isOrchestrator = token.isOrchestrator ?? false;
         session.user.role = token.role ?? 'MEMBER';
+
+        // Fetch the user's avatar from the database (S3 URL)
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { avatarUrl: true },
+          });
+          if (dbUser?.avatarUrl) {
+            session.user.image = dbUser.avatarUrl;
+          }
+        } catch (error) {
+          // Don't block session creation on avatar fetch failure
+          console.error('Failed to fetch user avatar:', error);
+        }
       }
       return session;
     },
@@ -315,8 +329,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account, profile: _profile }) {
       // Handle OAuth sign-ins
       if (account?.provider === 'github' || account?.provider === 'google') {
-        // If user has an avatar from OAuth provider, download and store it
-        if (user.id && user.image) {
+        // Check if user already has an avatar stored in our S3
+        let existingUser = null;
+        if (user.id) {
+          try {
+            existingUser = await prisma.user.findUnique({
+              where: { id: user.id },
+              select: { avatarUrl: true },
+            });
+          } catch (error) {
+            console.error('Failed to check existing user avatar:', error);
+          }
+        }
+
+        // Only upload/update avatar if user doesn't have one stored in S3, or if their provider avatar changed
+        const hasS3Avatar = existingUser?.avatarUrl?.includes('avatars/');
+
+        if (user.id && user.image && !hasS3Avatar) {
+          // User has provider avatar but no S3 avatar - download and store it
           try {
             await avatarService.uploadOAuthAvatar({
               userId: user.id,
@@ -327,18 +357,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Log error but don't block sign-in
             console.error('Failed to upload OAuth avatar:', error);
 
-            // Generate fallback avatar with initials
-            try {
-              await avatarService.generateFallbackAvatar({
-                name: user.name || user.email || 'User',
-                userId: user.id,
-              });
-            } catch (fallbackError) {
-              console.error('Failed to generate fallback avatar:', fallbackError);
+            // Generate fallback avatar with initials if no existing avatar
+            if (!existingUser?.avatarUrl) {
+              try {
+                await avatarService.generateFallbackAvatar({
+                  name: user.name || user.email || 'User',
+                  userId: user.id,
+                });
+              } catch (fallbackError) {
+                console.error('Failed to generate fallback avatar:', fallbackError);
+              }
             }
           }
-        } else if (user.id && (user.name || user.email)) {
-          // No avatar provided, generate fallback
+        } else if (user.id && (user.name || user.email) && !existingUser?.avatarUrl) {
+          // No avatar provided and no existing avatar, generate fallback
           try {
             await avatarService.generateFallbackAvatar({
               name: user.name || user.email || 'User',

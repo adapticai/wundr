@@ -8,6 +8,7 @@ import { useCallback, useState } from 'react';
 import { ChannelList } from '@/components/channel';
 import { Logo } from '@/components/ui/Logo';
 import { useChannelMutations, useChannels, useDirectMessages } from '@/hooks/use-channel';
+import { useRealtimeSidebar } from '@/hooks/use-realtime-sidebar';
 import { cn } from '@/lib/utils';
 
 interface Workspace {
@@ -29,15 +30,15 @@ interface SidebarProps {
 export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProps) {
   const pathname = usePathname();
   const params = useParams();
-  const workspaceId = (params.workspaceId as string) || currentWorkspace?.id || '';
+  const workspaceId = (params.workspaceSlug as string) || currentWorkspace?.id || '';
 
   const [showWorkspaceSwitcher, setShowWorkspaceSwitcher] = useState(false);
 
   // Fetch channels and DMs for current workspace
   const {
+    channels: allChannels,
     publicChannels,
     privateChannels,
-    starredChannels,
     isLoading: isChannelsLoading,
     error: channelsError,
     refetch: refetchChannels,
@@ -49,6 +50,33 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
     error: dmsError,
     refetch: refetchDMs,
   } = useDirectMessages(workspaceId);
+
+  // Use realtime SSE for starred items
+  const {
+    starredChannels,
+    starredDMs,
+    updateChannelStarStatus,
+    updateDMStarStatus,
+  } = useRealtimeSidebar({
+    workspaceSlug: workspaceId,
+    enabled: !!workspaceId,
+  });
+
+  // Handle channel star toggle with optimistic updates
+  const handleChannelStarChange = useCallback((channelId: string, isStarred: boolean) => {
+    console.log('[Sidebar] handleChannelStarChange called:', { channelId, isStarred });
+    // Find the channel from ALL channels (including already starred ones)
+    const channel = allChannels.find((c) => c.id === channelId);
+    console.log('[Sidebar] Found channel:', channel?.name);
+    updateChannelStarStatus(channelId, isStarred, channel);
+  }, [allChannels, updateChannelStarStatus]);
+
+  // Handle DM star toggle with optimistic updates
+  const handleDMStarChange = useCallback((dmId: string, isStarred: boolean) => {
+    // Find the DM from the directMessages list
+    const dm = directMessages.find((d) => d.id === dmId);
+    updateDMStarStatus(dmId, isStarred, dm);
+  }, [directMessages, updateDMStarStatus]);
   const { createChannel } = useChannelMutations();
 
   const handleCreateChannel = useCallback(
@@ -81,6 +109,8 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
   return (
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-stone-800 bg-stone-950 lg:block">
       <div className="flex h-full flex-col">
+        {/* Spacer for macOS Electron window controls (traffic lights) */}
+        <div className="h-7 shrink-0 [-webkit-app-region:drag]" />
         {/* Workspace Switcher */}
         <div className="relative border-b border-stone-800">
           <button
@@ -177,10 +207,13 @@ export function Sidebar({ user, workspaces = [], currentWorkspace }: SidebarProp
             channels={[...publicChannels, ...privateChannels]}
             directMessages={directMessages}
             starredChannels={starredChannels}
+            starredDMs={starredDMs}
             isLoading={isChannelsLoading || isDMsLoading}
             error={channelsError || dmsError}
             onCreateChannel={handleCreateChannel}
             onRetry={handleRetry}
+            onChannelStarChange={handleChannelStarChange}
+            onDMStarChange={handleDMStarChange}
             className="h-full"
           />
         </div>

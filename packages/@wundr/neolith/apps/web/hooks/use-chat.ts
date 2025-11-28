@@ -180,11 +180,17 @@ params.set('search', filters.search);
         }
 
         const result = await response.json();
-        const newMessages: Message[] = result.data.map((m: Message) => ({
+        const newMessages: Message[] = result.data.map((m: any) => ({
           ...m,
           createdAt: new Date(m.createdAt),
           updatedAt: new Date(m.updatedAt),
           editedAt: m.editedAt ? new Date(m.editedAt) : null,
+          // Transform author's avatarUrl to image for UI compatibility
+          author: {
+            ...m.author,
+            name: m.author.displayName || m.author.name,
+            image: m.author.avatarUrl || m.author.image,
+          },
         }));
 
         if (loadMore) {
@@ -209,17 +215,28 @@ params.set('search', filters.search);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelId]);
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates via SSE
   useEffect(() => {
     if (!channelId) {
-return;
-}
+      return;
+    }
 
-    // Simulated WebSocket subscription
-    // In production, this would connect to a real WebSocket or SSE endpoint
-    const subscribe = () => {
-      // Placeholder for WebSocket connection
+    const subscribe = (): (() => void) | null => {
       const eventSource = new EventSource(`/api/channels/${channelId}/subscribe`);
+
+      // Handle error events from server
+      eventSource.addEventListener('error', (event) => {
+        try {
+          // Try to parse as MessageEvent with data
+          const messageEvent = event as MessageEvent;
+          if (messageEvent.data) {
+            const errorData = JSON.parse(messageEvent.data);
+            console.error('[Channel Subscribe] Server error:', errorData);
+          }
+        } catch {
+          // Generic error event (connection failed, etc.)
+        }
+      });
 
       eventSource.onmessage = (event) => {
         try {
@@ -229,19 +246,44 @@ return;
               ...data.message,
               createdAt: new Date(data.message.createdAt),
               updatedAt: new Date(data.message.updatedAt),
+              editedAt: data.message.editedAt ? new Date(data.message.editedAt) : null,
+              // Transform author's avatarUrl to image for UI compatibility
+              author: data.message.author ? {
+                ...data.message.author,
+                name: data.message.author.displayName || data.message.author.name,
+                image: data.message.author.avatarUrl || data.message.author.image,
+              } : data.message.author,
+              // Ensure required fields have defaults
+              reactions: data.message.reactions || [],
+              replyCount: data.message.replyCount || 0,
+              mentions: data.message.mentions || [],
+              attachments: data.message.attachments || [],
             };
-            setMessages((prev) => [...prev, newMessage]);
+            setMessages((prev) => {
+              // Avoid duplicates by checking if message already exists
+              if (prev.some((m) => m.id === newMessage.id)) {
+                return prev;
+              }
+              return [...prev, newMessage];
+            });
           } else if (data.type === 'message_updated') {
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === data.message.id
                   ? {
+                      ...m,
                       ...data.message,
                       createdAt: new Date(data.message.createdAt),
                       updatedAt: new Date(data.message.updatedAt),
                       editedAt: data.message.editedAt
                         ? new Date(data.message.editedAt)
                         : null,
+                      // Transform author's avatarUrl to image for UI compatibility
+                      author: data.message.author ? {
+                        ...data.message.author,
+                        name: data.message.author.displayName || data.message.author.name,
+                        image: data.message.author.avatarUrl || data.message.author.image,
+                      } : m.author,
                     }
                   : m,
               ),
@@ -257,7 +299,9 @@ return;
       eventSource.onerror = () => {
         eventSource.close();
         // Retry connection after a delay
-        setTimeout(subscribe, 5000);
+        setTimeout(() => {
+          subscriptionRef.current = subscribe();
+        }, 5000);
       };
 
       return () => eventSource.close();
@@ -334,18 +378,30 @@ return;
       }
 
       const result = await response.json();
+      // Helper to transform author data
+      const transformAuthor = (author: any) => author ? ({
+        ...author,
+        name: author.displayName || author.name,
+        image: author.avatarUrl || author.image,
+      }) : author;
+
       setThread({
         parentMessage: {
           ...result.data.parentMessage,
           createdAt: new Date(result.data.parentMessage.createdAt),
           updatedAt: new Date(result.data.parentMessage.updatedAt),
+          author: transformAuthor(result.data.parentMessage.author),
         },
-        messages: result.data.replies.map((m: Message) => ({
+        messages: result.data.replies.map((m: any) => ({
           ...m,
           createdAt: new Date(m.createdAt),
           updatedAt: new Date(m.updatedAt),
+          author: transformAuthor(m.author),
         })),
-        participants: result.data.participants || [],
+        participants: (result.data.participants || []).map((p: any) => ({
+          ...p,
+          image: p.avatarUrl || p.image,
+        })),
       });
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -422,6 +478,12 @@ export function useSendMessage(): UseSendMessageReturn {
           ...result.data,
           createdAt: new Date(result.data.createdAt),
           updatedAt: new Date(result.data.updatedAt),
+          // Transform author's avatarUrl to image for UI compatibility
+          author: result.data.author ? {
+            ...result.data.author,
+            name: result.data.author.displayName || result.data.author.name,
+            image: result.data.author.avatarUrl || result.data.author.image,
+          } : result.data.author,
         };
 
         return { optimisticId, message };
@@ -457,6 +519,12 @@ export function useSendMessage(): UseSendMessageReturn {
           createdAt: new Date(result.data.createdAt),
           updatedAt: new Date(result.data.updatedAt),
           editedAt: new Date(result.data.editedAt),
+          // Transform author's avatarUrl to image for UI compatibility
+          author: result.data.author ? {
+            ...result.data.author,
+            name: result.data.author.displayName || result.data.author.name,
+            image: result.data.author.avatarUrl || result.data.author.image,
+          } : result.data.author,
         };
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -716,10 +784,11 @@ return;
         throw new Error('Failed to fetch channel');
       }
 
-      const data = await response.json();
+      const responseData = await response.json();
+      const channelData = responseData.data;
       setChannel({
-        ...data,
-        createdAt: new Date(data.createdAt),
+        ...channelData,
+        createdAt: new Date(channelData.createdAt),
       });
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));

@@ -1,7 +1,7 @@
 /**
- * Channel Leave API Route
+ * Channel Leave API Routes
  *
- * Allows users to leave a channel.
+ * Handles leaving channels for users.
  *
  * Routes:
  * - POST /api/channels/:channelId/leave - Leave a channel
@@ -14,7 +14,6 @@ import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
 import {
-  channelIdParamSchema,
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
@@ -31,16 +30,12 @@ interface RouteContext {
 /**
  * POST /api/channels/:channelId/leave
  *
- * Leave a channel. Cannot leave if you are the last admin.
+ * Leave a channel. User will be removed from the channel membership.
+ * Note: Cannot leave DM channels - use close conversation instead.
  *
  * @param request - Next.js request object
  * @param context - Route context containing channel ID
  * @returns Success message
- *
- * @example
- * ```
- * POST /api/channels/ch_123/leave
- * ```
  */
 export async function POST(
   _request: NextRequest,
@@ -56,83 +51,84 @@ export async function POST(
       );
     }
 
-    // Validate channel ID parameter
     const params = await context.params;
-    const paramResult = channelIdParamSchema.safeParse(params);
-    if (!paramResult.success) {
-      return NextResponse.json(
-        createErrorResponse('Invalid channel ID format', ORG_ERROR_CODES.VALIDATION_ERROR),
-        { status: 400 },
-      );
-    }
+    const { channelId } = params;
 
-    // Check if channel exists
+    // Get the channel to verify it exists and check type
     const channel = await prisma.channel.findUnique({
-      where: { id: params.channelId },
+      where: { id: channelId },
+      include: {
+        channelMembers: {
+          where: { userId: session.user.id },
+        },
+      },
     });
 
     if (!channel) {
       return NextResponse.json(
-        createErrorResponse(
-          'Channel not found',
-          ORG_ERROR_CODES.CHANNEL_NOT_FOUND,
-        ),
+        createErrorResponse('Channel not found', ORG_ERROR_CODES.CHANNEL_NOT_FOUND),
         { status: 404 },
       );
     }
 
     // Check if user is a member
-    const membership = await prisma.channelMember.findUnique({
-      where: {
-        channelId_userId: {
-          channelId: params.channelId,
-          userId: session.user.id,
-        },
-      },
-    });
-
-    if (!membership) {
+    if (channel.channelMembers.length === 0) {
       return NextResponse.json(
-        createErrorResponse(
-          'You are not a member of this channel',
-          ORG_ERROR_CODES.NOT_CHANNEL_MEMBER,
-        ),
-        { status: 404 },
+        createErrorResponse('You are not a member of this channel', ORG_ERROR_CODES.FORBIDDEN),
+        { status: 403 },
       );
     }
 
-    // Cannot leave if you are the last admin
-    if (membership.role === 'ADMIN') {
-      const adminCount = await prisma.channelMember.count({
-        where: {
-          channelId: params.channelId,
-          role: 'ADMIN',
-        },
+    // Cannot leave DM channels - use close conversation instead
+    if (channel.type === 'DM') {
+      return NextResponse.json(
+        createErrorResponse(
+          'Cannot leave direct message conversations. Use close conversation instead.',
+          ORG_ERROR_CODES.VALIDATION_ERROR,
+        ),
+        { status: 400 },
+      );
+    }
+
+    // Check if user is the only admin - prevent orphaning the channel
+    const adminCount = await prisma.channelMember.count({
+      where: {
+        channelId,
+        role: 'ADMIN',
+      },
+    });
+
+    const userMembership = channel.channelMembers[0];
+    if (userMembership.role === 'ADMIN' && adminCount === 1) {
+      // Count total members
+      const totalMembers = await prisma.channelMember.count({
+        where: { channelId },
       });
 
-      if (adminCount === 1) {
+      if (totalMembers > 1) {
         return NextResponse.json(
           createErrorResponse(
-            'Cannot leave as the last admin. Promote another member first or delete the channel.',
-            ORG_ERROR_CODES.CANNOT_LEAVE_LAST_ADMIN,
+            'You are the only admin. Please assign another admin before leaving.',
+            ORG_ERROR_CODES.FORBIDDEN,
           ),
-          { status: 400 },
+          { status: 403 },
         );
       }
     }
 
-    // Leave channel
+    // Remove the user from the channel
     await prisma.channelMember.delete({
       where: {
         channelId_userId: {
-          channelId: params.channelId,
+          channelId,
           userId: session.user.id,
         },
       },
     });
 
     return NextResponse.json({
-      message: 'Successfully left channel',
+      success: true,
+      message: 'Successfully left the channel',
     });
   } catch (error) {
     console.error('[POST /api/channels/:channelId/leave] Error:', error);

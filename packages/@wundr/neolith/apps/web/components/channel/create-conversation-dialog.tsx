@@ -52,7 +52,9 @@ export function CreateConversationDialog({
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
 
   const { users, searchUsers, isLoading: isSearchingUsers } = useWorkspaceUsers(workspaceId);
 
@@ -67,7 +69,51 @@ export function CreateConversationDialog({
     setSelectedUser(null);
     setUserSearch('');
     setError(null);
+    setInviteSuccess(null);
   }, []);
+
+  // Check if the search query looks like a valid email
+  const isValidEmail = useCallback((email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }, []);
+
+  const handleInviteUser = useCallback(async () => {
+    if (!userSearch.trim() || !isValidEmail(userSearch) || isInviting) {
+      return;
+    }
+
+    setIsInviting(true);
+    setError(null);
+    setInviteSuccess(null);
+
+    try {
+      const response = await fetch(`/api/workspaces/${workspaceId}/admin/invites`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invites: [{ email: userSearch.trim(), role: 'MEMBER' }],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403) {
+          throw new Error('You do not have permission to invite users to this workspace');
+        }
+        throw new Error(errorData.error?.message || 'Failed to send invite');
+      }
+
+      setInviteSuccess(`Invitation sent to ${userSearch.trim()}`);
+      setUserSearch('');
+    } catch (err) {
+      console.error('Failed to send invite:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send invitation');
+    } finally {
+      setIsInviting(false);
+    }
+  }, [userSearch, workspaceId, isInviting, isValidEmail]);
 
   const handleClose = useCallback(() => {
     resetForm();
@@ -169,6 +215,13 @@ export function CreateConversationDialog({
           {error && (
             <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2">
               <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
+
+          {/* Success message */}
+          {inviteSuccess && (
+            <div className="mb-4 rounded-md border border-green-500/50 bg-green-50 dark:bg-green-900/10 px-3 py-2">
+              <p className="text-sm text-green-700 dark:text-green-300">{inviteSuccess}</p>
             </div>
           )}
 
@@ -292,11 +345,36 @@ export function CreateConversationDialog({
               )}
 
               {userSearch && users.length === 0 && !isSearchingUsers && (
-                <div className="mt-2 rounded-md border bg-muted/50 px-3 py-8 text-center">
+                <div className="mt-2 rounded-md border bg-muted/50 px-3 py-6 text-center">
                   <p className="text-sm text-muted-foreground">No users found</p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Try a different name or email
                   </p>
+                  {isValidEmail(userSearch) && (
+                    <div className="mt-4 border-t pt-4">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Not a workspace member yet?
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleInviteUser}
+                        disabled={isInviting}
+                        className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        {isInviting ? (
+                          <>
+                            <LoadingSpinner className="h-3 w-3" />
+                            Sending invite...
+                          </>
+                        ) : (
+                          <>
+                            <InviteIcon className="h-3 w-3" />
+                            Invite {userSearch} to workspace
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -381,6 +459,26 @@ function LoadingSpinner({ className }: { className?: string }) {
         fill="currentColor"
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
       />
+    </svg>
+  );
+}
+
+function InviteIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" x2="19" y1="8" y2="14" />
+      <line x1="22" x2="16" y1="11" y2="11" />
     </svg>
   );
 }

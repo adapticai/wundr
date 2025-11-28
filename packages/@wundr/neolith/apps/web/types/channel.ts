@@ -75,4 +75,40 @@ export interface DirectMessageChannel {
     author: User;
   };
   unreadCount: number;
+  /** Whether this conversation is starred by the current user */
+  isStarred?: boolean;
+  /** Whether this is a self-DM (notes to self) */
+  isSelfDM?: boolean;
+  /** Whether this is a group DM (3+ participants) */
+  isGroupDM?: boolean;
+  /** The primary participant to display (the "other" user, or self for self-DM) */
+  participant?: {
+    id: string;
+    name: string;
+    avatarUrl?: string | null;
+    status?: string | null;
+    isOrchestrator?: boolean;
+  };
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+/**
+ * Workspace member for DM list display
+ */
+export interface WorkspaceMemberForDM {
+  id: string;
+  userId: string;
+  name: string;
+  displayName?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+  status?: string | null;
+  isOrchestrator?: boolean;
+  /** Whether this member has an existing DM with the current user */
+  existingDMId?: string | null;
+  /** Last message timestamp for sorting (if DM exists) */
+  lastMessageAt?: Date | null;
+  /** Unread count for existing DM */
+  unreadCount?: number;
 }

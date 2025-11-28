@@ -14,6 +14,7 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { NotificationService } from '@/lib/services/notification-service';
 import {
   sendMessageSchema,
   messageListSchema,
@@ -31,6 +32,20 @@ import type { NextRequest } from 'next/server';
  */
 interface RouteContext {
   params: Promise<{ channelId: string }>;
+}
+
+/**
+ * Extract @mentions from message content
+ * Matches @username patterns (alphanumeric + underscores + hyphens)
+ */
+function extractMentions(content: string): string[] {
+  const mentionRegex = /@([a-zA-Z0-9_-]+)/g;
+  const matches = content.matchAll(mentionRegex);
+  const mentions = new Set<string>();
+  for (const match of matches) {
+    mentions.add(match[1].toLowerCase());
+  }
+  return Array.from(mentions);
 }
 
 /**
@@ -417,6 +432,74 @@ export async function POST(
         },
       },
     });
+
+    // Process @mentions and send notifications (non-blocking)
+    const mentionedUsernames = extractMentions(input.content);
+    if (mentionedUsernames.length > 0) {
+      // Look up users by their name or displayName (case-insensitive)
+      const mentionedUsers = await prisma.user.findMany({
+        where: {
+          OR: mentionedUsernames.map(username => ({
+            OR: [
+              { name: { equals: username, mode: 'insensitive' } },
+              { displayName: { equals: username, mode: 'insensitive' } },
+            ],
+          })),
+        },
+        select: { id: true, name: true },
+      });
+
+      // Get author's display name
+      const authorName = message.author.displayName || message.author.name || 'Someone';
+
+      // Create preview (truncate to 100 chars)
+      const messagePreview = input.content.length > 100
+        ? input.content.substring(0, 100) + '...'
+        : input.content;
+
+      // Send notifications to each mentioned user (except the author)
+      for (const mentionedUser of mentionedUsers) {
+        if (mentionedUser.id !== session.user.id) {
+          // Fire and forget - don't block the response
+          NotificationService.notifyMention(
+            mentionedUser.id,
+            message.id,
+            params.channelId,
+            authorName,
+            messagePreview,
+          ).catch(err => {
+            console.error('[POST /api/channels/:channelId/messages] Failed to send mention notification:', err);
+          });
+        }
+      }
+    }
+
+    // If this is a thread reply, notify the parent message author
+    if (input.parentId) {
+      const parentMessage = await prisma.message.findUnique({
+        where: { id: input.parentId },
+        select: { authorId: true },
+      });
+
+      if (parentMessage && parentMessage.authorId !== session.user.id) {
+        const authorName = message.author.displayName || message.author.name || 'Someone';
+        const messagePreview = input.content.length > 100
+          ? input.content.substring(0, 100) + '...'
+          : input.content;
+
+        // Fire and forget
+        NotificationService.notifyThreadReply(
+          parentMessage.authorId,
+          message.id,
+          input.parentId,
+          params.channelId,
+          authorName,
+          messagePreview,
+        ).catch(err => {
+          console.error('[POST /api/channels/:channelId/messages] Failed to send thread reply notification:', err);
+        });
+      }
+    }
 
     return NextResponse.json(
       { data: message, message: 'Message sent successfully' },

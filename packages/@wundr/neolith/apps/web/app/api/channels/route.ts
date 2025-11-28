@@ -137,10 +137,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         userId: session.user.id,
         channel: { workspaceId: filters.workspaceId },
       },
-      select: { channelId: true },
+      select: {
+        channelId: true,
+        isStarred: true,
+        notificationPreference: true,
+      },
     });
 
     const memberChannelIds = channelMemberships.map((m) => m.channelId);
+    const membershipMap = new Map(channelMemberships.map((m) => [m.channelId, m]));
 
     const where: Prisma.channelWhereInput = {
       workspaceId: filters.workspaceId,
@@ -183,11 +188,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       prisma.channel.count({ where }),
     ]);
 
-    // Add membership status to each channel
-    const channelsWithMembership = channels.map((channel) => ({
-      ...channel,
-      isMember: memberChannelIds.includes(channel.id),
-    }));
+    // Add membership status and user preferences to each channel
+    const channelsWithMembership = channels.map((channel) => {
+      const membership = membershipMap.get(channel.id);
+      return {
+        ...channel,
+        isMember: memberChannelIds.includes(channel.id),
+        isStarred: membership?.isStarred || false,
+        notificationPreference: membership?.notificationPreference || 'all',
+      };
+    });
 
     // Calculate pagination metadata
     const totalPages = Math.ceil(totalCount / filters.limit);

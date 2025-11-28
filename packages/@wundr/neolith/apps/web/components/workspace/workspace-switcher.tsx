@@ -26,6 +26,7 @@ import { useUserWorkspaces } from '@/hooks/use-workspaces';
 export interface Workspace {
   id: string;
   name: string;
+  slug: string;
   plan?: string;
   avatarUrl?: string | null;
   settings?: Record<string, unknown> | null;
@@ -96,8 +97,9 @@ export function WorkspaceSwitcher() {
   const { isMobile } = useSidebar();
   const { workspaces, isLoading, error, refetch } = useUserWorkspaces();
 
-  const currentWorkspaceId = params.workspaceId as string;
-  const activeWorkspace = workspaces.find((w) => w.id === currentWorkspaceId) || workspaces[0];
+  const currentWorkspaceSlug = params.workspaceSlug as string;
+  // Match workspace by slug (URL param) or fall back to id for compatibility
+  const activeWorkspace = workspaces.find((w) => w.slug === currentWorkspaceSlug || w.id === currentWorkspaceSlug) || workspaces[0];
 
   // Keyboard shortcuts for workspace switching (Cmd+1, Cmd+2, etc.)
   React.useEffect(() => {
@@ -107,7 +109,7 @@ export function WorkspaceSwitcher() {
         const index = parseInt(event.key) - 1;
         if (workspaces[index]) {
           event.preventDefault();
-          router.push(`/${workspaces[index].id}/dashboard`);
+          router.push(`/${workspaces[index].slug}/dashboard`);
         }
       }
     };
@@ -132,7 +134,7 @@ export function WorkspaceSwitcher() {
   }
 
   const handleWorkspaceChange = (workspace: Workspace) => {
-    router.push(`/${workspace.id}/dashboard`);
+    router.push(`/${workspace.slug}/dashboard`);
   };
 
   const handleCreateWorkspace = () => {

@@ -5,9 +5,7 @@ import { AppHeader } from '@/components/layout/app-header';
 import { GlobalSearchBar } from '@/components/layout/global-search-bar';
 import { WorkspaceSidebar } from '@/components/workspace';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Separator } from '@/components/ui/separator';
 import { PageHeaderProvider } from '@/contexts/page-header-context';
-import { DynamicPageHeader } from '@/components/layout/dynamic-page-header';
 import { auth } from '@/lib/auth';
 import { prisma } from '@neolith/database';
 
@@ -49,18 +47,15 @@ export default async function WorkspaceLayout({
       <WorkspaceSidebar user={session?.user} />
       <SidebarInset>
         <PageHeaderProvider>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          {/* Draggable region for Electron window - aligns with sidebar traffic light spacer */}
+          <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <DynamicPageHeader />
-            <GlobalSearchBar />
-            <div className="ml-auto">
-              <AppHeader user={session?.user} compact />
+            <div className="flex-1 flex justify-center">
+              <GlobalSearchBar className="w-full max-w-3xl" />
             </div>
+            <AppHeader user={session?.user} compact />
           </header>
-          <main className="flex-1">
-            <div className="container mx-auto p-6">{children}</div>
-          </main>
+          <main className="flex-1 overflow-auto">{children}</main>
         </PageHeaderProvider>
       </SidebarInset>
     </SidebarProvider>

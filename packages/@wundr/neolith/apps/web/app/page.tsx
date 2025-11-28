@@ -42,8 +42,8 @@ export default async function HomePage() {
 
     // If user has a workspace, redirect to it
     if (userWorkspaces.length > 0 && userWorkspaces[0]) {
-      const workspaceId = userWorkspaces[0].workspace.id;
-      redirect(`/${workspaceId}/dashboard`);
+      const workspaceSlug = userWorkspaces[0].workspace.slug;
+      redirect(`/${workspaceSlug}/dashboard`);
     }
 
     // No workspace found - redirect to default workspace

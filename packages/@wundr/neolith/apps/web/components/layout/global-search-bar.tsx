@@ -1,28 +1,33 @@
 'use client';
 
 import {
-  Hash,
-  MessageSquare,
-  User,
-  Workflow,
-  Users,
   Clock,
-  Search,
+  File,
+  Hash,
   Loader2,
+  MessageSquarePlus,
+  Search,
+  Settings,
+  User,
+  Users,
+  Bot,
+  PlusCircle,
+  UserPlus,
 } from 'lucide-react';
-import { useRouter, useParams } from 'next/navigation';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
+  CommandShortcut,
 } from '@/components/ui/command';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 /**
@@ -36,82 +41,185 @@ export interface GlobalSearchBarProps {
 /**
  * Search result types
  */
-type SearchResultType = 'channel' | 'message' | 'member' | 'workflow' | 'vp';
+type SearchResultType = 'channel' | 'dm' | 'user' | 'orchestrator' | 'message';
 
 interface SearchResult {
   id: string;
   type: SearchResultType;
   name: string;
   description?: string;
+  image?: string | null;
   metadata?: {
     channelName?: string;
     memberCount?: number;
-    lastActive?: string;
+    participants?: string[];
+    email?: string;
+    isGroup?: boolean;
   };
 }
 
-interface RecentSearch {
-  query: string;
+interface RecentItem {
+  id: string;
+  type: 'channel' | 'dm' | 'user';
+  name: string;
+  image?: string | null;
   timestamp: number;
+}
+
+/**
+ * Personalized suggestion types from the command-palette API
+ */
+interface ChannelSuggestion {
+  type: 'channel';
+  id: string;
+  name: string;
+  description: string | null;
+  channelType: string;
+  memberCount: number;
+  lastActivityAt: string | null;
+}
+
+interface DMSuggestion {
+  type: 'dm';
+  id: string;
+  name: string;
+  participants: Array<{
+    id: string;
+    name: string | null;
+    avatarUrl: string | null;
+    isOrchestrator: boolean;
+  }>;
+  lastMessageAt: string | null;
+}
+
+interface PersonSuggestion {
+  type: 'person';
+  id: string;
+  name: string | null;
+  displayName: string | null;
+  email: string;
+  avatarUrl: string | null;
+  status: string;
+  isOrchestrator: boolean;
+  role?: string | null;
+  discipline?: string | null;
+}
+
+interface FileSuggestion {
+  type: 'file';
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  thumbnailUrl: string | null;
+  channelName?: string;
+  uploadedAt: string;
+}
+
+interface QuickAction {
+  type: 'action';
+  id: string;
+  label: string;
+  description: string;
+  icon: string;
+  shortcut?: string;
+  path: string;
+}
+
+interface PersonalizedSuggestions {
+  recentChannels: ChannelSuggestion[];
+  recentDMs: DMSuggestion[];
+  recentPeople: PersonSuggestion[];
+  recentFiles: FileSuggestion[];
+  quickActions: QuickAction[];
 }
 
 /**
  * Global Search Bar Component
  *
- * A command palette-style search component for the workspace header that allows
- * users to quickly search across channels, direct messages, members, workflows, and VPs.
- *
- * Features:
- * - Keyboard shortcut support (Cmd/Ctrl + K)
- * - Debounced API calls
- * - Recent searches tracking
- * - Categorized results
- * - Loading states
- * - Direct navigation to results
+ * A command palette-style search component using shadcn/ui Command.
+ * Features immediate suggestions, recent items, quick actions, and typeahead search.
  */
 export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
   const router = useRouter();
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
+  const workspaceSlug = params.workspaceSlug as string;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<PersonalizedSuggestions | null>(null);
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const suggestionsLoadedRef = useRef(false);
 
-  // Load recent searches from localStorage on mount
+  // Load recent items from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem(`recent-searches-${workspaceId}`);
+    const stored = localStorage.getItem(`recent-items-${workspaceSlug}`);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setRecentSearches(parsed.slice(0, 5)); // Keep only 5 most recent
+        setRecentItems(parsed.slice(0, 5));
       } catch (error) {
-        console.error('Failed to parse recent searches:', error);
+        console.error('Failed to parse recent items:', error);
       }
     }
-  }, [workspaceId]);
+  }, [workspaceSlug]);
 
-  // Save recent searches to localStorage
-  const saveRecentSearch = useCallback(
-    (searchQuery: string) => {
-      if (!searchQuery.trim()) return;
+  // Fetch personalized suggestions when dialog opens
+  const fetchSuggestions = useCallback(async () => {
+    if (!workspaceSlug || suggestionsLoadedRef.current) return;
 
-      const newSearch: RecentSearch = {
-        query: searchQuery.trim(),
+    setIsSuggestionsLoading(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceSlug}/command-palette`,
+      );
+
+      if (response.ok) {
+        const data: PersonalizedSuggestions = await response.json();
+        setSuggestions(data);
+        suggestionsLoadedRef.current = true;
+      }
+    } catch (error) {
+      console.error('Failed to fetch suggestions:', error);
+    } finally {
+      setIsSuggestionsLoading(false);
+    }
+  }, [workspaceSlug]);
+
+  // Fetch suggestions when dialog opens
+  useEffect(() => {
+    if (open && !suggestionsLoadedRef.current) {
+      fetchSuggestions();
+    }
+  }, [open, fetchSuggestions]);
+
+  // Reset suggestions when workspace changes
+  useEffect(() => {
+    suggestionsLoadedRef.current = false;
+    setSuggestions(null);
+  }, [workspaceSlug]);
+
+  // Save recent item to localStorage
+  const saveRecentItem = useCallback(
+    (item: Omit<RecentItem, 'timestamp'>) => {
+      const newItem: RecentItem = {
+        ...item,
         timestamp: Date.now(),
       };
 
       const updated = [
-        newSearch,
-        ...recentSearches.filter((s) => s.query !== searchQuery.trim()),
+        newItem,
+        ...recentItems.filter((r) => r.id !== item.id),
       ].slice(0, 5);
 
-      setRecentSearches(updated);
-      localStorage.setItem(`recent-searches-${workspaceId}`, JSON.stringify(updated));
+      setRecentItems(updated);
+      localStorage.setItem(`recent-items-${workspaceSlug}`, JSON.stringify(updated));
     },
-    [recentSearches, workspaceId]
+    [recentItems, workspaceSlug],
   );
 
   // Debounced search function
@@ -126,44 +234,65 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/search?q=${encodeURIComponent(searchQuery)}&limit=15&highlight=true`
+          `/api/workspaces/${workspaceSlug}/search?q=${encodeURIComponent(searchQuery)}&types=channels,users,orchestrators,dms&limit=20`,
         );
 
         if (response.ok) {
-          const data = await response.json();
+          const responseData = await response.json();
+          const transformedResults: SearchResult[] = [];
 
-          // Transform API response to our SearchResult format
-          const transformedResults: SearchResult[] = data.data.map((item: any) => {
-            switch (item.type) {
-              case 'channel':
-                return {
-                  id: item.id,
-                  type: 'channel' as SearchResultType,
-                  name: item.name,
-                  description: item.description,
-                  metadata: {
-                    memberCount: item.memberCount,
-                  },
-                };
-              case 'message':
-                return {
-                  id: item.id,
-                  type: 'message' as SearchResultType,
-                  name: item.content.substring(0, 100) + (item.content.length > 100 ? '...' : ''),
-                  description: `by ${item.authorName}`,
-                  metadata: {
-                    channelName: item.channelName,
-                  },
-                };
-              default:
-                return {
-                  id: item.id,
-                  type: item.type as SearchResultType,
-                  name: item.name || item.filename || 'Unknown',
-                  description: item.description,
-                };
+          // Handle new unified data format from search API
+          if (responseData.data && Array.isArray(responseData.data)) {
+            for (const item of responseData.data) {
+              switch (item.type) {
+                case 'channel':
+                  transformedResults.push({
+                    id: item.id,
+                    type: 'channel',
+                    name: item.name,
+                    description: item.description,
+                    metadata: {
+                      memberCount: item.memberCount,
+                    },
+                  });
+                  break;
+                case 'user':
+                  transformedResults.push({
+                    id: item.id,
+                    type: 'user',
+                    name: item.displayName || item.name || item.email,
+                    description: item.email,
+                    image: item.avatarUrl,
+                    metadata: {
+                      email: item.email,
+                    },
+                  });
+                  break;
+                case 'orchestrator':
+                  transformedResults.push({
+                    id: item.id,
+                    type: 'orchestrator',
+                    name: item.displayName || item.name || 'Orchestrator',
+                    description: item.role || item.discipline || 'Orchestrator',
+                    image: item.avatarUrl,
+                  });
+                  break;
+                case 'dm':
+                  transformedResults.push({
+                    id: item.id,
+                    type: 'dm',
+                    name: item.name || item.participants?.map((p: { name: string }) => p.name).join(', '),
+                    description: item.participants?.length > 2 ? `${item.participants.length} people` : undefined,
+                    image: item.participants?.length === 2 ? item.participants[0].avatarUrl : null,
+                    metadata: {
+                      isGroup: item.participants?.length > 2,
+                      participants: item.participants?.map((p: { name: string }) => p.name),
+                    },
+                  });
+                  break;
+              }
             }
-          });
+          }
 
           setResults(transformedResults);
         }
@@ -174,7 +303,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
         setIsLoading(false);
       }
     },
-    [workspaceId]
+    [workspaceSlug],
   );
 
   // Handle query change with debounce
@@ -187,6 +316,7 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       }
 
       if (value.trim().length >= 2) {
+        setIsLoading(true);
         debounceTimerRef.current = setTimeout(() => {
           performSearch(value);
         }, 300);
@@ -195,13 +325,20 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
         setIsLoading(false);
       }
     },
-    [performSearch]
+    [performSearch],
   );
 
   // Handle result selection
   const handleSelect = useCallback(
     (result: SearchResult) => {
-      saveRecentSearch(query);
+      // Save to recent items
+      saveRecentItem({
+        id: result.id,
+        type: result.type === 'orchestrator' ? 'user' : result.type === 'message' ? 'channel' : result.type,
+        name: result.name,
+        image: result.image,
+      });
+
       setOpen(false);
       setQuery('');
       setResults([]);
@@ -209,34 +346,158 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
       // Navigate based on result type
       switch (result.type) {
         case 'channel':
-          router.push(`/${workspaceId}/channels/${result.id}`);
+          router.push(`/${workspaceSlug}/channels/${result.id}`);
+          break;
+        case 'dm':
+          router.push(`/${workspaceSlug}/dm/${result.id}`);
+          break;
+        case 'user':
+          // Start a DM with the user
+          router.push(`/${workspaceSlug}/messages/new?user=${result.id}`);
+          break;
+        case 'orchestrator':
+          router.push(`/${workspaceSlug}/orchestrators/${result.id}`);
           break;
         case 'message':
           if (result.metadata?.channelName) {
-            router.push(`/${workspaceId}/channels/${result.id}`);
+            router.push(`/${workspaceSlug}/channels/${result.id}`);
           }
-          break;
-        case 'member':
-          router.push(`/${workspaceId}/members/${result.id}`);
-          break;
-        case 'workflow':
-          router.push(`/${workspaceId}/workflows/${result.id}`);
-          break;
-        case 'vp':
-          router.push(`/${workspaceId}/orchestrators/${result.id}`);
           break;
       }
     },
-    [query, router, saveRecentSearch, workspaceId]
+    [router, saveRecentItem, workspaceSlug],
   );
 
-  // Handle recent search click
-  const handleRecentSearchClick = useCallback(
-    (searchQuery: string) => {
-      setQuery(searchQuery);
-      performSearch(searchQuery);
+  // Handle recent item selection
+  const handleRecentSelect = useCallback(
+    (item: RecentItem) => {
+      setOpen(false);
+      setQuery('');
+
+      switch (item.type) {
+        case 'channel':
+          router.push(`/${workspaceSlug}/channels/${item.id}`);
+          break;
+        case 'dm':
+          router.push(`/${workspaceSlug}/dm/${item.id}`);
+          break;
+        case 'user':
+          router.push(`/${workspaceSlug}/messages/new?user=${item.id}`);
+          break;
+      }
     },
-    [performSearch]
+    [router, workspaceSlug],
+  );
+
+  // Handle quick action selection (for dynamic quick actions from API)
+  const handleQuickActionPath = useCallback(
+    (path: string) => {
+      setOpen(false);
+      setQuery('');
+      router.push(path);
+    },
+    [router],
+  );
+
+  // Handle channel suggestion selection
+  const handleChannelSuggestion = useCallback(
+    (channel: ChannelSuggestion) => {
+      saveRecentItem({
+        id: channel.id,
+        type: 'channel',
+        name: channel.name,
+      });
+      setOpen(false);
+      setQuery('');
+      router.push(`/${workspaceSlug}/channels/${channel.id}`);
+    },
+    [router, saveRecentItem, workspaceSlug],
+  );
+
+  // Handle DM suggestion selection
+  const handleDMSuggestion = useCallback(
+    (dm: DMSuggestion) => {
+      const participantName = dm.participants[0]?.name || dm.name;
+      const participantImage = dm.participants[0]?.avatarUrl;
+      saveRecentItem({
+        id: dm.id,
+        type: 'dm',
+        name: participantName,
+        image: participantImage,
+      });
+      setOpen(false);
+      setQuery('');
+      router.push(`/${workspaceSlug}/dm/${dm.id}`);
+    },
+    [router, saveRecentItem, workspaceSlug],
+  );
+
+  // Handle person suggestion selection
+  const handlePersonSuggestion = useCallback(
+    (person: PersonSuggestion) => {
+      saveRecentItem({
+        id: person.id,
+        type: 'user',
+        name: person.displayName || person.name || person.email,
+        image: person.avatarUrl,
+      });
+      setOpen(false);
+      setQuery('');
+      router.push(`/${workspaceSlug}/messages/new?user=${person.id}`);
+    },
+    [router, saveRecentItem, workspaceSlug],
+  );
+
+  // Handle file suggestion selection
+  const handleFileSuggestion = useCallback(
+    (file: FileSuggestion) => {
+      setOpen(false);
+      setQuery('');
+      // Open file in a new tab or navigate to file view
+      window.open(`/api/files/${file.id}`, '_blank');
+    },
+    [],
+  );
+
+  // Helper to get icon for quick actions
+  const getQuickActionIcon = useCallback((iconName: string) => {
+    switch (iconName) {
+      case 'message-square-plus':
+        return <MessageSquarePlus className="mr-2 h-4 w-4" />;
+      case 'hash':
+        return <Hash className="mr-2 h-4 w-4" />;
+      case 'search':
+        return <Search className="mr-2 h-4 w-4" />;
+      case 'plus-circle':
+        return <PlusCircle className="mr-2 h-4 w-4" />;
+      case 'user-plus':
+        return <UserPlus className="mr-2 h-4 w-4" />;
+      case 'settings':
+        return <Settings className="mr-2 h-4 w-4" />;
+      default:
+        return <Settings className="mr-2 h-4 w-4" />;
+    }
+  }, []);
+
+  // Handle legacy quick actions (settings menu)
+  const handleQuickAction = useCallback(
+    (action: string) => {
+      setOpen(false);
+      setQuery('');
+
+      switch (action) {
+        case 'profile':
+          router.push(`/${workspaceSlug}/settings/profile`);
+          break;
+        case 'billing':
+          router.push(`/${workspaceSlug}/settings/billing`);
+          break;
+        case 'settings':
+          router.push(`/${workspaceSlug}/settings`);
+          break;
+      }
+    },
+    [router, workspaceSlug],
   );
 
   // Keyboard shortcut (Cmd/Ctrl + K)
@@ -261,50 +522,10 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
     };
   }, []);
 
-  // Get icon for result type
-  const getResultIcon = (type: SearchResultType) => {
-    switch (type) {
-      case 'channel':
-        return Hash;
-      case 'message':
-        return MessageSquare;
-      case 'member':
-        return User;
-      case 'workflow':
-        return Workflow;
-      case 'vp':
-        return Users;
-      default:
-        return Search;
-    }
-  };
-
-  // Get label for result type
-  const getResultTypeLabel = (type: SearchResultType): string => {
-    switch (type) {
-      case 'channel':
-        return 'Channel';
-      case 'message':
-        return 'Message';
-      case 'member':
-        return 'Member';
-      case 'workflow':
-        return 'Workflow';
-      case 'vp':
-        return 'Orchestrator';
-      default:
-        return 'Result';
-    }
-  };
-
   // Group results by type
-  const groupedResults = results.reduce((acc, result) => {
-    if (!acc[result.type]) {
-      acc[result.type] = [];
-    }
-    acc[result.type].push(result);
-    return acc;
-  }, {} as Record<SearchResultType, SearchResult[]>);
+  const channelResults = results.filter((r) => r.type === 'channel');
+  const dmResults = results.filter((r) => r.type === 'dm');
+  const userResults = results.filter((r) => r.type === 'user' || r.type === 'orchestrator');
 
   return (
     <>
@@ -313,129 +534,378 @@ export function GlobalSearchBar({ className }: GlobalSearchBarProps) {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          'flex items-center gap-2 px-3 h-9 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors',
-          className
+          'flex items-center gap-2 px-3 h-9 w-full rounded-md border border-input bg-muted/50 hover:bg-muted/80 transition-colors',
+          className,
         )}
         aria-label="Search"
       >
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <span className="hidden md:inline-block text-sm text-muted-foreground">
-          Search...
+        <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+        <span className="text-sm text-muted-foreground truncate">
+          Search messages, channels, and people...
         </span>
-        <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground ml-auto">
+        <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-xs font-medium text-muted-foreground ml-auto shrink-0">
           <span className="text-xs">⌘</span>K
         </kbd>
       </button>
 
       {/* Command Dialog */}
-      <Command
-        shouldFilter={false}
-        className={cn(
-          'fixed left-[50%] top-[50%] z-50 w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] rounded-lg border bg-popover shadow-lg',
-          open ? 'block' : 'hidden'
-        )}
-      >
-        <div className="relative">
-          <CommandInput
-            placeholder="Search channels, people, workflows..."
-            value={query}
-            onValueChange={handleQueryChange}
-            className="border-b"
-          />
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput
+          placeholder="Type a command or search..."
+          value={query}
+          onValueChange={handleQueryChange}
+        />
+        <CommandList>
+          {/* Loading state */}
           {isLoading && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="flex items-center justify-center py-6">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
             </div>
           )}
-        </div>
 
-        <CommandList className="max-h-[400px]">
-          {!query && recentSearches.length > 0 && (
-            <CommandGroup heading="Recent Searches">
-              {recentSearches.map((search, index) => (
-                <CommandItem
-                  key={index}
-                  onSelect={() => handleRecentSearchClick(search.query)}
-                  className="cursor-pointer"
-                >
-                  <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <span>{search.query}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-
-          {query && results.length === 0 && !isLoading && (
+          {/* Empty state when searching */}
+          {query.length >= 2 && !isLoading && results.length === 0 && (
             <CommandEmpty>No results found for &quot;{query}&quot;</CommandEmpty>
           )}
 
-          {query && results.length > 0 && (
+          {/* Search results */}
+          {query.length >= 2 && !isLoading && results.length > 0 && (
             <>
-              {Object.entries(groupedResults).map(([type, items], groupIndex) => (
-                <div key={type}>
-                  {groupIndex > 0 && <CommandSeparator />}
-                  <CommandGroup heading={`${getResultTypeLabel(type as SearchResultType)}s`}>
-                    {items.map((result) => {
-                      const Icon = getResultIcon(result.type);
+              {channelResults.length > 0 && (
+                <CommandGroup heading="Channels">
+                  {channelResults.map((result) => (
+                    <CommandItem
+                      key={result.id}
+                      value={`channel-${result.id}`}
+                      onSelect={() => handleSelect(result)}
+                      className="cursor-pointer"
+                    >
+                      <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <div className="flex flex-col flex-1">
+                        <span>{result.name}</span>
+                        {result.description && (
+                          <span className="text-xs text-muted-foreground truncate">
+                            {result.description}
+                          </span>
+                        )}
+                      </div>
+                      {result.metadata?.memberCount !== undefined && (
+                        <span className="text-xs text-muted-foreground">
+                          {result.metadata.memberCount} members
+                        </span>
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {dmResults.length > 0 && (
+                <>
+                  {channelResults.length > 0 && <CommandSeparator />}
+                  <CommandGroup heading="Direct Messages">
+                    {dmResults.map((result) => (
+                      <CommandItem
+                        key={result.id}
+                        value={`dm-${result.id}`}
+                        onSelect={() => handleSelect(result)}
+                        className="cursor-pointer"
+                      >
+                        {result.metadata?.isGroup ? (
+                          <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Avatar className="mr-2 h-5 w-5">
+                            <AvatarImage src={result.image || undefined} />
+                            <AvatarFallback className="text-[10px]">
+                              {result.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className="flex flex-col flex-1">
+                          <span>{result.name}</span>
+                          {result.description && (
+                            <span className="text-xs text-muted-foreground">
+                              {result.description}
+                            </span>
+                          )}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+
+              {userResults.length > 0 && (
+                <>
+                  {(channelResults.length > 0 || dmResults.length > 0) && <CommandSeparator />}
+                  <CommandGroup heading="People">
+                    {userResults.map((result) => (
+                      <CommandItem
+                        key={result.id}
+                        value={`user-${result.id}`}
+                        onSelect={() => handleSelect(result)}
+                        className="cursor-pointer"
+                      >
+                        {result.type === 'orchestrator' ? (
+                          <div className="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                            <Bot className="h-3 w-3 text-primary" />
+                          </div>
+                        ) : (
+                          <Avatar className="mr-2 h-5 w-5">
+                            <AvatarImage src={result.image || undefined} />
+                            <AvatarFallback className="text-[10px]">
+                              {result.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className="flex flex-col flex-1">
+                          <span>{result.name}</span>
+                          {result.description && (
+                            <span className="text-xs text-muted-foreground">
+                              {result.description}
+                            </span>
+                          )}
+                        </div>
+                        {result.type === 'orchestrator' && (
+                          <span className="text-xs text-primary">AI</span>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+            </>
+          )}
+
+          {/* Default suggestions when no query */}
+          {query.length < 2 && !isLoading && (
+            <>
+              {/* Loading state for suggestions */}
+              {isSuggestionsLoading && (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading suggestions...</span>
+                </div>
+              )}
+
+              {/* Quick Actions from API */}
+              {suggestions?.quickActions && suggestions.quickActions.length > 0 && (
+                <>
+                  <CommandGroup heading="Quick Actions">
+                    {suggestions.quickActions.map((action) => (
+                      <CommandItem
+                        key={action.id}
+                        value={`action-${action.id}`}
+                        onSelect={() => handleQuickActionPath(action.path)}
+                        className="cursor-pointer"
+                      >
+                        {getQuickActionIcon(action.icon)}
+                        <div className="flex flex-col flex-1">
+                          <span>{action.label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {action.description}
+                          </span>
+                        </div>
+                        {action.shortcut && (
+                          <CommandShortcut>{action.shortcut}</CommandShortcut>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+
+              {/* Recent Channels from API */}
+              {suggestions?.recentChannels && suggestions.recentChannels.length > 0 && (
+                <>
+                  <CommandGroup heading="Recent Channels">
+                    {suggestions.recentChannels.map((channel) => (
+                      <CommandItem
+                        key={channel.id}
+                        value={`channel-${channel.id}`}
+                        onSelect={() => handleChannelSuggestion(channel)}
+                        className="cursor-pointer"
+                      >
+                        <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <div className="flex flex-col flex-1">
+                          <span>{channel.name}</span>
+                          {channel.description && (
+                            <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                              {channel.description}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {channel.memberCount} members
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+
+              {/* Recent DMs from API */}
+              {suggestions?.recentDMs && suggestions.recentDMs.length > 0 && (
+                <>
+                  <CommandGroup heading="Recent Messages">
+                    {suggestions.recentDMs.map((dm) => {
+                      const participant = dm.participants[0];
+                      const isGroup = dm.participants.length > 1;
                       return (
                         <CommandItem
-                          key={result.id}
-                          onSelect={() => handleSelect(result)}
+                          key={dm.id}
+                          value={`dm-${dm.id}`}
+                          onSelect={() => handleDMSuggestion(dm)}
                           className="cursor-pointer"
                         >
-                          <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                          <div className="flex flex-col flex-1 gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{result.name}</span>
-                              {result.metadata?.memberCount !== undefined && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {result.metadata.memberCount} members
-                                </Badge>
-                              )}
+                          {isGroup ? (
+                            <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                          ) : participant?.isOrchestrator ? (
+                            <div className="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                              <Bot className="h-3 w-3 text-primary" />
                             </div>
-                            {result.description && (
-                              <span className="text-xs text-muted-foreground">
-                                {result.description}
-                              </span>
-                            )}
-                            {result.metadata?.channelName && (
-                              <span className="text-xs text-muted-foreground">
-                                in #{result.metadata.channelName}
-                              </span>
-                            )}
-                          </div>
+                          ) : (
+                            <Avatar className="mr-2 h-5 w-5">
+                              <AvatarImage src={participant?.avatarUrl || undefined} />
+                              <AvatarFallback className="text-[10px]">
+                                {(participant?.name || dm.name || 'D').charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          <span>
+                            {isGroup
+                              ? dm.participants.map((p) => p.name).join(', ')
+                              : participant?.name || dm.name}
+                          </span>
+                          {participant?.isOrchestrator && (
+                            <span className="text-xs text-primary ml-auto">AI</span>
+                          )}
                         </CommandItem>
                       );
                     })}
                   </CommandGroup>
-                </div>
-              ))}
+                  <CommandSeparator />
+                </>
+              )}
+
+              {/* Recent People from API */}
+              {suggestions?.recentPeople && suggestions.recentPeople.length > 0 && (
+                <>
+                  <CommandGroup heading="People You've Contacted">
+                    {suggestions.recentPeople.map((person) => (
+                      <CommandItem
+                        key={person.id}
+                        value={`person-${person.id}`}
+                        onSelect={() => handlePersonSuggestion(person)}
+                        className="cursor-pointer"
+                      >
+                        {person.isOrchestrator ? (
+                          <div className="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                            <Bot className="h-3 w-3 text-primary" />
+                          </div>
+                        ) : (
+                          <Avatar className="mr-2 h-5 w-5">
+                            <AvatarImage src={person.avatarUrl || undefined} />
+                            <AvatarFallback className="text-[10px]">
+                              {(person.displayName || person.name || person.email).charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className="flex flex-col flex-1">
+                          <span>{person.displayName || person.name || person.email}</span>
+                          {person.isOrchestrator && person.role && (
+                            <span className="text-xs text-muted-foreground">
+                              {person.role}
+                            </span>
+                          )}
+                        </div>
+                        {person.isOrchestrator && (
+                          <span className="text-xs text-primary">AI</span>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+
+              {/* Recent Files from API */}
+              {suggestions?.recentFiles && suggestions.recentFiles.length > 0 && (
+                <>
+                  <CommandGroup heading="Recent Files">
+                    {suggestions.recentFiles.map((file) => (
+                      <CommandItem
+                        key={file.id}
+                        value={`file-${file.id}`}
+                        onSelect={() => handleFileSuggestion(file)}
+                        className="cursor-pointer"
+                      >
+                        <File className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <div className="flex flex-col flex-1">
+                          <span className="truncate max-w-[200px]">{file.originalName}</span>
+                          {file.channelName && (
+                            <span className="text-xs text-muted-foreground">
+                              in #{file.channelName}
+                            </span>
+                          )}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+
+              {/* Fallback to localStorage recent items if no API suggestions */}
+              {!suggestions && !isSuggestionsLoading && recentItems.length > 0 && (
+                <>
+                  <CommandGroup heading="Recent">
+                    {recentItems.map((item) => (
+                      <CommandItem
+                        key={item.id}
+                        value={`recent-${item.id}`}
+                        onSelect={() => handleRecentSelect(item)}
+                        className="cursor-pointer"
+                      >
+                        {item.type === 'channel' ? (
+                          <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
+                        ) : item.image ? (
+                          <Avatar className="mr-2 h-5 w-5">
+                            <AvatarImage src={item.image} />
+                            <AvatarFallback className="text-[10px]">
+                              {item.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span>{item.name}</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
+
+              {/* Settings (always shown) */}
+              <CommandGroup heading="Settings">
+                <CommandItem onSelect={() => handleQuickAction('profile')}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                  <CommandShortcut>⌘P</CommandShortcut>
+                </CommandItem>
+                <CommandItem onSelect={() => handleQuickAction('settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                  <CommandShortcut>⌘,</CommandShortcut>
+                </CommandItem>
+              </CommandGroup>
             </>
           )}
         </CommandList>
-      </Command>
-
-      {/* Backdrop overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/80"
-          onClick={() => {
-            setOpen(false);
-            setQuery('');
-            setResults([]);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setOpen(false);
-              setQuery('');
-              setResults([]);
-            }
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label="Close search"
-        />
-      )}
+      </CommandDialog>
     </>
   );
 }

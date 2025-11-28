@@ -8,6 +8,7 @@ export interface User {
   email: string;
   image?: string | null;
   status?: 'online' | 'offline' | 'away' | 'busy';
+  isOrchestrator?: boolean;
 }
 
 export interface Reaction {

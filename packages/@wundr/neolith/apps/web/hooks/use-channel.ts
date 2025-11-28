@@ -9,6 +9,7 @@ import type {
   UpdateChannelInput,
   ChannelPermissions,
   DirectMessageChannel,
+  WorkspaceMemberForDM,
 } from '@/types/channel';
 import type { User } from '@/types/chat';
 
@@ -139,6 +140,26 @@ export interface UseWorkspaceUsersReturn {
 }
 
 /**
+ * Return type for the useWorkspaceMembersForDM hook
+ */
+export interface UseWorkspaceMembersForDMReturn {
+  /** All workspace members combined with their DM status */
+  members: WorkspaceMemberForDM[];
+  /** Current user (for self-DM at top) */
+  currentUserMember: WorkspaceMemberForDM | null;
+  /** Members with existing DMs, sorted by most recent */
+  membersWithDM: WorkspaceMemberForDM[];
+  /** Members without existing DMs, sorted alphabetically */
+  membersWithoutDM: WorkspaceMemberForDM[];
+  /** Whether loading */
+  isLoading: boolean;
+  /** Error if fetch failed */
+  error: Error | null;
+  /** Refetch data */
+  refetch: () => Promise<void>;
+}
+
+/**
  * Hook for fetching workspace channels
  */
 export function useChannels(workspaceId: string): UseChannelsReturn {
@@ -161,9 +182,12 @@ return;
       }
 
       const data = await response.json();
+      // Normalize API response to match frontend types
+      // API returns uppercase types (PUBLIC, PRIVATE), frontend expects lowercase (public, private)
       setChannels(
-        (data.data || []).map((c: Channel) => ({
+        (data.data || []).map((c: any) => ({
           ...c,
+          type: c.type?.toLowerCase() as Channel['type'],
           createdAt: new Date(c.createdAt),
           updatedAt: new Date(c.updatedAt),
         })),
@@ -789,5 +813,150 @@ return;
     searchUsers,
     fetchAllUsers,
     isLoading,
+  };
+}
+
+/**
+ * Hook for fetching all workspace members with their DM status
+ * Combines workspace members with existing DM channels for a unified DM list
+ */
+export function useWorkspaceMembersForDM(
+  workspaceId: string,
+  currentUserId: string | undefined,
+): UseWorkspaceMembersForDMReturn {
+  const [members, setMembers] = useState<WorkspaceMemberForDM[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!workspaceId || !currentUserId) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Fetch both workspace members and existing DMs in parallel
+      const [membersResponse, dmsResponse] = await Promise.all([
+        fetch(`/api/workspaces/${workspaceId}/members`),
+        fetch(`/api/workspaces/${workspaceId}/dm`),
+      ]);
+
+      if (!membersResponse.ok) {
+        throw new Error('Failed to fetch workspace members');
+      }
+
+      const membersData = await membersResponse.json();
+      const dmsData = dmsResponse.ok ? await dmsResponse.json() : { data: [] };
+
+      const workspaceMembers = membersData.data || [];
+      const existingDMs: DirectMessageChannel[] = dmsData.data || [];
+
+      // Create a map of userId -> DM channel info
+      const dmByUserId = new Map<string, {
+        dmId: string;
+        lastMessageAt: Date | null;
+        unreadCount: number;
+        isSelfDM: boolean;
+      }>();
+
+      for (const dm of existingDMs) {
+        const dmInfo = {
+          dmId: dm.id,
+          lastMessageAt: dm.lastMessage?.createdAt ? new Date(dm.lastMessage.createdAt) : null,
+          unreadCount: dm.unreadCount || 0,
+          isSelfDM: dm.isSelfDM || false,
+        };
+
+        // Map ALL participants of this DM to the DM info
+        // This handles both 1:1 DMs and group DMs
+        if (dm.participants && dm.participants.length > 0) {
+          // New API format: participants array contains flat objects with id
+          for (const p of dm.participants) {
+            const pId = p.id || (p as any).user?.id;
+            if (pId) {
+              dmByUserId.set(pId, dmInfo);
+            }
+          }
+        }
+        // Also handle the singular participant field (for backwards compatibility)
+        if (dm.participant?.id) {
+          dmByUserId.set(dm.participant.id, dmInfo);
+        }
+      }
+
+      // Transform workspace members to WorkspaceMemberForDM format
+      const transformedMembers: WorkspaceMemberForDM[] = workspaceMembers.map((member: any) => {
+        const user = member.user || member;
+        const userId = user.id || member.userId;
+        const dmInfo = dmByUserId.get(userId);
+
+        return {
+          id: member.id || `member-${userId}`,
+          userId,
+          name: user.displayName || user.name || 'Unknown',
+          displayName: user.displayName,
+          email: user.email,
+          avatarUrl: user.avatarUrl || user.image,
+          status: user.status,
+          isOrchestrator: user.isOrchestrator || false,
+          existingDMId: dmInfo?.dmId || null,
+          lastMessageAt: dmInfo?.lastMessageAt || null,
+          unreadCount: dmInfo?.unreadCount || 0,
+        };
+      });
+
+      setMembers(transformedMembers);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [workspaceId, currentUserId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Categorize members
+  const { currentUserMember, membersWithDM, membersWithoutDM } = useMemo(() => {
+    // Find current user
+    const currentUser = members.find((m) => m.userId === currentUserId) || null;
+
+    // Other members (excluding current user)
+    const otherMembers = members.filter((m) => m.userId !== currentUserId);
+
+    // Members with existing DMs - sorted by most recent message
+    const withDM = otherMembers
+      .filter((m) => m.existingDMId)
+      .sort((a, b) => {
+        if (!a.lastMessageAt && !b.lastMessageAt) return 0;
+        if (!a.lastMessageAt) return 1;
+        if (!b.lastMessageAt) return -1;
+        return b.lastMessageAt.getTime() - a.lastMessageAt.getTime();
+      });
+
+    // Members without existing DMs - sorted alphabetically by name
+    const withoutDM = otherMembers
+      .filter((m) => !m.existingDMId)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return {
+      currentUserMember: currentUser,
+      membersWithDM: withDM,
+      membersWithoutDM: withoutDM,
+    };
+  }, [members, currentUserId]);
+
+  return {
+    members,
+    currentUserMember,
+    membersWithDM,
+    membersWithoutDM,
+    isLoading,
+    error,
+    refetch: fetchData,
   };
 }

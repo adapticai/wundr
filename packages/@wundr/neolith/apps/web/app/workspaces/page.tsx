@@ -25,7 +25,7 @@ interface Workspace {
 
 interface WorkspaceInvite {
   id: string;
-  workspaceId: string;
+  workspaceSlug: string;
   workspaceName: string;
   invitedBy: string;
   createdAt: string;
@@ -141,8 +141,8 @@ export default function WorkspacesPage() {
     }
   };
 
-  const handleWorkspaceClick = (workspaceId: string) => {
-    router.push(`/${workspaceId}/dashboard`);
+  const handleWorkspaceClick = (workspaceSlug: string) => {
+    router.push(`/${workspaceSlug}/dashboard`);
   };
 
   const handleCreateWorkspace = () => {

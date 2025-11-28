@@ -1,9 +1,14 @@
 'use client';
 
 import { signOut } from 'next-auth/react';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState, useCallback } from 'react';
 
+import { NotificationCenter } from '@/components/notifications/notification-center';
+import { useNotifications } from '@/hooks/use-notifications';
 import { ThemeToggle } from './theme-toggle';
+
+import type { Notification } from '@/types/notification';
 
 interface AppHeaderProps {
   user?: {
@@ -17,20 +22,54 @@ interface AppHeaderProps {
 
 export function AppHeader({ user, compact = false }: AppHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
+
+  // Use the notifications hook
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    hasMore,
+    markAsRead,
+    markAllAsRead,
+    dismiss,
+    loadMore,
+  } = useNotifications();
+
+  // Handle notification click - navigate to the action URL
+  const handleNotificationClick = useCallback((notification: Notification) => {
+    // Mark as read first
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    // Navigate to the action URL if available
+    if (notification.actionUrl) {
+      router.push(notification.actionUrl);
+    }
+  }, [markAsRead, router]);
+
+  // Handle opening notification settings
+  const handleOpenSettings = useCallback(() => {
+    router.push('/settings/notifications');
+  }, [router]);
 
   // Compact mode: render only the action buttons without the header wrapper
   if (compact) {
     return (
       <div className="flex items-center gap-2">
         {/* Notifications */}
-        <button
-          type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent"
-          aria-label="Notifications"
-        >
-          <BellIcon />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
-        </button>
+        <NotificationCenter
+          notifications={notifications}
+          unreadCount={unreadCount}
+          isLoading={isLoading}
+          hasMore={hasMore}
+          onMarkAsRead={markAsRead}
+          onMarkAllAsRead={markAllAsRead}
+          onDismiss={dismiss}
+          onNotificationClick={handleNotificationClick}
+          onLoadMore={loadMore}
+          onOpenSettings={handleOpenSettings}
+        />
 
         {/* Theme Toggle */}
         <ThemeToggle variant="compact" />
@@ -48,14 +87,18 @@ export function AppHeader({ user, compact = false }: AppHeaderProps) {
       {/* Right Side Actions */}
       <div className="flex items-center gap-4">
         {/* Notifications */}
-        <button
-          type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent"
-          aria-label="Notifications"
-        >
-          <BellIcon />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
-        </button>
+        <NotificationCenter
+          notifications={notifications}
+          unreadCount={unreadCount}
+          isLoading={isLoading}
+          hasMore={hasMore}
+          onMarkAsRead={markAsRead}
+          onMarkAllAsRead={markAllAsRead}
+          onDismiss={dismiss}
+          onNotificationClick={handleNotificationClick}
+          onLoadMore={loadMore}
+          onOpenSettings={handleOpenSettings}
+        />
 
         {/* Theme Toggle */}
         <ThemeToggle variant="compact" />
@@ -143,25 +186,6 @@ function MenuItem({ href, label, icon }: MenuItemProps) {
 }
 
 // Icons
-function BellIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-    </svg>
-  );
-}
-
 function ChevronDownIcon() {
   return (
     <svg

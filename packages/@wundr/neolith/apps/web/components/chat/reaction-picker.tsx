@@ -1,7 +1,13 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { cn } from '@/lib/utils';
 import { EMOJI_CATEGORIES, QUICK_REACTIONS } from '@/types/chat';
 
@@ -27,32 +33,6 @@ export function ReactionPicker({
 }: ReactionPickerProps) {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('frequent');
-  const pickerRef = useRef<HTMLDivElement>(null);
-  const categoriesRef = useRef<{ [key: string]: HTMLDivElement | null }>({});
-
-  // Close on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
-
-  // Close on Escape
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
 
   // Build categories with frequent emojis
   const categories = useMemo(() => {
@@ -69,16 +49,13 @@ export function ReactionPicker({
 
   // Filter emojis by search
   const filteredCategories = useMemo(() => {
-    if (!search) {
-return categories;
-}
+    if (!search) return categories;
 
     const searchLower = search.toLowerCase();
     return categories
       .map((cat) => ({
         ...cat,
         emojis: cat.emojis.filter((emoji) => {
-          // Simple search - in production, you'd want to search by emoji names
           return emoji.includes(search) || cat.name.toLowerCase().includes(searchLower);
         }),
       }))
@@ -87,7 +64,8 @@ return categories;
 
   const handleCategoryClick = useCallback((categoryId: string) => {
     setActiveCategory(categoryId);
-    categoriesRef.current[categoryId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const element = document.getElementById(`emoji-category-${categoryId}`);
+    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const handleEmojiClick = useCallback(
@@ -99,33 +77,27 @@ return categories;
   );
 
   return (
-    <div
-      ref={pickerRef}
-      className={cn(
-        'w-80 rounded-lg border bg-popover shadow-lg dark:border-border',
-        className,
-      )}
-    >
+    <div className={cn('flex flex-col h-full', className)}>
       {/* Search */}
-      <div className="border-b p-2">
+      <div className="p-3 border-b">
         <input
           type="text"
           placeholder="Search emoji..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border bg-background px-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-stone-500/20"
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
           autoFocus
         />
       </div>
 
       {/* Quick reactions */}
-      <div className="flex gap-1 border-b p-2">
+      <div className="flex gap-1 border-b p-3">
         {QUICK_REACTIONS.map((emoji) => (
           <button
             key={emoji}
             type="button"
             onClick={() => handleEmojiClick(emoji)}
-            className="rounded-md p-1.5 text-xl hover:bg-accent"
+            className="rounded-md p-2 text-2xl hover:bg-accent transition-colors"
           >
             {emoji}
           </button>
@@ -133,16 +105,16 @@ return categories;
       </div>
 
       {/* Category tabs */}
-      <div className="flex gap-0.5 overflow-x-auto border-b px-2 py-1">
+      <div className="flex gap-1 overflow-x-auto border-b px-3 py-2 scrollbar-thin">
         {categories.map((category) => (
           <button
             key={category.id}
             type="button"
             onClick={() => handleCategoryClick(category.id)}
             className={cn(
-              'shrink-0 rounded-md px-2 py-1 text-xs transition-colors',
+              'shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
               activeCategory === category.id
-                ? 'bg-stone-100 text-stone-900 dark:bg-stone-800 dark:text-stone-100'
+                ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground',
             )}
           >
@@ -152,25 +124,23 @@ return categories;
       </div>
 
       {/* Emoji grid */}
-      <div className="h-64 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto p-3 min-h-0">
         {filteredCategories.map((category) => (
           <div
             key={category.id}
-            ref={(el) => {
-              categoriesRef.current[category.id] = el;
-            }}
+            id={`emoji-category-${category.id}`}
             className="mb-4"
           >
-            <div className="sticky top-0 mb-1 bg-popover py-1 text-xs font-medium text-muted-foreground">
+            <div className="sticky top-0 mb-2 bg-background py-1 text-xs font-semibold text-muted-foreground">
               {category.name}
             </div>
-            <div className="grid grid-cols-8 gap-0.5">
+            <div className="grid grid-cols-8 gap-1">
               {category.emojis.map((emoji, index) => (
                 <button
                   key={`${category.id}-${index}`}
                   type="button"
                   onClick={() => handleEmojiClick(emoji)}
-                  className="rounded-md p-1.5 text-xl hover:bg-accent"
+                  className="rounded-md p-2 text-2xl hover:bg-accent transition-colors"
                 >
                   {emoji}
                 </button>
@@ -180,7 +150,7 @@ return categories;
         ))}
 
         {filteredCategories.length === 0 && (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+          <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
             No emojis found
           </div>
         )}
@@ -203,6 +173,12 @@ interface ReactionPickerTriggerProps {
   className?: string;
 }
 
+/**
+ * Responsive Emoji Picker Trigger
+ *
+ * Uses Dialog on desktop (md+) and Drawer on mobile/tablet
+ * for proper modal behavior across all devices.
+ */
 export function ReactionPickerTrigger({
   children,
   onSelect,
@@ -210,21 +186,33 @@ export function ReactionPickerTrigger({
   className,
 }: ReactionPickerTriggerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
+
+  const handleSelect = useCallback(
+    (emoji: string) => {
+      onSelect(emoji);
+      setIsOpen(false);
+    },
+    [onSelect],
+  );
 
   return (
-    <div ref={triggerRef} className={cn('relative', className)}>
-      <div onClick={() => setIsOpen((prev) => !prev)}>{children}</div>
+    <div className={className}>
+      <div onClick={() => setIsOpen(true)}>{children}</div>
 
-      {isOpen && (
-        <div className="absolute bottom-full right-0 z-50 mb-2">
-          <ReactionPicker
-            onSelect={onSelect}
-            onClose={() => setIsOpen(false)}
-            frequentEmojis={frequentEmojis}
-          />
-        </div>
-      )}
+      <ResponsiveModal open={isOpen} onOpenChange={setIsOpen}>
+        <ResponsiveModalContent className="max-w-md p-0 sm:max-h-[80vh] max-h-[70vh] flex flex-col">
+          <ResponsiveModalHeader className="p-4 pb-0">
+            <ResponsiveModalTitle>Choose an emoji</ResponsiveModalTitle>
+          </ResponsiveModalHeader>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ReactionPicker
+              onSelect={handleSelect}
+              onClose={() => setIsOpen(false)}
+              frequentEmojis={frequentEmojis}
+            />
+          </div>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
     </div>
   );
 }

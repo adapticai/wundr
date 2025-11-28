@@ -14,14 +14,12 @@ import { prisma } from '@neolith/database';
 import { NextResponse } from 'next/server';
 
 import { auth } from '@/lib/auth';
+import { NotificationService } from '@/lib/services/notification-service';
 import {
   channelIdParamSchema,
-  addChannelMemberSchema,
   createErrorResponse,
   ORG_ERROR_CODES,
 } from '@/lib/validations/organization';
-
-import type { AddChannelMemberInput } from '@/lib/validations/organization';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -79,13 +77,18 @@ return null;
  * GET /api/channels/:channelId/members
  *
  * List all members of a channel. Requires channel membership for private channels.
+ * Supports search parameter for @mentions - when search is provided, searches all
+ * workspace members (including orchestrators) for mention suggestions.
+ *
+ * Query Parameters:
+ * - search: Optional search query for filtering members by name/email (for @mentions)
  *
  * @param request - Next.js request object
  * @param context - Route context containing channel ID
- * @returns List of channel members
+ * @returns List of channel members (or workspace members when searching)
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   context: RouteContext,
 ): Promise<NextResponse> {
   try {
@@ -131,7 +134,61 @@ export async function GET(
       );
     }
 
-    // Fetch all members
+    // Parse search parameter for @mentions
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+
+    // If search is provided, return workspace members (for mention suggestions)
+    // This includes all workspace members (humans and orchestrators)
+    if (search !== null) {
+      const workspaceMembers = await prisma.workspaceMember.findMany({
+        where: {
+          workspaceId: access.channel.workspaceId,
+          user: {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { displayName: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+            ],
+          },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              displayName: true,
+              avatarUrl: true,
+              isOrchestrator: true,
+              status: true,
+            },
+          },
+        },
+        orderBy: [
+          { user: { isOrchestrator: 'desc' } }, // Orchestrators first for visibility
+          { user: { name: 'asc' } },
+        ],
+        take: 10, // Limit results for performance
+      });
+
+      // Transform to match expected format
+      const members = workspaceMembers.map((wm) => ({
+        id: wm.user.id,
+        name: wm.user.displayName || wm.user.name || 'Unknown',
+        email: wm.user.email,
+        image: wm.user.avatarUrl,
+        isOrchestrator: wm.user.isOrchestrator,
+        status: wm.user.status,
+      }));
+
+      return NextResponse.json({
+        members,
+        count: members.length,
+      });
+    }
+
+    // Fetch all channel members (no search)
     const members = await prisma.channelMember.findMany({
       where: { channelId: params.channelId },
       include: {
@@ -239,88 +296,135 @@ export async function POST(
       );
     }
 
-    // Validate input
-    const parseResult = addChannelMemberSchema.safeParse(body);
-    if (!parseResult.success) {
+    // Support both single userId and array of userIds
+    const bodyWithUserIds = body as { userId?: string; userIds?: string[]; role?: string; includeHistory?: boolean };
+
+    // Convert to array format for unified processing
+    const userIds = bodyWithUserIds.userIds || (bodyWithUserIds.userId ? [bodyWithUserIds.userId] : []);
+    const role = bodyWithUserIds.role || 'MEMBER';
+
+    if (userIds.length === 0) {
       return NextResponse.json(
         createErrorResponse(
-          'Validation failed',
+          'At least one userId is required',
           ORG_ERROR_CODES.VALIDATION_ERROR,
-          { errors: parseResult.error.flatten().fieldErrors },
         ),
         { status: 400 },
       );
     }
 
-    const input: AddChannelMemberInput = parseResult.data;
+    // Validate all user IDs are strings
+    if (!userIds.every((id: unknown) => typeof id === 'string' && id.length > 0)) {
+      return NextResponse.json(
+        createErrorResponse(
+          'All user IDs must be non-empty strings',
+          ORG_ERROR_CODES.VALIDATION_ERROR,
+        ),
+        { status: 400 },
+      );
+    }
 
-    // Check if user is a workspace member
-    const workspaceMembership = await prisma.workspaceMember.findUnique({
+    // Get all workspace memberships for the users
+    const workspaceMemberships = await prisma.workspaceMember.findMany({
       where: {
-        workspaceId_userId: {
-          workspaceId: access.channel.workspaceId,
-          userId: input.userId,
-        },
+        workspaceId: access.channel.workspaceId,
+        userId: { in: userIds },
       },
       include: {
         user: true,
       },
     });
 
-    if (!workspaceMembership) {
+    const workspaceMemberIds = new Set(workspaceMemberships.map(wm => wm.userId));
+    const nonWorkspaceMembers = userIds.filter((id: string) => !workspaceMemberIds.has(id));
+
+    if (nonWorkspaceMembers.length > 0) {
       return NextResponse.json(
         createErrorResponse(
-          'User must be a workspace member to join the channel',
+          `Users must be workspace members to join the channel: ${nonWorkspaceMembers.join(', ')}`,
           ORG_ERROR_CODES.USER_NOT_FOUND,
         ),
         { status: 404 },
       );
     }
 
-    // Check if user is already a channel member
-    const existingMembership = await prisma.channelMember.findUnique({
+    // Check for existing channel memberships
+    const existingMemberships = await prisma.channelMember.findMany({
       where: {
-        channelId_userId: {
-          channelId: params.channelId,
-          userId: input.userId,
-        },
+        channelId: params.channelId,
+        userId: { in: userIds },
       },
     });
 
-    if (existingMembership) {
+    const existingMemberIds = new Set(existingMemberships.map(m => m.userId));
+    const newUserIds = userIds.filter((id: string) => !existingMemberIds.has(id));
+
+    if (newUserIds.length === 0) {
       return NextResponse.json(
         createErrorResponse(
-          'User is already a member of this channel',
+          'All users are already members of this channel',
           ORG_ERROR_CODES.ALREADY_MEMBER,
         ),
         { status: 409 },
       );
     }
 
-    // Add member
-    const newMembership = await prisma.channelMember.create({
-      data: {
-        channelId: params.channelId,
-        userId: input.userId,
-        role: input.role,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            displayName: true,
-            avatarUrl: true,
-            isOrchestrator: true,
-            status: true,
+    // Add all new members in a transaction
+    const newMemberships = await prisma.$transaction(async (tx) => {
+      await tx.channelMember.createMany({
+        data: newUserIds.map((userId: string) => ({
+          channelId: params.channelId,
+          userId,
+          role: role as 'ADMIN' | 'MEMBER',
+        })),
+      });
+
+      // Fetch the created memberships with user details
+      return tx.channelMember.findMany({
+        where: {
+          channelId: params.channelId,
+          userId: { in: newUserIds },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              displayName: true,
+              avatarUrl: true,
+              isOrchestrator: true,
+              status: true,
+            },
           },
         },
-      },
+      });
     });
 
+    // Send notifications to all added users (fire and forget)
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, displayName: true },
+    });
+    const inviterName = currentUser?.displayName || currentUser?.name || 'Someone';
+
+    for (const membership of newMemberships) {
+      NotificationService.notifyChannelInvite(
+        membership.userId,
+        params.channelId,
+        access.channel.name,
+        inviterName,
+      ).catch(err => {
+        console.error('[POST /api/channels/:channelId/members] Failed to send channel invite notification:', err);
+      });
+    }
+
     return NextResponse.json(
-      { data: newMembership, message: 'Member added to channel successfully' },
+      {
+        data: newMemberships,
+        message: `${newMemberships.length} member(s) added to channel successfully`,
+        skipped: existingMemberIds.size,
+      },
       { status: 201 },
     );
   } catch (error) {

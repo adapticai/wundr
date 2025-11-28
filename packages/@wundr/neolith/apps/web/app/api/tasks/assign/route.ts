@@ -14,6 +14,7 @@ import { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { NotificationService } from '@/lib/services/notification-service';
 
 import type { TaskAssignmentInput } from '@/lib/validations/task';
 import {
@@ -186,6 +187,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Determine overall success
     const successCount = assignedTasks.filter((r) => r.success).length;
     const failureCount = assignedTasks.filter((r) => !r.success).length;
+
+    // Send notifications to the assignee for each successfully assigned task (if different from assigner)
+    if (input.assigneeId !== session.user.id) {
+      const currentUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, displayName: true },
+      });
+      const assignerName = currentUser?.displayName || currentUser?.name || 'Someone';
+
+      // Send notifications for successfully assigned tasks
+      for (const result of assignedTasks.filter(r => r.success)) {
+        const taskTitle = (result.data as any)?.title || `Task #${result.taskId.slice(-6)}`;
+        NotificationService.notifyTaskAssigned(
+          input.assigneeId,
+          result.taskId,
+          taskTitle,
+          assignerName,
+        ).catch(err => {
+          console.error(`[POST /api/tasks/assign] Failed to send notification for task ${result.taskId}:`, err);
+        });
+      }
+    }
 
     return NextResponse.json(
       {
